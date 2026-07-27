@@ -2,7 +2,7 @@
 <#
 .SYNOPSIS
     Configures (and optionally hosts a dev tunnel for) the .NET MAUI Essentials Passkeys sample,
-    which is served by the Samples.WebServer relying-party web app.
+    which is served by the Samples.Server.Passkeys relying-party web app.
 
 .DESCRIPTION
     Passkeys are bound to a domain (the RP ID), so `localhost` will not work from a
@@ -84,7 +84,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$project = Join-Path $here 'Samples.WebServer' 'Essentials.Samples.WebServer.csproj'
+$project = Join-Path $here 'Samples.Server.Passkeys' 'Essentials.Samples.Server.Passkeys.csproj'
 
 # Default the application id to the sample app's <ApplicationId> so the two never drift.
 if (-not $ApplicationId) {

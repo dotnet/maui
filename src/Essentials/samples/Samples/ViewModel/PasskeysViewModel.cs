@@ -18,7 +18,7 @@ namespace Samples.ViewModel
 {
 	public class PasskeysViewModel : BaseViewModel
 	{
-		// The relying-party server (Samples.WebServer). Passkeys are bound to a domain, so it must be a
+		// The relying-party server (Samples.Server.Passkeys). Passkeys are bound to a domain, so it must be a
 		// public HTTPS host reachable from the device. Run `pwsh ./Configure.ps1` in src/Essentials/samples
 		// to provision a dev tunnel; it bakes the URL in via AssemblyMetadata (see Essentials.Sample.csproj).
 		// The default is also editable at runtime from the Server toolbar button.

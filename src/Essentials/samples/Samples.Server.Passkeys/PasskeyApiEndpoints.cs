@@ -2,7 +2,7 @@ using System.Buffers.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 
-namespace Essentials.Samples.WebServer;
+namespace Samples.Server.Passkeys;
 
 /// <summary>
 /// Passkey ceremony endpoints for the native app. Driven by a native <c>HttpClient</c> (not browser forms):

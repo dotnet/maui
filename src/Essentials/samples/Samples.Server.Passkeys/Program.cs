@@ -1,9 +1,9 @@
-using Essentials.Samples.WebServer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Samples.Server.Passkeys;
 
 var builder = WebApplication.CreateBuilder(args);
 

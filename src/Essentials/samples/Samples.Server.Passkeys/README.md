@@ -35,7 +35,7 @@ Username/password auth (`/account/register`, `/account/login?useCookies=true`, p
 ## Run it
 
 ```bash
-dotnet run --project src/Essentials/samples/Samples.WebServer --launch-profile http
+dotnet run --project src/Essentials/samples/Samples.Server.Passkeys --launch-profile http
 # listens on http://localhost:5177  (https://localhost:7235 with the "https" profile)
 ```
 
@@ -100,7 +100,7 @@ on localhost with ASP.NET Core Identity's default RP settings. The keys:
 Set one by hand like:
 
 ```bash
-dotnet user-secrets --project src/Essentials/samples/Samples.WebServer \
+dotnet user-secrets --project src/Essentials/samples/Samples.Server.Passkeys \
   set "Passkeys:ServerDomain" "<id>-5177.<region>.devtunnels.ms"
 ```
 

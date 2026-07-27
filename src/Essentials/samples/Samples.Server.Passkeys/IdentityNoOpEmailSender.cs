@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Essentials.Samples.WebServer;
+namespace Samples.Server.Passkeys;
 
 // Dev-only test server: Identity's registration flow requires an IEmailSender<TUser> to be
 // registered, but this headless sample never sends email (email confirmation is disabled in
