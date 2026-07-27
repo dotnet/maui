@@ -943,23 +943,52 @@ if (-not $SkipE2E) {
 
                         # Dual-tracker window (PR #36497 review, Finding 4): once
                         # shipped+1 has been CUT to a real branch (branchExists=true =>
-                        # in-flight), the detector must ALSO surface a fresh shipped+2
-                        # CANDIDATE from main (net11.0's PreReleaseVersionIteration has
-                        # advanced by one). The previous bound only looked at shipped+1,
-                        # so a Lane 4 regression that dropped the shipped+2 row during the
-                        # cut->tag window would still pass. This is dormant in steady state
-                        # — it only fires once shipped+1's branch actually exists.
-                        $candidateN2 = $shippedPreviewN + 2
-                        $candidate2 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $candidateN2 } | Select-Object -First 1
-                        if ($null -eq $candidate2) {
-                            Write-Host "  ❌ net11 missing preview$candidateN2 candidate tracker (dual-tracker window)" -ForegroundColor Red; $script:failed++
+                        # in-flight), the detector must ALSO surface a fresh candidate
+                        # from the survey ref. The previous bound only looked at
+                        # shipped+1, so a Lane 4 regression that dropped that second row
+                        # during the cut->tag window would still pass.
+                        #
+                        # The window has TWO independent preconditions, not one: the
+                        # branch must be cut AND the survey ref must have been bumped to
+                        # the next iteration. Those are separate maintainer actions, so
+                        # gating on branchExists alone made this fail for the whole
+                        # (legitimate) interval between the cut and the bump — a real
+                        # repo state, not a regression. Read the survey ref's actual
+                        # PreReleaseVersionIteration and only assert once it has moved
+                        # past the in-flight preview.
+                        #
+                        # The expected number comes from that iteration rather than
+                        # shipped+2, because the pre-release train is not a plain
+                        # increment: after preview7 the next cycle is rc1, so a hardcoded
+                        # shipped+2 would demand a `preview8` that will never exist.
+                        # Deterministic coverage of the invariant itself lives in the
+                        # synthetic dual-preview-window test below, which mocks BOTH
+                        # preconditions and therefore always runs.
+                        $surveyIter = $null
+                        try {
+                            $repoRootForProps = Resolve-Path (Join-Path $PSScriptRoot '..' '..' '..' '..')
+                            $propsText = (& git -C $repoRootForProps show "origin/$($net11.mainBranch):eng/Versions.props" 2>$null) -join "`n"
+                            if ($propsText -match '<PreReleaseVersionIteration>\s*(\d+)\s*</PreReleaseVersionIteration>') {
+                                $surveyIter = [int]$Matches[1]
+                            }
+                        } catch { $surveyIter = $null }
+
+                        if ($null -eq $surveyIter) {
+                            Write-Host "  ⏭️  dual-tracker window: could not read PreReleaseVersionIteration from origin/$($net11.mainBranch) — skipped (synthetic test covers the invariant)" -ForegroundColor DarkGray
+                        } elseif ($surveyIter -le $candidateN) {
+                            Write-Host "  ⏭️  dual-tracker window not open: $($net11.mainBranch) is still at iteration $surveyIter (preview$candidateN cut, not yet bumped) — skipped (synthetic test covers the invariant)" -ForegroundColor DarkGray
                         } else {
-                            Assert-Eq -Label "shipped+2 candidate mode = candidate (not cut yet)" `
-                                      -Expected 'candidate' -Actual $candidate2.mode
-                            Assert-Eq -Label "shipped+2 candidate branchExists = false" `
-                                      -Expected $false -Actual $candidate2.branchExists
-                            Assert-Eq -Label "shipped+2 candidate surveyRef = mainBranch" `
-                                      -Expected $net11.mainBranch -Actual $candidate2.surveyRef
+                            $candidate2 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $surveyIter } | Select-Object -First 1
+                            if ($null -eq $candidate2) {
+                                Write-Host "  ❌ net11 missing iteration-$surveyIter candidate tracker (dual-tracker window)" -ForegroundColor Red; $script:failed++
+                            } else {
+                                Assert-Eq -Label "shipped+2 candidate mode = candidate (not cut yet)" `
+                                          -Expected 'candidate' -Actual $candidate2.mode
+                                Assert-Eq -Label "shipped+2 candidate branchExists = false" `
+                                          -Expected $false -Actual $candidate2.branchExists
+                                Assert-Eq -Label "shipped+2 candidate surveyRef = mainBranch" `
+                                          -Expected $net11.mainBranch -Actual $candidate2.surveyRef
+                            }
                         }
                     } else {
                         Assert-Eq -Label "candidate mode = candidate (no branch yet)" -Expected 'candidate' -Actual $candidate.mode
