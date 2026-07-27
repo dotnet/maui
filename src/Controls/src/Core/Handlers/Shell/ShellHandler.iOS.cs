@@ -998,7 +998,20 @@ namespace Microsoft.Maui.Controls.Handlers
                 _flyoutView.AccessibilityElementsHidden = flyoutElementsHidden;
 
             if (_detailView is not null)
-                _detailView.AccessibilityElementsHidden = detailElementsHidden;
+            {
+                // UIView.AccessibilityElementsHidden hides the whole subtree, including any
+                // subviews added to it *after* the flag is set. SetupFlyout() runs synchronously
+                // (and may call this multiple times) before the current item's content view has
+                // been attached to _detailView - that attachment happens later, asynchronously,
+                // in SetCurrentShellItemRendererAsync. If we hide _detailView before content
+                // exists, the content stays hidden from accessibility/automation forever once it
+                // is finally added, even though nothing about the flyout state actually changed
+                // in the interim. Skip hiding until real content has been attached, matching the
+                // legacy ShellFlyoutRenderer, which only ever evaluates this once (on IsOpen /
+                // FlyoutBehavior changes) - not immediately after the first render pass, so it
+                // never re-hides content that was just attached during initial load.
+                _detailView.AccessibilityElementsHidden = _currentShellItemRenderer is not null && detailElementsHidden;
+            }
         }
 
         bool ShouldReceiveTouch(UITouch touch, UIView containerView)
