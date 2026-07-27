@@ -38,10 +38,14 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		var noWarn = ProjectItem?.NoWarn;
 		if (!string.IsNullOrEmpty(noWarn))
 		{
-			var suppressedIds = noWarn!.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+			var suppressedIds = noWarn!.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var id in suppressedIds)
 			{
-				if (diagnostic.Id.Equals(id.Trim(), StringComparison.OrdinalIgnoreCase))
+				var code = id.Trim();
+				// Match full ID (e.g., "MAUIX2015") or bare numeric suffix (e.g., "2015")
+				if (code.Equals(diagnostic.Id, StringComparison.OrdinalIgnoreCase) ||
+					(diagnostic.Id.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
+					 code == diagnostic.Id.Substring("MAUIX".Length)))
 				{
 					return; // Suppress this diagnostic
 				}
@@ -72,6 +76,15 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 			LocalMethods.Add(code);
 		}
 	}
+
+	readonly HashSet<string> _emittedTemplateMethods = new HashSet<string>();
+
+	// Reserves a generated DataTemplate LoadTemplate method name once per compilation unit, so a
+	// template whose value is set more than once in the same scope (e.g. a `required` property set
+	// in the object initializer AND as an assignment) emits the local function only once instead of
+	// redeclaring it. Returns true the first time a name is seen, false afterwards. See dotnet/maui#36682.
+	public bool TryReserveTemplateMethod(string name)
+		=> ParentContext != null ? ParentContext.TryReserveTemplateMethod(name) : _emittedTemplateMethods.Add(name);
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
 	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;

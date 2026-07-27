@@ -50,6 +50,10 @@ namespace Microsoft.Maui.Resizetizer
 
 		public double ForegroundScale { get; set; } = 1.0;
 
+		public string? MonochromeFilename { get; set; }
+
+		public bool MonochromeIsVector => IsVectorFilename(MonochromeFilename);
+
 		private static bool IsVectorFilename(string? filename)
 			=> IsVectorExtension(Path.GetExtension(filename));
 
@@ -122,6 +126,16 @@ namespace Microsoft.Maui.Resizetizer
 					throw new FileNotFoundException("Unable to find foreground file: " + fgFileInfo.FullName, fgFileInfo.FullName);
 
 				info.ForegroundFilename = fgFileInfo.FullName;
+			}
+
+			var monoFile = image.GetMetadata("MonochromeFile");
+			if (!string.IsNullOrEmpty(monoFile))
+			{
+				var monoFileInfo = new FileInfo(monoFile);
+				if (!monoFileInfo.Exists)
+					throw new FileNotFoundException("Unable to find monochrome file: " + monoFileInfo.FullName, monoFileInfo.FullName);
+
+				info.MonochromeFilename = monoFileInfo.FullName;
 			}
 
 			// make sure the image is a foreground if this is an icon

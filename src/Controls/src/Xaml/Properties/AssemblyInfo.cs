@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.Benchmarks")]
 [assembly: InternalsVisibleTo("MockSourceGenerator.Generated")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Build.Tasks")]
@@ -12,7 +13,6 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.SourceGen")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Core")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Embedding")]

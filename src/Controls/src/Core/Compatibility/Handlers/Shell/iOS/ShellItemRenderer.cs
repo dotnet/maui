@@ -347,6 +347,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (TabBar.Items is not null && index >= 0 && index < TabBar.Items.Length)
 					UpdateTabBarItemEnabled(TabBar.Items[index], shellSection.IsEnabled);
 			}
+			else if (e.PropertyName == BaseShellItem.BadgeTextProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeColorProperty.PropertyName ||
+					 e.PropertyName == BaseShellItem.BadgeTextColorProperty.PropertyName)
+			{
+				var shellSection = (ShellSection)sender;
+				var renderer = RendererForShellContent(shellSection);
+				if (renderer is not null)
+				{
+					UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, shellSection);
+				}
+			}
 		}
 
 
@@ -386,7 +397,45 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
 				{
 					TabBar.Items[tabIndex].Enabled = items[tabIndex].IsEnabled;
+					UpdateTabBarItemBadge(TabBar.Items[tabIndex], items[tabIndex]);
 				}
+			}
+		}
+
+		internal static void UpdateTabBarItemBadge(UITabBarItem tabBarItem, ShellSection shellSection)
+		{
+			if (tabBarItem is null)
+				return;
+
+			var badgeText = shellSection.BadgeText;
+			tabBarItem.BadgeValue = badgeText is null ? null : (badgeText.Length > 0 ? badgeText : "");
+
+			var badgeColor = shellSection.BadgeColor;
+			if (badgeColor is not null)
+			{
+				tabBarItem.BadgeColor = badgeColor.ToPlatform();
+			}
+			else
+			{
+				// Reset to system default
+				tabBarItem.BadgeColor = null;
+			}
+
+			var badgeTextColor = shellSection.BadgeTextColor;
+			if (badgeTextColor is not null)
+			{
+				var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Focused);
+			}
+			else
+			{
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Normal);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Selected);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Disabled);
+				tabBarItem.SetBadgeTextAttributes(null, UIControlState.Focused);
 			}
 		}
 
