@@ -270,6 +270,19 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
     }
     It 'returns null when unparseable so the caller uses the conservative default' {
         Get-CiScanRecurrenceRate -Body 'no occurrences line' | Should -BeNullOrEmpty
+        Get-CiScanRecurrenceRate -Body '- **Occurrences**: 3 in last 0 builds' | Should -BeNullOrEmpty
+    }
+    It 'clamps a zero numerator to the rarity floor instead of falling back' {
+        # "0 in last n builds" is parseable and means "as rare as we can observe", so it
+        # must clamp to the 0.05 floor. Returning $null here would make the caller
+        # substitute DefaultRecurrenceRate (0.30), which demands FEWER absences than the
+        # floor does — the unsafe direction for staleness thresholding.
+        $d = Get-CiScanDefaults
+        $rate = Get-CiScanRecurrenceRate -Body '- **Occurrences**: 0 in last 10 builds'
+
+        $rate | Should -Be 0.05
+        Get-CiScanRequiredAbsences -RecurrenceRate $rate |
+            Should -BeGreaterThan (Get-CiScanRequiredAbsences -RecurrenceRate $d.DefaultRecurrenceRate)
     }
     It 'requires more absences for rarer failures' {
         $rare = Get-CiScanRequiredAbsences -RecurrenceRate 0.1
@@ -423,6 +436,28 @@ Describe 'Get-CiScanIssueVerdict — gates' {
 
     It 'is not a candidate when coverage is entirely absent (no observations recorded)' {
         (Get-CiScanIssueVerdict -Issue $script:CanonicalIssue -Config $script:Net11 -Now $script:Now).Decision | Should -Be 'watching'
+    }
+
+    It 'does not shorten the absence clock for a zero-occurrence issue' {
+        # A "0 in last n builds" body used to parse to a rate of 0, which the parser
+        # reported as unparseable, so the caller substituted DefaultRecurrenceRate (0.30)
+        # and demanded FEWER absences than the rarity floor does. That let the rarest
+        # signatures reach candidate soonest — backwards.
+        $d = Get-CiScanDefaults
+        $zero = New-TestIssue -Body (New-CanonicalBody -Occurrences '0 in last 10 builds' `
+                -StateJson (New-StateJson -Absent (1..20)))
+        $baseline = Get-CiScanIssueVerdict -Issue $script:CanonicalIssue -Config $script:Net11 `
+            -Now $script:Now -Coverage $script:FullCoverage
+
+        $v = Get-CiScanIssueVerdict -Issue $zero -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
+
+        $v.RecurrenceRate | Should -Be 0.05
+        $v.RecurrenceRate | Should -Not -Be $d.DefaultRecurrenceRate
+        $v.RequiredAbsences | Should -Be $d.MaxRequiredAbsences
+        $v.RequiredAbsences | Should -BeGreaterThan $baseline.RequiredAbsences
+        # 20 verified absences no longer clear the bar a 0.30 fallback would have set.
+        $v.Decision | Should -Be 'watching'
+        $baseline.Decision | Should -Be 'candidate'
     }
 
     It 'counts only builds the reconciler independently verified, not what the marker claimed' {

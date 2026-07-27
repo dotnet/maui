@@ -398,7 +398,12 @@ function Get-CiScanRecurrenceRate {
         builds". Reading only the numerator would over-estimate the rate and therefore
         UNDER-estimate the number of absences required, which is the unsafe direction.
 
-        Returns $null when unparseable; the caller substitutes the conservative default.
+        Returns $null only when the line is genuinely unparseable (absent, malformed, or
+        "in last 0 builds"); the caller substitutes the conservative default. A parsed
+        "0 in last <n> builds" is NOT unparseable — it is the rarest observable
+        recurrence, so it clamps to the 0.05 floor rather than falling back. Falling back
+        would substitute DefaultRecurrenceRate (0.30), which yields FEWER required
+        absences than the floor does, i.e. the unsafe direction.
     #>
     [CmdletBinding()]
     param([AllowNull()][AllowEmptyString()][string]$Body)
@@ -411,7 +416,6 @@ function Get-CiScanRecurrenceRate {
     if ($n -le 0) { return $null }
 
     $rate = $k / $n
-    if ($rate -le 0) { return $null }
     if ($rate -gt 1.0) { $rate = 1.0 }
     if ($rate -lt 0.05) { $rate = 0.05 }
     return [math]::Round($rate, 4)
