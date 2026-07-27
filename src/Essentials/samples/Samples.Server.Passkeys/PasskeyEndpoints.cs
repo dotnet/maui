@@ -5,14 +5,27 @@ using Microsoft.AspNetCore.Identity;
 namespace Samples.Server.Passkeys;
 
 /// <summary>
-/// Passkey ceremony endpoints for the native app. Driven by a native <c>HttpClient</c> (not browser forms):
-/// the WebAuthn challenge state is round-tripped through the auth cookie, so the client must use a
-/// <c>CookieContainer</c> and send the cookie from <c>/begin</c> back on the matching <c>/finish</c>.
-/// Registration enrolls a passkey for the signed-in user, so the caller must be authenticated first.
+/// The passkey ceremony endpoints for the native app, plus the platform domain-association documents
+/// they depend on — they belong together, because an on-device passkey ceremony only works when the
+/// same relying-party domain both runs the ceremony and serves the well-known association files.
 /// </summary>
-internal static class PasskeyApiEndpoints
+/// <remarks>
+/// The ceremony endpoints are driven by a native <c>HttpClient</c> (not browser forms): the WebAuthn
+/// challenge is round-tripped through the auth cookie, so the client must use a <c>CookieContainer</c>
+/// and send the cookie from <c>/begin</c> back on the matching <c>/finish</c>. Registration enrolls a
+/// passkey for the signed-in user, so the caller must be authenticated first.
+/// </remarks>
+internal static class PasskeyEndpoints
 {
-	public static IEndpointRouteBuilder MapNativePasskeyApi(this IEndpointRouteBuilder endpoints)
+	public static IEndpointRouteBuilder MapPasskeys(this IEndpointRouteBuilder endpoints, IConfiguration config)
+	{
+		MapCeremony(endpoints);
+		MapDomainAssociation(endpoints, config);
+		return endpoints;
+	}
+
+	// The /passkeys/* ceremony API called by the native app.
+	static void MapCeremony(IEndpointRouteBuilder endpoints)
 	{
 		// Native JSON APIs, not browser form posts, so antiforgery doesn't apply — disable it on the whole
 		// group. (WebAuthn payloads are signed over challenge+origin+rpId and can't be forged or replayed.)
@@ -32,11 +45,10 @@ internal static class PasskeyApiEndpoints
 			{
 				username = user.UserName,
 				passkeyCount = passkeys.Count,
-				// Base64Url-encode the credential id so the client can round-trip it back on /delete.
+				// Base64Url-encode the credential id so the client has a stable identifier to show.
 				passkeys = passkeys.Select(pk => new
 				{
 					id = Base64Url.EncodeToString(pk.CredentialId),
-					name = pk.Name,
 					createdAt = pk.CreatedAt,
 				}),
 			});
@@ -64,10 +76,9 @@ internal static class PasskeyApiEndpoints
 			return Results.Content(optionsJson, "application/json");
 		}).RequireAuthorization();
 
-		// Registration finish: validates the attestation and stores the passkey. An optional ?name= labels it.
+		// Registration finish: validates the attestation and stores the passkey against the signed-in user.
 		group.MapPost("/register/finish", async (
 			JsonElement credential,
-			string? name,
 			UserManager<IdentityUser> userManager,
 			SignInManager<IdentityUser> signInManager) =>
 		{
@@ -90,56 +101,20 @@ internal static class PasskeyApiEndpoints
 			if (user is null)
 				return Results.BadRequest("Unable to resolve the user for this passkey.");
 
-			if (!string.IsNullOrWhiteSpace(name))
-				attestation.Passkey.Name = name.Trim();
-
 			var stored = await userManager.AddOrUpdatePasskeyAsync(user, attestation.Passkey);
 			if (!stored.Succeeded)
 				return Results.BadRequest("Failed to store passkey.");
 
-			return Results.Ok(new { registered = true, username = user.UserName, name = attestation.Passkey.Name });
+			return Results.Ok(new { registered = true, username = user.UserName });
 		});
 
-		// Removes a passkey the signed-in user owns. credentialId is the Base64Url id from /list.
-		group.MapDelete("/delete", async (
-			string? credentialId,
-			HttpContext context,
-			UserManager<IdentityUser> userManager) =>
-		{
-			var user = await userManager.GetUserAsync(context.User);
-			if (user is null)
-				return Results.Json(new { error = "Not signed in." }, statusCode: StatusCodes.Status401Unauthorized);
-
-			if (string.IsNullOrWhiteSpace(credentialId))
-				return Results.BadRequest(new { error = "A credentialId is required." });
-
-			byte[] id;
-			try
-			{
-				id = Base64Url.DecodeFromChars(credentialId);
-			}
-			catch (FormatException)
-			{
-				return Results.BadRequest(new { error = "The credentialId is not valid Base64Url." });
-			}
-
-			var result = await userManager.RemovePasskeyAsync(user, id);
-			if (!result.Succeeded)
-				return Results.BadRequest(new { error = "The passkey could not be removed (it may not belong to this account)." });
-
-			return Results.Ok(new { removed = true });
-		}).RequireAuthorization();
-
-		// Sign-in begin: returns the WebAuthn request options. Omit 'username' for username-less sign-in.
+		// Sign-in begin: returns the WebAuthn request options for username-less (discoverable) sign-in.
+		// No username is needed — the passkey itself carries the identity, and the server only learns who
+		// the user is at /login/finish, from the credential the assertion is signed with.
 		group.MapPost("/login/begin", async (
-			string? username,
-			UserManager<IdentityUser> userManager,
 			SignInManager<IdentityUser> signInManager) =>
 		{
-			var user = string.IsNullOrWhiteSpace(username)
-				? null
-				: await userManager.FindByNameAsync(username);
-			var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+			var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user: null);
 			return Results.Content(optionsJson, "application/json");
 		});
 
@@ -175,7 +150,53 @@ internal static class PasskeyApiEndpoints
 
 			return Results.Ok(new { authenticated = true, username = assertion.User.UserName });
 		});
+	}
 
-		return endpoints;
+	// The platform domain-association documents that let real devices trust this relying party:
+	// Android Digital Asset Links (/.well-known/assetlinks.json) and Apple App Site Association
+	// (/.well-known/apple-app-site-association). Populated from the Passkeys:Android / Passkeys:Apple
+	// config; must be served over HTTPS from the same domain configured as the passkey ServerDomain.
+	static void MapDomainAssociation(IEndpointRouteBuilder endpoints, IConfiguration config)
+	{
+		// Android - Digital Asset Links. The sha256_cert_fingerprints are the colon-delimited SHA-256
+		// hashes of the app's signing certificate(s) (keytool / apksigner output).
+		endpoints.MapGet("/.well-known/assetlinks.json", () =>
+		{
+			var packageName = config["Passkeys:Android:PackageName"];
+			var fingerprints = config.GetSection("Passkeys:Android:Sha256CertFingerprints").Get<string[]>()
+				?? Array.Empty<string>();
+
+			var doc = new[]
+			{
+				new
+				{
+					relation = new[]
+					{
+						"delegate_permission/common.get_login_creds",
+						"delegate_permission/common.handle_all_urls",
+					},
+					target = new
+					{
+						@namespace = "android_app",
+						package_name = packageName,
+						sha256_cert_fingerprints = fingerprints,
+					},
+				},
+			};
+
+			return Results.Json(doc, contentType: "application/json");
+		});
+
+		// Apple - App Site Association (webcredentials). Each entry is "<TeamID>.<BundleId>".
+		// Must be served at the domain root, over HTTPS, with no file extension.
+		endpoints.MapGet("/.well-known/apple-app-site-association", () =>
+		{
+			var appIds = config.GetSection("Passkeys:Apple:AppIds").Get<string[]>()
+				?? Array.Empty<string>();
+
+			var doc = new { webcredentials = new { apps = appIds } };
+
+			return Results.Json(doc, contentType: "application/json");
+		});
 	}
 }

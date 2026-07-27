@@ -7,19 +7,17 @@ using Samples.Server.Passkeys;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// This is a headless relying-party API (no web UI). It exposes only what the native MAUI sample
-// exercises: username/password auth (MapIdentityApi) and the passkey ceremony endpoints.
-
-var authBuilder = builder.Services.AddAuthentication(options =>
+builder.Services.AddAuthentication(options =>
 	{
 		options.DefaultScheme = IdentityConstants.ApplicationScheme;
 		options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-	});
-
-authBuilder.AddIdentityCookies();
-
-// Required by MapIdentityApi even though the app authenticates with the cookie variant.
-authBuilder.AddBearerToken(IdentityConstants.BearerScheme);
+	})
+	// AddBearerToken must come before AddIdentityCookies in the chain: it returns the AuthenticationBuilder
+	// so the chain can continue, whereas AddIdentityCookies returns a different (terminal) builder type that
+	// has no AddBearerToken. The bearer scheme is required by MapIdentityApi even though the app authenticates
+	// with the cookie variant.
+	.AddBearerToken(IdentityConstants.BearerScheme)
+	.AddIdentityCookies();
 
 // Authorization services for the RequireAuthorization() passkey endpoints.
 builder.Services.AddAuthorization();
@@ -48,8 +46,7 @@ const string inMemoryConnectionString = "Data Source=PasskeysSample;Mode=Memory;
 var keepAliveConnection = new SqliteConnection(inMemoryConnectionString);
 keepAliveConnection.Open();
 builder.Services.AddSingleton(keepAliveConnection);
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-	options.UseSqlite(inMemoryConnectionString));
+builder.Services.AddDbContext<IdentityDbContext>(options => options.UseSqlite(inMemoryConnectionString));
 
 builder.Services.AddIdentityCore<IdentityUser>(options =>
 	{
@@ -106,19 +103,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Username/password auth: /account/register, /account/login (?useCookies=true sets the auth cookie), etc.
+// There's no logout endpoint: the auth cookie is a self-contained ticket the client holds, so the native
+// app "signs out" by simply dropping its cookie jar — there's no server-side session to invalidate.
 app.MapGroup("/account").MapIdentityApi<IdentityUser>();
 
-// MapIdentityApi has no logout endpoint; add one that clears the auth cookie.
-app.MapPost("/account/logout", async (SignInManager<IdentityUser> signInManager) =>
-{
-	await signInManager.SignOutAsync();
-	return Results.Ok(new { signedOut = true });
-});
-
-// Passkey ceremony endpoints.
-app.MapNativePasskeyApi();
-
-// Platform domain-association documents (Android assetlinks.json / Apple AASA).
-app.MapDomainAssociation(app.Configuration);
+// Passkey ceremony endpoints + the platform domain-association documents they depend on.
+app.MapPasskeys(app.Configuration);
 
 app.Run();

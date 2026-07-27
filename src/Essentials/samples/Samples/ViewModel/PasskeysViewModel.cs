@@ -11,7 +11,6 @@ using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
 using PasskeysApi = Microsoft.Maui.Authentication.Passkeys;
 
 namespace Samples.ViewModel
@@ -50,7 +49,7 @@ namespace Samples.ViewModel
 		{
 			SignUpCommand = new Command(async () => await SignUpAsync());
 			SignInPasswordCommand = new Command(async () => await SignInPasswordAsync());
-			SignOutCommand = new Command(async () => await SignOutAsync());
+			SignOutCommand = new Command(SignOut);
 			RegisterCommand = new Command(async () => await RegisterAsync());
 			LoginCommand = new Command(async () => await LoginAsync());
 			EditServerUrlCommand = new Command(async () => await EditServerUrlAsync());
@@ -185,27 +184,15 @@ namespace Samples.ViewModel
 			}
 		}
 
-		async Task SignOutAsync()
+		void SignOut()
 		{
-			try
-			{
-				IsBusy = true;
-				Log("Signing out…");
-
-				// Clears the Identity session cookie on our CookieContainer.
-				await PostJsonAsync("/account/logout", new { });
-				SetSignedOutState();
-
-				Log("Signed out.");
-			}
-			catch (Exception ex)
-			{
-				HandleError(ex);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
+			// The auth cookie is a self-contained ticket held in our CookieContainer, and the dev server keeps
+			// no server-side session — so "signing out" is just discarding the cookie jar. Drop the HttpClient;
+			// the next request builds a fresh one with an empty CookieContainer.
+			httpClient?.Dispose();
+			httpClient = null;
+			SetSignedOutState();
+			Log("Signed out.");
 		}
 
 		async Task RegisterAsync()
@@ -215,11 +202,6 @@ namespace Samples.ViewModel
 
 			try
 			{
-				// Let the user name the passkey (defaulting to the device name); the server infers a name if blank.
-				var suggestedName = string.IsNullOrWhiteSpace(DeviceInfo.Name) ? "My passkey" : DeviceInfo.Name;
-				var name = await DisplayPromptAsync("Name this passkey", "A label to recognise it later (e.g. your device or password manager).", suggestedName);
-				var nameQuery = string.IsNullOrWhiteSpace(name) ? string.Empty : $"?name={Uri.EscapeDataString(name.Trim())}";
-
 				IsBusy = true;
 				Log("Requesting creation options…");
 
@@ -232,47 +214,10 @@ namespace Samples.ViewModel
 
 				// Send the attestation back to be verified and stored.
 				Log("Verifying attestation with the server…");
-				await PostAsync($"/passkeys/register/finish{nameQuery}", response.ToString());
+				await PostAsync("/passkeys/register/finish", response.ToString());
 
 				await RefreshAccountStateAsync();
 				Log("✅ Passkey created. You can now sign in with it.");
-			}
-			catch (Exception ex)
-			{
-				HandleError(ex);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
-
-		async Task DeletePasskeyAsync(PasskeyItem passkey)
-		{
-			if (passkey is null)
-				return;
-
-			try
-			{
-				var confirmed = await DisplayConfirmAsync(
-					"Remove passkey?",
-					$"“{passkey.Name}” will be removed from your account. You won't be able to sign in with it anymore.",
-					"Remove",
-					"Cancel");
-				if (!confirmed)
-					return;
-
-				IsBusy = true;
-				Log($"Removing passkey “{passkey.Name}”…");
-
-				var client = GetClient();
-				using var httpResponse = await client.DeleteAsync($"/passkeys/delete?credentialId={Uri.EscapeDataString(passkey.Id)}");
-				var body = await httpResponse.Content.ReadAsStringAsync();
-				if (!httpResponse.IsSuccessStatusCode)
-					throw new InvalidOperationException($"Server returned {(int)httpResponse.StatusCode}: {ExtractServerMessage(body)}");
-
-				await RefreshAccountStateAsync();
-				Log("✅ Passkey removed.");
 			}
 			catch (Exception ex)
 			{
@@ -367,16 +312,13 @@ namespace Samples.ViewModel
 			{
 				foreach (var pk in list.EnumerateArray())
 				{
-					var item = new PasskeyItem
+					Passkeys.Add(new PasskeyItem
 					{
 						Id = pk.TryGetProperty("id", out var id) ? id.GetString() : null,
-						Name = pk.TryGetProperty("name", out var n) ? n.GetString() : "Unnamed passkey",
 						CreatedAt = pk.TryGetProperty("createdAt", out var ca) && ca.TryGetDateTimeOffset(out var dto)
 							? dto.ToLocalTime().ToString("MMM d, yyyy")
 							: null,
-					};
-					item.DeleteCommand = new Command(async () => await DeletePasskeyAsync(item));
-					Passkeys.Add(item);
+					});
 				}
 			}
 
@@ -519,17 +461,18 @@ namespace Samples.ViewModel
 		}
 	}
 
-	// One row in the signed-in passkey list. Id is the Base64Url credential id used to delete it.
+	// One row in the signed-in passkey list, identified by its Base64Url credential id.
 	public class PasskeyItem
 	{
 		public string Id { get; set; }
 
-		public string Name { get; set; }
-
 		public string CreatedAt { get; set; }
 
-		public string CreatedAtText => string.IsNullOrEmpty(CreatedAt) ? string.Empty : $"Added {CreatedAt}";
+		// A short, readable form of the (long) Base64Url credential id.
+		public string ShortId => string.IsNullOrEmpty(Id)
+			? "(unknown id)"
+			: Id.Length <= 16 ? Id : Id.Substring(0, 16) + "…";
 
-		public ICommand DeleteCommand { get; set; }
+		public string CreatedAtText => string.IsNullOrEmpty(CreatedAt) ? string.Empty : $"Added {CreatedAt}";
 	}
 }

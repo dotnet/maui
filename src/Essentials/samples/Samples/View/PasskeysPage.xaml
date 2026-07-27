@@ -41,19 +41,15 @@
                     <Label Text="{Binding AccountStatusText}" FontAttributes="Bold" FontSize="16" />
                     <Label Text="{Binding PasskeyStatusText}" TextColor="Gray" />
 
-                    <!-- The user's passkeys, each with a name, date and a Remove button. -->
+                    <!-- The user's passkeys, each shown by its credential id and creation date. -->
                     <VerticalStackLayout Spacing="6" BindableLayout.ItemsSource="{Binding Passkeys}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
                                 <Border Stroke="LightGray" StrokeThickness="1" Padding="10" StrokeShape="RoundRectangle 8">
-                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                        <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
-                                            <Label Text="{Binding Name}" FontAttributes="Bold" />
-                                            <Label Text="{Binding CreatedAtText}" FontSize="12" TextColor="Gray" />
-                                        </VerticalStackLayout>
-                                        <Button Grid.Column="1" Text="Remove" Command="{Binding DeleteCommand}"
-                                                BackgroundColor="#C62828" TextColor="White" Padding="12,6" />
-                                    </Grid>
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding ShortId}" FontFamily="Monospace" FontAttributes="Bold" />
+                                        <Label Text="{Binding CreatedAtText}" FontSize="12" TextColor="Gray" />
+                                    </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>

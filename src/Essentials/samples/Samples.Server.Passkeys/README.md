@@ -19,10 +19,9 @@ as an interop conformance check across Apple, Android, and Windows.
 
 | File | Purpose |
 | --- | --- |
-| `Program.cs` | The whole app: an in-memory SQLite database + Identity, cookie/bearer auth, `MapIdentityApi` under `/account`, and the passkey + well-known endpoints. |
-| `PasskeyApiEndpoints.cs` | Native-app-facing passkey ceremony API — `GET /passkeys/list`, `POST /passkeys/register/begin` · `/register/finish` · `/login/begin` · `/login/finish`, `DELETE /passkeys/delete`. JSON in / JSON out, cookie-correlated, no antiforgery. |
+| `Program.cs` | The whole app: an in-memory SQLite database + Identity, cookie auth, and `MapIdentityApi` under `/account`. |
+| `PasskeyEndpoints.cs` | The `/passkeys/*` ceremony API (`list`, `register/begin` · `/finish`, `login/begin` · `/finish`) **and** the `/.well-known/*` domain-association docs it depends on — they map together via one `MapPasskeys()` call. JSON in / JSON out, cookie-correlated, no antiforgery. |
 | `IdentityNoOpEmailSender.cs` | A no-op `IEmailSender<IdentityUser>` — Identity's registration flow requires one, but this server never sends email. |
-| `WellKnownEndpoints.cs` | Serves `/.well-known/assetlinks.json` (Android Digital Asset Links) and `/.well-known/apple-app-site-association` (Apple) from config, so real devices trust this domain as the credential provider. |
 
 There is no `DbContext` or `ApplicationUser` type — it uses the framework's `IdentityDbContext` and
 `IdentityUser` directly, with the schema created in-memory at startup (no migrations). All passkey
@@ -30,7 +29,9 @@ relying-party config (RP ID / origins / Android + Apple association values) come
 nothing sensitive lives in `appsettings.json`.
 
 Username/password auth (`/account/register`, `/account/login?useCookies=true`, plus the rest of
-`MapIdentityApi`) and `/account/logout` come from `Program.cs` directly.
+`MapIdentityApi`) comes from `Program.cs` directly. There is **no logout endpoint**: the auth cookie is a
+self-contained ticket the client holds and the server keeps no session, so the app signs out by simply
+dropping its cookie jar.
 
 ## Run it
 
@@ -111,12 +112,10 @@ The endpoints the MAUI app calls:
 ```
 POST   /account/register                                    (body: { email, password })
 POST   /account/login?useCookies=true                       (body: { email, password }) -> sets auth cookie
-POST   /account/logout
 GET    /passkeys/list                (signed-in required)   -> { username, passkeyCount, passkeys[] }
 POST   /passkeys/register/begin      (signed-in required)   -> PublicKeyCredentialCreationOptions JSON
-POST   /passkeys/register/finish?name=<label>  (body: attestation JSON)  -> { registered, username, name }
-DELETE /passkeys/delete?credentialId=<base64url>  (signed-in required)   -> { removed }
-POST   /passkeys/login/begin?username=<email>               -> PublicKeyCredentialRequestOptions JSON
+POST   /passkeys/register/finish     (body: attestation JSON)  -> { registered, username }
+POST   /passkeys/login/begin                                -> PublicKeyCredentialRequestOptions JSON
 POST   /passkeys/login/finish        (body: assertion JSON) -> { authenticated, username }
 ```
 
@@ -127,11 +126,13 @@ cookie container (the MAUI sample does).
 `register/begin` enrolls a passkey for the **currently signed-in** user (identified by the Identity
 session cookie), so the caller must sign in first — the "add a passkey after you log in" flow. Anonymous
 requests get a `401`; the server never creates an account from an arbitrary posted username.
-`login/begin` may be called **without** `username` for username-less / discoverable-credential sign-in.
+`login/begin` is **username-less** (discoverable): it sends no username and the passkey itself carries the
+identity — the server learns who the user is only at `login/finish`, from the credential the assertion is
+signed with.
 
 ## Authentication & CSRF (why cookies here)
 
-The native `/passkeys/*` (and `/account/logout`) endpoints are driven by a native `HttpClient`, not a
+The native `/passkeys/*` endpoints are driven by a native `HttpClient`, not a
 browser `<form>`, and a native client has no antiforgery token to send. The `/passkeys` group calls
 `.DisableAntiforgery()` so the framework's antiforgery middleware doesn't reject them. Combined with the
 fact that the **login session** is a cookie (`/login/finish` calls `SignInAsync`), that's the classic
