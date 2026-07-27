@@ -15,13 +15,13 @@
       - the passkeys relying-party domain + web origin,
       - the Android package name (read from the sample app's project) plus the debug-signing-key
         SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate), and
-      - (with -AppleTeamId) the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
+      - (with -Apple) the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
 
     Into the git-ignored Samples/Passkeys.Local.props (and, for Apple, Samples/Platforms/iOS/
     Entitlements.Local.plist):
       - the default relying-party server URL (baked into the app via AssemblyMetadata), and
-      - (with -AppleTeamId) the associated-domains entitlement plus the auto-detected Mac Catalyst
-        signing identity + provisioning profile. See README.md (Apple section) for the App ID
+      - (with -Apple) the associated-domains entitlement plus the auto-detected Mac Catalyst
+        signing identity + provisioning profile. See README-Passkeys.md (Apple section) for the App ID
         registration + profile steps that only you can do in your Apple Developer account.
 
     It does NOT run the web server — that is a separate `dotnet run` (see the printed next steps).
@@ -41,7 +41,7 @@
 .PARAMETER ApplicationId
     The app's application id (bundle id) shared by all platforms. Defaults to the sample app's
     <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, with
-    -AppleTeamId, the Apple app-id `<TeamID>.<ApplicationId>`.
+    -Apple, the Apple app-id `<TeamID>.<ApplicationId>`.
 
 .PARAMETER DebugKeystore
     Path to the Android debug keystore. Defaults to the keystore .NET for Android actually signs debug
@@ -49,11 +49,16 @@
     ~/Library/Application Support/Xamarin/Mono for Android/debug.keystore). This is NOT
     ~/.android/debug.keystore.
 
+.PARAMETER Apple
+    Set up Apple (iOS / iPadOS / Mac Catalyst) too. Auto-detects your Apple Developer Team ID from your
+    "Apple Development" signing certificate (its OU), along with the signing identity and a matching
+    provisioning profile.
+
 .PARAMETER AppleTeamId
-    Your 10-character Apple Developer Team ID (developer.apple.com -> Membership). When supplied, the
-    script writes the Apple app-id `<TeamID>.<ApplicationId>` into the server's App Site Association
-    config and generates the git-ignored Apple entitlements/signing for the sample app. Omit to skip
-    Apple setup.
+    Your 10-character Apple Developer Team ID (developer.apple.com -> Membership). Optional: with -Apple
+    it is auto-detected from your signing certificate — pass this only to override it. Supplying it
+    implies -Apple. When set, the script writes the Apple app-id `<TeamID>.<ApplicationId>` into the
+    server's App Site Association config and generates the git-ignored Apple entitlements/signing.
 
 .PARAMETER NoStartHost
     Skip hosting the tunnel. By default the script hosts the tunnel (blocking) at the end; pass this to
@@ -64,8 +69,12 @@
     # Provisions the tunnel, writes the server config into user-secrets, and hosts the tunnel (blocking).
 
 .EXAMPLE
+    ./Configure-Passkeys.ps1 -Apple
+    # Also sets up Apple (iOS/Mac Catalyst) — the Team ID is auto-detected from your signing cert.
+
+.EXAMPLE
     ./Configure-Passkeys.ps1 -AppleTeamId 42GDTGK33W
-    # Also writes the Apple App Site Association app-id and the associated-domains entitlement.
+    # Same, but overriding the auto-detected Team ID with an explicit one.
 
 .EXAMPLE
     ./Configure-Passkeys.ps1 -NoStartHost
@@ -77,6 +86,7 @@ param(
     [int]$Port = 5177,
     [string]$ApplicationId,
     [string]$DebugKeystore,
+    [switch]$Apple,
     [string]$AppleTeamId,
     [string]$AppleSigningIdentity,
     [string]$AppleProvisioningProfile,
@@ -205,6 +215,33 @@ function Get-AppleSigningIdentity {
     } | Select-Object -Unique)
     if ($matches.Count -eq 0) { return $null }
     return $matches[0]
+}
+
+# Derives the 10-char Apple Developer Team ID so it needn't be passed by hand: it's the Organizational
+# Unit (OU) of the "Apple Development" signing certificate, and also a provisioning profile's
+# TeamIdentifier. Returns the Team ID, or $null.
+function Get-AppleTeamId {
+    if (-not (Get-Command 'security' -ErrorAction SilentlyContinue)) { return $null }
+
+    # Preferred: the OU of the Apple Development signing certificate.
+    if (Get-Command 'openssl' -ErrorAction SilentlyContinue) {
+        $subject = (& security find-certificate -a -c 'Apple Develop' -p 2>$null | & openssl x509 -noout -subject 2>$null) -join "`n"
+        $m = [regex]::Match($subject, 'OU\s*=\s*([A-Z0-9]{10})')
+        if ($m.Success) { return $m.Groups[1].Value }
+    }
+
+    # Fallback: a provisioning profile's TeamIdentifier.
+    $dir = Join-Path $HOME 'Library' 'MobileDevice' 'Provisioning Profiles'
+    if (Test-Path $dir) {
+        $files = Get-ChildItem -Path (Join-Path $dir '*') -Include '*.provisionprofile', '*.mobileprovision' -File -ErrorAction SilentlyContinue
+        foreach ($f in $files) {
+            $xml = (& security cms -D -i $f.FullName 2>$null) -join "`n"
+            $m = [regex]::Match($xml, '<key>TeamIdentifier</key>\s*<array>\s*<string>([A-Z0-9]{10})</string>')
+            if ($m.Success) { return $m.Groups[1].Value }
+        }
+    }
+
+    return $null
 }
 
 # Scans installed provisioning profiles for one whose application-identifier equals <appId> (explicit)
@@ -396,11 +433,19 @@ else {
         Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
     }
     # Compose the git-ignored Passkeys.Local.props for the MAUI app: the default server URL always, plus
-    # the Apple entitlements/signing when -AppleTeamId is supplied. The committed files are never edited.
+    # the Apple entitlements/signing when -Apple is requested (Team ID auto-detected) or -AppleTeamId is
+    # supplied. The committed files are never edited.
     $appDir = Join-Path $here 'Samples'
     $entitlementsRel = $null
     $resolvedIdentity = $null
     $resolvedProfile = $null
+
+    if (($Apple -or $AppleTeamId) -and -not $AppleTeamId) {
+        $AppleTeamId = Get-AppleTeamId
+        if ($AppleTeamId) {
+            Write-Host "    Apple Team ID auto-detected from your signing cert: $AppleTeamId" -ForegroundColor DarkGray
+        }
+    }
 
     if ($AppleTeamId) {
         $appleAppId = "$AppleTeamId.$ApplicationId"
@@ -432,11 +477,14 @@ else {
                 Write-Host "      No installed provisioning profile matches '$appleAppId' with Associated Domains." -ForegroundColor Yellow
             }
             Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
-            Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README.md (Apple section)." -ForegroundColor DarkGray
+            Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README-Passkeys.md (Apple section)." -ForegroundColor DarkGray
         }
     }
+    elseif ($Apple) {
+        Write-Host "    (Apple: couldn't auto-detect your Team ID — install an 'Apple Development' signing cert, or pass -AppleTeamId <TEAMID>. See README-Passkeys.md.)" -ForegroundColor Yellow
+    }
     else {
-        Write-Host "    (Apple: pass -AppleTeamId <TEAMID> to set up iOS/Mac Catalyst — see README.md (Apple section).)" -ForegroundColor DarkGray
+        Write-Host "    (Apple: pass -Apple to set up iOS/Mac Catalyst — the Team ID is auto-detected from your signing cert. See README-Passkeys.md.)" -ForegroundColor DarkGray
     }
 
     $propsPath = Write-PasskeysLocalProps $appDir $uri $entitlementsRel $resolvedIdentity $resolvedProfile

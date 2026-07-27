@@ -8,7 +8,7 @@ This folder contains the **Passkeys** Essentials sample and everything needed to
   (ASP.NET Core Identity + WebAuthn) that does the server half. It's small and commented — read the code
   for the endpoint and auth details.
 - **[`Configure-Passkeys.ps1`](Configure-Passkeys.ps1)** — provisions a dev tunnel and writes the RP trust config into
-  the server's user-secrets (and, with `-AppleTeamId`, the Apple bits).
+  the server's user-secrets (and, with `-Apple`, the Apple bits).
 
 The rest of this page is the **testing guide**: run the RP server and exercise it from the app's
 **Passkeys** page on each platform.
@@ -81,8 +81,9 @@ At runtime the OS matches the app's entitlement against the AASA it fetched for 
 will Face ID / Touch ID create or use a passkey.
 
 **Prerequisites:** a **paid Apple Developer account** (free/personal teams can't provision Associated
-Domains), your 10-character **Team ID**, **macOS + Xcode** (Apple apps build only on a Mac), and a
-target on **iOS 16+** or **Mac Catalyst 16+**.
+Domains) with your **Apple Development signing certificate** in the keychain (the script reads your
+10-character **Team ID** straight from it — no need to look it up), **macOS + Xcode** (Apple apps build
+only on a Mac), and a target on **iOS 16+** or **Mac Catalyst 16+**.
 
 **Steps:**
 
@@ -104,8 +105,9 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 
 3. Configure the server + app (from `src/Essentials/samples`):
    ```bash
-   # reads the app id from <ApplicationId>
-   pwsh ./Configure-Passkeys.ps1 -AppleTeamId <TEAMID>
+   # -Apple auto-detects your Team ID (from the signing cert) + signing identity + provisioning profile;
+   # add -AppleTeamId <TEAMID> only to override the detected Team ID.
+   pwsh ./Configure-Passkeys.ps1 -Apple
    ```
    This is the one-stop setup, and it writes **only git-ignored files** (no committed file is edited):
    - `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into the server user-secrets (served in the AASA);
