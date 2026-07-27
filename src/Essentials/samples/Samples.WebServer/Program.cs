@@ -22,24 +22,17 @@ var authBuilder = builder.Services.AddAuthentication(options =>
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     });
+
 authBuilder.AddIdentityCookies();
-// Bearer token support so MapIdentityApi can wire up its /login, /refresh, etc. endpoints. The native
-// MAUI sample uses the COOKIE variant (/account/login?useCookies=true), but MapIdentityApi still
-// requires the bearer token services to be registered.
+
+// Bearer token services are required by MapIdentityApi even though the app uses the cookie variant.
 authBuilder.AddBearerToken(IdentityConstants.BearerScheme);
 
-// Flow 1 (BFF) external OAuth: register the real providers (Google, Microsoft, Apple, Facebook, …) that
-// have credentials configured (see appsettings.json / user-secrets). Nothing is registered without keys,
-// so the sample runs with none, some, or all of them. SaveTokens=true keeps each provider's token on the
-// server so /me/external can relay provider data — the native client never sees the provider token.
+// Registers the external OAuth providers that have credentials configured.
 authBuilder.AddConfiguredExternalProviders(builder.Configuration, builder.Environment);
 
-// The Identity application cookie, by default, answers an unauthenticated request to an [Authorize]
-// endpoint with a 302 redirect to the HTML login page. That is meaningless to the native MAUI client,
-// which speaks JSON over HttpClient. Translate the challenge into a clean 401 for the native API paths
-// (/passkeys/*) so endpoints can be guarded declaratively with .RequireAuthorization() and the client
-// gets a real status code instead of following a redirect to a web page. (Security-stamp validation on
-// OnValidatePrincipal is untouched.)
+// The application cookie answers an unauthenticated [Authorize] request with a 302 to the HTML login page,
+// which is useless to the native client. Return a clean 401 for the native API paths instead.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Events.OnRedirectToLogin = context =>
@@ -75,13 +68,11 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-// Used by /me/external to call the external provider's userinfo endpoint (the BFF relay).
+// Used by /me/external to call the provider's userinfo endpoint.
 builder.Services.AddHttpClient();
 
-// Passkey (WebAuthn) relying-party configuration. ServerDomain is the RP ID and MUST match the
-// public host the apps talk to (e.g. the dev tunnel domain). ValidateOrigin must additionally
-// accept the platform *native* origins — Apple uses the https web origin, Android uses an
-// "android:apk-key-hash:<hash>" origin — otherwise ceremonies fail with an origin mismatch.
+// Passkey relying-party config. ServerDomain is the RP ID (the public host the apps use).
+// ValidateOrigin must also accept each platform's native origin (Android's apk-key-hash, Apple's web origin).
 var passkeysConfig = builder.Configuration.GetSection("Passkeys");
 var serverDomain = passkeysConfig["ServerDomain"];
 var allowedOrigins = passkeysConfig.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
@@ -140,23 +131,20 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
-// Native-app-facing username/password auth (ASP.NET Core Identity API). Gives /account/register,
-// /account/login (use ?useCookies=true to set the Identity auth cookie), /account/refresh, etc.
-// This is the "bootstrap" the native app uses BEFORE enrolling a passkey — no browser required.
+// Username/password auth: /account/register, /account/login (?useCookies=true sets the auth cookie), etc.
 app.MapGroup("/account").MapIdentityApi<ApplicationUser>();
 
-// MapIdentityApi has no logout endpoint, so add a native one that clears the Identity cookie.
-// DisableAntiforgery: driven by a native HttpClient, not a browser form (see MapNativePasskeyApi).
+// MapIdentityApi has no logout endpoint; add one that clears the auth cookie.
 app.MapPost("/account/logout", async (SignInManager<ApplicationUser> signInManager) =>
 {
     await signInManager.SignOutAsync();
     return Results.Ok(new { signedOut = true });
 }).DisableAntiforgery();
 
-// Native-app-facing passkey ceremony API (used by the .NET MAUI Essentials sample).
+// Passkey ceremony endpoints.
 app.MapNativePasskeyApi();
 
-// Flow 1 (BFF) external OAuth: mock provider + native server-brokered sign-in + the /me/external relay.
+// External OAuth sign-in endpoints.
 app.MapExternalAuthApi();
 
 // Platform domain-association documents (Android assetlinks.json / Apple AASA).

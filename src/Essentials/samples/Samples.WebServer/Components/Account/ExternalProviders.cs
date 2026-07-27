@@ -4,14 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Essentials.Samples.WebServer.Components.Account;
 
 /// <summary>
-/// Registers external OAuth sign-in providers from configuration. Each provider is only added when its
-/// credentials are present (in appsettings.json or user-secrets), so the sample works with none, some, or
-/// all of them configured. These are the real ASP.NET Core provider handlers — there is no mock: whatever
-/// is registered here is what the native app discovers and can sign in with.
-///
-/// <c>SaveTokens = true</c> keeps the provider's access token on the SERVER so the app never handles it
-/// (Backend-for-Frontend). Add more providers the same way with any other <c>AuthenticationBuilder.AddX</c>
-/// handler — the native flow and discovery are provider-agnostic.
+/// Registers external OAuth sign-in providers from configuration. Each provider is added only when its
+/// credentials are present (in appsettings.json or user-secrets), so the sample runs with none, some, or all
+/// configured. <c>SaveTokens = true</c> keeps the provider's access token on the server. Add more providers
+/// with any other <c>AuthenticationBuilder.AddX</c> handler.
 /// </summary>
 internal static class ExternalProviders
 {
@@ -56,8 +52,8 @@ internal static class ExternalProviders
         }
 
         var apple = auth.GetSection("Apple");
-        // Apple can only work with a private key (used to generate its client secret). Require the key so a
-        // partial Apple config can't break authentication for every request — including the other providers.
+        // Apple derives its client secret from the private key, so require the key — a partial Apple config
+        // would otherwise fail options validation on every request and break the other providers too.
         if (!string.IsNullOrEmpty(apple["ClientId"]) && !string.IsNullOrEmpty(apple["PrivateKeyPath"]))
         {
             builder.AddApple(options =>

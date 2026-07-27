@@ -7,24 +7,10 @@ using Essentials.Samples.WebServer.Data;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Flow 1 (server-brokered / Backend-for-Frontend) external OAuth sign-in for the native .NET MAUI client,
-/// following current ASP.NET Core guidance: the browser/app never handles the provider's tokens. The server
-/// runs the OAuth exchange with the real provider (Google, Microsoft, Apple, Facebook, … — whatever is
-/// configured), creates or links a LOCAL ASP.NET Core Identity account, and hands the app a session. The
-/// provider access token stays server-side (see <c>/me/external</c>).
-///
-/// The flow is provider-agnostic — it works with any scheme registered on the AuthenticationBuilder:
-///   1. the app discovers providers from <c>/native-auth/external/providers</c> and shows a button per one;
-///   2. the app opens the system browser (WebAuthenticator) at <c>/native-auth/external/start?provider=…</c>;
-///   3. the server brokers the provider round-trip and, at <c>/native-auth/external/complete</c>, creates or
-///      links the local account and redirects to the app's custom scheme with a one-time code;
-///   4. the app POSTs that code to <c>/native-auth/external/exchange</c> over its OWN HttpClient, which
-///      establishes the Identity cookie session in the app's CookieContainer (the browser's cookie jar is
-///      separate, which is why a code — rather than the cookie itself — must be returned).
-///
-/// The one-time code is an ASP.NET Core Data Protection time-limited token (<see cref="ITimeLimitedDataProtector"/>),
-/// not a hand-rolled scheme: the framework signs and expires it. All authentication is performed by the
-/// framework's OAuth handlers and <see cref="SignInManager{TUser}"/>.
+/// Server-brokered external OAuth sign-in for the native app. The server runs the OAuth exchange with the
+/// configured provider (Google, Microsoft, Apple, Facebook, …), creates or links a local ASP.NET Core
+/// Identity account, and returns a session to the app; the provider's own token stays on the server (used
+/// by <c>/me/external</c>). Works with any scheme registered on the AuthenticationBuilder.
 /// </summary>
 internal static class ExternalAuthEndpoints
 {
@@ -33,7 +19,7 @@ internal static class ExternalAuthEndpoints
 
 	public static IEndpointRouteBuilder MapExternalAuthApi(this IEndpointRouteBuilder endpoints)
 	{
-		// Discovery: the native app renders a button per provider, so no provider is hard-coded client-side.
+		// Lists the configured external providers so the app can render a button per provider.
 		endpoints.MapGet("/native-auth/external/providers", async (SignInManager<ApplicationUser> signInManager) =>
 		{
 			var schemes = await signInManager.GetExternalAuthenticationSchemesAsync();
@@ -43,9 +29,8 @@ internal static class ExternalAuthEndpoints
 			return Results.Ok(providers);
 		});
 
-		// 1) start: kick off the provider challenge, returning to /complete after the round-trip.
-		// ConfigureExternalAuthenticationProperties stamps the LoginProvider + XSRF markers that
-		// GetExternalLoginInfoAsync relies on at /complete — a raw Challenge would omit them.
+		// Challenges the provider, returning to /complete afterwards. ConfigureExternalAuthenticationProperties
+		// stamps the markers GetExternalLoginInfoAsync needs at /complete (a raw Challenge would omit them).
 		endpoints.MapGet("/native-auth/external/start", (
 			string provider,
 			string returnUri,
@@ -56,8 +41,8 @@ internal static class ExternalAuthEndpoints
 			return Results.Challenge(props, new[] { provider });
 		});
 
-		// 2) complete: create/link the LOCAL Identity account, persist the provider token server-side, then
-		// redirect to the app's custom scheme with a framework-signed, short-lived one-time code.
+		// Creates/links the local account, stores the provider token, and redirects to the app's custom
+		// scheme with a short-lived one-time code.
 		endpoints.MapGet("/native-auth/external/complete", async (
 			string returnUri,
 			HttpContext context,
@@ -74,8 +59,6 @@ internal static class ExternalAuthEndpoints
 				return RedirectToApp(returnUri, "error", "account_create_failed");
 
 			await PersistProviderTokensAsync(user, info, userManager);
-
-			// The external cookie has done its job; clear it so it can't be reused.
 			await context.SignOutAsync(IdentityConstants.ExternalScheme);
 
 			var protector = dataProtectionProvider.CreateProtector(CodePurpose).ToTimeLimitedDataProtector();
@@ -83,9 +66,8 @@ internal static class ExternalAuthEndpoints
 			return RedirectToApp(returnUri, "code", code);
 		});
 
-		// 3) exchange: validate the one-time code and establish a real Identity cookie session. Because the
-		// native app makes THIS call with its own HttpClient, the Set-Cookie lands in its CookieContainer —
-		// so it is then authenticated for /me/external, /passkeys/list, etc. like password/passkey sign-in.
+		// Exchanges the one-time code for a session. The app makes this call itself, so the auth cookie lands
+		// in its own HttpClient and it becomes authenticated for /me/external, /passkeys/list, etc.
 		endpoints.MapPost("/native-auth/external/exchange", async (
 			ExchangeRequest body,
 			SignInManager<ApplicationUser> signInManager,
@@ -115,9 +97,8 @@ internal static class ExternalAuthEndpoints
 			return Results.Ok(new { signedIn = true, username = user.UserName });
 		}).DisableAntiforgery();
 
-		// 4) the "do something": use the SERVER-stored provider access token to fetch the external profile and
-		// return it. This is the whole point of BFF — the client asks OUR API, and OUR API (holding the
-		// provider token) talks to the provider. The native client never sees that token.
+		// Fetches the signed-in user's profile from the provider using the server-stored token and returns it,
+		// so the app can show provider data without ever handling the provider token itself.
 		endpoints.MapGet("/me/external", async (
 			HttpContext context,
 			UserManager<ApplicationUser> userManager,
@@ -136,8 +117,8 @@ internal static class ExternalAuthEndpoints
 				var userInfoUrl = UserInfoUrlFor(login.LoginProvider);
 				if (userInfoUrl is null)
 				{
-					// Some providers (e.g. Apple) have no userinfo endpoint — the identity arrives in the
-					// id_token at sign-in. Return what the local account captured instead.
+					// Providers without a userinfo endpoint (e.g. Apple) supply identity in the id_token at
+					// sign-in; fall back to what the local account captured.
 					return Results.Ok(new
 					{
 						provider = login.LoginProvider,
@@ -169,7 +150,7 @@ internal static class ExternalAuthEndpoints
 		return Results.Redirect($"{returnUri}{separator}{key}={Uri.EscapeDataString(value)}");
 	}
 
-	// Userinfo endpoints for the providers that expose one. Extend this to relay data from other providers.
+	// Userinfo endpoints for providers that expose one. Add entries to relay data from other providers.
 	static string? UserInfoUrlFor(string provider) => provider switch
 	{
 		"Google" => "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -210,8 +191,8 @@ internal static class ExternalAuthEndpoints
 
 	static async Task PersistProviderTokensAsync(ApplicationUser user, ExternalLoginInfo info, UserManager<ApplicationUser> userManager)
 	{
-		// ExternalLoginSignInAsync does NOT persist provider tokens (aspnetcore#12047), so store them
-		// explicitly. This is what lets /me/external call the provider on the user's behalf later.
+		// ExternalLoginSignInAsync doesn't persist provider tokens, so store them so /me/external can call
+		// the provider on the user's behalf later.
 		if (info.AuthenticationTokens is null)
 			return;
 

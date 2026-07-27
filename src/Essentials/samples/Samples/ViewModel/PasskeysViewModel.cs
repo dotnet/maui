@@ -17,18 +17,9 @@ namespace Samples.ViewModel
 {
 	public class PasskeysViewModel : BaseViewModel
 	{
-		// The relying-party (RP) server is the single Samples.WebServer project in this repo — it hosts BOTH
-		// the passkeys relying party (this page) AND the OAuth pass-through. So testing is: launch that
-		// one web app, then run this MAUI app.
-		//
-		// Dev-tunnel first: passkeys are bound to a domain (the RP ID), so the server must be reachable
-		// at a real, stable, public HTTPS domain — localhost can't complete a ceremony on a device.
-		// From src/Essentials/samples run `pwsh ./Configure.ps1` to provision one (it also writes
-		// the domain into the server's user-secrets — see Samples.WebServer/README.md), then replace the
-		// host below with the printed https://…devtunnels.ms URL. It's the SAME URL the Web
-		// Authenticator page uses.
-		//
-		// (localhost / 10.0.2.2 only exercises the round-trip and can be added back later.)
+		// The relying-party server (Samples.WebServer). Passkeys are bound to a domain, so it must be a
+		// public HTTPS host reachable from the device: run `pwsh ./Configure.ps1` in src/Essentials/samples
+		// to provision a dev tunnel (it writes the server's user-secrets) and put its URL here.
 		string serverBaseUrl = "https://your-tunnel-5177.devtunnels.ms";
 
 		string username = string.Empty;
@@ -151,11 +142,10 @@ namespace Samples.ViewModel
 				IsBusy = true;
 				Log($"Creating account '{Username}'…");
 
-				// ASP.NET Core Identity's MapIdentityApi: POST /account/register { email, password }.
+				// POST /account/register { email, password }.
 				await PostJsonAsync("/account/register", new { email = Username, password = Password });
 
-				// /register does NOT sign you in, so immediately bootstrap a cookie session. This mirrors a
-				// real app where "create account" lands you logged in and ready to add a passkey.
+				// /register doesn't sign you in, so log in immediately.
 				Log("Account created. Signing in…");
 				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
 
@@ -178,8 +168,7 @@ namespace Samples.ViewModel
 				IsBusy = true;
 				Log($"Signing in as '{Username}'…");
 
-				// The native "bootstrap": POST /account/login?useCookies=true sets the Identity auth cookie
-				// on our CookieContainer. No browser, no webview — just a form post.
+				// POST /account/login?useCookies=true sets the auth cookie on our CookieContainer.
 				await PostJsonAsync("/account/login?useCookies=true", new { email = Username, password = Password });
 
 				await RefreshAndOfferPasskeyAsync();
@@ -224,9 +213,7 @@ namespace Samples.ViewModel
 
 			try
 			{
-				// Let the user name the passkey up front (so it isn't stored "Unnamed"). A sensible default
-				// is the device name; if they clear it or cancel, the server falls back to the AAGUID-inferred
-				// authenticator name (e.g. "Google Password Manager").
+				// Let the user name the passkey (defaulting to the device name); the server infers a name if blank.
 				var suggestedName = string.IsNullOrWhiteSpace(DeviceInfo.Name) ? "My passkey" : DeviceInfo.Name;
 				var name = await DisplayPromptAsync("Name this passkey", "A label to recognise it later (e.g. your device or password manager).", suggestedName);
 				var nameQuery = string.IsNullOrWhiteSpace(name) ? string.Empty : $"?name={Uri.EscapeDataString(name.Trim())}";
@@ -234,16 +221,14 @@ namespace Samples.ViewModel
 				IsBusy = true;
 				Log("Requesting creation options…");
 
-				// 1) Ask the RP server for PublicKeyCredentialCreationOptions (WebAuthn JSON).
-				//    Enrollment is for the signed-in user (the session cookie set at sign-in identifies
-				//    them), so no username is sent here.
+				// Get the WebAuthn creation options for the signed-in user.
 				var creationOptionsJson = await PostAsync("/passkeys/register/begin");
 
-				// 2) Create the passkey with the platform authenticator (biometric / PIN prompt).
+				// Create the passkey with the platform authenticator (biometric / PIN).
 				Log("Creating passkey with the platform authenticator…");
 				var response = await PasskeysApi.CreateAsync(creationOptionsJson, CancellationToken.None);
 
-				// 3) Send the attestation back to the RP server to verify + store (with the chosen name).
+				// Send the attestation back to be verified and stored.
 				Log("Verifying attestation with the server…");
 				await PostAsync($"/passkeys/register/finish{nameQuery}", response.ToString());
 
@@ -307,19 +292,15 @@ namespace Samples.ViewModel
 				IsBusy = true;
 				Log("Requesting request options…");
 
-				// 1) Ask the RP server for PublicKeyCredentialRequestOptions (WebAuthn JSON).
-				//    Username-less / discoverable-credential sign-in: we deliberately do NOT send a
-				//    username. The passkey itself carries the user handle and the OS account picker lets
-				//    you choose which account to sign into — the credential is the identity. (Passing a
-				//    username here would pin the ceremony to that one account and reject a passkey that
-				//    belongs to a different user, which is a confusing failure in a multi-account demo.)
+				// Get the WebAuthn request options. Username-less: the passkey carries the identity and the
+				// OS account picker chooses the account, so no username is sent.
 				var requestOptionsJson = await PostAsync("/passkeys/login/begin");
 
-				// 2) Assert with the platform authenticator (biometric / PIN prompt).
+				// Assert with the platform authenticator (biometric / PIN).
 				Log("Asserting passkey with the platform authenticator…");
 				var response = await PasskeysApi.AssertAsync(requestOptionsJson, CancellationToken.None);
 
-				// 3) Send the assertion back to the RP server to verify + sign in.
+				// Send the assertion back to be verified and signed in.
 				Log("Verifying assertion with the server…");
 				await PostAsync("/passkeys/login/finish", response.ToString());
 
@@ -336,9 +317,7 @@ namespace Samples.ViewModel
 			}
 		}
 
-		// After any password sign-in, ask the server what this account has and — if there's no passkey
-		// yet — offer to set one up. This is the "make it feel real" moment: a normal app nudges you to
-		// enroll a passkey right after you log in with a password.
+		// After sign-in, offer to set up a passkey if the account doesn't have one yet.
 		async Task RefreshAndOfferPasskeyAsync()
 		{
 			await RefreshAccountStateAsync();
@@ -360,9 +339,7 @@ namespace Samples.ViewModel
 			}
 		}
 
-		// Single source of truth for "am I signed in, and what passkeys do I have?" — GET /passkeys/list
-		// returns { username, passkeyCount, passkeys[] } for the cookie-authenticated user, or 401 when
-		// signed out. The Identity session cookie rides along on this GET via the shared CookieContainer.
+		// Refreshes signed-in state and the passkey list from GET /passkeys/list (401 when signed out).
 		async Task RefreshAccountStateAsync()
 		{
 			var client = GetClient();
@@ -460,9 +437,8 @@ namespace Samples.ViewModel
 				IsBusy = true;
 				Log($"Opening {provider} sign-in in the browser…");
 
-				// Flow 1 (BFF): the browser hits the server's /native-auth/external/start; the SERVER runs the
-				// whole OAuth exchange with the provider, creates/links a LOCAL Identity account, and redirects
-				// back to our custom scheme with a single-use code. We never see the provider's token.
+				// The server runs the OAuth exchange, creates/links a local account, and redirects to our
+				// custom scheme with a one-time code. The app never handles the provider's token.
 				var callback = new Uri("xamarinessentials://");
 				var startUrl = new Uri($"{NormalizeBaseUrl()}native-auth/external/start?provider={Uri.EscapeDataString(provider)}&returnUri={Uri.EscapeDataString(callback.ToString())}");
 
@@ -480,9 +456,8 @@ namespace Samples.ViewModel
 					return;
 				}
 
-				// Exchange the one-time code over OUR HttpClient so the Identity session cookie lands in this
-				// app's CookieContainer (the browser's cookies are a separate jar). After this we're signed in
-				// exactly like a password/passkey sign-in — same account, so passkeys can be added too.
+				// Exchange the code over our HttpClient so the session cookie lands in our CookieContainer
+				// (the browser's cookies are a separate jar). Now signed in like password/passkey.
 				Log("Exchanging the code for a session…");
 				await PostJsonAsync("/native-auth/external/exchange", new { code });
 
@@ -503,10 +478,10 @@ namespace Samples.ViewModel
 			try
 			{
 				IsBusy = true;
-				Log("Asking the server for your external profile (BFF relay)…");
+				Log("Asking the server for your external profile…");
 
-				// The "do something" step: WE never hold the provider token — the server does. So we ask our
-				// own API, and the server uses its stored provider token to fetch the profile and relay it back.
+				// We never hold the provider token — we ask our own API, which uses its stored token to fetch
+				// the profile and relay it back.
 				var client = GetClient();
 				using var httpResponse = await client.GetAsync("/me/external");
 				var body = await httpResponse.Content.ReadAsStringAsync();
@@ -587,15 +562,11 @@ namespace Samples.ViewModel
 			return body;
 		}
 
-		// Posts a JSON object (used for the ASP.NET Core Identity /account endpoints, whose success
-		// responses are often empty). Shares the same cookie-preserving HttpClient so the auth cookie
-		// set by /account/login flows into the subsequent passkey ceremony calls.
+		// Posts a JSON object over the shared cookie-preserving HttpClient.
 		Task<string> PostJsonAsync(string relativeUrl, object payload)
 			=> PostAsync(relativeUrl, JsonSerializer.Serialize(payload));
 
-		// Pulls a human-readable message out of an error body. Our endpoints return either a plain
-		// string or a small { "error": "…" } / { "title": "…" } JSON object; show that rather than
-		// dumping raw JSON at the user.
+		// Pulls a readable message out of an error body ({ "error": … } / { "title": … } or plain text).
 		static string ExtractServerMessage(string body)
 		{
 			if (string.IsNullOrWhiteSpace(body))
@@ -623,8 +594,7 @@ namespace Samples.ViewModel
 
 		HttpClient GetClient()
 		{
-			// A single client with a CookieContainer so the WebAuthn challenge cookie set on "/begin"
-			// is sent back on the matching "/finish" request.
+			// A single client with a CookieContainer so the /begin cookie is sent back on /finish.
 			if (httpClient is null || httpClient.BaseAddress?.ToString() != NormalizeBaseUrl())
 			{
 				httpClient?.Dispose();
