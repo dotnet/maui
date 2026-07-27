@@ -673,6 +673,64 @@ Describe 'CI scan reconciler' {
             Should -Invoke Invoke-GhWrite -Times 0 -Exactly
         }
 
+        <#
+            The bot filter is a safety-critical *negative* filter: a login wrongly
+            classified as a bot removes the strongest veto signal an issue can carry.
+            `-like '*[bot]'` treated `[bot]` as a wildcard character class, so it
+            dropped humans whose login merely ends in b/o/t (`rmarinho`) and let the
+            literal `name[bot]` suffix through. Both directions are pinned here.
+        #>
+        It 'treats a human whose login ends in b, o or t as a human' -ForEach @(
+            @{ Login = 'rmarinho' }
+            @{ Login = 'someoneb' }
+            @{ Login = 'someonet' }
+        ) {
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') {
+                    return , @([pscustomobject]@{
+                            user = [pscustomobject]@{ login = $Login; type = 'User' } })
+                }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Ok | Should -BeTrue
+            $c.Logins | Should -Contain $Login
+        }
+
+        It 'still filters a literal [bot] suffix when the API omits the type field' {
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') {
+                    return , @([pscustomobject]@{
+                            user = [pscustomobject]@{ login = 'copilot-pull-request-reviewer[bot]' } })
+                }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Ok | Should -BeTrue
+            @($c.Logins).Count | Should -Be 0
+        }
+
+        It 'refuses to mutate an issue a human whose login ends in o commented on' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+                if ($joined -like '*/comments*') {
+                    return , @([pscustomobject]@{
+                            user = [pscustomobject]@{ login = 'rmarinho'; type = 'User' } })
+                }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+        }
+
         It 'suppresses all mutations when the comment history is incomplete' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {

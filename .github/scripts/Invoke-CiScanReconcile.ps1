@@ -402,7 +402,10 @@ function Get-CiScanHumanCommenters {
         $login = [string]$c.user.login
         $type = if ($c.user.PSObject.Properties.Name -contains 'type') { [string]$c.user.type } else { '' }
         if ($type -eq 'Bot') { continue }
-        if ($login -like '*[bot]') { continue }
+        # `-like '*[bot]'` would be a WILDCARD CHARACTER CLASS: it matches any login
+        # ending in b, o or t (dropping humans such as `rmarinho`) while NOT matching
+        # the literal `[bot]` suffix it was meant to catch. Anchor a regex instead.
+        if ($login -match '\[bot\]$') { continue }
         if ($login -in @('github-actions', 'maui-bot', 'MauiBot', 'dotnet-bot', 'dotnet-policy-service')) { continue }
         $logins += $login
     }
