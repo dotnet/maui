@@ -719,11 +719,20 @@
 
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+        <!-- NOTE: do NOT set WriteOnlyWhenDifferent="true" here. This file is listed in the
+             target's Outputs (line ~671), so its mtime is the target's up-to-date signal.
+             The file's content is only the SET of output filenames, so editing an existing
+             MauiImage's pixels leaves the set (and thus the file) unchanged — with
+             WriteOnlyWhenDifferent the file wouldn't be rewritten, its mtime would stay behind
+             the edited (newer) source image, and MSBuild would judge ResizetizeImages
+             perpetually out of date, re-running it (and cascading aapt/asset-catalog work) on
+             every subsequent no-change build. Always rewriting advances the mtime when the
+             target runs; the Exists() recovery path (line ~663) still forces a rebuild if the
+             file is deleted. -->
         <WriteLinesToFile
             File="$(_ResizetizerOutputsFile)"
             Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
             Overwrite="true"
-            WriteOnlyWhenDifferent="true"
         />
 
         <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
