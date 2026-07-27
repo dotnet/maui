@@ -14,7 +14,11 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// The value is resolved by matching the <see cref="Microsoft.Maui.Devices.DeviceInfo.Platform"/> identifier
 	/// (the <see cref="Microsoft.Maui.Devices.DevicePlatform"/> struct's <c>ToString()</c> value)
 	/// against the per-platform values, so a custom backend whose platform string matches one of the named
-	/// properties below (for example <c>GTK</c>) resolves correctly at runtime. Note that the compile-time
+	/// properties below (for example <c>GTK</c>) resolves correctly at runtime. The match is
+	/// <em>case-sensitive</em> (ordinal, per <see cref="Microsoft.Maui.Devices.DevicePlatform"/> equality), so the
+	/// identifier must match the property name's casing exactly — a backend reporting
+	/// <c>DevicePlatform.Create("gtk")</c> (lowercase) does not match the <c>GTK</c> property and falls through
+	/// to <see cref="Default"/>. Note that the compile-time
 	/// optimization (<c>SimplifyOnPlatformVisitor</c>) currently recognizes only the
 	/// <c>-android</c>/<c>-ios</c>/<c>-macos</c>/<c>-maccatalyst</c> target frameworks; every other target
 	/// framework (including <c>-windows</c> and <c>-tizen</c>) and any custom backend falls back to runtime
