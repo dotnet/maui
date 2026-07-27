@@ -499,7 +499,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				menuControl.Menu = menu;
 				menuControl.ShowsMenuAsPrimaryAction = true;
 				menuControl.AccessibilityIdentifier = "SecondaryToolbarMenuButton";
-				menuControl.SizeToFit();
+				menuControl.Frame = new CGRect(0, 0, 44, 44);
 				var menuButton = new UIBarButtonItem(menuControl)
 				{
 					AccessibilityIdentifier = "SecondaryToolbarMenuButton"

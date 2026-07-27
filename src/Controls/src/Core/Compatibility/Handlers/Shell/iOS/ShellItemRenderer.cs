@@ -302,7 +302,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			_nativeVisibleTabRegistrations.Clear();
 			_nativeMoreRegistrations.Clear();
 
 			if (e.OldItems != null)
@@ -363,7 +362,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			UpdateTabBarHidden();
-			RegisterVisibleTabViews();
+			View.SetNeedsLayout();
 			if (SelectedViewController == MoreNavigationController)
 				UpdateMoreCellsEnabled();
 		}
@@ -574,6 +573,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			for (int index = 0; index < controls.Count; index++)
 			{
 				var isMore = hasMore && index == controls.Count - 1;
+				if (!isMore && index >= sections.Count)
+					continue;
+
 				object owner = isMore ? ShellItem : sections[index];
 				var control = controls[index];
 				retainedElements.Add(control);

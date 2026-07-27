@@ -362,6 +362,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			sealed class AlertRegistration : IDisposable
 			{
+				readonly NativeElementRegistrationSet _actionViewRegistrations = new NativeElementRegistrationSet();
 				readonly NativeElementRegistrationSet _registrations = new NativeElementRegistrationSet();
 				NSTimer _lifecycleTimer;
 				int _disposed;
@@ -402,18 +403,21 @@ namespace Microsoft.Maui.Controls.Platform
 						.Where(group => group.Count() == 1)
 						.Select(group => group.Single())
 						.ToList();
+					var retainedActionViews = new List<object>(actionViews.Count);
 					foreach (var actionView in actionViews)
 					{
 						var title = GetActionViewTitle(actionView);
 						if (!actionsByTitle.ContainsKey(title))
 							continue;
 
-						_registrations.Register(
+						retainedActionViews.Add(actionView);
+						_actionViewRegistrations.Register(
 							owner,
 							actionView,
 							NativeElementRoles.DialogAction,
 							NativeElementDiscriminators.RealizedView);
 					}
+					_actionViewRegistrations.Retain(retainedActionViews);
 				}
 
 				public void RegisterLogicalActions(
@@ -554,6 +558,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_lifecycleTimer?.Invalidate();
 					_lifecycleTimer?.Dispose();
 					_lifecycleTimer = null;
+					_actionViewRegistrations.Dispose();
 					_registrations.Dispose();
 				}
 			}

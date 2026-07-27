@@ -665,6 +665,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			for (int index = 0; index < controls.Count; index++)
 			{
 				var isMore = hasMore && index == controls.Count - 1;
+				if (!isMore && index >= tabbed.Children.Count)
+					continue;
+
 				object owner = isMore ? tabbed : tabbed.Children[index];
 				var control = controls[index];
 				retainedElements.Add(control);
