@@ -42,6 +42,7 @@ Assertion failed
             [string]$Title = 'Sample test fails on Windows',
             [string]$SkipReason = '',
             [Int64]$IssueNumber = 0,
+            [Int64[]]$SourceLogIds = @(1001),
             [string]$Body = ''
         )
 
@@ -52,6 +53,7 @@ Assertion failed
         $signature = [ordered]@{
             fingerprint = $Fingerprint
             disposition = $Disposition
+            source_log_ids = $SourceLogIds
         }
         if ($Disposition -eq 'filed') {
             $signature.title = $Title
@@ -99,7 +101,8 @@ Assertion failed
         param(
             [Int64]$MainBuildId = 123456,
             [string]$MainResult = 'failed',
-            [Int64]$MainFailedRecordCount = 1
+            [Int64]$MainFailedRecordCount = 1,
+            [Int64[]]$MainRequiredLogIds = @(1001)
         )
 
         @(
@@ -110,6 +113,7 @@ Assertion failed
                 build_id            = $MainBuildId
                 result              = $MainResult
                 failed_record_count = $MainFailedRecordCount
+                required_log_ids    = $MainRequiredLogIds
             }
             [pscustomobject]@{
                 name                = 'maui-pr-devicetests'
@@ -118,6 +122,7 @@ Assertion failed
                 build_id            = 123457
                 result              = 'succeeded'
                 failed_record_count = 0
+                required_log_ids    = @()
             }
             [pscustomobject]@{
                 name                = 'maui-pr-uitests'
@@ -126,6 +131,7 @@ Assertion failed
                 build_id            = 123458
                 result              = 'succeeded'
                 failed_record_count = 0
+                required_log_ids    = @()
             }
         )
     }
@@ -161,14 +167,14 @@ Describe 'CI scanner pipeline coverage gate' {
         $manifest = New-CompleteManifest
 
         { Test-CiScanManifest -Manifest $manifest -ExpectedBuilds (New-ExpectedBuilds -MainBuildId 999999) } |
-            Should -Throw '*build_id must match the trusted latest completed build*'
+            Should -Throw '*build_id must match the trusted recent completed build*'
     }
 
-    It 'rejects empty coverage when the trusted build contains failed records' {
+    It 'rejects empty coverage when the trusted build contains required logs' {
         $manifest = New-CompleteManifest
 
         { Test-CiScanManifest -Manifest $manifest -ExpectedBuilds (New-ExpectedBuilds) } |
-            Should -Throw '*must record at least one signature because the trusted build has failed records*'
+            Should -Throw '*missing terminal coverage for trusted log IDs: 1001*'
     }
 
     It 'accepts empty coverage for a trusted successful build' {
@@ -176,10 +182,36 @@ Describe 'CI scanner pipeline coverage gate' {
 
         $plan = Test-CiScanManifest `
             -Manifest $manifest `
-            -ExpectedBuilds (New-ExpectedBuilds -MainResult 'succeeded' -MainFailedRecordCount 0)
+            -ExpectedBuilds (New-ExpectedBuilds `
+                -MainResult 'succeeded' `
+                -MainFailedRecordCount 0 `
+                -MainRequiredLogIds @())
 
         $plan.pipelines[0].build_result | Should -Be 'succeeded'
         $plan.pipelines[0].failed_records | Should -Be 0
+    }
+
+    It 'rejects partial coverage of the trusted candidate logs' {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -SourceLogIds @(1001))
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds -MainFailedRecordCount 2 -MainRequiredLogIds @(1001, 1002)) } |
+            Should -Throw '*missing terminal coverage for trusted log IDs: 1002*'
+    }
+
+    It 'accepts one deduplicated signature that covers multiple trusted logs' {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -SourceLogIds @(1001, 1002))
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds -MainFailedRecordCount 2 -MainRequiredLogIds @(1001, 1002))
+
+        $plan.pipelines[0].signatures[0].source_log_ids | Should -Be @(1001, 1002)
     }
 
     It 'accepts actual cap exhaustion with explicit remaining-pipeline skips' {
@@ -380,6 +412,30 @@ Describe 'CI scanner issue payload gate' {
         $plan.issues[0].Body | Should -Not -Match '@octocat|@dotnet/maui'
         $plan.issues[0].Body | Should -Match "@$([char]0x200B)octocat"
         $plan.issues[0].Body | Should -Match "@$([char]0x200B)dotnet/maui"
+    }
+
+    It 'neutralizes issue and pull-request cross references in the validated body' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nRelated: #123, dotnet/maui#456, https://github.com/dotnet/maui/issues/789, https://github.com/dotnet/maui/pull/1011."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        $plan = Test-CiScanManifest -Manifest $manifest
+
+        $plan.issues[0].Body | Should -Not -Match '(?<![\w/])#\d|dotnet/maui#\d|github\.com/dotnet/maui/(?:issues|pull)/\d'
+    }
+
+    It 'rejects a body that exceeds the limit after notification neutralization' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $mentions = -join (1..29000 | ForEach-Object { '@a' })
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$mentions"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*must be 20-60000 characters*'
     }
 
     It 'rejects a Build ID marker that differs from the pipeline build' {

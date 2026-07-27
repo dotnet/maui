@@ -99,7 +99,39 @@ function ConvertTo-SafeIssueBody {
     param([Parameter(Mandatory = $true)][string]$Body)
 
     $zeroWidthSpace = [char]0x200B
-    return [regex]::Replace($Body, '@(?=[A-Za-z0-9])', "@$zeroWidthSpace")
+    $safe = [regex]::Replace($Body, '@(?=[A-Za-z0-9])', "@$zeroWidthSpace")
+    $safe = [regex]::Replace($safe, '(?<![\w/])#(?=\d)', "#$zeroWidthSpace")
+    $safe = [regex]::Replace($safe, '(?i)\b([a-z0-9_.-]+/[a-z0-9_.-]+)#(?=\d)', "`$1#$zeroWidthSpace")
+    return [regex]::Replace(
+        $safe,
+        '(?i)(https?://github\.com/[a-z0-9_.-]+/[a-z0-9_.-]+/(?:issues|pull)/)(?=\d)',
+        "`$1$zeroWidthSpace"
+    )
+}
+
+function ConvertTo-PositiveIntegerArray {
+    param(
+        [AllowNull()][object]$Value,
+        [Parameter(Mandatory = $true)][string]$Context,
+        [switch]$AllowEmpty
+    )
+
+    $values = if ($null -eq $Value) { @() } else { @($Value) }
+    if (-not $AllowEmpty -and $values.Count -eq 0) {
+        throw "$Context must contain at least one positive integer."
+    }
+
+    $seen = [System.Collections.Generic.HashSet[Int64]]::new()
+    $normalized = [System.Collections.Generic.List[Int64]]::new()
+    foreach ($value in $values) {
+        $number = ConvertTo-PositiveInteger -Value $value -Context $Context
+        if (-not $seen.Add($number)) {
+            throw "$Context contains duplicate value $number."
+        }
+        $normalized.Add($number)
+    }
+
+    return $normalized.ToArray()
 }
 
 function Get-ScannerManifestFromAgentOutput {
@@ -189,7 +221,9 @@ function Assert-ValidIssuePayload {
         throw "Title for '$Fingerprint' must omit the prefix added by the publisher."
     }
 
-    $body = [string](Get-RequiredProperty -Object $Signature -Name 'body' -Context "filed signature '$Fingerprint'")
+    $body = ConvertTo-SafeIssueBody -Body (
+        [string](Get-RequiredProperty -Object $Signature -Name 'body' -Context "filed signature '$Fingerprint'")
+    )
     if ($body.Length -lt 20 -or $body.Length -gt 60000) {
         throw "Body for '$Fingerprint' must be 20-60000 characters."
     }
@@ -229,7 +263,7 @@ function Assert-ValidIssuePayload {
     return [pscustomobject]@{
         Title      = $title
         FinalTitle = "[ci-scan-net11] $title"
-        Body       = ConvertTo-SafeIssueBody -Body $body
+        Body       = $body
         MatchCount = [Int64]$matchMarkers[0].Groups[1].Value
     }
 }
@@ -285,6 +319,8 @@ function Test-CiScanManifest {
         $trustedBuildId = $null
         $trustedBuildResult = $null
         $trustedFailedRecordCount = $null
+        $trustedRequiredLogIds = @()
+        $trustedRequiredLogIdSet = [System.Collections.Generic.HashSet[Int64]]::new()
         if ($null -ne $trustedPipelines) {
             $trustedPipeline = $trustedPipelines[$pipelineIndex]
             $trustedName = ConvertTo-TrimmedString (
@@ -300,7 +336,7 @@ function Test-CiScanManifest {
             $trustedStatus = (ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $trustedPipeline -Name 'status' -Context "trusted $context"
             )).ToLowerInvariant()
-            if ($trustedStatus -notin @('scanned', 'skipped-no-recent-build')) {
+            if ($trustedStatus -notin @('scanned', 'skipped-no-recent-build', 'skipped-cap-reached')) {
                 throw "Trusted $context has invalid status '$trustedStatus'."
             }
             if ($trustedStatus -eq 'scanned') {
@@ -316,6 +352,13 @@ function Test-CiScanManifest {
                 $trustedFailedRecordCount = ConvertTo-NonNegativeInteger `
                     -Value (Get-RequiredProperty -Object $trustedPipeline -Name 'failed_record_count' -Context "trusted $context") `
                     -Context "trusted $context failed_record_count"
+                $trustedRequiredLogIds = @(ConvertTo-PositiveIntegerArray `
+                    -Value (Get-RequiredProperty -Object $trustedPipeline -Name 'required_log_ids' -Context "trusted $context") `
+                    -Context "trusted $context required_log_ids" `
+                    -AllowEmpty)
+                foreach ($logId in $trustedRequiredLogIds) {
+                    [void]$trustedRequiredLogIdSet.Add($logId)
+                }
             }
         }
 
@@ -326,10 +369,7 @@ function Test-CiScanManifest {
                 -Context "$context build_id"
             if ($null -ne $trustedPipelines) {
                 if ($trustedStatus -ne 'scanned' -or $buildId -ne $trustedBuildId) {
-                    throw "$context build_id must match the trusted latest completed build."
-                }
-                if ($trustedFailedRecordCount -gt 0 -and $signatures.Count -eq 0) {
-                    throw "$context must record at least one signature because the trusted build has failed records."
+                    throw "$context build_id must match the trusted recent completed build."
                 }
             }
         } else {
@@ -350,6 +390,7 @@ function Test-CiScanManifest {
         }
 
         $normalizedSignatures = [System.Collections.Generic.List[object]]::new()
+        $coveredLogIds = [System.Collections.Generic.HashSet[Int64]]::new()
         for ($signatureIndex = 0; $signatureIndex -lt $signatures.Count; $signatureIndex++) {
             $signatureCount++
             if ($signatureCount -gt 200) {
@@ -365,6 +406,17 @@ function Test-CiScanManifest {
             if (-not $fingerprints.Add($fingerprint)) {
                 throw "Duplicate fingerprint '$fingerprint' in manifest."
             }
+            $sourceLogIds = @(ConvertTo-PositiveIntegerArray `
+                -Value (Get-RequiredProperty -Object $signature -Name 'source_log_ids' -Context $signatureContext) `
+                -Context "$signatureContext source_log_ids")
+            if ($null -ne $trustedPipelines) {
+                foreach ($sourceLogId in $sourceLogIds) {
+                    if (-not $trustedRequiredLogIdSet.Contains($sourceLogId)) {
+                        throw "$signatureContext source_log_id $sourceLogId is not in the trusted build evidence."
+                    }
+                    [void]$coveredLogIds.Add($sourceLogId)
+                }
+            }
 
             $disposition = (ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $signature -Name 'disposition' -Context $signatureContext
@@ -374,8 +426,9 @@ function Test-CiScanManifest {
             }
 
             $normalized = [ordered]@{
-                fingerprint = $fingerprint
-                disposition = $disposition
+                fingerprint    = $fingerprint
+                disposition    = $disposition
+                source_log_ids = $sourceLogIds
             }
 
             switch ($disposition) {
@@ -430,14 +483,22 @@ function Test-CiScanManifest {
             $normalizedSignatures.Add([pscustomobject]$normalized)
         }
 
+        if ($null -ne $trustedPipelines -and $status -eq 'scanned') {
+            $missingLogIds = @($trustedRequiredLogIds | Where-Object { -not $coveredLogIds.Contains($_) })
+            if ($missingLogIds.Count -gt 0) {
+                throw "$context is missing terminal coverage for trusted log IDs: $($missingLogIds -join ', ')."
+            }
+        }
+
         $normalizedPipelines.Add([pscustomobject]@{
-                name          = $name
-                definition_id = $definitionId
-                status        = $status
-                build_id      = $buildId
-                build_result   = $trustedBuildResult
-                failed_records = $trustedFailedRecordCount
-                signatures     = $normalizedSignatures.ToArray()
+                name             = $name
+                definition_id    = $definitionId
+                status           = $status
+                build_id         = $buildId
+                build_result     = $trustedBuildResult
+                failed_records   = $trustedFailedRecordCount
+                required_log_ids = $trustedRequiredLogIds
+                signatures       = $normalizedSignatures.ToArray()
             })
     }
 
