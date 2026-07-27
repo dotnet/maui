@@ -57,4 +57,8 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
+  <!-- Local, git-ignored Apple signing for passkey testing, written by ../Configure.ps1 -AppleTeamId.
+       Absent by default (unsigned builds / CI unaffected). See ../README.md (Apple section). -->
+  <Import Project="Signing.local.props" Condition="Exists('$(MSBuildThisFileDirectory)Signing.local.props')" />
+
 </Project>
