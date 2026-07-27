@@ -753,13 +753,18 @@ Describe 'CI scanner workflow source invariants' {
     }
 
     It 'freezes a trusted publisher SHA before the agent and checks it out exactly' {
+        $workflowSource | Should -Match "const trustedPublisherRef = '\$\{\{ github\.workflow_sha \}\}'"
         $workflowSource | Should -Match 'trusted_publisher_ref: trustedPublisherRef'
         $workflowSource | Should -Match 'ref: \$\{\{ steps\.trusted_publisher_ref\.outputs\.ref \}\}'
         $workflowSource | Should -Not -Match '(?m)^\s+ref: main$'
+        $workflowSource | Should -Not -Match "ref: 'heads/main'"
     }
 
     It 'fails closed on incomplete Helix work-item evidence' {
-        $workflowSource | Should -Match 'workItems\.length === 0'
+        $workflowSource | Should -Match 'attempt <= 6'
+        $workflowSource | Should -Match 'items\.length >= finishedCount'
+        $workflowSource | Should -Match 'pendingCounts\.every\(count => count === 0\)'
+        $workflowSource | Should -Match 'did not provide complete terminal work-item evidence'
         $workflowSource | Should -Match "state !== 'finished' && state !== 'failed'"
         $workflowSource | Should -Match 'workItem\.ExitCode !== null'
         $workflowSource | Should -Match 'Failed Helix work item .* has no console output'

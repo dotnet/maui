@@ -352,15 +352,13 @@ steps:
           { name: 'maui-pr-devicetests', definition_id: 314 },
           { name: 'maui-pr-uitests', definition_id: 313 },
         ];
-        const trustedPublisherReference = await github.rest.git.getRef({
-          ...context.repo,
-          ref: 'heads/main',
-        });
-        const trustedPublisherRef = String(trustedPublisherReference.data.object?.sha || '');
+        const trustedPublisherRef = '${{ github.workflow_sha }}';
         if (!/^[0-9a-f]{40}$/.test(trustedPublisherRef)) {
-          throw new Error('GitHub returned an invalid trusted publisher ref for main.');
+          throw new Error('GitHub supplied an invalid immutable workflow SHA.');
         }
         const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const sleep = milliseconds =>
+          new Promise(resolve => setTimeout(resolve, milliseconds));
         const fetchJson = async url => {
           const response = await fetch(url, {
             headers: { Accept: 'application/json' },
@@ -464,13 +462,46 @@ steps:
                   .map(match => match[1].toLowerCase())
               )];
               for (const jobId of jobIds) {
-                const workItems = await fetchJson(
-                  `https://helix.dot.net/api/jobs/${jobId}/workitems?api-version=2019-06-17`);
-                if (!Array.isArray(workItems)) {
-                  throw new Error(`Helix returned invalid work-item evidence for job ${jobId}.`);
+                let workItems;
+                let terminalJob = false;
+                for (let attempt = 1; attempt <= 6; attempt++) {
+                  const [details, items] = await Promise.all([
+                    fetchJson(`https://helix.dot.net/api/jobs/${jobId}/details?api-version=2019-06-17`),
+                    fetchJson(`https://helix.dot.net/api/jobs/${jobId}/workitems?api-version=2019-06-17`),
+                  ]);
+                  if (!Array.isArray(items)) {
+                    throw new Error(`Helix returned invalid work-item evidence for job ${jobId}.`);
+                  }
+                  const counts = details?.WorkItems;
+                  const initialCount = Number(details?.InitialWorkItemCount);
+                  const finishedCount = Number(counts?.Finished);
+                  const pendingCounts = [
+                    Number(counts?.Unscheduled),
+                    Number(counts?.Waiting),
+                    Number(counts?.Running),
+                  ];
+                  const validCounts =
+                    Number.isSafeInteger(initialCount) &&
+                    initialCount >= 0 &&
+                    Number.isSafeInteger(finishedCount) &&
+                    finishedCount >= initialCount &&
+                    pendingCounts.every(count => Number.isSafeInteger(count) && count >= 0);
+                  terminalJob =
+                    validCounts &&
+                    Boolean(details?.Finished) &&
+                    pendingCounts.every(count => count === 0) &&
+                    finishedCount > 0 &&
+                    items.length >= finishedCount;
+                  if (terminalJob) {
+                    workItems = items;
+                    break;
+                  }
+                  if (attempt < 6) {
+                    await sleep(5000);
+                  }
                 }
-                if (workItems.length === 0) {
-                  throw new Error(`Helix returned no work-item evidence for job ${jobId}.`);
+                if (!terminalJob || !workItems) {
+                  throw new Error(`Helix job ${jobId} did not provide complete terminal work-item evidence.`);
                 }
                 for (const workItem of workItems) {
                   const state = String(workItem.State || '').toLowerCase();
