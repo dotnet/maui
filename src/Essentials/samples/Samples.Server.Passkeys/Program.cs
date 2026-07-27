@@ -41,7 +41,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // In-memory SQLite: the real relational engine, but nothing on disk. A named shared-cache
 // in-memory database exists only while a connection to it is open, so keep one open for the
-// app's lifetime. Everything is wiped when the server stops — fine for this throwaway dev tool.
+// app's lifetime. Everything is wiped when the server stops - fine for this throwaway dev tool.
 const string inMemoryConnectionString = "Data Source=PasskeysSample;Mode=Memory;Cache=Shared";
 var keepAliveConnection = new SqliteConnection(inMemoryConnectionString);
 keepAliveConnection.Open();
@@ -104,7 +104,7 @@ app.UseAuthorization();
 
 // Username/password auth: /account/register, /account/login (?useCookies=true sets the auth cookie), etc.
 // There's no logout endpoint: the auth cookie is a self-contained ticket the client holds, so the native
-// app "signs out" by simply dropping its cookie jar — there's no server-side session to invalidate.
+// app "signs out" by simply dropping its cookie jar - there's no server-side session to invalidate.
 app.MapGroup("/account").MapIdentityApi<IdentityUser>();
 
 // Passkey ceremony endpoints + the platform domain-association documents they depend on.

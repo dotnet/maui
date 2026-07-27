@@ -61,7 +61,7 @@ From `src/Essentials/samples`, run the helper — it provisions the tunnel and w
 edit any files:
 
 ```bash
-pwsh ./Configure.ps1
+pwsh ./Configure-Passkeys.ps1
 ```
 
 It prints the public `https://…devtunnels.ms` URL to paste into the sample page, and sets
@@ -82,11 +82,11 @@ devtunnel host maui-essentials
 ```
 
 Then build/run the MAUI sample — its **Passkeys** page defaults to the full `https://…devtunnels.ms`
-URL (baked in by `Configure.ps1`; editable at runtime via the Server toolbar button).
+URL (baked in by `Configure-Passkeys.ps1`; editable at runtime via the Server toolbar button).
 
 ## Passkeys configuration keys
 
-All passkey relying-party config is provided via **user-secrets** (written for you by `Configure.ps1`,
+All passkey relying-party config is provided via **user-secrets** (written for you by `Configure-Passkeys.ps1`,
 never committed) — nothing sensitive is in `appsettings.json`. With none set, a bare `dotnet run` works
 on localhost with ASP.NET Core Identity's default RP settings. The keys:
 
@@ -114,7 +114,7 @@ POST   /account/register                                    (body: { email, pass
 POST   /account/login?useCookies=true                       (body: { email, password }) -> sets auth cookie
 GET    /passkeys/list                (signed-in required)   -> { username, passkeyCount, passkeys[] }
 POST   /passkeys/register/begin      (signed-in required)   -> PublicKeyCredentialCreationOptions JSON
-POST   /passkeys/register/finish     (body: attestation JSON)  -> { registered, username }
+POST   /passkeys/register/finish?name=<device label>  (body: attestation JSON)  -> { registered, username, name }
 POST   /passkeys/login/begin                                -> PublicKeyCredentialRequestOptions JSON
 POST   /passkeys/login/finish        (body: assertion JSON) -> { authenticated, username }
 ```
@@ -168,7 +168,7 @@ domain back:
 
 Fill in `Passkeys:AllowedOrigins` (add the Android `android:apk-key-hash:…` origin), `Passkeys:Android`
 (package name + `keytool`/`apksigner` SHA-256 fingerprints), and `Passkeys:Apple` (`<TeamID>.<BundleID>`)
-once you know your signing identities — `Configure.ps1` fills the Android values for you.
+once you know your signing identities — `Configure-Passkeys.ps1` fills the Android values for you.
 `https://<ServerDomain>` is always accepted automatically. To compute the Android hash origin from a
 SHA-256 fingerprint, base64url-encode the raw 32 bytes and prefix `android:apk-key-hash:`.
 
@@ -177,4 +177,4 @@ SHA-256 fingerprint, base64url-encode the raw 32 bytes and prefix `android:apk-k
 The database is in-memory, so just restart the server — all registered users and passkeys are wiped and
 the schema is re-created empty on every launch.
 
-See [`../README.md`](../README.md) for the condensed end-to-end steps.
+See [`../README-Passkeys.md`](../README-Passkeys.md) for the condensed end-to-end steps.

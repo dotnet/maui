@@ -57,7 +57,7 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
-  <!-- Local, git-ignored passkey test config written by ../Configure.ps1: the default server URL
+  <!-- Local, git-ignored passkey test config written by ../Configure-Passkeys.ps1: the default server URL
        (baked in via AssemblyMetadata, read by PasskeysViewModel) plus Apple signing + entitlements.
        Absent by default — then PasskeysViewModel uses its built-in placeholder and CI is unaffected.
        See ../README.md. -->

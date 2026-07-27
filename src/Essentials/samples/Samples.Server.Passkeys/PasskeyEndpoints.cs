@@ -6,7 +6,7 @@ namespace Samples.Server.Passkeys;
 
 /// <summary>
 /// The passkey ceremony endpoints for the native app, plus the platform domain-association documents
-/// they depend on — they belong together, because an on-device passkey ceremony only works when the
+/// they depend on - they belong together, because an on-device passkey ceremony only works when the
 /// same relying-party domain both runs the ceremony and serves the well-known association files.
 /// </summary>
 /// <remarks>
@@ -27,7 +27,7 @@ internal static class PasskeyEndpoints
 	// The /passkeys/* ceremony API called by the native app.
 	static void MapCeremony(IEndpointRouteBuilder endpoints)
 	{
-		// Native JSON APIs, not browser form posts, so antiforgery doesn't apply — disable it on the whole
+		// Native JSON APIs, not browser form posts, so antiforgery doesn't apply - disable it on the whole
 		// group. (WebAuthn payloads are signed over challenge+origin+rpId and can't be forged or replayed.)
 		var group = endpoints.MapGroup("/passkeys").DisableAntiforgery();
 
@@ -45,10 +45,11 @@ internal static class PasskeyEndpoints
 			{
 				username = user.UserName,
 				passkeyCount = passkeys.Count,
-				// Base64Url-encode the credential id so the client has a stable identifier to show.
 				passkeys = passkeys.Select(pk => new
 				{
+					// Base64Url-encode the credential id (raw bytes) into a stable string identifier.
 					id = Base64Url.EncodeToString(pk.CredentialId),
+					name = pk.Name,
 					createdAt = pk.CreatedAt,
 				}),
 			});
@@ -62,7 +63,7 @@ internal static class PasskeyEndpoints
 		{
 			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
-				return Results.Json(new { error = "Sign in first (POST /account/login?useCookies=true) — a passkey is enrolled for the signed-in user." }, statusCode: StatusCodes.Status401Unauthorized);
+				return Results.Json(new { error = "Sign in first (POST /account/login?useCookies=true) - a passkey is enrolled for the signed-in user." }, statusCode: StatusCodes.Status401Unauthorized);
 
 			var userId = await userManager.GetUserIdAsync(user);
 			var userName = await userManager.GetUserNameAsync(user) ?? user.UserName!;
@@ -77,8 +78,11 @@ internal static class PasskeyEndpoints
 		}).RequireAuthorization();
 
 		// Registration finish: validates the attestation and stores the passkey against the signed-in user.
+		// An optional ?name= (the app passes an auto-generated device label) is stored so passkeys created
+		// on different devices are distinguishable in the list.
 		group.MapPost("/register/finish", async (
 			JsonElement credential,
+			string? name,
 			UserManager<IdentityUser> userManager,
 			SignInManager<IdentityUser> signInManager) =>
 		{
@@ -101,15 +105,18 @@ internal static class PasskeyEndpoints
 			if (user is null)
 				return Results.BadRequest("Unable to resolve the user for this passkey.");
 
+			if (!string.IsNullOrWhiteSpace(name))
+				attestation.Passkey.Name = name.Trim();
+
 			var stored = await userManager.AddOrUpdatePasskeyAsync(user, attestation.Passkey);
 			if (!stored.Succeeded)
 				return Results.BadRequest("Failed to store passkey.");
 
-			return Results.Ok(new { registered = true, username = user.UserName });
+			return Results.Ok(new { registered = true, username = user.UserName, name = attestation.Passkey.Name });
 		});
 
 		// Sign-in begin: returns the WebAuthn request options for username-less (discoverable) sign-in.
-		// No username is needed — the passkey itself carries the identity, and the server only learns who
+		// No username is needed - the passkey itself carries the identity, and the server only learns who
 		// the user is at /login/finish, from the credential the assertion is signed with.
 		group.MapPost("/login/begin", async (
 			SignInManager<IdentityUser> signInManager) =>

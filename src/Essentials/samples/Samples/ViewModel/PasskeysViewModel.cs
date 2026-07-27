@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 using PasskeysApi = Microsoft.Maui.Authentication.Passkeys;
 
 namespace Samples.ViewModel
@@ -18,7 +19,7 @@ namespace Samples.ViewModel
 	public class PasskeysViewModel : BaseViewModel
 	{
 		// The relying-party server (Samples.Server.Passkeys). Passkeys are bound to a domain, so it must be a
-		// public HTTPS host reachable from the device. Run `pwsh ./Configure.ps1` in src/Essentials/samples
+		// public HTTPS host reachable from the device. Run `pwsh ./Configure-Passkeys.ps1` in src/Essentials/samples
 		// to provision a dev tunnel; it bakes the URL in via AssemblyMetadata (see Essentials.Sample.csproj).
 		// The default is also editable at runtime from the Server toolbar button.
 		string serverBaseUrl = GetConfiguredServerUrl();
@@ -120,7 +121,7 @@ namespace Samples.ViewModel
 
 		public string PasskeyStatusText => HasPasskey
 			? (PasskeyCount == 1 ? "✓ 1 passkey on this account." : $"✓ {PasskeyCount} passkeys on this account.")
-			: "No passkey yet — add one for faster sign-in.";
+			: "No passkey yet - add one for faster sign-in.";
 
 		public string CreatePasskeyButtonText => HasPasskey ? "Add another passkey" : "Create a passkey";
 
@@ -187,7 +188,7 @@ namespace Samples.ViewModel
 		void SignOut()
 		{
 			// The auth cookie is a self-contained ticket held in our CookieContainer, and the dev server keeps
-			// no server-side session — so "signing out" is just discarding the cookie jar. Drop the HttpClient;
+			// no server-side session - so "signing out" is just discarding the cookie jar. Drop the HttpClient;
 			// the next request builds a fresh one with an empty CookieContainer.
 			httpClient?.Dispose();
 			httpClient = null;
@@ -212,9 +213,11 @@ namespace Samples.ViewModel
 				Log("Creating passkey with the platform authenticator…");
 				var response = await PasskeysApi.CreateAsync(creationOptionsJson, CancellationToken.None);
 
-				// Send the attestation back to be verified and stored.
+				// Send the attestation back to be verified and stored, labelled with this device so passkeys
+				// from different test devices are easy to tell apart in the list.
 				Log("Verifying attestation with the server…");
-				await PostAsync("/passkeys/register/finish", response.ToString());
+				var nameQuery = $"?name={Uri.EscapeDataString(BuildDeviceName())}";
+				await PostAsync($"/passkeys/register/finish{nameQuery}", response.ToString());
 
 				await RefreshAccountStateAsync();
 				Log("✅ Passkey created. You can now sign in with it.");
@@ -227,6 +230,18 @@ namespace Samples.ViewModel
 			{
 				IsBusy = false;
 			}
+		}
+
+		// A descriptive, auto-generated label from the Essentials DeviceInfo API so passkeys created on
+		// different devices are easy to tell apart — no user prompt. e.g. "iPhone 16 Pro (iOS 18.0)".
+		static string BuildDeviceName()
+		{
+			var name = string.IsNullOrWhiteSpace(DeviceInfo.Name)
+				? $"{DeviceInfo.Manufacturer} {DeviceInfo.Model}".Trim()
+				: DeviceInfo.Name;
+			if (string.IsNullOrWhiteSpace(name))
+				name = "Unknown device";
+			return $"{name} ({DeviceInfo.Platform} {DeviceInfo.VersionString})";
 		}
 
 		async Task LoginAsync()
@@ -277,7 +292,7 @@ namespace Samples.ViewModel
 			{
 				var wantsPasskey = await DisplayConfirmAsync(
 					"Set up a passkey?",
-					"Sign in faster next time using your fingerprint, face, or device PIN — no password needed. Create a passkey now?",
+					"Sign in faster next time using your fingerprint, face, or device PIN - no password needed. Create a passkey now?",
 					"Set up",
 					"Not now");
 
@@ -315,6 +330,7 @@ namespace Samples.ViewModel
 					Passkeys.Add(new PasskeyItem
 					{
 						Id = pk.TryGetProperty("id", out var id) ? id.GetString() : null,
+						Name = pk.TryGetProperty("name", out var n) ? n.GetString() : null,
 						CreatedAt = pk.TryGetProperty("createdAt", out var ca) && ca.TryGetDateTimeOffset(out var dto)
 							? dto.ToLocalTime().ToString("MMM d, yyyy")
 							: null,
@@ -398,7 +414,7 @@ namespace Samples.ViewModel
 				}
 				catch (JsonException)
 				{
-					// not JSON after all — fall through
+					// not JSON after all - fall through
 				}
 			}
 
@@ -461,12 +477,18 @@ namespace Samples.ViewModel
 		}
 	}
 
-	// One row in the signed-in passkey list, identified by its Base64Url credential id.
+	// One row in the signed-in passkey list. Name is the auto-generated device label; Id is the Base64Url
+	// credential id (raw bytes encoded), shown as a secondary, technical identifier.
 	public class PasskeyItem
 	{
 		public string Id { get; set; }
 
+		public string Name { get; set; }
+
 		public string CreatedAt { get; set; }
+
+		// The device label, falling back to the short credential id when the server has no name for it.
+		public string DisplayName => string.IsNullOrWhiteSpace(Name) ? ShortId : Name;
 
 		// A short, readable form of the (long) Base64Url credential id.
 		public string ShortId => string.IsNullOrEmpty(Id)
