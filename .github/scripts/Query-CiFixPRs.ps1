@@ -13,6 +13,11 @@ param(
     [string]$OutputPath = "CustomAgentLogsTmp/CiFixScanner/candidates.json",
     [string]$TitlePrefix = '[ci-fix]',
     [string]$IssueLabel = 'ci-scan',
+    # The twin workflow's label. Issues carrying BOTH labels are owned by the twin and are
+    # excluded here deterministically, because the agent has no live issue tools and so
+    # cannot enforce that ownership rule from the prompt.
+    [AllowEmptyString()]
+    [string]$ExcludeIssueLabel = '',
     [AllowEmptyString()]
     [string]$IssueNumber = '',
     [ValidateRange(64, 1024)]
@@ -240,17 +245,17 @@ function ConvertTo-CiFixIssueEvidence {
     param(
         [AllowNull()][object[]]$Issues,
         [Parameter(Mandatory = $true)][string]$ExactLabel,
+        [AllowNull()][string]$ExcludeLabel,
         [Parameter(Mandatory = $true)][int]$Limit,
         [Parameter(Mandatory = $true)][int]$TitleMaxChars,
         [Parameter(Mandatory = $true)][int]$BodyMaxChars
     )
 
     $evidence = @()
+    $excludedIssueNumbers = @()
+    $eligibleCount = 0
     $seenIssueNumbers = [System.Collections.Generic.HashSet[int]]::new()
     foreach ($issue in @($Issues)) {
-        if ($evidence.Count -ge $Limit) {
-            break
-        }
         if ($null -eq $issue -or
             ([string]$issue.state).ToLowerInvariant() -ne 'open' -or
             $issue.pull_request -or
@@ -263,6 +268,23 @@ function ConvertTo-CiFixIssueEvidence {
             continue
         }
         if (-not $seenIssueNumbers.Add($number)) {
+            continue
+        }
+
+        # The twin workflow owns dual-labelled issues. Decide ownership deterministically
+        # here: the agent cannot see raw labels (the `issues` toolset is deliberately
+        # removed), so a prompt-level "skip if it also carries <twin label>" rule would be
+        # unenforceable and both twins could open a PR for the same issue.
+        if (-not [string]::IsNullOrWhiteSpace($ExcludeLabel) -and
+            (Test-IssueHasExactLabel -Labels @($issue.labels) -ExactLabel $ExcludeLabel)) {
+            $excludedIssueNumbers += $number
+            continue
+        }
+
+        # Count every eligible issue, but only materialize up to $Limit, so the caller can
+        # report a truthful backlog total instead of implying the batch is the whole queue.
+        $eligibleCount++
+        if ($evidence.Count -ge $Limit) {
             continue
         }
 
@@ -285,7 +307,12 @@ function ConvertTo-CiFixIssueEvidence {
         }
     }
 
-    return @($evidence)
+    return [pscustomobject]@{
+        items = @($evidence)
+        totalMatched = $eligibleCount
+        truncated = ($eligibleCount -gt @($evidence).Count)
+        excludedDualLabelled = @($excludedIssueNumbers)
+    }
 }
 
 function Get-CiFixIssueEvidence {
@@ -293,6 +320,7 @@ function Get-CiFixIssueEvidence {
         [Parameter(Mandatory = $true)][string]$RepositoryOwner,
         [Parameter(Mandatory = $true)][string]$RepositoryName,
         [Parameter(Mandatory = $true)][string]$ExactLabel,
+        [AllowNull()][string]$ExcludeLabel,
         [AllowNull()][Nullable[int]]$ScopedIssueNumber,
         [AllowNull()][object[]]$PriorityIssueNumbers,
         [Parameter(Mandatory = $true)][int]$Limit,
@@ -306,10 +334,20 @@ function Get-CiFixIssueEvidence {
         throw "IssueLabel must be a non-empty GitHub label name of at most 100 safe characters."
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($ExcludeLabel) -and
+        ($ExcludeLabel.Length -gt 100 -or
+        $ExcludeLabel -notmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()-]*$')) {
+        throw "ExcludeLabel must be a GitHub label name of at most 100 safe characters."
+    }
+
     if ($null -ne $ScopedIssueNumber) {
+        # A stale or mistyped dispatch number must produce the documented
+        # "skipped: dispatch issue_number not an in-scope ci-scan issue" record, not a hard
+        # failure of the whole pre-activation job before the agent ever runs.
         $issueJson = Invoke-GhCommand `
             -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$ScopedIssueNumber") `
-            -Description "read scoped issue #$ScopedIssueNumber"
+            -Description "read scoped issue #$ScopedIssueNumber" `
+            -AllowFailure
         $issues = if ([string]::IsNullOrWhiteSpace($issueJson)) { @() } else { @(ConvertFrom-Json $issueJson) }
     }
     else {
@@ -333,28 +371,33 @@ function Get-CiFixIssueEvidence {
             }
         }
 
+        # Page to completion, oldest-first. `sort=updated&direction=desc` with a single
+        # `per_page=$Limit` page silently stranded the oldest still-open issues forever:
+        # the batch is capped, the agent has no live issue tools to compensate, and every
+        # issue the agent touches bubbles back to the top of the window. Ascending
+        # creation order makes the cap drain the backlog FIFO instead.
         $issueLines = Invoke-GhCommand `
             -Arguments @(
                 'api', '--method', 'GET', "repos/$RepositoryOwner/$RepositoryName/issues",
                 '-f', 'state=open',
                 '-f', "labels=$ExactLabel",
-                '-f', 'sort=updated',
-                '-f', 'direction=desc',
-                '-f', "per_page=$Limit",
+                '-f', 'sort=created',
+                '-f', 'direction=asc',
+                '-f', 'per_page=100',
+                '--paginate',
                 '--jq', '.[]'
             ) `
             -Description "list open issues with exact label '$ExactLabel'"
         $issues += @(ConvertFrom-JsonLines -JsonLines $issueLines)
     }
 
-    return @(
-        ConvertTo-CiFixIssueEvidence `
-            -Issues $issues `
-            -ExactLabel $ExactLabel `
-            -Limit $Limit `
-            -TitleMaxChars $TitleMaxChars `
-            -BodyMaxChars $BodyMaxChars
-    )
+    return ConvertTo-CiFixIssueEvidence `
+        -Issues $issues `
+        -ExactLabel $ExactLabel `
+        -ExcludeLabel $ExcludeLabel `
+        -Limit $Limit `
+        -TitleMaxChars $TitleMaxChars `
+        -BodyMaxChars $BodyMaxChars
 }
 
 function Test-IsHumanLogin {
@@ -744,17 +787,17 @@ foreach ($pr in @($searchResult)) {
 
 $anyActionable = @($candidates | Where-Object { $_.actionable }).Count -gt 0
 $scopedIssueNumber = Resolve-IssueScopeNumber -Value $IssueNumber
-$issueEvidenceItems = @(
-    Get-CiFixIssueEvidence `
-        -RepositoryOwner $Owner `
-        -RepositoryName $Repo `
-        -ExactLabel $IssueLabel `
-        -ScopedIssueNumber $scopedIssueNumber `
-        -PriorityIssueNumbers @($candidates | ForEach-Object { $_.refsIssue }) `
-        -Limit $MaxIssues `
-        -TitleMaxChars $MaxIssueTitleChars `
-        -BodyMaxChars $MaxIssueBodyChars
-)
+$issueEvidence = Get-CiFixIssueEvidence `
+    -RepositoryOwner $Owner `
+    -RepositoryName $Repo `
+    -ExactLabel $IssueLabel `
+    -ExcludeLabel $ExcludeIssueLabel `
+    -ScopedIssueNumber $scopedIssueNumber `
+    -PriorityIssueNumbers @($candidates | ForEach-Object { $_.refsIssue }) `
+    -Limit $MaxIssues `
+    -TitleMaxChars $MaxIssueTitleChars `
+    -BodyMaxChars $MaxIssueBodyChars
+$issueEvidenceItems = @($issueEvidence.items)
 
 $outputDir = Split-Path -Parent $OutputPath
 if ($outputDir) {
@@ -768,11 +811,18 @@ $json = [ordered]@{
     issueEvidence = [ordered]@{
         authoritative = $true
         exactLabel = $IssueLabel
+        excludeLabel = $ExcludeIssueLabel
         scopedIssueNumber = $scopedIssueNumber
         maxIssues = $MaxIssues
         titleMaxChars = $MaxIssueTitleChars
         bodyMaxChars = $MaxIssueBodyChars
         count = $issueEvidenceItems.Count
+        # totalMatched counts every eligible open exact-label issue, not just the bounded
+        # batch. truncated=true means work remains beyond this run's window; it must never
+        # be read as "no other candidates exist".
+        totalMatched = [int]$issueEvidence.totalMatched
+        truncated = [bool]$issueEvidence.truncated
+        excludedDualLabelled = @($issueEvidence.excludedDualLabelled)
         issues = @($issueEvidenceItems)
     }
     anyActionable = [bool]$anyActionable

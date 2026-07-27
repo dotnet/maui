@@ -42,7 +42,16 @@ function Invoke-GitText {
 function Test-IsAllowedCiFixPath {
     param([Parameter(Mandatory = $true)][string]$Path)
 
-    return $Path -match '^(src/(AI|Core|Controls|Essentials|BlazorWebView|TestUtils|Templates)/|.+/PublicAPI\.Unshipped\.txt$)'
+    # -cmatch (case-SENSITIVE) on purpose: gh-aw compiles `allowed_files` globs with
+    # case-sensitive semantics on Linux runners, so a case-insensitive -match here would
+    # pass `src/core/x.cs` through the gate, register an expectation, and then have the
+    # privileged handler reject it — surfacing as a confusing "registered but captured 0"
+    # failure instead of a clear, local transport rejection.
+    #
+    # `.+/` is deliberately stricter than the handler's `**/PublicAPI.Unshipped.txt`: a
+    # root-level PublicAPI.Unshipped.txt is rejected here. No such file exists in this repo
+    # (all 71 live under src/**), and erring stricter than the handler fails closed.
+    return $Path -cmatch '^(src/(AI|Core|Controls|Essentials|BlazorWebView|TestUtils|Templates)/|.+/PublicAPI\.Unshipped\.txt$)'
 }
 
 if ($ExpectedOutputType -eq 'push_to_pull_request_branch' -and $PullRequestNumber -le 0) {

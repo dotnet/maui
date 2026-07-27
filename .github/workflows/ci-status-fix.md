@@ -103,6 +103,7 @@ on:
           -MaxIssues 20 `
           -TitlePrefix '[ci-fix]' `
           -IssueLabel 'ci-scan' `
+          -ExcludeIssueLabel 'ci-scan-net11' `
           -IssueNumber $env:ISSUE_NUMBER `
           -BaseBranch 'main' `
           -OutputPath $output | Out-Null
@@ -226,6 +227,14 @@ safe-outputs:
     # commit onto the SAME PR branch instead of opening a second PR. The workflow
     # is schedule/dispatch-triggered (no triggering-PR context), so target "*"
     # lets the agent name the PR number it is advancing (Step 5.6).
+    #
+    # NOTE: gh-aw v0.82.14 rejects `max-patch-files` on this handler (it is valid only on
+    # create-pull-request), and a top-level safe-outputs `max-patch-files` does NOT
+    # propagate here -- both verified by strict compile. So on the advance path gh-aw
+    # enforces only max-patch-size + allowed-files; the <=20-file bound exists solely in
+    # Test-CiFixTransport.ps1. Treat that script as defense-in-depth, NOT as a privileged
+    # security boundary: an agent that skips it is still bounded by allowed-files, patch
+    # size, protected-files, and required-labels, but not by file count.
     target: "*"
     # max is a PER-RUN total, NOT per-PR. A scheduled sweep processes ALL open
     # ci-scan issues, so a run can legitimately need to advance several PRs; at
@@ -336,7 +345,12 @@ safe-outputs:
 
 post-steps:
   - name: Require every registered safe output to be captured
-    if: always()
+    # A dry_run must be able to validate a candidate diff (which registers an expectation)
+    # and then correctly emit nothing. Without this guard that combination trips the
+    # reconciliation and turns an intentional preview red. The condition is evaluated by
+    # Actions, not by the agent, so a compromised agent cannot switch the gate off; real
+    # scheduled runs have an empty inputs.dry_run and stay fully fail-closed.
+    if: always() && github.event.inputs.dry_run != 'true'
     shell: bash
     run: |
       set -euo pipefail

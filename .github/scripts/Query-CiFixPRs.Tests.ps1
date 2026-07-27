@@ -67,7 +67,7 @@ Describe 'Get-CiFixIssueEvidence' {
         } -ParameterFilter { $Description -eq 'read scoped issue #40001' }
 
         $result = @(
-            Get-CiFixIssueEvidence `
+            (Get-CiFixIssueEvidence `
                 -RepositoryOwner dotnet `
                 -RepositoryName maui `
                 -ExactLabel ci-scan `
@@ -75,11 +75,81 @@ Describe 'Get-CiFixIssueEvidence' {
                 -PriorityIssueNumbers @(40002) `
                 -Limit 20 `
                 -TitleMaxChars 256 `
-                -BodyMaxChars 12000
+                -BodyMaxChars 12000).items
         )
 
         $result.issueNumber | Should -Be 40001
         Should -Invoke Invoke-GhCommand -Times 1 -Exactly
+    }
+
+    It 'records an empty snapshot instead of throwing when the scoped issue does not exist' {
+        Mock Invoke-GhCommand { $null } -ParameterFilter { $Description -eq 'read scoped issue #40404' }
+
+        $evidence = Get-CiFixIssueEvidence `
+            -RepositoryOwner dotnet `
+            -RepositoryName maui `
+            -ExactLabel ci-scan `
+            -ScopedIssueNumber 40404 `
+            -PriorityIssueNumbers @() `
+            -Limit 20 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000
+
+        @($evidence.items).Count | Should -Be 0
+        $evidence.truncated | Should -BeFalse
+        Should -Invoke Invoke-GhCommand -Times 1 -Exactly -ParameterFilter { $AllowFailure }
+    }
+
+    It 'lists open issues oldest-first and pages to completion so old issues cannot be stranded' {
+        Mock Invoke-GhCommand {
+            if ($Description -eq "list open issues with exact label 'ci-scan'") {
+                return $script:freshIssue | ConvertTo-Json -Depth 5 -Compress
+            }
+            throw "Unexpected call: $Description"
+        }
+
+        Get-CiFixIssueEvidence `
+            -RepositoryOwner dotnet `
+            -RepositoryName maui `
+            -ExactLabel ci-scan `
+            -ScopedIssueNumber $null `
+            -PriorityIssueNumbers @() `
+            -Limit 20 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000 | Out-Null
+
+        Should -Invoke Invoke-GhCommand -Times 1 -Exactly -ParameterFilter {
+            $Arguments -contains '--paginate' -and
+            $Arguments -contains 'sort=created' -and
+            $Arguments -contains 'direction=asc' -and
+            ($Arguments -join ' ') -notmatch 'sort=updated'
+        }
+    }
+
+    It 'caps and deduplicates priority watch reads' {
+        Mock Invoke-GhCommand {
+            if ($Description -like 'read priority watch issue*') {
+                return $null
+            }
+            if ($Description -eq "list open issues with exact label 'ci-scan'") {
+                return ''
+            }
+            throw "Unexpected call: $Description"
+        }
+
+        Get-CiFixIssueEvidence `
+            -RepositoryOwner dotnet `
+            -RepositoryName maui `
+            -ExactLabel ci-scan `
+            -ScopedIssueNumber $null `
+            -PriorityIssueNumbers @(40001, 40001, 40002, 40003) `
+            -Limit 2 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000 | Out-Null
+
+        Should -Invoke Invoke-GhCommand -Times 2 -Exactly -ParameterFilter {
+            $Description -like 'read priority watch issue*'
+        }
     }
 
     It 'places watch-linked issue evidence before the fresh bounded list' {
@@ -97,7 +167,7 @@ Describe 'Get-CiFixIssueEvidence' {
         }
 
         $result = @(
-            Get-CiFixIssueEvidence `
+            (Get-CiFixIssueEvidence `
                 -RepositoryOwner dotnet `
                 -RepositoryName maui `
                 -ExactLabel ci-scan `
@@ -105,7 +175,7 @@ Describe 'Get-CiFixIssueEvidence' {
                 -PriorityIssueNumbers @(40001) `
                 -Limit 2 `
                 -TitleMaxChars 256 `
-                -BodyMaxChars 12000
+                -BodyMaxChars 12000).items
         )
 
         @($result.issueNumber) | Should -Be @(40001, 40002)
@@ -167,18 +237,58 @@ Describe 'ConvertTo-CiFixIssueEvidence' {
         $pullRequest | Add-Member pull_request ([pscustomobject]@{ url = 'https://api.github.com/pulls/40004' })
 
         $result = @(
-            ConvertTo-CiFixIssueEvidence `
+            (ConvertTo-CiFixIssueEvidence `
                 -Issues @($wrongLabel, $closed, $pullRequest, $script:validIssue) `
                 -ExactLabel 'ci-scan' `
                 -Limit 20 `
                 -TitleMaxChars 256 `
-                -BodyMaxChars 12000
+                -BodyMaxChars 12000).items
         )
 
         $result.Count | Should -Be 1
         $result[0].issueNumber | Should -Be 40001
         $result[0].exactLabel | Should -Be 'ci-scan'
         $result[0].untrusted | Should -BeTrue
+    }
+
+    It 'excludes dual-labelled issues owned by the twin workflow and reports them' {
+        $dualLabelled = $script:validIssue.PSObject.Copy()
+        $dualLabelled.number = 40005
+        $dualLabelled.labels = @(
+            [pscustomobject]@{ name = 'ci-scan' },
+            [pscustomobject]@{ name = 'ci-scan-net11' }
+        )
+
+        $evidence = ConvertTo-CiFixIssueEvidence `
+            -Issues @($script:validIssue, $dualLabelled) `
+            -ExactLabel 'ci-scan' `
+            -ExcludeLabel 'ci-scan-net11' `
+            -Limit 20 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000
+
+        @($evidence.items.issueNumber) | Should -Be @(40001)
+        @($evidence.excludedDualLabelled) | Should -Be @(40005)
+        $evidence.totalMatched | Should -Be 1
+        $evidence.truncated | Should -BeFalse
+    }
+
+    It 'reports the full backlog total and truncation when the batch is capped' {
+        $second = $script:validIssue.PSObject.Copy()
+        $second.number = 40002
+        $third = $script:validIssue.PSObject.Copy()
+        $third.number = 40003
+
+        $evidence = ConvertTo-CiFixIssueEvidence `
+            -Issues @($script:validIssue, $second, $third) `
+            -ExactLabel 'ci-scan' `
+            -Limit 1 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000
+
+        @($evidence.items).Count | Should -Be 1
+        $evidence.totalMatched | Should -Be 3
+        $evidence.truncated | Should -BeTrue
     }
 
     It 'bounds both item count and untrusted title/body sizes' {
@@ -189,12 +299,12 @@ Describe 'ConvertTo-CiFixIssueEvidence' {
         $second.number = 40002
 
         $result = @(
-            ConvertTo-CiFixIssueEvidence `
+            (ConvertTo-CiFixIssueEvidence `
                 -Issues @($first, $second) `
                 -ExactLabel 'ci-scan' `
                 -Limit 1 `
                 -TitleMaxChars 5 `
-                -BodyMaxChars 4
+                -BodyMaxChars 4).items
         )
 
         $result.Count | Should -Be 1
@@ -210,15 +320,69 @@ Describe 'ConvertTo-CiFixIssueEvidence' {
         $fresh.number = 40002
 
         $result = @(
-            ConvertTo-CiFixIssueEvidence `
+            (ConvertTo-CiFixIssueEvidence `
                 -Issues @($script:validIssue, $duplicate, $fresh) `
                 -ExactLabel 'ci-scan' `
                 -Limit 2 `
                 -TitleMaxChars 256 `
-                -BodyMaxChars 12000
+                -BodyMaxChars 12000).items
         )
 
         $result.Count | Should -Be 2
         @($result.issueNumber) | Should -Be @(40001, 40002)
+    }
+}
+
+Describe 'Query-CiFixPRs.ps1 command-line wiring' {
+    # The other Describe blocks extract functions via AST and call them with literal
+    # arguments, so a broken param()->call-site binding (a renamed $MaxIssues, a dropped
+    # argument) stays green there while the real script silently emits zero issue evidence.
+    # This test runs the actual script with a stub `gh` on PATH so the wiring is covered.
+    It 'threads the CLI issue bounds through to the emitted snapshot' {
+        $work = Join-Path ([IO.Path]::GetTempPath()) ("cifix-wiring-" + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $work -Force | Out-Null
+        try {
+            $ghPath = Join-Path $work 'gh'
+            @'
+#!/bin/sh
+if [ "$1" = "pr" ]; then echo "[]"; exit 0; fi
+if [ "$1" = "api" ]; then
+  echo '{"number":40001,"title":"Oldest open CI failure","body":"body text","state":"open","html_url":"https://github.com/dotnet/maui/issues/40001","labels":[{"name":"ci-scan"}],"created_at":"2026-06-03T00:00:00Z","updated_at":"2026-06-03T00:00:00Z"}'
+  exit 0
+fi
+exit 1
+'@ | Set-Content -LiteralPath $ghPath -Encoding ASCII
+            chmod +x $ghPath
+
+            $outputPath = Join-Path $work 'candidates.json'
+            $scriptPath = Join-Path $PSScriptRoot 'Query-CiFixPRs.ps1'
+            $originalPath = $env:PATH
+            $env:PATH = $work + [IO.Path]::PathSeparator + $originalPath
+            try {
+                & pwsh -NoProfile -File $scriptPath `
+                    -Owner dotnet -Repo maui `
+                    -OutputPath $outputPath `
+                    -MaxIssues 5 `
+                    -MaxIssueTitleChars 64 `
+                    -MaxIssueBodyChars 256 | Out-Null
+                $LASTEXITCODE | Should -Be 0
+            }
+            finally {
+                $env:PATH = $originalPath
+            }
+
+            $snapshot = Get-Content -LiteralPath $outputPath -Raw | ConvertFrom-Json
+            $snapshot.schemaVersion | Should -Be 2
+            $snapshot.issueEvidence.maxIssues | Should -Be 5
+            $snapshot.issueEvidence.titleMaxChars | Should -Be 64
+            $snapshot.issueEvidence.bodyMaxChars | Should -Be 256
+            $snapshot.issueEvidence.count | Should -Be 1
+            $snapshot.issueEvidence.totalMatched | Should -Be 1
+            $snapshot.issueEvidence.truncated | Should -BeFalse
+            @($snapshot.issueEvidence.issues)[0].issueNumber | Should -Be 40001
+        }
+        finally {
+            Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }

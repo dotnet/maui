@@ -22,6 +22,22 @@ Describe 'Test-CiFixTransport' {
         Pop-Location
     }
 
+    It 'rejects a case-variant path that the privileged handler allowlist would not match' {
+        New-Item -ItemType Directory -Path (Join-Path $script:repo 'src/core') -Force | Out-Null
+        'fix' | Set-Content -LiteralPath 'src/core/Test.cs'
+        git add .
+        git commit --quiet -m 'case variant'
+
+        {
+            & $script:scriptPath `
+                -BaseRef $script:base `
+                -ExpectedOutputType create_pull_request `
+                -ExpectationDirectory $script:expectations
+        } | Should -Throw '*out-of-scope paths*'
+
+        Test-Path -LiteralPath $script:expectations | Should -BeFalse
+    }
+
     It 'accepts a small append-only allowed diff and registers the expected output' {
         'fix' | Set-Content -LiteralPath 'src/Essentials/Test.cs'
         git add .
