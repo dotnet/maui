@@ -37,9 +37,8 @@ namespace Microsoft.Maui.Platform
 		/// This is typically used when an input view is dismissed and focus should return to the original control.
 		/// </summary>
 		/// <param name="platformView">The platform view that should receive focus</param>
-		internal static void PostAccessibilityFocusNotification(this UIView platformView)
+		public static void PostAccessibilityFocusNotification(this UIView platformView)
 		{
-			// TODO: Make public for .NET 11.
 			UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, platformView);
 		}
 
@@ -49,9 +48,8 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="platformView">The platform view that hosts the input view</param>
 		/// <param name="inputView">The input view that should receive focus</param>
-		internal static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
+		public static void PostAccessibilityFocusNotification(this UIView platformView, UIView? inputView)
 		{
-			// TODO: Make public for .NET 11.
 
 			if (inputView is null)
 			{

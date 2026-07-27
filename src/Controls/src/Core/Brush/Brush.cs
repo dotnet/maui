@@ -116,8 +116,7 @@ namespace Microsoft.Maui.Controls
 			return brush == null || brush.IsEmpty;
 		}
 
-		// TODO: Make this method public in .NET 11
-		internal static bool HasTransparency(Brush background)
+		public static bool HasTransparency(Brush background)
 		{
 
 			if (background is SolidColorBrush solidColorBrush)

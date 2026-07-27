@@ -33,3 +33,11 @@ override Microsoft.Maui.Platform.MauiView.AccessibilityActivate() -> bool
 override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.get -> string?
 override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.set -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+static Microsoft.Maui.Handlers.StepperHandler.MapFlowDirection(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
+static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapSelectionLength(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.CollectionViewExtensions.UpdateIsEnabled(this UIKit.UICollectionView! collectionView, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this UIKit.UIButton! platformButton, Microsoft.Maui.Graphics.Paint? paint) -> void
+static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView) -> void
+static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView, UIKit.UIView? inputView) -> void
