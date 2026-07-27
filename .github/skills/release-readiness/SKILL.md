@@ -176,12 +176,9 @@ of these prerequisites:
 4. Build branch HEAD and promote the resulting MAUI build to the Preview N channel.
 5. Clear current-preview CI/device/UI failures and finish release validation.
 
-Only after that current-preview sequence, list next-preview/inflight work such as the
-`netN.0` Preview N+1 bump, `main → netN.0` merge-ups, the next milestone, and other
-housekeeping. Keep those items in a separate **Preview N+1 / inflight follow-up**
-group unless there is explicit evidence that one is required for the current Preview N
-candidate. This is an output-ordering rule: it does not hide evidence or rewrite the
-deterministic status of any check.
+Keep the report scoped to Preview N. Do **not** mention the `netN.0` Preview N+1
+bump, `main → netN.0` PRs, the Preview N+1 milestone, or any other next-preview
+work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 
 ## Parameters
 

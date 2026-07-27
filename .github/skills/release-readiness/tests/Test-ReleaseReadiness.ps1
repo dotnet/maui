@@ -5892,9 +5892,8 @@ Assert-Eq -Label "No ciScanIssues key: section NOT rendered" -Expected $false `
 # Get-CiScanLabels (label-list filter, deleted). Same convention: the
 # label name fully encodes the source branch (`ci-scan` = main,
 # `ci-scan-net11` = net11.0, `ci-scan-net12` = net12.0, etc.).
-# Preview branches are mapped to their parent net<N>.0 so an in-flight
-# preview readiness still surfaces signals from the branch the preview
-# was cut from.
+# The SR helper retains its broader branch-to-label mapping; Preview-specific
+# lifecycle scoping is tested after the Preview engine is dot-sourced below.
 Write-Host "`n[Unit] Get-CiScanLabelForBranch returns canonical label per branch" -ForegroundColor Cyan
 
 Assert-Eq -Label "'main' → 'ci-scan'" -Expected 'ci-scan' `
@@ -5903,7 +5902,7 @@ Assert-Eq -Label "'net11.0' → 'ci-scan-net11'" -Expected 'ci-scan-net11' `
     -Actual (Get-CiScanLabelForBranch -Branch 'net11.0')
 Assert-Eq -Label "'net12.0' → 'ci-scan-net12' (future-proof)" -Expected 'ci-scan-net12' `
     -Actual (Get-CiScanLabelForBranch -Branch 'net12.0')
-Assert-Eq -Label "preview branch → parent net<N>.0 label" -Expected 'ci-scan-net11' `
+Assert-Eq -Label "SR helper: preview branch → parent net<N>.0 label" -Expected 'ci-scan-net11' `
     -Actual (Get-CiScanLabelForBranch -Branch 'release/11.0.1xx-preview6')
 Assert-Eq -Label "SR branch → null (no scanner configured)" -Expected $null `
     -Actual (Get-CiScanLabelForBranch -Branch 'release/10.0.1xx-sr8')
@@ -7169,6 +7168,69 @@ Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundC
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
 
+# The report scope must follow the preview lifecycle: after Preview N is cut,
+# only PRs targeting its release branch belong in its report. net<N>.0 is queried
+# only by the Preview N+1 candidate report.
+Write-Host "`n[Unit] Preview report mode isolation" -ForegroundColor Cyan
+Assert-Eq -Label "preview scanner: cut Preview 7 does not inherit net11.0 scanner" `
+    -Expected $null -Actual (Get-CiScanLabelForBranch -Branch 'release/11.0.1xx-preview7')
+Assert-Eq -Label "preview scanner: Preview 8 candidate source net11.0 keeps scanner" `
+    -Expected 'ci-scan-net11' -Actual (Get-CiScanLabelForBranch -Branch 'net11.0')
+
+$releaseMergeUp = [PSCustomObject]@{
+    number = 80001
+    title = "[automated] Merge branch 'net11.0' => 'release/11.0.1xx-preview7'"
+    author = [PSCustomObject]@{ login = 'github-actions[bot]' }
+    labels = @()
+    headRefName = 'merge/net11.0-to-release/11.0.1xx-preview7'
+}
+$nextPreviewMergeUp = [PSCustomObject]@{
+    number = 36814
+    title = "[automated] Merge branch 'main' => 'net11.0'"
+    author = [PSCustomObject]@{ login = 'github-actions[bot]' }
+    labels = @()
+    headRefName = 'merge/main-to-net11.0'
+}
+$previewScopeFetchCalls = [System.Collections.Generic.List[string]]::new()
+$previewScopeFetcher = {
+    param($BaseBranch)
+    [void]$previewScopeFetchCalls.Add($BaseBranch)
+    if ($BaseBranch -eq 'release/11.0.1xx-preview7') { return @($releaseMergeUp) }
+    if ($BaseBranch -eq 'net11.0') { return @($nextPreviewMergeUp) }
+    return @()
+}.GetNewClosure()
+
+$preview7Scope = Get-PreviewReportPullRequests -Mode 'in-flight' `
+    -SurveyRef 'release/11.0.1xx-preview7' -Fetcher $previewScopeFetcher
+Assert-Eq -Label "preview scope: in-flight fetches only the Preview 7 branch" `
+    -Expected 'release/11.0.1xx-preview7' -Actual ($previewScopeFetchCalls -join ',')
+Assert-Eq -Label "preview scope: Preview 7 keeps its direct net11.0 merge-up" `
+    -Expected 80001 -Actual $preview7Scope.MergeUpPRs[0].number
+Assert-Eq -Label "preview scope: Preview 7 excludes main→net11.0 PR #36814" `
+    -Expected $false -Actual (@($preview7Scope.MergeUpPRs.number) -contains 36814)
+
+$previewScopeFetchCalls.Clear()
+$preview8Scope = Get-PreviewReportPullRequests -Mode 'candidate' `
+    -SurveyRef 'net11.0' -Fetcher $previewScopeFetcher
+Assert-Eq -Label "preview scope: Preview 8 candidate fetches only net11.0" `
+    -Expected 'net11.0' -Actual ($previewScopeFetchCalls -join ',')
+Assert-Eq -Label "preview scope: Preview 8 candidate includes main→net11.0 PR #36814" `
+    -Expected $true -Actual (@($preview8Scope.MergeUpPRs.number) -contains 36814)
+
+$preview7Iteration = Get-PreviewIterationCheck -Mode 'in-flight' `
+    -SurveyRef 'release/11.0.1xx-preview7' -PreviewNumber 7 -Iteration '7'
+Assert-Eq -Label "preview iteration: Preview 7 validates its own branch" `
+    -Expected 'READY' -Actual $preview7Iteration.Status
+Assert-Eq -Label "preview iteration: Preview 7 check does not mention Preview 8" `
+    -Expected $false -Actual ([bool](("$($preview7Iteration.Details) $($preview7Iteration.NextAction)") -match 'Preview 8|preview-next'))
+
+$preview8Iteration = Get-PreviewIterationCheck -Mode 'candidate' `
+    -SurveyRef 'net11.0' -PreviewNumber 8 -Iteration '7'
+Assert-Eq -Label "preview iteration: Preview 8 candidate blocks until net11.0 is bumped" `
+    -Expected 'BLOCKED' -Actual $preview8Iteration.Status
+Assert-Eq -Label "preview iteration: Preview 8 candidate expects iteration 8" `
+    -Expected $true -Actual ([bool]($preview8Iteration.Details -match 'expected 8'))
+
 # GitHub's GraphQL endpoint can fail independently of the REST API. Prove open
 # and merged PR discovery retain the engine's expected object shape and do not
 # abort the report when `gh pr list` fails but REST remains available.
@@ -7276,21 +7338,12 @@ try {
     Assert-Eq -Label "preview open-PR fallback: records affected base branch" -Expected $true -Actual $script:OpenPullRequestMetadataRestBases.Contains('net11.0')
     Assert-Eq -Label "preview open-PR fallback: fewer than 100 REST results remain complete" -Expected $false `
         -Actual $script:OpenPullRequestScanIncompleteBases.Contains('net11.0')
-    $mixedFallbackBases = @($script:OpenPullRequestMetadataRestBases)
-    $mixedFallbackScope = Get-OpenPrMetadataScope -RestBases $mixedFallbackBases `
-        -TargetBase 'release/11.0.1xx-preview7' -InflightBase 'net11.0'
-    Assert-Eq -Label "preview mixed fallback: target base remains complete when only inflight used REST" `
-        -Expected $false -Actual $mixedFallbackScope.TargetUsedRest
-    Assert-Eq -Label "preview mixed fallback: affected inflight base is identified precisely" `
-        -Expected $true -Actual $mixedFallbackScope.InflightUsedRest
-    Assert-Eq -Label "preview merge-up empty state: complete target and inflight scans are READY" -Expected 'READY' `
-        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $false -InflightScanIncomplete $false).Status
+    Assert-Eq -Label "preview merge-up empty state: complete target scan is READY" -Expected 'READY' `
+        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $false).Status
     Assert-Eq -Label "preview merge-up empty state: incomplete target scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
-        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $true -InflightScanIncomplete $false).Status
-    Assert-Eq -Label "preview merge-up empty state: incomplete inflight scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
-        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $false -InflightScanIncomplete $true).Status
-    Assert-Eq -Label "preview merge-up empty state: action covers both scanned bases" -Expected $true `
-        -Actual ((Get-MergeUpEmptyCheckState -TargetScanIncomplete $false -InflightScanIncomplete $true).Action -match 'target and inflight')
+        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $true).Status
+    Assert-Eq -Label "preview merge-up empty state: action is scoped to target base" -Expected $true `
+        -Actual ((Get-MergeUpEmptyCheckState -TargetScanIncomplete $true).Action -match 'full target PR list')
 
     $fallbackMergedPrs = @(Get-MergedPullRequests -BaseBranch 'net11.0')
     Assert-Eq -Label "preview merged-PR fallback: excludes closed-unmerged PRs" -Expected 1 -Actual $fallbackMergedPrs.Count
@@ -7884,19 +7937,16 @@ try {
     Set-Item function:Get-ContentFromRepo $script:OrigGetContentFromRepoForPins
 }
 
-# Inflight merge-up hoist (#36085 scenario): a main → net<N>.0 automated merge PR
-# (base = inflight branch) must be carved into the merge-up bucket — hoisted to
-# high priority — and REMOVED from the inflight-human queue, not buried as generic
-# inflight noise. The preview lane chains main → net<N>.0 → previewN, so a stuck
-# main → net<N>.0 merge starves the preview branch of upstream fixes and belongs
-# in the daily-flow merge-up chain alongside the net<N>.0 → previewN hop.
+# Inflight isolation: a main → net<N>.0 automated merge PR belongs to Preview N+1
+# readiness after Preview N is cut. It must stay out of the current preview's
+# merge-up bucket and remain in the separate inflight-human bucket.
 $prInflightMergeUp = [PSCustomObject]@{ number = 9; author = $humanLogin; labels = $plainLbl; headRefName = 'merge/main-to-net11.0'; title = "[automated] Merge branch 'main' => 'net11.0'" }
 $bucketsIM   = Get-CategorizedPullRequests -TargetPRs $targetSet -InflightPRs @($prInflightMaestro, $prInflightP0, $prInflightMergeUp)
 $imMergeUp   = @($bucketsIM.MergeUpPRs       | ForEach-Object { $_.number })
 $imInflight  = @($bucketsIM.InflightHumanPRs | ForEach-Object { $_.number })
-Assert-Eq -Label "inflight merge-up: hoisted into merge-up bucket (#9)"                 -Expected $true  -Actual ($imMergeUp -contains 9)
-Assert-Eq -Label "inflight merge-up: both hops in merge-up bucket (#6 target + #9 inflight)" -Expected 2 -Actual $bucketsIM.MergeUpPRs.Count
-Assert-Eq -Label "inflight merge-up: removed from inflight-human queue (#9)"            -Expected $false -Actual ($imInflight -contains 9)
+Assert-Eq -Label "inflight merge-up: excluded from current preview merge-up bucket (#9)" -Expected $false -Actual ($imMergeUp -contains 9)
+Assert-Eq -Label "inflight merge-up: only target hop remains in merge-up bucket (#6)"    -Expected 1 -Actual $bucketsIM.MergeUpPRs.Count
+Assert-Eq -Label "inflight merge-up: retained in inflight-human queue for Preview N+1"   -Expected $true -Actual ($imInflight -contains 9)
 Assert-Eq -Label "inflight merge-up: inflight-human still keeps the plain p/0 human (#8)" -Expected $true -Actual ($imInflight -contains 8)
 
 # Empty-input safety: no PRs at all yields five empty buckets, no throw.

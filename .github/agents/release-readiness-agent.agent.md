@@ -212,12 +212,10 @@ dependency order, even when other report rows are marked `BLOCKED`:
 3. Reconcile MAUI's SDK/VMR pin with the official Preview N build through the newly
    active component-flow path (normally the VMR subscription/update).
 
-Then list the current-preview build/promotion and CI validation work. Put `netN.0`
-Preview N+1 bumps, `main → netN.0` merge-ups, the next milestone, and bug-template
-housekeeping in a separate **Preview N+1 / inflight follow-up** group after the
-current-preview sequence. Do not allow a generic status sort to move those inflight
-items above the mapping → subscriptions → pin prerequisites. Preserve all evidence and
-statuses; this rule controls presentation and execution order, not classification.
+Then list the current-preview build/promotion and CI validation work. Keep the report
+strictly scoped to Preview N: do **not** mention the `netN.0` Preview N+1 bump,
+`main → netN.0` PRs, the next milestone, or other next-preview housekeeping. Those
+belong only in the Preview N+1 readiness report.
 
 **Portfolio roll-up (cross-release path from §0a).** When answering a portfolio question, lead with a one-screen table — one row per active release — then a prioritized next-actions list:
 

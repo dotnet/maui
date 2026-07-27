@@ -11,10 +11,8 @@
     Given a preview branch (e.g. `release/11.0.1xx-preview6`), checks the
     public release-readiness signals that don't require internal access:
         - Target branch exists with the right PreReleaseVersionIteration
-        - net<major>.0 inflight branch is bumped for the NEXT preview train
         - Maestro / dependency-flow PRs
         - Release-branch human PRs
-        - net<major>.0 inflight PRs (preview-next watch)
         - Priority release-blocking issues (p/0, p/1) tagged release-relevant
         - Known Build Error issues tagged release-relevant
         - Xcode requirement variables (from eng/pipelines/common/variables.yml)
@@ -156,13 +154,12 @@ if ([string]::IsNullOrWhiteSpace($SurveyRef)) {
     $SurveyRef = if ($Mode -eq 'candidate') { $mainBranch } else { $Branch }
 }
 
-# Human-readable label for the daily-flow merge-up CHAIN that feeds the survey
-# ref. The preview lane is a two-hop chain: main → net<N>.0 → previewN. An
-# in-flight preview surveys previewN, so BOTH hops feed it (main → net<N>.0 →
-# previewN). A candidate's survey ref IS net<N>.0, so the chain it sees is the
-# single main → net<N>.0 hop. Used for the merge-up check Area, the high-priority
-# blurb, and the carve-out list (which must stay string-equal to the check Area).
-$mergeUpChainLabel = if ($Mode -eq 'candidate') { "main → $SurveyRef" } else { "main → $mainBranch → $SurveyRef" }
+# Human-readable label for the merge-up hop that directly targets the release
+# being assessed. Candidate mode assesses main → net<N>.0 for Preview N; once
+# Preview N is cut, its report assesses only net<N>.0 → previewN. Work targeting
+# net<N>.0 after the cut belongs to Preview N+1 readiness and must not leak into
+# the Preview N report.
+$mergeUpChainLabel = if ($Mode -eq 'candidate') { "main → $SurveyRef" } else { "$mainBranch → $SurveyRef" }
 
 # Canonical tracker key. Default matches Find-Trackers' New-PreviewTracker.
 if ([string]::IsNullOrWhiteSpace($TrackerKey)) {
@@ -684,28 +681,15 @@ function Get-OpenPullRequests {
     }
 }
 
-function Get-OpenPrMetadataScope {
-    param(
-        [array]$RestBases,
-        [string]$TargetBase,
-        [string]$InflightBase
-    )
-    return [PSCustomObject]@{
-        TargetUsedRest   = @($RestBases) -contains $TargetBase
-        InflightUsedRest = @($RestBases) -contains $InflightBase
-    }
-}
-
 function Get-MergeUpEmptyCheckState {
     param(
-        [bool]$TargetScanIncomplete,
-        [bool]$InflightScanIncomplete
+        [bool]$TargetScanIncomplete
     )
 
-    if ($TargetScanIncomplete -or $InflightScanIncomplete) {
+    if ($TargetScanIncomplete) {
         return [PSCustomObject]@{
             Status = 'INSUFFICIENT_DATA'
-            Action = 'Inspect the full target and inflight PR lists before concluding that no merge-up PR is open.'
+            Action = 'Inspect the full target PR list before concluding that no merge-up PR is open.'
         }
     }
     return [PSCustomObject]@{
@@ -873,27 +857,21 @@ function Get-CiScanLabelForBranch {
         Mapping:
           main                                  → ci-scan
           netN.0                                → ci-scan-netN
-          release/N.0.<patch>xx-previewM        → ci-scan-netN   (upstream)
+          release/N.0.<patch>xx-previewM        → $null          (no scanner)
           release/N.0.<patch>xx-srM             → $null          (no scanner)
           anything else                         → $null          (no scanner)
 
-        Preview branches return the parent net<N>.0 label so an in-flight
-        preview readiness check still surfaces signals from the branch
-        the preview was cut from — the per-branch ci-status-*.md workflow
-        runs against net<N>.0, not the preview branch.
+        A cut Preview N branch does not inherit the parent net<N>.0 scanner:
+        after the cut, those signals belong to Preview N+1 readiness. Candidate
+        mode surveys net<N>.0 directly and therefore still receives ci-scan-netN.
 
         Add a case here when a new ci-status-*.md workflow is introduced.
-        Must be kept in sync with the matching helper in
-        scripts/Get-ReleaseReadiness.ps1.
     #>
     param([string]$Branch)
 
     if ([string]::IsNullOrWhiteSpace($Branch)) { return $null }
     if ($Branch -eq 'main') { return 'ci-scan' }
     if ($Branch -match '^net(\d+)\.0$') { return "ci-scan-net$($Matches[1])" }
-    if ($Branch -match '^release/(\d+)\.0\.\d+xx-preview\d+$') {
-        return "ci-scan-net$($Matches[1])"
-    }
     return $null
 }
 
@@ -1522,7 +1500,7 @@ function Get-CategorizedPullRequests {
                     bumps are intentionally NOT reported by a branched preview
                     tracker — they belong to the inflight branch's own readiness.
           3. Merge-up — non-P/0, non-Maestro target PRs that are automated
-                    main → survey-ref merges (head `merge/<x>-to-<y>` or title
+                    upstream → survey-ref merges (head `merge/<x>-to-<y>` or title
                     "[automated] Merge branch ...").
           4. Generic-human (target) — the remaining survey-ref PRs.
           5. Inflight-human — non-Maestro PRs on the inflight (net<major>.0) branch.
@@ -1580,38 +1558,32 @@ function Get-CategorizedPullRequests {
     #    $InflightPRs is empty, so target-only is correct there too.)
     $maestroPRs = @($TargetPRs | Where-Object { (Test-IsDependencyFlowPr $_) -and ($p0PrNumbers -notcontains $_.number) })
 
-    # Non-P/0, non-dependency-flow humans, split by scope. Both slots keep a
-    #    Raw stage so the two-hop merge-up filter below can strip hoisted merge-up
-    #    PRs from target AND inflight. Detection uses Test-IsDependencyFlowPr so
+    # Non-P/0, non-dependency-flow humans, split by scope. Detection uses
+    #    Test-IsDependencyFlowPr so
     #    human-authored component bumps (not just author dotnet-maestro) are
     #    excluded from the human buckets and routed to the dependency-flow bucket.
     $targetHumanPRsRaw   = @($TargetPRs   | Where-Object { -not (Test-IsDependencyFlowPr $_) -and ($p0PrNumbers -notcontains $_.number) })
     $inflightHumanPRsRaw = @($InflightPRs | Where-Object { -not (Test-IsDependencyFlowPr $_) })
 
-    # 3. Merge-up: non-P/0, non-Maestro PRs from BOTH hops of the daily-flow chain
-    #    that feeds the survey ref. The preview lane chains main → net<N>.0 →
-    #    previewN, so a stuck merge-up at EITHER hop starves the release of
-    #    upstream fixes:
-    #      - net<N>.0 → previewN  (base = survey ref)      — from target PRs
-    #      - main → net<N>.0      (base = inflight branch)  — from inflight PRs
-    #    Both are hoisted to high priority rather than the second hop being buried
-    #    as generic inflight-queue noise (the #36085 scenario). In candidate mode
-    #    the inflight set is empty, so only the single base=net<N>.0 hop is seen —
-    #    no double counting across modes.
+    # 3. Merge-up: non-P/0, non-Maestro PRs that target the branch being assessed.
+    #    Candidate mode therefore sees main → net<N>.0; an in-flight Preview N
+    #    report sees net<N>.0 → previewN. A main → net<N>.0 PR opened after
+    #    Preview N was cut belongs to Preview N+1 readiness and remains in the
+    #    separate inflight-human bucket rather than blocking Preview N.
     #    MAUI convention:
     #      - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
     #      - title like "[automated] Merge branch 'main' => 'net11.0'"
-    $allHumanPRs = @($targetHumanPRsRaw) + @($inflightHumanPRsRaw)
-    $mergeUpPRs = @($allHumanPRs | Where-Object {
+    $mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
         ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
         ($_.title -and $_.title -match '^\[automated\] Merge branch')
     })
     $mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
 
-    # 4. Generic-human (target) and inflight-human = the remainders, with merge-up
-    #    PRs removed from BOTH so a hoisted merge-up is never also listed below.
+    # 4. Generic-human (target) excludes its hoisted merge-ups. Inflight-human is
+    #    left intact because the current preview driver does not render that
+    #    next-preview scope; callers assessing Preview N+1 can use it separately.
     $targetHumanPRs   = @($targetHumanPRsRaw   | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
-    $inflightHumanPRs = @($inflightHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+    $inflightHumanPRs = @($inflightHumanPRsRaw)
 
     return [PSCustomObject]@{
         P0Prs            = $p0Prs
@@ -1619,6 +1591,49 @@ function Get-CategorizedPullRequests {
         MergeUpPRs       = $mergeUpPRs
         TargetHumanPRs   = $targetHumanPRs
         InflightHumanPRs = $inflightHumanPRs
+    }
+}
+
+function Get-PreviewReportPullRequests {
+    <#
+    .SYNOPSIS
+        Fetches and categorizes only the PRs targeting the preview scope being
+        assessed.
+    .DESCRIPTION
+        The caller has already resolved SurveyRef from Mode:
+          * candidate -> net<N>.0 (the Preview N source)
+          * in-flight -> release/...-previewN
+
+        Fetching exactly SurveyRef is the lifecycle boundary. Once Preview N is
+        cut, PRs targeting net<N>.0 belong to Preview N+1 and must not appear in
+        the Preview N report. Tests inject Fetcher to lock that behavior without
+        GitHub/network access.
+    #>
+    param(
+        [ValidateSet('candidate', 'in-flight')]
+        [string]$Mode,
+        [string]$SurveyRef,
+        [scriptblock]$Fetcher
+    )
+
+    if (-not $Fetcher) {
+        $Fetcher = {
+            param($BaseBranch)
+            Get-OpenPullRequests -BaseBranch $BaseBranch
+        }
+    }
+
+    $targetPRs = @(& $Fetcher $SurveyRef | Where-Object { $null -ne $_ })
+    $buckets = Get-CategorizedPullRequests -TargetPRs $targetPRs -InflightPRs @()
+
+    return [PSCustomObject]@{
+        Mode              = $Mode
+        SurveyRef         = $SurveyRef
+        TargetPRs         = $targetPRs
+        P0Prs             = @($buckets.P0Prs)
+        MaestroPRs        = @($buckets.MaestroPRs)
+        MergeUpPRs        = @($buckets.MergeUpPRs)
+        TargetHumanPRs    = @($buckets.TargetHumanPRs)
     }
 }
 
@@ -1636,6 +1651,36 @@ function New-Check {
         Details    = $Details
         NextAction = $NextAction
     }
+}
+
+function Get-PreviewIterationCheck {
+    <#
+    .SYNOPSIS
+        Builds the iteration check for the preview scope being assessed.
+    .DESCRIPTION
+        In candidate mode SurveyRef is net<N>.0, so this is where Preview N+1's
+        required bump is validated. In in-flight mode SurveyRef is the already-cut
+        Preview N branch, so no next-preview iteration is consulted or mentioned.
+    #>
+    param(
+        [ValidateSet('candidate', 'in-flight')]
+        [string]$Mode,
+        [string]$SurveyRef,
+        [int]$PreviewNumber,
+        [AllowNull()][AllowEmptyString()][string]$Iteration
+    )
+
+    $area = if ($Mode -eq 'candidate') { "$SurveyRef preview iteration (candidate source)" } else { "Preview iteration" }
+    if ($Iteration -eq [string]$PreviewNumber) {
+        return New-Check -Area $area -Status "READY" `
+            -Details "``$SurveyRef`` has PreReleaseVersionIteration=$Iteration." `
+            -NextAction "No version-iteration action needed."
+    }
+
+    $displayValue = if ($Iteration) { $Iteration } else { "<empty>" }
+    return New-Check -Area $area -Status "BLOCKED" `
+        -Details "``$SurveyRef`` has PreReleaseVersionIteration=$displayValue; expected $PreviewNumber." `
+        -NextAction "Bump ``$SurveyRef`` to match the preview number before cutting."
 }
 
 function Get-OverallStatus {
@@ -1916,13 +1961,8 @@ $surveyExists = if ($SurveyRef -eq $Branch) { $targetBranchExists } else { Test-
 if ($surveyExists) {
     try {
         $surveyIteration = Get-PreReleaseVersionIteration -BranchName $SurveyRef
-        $iterArea = if ($Mode -eq 'candidate') { "$SurveyRef preview iteration (candidate source)" } else { "Preview iteration" }
-        if ($surveyIteration -eq [string]$previewNumber) {
-            $checks += New-Check -Area $iterArea -Status "READY" -Details "``$SurveyRef`` has PreReleaseVersionIteration=$surveyIteration." -NextAction "No version-iteration action needed."
-        } else {
-            $displayValue = if ($surveyIteration) { $surveyIteration } else { "<empty>" }
-            $checks += New-Check -Area $iterArea -Status "BLOCKED" -Details "``$SurveyRef`` has PreReleaseVersionIteration=$displayValue; expected $previewNumber." -NextAction "Bump ``$SurveyRef`` to match the preview number before cutting."
-        }
+        $checks += Get-PreviewIterationCheck -Mode $Mode -SurveyRef $SurveyRef `
+            -PreviewNumber $previewNumber -Iteration $surveyIteration
     } catch {
         $checks += New-Check -Area "Preview iteration" -Status "UNKNOWN" -Details "Could not read version iteration from ``$SurveyRef``." -NextAction "Run locally and inspect eng/Versions.props."
     }
@@ -1986,66 +2026,28 @@ try {
         -NextAction "Check milestones manually: ``gh api repos/$Repository/milestones``."
 }
 
-# --- Inflight branch (net<major>.0) bump check ---
-# In-flight mode: surveyRef == Branch, so net<major>.0 should be on N+1 (next preview).
-# Candidate mode: surveyRef == net<major>.0 already (and we just checked it
-# declares iteration N above), so net<major>.0 IS the source for this preview
-# and the bump-to-N+1 conversation comes AFTER this preview ships.
-$inflightIteration = $null
-$inflightExists = Test-BranchExists -BranchName $mainBranch
-if ($Mode -eq 'in-flight') {
-    if ($inflightExists) {
-        try {
-            $inflightIteration = Get-PreReleaseVersionIteration -BranchName $mainBranch
-            $displayValue = if ($inflightIteration) { $inflightIteration } else { "<empty>" }
-            if ($inflightIteration -and ([int]$inflightIteration -le $previewNumber)) {
-                $checks += New-Check -Area "$mainBranch preview-next bump" -Status "BLOCKED" -Details "``$mainBranch`` PreReleaseVersionIteration is $displayValue; target preview is $previewNumber." -NextAction "Confirm ``$mainBranch`` is bumped for preview-next."
-            } else {
-                $checks += New-Check -Area "$mainBranch preview-next bump" -Status "WATCH" -Details "``$mainBranch`` PreReleaseVersionIteration is $displayValue." -NextAction "Confirm this is correct for the next preview train."
-            }
-        } catch {
-            $checks += New-Check -Area "$mainBranch preview-next bump" -Status "UNKNOWN" -Details "Could not read $mainBranch PreReleaseVersionIteration." -NextAction "Run locally and inspect eng/Versions.props on $mainBranch."
-        }
-    } else {
-        $checks += New-Check -Area "$mainBranch branch" -Status "UNKNOWN" -Details "``$mainBranch`` branch was not found." -NextAction "Confirm branch state before release."
-    }
-}
-
 # --- Open PRs ---
 # "Target PRs" = PRs against the survey ref (the branch we're actually
-# reporting readiness on; same as $Branch in in-flight mode, $mainBranch
-# in candidate mode).
-# "Inflight PRs" = PRs against net<major>.0, ONLY surfaced when
-# surveyRef != mainBranch (otherwise these are the same set).
-$targetPRs = @()
-$inflightPRs = @()
-if ($surveyExists) {
-    $targetPRs = Get-OpenPullRequests -BaseBranch $SurveyRef
+# reporting readiness on; same as $Branch in in-flight mode and $mainBranch
+# in candidate mode). Do not query a separate inflight base: once Preview N is
+# cut, work targeting net<N>.0 belongs to Preview N+1 readiness.
+$prScope = if ($surveyExists) {
+    Get-PreviewReportPullRequests -Mode $Mode -SurveyRef $SurveyRef
+} else {
+    Get-PreviewReportPullRequests -Mode $Mode -SurveyRef $SurveyRef -Fetcher { param($BaseBranch) @() }
 }
-if ($SurveyRef -ne $mainBranch -and $inflightExists) {
-    $inflightPRs = Get-OpenPullRequests -BaseBranch $mainBranch
-}
+$targetPRs = @($prScope.TargetPRs)
 $openPrMetadataUsedRest = [bool]$script:OpenPullRequestMetadataUsedRest
 $openPrMetadataRestBases = @($script:OpenPullRequestMetadataRestBases | Sort-Object)
 $openPrScanIncompleteBases = @($script:OpenPullRequestScanIncompleteBases | Sort-Object)
-$openPrMetadataScope = Get-OpenPrMetadataScope -RestBases $openPrMetadataRestBases `
-    -TargetBase $SurveyRef -InflightBase $mainBranch
-$targetOpenPrMetadataUsedRest = $openPrMetadataScope.TargetUsedRest
-$inflightOpenPrMetadataUsedRest = $openPrMetadataScope.InflightUsedRest
+$targetOpenPrMetadataUsedRest = $openPrMetadataRestBases -contains $SurveyRef
 $targetOpenPrScanIncomplete = $openPrScanIncompleteBases -contains $SurveyRef
-$inflightOpenPrScanIncomplete = $openPrScanIncompleteBases -contains $mainBranch
 
-# Categorize PRs into mutually-exclusive blocker buckets with P/0 as the highest
-# precedence (a p/0-labelled Maestro or merge-up PR escalates to the P/0 category
-# rather than being downgraded to a 📦 Maestro / merge-up row). The carve-out
-# precedence logic lives in Get-CategorizedPullRequests so the unit tests drive
-# the same code the engine runs (see Test-ReleaseReadiness.ps1 precedence block).
-$prBuckets        = Get-CategorizedPullRequests -TargetPRs $targetPRs -InflightPRs $inflightPRs
-$p0Prs            = $prBuckets.P0Prs
-$maestroPRs       = $prBuckets.MaestroPRs
-$mergeUpPRs       = $prBuckets.MergeUpPRs
-$targetHumanPRs   = $prBuckets.TargetHumanPRs
-$inflightHumanPRs = $prBuckets.InflightHumanPRs
+$p0Prs            = @($prScope.P0Prs)
+$maestroPRs       = @($prScope.MaestroPRs)
+$mergeUpPRs       = @($prScope.MergeUpPRs)
+$targetHumanPRs   = @($prScope.TargetHumanPRs)
+$inflightHumanPRs = @()
 
 if ($openPrMetadataUsedRest) {
     $restBases = ($openPrMetadataRestBases | ForEach-Object { "``$_``" }) -join ', '
@@ -2128,32 +2130,6 @@ if ($p0Prs.Count -gt 0) {
     $checks += New-Check -Area "P/0 release-branch PRs" -Status $p0EmptyStatus -Details "No open P/0-labelled PRs were found in the scanned results for ``$SurveyRef``." -NextAction $p0EmptyAction
 }
 
-# Inflight watch only matters when survey != inflight (otherwise it
-# duplicates the target check).
-if ($SurveyRef -ne $mainBranch) {
-    if ($inflightHumanPRs.Count -eq 0) {
-        $inflightEmptyStatus = if ($inflightOpenPrScanIncomplete) { 'INSUFFICIENT_DATA' } else { 'READY' }
-        $inflightEmptyAction = if ($inflightOpenPrScanIncomplete) {
-            'Inspect the full inflight PR list; the capped scan cannot prove that no non-Maestro PR exists.'
-        } else { 'Continue monitoring inflight branch health.' }
-        $checks += New-Check -Area "$mainBranch inflight branch health" -Status $inflightEmptyStatus -Details "No non-Maestro inflight PRs were found in the scanned results on ``$mainBranch``." -NextAction $inflightEmptyAction
-    } elseif (@($inflightHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
-        $inflightBlockedDetail = if ($inflightOpenPrMetadataUsedRest) {
-            "including PRs with do-not-merge labels (review/conflict metadata unavailable via REST)."
-        } else {
-            "including blocked/conflicted PRs."
-        }
-        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "WATCH" -Details "$($inflightHumanPRs.Count) non-Maestro PR(s) are open on ``$mainBranch``, $inflightBlockedDetail" -NextAction "Track as preview-next/inflight work; do not treat every inflight PR as a direct blocker for this release branch."
-    } else {
-        $inflightAction = if ($inflightOpenPrMetadataUsedRest) {
-            "Review the inflight queue for preview-next readiness and manually inspect review/conflict status because REST metadata is incomplete."
-        } else {
-            "Review inflight queue for preview-next readiness."
-        }
-        $checks += New-Check -Area "$mainBranch inflight branch health" -Status "WATCH" -Details "$($inflightHumanPRs.Count) non-Maestro PR(s) are open on ``$mainBranch``." -NextAction $inflightAction
-    }
-}
-
 # --- Release-relevant issues ---
 $priorityIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("p/0", "p/1") -Major $majorVersion -Preview $previewNumber
 $kbeIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("Known Build Error") -Major $majorVersion -Preview $previewNumber
@@ -2185,8 +2161,7 @@ if ($mergeUpPRs.Count -gt 0) {
     $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s) in the ``$mergeUpChainLabel`` daily-flow chain. See 🔴 High-priority items at top. A stuck merge-up at any hop accumulates conflicts and starves the release of upstream fixes." -NextAction "Resolve and merge each before shipping."
 } else {
     $mergeUpEmptyState = Get-MergeUpEmptyCheckState `
-        -TargetScanIncomplete $targetOpenPrScanIncomplete `
-        -InflightScanIncomplete $inflightOpenPrScanIncomplete
+        -TargetScanIncomplete $targetOpenPrScanIncomplete
     $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status $mergeUpEmptyState.Status -Details "No open merge-up PRs were found in the scanned results for the ``$mergeUpChainLabel`` daily-flow chain." -NextAction $mergeUpEmptyState.Action
 }
 
@@ -2197,16 +2172,10 @@ if ($kbeIssues.Count -gt 0) {
 }
 
 # --- ci-scan signals (auto-filed by CI Failure Scanner every 12h) ---
-# Filtered to issues whose body marker `**Branch**: <name>` matches the
-# survey ref — repo-wide scanner signals from other branches (e.g. main
-# failures when we're surveying net11.0) are excluded as not relevant.
-# Fresh issues (created in last 24h) escalate to WATCH so release captains
-# notice that the scanner just found something on this branch.
-# Branch-scoped (was: dedup-and-filter; now: one label lookup via
-# Get-CiScanLabelForBranch). For in-flight previews the parent net<N>.0
-# scanner is queried; for SR-style refs there is no scanner and we surface
-# that fact explicitly instead of a misleading "no signals". gh failures
-# escalate to WATCH so a missing query doesn't silently READY the verdict.
+# Candidate mode surveys net<N>.0 and consumes its scanner. A cut Preview N
+# branch has no dedicated scanner and deliberately does not inherit net<N>.0
+# signals, which belong to Preview N+1 after the cut. gh failures escalate to
+# WATCH so a missing candidate query does not silently READY the verdict.
 $ciScanResult = Get-CiScanIssues -Branch $SurveyRef
 $ciScanIssues = @($ciScanResult.Matched)
 $ciScanFilteredOut = $ciScanResult.FilteredOut
@@ -2330,7 +2299,7 @@ $report = [PSCustomObject]@{
     OpenPullRequestMetadataRestBases = $openPrMetadataRestBases
     OpenPullRequestScanIncompleteBases = $openPrScanIncompleteBases
     TargetOpenPullRequestScanIncomplete = $targetOpenPrScanIncomplete
-    InflightOpenPullRequestScanIncomplete = $inflightOpenPrScanIncomplete
+    InflightOpenPullRequestScanIncomplete = $false
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
@@ -2450,10 +2419,8 @@ foreach ($pr in $maestroPRs) {
 }
 foreach ($pr in $mergeUpPRs) {
     $action = Get-PRAction -PR $pr
-    # Name the specific hop from the PR's base: a survey-ref-based merge-up is the
-    # net<N>.0 → previewN hop; an inflight-based one (base = net<N>.0) is the
-    # main → net<N>.0 hop. In candidate mode the survey ref IS net<N>.0, so a
-    # base=net<N>.0 PR is the main → net<N>.0 hop (guarded by the candidate check).
+    # Name the specific hop that directly targets the release being assessed.
+    # Candidate mode sees main → net<N>.0; in-flight mode sees net<N>.0 → previewN.
     $leg = if ($Mode -ne 'candidate' -and $pr.baseRefName -eq $SurveyRef) {
         "$mainBranch → $SurveyRef"
     } elseif ($pr.baseRefName -eq $mainBranch) {
@@ -2730,10 +2697,6 @@ if ($openPrMetadataUsedRest) {
 [void]$md.AppendLine("")
 $releasePullRequestListUrl = "https://github.com/$Repository/pulls?q=$([uri]::EscapeDataString("is:open is:pr base:$SurveyRef"))"
 Add-PRTable -Builder $md -PRs $targetHumanPRs -MaxRows 15 -SortByActionability -FullListUrl $releasePullRequestListUrl
-
-[void]$md.AppendLine("## $mainBranch inflight PRs")
-[void]$md.AppendLine("")
-Add-PRTable -Builder $md -PRs $inflightHumanPRs -MaxRows 30
 
 [void]$md.AppendLine("## Priority release-blocking issues (p/0/p/1)")
 [void]$md.AppendLine("")

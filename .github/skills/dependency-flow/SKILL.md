@@ -587,5 +587,5 @@ All three anchors are byte-identical to `net11.0` HEAD → **clean cut, componen
 
 For release-readiness summaries, preserve that dependency order exactly:
 **default-channel mapping → three subscriptions → official SDK/VMR pin
-reconciliation**. Do not put next-preview branch work or generic CI triage ahead of
-these start-of-preview prerequisites.
+reconciliation**. Do not include next-preview branch work in the current preview's
+readiness report; it belongs only in the next preview's report.
