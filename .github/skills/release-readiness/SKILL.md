@@ -124,31 +124,32 @@ For **Previews**, this skill's public survey (CI health + regression classificat
    - `AVAILABLE_ENABLED` → invoke the **`dotnet-release-tracker`** skill for the blessed SDK/runtime + BAR id + stage, and present it as the authoritative official preview build. It is a **skill/plugin, not an MCP tool** — don't look for a `release-tracker` entry in the tool list and give up; run the skill (reload/restart the session if it's enabled but hasn't loaded yet). Combine it with this skill's CI/regression verdict for the full picture.
    - `AVAILABLE_NOT_ENABLED` → the caller has access but the plugin isn't enabled locally; offer the one-time user-scope opt-in, then re-run the gate.
    - `ACCESS_ON_INACTIVE_ACCOUNT` → access exists, but only under a logged-in **inactive** `gh` account (named in the gate's `inactiveAccount`); the plugin loads under the active identity, so advise `gh auth switch --user <account>` and re-run the gate — do **not** invoke the plugin or claim availability under the current identity.
-   - `NO_ACCESS` → report from public data only. For the official-build line, fall back to the **latest build on the public `.NET 11.0.1xx SDK Preview N` channel** (public BAR/Maestro) and present it **labeled** as a public-feed candidate — "source: public preview feed; may not be the final official (blessed) build; the official build is designated at release time and may differ." Don't name or hint at the private tracker tool (see dependency-flow's privacy guardrail), but do be honest that this is the public feed and not a confirmed official build.
+   - `NO_ACCESS` → report from public data only. For the official-build line, fall back to the **latest build on the public `.NET 11.0.1xx SDK Preview N` channel** (public BAR/Maestro) and present it **labeled** as a display-only public-feed candidate — "source: public preview feed; may not be the final official build." Keep VMR validation **UNKNOWN**: do not compare/update the MAUI pin or render ✅ from that candidate. Don't name or hint at the private tracker tool (see dependency-flow's privacy guardrail).
 
 The full tier table, the user-scope opt-in snippet, and the privacy guardrails live in dependency-flow's **"Preview release readiness (authoritative source + access tiers)"** section ([`../dependency-flow/SKILL.md`](../dependency-flow/SKILL.md)) — cross-reference it rather than duplicating it here.
 
 > **Blessed ≠ green.** The release tracker names the *official* build; it does **not** substitute for the ship-readiness judgment. A build can be blessed while this skill still reports open `regressed-in-*` blockers — surface both.
 
-**Don't maintain a standing "🏷️ Official (blessed) preview build" table in the tracker.** The deterministic CI body already owns the public blessed-build handling: its **"🏷️ Preview N component build — branch pins + inferred sub health"** section states the pins are explicitly *not* the blessed build, carries the drift-proof "verify locally" prompt, and infers subscription health from the public PR trail. Because the blessed build number is embargoed (withheld from the public issue), a standing public table just renders "🔒 withheld" and duplicates that callout. So a local run with tracker access should **report the blessed SDK/runtime build in its conversational answer**, and only add a line to _Release Captain Notes_ when there's a **decision or exception worth persisting** — e.g. the blessed build differs from the branch pin, a promoted build was rejected, or a subscription is confirmed broken. Don't re-create the section the CI body already renders.
+**Don't maintain a standing "🏷️ Official (blessed) preview build" table in the tracker.** The deterministic CI body already owns the public build-pin handling: its **"🏷️ Preview N component build — branch pins + update paths"** section states the pins are explicitly *not* the blessed build, carries the drift-proof "verify locally" prompt, infers Android/macOS-iOS subscription health from the public PR trail, and identifies VMR as a local official-build reconciliation path. Because the blessed build number is embargoed (withheld from the public issue), a standing public table just renders "🔒 withheld" and duplicates that callout. So a local run with tracker access should **report the blessed SDK/runtime build in its conversational answer**, and only add a line to _Release Captain Notes_ when there's a **decision or exception worth persisting** — e.g. the blessed build differs from the branch pin, a promoted build was rejected, or an Android/macOS-iOS subscription is confirmed broken. Don't re-create the section the CI body already renders.
 
 ### Preview: is the branch actually plumbed? (subscription wiring + feed drift)
 
 A preview can pass CI and even have a blessed build yet still not be *ship-wired* —
 the branch is cut but nothing flows into it, or its promoted feed lags the branch.
 The deterministic CI body already gives a **best-effort inferred** read of the
-wiring from the public PR trail — the **Flow signal** column in its
-**"🏷️ Preview N component build — branch pins + inferred sub health"** section
-(🔄 open dep-flow PR / ✅ fresh merge ≤14d / ⚠️ stale >14d / ❌ none seen). The
+Android/macOS-iOS wiring from the public PR trail — the **Update path / flow signal**
+column in its **"🏷️ Preview N component build — branch pins + update paths"** section
+(🔄 open dep-flow PR / ✅ fresh merge ≤14d / ⚠️ stale >14d / ❌ none seen). Its VMR
+row instead directs the captain to local official-build reconciliation. The
 checks below are the **authoritative** confirmation a local run adds on top of that
 inference (`darc`/BAR can see the subscription itself; CI can only see its PR
 exhaust). Run them when the inferred signal is ⚠️/❌, or to confirm a ✅ before ship.
 A complete *"is preview N ready?"* answer runs three more **public** (BAR/Maestro + git)
 checks alongside the survey and the blessed-build lookup:
 
-- **Subscriptions wired?** Confirm the `release/11.0.1xx-previewN` branch has its default-channel mapping **and** the baseline three subscriptions (android + macios + dotnet on `.NET 11.0.1xx SDK Preview N`). Branch cut + default-channel present but **zero subs** = a start-of-preview flow gap → surface as an **FYI note** (not a ship blocker), naming the missing source repos.
+- **Subscriptions wired?** Confirm the `release/11.0.1xx-previewN` branch has its default-channel mapping **and** the baseline two subscriptions (android + macios on `.NET 11.0.1xx SDK Preview N`). There is intentionally **no dotnet/VMR subscription**: reconcile that pin locally against the official SDK/runtime build because the Maestro channel can differ from the release source of truth. Branch cut + default-channel present but either subscription missing = a start-of-preview flow gap → surface as an **FYI note** (not a ship blocker), naming the missing source repos.
 - **Feed matches the branch?** Compare the latest build promoted to the `.NET 11.0.1xx SDK Preview N` channel (`maestro_latest_build`) against `origin/release/11.0.1xx-previewN` HEAD. Branch ahead of the promoted build = stale feed → flag it.
-- **Component pins coherent?** Report which `dotnet/android`, `dotnet/macios`, and `dotnet/dotnet` (VMR) builds MAUI bundles (version + SHA from `eng/Version.Details.xml`) and confirm they **match the inflight `netN.0` branch the preview was cut from**. Match = clean cut ✅; divergence or an off-band pin (macios/dotnet missing the `-net11-pN`/`preview.N` stamp) → flag. The tracker has **no** per-component build, so there is no "blessed" android/macios to look up — this is git+BAR only, and "behind the latest component build" is *expected* for a cut branch (don't flag it). Android's `-ci.main.NN` scheme is normal for net11 — validate against `netN.0`, don't alarm on the moniker.
+- **Component pins coherent?** Report which `dotnet/android`, `dotnet/macios`, and `dotnet/dotnet` (VMR) builds MAUI bundles (version + SHA from `eng/Version.Details.xml`). For Android/macOS-iOS, verify the pin belongs to the component's same-named `release/...-previewN` branch and carries the expected stage/band; the component branch being ahead of the pin is an FYI because subscriptions may advance it later. Validate the SDK/VMR pin against the **official SDK/runtime build** from the release source of truth, not `netN.0`, component branch tip, or the Maestro preview channel. Android's `-ci.main.NN` scheme is normal for net11 and is not itself an anomaly.
 
 All three checks — the exact MCP/`darc`/git commands, the interpretation tables, the
 remediation (combined-PR pattern), and live worked examples — live in dependency-flow's
@@ -169,10 +170,10 @@ as a dependency-ordered sequence. Do **not** sort unrelated `BLOCKED`/`WATCH` ro
 of these prerequisites:
 
 1. Add the Preview N default-channel mapping.
-2. Add the baseline Android, macOS/iOS, and VMR subscriptions and wait for the
+2. Add the baseline Android and macOS/iOS subscriptions and wait for the
    `maestro-configuration` PR to merge into `production`.
-3. Reconcile MAUI's SDK/VMR pin with the official Preview N build through the newly
-   active component-flow path (typically the VMR subscription/update).
+3. Reconcile MAUI's SDK/VMR pin **locally** with the official Preview N build and
+   open the resulting focused component-bump PR. Do not add a VMR subscription.
 4. Build branch HEAD and promote the resulting MAUI build to the Preview N channel.
 5. Clear current-preview CI/device/UI failures and finish release validation.
 

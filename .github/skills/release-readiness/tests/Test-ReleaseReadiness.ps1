@@ -7172,6 +7172,58 @@ $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 # only PRs targeting its release branch belong in its report. net<N>.0 is queried
 # only by the Preview N+1 candidate report.
 Write-Host "`n[Unit] Preview report mode isolation" -ForegroundColor Cyan
+$publicTrackerLeakLines = @(Get-Content -LiteralPath $prevScript | Where-Object {
+    $_ -match '\$md\.AppendLine' -and $_ -match '\.NET Release Tracker'
+})
+Assert-Eq -Label "preview public output never names the private release source" `
+    -Expected 0 -Actual $publicTrackerLeakLines.Count
+
+$safeInternalText = Get-PublicSafeInternalPipelineText -Status 'UNKNOWN'
+$safePublicBuilder = [System.Text.StringBuilder]::new()
+Add-CheckTable -Builder $safePublicBuilder -Checks @(
+    (New-Check -Area 'Internal release pipelines' -Status 'UNKNOWN' `
+        -Details $safeInternalText.Details -NextAction $safeInternalText.NextAction)
+)
+[void]$safePublicBuilder.AppendLine((Get-PublicDataBoundaryText))
+[void]$safePublicBuilder.AppendLine('Fetched PR title: update from dnceng/internal/dotnet-optimization')
+[void]$safePublicBuilder.AppendLine('Nested coordinate: dnceng/internal/_git/secret-repository')
+[void]$safePublicBuilder.AppendLine('Private URL: https://dev.azure.com/dnceng/internal/_git/example')
+[void]$safePublicBuilder.AppendLine('Internal identifier: api://example/resource')
+[void]$safePublicBuilder.AppendLine('Fetched title names .NET Release Tracker, dotnet-release-tracker, and dotnet/release')
+[void]$safePublicBuilder.AppendLine('Public feed: https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11')
+$safePublicMarkdown = ConvertTo-PublicSafeMarkdown -Text $safePublicBuilder.ToString()
+Assert-Eq -Label "preview rendered public-safe text omits internal coordinates" `
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng/internal|dev\.azure\.com/dnceng/internal|api://|secret-repository'))
+Assert-Eq -Label "preview rendered public-safe text omits private release-tool names" `
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match '\.NET Release Tracker|dotnet-release-tracker|dotnet/release'))
+Assert-Eq -Label "preview public-safe sanitizer preserves public feed URL" `
+    -Expected $true -Actual ([bool]($safePublicMarkdown -match 'dev\.azure\.com/dnceng/public'))
+Assert-Eq -Label "preview public-safe sanitizer marks removed internal source" `
+    -Expected $true -Actual ([bool]($safePublicMarkdown -match 'internal source|internal URL omitted'))
+
+$unsafeJsonReport = [PSCustomObject]@{
+    PullRequests = @(
+        [PSCustomObject]@{
+            Title = 'Update from https://dev.azure.com/dnceng/internal/_git/secret-repository "quoted suffix" using dotnet-release-tracker'
+            Url   = 'https://dev.azure.com/dnceng/internal/_git/secret-repository'
+        }
+    )
+    PublicFeed = 'https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11'
+}
+$safeReportJson = ConvertTo-PreviewReportJson -Report $unsafeJsonReport -PublicSafe $true
+$safeReportRoundTrip = $safeReportJson | ConvertFrom-Json
+Assert-Eq -Label "preview public-safe JSON remains valid after sanitization" `
+    -Expected 1 -Actual @($safeReportRoundTrip.PullRequests).Count
+Assert-Eq -Label "preview public-safe JSON preserves quoted suffix after URL sanitization" `
+    -Expected $true -Actual ([bool]($safeReportRoundTrip.PullRequests[0].Title -match '"quoted suffix"'))
+Assert-Eq -Label "preview public-safe JSON omits internal coordinates and tool names" `
+    -Expected $false -Actual ([bool]($safeReportJson -match 'dnceng/internal|secret-repository|dotnet-release-tracker'))
+Assert-Eq -Label "preview public-safe JSON preserves public feed URL" `
+    -Expected $true -Actual ([bool]($safeReportJson -match 'dev\.azure\.com/dnceng/public'))
+$rawReportJson = ConvertTo-PreviewReportJson -Report $unsafeJsonReport -PublicSafe $false
+Assert-Eq -Label "preview non-public JSON retains raw local evidence" `
+    -Expected $true -Actual ([bool]($rawReportJson -match 'secret-repository|dotnet-release-tracker'))
+
 Assert-Eq -Label "preview scanner: cut Preview 7 does not inherit net11.0 scanner" `
     -Expected $null -Actual (Get-CiScanLabelForBranch -Branch 'release/11.0.1xx-preview7')
 Assert-Eq -Label "preview scanner: Preview 8 candidate source net11.0 keeps scanner" `
@@ -7651,6 +7703,30 @@ Assert-Eq -Label "flowcell: missing (history ok) → none seen absence claim" -E
 Assert-Eq -Label "flowcell: missing + HistoryUnavailable → no false 'none seen'" -Expected $true -Actual ([bool]($cellMissHU -notmatch 'none seen'))
 Assert-Eq -Label "flowcell: missing + HistoryUnavailable → honest 'unavailable'" -Expected $true -Actual ([bool]($cellMissHU -match 'unavailable'))
 
+# Preview rendering uses subscription flow only for Android/macOS-iOS. VMR is a
+# local official-build reconciliation path because the Maestro feed can differ
+# from the release source of truth.
+$vmrUpdatePath = Format-PreviewComponentUpdatePathCell -Repo 'dotnet/dotnet' `
+    -DepFlowPRs @($fStaleVmr) -Now $flowNow -StaleDays 14 -LocalVmr
+Assert-Eq -Label "preview update path: VMR is local-only, not subscription health" `
+    -Expected $true -Actual ([bool]($vmrUpdatePath -match 'local official-build reconciliation'))
+Assert-Eq -Label "preview update path: VMR explicitly has no Maestro subscription" `
+    -Expected $true -Actual ([bool]($vmrUpdatePath -match 'no Maestro subscription by design'))
+Assert-Eq -Label "preview update path: VMR never renders stale/missing sub status" `
+    -Expected $false -Actual ([bool]($vmrUpdatePath -match 'stale|missing|none seen'))
+
+$candidateVmrPath = Format-PreviewComponentUpdatePathCell -Repo 'dotnet/dotnet' `
+    -DepFlowPRs @($fStaleVmr) -Now $flowNow -StaleDays 14
+Assert-Eq -Label "preview update path: candidate VMR retains netN.0 flow signal" `
+    -Expected $true -Actual ([bool]($candidateVmrPath -match 'stale'))
+Assert-Eq -Label "preview update path: candidate VMR does not claim no subscription" `
+    -Expected $false -Actual ([bool]($candidateVmrPath -match 'no Maestro subscription|local official-build reconciliation'))
+
+$androidUpdatePath = Format-PreviewComponentUpdatePathCell -Repo 'dotnet/android' `
+    -DepFlowPRs @($fOpenAndroid) -Now $flowNow -StaleDays 14
+Assert-Eq -Label "preview update path: Android still uses subscription flow signal" `
+    -Expected $true -Actual ([bool]($androidUpdatePath -match 'flowing'))
+
 # --- Get-UpstreamDriftSignal: has the component's same-named branch advanced past our pin? ---
 # Complementary to the Flow signal: a hard git fact (public compare API), not an inference.
 # Tested via the injectable -Fetcher seam (same idiom as Get-NightlyFeedFreshness) so no
@@ -7748,6 +7824,42 @@ $fNoCounts = New-DriftFetcher -RefName "refs/heads/$drBranch" -Compare ([pscusto
 $drNC = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $drBranch -Fetcher $fNoCounts
 Assert-Eq -Label "drift: compare missing ahead_by → unknown"     -Expected 'unknown' -Actual $drNC.Status
 Assert-Eq -Label "drift: no-counts reason"                       -Expected 'compare returned no counts' -Actual $drNC.Reason
+
+# Public VMR branch drift is inventory only. Both ahead and diverged states must
+# defer to the official build without rendering a release warning.
+$vmrCurrentCell = Format-UpstreamDriftCell -Drift $drCur -Vmr
+Assert-Eq -Label "drift cell: VMR current is informational, not validated" `
+    -Expected $true -Actual ([bool]($vmrCurrentCell -match '^ℹ️' -and $vmrCurrentCell -notmatch '✅'))
+Assert-Eq -Label "drift cell: VMR current defers to official build" `
+    -Expected $true -Actual ([bool]($vmrCurrentCell -match 'official build decides'))
+$vmrAheadCell = Format-UpstreamDriftCell -Drift $drAhead -Vmr
+Assert-Eq -Label "drift cell: VMR ahead is informational" `
+    -Expected $true -Actual ([bool]($vmrAheadCell -match '^ℹ️' -and $vmrAheadCell -match 'official build decides'))
+$vmrDivergedCell = Format-UpstreamDriftCell -Drift $drDiv -Vmr
+Assert-Eq -Label "drift cell: VMR diverged is informational, not warning" `
+    -Expected $true -Actual ([bool]($vmrDivergedCell -match '^ℹ️' -and $vmrDivergedCell -notmatch '⚠️'))
+Assert-Eq -Label "drift cell: VMR diverged defers to official build" `
+    -Expected $true -Actual ([bool]($vmrDivergedCell -match 'official build decides'))
+$componentDivergedCell = Format-UpstreamDriftCell -Drift $drDiv
+Assert-Eq -Label "drift cell: Android/macOS divergence remains warning" `
+    -Expected $true -Actual ([bool]($componentDivergedCell -match '^⚠️'))
+
+$wrongStageMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
+    -Version '26.5.11717-net11-p5' -Major 11 -Preview 6 -Drift $drAhead
+Assert-Eq -Label "component source: old macOS/iOS stage warns even when branch is ahead" `
+    -Expected $true -Actual ([bool]($wrongStageMacCell -match '^⚠️.*off-band.*-net11-p6'))
+$correctStageMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
+    -Version '26.5.11717-net11-p6' -Major 11 -Preview 6 -Drift $drAhead
+Assert-Eq -Label "component source: correct macOS/iOS stage preserves ahead FYI" `
+    -Expected $true -Actual ([bool]($correctStageMacCell -match '^⬆️' -and $correctStageMacCell -notmatch '⚠️'))
+$androidSourceCell = Format-PreviewComponentSourceCell -Repo 'dotnet/android' `
+    -Version '37.0.0-ci.main.51' -Major 11 -Preview 6 -Drift $drCur
+Assert-Eq -Label "component source: Android ci.main scheme uses branch ancestry" `
+    -Expected '✅ current' -Actual $androidSourceCell
+$vmrSourceCell = Format-PreviewComponentSourceCell -Repo 'dotnet/dotnet' `
+    -Version '11.0.100-preview.6.26325.125' -Major 11 -Preview 6 -Drift $drCur -Vmr
+Assert-Eq -Label "component source: VMR current remains informational through row formatter" `
+    -Expected $true -Actual ([bool]($vmrSourceCell -match '^ℹ️' -and $vmrSourceCell -match 'official build decides'))
 
 # --- Remove-JsoncComments (dependency-flow access gate): STRING-AWARE JSONC comment
 #     strip. Must remove real // and /* */ comments but must NOT delete a genuinely-

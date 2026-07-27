@@ -1355,6 +1355,35 @@ function Format-FlowSignalCell {
     }
 }
 
+function Format-PreviewComponentUpdatePathCell {
+    <#
+    .SYNOPSIS
+        Renders the Preview component update path without treating VMR as a
+        Maestro subscription.
+    .DESCRIPTION
+        Android and macOS/iOS use Preview-channel subscriptions, so their public
+        PR trail is a useful flow-health signal. dotnet/dotnet intentionally does
+        not: the Maestro preview feed can differ from the official SDK/runtime
+        source of truth. Its pin must be reconciled locally against the official
+        build, so the VMR row always reports that explicit local path.
+    #>
+    param(
+        [string]$Repo,
+        [array]$DepFlowPRs,
+        [DateTime]$Now,
+        [int]$StaleDays = 14,
+        [switch]$LocalVmr,
+        [switch]$HistoryUnavailable
+    )
+
+    if ($Repo -eq 'dotnet/dotnet' -and $LocalVmr) {
+        return '🛠️ local official-build reconciliation — no Maestro subscription by design'
+    }
+
+    $flow = Get-ComponentFlowSignal -Repo $Repo -DepFlowPRs $DepFlowPRs -Now $Now -StaleDays $StaleDays
+    return Format-FlowSignalCell -Flow $flow -HistoryUnavailable:$HistoryUnavailable
+}
+
 function Get-UpstreamDriftSignal {
     <#
     .SYNOPSIS
@@ -1388,8 +1417,9 @@ function Get-UpstreamDriftSignal {
     .NOTES
         Soft-fail: any lookup/parse failure returns 'unknown' with a Reason and
         never throws (must not break report generation). ~2 gh calls per component.
-        dotnet/dotnet (VMR) moves constantly and flows on manual trigger, so a large
-        ahead_by there is expected churn, rarely actionable — the caller labels it.
+        dotnet/dotnet (VMR) moves constantly, so a large ahead_by there is expected
+        churn and not a release-selection signal. The official SDK/runtime build
+        remains authoritative; the caller labels the drift as informational.
     #>
     param(
         [string]$Repo,        # e.g. 'dotnet/macios'
@@ -1476,6 +1506,81 @@ function Get-UpstreamDriftSignal {
     }
     $result.Reason = $null
     return $result
+}
+
+function Format-UpstreamDriftCell {
+    <#
+    .SYNOPSIS
+        Renders public upstream drift with VMR-specific authority semantics.
+    .DESCRIPTION
+        Android/macOS-iOS divergence can indicate a Preview-branch source mismatch and is a
+        warning. VMR branch drift is always informational: neither branch tip nor
+        the Maestro feed selects the release pin; the official SDK/runtime build
+        does.
+    #>
+    param(
+        [Parameter(Mandatory)]$Drift,
+        [switch]$Vmr
+    )
+
+    switch ($Drift.Status) {
+        'current' {
+            if ($Vmr) {
+                return 'ℹ️ branch tip matches pin — inventory only; official build decides'
+            }
+            return '✅ current'
+        }
+        'ahead' {
+            $n = $Drift.AheadBy
+            $unit = if ($n -eq 1) { 'commit' } else { 'commits' }
+            if ($Vmr) {
+                return "ℹ️ [$n $unit ahead]($($Drift.Url)) — VMR churn; official build decides"
+            }
+            return "⬆️ [$n $unit ahead]($($Drift.Url)) — FYI"
+        }
+        'diverged' {
+            if ($Vmr) {
+                return "ℹ️ [diverged]($($Drift.Url)) — VMR branch state is informational; official build decides"
+            }
+            return "⚠️ [diverged]($($Drift.Url)) — compare manually"
+        }
+        default {
+            if ($Drift.Reason) { return "— _$($Drift.Reason)_" }
+            return '—'
+        }
+    }
+}
+
+function Format-PreviewComponentSourceCell {
+    <#
+    .SYNOPSIS
+        Combines Preview stage validation with public branch-drift evidence.
+    .DESCRIPTION
+        macOS/iOS versions encode the Preview train (`-netN-pM`), so an old-stage
+        pin is a warning even when it is an ancestor of the correct component
+        branch. Android's net11 `ci.main` version scheme does not encode Preview N;
+        branch ancestry remains its source signal. VMR always delegates to the
+        official SDK/runtime source and treats public drift as informational.
+    #>
+    param(
+        [string]$Repo,
+        [AllowNull()][AllowEmptyString()][string]$Version,
+        [int]$Major,
+        [int]$Preview,
+        [Parameter(Mandatory)]$Drift,
+        [switch]$Vmr
+    )
+
+    if ($Repo -eq 'dotnet/macios') {
+        $expectedStamp = "-net$Major-p$Preview"
+        if ([string]::IsNullOrWhiteSpace($Version) -or
+            $Version -notmatch "$([regex]::Escape($expectedStamp))(?!\d)") {
+            $actual = if ([string]::IsNullOrWhiteSpace($Version)) { '<empty>' } else { $Version }
+            return "⚠️ off-band macOS/iOS pin ``$actual``; expected ``$expectedStamp``"
+        }
+    }
+
+    return Format-UpstreamDriftCell -Drift $Drift -Vmr:$Vmr
 }
 
 function Get-CategorizedPullRequests {
@@ -1651,6 +1756,96 @@ function New-Check {
         Details    = $Details
         NextAction = $NextAction
     }
+}
+
+function Get-PublicSafeInternalPipelineText {
+    param([string]$Status)
+
+    return [PSCustomObject]@{
+        Details    = "Internal release pipeline status is $Status."
+        NextAction = "Release owner should inspect the authorized internal release pipeline."
+    }
+}
+
+function Get-PublicDataBoundaryText {
+    return "This public report intentionally omits internal logs, artifacts, private URLs, raw error text, secret names, account identifiers, and detailed private failure payloads. Use the local script with appropriate access for deeper validation."
+}
+
+function ConvertTo-PublicSafeMarkdown {
+    param(
+        [AllowNull()][AllowEmptyString()][string]$Text
+    )
+
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+
+    $safe = [regex]::Replace(
+        $Text,
+        '(?i)https?://dev\.azure\.com/dnceng/internal(?:/[^\s<>"''`|)]*)?',
+        '_internal URL omitted_'
+    )
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)\b(?:dev\.azure\.com/)?dnceng/internal(?:/[A-Za-z0-9._-]+)*\b',
+        'internal source'
+    )
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)\bapi://[A-Za-z0-9._/-]+',
+        '_internal identifier omitted_'
+    )
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)(?:\.NET Release Tracker|\bdotnet-release-tracker\b|\bdotnet/release\b)',
+        'official release source'
+    )
+    return $safe
+}
+
+function ConvertTo-PreviewReportJson {
+    param(
+        [Parameter(Mandatory)]$Report,
+        [bool]$PublicSafe = $true
+    )
+
+    $serializableReport = $Report
+    if ($PublicSafe) {
+        $serializableReport = ConvertTo-PublicSafeValue -Value $Report
+    }
+    return ($serializableReport | ConvertTo-Json -Depth 20)
+}
+
+function ConvertTo-PublicSafeValue {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]$Value
+    )
+
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [string]) {
+        return ConvertTo-PublicSafeMarkdown -Text $Value
+    }
+    if ($Value -is [System.Collections.IDictionary]) {
+        $copy = [ordered]@{}
+        foreach ($key in $Value.Keys) {
+            $copy[$key] = ConvertTo-PublicSafeValue -Value $Value[$key]
+        }
+        return $copy
+    }
+    if ($Value -is [System.Collections.IEnumerable]) {
+        $items = [System.Collections.Generic.List[object]]::new()
+        foreach ($item in $Value) {
+            [void]$items.Add((ConvertTo-PublicSafeValue -Value $item))
+        }
+        return ,$items.ToArray()
+    }
+    if ($Value -is [PSCustomObject]) {
+        $copy = [ordered]@{}
+        foreach ($property in $Value.PSObject.Properties) {
+            $copy[$property.Name] = ConvertTo-PublicSafeValue -Value $property.Value
+        }
+        return [PSCustomObject]$copy
+    }
+    return $Value
 }
 
 function Get-PreviewIterationCheck {
@@ -2210,7 +2405,7 @@ $checks += New-Check -Area "Xcode / ICM" -Status "UNKNOWN" -Details "REQUIRED_XC
 
 # --- Internal release pipelines (sanitized) ---
 $internalStatus = "UNKNOWN"
-$internalDetails = "Internal dnceng pipeline details are not queried in public workflow mode."
+$internalDetails = "Internal release pipeline details are not queried in public workflow mode."
 $internalAction = "Run this script locally with internal access, then publish only sanitized status."
 
 if ($IncludeInternal) {
@@ -2262,8 +2457,9 @@ if ($IncludeInternal) {
 }
 
 if ($PublicSafe -and $internalStatus -ne "READY") {
-    $internalDetails = "Internal release pipeline status is $internalStatus."
-    $internalAction = "Release owner should inspect dnceng/internal pipeline details ASAP."
+    $publicInternalText = Get-PublicSafeInternalPipelineText -Status $internalStatus
+    $internalDetails = $publicInternalText.Details
+    $internalAction = $publicInternalText.NextAction
 }
 
 $checks += New-Check -Area "Internal release pipelines" -Status $internalStatus -Details $internalDetails -NextAction $internalAction
@@ -2477,15 +2673,16 @@ $notesBlockText = $notesSb.ToString()
 #   * the internal .NET Release Tracker (which names the authoritative "blessed"
 #     preview build), nor
 #   * Maestro/BAR or the AzDO-internal maestro-configuration repo (which hold the
-#     android/macios/dotnet preview *subscription* wiring).
+#     android/macios preview subscription wiring).
 # So the Action reports only what PUBLIC git can prove: the component builds
 # CURRENTLY BUNDLED on the branch (eng/Version.Details.xml). These are branch pins,
-# NOT a confirmed blessed build. Confirming the blessed build AND verifying the
-# preview subscriptions are both LOCAL tasks — the callout below points the captain
-# at the exact local prompt to run. Rendered OUTSIDE the human-notes markers so it
-# self-refreshes on every automated re-run.
+# NOT a confirmed blessed build. Confirming the blessed build, reconciling the VMR
+# pin locally, and verifying the two preview subscriptions are LOCAL tasks — the
+# callout below points the captain at the exact local prompt to run. Rendered OUTSIDE
+# the human-notes markers so it self-refreshes on every automated re-run.
 $componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
 if ($componentPins) {
+    $isCutPreview = $Mode -eq 'in-flight'
     # --- Inferred subscription health (public PR trail) ---
     # We can't read Maestro subscription config from CI, but a *working* sub
     # leaves a public trail of dependency-flow PRs into the branch. Gather that
@@ -2509,28 +2706,40 @@ if ($componentPins) {
     $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
     $depFlowPRs      = @($allPRsForFlow | Where-Object { Test-IsDependencyFlowPr $_ })
 
-    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + inferred sub health")
+    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + update paths")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("> [!IMPORTANT]")
-    [void]$md.AppendLine("> **Branch pins** below are the component builds **currently bundled** on ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT the confirmed official/blessed build** — that designation lives in the internal **.NET Release Tracker**, which this Action can't reach (``contents:read`` + ``GITHUB_TOKEN`` only). The **Flow signal** column *infers* each component's subscription health from the **public dependency-flow PR trail** (the Action can't read Maestro subscription config directly). It surfaces both a **never-wired** sub (❌ none seen) and a **silently stalled** one (⚠️ stale — the `"we stopped getting Maestro PRs a month ago`" decay case). The blessed build AND the authoritative subscription wiring are both confirmed **locally** — run the release-readiness skill:")
+    $vmrPolicyText = if ($isCutPreview) {
+        "VMR is intentionally different: there is **no dotnet/dotnet subscription** on a cut preview branch because the Maestro preview feed can differ from the official release source of truth; reconcile that pin locally against the official SDK/runtime build."
+    } else {
+        "Candidate mode surveys ``$SurveyRef``: its VMR flow signal describes the inflight branch subscription only and does **not** select or validate the official Preview $previewNumber SDK/runtime pin. After cut, use only Android/macOS-iOS subscriptions and reconcile VMR locally."
+    }
+    [void]$md.AppendLine("> **Branch pins** below are the component builds **currently bundled** on ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT a confirmed official build**; this public workflow cannot resolve the authoritative release designation. The **Update path / flow signal** column infers subscription health from the **public dependency-flow PR trail**. $vmrPolicyText")
     [void]$md.AppendLine(">")
     [void]$md.AppendLine("> The **Upstream** column is a hard git fact (not an inference): it compares our pinned SHA against the tip of each component's same-named branch (``$SurveyRef`` — derived, never hardcoded) via the public compare API. ⬆️ *N ahead* means the source moved past what we bundle — an FYI you *may* want to pull in, **not** a required bump (maui pins blessed builds deliberately, so those commits may be post-preview churn or not yet blessed).")
     [void]$md.AppendLine(">")
     [void]$md.AppendLine("> ``````")
-    [void]$md.AppendLine("> Run release readiness for ${Branch}: report the blessed/official preview build (SDK + runtime) from the .NET Release Tracker, and verify the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel.")
+    $localVerificationPrompt = if ($isCutPreview) {
+        "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth, reconcile the MAUI SDK/VMR pin locally to that build, and verify only the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel."
+    } else {
+        "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth. Treat ``$SurveyRef`` VMR flow as inflight evidence only; after cut, add only dotnet/android + dotnet/macios subscriptions and reconcile MAUI's SDK/VMR pin locally."
+    }
+    [void]$md.AppendLine("> $localVerificationPrompt")
     [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Flow signal (inferred sub health) | Upstream (vs our pin) |")
-    [void]$md.AppendLine("|-----------|----------------------|--------|-----------------------------------|-----------------------|")
+    [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Update path / flow signal | Upstream (vs our pin) |")
+    [void]$md.AppendLine("|-----------|----------------------|--------|---------------------------|-----------------------|")
 
     $pinRows = @(
-        @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr;     Noisy = $true  }
-        @{ Label = 'dotnet/android';            Repo = 'dotnet/android'; Pin = $componentPins.Android; Noisy = $false }
-        @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios;  Noisy = $false }
+        @{ Label = 'dotnet/dotnet (VMR / SDK)'; Repo = 'dotnet/dotnet'; Pin = $componentPins.Vmr;     Vmr = $true  }
+        @{ Label = 'dotnet/android';            Repo = 'dotnet/android'; Pin = $componentPins.Android; Vmr = $false }
+        @{ Label = 'dotnet/macios';             Repo = 'dotnet/macios';  Pin = $componentPins.Macios;  Vmr = $false }
     )
     foreach ($r in $pinRows) {
-        $flow = Get-ComponentFlowSignal -Repo $r.Repo -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays
-        $flowCell = Format-FlowSignalCell -Flow $flow -HistoryUnavailable:$mergedHistoryUnavailable
+        $flowCell = Format-PreviewComponentUpdatePathCell -Repo $r.Repo `
+            -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays `
+            -LocalVmr:($isCutPreview) `
+            -HistoryUnavailable:$mergedHistoryUnavailable
         $pin = $r.Pin
         if (-not $pin) {
             [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | _not pinned_ | — | $flowCell | — |")
@@ -2542,17 +2751,9 @@ if ($componentPins) {
         $driftCell = '—'
         if (-not [string]::IsNullOrWhiteSpace($pin.Sha)) {
             $drift = Get-UpstreamDriftSignal -Repo $r.Repo -Sha $pin.Sha -BranchName $SurveyRef
-            $driftCell = switch ($drift.Status) {
-                'current'  { '✅ current' }
-                'ahead'    {
-                    $n = $drift.AheadBy
-                    $unit = if ($n -eq 1) { 'commit' } else { 'commits' }
-                    if ($r.Noisy) { "⬆️ [$n $unit ahead]($($drift.Url)) — VMR churn (expected)" }
-                    else          { "⬆️ [$n $unit ahead]($($drift.Url)) — FYI" }
-                }
-                'diverged' { "⚠️ [diverged]($($drift.Url)) — compare manually" }
-                default    { if ($drift.Reason) { "— _$($drift.Reason)_" } else { '—' } }
-            }
+            $driftCell = Format-PreviewComponentSourceCell -Repo $r.Repo `
+                -Version $pin.Version -Major $majorVersion -Preview $previewNumber `
+                -Drift $drift -Vmr:$r.Vmr
         }
 
         $commitCell = '—'
@@ -2563,9 +2764,14 @@ if ($componentPins) {
         [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | $flowCell | $driftCell |")
     }
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_Flow-signal legend: 🔄 open dep-flow PR (flowing now) · ✅ merged ≤ $flowStaleDays d · ⚠️ newest merge > $flowStaleDays d (sub may have stalled) · ❌ no dep-flow PR into ``$SurveyRef`` seen (sub may be missing — or the branch is brand new). Inferred from the **public** PR trail; confirm authoritative wiring locally with ``darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch $SurveyRef``. dotnet/dotnet (VMR) typically flows on manual trigger, so a quiet VMR is less alarming than a quiet android/macios._")
+    $updatePathLegend = if ($isCutPreview) {
+        "_Update-path legend: Android/macOS-iOS — 🔄 open dep-flow PR · ✅ merged ≤ $flowStaleDays d · ⚠️ newest merge > $flowStaleDays d · ❌ no PR trail (subscription may be missing). Confirm those two subscriptions with ``darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch $SurveyRef``. VMR — 🛠️ no subscription by design; reconcile locally against the official SDK/runtime build._"
+    } else {
+        "_Update-path legend: candidate mode reports the existing ``$SurveyRef`` subscription PR trail. Its VMR signal is inflight evidence only, not proof of the official Preview $previewNumber SDK/runtime selection._"
+    }
+    [void]$md.AppendLine($updatePathLegend)
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_Upstream legend: ✅ current = our pin **is** the tip of the component's ``$SurveyRef`` branch · ⬆️ N ahead = that branch has N newer commit(s) than we bundle (**FYI** — may be post-preview churn or not-yet-blessed work; not necessarily a bump you need) · ⚠️ diverged = our pin isn't a clean ancestor of the branch tip (build tag / different line) — compare manually · — = couldn't determine (no same-named upstream branch, or the compare API was unavailable). Branch is **derived** from the survey ref, never hardcoded. dotnet/dotnet (VMR) advances constantly on manual trigger, so 'N ahead' there is expected churn and rarely actionable._")
+    [void]$md.AppendLine("_Upstream legend: ✅ current = our pin **is** the tip of the component's ``$SurveyRef`` branch · ⬆️ N ahead = that branch has N newer commit(s) than we bundle (**FYI** — may be post-preview churn or not-yet-blessed work; not necessarily a bump you need) · ⚠️ diverged = our pin isn't a clean ancestor of the branch tip (build tag / different line) — compare manually · — = couldn't determine (no same-named upstream branch, or the compare API was unavailable). Branch is **derived** from the survey ref, never hardcoded. dotnet/dotnet (VMR) advances constantly; its upstream drift is informational because the official SDK/runtime build, not branch tip or Maestro feed, selects the release pin._")
 
     # If a manual/darc component-bump PR is open against the branch, it names the
     # pending target BAR builds in its title — surface it so readers see the pins
@@ -2682,7 +2888,7 @@ $sdkBumpPrs = @($maestroPRs | Where-Object { Test-IsSdkBumpPr $_ })
 if ($sdkBumpPrs.Count -gt 0) {
     $sdkBumpLinks = ($sdkBumpPrs | ForEach-Object { "[#$($_.number)]($($_.url))" }) -join ', '
     [void]$md.AppendLine("> [!WARNING]")
-    [void]$md.AppendLine("> $($sdkBumpPrs.Count) open PR(s) bump the **SDK/VMR** ($sdkBumpLinks). The new SDK pin they land is only a **candidate** — the official/blessed build is designated in the internal .NET Release Tracker, which this Action can't reach. **Confirm the blessed SDK build locally** (see 🏷️ Preview $previewNumber component build above) before treating the bumped pin as final.")
+    [void]$md.AppendLine("> $($sdkBumpPrs.Count) open PR(s) bump the **SDK/VMR** ($sdkBumpLinks). The new SDK pin they land is only a **candidate**; this public workflow cannot resolve the authoritative release designation. **Confirm the official SDK/runtime build locally** (see 🏷️ Preview $previewNumber component build above) before treating the bumped pin as final.")
     [void]$md.AppendLine("")
 }
 Add-PRTable -Builder $md -PRs $maestroPRs
@@ -2708,10 +2914,16 @@ Add-IssueTable -Builder $md -Issues $kbeIssues
 
 [void]$md.AppendLine("## Public/internal data boundary")
 [void]$md.AppendLine("")
-[void]$md.AppendLine("This public report intentionally omits internal logs, artifacts, private URLs, raw error text, secret names, account identifiers, and detailed dnceng/internal failure payloads. Use the local script with appropriate internal access for deeper validation.")
+[void]$md.AppendLine((Get-PublicDataBoundaryText))
 [void]$md.AppendLine("")
 
 $markdownBody = $md.ToString()
+
+# Public-safe mode sanitizes fetched text too (for example, PR titles can contain
+# internal repository coordinates even when every generated sentence is neutral).
+if ($PublicSafe) {
+    $markdownBody = ConvertTo-PublicSafeMarkdown -Text $markdownBody
+}
 
 # ===================================================================
 # SAFETY NET: defang any remaining bare @-mentions in the final body.
@@ -2786,6 +2998,8 @@ if ($bodyBytes -gt $MaxBodyBytes) {
 # ===================================================================
 # OUTPUT
 # ===================================================================
+$reportJson = ConvertTo-PreviewReportJson -Report $report -PublicSafe:$PublicSafe
+
 if ($OutputDir) {
     if (-not (Test-Path $OutputDir)) {
         New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
@@ -2793,7 +3007,7 @@ if ($OutputDir) {
     $jsonPath = Join-Path $OutputDir "preview-readiness.json"
     $mdPath = Join-Path $OutputDir "preview-readiness.md"
 
-    $report | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonPath -Encoding utf8
+    $reportJson | Out-File -FilePath $jsonPath -Encoding utf8
     $markdownBody | Out-File -FilePath $mdPath -Encoding utf8
 
     Write-Host "Wrote $jsonPath"
@@ -2802,11 +3016,11 @@ if ($OutputDir) {
 
 switch ($OutputFormat) {
     "json" {
-        $report | ConvertTo-Json -Depth 20
+        $reportJson
     }
     "both" {
         if (-not $OutputDir) {
-            $report | ConvertTo-Json -Depth 20
+            $reportJson
         }
         $markdownBody
     }

@@ -207,10 +207,15 @@ missing or incomplete flow plumbing, the prioritized action list MUST start with
 dependency order, even when other report rows are marked `BLOCKED`:
 
 1. Add the Preview N default-channel mapping.
-2. Add the Android, macOS/iOS, and VMR subscriptions; note that they are inert until
+2. Add the Android and macOS/iOS subscriptions; note that they are inert until
    the `maestro-configuration` PR merges into `production`.
-3. Reconcile MAUI's SDK/VMR pin with the official Preview N build through the newly
-   active component-flow path (normally the VMR subscription/update).
+3. Reconcile MAUI's SDK/VMR pin locally with the official Preview N build and
+   recommend a focused component-bump PR. Never request a dotnet/VMR subscription:
+   the Maestro preview feed can differ from the release source of truth.
+
+If the official SDK/runtime build is unavailable under the access-tier workflow,
+report the public-feed build as display-only and leave VMR validation `UNKNOWN`.
+Never recommend a pin update or render VMR as matched from that fallback.
 
 Then list the current-preview build/promotion and CI validation work. Keep the report
 strictly scoped to Preview N: do **not** mention the `netN.0` Preview N+1 bump,
