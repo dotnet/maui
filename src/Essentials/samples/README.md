@@ -39,6 +39,10 @@ On every platform the in-app steps are the same: open the **Passkeys** page, set
 your `https://<tunnel-host>`, sign up (or sign in) with a username + password, tap **Create a passkey**
 (approve the device prompt), then **Sign in with a passkey**.
 
+> **Testing the web UI in a browser?** Load it via the **tunnel URL** (`https://<tunnel-host>`, clicking
+> through the dev-tunnel warning), not `http://localhost:5177`. Passkeys are bound to the RP ID domain,
+> so a `localhost` origin fails with *"relying party ID is not a registrable domain suffix…"*.
+
 ## 1. Server (shared by all platforms)
 
 From `src/Essentials/samples`, provision the tunnel and write the server config into user-secrets:
@@ -92,18 +96,19 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
    `-AppleBundleId com.yourname.mauiessentials` and set the same value in `<ApplicationId>`.
 2. On developer.apple.com → **Identifiers**, select your bundle id and enable the **Associated
    Domains** capability. (IDE automatic signing can do this for you.)
-3. Sign locally (don't commit): set the project's **Team** + automatic provisioning and **Custom
-   Entitlements** → `Platforms/iOS/Entitlements.plist`, via the IDE's iOS *Bundle Signing* settings, or
-   a local csproj `<PropertyGroup>`:
-   ```xml
-   <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-     <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
-     <CodesignProvision>Automatic</CodesignProvision>
-     <CodesignKey>Apple Development</CodesignKey>
-   </PropertyGroup>
-   ```
-   The Simulator applies the entitlement without enforcing a profile; a **real device** needs the
-   profile with the Associated Domains capability.
+3. **Signing.** The .NET iOS SDK applies `Platforms/iOS/Entitlements.plist` automatically (it's the
+   convention-based default — no csproj change needed). So:
+   - **iOS Simulator / Mac Catalyst** — nothing extra; the entitlement is applied and no provisioning
+     profile is enforced. Just build and run.
+   - **Real iOS device** — set the project's **Team** + automatic provisioning (via the IDE's iOS
+     *Bundle Signing* settings, or locally in the csproj — don't commit) so the profile includes the
+     Associated Domains capability:
+     ```xml
+     <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+       <CodesignProvision>Automatic</CodesignProvision>
+       <CodesignKey>Apple Development</CodesignKey>
+     </PropertyGroup>
+     ```
 4. With the server running (section 1), verify the AASA is reachable **from the public internet** and
    is JSON (not an HTML page):
    ```bash
@@ -124,6 +129,7 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 | AASA `curl` returns HTML | The dev tunnel's anti-phishing interstitial is answering; create a tunnel access token / disable anti-phishing for the port so raw JSON is served. |
 | `Could not resolve host …devtunnels.ms` on the device | Local-network DNS won't resolve `*.devtunnels.ms`. Point the device at a public resolver (iOS Wi-Fi → Configure DNS → Manual → `8.8.8.8`) or restart the router. Apple's CDN resolves it fine over the public internet. |
 | `no profiles for '<bundle id>' were found` | The App ID belongs to another team — use `-AppleBundleId` + a matching `<ApplicationId>`. |
+| Browser: *"relying party ID is not a registrable domain suffix of … the current domain"* | You opened the web UI on `localhost` (e.g. `http://localhost:5177`). Passkeys are domain-bound — browse to the **tunnel URL** `https://<your-domain>` instead (click through the dev-tunnel warning), so the page origin matches the RP ID. |
 
 ## 3. Android (emulator)
 
