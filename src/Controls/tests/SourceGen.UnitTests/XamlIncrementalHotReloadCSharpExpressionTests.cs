@@ -406,7 +406,8 @@ public partial class TestPage : ContentPage
 		// if UC is null, the fallback full-reload path handles it
 		if (ucSource is not null)
 		{
-			Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
+			// New design: UpdateComponent() is emitted (present) but carries no version-chain guard.
+			Assert.DoesNotContain("if (__version ==", ucSource, StringComparison.Ordinal);
 		}
 	}
 
@@ -452,7 +453,7 @@ public partial class TestPage : ContentPage
 
 		var ucSource = GetUCSource(result);
 		Assert.NotNull(ucSource);
-		Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("if (__version ==", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]

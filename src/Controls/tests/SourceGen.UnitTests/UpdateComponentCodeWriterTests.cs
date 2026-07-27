@@ -112,7 +112,8 @@ $"""
 		// Child add → UC generated with child list change handling
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		Assert.Contains("__version == 1", result!, StringComparison.Ordinal);
+		// New design: a single unconditional patch — no `if (__version == N)` version-chain guard.
+		Assert.DoesNotContain("if (__version ==", result!, StringComparison.Ordinal);
 		// No goto fallback label or fallback block
 		Assert.DoesNotContain("goto fallback", result!, StringComparison.Ordinal);
 		Assert.DoesNotContain("fallback:", result!, StringComparison.Ordinal);
@@ -132,15 +133,17 @@ $"""
 	}
 
 	[Fact]
-	public void SinglePropertyChange_ContainsVersionGuard()
+	public void SinglePropertyChange_AppliesPatchUnconditionally()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
 		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
 
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		// Per spec: if (__version == fromVersion) { ... } — uses == not !=
-		Assert.Contains("if (__version == 1)", result, System.StringComparison.Ordinal);
+		// New design: the single baseline->current patch is applied unconditionally (patch property-sets
+		// are absolute), with no accumulated `if (__version == N)` version-chain guard.
+		Assert.DoesNotContain("if (__version ==", result!, System.StringComparison.Ordinal);
+		Assert.Contains("World", result!, System.StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -192,17 +195,18 @@ $"""
 	}
 
 	[Fact]
-	public void CustomVersions_MethodNameIncludesVersions()
+	public void SingleUpdateComponent_NoVersionedMethodName()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"A\" /></ContentPage>";
 		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"B\" /></ContentPage>";
 
 		var result = Generate(v1, v2, fromVersion: 5, toVersion: 6);
 		Assert.NotNull(result);
-		// Single UpdateComponent() method with if (__version == 5) guard
+		// New design: a single unconditional UpdateComponent() with no `if (__version == N)` guard and
+		// no version-suffixed method name.
 		Assert.Contains("void UpdateComponent()", result, System.StringComparison.Ordinal);
-		Assert.Contains("if (__version == 5)", result, System.StringComparison.Ordinal);
-		Assert.Contains("__version = 6;", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("if (__version ==", result, System.StringComparison.Ordinal);
+		Assert.DoesNotContain("UpdateComponent_v", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]

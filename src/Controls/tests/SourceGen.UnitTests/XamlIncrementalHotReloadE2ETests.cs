@@ -379,17 +379,107 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 			</ContentPage>
 			""";
 
-		// Run source gen: V1 seeds, V2 produces UC with patch v0→v1
+		// Run source gen: V1 seeds, V2 produces UC with the single V1->V2 patch (no version chain)
 		var (icV1, icV2, ucV2) = RunSourceGenTwoPhase(xamlV1, xamlV2);
 		Assert.NotNull(ucV2);
 
-		// Verify UC contains the expected version guard
-		Assert.Contains("__version == 0", ucV2!, StringComparison.Ordinal);
-		Assert.Contains("__version = 1", ucV2!, StringComparison.Ordinal);
+		// New design: a single unconditional patch — no accumulated `if (__version == N)` version guard.
+		Assert.DoesNotContain("if (__version ==", ucV2!, StringComparison.Ordinal);
 
-		// Verify UC contains the new property value
+		// Verify UC contains the new property values
 		Assert.Contains("\"World\"", ucV2!, StringComparison.Ordinal);
 		Assert.Contains("\"V2\"", ucV2!, StringComparison.Ordinal);
+	}
+
+	/// <summary>
+	/// Runs the generator over three successive XAML versions against the same compilation, so
+	/// <see cref="XamlHotReloadState"/> accumulates exactly as it would across live edits, and
+	/// returns the final (V3) IC + UC sources.
+	/// </summary>
+	(string icV3, string? ucV3) RunSourceGenThreePhase(string xamlV1, string xamlV2, string xamlV3)
+	{
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation(AssemblyName);
+		var fileV1 = MakeFile(xamlV1);
+		var fileV2 = MakeFile(xamlV2);
+		var fileV3 = MakeFile(xamlV3);
+
+		Microsoft.CodeAnalysis.ISourceGenerator generator = new XamlGenerator().AsSourceGenerator();
+		var options = new Microsoft.CodeAnalysis.GeneratorDriverOptions(
+			disabledOutputs: Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		Microsoft.CodeAnalysis.GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
+			.AddAdditionalTexts(System.Collections.Immutable.ImmutableArray.Create<Microsoft.CodeAnalysis.AdditionalText>(fileV1.Text))
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV1]));
+
+		driver = driver.RunGenerators(compilation);
+		driver = driver
+			.ReplaceAdditionalText(fileV1.Text, fileV2.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV2]))
+			.RunGenerators(compilation);
+		driver = driver
+			.ReplaceAdditionalText(fileV2.Text, fileV3.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV3]))
+			.RunGenerators(compilation);
+
+		var run3 = driver.GetRunResult();
+		string? icV3 = null, ucV3 = null;
+		foreach (var gen in run3.Results)
+		{
+			foreach (var src in gen.GeneratedSources)
+			{
+				if (src.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase)
+					&& !src.HintName.Contains("uc.xsg", StringComparison.OrdinalIgnoreCase))
+					icV3 = src.SourceText.ToString();
+				if (src.HintName.Contains("uc.xsg", StringComparison.OrdinalIgnoreCase))
+					ucV3 = src.SourceText.ToString();
+			}
+		}
+
+		Assert.NotNull(icV3);
+		return (icV3!, ucV3);
+	}
+
+	/// <summary>
+	/// Regression for the XIHR versioning determinism bug (Tomas Matousek). Editing a property to an
+	/// INVALID value and then reverting it must leave the generator in a state where the generated
+	/// output for the (now identical to baseline) XAML compiles cleanly and does not retain the
+	/// invalid intermediate value. Today's monotonic __version chain accumulates every patch, so the
+	/// invalid "Level22" block lingers in UpdateComponent() and the output fails to compile.
+	/// </summary>
+	[Fact]
+	public void RevertToOriginal_ProducesCompilableOutput_WithoutStalePatch()
+	{
+		XamlHotReloadState.Reset();
+
+		string Page(string headingLevel) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label Text="Hi" SemanticProperties.HeadingLevel="{{headingLevel}}" />
+			</ContentPage>
+			""";
+
+		// V1 (valid) -> V2 (invalid enum member 'Level22') -> V3 (revert, identical to V1).
+		var (icV3, ucV3) = RunSourceGenThreePhase(Page("Level2"), Page("Level22"), Page("Level2"));
+
+		// The invalid intermediate value must NOT survive into the reverted generation.
+		if (ucV3 is not null)
+			Assert.DoesNotContain("Level22", ucV3, StringComparison.Ordinal);
+		Assert.DoesNotContain("Level22", icV3, StringComparison.Ordinal);
+
+		// And the final generated code (IC + UC) must compile — the whole point of reverting.
+		var sources = new List<string> { PageStub, icV3 };
+		if (ucV3 is not null)
+			sources.Add(StripGeneratedCodeAttribute(ucV3));
+
+		var trees = sources.Select((s, i) =>
+			CSharpSyntaxTree.ParseText(s, path: $"Source{i}.cs", encoding: System.Text.Encoding.UTF8)).ToArray();
+		var comp = CreateMauiCompilation(trees);
+		var errors = comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
+		Assert.True(errors.Length == 0,
+			$"Reverted generation should compile, but got:\n{string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"))}");
 	}
 
 	[Fact]
