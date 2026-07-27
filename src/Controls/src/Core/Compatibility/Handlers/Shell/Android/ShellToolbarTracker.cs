@@ -433,7 +433,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				await UpdateDrawerArrowFromFlyoutIcon(context, _drawerToggle);
 
 				// Fragment might have been disposed while we were awaiting
-				if (_disposed)
+				if (_disposed ||
+					registrationGeneration != _navigationRegistrationGeneration ||
+					!ReferenceEquals(Page, page))
 				{
 					return;
 				}
@@ -471,7 +473,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
 
 					// Fragment might have been disposed while we were waiting for the image drawable
-					if (_disposed)
+					if (_disposed ||
+						registrationGeneration != _navigationRegistrationGeneration ||
+						!ReferenceEquals(Page, page))
 					{
 						return;
 					}
@@ -884,7 +888,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_disposed)
 				return;
 
-			UpdateLeftBarButtonItem();
+			var page = Page;
+			if (page is null)
+			{
+				_navigationRegistrationGeneration++;
+				_nativeNavigationRegistrations.Clear();
+			}
+			else
+			{
+				var behavior = Shell.GetEffectiveBackButtonBehavior(page);
+				var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
+				var registrationGeneration = ++_navigationRegistrationGeneration;
+				_nativeNavigationRegistrations.AdvanceLifecycle();
+				RegisterNavigationButton(
+					_platformToolbar,
+					page,
+					command is not null || CanNavigateBack,
+					registrationGeneration);
+			}
+
 			_toolbar?.Handler?.UpdateValue(nameof(Toolbar.Title));
 		}
 
