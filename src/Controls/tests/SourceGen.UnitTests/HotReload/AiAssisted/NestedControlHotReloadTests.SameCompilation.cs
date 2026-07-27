@@ -17,7 +17,6 @@ public partial class NestedControlHotReloadTests
 	//   x:Name, nested <ProbeCard.Resources> keyed converter, and an x:Reference-bound Label. No writer
 	//   mutation/skip path is involved; this is the supported-construction GREEN anchor that NC-02/NC-03
 	//   (below) diff against.
-	// Expected: GREEN
 	// Issue: https://github.com/dotnet/maui/issues/36732   (writer-roadmap tracking; NC-01 is the green anchor, not a probe)
 	[MetadataUpdateFact]
 	public void NestedCustomControls_Construct_HaveIndependentIdentityAndNamescope()
@@ -112,7 +111,6 @@ public partial class NestedControlHotReloadTests
 	//   multiplication and no cross-card bleed; and each card's local converter/Resources dictionary
 	//   object is untouched (same reference) throughout, proving left/right independence never
 	//   degrades. No incorrect/multiplied/cross-bled behavior was found — classified GREEN.
-	// Expected: GREEN
 	[MetadataUpdateFact]
 	public void NestedControls_LocalResources_XReference_RebindIndependently()
 	{

@@ -10,32 +10,19 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 
-// Wave-2 · Templates & Selectors · TS-01..TS-06 (PR #36730)
+// Wave-2 · Templates & Selectors · TS-01..TS-05 (PR #36730)
 //
-// Mechanism — established EMPIRICALLY against this harness (by dumping the generated sources), not assumed:
-//   * A keyed DataTemplate/ControlTemplate/DataTemplateSelector is emitted as a lazy resource factory:
-//         __root.Resources.AddFactory("<Key>", () => { var t = new DataTemplate(); ...
-//                                                      t.LoadTemplate = LoadTemplate_{line}_{pos}; return t; }, shared: true)
-//     The stably-named local function LoadTemplate_{line}_{pos} lives lexically INSIDE that anonymous
-//     AddFactory lambda (SetPropertiesVisitor.cs L245-296, #36482).
-//   * The IHR apply path runs UpdateComponent (it does NOT re-run InitializeComponent). For a keyed template
-//     resource, the dumped V2 UpdateComponent REPLACES the entry with a bare, factory-less template:
-//         this.Resources["<Key>"] = new global::Microsoft.Maui.Controls.DataTemplate();   // LoadTemplate == null
-//     The original template object that callers already hold keeps its construction-time (V1) factory
-//     delegate, and that delegate is NOT refreshed by the InitializeComponent EnC edit.
-//   * NET RESULT (empirically confirmed — a held template's CreateContent() returned "V1" after the edit):
-//     after an update an ALREADY-REALIZED subtree is unchanged AND a FUTURE CreateContent()/SelectTemplate()
-//     still serves the construction-time version; it does NOT reflect the edit. The plan's
-//     "future realization uses the new factory" claim therefore does NOT hold on this harness. Per the
-//     robustness rule it is RECLASSIFIED (not weakened) into skip-gated RED-PROBEs paired with each family's
-//     GREEN anchor, referencing #36482 (DataTemplate edits under IHR) / #36732 (complex/attached reconcile).
+// Mechanism — established empirically against this harness by inspecting the generated sources:
+//   * keyed DataTemplate/ControlTemplate/DataTemplateSelector resources are emitted as lazy factories whose
+//     LoadTemplate delegates live inside the generated AddFactory lambda (SetPropertiesVisitor.cs L245-296,
+//     #36482).
+//   * the IHR apply path runs UpdateComponent (it does not re-run InitializeComponent). For keyed template
+//     resources, the current writer replaces the keyed entry with a bare template in UpdateComponent.
 //
-// GREEN anchors assert only what is empirically true and faithful: (a) construction-time realization is
-// correct (per-realization namescope isolation, selector branch selection, compiled binding, x:Reference,
-// VSM TargetName isolation); (b) an already-realized subtree is stable across an update; (c) the generated
-// source reflects the edit (the new factory in InitializeComponent, and the exact resource-replacement /
-// skip markers in UpdateComponent). RED-PROBEs pin the future-realization gap and are skip-gated on the
-// tracking issues.
+// Net result: this PR keeps only the construction/source guards that are faithful on the current harness.
+// They prove construction-time realization, already-realized stability, and generated-source shape.
+// Future-realization follow-ups remain tracked under #36482, while complex/attached-property reconciliation
+// scenarios remain tracked under #36732 and are intentionally left out of this PR.
 //
 // Item/selector types (TS-02/TS-03) compile into the collectible test ALC as additional sources, so host
 // code reaches them through base types (DataTemplateSelector) + reflection (Assembly.GetType + Activator).

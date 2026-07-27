@@ -188,7 +188,6 @@ public class CrossAssemblyHotReloadTests
 	// Wave2 · CrossAssembly · cap-cross-asm-MC · XA-01
 	// Provenance: wave2-final-test-plan §3.6/§4/§6/§10 | wave2-cross-assembly-patterns #30
 	// Faithfulness: reaches CompilationSignaturesComparer external-reference identity invalidation and XamlSourceProviderForIC; fails-for-bug: swapped referenced PE is treated as unchanged so Lib-backed XAML state stays cached.
-	// Expected: GREEN
 	// Issue: https://github.com/dotnet/maui/pull/36730
 	[Fact]
 	public void ReferencedAssemblySwap_InvalidatesXamlPipeline()
@@ -235,7 +234,6 @@ public class CrossAssemblyHotReloadTests
 	// Wave2 · CrossAssembly · cap-cross-asm-MC · XA-02
 	// Provenance: wave2-final-test-plan §3.6/§4/§6/§10 | wave2-cross-assembly-patterns §0 inventory
 	// Faithfulness: reaches the no-op branch of CompilationSignaturesComparer and keeps the same MetadataReference instance; fails-for-bug: unchanged references still fan out through the IC pipeline.
-	// Expected: GREEN
 	// Issue: https://github.com/dotnet/maui/pull/36730
 	[Fact]
 	public void UnchangedReferences_XamlPipelineCached()

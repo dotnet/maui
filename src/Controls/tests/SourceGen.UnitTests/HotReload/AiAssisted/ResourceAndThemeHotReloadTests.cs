@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload.AiAssisted;
 // RT-08..RT-11 (Phase-2) cover AppThemeBinding branch edits, application-scope DynamicResource
 // fanout, and multi-document (Source= merged dictionary / malformed->repair) scenarios; they rely
 // on the Phase-0/1 harness capabilities cap-app-host, cap-theme-flip, cap-multi-instance and
-// cap-multi-doc. Where the harness cannot faithfully reach a live invariant (Source= dictionaries
-// have no compiled resource payload in this in-memory generator/ALC harness), coverage is provided
-// at the strongest faithful level (generator/compile-atomic) with a paired live RED-PROBE that
-// documents the precise boundary — never an always-skipped empty body.
+// cap-multi-doc. Where the harness cannot faithfully reach a live invariant (for example Source=
+// dictionaries in this in-memory generator/ALC harness), this PR stops at the strongest faithful
+// passing level and records the deferred follow-up in the README/issue ledger instead of checking in
+// skip-gated probes.
 [Collection("XamlHotReloadTests")]
 public partial class ResourceAndThemeHotReloadTests
 {

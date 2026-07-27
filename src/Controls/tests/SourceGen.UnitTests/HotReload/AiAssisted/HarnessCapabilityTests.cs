@@ -133,49 +133,6 @@ public class HarnessCapabilityTests
 		Assert.Equal(PageClass, generation[1].GeneratedRoots[0].TypeName);
 		Assert.True(harness.Compile(generation[1]).PeImage.Length > 0);
 	}
-
-	[MetadataUpdateFact(Skip = "A ResourceDictionary loaded through Source= has no compiled resource payload in this in-memory generator/ALC harness, so the current runtime cannot reload the dictionary into an existing page without faking ResourceLoader behavior.")]
-	public void MultiDocument_DictionaryOnlyEdit_RetainsPageAndLabelIdentity()
-	{
-		const string page = """
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="HarnessCapabilityApp.MainPage">
-			  <ContentPage.Resources>
-			    <ResourceDictionary Source="Theme.xaml" />
-			  </ContentPage.Resources>
-			  <Label Text="{StaticResource ThemeText}" />
-			</ContentPage>
-			""";
-		const string themeV1 = """
-			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-			  <x:String x:Key="ThemeText">Before</x:String>
-			</ResourceDictionary>
-			""";
-		const string themeV2 = """
-			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-			  <x:String x:Key="ThemeText">After</x:String>
-			</ResourceDictionary>
-			""";
-
-		using var harness = CreateHarness();
-		var generation = harness.GenerateDocuments(
-			CreateDocumentSnapshot(page, themeV1),
-			CreateDocumentSnapshot(page, themeV2));
-
-		harness.RunLive(generation, live =>
-		{
-			var pageInstance = live.GetInstance<ContentPage>();
-			var label = Assert.IsType<Label>(pageInstance.Content);
-
-			Assert.Same(pageInstance, live.ApplyUpdate<ContentPage>(1));
-			Assert.Same(label, pageInstance.Content);
-			Assert.Equal("After", label.Text);
-		});
-	}
-
 	[MetadataUpdateFact]
 	public void MultipleInstances_RetainedRootsUpdateAndFreshRootStartsLatest()
 	{

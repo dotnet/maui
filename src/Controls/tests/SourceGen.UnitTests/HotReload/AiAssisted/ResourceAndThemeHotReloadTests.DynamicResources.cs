@@ -19,7 +19,6 @@ public partial class ResourceAndThemeHotReloadTests
 	// Faithfulness: reaches DynamicResource markup path (UpdateComponentCodeWriter ~L1548,
 	// TryEmitExpandedMarkupExtension) + keyed-scalar resource patch; fails if the value is not
 	// re-resolved against the renamed key on live update.
-	// Expected: GREEN
 	[MetadataUpdateTheory]
 	[InlineData("TextColor", "Color", "Color", "Red", "Blue")]
 	[InlineData("FontSize", "x:Double", "Double", "20", "30")]
@@ -91,7 +90,6 @@ public partial class ResourceAndThemeHotReloadTests
 	// fanout to every retained root, and fresh-root-starts-latest without replay. The application
 	// ResourceDictionary object identity is asserted stable across the page updates. Fails if a
 	// retained root is not re-resolved, a fresh root replays history, or the app dictionary is swapped.
-	// Expected: GREEN
 	[MetadataUpdateFact]
 	public void ApplicationDynamicResource_FansOutAndFreshRootsStartLatest()
 	{

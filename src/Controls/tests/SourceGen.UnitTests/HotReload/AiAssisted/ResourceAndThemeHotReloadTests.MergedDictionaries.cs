@@ -78,114 +78,13 @@ public partial class ResourceAndThemeHotReloadTests
 		Assert.Contains("// Complex property 'Resources' (ElementNode) \u2014 skipped (not yet supported)", updateComponentSource!, StringComparison.Ordinal);
 	}
 
-	// Wave2 · Resources · P0-09 · RT-03
-	// Provenance: MAUI §1.1; public-app T1/T3
-	// Faithfulness: reaches the same non-root merged-dictionary complex-property path as RT-02;
-	// fails-for-bug: merged-dictionary "last wins" recomputation across reorder/removal is not
-	// re-evaluated live because the property update is skipped entirely (paired guard: RT-02).
-	// Expected: RED-PROBE(#36732)
-	// Issue: https://github.com/dotnet/maui/issues/36732
-	[MetadataUpdateFact(Skip = "Blocked by complex property/collection reconciliation; tracked by #36732")]
-	public void InlineMergedDictionaries_ReorderThenRemove_RecomputesWinner()
-	{
-		const string xamlV1 = """
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestAiAssisted.MainPage">
-			  <VerticalStackLayout>
-			    <VerticalStackLayout.Resources>
-			      <ResourceDictionary>
-			        <ResourceDictionary.MergedDictionaries>
-			          <ResourceDictionary>
-			            <Color x:Key="Accent">Red</Color>
-			          </ResourceDictionary>
-			          <ResourceDictionary>
-			            <Color x:Key="Accent">Blue</Color>
-			          </ResourceDictionary>
-			        </ResourceDictionary.MergedDictionaries>
-			      </ResourceDictionary>
-			    </VerticalStackLayout.Resources>
-			    <Label TextColor="{DynamicResource Accent}" />
-			  </VerticalStackLayout>
-			</ContentPage>
-			""";
-		// V2: same two dictionaries, order reversed — "last wins" should flip to Red.
-		const string xamlV2 = """
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestAiAssisted.MainPage">
-			  <VerticalStackLayout>
-			    <VerticalStackLayout.Resources>
-			      <ResourceDictionary>
-			        <ResourceDictionary.MergedDictionaries>
-			          <ResourceDictionary>
-			            <Color x:Key="Accent">Blue</Color>
-			          </ResourceDictionary>
-			          <ResourceDictionary>
-			            <Color x:Key="Accent">Red</Color>
-			          </ResourceDictionary>
-			        </ResourceDictionary.MergedDictionaries>
-			      </ResourceDictionary>
-			    </VerticalStackLayout.Resources>
-			    <Label TextColor="{DynamicResource Accent}" />
-			  </VerticalStackLayout>
-			</ContentPage>
-			""";
-		// V3: the Red dictionary is removed entirely, leaving only Blue.
-		const string xamlV3 = """
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestAiAssisted.MainPage">
-			  <VerticalStackLayout>
-			    <VerticalStackLayout.Resources>
-			      <ResourceDictionary>
-			        <ResourceDictionary.MergedDictionaries>
-			          <ResourceDictionary>
-			            <Color x:Key="Accent">Blue</Color>
-			          </ResourceDictionary>
-			        </ResourceDictionary.MergedDictionaries>
-			      </ResourceDictionary>
-			    </VerticalStackLayout.Resources>
-			    <Label TextColor="{DynamicResource Accent}" />
-			  </VerticalStackLayout>
-			</ContentPage>
-			""";
-
-		using var harness = CreateHarness(nameof(InlineMergedDictionaries_ReorderThenRemove_RecomputesWinner));
-		var generation = harness.Generate(xamlV1, xamlV2, xamlV3);
-
-		harness.RunLive(generation, live =>
-		{
-			var page = live.GetInstance<ContentPage>();
-			var stack = Assert.IsType<VerticalStackLayout>(page.Content);
-			var label = Assert.IsType<Label>(stack.Children[0]);
-
-			Assert.Equal(Colors.Blue, label.TextColor);
-			Assert.Equal(Colors.Blue, stack.Resources["Accent"]);
-
-			live.ApplyUpdate<ContentPage>(1);
-			Assert.Equal(Colors.Red, label.TextColor);
-			Assert.Equal(Colors.Red, stack.Resources["Accent"]);
-
-			live.ApplyUpdate<ContentPage>(2);
-			Assert.Equal(Colors.Blue, label.TextColor);
-			Assert.Equal(Colors.Blue, stack.Resources["Accent"]);
-
-			// The removed Red dictionary must no longer influence the live winner after V3.
-			stack.Resources["Accent"] = Colors.Red;
-			Assert.Equal(Colors.Blue, label.TextColor);
-		});
-	}
-
 	// Wave2 · Resources · P1-01 · RT-10 (generator/compile-atomic anchor)
 	// Provenance: MAUI §3.1 (Source= merged dictionaries); public-app T13
 	// Faithfulness: strongest faithful level the harness supports for Source= merged dictionaries.
-	// It TRACKS the reorder then removal of the Source= sibling documents and RECOMPILES the page in
+	// It tracks the reorder then removal of the Source= sibling documents and recompiles the page in
 	// every version (mirrors HarnessCapabilityTests.MultiDocument_DictionaryOnlyEdit_TracksAllDocuments
-	// AndCompilesPage). The live runtime cannot reload a Source= dictionary into a retained page (no
-	// compiled resource payload in this in-memory generator/ALC harness); that live invariant is the
-	// paired RED-PROBE below (SourceMergedDictionaries_ReorderThenRemove_UsesRuntimeFallback).
-	// Expected: GREEN
+	// AndCompilesPage). The live runtime cannot reload a Source= dictionary into a retained page in this
+	// in-memory generator/ALC harness, so this PR intentionally stops at document-tracking/compile coverage.
 	[Fact]
 	public void SourceMergedDictionaries_ReorderThenRemove_TracksDocumentsAndCompiles()
 	{
@@ -251,91 +150,6 @@ public partial class ResourceAndThemeHotReloadTests
 		}
 	}
 
-	// Wave2 · Resources · P1-01 · RT-10 (live probe)
-	// Provenance: MAUI §3.1 (Source= merged dictionaries); public-app T13
-	// Faithfulness: the intended LIVE invariant — reordering then removing Source= merged dictionaries
-	// must recompute the winning {DynamicResource Accent} on the retained page (Blue→Red→Blue), and a
-	// removed dictionary must stop contributing. This cannot run in the current harness: a
-	// ResourceDictionary loaded through Source= has no compiled resource payload in the in-memory
-	// generator/ALC harness, so the runtime cannot reload it into a retained page without faking
-	// ResourceLoader behavior (see HarnessCapabilityTests.MultiDocument_DictionaryOnlyEdit_RetainsPage
-	// AndLabelIdentity, which is skipped for the same reason). The body below is the real assertion
-	// that would run once the harness can load compiled Source= payloads.
-	// Paired green anchor: SourceMergedDictionaries_ReorderThenRemove_TracksDocumentsAndCompiles.
-	// Expected: RED-PROBE(#36732)
-	// Issue: https://github.com/dotnet/maui/issues/36732
-	[MetadataUpdateFact(Skip = "Blocked by the harness Source= resource-loader boundary: a ResourceDictionary loaded through Source= has no compiled resource payload in this in-memory generator/ALC harness, so the runtime cannot reload it into a retained page without faking ResourceLoader; green anchor: SourceMergedDictionaries_ReorderThenRemove_TracksDocumentsAndCompiles; tracked by #36732")]
-	public void SourceMergedDictionaries_ReorderThenRemove_UsesRuntimeFallback()
-	{
-		string Page(string mergedBody) => $$"""
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestAiAssisted.MainPage">
-			  <ContentPage.Resources>
-			    <ResourceDictionary>
-			      <ResourceDictionary.MergedDictionaries>
-			{{mergedBody}}
-			      </ResourceDictionary.MergedDictionaries>
-			    </ResourceDictionary>
-			  </ContentPage.Resources>
-			  <Label TextColor="{DynamicResource Accent}" />
-			</ContentPage>
-			""";
-
-		const string sourceA = "        <ResourceDictionary Source=\"A.xaml\" />";
-		const string sourceB = "        <ResourceDictionary Source=\"B.xaml\" />";
-		const string dictA = """
-			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-			  <Color x:Key="Accent">Red</Color>
-			</ResourceDictionary>
-			""";
-		const string dictB = """
-			<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-			  <Color x:Key="Accent">Blue</Color>
-			</ResourceDictionary>
-			""";
-
-		IReadOnlyDictionary<string, XamlHotReloadDocument> Snapshot(string mergedBody, bool includeA)
-		{
-			var snapshot = new Dictionary<string, XamlHotReloadDocument>(StringComparer.Ordinal)
-			{
-				["MainPage.xaml"] = new XamlHotReloadDocument(Page(mergedBody)),
-				["B.xaml"] = new XamlHotReloadDocument(dictB),
-			};
-			if (includeA)
-				snapshot["A.xaml"] = new XamlHotReloadDocument(dictA);
-			return snapshot;
-		}
-
-		using var harness = CreateHarness(nameof(SourceMergedDictionaries_ReorderThenRemove_UsesRuntimeFallback));
-		var generation = harness.GenerateDocuments(
-			Snapshot(sourceA + "\n" + sourceB, includeA: true),   // V1: A;B → later B wins → Blue
-			Snapshot(sourceB + "\n" + sourceA, includeA: true),   // V2: B;A → later A wins → Red
-			Snapshot(sourceB, includeA: false));                  // V3: B only → Blue
-
-		harness.RunLive(generation, live =>
-		{
-			var page = live.GetInstance<ContentPage>();
-			var label = Assert.IsType<Label>(page.Content);
-
-			// MergedDictionaries: the last-added dictionary wins for a duplicate key.
-			Assert.Equal(Colors.Blue, label.TextColor);   // A;B → B wins
-
-			live.ApplyUpdate<ContentPage>(1);
-			Assert.Equal(Colors.Red, label.TextColor);    // B;A → A wins
-
-			live.ApplyUpdate<ContentPage>(2);
-			Assert.Equal(Colors.Blue, label.TextColor);   // B only
-
-			// The removed A dictionary must no longer contribute: mutating a fresh copy of its value
-			// after removal must not affect the retained label.
-			page.Resources.MergedDictionaries.First()["Accent"] = Colors.Fuchsia;
-			Assert.Equal(Colors.Blue, label.TextColor);
-		});
-	}
-
 	// Wave2 · Resources · P1-05 · RT-11
 	// Provenance: MAUI §3.1/§3.5 (multi-document malformed→repair); public-app T14
 	// Faithfulness: multi-document malformed→repair atomicity at the strongest faithful level the
@@ -351,7 +165,6 @@ public partial class ResourceAndThemeHotReloadTests
 	// atomic reload of a Source= dictionary is out of harness scope, hence generator-atomic labeling.
 	// Fails if a malformed batch silently produces a compilable page, if the repaired batch does not
 	// generate/compile, or if the sibling document is dropped.
-	// Expected: GREEN (generator-atomic)
 	[Fact]
 	public void MultiDocumentMalformedThenRepair_IsAtomicAcrossPageAndDictionary()
 	{

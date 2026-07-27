@@ -33,43 +33,4 @@ public partial class TemplateAndSelectorHotReloadTests
 		var compilation = harness.Compile(generation[1]);
 		Assert.True(compilation.PeImage.Length > 0, "Generated V2 UpdateComponent should still compile.");
 	}
-
-	// Wave-2 · Templates · TS-06 (RED-PROBE)
-	// Provenance: MAUI §hot-reload complex/collection reconcile; UpdateComponentCodeWriter attached-complex skip (L1319).
-	// Faithfulness: reaches the attached-complex skip and would exercise BindableLayout's controller re-templating;
-	//               fails-for-bug: retype/reverse of the item template duplicates or orphans controller children.
-	// Expected: RED-PROBE(#36732) — paired green anchor: BindableLayoutTemplate_AttachedComplex_EmitsSkipMarker
-	// Issue: https://github.com/dotnet/maui/issues/36732
-	[MetadataUpdateFact(Skip = "Blocked by writer complex-property gap — see #36732; green anchor: BindableLayoutTemplate_AttachedComplex_EmitsSkipMarker")]
-	public void BindableLayoutTemplate_RetypeAndReverse_DoesNotDuplicateControllerChildren()
-	{
-		using var harness = CreateHarness();
-		var generation = harness.Generate(BindableLayoutXaml("V1"), BindableLayoutXaml("V2"), BindableLayoutXaml("V3"));
-
-		harness.RunLive(generation, live =>
-		{
-			var page = live.GetInstance<ContentPage>();
-			var host = Assert.IsType<VerticalStackLayout>(page.Content);
-
-			var items = new ObservableCollection<string> { "a", "b" };
-			BindableLayout.SetItemsSource(host, items);
-			Assert.Equal(2, host.Children.Count);
-
-			IReadOnlyList<object> ChildSnapshot() => host.Children.ToList();
-			var beforeUpdate = ChildSnapshot();
-
-			// Retype the item template; the controller must re-template WITHOUT duplicating/orphaning children.
-			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
-			Assert.Equal(2, host.Children.Count);
-			Assert.DoesNotContain(host.Children, c => beforeUpdate.Contains(c)); // no stale child left parented
-
-			// Reverse the retype.
-			Assert.Same(page, live.ApplyUpdate<ContentPage>(2));
-			Assert.Equal(2, host.Children.Count);
-
-			// A new source item after V3 must produce exactly one additional child (no double subscription).
-			items.Add("c");
-			Assert.Equal(3, host.Children.Count);
-		});
-	}
 }

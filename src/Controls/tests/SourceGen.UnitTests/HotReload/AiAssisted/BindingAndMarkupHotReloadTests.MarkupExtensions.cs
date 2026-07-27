@@ -19,7 +19,6 @@ public partial class BindingAndMarkupHotReloadTests
 	// Wave2 · Binding & Markup · family-7 · BM-02
 	// Provenance: MAUI §3.4 | family 7 custom markup
 	// Faithfulness: reaches the IC ProvideValue pipeline for a same-compilation IMarkupExtension<string>; fails-for-bug: custom markup edits are not re-provided on the retained element.
-	// Expected: GREEN
 	// Issue: https://github.com/dotnet/maui/issues/36732
 	[MetadataUpdateFact]
 	public void CustomMarkupExtension_EditAndReverse_ReprovidesValue()
