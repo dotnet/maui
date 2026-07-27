@@ -17,6 +17,8 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using WRectangleGeometry = Microsoft.UI.Xaml.Media.RectangleGeometry;
+using WVisualTreeHelper = Microsoft.UI.Xaml.Media.VisualTreeHelper;
 
 
 namespace Microsoft.Maui.DeviceTests
@@ -750,6 +752,81 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Verify that the flyout item updates
 				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][1]);
+			});
+		}
+
+		[Fact(DisplayName = "Shell FlyoutItem Grid with Star Column Expands to Full Pane Width")]
+		public async Task ShellFlyoutItemGridExpandsToFullPaneWidth()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/19542
+			// ShellFlyoutItemView was clipping its content to the minimum measured width
+			// instead of the final arranged width, causing Grid star columns to not expand.
+			SetupBuilder();
+
+			Controls.Grid templateGrid = null;
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+
+				shell.ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var grid = new Controls.Grid
+					{
+						ColumnDefinitions =
+						{
+							new Controls.ColumnDefinition { Width = GridLength.Auto },
+							new Controls.ColumnDefinition { Width = GridLength.Star },
+							new Controls.ColumnDefinition { Width = GridLength.Auto }
+						}
+					};
+
+					// Capture the first instance created by the DataTemplate
+					templateGrid ??= grid;
+
+					grid.Add(new Label { Text = "L" }, 0, 0);
+					grid.Add(new Label { Text = "Title" }, 1, 0);
+					grid.Add(new Label { Text = "R" }, 2, 0);
+
+					return grid;
+				});
+
+				var flyoutItem = new FlyoutItem { Title = "Test Item" };
+				flyoutItem.Items.Add(new ShellContent { Content = new ContentPage() });
+				shell.Items.Add(flyoutItem);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OpenFlyout(handler);
+
+				// Wait for DataTemplate to be inflated and handler assigned
+				await AssertEventually(() => templateGrid?.Handler?.PlatformView != null);
+
+				var platformGrid = templateGrid.Handler.PlatformView as WFrameworkElement;
+				Assert.NotNull(platformGrid);
+
+				// Walk up to find the ShellFlyoutItemView that hosts this content
+				DependencyObject current = WVisualTreeHelper.GetParent(platformGrid);
+				Controls.Platform.ShellFlyoutItemView flyoutItemView = null;
+				while (current != null)
+				{
+					if (current is Controls.Platform.ShellFlyoutItemView sfiv)
+					{
+						flyoutItemView = sfiv;
+						break;
+					}
+					current = WVisualTreeHelper.GetParent(current);
+				}
+
+				Assert.NotNull(flyoutItemView);
+
+				// The Clip must cover the full arranged width, not just the minimum measured width.
+				// Before the fix, Clip was set in MeasureOverride using request.Width (too small).
+				// After the fix, Clip is set in ArrangeOverride using finalSize.Width (correct).
+				var clip = flyoutItemView.Clip as WRectangleGeometry;
+				Assert.NotNull(clip);
+				Assert.Equal(Math.Round(flyoutItemView.ActualWidth), Math.Round(clip.Rect.Width));
 			});
 		}
 

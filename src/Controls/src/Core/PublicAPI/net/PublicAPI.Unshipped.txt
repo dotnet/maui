@@ -139,3 +139,5 @@ static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> 
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
+Microsoft.Maui.Controls.Label.~Label() -> void

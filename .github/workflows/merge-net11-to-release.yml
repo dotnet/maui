@@ -1,5 +1,10 @@
 # Merge net11.0 → next release branch
 # Target branch is configured in /github-merge-flow-release-11.jsonc (MergeToBranch)
+#
+# This workflow must be triggered FROM the net11.0 branch because the arcade merge
+# script uses GITHUB_REF_NAME as the config lookup key. When triggered via
+# workflow_dispatch from the GitHub UI, select 'net11.0' from the branch dropdown.
+# The schedule trigger only works when this file exists on net11.0.
 
 name: Merge net11.0 to next release
 
@@ -17,6 +22,8 @@ permissions:
 
 jobs:
   Merge:
+    # Only run if triggered from net11.0 (push trigger or correct workflow_dispatch)
+    if: github.ref_name == 'net11.0'
     uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@main
     with:
       configuration_file_path: 'github-merge-flow-release-11.jsonc'
