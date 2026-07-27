@@ -104,7 +104,8 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
 
 3. Configure the server + app (from `src/Essentials/samples`):
    ```bash
-   pwsh ./Configure-Passkeys.ps1 -AppleTeamId <TEAMID>          # reads the app id from <ApplicationId>
+   # reads the app id from <ApplicationId>
+   pwsh ./Configure-Passkeys.ps1 -AppleTeamId <TEAMID>
    ```
    This is the one-stop setup, and it writes **only git-ignored files** (no committed file is edited):
    - `Passkeys:Apple:AppIds:0 = <TeamID>.<BundleID>` into the server user-secrets (served in the AASA);
@@ -124,8 +125,8 @@ target on **iOS 16+** or **Mac Catalyst 16+**.
    # {"webcredentials":{"apps":["ABCDE12345.com.microsoft.maui.essentials"]}}
    ```
 5. Build + run, then follow [**Using the app**](#using-the-app):
-   - **iOS Simulator** (unsigned): `dotnet build Samples/Essentials.Sample.csproj -f net11.0-ios -p:RuntimeIdentifier=iossimulator-arm64`, then `xcrun simctl install booted <app>` + `xcrun simctl launch booted <bundle-id>`.
-   - **Mac Catalyst** (signed via `Signing.local.props`): `dotnet build Samples/Essentials.Sample.csproj -f net11.0-maccatalyst -p:RuntimeIdentifier=maccatalyst-arm64`, then `open` the built `.app`.
+   - **iOS Simulator** (unsigned): `dotnet run --project Samples/Essentials.Sample.csproj -f net11.0-ios`
+   - **Mac Catalyst** (signed via `Signing.local.props`): `dotnet run --project Samples/Essentials.Sample.csproj -f net11.0-maccatalyst`
    - **Real iOS device**: signed the same way, deploy from your IDE.
 
 **Apple troubleshooting:**
@@ -163,7 +164,7 @@ intent-filters are only for App Links, a different feature). You do need the rig
    `https://<tunnel-host>/.well-known/assetlinks.json` — it should list your package + fingerprint.
 3. Run the sample on the emulator:
    ```bash
-   dotnet build Samples/Essentials.Sample.csproj -t:Run -f net11.0-android
+   dotnet run --project Samples/Essentials.Sample.csproj -f net11.0-android
    ```
 4. Follow [**Using the app**](#using-the-app).
 
@@ -174,7 +175,7 @@ prerequisites above — that's the usual cause.
 
 Nothing extra: the Windows platform trusts the `https` origin directly (no domain-association file).
 Passkeys require **Windows 11 with Windows Hello** configured. With the server running (section 1),
-deploy the Windows head from your IDE (or `dotnet build Samples/Essentials.Sample.csproj -t:Run -f
+deploy the Windows head from your IDE (or `dotnet run --project Samples/Essentials.Sample.csproj -f
 net11.0-windows10.0.<version>` matching the project's Windows TFM), then follow
 [**Using the app**](#using-the-app).
 
