@@ -43,6 +43,7 @@ Assertion failed
             [string]$SkipReason = '',
             [Int64]$IssueNumber = 0,
             [Int64[]]$SourceLogIds = @(1001),
+            [string]$MatchPattern = 'Assertion failed',
             [string]$Body = ''
         )
 
@@ -58,6 +59,7 @@ Assertion failed
         if ($Disposition -eq 'filed') {
             $signature.title = $Title
             $signature.body = $Body
+            $signature.match_pattern = $MatchPattern
         } elseif ($Disposition -eq 'existing') {
             $signature.issue_number = $IssueNumber
         } elseif ($Disposition -eq 'skipped') {
@@ -134,6 +136,22 @@ Assertion failed
                 required_log_ids    = @()
             }
         )
+    }
+
+    function New-TestEvidence {
+        param(
+            [string]$Root,
+            [string]$Pipeline = 'maui-pr',
+            [Int64]$BuildId = 123456,
+            [Int64]$LogId = 1001,
+            [string[]]$Lines = @('Assertion failed once', 'Assertion failed twice')
+        )
+
+        $directory = Join-Path $Root $Pipeline
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        Set-Content `
+            -LiteralPath (Join-Path $directory "$BuildId-$LogId.log") `
+            -Value $Lines
     }
 }
 
@@ -414,6 +432,72 @@ Describe 'CI scanner issue payload gate' {
         $plan.issues.Count | Should -Be 1
         $plan.issues[0].Title | Should -Be '[ci-scan-net11] Sample test fails on Windows'
         $plan.issues[0].MatchCount | Should -Be 2
+    }
+
+    It 'accepts a match count recomputed from frozen trusted evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'evidence'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].MatchCount | Should -Be 2
+        $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Assertion failed'
+    }
+
+    It 'rejects an agent match count that differs from frozen trusted evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Assertion failed once')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*must equal the trusted evidence count (1)*'
+    }
+
+    It 'rejects a match pattern absent from frozen trusted evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different failure')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*trusted evidence count (0)*'
+    }
+
+    It 'rejects a missing frozen evidence file' {
+        $evidenceRoot = Join-Path $TestDrive 'missing-evidence'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*Trusted evidence file is missing*'
+    }
+
+    It 'rejects a body that omits its exact match pattern' {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Different failure')
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*must contain match_pattern exactly*'
     }
 
     It 'neutralizes user and team mentions in the validated issue body' {

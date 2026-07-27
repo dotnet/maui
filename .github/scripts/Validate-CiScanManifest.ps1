@@ -5,9 +5,10 @@
 
 .DESCRIPTION
     This script is the fail-closed boundary between the scanner agent and GitHub
-    issue writes. It does not call GitHub or interpret CI logs. It validates the
-    single batched safe-output payload against a trusted build inventory and
-    writes a normalized plan for the downstream GitHub API step.
+    issue writes. It does not call GitHub. It validates the single batched
+    safe-output payload against a trusted build inventory, recomputes filed-issue
+    match counts from frozen CI evidence, and writes a normalized plan for the
+    downstream GitHub API step.
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -204,7 +205,9 @@ function Assert-ValidIssuePayload {
         [Parameter(Mandatory = $true)][object]$Signature,
         [Parameter(Mandatory = $true)][string]$PipelineName,
         [Parameter(Mandatory = $true)][Int64]$BuildId,
-        [Parameter(Mandatory = $true)][string]$Fingerprint
+        [Parameter(Mandatory = $true)][string]$Fingerprint,
+        [Parameter(Mandatory = $true)][Int64[]]$SourceLogIds,
+        [string]$TrustedEvidencePath = ''
     )
 
     $title = ConvertTo-TrimmedString (Get-RequiredProperty -Object $Signature -Name 'title' -Context "filed signature '$Fingerprint'")
@@ -221,9 +224,8 @@ function Assert-ValidIssuePayload {
         throw "Title for '$Fingerprint' must omit the prefix added by the publisher."
     }
 
-    $body = ConvertTo-SafeIssueBody -Body (
-        [string](Get-RequiredProperty -Object $Signature -Name 'body' -Context "filed signature '$Fingerprint'")
-    )
+    $rawBody = [string](Get-RequiredProperty -Object $Signature -Name 'body' -Context "filed signature '$Fingerprint'")
+    $body = ConvertTo-SafeIssueBody -Body $rawBody
     if ($body.Length -lt 20 -or $body.Length -gt 60000) {
         throw "Body for '$Fingerprint' must be 20-60000 characters."
     }
@@ -249,6 +251,35 @@ function Assert-ValidIssuePayload {
     if ($matchPrefixCount -ne 1 -or $matchMarkers.Count -ne 1) {
         throw "Body for '$Fingerprint' must contain exactly one canonical positive match-count marker."
     }
+    $matchPattern = ConvertTo-TrimmedString (
+        Get-RequiredProperty -Object $Signature -Name 'match_pattern' -Context "filed signature '$Fingerprint'"
+    )
+    if ($matchPattern.Length -lt 8 -or $matchPattern.Length -gt 500 -or $matchPattern -match '[\r\n]') {
+        throw "match_pattern for '$Fingerprint' must be one line of 8-500 characters."
+    }
+    if (-not $rawBody.Contains($matchPattern, [System.StringComparison]::Ordinal)) {
+        throw "Body for '$Fingerprint' must contain match_pattern exactly."
+    }
+    $markerMatchCount = [Int64]$matchMarkers[0].Groups[1].Value
+    if ($TrustedEvidencePath) {
+        $trustedMatchCount = [Int64]0
+        foreach ($sourceLogId in $SourceLogIds) {
+            $evidenceFile = Join-Path `
+                $TrustedEvidencePath `
+                "$PipelineName/$BuildId-$sourceLogId.log"
+            if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
+                throw "Trusted evidence file is missing for '$Fingerprint' source log $sourceLogId."
+            }
+            foreach ($line in [System.IO.File]::ReadLines($evidenceFile)) {
+                if ($line.Contains($matchPattern, [System.StringComparison]::Ordinal)) {
+                    $trustedMatchCount++
+                }
+            }
+        }
+        if ($trustedMatchCount -lt 1 -or $markerMatchCount -ne $trustedMatchCount) {
+            throw "Match count for '$Fingerprint' must equal the trusted evidence count ($trustedMatchCount)."
+        }
+    }
 
     $pipelineLine = "- **Pipeline**: $PipelineName"
     if ([regex]::Matches($body, "(?m)^$([regex]::Escape($pipelineLine))\r?$").Count -ne 1) {
@@ -261,17 +292,19 @@ function Assert-ValidIssuePayload {
     }
 
     return [pscustomobject]@{
-        Title      = $title
-        FinalTitle = "[ci-scan-net11] $title"
-        Body       = $body
-        MatchCount = [Int64]$matchMarkers[0].Groups[1].Value
+        Title        = $title
+        FinalTitle   = "[ci-scan-net11] $title"
+        Body         = $body
+        MatchCount   = $markerMatchCount
+        MatchPattern = $matchPattern
     }
 }
 
 function Test-CiScanManifest {
     param(
         [Parameter(Mandatory = $true)][object]$Manifest,
-        [AllowNull()][object]$ExpectedBuilds = $null
+        [AllowNull()][object]$ExpectedBuilds = $null,
+        [string]$TrustedEvidencePath = ''
     )
 
     $pipelines = @(Get-RequiredProperty -Object $Manifest -Name 'pipelines' -Context 'manifest')
@@ -437,12 +470,15 @@ function Test-CiScanManifest {
                         -Signature $signature `
                         -PipelineName $name `
                         -BuildId $buildId `
-                        -Fingerprint $fingerprint
+                        -Fingerprint $fingerprint `
+                        -SourceLogIds $sourceLogIds `
+                        -TrustedEvidencePath $TrustedEvidencePath
                     $filedCount++
                     $normalized.title = $payload.Title
                     $normalized.final_title = $payload.FinalTitle
                     $normalized.body = $payload.Body
                     $normalized.match_count = $payload.MatchCount
+                    $normalized.match_pattern = $payload.MatchPattern
                     $issues.Add([pscustomobject]@{
                             Pipeline    = $name
                             BuildId     = $buildId
@@ -547,11 +583,17 @@ if (-not $env:CI_SCAN_PLAN_PATH) {
 if (-not $env:CI_SCAN_EXPECTED_BUILDS_PATH) {
     throw 'CI_SCAN_EXPECTED_BUILDS_PATH is required.'
 }
+if (-not $env:CI_SCAN_TRUSTED_EVIDENCE_PATH) {
+    throw 'CI_SCAN_TRUSTED_EVIDENCE_PATH is required.'
+}
 
 try {
     $manifest = Get-ScannerManifestFromAgentOutput -Path $env:GH_AW_AGENT_OUTPUT
     $expectedBuilds = Get-CiScanExpectedBuilds -Path $env:CI_SCAN_EXPECTED_BUILDS_PATH
-    $plan = Test-CiScanManifest -Manifest $manifest -ExpectedBuilds $expectedBuilds
+    $plan = Test-CiScanManifest `
+        -Manifest $manifest `
+        -ExpectedBuilds $expectedBuilds `
+        -TrustedEvidencePath $env:CI_SCAN_TRUSTED_EVIDENCE_PATH
     Write-CiScanPlan -Plan $plan -Path $env:CI_SCAN_PLAN_PATH
     Write-Host "Validated complete coverage for $($plan.pipelines.Count) pipelines and $($plan.filed_count) issue payload(s)."
 } catch {
