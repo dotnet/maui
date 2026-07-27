@@ -43,9 +43,10 @@
     <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, unless
     -NoApple, the Apple app-id `<TeamID>.<ApplicationId>`.
 
-.PARAMETER DebugKeystore
-    Path to the Android debug keystore. Defaults to the keystore .NET for Android actually signs debug
-    builds with: <LocalApplicationData>/Xamarin/Mono for Android/debug.keystore (e.g. on macOS
+.PARAMETER AndroidKeystore
+    Path to the Android keystore whose signing-certificate SHA-256 goes into the Digital Asset Links
+    (assetlinks.json). Defaults to the debug keystore .NET for Android signs debug builds with:
+    <LocalApplicationData>/Xamarin/Mono for Android/debug.keystore (e.g. on macOS
     ~/Library/Application Support/Xamarin/Mono for Android/debug.keystore). This is NOT
     ~/.android/debug.keystore.
 
@@ -91,7 +92,7 @@ param(
     [string]$TunnelId = 'maui-essentials-passkeys',
     [int]$Port = 5177,
     [string]$ApplicationId,
-    [string]$DebugKeystore,
+    [string]$AndroidKeystore,
     [string]$AppleTeamId,
     [string]$AppleSigningIdentity,
     [string]$AppleProvisioningProfile,
@@ -112,7 +113,7 @@ if (-not $ApplicationId) {
         if ($m.Success) { $ApplicationId = $m.Groups[1].Value.Trim() }
     }
     if (-not $ApplicationId) {
-        Write-Error "Could not read <ApplicationId> from '$appCsproj'. Pass -ApplicationId explicitly, or ensure the sample project defines <ApplicationId>."
+        throw "Could not read <ApplicationId> from '$appCsproj'. Pass -ApplicationId explicitly, or ensure the sample project defines <ApplicationId>."
     }
 }
 
@@ -126,26 +127,26 @@ if (-not $ApplicationId) {
 # the .NET MAUI app. Reading the wrong keystore makes assetlinks.json advertise a fingerprint the APK
 # isn't signed with, and passkey creation then fails on-device with
 # "the incoming request could not be validated".
-if (-not $DebugKeystore) {
+if (-not $AndroidKeystore) {
     $localAppData = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
-    $DebugKeystore = Join-Path $localAppData 'Xamarin' 'Mono for Android' 'debug.keystore'
+    $AndroidKeystore = Join-Path $localAppData 'Xamarin' 'Mono for Android' 'debug.keystore'
 }
 
-# Computes the Android debug-signing-key fingerprints needed for passkeys: the colon-hex SHA-256
+# Computes the Android signing-key fingerprints needed for passkeys: the colon-hex SHA-256
 # (for assetlinks.json) and the "android:apk-key-hash:<base64url>" origin (for ValidateOrigin).
 # Returns $null if keytool or the keystore is unavailable (e.g. before the first Android build).
 function Get-AndroidKeyInfo($keystore) {
     if (-not (Get-Command 'keytool' -ErrorAction SilentlyContinue)) {
-        Write-Warning "keytool not found (install a JDK). Skipping Android fingerprint setup."
+        Write-Warning "keytool not found (install a JDK) — can't compute the Android signing fingerprint."
         return $null
     }
     if (-not (Test-Path $keystore)) {
-        Write-Warning "Debug keystore not found at '$keystore' (build the Android app once to create it). Skipping Android fingerprint setup."
+        Write-Warning "Android keystore not found at '$keystore' (build the Android app once to create it)."
         return $null
     }
     $out = & keytool -list -v -keystore $keystore -alias androiddebugkey -storepass android -keypass android 2>$null
     $line = $out | Where-Object { $_ -match 'SHA256:' } | Select-Object -First 1
-    if (-not $line) { Write-Warning "Could not read SHA-256 from the debug keystore."; return $null }
+    if (-not $line) { Write-Warning "Could not read SHA-256 from the keystore '$keystore'."; return $null }
     $hex = ($line -replace '.*SHA256:\s*', '').Trim()
     $bytes = [byte[]]($hex.Split(':') | ForEach-Object { [Convert]::ToByte($_, 16) })
     $b64url = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
@@ -204,7 +205,7 @@ function New-LocalEntitlements($basePlist, $outPlist, $domain) {
 
 function Require-Command($name, $hint) {
     if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
-        Write-Error "'$name' is not installed. $hint"
+        throw "'$name' is not installed. $hint"
     }
 }
 
@@ -286,7 +287,7 @@ function Write-PasskeysLocalProps($appDir, $serverUrl, $entitlementsRel, $identi
     $template = Join-Path $appDir 'Passkeys.Local.in.props'
     $path = Join-Path $appDir 'Passkeys.Local.props'
     if (-not (Test-Path $template)) {
-        Write-Error "Template not found at '$template'. It should be committed alongside the app project."
+        throw "Template not found at '$template'. It should be committed alongside the app project."
     }
 
     $xml = New-Object System.Xml.XmlDocument
@@ -410,7 +411,7 @@ if (-not $uri) {
 }
 
 if (-not $uri) {
-    Write-Error @"
+    throw @"
 Could not resolve the public dev tunnel URL for '$TunnelId'.
 
 A public HTTPS domain is REQUIRED — there is no localhost fallback. Passkeys are bound to a domain: the
@@ -421,103 +422,101 @@ Host the tunnel once to materialize its URL, then re-run this script:
     devtunnel host $TunnelId
 "@
 }
-else {
-    $domain = ([Uri]$uri).Host
-    Write-Host "    Public URL : $uri" -ForegroundColor Green
-    Write-Host "    RP ID/host : $domain" -ForegroundColor Green
+$domain = ([Uri]$uri).Host
+Write-Host "    Public URL : $uri" -ForegroundColor Green
+Write-Host "    RP ID/host : $domain" -ForegroundColor Green
 
-    Write-Host "==> Writing server user-secrets (passkeys ServerDomain + web origin)…" -ForegroundColor Cyan
-    dotnet user-secrets --project $project set 'Passkeys:ServerDomain' $domain | Out-Null
-    dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:0' $uri | Out-Null
-    Write-Host "    Done. The passkeys RP ID is '$domain'." -ForegroundColor Green
+Write-Host "==> Writing server user-secrets (passkeys ServerDomain + web origin)…" -ForegroundColor Cyan
+dotnet user-secrets --project $project set 'Passkeys:ServerDomain' $domain | Out-Null
+dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:0' $uri | Out-Null
+Write-Host "    Done. The passkeys RP ID is '$domain'." -ForegroundColor Green
 
-    # Android: compute + write the debug-key fingerprint (assetlinks) and apk-key-hash origin. Configured
-    # by default; fails if the debug key can't be read (pass -NoAndroid to skip Android instead).
-    if ($NoAndroid) {
-        Write-Host "    Android: skipped (-NoAndroid)." -ForegroundColor DarkGray
-    }
-    else {
-        $android = Get-AndroidKeyInfo $DebugKeystore
-        if (-not $android) {
-            throw "Could not read the Android debug-signing key (needed for the Digital Asset Links fingerprint). Build the Android app once to generate the debug keystore, pass -DebugKeystore <path>, or pass -NoAndroid to skip Android."
-        }
-        dotnet user-secrets --project $project set 'Passkeys:Android:PackageName' $ApplicationId | Out-Null
-        dotnet user-secrets --project $project set 'Passkeys:Android:Sha256CertFingerprints:0' $android.Hex | Out-Null
-        dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:1' $android.Origin | Out-Null
-        Write-Host "    Android configured: package '$ApplicationId'" -ForegroundColor Green
-        Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
-        Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
-    }
-    # Compose the git-ignored Passkeys.Local.props for the MAUI app: the default server URL always, plus
-    # the Apple entitlements/signing (configured by default; skipped with -NoApple). The committed files
-    # are never edited.
-    $appDir = Join-Path $here 'Samples'
-    $entitlementsRel = $null
-    $resolvedIdentity = $null
-    $resolvedProfile = $null
-
-    if (-not $NoApple -and -not $AppleTeamId) {
-        $AppleTeamId = Get-AppleTeamId
-        if ($AppleTeamId) {
-            Write-Host "    Apple Team ID auto-detected from your signing cert: $AppleTeamId" -ForegroundColor DarkGray
-        }
-    }
-
-    if ($NoApple) {
-        Write-Host "    Apple: skipped (-NoApple)." -ForegroundColor DarkGray
-    }
-    elseif (-not $AppleTeamId) {
-        throw "Could not determine your Apple Team ID: no 'Apple Development' signing certificate found. Install one (Xcode -> Settings -> Accounts -> Manage Certificates), pass -AppleTeamId <TEAMID>, or pass -NoApple to skip Apple."
-    }
-    else {
-        $appleAppId = "$AppleTeamId.$ApplicationId"
-        dotnet user-secrets --project $project set 'Passkeys:Apple:AppIds:0' $appleAppId | Out-Null
-        Write-Host "    Apple configured: app-id '$appleAppId'" -ForegroundColor Green
-
-        # Generate the git-ignored local entitlements (the committed Entitlements.plist is never touched).
-        $baseEnt = Join-Path $appDir 'Platforms' 'iOS' 'Entitlements.plist'
-        $localEnt = Join-Path $appDir 'Platforms' 'iOS' 'Entitlements.Local.plist'
-        if (New-LocalEntitlements $baseEnt $localEnt $domain) {
-            $entitlementsRel = 'Platforms/iOS/Entitlements.Local.plist'
-            Write-Host "      entitlement: webcredentials:$domain  (Entitlements.Local.plist — git-ignored)" -ForegroundColor DarkGray
-        }
-
-        # Resolve the signing identity and provisioning profile (params win; otherwise auto-detect).
-        if (-not $AppleSigningIdentity) { $AppleSigningIdentity = Get-AppleSigningIdentity }
-        if (-not $AppleProvisioningProfile) { $AppleProvisioningProfile = Find-AppleProvisioningProfile $appleAppId }
-        if ($AppleSigningIdentity -and $AppleProvisioningProfile) {
-            $resolvedIdentity = $AppleSigningIdentity
-            $resolvedProfile = $AppleProvisioningProfile
-            Write-Host "      signing identity : $AppleSigningIdentity" -ForegroundColor DarkGray
-            Write-Host "      provisioning     : $AppleProvisioningProfile" -ForegroundColor DarkGray
-        }
-        else {
-            if (-not $AppleSigningIdentity) {
-                Write-Host "      No 'Apple Development' signing identity found in the keychain." -ForegroundColor Yellow
-            }
-            if (-not $AppleProvisioningProfile) {
-                Write-Host "      No installed provisioning profile matches '$appleAppId' with Associated Domains." -ForegroundColor Yellow
-            }
-            Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
-            Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README-Passkeys.md (Apple section)." -ForegroundColor DarkGray
-        }
-    }
-
-    $propsPath = Write-PasskeysLocalProps $appDir $uri $entitlementsRel $resolvedIdentity $resolvedProfile
-    Write-Host "    Wrote $([IO.Path]::GetFileName($propsPath)) (git-ignored): the app defaults to $uri." -ForegroundColor Green
-
-    Write-Host ""
-    Write-Host "Next steps:" -ForegroundColor Yellow
-    if ($NoStartHost) {
-        Write-Host "  1) In THIS terminal, host the tunnel:   devtunnel host $TunnelId"
-        Write-Host "  2) In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
-    }
-    else {
-        Write-Host "  In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
-        Write-Host "  (this terminal is about to host the tunnel — pass -NoStartHost to skip that)"
-    }
-    Write-Host "  Then build/run the sample — its Passkeys page now defaults to $uri (editable via the Server button)."
+# Android: compute + write the debug-key fingerprint (assetlinks) and apk-key-hash origin. Configured
+# by default; fails if the debug key can't be read (pass -NoAndroid to skip Android instead).
+if ($NoAndroid) {
+    Write-Host "    Android: skipped (-NoAndroid)." -ForegroundColor DarkGray
 }
+else {
+    $android = Get-AndroidKeyInfo $AndroidKeystore
+    if (-not $android) {
+        throw "Could not read the Android debug-signing key (needed for the Digital Asset Links fingerprint). Build the Android app once to generate the debug keystore, pass -AndroidKeystore <path>, or pass -NoAndroid to skip Android."
+    }
+    dotnet user-secrets --project $project set 'Passkeys:Android:PackageName' $ApplicationId | Out-Null
+    dotnet user-secrets --project $project set 'Passkeys:Android:Sha256CertFingerprints:0' $android.Hex | Out-Null
+    dotnet user-secrets --project $project set 'Passkeys:AllowedOrigins:1' $android.Origin | Out-Null
+    Write-Host "    Android configured: package '$ApplicationId'" -ForegroundColor Green
+    Write-Host "      SHA-256 : $($android.Hex)" -ForegroundColor DarkGray
+    Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
+}
+# Compose the git-ignored Passkeys.Local.props for the MAUI app: the default server URL always, plus
+# the Apple entitlements/signing (configured by default; skipped with -NoApple). The committed files
+# are never edited.
+$appDir = Join-Path $here 'Samples'
+$entitlementsRel = $null
+$resolvedIdentity = $null
+$resolvedProfile = $null
+
+if (-not $NoApple -and -not $AppleTeamId) {
+    $AppleTeamId = Get-AppleTeamId
+    if ($AppleTeamId) {
+        Write-Host "    Apple Team ID auto-detected from your signing cert: $AppleTeamId" -ForegroundColor DarkGray
+    }
+}
+
+if ($NoApple) {
+    Write-Host "    Apple: skipped (-NoApple)." -ForegroundColor DarkGray
+}
+elseif (-not $AppleTeamId) {
+    throw "Could not determine your Apple Team ID: no 'Apple Development' signing certificate found. Install one (Xcode -> Settings -> Accounts -> Manage Certificates), pass -AppleTeamId <TEAMID>, or pass -NoApple to skip Apple."
+}
+else {
+    $appleAppId = "$AppleTeamId.$ApplicationId"
+    dotnet user-secrets --project $project set 'Passkeys:Apple:AppIds:0' $appleAppId | Out-Null
+    Write-Host "    Apple configured: app-id '$appleAppId'" -ForegroundColor Green
+
+    # Generate the git-ignored local entitlements (the committed Entitlements.plist is never touched).
+    $baseEnt = Join-Path $appDir 'Platforms' 'iOS' 'Entitlements.plist'
+    $localEnt = Join-Path $appDir 'Platforms' 'iOS' 'Entitlements.Local.plist'
+    if (New-LocalEntitlements $baseEnt $localEnt $domain) {
+        $entitlementsRel = 'Platforms/iOS/Entitlements.Local.plist'
+        Write-Host "      entitlement: webcredentials:$domain  (Entitlements.Local.plist — git-ignored)" -ForegroundColor DarkGray
+    }
+
+    # Resolve the signing identity and provisioning profile (params win; otherwise auto-detect).
+    if (-not $AppleSigningIdentity) { $AppleSigningIdentity = Get-AppleSigningIdentity }
+    if (-not $AppleProvisioningProfile) { $AppleProvisioningProfile = Find-AppleProvisioningProfile $appleAppId }
+    if ($AppleSigningIdentity -and $AppleProvisioningProfile) {
+        $resolvedIdentity = $AppleSigningIdentity
+        $resolvedProfile = $AppleProvisioningProfile
+        Write-Host "      signing identity : $AppleSigningIdentity" -ForegroundColor DarkGray
+        Write-Host "      provisioning     : $AppleProvisioningProfile" -ForegroundColor DarkGray
+    }
+    else {
+        if (-not $AppleSigningIdentity) {
+            Write-Host "      No 'Apple Development' signing identity found in the keychain." -ForegroundColor Yellow
+        }
+        if (-not $AppleProvisioningProfile) {
+            Write-Host "      No installed provisioning profile matches '$appleAppId' with Associated Domains." -ForegroundColor Yellow
+        }
+        Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
+        Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README-Passkeys.md (Apple section)." -ForegroundColor DarkGray
+    }
+}
+
+$propsPath = Write-PasskeysLocalProps $appDir $uri $entitlementsRel $resolvedIdentity $resolvedProfile
+Write-Host "    Wrote $([IO.Path]::GetFileName($propsPath)) (git-ignored): the app defaults to $uri." -ForegroundColor Green
+
+Write-Host ""
+Write-Host "Next steps:" -ForegroundColor Yellow
+if ($NoStartHost) {
+    Write-Host "  1) In THIS terminal, host the tunnel:   devtunnel host $TunnelId"
+    Write-Host "  2) In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
+}
+else {
+    Write-Host "  In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
+    Write-Host "  (this terminal is about to host the tunnel — pass -NoStartHost to skip that)"
+}
+Write-Host "  Then build/run the sample — its Passkeys page now defaults to $uri (editable via the Server button)."
 
 if (-not $NoStartHost) {
     Write-Host ""
