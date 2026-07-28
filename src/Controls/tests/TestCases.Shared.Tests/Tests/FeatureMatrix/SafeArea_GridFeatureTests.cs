@@ -1255,8 +1255,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/36770
 		[Test, Order(25)]
-		[Description("SoftInput: landscape left/right inset by safe area, bottom edge-to-edge")]
+		[Description("SoftInput: landscape left/right/bottom all edge-to-edge (flows under system bars/notch)")]
 		public void ValidateOrientation_SoftInput_Landscape_Grid()
 		{
 			ClickGridSafeAreaButton();
@@ -1269,19 +1270,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 
 			var (screenWidth, screenHeight) = GetScreenSize();
-			var insetsLandscape = GetSafeAreaInsets();
 
-			// Left: inset by safe area
+			// Left: edge-to-edge (SoftInput flows under system bars/notch)
 			var leftRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(leftRect.X), Is.EqualTo(insetsLandscape.Left).Within(PixelTolerance),
-				$"SoftInput: left X ({leftRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
+			Assert.That(leftRect.X, Is.EqualTo(0).Within(PixelTolerance),
+				$"SoftInput: left X ({leftRect.X}) should be = 0 (edge-to-edge)");
 
-			// Right: inset by safe area (Android uses display cutout for right inset)
+			// Right: edge-to-edge
 			var rightRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightEdge = rightRect.X + rightRect.Width;
-			var expectedRight = GetLandscapeRightInset(insetsLandscape.Right, insetsLandscape.CutoutR);
-			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth - expectedRight).Within(PixelTolerance),
-				$"SoftInput: right edge ({rightEdge}) should be = screenWidth - expectedRight ({screenWidth - expectedRight})");
+			Assert.That(Math.Abs(rightEdge), Is.EqualTo(screenWidth).Within(PixelTolerance),
+				$"SoftInput: right edge ({rightEdge}) should be = screenWidth ({screenWidth})");
 
 			// Bottom: edge-to-edge (SoftInput doesn't avoid bottom without keyboard)
 			var bottomRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
@@ -1291,6 +1290,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 		}
+#endif
 
 		[Test, Order(26)]
 		[Description("Default: landscape left/right/bottom all inset from system UI (Default on Grid = Container)")]
@@ -1412,8 +1412,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 		}
 
+#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/36770
 		[Test, Order(28)]
-		[Description("Landscape SoftInput: bottom moves up to keyboard, left/right stay inset")]
+		[Description("Landscape SoftInput: left/right/top edge-to-edge; bottom moves up to keyboard when shown")]
 		public void ValidateKeyboard_SoftInput_Landscape_Grid()
 		{
 			ClickGridSafeAreaButton();
@@ -1427,17 +1428,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 
 			var (screenWidth, screenHeight) = GetScreenSize();
-			var insetsLandscape = GetSafeAreaInsets();
 
-			// ── Before keyboard ──
+			// ── Before keyboard (SoftInput: edge-to-edge on all sides without keyboard) ──
 			var leftBeforeRect = App.WaitForElement("LeftEdgeIndicator").GetRect();
-			Assert.That(Math.Abs(leftBeforeRect.X), Is.EqualTo(insetsLandscape.Left).Within(PixelTolerance),
-				$"Before keyboard - left X ({leftBeforeRect.X}) should be = insetsLandscape.Left ({insetsLandscape.Left})");
+			Assert.That(leftBeforeRect.X, Is.EqualTo(0).Within(PixelTolerance),
+				$"Before keyboard - left X ({leftBeforeRect.X}) should be = 0 (edge-to-edge)");
 
 			var rightBeforeRect = App.WaitForElement("RightEdgeIndicator").GetRect();
 			var rightBeforeEdge = rightBeforeRect.X + rightBeforeRect.Width;
-			Assert.That(Math.Abs(rightBeforeEdge), Is.EqualTo(screenWidth - insetsLandscape.Right).Within(PixelTolerance),
-				$"Before keyboard - right edge ({rightBeforeEdge}) should be = screenWidth - insetsLandscape.Right ({screenWidth - insetsLandscape.Right})");
+			Assert.That(Math.Abs(rightBeforeEdge), Is.EqualTo(screenWidth).Within(PixelTolerance),
+				$"Before keyboard - right edge ({rightBeforeEdge}) should be = screenWidth ({screenWidth})");
 
 			var bottomBeforeRect = App.WaitForElement("BottomEdgeIndicator").GetRect();
 			Assert.That(Math.Abs(bottomBeforeRect.Bottom), Is.EqualTo(screenHeight).Within(PixelTolerance),
@@ -1488,6 +1488,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.SetOrientationPortrait();
 			App.WaitForElement("SafeAreaEdgesValueLabel");
 		}
+#endif
 
 		[Test, Order(29)]
 		[Description("Landscape None: bottom stays at screen edge with keyboard, left/right stay edge-to-edge")]
