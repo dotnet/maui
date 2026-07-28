@@ -1341,6 +1341,12 @@ Describe 'AzDO coverage re-derivation' {
             foreach ($case in @(
                     @{ Def = [pscustomobject]@{ id = 'abc' }; Label = 'non-numeric' },
                     @{ Def = [pscustomobject]@{ id = '99999999999' }; Label = 'overflows Int32' },
+                    # ConvertFrom-Json will happily yield an array or a nested object for a
+                    # malformed body, and both throw a DIFFERENT conversion error than a
+                    # non-numeric string. Pinned because a fix keyed only on "is it numeric
+                    # text" would look correct and still abort the run on these two.
+                    @{ Def = [pscustomobject]@{ id = @(1, 2) }; Label = 'id is an array' },
+                    @{ Def = [pscustomobject]@{ id = [pscustomobject]@{ x = 1 } }; Label = 'id is an object' },
                     @{ Def = [pscustomobject]@{ }; Label = 'id property absent' },
                     @{ Def = $null; Label = 'definition null' })) {
                 $script:MockBuild = New-MockBuild -Definition $case.Def
