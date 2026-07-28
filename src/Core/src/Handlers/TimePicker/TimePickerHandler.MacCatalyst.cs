@@ -1,5 +1,6 @@
 ﻿using System;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -121,6 +122,25 @@ namespace Microsoft.Maui.Handlers
 				{
 					handler.SetVirtualViewTime();
 				}
+			}
+		}
+
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.PlatformView is not UIDatePicker platformView)
+			{
+				return;
+			}
+
+			if (timePicker.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(timePicker);
 			}
 		}
 	}
