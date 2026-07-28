@@ -352,6 +352,48 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
         Get-CiScanRequiredAbsences -RecurrenceRate 1.0 | Should -Be $d.MinRequiredAbsences
         Get-CiScanRequiredAbsences -RecurrenceRate 0.01 | Should -Be $d.MaxRequiredAbsences
     }
+    <#
+        NaN compares false against EVERY relational operator, so it satisfies neither
+        `-le 0` nor `-ge 1.0`, and neither of the Min/Max clamps either. Before the
+        explicit guard it flowed the length of the function and threw at `[int]$n`,
+        aborting the caller's per-issue loop rather than quarantining one issue.
+
+        The safe direction here is counter-intuitive and worth pinning: a LOWER rate
+        yields MORE required absences, so an uninformative rate must fall back to the
+        MAXIMUM wait, not to DefaultRecurrenceRate (which is the more permissive answer).
+    #>
+    It 'fails closed to the maximum wait for a non-finite rate' {
+        $d = Get-CiScanDefaults
+        foreach ($bad in @([double]::NaN, [double]::PositiveInfinity, [double]::NegativeInfinity)) {
+            { Get-CiScanRequiredAbsences -RecurrenceRate $bad } | Should -Not -Throw
+            Get-CiScanRequiredAbsences -RecurrenceRate $bad | Should -Be $d.MaxRequiredAbsences
+        }
+        # Strictly more conservative than the fallback it must NOT collapse to.
+        $d.MaxRequiredAbsences |
+            Should -BeGreaterThan (Get-CiScanRequiredAbsences -RecurrenceRate $d.DefaultRecurrenceRate)
+    }
+
+    <#
+        The guard above is defence in depth; what makes NaN unreachable TODAY is the
+        `\d{1,4}` bound in Get-CiScanRecurrenceRate, one function away. A double cast
+        of a wider capture yields Infinity rather than throwing, then Infinity/Infinity
+        is NaN, and that function's own clamps miss it too. Pin the agreement between
+        the regex width and the cast so widening one without the other fails here.
+    #>
+    It 'keeps the Occurrences capture narrow enough that its double cast cannot overflow' {
+        $src = Get-Content -Raw -Path (Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1')
+        $pattern = [regex]::Match($src, "Occurrences\\\*\\\*\s*\\s\*:.*?\(\?<k>\\d\{1,(?<kw>\d+)\}\).*?\(\?<n>\\d\{1,(?<nw>\d+)\}\)")
+        $pattern.Success | Should -BeTrue -Because 'the Occurrences pattern must stay machine-checkable'
+        [int]$pattern.Groups['kw'].Value | Should -BeLessOrEqual 308
+        [int]$pattern.Groups['nw'].Value | Should -BeLessOrEqual 308
+
+        # And the boundary the current width admits really is safe end to end.
+        $max = '9' * [int]$pattern.Groups['kw'].Value
+        $rate = Get-CiScanRecurrenceRate -Body "- **Occurrences**: $max in last $max builds"
+        [double]::IsNaN($rate) | Should -BeFalse
+        { Get-CiScanRequiredAbsences -RecurrenceRate $rate } | Should -Not -Throw
+    }
+
     It 'falls back to the default rate for null input' {
         $d = Get-CiScanDefaults
         Get-CiScanRequiredAbsences -RecurrenceRate $null |

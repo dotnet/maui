@@ -548,12 +548,33 @@ function Get-CiScanRequiredAbsences {
         Clamped to [MinRequiredAbsences, MaxRequiredAbsences] so a flaky-but-rare
         signature does not demand an unbounded wait, and a near-100% signature still has
         to clear a meaningful floor.
+
+        The `-le 0` and `-ge 1.0` guards below READ like a complete domain check, but
+        they are not: NaN satisfies neither, and every clamp after them also compares
+        false, so a NaN rate reaches `[int]$n` and throws a TERMINATING error out of the
+        caller's per-issue loop. This parameter is deliberately `[object]`, so a
+        non-finite value is a signature-level possibility rather than a hypothetical.
+
+        Today no caller can produce one — `Get-CiScanRecurrenceRate` bounds its captures
+        to `\d{1,4}`, which cannot overflow a double. That is the whole protection, and
+        it lives in a DIFFERENT function: widening that regex would silently make
+        `[double]` yield Infinity, then Infinity/Infinity = NaN, with both of that
+        function's clamps also comparing false. Guard the value here rather than relying
+        on a bound one scope away.
+
+        A non-finite rate is not a low rate; it is no information at all, so it fails
+        closed to MaxRequiredAbsences. Note the conservative direction is COUNTER-
+        intuitive: a lower p yields MORE required absences, so the safe fallback is the
+        maximum wait, not DefaultRecurrenceRate.
     #>
     [CmdletBinding()]
     param([AllowNull()][object]$RecurrenceRate)
 
     $d = $script:CiScanDefaults
     $p = if ($null -eq $RecurrenceRate) { $d.DefaultRecurrenceRate } else { [double]$RecurrenceRate }
+    # Must precede the comparisons below: NaN compares false against everything, so it
+    # would otherwise pass every guard and clamp and only surface at the final [int] cast.
+    if ([double]::IsNaN($p) -or [double]::IsInfinity($p)) { return $d.MaxRequiredAbsences }
     if ($p -le 0) { $p = $d.DefaultRecurrenceRate }
     if ($p -ge 1.0) { return $d.MinRequiredAbsences }
 
