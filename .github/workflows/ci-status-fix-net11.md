@@ -434,6 +434,17 @@ post-steps:
       # captured > registered is always a defect and must fail closed. Diagnostic outputs
       # (missing_tool / missing_data / noop / report_incomplete) are emitted outside that
       # rule and are deliberately excluded so they cannot redden a legitimate run.
+      #
+      # That exclusion deliberately SURVIVES dry_run, even though `noop`
+      # (report-as-issue: true) and `report_incomplete` do each create a GitHub issue.
+      # Two reasons. First, this step is detective, not preventive: naming them here
+      # could not stop the issue, only redden the run after it was already filed.
+      # Second, `report_incomplete` is emitted from the snapshot guard, which runs
+      # BEFORE any Step 0 dry-run gate and exists precisely to say "I could not
+      # proceed" -- a write-free canary that cannot report its own blocker is worse
+      # than one that files a diagnostic. So the dry-run contract enforced here is
+      # "emit no MUTATION", not "emit no telemetry": the run's own reporting about
+      # itself is not an agent code/PR mutation and is never suppressed.
       if [ -f "${output}" ] && jq -e '.items | type == "array"' "${output}" >/dev/null; then
         for mutating_type in \
           create_pull_request \

@@ -424,13 +424,22 @@ Describe 'CI-fixer safe-output reconciliation' {
             Should -Be 0
     }
 
+    # The diagnostics carve-out survives dry_run deliberately. `noop`
+    # (report-as-issue: true) and `create_report_incomplete_issue` DO each file a GitHub
+    # issue, so an obvious-looking "fix" is to add them to the zero allowance above --
+    # which would break the write-free canary in the one case it matters most. This step
+    # is detective, so listing them could not prevent the issue anyway; and
+    # `report_incomplete` is emitted from the snapshot guard that runs BEFORE any Step 0
+    # dry-run gate, i.e. it is how a preview says "I could not proceed". Reddening that
+    # run buys nothing and hides the blocker. This case pins the contract as "emit no
+    # MUTATION", not "emit no telemetry".
     It 'passes <Lock> for a dry_run that emits diagnostics only' -Skip:(-not $script:reconcileAvailable) -ForEach @(
         @{ Lock = 'ci-status-fix.lock.yml' }
         @{ Lock = 'ci-status-fix-net11.lock.yml' }
     ) {
         script:Invoke-Reconcile -LockFileName $Lock -DryRun `
             -Expectations @() `
-            -AgentOutput '{"items":[{"type":"missing_tool"},{"type":"noop"}]}' |
+            -AgentOutput '{"items":[{"type":"missing_tool"},{"type":"missing_data"},{"type":"noop"},{"type":"create_report_incomplete_issue"}]}' |
             Should -Be 0
     }
 }
