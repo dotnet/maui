@@ -111,9 +111,9 @@ partial class PasskeysImplementation : IPasskeys
 
 	// A synchronous failure from the Credential Manager call is a .NET exception; the Java
 	// *CancellationException surfaces here as an OperationCanceledException or a type whose name
-	// contains "Cancellation".
+	// contains "Cancellation". Fully qualify to avoid the Android.OS.OperationCanceledException clash.
 	static bool IsCancellation(Exception ex)
-		=> ex is OperationCanceledException || IsCancellation(ex.GetType().Name);
+		=> ex is System.OperationCanceledException || IsCancellation(ex.GetType().Name);
 
 	static bool IsCancellation(string typeName)
 		=> typeName.Contains("Cancellation", StringComparison.Ordinal);
