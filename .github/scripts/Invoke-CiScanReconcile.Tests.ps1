@@ -1834,6 +1834,58 @@ Describe 'Static source invariants' {
             -Because "'$sample' must be ignored, or a local report run can be committed by accident"
     }
 
+    It 'never dots into a variable assigned from an HTTP or gh payload' {
+        <#
+            The function-scoped invariant below proves the property for
+            Get-CiScanBuildCoverage. This generalises it to the whole orchestrator, which
+            is what makes it a ratchet rather than a repair: the scan comes back clean
+            today, so its job is to KEEP it clean as payload reads are added.
+
+            The variable set is DISCOVERED, not listed. A hardcoded list rots — the next
+            payload variable would be out of scope on the day it is introduced, which is
+            precisely when the guard is needed. Anything assigned from Invoke-HttpGetJson,
+            Invoke-GhRead or ConvertFrom-Json is in scope automatically.
+
+            TWO safe idioms are admitted, and a reader needs to know which they are:
+
+              1. `Get-CiScanJsonField -Object $x -Name '...'` — never dots at all.
+              2. `$x = @($x)` followed by `$x.Count` — `.Count` is NOT total under
+                 StrictMode (it throws on a bare string, an int, and $null), but `@()`
+                 makes it total on every shape. This is explicit, one line up, and local,
+                 which is what separates it from the borrowed safety that produced the
+                 defects on this path.
+
+            Note `@($null).Count` is 1, not 0 — normalisation makes the READ total, not
+            the value meaningful. The `$null -eq $x` checks that precede these sites are
+            what make the count mean something, and they are asserted by behaviour tests.
+        #>
+        # Comments here deliberately quote the unsafe forms; assert against code only.
+        $code = [regex]::Replace($script:OrchestratorText, '(?s)<#.*?#>', '')
+        $code = (($code -split "`n") | Where-Object { $_ -notmatch '^\s*#' } |
+            ForEach-Object { $_ -replace '\s+#(?!\{).*$', '' }) -join "`n"
+
+        $payloadVars = @([regex]::Matches($code,
+                '\$(?<v>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:Invoke-HttpGetJson|Invoke-GhRead|ConvertFrom-Json)') |
+            ForEach-Object { $_.Groups['v'].Value } | Sort-Object -Unique)
+
+        # Anti-vacuity: a scanner that silently matches nothing would pass forever.
+        (Get-CiScanCount $payloadVars) | Should -BeGreaterThan 4 -Because 'the discovery regex must still find payload assignments'
+        foreach ($known in @('build', 'timeline', 'batch')) {
+            $payloadVars | Should -Contain $known -Because 'these are known payload variables'
+        }
+
+        $offenders = @()
+        foreach ($v in $payloadVars) {
+            $normalised = $code -match ("\`$$v\s*=\s*@\(\`$$v\)")
+            foreach ($m in [regex]::Matches($code, "\`$$v\.(?<f>[A-Za-z_][A-Za-z0-9_]*)")) {
+                if ($normalised -and $m.Groups['f'].Value -eq 'Count') { continue }
+                $offenders += $m.Value
+            }
+        }
+        @($offenders | Sort-Object -Unique) | Should -BeNullOrEmpty `
+            -Because 'a payload field must be read via Get-CiScanJsonField, or @()-normalised before .Count'
+    }
+
     It 'reads every AzDO payload field in Get-CiScanBuildCoverage through the accessor' {
         <#
             The behavioural tests can only pin the reads that are reachable TODAY. The
