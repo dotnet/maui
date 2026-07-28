@@ -756,10 +756,16 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 var attrs = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() };
                 tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Normal);
+                tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Selected);
+                tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Disabled);
+                tabBarItem.SetBadgeTextAttributes(attrs, UIControlState.Focused);
             }
             else
             {
                 tabBarItem.SetBadgeTextAttributes(null!, UIControlState.Normal);
+                tabBarItem.SetBadgeTextAttributes(null!, UIControlState.Selected);
+                tabBarItem.SetBadgeTextAttributes(null!, UIControlState.Disabled);
+                tabBarItem.SetBadgeTextAttributes(null!, UIControlState.Focused);
             }
         }
 
