@@ -123,6 +123,13 @@ jobs:
   # gating (`powershell-script-tests.yml`) does not cover that path, because a dispatch
   # does not have to run from a merged commit.
   #
+  # Note the stronger fact behind that: PR-time gating does not exist YET at all.
+  # `powershell-script-tests.yml` arrives with dotnet/maui#36842, and no workflow in the
+  # repository currently runs this suite on `pull_request` — the triggers above are
+  # `schedule` and `workflow_dispatch` only. Until #36842 lands, THIS JOB IS THE ONLY
+  # PLACE THE SUITE RUNS, which is why its floor check below is not decorative and why
+  # the gate must not be weakened to "report-only runs may skip the tests".
+  #
   # The test SUITE is offline — it reaches neither `gh` nor AzDO. The JOB is not: it
   # checks out the repo and installs Pester from PSGallery. So the guarantee here is
   # scoped by permission, not by connectivity:

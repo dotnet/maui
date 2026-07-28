@@ -2220,6 +2220,33 @@ Describe 'Static source invariants' {
             $script:WorkflowCode | Should -Match 'needs:\s*\[test, report\]'
         }
 
+        It 'keeps the PR-time-gating note true while that workflow is absent' {
+            <#
+                The workflow header explains that PR-time gating does not cover a
+                `workflow_dispatch` from an arbitrary ref. That sentence is true, but on
+                its own it implies PR-time gating EXISTS — and today it does not:
+                `powershell-script-tests.yml` ships with #36842, and this workflow's own
+                triggers are `schedule` and `workflow_dispatch` only. So the in-workflow
+                gate is currently the ONLY place these suites run.
+
+                That is a claim about repository state, and an unpinned claim in a safety
+                header is the defect this suite exists to prevent. Tie it to the fact
+                instead: while the file is absent the header must say so, and once #36842
+                lands this fails and forces the note to be rewritten rather than quietly
+                becoming false.
+            #>
+            $prGate = Join-Path $PSScriptRoot '..' 'workflows' 'powershell-script-tests.yml'
+            $header = ($script:WorkflowText -split "`n" | Where-Object { $_ -match '^\s*#' }) -join "`n"
+
+            if (Test-Path -LiteralPath $prGate) {
+                $header | Should -Not -Match 'does not exist YET' -Because 'the PR-time gate now exists; the header must be updated'
+            }
+            else {
+                $header | Should -Match 'does not exist YET' -Because 'nothing runs this suite on pull_request yet, and the header must not imply otherwise'
+                $header | Should -Match '36842' -Because 'the note must name the PR that supplies PR-time gating'
+            }
+        }
+
         It 'keeps an anti-vacuous floor on the in-workflow gate' {
             # A suite that fails to PARSE reports 0 tests and 0 failures, which looks
             # exactly like a pass to a FailedCount-only check. The floor is the specific
