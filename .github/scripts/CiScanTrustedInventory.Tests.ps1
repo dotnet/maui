@@ -106,7 +106,8 @@ $body
         param(
             [Parameter(Mandatory = $true)][string]$TaskResult,
             [Parameter(Mandatory = $true)][string]$WorkItemState,
-            [Parameter(Mandatory = $true)][int]$WorkItemExitCode
+            [Parameter(Mandatory = $true)][int]$WorkItemExitCode,
+            [string]$ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Controls.DeviceTests.log'
         )
 
         $emptyBuilds = [pscustomobject]@{ value = @() }
@@ -171,7 +172,7 @@ $body
                         Name             = 'Controls.DeviceTests'
                         State            = $WorkItemState
                         ExitCode         = $WorkItemExitCode
-                        ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Controls.DeviceTests.log'
+                        ConsoleOutputUri = $ConsoleOutputUri
                     }
                 )
             }
@@ -218,6 +219,36 @@ Describe 'ci-status-net11 trusted build-evidence collector' {
                 -WorkItemExitCode 3)
 
         $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
+        @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
+    }
+
+    It 'treats a deadletter console URI as a Helix failure in the compiled lock' {
+        # Source-level guard for environments without node. The deadletter check
+        # must be part of isFailure -- if it were only consulted after the
+        # `continue`, a Finished/exit-0 deadletter would still be skipped.
+        $source = Get-CollectorSource
+        $deadletter = $source.IndexOf('helix-workitem-deadletter')
+        $isFailure = $source.IndexOf('const isFailure')
+        $continue = $source.IndexOf('if (!isFailure)')
+        $deadletter | Should -BeGreaterThan 0
+        $isFailure | Should -BeGreaterThan $deadletter
+        $continue | Should -BeGreaterThan $isFailure
+        $source.Substring($isFailure, $continue - $isFailure) | Should -Match 'isDeadletter'
+    }
+
+    It 'marks a deadlettered Helix work item as failed-leaf despite Finished/exit 0' -Skip:(-not $script:NodeAvailable) {
+        # A deadlettered work item never ran, so Helix reports it terminal and
+        # green. State/ExitCode therefore cannot see it, but the workflow's own
+        # Helix reference calls a `helix-workitem-deadletter` console URI an
+        # infra failure -- so it must not stay absence-skippable.
+        $inventory = Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -ConsoleOutputUri 'https://helix.blob.core.windows.net/helix-workitem-deadletter/Controls.DeviceTests.log')
+
+        $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
+        @($devicePipeline.required_log_ids) | Should -Be @(1001)
         @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
     }
 

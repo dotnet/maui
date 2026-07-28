@@ -587,7 +587,19 @@ steps:
                   if (state !== 'failed' && !hasExitCode) {
                     throw new Error(`Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} has no terminal exit code.`);
                   }
-                  const isFailure = state === 'failed' || Number(workItem.ExitCode) !== 0;
+                  // A deadlettered work item never ran, so Helix can report it
+                  // as Finished with exit code 0 even though nothing executed.
+                  // The Helix reference below classifies a console URI
+                  // containing `helix-workitem-deadletter` as an infra failure,
+                  // so it has to count as one here too. Without this the log
+                  // carries a real failure yet stays absence-skippable — the
+                  // same fail-open failed_leaf_log_ids exists to close, just
+                  // reached through the one surface State/ExitCode cannot see.
+                  const isDeadletter = String(workItem.ConsoleOutputUri || '')
+                    .toLowerCase()
+                    .includes('helix-workitem-deadletter');
+                  const isFailure =
+                    state === 'failed' || Number(workItem.ExitCode) !== 0 || isDeadletter;
                   if (!isFailure) {
                     continue;
                   }
