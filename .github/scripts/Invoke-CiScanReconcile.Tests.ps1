@@ -1294,6 +1294,7 @@ Describe 'Static source invariants' {
         $script:OrchestratorText = Get-Content -Raw -Path (Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1')
         $script:CoreText = Get-Content -Raw -Path (Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1')
         $script:WorkflowText = Get-Content -Raw -Path (Join-Path $PSScriptRoot '..' 'workflows' 'ci-scan-reconcile.yml')
+        $script:TestsWorkflowPath = Join-Path $PSScriptRoot '..' 'workflows' 'powershell-script-tests.yml'
 
         # The workflow header is a long safety rationale that names the very strings these
         # tests forbid ("issues: write", "pull_request", ...). Assertions about what the
@@ -1329,8 +1330,100 @@ Describe 'Static source invariants' {
         $script:CoreText | Should -Not -Match "Decision\s*=\s*'close'"
     }
 
+    # ─────────────────────────────────────────────────────────────────────────────
+    # CI EXECUTION OF THIS SUITE.
+    #
+    # A test suite nobody runs cannot defend anything. `maui-pr` is path-filtered and
+    # skips for `.github/**`-only changes, so before `powershell-script-tests.yml`
+    # existed these files could rot — or stop parsing — with every check still green.
+    # These assertions are the regression test for that gap: delete the workflow, or
+    # quietly narrow it so it stops covering `.github/scripts`, and this suite fails.
+    # ─────────────────────────────────────────────────────────────────────────────
+    Context 'the Pester suites are executed by CI' {
+        BeforeAll {
+            $script:TestsWorkflowText = Get-Content -Raw -Path $script:TestsWorkflowPath
+            $script:TestsWorkflowCode = (($script:TestsWorkflowText -split "`n") |
+                Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+        }
+
+        It 'has a PR-time workflow covering .github/scripts' {
+            Test-Path $script:TestsWorkflowPath | Should -BeTrue
+            $script:TestsWorkflowCode | Should -BeLike '*pull_request*'
+            $script:TestsWorkflowCode | Should -BeLike "*.github/scripts/**"
+        }
+
+        It 'runs this suite and the core suite' {
+            # Discovery is a recursive glob rather than a hard-coded list, so assert the
+            # glob and the directory instead of file names.
+            $script:TestsWorkflowCode | Should -BeLike '*`*.Tests.ps1*'
+            $script:TestsWorkflowCode | Should -BeLike '*Invoke-Pester*'
+        }
+
+        It 'grants the test job no write permission' {
+            # `permissions: {}` at top level plus `contents: read` on the job. Any write
+            # scope here would hand a token to code that dot-sources 16 test files.
+            $script:TestsWorkflowCode | Should -BeLike '*permissions: {}*'
+            $script:TestsWorkflowCode | Should -Not -Match 'issues:\s*write'
+            $script:TestsWorkflowCode | Should -Not -Match 'contents:\s*write'
+            $script:TestsWorkflowCode | Should -Not -Match 'pull-requests:\s*write'
+        }
+
+        It 'runs each suite in its own process' {
+            # Load-bearing, not stylistic: a single shared Pester session dot-sources all
+            # 16 files together, so same-named helpers collide and `Mock` binds to
+            # whichever loaded last. That combination currently reports 12 failures that
+            # do not reproduce per-file. If someone "simplifies" this to one invocation
+            # over the directory, this fails.
+            $script:TestsWorkflowCode | Should -BeLike '*pwsh -NoProfile -NonInteractive*'
+        }
+
+        It 'treats a suite that ran zero tests as a failure' {
+            # A file that fails to PARSE reports 0 tests and 0 failures, which looks
+            # exactly like a pass to a FailedCount-only check. This is the anti-vacuous
+            # guard, and it is the specific defence against "the suite does not parse".
+            $script:TestsWorkflowCode | Should -Match 'Total\)?\s*-eq 0'
+            $script:TestsWorkflowCode | Should -BeLike '*ZERO tests*'
+        }
+
+        It 'parses every script before running anything' {
+            $script:TestsWorkflowCode | Should -BeLike '*Parser`]::ParseFile*'
+        }
+
+        It 'keeps the reconciler workflow safety gate in front of both jobs' {
+            # `report` and `mutate` must both stay behind the in-workflow Pester gate.
+            # PR-time testing does not cover a `workflow_dispatch` from an arbitrary ref.
+            $script:WorkflowCode | Should -Match 'needs:\s*test'
+            $script:WorkflowCode | Should -Match 'needs:\s*\[test, report\]'
+        }
+    }
+
     It 'hard-codes report mode in the read-only workflow job' {
         $script:WorkflowCode | Should -BeLike '*-Mode report*'
+    }
+
+    <#
+        Enforce is the only irreversible mode, and its human gate — the required-reviewer
+        rule on the `ci-scan-reconcile` environment — is a REPOSITORY setting that naming
+        the environment does not create. An unconfigured environment is auto-created
+        UNPROTECTED, so without a separate opt-in the first `enforce` dispatch would close
+        issues with no approval whatsoever.
+
+        `CI_SCAN_RECONCILE_ENFORCE_ENABLED` is that opt-in, and it is not redundant with
+        the `CI_SCAN_RECONCILE_DISABLED` kill switch: the kill switch is opt-OUT (absent
+        means "allowed"), this is opt-IN (absent means "refused"). Deleting either one
+        must fail here.
+    #>
+    It 'makes enforce unreachable until a maintainer opts in' {
+        $script:WorkflowCode | Should -BeLike '*CI_SCAN_RECONCILE_ENFORCE_ENABLED*'
+
+        # The opt-in must gate `enforce` ONLY — `comment` is reversible and stays usable
+        # in one step — and it must be an equality test against the literal 'true', not a
+        # mere "is set" check.
+        $script:WorkflowCode | Should -Match "CI_SCAN_RECONCILE_ENFORCE_ENABLED\s*==\s*'true'"
+        $script:WorkflowCode | Should -Match "inputs\.mode\s*==\s*'comment'\s*\|\|\s*vars\.CI_SCAN_RECONCILE_ENFORCE_ENABLED"
+
+        # The kill switch is a separate, opposite-polarity control and must survive too.
+        $script:WorkflowCode | Should -Match "CI_SCAN_RECONCILE_DISABLED\s*!=\s*'true'"
     }
 
     <#
