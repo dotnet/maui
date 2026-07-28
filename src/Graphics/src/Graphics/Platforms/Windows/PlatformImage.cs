@@ -7,6 +7,9 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.IO;
 using Windows.Foundation;
 using Windows.Storage.Streams;
+#if !MAUI_GRAPHICS_WIN2D
+using Windows.Graphics.Imaging;
+#endif
 using WinRect = Windows.Foundation.Rect;
 
 #if MAUI_GRAPHICS_WIN2D
@@ -27,6 +30,9 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private readonly ICanvasResourceCreator _creator;
 		private CanvasBitmap _bitmap;
+#if !MAUI_GRAPHICS_WIN2D
+		private WindowsImageMetadata _metadata;
+#endif
 
 		private static readonly RecyclableMemoryStreamManager recyclableMemoryStreamManager = new();
 
@@ -40,6 +46,15 @@ namespace Microsoft.Maui.Graphics.Platform
 			_creator = creator;
 			_bitmap = bitmap;
 		}
+
+#if !MAUI_GRAPHICS_WIN2D
+		internal PlatformImage(ICanvasResourceCreator creator, CanvasBitmap bitmap, WindowsImageMetadata metadata)
+		{
+			_creator = creator;
+			_bitmap = bitmap;
+			_metadata = metadata;
+		}
+#endif
 
 		public CanvasBitmap PlatformRepresentation => _bitmap;
 
@@ -116,6 +131,14 @@ namespace Microsoft.Maui.Graphics.Platform
 				resizedStream.Seek(0);
 
 				var newImage = FromStream(resizedStream.AsStreamForRead());
+
+#if !MAUI_GRAPHICS_WIN2D
+				// The resized pixels are upright whenever orientation was normalized on load (the
+				// default); if the caller loaded with DisableRotationNormalization, the metadata's
+				// orientation still describes the pixels, so it carries over unchanged either way.
+				if (newImage is PlatformImage resized)
+					resized._metadata = _metadata;
+#endif
 
 				if (disposeOriginal)
 				{
@@ -216,6 +239,92 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, Math.Abs(dirtyRect.Width), Math.Abs(dirtyRect.Height));
 		}
+
+#if !MAUI_GRAPHICS_WIN2D
+#nullable enable
+		IImageMetadata? IImage.Metadata => _metadata;
+#nullable restore
+
+		void IImage.Save(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> AsyncPump.Run(() => SaveWithOptionsAsync(stream, format, options));
+
+		Task IImage.SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+			=> SaveWithOptionsAsync(stream, format, options);
+
+		async Task SaveWithOptionsAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
+		{
+			var quality = Math.Max(0f, Math.Min(1f, options.Quality));
+
+			// Metadata re-embedding is only supported for JPEG on this platform.
+			if (!options.PreserveMetadata || _metadata is null || format != ImageFormat.Jpeg)
+			{
+				await SaveAsync(stream, format, quality);
+				return;
+			}
+
+			// 1. Encode the (processed) pixels to a temporary in-memory JPEG.
+			using var pixelStream = new InMemoryRandomAccessStream();
+			await _bitmap.SaveAsync(pixelStream, CanvasBitmapFileFormat.Jpeg, quality);
+			pixelStream.Seek(0);
+
+			// 2. Transcode into the destination while injecting the captured metadata.
+			var decoder = await BitmapDecoder.CreateAsync(pixelStream);
+			using var outputStream = new InMemoryRandomAccessStream();
+			var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
+			await _metadata.ApplyToAsync(encoder.BitmapProperties);
+			await encoder.FlushAsync();
+
+			outputStream.Seek(0);
+			await outputStream.AsStreamForRead().CopyToAsync(stream);
+		}
+
+		// Loads the image applying the supplied options (EXIF orientation normalization and metadata
+		// capture). Unlike the plain FromStream overload, this normalizes orientation by default so the
+		// returned pixels are upright, matching the behavior of the other platforms.
+		public static IImage FromStream(Stream stream, ImageLoadOptions options)
+			=> AsyncPump.Run(() => FromStreamWithOptionsAsync(stream, options));
+
+		static async Task<IImage> FromStreamWithOptionsAsync(Stream stream, ImageLoadOptions options)
+		{
+			var creator = PlatformGraphicsService.Creator;
+			if (creator is null)
+			{
+				throw new Exception("No resource creator has been registered globally or for this thread.");
+			}
+
+			using var randomAccessStream = new InMemoryRandomAccessStream();
+			await stream.CopyToAsync(randomAccessStream.AsStreamForWrite());
+			randomAccessStream.Seek(0);
+
+			var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
+
+			var metadata = options.PreserveMetadata
+				? await WindowsImageMetadata.CaptureAsync(decoder)
+				: null;
+
+			// Win2D's CanvasBitmap.LoadAsync ignores EXIF orientation, so bake it in here unless the
+			// caller opted out.
+			var exifMode = options.DisableRotationNormalization
+				? ExifOrientationMode.IgnoreExifOrientation
+				: ExifOrientationMode.RespectExifOrientation;
+
+			using var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+				BitmapPixelFormat.Bgra8,
+				BitmapAlphaMode.Premultiplied,
+				new BitmapTransform(),
+				exifMode,
+				ColorManagementMode.DoNotColorManage);
+
+			var bitmap = CanvasBitmap.CreateFromSoftwareBitmap(creator, softwareBitmap);
+
+			// If we normalized orientation, the pixels are now upright, so persist orientation as 1 to
+			// avoid a viewer double-rotating the already-upright image.
+			if (metadata is not null && !options.DisableRotationNormalization)
+				metadata.Orientation = 1;
+
+			return new PlatformImage(creator, bitmap, metadata);
+		}
+#endif
 
 		public IImage ToPlatformImage()
 		{

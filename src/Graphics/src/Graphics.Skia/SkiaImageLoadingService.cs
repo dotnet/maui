@@ -17,5 +17,11 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			return SkiaImage.FromStream(stream, formatHint);
 		}
+
+		/// <inheritdoc/>
+		public IImage FromStream(Stream stream, ImageLoadOptions options)
+		{
+			return SkiaImage.FromStream(stream);
+		}
 	}
 }

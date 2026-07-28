@@ -56,10 +56,16 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			UIGraphics.BeginImageContext(size);
-			target.Draw(new CGRect(CGPoint.Empty, size));
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			// Use UIGraphicsImageRenderer instead of the deprecated UIGraphics.BeginImageContext, which
+			// is unsupported on MacCatalyst 17+ (and flagged by CA1416). This matches the approach used
+			// by NormalizeOrientation below.
+			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat
+			{
+				Opaque = false,
+				Scale = target.CurrentScale,
+			});
+
+			var image = renderer.CreateImage(context => target.Draw(new CGRect(CGPoint.Empty, size)));
 
 			if (disposeOriginal)
 			{
