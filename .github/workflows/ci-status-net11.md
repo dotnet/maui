@@ -244,9 +244,17 @@ safe-outputs:
               const issuesToCreate = [];
               for (const issue of plan.issues) {
                 const exactMarker = `<!-- ci-scan-fingerprint: ${issue.Fingerprint} -->`;
-                const match = openTrackingIssues.find(candidate =>
+                // Adoption must fail closed on ambiguity exactly like the legacy
+                // path below. Taking the first of several marker matches would
+                // silently adopt one duplicate and leave the rest open and
+                // contradictory.
+                const markerMatches = openTrackingIssues.filter(candidate =>
                   !candidate.pull_request &&
                   String(candidate.body || '').split(/\r?\n/).includes(exactMarker));
+                if (markerMatches.length > 1) {
+                  throw new Error(`Fingerprint ${issue.Fingerprint} ambiguously matches open issues ${markerMatches.map(candidate => `#${candidate.number}`).join(', ')}.`);
+                }
+                const match = markerMatches[0];
                 if (match) {
                   if (match.title !== issue.Title ||
                       normalizeBody(match.body) !== normalizeBody(issue.Body)) {

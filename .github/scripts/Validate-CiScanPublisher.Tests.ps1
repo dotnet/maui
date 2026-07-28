@@ -97,6 +97,110 @@ $Error
 "@
         }
     }
+
+    function Get-AdoptPathSource {
+        $lock = Get-Content -LiteralPath $script:LockPath -Raw
+        $start = $lock.IndexOf('const issuesToCreate = [];')
+        if ($start -lt 0) {
+            throw 'The compiled lock no longer contains the publisher adopt path.'
+        }
+        $end = $lock.IndexOf('for (const entry of existingEntries)', $start)
+        if ($end -lt 0) {
+            throw 'Could not find the end of the publisher adopt path.'
+        }
+
+        $segment = $lock.Substring($start, $end - $start)
+        $lineStart = $lock.LastIndexOf("`n", $start) + 1
+        $indent = $start - $lineStart
+        $lines = $segment -split "`r?`n"
+        $dedented = $lines | ForEach-Object {
+            if ($_.Length -ge $indent -and $_.Substring(0, [Math]::Min($indent, $_.Length)).Trim() -eq '') {
+                $_.Substring($indent)
+            } else {
+                $_
+            }
+        }
+
+        return ($dedented -join "`n")
+    }
+
+    function Get-NormalizeBodySource {
+        # Reuse the publisher's real body normalizer rather than a stub, so the
+        # harness compares bodies exactly the way the workflow does.
+        $lock = Get-Content -LiteralPath $script:LockPath -Raw
+        $start = $lock.IndexOf('const normalizeBody =')
+        if ($start -lt 0) {
+            throw 'The compiled lock no longer contains normalizeBody.'
+        }
+        $end = $lock.IndexOf('const requestOptions', $start)
+        if ($end -lt 0) {
+            throw 'Could not find the end of normalizeBody.'
+        }
+
+        return (($lock.Substring($start, $end - $start) -split "`r?`n" |
+                    ForEach-Object { $_.Trim() }) -join "`n")
+    }
+
+    function Invoke-AdoptPath {
+        param(
+            [Parameter(Mandatory = $true)][object]$PlannedIssue,
+            [Parameter(Mandatory = $true)][object[]]$OpenIssues
+        )
+
+        $harness = Join-Path $TestDrive 'adopt.js'
+        $data = Join-Path $TestDrive 'open-issues.json'
+        $planned = Join-Path $TestDrive 'planned.json'
+        Set-Content -LiteralPath $data -Value ($OpenIssues | ConvertTo-Json -Depth 6 -AsArray)
+        Set-Content -LiteralPath $planned -Value ($PlannedIssue | ConvertTo-Json -Depth 6)
+
+        # The legacy matcher has its own coverage above; stub it out so this
+        # harness exercises only the canonical-marker adopt path.
+        $script = @"
+const openTrackingIssues = require($($data | ConvertTo-Json));
+const plan = { issues: [require($($planned | ConvertTo-Json))] };
+const results = { issues: [] };
+const persistResults = () => {};
+const markerPrefix = '<!-- ci-scan-fingerprint:';
+$(Get-NormalizeBodySource)
+const legacyIdentityMatcher = () => null;
+try {
+$(Get-AdoptPathSource)
+  console.log('OK ' + JSON.stringify({
+    adopted: results.issues.map(entry => entry.issue_number),
+    created: issuesToCreate.map(entry => entry.Fingerprint),
+  }));
+} catch (error) {
+  console.log('THROW ' + (error && error.message ? error.message : String(error)));
+}
+"@
+        Set-Content -LiteralPath $harness -Value $script
+        $output = & node $harness 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "node harness failed: $output"
+        }
+
+        return ($output | Select-Object -Last 1).ToString().Trim()
+    }
+
+    function New-MarkedIssue {
+        param(
+            [int]$Number,
+            [string]$Fingerprint,
+            [string]$Title = 'Sample failure',
+            [string]$Body = ''
+        )
+
+        if (-not $Body) {
+            $Body = "<!-- ci-scan-fingerprint: $Fingerprint -->`nRecurring sample failure."
+        }
+
+        [pscustomobject]@{
+            number   = $Number
+            title    = $Title
+            body     = $Body
+            html_url = "https://github.com/dotnet/maui/issues/$Number"
+        }
+    }
 }
 
 Describe 'ci-status-net11 legacy dedup matcher' {
@@ -187,6 +291,59 @@ Describe 'ci-status-net11 publisher create path' {
 
         $createPath | Should -Match 'legacyIdentityMatcher\(issue\.Fingerprint, issue\.Pipeline\)'
         $createPath | Should -Match 'ambiguously matches legacy issues'
+    }
+
+
+    It 'fails closed when two open issues carry the same canonical fingerprint marker' {
+        # The legacy path throws on an ambiguous match; the marker path used
+        # find(), so it silently adopted the first duplicate and left the rest
+        # open and contradictory.
+        $createPath = (Get-Content -LiteralPath $script:LockPath -Raw)
+        $createPath.Substring($createPath.IndexOf('const issuesToCreate = []')) |
+            Should -Match 'ambiguously matches open issues'
+    }
+
+    It 'adopts a single canonical-marker match' -Skip:(-not $script:NodeAvailable) {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $planned = [pscustomobject]@{
+            Fingerprint = $fingerprint
+            Pipeline    = 'maui-pr'
+            Title       = 'Sample failure'
+            Body        = "<!-- ci-scan-fingerprint: $fingerprint -->`nRecurring sample failure."
+        }
+
+        Invoke-AdoptPath -PlannedIssue $planned -OpenIssues @(
+            (New-MarkedIssue -Number 40001 -Fingerprint $fingerprint)
+        ) | Should -Be 'OK {"adopted":[40001],"created":[]}'
+    }
+
+    It 'throws instead of adopting the first of two identical markers' -Skip:(-not $script:NodeAvailable) {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $planned = [pscustomobject]@{
+            Fingerprint = $fingerprint
+            Pipeline    = 'maui-pr'
+            Title       = 'Sample failure'
+            Body        = "<!-- ci-scan-fingerprint: $fingerprint -->`nRecurring sample failure."
+        }
+
+        Invoke-AdoptPath -PlannedIssue $planned -OpenIssues @(
+            (New-MarkedIssue -Number 40001 -Fingerprint $fingerprint)
+            (New-MarkedIssue -Number 40002 -Fingerprint $fingerprint)
+        ) | Should -BeLike 'THROW *ambiguously matches open issues #40001, #40002.'
+    }
+
+    It 'creates when no open issue carries the marker' -Skip:(-not $script:NodeAvailable) {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $planned = [pscustomobject]@{
+            Fingerprint = $fingerprint
+            Pipeline    = 'maui-pr'
+            Title       = 'Sample failure'
+            Body        = "<!-- ci-scan-fingerprint: $fingerprint -->`nRecurring sample failure."
+        }
+
+        Invoke-AdoptPath -PlannedIssue $planned -OpenIssues @(
+            (New-MarkedIssue -Number 40001 -Fingerprint 'ci-scan-net11|net11.0|maui-pr|other test|other error|linux')
+        ) | Should -Be ('OK {"adopted":[],"created":["' + $fingerprint + '"]}')
     }
 
     It 'treats a malformed AzDO build list as an error, not an absence' {
