@@ -721,21 +721,29 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isPullRequest
-      - isAction:
-          action: Opened
       - isActivitySender:
           user: github-actions[bot]
           issueAuthor: False
-      - targetsBranch:
-          branch: net11.0
-      - titleContains:
-          pattern: "[automated] Merge branch 'main' => 'net11.0'"
-          isRegex: False
+      - or:
+        - isAction:
+            action: Opened
+        - isAction:
+            action: Synchronize
+      - or:
+        - and:
+          - targetsBranch:
+              branch: net11.0
+          - titleContains:
+              pattern: "[automated] Merge branch 'main' => 'net11.0'"
+              isRegex: False
+        - titleContains:
+            pattern: "[automated] Merge branch 'net11.0' => 'release/"
+            isRegex: False
       then:
       - approvePullRequest:
-          comment: Auto-approved automated main to net11.0 merge.
+          comment: Auto-approved automated inter-branch merge.
       - enableAutoMerge:
           mergeMethod: merge
-      description: '[Inter-branch merge] Auto-approve and enable auto-merge for main to net11.0'
+      description: '[Inter-branch merge] Auto-approve and enable auto-merge for main to net11.0 and net11.0 to release'
 onFailure: 
 onSuccess: 
