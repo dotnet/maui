@@ -1,58 +1,21 @@
-using System;
 using Android.Content;
 using Android.Runtime;
-using Android.Text.Method;
-using Android.Util;
-using Android.Views;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Graphics.Drawable;
-using Google.Android.Material.TextField;
-using static Android.Views.View;
 
 namespace Microsoft.Maui.Platform;
 
-public class MauiMaterialDatePicker : TextInputEditText, IOnClickListener
+/// <summary>
+/// Material 3 DatePicker field on Android: an outlined text field with a trailing calendar icon.
+/// Tapping the field or the icon opens the platform <c>MaterialDatePicker</c> dialog.
+/// </summary>
+public class MauiMaterialDatePicker : MauiMaterialDateTimePicker
 {
-    public MauiMaterialDatePicker(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
-    {
-        Initialize();
-    }
-
-    public MauiMaterialDatePicker(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
-    {
-        Initialize();
-    }
-
-    public MauiMaterialDatePicker(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
-    {
-        Initialize();
-    }
-
-    protected MauiMaterialDatePicker(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+    public MauiMaterialDatePicker(Context context)
+        : base(context, Resource.Drawable.material_ic_calendar_black_24dp)
     {
     }
 
-    // MovementMethod handles cursor positioning, scrolling, and text selection (per Android docs).
-    // Since text is readonly, we disable it to avoid unnecessary cursor navigation during keyboard input.
-    protected override IMovementMethod? DefaultMovementMethod => null;
-
-    public Action? ShowPicker { get; set; }
-    public Action? HidePicker { get; set; }
-
-    public void OnClick(View? v)
+    protected MauiMaterialDatePicker(nint javaReference, JniHandleOwnership transfer)
+        : base(javaReference, transfer)
     {
-        ShowPicker?.Invoke();
-    }
-
-    void Initialize()
-    {
-        if (Background is not null)
-        {
-            DrawableCompat.Wrap(Background);
-        }
-
-        PickerManager.Init(this);
-
-        SetOnClickListener(this);
     }
 }
