@@ -724,6 +724,8 @@ configuration:
       - isActivitySender:
           user: github-actions[bot]
           issueAuthor: False
+      - isActivitySender:
+          issueAuthor: True
       - or:
         - isAction:
             action: Opened
@@ -734,16 +736,19 @@ configuration:
           - targetsBranch:
               branch: net11.0
           - titleContains:
-              pattern: "[automated] Merge branch 'main' => 'net11.0'"
-              isRegex: False
-        - titleContains:
-            pattern: "[automated] Merge branch 'net11.0' => 'release/"
-            isRegex: False
+              pattern: '^\[automated\] Merge branch ''main'' => ''net11\.0''$'
+              isRegex: True
+        - and:
+          - targetsBranch:
+              branch: release/11.0.1xx-preview7
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-preview7''$'
+              isRegex: True
       then:
       - approvePullRequest:
           comment: Auto-approved automated inter-branch merge.
       - enableAutoMerge:
           mergeMethod: merge
-      description: '[Inter-branch merge] Auto-approve and enable auto-merge for main to net11.0 and net11.0 to release'
+      description: '[Inter-branch merge] Auto-approve and enable auto-merge for exact forward-merge flows'
 onFailure: 
 onSuccess: 
