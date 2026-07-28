@@ -57,6 +57,18 @@ param(
     [string]$OutputPath = '',
     [string]$SummaryPath = '',
     [int]$MaxIssues = 300,
+    # Sized against live counts with headroom: a read-only run on 2026-07-28 saw 52 open
+    # `ci-scan` issues, 58 `ci-scan-net11`, and 296 open pull requests repo-wide.
+    #
+    # The PR bound is the one to watch. It indexes EVERY open PR, not just `[ci-fix]` ones,
+    # because an open PR referencing an issue is a closure blocker whoever opened it. So it
+    # tracks total repo PR volume, and 296/400 is only ~26% headroom. If open PRs ever
+    # exceed this, `Get-CiScanPullRequestIndex` reports incomplete, the run fail-closes on
+    # `pull-request-index-incomplete`, and NOTHING is ever closed again.
+    #
+    # That direction is safe — a short blocker index must never license a close — but it is
+    # silent, so raise this bound rather than letting the reconciler quietly stop working.
+    # The summary's `PR blocker index complete` row is what makes it visible at all.
     [int]$MaxPullRequests = 400,
     # Skips the AzDO round-trips. Coverage then reports as unverifiable, which fails
     # closed (no absences count), so this can never make the run more aggressive.
