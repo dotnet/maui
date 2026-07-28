@@ -612,12 +612,17 @@ function Get-CiScanRecurrenceRate {
         builds". Reading only the numerator would over-estimate the rate and therefore
         UNDER-estimate the number of absences required, which is the unsafe direction.
 
-        Returns $null only when the line is genuinely unparseable (absent, malformed, or
-        "in last 0 builds"); the caller substitutes the conservative default. A parsed
-        "0 in last <n> builds" is NOT unparseable — it is the rarest observable
-        recurrence, so it clamps to the 0.05 floor rather than falling back. Falling back
-        would substitute DefaultRecurrenceRate (0.30), which yields FEWER required
-        absences than the floor does, i.e. the unsafe direction.
+        Returns $null only when the line is genuinely unparseable (absent, malformed,
+        "in last 0 builds", or an impossible k > n); the caller fails closed to the
+        MAXIMUM wait. A parsed "0 in last <n> builds" is NOT unparseable — it is the
+        rarest observable recurrence, so it clamps to the 0.05 floor rather than falling
+        back.
+
+        k > n means more occurrences than builds observed, which no real scanner run can
+        produce. It used to be clamped to a rate of 1.0, i.e. "recurs in every build",
+        which yields MinRequiredAbsences — the most PERMISSIVE answer the function has.
+        Corrupt data must never buy a shorter wait than real data, so it is unparseable
+        rather than clamped. k == n is legitimate and stays ("3 in last 3 builds").
     #>
     [CmdletBinding()]
     param([AllowNull()][AllowEmptyString()][string]$Body)
@@ -628,6 +633,7 @@ function Get-CiScanRecurrenceRate {
     $k = [double]$Matches['k']
     $n = [double]$Matches['n']
     if ($n -le 0) { return $null }
+    if ($k -gt $n) { return $null }
 
     $rate = $k / $n
     if ($rate -gt 1.0) { $rate = 1.0 }
@@ -665,16 +671,40 @@ function Get-CiScanRequiredAbsences {
         closed to MaxRequiredAbsences. Note the conservative direction is COUNTER-
         intuitive: a lower p yields MORE required absences, so the safe fallback is the
         maximum wait, not DefaultRecurrenceRate.
+
+        That rule governs EVERY uninformative input, not just the non-finite one, and the
+        other two used to violate it six lines below where it is written:
+
+          * `$null` — `Get-CiScanRecurrenceRate` answers `$null` for a missing Occurrences
+            line AND for a malformed one. The canonical scanner template always emits
+            `- **Occurrences**: <k> in last <n> builds`, so absence means the issue is
+            non-canonical or the field is corrupt. Either way it is no information.
+            Routing it to DefaultRecurrenceRate meant CORRUPTING the line LOWERED the bar
+            from 25 absences to 9 — degrading the data made closure easier, which is the
+            definition of failing open.
+
+          * `p <= 0` — "never observed to recur" is the RAREST signal, not a missing one,
+            so monotonicity alone puts it at the maximum wait. Sending it to the default
+            put a discontinuity in the middle of the function: 0.01 required 25 and 0
+            required 9, so the most conservative input produced a permissive answer.
+            Unreachable today only because the parser floors the rate at 0.05 — a bound
+            in another function, which is exactly the borrowed safety this docblock
+            already warns about for the non-finite case.
+
+        The function is therefore monotonically non-increasing in p across its whole
+        domain, and every input carrying no usable information sits at MaxRequiredAbsences.
     #>
     [CmdletBinding()]
     param([AllowNull()][object]$RecurrenceRate)
 
     $d = $script:CiScanDefaults
-    $p = if ($null -eq $RecurrenceRate) { $d.DefaultRecurrenceRate } else { [double]$RecurrenceRate }
+    # No rate at all: missing or malformed Occurrences data. Fails closed, see above.
+    if ($null -eq $RecurrenceRate) { return $d.MaxRequiredAbsences }
+    $p = [double]$RecurrenceRate
     # Must precede the comparisons below: NaN compares false against everything, so it
     # would otherwise pass every guard and clamp and only surface at the final [int] cast.
     if ([double]::IsNaN($p) -or [double]::IsInfinity($p)) { return $d.MaxRequiredAbsences }
-    if ($p -le 0) { $p = $d.DefaultRecurrenceRate }
+    if ($p -le 0) { return $d.MaxRequiredAbsences }
     if ($p -ge 1.0) { return $d.MinRequiredAbsences }
 
     $n = [math]::Ceiling([math]::Log(1.0 - $d.AbsenceConfidence) / [math]::Log(1.0 - $p))

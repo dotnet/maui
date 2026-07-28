@@ -598,10 +598,73 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
         { Get-CiScanRequiredAbsences -RecurrenceRate $rate } | Should -Not -Throw
     }
 
-    It 'falls back to the default rate for null input' {
+    <#
+        `Get-CiScanRecurrenceRate` answers `$null` for BOTH a missing Occurrences line and
+        a malformed one, and the canonical scanner template always emits the field — so
+        `$null` means non-canonical or corrupt, i.e. no information, and the docblock's
+        rule applies: maximum wait, not DefaultRecurrenceRate.
+
+        This test previously asserted the opposite. That is what made the defect durable:
+        corrupting `- **Occurrences**: 0 in last 10 builds` into anything unparseable
+        dropped the requirement from 25 absences to 9, so DEGRADING the data made an issue
+        easier to close, and a green suite certified it.
+    #>
+    It 'fails closed to the maximum wait when there is no rate at all' {
         $d = Get-CiScanDefaults
-        Get-CiScanRequiredAbsences -RecurrenceRate $null |
-            Should -Be (Get-CiScanRequiredAbsences -RecurrenceRate $d.DefaultRecurrenceRate)
+        Get-CiScanRequiredAbsences -RecurrenceRate $null | Should -Be $d.MaxRequiredAbsences
+
+        # The end-to-end statement of the same thing: corruption must never relax the bar.
+        $wellFormed = Get-CiScanRecurrenceRate -Body '- **Occurrences**: 0 in last 10 builds'
+        $corrupt    = Get-CiScanRecurrenceRate -Body '- **Occurrences**: not a number'
+        $null -eq $corrupt | Should -BeTrue -Because 'an unparseable Occurrences line yields no rate'
+        Get-CiScanRequiredAbsences -RecurrenceRate $corrupt |
+            Should -BeGreaterOrEqual (Get-CiScanRequiredAbsences -RecurrenceRate $wellFormed) `
+            -Because 'corrupting the recurrence data must not lower the absence bar'
+    }
+
+    <#
+        "Never observed to recur" is the rarest signal, not a missing one, so monotonicity
+        alone places it at the maximum wait. Before this, 0.01 required 25 and 0 required
+        9 — a discontinuity that handed the most conservative input a permissive answer.
+        Reachable only through a bound in another function (the parser floors at 0.05),
+        which is the borrowed safety this suite exists to stop relying on.
+    #>
+    It 'keeps required absences monotonic, with no permissive island at or below zero' {
+        $d = Get-CiScanDefaults
+        foreach ($r in @(0.0, -0.5, -1.0)) {
+            Get-CiScanRequiredAbsences -RecurrenceRate $r | Should -Be $d.MaxRequiredAbsences
+        }
+
+        # Non-increasing in p across the whole domain: a rarer signature never requires
+        # FEWER absences than a more common one.
+        $rates = @(-1.0, 0.0, 0.01, 0.05, 0.1, 0.3, 0.5, 0.9, 1.0, 2.0)
+        $req = $rates | ForEach-Object { Get-CiScanRequiredAbsences -RecurrenceRate $_ }
+        for ($i = 1; $i -lt $req.Count; $i++) {
+            $req[$i] | Should -BeLessOrEqual $req[$i - 1] `
+                -Because "rate $($rates[$i]) must not require more absences than $($rates[$i-1])"
+        }
+    }
+
+    <#
+        k > n is impossible data: more occurrences than builds observed. It was clamped to
+        a rate of 1.0 — "recurs every build" — which returns MinRequiredAbsences, the most
+        permissive answer in the function. So the single most corrupt tuple bought the
+        SHORTEST wait, one step further open than the malformed case above.
+
+        k == n is legitimate and must keep working; the docblock's own example is
+        "3 in last 3 builds".
+    #>
+    It 'treats an impossible occurrence tuple as unparseable rather than as constant recurrence' {
+        $d = Get-CiScanDefaults
+        Get-CiScanRecurrenceRate -Body '- **Occurrences**: 9999 in last 1 build' |
+            Should -BeNullOrEmpty -Because 'more occurrences than builds is not data'
+        Get-CiScanRequiredAbsences -RecurrenceRate (Get-CiScanRecurrenceRate -Body '- **Occurrences**: 9999 in last 1 build') |
+            Should -Be $d.MaxRequiredAbsences
+
+        # k == n stays legitimate, and still means "recurs constantly".
+        Get-CiScanRecurrenceRate -Body '- **Occurrences**: 3 in last 3 builds' | Should -Be 1
+        Get-CiScanRequiredAbsences -RecurrenceRate (Get-CiScanRecurrenceRate -Body '- **Occurrences**: 3 in last 3 builds') |
+            Should -Be $d.MinRequiredAbsences
     }
 }
 
