@@ -581,8 +581,13 @@ function Get-CiScanHumanCommenters {
         #
         # Recorded as a fixed sentinel, never as payload text: the login is echoed into a
         # `human-comment:` verdict signal, so an attacker-chosen string must not reach it.
-        # The sentinel contains characters GitHub logins cannot ('<', '>'), so it can
-        # never collide with a real commenter.
+        # The sentinel must be something no GitHub login can equal. Logins are letters,
+        # digits and hyphens only, so the parentheses are what make it collision-proof —
+        # not the '<' and '>' this comment used to name, which the sentinel has never
+        # contained. The inversion mattered: the step-summary test requires the sentinel
+        # to carry NO angle brackets, so anyone reconciling the sentinel to its stated
+        # justification would have broken rendering. The property is pinned behaviourally
+        # in 'a sentinel that is neither a login nor markup'.
         #
         # This is a PER-ISSUE veto, not a run-level read error. The history here is
         # complete — every page was fetched — so the run-wide `Ok = $false` suppression

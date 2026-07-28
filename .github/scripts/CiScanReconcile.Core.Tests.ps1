@@ -839,6 +839,36 @@ Describe 'Get-CiScanIssueVerdict — gates' {
         $baseline.Decision | Should -Be 'candidate'
     }
 
+    It 'reports the recurrence rate it measured, never a plausible substitute' {
+        # The verdict used to record DefaultRecurrenceRate whenever the Occurrences line
+        # was missing or malformed. That did not merely lose the reading, it invented
+        # one: 0.30 sitting beside RequiredAbsences = 25, when 0.30 actually yields 9.
+        # Anyone reconciling the two numbers would find them irreconcilable, and 0.30 is
+        # the ordinary default, so nothing distinguished "recurrence was average" from
+        # "recurrence was unreadable and we failed closed". Assert the general property —
+        # the pair must always be self-consistent — rather than the one substitution,
+        # so any future fabrication is caught wherever it is introduced.
+        $canonical = New-CanonicalBody -Occurrences '3 in last 10 builds' -StateJson (New-StateJson -Absent (1..20))
+        $shapes = @{
+            'well-formed'      = $canonical
+            'malformed line'   = New-CanonicalBody -Occurrences 'lots, recently' -StateJson (New-StateJson -Absent (1..20))
+            'no Occurrences'   = ($canonical -replace '(?m)^- \*\*Occurrences\*\*.*\r?\n', '')
+        }
+
+        foreach ($name in $shapes.Keys) {
+            $v = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body $shapes[$name]) `
+                -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
+            $derived = Get-CiScanRequiredAbsences -RecurrenceRate $v.RecurrenceRate
+            $derived | Should -Be $v.RequiredAbsences -Because "$name must report a rate that reproduces its own bar"
+        }
+
+        # And the unreadable shapes must say so, rather than naming a number.
+        $malformed = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body $shapes['malformed line']) `
+            -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
+        $malformed.RecurrenceRate | Should -BeNullOrEmpty
+        $malformed.RequiredAbsences | Should -Be (Get-CiScanDefaults).MaxRequiredAbsences
+    }
+
     It 'counts only builds the reconciler independently verified, not what the marker claimed' {
         # The marker claims 20 absences; independent re-derivation confirms 2.
         $v = Get-CiScanIssueVerdict -Issue $script:CanonicalIssue -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified @(1, 2))
@@ -1032,6 +1062,71 @@ Describe 'Get-CiScanReopenVerdict' {
     It 'reopens only when all three conditions hold' {
         $i = [pscustomobject]@{ number = 1; labels = @([pscustomobject]@{ name = 'auto-closed-stale' }); closed_at = $script:Now.AddDays(-2).ToString('o') }
         (Get-CiScanReopenVerdict -Issue $i -Config $script:Net11 -Now $script:Now -RecurrenceObserved).Decision | Should -Be 'reopen'
+    }
+}
+
+Describe 'A timestamp with no offset means UTC, whatever the runner is set to' {
+    <#
+        `ToUniversalTime()` reads a DateTime whose Kind is `Unspecified` as LOCAL and
+        shifts it by the machine offset. That is reachable rather than theoretical:
+        `ConvertFrom-Json` hands back `Kind=Unspecified` for any timestamp serialised
+        without an offset, so a marker holding `"last_present_at":"2026-07-10T00:00:00"`
+        reaches the converters as a DateTime, not as a string — and the string path was
+        the only one parsing with `AssumeUniversal`. Measured on one input:
+
+            TZ=UTC             2026-07-10T00:00:00Z
+            TZ=America/Chicago 2026-07-10T05:00:00Z
+            TZ=Europe/Warsaw   2026-07-09T22:00:00Z
+
+        East of UTC the stamp moves EARLIER, which resets the quiet clock earlier and
+        inflates QuietDays — the permissive direction.
+
+        These assertions are honest about their own limits: under a UTC runner, local and
+        UTC coincide, so they would pass against the defect. They pin the intended
+        semantics and catch the regression for anyone running the suite off UTC, but the
+        instrument with signal in CI is the static invariant in Invoke-CiScanReconcile.Tests.ps1
+        that forbids `.ToUniversalTime()` on these branches. Noted here because a test that
+        cannot fail in the environment that runs it is worth labelling rather than trusting.
+    #>
+    It 'treats an Unspecified DateTime as already UTC rather than as local' {
+        $unspecified = [datetime]::SpecifyKind(
+            [datetime]::new(2026, 7, 10, 0, 0, 0), [System.DateTimeKind]::Unspecified)
+        $result = ConvertTo-CiScanUtcDateTime -Value $unspecified
+
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result.ToString('o', [cultureinfo]::InvariantCulture) | Should -Be '2026-07-10T00:00:00.0000000Z'
+    }
+
+    It 'still converts a genuinely Local DateTime rather than relabelling it' {
+        $local = [datetime]::SpecifyKind(
+            [datetime]::new(2026, 7, 10, 0, 0, 0), [System.DateTimeKind]::Local)
+        $result = ConvertTo-CiScanUtcDateTime -Value $local
+
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be $local.ToUniversalTime()
+    }
+
+    It 'leaves a UTC DateTime exactly as it is' {
+        $utc = [datetime]::SpecifyKind(
+            [datetime]::new(2026, 7, 10, 0, 0, 0), [System.DateTimeKind]::Utc)
+        (ConvertTo-CiScanUtcDateTime -Value $utc).ToString('o', [cultureinfo]::InvariantCulture) |
+            Should -Be '2026-07-10T00:00:00.0000000Z'
+    }
+
+    <#
+        The property that actually matters: an offsetless timestamp must mean the same
+        instant whether it arrives as text or as a ConvertFrom-Json DateTime. The two
+        paths disagreed, and the DateTime one was wrong.
+    #>
+    It 'reads an offsetless stamp identically as text and as a ConvertFrom-Json value' {
+        $fromJson = ('{"t":"2026-07-10T00:00:00"}' | ConvertFrom-Json).t
+        $fromJson | Should -BeOfType [datetime]
+        $fromJson.Kind | Should -Be ([System.DateTimeKind]::Unspecified)
+
+        (ConvertFrom-CiScanTimestamp -Value $fromJson) |
+            Should -Be (ConvertFrom-CiScanTimestamp -Value '2026-07-10T00:00:00')
+        (ConvertTo-CiScanTimestamp -Value $fromJson) |
+            Should -Be (ConvertTo-CiScanTimestamp -Value '2026-07-10T00:00:00')
     }
 }
 
