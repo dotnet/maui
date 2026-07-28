@@ -300,8 +300,9 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | **`BAR build for SR HEAD`** | SR branches with the SR HEAD SHA resolved | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. `UNKNOWN` if `darc` isn't on PATH or the build lookup fails (report includes the exact verification command). |
 | **`Ship Assessment validation feed`** | SR branches with the SR HEAD SHA resolved | `READY` surfaces the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed URL to paste into the DevDiv ship **Assessment**, once `darc get-asset` confirms the build's published `NugetFeed` location. `WATCH` if the build isn't promoted to a channel yet (no channel → no feed → the Assessment has no validation feed to link — the SR9 miss), or if a promoted build's `NugetFeed` location isn't confirmed by `darc get-asset` yet (don't link the guessed per-build endpoint before BAR publishes it — `--skip-assets-publishing` can leave it missing). `UNKNOWN` when `darc` is unavailable or the build lookup fails, so the feed can't be resolved. |
 | **`Milestone for current cycle`** | SR + preview branches | `BLOCKED` if the current cycle's milestone (e.g. `.NET 10 SR8` or `.NET 11.0-preview6`) doesn't exist in the GitHub milestone list — fixed issues have nowhere to land. |
-| **`Milestone for next cycle`** | SR + preview branches | `CLEANUP` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships, but it doesn't block the current release. |
-| **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
+| **`Milestone for next cycle`** | SR + preview branches | `CLEANUP` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships, but it doesn't block the current release. **The preview train is `preview1…preview7 → rc1 → rc2 → GA` — there is no `preview8`**, so the cycle after `preview7` is `.NET <major>.0-rc1` (see [Pre-release train cadence](#pre-release-train-cadence-no-preview8)). After `rc2` the check is skipped entirely (GA doesn't use this naming). |
+| **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR, or the preview/rc train) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). The **current** and **next** cycle milestones are excluded here — the next-cycle (roll-forward) target is handled by `Next-cycle milestone past due` below so it isn't mislabeled as shipped debt. |
+| **`Next-cycle milestone past due`** | SR + preview branches | `CLEANUP` if the next-cycle (roll-forward) milestone *exists* but is >7 days past its `due_on`. This is **not** already-shipped debt — it's the target open issues roll forward to after the current cycle ships — so it's surfaced distinctly rather than dropped. Lane-agnostic (an overdue `SR<n+1>` while surveying `SR<n>` triggers it exactly as a slipped `rc1` does). A slip usually means the schedule moved (bump `due_on`) or the cycle was skipped and the milestone abandoned (triage + close). |
 | **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
 | **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
 
@@ -340,6 +341,28 @@ The header line **`Expected ship date`** is rendered from `Get-ExpectedShipDate`
 | Anything else (`81`, `82`, `91`…) | **ASAP** — no fixed cadence | SR8 hotfix `10.0.81` → as soon as ready |
 
 Surfaced in JSON as `expectedShipDate.{cadence, date, daysFromNow, formattedLong, note, patchVersion}` so downstream automation doesn't redo the math.
+
+### Pre-release train cadence (no `preview8`)
+
+.NET ships a **single ordered pre-release train per major**:
+
+```
+preview1 → preview2 → … → preview7 → rc1 → rc2 → GA
+```
+
+**`preview7` is the FINAL preview. There is no `preview8`.** Verified against dotnet/maui's own tags and milestones:
+
+| Major | Last preview | Then | Milestones |
+|-------|--------------|------|------------|
+| .NET 9 | `9.0.0-preview.7.24407.4` | `9.0.0-rc.1.24453.9` → `9.0.0-rc.2.24503.2` | — |
+| .NET 10 | `10.0.0-preview.7.25406.3` | `10.0.0-rc.1.25424.2` → `10.0.0-rc.2.25504.7` | `.NET 10.0-preview7` → `.NET 10.0-rc1` → `.NET 10.0-rc2` |
+
+Two consequences the report must get right:
+
+1. **Roll-forward milestone.** The cycle after `preview7` is `.NET <major>.0-rc1`, *not* `.NET <major>.0-preview8`. `Get-PreviewTrainMilestoneTitle` in [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) owns this mapping (ordinals `1..7` → previews, `8` → rc1, `9` → rc2, `10+` → `$null`); `$script:FinalPreviewNumber` is the single constant to change if the cadence ever moves. (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since .NET 6.)
+2. **`preview7` is the feature/API-lock gate.** Because no eighth preview exists, work that misses the `preview7` cut does **not** roll into "the next preview" — RC is normally API-locked and go-live-licensed, so in practice it slips to the **next major**. When reporting on a `preview7` branch or candidate, say so explicitly: public-API PRs still open at the `preview7` cut are a *decide-now* item, not a defer-later one.
+
+> **Where the `rc` mapping actually fires (and where it doesn't).** `Get-MilestoneHygieneChecks` lives only in the **SR lane** (`Get-ReleaseReadiness.ps1`); the automated preview lane (`Get-PreviewReadiness.ps1` → `Test-PreviewMilestoneExists`) validates only the *current* preview's own milestone and never derives a next-cycle title. So an `rc`-shaped milestone title is produced **only** when the SR-lane hygiene check is driven with a preview-shaped branch — an ad-hoc `Get-ReleaseReadiness.ps1 -SrBranch release/<major>.0.1xx-preview7` run, or candidate mode off `preview7`. An **in-flight survey of an actual `release/*-rc1` branch produces no milestone checks at all**: rc-shaped branches match neither the SR nor the preview shape, so the parser skips them (scenario M15). Treat the `preview→rc` mapping as defensive normalization for preview-lane inputs, **not** a live milestone gate on cut `rc` branches.
 
 ### Maestro / BAR check gating
 
