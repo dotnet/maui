@@ -777,6 +777,12 @@ namespace Microsoft.Maui.Hosting
 				{
 					lock (FacadeBridgeState<T>.SyncRoot)
 					{
+						// Invariant: every bridged-facade mutation (SetDefault/SetCurrent, via
+						// TrackAndSet) must run under FacadeBridgeState<T>.SyncRoot. The get->check->set
+						// restoration below (read current, verify this assignment still owns it, restore
+						// Previous) is only atomic against those mutations while that invariant holds.
+						// Bridging a facade through a setter without taking this lock would reopen a
+						// TOCTOU window that could clobber a concurrent replacement with the predecessor.
 						var index = FacadeBridgeState<T>.Assignments.IndexOf(assignment);
 						if (index < 0)
 							return;

@@ -55,9 +55,9 @@ namespace Microsoft.Maui.Hosting
 		/// Disposal runs exactly once. When several callers race <see cref="Dispose"/> and/or
 		/// <see cref="DisposeAsync"/> on the same instance, the first caller performs the teardown
 		/// and every other caller waits for it to finish and observes the same exception. A caller
-		/// that re-enters disposal from the logical execution flow already performing it (for example from an
-		/// <c>IMauiAppCleanupService.Cleanup</c> implementation) returns immediately without waiting
-		/// to avoid deadlocking on itself, and therefore does not observe completion or exceptions.
+		/// that re-enters disposal from the logical execution flow already performing it returns
+		/// immediately without waiting to avoid deadlocking on itself, and therefore does not observe
+		/// completion or exceptions.
 		/// </para>
 		/// </remarks>
 		public void Dispose()
@@ -103,8 +103,9 @@ namespace Microsoft.Maui.Hosting
 		/// Disposal runs exactly once. When several callers race <see cref="Dispose"/> and/or
 		/// <see cref="DisposeAsync"/> on the same instance, the first caller performs the teardown
 		/// and every other caller awaits its completion and observes the same exception. A caller
-		/// that re-enters disposal from the logical execution flow already performing it returns immediately without
-		/// awaiting to avoid deadlocking on itself, and therefore does not observe completion or exceptions.
+		/// that re-enters disposal from the logical execution flow already performing it returns
+		/// immediately without awaiting to avoid deadlocking on itself, and therefore does not
+		/// observe completion or exceptions.
 		/// </remarks>
 		public async ValueTask DisposeAsync()
 		{
