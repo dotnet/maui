@@ -154,6 +154,131 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task ParallelDisposeCallersAllWaitForCleanupCompletion()
+		{
+			// A genuinely parallel race (Task.WhenAll) of sync and async disposers on the same
+			// instance: the winner runs cleanup once and every "losing" caller must wait until that
+			// teardown finishes rather than returning early.
+			var timeout = TimeSpan.FromSeconds(30);
+			var cleanupStarted = 0;
+			var cleanupFinished = 0;
+			var enteredCleanup = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseCleanup = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					Interlocked.Increment(ref cleanupStarted);
+					enteredCleanup.TrySetResult(true);
+					Assert.True(releaseCleanup.Task.Wait(timeout));
+					Interlocked.Increment(ref cleanupFinished);
+				}));
+			var app = builder.Build();
+
+			const int callers = 6;
+			var start = new Barrier(callers);
+			var tasks = new Task[callers];
+			for (int i = 0; i < callers; i++)
+			{
+				var useSync = i % 2 == 0;
+				tasks[i] = Task.Run(async () =>
+				{
+					start.SignalAndWait(timeout);
+					if (useSync)
+						app.Dispose();
+					else
+						await app.DisposeAsync();
+				});
+			}
+
+			await enteredCleanup.Task.WaitAsync(timeout);
+
+			// While the winner is still inside cleanup, no caller (winner or loser) may have returned.
+			await Task.Delay(150);
+			Assert.All(tasks, t => Assert.False(t.IsCompleted));
+
+			releaseCleanup.TrySetResult(true);
+			await Task.WhenAll(tasks).WaitAsync(timeout);
+
+			Assert.Equal(1, cleanupStarted);
+			Assert.Equal(1, cleanupFinished);
+		}
+
+		[Fact]
+		public async Task ParallelDisposeCallersAllObserveCleanupException()
+		{
+			// Every concurrent caller (sync Dispose and async DisposeAsync) must observe the winner's
+			// teardown exception, not silently return.
+			var timeout = TimeSpan.FromSeconds(30);
+			var cleanupCount = 0;
+			var releaseCleanup = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					Interlocked.Increment(ref cleanupCount);
+					Assert.True(releaseCleanup.Task.Wait(timeout));
+					throw new InvalidOperationException("cleanup boom");
+				}));
+			var app = builder.Build();
+
+			const int callers = 6;
+			var start = new Barrier(callers);
+			var tasks = new Task[callers];
+			for (int i = 0; i < callers; i++)
+			{
+				var useSync = i % 2 == 0;
+				tasks[i] = Task.Run(async () =>
+				{
+					start.SignalAndWait(timeout);
+					if (useSync)
+						app.Dispose();
+					else
+						await app.DisposeAsync();
+				});
+			}
+
+			// Give every caller time to reach the one-shot gate before the winner throws.
+			await Task.Delay(150);
+			releaseCleanup.TrySetResult(true);
+
+			foreach (var task in tasks)
+			{
+				var exception = await Record.ExceptionAsync(() => task);
+				var invalidOperation = Assert.IsType<InvalidOperationException>(exception);
+				Assert.Equal("cleanup boom", invalidOperation.Message);
+			}
+
+			Assert.Equal(1, cleanupCount);
+		}
+
+		[Fact]
+		public void ReentrantDisposeFromCleanupOnAnotherThreadDoesNotDeadlock()
+		{
+			// The disposal scope flows through Task.Run, so cleanup can hand work to another thread
+			// and wait for it without that reentrant caller waiting on the outer disposal.
+			var timeout = TimeSpan.FromSeconds(30);
+			var cleanupCount = 0;
+			MauiApp app = null!;
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					Interlocked.Increment(ref cleanupCount);
+					Assert.True(Task.Run(app.Dispose).Wait(timeout));
+					Assert.True(Task.Run(async () => await app.DisposeAsync()).Wait(timeout));
+				}));
+			app = builder.Build();
+
+			var disposal = Task.Run(() => app.Dispose());
+
+			Assert.True(disposal.Wait(timeout), "Reentrant dispose from a cleanup service deadlocked.");
+			Assert.Equal(1, cleanupCount);
+		}
+
+		[Fact]
 		public void MauiAppDisposeDisposesAsyncOnlyServiceProvider()
 		{
 			var factory = new AsyncOnlyServiceProviderFactory();

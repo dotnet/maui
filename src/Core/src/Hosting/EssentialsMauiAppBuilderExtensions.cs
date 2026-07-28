@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,7 +42,13 @@ namespace Microsoft.Maui.Hosting
 
 	public static class EssentialsExtensions
 	{
-		static readonly object s_essentialsBridgeLock = new();
+		// Serializes access to the shared map-token bookkeeping (s_mapTokenAssignments) only.
+		// It is intentionally NOT held across user code (ConfigureEssentials delegates, DI factory
+		// resolution) or facade reads. Facade ownership bookkeeping is serialized per type by
+		// FacadeBridgeState<T>.SyncRoot instead. See EssentialsInitializer.InitializeCore.
+#if WINDOWS || TIZEN
+		static readonly object s_mapTokenLock = new();
+#endif
 #if WINDOWS || TIZEN
 		static readonly List<MapTokenAssignment> s_mapTokenAssignments = new();
 #endif
@@ -55,36 +62,36 @@ namespace Microsoft.Maui.Hosting
 
 		internal static void RestoreFacadeCleanups(List<Action> facadeCleanups)
 		{
-			lock (s_essentialsBridgeLock)
+			// No global lock: each cleanup action acquires the per-type FacadeBridgeState<T>.SyncRoot
+			// (map-token cleanups use s_mapTokenLock) so restoration stays serialized with concurrent
+			// bridging without holding a process-global lock across the whole batch.
+			List<Exception>? exceptions = null;
+			try
 			{
-				List<Exception>? exceptions = null;
-				try
+				for (int i = facadeCleanups.Count - 1; i >= 0; i--)
 				{
-					for (int i = facadeCleanups.Count - 1; i >= 0; i--)
+					try
 					{
-						try
-						{
-							facadeCleanups[i]();
-						}
-						catch (Exception ex)
-						{
-							(exceptions ??= new()).Add(ex);
-						}
+						facadeCleanups[i]();
+					}
+					catch (Exception ex)
+					{
+						(exceptions ??= new()).Add(ex);
 					}
 				}
-				finally
-				{
-					facadeCleanups.Clear();
-				}
-
-				if (exceptions is null)
-					return;
-
-				if (exceptions.Count == 1)
-					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
-
-				throw new AggregateException("One or more Essentials facade cleanup actions failed.", exceptions);
 			}
+			finally
+			{
+				facadeCleanups.Clear();
+			}
+
+			if (exceptions is null)
+				return;
+
+			if (exceptions.Count == 1)
+				ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+			throw new AggregateException("One or more Essentials facade cleanup actions failed.", exceptions);
 		}
 
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
@@ -202,8 +209,12 @@ namespace Microsoft.Maui.Hosting
 
 			public void Initialize(IServiceProvider services)
 			{
-				lock (s_essentialsBridgeLock)
-					InitializeCore(services);
+				// No process-global lock is held across InitializeCore. It runs user code
+				// (ConfigureEssentials delegates and DI factory resolution) that could reentrantly
+				// build/dispose another MauiApp or read a facade on another thread; holding a global
+				// lock here previously risked deadlock. Facade ownership is serialized per type by
+				// FacadeBridgeState<T>.SyncRoot; map-token bookkeeping uses s_mapTokenLock.
+				InitializeCore(services);
 			}
 
 			void InitializeCore(IServiceProvider services)
@@ -511,10 +522,26 @@ namespace Microsoft.Maui.Hosting
 						previousOwner,
 						allowsSharedOwnership);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
-					setter(impl);
+					SetFacade(setter, impl);
 				}
 
 				AddFacadeCleanup(assignment, currentGetter, setter, facadeCleanups);
+			}
+
+			// Invariant: every write to a bridged static facade (SetDefault/SetCurrent) MUST hold
+			// FacadeBridgeState<T>.SyncRoot. The facade setters are plain unlocked field writes, so the
+			// per-type SyncRoot is the only lock serializing the get-current-owner -> set critical
+			// sections in TrackAndSet and AddFacadeCleanup. A writer that skips the lock reopens a
+			// TOCTOU window that can clobber a concurrent replacement with a stale predecessor. Route
+			// all bridged facade writes through here so the invariant is enforced (in Debug) and
+			// documented for future callers.
+			static void SetFacade<T>(Action<T?> setter, T? value)
+				where T : class
+			{
+				Debug.Assert(
+					Monitor.IsEntered(FacadeBridgeState<T>.SyncRoot),
+					"Bridged facade writes (SetDefault/SetCurrent) must hold FacadeBridgeState<T>.SyncRoot.");
+				setter(value);
 			}
 
 			static T? GetFacadeBackingField<T>(
@@ -534,34 +561,38 @@ namespace Microsoft.Maui.Hosting
 				string mapServiceToken,
 				List<Action> facadeCleanups)
 			{
+				lock (s_mapTokenLock)
+				{
 #if WINDOWS
-				var previousPlatformToken = WindowsMapServiceTokenGetter();
-				var previousPlatformOwner = FindMapTokenOwner(previousPlatformToken);
+					var previousPlatformToken = WindowsMapServiceTokenGetter();
+					var previousPlatformOwner = FindMapTokenOwner(previousPlatformToken);
 #endif
-				var assignment = new MapTokenAssignment(
-					implementation,
-					mapServiceToken,
-					implementation.MapServiceToken
+					var assignment = new MapTokenAssignment(
+						implementation,
+						mapServiceToken,
+						implementation.MapServiceToken
 #if WINDOWS
-					, previousPlatformToken
-					, previousPlatformOwner
+						, previousPlatformToken
+						, previousPlatformOwner
 #endif
-				);
+					);
 
-				s_mapTokenAssignments.Add(assignment);
-				try
-				{
-					implementation.MapServiceToken = mapServiceToken;
+					s_mapTokenAssignments.Add(assignment);
+					try
+					{
+						implementation.MapServiceToken = mapServiceToken;
+					}
+					catch
+					{
+						s_mapTokenAssignments.Remove(assignment);
+						throw;
+					}
+					facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
 				}
-				catch
-				{
-					s_mapTokenAssignments.Remove(assignment);
-					throw;
-				}
-				facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
 			}
 
 #if WINDOWS
+			// Caller must hold s_mapTokenLock.
 			static MapTokenAssignment? FindMapTokenOwner(string? token)
 			{
 				for (int i = s_mapTokenAssignments.Count - 1; i >= 0; i--)
@@ -575,6 +606,12 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 			static void CleanupMapServiceToken(MapTokenAssignment assignment)
+			{
+				lock (s_mapTokenLock)
+					CleanupMapServiceTokenLocked(assignment);
+			}
+
+			static void CleanupMapServiceTokenLocked(MapTokenAssignment assignment)
 			{
 				var index = s_mapTokenAssignments.IndexOf(assignment);
 				if (index < 0)
@@ -757,7 +794,7 @@ namespace Microsoft.Maui.Hosting
 
 						FacadeBridgeState<T>.Assignments.RemoveAt(index);
 						if (ownsCurrent)
-							setter(assignment.Previous);
+							SetFacade(setter, assignment.Previous);
 					}
 
 					if (typeof(T) == typeof(IPreferences) ||
@@ -817,6 +854,11 @@ namespace Microsoft.Maui.Hosting
 
 			static class FacadeBridgeState<T> where T : class
 			{
+				// SyncRoot serializes both the ownership bookkeeping (Assignments) and the bridged
+				// facade field itself. INVARIANT: all bridged facade writes (SetDefault/SetCurrent for
+				// this T) must be performed while holding SyncRoot (see SetFacade). The facade setters
+				// are plain unlocked field writes, so this lock is the sole guard against a TOCTOU
+				// clobber between reading the current owner and writing the replacement.
 				internal static readonly object SyncRoot = new();
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
 
@@ -851,27 +893,28 @@ namespace Microsoft.Maui.Hosting
 				{
 					get
 					{
-						lock (s_essentialsBridgeLock)
+						// Intentionally does NOT take a process-global lock: doing so previously
+						// deadlocked when a facade read raced an in-flight EssentialsInitializer that
+						// held the global lock across user code. _sync guards this instance's cached
+						// state; the dependency getters take the per-type FacadeBridgeState<T>.SyncRoot.
+						lock (_sync)
 						{
-							lock (_sync)
+							var preferences = _getPreferences();
+							var appInfo = _getAppInfo();
+
+							if (_state is null ||
+								!_state.Preferences.Matches(preferences) ||
+								!_state.AppInfo.Matches(appInfo))
 							{
-								var preferences = _getPreferences();
-								var appInfo = _getAppInfo();
-
-								if (_state is null ||
-									!_state.Preferences.Matches(preferences) ||
-									!_state.AppInfo.Matches(appInfo))
-								{
-									_state = new VersionTrackingState(
-										new VersionTrackingImplementation(
-											preferences.Implementation,
-											appInfo.Implementation),
-										preferences,
-										appInfo);
-								}
-
-								return _state.Implementation;
+								_state = new VersionTrackingState(
+									new VersionTrackingImplementation(
+										preferences.Implementation,
+										appInfo.Implementation),
+									preferences,
+									appInfo);
 							}
+
+							return _state.Implementation;
 						}
 					}
 				}
@@ -1025,6 +1068,10 @@ namespace Microsoft.Maui.Hosting
 
 		sealed class EssentialsCleanup : IMauiAppCleanupService
 		{
+			// Per-instance lock: each MauiApp owns its own EssentialsCleanup singleton, so cleanup
+			// state is guarded per app rather than by a process-global lock. Facade restoration inside
+			// DisposeCore still serializes per type via FacadeBridgeState<T>.SyncRoot.
+			readonly object _sync = new();
 			List<Action> _facadeCleanups = new();
 			bool _cleanedUp;
 #if !TIZEN
@@ -1046,7 +1093,7 @@ namespace Microsoft.Maui.Hosting
 
 			public void Cleanup()
 			{
-				lock (s_essentialsBridgeLock)
+				lock (_sync)
 				{
 					if (_cleanedUp)
 						return;

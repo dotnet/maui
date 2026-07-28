@@ -1227,9 +1227,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task ConcurrentMauiAppBuildsSerializeEssentialsInitialization()
+		public async Task ConcurrentMauiAppBuildsDoNotHoldGlobalLockAcrossEssentialsDelegates()
 		{
-			var probe = new InitializationConcurrencyProbe();
+			// Regression test for the process-global s_essentialsBridgeLock being held across user
+			// code. The ConfigureEssentials delegates are forced (via a Barrier) to run at the same
+			// time; if initialization serialized them under a global lock, the second build could
+			// never enter its delegate and this would deadlock. Facade ownership is still serialized
+			// per type by FacadeBridgeState<T>.SyncRoot, which the ownership tests cover.
+			var timeout = TimeSpan.FromSeconds(30);
+			var probe = new InitializationConcurrencyProbe(timeout);
 			var firstBuilder = MauiApp.CreateBuilder();
 			firstBuilder.ConfigureEssentials(_ => probe.Enter());
 			var secondBuilder = MauiApp.CreateBuilder();
@@ -1239,10 +1245,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var firstBuild = StartBuild(firstBuilder);
 			var secondBuild = StartBuild(secondBuilder);
 
-			var apps = await Task.WhenAll(firstBuild, secondBuild);
+			var apps = await Task.WhenAll(firstBuild, secondBuild).WaitAsync(timeout);
 			try
 			{
-				Assert.Equal(1, probe.MaxConcurrent);
+				// Both delegates ran concurrently: user code is no longer serialized by a global lock.
+				Assert.Equal(2, probe.MaxConcurrent);
 				Assert.Equal(2, probe.EntryCount);
 			}
 			finally
@@ -1256,13 +1263,39 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					() =>
 					{
 						Assert.True(
-							start.SignalAndWait(TimeSpan.FromSeconds(10)),
+							start.SignalAndWait(timeout),
 							"Timed out waiting for both build tasks to start.");
 						return builder.Build();
 					},
 					CancellationToken.None,
 					TaskCreationOptions.LongRunning,
 					TaskScheduler.Default);
+		}
+
+		[Fact]
+		public async Task EssentialsInitializationDoesNotDeadlockOnReentrantBuildFromDelegate()
+		{
+			// A ConfigureEssentials delegate that reentrantly builds and disposes another MauiApp on
+			// a different thread must not deadlock. Holding a process-global lock across the delegate
+			// (the old behavior) blocked the nested build's own initialization on that lock.
+			var timeout = TimeSpan.FromSeconds(30);
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureEssentials(_ =>
+			{
+				var nested = Task.Run(() =>
+				{
+					var nestedBuilder = MauiApp.CreateBuilder();
+					nestedBuilder.ConfigureEssentials();
+					nestedBuilder.Build().Dispose();
+				});
+
+				Assert.True(
+					nested.Wait(timeout),
+					"Nested MauiApp build deadlocked: initialization held a lock across the delegate.");
+			});
+
+			var app = await Task.Run(builder.Build).WaitAsync(timeout);
+			app.Dispose();
 		}
 
 		[Fact]
@@ -1455,10 +1488,16 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		sealed class InitializationConcurrencyProbe
 		{
-			readonly ManualResetEventSlim _secondEntry = new();
+			readonly Barrier _bothEntered = new(2);
+			readonly TimeSpan _timeout;
 			int _active;
 			int _entries;
 			int _maxConcurrent;
+
+			public InitializationConcurrencyProbe(TimeSpan timeout)
+			{
+				_timeout = timeout;
+			}
 
 			public int EntryCount => Volatile.Read(ref _entries);
 
@@ -1468,11 +1507,14 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				var active = Interlocked.Increment(ref _active);
 				UpdateMax(active);
+				Interlocked.Increment(ref _entries);
 
-				if (Interlocked.Increment(ref _entries) == 1)
-					_secondEntry.Wait(TimeSpan.FromSeconds(5));
-				else
-					_secondEntry.Set();
+				// Block until BOTH initializers are inside their delegate at the same time. If the
+				// caller held a process-global lock across this delegate, the second initializer
+				// could never reach here and this would time out.
+				Assert.True(
+					_bothEntered.SignalAndWait(_timeout),
+					"The two Essentials initializers did not run their delegates concurrently.");
 
 				Interlocked.Decrement(ref _active);
 			}
