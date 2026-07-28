@@ -85,6 +85,7 @@ boom
             [string]$Branch = 'net11.0',
             [string]$Pipeline = 'maui-pr-uitests',
             [string]$ClockStart = '2026-06-01T00:00:00Z',
+            [string]$LastPresent = $null,
             [int]$Version = 1
         )
         $o = [ordered]@{
@@ -92,6 +93,7 @@ boom
             absent_builds = @($Absent); present_builds = @($Present)
             clock_start_at = $ClockStart; candidate_notified = $false; runs = 5
         }
+        if ($LastPresent) { $o.last_present_at = $LastPresent }
         return ($o | ConvertTo-Json -Compress)
     }
 
@@ -673,5 +675,128 @@ Describe 'Get-CiScanReopenVerdict' {
     It 'reopens only when all three conditions hold' {
         $i = [pscustomobject]@{ number = 1; labels = @([pscustomobject]@{ name = 'auto-closed-stale' }); closed_at = $script:Now.AddDays(-2).ToString('o') }
         (Get-CiScanReopenVerdict -Issue $i -Config $script:Net11 -Now $script:Now -RecurrenceObserved).Decision | Should -Be 'reopen'
+    }
+}
+
+Describe 'Timestamp handling is culture-independent' {
+    # Regression: state timestamps used to be `[string]`-cast out of `ConvertFrom-Json`
+    # and re-read with `[datetime]::TryParse` under the CURRENT culture. The cast renders
+    # with the invariant 'MM/dd/yyyy' shape, so on any dd/MM locale the day and month
+    # transposed and the quiet clock jumped by months.
+    BeforeEach {
+        $script:OriginalCulture = [System.Threading.Thread]::CurrentThread.CurrentCulture
+    }
+    AfterEach {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = $script:OriginalCulture
+    }
+
+    It 'round-trips a ConvertFrom-Json timestamp unchanged under a dd/MM culture' -ForEach @(
+        @{ Culture = 'en-GB' }, @{ Culture = 'de-DE' }, @{ Culture = 'pl-PL' }
+    ) {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = [cultureinfo]::GetCultureInfo($Culture)
+        # ConvertFrom-Json materializes an ISO-8601 field as a [datetime], which is the
+        # exact input shape that used to be mangled.
+        $parsed = '{"clock_start_at":"2026-07-01T00:00:00Z"}' | ConvertFrom-Json
+        $round = ConvertFrom-CiScanTimestamp (ConvertTo-CiScanTimestamp $parsed.clock_start_at)
+
+        $round.Year | Should -Be 2026
+        $round.Month | Should -Be 7
+        $round.Day | Should -Be 1
+        $round.Kind | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'computes the same quiet period regardless of culture' -ForEach @(
+        @{ Culture = 'en-US' }, @{ Culture = 'pl-PL' }
+    ) {
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = [cultureinfo]::GetCultureInfo($Culture)
+        $issue = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..20) -ClockStart '2026-07-27T00:00:00Z'))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        # 2026-07-27 -> 2026-08-01 is 5 days in every locale. The bug reported 35.
+        $v.QuietDays | Should -Be 5
+    }
+
+    It 'treats an offset-less timestamp as UTC rather than local time' {
+        $utc = ConvertFrom-CiScanTimestamp '2026-07-01T12:00:00'
+        $utc.Hour | Should -Be 12
+        $utc.Kind | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'returns null for an unparseable timestamp instead of a min-value date' {
+        ConvertFrom-CiScanTimestamp 'not-a-date' | Should -BeNullOrEmpty
+        ConvertFrom-CiScanTimestamp '' | Should -BeNullOrEmpty
+        ConvertFrom-CiScanTimestamp $null | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Staleness is recency-aware' {
+    It 'discards absences observed at or before the last recorded presence' {
+        # 20 absences from BEFORE the signature last fired say nothing about now.
+        $issue = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..20) -Present @(21)))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        $v.VerifiedAbsences | Should -Be 0
+        $v.Decision | Should -Not -Be 'candidate'
+        $v.Detail | Should -Contain 'absences-before-last-presence-discarded:20'
+    }
+
+    It 'keeps absences observed after the last recorded presence' {
+        $issue = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..20) -Present @(5)))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        $v.VerifiedAbsences | Should -Be 15
+        $v.AbsentBuildIds | Should -Not -Contain 5
+        $v.AbsentBuildIds | Should -Contain 6
+    }
+
+    It 'resets the quiet clock to the last observed recurrence' {
+        # The signature failed one day before Now, so it has been quiet for 1 day,
+        # not the ~61 days implied by a clock_start_at of 2026-06-01.
+        $issue = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..20) -LastPresent $script:Now.AddDays(-1).ToString('o')))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        $v.QuietDays | Should -Be 1
+        $v.Detail | Should -Contain 'clock-reset-by-recurrence'
+        $v.Decision | Should -Be 'watching'
+    }
+
+    It 'does not move the clock backwards for a recurrence older than the clock start' {
+        $issue = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..20) -ClockStart '2026-07-01T00:00:00Z' `
+                    -LastPresent '2026-05-01T00:00:00Z'))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        $v.QuietDays | Should -Be 31
+        $v.Detail | Should -Not -Contain 'clock-reset-by-recurrence'
+    }
+}
+
+Describe 'A human reopen is a permanent veto' {
+    It 'never re-closes an open issue this automation already auto-closed' {
+        $issue = New-TestIssue `
+            -Labels @('ci-scan-net11', 'auto-closed-stale') `
+            -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..20)))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        $v.Decision | Should -Be 'needs-human'
+        $v.Reason | Should -Be 'reopened-after-auto-close'
+    }
+
+    It 'still reaches candidate for an issue that was never auto-closed' {
+        $issue = New-TestIssue -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..20)))
+        $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..20))
+
+        $v.Decision | Should -Be 'candidate'
     }
 }

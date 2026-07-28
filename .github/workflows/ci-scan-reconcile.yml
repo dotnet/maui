@@ -17,8 +17,17 @@
 # 2. MUTATION REQUIRES ALL OF:
 #      * `workflow_dispatch` (a scheduled run can never reach the mutating job),
 #      * an explicit `mode` input of exactly `comment` or `enforce`,
-#      * the `ci-scan-reconcile` deployment environment, and
-#      * the `CI_SCAN_RECONCILE_DISABLED` repository variable not being set to `true`.
+#      * the `ci-scan-reconcile` deployment environment,
+#      * the `CI_SCAN_RECONCILE_DISABLED` repository variable not being set to `true`, and
+#      * for `enforce` ONLY, `CI_SCAN_RECONCILE_ENFORCE_ENABLED` set to exactly `true`.
+#
+#    The last one is an OPT-IN, not a kill switch, and the two are not redundant. Note 3
+#    explains that the human approval gate does not exist until a maintainer configures
+#    the environment — but an unconfigured environment is auto-created UNPROTECTED, so
+#    absent this variable the very first `enforce` dispatch would close issues with no
+#    approval at all. Defaulting to "off" makes the irreversible mode unreachable until
+#    somebody deliberately turns it on, which is also when they will have configured the
+#    reviewers. `comment` mode is unaffected: it is reversible and stays one-step usable.
 #
 # 3. REQUIRED REVIEWERS ARE A REPOSITORY CONFIGURATION PREREQUISITE.
 #    GitHub Actions cannot declare an environment's protection rules in YAML. Naming the
@@ -29,6 +38,7 @@
 #
 # 4. KILL SWITCH / ROLLBACK.
 #    Immediate:  set repository variable `CI_SCAN_RECONCILE_DISABLED=true` (no PR needed).
+#                To disable only closures, clear `CI_SCAN_RECONCILE_ENFORCE_ENABLED`.
 #    Permanent:  the checked-in default is `report`; reverting to it is a one-line change.
 #    Nuclear:    disable the workflow in the Actions UI.
 #
@@ -209,7 +219,8 @@ jobs:
       github.repository == 'dotnet/maui' &&
       github.event_name == 'workflow_dispatch' &&
       (inputs.mode == 'comment' || inputs.mode == 'enforce') &&
-      vars.CI_SCAN_RECONCILE_DISABLED != 'true'
+      vars.CI_SCAN_RECONCILE_DISABLED != 'true' &&
+      (inputs.mode == 'comment' || vars.CI_SCAN_RECONCILE_ENFORCE_ENABLED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # Repository-configured protection rules (required reviewers) are the human gate.

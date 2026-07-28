@@ -98,7 +98,7 @@ function Set-CiScanReconcileMode {
 function Reset-CiScanCounters {
     [CmdletBinding()]
     param()
-    $script:Counters = @{ Closes = 0; Reopens = 0; Comments = 0; LabelOps = 0; Writes = 0; ReadErrors = 0 }
+    $script:Counters = @{ Closes = 0; Reopens = 0; Comments = 0; LabelOps = 0; Writes = 0; ReadErrors = 0; WriteErrors = 0 }
 }
 
 $script:SkipAzdo = [bool]$SkipAzdo
@@ -161,7 +161,7 @@ function Invoke-GhRead {
     # the read shapes the reconciler actually uses. `gh api` defaults to GET, so the only
     # way to make it write is a method flag or a request parameter.
     $verb = ($GhArgs | Select-Object -First 2) -join ' '
-    if ($verb -cne 'api' -and $verb -cne 'pr list' -and $GhArgs[0] -cne 'api') {
+    if ($verb -cne 'api' -and $verb -cne 'pr list' -and $verb -cne 'label list' -and $GhArgs[0] -cne 'api') {
         throw "BUG: Invoke-GhRead refuses non-read invocation 'gh $($GhArgs -join ' ')'."
     }
     foreach ($a in $GhArgs) {
@@ -246,6 +246,12 @@ function Invoke-GhWrite {
     $script:Counters.Writes++
     $out = & gh @GhArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
+        # Counted, not just warned. A close and its `auto-closed-stale` marker are two
+        # calls: if the close lands and the label does not, the issue is closed WITHOUT
+        # the marker that `Get-CiScanReopenVerdict` requires, so the reopen safety net no
+        # longer recognizes it. Swallowing that left the run green over inconsistent
+        # state. The caller turns any non-zero count into a non-zero exit.
+        $script:Counters.WriteErrors++
         Write-Warning "gh write failed (exit $LASTEXITCODE) on #${IssueNumber}: $($out | Out-String)"
         return $false
     }
@@ -324,17 +330,28 @@ function Get-CiScanPullRequestIndex {
 
         Returning an empty set on failure would silently REMOVE blockers, so a failed
         fetch is surfaced via `Complete` = $false and the caller aborts all mutations.
+
+        The cap is probed, not assumed. `gh pr list --limit N` returning exactly N is
+        indistinguishable from "there were exactly N" unless you ask for one more, and a
+        blocker PR beyond a silently-truncated page is a blocker that cannot veto a
+        close. Asking for `Max + 1` makes hitting the bound observable, and it is then
+        reported as incomplete for the same reason a failed fetch is.
     #>
     [CmdletBinding()]
     param([string]$Owner, [string]$Repo, [int]$Max)
 
     $fields = 'number,title,body,state,mergedAt,isDraft,baseRefName'
+    $probe = $Max + 1
     $open = Invoke-GhRead -GhArgs @('pr', 'list', '--repo', "$Owner/$Repo", '--state', 'open',
-        '--limit', "$Max", '--json', $fields)
+        '--limit', "$probe", '--json', $fields)
     $fixes = Invoke-GhRead -GhArgs @('pr', 'list', '--repo', "$Owner/$Repo", '--state', 'all',
-        '--search', 'in:title ci-fix', '--limit', "$Max", '--json', $fields)
+        '--search', 'in:title ci-fix', '--limit', "$probe", '--json', $fields)
 
     $complete = ($null -ne $open -and $null -ne $fixes)
+    if ($complete -and ((Get-CiScanCount $open) -gt $Max -or (Get-CiScanCount $fixes) -gt $Max)) {
+        Write-Warning "Pull-request listing hit the -MaxPullRequests bound of $Max; the blocker index is NOT exhaustive."
+        $complete = $false
+    }
     $all = @()
     $seen = @{}
     foreach ($pr in (@($open) + @($fixes))) {
@@ -345,6 +362,43 @@ function Get-CiScanPullRequestIndex {
         $all += $pr
     }
     return @{ PullRequests = @($all); Complete = $complete }
+}
+
+function Test-CiScanOwnedLabels {
+    <#
+    .SYNOPSIS
+        Returns the reconciler-owned labels that do NOT exist on the repository.
+    .DESCRIPTION
+        Preflight for mutating modes. Applying a label that does not exist is a hard
+        `gh` failure, and the one that matters is `auto-closed-stale`: it is written
+        AFTER the close, so a missing label produces a closed issue with no marker —
+        and `Get-CiScanReopenVerdict` refuses to reopen anything it cannot recognize as
+        its own. The result is an irreversible close, which is precisely the outcome the
+        design forbids.
+
+        A lookup that FAILS is reported as missing too: an unprovable label is not a
+        present one, and this gate exists to fail closed. One list call rather than one
+        probe per label, so a missing label is an absence in a successful response
+        instead of an expected-404 that would pollute the read-error counter.
+    #>
+    [CmdletBinding()]
+    param([string]$Owner, [string]$Repo, [int]$Max = 500)
+
+    $labels = Invoke-GhRead -GhArgs @('label', 'list', '--repo', "$Owner/$Repo",
+        '--limit', "$Max", '--json', 'name')
+    if ($null -eq $labels) { return @($script:CiScanOwnedLabels) }
+
+    $present = @{}
+    foreach ($l in @($labels)) {
+        if ($null -eq $l -or $null -eq $l.name) { continue }
+        $present[[string]$l.name] = $true
+    }
+
+    $missing = @()
+    foreach ($name in $script:CiScanOwnedLabels) {
+        if (-not $present.ContainsKey($name)) { $missing += $name }
+    }
+    return @($missing)
 }
 
 function Get-CiScanHumanCommenters {
@@ -429,11 +483,15 @@ function Get-CiScanBuildCoverage {
           * `sourceBranch` is exactly `refs/heads/<twin branch>`,
           * `status` is `completed` and `result` is one of the accepted results, and
           * the timeline contains a record for EVERY leg named in the issue's
-            `## Affected Legs`, with a result that means the leg genuinely ran.
+            `## Affected Legs`, with a result that means the leg genuinely ran AND
+            completed cleanly.
 
         The last check is what separates a real clean build from a build where the
-        relevant leg was skipped, gated off, or never scheduled — the failure mode a
-        wall-clock rule cannot see.
+        relevant leg was skipped, gated off, never scheduled, or ran and failed — the
+        failure modes a wall-clock rule cannot see. A leg that ran and FAILED is
+        specifically excluded: that is the one outcome where the signature may well
+        have fired, so counting it would let a still-broken pipeline accumulate
+        "verified absences".
 
         Any error, any missing build, any unresolvable leg sets `Unverifiable = $true`,
         which the core converts to zero counted absences.
@@ -501,6 +559,17 @@ function Get-CiScanBuildCoverage {
                 $r -ne '' -and $d.NonRunningLegResults -notcontains $r
             })
             if ((Get-CiScanCount $ran) -eq 0) { $allLegsRan = $false; break }
+
+            # Execution is not absence. The affected leg is precisely where this
+            # signature surfaces, so a leg that RAN AND FAILED is the one outcome that
+            # cannot distinguish "the signature is gone" from "the signature fired
+            # again and the scanner did not record it". A build-level `failed` is still
+            # accepted (some unrelated leg can fail while this one is clean) — but if
+            # THIS leg failed, the build proves nothing and must not be counted.
+            $clean = @($ran | Where-Object {
+                $d.CleanLegResults -contains ([string]$_.result)
+            })
+            if ((Get-CiScanCount $clean) -eq 0) { $allLegsRan = $false; break }
         }
         if (-not $allLegsRan) { continue }
 
@@ -604,6 +673,7 @@ function Format-CiScanSummary {
     $null = $sb.AppendLine("| Closures permitted | $(if ($Report.ClosuresAllowed) { 'yes' } else { '**no**' }) |")
     $null = $sb.AppendLine("| Mutating API calls made | **$($Report.Counters.Writes)** |")
     $null = $sb.AppendLine("| Read errors | $($Report.Counters.ReadErrors) |")
+    $null = $sb.AppendLine("| Write errors | $($Report.Counters.WriteErrors) |")
     $null = $sb.AppendLine("| Fail-closed | $(if ($Report.FailClosed) { "**yes — $($Report.FailClosedReason)**" } else { 'no' }) |")
     $null = $sb.AppendLine("| Issues evaluated | $($Report.IssueCount) |")
     $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — issue listing was truncated by `-MaxIssues`; oldest issues shown**' } else { 'yes' }) |")
@@ -775,6 +845,19 @@ function Invoke-CiScanReconcile {
     if (-not $prIndex.Complete) { $failClosed = $true; $failReason = 'pull-request-index-incomplete' }
     elseif ($script:Counters.ReadErrors -gt 0) { $failClosed = $true; $failReason = "read-errors:$($script:Counters.ReadErrors)" }
     elseif ((Get-CiScanCount $issues) -eq 0) { $failClosed = $true; $failReason = 'no-issues-fetched' }
+    elseif ($script:MutationsAllowed) {
+        # Every label this reconciler owns must already exist before it is allowed to
+        # mutate anything. None of the three exist in dotnet/maui today, so without this
+        # a first `enforce` run would close issues and then fail to stamp
+        # `auto-closed-stale` on any of them — the exact partial state that makes the
+        # closures unreopenable by `Get-CiScanReopenVerdict`. Checked once per run, in a
+        # read-only call, and it fails the whole run closed rather than per-issue.
+        $missing = @(Test-CiScanOwnedLabels -Owner $Owner -Repo $Repo)
+        if ((Get-CiScanCount $missing) -gt 0) {
+            $failClosed = $true
+            $failReason = "missing-owned-labels:$($missing -join ',')"
+        }
+    }
 
     # ---- Plan actions (mode-independent) and apply caps ----------------------
     $budgets = @{ close = $defaults.MaxCloses; comment = $defaults.MaxComments; label = $defaults.MaxLabelOps }
@@ -872,6 +955,7 @@ function Invoke-CiScanReconcile {
         IssueCount        = @($issues).Count
         IssuesTruncated   = [bool]$issueIndex.Truncated
         PullRequestCount  = @($prIndex.PullRequests).Count
+        WriteErrors       = $script:Counters.WriteErrors
         Counters          = $script:Counters
         Thresholds        = $defaults
         Verdicts          = @($verdicts)
@@ -902,3 +986,12 @@ if (-not $script:MutationsAllowed -and $script:Counters.Writes -ne 0) {
     throw "SAFETY VIOLATION: $($script:Counters.Writes) mutating call(s) in mode '$($script:EffectiveMode)'."
 }
 Write-Host "Done. mode=$($script:EffectiveMode) writes=$($script:Counters.Writes) closes=$($script:Counters.Closes) labels=$($script:Counters.LabelOps)"
+
+# A partially-applied mutating run must NOT report success. Reaching here with write
+# errors means some subset of the planned actions landed and the rest did not — most
+# dangerously a close whose `auto-closed-stale` marker failed, which the reopen path can
+# no longer recognize. The report has already been written and uploaded, so the operator
+# has the full picture; this only denies the green check.
+if ($script:Counters.WriteErrors -gt 0) {
+    throw "$($script:Counters.WriteErrors) GitHub write call(s) failed in mode '$($script:EffectiveMode)'; the run applied only part of its plan. See the warnings above and the JSON report."
+}

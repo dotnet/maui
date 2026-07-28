@@ -110,7 +110,75 @@ $script:CiScanDefaults = @{
     AcceptedBuildResults     = @('succeeded', 'failed', 'partiallySucceeded')
     # Timeline record results that mean the leg did NOT actually run.
     NonRunningLegResults     = @('skipped', 'abandoned', 'canceled', 'cancelled')
+    # Timeline record results for an AFFECTED leg that are compatible with the
+    # signature being absent. Deliberately excludes 'failed': a failed affected leg is
+    # exactly where the signature would have fired, so it can never prove absence.
+    CleanLegResults          = @('succeeded', 'succeededWithIssues')
     StateMarkerVersion       = 1
+}
+
+function ConvertTo-CiScanTimestamp {
+    <#
+    .SYNOPSIS
+        Serializes an instant as a round-trippable UTC ISO-8601 string.
+    .DESCRIPTION
+        NEVER `[string]`-cast a `[datetime]` here. `ConvertFrom-Json` materializes an
+        ISO-8601 JSON value as a `[datetime]`, and PowerShell's `[string]` cast renders
+        it with the INVARIANT culture ('MM/dd/yyyy HH:mm:ss') while `[datetime]::Parse`
+        reads it back with the CURRENT culture. On any dd/MM locale (en-GB, de-DE,
+        pl-PL, ...) that asymmetry silently transposes day and month: '2026-07-01'
+        round-trips to 2026-01-07, turning a 6-day quiet period into 181 days and
+        flipping the staleness verdict.
+
+        The cast also drops the offset, so the reparsed value is `Kind = Unspecified`
+        and a later `.ToUniversalTime()` re-applies the LOCAL offset — an error of up
+        to +/-14h even in an en-US runner.
+
+        'o' (round-trip) plus `AssumeUniversal`/`AdjustToUniversal` on the way back is
+        lossless and culture-independent in both directions.
+    #>
+    [CmdletBinding()]
+    param([AllowNull()]$Value)
+
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [datetime]) { return ([datetime]$Value).ToUniversalTime().ToString('o', [cultureinfo]::InvariantCulture) }
+    if ($Value -is [datetimeoffset]) { return ([datetimeoffset]$Value).UtcDateTime.ToString('o', [cultureinfo]::InvariantCulture) }
+
+    $parsed = ConvertFrom-CiScanTimestamp -Value $Value
+    if ($null -eq $parsed) { return $null }
+    return $parsed.ToString('o', [cultureinfo]::InvariantCulture)
+}
+
+function ConvertFrom-CiScanTimestamp {
+    <#
+    .SYNOPSIS
+        Parses a timestamp to UTC `[datetime]`, or `$null` when it is not parseable.
+    .DESCRIPTION
+        Culture-independent by construction: `InvariantCulture` plus `AssumeUniversal`
+        (a value with no offset is UTC, not local) and `AdjustToUniversal`. See
+        `ConvertTo-CiScanTimestamp` for why the naive `[datetime]::TryParse` it replaces
+        is unsafe.
+
+        A bare `[datetime]`/`[datetimeoffset]` — which is what `ConvertFrom-Json` hands
+        back for an ISO-8601 field — is normalized without going through text at all.
+    #>
+    [CmdletBinding()]
+    param([AllowNull()]$Value)
+
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [datetime]) { return ([datetime]$Value).ToUniversalTime() }
+    if ($Value -is [datetimeoffset]) { return ([datetimeoffset]$Value).UtcDateTime }
+
+    $text = [string]$Value
+    if ([string]::IsNullOrWhiteSpace($text)) { return $null }
+
+    $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor
+    [System.Globalization.DateTimeStyles]::AdjustToUniversal
+    $parsed = [datetime]::MinValue
+    if ([datetime]::TryParse($text, [cultureinfo]::InvariantCulture, $styles, [ref]$parsed)) {
+        return $parsed
+    }
+    return $null
 }
 
 function Get-CiScanCount {
@@ -316,10 +384,10 @@ function Get-CiScanStateMarker {
         pipeline           = [string]$obj.pipeline
         absent_builds      = $buckets['absent_builds']
         present_builds     = $buckets['present_builds']
-        clock_start_at     = if ($obj.PSObject.Properties.Name -contains 'clock_start_at') { [string]$obj.clock_start_at } else { $null }
-        last_present_at    = if ($obj.PSObject.Properties.Name -contains 'last_present_at') { [string]$obj.last_present_at } else { $null }
+        clock_start_at     = if ($obj.PSObject.Properties.Name -contains 'clock_start_at') { ConvertTo-CiScanTimestamp $obj.clock_start_at } else { $null }
+        last_present_at    = if ($obj.PSObject.Properties.Name -contains 'last_present_at') { ConvertTo-CiScanTimestamp $obj.last_present_at } else { $null }
         candidate_notified = if ($obj.PSObject.Properties.Name -contains 'candidate_notified') { [bool]$obj.candidate_notified } else { $false }
-        updated_at         = if ($obj.PSObject.Properties.Name -contains 'updated_at') { [string]$obj.updated_at } else { $null }
+        updated_at         = if ($obj.PSObject.Properties.Name -contains 'updated_at') { ConvertTo-CiScanTimestamp $obj.updated_at } else { $null }
         runs               = if ($obj.PSObject.Properties.Name -contains 'runs') { [int]$obj.runs } else { 0 }
     }
 
@@ -490,10 +558,10 @@ function Set-CiScanStateMarker {
         pipeline           = $State.pipeline
         absent_builds      = @(@($State.absent_builds) | Sort-Object -Unique | Select-Object -Last $d.StateHistoryLimit)
         present_builds     = @(@($State.present_builds) | Sort-Object -Unique | Select-Object -Last $d.StateHistoryLimit)
-        clock_start_at     = $State.clock_start_at
-        last_present_at    = $State.last_present_at
+        clock_start_at     = ConvertTo-CiScanTimestamp $State.clock_start_at
+        last_present_at    = ConvertTo-CiScanTimestamp $State.last_present_at
         candidate_notified = [bool]$State.candidate_notified
-        updated_at         = $State.updated_at
+        updated_at         = ConvertTo-CiScanTimestamp $State.updated_at
         runs               = [int]$State.runs
     }
 
@@ -685,9 +753,8 @@ function Get-CiScanFixPrStatus {
         }
 
         if ($isFixPr -and $null -ne $mergedAt -and -not [string]::IsNullOrWhiteSpace([string]$mergedAt)) {
-            $when = [datetime]::MinValue
-            if ([datetime]::TryParse([string]$mergedAt, [ref]$when)) {
-                $when = $when.ToUniversalTime()
+            $when = ConvertFrom-CiScanTimestamp $mergedAt
+            if ($null -ne $when) {
                 $mergedFix += [ordered]@{ Number = [int]$pr.number; Title = $title; MergedAt = $when }
                 if ($null -eq $latestMergedAt -or $when -gt $latestMergedAt) { $latestMergedAt = $when }
             }
@@ -799,13 +866,12 @@ function Get-CiScanIssueVerdict {
     $verdict.RecurrenceRate = if ($null -eq $rate) { $d.DefaultRecurrenceRate } else { $rate }
     $verdict.RequiredAbsences = Get-CiScanRequiredAbsences -RecurrenceRate $rate
 
-    $createdAt = [datetime]::MinValue
-    if (-not [datetime]::TryParse([string]$Issue.created_at, [ref]$createdAt)) {
+    $createdAt = ConvertFrom-CiScanTimestamp $Issue.created_at
+    if ($null -eq $createdAt) {
         $verdict.Decision = 'needs-human'
         $verdict.Reason = 'unparseable-created-at'
         return $verdict
     }
-    $createdAt = $createdAt.ToUniversalTime()
     $verdict.AgeDays = [math]::Floor(($Now - $createdAt).TotalDays)
 
     $stateResult = Get-CiScanStateMarker -Body $body -Config $Config
@@ -838,6 +904,16 @@ function Get-CiScanIssueVerdict {
     if ($ManualVeto) {
         $verdict.Decision = 'needs-human'
         $verdict.Reason = 'manual-veto'
+        return $verdict
+    }
+    # An OPEN issue that still carries `auto-closed-stale` is one this reconciler already
+    # closed and a human subsequently reopened. The closing notice asks maintainers to
+    # reopen if the call was wrong, so treating that reopen as ordinary input would let
+    # the same gates re-close it on the next run — the veto would be a no-op and the
+    # instruction in the notice a lie. A reopen is a permanent human decision.
+    if ((Get-CiScanIssueLabelNames -Issue $Issue) -ccontains 'auto-closed-stale') {
+        $verdict.Decision = 'needs-human'
+        $verdict.Reason = 'reopened-after-auto-close'
         return $verdict
     }
     if ($human.Touched) {
@@ -880,11 +956,19 @@ function Get-CiScanIssueVerdict {
         return $verdict
     }
 
-    # --- Gate 4: clock start (merged fix resets it) --------------------------
+    # --- Gate 4: clock start (a recurrence or a merged fix resets it) --------
+    # The clock measures how long the signature has been QUIET, so every observation
+    # that proves it was NOT quiet has to push the clock forward. Without the
+    # `last_present_at` reset the clock is a lifetime measure: a signature that failed
+    # yesterday still reports a months-long quiet period, because nothing between
+    # issue creation and `Now` ever moved the start.
     $clockStart = $createdAt
-    if ($null -ne $state.clock_start_at -and -not [string]::IsNullOrWhiteSpace([string]$state.clock_start_at)) {
-        $parsed = [datetime]::MinValue
-        if ([datetime]::TryParse([string]$state.clock_start_at, [ref]$parsed)) { $clockStart = $parsed.ToUniversalTime() }
+    $parsedClock = ConvertFrom-CiScanTimestamp $state.clock_start_at
+    if ($null -ne $parsedClock) { $clockStart = $parsedClock }
+    $lastPresent = ConvertFrom-CiScanTimestamp $state.last_present_at
+    if ($null -ne $lastPresent -and $lastPresent -gt $clockStart) {
+        $clockStart = $lastPresent
+        $verdict.Detail += 'clock-reset-by-recurrence'
     }
     if ($null -ne $FixPrStatus -and $null -ne $FixPrStatus.LatestMergedAt -and $FixPrStatus.LatestMergedAt -gt $clockStart) {
         $clockStart = $FixPrStatus.LatestMergedAt.AddHours($d.MergedFixGraceHours)
@@ -905,6 +989,25 @@ function Get-CiScanIssueVerdict {
             $verified = @($Coverage.VerifiedAbsentBuilds | Sort-Object -Unique)
         }
     }
+
+    # Absences must be CONSECUTIVE AND CURRENT, not a lifetime tally. AzDO build IDs are
+    # monotonically increasing per organization, so the newest recorded presence is an
+    # ordering watermark: any absence at or below it was observed BEFORE the signature
+    # last recurred and says nothing about whether it is gone now. Dropping them is what
+    # stops "20 absences from before the regression" from satisfying the threshold.
+    $newestPresence = 0
+    foreach ($p in @($state.present_builds)) {
+        if ($null -eq $p) { continue }
+        if ([int]$p -gt $newestPresence) { $newestPresence = [int]$p }
+    }
+    if ($newestPresence -gt 0) {
+        $stale = @($verified | Where-Object { [int]$_ -le $newestPresence })
+        if ((Get-CiScanCount $stale) -gt 0) {
+            $verdict.Detail += "absences-before-last-presence-discarded:$((Get-CiScanCount $stale))"
+        }
+        $verified = @($verified | Where-Object { [int]$_ -gt $newestPresence })
+    }
+
     $verdict.AbsentBuildIds = @($verified)
     $verdict.VerifiedAbsences = Get-CiScanCount $verified
 
@@ -1044,12 +1147,12 @@ function Get-CiScanReopenVerdict {
     }
     if (-not $RecurrenceObserved) { return $verdict }
 
-    $closedAt = [datetime]::MinValue
-    if (-not [datetime]::TryParse([string]$Issue.closed_at, [ref]$closedAt)) {
+    $closedAt = ConvertFrom-CiScanTimestamp $Issue.closed_at
+    if ($null -eq $closedAt) {
         $verdict.Reason = 'unparseable-closed-at'
         return $verdict
     }
-    if (($Now - $closedAt.ToUniversalTime()).TotalDays -gt $script:CiScanDefaults.ReopenWindowDays) {
+    if (($Now - $closedAt).TotalDays -gt $script:CiScanDefaults.ReopenWindowDays) {
         $verdict.Reason = 'outside-reopen-window'
         return $verdict
     }

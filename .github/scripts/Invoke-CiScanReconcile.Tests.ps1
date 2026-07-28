@@ -33,13 +33,16 @@ BeforeAll {
     function New-StateJson {
         param(
             [int[]]$Absent = @(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
-            [string]$ClockStart = '2026-06-01T00:00:00Z'
+            [string]$ClockStart = '2026-06-01T00:00:00Z',
+            [int[]]$Present = @(),
+            [string]$LastPresent
         )
         $o = [ordered]@{
             v = 1; label = 'ci-scan-net11'; branch = 'net11.0'; pipeline = 'maui-pr-uitests'
-            absent_builds = @($Absent); present_builds = @()
+            absent_builds = @($Absent); present_builds = @($Present)
             clock_start_at = $ClockStart; candidate_notified = $false; runs = 12
         }
+        if ($PSBoundParameters.ContainsKey('LastPresent')) { $o['last_present_at'] = $LastPresent }
         return ($o | ConvertTo-Json -Compress)
     }
 
@@ -104,14 +107,25 @@ Old markerless issue filed before canonical metadata existed.
 '@
     }
 
+    # Coverage probe for the single canonical fixture leg, used by the leg-result tests.
+    function Invoke-CoverageForFixtureLeg {
+        return Get-CiScanBuildCoverage -Config (Get-CiScanTwinConfig -Label 'ci-scan-net11') `
+            -Pipeline 'maui-pr-uitests' -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42)
+    }
+
     <#
         Installs the standard mock surface. Callers override individual pieces afterwards.
         `$script:Issues` is the set of issues the listing endpoint returns.
     #>
-    function Initialize-ReconcileMocks {
-        param([object[]]$Issues = @(), [object[]]$PullRequests = @())
+    function Initialize-ReconcileMocks {        param([object[]]$Issues = @(), [object[]]$PullRequests = @(), [string[]]$RepoLabels)
         $script:Issues = @($Issues)
         $script:PullRequests = @($PullRequests)
+        # Mutating modes preflight the labels they own, so the default fixture has all of
+        # them present. Tests that care about the preflight override this explicitly.
+        if (-not $PSBoundParameters.ContainsKey('RepoLabels')) {
+            $RepoLabels = @('ci-scan-stale-candidate', 'ci-fix-landed', 'auto-closed-stale')
+        }
+        $script:RepoLabels = @($RepoLabels | ForEach-Object { [pscustomobject]@{ name = $_ } })
     }
 }
 
@@ -125,6 +139,7 @@ Describe 'CI scan reconciler' {
 
         Mock Invoke-GhRead {
             $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
             if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
             if ($joined -like '*/comments*') { return , @() }
             if ($joined -like 'pr list*') { return , @($script:PullRequests) }
@@ -298,6 +313,7 @@ Describe 'CI scan reconciler' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/comments*') {
                     return , @([pscustomobject]@{ user = [pscustomobject]@{ login = 'PureWeen'; type = 'User' } })
@@ -319,6 +335,7 @@ Describe 'CI scan reconciler' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/comments*') { return , @() }
                 return $null   # every `pr list` fails
@@ -337,6 +354,7 @@ Describe 'CI scan reconciler' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/comments*') { $script:Counters.ReadErrors++; return $null }
                 if ($joined -like 'pr list*') { return , @($script:PullRequests) }
@@ -531,6 +549,7 @@ Describe 'CI scan reconciler' {
             $script:SeenIssuePaths = @()
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') {
                     $script:SeenIssuePaths += $joined
                     return , @($script:Issues)
@@ -586,6 +605,7 @@ Describe 'CI scan reconciler' {
 
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/comments*') {
                     # NOTE: `per_page=100` contains the substring `page=100`, so a
@@ -659,6 +679,7 @@ Describe 'CI scan reconciler' {
             }
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/issues/100/comments*') { return , @($full) }
                 if ($joined -like '*/comments*') { return , @() }
@@ -716,6 +737,7 @@ Describe 'CI scan reconciler' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/comments*') {
                     return , @([pscustomobject]@{
@@ -735,6 +757,7 @@ Describe 'CI scan reconciler' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {
                 $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
                 if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
                 if ($joined -like '*/comments*') { return $null }
                 if ($joined -like 'pr list*') { return , @($script:PullRequests) }
@@ -879,6 +902,7 @@ Describe 'Get-CiScanOpenIssues — the bound is honest at any size' {
         $script:RequestedIssuePages = @()
         Mock Invoke-GhRead {
             $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
             $script:RequestedIssuePages += $joined
             if ($joined -notmatch 'per_page=(\d+)&page=(\d+)$') { return $null }
             # A server holding more issues than any bound asks for: every page is full.
@@ -993,6 +1017,35 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
         { Invoke-GhWrite -Kind 'delete' -IssueNumber 1 -GhArgs @('x') } | Should -Throw
         $null = Set-CiScanReconcileMode -RequestedMode 'report'
     }
+
+    <#
+        A failed write used to be a warning on an otherwise-green run. The dangerous
+        shape is a close that lands followed by an `auto-closed-stale` label that does
+        not: the issue is then closed without the marker `Get-CiScanReopenVerdict`
+        requires, so the automation can no longer undo its own irreversible action.
+        Counting the failure is what lets the caller exit non-zero.
+    #>
+    It 'counts a failed write and still reports failure to the caller' {
+        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+        Reset-CiScanCounters
+        # A `gh` invocation that is guaranteed to exit non-zero without touching GitHub.
+        $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('--this-flag-does-not-exist')
+        $null = Set-CiScanReconcileMode -RequestedMode 'report'
+
+        $ok | Should -BeFalse
+        $script:Counters.Writes | Should -Be 1
+        $script:Counters.WriteErrors | Should -Be 1
+    }
+
+    It 'leaves the write-error counter at zero for a successful write' {
+        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+        Reset-CiScanCounters
+        $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('--version')
+        $null = Set-CiScanReconcileMode -RequestedMode 'report'
+
+        $ok | Should -BeTrue
+        $script:Counters.WriteErrors | Should -Be 0
+    }
 }
 
 
@@ -1044,6 +1097,194 @@ Describe 'AzDO coverage re-derivation' {
 
         $c.Unverifiable | Should -BeFalse
         $c.VerifiedAbsentBuilds | Should -Contain 42
+    }
+
+    <#
+        Execution is not absence. Before this gate the leg filter only excluded results
+        that mean "did not run" (skipped/canceled/abandoned), so a leg that RAN AND
+        FAILED counted as a clean observation. That is the single worst input to a
+        staleness rule: the affected leg is exactly where the tracked signature surfaces,
+        so a failing leg is the case where the signature most plausibly fired again.
+        A still-red pipeline could therefore accumulate "verified absences" until the
+        threshold was met and the issue was auto-closed while still broken.
+    #>
+    Context 'the affected leg must have completed cleanly, not merely run' {
+        BeforeEach {
+            $script:LegResult = 'succeeded'
+            Mock Invoke-HttpGetJson {
+                if ($Url -like '*/timeline*') {
+                    return [pscustomobject]@{ records = @(
+                            [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = $script:LegResult }) }
+                }
+                return [pscustomobject]@{
+                    definition   = [pscustomobject]@{ id = 313 }
+                    sourceBranch = 'refs/heads/net11.0'
+                    status       = 'completed'
+                    result       = 'failed'
+                }
+            }
+        }
+
+        It 'does not count a build whose affected leg ran and failed' {
+            $script:LegResult = 'failed'
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeFalse
+            $c.VerifiedAbsentBuilds | Should -Not -Contain 42
+            (Get-CiScanCount $c.VerifiedAbsentBuilds) | Should -Be 0
+        }
+
+        # A build-level `failed` is still fine: an unrelated leg can fail while the
+        # affected one is green. Only the affected leg's own result is disqualifying.
+        It 'still counts a failed BUILD when the affected leg itself succeeded' {
+            $script:LegResult = 'succeeded'
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Contain 42
+        }
+
+        It 'counts succeededWithIssues, which is a completed clean leg' {
+            $script:LegResult = 'succeededWithIssues'
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Contain 42
+        }
+    }
+}
+
+
+<#
+    `gh pr list --limit N` returning exactly N is indistinguishable from "there were
+    exactly N" — so a blocker PR beyond the bound was invisible, and an invisible
+    blocker cannot veto a close. The index reported itself Complete anyway, which is
+    the one signal the run-level fail-closed check depends on.
+#>
+Describe 'Get-CiScanPullRequestIndex — the bound is honest at the cap' {
+    BeforeEach { Reset-CiScanCounters }
+
+    It 'reports incomplete when the listing returns more than Max' {
+        Mock Invoke-GhRead {
+            # Max + 1 probe: the caller asked for 4, so 4 rows means the cap was hit.
+            return , @(1..4 | ForEach-Object { [pscustomobject]@{ number = $_; title = "PR $_"; state = 'open' } })
+        }
+        $idx = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 3
+        $idx.Complete | Should -BeFalse
+    }
+
+    It 'reports complete when the listing comes back under the bound' {
+        Mock Invoke-GhRead {
+            return , @(1..2 | ForEach-Object { [pscustomobject]@{ number = $_; title = "PR $_"; state = 'open' } })
+        }
+        $idx = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 3
+        $idx.Complete | Should -BeTrue
+    }
+
+    It 'asks for one more than Max so hitting the cap is observable at all' {
+        $script:SeenLimits = @()
+        Mock Invoke-GhRead {
+            $i = [array]::IndexOf($GhArgs, '--limit')
+            if ($i -ge 0) { $script:SeenLimits += $GhArgs[$i + 1] }
+            return , @()
+        }
+        $null = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 400
+        $script:SeenLimits | Should -Not -Contain '400'
+        $script:SeenLimits | ForEach-Object { $_ | Should -BeExactly '401' }
+    }
+}
+
+
+<#
+    All three reconciler-owned labels are absent from dotnet/maui today. Without a
+    preflight the first `enforce` run would close issues and then fail to apply
+    `auto-closed-stale` — and `Get-CiScanReopenVerdict` refuses to reopen anything
+    lacking that label, so those closures would be irreversible by the automation that
+    made them.
+#>
+Describe 'Owned-label preflight gates every mutating run' {
+    BeforeEach {
+        Initialize-ReconcileMocks
+        Reset-CiScanCounters
+        Mock Invoke-GhWrite { return $true }
+        Mock Invoke-GhRead {
+            $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
+            if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*/comments*') { return , @() }
+            if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+            return $null
+        }
+        Mock Invoke-HttpGetJson { throw 'AzDO must not be reached in these tests' }
+        Mock Get-CiScanBuildCoverage {
+            return @{ VerifiedAbsentBuilds = @(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); Unverifiable = $false; Reason = '' }
+        }
+    }
+
+    It 'fail-closes an enforce run when auto-closed-stale is missing' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
+            -RepoLabels @('ci-scan-stale-candidate', 'ci-fix-landed')
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+        $r.FailClosed | Should -BeTrue
+        $r.FailClosedReason | Should -BeLike '*missing-owned-labels*auto-closed-stale*'
+        $r.Counters.Closes | Should -Be 0
+        Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+    }
+
+    It 'treats an unreadable label listing as missing rather than present' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+        Mock Invoke-GhRead {
+            $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return $null }
+            if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*/comments*') { return , @() }
+            if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+            return $null
+        }
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+        $r.FailClosed | Should -BeTrue
+        Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+    }
+
+    # Report mode never mutates, so the preflight must not make it fail — otherwise the
+    # daily read-only run would go red for a condition that cannot affect it.
+    It 'does not fail-close a report run when the labels are missing' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) -RepoLabels @()
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+        $r.FailClosed | Should -BeFalse
+    }
+
+    <#
+        A close and its `auto-closed-stale` marker are two calls. If the close lands and
+        the label does not, the issue ends up closed WITHOUT the marker the reopen path
+        keys on. That was previously a warning on an otherwise-green run, so the report
+        has to carry the failure count for the caller to act on.
+    #>
+    It 'surfaces the write-error count in the report so a partial run cannot look clean' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+        # Mirrors what the real Invoke-GhWrite does on a non-zero exit; the counter
+        # increment itself is covered directly in the Invoke-GhWrite describe.
+        Mock Invoke-GhWrite {
+            if ($GhArgs -contains '--add-label') { $script:Counters.WriteErrors++; return $false }
+            return $true
+        }
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+        $r.Counters.Closes | Should -Be 1
+        $r.WriteErrors | Should -BeGreaterThan 0
+    }
+
+    It 'reports zero write errors when every call lands' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+        $r.Counters.WriteErrors | Should -Be 0
     }
 }
 
