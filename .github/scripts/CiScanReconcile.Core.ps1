@@ -754,8 +754,21 @@ function Set-CiScanStateMarker {
         Returns a new issue body with the ci-scan-state marker inserted or replaced.
     .DESCRIPTION
         Trims the build-ID history to StateHistoryLimit newest entries and refuses to
-        emit a marker larger than StateMarkerMaxBytes (returns $null instead, which the
-        caller treats as "skip the write"). Never mutates the input string.
+        emit a marker larger than StateMarkerMaxBytes (returns $null instead, which a
+        caller is expected to treat as "skip the write"). Never mutates the input string.
+
+        NOTE: there is no such caller yet. This function has no production invocation --
+        only the read side (`Get-CiScanStateMarker`, live at Invoke-CiScanReconcile.ps1)
+        currently runs, so the ci-scan-state marker is consumed but never produced. The
+        practical effect is that no open issue carries a marker, and a markerless issue
+        stops at `awaiting-canonical-data` / `no-observation-state-recorded`, so the
+        N-consecutive-absence criterion has never executed end to end and `candidate` is
+        unreachable in production regardless of mode. That is a safety property
+        independent of report-only, and it is deliberate for now: wiring a writer is what
+        makes stale closure reachable, so it should be a reviewed change rather than a
+        side effect. The invariant 'has no production caller' in
+        CiScanReconcile.Core.Tests.ps1 fails the moment that happens, and names what to
+        update.
     #>
     [CmdletBinding()]
     param(
