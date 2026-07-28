@@ -102,6 +102,24 @@ $body
                 ConvertFrom-Json)
     }
 
+    function Get-CollectorEvidence {
+        # Reads the evidence log the collector wrote for a scanned pipeline.
+        # `Invoke-Collector` pins RUNNER_TEMP to this deterministic TestDrive
+        # path, and the collector writes with fs.writeFileSync, so this always
+        # returns the current run's content rather than a stale sibling test's.
+        param(
+            [Parameter(Mandatory = $true)][string]$Pipeline,
+            [Parameter(Mandatory = $true)][string]$LogFileName
+        )
+
+        $evidencePath = Join-Path $TestDrive "runner-temp/ci-scan-net11/evidence/$Pipeline/$LogFileName"
+        if (-not (Test-Path -LiteralPath $evidencePath)) {
+            throw "The collector wrote no evidence at $evidencePath."
+        }
+
+        return (Get-Content -LiteralPath $evidencePath -Raw)
+    }
+
     function New-DeviceTestsFixtures {
         param(
             [Parameter(Mandatory = $true)][string]$TaskResult,
@@ -236,11 +254,68 @@ Describe 'ci-status-net11 trusted build-evidence collector' {
         $source.Substring($isFailure, $continue - $isFailure) | Should -Match 'isDeadletter'
     }
 
+    It 'handles a deadletter before the blob-only console allowlist in the compiled lock' {
+        # Source-level guard for environments without node. Production
+        # deadletters are served from dotnet.github.io, not the blob host the
+        # console fetch allows, so the deadletter branch MUST come first. If it
+        # were ordered after the allowlist, every real deadletter would throw
+        # `invalid console URL` and abort the scan before the fold below.
+        $source = Get-CollectorSource
+        $deadletterBranch = $source.IndexOf('if (isDeadletter)')
+        $allowlist = $source.IndexOf("endsWith('.blob.core.windows.net')")
+        $deadletterBranch | Should -BeGreaterThan 0
+        $allowlist | Should -BeGreaterThan $deadletterBranch
+    }
+
     It 'marks a deadlettered Helix work item as failed-leaf despite Finished/exit 0' -Skip:(-not $script:NodeAvailable) {
         # A deadlettered work item never ran, so Helix reports it terminal and
         # green. State/ExitCode therefore cannot see it, but the workflow's own
         # Helix reference calls a `helix-workitem-deadletter` console URI an
         # infra failure -- so it must not stay absence-skippable.
+        #
+        # This uses the REAL production deadletter URI, verified live against
+        # Helix job a755e8d4-4f81-48be-8dbc-13e723054eb5 (work item
+        # com.microsoft.maui.controls.devicetests-Signed, State=Finished,
+        # ExitCode=-1). Its host is dotnet.github.io, NOT the blob host the
+        # console fetch allows -- a blob-host fixture here passes the allowlist
+        # and silently masks the production path. The fetch mock has no entry
+        # for this URI, so the harness would throw `unmocked request` if the
+        # collector ever tried to fetch the placeholder instead of skipping it.
+        $inventory = Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -ConsoleOutputUri 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt')
+
+        $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
+        @($devicePipeline.required_log_ids) | Should -Be @(1001)
+        @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
+    }
+
+    It 'records the deadletter URI as evidence without fetching it' -Skip:(-not $script:NodeAvailable) {
+        # The placeholder carries no run-specific diagnostics, so the URI itself
+        # is the evidence. Pin that it lands in the evidence file, otherwise the
+        # log could be marked failed-leaf with nothing explaining why.
+        $inventory = Invoke-Collector `
+            -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -ConsoleOutputUri 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt')
+        $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
+        @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
+
+        $evidence = Get-CollectorEvidence -Pipeline 'maui-pr-devicetests' -LogFileName '5000-1001.log'
+        $evidence | Should -Match 'Helix deadletter'
+        $evidence | Should -Match ([regex]::Escape('https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'))
+        # The blob-only console fetch must not have run for a deadletter.
+        $evidence | Should -Not -Match 'Helix console '
+    }
+
+    It 'still marks a deadlettered work item on a blob-hosted URI as failed-leaf' -Skip:(-not $script:NodeAvailable) {
+        # Helix has also served deadletter URIs from the blob host. That form
+        # would pass the console allowlist, so guard that it takes the same
+        # no-fetch deadletter path rather than being fetched as a real console.
         $inventory = Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
                 -TaskResult 'succeeded' `
                 -WorkItemState 'Finished' `
@@ -248,7 +323,6 @@ Describe 'ci-status-net11 trusted build-evidence collector' {
                 -ConsoleOutputUri 'https://helix.blob.core.windows.net/helix-workitem-deadletter/Controls.DeviceTests.log')
 
         $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
-        @($devicePipeline.required_log_ids) | Should -Be @(1001)
         @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
     }
 

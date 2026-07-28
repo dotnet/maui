@@ -606,6 +606,28 @@ steps:
                   if (!workItem.ConsoleOutputUri) {
                     throw new Error(`Failed Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} has no console output.`);
                   }
+                  // A deadletter's console URI is a fixed Helix documentation
+                  // placeholder (in production
+                  // `https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt`),
+                  // not run-specific output on the blob host the fetch below
+                  // allows. Fetching it would have to either throw on that
+                  // allowlist -- aborting the whole scan on the first real
+                  // deadletter -- or force the allowlist open to a second host.
+                  // The placeholder carries no run-specific diagnostics anyway,
+                  // so the URI itself is the evidence. Record it and fold the
+                  // log in without widening the egress surface.
+                  if (isDeadletter) {
+                    const deadletterUrl = new URL(workItem.ConsoleOutputUri);
+                    if (deadletterUrl.protocol !== 'https:') {
+                      throw new Error(`Helix returned an invalid deadletter URL for job ${jobId}.`);
+                    }
+                    evidence.push(
+                      `===== Helix deadletter ${jobId}/${String(workItem.Name || 'unknown')} =====`,
+                      `Work item was deadlettered (State=${String(workItem.State || 'unknown')}, ExitCode=${String(workItem.ExitCode)}); it never ran.`,
+                      deadletterUrl.toString());
+                    failedLeafLogIds.add(logId);
+                    continue;
+                  }
                   const consoleUrl = new URL(workItem.ConsoleOutputUri);
                   if (consoleUrl.protocol !== 'https:' ||
                       !consoleUrl.hostname.endsWith('.blob.core.windows.net')) {
