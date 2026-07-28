@@ -191,29 +191,36 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
     public static void MapTime(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateTime(picker);
+        handler.PlatformView?.InputEditText?.UpdateTime(picker);
     }
 
     public static void MapTextColor(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateTextColor(picker);
+        handler.PlatformView?.InputEditText?.UpdateTextColor(picker);
     }
 
     public static void MapFormat(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateFormat(picker);
+        handler.PlatformView?.InputEditText?.UpdateFormat(picker);
     }
 
     public static void MapFont(TimePickerHandler2 handler, ITimePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
-        handler.PlatformView?.UpdateFont(picker, fontManager);
+        handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
+
+        // TextInputLayout has its own Typeface for the hint/label text,
+        // separate from the edit text's Typeface which only affects the displayed value.
+        if (handler.PlatformView is { } platformView)
+        {
+            platformView.Typeface = fontManager.GetTypeface(picker.Font);
+        }
     }
 
     public static void MapCharacterSpacing(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateCharacterSpacing(picker);
+        handler.PlatformView?.InputEditText?.UpdateCharacterSpacing(picker);
     }
 
     protected override MauiMaterialTimePicker CreatePlatformView()
