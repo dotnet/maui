@@ -128,13 +128,12 @@ internal static class PasskeyEndpoints
 		// Sign-in finish: validates the assertion and signs the user in.
 		group.MapPost("/login/finish", async (
 			JsonElement credential,
-			UserManager<IdentityUser> userManager,
 			SignInManager<IdentityUser> signInManager) =>
 		{
-			PasskeyAssertionResult<IdentityUser> assertion;
+			SignInResult result;
 			try
 			{
-				assertion = await signInManager.PerformPasskeyAssertionAsync(credential.GetRawText());
+				result = await signInManager.PasskeySignInAsync(credential.GetRawText());
 			}
 			catch (InvalidOperationException ex)
 			{
@@ -142,20 +141,20 @@ internal static class PasskeyEndpoints
 				return Results.BadRequest($"No passkey sign-in is in progress. Call /passkeys/login/begin first (and send its cookie). {ex.Message}");
 			}
 
-			if (!assertion.Succeeded || assertion.User is null)
+			if (!result.Succeeded)
 			{
+				var reason = result.IsLockedOut
+					? "the account is locked out."
+					: result.IsNotAllowed
+						? "the account is not allowed to sign in."
+						: "the passkey could not be verified.";
+
 				return Results.Json(
-					new { error = $"Sign-in failed: {assertion.Failure?.Message ?? "the passkey could not be verified."}" },
+					new { error = $"Sign-in failed: {reason}" },
 					statusCode: StatusCodes.Status401Unauthorized);
 			}
 
-			// The sign counter / backup flags may have changed; persist the updated passkey.
-			await userManager.AddOrUpdatePasskeyAsync(assertion.User, assertion.Passkey!);
-
-			// Sign in so the passkey sign-in yields an authenticated cookie for subsequent calls.
-			await signInManager.SignInAsync(assertion.User, isPersistent: true);
-
-			return Results.Ok(new { authenticated = true, username = assertion.User.UserName });
+			return Results.Ok(new { authenticated = true });
 		});
 	}
 

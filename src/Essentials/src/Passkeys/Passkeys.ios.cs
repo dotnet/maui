@@ -47,8 +47,7 @@ partial class PasskeysImplementation : IPasskeys
 		if (attestation is not null)
 			request.AttestationPreference = attestation;
 
-		var authorization = await PerformAsync(request, options.PreferImmediatelyAvailable, cancellationToken)
-			.ConfigureAwait(false);
+		var authorization = await PerformAsync(request, options.PreferImmediatelyAvailable, cancellationToken);
 
 		var registration = authorization.GetCredential<ASAuthorizationPlatformPublicKeyCredentialRegistration>();
 		if (registration is null)
@@ -92,8 +91,7 @@ partial class PasskeysImplementation : IPasskeys
 		if (allowed is not null)
 			assertionRequest.AllowedCredentials = allowed;
 
-		var authorization = await PerformAsync(assertionRequest, options.PreferImmediatelyAvailable, cancellationToken)
-			.ConfigureAwait(false);
+		var authorization = await PerformAsync(assertionRequest, options.PreferImmediatelyAvailable, cancellationToken);
 
 		var assertion = authorization.GetCredential<ASAuthorizationPlatformPublicKeyCredentialAssertion>();
 		if (assertion is null)
@@ -194,7 +192,7 @@ partial class PasskeysImplementation : IPasskeys
 			else
 				controller.PerformRequests();
 
-			return await manager.Task.ConfigureAwait(false);
+			return await manager.Task;
 		}
 	}
 

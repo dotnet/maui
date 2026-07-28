@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.OS;
 using Android.Runtime;
+using AndroidX.Core.Content;
 using AndroidX.Credentials;
 using Java.Util.Concurrent;
 using Microsoft.Maui.ApplicationModel;
@@ -24,6 +25,8 @@ partial class PasskeysImplementation : IPasskeys
 			?? throw new InvalidOperationException("Passkeys require a current Activity.");
 
 		var manager = CredentialManager.Create(activity);
+		var executor = ContextCompat.GetMainExecutor(activity)
+			?? throw new InvalidOperationException("Unable to acquire the Android main-thread executor.");
 		var request = new CreatePublicKeyCredentialRequest(
 			options.ToString(),
 			clientDataHash: null,
@@ -31,7 +34,8 @@ partial class PasskeysImplementation : IPasskeys
 
 		var result = await InvokeAsync(
 			(signal, executor, callback) => manager.CreateCredentialAsync(activity, request, signal, executor, callback),
-			cancellationToken).ConfigureAwait(false);
+			executor,
+			cancellationToken);
 
 		var response = result.JavaCast<CreatePublicKeyCredentialResponse>()
 			?? throw new InvalidOperationException("The credential provider did not return a passkey registration response.");
@@ -48,6 +52,8 @@ partial class PasskeysImplementation : IPasskeys
 			?? throw new InvalidOperationException("Passkeys require a current Activity.");
 
 		var manager = CredentialManager.Create(activity);
+		var executor = ContextCompat.GetMainExecutor(activity)
+			?? throw new InvalidOperationException("Unable to acquire the Android main-thread executor.");
 		var option = new GetPublicKeyCredentialOption(options.ToString());
 		var request = new GetCredentialRequest.Builder()
 			.AddCredentialOption(option)
@@ -56,7 +62,8 @@ partial class PasskeysImplementation : IPasskeys
 
 		var result = await InvokeAsync(
 			(signal, executor, callback) => manager.GetCredentialAsync(activity, request, signal, executor, callback),
-			cancellationToken).ConfigureAwait(false);
+			executor,
+			cancellationToken);
 
 		var response = result.JavaCast<GetCredentialResponse>()
 			?? throw new InvalidOperationException("The credential provider did not return a sign-in response.");
@@ -73,16 +80,16 @@ partial class PasskeysImplementation : IPasskeys
 			throw new FeatureNotSupportedException("Passkeys require Android 14 (API 34) or later.");
 	}
 
-	static Task<Java.Lang.Object> InvokeAsync(
+	static async Task<Java.Lang.Object> InvokeAsync(
 		Action<CancellationSignal, IExecutor, ICredentialManagerCallback> start,
+		IExecutor executor,
 		CancellationToken cancellationToken)
 	{
-		var tcs = new TaskCompletionSource<Java.Lang.Object>();
+		var tcs = new TaskCompletionSource<Java.Lang.Object>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var signal = new CancellationSignal();
-		var executor = Executors.NewSingleThreadExecutor()!;
 		var callback = new CredentialManagerCallback(tcs);
 
-		var registration = cancellationToken.Register(() =>
+		using var registration = cancellationToken.Register(() =>
 		{
 			signal.Cancel();
 			tcs.TrySetCanceled(cancellationToken);
@@ -101,12 +108,7 @@ partial class PasskeysImplementation : IPasskeys
 			tcs.TrySetException(new InvalidOperationException(ex.Message, ex));
 		}
 
-		return tcs.Task.ContinueWith(t =>
-		{
-			registration.Dispose();
-			executor.Shutdown();
-			return t;
-		}, TaskScheduler.Default).Unwrap();
+		return await tcs.Task;
 	}
 
 	// A synchronous failure from the Credential Manager call is a .NET exception; the Java

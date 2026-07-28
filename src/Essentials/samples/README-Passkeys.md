@@ -8,7 +8,8 @@ This folder contains the **Passkeys** Essentials sample and everything needed to
   (ASP.NET Core Identity + WebAuthn) that does the server half. It's small and commented — read the code
   for the endpoint and auth details.
 - **[`Configure-Passkeys.ps1`](Configure-Passkeys.ps1)** — provisions a dev tunnel and writes the RP trust
-  config into the server's user-secrets (Android + Apple by default; `-NoApple` / `-NoAndroid` to skip).
+  config into the server's user-secrets (Android by default, plus Apple on macOS; `-NoApple` /
+  `-NoAndroid` to skip).
 
 The rest of this page is the **testing guide**: run the RP server and exercise it from the app's
 **Passkeys** page on each platform.
@@ -49,20 +50,30 @@ pwsh ./Configure-Passkeys.ps1
 ```
 
 It provisions a persistent dev tunnel, writes the RP domain + web origin into the SERVER's user-secrets,
-and — **by default sets up both Android and Apple trust** (auto-detecting the Android debug-key
-fingerprint and, on a Mac, your Apple Team ID + signing identity + provisioning profile). It prints the
-public `https://…devtunnels.ms` URL (keep it — you type it into the app), then **hosts the tunnel**.
+and sets up Android trust plus, **when running on macOS**, Apple trust (auto-detecting the Android
+debug-key fingerprint and, on a Mac, your Apple Team ID + signing identity + provisioning profile).
+Outside macOS, Apple setup is skipped automatically because Apple apps require a Mac to build and sign.
+It prints the public `https://…devtunnels.ms` URL, bakes it into the app, then **hosts the tunnel**.
 
 > It **fails fast** if a platform it's meant to configure can't be — e.g. the Android debug keystore
-> doesn't exist yet (build the Android app once), or there's no Apple signing certificate. Pass
-> **`-NoAndroid`** and/or **`-NoApple`** to skip a platform you aren't testing, and `-NoStartHost` to just
-> (re)configure without hosting.
+> doesn't exist yet (build the Android app once), or on macOS there's no Apple signing certificate.
+> Pass **`-NoAndroid`** and/or **`-NoApple`** to skip a platform you aren't testing, and `-NoStartHost`
+> to just (re)configure without hosting. Outside macOS, pass `-AppleTeamId <TEAMID>` only if you want to
+> prepare the server trust and entitlements for a subsequent build on a Mac.
 
 Then, in another terminal, run the server:
 
 ```bash
 dotnet run --project Samples.Server.Passkeys --launch-profile http
 ```
+
+Verify the printed public URL reaches the server:
+
+```bash
+curl https://<your-domain>/health
+```
+
+The response reports the relying-party ID and whether Android and Apple trust are configured.
 
 Now pick your platform.
 

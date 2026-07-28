@@ -34,6 +34,8 @@ static partial class WebAuthn
 
 		public int? Timeout { get; set; }
 
+		public JsonElement? Extensions { get; set; }
+
 		// Not part of the spec here (userVerification lives under authenticatorSelection for creation),
 		// but tolerated as a top-level fallback for servers that place it here.
 		public string? UserVerification { get; set; }
@@ -51,6 +53,8 @@ static partial class WebAuthn
 		public List<CredentialDescriptor>? AllowCredentials { get; set; }
 
 		public int? Timeout { get; set; }
+
+		public JsonElement? Extensions { get; set; }
 	}
 
 	internal sealed class RelyingParty
@@ -162,6 +166,62 @@ static partial class WebAuthn
 	// Always serialized as an empty object ("clientExtensionResults": {}).
 	internal sealed class ClientExtensionOutputs
 	{
+		[JsonExtensionData]
+		public Dictionary<string, JsonElement>? Values { get; set; }
+	}
+
+	internal static bool RequiresResidentKey(AuthenticatorSelection? selection) =>
+		selection?.ResidentKey switch
+		{
+			"required" => true,
+			"preferred" or "discouraged" => false,
+			_ => selection?.RequireResidentKey == true,
+		};
+
+	internal static uint GetTimeout(int? timeout)
+	{
+		var value = timeout ?? 60000;
+		if (value < 0)
+			throw new ArgumentOutOfRangeException("options", "The WebAuthn timeout cannot be negative.");
+
+		return (uint)value;
+	}
+
+	internal static byte[] GetExtensionsJson(JsonElement? extensions)
+	{
+		if (extensions is not JsonElement value ||
+			value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+		{
+			return Array.Empty<byte>();
+		}
+
+		if (value.ValueKind == JsonValueKind.Object)
+		{
+			var properties = value.EnumerateObject();
+			if (!properties.MoveNext())
+				return Array.Empty<byte>();
+		}
+		else
+		{
+			throw new ArgumentException("The WebAuthn 'extensions' value must be a JSON object.", "options");
+		}
+
+		return JsonSerializer.SerializeToUtf8Bytes(value, JsonContext.Default.JsonElement);
+	}
+
+	internal static ClientExtensionOutputs ReadExtensionOutputs(byte[] json)
+	{
+		if (json.Length == 0)
+			return new();
+
+		try
+		{
+			return JsonSerializer.Deserialize(json, JsonContext.Default.ClientExtensionOutputs) ?? new();
+		}
+		catch (JsonException ex)
+		{
+			throw new InvalidOperationException("The native WebAuthn extension output JSON could not be parsed.", ex);
+		}
 	}
 
 	[JsonSourceGenerationOptions(

@@ -15,12 +15,12 @@
       - the passkeys relying-party domain + web origin,
       - the Android package name (read from the sample app's project) plus the debug-signing-key
         SHA-256 fingerprint and `android:apk-key-hash:` origin (so Digital Asset Links validate), and
-      - (unless -NoApple) the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
+      - on macOS (unless -NoApple), the Apple app-id `<TeamID>.<BundleID>` for the App Site Association.
 
     Into the git-ignored Samples/Passkeys.Local.props (and, for Apple, Samples/Platforms/iOS/
     Entitlements.Local.plist):
       - the default relying-party server URL (baked into the app via AssemblyMetadata), and
-      - (unless -NoApple) the associated-domains entitlement plus the auto-detected Mac Catalyst
+      - on macOS (unless -NoApple), the associated-domains entitlement plus the auto-detected Mac Catalyst
         signing identity + provisioning profile. See README-Passkeys.md (Apple section) for the App ID
         registration + profile steps that only you can do in your Apple Developer account.
 
@@ -40,8 +40,9 @@
 
 .PARAMETER ApplicationId
     The app's application id (bundle id) shared by all platforms. Defaults to the sample app's
-    <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, unless
-    -NoApple, the Apple app-id `<TeamID>.<ApplicationId>`.
+    <ApplicationId> read from its project. It's used for the Android package (assetlinks) and, when
+    Apple is configured, the Apple app-id `<TeamID>.<ApplicationId>`. Apple setup is skipped
+    automatically outside macOS unless AppleTeamId is passed explicitly.
 
 .PARAMETER AndroidKeystore
     Path to the Android keystore whose signing-certificate SHA-256 goes into the Digital Asset Links
@@ -51,10 +52,11 @@
     ~/.android/debug.keystore.
 
 .PARAMETER NoApple
-    Skip Apple (iOS / iPadOS / Mac Catalyst) setup. By default the script configures Apple too, auto-
-    detecting your Team ID (from the "Apple Development" signing certificate), signing identity, and
-    provisioning profile. If Apple is not skipped but the Team ID can't be determined (no signing
-    certificate), the script FAILS rather than writing a half-configured app — pass -NoApple to opt out.
+    Skip Apple (iOS / iPadOS / Mac Catalyst) setup. On macOS the script configures Apple by default,
+    auto-detecting your Team ID (from the "Apple Development" signing certificate), signing identity,
+    and provisioning profile. Apple setup is skipped automatically outside macOS because Apple targets
+    require a Mac to build and sign. Pass AppleTeamId explicitly to prepare server trust and entitlements
+    outside macOS for a subsequent build on a Mac.
 
 .PARAMETER NoAndroid
     Skip Android setup. By default the script writes the Android debug-key SHA-256 fingerprint +
@@ -73,7 +75,7 @@
 
 .EXAMPLE
     ./Configure-Passkeys.ps1
-    # Configures Apple + Android (whatever this machine supports), writes user-secrets, hosts the tunnel.
+    # Configures Android and, on macOS, Apple; writes user-secrets and hosts the tunnel.
 
 .EXAMPLE
     ./Configure-Passkeys.ps1 -NoApple
@@ -104,6 +106,12 @@ param(
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $project = Join-Path $here 'Samples.Server.Passkeys' 'Essentials.Samples.Server.Passkeys.csproj'
+$appleSkippedForPlatform = $false
+
+if (-not $IsMacOS -and -not $NoApple -and -not $AppleTeamId) {
+    $NoApple = $true
+    $appleSkippedForPlatform = $true
+}
 
 # Default the application id to the sample app's <ApplicationId> so the two never drift.
 if (-not $ApplicationId) {
@@ -450,8 +458,8 @@ else {
     Write-Host "      origin  : $($android.Origin)" -ForegroundColor DarkGray
 }
 # Compose the git-ignored Passkeys.Local.props for the MAUI app: the default server URL always, plus
-# the Apple entitlements/signing (configured by default; skipped with -NoApple). The committed files
-# are never edited.
+# the Apple entitlements/signing (configured by default on macOS; skipped with -NoApple or automatically
+# on other operating systems). The committed files are never edited.
 $appDir = Join-Path $here 'Samples'
 $entitlementsRel = $null
 $resolvedIdentity = $null
@@ -465,7 +473,12 @@ if (-not $NoApple -and -not $AppleTeamId) {
 }
 
 if ($NoApple) {
-    Write-Host "    Apple: skipped (-NoApple)." -ForegroundColor DarkGray
+    if ($appleSkippedForPlatform) {
+        Write-Host "    Apple: skipped automatically (Apple targets require macOS to build and sign)." -ForegroundColor DarkGray
+    }
+    else {
+        Write-Host "    Apple: skipped (-NoApple)." -ForegroundColor DarkGray
+    }
 }
 elseif (-not $AppleTeamId) {
     throw "Could not determine your Apple Team ID: no 'Apple Development' signing certificate found. Install one (Xcode -> Settings -> Accounts -> Manage Certificates), pass -AppleTeamId <TEAMID>, or pass -NoApple to skip Apple."
@@ -493,14 +506,19 @@ else {
         Write-Host "      provisioning     : $AppleProvisioningProfile" -ForegroundColor DarkGray
     }
     else {
-        if (-not $AppleSigningIdentity) {
-            Write-Host "      No 'Apple Development' signing identity found in the keychain." -ForegroundColor Yellow
+        if ($IsMacOS) {
+            if (-not $AppleSigningIdentity) {
+                Write-Host "      No 'Apple Development' signing identity found in the keychain." -ForegroundColor Yellow
+            }
+            if (-not $AppleProvisioningProfile) {
+                Write-Host "      No installed provisioning profile matches '$appleAppId' with Associated Domains." -ForegroundColor Yellow
+            }
+            Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
+            Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README-Passkeys.md (Apple section)." -ForegroundColor DarkGray
         }
-        if (-not $AppleProvisioningProfile) {
-            Write-Host "      No installed provisioning profile matches '$appleAppId' with Associated Domains." -ForegroundColor Yellow
+        else {
+            Write-Host "      Server trust and entitlements generated. Build and sign the Apple app on a Mac." -ForegroundColor DarkGray
         }
-        Write-Host "      iOS Simulator still works. For Mac Catalyst / iOS device, create the profile and re-run" -ForegroundColor DarkGray
-        Write-Host "      (or pass -AppleSigningIdentity / -AppleProvisioningProfile) — see README-Passkeys.md (Apple section)." -ForegroundColor DarkGray
     }
 }
 

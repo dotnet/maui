@@ -2,7 +2,6 @@
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
@@ -23,18 +22,7 @@ partial class PasskeysImplementation : IPasskeys
 			if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
 				return false;
 
-			try
-			{
-				return NativeMethods.WebAuthNGetApiVersionNumber() > 0;
-			}
-			catch (DllNotFoundException)
-			{
-				return false;
-			}
-			catch (EntryPointNotFoundException)
-			{
-				return false;
-			}
+			return WindowsWebAuthn.IsAvailable;
 		}
 	}
 
@@ -42,17 +30,22 @@ partial class PasskeysImplementation : IPasskeys
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
+		cancellationToken.ThrowIfCancellationRequested();
 
-		// The native WebAuthn API is blocking and modal on the top-level window, so run it off the UI thread.
-		return Task.Run(() => MakeCredential(options, cancellationToken), cancellationToken);
+		// WebAuthn is a synchronous Win32 modal API. Keep the HWND lookup and native call on the
+		// caller's UI thread so the owner window remains in the same apartment.
+		var response = MakeCredential(GetHwnd(), options, cancellationToken);
+		return Task.FromResult(response);
 	}
 
 	public Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
+		cancellationToken.ThrowIfCancellationRequested();
 
-		return Task.Run(() => GetAssertion(options, cancellationToken), cancellationToken);
+		var response = GetAssertion(GetHwnd(), options, cancellationToken);
+		return Task.FromResult(response);
 	}
 
 	void EnsureSupported()
@@ -67,7 +60,7 @@ partial class PasskeysImplementation : IPasskeys
 		return window;
 	}
 
-	static PasskeyCreationResponse MakeCredential(PasskeyCreationOptions options, CancellationToken cancellationToken)
+	static PasskeyCreationResponse MakeCredential(IntPtr hwnd, PasskeyCreationOptions options, CancellationToken cancellationToken)
 	{
 		var creation = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.CreationOptions, "creation options");
 
@@ -84,95 +77,36 @@ partial class PasskeysImplementation : IPasskeys
 		var challenge = DecodeRequired(creation.Challenge, "challenge");
 		var clientDataJson = BuildClientDataJson("webauthn.create", challenge, rpId);
 
-		var coseParams = MapCoseParameters(creation.PubKeyCredParams);
-		var timeout = (uint)(creation.Timeout ?? 60000);
-		var uv = MapUserVerification(creation.AuthenticatorSelection?.UserVerification ?? creation.UserVerification);
-		var attachment = MapAuthenticatorAttachment(creation.AuthenticatorSelection?.AuthenticatorAttachment);
-		var attestation = MapAttestation(creation.Attestation);
-		var requireResidentKey = creation.AuthenticatorSelection?.RequireResidentKey == true;
-		var excludeCredentials = MapCredentialIds(creation.ExcludeCredentials);
-
-		var native = new WindowsNativeBuffers();
-		var (cancellationId, cancellationRegistration) = RegisterCancellation(cancellationToken);
-
-		try
-		{
-			var rpInfo = new NativeMethods.WEBAUTHN_RP_ENTITY_INFORMATION
+		var result = WindowsWebAuthn.MakeCredential(
+			new WindowsWebAuthn.MakeCredentialRequest
 			{
-				dwVersion = NativeMethods.WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION,
-				pwszId = rpId,
-				pwszName = rpName,
-				pwszIcon = null,
-			};
+				WindowHandle = hwnd,
+				RelyingPartyId = rpId,
+				RelyingPartyName = rpName,
+				UserId = userId,
+				UserName = userName,
+				UserDisplayName = userDisplayName,
+				Algorithms = MapCoseParameters(creation.PubKeyCredParams),
+				ClientDataJson = clientDataJson,
+				Timeout = WebAuthn.GetTimeout(creation.Timeout),
+				UserVerification = MapUserVerification(creation.AuthenticatorSelection?.UserVerification ?? creation.UserVerification),
+				AuthenticatorAttachment = MapAuthenticatorAttachment(creation.AuthenticatorSelection?.AuthenticatorAttachment),
+				Attestation = MapAttestation(creation.Attestation),
+				RequireResidentKey = WebAuthn.RequiresResidentKey(creation.AuthenticatorSelection),
+				ExcludeCredentials = MapCredentialIds(creation.ExcludeCredentials),
+				ExtensionsJson = WebAuthn.GetExtensionsJson(creation.Extensions),
+			},
+			cancellationToken);
 
-			var userInfo = new NativeMethods.WEBAUTHN_USER_ENTITY_INFORMATION
-			{
-				dwVersion = NativeMethods.WEBAUTHN_USER_ENTITY_INFORMATION_CURRENT_VERSION,
-				cbId = (uint)userId.Length,
-				pbId = native.Pin(userId),
-				pwszName = userName,
-				pwszIcon = null,
-				pwszDisplayName = userDisplayName,
-			};
-
-			var clientData = new NativeMethods.WEBAUTHN_CLIENT_DATA
-			{
-				dwVersion = NativeMethods.WEBAUTHN_CLIENT_DATA_CURRENT_VERSION,
-				cbClientDataJSON = (uint)clientDataJson.Length,
-				pbClientDataJSON = native.Pin(clientDataJson),
-				pwszHashAlgId = "SHA-256",
-			};
-
-			var coseParamsNative = native.PinCoseParameters(coseParams);
-
-			var makeOptions = new NativeMethods.WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS
-			{
-				dwVersion = NativeMethods.WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3,
-				dwTimeoutMilliseconds = timeout,
-				CredentialList = default,
-				Extensions = default,
-				dwAuthenticatorAttachment = attachment,
-				bRequireResidentKey = requireResidentKey,
-				dwUserVerificationRequirement = uv,
-				dwAttestationConveyancePreference = attestation,
-				dwFlags = 0,
-				pCancellationId = native.PinCancellationId(cancellationId),
-				pExcludeCredentialList = native.PinCredentialList(excludeCredentials),
-			};
-
-			var hr = NativeMethods.WebAuthNAuthenticatorMakeCredential(
-				GetHwnd(),
-				ref rpInfo,
-				ref userInfo,
-				ref coseParamsNative,
-				ref clientData,
-				ref makeOptions,
-				out var attestationPtr);
-
-			ThrowIfFailed(hr, cancellationToken);
-
-			try
-			{
-				var attestationResult = Marshal.PtrToStructure<NativeMethods.WEBAUTHN_CREDENTIAL_ATTESTATION>(attestationPtr);
-				var credentialId = ReadBytes(attestationResult.pbCredentialId, attestationResult.cbCredentialId);
-				var attestationObject = ReadBytes(attestationResult.pbAttestationObject, attestationResult.cbAttestationObject);
-
-				var json = BuildRegistrationResponseJson(credentialId, attestationObject, clientDataJson);
-				return new PasskeyCreationResponse(json);
-			}
-			finally
-			{
-				NativeMethods.WebAuthNFreeCredentialAttestation(attestationPtr);
-			}
-		}
-		finally
-		{
-			cancellationRegistration.Dispose();
-			native.Dispose();
-		}
+		var json = BuildRegistrationResponseJson(
+			result.CredentialId,
+			result.AttestationObject,
+			clientDataJson,
+			result.ExtensionOutputsJson);
+		return new PasskeyCreationResponse(json);
 	}
 
-	static PasskeyAssertionResponse GetAssertion(PasskeyRequestOptions options, CancellationToken cancellationToken)
+	static PasskeyAssertionResponse GetAssertion(IntPtr hwnd, PasskeyRequestOptions options, CancellationToken cancellationToken)
 	{
 		var request = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.RequestOptions, "request options");
 
@@ -181,88 +115,27 @@ partial class PasskeysImplementation : IPasskeys
 		var challenge = DecodeRequired(request.Challenge, "challenge");
 		var clientDataJson = BuildClientDataJson("webauthn.get", challenge, rpId);
 
-		var timeout = (uint)(request.Timeout ?? 60000);
-		var uv = MapUserVerification(request.UserVerification);
-		var allowCredentials = MapCredentialIds(request.AllowCredentials);
-
-		var native = new WindowsNativeBuffers();
-		var (cancellationId, cancellationRegistration) = RegisterCancellation(cancellationToken);
-
-		try
-		{
-			var clientData = new NativeMethods.WEBAUTHN_CLIENT_DATA
+		var result = WindowsWebAuthn.GetAssertion(
+			new WindowsWebAuthn.GetAssertionRequest
 			{
-				dwVersion = NativeMethods.WEBAUTHN_CLIENT_DATA_CURRENT_VERSION,
-				cbClientDataJSON = (uint)clientDataJson.Length,
-				pbClientDataJSON = native.Pin(clientDataJson),
-				pwszHashAlgId = "SHA-256",
-			};
+				WindowHandle = hwnd,
+				RelyingPartyId = rpId,
+				ClientDataJson = clientDataJson,
+				Timeout = WebAuthn.GetTimeout(request.Timeout),
+				UserVerification = MapUserVerification(request.UserVerification),
+				AllowCredentials = MapCredentialIds(request.AllowCredentials),
+				ExtensionsJson = WebAuthn.GetExtensionsJson(request.Extensions),
+			},
+			cancellationToken);
 
-			var getOptions = new NativeMethods.WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS
-			{
-				dwVersion = NativeMethods.WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4,
-				dwTimeoutMilliseconds = timeout,
-				CredentialList = default,
-				Extensions = default,
-				dwAuthenticatorAttachment = NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
-				dwUserVerificationRequirement = uv,
-				dwFlags = 0,
-				pwszU2fAppId = null,
-				pbU2fAppId = IntPtr.Zero,
-				pCancellationId = native.PinCancellationId(cancellationId),
-				pAllowCredentialList = native.PinCredentialList(allowCredentials),
-			};
-
-			var hr = NativeMethods.WebAuthNAuthenticatorGetAssertion(
-				GetHwnd(),
-				rpId,
-				ref clientData,
-				ref getOptions,
-				out var assertionPtr);
-
-			ThrowIfFailed(hr, cancellationToken);
-
-			try
-			{
-				var assertion = Marshal.PtrToStructure<NativeMethods.WEBAUTHN_ASSERTION>(assertionPtr);
-				var authenticatorData = ReadBytes(assertion.pbAuthenticatorData, assertion.cbAuthenticatorData);
-				var signature = ReadBytes(assertion.pbSignature, assertion.cbSignature);
-				var credentialId = ReadBytes(assertion.Credential.pbId, assertion.Credential.cbId);
-				var userHandle = ReadBytes(assertion.pbUserId, assertion.cbUserId);
-
-				var json = BuildAssertionResponseJson(credentialId, authenticatorData, signature, clientDataJson, userHandle);
-				return new PasskeyAssertionResponse(json);
-			}
-			finally
-			{
-				NativeMethods.WebAuthNFreeAssertion(assertionPtr);
-			}
-		}
-		finally
-		{
-			cancellationRegistration.Dispose();
-			native.Dispose();
-		}
-	}
-
-	static (Guid Id, CancellationTokenRegistration Registration) RegisterCancellation(CancellationToken cancellationToken)
-	{
-		if (NativeMethods.WebAuthNGetCancellationId(out var id) != 0)
-			return (Guid.Empty, default);
-
-		var registration = cancellationToken.Register(() =>
-		{
-			try
-			{
-				NativeMethods.WebAuthNCancelCurrentOperation(ref id);
-			}
-			catch
-			{
-				// Best-effort cancellation.
-			}
-		});
-
-		return (id, registration);
+		var json = BuildAssertionResponseJson(
+			result.CredentialId,
+			result.AuthenticatorData,
+			result.Signature,
+			clientDataJson,
+			result.UserHandle,
+			result.ExtensionOutputsJson);
+		return new PasskeyAssertionResponse(json);
 	}
 
 	static T Deserialize<T>(string json, JsonTypeInfo<T> typeInfo, string what)
@@ -299,32 +172,6 @@ partial class PasskeysImplementation : IPasskeys
 		return list.ToArray();
 	}
 
-	static void ThrowIfFailed(int hr, CancellationToken cancellationToken)
-	{
-		if (hr == 0)
-			return;
-
-		if (cancellationToken.IsCancellationRequested)
-			throw new TaskCanceledException();
-
-		// NTE_USER_CANCELLED (0x80090036) — the user dismissed the dialog.
-		if ((uint)hr == 0x80090036)
-			throw new TaskCanceledException();
-
-		var message = NativeMethods.GetErrorName(hr);
-		throw new InvalidOperationException($"WebAuthn operation failed (0x{hr:X8}): {message}");
-	}
-
-	static byte[] ReadBytes(IntPtr ptr, uint length)
-	{
-		if (ptr == IntPtr.Zero || length == 0)
-			return Array.Empty<byte>();
-
-		var bytes = new byte[length];
-		Marshal.Copy(ptr, bytes, 0, (int)length);
-		return bytes;
-	}
-
 	static byte[] BuildClientDataJson(string type, byte[] challenge, string rpId)
 	{
 		var clientData = new WebAuthn.ClientData
@@ -338,7 +185,7 @@ partial class PasskeysImplementation : IPasskeys
 		return JsonSerializer.SerializeToUtf8Bytes(clientData, WebAuthn.JsonContext.Default.ClientData);
 	}
 
-	static string BuildRegistrationResponseJson(byte[] credentialId, byte[] attestationObject, byte[] clientDataJson)
+	static string BuildRegistrationResponseJson(byte[] credentialId, byte[] attestationObject, byte[] clientDataJson, byte[] extensionOutputs)
 	{
 		var response = new WebAuthn.RegistrationResponse
 		{
@@ -349,12 +196,13 @@ partial class PasskeysImplementation : IPasskeys
 				ClientDataJson = Base64Url.EncodeToString(clientDataJson),
 				AttestationObject = Base64Url.EncodeToString(attestationObject),
 			},
+			ClientExtensionResults = WebAuthn.ReadExtensionOutputs(extensionOutputs),
 		};
 
 		return JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.RegistrationResponse);
 	}
 
-	static string BuildAssertionResponseJson(byte[] credentialId, byte[] authenticatorData, byte[] signature, byte[] clientDataJson, byte[] userHandle)
+	static string BuildAssertionResponseJson(byte[] credentialId, byte[] authenticatorData, byte[] signature, byte[] clientDataJson, byte[] userHandle, byte[] extensionOutputs)
 	{
 		var response = new WebAuthn.AssertionResponse
 		{
@@ -367,27 +215,21 @@ partial class PasskeysImplementation : IPasskeys
 				Signature = Base64Url.EncodeToString(signature),
 				UserHandle = userHandle.Length > 0 ? Base64Url.EncodeToString(userHandle) : null,
 			},
+			ClientExtensionResults = WebAuthn.ReadExtensionOutputs(extensionOutputs),
 		};
 
 		return JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.AssertionResponse);
 	}
 
-	static NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER[] MapCoseParameters(List<WebAuthn.CredentialParameter>? pubKeyCredParams)
+	static int[] MapCoseParameters(List<WebAuthn.CredentialParameter>? pubKeyCredParams)
 	{
 		if (pubKeyCredParams is { Count: > 0 })
 		{
-			var list = new List<NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER>();
+			var list = new List<int>();
 			foreach (var param in pubKeyCredParams)
 			{
 				if (param.Alg is int alg)
-				{
-					list.Add(new NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER
-					{
-						dwVersion = NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER_CURRENT_VERSION,
-						pwszCredentialType = "public-key",
-						lAlg = alg,
-					});
-				}
+					list.Add(alg);
 			}
 
 			if (list.Count > 0)
@@ -395,33 +237,29 @@ partial class PasskeysImplementation : IPasskeys
 		}
 
 		// Default to ES256 + RS256.
-		return new[]
-		{
-			new NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER { dwVersion = NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER_CURRENT_VERSION, pwszCredentialType = "public-key", lAlg = -7 },
-			new NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER { dwVersion = NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER_CURRENT_VERSION, pwszCredentialType = "public-key", lAlg = -257 },
-		};
+		return new[] { -7, -257 };
 	}
 
-	static uint MapUserVerification(string? value) => value switch
+	static WindowsWebAuthn.UserVerificationRequirement MapUserVerification(string? value) => value switch
 	{
-		"required" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_REQUIRED,
-		"discouraged" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_DISCOURAGED,
-		"preferred" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_PREFERRED,
-		_ => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_ANY,
+		"required" => WindowsWebAuthn.UserVerificationRequirement.Required,
+		"discouraged" => WindowsWebAuthn.UserVerificationRequirement.Discouraged,
+		"preferred" => WindowsWebAuthn.UserVerificationRequirement.Preferred,
+		_ => WindowsWebAuthn.UserVerificationRequirement.Any,
 	};
 
-	static uint MapAuthenticatorAttachment(string? value) => value switch
+	static WindowsWebAuthn.AuthenticatorAttachment MapAuthenticatorAttachment(string? value) => value switch
 	{
-		"platform" => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_PLATFORM,
-		"cross-platform" => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM,
-		_ => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
+		"platform" => WindowsWebAuthn.AuthenticatorAttachment.Platform,
+		"cross-platform" => WindowsWebAuthn.AuthenticatorAttachment.CrossPlatform,
+		_ => WindowsWebAuthn.AuthenticatorAttachment.Any,
 	};
 
-	static uint MapAttestation(string? value) => value switch
+	static WindowsWebAuthn.AttestationConveyancePreference MapAttestation(string? value) => value switch
 	{
-		"direct" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT,
-		"indirect" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_INDIRECT,
-		"none" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
-		_ => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ANY,
+		"direct" => WindowsWebAuthn.AttestationConveyancePreference.Direct,
+		"indirect" => WindowsWebAuthn.AttestationConveyancePreference.Indirect,
+		"none" => WindowsWebAuthn.AttestationConveyancePreference.None,
+		_ => WindowsWebAuthn.AttestationConveyancePreference.Any,
 	};
 }

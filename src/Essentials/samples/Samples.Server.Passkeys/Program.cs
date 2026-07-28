@@ -84,8 +84,6 @@ if (!string.IsNullOrEmpty(serverDomain))
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
 	options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
-	options.KnownIPNetworks.Clear();
-	options.KnownProxies.Clear();
 });
 
 var app = builder.Build();
@@ -109,5 +107,34 @@ app.MapGroup("/account").MapIdentityApi<IdentityUser>();
 
 // Passkey ceremony endpoints + the platform domain-association documents they depend on.
 app.MapPasskeys(app.Configuration);
+
+// Public tunnel/server readiness probe. If this responds through the dev-tunnel URL, tunnel access
+// (including any required approval or X-Tunnel-Authorization token) has already succeeded.
+app.MapGet("/health", (IConfiguration config) =>
+{
+	var domain = config["Passkeys:ServerDomain"];
+	var androidPackage = config["Passkeys:Android:PackageName"];
+	var androidFingerprints = config.GetSection("Passkeys:Android:Sha256CertFingerprints").Get<string[]>()
+		?? Array.Empty<string>();
+	var appleAppIds = config.GetSection("Passkeys:Apple:AppIds").Get<string[]>()
+		?? Array.Empty<string>();
+
+	return Results.Ok(new
+	{
+		status = "healthy",
+		relyingPartyId = domain,
+		android = new
+		{
+			configured = !string.IsNullOrWhiteSpace(androidPackage) && androidFingerprints.Length > 0,
+			packageName = androidPackage,
+			fingerprintCount = androidFingerprints.Length,
+		},
+		apple = new
+		{
+			configured = appleAppIds.Length > 0,
+			appIdCount = appleAppIds.Length,
+		},
+	});
+});
 
 app.Run();

@@ -631,9 +631,11 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   [`WebAuthNAuthenticatorGetAssertion`](https://learn.microsoft.com/windows/win32/api/webauthn/nf-webauthn-webauthnauthenticatorgetassertion) ·
   [webauthn.h header](https://learn.microsoft.com/windows/win32/api/webauthn/) ·
   [Microsoft `webauthn` reference implementation](https://github.com/microsoft/webauthn)
-- **No NuGet dependency** — direct P/Invoke into the in-box `webauthn.dll`. `AllowUnsafeBlocks` is
-  already enabled for the Windows TFM in `Essentials.csproj`.
-- **Structured, not JSON.** Same JSON ⇄ struct translation as Apple, plus manual marshaling.
+- **No runtime NuGet dependency** — `Microsoft.Windows.CsWin32` generates strongly typed bindings at
+  build time (`PrivateAssets="all"`) for the in-box `webauthn.dll`. `AllowUnsafeBlocks` is already
+  enabled for the Windows TFM in `Essentials.csproj`.
+- **Structured, not JSON.** Same JSON ⇄ struct translation as Apple, with generated ABI layouts and
+  a small local unmanaged-buffer owner for pointer lifetimes.
 - Native signatures:
 
   ```cpp
@@ -660,11 +662,13 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   ```
 
 - **HWND**: the API is modal on a top-level window. Acquire the current window handle from the MAUI
-  window (`WinRT.Interop.WindowNative.GetWindowHandle(...)`).
+  window (`WinRT.Interop.WindowNative.GetWindowHandle(...)`) and invoke the synchronous native call on
+  the caller's UI thread so the owner window remains in the same COM apartment. As with other
+  window-bound Essentials APIs, the implementation does not dispatch or move the operation to a worker.
 - **`ClientDataJson` & origin**: the WebAuthn options JSON does **not** contain an `origin` (in a browser
   the user agent supplies it from the current page). For a native app there is no page, so the platform
   determines the origin from the app's verified identity, and the RP server must be configured to accept
-  that native origin (see "Origin derivation" below). On Windows specifically, our P/Invoke layer
+  that native origin (see "Origin derivation" below). On Windows specifically, our generated interop layer
   constructs the `WEBAUTHN_CLIENT_DATA` (challenge + type + origin) — we build client data JSON using the
   challenge from the options and an origin of `https://<rpId>`. The OS returns `pbAttestationObject` /
   `pbCredentialId` (make) and `pbAuthenticatorData` / `pbSignature` / `pbUserId` (get), which we
@@ -672,8 +676,8 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
 - **Version gating**: `WebAuthNGetApiVersionNumber()` for capability, and
   `WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable` for Hello availability. Passkeys need
   **Windows 11**; older `webauthn.dll` (Win10 1903+) supports FIDO2 security keys but not full passkeys.
-- **Highest implementation cost** of the three (struct marshaling, memory ownership/free, version
-  branching). Recommend implementing this platform **last**.
+- **Highest implementation cost** of the three (memory ownership/free and version branching), even with
+  generated bindings.
 
 ### 7.4 Unsupported platforms
 - **Built by Essentials but no passkey support in v1** — `netstandard`, tvOS, Tizen: `IsSupported == false`;
@@ -699,7 +703,7 @@ inside the WebAuthn options JSON** and needs no cross-platform API knob. A small
 | `timeout` | Ceremony timeout | via `requestJson` | — (OS-managed) | `dwTimeoutMilliseconds` |
 | `excludeCredentials` / `allowCredentials` | Prevent re-reg / scope sign-in | via `requestJson` | `ExcludedCredentials` / `AllowedCredentials` | exclude / allow list |
 | `attestation` | Attestation conveyance | via `requestJson` | `AttestationPreference` | `dwAttestationConveyancePreference` |
-| `extensions` (e.g. `credProps`, `prf`, `largeBlob`) | WebAuthn extensions | via `requestJson` | per-extension API | `Extensions` |
+| `extensions` (e.g. `credProps`, `prf`, `largeBlob`) | WebAuthn extensions | via `requestJson` | per-extension API | JSON extension fields (WebAuthn API v7+) |
 | `hints` | UI hint (security-key/hybrid/client-device) | via `requestJson` | — | — |
 
 Because all of the above flow through the JSON, we do **not** add typed knobs for them — that's the whole
@@ -776,7 +780,7 @@ the app's **verified identity**, and it is written into the `clientDataJSON` the
 |---|---|---|
 | **Android** | `android:apk-key-hash:<base64url-sha256(signing cert)>` | Digital Asset Links (`assetlinks.json`) binds the package + cert to the RP domain |
 | **Apple** | `https://<associated-domain>` | Associated Domains entitlement (`webcredentials:`) + `apple-app-site-association` |
-| **Windows** | `https://<rpId>` (our P/Invoke layer constructs it) | RP ID; no separate app-identity origin |
+| **Windows** | `https://<rpId>` (our generated interop layer constructs it) | RP ID; no separate app-identity origin |
 
 **RP-server implication:** because native origins differ from a plain web origin (Android's is an
 `android:apk-key-hash:` string), the relying-party server must be configured to **accept the app's native
@@ -844,7 +848,9 @@ cancel must come from a different thread than the blocking call, using the pre-a
   Services** enters the `Microsoft.Maui.Essentials` dependency closure (it has none today). Trade-off: the
   OS-native passkey path is Android 14+; API 28–33 back-fill is the app's opt-in (§7.1). This new AndroidX
   dependency is recorded in `NuGets.md` (size/servicing tracked there).
-- **Apple / Windows**: no new NuGet packages (in-box frameworks / P/Invoke).
+- **Apple**: no new NuGet package (in-box framework).
+- **Windows**: adds `Microsoft.Windows.CsWin32` as a private build-time source-generator dependency; it
+  contributes no runtime package dependency. The generated bindings call the in-box `webauthn.dll`.
 - **Public API**: new types in `Microsoft.Maui.Authentication` → `PublicAPI.Unshipped.txt` entries per
   TFM. Because this adds public API, implementation targets the **`net11.0`** feature branch.
 
@@ -928,7 +934,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
 | Android provider | **`Xamarin.AndroidX.Credentials` only — no Google Play Services** (§7.1, §9). |
 | Android minimum | **API 34 (Android 14)** for the OS-native path; API 28–33 is the app's own opt-in (§7.1). |
 | Apple scope | **iOS / iPadOS / Mac Catalyst** (iOS 16+); standalone macOS deferred until Essentials enables a `net-macos` target (§7.2). |
-| Windows minimum | **Windows 11** for passkeys, via `webauthn.dll` P/Invoke (§7.3). |
+| Windows minimum | **Windows 11** for passkeys, via CsWin32-generated `webauthn.dll` bindings (§7.3). |
 | Runtime knobs | v1 exposes **`PreferImmediatelyAvailable`** and **`CancellationToken`**; presentation anchor is internal; origin override and conditional UI are deferred (§7.5). |
 
 ## 13. Planned follow-ups

@@ -145,9 +145,17 @@
         Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
     />
     <PackageReference
+        Update="Microsoft.Windows.CsWin32"
+        Version="$(MicrosoftWindowsCsWin32PackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"
+    />
+    <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
+        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Web.WebView2"
