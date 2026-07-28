@@ -602,7 +602,7 @@ Describe 'CI scan reconciler' {
                 MutationsAllowed = $false; ClosuresAllowed = $false
                 FailClosed = $true; FailClosedReason = 'read-errors:3'
                 IssueCount = 59; IssuesTruncated = $false; PullRequestCount = 0
-                PullRequestIndexComplete = $true
+                PullRequestIndexComplete = $true; MaxPullRequests = 400
                 WriteErrors = 0; AbortedAt = $null
                 Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
                               LabelOps = 0; ReadErrors = 3; WriteErrors = 0 }
@@ -633,7 +633,7 @@ Describe 'CI scan reconciler' {
                 MutationsAllowed = $false; ClosuresAllowed = $false
                 FailClosed = $true; FailClosedReason = 'pull-request-index-incomplete'
                 IssueCount = 58; IssuesTruncated = $false; PullRequestCount = 197
-                PullRequestIndexComplete = $false
+                PullRequestIndexComplete = $false; MaxPullRequests = 100
                 WriteErrors = 0; AbortedAt = $null
                 Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
                               LabelOps = 0; ReadErrors = 0; WriteErrors = 0 }
@@ -662,6 +662,64 @@ Describe 'CI scan reconciler' {
             (Format-CiScanSummary -Report $r) | Should -BeLike '*| Survey complete | yes |*'
         }
 
+        <#
+            The bound is not a static margin — the index covers EVERY open pull request,
+            so it tracks repo-wide volume and drifts toward the bound with nobody touching
+            this code. Crossing it fail-closes silently and permanently, so the margin has
+            to be visible on every run rather than only in the run that already broke.
+        #>
+        It 'reports PR index headroom while the index is still complete' {
+            $report = @{
+                Label = 'ci-scan'; Branch = 'main'
+                RequestedMode = 'report'; EffectiveMode = 'report'
+                MutationsAllowed = $false; ClosuresAllowed = $false
+                FailClosed = $false; FailClosedReason = ''
+                IssueCount = 52; IssuesTruncated = $false; PullRequestCount = 296
+                PullRequestIndexComplete = $true; MaxPullRequests = 400
+                WriteErrors = 0; AbortedAt = $null
+                Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
+                              LabelOps = 0; ReadErrors = 0; WriteErrors = 0 }
+                Thresholds = @{}; Verdicts = @(); GeneratedAt = '2026-07-28T00:00:00Z'
+            }
+
+            $md = Format-CiScanSummary -Report $report
+
+            # The live 2026-07-28 reading: complete, but only ~26% headroom left.
+            $md | Should -BeLike '*PR index headroom | 296 / 400 (74% of bound)*'
+            $md | Should -BeLike '*| Survey complete | yes |*'
+        }
+
+        It 'warns before the bound is reached, not only after' {
+            $report = @{
+                Label = 'ci-scan'; Branch = 'main'
+                RequestedMode = 'report'; EffectiveMode = 'report'
+                MutationsAllowed = $false; ClosuresAllowed = $false
+                FailClosed = $false; FailClosedReason = ''
+                IssueCount = 52; IssuesTruncated = $false; PullRequestCount = 340
+                PullRequestIndexComplete = $true; MaxPullRequests = 400
+                WriteErrors = 0; AbortedAt = $null
+                Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
+                              LabelOps = 0; ReadErrors = 0; WriteErrors = 0 }
+                Thresholds = @{}; Verdicts = @(); GeneratedAt = '2026-07-28T00:00:00Z'
+            }
+
+            $md = Format-CiScanSummary -Report $report
+
+            # 85% of the bound: still complete, so nothing else in the report is alarming.
+            $md | Should -BeLike '*approaching the bound*'
+            $md | Should -BeLike '*| Survey complete | yes |*'
+        }
+
+        It 'returns the bounds it was invoked with so headroom can be computed at all' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 300 -MaxPullRequests 400 -RequestedMode 'report'
+
+            $r.MaxPullRequests | Should -Be 400
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*PR index headroom*'
+        }
+
         It 'reports a fully clean survey as complete' {
             $report = @{
                 Label = 'ci-scan-net11'; Branch = 'net11.0'
@@ -669,7 +727,7 @@ Describe 'CI scan reconciler' {
                 MutationsAllowed = $false; ClosuresAllowed = $false
                 FailClosed = $false; FailClosedReason = ''
                 IssueCount = 59; IssuesTruncated = $false; PullRequestCount = 12
-                PullRequestIndexComplete = $true
+                PullRequestIndexComplete = $true; MaxPullRequests = 400
                 WriteErrors = 0; AbortedAt = $null
                 Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
                               LabelOps = 0; ReadErrors = 0; WriteErrors = 0 }

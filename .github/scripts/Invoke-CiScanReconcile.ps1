@@ -727,6 +727,31 @@ function Format-CiScanSummary {
     $null = $sb.AppendLine("| Issue listing bounded | $(if ($Report.IssuesTruncated) { '**yes — hit the `-MaxIssues` bound or a page read failed; oldest issues shown**' } else { 'no — listing read to exhaustion' }) |")
     $null = $sb.AppendLine("| All reads succeeded | $(if ($Report.Counters.ReadErrors -gt 0) { "**no — $($Report.Counters.ReadErrors) read(s) failed; verdicts below used partial data**" } else { 'yes' }) |")
     $null = $sb.AppendLine("| PR blocker index complete | $(if ($Report.PullRequestIndexComplete) { 'yes' } else { '**no — hit the `-MaxPullRequests` bound; an open fix PR may have been missed**' }) |")
+
+    <#
+        Headroom against the PR bound, reported every run because it DRIFTS on its own.
+
+        The index covers every open pull request, not just `[ci-fix]` ones, because a PR
+        referencing an issue is a closure blocker whoever opened it. So it tracks repo-wide
+        PR volume and creeps toward the bound with nobody changing anything here.
+
+        Crossing it is safe but silent: the index reports incomplete, the run fail-closes
+        on `pull-request-index-incomplete`, and nothing is closed again until a human
+        notices. A comment in the param block documents that; only a row DETECTS it.
+        Warning early turns a silent stop into a scheduled bump.
+    #>
+    if ($Report.MaxPullRequests -gt 0) {
+        $pct = [math]::Round(100 * $Report.PullRequestCount / $Report.MaxPullRequests)
+        $headroom = "$($Report.PullRequestCount) / $($Report.MaxPullRequests) ($pct% of bound)"
+        if (-not $Report.PullRequestIndexComplete) {
+            $headroom = "**$headroom — BOUND REACHED; raise ``-MaxPullRequests``**"
+        }
+        elseif ($pct -ge 80) {
+            $headroom = "**$headroom — approaching the bound; raise ``-MaxPullRequests`` before it fail-closes**"
+        }
+        $null = $sb.AppendLine("| PR index headroom | $headroom |")
+    }
+
     $surveyComplete = (-not $Report.IssuesTruncated) -and ($Report.Counters.ReadErrors -eq 0) -and $Report.PullRequestIndexComplete
     $null = $sb.AppendLine("| Survey complete | $(if ($surveyComplete) { 'yes' } else { '**no — see the rows above**' }) |")
     $null = $sb.AppendLine("| Generated | $($Report.GeneratedAt) |")
@@ -1032,6 +1057,9 @@ function Invoke-CiScanReconcile {
         IssuesTruncated   = [bool]$issueIndex.Truncated
         PullRequestCount  = @($prIndex.PullRequests).Count
         PullRequestIndexComplete = [bool]$prIndex.Complete
+        # Carried so the summary can report headroom, not just the pass/fail bound check.
+        MaxPullRequests   = $MaxPullRequests
+        MaxIssues         = $MaxIssues
         WriteErrors       = $script:Counters.WriteErrors
         AbortedAt         = $script:AbortedAt
         Counters          = $script:Counters
