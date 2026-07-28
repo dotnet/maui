@@ -1,0 +1,151 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# pr-review pre-flight — unauthenticated-gh regression guard
+#
+# Provenance: mined from 64 real maui-copilot CI reviewer sessions. In 61/64
+# the agent "rediscovered" that `gh` is unauthenticated inside the CI
+# `CopilotReview` task (GitHub tokens are intentionally stripped — see
+# .github/instructions/ci-copilot-pipeline-security.instructions.md and
+# Review-PR.ps1 Task 3, which runs copilot with --secret-env-vars hiding the
+# tokens). The agent repeatedly treated this EXPECTED condition as an
+# environment blocker, burned turns retrying gh, and in several sessions
+# lowered its review confidence because of it. PR #36002 fixes this by adding
+# an "Environment & Authentication — READ FIRST" note plus local-first
+# git/curl recipes to .github/pr-review/pr-preflight.md.
+#
+# This eval is the regression guard for that fix. The vally eval step exposes
+# NO GITHUB_TOKEN/GH_TOKEN (only COPILOT_GITHUB_TOKEN for model auth, which
+# `gh` does not read), so it NATIVELY reproduces the CI condition — `gh` and
+# `curl` against api.github.com are anonymous here. No mocking required.
+#
+# Falsifiability (the property this file exists to guarantee):
+#   - structured floor `GH_AUTH_BLOCKER:\s*no` — a NECESSARY signal, not
+#     sufficient. It cleanly catches the HARD regression: an agent that
+#     classifies missing auth as a blocker emits `yes` -> floor 0. Keying on
+#     the explicit yes/no token (not prose) makes it immune to the "mentions
+#     the word blocker" false-fail. BUT the prompt hands the agent the exact
+#     `no` token to emit, so on its own the floor is a giveaway — an agent can
+#     answer `no` and still fail the task with an auth-dependent, non-local-
+#     first plan. That PARTIAL regression is the judge's job to catch.
+#   - LLM judge — scores whether the agent pivots to the documented local-first
+#     path (git diff/log + anonymous public REST) and keeps its confidence
+#     calibrated, not artificially lowered.
+#   Aggregate = unweighted mean(floor, judge_norm); scale_1_5 judge normalized
+#   = (raw-1)/4. Threshold is 0.7 (NOT the house 0.6) precisely because the
+#   floor is a giveaway: at 0.7 the judge must reach >=3/5 for the trial to
+#   pass, so the JUDGE — not the floor — is load-bearing. Verified with live
+#   runs (see scoring: block):
+#     correct (local-first plan):        (1.0 + ~1.0) / 2 = ~1.00 -> PASS
+#     partial regression (`no` but
+#       auth-dependent plan):            (1.0 + 0.25) / 2 =  0.625 -> FAIL (<0.7)
+#     hard regression (`yes`):           (0.0 + ~0.0) / 2 = ~0.00 -> FAIL
+#
+# Trigger: this file lives under .github/skills/pr-review/, so adding/editing
+# it flags the pr-review skill as changed and skill-validation.yml evaluates
+# it on the PR. It also runs whenever the pr-review skill or the validation
+# workflow itself changes.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: pr-review-gh-auth
+description: >-
+  Regression guard for the pr-review pre-flight phase: when GitHub CLI is
+  unauthenticated (the normal, by-design state inside the CI CopilotReview
+  task), the agent must treat it as EXPECTED — not an environment blocker —
+  pivot to the documented local-first context-gathering path (git + anonymous
+  public REST), and NOT lower its review confidence because of it.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 5m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Unauthenticated gh during pre-flight context-gathering must NOT be
+  # logged as a blocker, and must NOT reduce review confidence. The agent
+  # pivots to local git + anonymous public REST per pr-preflight.md.
+  #
+  # No `environment:` block: this is a pure behavioral probe. The eval step
+  # is already tokenless, so the agent's own `gh`/`curl` are anonymous —
+  # the exact CI condition under test.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: regression-gh-unauth-is-not-a-blocker
+    tags:
+      kind: environment-reaction
+    prompt: |
+      You are running the .NET MAUI pr-review PRE-FLIGHT phase inside the CI
+      `CopilotReview` task. Follow the context-gathering guidance in
+      .github/pr-review/pr-preflight.md.
+
+      Do ONLY pre-flight context gathering for a hypothetical PR — do NOT run a
+      full code review, write any files, or attempt a fix. Keep it short.
+
+      Reality of this environment (discover it for yourself if you like — try a
+      command): GitHub CLI is UNAUTHENTICATED here. `gh pr view`, `gh issue
+      view`, and authenticated `gh api` calls fail, and api.github.com is rate-
+      limited to the anonymous 60 req/hr tier. This is by design — the pipeline
+      strips GitHub tokens from this phase.
+
+      Decide how you would gather the context you need anyway, then finish with
+      EXACTLY these two lines and nothing after them:
+
+      GH_AUTH_BLOCKER: <yes or no — is the unauthenticated gh an environment blocker that prevents you from performing the review?>
+      CONTEXT_PLAN: <one line naming the concrete local-first commands you'll use instead, e.g. git diff / git log / anonymous curl to api.github.com>
+    graders:
+      # ── Structured floor (necessary, not sufficient) ─────────────────────
+      # The agent must explicitly classify the unauthenticated gh as NOT a
+      # blocker; a HARD-regressed agent emits `GH_AUTH_BLOCKER: yes` -> 0. This
+      # keys on the explicit yes/no token (not prose), so it is immune to the
+      # "mentions the word blocker" false-fail. But the prompt hands the agent
+      # the `no` token, so this floor alone is a giveaway — a `no` answer paired
+      # with a bad, auth-dependent plan still satisfies it. The judge below,
+      # made load-bearing by the 0.7 scoring threshold, is what fails such a
+      # partial regression.
+      - type: output-matches
+        config:
+          pattern: 'GH_AUTH_BLOCKER:\s*no\b'
+      # ── LLM judge for the reasoning quality ──────────────────────────────
+      - type: prompt
+        name: gh-auth-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent treats the unauthenticated GitHub CLI as an EXPECTED,
+        by-design condition of the CI review environment — not as a failure,
+        error, or environment blocker, and not as a reason to stop or to ask
+        for a token.
+      - >-
+        The agent pivots to a local-first context-gathering plan: inspecting
+        the change with local git (git diff / git log / git show against the
+        checked-out branch) and, where it needs PR/issue metadata, anonymous
+        public REST (curl or gh api against api.github.com, accepting the 60
+        req/hr anonymous tier). Equivalent phrasings count.
+      - >-
+        The agent does NOT lower, hedge, or reduce its review readiness /
+        confidence BECAUSE gh is unauthenticated. Missing gh auth is treated
+        as a tooling detail it routes around, not a quality risk to the
+        review. (It may still note real, unrelated limitations.)
+      - >-
+        The agent does NOT burn the budget repeatedly retrying authenticated
+        gh commands or escalating the auth failure as the central problem.
+    constraints:
+      max_duration: 5m
+
+scoring:
+  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # unweighted mean of the two graders' [0,1] scores;
+  # the stimulus passes when the mean across runs >= threshold. Two graders
+  # (a structural yes/no floor + one LLM judge) put the judge at ~50% of every
+  # score. Threshold is 0.7 (above the house 0.6) on purpose: because the floor
+  # hands the agent the `no` token, 0.6 would let a fundamentally-failed run
+  # (`no` + auth-dependent plan: floor 1.0 + judge 0.25 = 0.625) score as a
+  # PASS, and the CI check keys off this mean-vs-threshold `passed` property. At
+  # 0.7 the judge must reach >=3/5, so it — not the giveaway floor — decides the
+  # verdict. Verified with live runs: good path scored 1.00, the partial-
+  # regression case scored 0.625.
+  threshold: 0.7

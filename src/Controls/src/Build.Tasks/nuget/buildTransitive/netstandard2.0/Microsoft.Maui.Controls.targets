@@ -10,11 +10,11 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
 
-    <!-- XAML Incremental Hot Reload (XIHR): opt-in for the initial ship (Preview 6). Hot reload is a
-         dev-time feature; when enabled it emits per-page registry calls and keeps the runtime feature
-         switch on. Default off everywhere — set <EnableMauiIncrementalHotReload>true</...> to opt in.
-         Default-on is planned for a later preview (see the .NET 11 Hot Reload plan). Resolves to an
-         explicit true/false so the value always flows to the source generator and runtime config. -->
+    <!-- XAML Incremental Hot Reload (XIHR): off by default. Hot reload is a dev-time feature; when
+         enabled it emits per-page registry calls and keeps the runtime feature switch on. Set
+         <EnableMauiIncrementalHotReload>true</...> to opt in (legacy XAML Hot Reload remains the
+         default fallback). Resolves to an explicit true/false so the value always flows to the source
+         generator and runtime config. -->
     <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">false</EnableMauiIncrementalHotReload>
 
     <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->

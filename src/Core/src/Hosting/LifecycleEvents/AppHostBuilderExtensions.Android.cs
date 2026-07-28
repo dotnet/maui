@@ -58,11 +58,11 @@ namespace Microsoft.Maui.LifecycleEvents
 					// If we tried to call window.Destroying() before, GetWindow() should return null
 					activity.GetWindow()?.Destroying();
 				})
-				.OnBackPressed(activity =>
-				{
-					return activity.GetWindow()?.BackButtonClicked() ?? false;
-				});
+				.OnBackPressed(HandleWindowBackButtonPressed);
 		}
+
+		internal static bool HandleWindowBackButtonPressed(global::Android.App.Activity activity) =>
+			activity.GetWindow()?.BackButtonClicked() ?? false;
 
 		static void OnConfigureWindow(IAndroidLifecycleBuilder android)
 		{

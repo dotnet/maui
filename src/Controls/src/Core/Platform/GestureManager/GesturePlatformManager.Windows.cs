@@ -12,6 +12,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Input;
 using Windows.Storage.Streams;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -20,6 +22,10 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IPlatformViewHandler _handler;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
+		// Tracks tap recognizers that currently have HandleTapGestureRecognizerPropertyChanged subscribed.
+		// Using an explicit set ensures removed recognizers are unsubscribed even after they leave GestureRecognizers,
+		// preventing stale PropertyChanged subscriptions from keeping this manager alive (memory leak fix).
+		readonly HashSet<TapGestureRecognizer> _subscribedTapRecognizers = new();
 		FrameworkElement? _container;
 		FrameworkElement? _control;
 		VisualElement? _element;
@@ -114,6 +120,12 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						_control.DoubleTapped -= HandleDoubleTapped;
 					}
+
+					// Needed for handler re-use or hot-reload: if _control is reassigned while a KeyDown
+					// subscription is live, detach it from the old ContentPanel before the swap.
+					// During Dispose this is a no-op because ClearContainerEventHandlers() already
+					// cleared ContentPanelKeyDownSubscribed before Control is set to null.
+					UpdateContentPanelIsTapStop(false);
 				}
 
 				_control = value;
@@ -298,12 +310,20 @@ namespace Microsoft.Maui.Controls.Platform
 					gestureRecognizersBefore.CollectionChanged -= _collectionChangedHandler;
 				}
 
+				// Unsubscribe from the old element before swapping, to avoid stale callbacks.
+				_element?.PropertyChanged -= HandleElementPropertyChanged;
+
 				_element = value;
 
 				if (_element is View && ElementGestureRecognizers is { } gestureRecognizersAfter)
 				{
 					gestureRecognizersAfter.CollectionChanged += _collectionChangedHandler;
 				}
+
+				// Subscribe to IsEnabled changes so Border keyboard focus state stays in sync
+				// when IsEnabled is toggled at runtime (ContentPanel is a Panel, not a Control,
+				// so MapIsEnabled does not propagate IsEnabled to it automatically).
+				_element?.PropertyChanged += HandleElementPropertyChanged;
 			}
 		}
 
@@ -398,6 +418,108 @@ namespace Microsoft.Maui.Controls.Platform
 					if (gestureRecognizers.FirstGestureOrDefault<DropGestureRecognizer>() is { } dropGesture)
 					{
 						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
+					foreach (var tapGesture in _subscribedTapRecognizers)
+					{
+						tapGesture.PropertyChanged -= HandleTapGestureRecognizerPropertyChanged;
+					}
+					_subscribedTapRecognizers.Clear();
+				}
+			}
+
+			// Reset tab stop state when clearing gesture handlers for Border
+			UpdateContentPanelIsTapStop(false);
+		}
+
+		// Sets or resets the IsTabStop property on ContentPanel (Border) when gesture recognizers are added or removed for border.
+		// This allows Border to be focusable when it has TapGestureRecognizers for keyboard accessibility.
+		void UpdateContentPanelIsTapStop(bool canAllowTabStop)
+		{
+			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
+			{
+				// A disabled or input-transparent Border must not be keyboard-focusable even if it has a TapGestureRecognizer.
+				// ContentPanel derives from Panel, so MapIsEnabled does not propagate IsEnabled to it.
+				// InputTransparent on Windows only disables hit-testing (mouse), not tab navigation — guard it explicitly.
+				bool shouldEnable = canAllowTabStop && (Element is not View v || (v.IsEnabled && !v.InputTransparent));
+				bool isSubscribed = (_subscriptionFlags & SubscriptionFlags.ContentPanelKeyDownSubscribed) != 0;
+
+				if (shouldEnable && !isSubscribed)
+				{
+					contentPanel.IsTabStop = true;
+					contentPanel.UseSystemFocusVisuals = true;
+					contentPanel.KeyDown += ContentPanelOnKeyDown;
+					_subscriptionFlags |= SubscriptionFlags.ContentPanelKeyDownSubscribed;
+				}
+				else if (!shouldEnable && isSubscribed)
+				{
+					contentPanel.IsTabStop = false;
+					contentPanel.UseSystemFocusVisuals = false;
+					contentPanel.KeyDown -= ContentPanelOnKeyDown;
+					_subscriptionFlags &= ~SubscriptionFlags.ContentPanelKeyDownSubscribed;
+				}
+			}
+		}
+
+		// Handle Enter and Space key presses to trigger TapGestureRecognizers on Border for keyboard accessibility
+		// This is only applicable when the Border has TapGestureRecognizers attached
+		void ContentPanelOnKeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			// Only handle events originating directly from the ContentPanel (i.e. the Border itself is focused).
+			// KeyDown is a bubbling routed event; without this guard a child element's unhandled Enter/Space
+			// would bubble up and spuriously fire the Border's TapGestureRecognizer.
+			if (!ReferenceEquals(e.OriginalSource, sender))
+			{
+				return;
+			}
+
+			// Ignore auto-repeat events fired while the key is held down.
+			// KeyDown fires repeatedly for a single held key press; we only want to act once per press,
+			// consistent with Android's OnKeyPress which acts on KeyEventActions.Up.
+			if (e.KeyStatus.WasKeyDown)
+			{
+				return;
+			}
+
+			if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Space)
+			{
+				// Suppress modifier chords (Ctrl+Enter, Shift+Space, Alt+Space, etc.).
+				// Alt+Space is the Windows system menu accelerator — consuming it would break OS behavior.
+				// Standard WinUI controls (e.g. Button) do not activate on modifier+key chords.
+				// Pattern follows MauiPasswordTextBox.cs which uses the same API for Ctrl detection.
+				if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down) ||
+					InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ||
+					InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down))
+				{
+					return;
+				}
+
+				if (Element is View view)
+				{
+					if (!view.IsEnabled || view.InputTransparent)
+					{
+						return;
+					}
+
+					IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer =>
+						recognizer.NumberOfTapsRequired == 1 &&
+						(recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
+
+					bool handled = false;
+
+					foreach (var recognizer in tapGestures)
+					{
+						recognizer.SendTapped(view, (relativeTo) =>
+						{
+							// Keyboard taps have no physical position, use Point.Zero
+							// consistent with Android keyboard behavior.
+							return Point.Zero;
+						});
+						handled = true;
+					}
+
+					if (handled)
+					{
+						e.Handled = true;
 					}
 				}
 			}
@@ -976,7 +1098,31 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
-			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
+			bool hasSelfSingleTap = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
+				g.NumberOfTapsRequired == 1);
+
+			bool hasSelfPrimarySingleTap = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
+				g.NumberOfTapsRequired == 1 &&
+				(g.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
+
+			// Unsubscribe all previously tracked tap recognizers before re-subscribing.
+			// This ensures removed recognizers (no longer in GestureRecognizers) are detached —
+			// they would be missed if we only iterated the current collection here.
+			foreach (var oldTapGesture in _subscribedTapRecognizers)
+			{
+				oldTapGesture.PropertyChanged -= HandleTapGestureRecognizerPropertyChanged;
+			}
+			_subscribedTapRecognizers.Clear();
+
+			// Subscribe to property changes on all current tap recognizers so IsTabStop stays in sync
+			// when Buttons or NumberOfTapsRequired change at runtime without a collection change.
+			foreach (var tapGesture in gestures.GetGesturesFor<TapGestureRecognizer>())
+			{
+				tapGesture.PropertyChanged += HandleTapGestureRecognizerPropertyChanged;
+				_subscribedTapRecognizers.Add(tapGesture);
+			}
+
+			if (hasSelfSingleTap
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
@@ -992,6 +1138,11 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_container.RightTapped += OnTap;
+
+				// Only enable tab stop when the border itself has a primary-button single-tap gesture.
+				// Children should handle their own keyboard focus independently, and secondary-only
+				// gestures are not activated via Enter/Space.
+				UpdateContentPanelIsTapStop(hasSelfPrimarySingleTap);
 			}
 			else
 			{
@@ -1108,6 +1259,29 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		void HandleElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if ((e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
+				 e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })
+			{
+				// ContentPanel derives from Panel, so MapIsEnabled does not propagate to it.
+				// InputTransparent on Windows only disables hit-testing, not tab navigation — recompute here.
+				// Recompute keyboard focus state when IsEnabled or InputTransparent changes at runtime.
+				UpdatingGestureRecognizers();
+			}
+		}
+
+		void HandleTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName is nameof(TapGestureRecognizer.NumberOfTapsRequired) or nameof(TapGestureRecognizer.Buttons)
+				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })
+			{
+				// Recompute keyboard focus state when tap recognizer properties change at runtime.
+				UpdatingGestureRecognizers();
+			}
+		}
+
 		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)
 		{
 			// The package should never be null here since the UI.Xaml.DragEventArgs have already been initialized
@@ -1117,7 +1291,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		[Flags]
-		enum SubscriptionFlags : byte
+		enum SubscriptionFlags : ushort
 		{
 			None = 0,
 			ContainerDragEventsSubscribed = 1,
@@ -1127,7 +1301,8 @@ namespace Microsoft.Maui.Controls.Platform
 			ContainerTapAndRightTabEventSubscribed = 1 << 4,
 			ContainerDoubleTapEventSubscribed = 1 << 5,
 			ControlTapEventSubscribed = 1 << 6,
-			ControlDoubleTapEventSubscribed = 1 << 7
+			ControlDoubleTapEventSubscribed = 1 << 7,
+			ContentPanelKeyDownSubscribed = 1 << 8
 		}
 	}
 }
