@@ -326,6 +326,14 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		NotifyCollectionChangedEventHandler _collectionChangedHandler;
+
+		~Picker()
+		{
+			_collectionChangedProxy.Unsubscribe();
+		}
+
 		static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((Picker)bindable).OnItemsSourceChanged((IList)oldValue, (IList)newValue);
@@ -333,14 +341,17 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
-			var oldObservable = oldValue as INotifyCollectionChanged;
-			if (oldObservable != null)
-				oldObservable.CollectionChanged -= CollectionChanged;
+			if (oldValue is INotifyCollectionChanged)
+				_collectionChangedProxy.Unsubscribe();
 
-			var newObservable = newValue as INotifyCollectionChanged;
-			if (newObservable != null)
+			if (newValue is INotifyCollectionChanged newObservable)
 			{
-				newObservable.CollectionChanged += CollectionChanged;
+				// Subscribe via a weak proxy so a long-lived ItemsSource (e.g. a shared/static
+				// ObservableCollection or one stored on a reused view-model) does not keep this
+				// Picker - and through it the page's element tree - rooted in memory when the
+				// page is torn down without ItemsSource being reassigned. See issue #36346.
+				_collectionChangedHandler ??= CollectionChanged;
+				_collectionChangedProxy.Subscribe(newObservable, _collectionChangedHandler);
 			}
 
 			if (newValue != null)

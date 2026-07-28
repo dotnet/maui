@@ -5,6 +5,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using Xunit;
@@ -1039,6 +1041,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Assert: SelectedItem should still be "Dog", and index should now be 2
 			Assert.Equal("Dog", picker.SelectedItem);
 			Assert.Equal(2, picker.SelectedIndex);
+		}
+
+		[Fact]
+		public async Task PickerItemsSourceDoesNotLeak()
+		{
+			// A long-lived/shared collection, as the issue describes (e.g. a ViewModel collection
+			// reused across navigations). It out-lives the Picker.
+			var sharedRoot = new ObservableCollection<string> { "a", "b", "c" };
+
+			WeakReference weakPicker = CreatePicker(sharedRoot);
+
+			Assert.False(await weakPicker.WaitForCollect(), "Picker should not be alive!");
+			GC.KeepAlive(sharedRoot);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreatePicker(ObservableCollection<string> sharedRoot)
+		{
+			var picker = new Picker { ItemsSource = sharedRoot };
+			return new WeakReference(picker);
 		}
 	}
 }
