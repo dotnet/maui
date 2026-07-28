@@ -131,11 +131,17 @@ $workflowContractText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'wor
 Assert-Eq -Label "workflow verifies exact closed-generation body lines" -Expected $true `
     -Actual ($workflowContractText.Contains('($lines | index($tracker) != null)') -and
         $workflowContractText.Contains('($lines | index($generation) != null)'))
-Assert-Eq -Label "workflow accepts closed generations only from the trusted workflow bot" -Expected $true `
-    -Actual ($workflowContractText.Contains('--app github-actions') -and
+Assert-Eq -Label "workflow verifies exact open-tracker marker and ownership label" -Expected $true `
+    -Actual ($workflowContractText.Contains('split("\n") | index($tracker)') -and
+        $workflowContractText.Contains('--label area-infrastructure'))
+Assert-Eq -Label "workflow accepts adopted human-created closed generations" -Expected $false `
+    -Actual ($workflowContractText.Contains('--app github-actions') -or
         $workflowContractText.Contains('.author.login == "app/github-actions"'))
 Assert-Eq -Label "workflow requires tracker label on a closed-generation match" -Expected $true `
     -Actual $workflowContractText.Contains('index("area-infrastructure") != null')
+Assert-Eq -Label "workflow refuses to create a tracker without its durable ownership label" -Expected $true `
+    -Actual ($workflowContractText.Contains("Required label 'area-infrastructure' not found") -and
+        $workflowContractText.Contains('CREATE_ARGS+=(--label "area-infrastructure")'))
 $previewContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1') -Raw
 Assert-Eq -Label "preview body cap reserves mandatory component policy" -Expected $true `
     -Actual ($previewContractText.Contains('componentPolicyReserve') -and
@@ -2160,6 +2166,18 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         Assert-Eq -Label "backport lineage: unrelated repeated mention cannot retract source — $unrelatedRepeatedMention" `
             -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unrelatedRepeatedMention) -join ',')
     }
+    foreach ($contextualRetraction in @(
+        'Backport of #12345. The change from #12345 was reverted in this branch.',
+        'Backport of #12345. The fix from #12345 was not included in this SR.',
+        'Backport of #12345. The workaround from #12345 was rolled back.',
+        'Backport of #12345. Work introduced by #12345 was omitted from this branch.'
+    )) {
+        Assert-Eq -Label "backport lineage: contextual repeated mention still retracts explicit removal — $contextualRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $contextualRetraction) -join ',')
+    }
+    $otherPrRetracted = 'Backport: #100 and #200. #200 was a follow-up, but it was reverted.'
+    Assert-Eq -Label "backport lineage: another PR retraction cannot remove prior source" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $otherPrRetracted) -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -5786,8 +5804,10 @@ function Invoke-ShipChecksWithMockedVersions {
         [string]$SrBranch = 'release/10.0.1xx-sr8',
         [string]$MainBranch = 'main',
         [switch]$Candidate,
-        [switch]$Shipped
+        [switch]$Shipped,
+        [string]$BugYaml = $bugYamlAllowsAll
     )
+    $priorGetFileFromRefStub = $script:GetFileFromRefStub
     # Wrap Get-FileFromRef so the script's existing Get-VersionsPropsState /
     # Get-BugTemplateVersions read from these in-memory blobs.
     $srRef   = "origin/$SrBranch"
@@ -5814,7 +5834,7 @@ function Invoke-ShipChecksWithMockedVersions {
     $script:_mockContentsRef = $shippedContentsRef
     $script:_mockSrXml    = $srXml
     $script:_mockMainXml  = $mainXml
-    $script:_mockBugYaml  = $bugYamlAllowsAll
+    $script:_mockBugYaml  = $BugYaml
 
     try {
         $ctx = @{
@@ -5822,13 +5842,14 @@ function Invoke-ShipChecksWithMockedVersions {
             srRef      = if ($Candidate) { "origin/$MainBranch" } else { "origin/$SrBranch" }
             contentsRef = if ($Shipped) { $shippedContentsRef } else { $null }
             previousStableTag = if ($Shipped) { '10.0.71' } else { $null }
+            shippedTagVersion = if ($Shipped) { $shippedContentsRef } else { $null }
             mainBranch = $MainBranch
             mode       = if ($Candidate) { 'candidate' } elseif ($Shipped) { 'shipped' } else { 'in-flight' }
             priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
         }
         return Get-ReleaseShipChecks -Ctx $ctx
     } finally {
-        $script:GetFileFromRefStub = $null
+        $script:GetFileFromRefStub = $priorGetFileFromRefStub
     }
 }
 
@@ -6153,6 +6174,32 @@ Assert-Eq -Label "shipped branch-ahead hotfix is surfaced as WATCH" -Expected 'W
 Assert-Eq -Label "shipped branch-ahead hotfix keeps published anchor explicit" -Expected $true `
     -Actual ($hotfixInProgressCheck.Details -match '10\.0\.81' -and $hotfixInProgressCheck.Details -match '10\.0\.80')
 
+$shipped91MissingTemplate = @'
+- type: dropdown
+  id: version-with-bug
+  attributes:
+    options:
+      - "10.0.90 (SR9)"
+'@
+$shipped91Checks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=91; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=100; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr9' -Shipped -BugYaml $shipped91MissingTemplate
+$shipped91TemplateCheck = Get-CheckByAreaPrefix -Checks $shipped91Checks -Prefix 'Bug template lists SR9 version'
+Assert-Eq -Label "shipped hotfix requires exact bug-template version, not decade sibling" `
+    -Expected 'CLEANUP' -Actual $shipped91TemplateCheck.Status
+Assert-Eq -Label "shipped hotfix template cleanup names exact published version" `
+    -Expected $true -Actual ($shipped91TemplateCheck.Details -match '10\.0\.91')
+
+$shipped91ExactTemplate = $shipped91MissingTemplate.Replace('10.0.90 (SR9)', '10.0.91 SR9.1')
+$shipped91ExactChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=91; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=100; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr9' -Shipped -BugYaml $shipped91ExactTemplate
+$shipped91ExactCheck = Get-CheckByAreaPrefix -Checks $shipped91ExactChecks -Prefix 'Bug template lists SR9 version'
+Assert-Eq -Label "shipped hotfix accepts exact version with descriptive suffix" `
+    -Expected 'READY' -Actual $shipped91ExactCheck.Status
+
 $preBumpHotfixChecks = Get-ReleaseShipChecks -Ctx @{
     srBranch = 'release/10.0.1xx-sr8'
     srRef = 'origin/release/10.0.1xx-sr8'
@@ -6170,6 +6217,25 @@ Assert-Eq -Label "shipped post-tag commit before version bump is surfaced as WAT
     -Expected 'WATCH' -Actual $preBumpHotfixCheck.Status
 Assert-Eq -Label "pre-bump hotfix WATCH explains unchanged Versions.props" `
     -Expected $true -Actual ($preBumpHotfixCheck.Details -match 'still reports that version')
+
+$unknownVersionHotfixChecks = Get-ReleaseShipChecks -Ctx @{
+    srBranch = 'release/10.0.1xx-sr8'
+    srRef = 'origin/release/10.0.1xx-sr8'
+    contentsRef = '10.0.80'
+    previousStableTag = '10.0.71'
+    shippedTagVersion = '10.0.80'
+    hotfixHasPostTagCommits = $true
+    hotfixInProgress = $true
+    mainBranch = 'main'
+    mode = 'shipped'
+}
+$unknownVersionHotfixCheck = Get-CheckByAreaPrefix -Checks $unknownVersionHotfixChecks -Prefix 'Unpublished hotfix branch state'
+Assert-Eq -Label "post-tag hotfix with unreadable live version remains a WATCH" `
+    -Expected 'WATCH' -Actual $unknownVersionHotfixCheck.Status
+Assert-Eq -Label "post-tag hotfix with unreadable version renders explicit unknown text" `
+    -Expected $true -Actual ($unknownVersionHotfixCheck.Details -match 'version could not be determined')
+Assert-Eq -Label "post-tag hotfix with unreadable version does not render empty inline code" `
+    -Expected $false -Actual ($unknownVersionHotfixCheck.Details -match 'reports ``')
 
 Set-Item function:Get-FileFromRef $script:OrigGetFileFromRefForShipChecks
 $script:GetFileFromRefStub = $null

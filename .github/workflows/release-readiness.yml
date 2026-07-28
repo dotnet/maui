@@ -476,10 +476,16 @@ jobs:
           EXISTING=$(gh issue list \
             --repo "${{ github.repository }}" \
             --state open \
+            --label area-infrastructure \
             --search "in:body \"${MARKER}\"" \
-            --json number,title,createdAt \
-            --limit 50 \
-            --jq '. // [] | sort_by(.createdAt) | .[].number')
+            --json number,title,createdAt,body,labels \
+            --limit 100 | jq -r \
+              --arg tracker "$MARKER" '
+                [.[] | select(
+                  ([.labels[].name] | index("area-infrastructure") != null) and
+                  ((.body | gsub("\r"; "") | split("\n") | index($tracker)) != null)
+                )] | sort_by(.createdAt) | .[].number
+              ')
 
           # Each exact shipped-tag or hotfix-tip generation is create-once. A
           # later hotfix commit intentionally has a new version@commit marker.
@@ -494,20 +500,20 @@ jobs:
               echo "::warning::Shipped report for ${TRACKER_KEY} has no lifecycle generation marker; refusing to create or infer closure state."
               exit 0
             fi
-            # Narrow server-side to issues created by the GitHub Actions app
-            # with the tracker label, then enforce exact marker lines locally.
+            # Narrow server-side to tracker-labeled issues, then enforce exact
+            # marker lines locally. Legacy/current trackers may be human-created
+            # and later adopted by this workflow, so author identity is not a
+            # durable ownership signal.
             CLOSED_GENERATION=$(gh issue list \
               --repo "${{ github.repository }}" \
               --state closed \
-              --app github-actions \
               --label area-infrastructure \
               --search "in:body \"${GENERATION_MARKER}\"" \
-              --json number,closedAt,body,author,labels \
+              --json number,closedAt,body,labels \
               --limit 100 | jq -r \
                 --arg tracker "$MARKER" \
                 --arg generation "$GENERATION_MARKER" '
                   [.[] | select(
-                    (.author.login == "app/github-actions") and
                     ([.labels[].name] | index("area-infrastructure") != null) and
                     ((.body | gsub("\r"; "") | split("\n")) as $lines |
                       ($lines | index($tracker) != null) and
@@ -711,12 +717,17 @@ jobs:
               --title "$ISSUE_TITLE"
               --body-file "$BODY_FILE"
             )
-            # Best-effort label attach — never fail the job for a label that does
-            # not exist in this repo. `gh issue create` hard-fails (422) on an
-            # unknown label, so attaching one that was renamed/removed would abort
-            # every auto-create. Probe each label and skip (with a warning) any
-            # that is missing, exactly like the milestone handling below.
-            for lbl in "report" "s/triaged" "area-infrastructure"; do
+            # area-infrastructure is the durable ownership boundary used by the
+            # closed-generation lookup. Refuse to create an issue that the
+            # lifecycle code could not recognize later.
+            if gh api "repos/${{ github.repository }}/labels/area-infrastructure" --jq '.name' >/dev/null 2>&1; then
+              CREATE_ARGS+=(--label "area-infrastructure")
+            else
+              echo "::error::Required label 'area-infrastructure' not found; refusing to create an untrackable release-readiness issue."
+              exit 1
+            fi
+            # The remaining organizational labels are best-effort.
+            for lbl in "report" "s/triaged"; do
               if gh api "repos/${{ github.repository }}/labels/${lbl//\//%2F}" --jq '.name' >/dev/null 2>&1; then
                 CREATE_ARGS+=(--label "$lbl")
               else

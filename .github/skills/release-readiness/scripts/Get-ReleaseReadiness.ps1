@@ -1194,27 +1194,46 @@ function Get-ReleaseShipChecks {
     # === Bug template version listing ===
     # Issue templates live on the default branch (main) — they're global per repo.
     $templateRef = "origin/$($Ctx.mainBranch)"
-    $templateVersions = Get-BugTemplateVersions -Ref $templateRef
-    # Acceptable: any entry matching $major.$minor.<patch-in-SR-range>, with or
-    # without an "SR$targetSr" or similar suffix.
+    $templateVersions = @(Get-BugTemplateVersions -Ref $templateRef)
+    # Before ship, any entry in the target SR decade proves the dropdown is
+    # prepared. After ship, users must be able to select the exact immutable
+    # published version; a sibling patch in the same decade is not sufficient.
+    $shippedTemplateVersion = if ($isShipped) {
+        [string](Get-MetadataValue -Container $Ctx -Name 'shippedTagVersion')
+    } else { $null }
     $matchPattern = "^$major\.$minor\.(\d+)"
-    $matchingEntries = @($templateVersions | Where-Object {
-        if ($_ -match $matchPattern) {
-            $p = [int]$Matches[1]
-            return ($p -ge $expectedPatchPrefix -and $p -lt ($expectedPatchPrefix + 10))
+    $matchingEntries = @(
+        if ($isShipped -and $shippedTemplateVersion) {
+            $exactPattern = "^\s*$([regex]::Escape($shippedTemplateVersion))(?:\s|$)"
+            $templateVersions | Where-Object { $_ -match $exactPattern }
+        } else {
+            $templateVersions | Where-Object {
+            if ($_ -match $matchPattern) {
+                $p = [int]$Matches[1]
+                return ($p -ge $expectedPatchPrefix -and $p -lt ($expectedPatchPrefix + 10))
+            }
+            return $false
+            }
         }
-        return $false
-    })
+    )
 
     $bugArea = "Bug template lists SR$targetSr version"
     if ($templateVersions.Count -eq 0) {
         $checks += New-ReadinessCheck -Area $bugArea -Status 'UNKNOWN' `
             -Details "Could not read .github/ISSUE_TEMPLATE/bug-report.yml from ``$templateRef`` or the version-with-bug dropdown is empty." `
             -NextAction "Inspect the bug template manually."
+    } elseif ($isShipped -and -not $shippedTemplateVersion) {
+        $checks += New-ReadinessCheck -Area $bugArea -Status 'UNKNOWN' `
+            -Details "The shipped tag version is unavailable, so the exact version-with-bug entry cannot be verified on ``$templateRef``." `
+            -NextAction "Resolve the immutable shipped tag and verify its exact version is listed in .github/ISSUE_TEMPLATE/bug-report.yml."
     } elseif ($matchingEntries.Count -gt 0) {
         $first = $matchingEntries[0]
         $checks += New-ReadinessCheck -Area $bugArea -Status 'READY' `
-            -Details "Bug template lists ``$first`` (and $($matchingEntries.Count - 1) other SR$targetSr entries)." `
+            -Details $(if ($isShipped) {
+                "Bug template lists the exact shipped version ``$first``."
+            } else {
+                "Bug template lists ``$first`` (and $($matchingEntries.Count - 1) other SR$targetSr entries)."
+            }) `
             -NextAction "No template update needed."
     } else {
         $sample = ($templateVersions | Select-Object -First 3) -join ', '
@@ -1223,8 +1242,16 @@ function Get-ReleaseShipChecks {
         # version for the first few days. Surface prominently so it gets done,
         # but don't escalate the verdict to Not Ready.
         $checks += New-ReadinessCheck -Area $bugArea -Status 'CLEANUP' `
-            -Details "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample." `
-            -NextAction "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml — can land before or shortly after ship."
+            -Details $(if ($isShipped) {
+                "Exact shipped version ``$shippedTemplateVersion`` is missing from the version-with-bug dropdown on ``$templateRef``. Same-decade entries do not let users select this shipped patch. Top entries: $sample."
+            } else {
+                "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample."
+            }) `
+            -NextAction $(if ($isShipped) {
+                "Add ``$shippedTemplateVersion`` to .github/ISSUE_TEMPLATE/bug-report.yml so users can file against the exact shipped patch."
+            } else {
+                "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml — can land before or shortly after ship."
+            })
     }
 
     if ($isShipped) {
@@ -1234,8 +1261,13 @@ function Get-ReleaseShipChecks {
         $hotfixInProgress = [bool](Get-MetadataValue -Container $Ctx -Name 'hotfixInProgress' `
             -Default ($liveVersion -and $publishedVersion -and $liveVersion -ne $publishedVersion))
         if ($hotfixInProgress) {
-            $hotfixEvidence = if ($hasPostTagCommits -and $liveVersion -eq $publishedVersion) {
-                "The live SR branch has commits after the published ``$publishedVersion`` tag even though ``eng/Versions.props`` still reports that version."
+            $hotfixEvidence = if ($hasPostTagCommits -and
+                ([string]::IsNullOrEmpty($liveVersion) -or $liveVersion -eq $publishedVersion)) {
+                if ($liveVersion) {
+                    "The live SR branch has commits after the published ``$publishedVersion`` tag even though ``eng/Versions.props`` still reports that version."
+                } else {
+                    "The live SR branch has commits after the published ``$publishedVersion`` tag; the live ``eng/Versions.props`` version could not be determined."
+                }
             } else {
                 "The live SR branch reports ``$liveVersion``, while the latest published tag for this SR cycle is ``$publishedVersion``."
             }
@@ -2446,9 +2478,11 @@ function Get-ExplicitBackportSourceNumbers {
                     $nextNumber = ConvertTo-PrNumber -Value $nextReference.Groups['number'].Value
                     if ($nextNumber -eq $number) {
                         $beforeRepeatedReference = $suffix.Substring(0, $nextReference.Index)
-                        if ($beforeRepeatedReference -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$') {
-                            # The number is an object in unrelated prose ("the
-                            # workaround from #N"), not a repeated lineage claim.
+                        $contextualObject = $beforeRepeatedReference -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+                        $lineageObject = $beforeRepeatedReference -match '(?i)\b(?:change|fix|work|code|commit|backport|patch|implementation|workaround)\b[^#\r\n]{0,80}\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+                        if ($contextualObject -and -not $lineageObject) {
+                            # An unrelated object ("the guide mentioned in #N")
+                            # cannot retract the PR's lineage.
                             $suffix = $beforeRepeatedReference
                             break
                         }
@@ -2512,12 +2546,21 @@ function Get-ExplicitBackportSourceNumbers {
         foreach ($occurrence in [regex]::Matches($Text, $acceptedPattern)) {
             $prefixStart = [Math]::Max(0, $occurrence.Index - 160)
             $occurrencePrefix = $Text.Substring($prefixStart, $occurrence.Index - $prefixStart)
-            if ($occurrencePrefix -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$') {
-                continue
-            }
+            $contextualObject = $occurrencePrefix -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+            $lineageObject = $occurrencePrefix -match '(?i)\b(?:change|fix|work|code|commit|backport|patch|implementation|workaround)\b[^#\r\n]{0,80}\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+            if ($contextualObject -and -not $lineageObject) { continue }
             $occurrenceEnd = $occurrence.Index + $occurrence.Length
             $remainingLength = [Math]::Min(2048, $Text.Length - $occurrenceEnd)
             $occurrenceSuffix = $Text.Substring($occurrenceEnd, $remainingLength)
+            # This occurrence gets its own retraction decision. Stop before any
+            # later PR reference so another PR's removal cannot retract it; a
+            # repeated occurrence of the same number is evaluated separately.
+            $nextReference = [regex]::Match(
+                $occurrenceSuffix,
+                '(?i)(?:pull/|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+            if ($nextReference.Success) {
+                $occurrenceSuffix = $occurrenceSuffix.Substring(0, $nextReference.Index)
+            }
             if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix -PresenceOnly) {
                 [void]$result.Remove($acceptedNumber)
                 break
