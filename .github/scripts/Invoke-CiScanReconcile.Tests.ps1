@@ -2234,16 +2234,36 @@ Describe 'Static source invariants' {
                 instead: while the file is absent the header must say so, and once #36842
                 lands this fails and forces the note to be rewritten rather than quietly
                 becoming false.
+
+                The failure lands on WHOEVER MERGES #36842, not on whoever wrote the note:
+                that PR adds `powershell-script-tests.yml` under a `pull_request` trigger
+                filtered to `.github/scripts/**`, so its own merge-ref runs this suite and
+                trips this test against a file it never touched. A forcing function is only
+                worth its cost if the person who trips it can tell what to change, so the
+                assertion is made against the single offending LINE rather than the whole
+                header — matching a 100-line comment block prints all 100 lines and buries
+                the reason — and both messages name the file and the exact phrase.
             #>
             $prGate = Join-Path $PSScriptRoot '..' 'workflows' 'powershell-script-tests.yml'
-            $header = ($script:WorkflowText -split "`n" | Where-Object { $_ -match '^\s*#' }) -join "`n"
+            $headerLines = @($script:WorkflowText -split "`n" | Where-Object { $_ -match '^\s*#' })
+            $header = $headerLines -join "`n"
+            $noteLines = @($headerLines | Where-Object { $_ -match 'does not exist YET' })
 
             if (Test-Path -LiteralPath $prGate) {
-                $header | Should -Not -Match 'does not exist YET' -Because 'the PR-time gate now exists; the header must be updated'
+                @($noteLines).Count | Should -Be 0 -Because (
+                    "powershell-script-tests.yml now EXISTS, so PR-time gating is real and the " +
+                    "'does not exist YET' note in .github/workflows/ci-scan-reconcile.yml is stale. " +
+                    "Delete that note (it names #36842) and keep the surrounding sentence about " +
+                    "workflow_dispatch not being covered, which is still true. Offending line(s): " +
+                    ($noteLines -join ' / '))
             }
             else {
-                $header | Should -Match 'does not exist YET' -Because 'nothing runs this suite on pull_request yet, and the header must not imply otherwise'
-                $header | Should -Match '36842' -Because 'the note must name the PR that supplies PR-time gating'
+                @($noteLines).Count | Should -BeGreaterOrEqual 1 -Because (
+                    "nothing runs these suites on pull_request yet — powershell-script-tests.yml " +
+                    "does not exist and ci-scan-reconcile.yml triggers on schedule/dispatch only — " +
+                    "so the header of .github/workflows/ci-scan-reconcile.yml must say 'does not " +
+                    "exist YET' rather than implying PR-time gating covers this")
+                $header | Should -Match '36842' -Because 'the note in .github/workflows/ci-scan-reconcile.yml must name the PR that supplies PR-time gating'
             }
         }
 
