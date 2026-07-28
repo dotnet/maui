@@ -33,8 +33,9 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <returns>
 		/// A new <see cref="IGesturePlatformManager"/> instance. The framework owns and disposes this
 		/// instance. Return a new instance for each call because the manager is disposed and recreated
-		/// on every connect or handler change.
+		/// on every connect or handler change. Returning <see langword="null"/> is not permitted.
 		/// </returns>
+		/// <exception cref="System.InvalidOperationException">Thrown when the implementation returns <see langword="null"/>.</exception>
 		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler);
 	}
 }
