@@ -23,7 +23,7 @@ partial class PasskeysImplementation : IPasskeys
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
 
-		var creation = Deserialize(options.ToString(), PasskeyJsonContext.Default.CreationOptions, "creation options");
+		var creation = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.CreationOptions, "creation options");
 
 		var rpId = creation.Rp?.Id
 			?? throw new ArgumentException("The creation options are missing the 'rp.id'.", nameof(options));
@@ -67,7 +67,7 @@ partial class PasskeysImplementation : IPasskeys
 			},
 		};
 
-		return new PasskeyCreationResponse(JsonSerializer.Serialize(response, PasskeyJsonContext.Default.RegistrationResponse));
+		return new PasskeyCreationResponse(JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.RegistrationResponse));
 	}
 
 	public async Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
@@ -75,7 +75,7 @@ partial class PasskeysImplementation : IPasskeys
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
 
-		var request = Deserialize(options.ToString(), PasskeyJsonContext.Default.RequestOptions, "request options");
+		var request = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.RequestOptions, "request options");
 
 		var rpId = request.RpId
 			?? throw new ArgumentException("The request options are missing the 'rpId'.", nameof(options));
@@ -114,7 +114,7 @@ partial class PasskeysImplementation : IPasskeys
 			},
 		};
 
-		return new PasskeyAssertionResponse(JsonSerializer.Serialize(response, PasskeyJsonContext.Default.AssertionResponse));
+		return new PasskeyAssertionResponse(JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.AssertionResponse));
 	}
 
 	void EnsureSupported()
@@ -197,34 +197,34 @@ partial class PasskeysImplementation : IPasskeys
 			return await manager.Task.ConfigureAwait(false);
 		}
 	}
-}
 
-[System.Runtime.Versioning.SupportedOSPlatform("ios16.0")]
-[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst16.0")]
-sealed class PasskeyAuthorizationManager : NSObject, IASAuthorizationControllerDelegate, IASAuthorizationControllerPresentationContextProviding
-{
-	readonly TaskCompletionSource<ASAuthorization> _tcs = new();
-	readonly UIWindow _anchor;
-
-	public PasskeyAuthorizationManager(UIWindow anchor) => _anchor = anchor;
-
-	public Task<ASAuthorization> Task => _tcs.Task;
-
-	public void TrySetCanceled() => _tcs.TrySetCanceled();
-
-	public UIWindow GetPresentationAnchor(ASAuthorizationController controller) => _anchor;
-
-	[Export("authorizationController:didCompleteWithAuthorization:")]
-	public void DidComplete(ASAuthorizationController controller, ASAuthorization authorization)
-		=> _tcs.TrySetResult(authorization);
-
-	[Export("authorizationController:didCompleteWithError:")]
-	public void DidComplete(ASAuthorizationController controller, NSError error)
+	[System.Runtime.Versioning.SupportedOSPlatform("ios16.0")]
+	[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst16.0")]
+	sealed class PasskeyAuthorizationManager : NSObject, IASAuthorizationControllerDelegate, IASAuthorizationControllerPresentationContextProviding
 	{
-		// ASAuthorizationError.Canceled == 1001 (user dismissed the sheet or the request was canceled).
-		if (error.Code == 1001)
-			_tcs.TrySetCanceled();
-		else
-			_tcs.TrySetException(new InvalidOperationException(error.LocalizedDescription));
+		readonly TaskCompletionSource<ASAuthorization> _tcs = new();
+		readonly UIWindow _anchor;
+
+		public PasskeyAuthorizationManager(UIWindow anchor) => _anchor = anchor;
+
+		public Task<ASAuthorization> Task => _tcs.Task;
+
+		public void TrySetCanceled() => _tcs.TrySetCanceled();
+
+		public UIWindow GetPresentationAnchor(ASAuthorizationController controller) => _anchor;
+
+		[Export("authorizationController:didCompleteWithAuthorization:")]
+		public void DidComplete(ASAuthorizationController controller, ASAuthorization authorization)
+			=> _tcs.TrySetResult(authorization);
+
+		[Export("authorizationController:didCompleteWithError:")]
+		public void DidComplete(ASAuthorizationController controller, NSError error)
+		{
+			// ASAuthorizationError.Canceled == 1001 (user dismissed the sheet or the request was canceled).
+			if (error.Code == 1001)
+				_tcs.TrySetCanceled();
+			else
+				_tcs.TrySetException(new InvalidOperationException(error.LocalizedDescription));
+		}
 	}
 }

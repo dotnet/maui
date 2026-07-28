@@ -115,7 +115,7 @@ public sealed class PasskeyCreationResponse
 		// Passkeys are not supported on this target; a response is never constructed here at runtime.
 		_id = string.Empty;
 #else
-		_id = PasskeyResponseReader.ReadRegistration(_json).Id
+		_id = WebAuthn.ResponseReader.ReadRegistration(_json).Id
 			?? throw new InvalidOperationException("The registration response JSON did not contain a credential 'id'.");
 #endif
 	}
@@ -149,7 +149,7 @@ public sealed class PasskeyAssertionResponse
 		_id = string.Empty;
 		_userHandle = null;
 #else
-		var parsed = PasskeyResponseReader.ReadAssertion(_json);
+		var parsed = WebAuthn.ResponseReader.ReadAssertion(_json);
 		_id = parsed.Id
 			?? throw new InvalidOperationException("The authentication response JSON did not contain a credential 'id'.");
 		_userHandle = parsed.Response?.UserHandle;

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Authentication;
 // generator (no reflection, AOT-friendly). Android does not use these: its Credential Manager consumes
 // and produces the WebAuthn JSON directly. This file is excluded from the netstandard build, which has
 // no passkey implementation and does not reference System.Text.Json.
-static class WebAuthn
+static partial class WebAuthn
 {
 	// PublicKeyCredentialCreationOptions (server -> CreateAsync).
 	internal sealed class CreationOptions
@@ -163,41 +163,41 @@ static class WebAuthn
 	internal sealed class ClientExtensionOutputs
 	{
 	}
-}
 
-[JsonSourceGenerationOptions(
-	PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-	DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-[JsonSerializable(typeof(WebAuthn.CreationOptions))]
-[JsonSerializable(typeof(WebAuthn.RequestOptions))]
-[JsonSerializable(typeof(WebAuthn.ClientData))]
-[JsonSerializable(typeof(WebAuthn.RegistrationResponse))]
-[JsonSerializable(typeof(WebAuthn.AssertionResponse))]
-partial class PasskeyJsonContext : JsonSerializerContext
-{
-}
-
-// Parses the WebAuthn response JSON so the shared response types can surface the credential id and user
-// handle. Used only on platforms that build a response; the netstandard build has no passkey support.
-static class PasskeyResponseReader
-{
-	public static WebAuthn.RegistrationResponse ReadRegistration(string json)
-		=> Deserialize(json, PasskeyJsonContext.Default.RegistrationResponse);
-
-	public static WebAuthn.AssertionResponse ReadAssertion(string json)
-		=> Deserialize(json, PasskeyJsonContext.Default.AssertionResponse);
-
-	static T Deserialize<T>(string json, JsonTypeInfo<T> typeInfo)
-		where T : class
+	[JsonSourceGenerationOptions(
+		PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+	[JsonSerializable(typeof(CreationOptions))]
+	[JsonSerializable(typeof(RequestOptions))]
+	[JsonSerializable(typeof(ClientData))]
+	[JsonSerializable(typeof(RegistrationResponse))]
+	[JsonSerializable(typeof(AssertionResponse))]
+	internal partial class JsonContext : JsonSerializerContext
 	{
-		try
+	}
+
+	// Parses the WebAuthn response JSON so the shared response types can surface the credential id and
+	// user handle. Used only on platforms that build a response; the netstandard build has no passkeys.
+	internal static class ResponseReader
+	{
+		public static RegistrationResponse ReadRegistration(string json)
+			=> Deserialize(json, JsonContext.Default.RegistrationResponse);
+
+		public static AssertionResponse ReadAssertion(string json)
+			=> Deserialize(json, JsonContext.Default.AssertionResponse);
+
+		static T Deserialize<T>(string json, JsonTypeInfo<T> typeInfo)
+			where T : class
 		{
-			return JsonSerializer.Deserialize(json, typeInfo)
-				?? throw new InvalidOperationException("The response JSON was empty.");
-		}
-		catch (JsonException ex)
-		{
-			throw new InvalidOperationException("The response JSON could not be parsed.", ex);
+			try
+			{
+				return JsonSerializer.Deserialize(json, typeInfo)
+					?? throw new InvalidOperationException("The response JSON was empty.");
+			}
+			catch (JsonException ex)
+			{
+				throw new InvalidOperationException("The response JSON could not be parsed.", ex);
+			}
 		}
 	}
 }

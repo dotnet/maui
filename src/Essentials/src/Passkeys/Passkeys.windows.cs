@@ -69,7 +69,7 @@ partial class PasskeysImplementation : IPasskeys
 
 	static PasskeyCreationResponse MakeCredential(PasskeyCreationOptions options, CancellationToken cancellationToken)
 	{
-		var creation = Deserialize(options.ToString(), PasskeyJsonContext.Default.CreationOptions, "creation options");
+		var creation = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.CreationOptions, "creation options");
 
 		var rpId = creation.Rp?.Id
 			?? throw new ArgumentException("The creation options are missing the 'rp.id'.", nameof(options));
@@ -174,7 +174,7 @@ partial class PasskeysImplementation : IPasskeys
 
 	static PasskeyAssertionResponse GetAssertion(PasskeyRequestOptions options, CancellationToken cancellationToken)
 	{
-		var request = Deserialize(options.ToString(), PasskeyJsonContext.Default.RequestOptions, "request options");
+		var request = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.RequestOptions, "request options");
 
 		var rpId = request.RpId
 			?? throw new ArgumentException("The request options are missing the 'rpId'.", nameof(options));
@@ -335,7 +335,7 @@ partial class PasskeysImplementation : IPasskeys
 			CrossOrigin = false,
 		};
 
-		return JsonSerializer.SerializeToUtf8Bytes(clientData, PasskeyJsonContext.Default.ClientData);
+		return JsonSerializer.SerializeToUtf8Bytes(clientData, WebAuthn.JsonContext.Default.ClientData);
 	}
 
 	static string BuildRegistrationResponseJson(byte[] credentialId, byte[] attestationObject, byte[] clientDataJson)
@@ -351,7 +351,7 @@ partial class PasskeysImplementation : IPasskeys
 			},
 		};
 
-		return JsonSerializer.Serialize(response, PasskeyJsonContext.Default.RegistrationResponse);
+		return JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.RegistrationResponse);
 	}
 
 	static string BuildAssertionResponseJson(byte[] credentialId, byte[] authenticatorData, byte[] signature, byte[] clientDataJson, byte[] userHandle)
@@ -369,7 +369,7 @@ partial class PasskeysImplementation : IPasskeys
 			},
 		};
 
-		return JsonSerializer.Serialize(response, PasskeyJsonContext.Default.AssertionResponse);
+		return JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.AssertionResponse);
 	}
 
 	static NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER[] MapCoseParameters(List<WebAuthn.CredentialParameter>? pubKeyCredParams)
