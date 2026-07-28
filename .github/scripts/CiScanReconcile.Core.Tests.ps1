@@ -243,6 +243,64 @@ Describe 'Get-CiScanStateMarker' {
         $r.Status | Should -Be 'ok'
         $r.State.runs | Should -Be 7
     }
+    It 'quarantines a present-but-unparseable timestamp instead of silently dropping it' {
+        # `ConvertTo-CiScanTimestamp` answers $null for BOTH "no value" and "unparseable",
+        # so normalizing straight into the state rewrote corruption as absence: Status
+        # stayed 'ok' and the marker was laundered clean on the next write. Same rule as
+        # `runs` — present-but-unparseable is corruption, not an absent field.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        $shapes = @{
+            'clock_start_at text'    = "$base,`"clock_start_at`":`"not-a-date`"}"
+            'clock_start_at empty'   = "$base,`"clock_start_at`":`"`"}"
+            'last_present_at text'   = "$base,`"last_present_at`":`"whenever`"}"
+            'last_present_at array'  = "$base,`"last_present_at`":[1,2]}"
+            'last_present_at number' = "$base,`"last_present_at`":5}"
+            'updated_at object'      = "$base,`"updated_at`":{`"a`":1}}"
+            'updated_at text'        = "$base,`"updated_at`":`"soon`"}"
+        }
+        foreach ($shape in $shapes.GetEnumerator()) {
+            $call = { Get-CiScanStateMarker -Body "<!-- ci-scan-state: $($shape.Value) -->" -Config $script:Net11 }
+            $call | Should -Not -Throw -Because "a corrupt '$($shape.Key)' marker must not abort the survey"
+            (& $call).Status | Should -Be 'malformed' -Because "'$($shape.Key)' is corruption, not an absent timestamp"
+        }
+    }
+    It 'rejects an array-shaped timestamp, which parses as a real date instead of failing' {
+        # Separated from the shape table above because it is the one case a parse guard
+        # cannot catch: `[string]@(1,2)` is '1 2', which .NET parses cleanly as 2 January.
+        # A field that fabricates a plausible timestamp is worse than one that drops it,
+        # and it is invisible to any "did it fail to parse?" test. Numbers and objects
+        # stringify to '5' / '@{a=1}' and do fail the parse, so only this shape pins the
+        # type check.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        $json = "$base,`"last_present_at`":[1,2]}"
+        (Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11).Status |
+            Should -Be 'malformed' -Because 'an array must not be coerced into 2 January'
+    }
+    It 'accepts an absent or explicitly null timestamp, which is what this function writes' {
+        # Set-CiScanStateMarker emits JSON `null` for a state with no clock, so treating
+        # null as corruption would quarantine the reconciler's OWN output on every issue
+        # it has ever recorded state for. Absent and null must both stay legitimate.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        foreach ($json in @("$base}", "$base,`"clock_start_at`":null,`"last_present_at`":null,`"updated_at`":null}")) {
+            $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11
+            $r.Status | Should -Be 'ok'
+            $r.State.clock_start_at | Should -BeNullOrEmpty
+            $r.State.last_present_at | Should -BeNullOrEmpty
+        }
+        # Round-trip this function's own writer, which is the shape that must never trip.
+        $state = @{ label = 'ci-scan-net11'; branch = 'net11.0'; pipeline = 'maui-pr-uitests'
+            absent_builds = @(); present_builds = @(); clock_start_at = $null
+            last_present_at = $null; candidate_notified = $false; updated_at = $null; runs = 0 }
+        $written = Set-CiScanStateMarker -Body 'Body text.' -State $state
+        (Get-CiScanStateMarker -Body $written -Config $script:Net11).Status | Should -Be 'ok'
+    }
+    It 'still reads well-formed timestamps' {
+        $json = New-StateJson -ClockStart '2026-06-01T00:00:00Z' -LastPresent '2026-07-20T00:00:00Z'
+        $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11
+        $r.Status | Should -Be 'ok'
+        (ConvertFrom-CiScanTimestamp $r.State.clock_start_at) | Should -Be ([datetime]::Parse('2026-06-01T00:00:00Z').ToUniversalTime())
+        (ConvertFrom-CiScanTimestamp $r.State.last_present_at) | Should -Be ([datetime]::Parse('2026-07-20T00:00:00Z').ToUniversalTime())
+    }
 }
 
 Describe 'Every payload consumer survives a field-less object' {
@@ -922,6 +980,30 @@ Describe 'Staleness is recency-aware' {
 
         $v.QuietDays | Should -Be 31
         $v.Detail | Should -Not -Contain 'clock-reset-by-recurrence'
+    }
+
+    It 'never promotes an issue to candidate on the strength of a corrupt recurrence stamp' {
+        # This is the consequence the marker-level test only implies. Corrupting one
+        # string used to drop `last_present_at` silently, and because $clockStart only
+        # ever moves FORWARD from created_at, dropping it always INFLATES QuietDays.
+        # The recent recurrence below holds the issue at 'watching'; the corrupt twin
+        # sailed past the quiet threshold into 'candidate' — the set the orchestrator
+        # may close in enforce mode — while the marker still reported Status='ok'.
+        $recent = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..25) -LastPresent $script:Now.AddDays(-3).ToString('o')))
+        $good = Get-CiScanIssueVerdict -Issue $recent -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..25))
+        $good.Decision | Should -Be 'watching'
+        $good.Reason | Should -Be 'threshold-not-met'
+
+        $corruptJson = (New-StateJson -Absent (1..25)) -replace '"clock_start_at":"[^"]*"', '"clock_start_at":"2026-06-01T00:00:00Z","last_present_at":"not-a-date"'
+        $corrupt = New-TestIssue -Body (New-CanonicalBody -StateJson $corruptJson)
+        $v = Get-CiScanIssueVerdict -Issue $corrupt -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..25))
+
+        $v.Decision | Should -Not -Be 'candidate' -Because 'a corrupt stamp must never relax a gate'
+        $v.Decision | Should -Be 'needs-human'
+        $v.Reason | Should -Be 'malformed-state-marker'
     }
 }
 

@@ -390,6 +390,14 @@ function Get-CiScanStateMarker {
         rather than quarantining that single issue. Failing closed means returning
         'malformed' for the one bad issue, not killing the survey. Use
         `[int]::TryParse` on the `[string]` form, as the build-id loop below does.
+
+        The dual hazard is QUIETER and strictly worse: a normalizer that answers `$null`
+        for both "absent" and "unparseable" (`ConvertTo-CiScanTimestamp`, and any future
+        sibling) silently rewrites corruption as absence. Nothing throws, Status stays
+        'ok', and the marker is laundered clean on the next write — while the dropped
+        value relaxes a downstream gate. Every field parsed here must distinguish the two
+        and return 'malformed' for present-but-unparseable, as `runs` and the timestamps
+        below do. A crash is loud and fails closed; a silent default fails OPEN.
     #>
     [CmdletBinding()]
     param(
@@ -454,6 +462,38 @@ function Get-CiScanStateMarker {
         if (-not [int]::TryParse([string]$obj.runs, [ref]$runs) -or $runs -lt 0) { return $bad }
     }
 
+    # The timestamps obey the same rule as `runs` above, and for the same reason:
+    # `ConvertTo-CiScanTimestamp` answers `$null` for BOTH "no value" and "unparseable",
+    # so normalizing straight into the state silently rewrites corruption as absence. That
+    # is not a cosmetic loss. `$clockStart` in Get-CiScanIssueVerdict only ever moves
+    # FORWARD from `created_at`, so a dropped timestamp always moves the clock EARLIER and
+    # therefore always INFLATES QuietDays — and `last_present_at` is precisely the field
+    # that proves the signature recurred. One corrupt string turns a 3-day-quiet
+    # 'watching' into a 57-day-quiet 'candidate', i.e. into the closable set, while the
+    # marker still reports Status='ok'. That is the laundering the header forbids.
+    #
+    # Absent and explicit-null both stay legitimate: the writer below emits JSON `null`
+    # for a state with no clock, so rejecting null would quarantine this function's own
+    # output. Only a present, non-null value that fails to parse is corruption.
+    $stamps = @{ clock_start_at = $null; last_present_at = $null; updated_at = $null }
+    foreach ($field in @($stamps.Keys)) {
+        $rawStamp = Get-CiScanFieldValue -Object $obj -Name $field
+        if ($null -eq $rawStamp) { continue }
+        # Constrain the SHAPE before parsing, because .NET's date parsing is more
+        # permissive than the value space here. `[string]@(1,2)` is '1 2', which parses
+        # cleanly as 2 January of the current year — so an array field is not rejected by
+        # a parse failure, it is silently FABRICATED into a plausible timestamp. Numbers
+        # and objects do fail the parse ('5', '@{a=1}'), so this guard is load-bearing
+        # only for the array shape; it is written over the whole type space anyway
+        # because the writer only ever emits `null` or an 'o'-format string, which
+        # ConvertFrom-Json returns as [string] or [datetime]. Nothing else is legitimate,
+        # and enumerating what happens to parse today is how the array case was missed.
+        if (-not ($rawStamp -is [string] -or $rawStamp -is [datetime] -or $rawStamp -is [datetimeoffset])) { return $bad }
+        $normalized = ConvertTo-CiScanTimestamp $rawStamp
+        if ($null -eq $normalized) { return $bad }
+        $stamps[$field] = $normalized
+    }
+
     $state = @{
         v                  = $script:CiScanDefaults.StateMarkerVersion
         label              = [string]$obj.label
@@ -461,10 +501,10 @@ function Get-CiScanStateMarker {
         pipeline           = [string]$obj.pipeline
         absent_builds      = $buckets['absent_builds']
         present_builds     = $buckets['present_builds']
-        clock_start_at     = if (Test-CiScanHasField -Object $obj -Name 'clock_start_at') { ConvertTo-CiScanTimestamp $obj.clock_start_at } else { $null }
-        last_present_at    = if (Test-CiScanHasField -Object $obj -Name 'last_present_at') { ConvertTo-CiScanTimestamp $obj.last_present_at } else { $null }
+        clock_start_at     = $stamps['clock_start_at']
+        last_present_at    = $stamps['last_present_at']
         candidate_notified = if (Test-CiScanHasField -Object $obj -Name 'candidate_notified') { [bool]$obj.candidate_notified } else { $false }
-        updated_at         = if (Test-CiScanHasField -Object $obj -Name 'updated_at') { ConvertTo-CiScanTimestamp $obj.updated_at } else { $null }
+        updated_at         = $stamps['updated_at']
         runs               = $runs
     }
 
