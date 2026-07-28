@@ -305,6 +305,18 @@ x').Count | Should -Be 0
         Get-CiScanBuildIdFromBody -Body '- **Build ID**: 1517702' | Should -Be 1517702
         Get-CiScanBuildIdFromBody -Body '- **Build ID**: https://example/1517702' | Should -BeNullOrEmpty
     }
+    It 'fails closed instead of throwing on a build id too large for Int32' {
+        # The pattern admits 12 digits but the return type is Int32, so a casting
+        # implementation raises a TERMINATING error rather than returning $null.
+        # The caller surveys issues in a loop, so that would abort the whole run
+        # over one malformed body instead of quarantining that single issue.
+        # Int32.MaxValue is 2147483647, so the first value below is the boundary
+        # that must still parse and the rest must all fail closed.
+        Get-CiScanBuildIdFromBody -Body '- **Build ID**: 2147483647' | Should -Be 2147483647
+        { Get-CiScanBuildIdFromBody -Body '- **Build ID**: 2147483648' } | Should -Not -Throw
+        Get-CiScanBuildIdFromBody -Body '- **Build ID**: 2147483648' | Should -BeNullOrEmpty
+        Get-CiScanBuildIdFromBody -Body '- **Build ID**: 999999999999' | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {

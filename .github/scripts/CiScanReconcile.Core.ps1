@@ -491,7 +491,17 @@ function Get-CiScanBuildIdFromBody {
 
     if ([string]::IsNullOrWhiteSpace($Body)) { return $null }
     if ($Body -notmatch '(?im)^\s*[-*]\s*\*\*Build\s+ID\*\*\s*:\s*(?<id>\d{1,12})\s*$') { return $null }
-    return [int]$Matches['id']
+
+    # The pattern admits up to 12 digits, which overflows Int32. A PowerShell cast
+    # failure is a TERMINATING error, so `[int]$Matches['id']` on a 12-digit body
+    # would abort the caller's per-issue loop instead of quarantining the one bad
+    # issue -- the exact failure mode Get-CiScanStateMarker's header warns about,
+    # and which names this function as the TryParse exemplar. Widening the cast to
+    # [long] would be the wrong fix: an out-of-range build ID is not a build ID, so
+    # it must fail closed to $null like every other unparseable form here.
+    $buildId = 0
+    if (-not [int]::TryParse([string]$Matches['id'], [ref]$buildId)) { return $null }
+    return $buildId
 }
 
 function Get-CiScanRecurrenceRate {
