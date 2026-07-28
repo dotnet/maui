@@ -1798,7 +1798,7 @@ function Get-ComponentPinsReadinessCheck {
 }
 
 function Get-ComponentPinsUnavailableMarkdown {
-    return "> [!CAUTION]`n> **Component pins unavailable.** The mandatory local SDK/VMR reconciliation above still applies, but no bundled component versions can be verified from this run. See the ``Component pins`` UNKNOWN checklist row."
+    return "> [!CAUTION]`n> **Component pin evidence is incomplete.** The mandatory local SDK/VMR reconciliation above still applies. Some rows may be available, but all VMR/Android/macOS version+SHA anchors must be verified before treating component selection as complete. See the ``Component pins`` UNKNOWN checklist row."
 }
 
 function Get-PublicSafeInternalPipelineText {

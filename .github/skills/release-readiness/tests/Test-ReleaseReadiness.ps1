@@ -1215,7 +1215,8 @@ if (-not $SkipE2E) {
     try {
         function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'net11.0' }
         function Get-StableTagsForMajor { param([int]$Major) ,@() }
-        function Get-PreviewTagsForMajor { param([int]$Major) ,@('11.0.0-preview.5.26000.1') }
+        $script:SyntheticPreviewTags = @('11.0.0-preview.5.26000.1')
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@($script:SyntheticPreviewTags) }
         function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
         function Get-RemotePreviewBranchesForMajor {
             param([int]$Major)
@@ -1263,6 +1264,15 @@ if (-not $SkipE2E) {
             -Expected 'candidate' -Actual $preBumpPreview7.mode
         Assert-Eq -Label "cut-before-bump Preview 7 candidate surveys net11.0" `
             -Expected 'net11.0' -Actual $preBumpPreview7.surveyRef
+
+        $script:SyntheticPreviewTags = @('11.0.0-preview.5.26000.1', '11.0.0-preview.6.26010.1')
+        $tagBeforeBump = Invoke-DetectionForMajor -Major 11
+        $tagBeforeBumpTrackers = @($tagBeforeBump.trackers | Where-Object branchType -eq 'preview')
+        Assert-Eq -Label "tag-before-bump retires shipped Preview 6 tracker" `
+            -Expected 0 -Actual @($tagBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 6 }).Count
+        $postShipPreview7 = $tagBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+        Assert-Eq -Label "tag-before-bump still creates separate Preview 7 candidate" `
+            -Expected 'candidate' -Actual $postShipPreview7.mode
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
@@ -1272,7 +1282,7 @@ if (-not $SkipE2E) {
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
-        Remove-Variable -Name SyntheticPreviewIteration -Scope Script -ErrorAction SilentlyContinue
+        Remove-Variable -Name SyntheticPreviewIteration,SyntheticPreviewTags -Scope Script -ErrorAction SilentlyContinue
     }
 
     # Synthetic rc window: the pre-release train continues past the final preview
@@ -1364,7 +1374,11 @@ if (-not $SkipE2E) {
     Assert-Eq -Label "workflow matrix carries expected tag for report-time lifecycle re-resolution" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'expectedTag:\s*\(\.expectedTag // ""\)'))
     Assert-Eq -Label "workflow re-resolves shipped mode when stable tag lands after detection" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'MODE.*in-flight[\s\S]*refs/tags/\$\{EXPECTED_TAG\}.*MODE="shipped"'))
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'MODE.*in-flight[\s\S]*refs/tags/\$\{EXPECTED_TAG\}[\s\S]*MODE="shipped"'))
+    Assert-Eq -Label "workflow propagates report-time resolved mode to issue updater" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
+    Assert-Eq -Label "workflow propagates report-time resolved issue title" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
     Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
@@ -2067,6 +2081,12 @@ try {
     }
     Assert-Eq -Label "backport lineage: later negated repetition retracts earlier positive source" `
         -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $repeatedNegatedList.body) -join ',')
+    $crossClauseRetraction = 'Backport of #12345 and #23456. #12345 was not included.'
+    Assert-Eq -Label "backport lineage: cross-clause negation retracts a non-final list source" `
+        -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $crossClauseRetraction) -join ',')
+    $distantRetraction = "Backport of #12345 and #23456. " + ('context ' * 90) + '#12345 was not included.'
+    Assert-Eq -Label "backport lineage: distant repeated negation remains visible within bounded scan" `
+        -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $distantRetraction) -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -7475,7 +7495,7 @@ Assert-Eq -Label "partial component pins remain UNKNOWN" -Expected 'UNKNOWN' -Ac
 Assert-Eq -Label "partial component pins identify missing component and field" -Expected $true `
     -Actual ([bool]($partialPinsCheck.Details -match 'Android' -and $partialPinsCheck.Details -match 'Macios\.Sha'))
 Assert-Eq -Label "partial component pins use the same prominent caution as missing pins" `
-    -Expected $true -Actual ([bool]((Get-ComponentPinsUnavailableMarkdown) -match 'Component pins unavailable'))
+    -Expected $true -Actual ([bool]((Get-ComponentPinsUnavailableMarkdown) -match 'Component pin evidence is incomplete'))
 $completePins = [pscustomobject]@{
     Vmr = [pscustomobject]@{ Version = '11.0.100-preview.7.1'; Sha = ('a' * 40 -join '') }
     Android = [pscustomobject]@{ Version = '37.0.0-ci.main.1'; Sha = ('b' * 40 -join '') }

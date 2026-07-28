@@ -2366,7 +2366,7 @@ function Get-ExplicitBackportSourceNumbers {
             $prefixStart = [Math]::Max(0, $verb.Index - 2048)
             $prefix = $clause.Substring($prefixStart, $verb.Index - $prefixStart)
             $clauseStart = $verb.Index + $verb.Length
-            $windowLength = [Math]::Min(512, $clause.Length - $clauseStart)
+            $windowLength = [Math]::Min(2048, $clause.Length - $clauseStart)
             $window = $clause.Substring($clauseStart, $windowLength)
             $references = @([regex]::Matches($window,
                 '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
@@ -2381,7 +2381,7 @@ function Get-ExplicitBackportSourceNumbers {
                     continue
                 }
                 $absoluteReferenceEnd = $clauseOffset + $clauseStart + $reference.Index + $reference.Length
-                $suffixLength = [Math]::Min(320, $Text.Length - $absoluteReferenceEnd)
+                $suffixLength = [Math]::Min(2048, $Text.Length - $absoluteReferenceEnd)
                 $suffix = $Text.Substring($absoluteReferenceEnd, $suffixLength)
                 # Negation after a later PR reference belongs to that later
                 # list item, not the current one.
@@ -2438,6 +2438,23 @@ function Get-ExplicitBackportSourceNumbers {
             }
         }
         if ($processedVerbs -gt 200) { break }
+    }
+
+    # A later clause can explicitly retract an earlier source after intervening
+    # PR numbers ("#A and #B. #A was not included"). Re-scan accepted numbers
+    # for any repeated negated occurrence across the bounded full text so list
+    # order and sentence boundaries cannot preserve false-positive lineage.
+    foreach ($acceptedNumber in @($result)) {
+        $acceptedPattern = "(?i)(?:pull/|#)$acceptedNumber(?![\p{L}\p{N}_])"
+        foreach ($occurrence in [regex]::Matches($Text, $acceptedPattern)) {
+            $occurrenceEnd = $occurrence.Index + $occurrence.Length
+            $remainingLength = [Math]::Min(2048, $Text.Length - $occurrenceEnd)
+            $occurrenceSuffix = $Text.Substring($occurrenceEnd, $remainingLength)
+            if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix) {
+                [void]$result.Remove($acceptedNumber)
+                break
+            }
+        }
     }
     return @($result | Sort-Object)
 }

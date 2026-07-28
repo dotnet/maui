@@ -158,6 +158,10 @@ $Script:StrictStableTagRegex = '^(\d+)\.0\.(\d+)$'
 #   Preview tag: `<major>.0.0-preview.<N>.<YYYYMMDD>[.<build>]`
 #     e.g., 11.0.0-preview.5.26304.4
 $Script:StrictPreviewTagRegex = '^(\d+)\.0\.0-preview\.(\d+)\.\d+(?:\.\d+)?$'
+# .NET 6 through the currently active majors use seven previews before RC1.
+# This is release policy, not a pointer to the current preview. If a future
+# major changes cadence, update this explicit invariant (and its RC tests)
+# rather than silently inferring a stage from branch/tag names.
 $Script:FinalPreviewNumber = 7
 
 # Backwards-compatible exports for tests that dot-source this script.
@@ -948,14 +952,13 @@ function Invoke-DetectionForMajor {
         $previewBranchAlreadyExists = $previewBranches | Where-Object { $_.previewNumber -eq $candidatePreviewN }
         $previewAlreadyShipped = $shippedPreviews.Contains($candidatePreviewN)
 
-        if ($previewAlreadyShipped) {
-            Write-Host "[major $Major] preview$candidatePreviewN (from $previewCandidateRef) already shipped — skipping Lane 4" -ForegroundColor DarkGray
-        } elseif ($previewBranchAlreadyExists) {
+        if ($previewAlreadyShipped -or $previewBranchAlreadyExists) {
             if ($candidatePreviewN -lt $Script:FinalPreviewNumber) {
-                # Cut-before-bump transition: Preview N has its own branch, so its
-                # report intentionally excludes net<N>.0. Keep net<N>.0 covered by
-                # a separate Preview N+1 candidate immediately; its iteration
-                # check will stay BLOCKED until the source branch actually bumps.
+                # Cut/tag-before-bump transition: Preview N has its own branch or
+                # tag, so its report intentionally excludes net<N>.0. Keep
+                # net<N>.0 covered by a separate Preview N+1 candidate
+                # immediately; its iteration check stays BLOCKED until the source
+                # branch actually bumps.
                 $nextPreviewN = $candidatePreviewN + 1
                 $nextAlreadyShipped = $shippedPreviews.Contains($nextPreviewN)
                 $nextBranchExists = $previewBranches | Where-Object { $_.previewNumber -eq $nextPreviewN }
@@ -972,6 +975,9 @@ function Invoke-DetectionForMajor {
                 # preview8. Keep the current Preview 7 tracker scoped to its branch
                 # and warn until the dedicated RC lane exists.
                 Write-Warning "[major $Major] preview$candidatePreviewN is cut while $previewCandidateRef still advertises preview$candidatePreviewN. The next cycle is rc1, but RC tracking is not yet implemented; no preview8 tracker will be invented."
+            }
+            if ($previewAlreadyShipped) {
+                Write-Host "[major $Major] preview$candidatePreviewN (from $previewCandidateRef) already shipped; next-cycle transition handled separately" -ForegroundColor DarkGray
             }
         } else {
             $recent = Get-RecentCommitCount -Ref $previewCandidateRef -Days $ActivityWindowDays
