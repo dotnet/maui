@@ -2478,6 +2478,55 @@ Describe 'Static source invariants' {
         $script:WorkflowText = Get-Content -Raw -Path (Join-Path $PSScriptRoot '..' 'workflows' 'ci-scan-reconcile.yml')
         $script:ScriptDir = $PSScriptRoot
 
+        <#
+            Anti-vacuity for a source scan has TWO independent halves, and the scans in
+            this Describe had only ever supplied the first:
+
+              1. is the INPUT real?    — the comment-stripper did not eat the file
+              2. does the MATCHER work? — the pattern still detects what it looks for
+
+            Half 2 cannot come from the file under scan. These are zero-expectation
+            invariants: the source must NOT contain the forbidden shape, so it can never
+            be the ground truth for whether the pattern still finds it. An unrelated
+            anchor ("some code survived") satisfies half 1 while leaving half 2 wide open.
+
+            Measured rather than assumed. Truncating '\.PSObject\.Properties\.Name' to
+            '\.PSObject\.Propertie\.Name' AND adding a real offender to
+            CiScanReconcile.Core.ps1 left the whole 994-test suite green — the invariant
+            whose only job is to forbid that shape reported clean with one present.
+
+            So the pattern is exercised against samples guaranteed to contain the shape,
+            plus near-misses that must NOT match, so it cannot pass by being trivially
+            permissive. The samples live here, next to the pattern, and none is derived
+            from the file being scanned.
+
+            KnownBad is a LIST, and that is load-bearing rather than tidy. The first
+            version of this helper took one compound sample, and truncating a single
+            alternation of the AzDO pattern ('build' -> 'buil') left all 232 tests green:
+            the sample's OTHER alternation still matched, so the anchor stayed satisfied
+            while the pattern had stopped detecting one of the three shapes it exists to
+            find. An anchor built from a compound sample is only as strong as its most
+            robust branch. One sample per alternation, so each branch is pinned alone.
+            KnownGood is deliberately the weaker half, and saying so is the point. For a
+            zero-expectation scan, over-matching fails LOUD — broadening the AzDO pattern
+            to any variable makes the scan report $Config.Branch, $listing.Ok and a dozen
+            more, so the invariant itself catches it. Under-matching is the silent
+            direction, and KnownBad is the only guard against it. KnownGood pins the
+            boundary for code that does not exist yet; it is not what makes this work.
+        #>
+        $script:AssertScanPattern = {
+            param([string]$Pattern, [string[]]$KnownBad, [string[]]$KnownGood, [string]$What)
+
+            foreach ($bad in $KnownBad) {
+                @([regex]::Matches($bad, $Pattern)).Count |
+                    Should -BeGreaterThan 0 -Because "the $What pattern must still detect the offender '$bad'; a corrupted pattern reports every file clean, including one that contains a real violation"
+            }
+            foreach ($good in $KnownGood) {
+                @([regex]::Matches($good, $Pattern)).Count |
+                    Should -Be 0 -Because "the $What pattern must not match the sanctioned form '$good', or a clean scan proves nothing"
+            }
+        }
+
         # The workflow header is a long safety rationale that names the very strings these
         # tests forbid ("issues: write", "pull_request", ...). Assertions about what the
         # workflow DOES must run against executable YAML only, never against prose.
@@ -2654,13 +2703,18 @@ Describe 'Static source invariants' {
             deliberately, so strip comments before asserting — otherwise the invariant fails
             on the text explaining itself.
         #>
+        $script:PSObjectScanPattern = '\.PSObject\.Properties\.Name'
+        & $script:AssertScanPattern -Pattern $script:PSObjectScanPattern -What 'PSObject-enumeration' `
+            -KnownBad  'if ($o.PSObject.Properties.Name -contains $n) { $true }' `
+            -KnownGood 'if (Test-CiScanHasField -Object $o -Name $n) { $true }'
+
         foreach ($f in @{ 'Invoke-CiScanReconcile.ps1' = $script:OrchestratorText
                 'CiScanReconcile.Core.ps1'             = $script:CoreText }.GetEnumerator()) {
             $code = [regex]::Replace($f.Value, '(?s)<#.*?#>', '')
             $code = (($code -split "`n") | Where-Object { $_ -notmatch '^\s*#' } |
                 ForEach-Object { $_ -replace '\s+#(?!\{).*$', '' }) -join "`n"
 
-            @([regex]::Matches($code, '\.PSObject\.Properties\.Name')) | Should -BeNullOrEmpty `
+            @([regex]::Matches($code, $script:PSObjectScanPattern)) | Should -BeNullOrEmpty `
                 -Because "$($f.Key) must ask via Test-CiScanHasField, which is total where .Name enumeration is partial"
         }
 
@@ -2697,7 +2751,15 @@ Describe 'Static source invariants' {
         $code = (($code -split "`n") |
             Where-Object { $_ -notmatch '^\s*#' -and $_ -notmatch '\$Config\.Pipelines' }) -join "`n"
 
-        $offenders = @([regex]::Matches($code, '\$(?:_|build|timeline)\.[A-Za-z_]+') |
+        $script:AzdoFieldScanPattern = '\$(?:_|build|timeline)\.[A-Za-z_]+'
+        & $script:AssertScanPattern -Pattern $script:AzdoFieldScanPattern -What 'AzDO-payload-field' `
+            -KnownBad  @('if ($build.result -eq "failed") { $true }',
+                         'foreach ($r in $timeline.records) { $true }',
+                         '$rows | Where-Object { $_.name }') `
+            -KnownGood @('Get-CiScanJsonField -Object $build -Name result',
+                         'Get-CiScanJsonField -Object $timeline -Name records')
+
+        $offenders = @([regex]::Matches($code, $script:AzdoFieldScanPattern) |
             ForEach-Object { $_.Value } | Sort-Object -Unique)
         $offenders | Should -BeNullOrEmpty -Because 'AzDO payload fields must go through Get-CiScanJsonField'
     }
@@ -2719,7 +2781,19 @@ Describe 'Static source invariants' {
     }
 
     It 'keeps the pure core free of any I/O primitive' {
+        <#
+            The ban list is hand-typed, and a misspelling bans nothing while still
+            reading as coverage — `-BeLike "*Invoke-RestMethd*"` passes forever. The
+            file cannot anchor these names, because the whole point is that it must not
+            contain them.
+
+            The runtime can. These are real cmdlets, so `Get-Command` is ground truth
+            that is not derived from the same literal — the failure mode a synthetic
+            sample would share. A typo resolves to nothing and fails here.
+        #>
         foreach ($banned in @('Invoke-RestMethod', 'Invoke-WebRequest', 'Start-Process', 'Set-Content', 'Out-File')) {
+            Get-Command -Name $banned -ErrorAction SilentlyContinue |
+                Should -Not -BeNullOrEmpty -Because "'$banned' must be a real cmdlet name; a misspelled entry bans nothing and this test would still pass"
             $script:CoreText | Should -Not -BeLike "*$banned*"
         }
         $script:CoreText | Should -Not -Match '&\s+gh\s'
