@@ -204,3 +204,174 @@ Describe 'CI-fixer push handler base configuration' {
         $compiledGateway | Should -BeGreaterThan $compiledPin
     }
 }
+
+Describe 'CI-fixer mutating safe-output handler scoping' {
+    # The compiled GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG is the REAL enforcement boundary:
+    # it is what the SHA-pinned gh-aw handler reads at apply time. Asserting the source
+    # frontmatter alone would not catch a compiler that silently drops a required-* key,
+    # so this reads the lock. Every handler that can MUTATE a pull request must be
+    # scoped to this workflow's own PRs; without both keys, `target: "*"` lets a
+    # prompt-injected agent reach an arbitrary PR in the repo.
+    It 'locks every mutating handler in <Workflow> to <TitlePrefix> + agentic-workflows' -ForEach @(
+        @{ Workflow = 'ci-status-fix.lock.yml'; TitlePrefix = '[ci-fix] ' }
+        @{ Workflow = 'ci-status-fix-net11.lock.yml'; TitlePrefix = '[ci-fix-net11] ' }
+    ) {
+        $lockPath = Join-Path (Split-Path $PSScriptRoot) "workflows/$Workflow"
+        $lock = Get-Content -Raw -LiteralPath $lockPath
+
+        $match = [regex]::Match(
+            $lock,
+            '(?m)^\s*GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG:\s*"(?<config>.*)"\s*$')
+        $match.Success | Should -BeTrue
+
+        $config = ($match.Groups['config'].Value -replace '\\"', '"' -replace '\\\\', '\') |
+            ConvertFrom-Json
+
+        foreach ($handler in @(
+                'add_comment',
+                'update_pull_request',
+                'mark_pull_request_as_ready_for_review',
+                'add_labels',
+                'push_to_pull_request_branch')) {
+            $handlerConfig = $config.$handler
+            $handlerConfig | Should -Not -BeNullOrEmpty -Because "$handler must be configured in $Workflow"
+
+            # gh-aw v0.82.14 compiles `required-title-prefix` to `required_title_prefix`
+            # for most handlers but to `title_prefix` for push_to_pull_request_branch.
+            # Accept either compiled spelling; require that ONE of them is present and
+            # correct, so a dropped key still fails this test.
+            $compiledPrefix = @($handlerConfig.required_title_prefix, $handlerConfig.title_prefix) |
+                Where-Object { -not [string]::IsNullOrEmpty($_) } |
+                Select-Object -First 1
+            $compiledPrefix |
+                Should -Be $TitlePrefix -Because "$handler must only ever touch this workflow's own PRs"
+            @($handlerConfig.required_labels) |
+                Should -Be @('agentic-workflows') -Because "$handler must only ever touch this workflow's own PRs"
+        }
+
+        # Body edits only: a retitle would let the fixer rewrite a PR's identity.
+        $config.update_pull_request.allow_title | Should -BeFalse
+    }
+}
+
+Describe 'CI-fixer safe-output reconciliation' {
+    # Executes the COMPILED reconciliation step (the shell that actually runs in CI)
+    # against fixtures. Asserting the source .md would not prove the generated lock is
+    # equivalent, and a content-only assertion would not catch a logic regression.
+    BeforeDiscovery {
+        $script:reconcileAvailable = $null -ne (Get-Command bash -ErrorAction SilentlyContinue) -and
+            $null -ne (Get-Command jq -ErrorAction SilentlyContinue)
+    }
+
+    BeforeAll {
+        function script:Get-ReconcileScript {
+            param([string]$LockFileName)
+
+            $lockPath = Join-Path (Split-Path $PSScriptRoot) "workflows/$LockFileName"
+            $line = Get-Content -LiteralPath $lockPath |
+                Where-Object { $_ -match '^\s*run: "set -euo pipefail\\nexpectations=' } |
+                Select-Object -First 1
+            if (-not $line) {
+                throw "Reconciliation step not found in $LockFileName"
+            }
+
+            $scalar = [regex]::Match($line, '^\s*run: "(?<body>.*)"\s*$').Groups['body'].Value
+            # Unescape the YAML double-quoted scalar gh-aw emits.
+            return $scalar `
+                -replace '\\n', "`n" `
+                -replace '\\t', "`t" `
+                -replace '\\"', '"' `
+                -replace '\\\\', '\'
+        }
+
+        function script:Invoke-Reconcile {
+            param(
+                [string]$LockFileName,
+                [string[]]$Expectations,
+                [AllowNull()][string]$AgentOutput)
+
+            $root = Join-Path ([IO.Path]::GetTempPath()) ("recon-" + [Guid]::NewGuid().ToString('N'))
+            $expectationDir = Join-Path $root 'exp'
+            New-Item -ItemType Directory -Force -Path $expectationDir | Out-Null
+            $outputPath = Join-Path $root 'agent_output.json'
+
+            $index = 0
+            foreach ($expectation in $Expectations) {
+                Set-Content -LiteralPath (Join-Path $expectationDir "$index.json") -Value $expectation -Encoding UTF8
+                $index++
+            }
+            if ($null -ne $AgentOutput) {
+                Set-Content -LiteralPath $outputPath -Value $AgentOutput -Encoding UTF8
+            }
+
+            $body = script:Get-ReconcileScript -LockFileName $LockFileName
+            # Repoint the two absolute runner paths at the fixture directory.
+            $body = $body `
+                -replace '(?m)^expectations=.*$', "expectations=$expectationDir" `
+                -replace '(?m)^output=.*$', "output=$outputPath"
+
+            $scriptPath = Join-Path $root 'reconcile.sh'
+            Set-Content -LiteralPath $scriptPath -Value $body -Encoding UTF8
+
+            $stderrPath = Join-Path $root 'stderr.txt'
+            & bash $scriptPath 2>$stderrPath | Out-Null
+            $exitCode = $LASTEXITCODE
+            Remove-Item -Recurse -Force -LiteralPath $root -ErrorAction SilentlyContinue
+            return $exitCode
+        }
+    }
+
+    It 'fails <Lock> when gh-aw captures an unregistered <Type>' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml'; Type = 'update_pull_request' }
+        @{ Lock = 'ci-status-fix.lock.yml'; Type = 'add_comment' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml'; Type = 'push_to_pull_request_branch' }
+    ) {
+        # No expectation at all: before the bidirectional check this run was green,
+        # so an out-of-band emitter produced a silent write.
+        $output = "{`"items`":[{`"type`":`"$Type`",`"pull_request_number`":5}]}"
+
+        script:Invoke-Reconcile -LockFileName $Lock -Expectations @() -AgentOutput $output |
+            Should -Be 1
+    }
+
+    It 'fails <Lock> when more outputs are captured than registered' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml' }
+    ) {
+        script:Invoke-Reconcile -LockFileName $Lock `
+            -Expectations @('{"type":"add_comment","pullRequestNumber":5}') `
+            -AgentOutput '{"items":[{"type":"add_comment","pull_request_number":5},{"type":"add_comment","pull_request_number":99}]}' |
+            Should -Be 1
+    }
+
+    It 'fails <Lock> when a registered output is never captured' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml' }
+    ) {
+        script:Invoke-Reconcile -LockFileName $Lock `
+            -Expectations @('{"type":"add_comment","pullRequestNumber":5}') `
+            -AgentOutput '{"items":[]}' |
+            Should -Be 1
+    }
+
+    It 'passes <Lock> for <Case>' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml'; Case = 'a matched comment'
+            Expectations = @('{"type":"add_comment","pullRequestNumber":5}')
+            Output = '{"items":[{"type":"add_comment","pull_request_number":5}]}' }
+        @{ Lock = 'ci-status-fix.lock.yml'; Case = 'a run with no safe outputs'
+            Expectations = @(); Output = '{"items":[]}' }
+        # Diagnostics are emitted outside Hard Rule 11 and must never redden a run.
+        @{ Lock = 'ci-status-fix.lock.yml'; Case = 'diagnostics-only output'
+            Expectations = @()
+            Output = '{"items":[{"type":"missing_tool"},{"type":"missing_data"},{"type":"noop"}]}' }
+        @{ Lock = 'ci-status-fix.lock.yml'; Case = 'the report_incomplete alias'
+            Expectations = @('{"type":"report_incomplete","pullRequestNumber":null}')
+            Output = '{"items":[{"type":"create_report_incomplete_issue"}]}' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml'; Case = 'a matched create_pull_request'
+            Expectations = @('{"type":"create_pull_request","pullRequestNumber":null}')
+            Output = '{"items":[{"type":"create_pull_request"}]}' }
+    ) {
+        script:Invoke-Reconcile -LockFileName $Lock -Expectations $Expectations -AgentOutput $Output |
+            Should -Be 0
+    }
+}

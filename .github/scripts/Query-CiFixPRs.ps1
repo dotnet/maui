@@ -33,9 +33,10 @@ param(
 $ErrorActionPreference = 'Stop'
 # Pin native-command error handling OFF so `& gh ... 2>&1` in Invoke-GhCommand never
 # throws at invocation on a non-zero exit (404 on an orphaned SHA, transient rate-limit).
-# The whole prefetch's graceful degradation depends on the -AllowFailure path returning
-# $null on expected failures rather than terminating; a future runner image or profile
-# that flips this preference to $true would bypass -AllowFailure and crash the loop.
+# The whole prefetch's graceful degradation depends on the -AllowFailure/-AllowNotFound
+# paths returning $null on expected failures rather than terminating; a future runner
+# image or profile that flips this preference to $true would bypass them and crash the
+# loop.
 $PSNativeCommandUseErrorActionPreference = $false
 
 $BotLogins = @(
@@ -112,11 +113,30 @@ function Test-IsTransientGhFailure {
     return $false
 }
 
+function Test-IsGhNotFoundFailure {
+    param([AllowEmptyString()][string]$Detail)
+
+    # Only a CONFIRMED 404 means "this issue is genuinely not in scope". Auth
+    # (401/403), rate-limit (429), server (5xx) and network failures must NOT be
+    # collapsed into "not found" — on the discovery path that would silently look
+    # like "no ci-fix work" and skip the whole sweep. Match the HTTP code, never
+    # gh's prose, so a body containing the words "Not Found" cannot fake it.
+    return [bool]($Detail -match '(?i)\bHTTP 404\b')
+}
+
 function Invoke-GhCommand {
     param(
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$Description,
-        [switch]$AllowFailure
+        # Degrade to $null on ANY non-transient failure. Reserved for callers that
+        # track their own "known" flag and fail closed from it (Get-HeadCheckState,
+        # Get-PullRequestBody).
+        [switch]$AllowFailure,
+        # Degrade to $null ONLY on a confirmed HTTP 404, and propagate everything
+        # else. Use this on discovery reads, where an empty result is indistinguishable
+        # from "nothing to do" and therefore must never be produced by an auth,
+        # rate-limit, server or network failure.
+        [switch]$AllowNotFound
     )
 
     for ($attempt = 1; $attempt -le $MaxTransientGhAttempts; $attempt++) {
@@ -148,6 +168,11 @@ function Invoke-GhCommand {
             Write-Warning "$message Retrying in $delaySeconds second(s) ($attempt/$MaxTransientGhAttempts)."
             Start-Sleep -Seconds $delaySeconds
             continue
+        }
+
+        if ($AllowNotFound -and (Test-IsGhNotFoundFailure -Detail $detail)) {
+            Write-Warning $message
+            return $null
         }
 
         if ($AllowFailure) {
@@ -343,11 +368,13 @@ function Get-CiFixIssueEvidence {
     if ($null -ne $ScopedIssueNumber) {
         # A stale or mistyped dispatch number must produce the documented
         # "skipped: dispatch issue_number not an in-scope ci-scan issue" record, not a hard
-        # failure of the whole pre-activation job before the agent ever runs.
+        # failure of the whole pre-activation job before the agent ever runs. Only a
+        # confirmed 404 qualifies: -AllowNotFound propagates auth/rate-limit/5xx/network
+        # failures so a transient blip can never masquerade as "not in scope".
         $issueJson = Invoke-GhCommand `
             -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$ScopedIssueNumber") `
             -Description "read scoped issue #$ScopedIssueNumber" `
-            -AllowFailure
+            -AllowNotFound
         $issues = if ([string]::IsNullOrWhiteSpace($issueJson)) { @() } else { @(ConvertFrom-Json $issueJson) }
     }
     else {
@@ -362,10 +389,13 @@ function Get-CiFixIssueEvidence {
                 continue
             }
 
+            # A watch issue that was deleted/transferred (404) is legitimately gone, so
+            # skip it. Anything else (auth, rate-limit, 5xx, network) must fail the
+            # prefetch instead of silently dropping a watched issue from the snapshot.
             $priorityJson = Invoke-GhCommand `
                 -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$number") `
                 -Description "read priority watch issue #$number" `
-                -AllowFailure
+                -AllowNotFound
             if (-not [string]::IsNullOrWhiteSpace($priorityJson)) {
                 $issues += ConvertFrom-Json $priorityJson
             }

@@ -305,13 +305,17 @@ safe-outputs:
     # never the title, so disable title rewrites — this compiles to allow_title:false
     # and removes any ability to retitle an arbitrary PR.
     title: false
-    # NOTE: gh-aw v0.82.14 does NOT emit required-title-prefix/required-labels into
-    # the compiled config for update-pull-request (verified against the lock — it
-    # silently drops them, unlike add-comment / push-to-pull-request-branch which
-    # honor them). So which-PR scoping here relies on prompt Hard-Rule 6 +
-    # min-integrity:approved; the residual is body-marker edits only (no code, no
-    # merge, no close), capped at max:3. Revisit required-* if a future gh-aw
-    # compiler emits them for this output.
+    # Hard constraint (defense-in-depth): scope body edits to THIS workflow's own
+    # PRs — [ci-fix] title prefix AND agentic-workflows label — exactly like
+    # add-comment / push-to-pull-request-branch / mark-pull-request-as-ready-for-review.
+    # Without these, target "*" + allow_body:true would let a prompt-injected agent
+    # replace the body of ANY PR in the repo (up to max:3 per run).
+    # gh-aw v0.82.14 DOES emit both into the compiled handler config for this output
+    # (verified: they appear in GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG's
+    # "update_pull_request" entry after recompiling, and --strict rejects unknown
+    # safe-output fields, so they are schema-supported rather than silently ignored).
+    required-title-prefix: "[ci-fix] "
+    required-labels: [agentic-workflows]
   mark-pull-request-as-ready-for-review:
     # Flip a validated draft [ci-fix] PR to ready-for-review once the SPECIFIC test
     # this PR was opened to fix is confirmed green in the PR's OWN CI (Step 3.6) —
@@ -367,8 +371,53 @@ post-steps:
         exit 1
       fi
 
-      if [ ! -d "${expectations}" ] || ! find "${expectations}" -type f -name '*.json' -print -quit | grep -q .; then
-        exit 0
+      failed=0
+
+      # Resolve the registration set ONCE. The probe is consulted repeatedly below, and
+      # `find ... -print -quit | grep -q .` under `pipefail` can surface a SIGPIPE (141)
+      # instead of success, which would read as "no expectations" and silently skip the
+      # reconciliation. A single plain `find` has no pipeline and cannot fail that way.
+      expectation_files=""
+      if [ -d "${expectations}" ]; then
+        expectation_files="$(find "${expectations}" -type f -name '*.json')"
+      fi
+
+      count_registered() {
+        if [ -z "${expectation_files}" ]; then
+          echo 0
+          return 0
+        fi
+        jq -s --arg type "$1" '[.[] | select(.type == $type)] | length' "${expectations}"/*.json
+      }
+
+      # Reverse direction: gh-aw captured a MUTATING output that was never registered.
+      # The forward loop below only detects registered-but-NOT-captured, so on its own it
+      # ignores extra captured items entirely -- and it is skipped altogether when no
+      # expectation exists, which is exactly the run shape an out-of-band emitter would
+      # produce. Hard Rule 11 requires one registration immediately BEFORE every emit, so
+      # captured > registered is always a defect and must fail closed. Diagnostic outputs
+      # (missing_tool / missing_data / noop / report_incomplete) are emitted outside that
+      # rule and are deliberately excluded so they cannot redden a legitimate run.
+      if [ -f "${output}" ] && jq -e '.items | type == "array"' "${output}" >/dev/null; then
+        for mutating_type in \
+          create_pull_request \
+          push_to_pull_request_branch \
+          update_pull_request \
+          add_comment \
+          mark_pull_request_as_ready_for_review \
+          add_labels; do
+          captured="$(jq --arg type "${mutating_type}" \
+            '[.items[]? | select(.type == $type)] | length' "${output}")"
+          registered="$(count_registered "${mutating_type}")"
+          if [ "${captured}" -gt "${registered}" ]; then
+            echo "::error::gh-aw captured ${captured} ${mutating_type} output(s) but only ${registered} were registered."
+            failed=1
+          fi
+        done
+      fi
+
+      if [ -z "${expectation_files}" ]; then
+        exit "${failed}"
       fi
       if [ ! -f "${output}" ] || ! jq -e '.items | type == "array"' "${output}" >/dev/null; then
         echo "::error::A safe output was registered but agent_output.json is missing or malformed."
@@ -391,7 +440,6 @@ post-steps:
         exit 1
       fi
 
-      failed=0
       while IFS= read -r group; do
         type="$(jq -r '.type' <<<"${group}")"
         pr="$(jq -r '.pullRequestNumber' <<<"${group}")"
@@ -514,14 +562,12 @@ where they are more specific.
    `.github/workflows/ci-scan-lock-issues.yml`) — `add_comment` targets the PR. No
    `gh pr create`, no manual `git push`. **Defense-in-depth:** `add_comment` and
    `update_pull_request` use `target: "*"` (the agent supplies the PR number).
-   `add_comment`, `mark_pull_request_as_ready_for_review`, and `add_labels` are
-   config-locked to `required-title-prefix: "[ci-fix] "` +
+   `add_comment`, `update_pull_request`, `mark_pull_request_as_ready_for_review`,
+   and `add_labels` are all config-locked to `required-title-prefix: "[ci-fix] "` +
    `required-labels: [agentic-workflows]` (hard-enforced by the handler, same as
    `push_to_pull_request_branch`), and `add_labels` additionally has an
    `allowed: [p/0]` allowlist so it can ONLY ever add `p/0` — so these can only
-   ever land on THIS workflow's own PRs. `update_pull_request` CANNOT be
-   config-locked to a title/label in gh-aw v0.82.14 (the compiler silently drops
-   `required-*` for that output — verified against the lock), so it keeps
+   ever land on THIS workflow's own PRs. `update_pull_request` also keeps
    `title: false` (no retitles; body-marker edits only) plus this prompt-level
    guard. Before emitting ANY of these, VERIFY the target PR carries BOTH the
    `[ci-fix]` title prefix AND the `agentic-workflows` label; never comment on,

@@ -31,7 +31,8 @@ BeforeAll {
         param(
             [string[]]$Arguments,
             [string]$Description,
-            [switch]$AllowFailure
+            [switch]$AllowFailure,
+            [switch]$AllowNotFound
         )
         throw 'Invoke-GhCommand must be mocked by this test.'
     }
@@ -97,7 +98,54 @@ Describe 'Get-CiFixIssueEvidence' {
 
         @($evidence.items).Count | Should -Be 0
         $evidence.truncated | Should -BeFalse
-        Should -Invoke Invoke-GhCommand -Times 1 -Exactly -ParameterFilter { $AllowFailure }
+        Should -Invoke Invoke-GhCommand -Times 1 -Exactly -ParameterFilter { $AllowNotFound }
+    }
+
+    It 'reads the scoped issue with -AllowNotFound so only a 404 can empty the snapshot' {
+        Mock Invoke-GhCommand { $null } -ParameterFilter { $Description -eq 'read scoped issue #40404' }
+
+        Get-CiFixIssueEvidence `
+            -RepositoryOwner dotnet `
+            -RepositoryName maui `
+            -ExactLabel ci-scan `
+            -ScopedIssueNumber 40404 `
+            -PriorityIssueNumbers @() `
+            -Limit 20 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000 | Out-Null
+
+        # -AllowFailure would swallow 401/403/429/5xx/network too, making a transient
+        # outage indistinguishable from "this issue is not in scope".
+        Should -Invoke Invoke-GhCommand -Times 1 -Exactly -ParameterFilter {
+            $AllowNotFound -and -not $AllowFailure
+        }
+    }
+
+    It 'reads priority watch issues with -AllowNotFound so a transient blip cannot drop a watch' {
+        Mock Invoke-GhCommand {
+            if ($Description -like 'read priority watch issue*') {
+                return $null
+            }
+            if ($Description -eq "list open issues with exact label 'ci-scan'") {
+                return ''
+            }
+            throw "Unexpected call: $Description"
+        }
+
+        Get-CiFixIssueEvidence `
+            -RepositoryOwner dotnet `
+            -RepositoryName maui `
+            -ExactLabel ci-scan `
+            -ScopedIssueNumber $null `
+            -PriorityIssueNumbers @(40001) `
+            -Limit 20 `
+            -TitleMaxChars 256 `
+            -BodyMaxChars 12000 | Out-Null
+
+        Should -Invoke Invoke-GhCommand -Times 1 -Exactly -ParameterFilter {
+            $Description -like 'read priority watch issue*' -and
+            $AllowNotFound -and -not $AllowFailure
+        }
     }
 
     It 'lists open issues oldest-first and pages to completion so old issues cannot be stranded' {
@@ -440,5 +488,128 @@ Describe 'CI-fixer twin dual-label ownership wiring' {
         # Must NOT exclude `ci-scan`: the exact-label filter already drops
         # ci-scan-only issues, so excluding here would only drop dual-labelled ones.
         [regex]::IsMatch($script:net11Workflow, $script:argLinePattern) | Should -BeFalse
+    }
+}
+
+Describe 'Invoke-GhCommand failure classification' {
+    BeforeAll {
+        $scriptPath = Join-Path $PSScriptRoot 'Query-CiFixPRs.ps1'
+        $tokens = $null
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
+        if ($parseErrors -and $parseErrors.Count -gt 0) {
+            throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
+        }
+
+        # Extract the REAL transport helpers (the outer BeforeAll installs a throwing
+        # stub for Invoke-GhCommand, which this Describe deliberately shadows).
+        foreach ($functionName in @(
+                'Test-IsTransientGhFailure',
+                'Test-IsGhNotFoundFailure',
+                'Invoke-GhCommand')) {
+            $function = $ast.Find({
+                    $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                    $args[0].Name -eq $functionName
+                }, $true)
+            if (-not $function) {
+                throw "Function '$functionName' not found"
+            }
+            Invoke-Expression $function.Extent.Text
+        }
+
+        $TransientGhHttpStatusCodes = @(429, 500, 502, 503, 504)
+        $MaxTransientGhAttempts = 4
+        # Keep the retry budget's shape but not its wall-clock cost.
+        $TransientGhRetryBaseDelaySeconds = 0
+
+        $global:mockGhExitCode = 0
+        $global:mockGhStderr = $null
+        $global:mockGhStdout = $null
+        function global:gh {
+            param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+            if ($null -ne $global:mockGhStdout) {
+                Write-Output $global:mockGhStdout
+            }
+            if ($null -ne $global:mockGhStderr) {
+                Write-Error $global:mockGhStderr -ErrorAction Continue
+            }
+            $global:LASTEXITCODE = $global:mockGhExitCode
+        }
+    }
+
+    AfterAll {
+        Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+        Remove-Variable mockGhExitCode, mockGhStderr, mockGhStdout -Scope Global -ErrorAction SilentlyContinue
+    }
+
+    BeforeEach {
+        $global:mockGhExitCode = 1
+        $global:mockGhStdout = $null
+        $global:mockGhStderr = $null
+    }
+
+    It 'suppresses a confirmed 404 under -AllowNotFound' {
+        $global:mockGhStderr = 'gh: Not Found (HTTP 404)'
+
+        $result = Invoke-GhCommand -Arguments @('api', 'repos/dotnet/maui/issues/1') `
+            -Description 'read scoped issue #1' -AllowNotFound -WarningAction SilentlyContinue
+
+        ($null -eq $result) | Should -BeTrue
+    }
+
+    # Each of these would otherwise collapse to "no ci-fix work in scope" and silently
+    # skip the sweep. -AllowNotFound must propagate them.
+    It 'propagates <Label> under -AllowNotFound' -ForEach @(
+        @{ Label = 'a 401 auth failure'; Stderr = 'gh: Requires authentication (HTTP 401)' }
+        @{ Label = 'a 403 auth failure'; Stderr = 'gh: Resource not accessible by integration (HTTP 403)' }
+        @{ Label = 'a 429 rate-limit'; Stderr = 'gh: API rate limit exceeded (HTTP 429)' }
+        @{ Label = 'a 500 server failure'; Stderr = 'gh: Server Error (HTTP 500)' }
+        @{ Label = 'a 503 server failure'; Stderr = 'gh: Service Unavailable (HTTP 503)' }
+        @{ Label = 'a network failure'; Stderr = 'dial tcp: lookup api.github.com: no such host' }
+    ) {
+        $global:mockGhStderr = $Stderr
+
+        { Invoke-GhCommand -Arguments @('api', 'repos/dotnet/maui/issues/1') `
+                -Description 'read scoped issue #1' -AllowNotFound -WarningAction SilentlyContinue } |
+            Should -Throw '*read scoped issue #1*'
+    }
+
+    It 'still suppresses every non-transient failure under the broader -AllowFailure' {
+        $global:mockGhStderr = 'gh: Resource not accessible by integration (HTTP 403)'
+
+        $result = Invoke-GhCommand -Arguments @('api', 'repos/dotnet/maui/issues/1') `
+            -Description 'read PR #1 body' -AllowFailure -WarningAction SilentlyContinue
+
+        ($null -eq $result) | Should -BeTrue
+    }
+
+    It 'does not treat prose "Not Found" without an HTTP 404 code as not-found' {
+        $global:mockGhStderr = 'gh: Not Found'
+
+        { Invoke-GhCommand -Arguments @('api', 'repos/dotnet/maui/issues/1') `
+                -Description 'read scoped issue #1' -AllowNotFound -WarningAction SilentlyContinue } |
+            Should -Throw '*read scoped issue #1*'
+    }
+}
+
+Describe 'Test-IsGhNotFoundFailure' {
+    BeforeAll {
+        $scriptPath = Join-Path $PSScriptRoot 'Query-CiFixPRs.ps1'
+        $tokens = $null
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
+        $function = $ast.Find({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq 'Test-IsGhNotFoundFailure'
+            }, $true)
+        Invoke-Expression $function.Extent.Text
+    }
+
+    It 'matches only a confirmed HTTP 404' {
+        Test-IsGhNotFoundFailure 'gh: Not Found (HTTP 404)' | Should -BeTrue
+        Test-IsGhNotFoundFailure 'HTTP 403' | Should -BeFalse
+        Test-IsGhNotFoundFailure 'HTTP 429' | Should -BeFalse
+        Test-IsGhNotFoundFailure 'Not Found' | Should -BeFalse
+        Test-IsGhNotFoundFailure '' | Should -BeFalse
     }
 }
