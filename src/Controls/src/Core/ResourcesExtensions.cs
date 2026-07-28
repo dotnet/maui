@@ -141,6 +141,21 @@ namespace Microsoft.Maui.Controls
 
 		public static bool TryGetResource(this IElementDefinition element, string key, out object value)
 		{
+			if (key == AppThemeBinding.AppThemeResource)
+			{
+				var parent = element;
+				while (parent != null)
+				{
+					if (parent is Application app)
+					{
+						value = app.RequestedTheme;
+						return true;
+					}
+
+					parent = parent.Parent;
+				}
+			}
+
 			while (element != null)
 			{
 				if (element is IResourcesProvider ve && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out value))
