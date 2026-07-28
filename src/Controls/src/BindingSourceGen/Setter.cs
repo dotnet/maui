@@ -46,14 +46,14 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
 
-				// A value-type member (that is not a field) accessed mid-path through a possibly-null
-				// receiver is an rvalue, so a following inline member/index assignment would fail with
-				// CS1612 ("cannot modify the return value ... because it is not a variable"). Capture it
-				// into a local first. If the next part is itself a conditional access, it introduces its
-				// own local, so no extra capture is needed. Fields are variables (lvalues) and never need this.
+				// A value-type member/indexer result accessed mid-path through a possibly-null receiver
+				// is an rvalue, so a following inline member/index assignment would fail with CS1612
+				// ("cannot modify the return value ... because it is not a variable"). Capture it into a
+				// local first. If the next part is itself a conditional access, it introduces its own
+				// local, so no extra capture is needed.
 				if (!isLastPart
 					&& parts[i + 1] is not ConditionalAccess
-					&& innerPart is MemberAccess { IsValueType: true, Kind: not AccessorKind.Field })
+					&& NeedsValueTypeCapture(innerPart))
 				{
 					AddPatternMatchingExpression("{}");
 				}
@@ -62,6 +62,14 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 			{
 				// It is necessary to create a variable for value types in order to set their properties.
 				// We can simply reuse the pattern matching mechanism to declare the variable.
+				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
+				AddPatternMatchingExpression("{}");
+			}
+			else if (part is IndexAccess { IsValueType: true, IsArrayElement: false }
+				&& !isLastPart
+				&& parts[i + 1] is not ConditionalAccess)
+			{
+				// Same CS1612 problem as above, for an indexer reached without a conditional access.
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
 				AddPatternMatchingExpression("{}");
 			}
@@ -77,6 +85,16 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 		return new Setter(
 			patternMatchingExpressions.ToArray(),
 			AssignmentStatement: BuildAssignmentStatement(accessAccumulator, parts.Count > 0 ? parts[parts.Count - 1] : null, assignedValueExpression));
+
+		// Whether the value produced by this part is an rvalue that has to be captured into a local
+		// before a member of it can be assigned. Fields and array elements are variables (lvalues),
+		// so they can be assigned through directly; properties and indexers return a copy.
+		static bool NeedsValueTypeCapture(IPathPart part) => part switch
+		{
+			MemberAccess { IsValueType: true, Kind: not AccessorKind.Field } => true,
+			IndexAccess { IsValueType: true, IsArrayElement: false } => true,
+			_ => false,
+		};
 	}
 
 	public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>

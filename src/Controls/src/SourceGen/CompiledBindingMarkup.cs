@@ -373,7 +373,7 @@ internal struct CompiledBindingMarkup
 					}
 					index = indexArgInt;
 
-					IPathPart indexAccess = new IndexAccess("", index, arrayType.ElementType.IsValueType);
+					IPathPart indexAccess = new IndexAccess("", index, arrayType.ElementType.IsValueType, IsArrayElement: true);
 					if (previousPartIsNullable)
 					{
 						indexAccess = new ConditionalAccess(indexAccess);

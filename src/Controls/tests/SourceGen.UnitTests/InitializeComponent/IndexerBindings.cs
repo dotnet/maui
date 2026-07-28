@@ -607,4 +607,121 @@ public class ReadOnlyIndexer
 		// Verify setter throws because indexer is read-only
 		Assert.Contains("throw new global::System.InvalidOperationException", generated, StringComparison.Ordinal);
 	}
+
+	[Fact]
+	public void TwoWayBindingThroughValueTypeIndexerResultCompiles()
+	{
+		// An indexer returns a copy, so a value-type result is an rvalue. Assigning a member of it
+		// inline would fail to compile with CS1612, so the result must be captured into a local first.
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestViewModel">
+	<Entry Text="{Binding Items[0].Name, Mode=TwoWay}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class TestViewModel
+{
+	public List<ItemStruct> Items { get; set; } = new List<ItemStruct>();
+}
+
+public struct ItemStruct
+{
+	public string Name { get; set; }
+}
+""";
+
+		// RunGenerator compiles the generated code, so CS1612 would surface here as an error.
+		var (result, generated) = RunGenerator(xaml, code);
+
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+
+		// The indexer result must be captured into a local instead of assigned inline.
+		Assert.Contains("p0[0] is {} p1", generated, StringComparison.Ordinal);
+		Assert.Contains("p1.Name = value!;", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("p0[0].Name = value", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TwoWayBindingThroughValueTypeArrayElementIsNotCaptured()
+	{
+		// Unlike an indexer, array element access yields a variable, so the assignment can happen
+		// in place. Capturing here would write to a copy and silently lose the value.
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestViewModel">
+	<Entry Text="{Binding Items[0].Name, Mode=TwoWay}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class TestViewModel
+{
+	public ItemStruct[] Items { get; set; } = new ItemStruct[1];
+}
+
+public struct ItemStruct
+{
+	public string Name { get; set; }
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		Assert.Empty(result.Diagnostics.Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+
+		// Assign straight into the array slot - no intermediate copy.
+		Assert.Contains("p0[0].Name = value!;", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("p0[0] is {} p1", generated, StringComparison.Ordinal);
+	}
 }
