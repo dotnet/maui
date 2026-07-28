@@ -2362,34 +2362,36 @@ function Test-IsLineageVerbNegated {
 function Test-IsLineageReferenceNegated {
     param(
         [string]$Suffix,
-        [switch]$PresenceOnly
+        [switch]$PresenceOnly,
+        [switch]$DirectPrSubject
     )
 
     $suffix = $Suffix -replace '[\u2018\u2019]', "'"
     $lead = '(?:was|is|were|are|did|does|should|must|will|would|can|could)'
     $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
     $presenceEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies)|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
-    $effect = if ($PresenceOnly) {
-        $presenceEffect
-    } else {
-        '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
-    }
+    $fullEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|necessary|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $effect = if ($PresenceOnly -and -not $DirectPrSubject) { $presenceEffect } else { $fullEffect }
     $prefix = '\s*(?:[,\-–—.!?;]\s*)*[\(\[]?\s*(?:(?:which|that|this|it|though|but|although|yet|however)\s*[,;:]?\s+){0,3}'
     $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
     $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
-    $rollback = "(?i)^$prefix(?:\w+\s+){0,8}?revert(?:s|ed|ing)?\b"
-    $omitted = "(?i)^$prefix(?:\w+\s+){0,8}?(?:omit(?:ted)?|exclude(?:d)?)\b"
+    $passiveRemovalLead = '(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:(?:since|later|subsequently|ultimately)\s+))?'
+    $rollback = "(?i)^$prefix$passiveRemovalLead" + 'revert(?:s|ed|ing)?\b'
+    $omitted = "(?i)^$prefix$passiveRemovalLead" + '(?:omit(?:ted)?|exclude(?:d)?)\b'
     $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
-    $rolledBack = "(?i)^$prefix(?:\w+\s+){0,8}?rolled\s+back\b"
+    $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:\w+\s+){0,8}?and\s+)|(?:(?:since|subsequently|ultimately)\s+))?rolled\s+back\b"
     $laterPresenceRemoval = "(?i)\b(?:but|however|although|yet|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:(?:was|is|were|are)\s+(?:not|never)\s+(?:\w+\s+){0,3}?(?:be\s+)?$presenceEffect\b|(?:was|is)\s+(?:revert(?:ed)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b)"
     if ($suffix -match $laterPresenceRemoval) { return $true }
+    $negatedHardRemoval = "(?i)^$prefix(?:\w+\s+){0,6}?(?:not|never)\s+(?:\w+\s+){0,2}?(?:revert(?:s|ed|ing)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b"
+    if ($suffix -match $negatedHardRemoval) { return $false }
+    $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b(?:(?!\b(?:not|never)\b|n''t)[^.;!?])*?\b(?:included|applied|landed|shipped|backported|retained|restored)\b'
     $isHardRemoval = ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
-    if ($isHardRemoval) { return $true }
+    if ($isHardRemoval) { return -not ($suffix -match $restoredPresence) }
 
     $isNegated = ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect)
     if (-not $isNegated) { return $false }
-    if ($PresenceOnly) { return $true }
+    if ($PresenceOnly -and -not $DirectPrSubject) { return $true }
 
     # Only an explicit correction of a prior expectation can reverse a soft
     # "not needed/required" phrase. Generic contrastive prose ("not backported,
@@ -2470,6 +2472,7 @@ function Get-ExplicitBackportSourceNumbers {
                 $suffixLength = [Math]::Min(2048, $Text.Length - $absoluteReferenceEnd)
                 $suffix = $Text.Substring($absoluteReferenceEnd, $suffixLength)
                 $sawRepeatedReference = $false
+                $repeatedReferenceIsDirectSubject = $false
                 # Negation after a later PR reference belongs to that later
                 # list item, not the current one.
                 while ($true) {
@@ -2486,6 +2489,9 @@ function Get-ExplicitBackportSourceNumbers {
                             $suffix = $beforeRepeatedReference
                             break
                         }
+                        $repeatedReferenceIsDirectSubject =
+                            (-not $contextualObject) -and
+                            ($beforeRepeatedReference -match '(?i)(?:^|[.!?;,:]\s*|\bPR\s*)$')
                         # A repeated mention of the same PR often introduces its
                         # non-inclusion reason ("#N, but #N was not included").
                         $sawRepeatedReference = $true
@@ -2495,7 +2501,9 @@ function Get-ExplicitBackportSourceNumbers {
                     $suffix = $suffix.Substring(0, $nextReference.Index)
                     break
                 }
-                if (Test-IsLineageReferenceNegated -Suffix $suffix -PresenceOnly:$sawRepeatedReference) {
+                if (Test-IsLineageReferenceNegated -Suffix $suffix `
+                    -PresenceOnly:$sawRepeatedReference `
+                    -DirectPrSubject:$repeatedReferenceIsDirectSubject) {
                     # A later repeated mention can retract an earlier positive
                     # occurrence ("#A and #B, but #A was not included"). Remove
                     # any already-accepted occurrence before continuing.
@@ -2549,6 +2557,9 @@ function Get-ExplicitBackportSourceNumbers {
             $contextualObject = $occurrencePrefix -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
             $lineageObject = $occurrencePrefix -match '(?i)\b(?:change|fix|work|code|commit|backport|patch|implementation|workaround)\b[^#\r\n]{0,80}\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
             if ($contextualObject -and -not $lineageObject) { continue }
+            $occurrenceIsDirectSubject =
+                (-not $contextualObject) -and
+                ($occurrencePrefix -match '(?i)(?:^|[.!?;,:]\s*|\bPR\s*)$')
             $occurrenceEnd = $occurrence.Index + $occurrence.Length
             $remainingLength = [Math]::Min(2048, $Text.Length - $occurrenceEnd)
             $occurrenceSuffix = $Text.Substring($occurrenceEnd, $remainingLength)
@@ -2561,7 +2572,8 @@ function Get-ExplicitBackportSourceNumbers {
             if ($nextReference.Success) {
                 $occurrenceSuffix = $occurrenceSuffix.Substring(0, $nextReference.Index)
             }
-            if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix -PresenceOnly) {
+            if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix `
+                -PresenceOnly -DirectPrSubject:$occurrenceIsDirectSubject) {
                 [void]$result.Remove($acceptedNumber)
                 break
             }
@@ -3186,9 +3198,11 @@ function Test-IsExplicitBackportForSource {
     if (-not $Pr -or -not $SourcePrNumber) { return $false }
 
     $body = [string](Get-MetadataValue -Container $Pr -Name 'body' -Default '')
+    $title = [string](Get-MetadataValue -Container $Pr -Name 'title' -Default '')
     $head = [string](Get-MetadataValue -Container $Pr -Name 'headRefName' -Default '')
 
     if (@(Get-CopilotBackportSourceNumbers -HeadRefName $head) -contains $SourcePrNumber) { return $true }
+    if (@(Get-ExplicitBackportSourceNumbers -Text $title) -contains $SourcePrNumber) { return $true }
     if (@(Get-ExplicitBackportSourceNumbers -Text $body) -contains $SourcePrNumber) { return $true }
     if ($head -match "(?i)^backport/pr-$SourcePrNumber-to-") { return $true }
     return $false
@@ -5220,7 +5234,8 @@ function Format-MarkdownReport {
     if ([bool](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'hotfixInProgress' -Default $false)) {
         $hotfixMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'liveVersion')
         $hotfixMarkerCommit = [string](Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha')
-        if ($hotfixMarkerVersion -and $hotfixMarkerCommit) {
+        if (-not $hotfixMarkerVersion) { $hotfixMarkerVersion = 'version-pending' }
+        if ($hotfixMarkerCommit) {
             [void]$sb.AppendLine("<!-- release-readiness-hotfix: $hotfixMarkerVersion@$hotfixMarkerCommit -->")
         }
     }

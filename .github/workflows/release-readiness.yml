@@ -416,7 +416,11 @@ jobs:
               REPORT_HOTFIX_ID="${REPORT_HOTFIX_MARKER#<!-- release-readiness-hotfix: }"
               REPORT_HOTFIX_ID="${REPORT_HOTFIX_ID% -->}"
               REPORT_HOTFIX_VERSION="${REPORT_HOTFIX_ID%%@*}"
-              ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix ${REPORT_HOTFIX_VERSION} in progress (${BRANCH_NAME})"
+              if [ "$REPORT_HOTFIX_VERSION" = "version-pending" ]; then
+                ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix version pending (${BRANCH_NAME})"
+              else
+                ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix ${REPORT_HOTFIX_VERSION} in progress (${BRANCH_NAME})"
+              fi
               MODE="shipped"
             elif [ -n "$REPORT_SHIPPED_MARKER" ]; then
               ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — shipped (${BRANCH_NAME})"
@@ -472,6 +476,15 @@ jobs:
           REPORT_HOTFIX_IN_PROGRESS=false
           [ -n "$HOTFIX_MARKER" ] && REPORT_HOTFIX_IN_PROGRESS=true
           CREATE_GENERATION=false
+          GENERATION_MARKER=""
+          if [ "$MODE" = "shipped" ]; then
+            GENERATION_MARKER="$SHIPPED_MARKER"
+            [ "$REPORT_HOTFIX_IN_PROGRESS" = "true" ] && GENERATION_MARKER="$HOTFIX_MARKER"
+            if [ -z "$GENERATION_MARKER" ]; then
+              echo "::warning::Shipped report for ${TRACKER_KEY} has no lifecycle generation marker; refusing to create or infer closure state."
+              exit 0
+            fi
+          fi
 
           EXISTING=$(gh issue list \
             --repo "${{ github.repository }}" \
@@ -487,19 +500,63 @@ jobs:
                 )] | sort_by(.createdAt) | .[].number
               ')
 
+          # Do not silently orphan or duplicate a tracker whose ownership label
+          # was removed. Exact marker text proves a candidate exists, but without
+          # the durable label the workflow must not edit or adopt it automatically.
+          if [ -z "$EXISTING" ]; then
+            UNOWNED_EXISTING=$(gh issue list \
+              --repo "${{ github.repository }}" \
+              --state open \
+              --search "in:body \"${MARKER}\"" \
+              --json number,createdAt,body,labels \
+              --limit 100 | jq -r \
+                --arg tracker "$MARKER" '
+                  [.[] | select(
+                    ([.labels[].name] | index("area-infrastructure") == null) and
+                    ((.body | gsub("\r"; "") | split("\n") | index($tracker)) != null)
+                  )] | sort_by(.createdAt) | .[].number
+                ')
+            if [ -n "$UNOWNED_EXISTING" ]; then
+              echo "::warning::Open tracker marker ${MARKER} exists on unlabeled issue(s): $(echo "$UNOWNED_EXISTING" | tr '\n' ' '). Restore the area-infrastructure label before automation resumes; refusing to create a duplicate."
+              exit 0
+            fi
+          fi
+
           # Each exact shipped-tag or hotfix-tip generation is create-once. A
           # later hotfix commit intentionally has a new version@commit marker.
           # This distinguishes an intentionally closed generation from one that was
           # never tracked (for example, a hotfix tag published before the first
           # scheduled updater run). Search the exact generated marker directly so
           # the result is not diluted by a generic-marker --limit window.
-          if [ "$MODE" = "shipped" ] && [ -z "$EXISTING" ]; then
-            GENERATION_MARKER="$SHIPPED_MARKER"
-            [ "$REPORT_HOTFIX_IN_PROGRESS" = "true" ] && GENERATION_MARKER="$HOTFIX_MARKER"
-            if [ -z "$GENERATION_MARKER" ]; then
-              echo "::warning::Shipped report for ${TRACKER_KEY} has no lifecycle generation marker; refusing to create or infer closure state."
-              exit 0
-            fi
+          if [ "$MODE" = "shipped" ]; then
+            EXACT_OPEN=$(gh issue list \
+              --repo "${{ github.repository }}" \
+              --state open \
+              --label area-infrastructure \
+              --search "in:body \"${GENERATION_MARKER}\"" \
+              --json number,createdAt,body,labels \
+              --limit 100 | jq -r \
+                --arg tracker "$MARKER" \
+                --arg generation "$GENERATION_MARKER" '
+                  [.[] | select(
+                    ([.labels[].name] | index("area-infrastructure") != null) and
+                    ((.body | gsub("\r"; "") | split("\n")) as $lines |
+                      ($lines | index($tracker) != null) and
+                      ($lines | index($generation) != null))
+                  )] | sort_by(.createdAt) | .[].number
+                ')
+
+            if [ -n "$EXACT_OPEN" ]; then
+              # Prefer the current generation even when an older generic tracker
+              # is still open; duplicate cleanup will retire the stale issue.
+              GENERATION_CANONICAL=$(echo "$EXACT_OPEN" | head -n 1)
+              REORDERED_EXISTING="$GENERATION_CANONICAL"
+              for issue in $EXISTING; do
+                [ "$issue" = "$GENERATION_CANONICAL" ] && continue
+                REORDERED_EXISTING="${REORDERED_EXISTING}"$'\n'"${issue}"
+              done
+              EXISTING="$REORDERED_EXISTING"
+            else
             # Narrow server-side to tracker-labeled issues, then enforce exact
             # marker lines locally. Legacy/current trackers may be human-created
             # and later adopted by this workflow, so author identity is not a
@@ -524,7 +581,8 @@ jobs:
               echo "Tracker generation ${GENERATION_MARKER} was intentionally closed as #${CLOSED_GENERATION} — not recreating."
               exit 0
             fi
-            CREATE_GENERATION=true
+              [ -z "$EXISTING" ] && CREATE_GENERATION=true
+            fi
           fi
 
           # Activity gate: when there is no recent activity AND no open tracker issue,

@@ -142,6 +142,16 @@ Assert-Eq -Label "workflow requires tracker label on a closed-generation match" 
 Assert-Eq -Label "workflow refuses to create a tracker without its durable ownership label" -Expected $true `
     -Actual ($workflowContractText.Contains("Required label 'area-infrastructure' not found") -and
         $workflowContractText.Contains('CREATE_ARGS+=(--label "area-infrastructure")'))
+Assert-Eq -Label "workflow refuses duplicate creation when an unlabeled tracker marker exists" -Expected $true `
+    -Actual ($workflowContractText.Contains('UNOWNED_EXISTING=') -and
+        $workflowContractText.Contains('Restore the area-infrastructure label before automation resumes'))
+Assert-Eq -Label "workflow resolves exact current-generation opens before exact closures" -Expected $true `
+    -Actual ($workflowContractText.IndexOf('EXACT_OPEN=') -lt $workflowContractText.IndexOf('CLOSED_GENERATION='))
+Assert-Eq -Label "workflow prefers exact current generation before generic canonical fallback" -Expected $true `
+    -Actual ($workflowContractText.Contains('GENERATION_CANONICAL=$(echo "$EXACT_OPEN" | head -n 1)') -and
+        $workflowContractText.Contains('EXISTING="$REORDERED_EXISTING"'))
+Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
+    -Actual $workflowContractText.Contains('hotfix version pending')
 $previewContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1') -Raw
 Assert-Eq -Label "preview body cap reserves mandatory component policy" -Expected $true `
     -Actual ($previewContractText.Contains('componentPolicyReserve') -and
@@ -1899,6 +1909,18 @@ try {
         -Actual (($explicitBackports.number | Sort-Object) -join ',')
     Assert-Eq -Label "backport lineage: unrelated merged mention is rejected" -Expected $false `
         -Actual ($explicitBackports.number -contains 84002)
+    Assert-Eq -Label "backport lineage: explicit title-only backport is retained" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            title = 'Backport of #32537 to SR9'
+            body = ''
+            headRefName = 'manual/release-fix'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: contextual title-only mention is rejected" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            title = 'Cleanup after #32537'
+            body = ''
+            headRefName = 'manual/cleanup'
+        }) -SourcePrNumber 32537)
     Assert-Eq -Label "backport lineage: Copilot PR-number branch is explicit" -Expected $true `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
             body = 'Please backport https://github.com/dotnet/maui/pull/32537'
@@ -2178,6 +2200,25 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
     $otherPrRetracted = 'Backport: #100 and #200. #200 was a follow-up, but it was reverted.'
     Assert-Eq -Label "backport lineage: another PR retraction cannot remove prior source" `
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $otherPrRetracted) -join ',')
+    foreach ($repeatedSemanticRetraction in @(
+        'Backport of #12345. PR #12345 is no longer required.',
+        'Backport of #12345. PR #12345 is no longer needed.',
+        'Backport of #12345. PR #12345 is no longer relevant.',
+        'Backport of #12345. PR #12345 is no longer applicable.'
+    )) {
+        Assert-Eq -Label "backport lineage: repeated semantic retraction removes source — $repeatedSemanticRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $repeatedSemanticRetraction) -join ',')
+    }
+    foreach ($retainedRemoval in @(
+        'Backport of #100. The change from #100 was not reverted.',
+        'Backport of #100. The change from #100 was not excluded.',
+        'Backport of #100. The change from #100 was excluded from SR7 but included now.'
+    )) {
+        Assert-Eq -Label "backport lineage: negated or reversed removal keeps source — $retainedRemoval" `
+            -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $retainedRemoval) -join ',')
+    }
+    Assert-Eq -Label "backport lineage: unrelated later-sentence rollback cannot retract source" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100. We also reverted an unrelated workaround.') -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -4698,6 +4739,14 @@ Assert-Eq -Label "active hotfix report renders operational follow-up section" -E
     -Actual ($hotfixMd -match '(?s)Post-ship operational follow-ups.*Unpublished hotfix branch state')
 Assert-Eq -Label "active hotfix report does not claim no urgent follow-ups" -Expected $false `
     -Actual ($hotfixMd -match 'No urgent post-ship follow-ups')
+$pendingVersionHotfixData = $hotfixMdData.Clone()
+$pendingVersionHotfixData['metadata'] = $hotfixMdData.metadata.Clone()
+$pendingVersionHotfixData['shippedInfo'] = $hotfixMdData.shippedInfo.Clone()
+$pendingVersionHotfixData.shippedInfo.liveVersion = $null
+$pendingVersionHotfixMd = Format-MarkdownReport -Data $pendingVersionHotfixData `
+    -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "versionless post-tag hotfix emits commit-keyed pending marker" -Expected $true `
+    -Actual ($pendingVersionHotfixMd -match '<!-- release-readiness-hotfix: version-pending@aaaaaaaa1111bbbbbbbb2222cccccccc -->')
 $mdTopPscoData = $mdData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 $mdTopPscoThrew = $false; $mdTopPsco = $null
 try {
