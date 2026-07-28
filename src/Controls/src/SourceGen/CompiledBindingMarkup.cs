@@ -617,21 +617,26 @@ internal struct CompiledBindingMarkup
 		
 		var assignedValueExpression = "value";
 
-		// early return for nullable values if the setter doesn't accept them
+		// TProperty can be nullable either because the final member is declared nullable
+		// (AcceptsNullValue) or because null-conditional access somewhere in the path widened it.
+		// In the latter case the final member is declared non-nullable, but NRT annotations are not
+		// enforced at runtime: runtime and XamlC bindings both write null through to the source, so
+		// dropping the assignment here would silently break two-way bindings (e.g. clearing a
+		// selection). Only non-nullable *value* types genuinely cannot be assigned null.
 		if (binding.PropertyType.IsNullable && !binding.SetterOptions.AcceptsNullValue)
 		{
 			if (binding.PropertyType.IsValueType)
 			{
 				code.WriteLine("if (!value.HasValue)");
+				using (PrePost.NewBlock(code))
+				{
+					code.WriteLine("return;");
+				}
 				assignedValueExpression = "value.Value";
 			}
 			else
 			{
-				code.WriteLine("if (value is null)");
-			}
-			using (PrePost.NewBlock(code))
-			{
-				code.WriteLine("return;");
+				assignedValueExpression = "value!";
 			}
 		}
 
