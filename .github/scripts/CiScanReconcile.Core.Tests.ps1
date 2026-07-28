@@ -209,6 +209,30 @@ Describe 'Get-CiScanStateMarker' {
         $json = New-StateJson -Absent (1..600)
         (Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11).Status | Should -Be 'malformed'
     }
+    It 'quarantines a non-integer numeric field instead of aborting the run' {
+        # `[int]$obj.v` / `[int]$obj.runs` are TERMINATING errors in PowerShell, and the
+        # orchestrator's per-issue loop has no try/catch — so ONE corrupt or forged marker
+        # used to kill the entire survey instead of escalating that single issue.
+        $shapes = @{
+            'non-numeric v'    = '{"v":"abc","label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]}'
+            'array v'          = '{"v":[1,2],"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]}'
+            'overflowing v'    = '{"v":99999999999,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]}'
+            'non-numeric runs' = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[],"runs":"lots"}'
+            'overflowing runs' = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[],"runs":99999999999}'
+            'negative runs'    = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[],"runs":-3}'
+        }
+        foreach ($shape in $shapes.GetEnumerator()) {
+            $call = { Get-CiScanStateMarker -Body "<!-- ci-scan-state: $($shape.Value) -->" -Config $script:Net11 }
+            $call | Should -Not -Throw -Because "a corrupt '$($shape.Key)' marker must not abort the survey"
+            (& $call).Status | Should -Be 'malformed' -Because "'$($shape.Key)' is corruption, not clean state"
+        }
+    }
+    It 'still reads a well-formed runs counter' {
+        $json = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[],"runs":7}'
+        $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11
+        $r.Status | Should -Be 'ok'
+        $r.State.runs | Should -Be 7
+    }
 }
 
 Describe 'Set-CiScanStateMarker' {
@@ -458,6 +482,18 @@ Describe 'Get-CiScanIssueVerdict — gates' {
 
     It 'is not a candidate when coverage is entirely absent (no observations recorded)' {
         (Get-CiScanIssueVerdict -Issue $script:CanonicalIssue -Config $script:Net11 -Now $script:Now).Decision | Should -Be 'watching'
+    }
+
+    It 'escalates a corrupt state marker instead of throwing out of the per-issue loop' {
+        # The orchestrator loops over issues with no try/catch, so a terminating error here
+        # takes down the whole survey. A corrupt marker must cost exactly one issue.
+        $corrupt = New-TestIssue -Body (New-CanonicalBody -StateJson `
+            '{"v":"abc","label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]}')
+        $call = { Get-CiScanIssueVerdict -Issue $corrupt -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage }
+        $call | Should -Not -Throw
+        $v = & $call
+        $v.Decision | Should -Be 'needs-human'
+        $v.Reason | Should -Be 'malformed-state-marker'
     }
 
     It 'does not shorten the absence clock for a zero-occurrence issue' {

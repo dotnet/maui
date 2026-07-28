@@ -323,6 +323,14 @@ function Get-CiScanStateMarker {
                       This FAILS CLOSED: the caller must escalate to a human and must
                       not overwrite the marker, so a corrupted marker can never be
                       laundered into a clean one by a subsequent run.
+
+        NEVER `[int]`-cast a field straight off the deserialized marker. A PowerShell
+        cast failure is a TERMINATING error, and the orchestrator calls this function
+        from its per-issue loop with no try/catch — so one corrupted or forged marker
+        (`"v":"abc"`, `"v":[1,2]`, `"runs":99999999999`) would abort the ENTIRE run
+        rather than quarantining that single issue. Failing closed means returning
+        'malformed' for the one bad issue, not killing the survey. Use
+        `[int]::TryParse` on the `[string]` form, as the build-id loop below does.
     #>
     [CmdletBinding()]
     param(
@@ -358,7 +366,9 @@ function Get-CiScanStateMarker {
         if (-not ($obj.PSObject.Properties.Name -contains $prop)) { return $bad }
     }
 
-    if ([int]$obj.v -ne $script:CiScanDefaults.StateMarkerVersion) { return $bad }
+    $version = 0
+    if (-not [int]::TryParse([string]$obj.v, [ref]$version)) { return $bad }
+    if ($version -ne $script:CiScanDefaults.StateMarkerVersion) { return $bad }
     # The marker must agree with the twin we are currently reconciling. A marker copied
     # from the other twin (or forged) cannot be used to advance this issue.
     if ([string]$obj.label -cne $Config.Label -or [string]$obj.branch -cne $Config.Branch) { return $bad }
@@ -377,6 +387,14 @@ function Get-CiScanStateMarker {
         $buckets[$name] = @($ids | Sort-Object -Unique)
     }
 
+    # A present-but-unparseable `runs` is corruption, so it is 'malformed' rather than a
+    # silent reset to 0: defaulting would launder a corrupt marker into a clean one on the
+    # next write, which is exactly what the fail-closed contract above forbids.
+    $runs = 0
+    if ($obj.PSObject.Properties.Name -contains 'runs') {
+        if (-not [int]::TryParse([string]$obj.runs, [ref]$runs) -or $runs -lt 0) { return $bad }
+    }
+
     $state = @{
         v                  = $script:CiScanDefaults.StateMarkerVersion
         label              = [string]$obj.label
@@ -388,7 +406,7 @@ function Get-CiScanStateMarker {
         last_present_at    = if ($obj.PSObject.Properties.Name -contains 'last_present_at') { ConvertTo-CiScanTimestamp $obj.last_present_at } else { $null }
         candidate_notified = if ($obj.PSObject.Properties.Name -contains 'candidate_notified') { [bool]$obj.candidate_notified } else { $false }
         updated_at         = if ($obj.PSObject.Properties.Name -contains 'updated_at') { ConvertTo-CiScanTimestamp $obj.updated_at } else { $null }
-        runs               = if ($obj.PSObject.Properties.Name -contains 'runs') { [int]$obj.runs } else { 0 }
+        runs               = $runs
     }
 
     return @{ Status = 'ok'; State = $state }
