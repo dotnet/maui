@@ -1785,6 +1785,82 @@ Describe 'Owned-label preflight gates every mutating run' {
 }
 
 
+Describe 'A malformed record aborts nothing' {
+    <#
+        Every read below sat in a loop with no try/catch, so ONE unreadable record ended
+        the whole run rather than being quarantined. All three were invisible to a source
+        scan scoped to direct payload assignment, because the records arrive through a
+        function return and a foreach — and two of them were invisible to review as well,
+        since `$null -eq $l.name` reads as a guard for exactly the record it throws on.
+
+        The static invariant now covers the form. These cover the behaviour, because the
+        two see genuinely different things: a scan cannot tell whether a guard can
+        EXECUTE, and a fixture cannot see code no fixture reaches.
+    #>
+    BeforeEach {
+        Initialize-ReconcileMocks
+        Reset-CiScanCounters
+        Mock Invoke-GhWrite { return $true }
+        Mock Invoke-GhRead {
+            $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
+            if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*/comments*') { return , @() }
+            if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+            return $null
+        }
+        Mock Invoke-HttpGetJson { throw 'AzDO must not be reached in these tests' }
+        Mock Get-CiScanBuildCoverage {
+            return @{ VerifiedAbsentBuilds = @(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); Unverifiable = $false; Reason = '' }
+        }
+    }
+
+    It 'survives a repository label record with no name, in the preflight that gates mutation' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+        # A field-less record FIRST, so a throwing read cannot be masked by the good ones.
+        # Mode must be MUTATING: the preflight is skipped entirely in report mode, so a
+        # report-mode fixture here would pass without ever reaching the defect.
+        $script:RepoLabels = @(('{}' | ConvertFrom-Json)) + @(
+            'ci-scan-stale-candidate', 'ci-fix-landed', 'auto-closed-stale' |
+                ForEach-Object { [pscustomobject]@{ name = $_ } })
+
+        $script:r = $null
+        { $script:r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'comment' } |
+            Should -Not -Throw -Because 'the preflight decides whether mutation is allowed; it must not abort'
+        # Skipping the junk record must not suppress a legitimately present label, or the
+        # reconciler quietly disables itself and still looks healthy.
+        $script:r.FailClosed | Should -BeFalse -Because 'all three owned labels are present and readable'
+        $script:r.MutationsAllowed | Should -BeTrue
+    }
+
+    It 'fails closed on an issue record with no number instead of ending the survey' {
+        Initialize-ReconcileMocks -Issues @(('{}' | ConvertFrom-Json), (New-CandidateIssue -Number 100))
+
+        $script:r = $null
+        { $script:r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 100 -MaxPullRequests 50 -RequestedMode 'enforce' } |
+            Should -Not -Throw -Because 'the per-issue loop has no try/catch'
+        $script:r.Counters.ReadErrors | Should -BeGreaterThan 0 -Because 'a skipped issue must not let the run look clean'
+        $script:r.Counters.Closes | Should -Be 0 -Because 'an incomplete survey must suppress every mutation'
+        $script:r.Counters.Writes | Should -Be 0
+    }
+
+    It 'marks the blocker index inexhaustive when a pull request record has no number' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
+            -PullRequests @(('{}' | ConvertFrom-Json))
+
+        $script:r = $null
+        { $script:r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 100 -MaxPullRequests 50 -RequestedMode 'enforce' } | Should -Not -Throw
+        # Dropping the record silently would SHRINK the blocker index, and a missing
+        # blocker is the one direction that can let an issue close.
+        $script:r.PullRequestIndexComplete | Should -BeFalse
+        $script:r.Counters.Closes | Should -Be 0
+        $script:r.Counters.Writes | Should -Be 0
+    }
+}
+
 Describe 'Static source invariants' {
     BeforeAll {
         $script:OrchestratorText = Get-Content -Raw -Path (Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1')
@@ -1868,10 +1944,73 @@ Describe 'Static source invariants' {
                 '\$(?<v>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:Invoke-HttpGetJson|Invoke-GhRead|ConvertFrom-Json)') |
             ForEach-Object { $_.Groups['v'].Value } | Sort-Object -Unique)
 
+        # A payload does not stop being a payload when it is returned, unwrapped or
+        # iterated. Direct assignment is only how a payload ENTERS the script; scoping to
+        # it alone left the most dangerous reads in the file — `[int]$pr.number`,
+        # `[int]$issue.number` and `$l.name`, all in loops with no try/catch — permanently
+        # out of scope, because they arrive via a function return and a foreach.
+        #
+        # But provenance has to distinguish two things a naive closure conflates:
+        #
+        #   WRAPPER  a reader function returns a hashtable this script literally builds
+        #            (`return @{ Issues = ...; Truncated = ... }`). Its member NAMES are
+        #            guaranteed by this file, so `$issueIndex.Truncated` is as trusted as
+        #            `$Config.Pipelines`. Flagging it would be noise, and noise is how an
+        #            invariant gets suppressed.
+        #   ELEMENT  the objects that wrapper CARRIES are still raw API records. They are
+        #            reached by iterating, and they are the actual hazard.
+        #
+        # So wrappers are traced in order to find elements, and only elements are asserted
+        # on. No hardcoded name list, so it cannot rot as functions are added.
+        $readerFns = @()
+        foreach ($blk in [regex]::Split($code, '(?m)^function\s+')) {
+            # Capture the name BEFORE testing the body: a second -match overwrites $Matches,
+            # so reading $Matches['n'] afterwards silently yields the wrong groups. Which is
+            # this thread's defect in miniature — a correct-looking read invalidated by an
+            # adjacent operation rather than by anything visible at the read itself.
+            $nameMatch = [regex]::Match($blk, '^(?<n>[A-Za-z][A-Za-z0-9-]*)')
+            if ($nameMatch.Success -and $blk -match '(Invoke-HttpGetJson|Invoke-GhRead|ConvertFrom-Json)') {
+                $readerFns += $nameMatch.Groups['n'].Value
+            }
+        }
+
+        $wrappers = @()
+        foreach ($fn in ($readerFns | Sort-Object -Unique)) {
+            foreach ($m in [regex]::Matches($code, "\`$(?<v>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:@\()?\s*$fn\b")) {
+                if ($wrappers -notcontains $m.Groups['v'].Value) { $wrappers += $m.Groups['v'].Value }
+            }
+        }
+
+        $elements = @($payloadVars)
+        for ($pass = 0; $pass -lt 12; $pass++) {
+            $before = (Get-CiScanCount $elements) + (Get-CiScanCount $wrappers)
+            foreach ($src in (@($elements) + @($wrappers))) {
+                # `$x = ...$src...` keeps whatever $src was: a wrapper member is still a
+                # wrapper, an element member is still an element. The RHS must START with
+                # $src — otherwise `$verdict = Get-CiScanIssueVerdict -Issue $issue` would
+                # mark $verdict a payload record, when a payload merely went IN as an
+                # argument and what came back is a hashtable this codebase builds.
+                foreach ($m in [regex]::Matches($code, "\`$(?<v>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*[@(\s]*\`$$src\b")) {
+                    $v = $m.Groups['v'].Value
+                    if ($wrappers -contains $src) { if ($wrappers -notcontains $v) { $wrappers += $v } }
+                    elseif ($elements -notcontains $v) { $elements += $v }
+                }
+                # Iterating ANY of them yields a raw API record.
+                foreach ($m in [regex]::Matches($code, "foreach\s*\(\s*\`$(?<loop>[A-Za-z_][A-Za-z0-9_]*)\s+in\s+[^)]*\`$$src\b")) {
+                    if ($elements -notcontains $m.Groups['loop'].Value) { $elements += $m.Groups['loop'].Value }
+                }
+            }
+            if (((Get-CiScanCount $elements) + (Get-CiScanCount $wrappers)) -eq $before) { break }
+        }
+        $payloadVars = @($elements | Sort-Object -Unique)
+
         # Anti-vacuity: a scanner that silently matches nothing would pass forever.
         (Get-CiScanCount $payloadVars) | Should -BeGreaterThan 4 -Because 'the discovery regex must still find payload assignments'
         foreach ($known in @('build', 'timeline', 'batch')) {
             $payloadVars | Should -Contain $known -Because 'these are known payload variables'
+        }
+        foreach ($known in @('issue', 'pr', 'l')) {
+            $payloadVars | Should -Contain $known -Because 'a payload record is still a payload once returned and iterated'
         }
 
         $offenders = @()

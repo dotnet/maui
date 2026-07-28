@@ -420,7 +420,15 @@ function Get-CiScanPullRequestIndex {
     $seen = @{}
     foreach ($pr in (@($open) + @($fixes))) {
         if ($null -eq $pr) { continue }
-        $n = [int]$pr.number
+        $n = 0
+        if (-not [int]::TryParse([string](Get-CiScanJsonField -Object $pr -Name 'number'), [ref]$n) -or $n -le 0) {
+            # Dropping an unreadable record silently would SHRINK the blocker index, and a
+            # missing blocker is the one direction that can let an issue close. So this
+            # marks the index inexhaustive rather than skipping quietly.
+            Write-Warning 'A pull request record has no readable number; the blocker index is NOT exhaustive.'
+            $complete = $false
+            continue
+        }
         if ($seen.ContainsKey($n)) { continue }
         $seen[$n] = $true
         $all += $pr
@@ -454,8 +462,14 @@ function Test-CiScanOwnedLabels {
 
     $present = @{}
     foreach ($l in @($labels)) {
-        if ($null -eq $l -or $null -eq $l.name) { continue }
-        $present[[string]$l.name] = $true
+        # `$null -eq $l.name` reads as a guard for a label record without a name and
+        # THROWS on exactly that record under StrictMode, because the property read runs
+        # before the comparison. This preflight gates every mutating run, so an aborted
+        # one is not a safe failure — it is an unhandled exception in the code whose job
+        # is to decide whether mutation is allowed at all.
+        $name = [string](Get-CiScanJsonField -Object $l -Name 'name')
+        if ([string]::IsNullOrEmpty($name)) { continue }
+        $present[$name] = $true
     }
 
     $missing = @()
@@ -953,7 +967,15 @@ function Invoke-CiScanReconcile {
     foreach ($issue in @($issues)) {
         if ($null -eq $issue) { continue }
 
-        $number = [int]$issue.number
+        $number = 0
+        if (-not [int]::TryParse([string](Get-CiScanJsonField -Object $issue -Name 'number'), [ref]$number) -or $number -le 0) {
+            # This loop has no try/catch, so a bare `[int]$issue.number` ended the whole
+            # survey on one malformed record. Counting it as a read error skips the issue
+            # AND fails the run closed, so a partial survey cannot look clean.
+            Write-Warning 'An issue record has no readable number; skipping it and failing the run closed.'
+            $script:Counters.ReadErrors++
+            continue
+        }
         $fixStatus = Get-CiScanFixPrStatus -IssueNumber $number -PullRequests $prIndex.PullRequests
 
         # Comments are only needed to detect human involvement; fetch them lazily for
@@ -970,7 +992,7 @@ function Invoke-CiScanReconcile {
         # Coverage is only meaningful once a canonical fingerprint and state marker
         # exist. Evaluating it for the legacy backlog would be ~200 pointless AzDO calls.
         $coverage = $null
-        $body = if (Test-CiScanHasField -Object $issue -Name 'body') { [string]$issue.body } else { '' }
+        $body = [string](Get-CiScanJsonField -Object $issue -Name 'body')
         $fp = Get-CiScanFingerprintMarker -Body $body -Config $config
         $stateResult = Get-CiScanStateMarker -Body $body -Config $config
         if ($null -ne $fp -and $stateResult.Status -eq 'ok') {
