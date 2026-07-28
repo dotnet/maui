@@ -237,6 +237,65 @@ function Get-CiScanDefaults {
 
 #region Fingerprint + marker parsing ------------------------------------------
 
+function Test-CiScanHasField {
+    <#
+    .SYNOPSIS
+        Tests whether a deserialized JSON object carries a named property.
+
+    .DESCRIPTION
+        The obvious spelling — `$o.PSObject.Properties.Name -contains 'x'` — is itself
+        unsafe under `Set-StrictMode -Version Latest`. Member-enumeration of `.Name`
+        over an EMPTY property collection is a terminating error, so the guard throws on
+        exactly the degenerate object it exists to screen out. `ConvertFrom-Json '{}'`
+        produces precisely that object, and a marker body of `{}` is one truncated write
+        away, so this aborted the whole per-issue survey instead of quarantining one
+        issue.
+
+        The indexer returns $null for an absent name on every input shape — empty
+        pscustomobject, bare string, int, array, $null — so it is total where the
+        enumeration is partial.
+
+        Prefer this over `.PSObject.Properties.Name`. A static invariant in
+        Invoke-CiScanReconcile.Tests.ps1 enforces that, because this is the fourth
+        distinct defect on this path where a documented fail-closed contract was
+        honoured only by whichever shapes the code happened to survive.
+    #>
+    [CmdletBinding()]
+    param([object]$Object, [Parameter(Mandatory)][string]$Name)
+
+    if ($null -eq $Object) { return $false }
+    return $null -ne $Object.PSObject.Properties[$Name]
+}
+
+function Get-CiScanFieldValue {
+    <#
+    .SYNOPSIS
+        Reads a named property from a deserialized JSON object, or $Default if absent.
+
+    .DESCRIPTION
+        Test-CiScanHasField bounds the sites that ASK whether a field exists. This bounds
+        the sites that just READ one, which is the strictly larger and more dangerous set:
+        a site with a broken existence check is at least visibly trying to guard, and a
+        source scan can find it. A site with no check at all looks like ordinary code.
+
+        That distinction is not theoretical. Converting every broken existence check on
+        this path left roughly a dozen bare reads — `$Issue.labels`, `$Issue.number`,
+        `$pr.number` — untouched, because there was no guard for a scan to recognise.
+        Fixture tests feeding `ConvertFrom-Json '{}'` to each consumer found them
+        immediately. Neither technique bounds this class alone: the scan sees the form,
+        the fixtures see the absence of one.
+
+        Returns $Default (default $null) rather than throwing, so a caller keeps its own
+        fail-closed branch instead of tearing down the per-issue loop, which has no
+        try/catch.
+    #>
+    [CmdletBinding()]
+    param([object]$Object, [Parameter(Mandatory)][string]$Name, [object]$Default = $null)
+
+    if (-not (Test-CiScanHasField -Object $Object -Name $Name)) { return $Default }
+    return $Object.PSObject.Properties[$Name].Value
+}
+
 function Test-CiScanFingerprint {
     <#
     .SYNOPSIS
@@ -363,7 +422,7 @@ function Get-CiScanStateMarker {
 
     $required = @('v', 'label', 'branch', 'pipeline', 'absent_builds', 'present_builds')
     foreach ($prop in $required) {
-        if (-not ($obj.PSObject.Properties.Name -contains $prop)) { return $bad }
+        if (-not (Test-CiScanHasField -Object $obj -Name $prop)) { return $bad }
     }
 
     $version = 0
@@ -391,7 +450,7 @@ function Get-CiScanStateMarker {
     # silent reset to 0: defaulting would launder a corrupt marker into a clean one on the
     # next write, which is exactly what the fail-closed contract above forbids.
     $runs = 0
-    if ($obj.PSObject.Properties.Name -contains 'runs') {
+    if (Test-CiScanHasField -Object $obj -Name 'runs') {
         if (-not [int]::TryParse([string]$obj.runs, [ref]$runs) -or $runs -lt 0) { return $bad }
     }
 
@@ -402,10 +461,10 @@ function Get-CiScanStateMarker {
         pipeline           = [string]$obj.pipeline
         absent_builds      = $buckets['absent_builds']
         present_builds     = $buckets['present_builds']
-        clock_start_at     = if ($obj.PSObject.Properties.Name -contains 'clock_start_at') { ConvertTo-CiScanTimestamp $obj.clock_start_at } else { $null }
-        last_present_at    = if ($obj.PSObject.Properties.Name -contains 'last_present_at') { ConvertTo-CiScanTimestamp $obj.last_present_at } else { $null }
-        candidate_notified = if ($obj.PSObject.Properties.Name -contains 'candidate_notified') { [bool]$obj.candidate_notified } else { $false }
-        updated_at         = if ($obj.PSObject.Properties.Name -contains 'updated_at') { ConvertTo-CiScanTimestamp $obj.updated_at } else { $null }
+        clock_start_at     = if (Test-CiScanHasField -Object $obj -Name 'clock_start_at') { ConvertTo-CiScanTimestamp $obj.clock_start_at } else { $null }
+        last_present_at    = if (Test-CiScanHasField -Object $obj -Name 'last_present_at') { ConvertTo-CiScanTimestamp $obj.last_present_at } else { $null }
+        candidate_notified = if (Test-CiScanHasField -Object $obj -Name 'candidate_notified') { [bool]$obj.candidate_notified } else { $false }
+        updated_at         = if (Test-CiScanHasField -Object $obj -Name 'updated_at') { ConvertTo-CiScanTimestamp $obj.updated_at } else { $null }
         runs               = $runs
     }
 
@@ -654,25 +713,25 @@ function Test-CiScanIssueProvenance {
 
     $failures = @()
 
-    if ($Issue.PSObject.Properties.Name -contains 'pull_request' -and $null -ne $Issue.pull_request) {
+    if ((Test-CiScanHasField -Object $Issue -Name 'pull_request') -and $null -ne $Issue.pull_request) {
         $failures += 'is-pull-request'
     }
 
     $labelNames = @()
-    foreach ($l in @($Issue.labels)) {
+    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
         if ($null -eq $l) { continue }
         $labelNames += if ($l -is [string]) { $l } else { [string]$l.name }
     }
     if ($labelNames -cnotcontains $Config.Label) { $failures += 'missing-exact-label' }
 
-    $title = [string]$Issue.title
+    $title = [string](Get-CiScanFieldValue -Object $Issue -Name 'title')
     if (-not $title.StartsWith($Config.TitlePrefix, [System.StringComparison]::Ordinal)) {
         $failures += 'title-prefix-mismatch'
     }
 
     $login = ''
-    if ($Issue.PSObject.Properties.Name -contains 'user' -and $null -ne $Issue.user) { $login = [string]$Issue.user.login }
-    elseif ($Issue.PSObject.Properties.Name -contains 'author' -and $null -ne $Issue.author) { $login = [string]$Issue.author.login }
+    if ((Test-CiScanHasField -Object $Issue -Name 'user') -and $null -ne $Issue.user) { $login = [string](Get-CiScanFieldValue -Object $Issue.user -Name 'login') }
+    elseif ((Test-CiScanHasField -Object $Issue -Name 'author') -and $null -ne $Issue.author) { $login = [string](Get-CiScanFieldValue -Object $Issue.author -Name 'login') }
     if ($script:CiScanAllowedCreators -cnotcontains $login) { $failures += "creator-not-allowed:$login" }
 
     return @{ Ok = ((Get-CiScanCount $failures) -eq 0); Failures = @($failures) }
@@ -693,11 +752,11 @@ function Test-CiScanHumanTouched {
 
     $signals = @()
 
-    if ($Issue.PSObject.Properties.Name -contains 'milestone' -and $null -ne $Issue.milestone) { $signals += 'milestone' }
-    if ($Issue.PSObject.Properties.Name -contains 'assignees' -and @($Issue.assignees).Count -gt 0) { $signals += 'assignee' }
+    if ((Test-CiScanHasField -Object $Issue -Name 'milestone') -and $null -ne $Issue.milestone) { $signals += 'milestone' }
+    if ((Test-CiScanHasField -Object $Issue -Name 'assignees') -and @($Issue.assignees).Count -gt 0) { $signals += 'assignee' }
 
     $labelNames = @()
-    foreach ($l in @($Issue.labels)) {
+    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
         if ($null -eq $l) { continue }
         $labelNames += if ($l -is [string]) { $l } else { [string]$l.name }
     }
@@ -782,10 +841,10 @@ function Get-CiScanFixPrStatus {
     foreach ($pr in @($PullRequests)) {
         if ($null -eq $pr) { continue }
 
-        $title = if ($pr.PSObject.Properties.Name -contains 'title') { [string]$pr.title } else { '' }
-        $body = if ($pr.PSObject.Properties.Name -contains 'body') { [string]$pr.body } else { '' }
-        $state = if ($pr.PSObject.Properties.Name -contains 'state') { ([string]$pr.state).ToUpperInvariant() } else { '' }
-        $mergedAt = if ($pr.PSObject.Properties.Name -contains 'mergedAt') { $pr.mergedAt } else { $null }
+        $title = if (Test-CiScanHasField -Object $pr -Name 'title') { [string]$pr.title } else { '' }
+        $body = if (Test-CiScanHasField -Object $pr -Name 'body') { [string]$pr.body } else { '' }
+        $state = if (Test-CiScanHasField -Object $pr -Name 'state') { ([string]$pr.state).ToUpperInvariant() } else { '' }
+        $mergedAt = if (Test-CiScanHasField -Object $pr -Name 'mergedAt') { $pr.mergedAt } else { $null }
 
         $refs = Get-CiScanIssueReferences -Text ($title + "`n" + $body)
         $mentions = (@($refs.Refs) -contains $IssueNumber) -or (@($refs.Closes) -contains $IssueNumber)
@@ -797,14 +856,14 @@ function Get-CiScanFixPrStatus {
         }
 
         if ($state -eq 'OPEN') {
-            $blocking += [ordered]@{ Number = [int]$pr.number; Title = $title; IsFixPr = $isFixPr; State = 'OPEN' }
+            $blocking += [ordered]@{ Number = [int](Get-CiScanFieldValue -Object $pr -Name 'number' -Default 0); Title = $title; IsFixPr = $isFixPr; State = 'OPEN' }
             continue
         }
 
         if ($isFixPr -and $null -ne $mergedAt -and -not [string]::IsNullOrWhiteSpace([string]$mergedAt)) {
             $when = ConvertFrom-CiScanTimestamp $mergedAt
             if ($null -ne $when) {
-                $mergedFix += [ordered]@{ Number = [int]$pr.number; Title = $title; MergedAt = $when }
+                $mergedFix += [ordered]@{ Number = [int](Get-CiScanFieldValue -Object $pr -Name 'number' -Default 0); Title = $title; MergedAt = $when }
                 if ($null -eq $latestMergedAt -or $when -gt $latestMergedAt) { $latestMergedAt = $when }
             }
         }
@@ -866,13 +925,13 @@ function Get-CiScanIssueVerdict {
     )
 
     $d = $script:CiScanDefaults
-    $body = if ($Issue.PSObject.Properties.Name -contains 'body') { [string]$Issue.body } else { '' }
+    $body = if (Test-CiScanHasField -Object $Issue -Name 'body') { [string]$Issue.body } else { '' }
 
     # PSCustomObject (not a hashtable) so the orchestrator can Sort-Object/Group-Object
     # on these fields and serialize them faithfully.
     $verdict = [pscustomobject][ordered]@{
-        Number             = [int]$Issue.number
-        Title              = [string]$Issue.title
+        Number             = [int](Get-CiScanFieldValue -Object $Issue -Name 'number' -Default 0)
+        Title              = [string](Get-CiScanFieldValue -Object $Issue -Name 'title')
         Label              = $Config.Label
         Branch             = $Config.Branch
         Decision           = 'needs-human'
@@ -915,7 +974,7 @@ function Get-CiScanIssueVerdict {
     $verdict.RecurrenceRate = if ($null -eq $rate) { $d.DefaultRecurrenceRate } else { $rate }
     $verdict.RequiredAbsences = Get-CiScanRequiredAbsences -RecurrenceRate $rate
 
-    $createdAt = ConvertFrom-CiScanTimestamp $Issue.created_at
+    $createdAt = ConvertFrom-CiScanTimestamp (Get-CiScanFieldValue -Object $Issue -Name 'created_at')
     if ($null -eq $createdAt) {
         $verdict.Decision = 'needs-human'
         $verdict.Reason = 'unparseable-created-at'
@@ -1149,8 +1208,8 @@ function Get-CiScanIssueLabelNames {
     param([Parameter(Mandatory)]$Issue)
 
     $names = @()
-    if (-not ($Issue.PSObject.Properties.Name -contains 'labels')) { return $names }
-    foreach ($l in @($Issue.labels)) {
+    if (-not (Test-CiScanHasField -Object $Issue -Name 'labels')) { return $names }
+    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
         if ($null -eq $l) { continue }
         $names += if ($l -is [string]) { $l } else { [string]$l.name }
     }
@@ -1180,13 +1239,13 @@ function Get-CiScanReopenVerdict {
     )
 
     $verdict = [ordered]@{
-        Number   = [int]$Issue.number
+        Number   = [int](Get-CiScanFieldValue -Object $Issue -Name 'number' -Default 0)
         Decision = 'leave-closed'
         Reason   = 'no-recurrence-evidence'
     }
 
     $labelNames = @()
-    foreach ($l in @($Issue.labels)) {
+    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
         if ($null -eq $l) { continue }
         $labelNames += if ($l -is [string]) { $l } else { [string]$l.name }
     }
@@ -1196,7 +1255,7 @@ function Get-CiScanReopenVerdict {
     }
     if (-not $RecurrenceObserved) { return $verdict }
 
-    $closedAt = ConvertFrom-CiScanTimestamp $Issue.closed_at
+    $closedAt = ConvertFrom-CiScanTimestamp (Get-CiScanFieldValue -Object $Issue -Name 'closed_at')
     if ($null -eq $closedAt) {
         $verdict.Reason = 'unparseable-closed-at'
         return $verdict

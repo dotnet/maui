@@ -516,9 +516,13 @@ function Get-CiScanHumanCommenters {
 
     $logins = @()
     foreach ($c in $comments) {
-        if ($null -eq $c -or $null -eq $c.user) { continue }
-        $login = [string]$c.user.login
-        $type = if ($c.user.PSObject.Properties.Name -contains 'type') { [string]$c.user.type } else { '' }
+        # `$null -eq $c.user` was the same dead guard as the timeline records: under
+        # StrictMode the read throws before the comparison, so a comment payload without
+        # `user` aborted the run rather than being skipped.
+        $user = Get-CiScanJsonField -Object $c -Name 'user'
+        if ($null -eq $user) { continue }
+        $login = [string](Get-CiScanJsonField -Object $user -Name 'login')
+        $type = [string](Get-CiScanJsonField -Object $user -Name 'type')
         if ($type -eq 'Bot') { continue }
         # `-like '*[bot]'` would be a WILDCARD CHARACTER CLASS: it matches any login
         # ending in b, o or t (dropping humans such as `rmarinho`) while NOT matching
@@ -966,7 +970,7 @@ function Invoke-CiScanReconcile {
         # Coverage is only meaningful once a canonical fingerprint and state marker
         # exist. Evaluating it for the legacy backlog would be ~200 pointless AzDO calls.
         $coverage = $null
-        $body = if ($issue.PSObject.Properties.Name -contains 'body') { [string]$issue.body } else { '' }
+        $body = if (Test-CiScanHasField -Object $issue -Name 'body') { [string]$issue.body } else { '' }
         $fp = Get-CiScanFingerprintMarker -Body $body -Config $config
         $stateResult = Get-CiScanStateMarker -Body $body -Config $config
         if ($null -ne $fp -and $stateResult.Status -eq 'ok') {

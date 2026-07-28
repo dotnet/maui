@@ -227,11 +227,66 @@ Describe 'Get-CiScanStateMarker' {
             (& $call).Status | Should -Be 'malformed' -Because "'$($shape.Key)' is corruption, not clean state"
         }
     }
+    It 'quarantines a marker whose JSON object carries no fields at all' {
+        # `{}` is the ONE degenerate shape the marker regex admits (it requires `\{.*?\}`,
+        # so a scalar, array or null payload never reaches ConvertFrom-Json). It is also
+        # the shape that broke the required-field loop: `.PSObject.Properties.Name` is
+        # itself a terminating read when the object has NO properties, so the check written
+        # to REJECT an empty marker was the check that aborted on one.
+        $call = { Get-CiScanStateMarker -Body '<!-- ci-scan-state: {} -->' -Config $script:Net11 }
+        $call | Should -Not -Throw -Because 'an empty marker object is corruption, not a crash'
+        (& $call).Status | Should -Be 'malformed'
+    }
     It 'still reads a well-formed runs counter' {
         $json = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[],"runs":7}'
         $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11
         $r.Status | Should -Be 'ok'
         $r.State.runs | Should -Be 7
+    }
+}
+
+Describe 'Every payload consumer survives a field-less object' {
+    <#
+        The unsafe existence check — `$x.PSObject.Properties.Name -contains 'f'` — reads
+        as a guard and IS one for every object that has at least one property. It is a
+        TERMINATING error for an object with none, which is exactly the input the guard
+        exists to reject. So the defect only ever fires on the case the author was
+        thinking about, which is why it survived review in eighteen places.
+
+        `ConvertFrom-Json '{}'` produces that shape, and every one of these consumers is
+        fed objects parsed from a GitHub or AzDO response. Each must fail closed on its
+        own terms rather than abort the per-issue loop, which has no try/catch.
+
+        This asserts the BEHAVIOUR. The static invariant in Invoke-CiScanReconcile.Tests.ps1
+        asserts the FORM, because a behaviour test can only cover the consumers that exist
+        today and the form is what the next one will copy.
+    #>
+    BeforeAll { $script:Fieldless = '{}' | ConvertFrom-Json }
+
+    It 'Test-CiScanIssueProvenance rejects it instead of throwing' {
+        $call = { Test-CiScanIssueProvenance -Issue $script:Fieldless -Config $script:Net11 }
+        $call | Should -Not -Throw
+        (& $call).Ok | Should -BeFalse -Because 'an object with no fields cannot prove provenance'
+    }
+    It 'Test-CiScanHumanTouched reports untouched instead of throwing' {
+        $call = { Test-CiScanHumanTouched -Issue $script:Fieldless }
+        $call | Should -Not -Throw
+        (& $call).Touched | Should -BeFalse
+    }
+    It 'Get-CiScanFixPrStatus ignores it instead of throwing' {
+        $call = { Get-CiScanFixPrStatus -IssueNumber 500 -PullRequests @($script:Fieldless) }
+        $call | Should -Not -Throw
+        (& $call).Blocked | Should -BeFalse -Because 'an unreadable PR record cannot reference anything'
+    }
+    It 'Get-CiScanIssueLabelNames returns no labels instead of throwing' {
+        $call = { Get-CiScanIssueLabelNames -Issue $script:Fieldless }
+        $call | Should -Not -Throw
+        (Get-CiScanCount (& $call)) | Should -Be 0
+    }
+    It 'Get-CiScanIssueVerdict escalates it instead of throwing' {
+        $call = { Get-CiScanIssueVerdict -Issue $script:Fieldless -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified @()) }
+        $call | Should -Not -Throw -Because 'the per-issue loop has no try/catch — one bad record must not end the survey'
+        (& $call).Decision | Should -Not -Be 'close'
     }
 }
 

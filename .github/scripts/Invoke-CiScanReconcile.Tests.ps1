@@ -1886,6 +1886,40 @@ Describe 'Static source invariants' {
             -Because 'a payload field must be read via Get-CiScanJsonField, or @()-normalised before .Count'
     }
 
+    It 'never spells an existence check as .PSObject.Properties.Name in either script' {
+        <#
+            The complement to the invariant above, and the one that has to span BOTH files.
+
+            `$x.PSObject.Properties.Name -contains 'f'` reads as a guard and behaves as one
+            for any object carrying at least one property. Member-enumeration of `.Name`
+            over an EMPTY property collection is a TERMINATING error under StrictMode — so
+            the check throws on precisely the degenerate object it was written to reject,
+            and passes on everything else. That is why eighteen instances of it survived
+            review: it is only wrong on the input the author had in mind.
+
+            `ConvertFrom-Json '{}'` produces that object, so a truncated state-marker write
+            was one step from aborting a whole survey.
+
+            The indexer form used by Test-CiScanHasField is total on every shape, so the
+            rule is absolute and needs no exemptions. Doc comments quote the unsafe spelling
+            deliberately, so strip comments before asserting — otherwise the invariant fails
+            on the text explaining itself.
+        #>
+        foreach ($f in @{ 'Invoke-CiScanReconcile.ps1' = $script:OrchestratorText
+                'CiScanReconcile.Core.ps1'             = $script:CoreText }.GetEnumerator()) {
+            $code = [regex]::Replace($f.Value, '(?s)<#.*?#>', '')
+            $code = (($code -split "`n") | Where-Object { $_ -notmatch '^\s*#' } |
+                ForEach-Object { $_ -replace '\s+#(?!\{).*$', '' }) -join "`n"
+
+            @([regex]::Matches($code, '\.PSObject\.Properties\.Name')) | Should -BeNullOrEmpty `
+                -Because "$($f.Key) must ask via Test-CiScanHasField, which is total where .Name enumeration is partial"
+        }
+
+        # Anti-vacuity: the comment-stripper must not be eating the whole file.
+        $stripped = [regex]::Replace($script:CoreText, '(?s)<#.*?#>', '')
+        $stripped | Should -Match 'Test-CiScanHasField' -Because 'the scan must still be looking at real code'
+    }
+
     It 'reads every AzDO payload field in Get-CiScanBuildCoverage through the accessor' {
         <#
             The behavioural tests can only pin the reads that are reachable TODAY. The
