@@ -871,7 +871,22 @@ function Test-CiScanHumanTouched {
     $signals = @()
 
     if ((Test-CiScanHasField -Object $Issue -Name 'milestone') -and $null -ne $Issue.milestone) { $signals += 'milestone' }
-    if ((Test-CiScanHasField -Object $Issue -Name 'assignees') -and @($Issue.assignees).Count -gt 0) { $signals += 'assignee' }
+    # The `$null -ne $Issue.assignees` half is what the `milestone` line above already had
+    # and this one did not. Without it, `"assignees": null` produces the SAME verdict as a
+    # genuinely assigned issue: `@($null)` is a one-element array containing $null, so
+    # `.Count` is 1 and the veto fires. The bug is invisible from the outside because
+    # both shapes report the identical `assignee` signal.
+    #
+    # The direction is safe -- a false 'human-owned' only ever SKIPS an issue -- but a
+    # veto that cannot be distinguished from a real one is still wrong: it is unfalsifiable
+    # from the report, and the report is the entire product in report-only mode.
+    #
+    # Note this deliberately screens the FIELD, not the entries. An `[null]` ENTRY -- an
+    # assignee that exists but cannot be attributed -- keeps the veto, matching how a
+    # comment with a null `user` counts AS human in Get-CiScanHumanCommenters. Absent
+    # data and unattributable data are different epistemic states and only the first
+    # means "nobody is assigned".
+    if ((Test-CiScanHasField -Object $Issue -Name 'assignees') -and $null -ne $Issue.assignees -and @($Issue.assignees).Count -gt 0) { $signals += 'assignee' }
 
     $labelNames = @(Get-CiScanIssueLabelNames -Issue $Issue)
     foreach ($name in $labelNames) {

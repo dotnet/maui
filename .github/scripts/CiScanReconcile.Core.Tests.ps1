@@ -775,6 +775,30 @@ Describe 'Test-CiScanHumanTouched' {
     It 'detects an assignee' {
         (Test-CiScanHumanTouched -Issue (New-TestIssue -Assignees @([pscustomobject]@{ login = 'someone' }))).Touched | Should -BeTrue
     }
+    It 'does not invent an assignee from a null assignees field' {
+        # `@($null).Count` is 1, so an explicit JSON `null` used to raise the SAME
+        # 'assignee' signal as a real assignee. Built from JSON rather than New-TestIssue
+        # because the helper coerces through `@($Assignees)` and cannot express the shape.
+        $nullField = '{"number":1,"title":"[ci-scan-net11] t","body":"","labels":[],"assignees":null,"milestone":null,"created_at":"2026-06-01T00:00:00Z","state":"open"}' | ConvertFrom-Json
+        $r = Test-CiScanHumanTouched -Issue $nullField
+
+        $r.Touched | Should -BeFalse -Because 'a null assignees field means nobody is assigned'
+        $r.Signals | Should -Not -Contain 'assignee'
+
+        # Anti-vacuity: the same fixture with a real assignee must still veto, so this
+        # cannot pass by having disabled assignee detection outright.
+        $assigned = '{"number":1,"title":"[ci-scan-net11] t","body":"","labels":[],"assignees":[{"login":"someone"}],"milestone":null,"created_at":"2026-06-01T00:00:00Z","state":"open"}' | ConvertFrom-Json
+        (Test-CiScanHumanTouched -Issue $assigned).Signals | Should -Contain 'assignee'
+    }
+    It 'keeps the veto for an assignee entry that exists but cannot be attributed' {
+        # A null ENTRY is not a null FIELD. Someone is assigned and the account is
+        # unreadable, which is the same epistemic state as a comment whose `user` is
+        # null — and that counts AS human. Absent data and unattributable data must not
+        # collapse onto the same answer.
+        $nullEntry = '{"number":1,"title":"[ci-scan-net11] t","body":"","labels":[],"assignees":[null],"milestone":null,"created_at":"2026-06-01T00:00:00Z","state":"open"}' | ConvertFrom-Json
+        (Test-CiScanHumanTouched -Issue $nullEntry).Touched |
+            Should -BeTrue -Because 'an unattributable assignee still means a human is on it'
+    }
     It 'detects triage/area/partner labels' {
         foreach ($l in @('s/triaged', 'area-controls', 'partner/syncfusion', 'p/0')) {
             (Test-CiScanHumanTouched -Issue (New-TestIssue -Labels @('ci-scan-net11', $l))).Touched |
