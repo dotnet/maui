@@ -540,7 +540,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void IMauiCarouselRecyclerView.UpdateFromPosition()
 		{
-			if (!_initialized)
+			// Only queue the initial-position pending scroll when looping is enabled: the queue
+			// is exclusively drained from loop-gated paths (LayoutReady and the scroll listener),
+			// so enqueuing it in the non-loop case (e.g. MauiCarouselRecyclerView2, or Loop=false)
+			// would leave a stale entry that is never flushed. The non-loop initial position is
+			// applied via the ScrollToItemPosition path below (and UpdateInitialPosition).
+			if (!_initialized && IsLoopEnabled)
 			{
 				_carouselViewLoopManager.AddPendingScrollTo(new ScrollToRequestEventArgs(Carousel.Position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false));
 			}
