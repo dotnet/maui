@@ -117,15 +117,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		// so reading them straight from the Context automatically tracks light/dark and any
 		// app-level M3 theme customization instead of duplicating hardcoded hex values here.
 		internal static Color GetM3BackgroundColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(Resource.Attribute.colorSurface)).ToColor();
+			ReadThemeColor(context, Resource.Attribute.colorSurface, DefaultBackgroundColor);
 		internal static Color GetM3ForegroundColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(Resource.Attribute.colorPrimary)).ToColor();
+			// colorOnSurface (not colorPrimary — that resolves to Material Purple on stock M3 themes).
+			// Matches the previously hardcoded M3 foreground of #1D1B20 / #E6E0E9.
+			ReadThemeColor(context, Resource.Attribute.colorOnSurface, DefaultForegroundColor);
 		internal static Color GetM3TitleColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface)).ToColor();
+			ReadThemeColor(context, Resource.Attribute.colorOnSurface, DefaultTitleColor);
 		internal static Color GetM3UnselectedColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant)).ToColor();
+			ReadThemeColor(context, Resource.Attribute.colorOnSurfaceVariant, DefaultUnselectedColor);
 		internal static Color GetM3BottomNavBackgroundColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(Resource.Attribute.colorSurface)).ToColor();
+			ReadThemeColor(context, Resource.Attribute.colorSurface, DefaultBottomNavigationViewBackgroundColor);
 
 		// Material 2 — MAUI's Maui.MainTheme.Base already declares colorPrimary/colorPrimaryDark/
 		// actionMenuTextColor with the same values previously hardcoded here. Reading them through
@@ -134,19 +136,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		// android:textColorPrimary and android:colorBackground come from the platform DayNight
 		// parent so they swap correctly in dark mode without extra branching.
 		internal static Color GetM2BackgroundColor(Context context) =>
-			IsDarkTheme
-				? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorPrimaryDark)).ToColor()
-				: new AColor(context.GetThemeAttrColor(Resource.Attribute.colorPrimary)).ToColor();
+			ReadThemeColor(context,
+				IsDarkTheme ? Resource.Attribute.colorPrimaryDark : Resource.Attribute.colorPrimary,
+				DefaultBackgroundColor);
 		internal static Color GetM2ForegroundColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(global::Android.Resource.Attribute.TextColorPrimary)).ToColor();
+			ReadThemeColor(context, global::Android.Resource.Attribute.TextColorPrimary, DefaultForegroundColor);
 		internal static Color GetM2TitleColor(Context context) =>
-			new AColor(context.GetThemeAttrColor(Resource.Attribute.actionMenuTextColor)).ToColor();
+			ReadThemeColor(context, Resource.Attribute.actionMenuTextColor, DefaultTitleColor);
 		internal static Color GetM2UnselectedColor(Context context) =>
 			GetM2TitleColor(context).MultiplyAlpha(180f / 255f);
 		internal static Color GetM2BottomNavBackgroundColor(Context context) =>
-			IsDarkTheme
-				? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorPrimaryDark)).ToColor()
-				: new AColor(context.GetThemeAttrColor(global::Android.Resource.Attribute.ColorBackground)).ToColor();
+			ReadThemeColor(context,
+				IsDarkTheme ? Resource.Attribute.colorPrimaryDark : global::Android.Resource.Attribute.ColorBackground,
+				DefaultBottomNavigationViewBackgroundColor);
+
+		// Reads a color from a theme attribute. Returns the supplied fallback when the attribute
+		// is not declared on the current theme — GetThemeAttrColor returns 0 (transparent) in that
+		// case, which would otherwise paint Shell chrome invisible on non-MAUI base themes.
+		static Color ReadThemeColor(Context context, int attr, Color fallback)
+		{
+			int raw = context.GetThemeAttrColor(attr);
+			return raw == 0 ? fallback : new AColor(raw).ToColor();
+		}
 
 		// Context-aware accessors used by the appearance trackers: resolve from the M3 theme
 		// attributes above when Material 3 is enabled, otherwise resolve from the M2 attributes
