@@ -1793,6 +1793,39 @@ Describe 'Static source invariants' {
             Where-Object { $_ -notmatch '^\s*#' } | ForEach-Object { ($_ -replace '\s+#(?!\{).*$', '') }) -join "`n"
     }
 
+    It 'reads every AzDO payload field in Get-CiScanBuildCoverage through the accessor' {
+        <#
+            The behavioural tests can only pin the reads that are reachable TODAY. The
+            `clean` filter's `result` read, for instance, is unreachable because the
+            filter above it already excludes records without that field — so restoring a
+            bare dot there breaks no test, and the next person to reorder those filters
+            gets no warning at all.
+
+            That borrowed safety is precisely the coupling that produced four separate
+            defects on this path: a read that is fine only because of something adjacent
+            to it. This asserts the property directly instead — no payload field in this
+            function is dotted, whether or not the unguarded path is currently reachable.
+
+            `$Config.Pipelines` is exempt: Get-CiScanTwinConfig builds it solely from the
+            in-source $script:CiScanTwins literals, so it never crosses a trust boundary
+            and can never be missing a property.
+        #>
+        $start = $script:OrchestratorText.IndexOf('function Get-CiScanBuildCoverage')
+        $start | Should -BeGreaterThan 0 -Because 'the function must still be findable by name'
+        $end = $script:OrchestratorText.IndexOf("`n#endregion", $start)
+        $end | Should -BeGreaterThan $start
+        $body = $script:OrchestratorText.Substring($start, $end - $start)
+
+        # Strip prose first: the comments here deliberately quote the unsafe forms.
+        $code = [regex]::Replace($body, '(?s)<#.*?#>', '')
+        $code = (($code -split "`n") |
+            Where-Object { $_ -notmatch '^\s*#' -and $_ -notmatch '\$Config\.Pipelines' }) -join "`n"
+
+        $offenders = @([regex]::Matches($code, '\$(?:_|build|timeline)\.[A-Za-z_]+') |
+            ForEach-Object { $_.Value } | Sort-Object -Unique)
+        $offenders | Should -BeNullOrEmpty -Because 'AzDO payload fields must go through Get-CiScanJsonField'
+    }
+
     It 'routes every mutating gh subcommand through Invoke-GhWrite' {
         # `gh issue close/edit/comment/reopen` and `gh api -X` are the mutating shapes.
         # They may appear only inside an Invoke-GhWrite -GhArgs argument list.
