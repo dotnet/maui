@@ -1363,6 +1363,8 @@ if (-not $SkipE2E) {
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
+    Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
+        -Expected $false -Actual ([bool]($releaseWorkflowText -match 'closedAt.*updatedAt|updatedAt.*closedAt'))
     Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
     Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
@@ -7450,12 +7452,25 @@ $missingPinsCheck = Get-ComponentPinsReadinessCheck -Pins $null `
 Assert-Eq -Label "component pins failure emits UNKNOWN check" `
     -Expected 'UNKNOWN' -Actual $missingPinsCheck.Status
 Assert-Eq -Label "component pins failure names unverified SDK/VMR evidence" `
-    -Expected $true -Actual ([bool]($missingPinsCheck.Details -match 'SDK/VMR builds are unverified'))
+    -Expected $true -Actual ([bool]($missingPinsCheck.Details -match 'SDK/VMR builds are not fully verified'))
 $missingPinsMarkdown = Get-ComponentPinsUnavailableMarkdown
 Assert-Eq -Label "component pins failure still renders mandatory local VMR guidance" `
     -Expected $true -Actual ([bool]($missingPinsMarkdown -match 'mandatory local SDK/VMR reconciliation'))
-Assert-Eq -Label "available component pins do not emit UNKNOWN check" `
-    -Expected $true -Actual ($null -eq (Get-ComponentPinsReadinessCheck -Pins ([pscustomobject]@{ Vmr = @{} }) -SurveyRef 'x'))
+$partialPinsCheck = Get-ComponentPinsReadinessCheck -Pins ([pscustomobject]@{
+    Vmr = [pscustomobject]@{ Version = '11.0.100-preview.7.1'; Sha = ('a' * 40 -join '') }
+    Android = $null
+    Macios = [pscustomobject]@{ Version = '26.5.1-net11-p7'; Sha = '' }
+}) -SurveyRef 'x'
+Assert-Eq -Label "partial component pins remain UNKNOWN" -Expected 'UNKNOWN' -Actual $partialPinsCheck.Status
+Assert-Eq -Label "partial component pins identify missing component and field" -Expected $true `
+    -Actual ([bool]($partialPinsCheck.Details -match 'Android' -and $partialPinsCheck.Details -match 'Macios\.Sha'))
+$completePins = [pscustomobject]@{
+    Vmr = [pscustomobject]@{ Version = '11.0.100-preview.7.1'; Sha = ('a' * 40 -join '') }
+    Android = [pscustomobject]@{ Version = '37.0.0-ci.main.1'; Sha = ('b' * 40 -join '') }
+    Macios = [pscustomobject]@{ Version = '26.5.1-net11-p7'; Sha = ('c' * 40 -join '') }
+}
+Assert-Eq -Label "complete component pins do not emit UNKNOWN check" `
+    -Expected $true -Actual ($null -eq (Get-ComponentPinsReadinessCheck -Pins $completePins -SurveyRef 'x'))
 
 # The report scope must follow the preview lifecycle: after Preview N is cut,
 # only PRs targeting its release branch belong in its report. net<N>.0 is queried

@@ -229,6 +229,9 @@ jobs:
                   branchExists: .branchExists,
                   surveyRef:    .surveyRef,
                   mode:         .mode,
+                  # Detection-time diagnostics only. Never use these fields for
+                  # lifecycle gating: the generated BODY_FILE markers are the
+                  # authoritative report-time state after refs/tags may move.
                   hotfixInProgress: (.hotfixInProgress // false),
                   hotfixVersion: (.hotfixVersion // ""),
                   hotfixCommit: (.hotfixCommit // ""),
@@ -452,9 +455,9 @@ jobs:
               --repo "${{ github.repository }}" \
               --state closed \
               --search "in:body \"${GENERATION_MARKER}\"" \
-              --json number,closedAt,updatedAt \
+              --json number,closedAt \
               --limit 10 \
-              --jq '[.[] | select((.closedAt // "") >= (.updatedAt // ""))] | sort_by(.closedAt) | last | .number // empty')
+              --jq 'sort_by(.closedAt) | last | .number // empty')
             if [ -n "$CLOSED_GENERATION" ]; then
               echo "Tracker generation ${GENERATION_MARKER} was intentionally closed as #${CLOSED_GENERATION} — not recreating."
               exit 0

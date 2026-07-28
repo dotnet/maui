@@ -1764,9 +1764,36 @@ function Get-ComponentPinsReadinessCheck {
         [string]$SurveyRef
     )
 
-    if ($Pins) { return $null }
+    $missing = [System.Collections.Generic.List[string]]::new()
+    foreach ($component in @('Vmr', 'Android', 'Macios')) {
+        $pin = if ($Pins -is [System.Collections.IDictionary]) {
+            if ($Pins.Contains($component)) { $Pins[$component] } else { $null }
+        } elseif ($Pins -and $Pins.PSObject.Properties[$component]) {
+            $Pins.$component
+        } else {
+            $null
+        }
+        if (-not $pin) {
+            [void]$missing.Add($component)
+            continue
+        }
+        foreach ($fieldName in @('Version', 'Sha')) {
+            $fieldValue = if ($pin -is [System.Collections.IDictionary]) {
+                if ($pin.Contains($fieldName)) { [string]$pin[$fieldName] } else { '' }
+            } elseif ($pin.PSObject.Properties[$fieldName]) {
+                [string]$pin.$fieldName
+            } else {
+                ''
+            }
+            if ([string]::IsNullOrWhiteSpace($fieldValue)) {
+                [void]$missing.Add("$component.$fieldName")
+            }
+        }
+    }
+    if ($missing.Count -eq 0) { return $null }
+    $missingText = $missing -join ', '
     return New-Check -Area "Component pins (eng/Version.Details.xml)" -Status "UNKNOWN" `
-        -Details "Could not read or parse component pins from ``$SurveyRef``. The bundled Android, macOS/iOS, and SDK/VMR builds are unverified." `
+        -Details "Component pin evidence from ``$SurveyRef`` is incomplete (missing: $missingText). The bundled Android, macOS/iOS, and SDK/VMR builds are not fully verified." `
         -NextAction "Restore access to ``eng/Version.Details.xml``, resolve the official SDK/runtime build locally, and rerun readiness before treating component selection as verified."
 }
 
