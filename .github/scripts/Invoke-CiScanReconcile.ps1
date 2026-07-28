@@ -232,6 +232,39 @@ function Invoke-HttpGetJson {
     }
 }
 
+function Get-CiScanJsonField {
+    <#
+    .SYNOPSIS
+        Reads one property off a parsed AzDO payload without trusting its shape.
+
+    .DESCRIPTION
+        This script runs under `Set-StrictMode -Version Latest`, where reading a property
+        that does not exist is a TERMINATING error rather than `$null`. Every AzDO body
+        reaches us through `Invoke-RestMethod`, which only guarantees the shape when the
+        service returns the JSON we expect: a 200 carrying an error object, an HTML
+        interstitial (parsed as a bare [string]), or an api-version change all produce an
+        object with no `definition`/`sourceBranch`/`status` at all.
+
+        Dotting into those directly throws out of the caller's per-issue loop and aborts
+        the whole run — the precise opposite of the fail-closed contract the coverage
+        layer documents. Returning `$null` lets each call site fall through to its own
+        existing "unverifiable" branch instead. `Invoke-HttpGetJson` already fails closed
+        for every NON-200; this is the same guarantee for a 200 whose body is not what we
+        asked for.
+    #>
+    [CmdletBinding()]
+    param([object]$Object, [Parameter(Mandatory)][string]$Name)
+
+    if ($null -eq $Object) { return $null }
+    # Index the property collection rather than testing `.Name -notcontains`: on an object
+    # with NO properties the `.Name` member-enumeration itself throws under StrictMode,
+    # which would reintroduce the very failure this helper exists to prevent. The indexer
+    # returns $null for an absent name on every input shape, including a bare [string].
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($null -eq $prop) { return $null }
+    return $prop.Value
+}
+
 function Invoke-GhWrite {
     <#
     .SYNOPSIS
@@ -525,7 +558,10 @@ function Get-CiScanBuildCoverage {
         "verified absences".
 
         Any error, any missing build, any unresolvable leg sets `Unverifiable = $true`,
-        which the core converts to zero counted absences.
+        which the core converts to zero counted absences. That includes a 200 whose body
+        is not a build at all: every field is read through `Get-CiScanJsonField`, because
+        under `Set-StrictMode -Version Latest` dotting a missing property would abort the
+        caller's per-issue loop rather than quarantine this one build.
     #>
     [CmdletBinding()]
     param(
@@ -566,17 +602,38 @@ function Get-CiScanBuildCoverage {
         $build = Invoke-HttpGetJson -Url "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId`?api-version=7.1"
         if ($null -eq $build) { $result.Unverifiable = $true; $result.Reason = "build-fetch-failed:$buildId"; return $result }
 
-        if ([int]$build.definition.id -ne $definitionId) { $result.Unverifiable = $true; $result.Reason = "definition-mismatch:$buildId"; return $result }
-        if ([string]$build.sourceBranch -cne $expectedBranch) { $result.Unverifiable = $true; $result.Reason = "branch-mismatch:$buildId"; return $result }
-        if ([string]$build.status -ne 'completed') { continue }
-        if ($d.AcceptedBuildResults -notcontains [string]$build.result) { continue }
+        # Every field below is read through Get-CiScanJsonField, not dotted directly: under
+        # `Set-StrictMode -Version Latest` a MISSING property is a terminating error, so a
+        # 200 whose body is not a build (an error object, an HTML interstitial parsed as a
+        # bare string, an api-version shape change) aborted the entire run here instead of
+        # marking this one build unverifiable. Invoke-HttpGetJson already fails closed for
+        # every non-200; this extends the same guarantee to a 200 with the wrong shape.
+        #
+        # `id` additionally needs TryParse rather than [int]: a present-but-non-numeric or
+        # overflowing value is a terminating cast error even when the property exists. An
+        # unreadable id is reported as its own reason rather than as a mismatch, which
+        # would blame the wrong pipeline for what is really a malformed payload.
+        $buildDefinitionId = 0
+        $rawDefinitionId = Get-CiScanJsonField -Object (Get-CiScanJsonField -Object $build -Name 'definition') -Name 'id'
+        if (-not [int]::TryParse([string]$rawDefinitionId, [ref]$buildDefinitionId)) {
+            $result.Unverifiable = $true; $result.Reason = "definition-unparseable:$buildId"; return $result
+        }
+        if ($buildDefinitionId -ne $definitionId) { $result.Unverifiable = $true; $result.Reason = "definition-mismatch:$buildId"; return $result }
+        if ([string](Get-CiScanJsonField -Object $build -Name 'sourceBranch') -cne $expectedBranch) { $result.Unverifiable = $true; $result.Reason = "branch-mismatch:$buildId"; return $result }
+        if ([string](Get-CiScanJsonField -Object $build -Name 'status') -ne 'completed') { continue }
+        if ($d.AcceptedBuildResults -notcontains [string](Get-CiScanJsonField -Object $build -Name 'result')) { continue }
 
         $timeline = Invoke-HttpGetJson -Url "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId/timeline`?api-version=7.1"
-        if ($null -eq $timeline -or -not ($timeline.PSObject.Properties.Name -contains 'records')) {
+        # Same helper, same reason: the previous `$timeline.PSObject.Properties.Name -contains`
+        # form is itself unsafe under StrictMode, because `.Name` member-enumeration throws
+        # on a payload with NO properties (a 200 carrying `{}`). A present-but-null `records`
+        # now also fails closed rather than degrading into a one-element array of $null.
+        $timelineRecords = Get-CiScanJsonField -Object $timeline -Name 'records'
+        if ($null -eq $timeline -or $null -eq $timelineRecords) {
             $result.Unverifiable = $true; $result.Reason = "timeline-fetch-failed:$buildId"; return $result
         }
 
-        $records = @($timeline.records)
+        $records = @($timelineRecords)
         $allLegsRan = $true
         foreach ($leg in $Legs) {
             $key = ($leg -split '—')[0].Trim()

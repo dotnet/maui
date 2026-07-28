@@ -1301,6 +1301,125 @@ Describe 'AzDO coverage re-derivation' {
         finally { $script:SkipAzdo = $false }
     }
 
+    <#
+        `definition.id` is AzDO-supplied and was dotted directly under
+        `Set-StrictMode -Version Latest`, where BOTH a malformed value and an absent
+        property are TERMINATING errors. The call site sits in the bare per-issue foreach
+        with no try, so one unexpected payload aborted the entire reconcile run instead of
+        quarantining that build — the opposite of what this function's contract promises
+        ("Any error ... sets Unverifiable = $true").
+
+        StrictMode is what makes the absent cases matter: without it `[int]$null` is 0 and
+        would merely trip the mismatch branch. With it, a 200 carrying an AzDO error object
+        — which has no `definition` at all — was enough to kill the run, and that is far
+        more reachable than a non-numeric id. Both are pinned below.
+    #>
+    Context 'a build payload of the wrong shape is quarantined, not thrown' {
+        BeforeAll {
+            # The well-formed build every case below mutates one field of.
+            function New-MockBuild {
+                param([object]$Definition = [pscustomobject]@{ id = 313 })
+                return [pscustomobject]@{
+                    definition   = $Definition
+                    sourceBranch = 'refs/heads/net11.0'
+                    status       = 'completed'
+                    result       = 'succeeded'
+                }
+            }
+        }
+
+        BeforeEach {
+            $script:MockTimeline = [pscustomobject]@{ records = @(
+                    [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+            Mock Invoke-HttpGetJson {
+                if ($Url -like '*/timeline*') { return $script:MockTimeline }
+                return $script:MockBuild
+            }
+        }
+
+        It 'returns unverifiable instead of throwing for an unreadable definition id' {
+            foreach ($case in @(
+                    @{ Def = [pscustomobject]@{ id = 'abc' }; Label = 'non-numeric' },
+                    @{ Def = [pscustomobject]@{ id = '99999999999' }; Label = 'overflows Int32' },
+                    @{ Def = [pscustomobject]@{ }; Label = 'id property absent' },
+                    @{ Def = $null; Label = 'definition null' })) {
+                $script:MockBuild = New-MockBuild -Definition $case.Def
+                $c = $null
+                { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw -Because $case.Label
+                $c = $script:Probe
+                $c.Unverifiable | Should -BeTrue -Because $case.Label
+                $c.Reason | Should -BeExactly 'definition-unparseable:42'
+                (Get-CiScanCount $c.VerifiedAbsentBuilds) | Should -Be 0
+            }
+        }
+
+        <#
+            The most reachable case by far: AzDO answers 200 with an error object, or a
+            proxy returns an HTML page that Invoke-RestMethod hands back as a bare string.
+            Neither has a `definition`, and neither is a non-200, so Invoke-HttpGetJson's
+            own fail-closed path never sees it.
+        #>
+        It 'returns unverifiable for a 200 whose body is not a build at all' {
+            foreach ($body in @([pscustomobject]@{ message = 'TF400813'; typeName = 'Error' },
+                    '<html><body>Sign in</body></html>')) {
+                $script:MockBuild = $body
+                $c = $null
+                { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw
+                $c = $script:Probe
+                $c.Unverifiable | Should -BeTrue
+                $c.Reason | Should -BeExactly 'definition-unparseable:42'
+            }
+        }
+
+        It 'does not count a build whose shape breaks after the definition check' {
+            foreach ($field in @('sourceBranch', 'status', 'result')) {
+                $b = New-MockBuild
+                $b.PSObject.Properties.Remove($field)
+                $script:MockBuild = $b
+                $c = $null
+                { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw -Because "missing $field"
+                $c = $script:Probe
+                (Get-CiScanCount $c.VerifiedAbsentBuilds) | Should -Be 0 -Because "missing $field"
+            }
+        }
+
+        <#
+            The timeline guard had the same defect one fetch later: testing
+            `.PSObject.Properties.Name -contains` throws on a payload with no properties
+            at all, so a 200 carrying `{}` aborted the run instead of failing this build
+            closed. A present-but-null `records` is also rejected now, rather than
+            degrading into a one-element array of $null.
+        #>
+        It 'returns unverifiable for a timeline payload of the wrong shape' {
+            foreach ($tl in @([pscustomobject]@{ }, [pscustomobject]@{ records = $null },
+                    [pscustomobject]@{ message = 'TF400813' })) {
+                $script:MockBuild = New-MockBuild
+                $script:MockTimeline = $tl
+                $c = $null
+                { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw
+                $c = $script:Probe
+                $c.Unverifiable | Should -BeTrue
+                $c.Reason | Should -BeExactly 'timeline-fetch-failed:42'
+            }
+        }
+
+        It 'still reports a plain mismatch when the id is well-formed but belongs elsewhere' {
+            $script:MockBuild = New-MockBuild -Definition ([pscustomobject]@{ id = 999 })
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeTrue
+            $c.Reason | Should -BeExactly 'definition-mismatch:42'
+        }
+
+        It 'is unchanged for a well-formed id, whether numeric or a numeric string' {
+            foreach ($good in @(313, '313')) {
+                $script:MockBuild = New-MockBuild -Definition ([pscustomobject]@{ id = $good })
+                $c = Invoke-CoverageForFixtureLeg
+                $c.Unverifiable | Should -BeFalse
+                $c.VerifiedAbsentBuilds | Should -Contain 42
+            }
+        }
+    }
+
     It 'refuses to fetch a URL outside the AzDO allow-list' {
         { Invoke-HttpGetJson -Url 'https://evil.example.com/steal' } |
             Should -Throw -ExpectedMessage '*non-allowlisted*'
