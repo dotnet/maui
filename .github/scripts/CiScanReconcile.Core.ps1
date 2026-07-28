@@ -1068,7 +1068,14 @@ function Get-CiScanIssueVerdict {
     $verdict.Pipeline = if ($fp) { $fp.Pipeline } else { Get-CiScanPipelineFromBody -Body $body -Config $Config }
     $verdict.Legs = @(Get-CiScanAffectedLegs -Body $body | Where-Object { $null -ne $_ })
     $rate = Get-CiScanRecurrenceRate -Body $body
-    $verdict.RecurrenceRate = if ($null -eq $rate) { $d.DefaultRecurrenceRate } else { $rate }
+    # Record the rate that was actually measured, including `$null` for "no usable
+    # Occurrences line". Substituting DefaultRecurrenceRate here used to FABRICATE a
+    # reading: the verdict claimed a measured 0.30 while RequiredAbsences was 25, and
+    # 0.30 yields 9 — so the two fields disagreed by a factor of three and the number
+    # shown was the ordinary default, giving no sign that the fail-closed path had
+    # fired at all. Inventing a plausible value is worse than reporting none, which is
+    # the same reason a malformed marker is quarantined rather than coerced.
+    $verdict.RecurrenceRate = $rate
     $verdict.RequiredAbsences = Get-CiScanRequiredAbsences -RecurrenceRate $rate
 
     $createdAt = ConvertFrom-CiScanTimestamp (Get-CiScanFieldValue -Object $Issue -Name 'created_at')

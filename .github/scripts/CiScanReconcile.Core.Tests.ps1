@@ -839,6 +839,36 @@ Describe 'Get-CiScanIssueVerdict — gates' {
         $baseline.Decision | Should -Be 'candidate'
     }
 
+    It 'reports the recurrence rate it measured, never a plausible substitute' {
+        # The verdict used to record DefaultRecurrenceRate whenever the Occurrences line
+        # was missing or malformed. That did not merely lose the reading, it invented
+        # one: 0.30 sitting beside RequiredAbsences = 25, when 0.30 actually yields 9.
+        # Anyone reconciling the two numbers would find them irreconcilable, and 0.30 is
+        # the ordinary default, so nothing distinguished "recurrence was average" from
+        # "recurrence was unreadable and we failed closed". Assert the general property —
+        # the pair must always be self-consistent — rather than the one substitution,
+        # so any future fabrication is caught wherever it is introduced.
+        $canonical = New-CanonicalBody -Occurrences '3 in last 10 builds' -StateJson (New-StateJson -Absent (1..20))
+        $shapes = @{
+            'well-formed'      = $canonical
+            'malformed line'   = New-CanonicalBody -Occurrences 'lots, recently' -StateJson (New-StateJson -Absent (1..20))
+            'no Occurrences'   = ($canonical -replace '(?m)^- \*\*Occurrences\*\*.*\r?\n', '')
+        }
+
+        foreach ($name in $shapes.Keys) {
+            $v = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body $shapes[$name]) `
+                -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
+            $derived = Get-CiScanRequiredAbsences -RecurrenceRate $v.RecurrenceRate
+            $derived | Should -Be $v.RequiredAbsences -Because "$name must report a rate that reproduces its own bar"
+        }
+
+        # And the unreadable shapes must say so, rather than naming a number.
+        $malformed = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body $shapes['malformed line']) `
+            -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
+        $malformed.RecurrenceRate | Should -BeNullOrEmpty
+        $malformed.RequiredAbsences | Should -Be (Get-CiScanDefaults).MaxRequiredAbsences
+    }
+
     It 'counts only builds the reconciler independently verified, not what the marker claimed' {
         # The marker claims 20 absences; independent re-derivation confirms 2.
         $v = Get-CiScanIssueVerdict -Issue $script:CanonicalIssue -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified @(1, 2))
