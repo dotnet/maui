@@ -563,9 +563,10 @@
 
     </Target>
 
-    <!-- A partial obj/cache restore can leave the font stamp while losing a copied font.
-         Remove the stamp when an expected copy is missing so ProcessMauiFonts restores it.
-         Removed fonts are absent from @(MauiFont), so stale files are not re-exposed. -->
+    <!-- A partial obj/cache restore can leave the font stamp while losing a copied font
+         or the iOS partial manifest. Remove the stamp when an expected output is missing
+         so ProcessMauiFonts restores it. Removed fonts are absent from @(MauiFont), so
+         stale files are not re-exposed. -->
     <Target Name="_HealProcessedMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true' And Exists('$(_MauiFontStampFile)')"
         BeforeTargets="ProcessMauiFonts"
@@ -573,6 +574,9 @@
         <ItemGroup>
             <_MauiExpectedProcessedFont Include="@(MauiFont->'$(_MauiIntermediateFonts)%(Filename)%(Extension)'->Distinct())" />
             <_MauiMissingProcessedFont Include="@(_MauiExpectedProcessedFont)" Condition="!Exists('%(_MauiExpectedProcessedFont.Identity)')" />
+            <_MauiMissingProcessedFont
+                Include="$(_MauiIntermediateFonts)MauiInfo.plist"
+                Condition="'$(_ResizetizerIsiOSApp)' == 'True' And '@(MauiFont)' != '' And !Exists('$(_MauiIntermediateFonts)MauiInfo.plist')" />
         </ItemGroup>
         <Delete Files="$(_MauiFontStampFile)" Condition="'@(_MauiMissingProcessedFont)' != ''" />
     </Target>

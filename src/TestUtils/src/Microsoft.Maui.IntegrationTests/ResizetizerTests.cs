@@ -243,6 +243,7 @@ public class ResizetizerTests : BaseBuildTest
 			  <Target Name="VerifyCustomBackendFonts">
 			    <Error Condition="'$(ExpectNoProcessedFonts)' != 'true' And '@(MauiProcessedFont)' == ''" Text="Custom backends must receive processed fonts collected from references." />
 			    <Error Condition="'$(ExpectNoProcessedFonts)' == 'true' And '@(MauiProcessedFont)' != ''" Text="Removed fonts must not remain in the processed font contract." />
+			    <Error Condition="'$(ExpectFontPlist)' == 'true' And '@(PartialAppManifest)' == ''" Text="iOS font processing must expose the generated partial app manifest." />
 			    <WriteLinesToFile File="$(_MauiIntermediateImages)late-import.fonts" Lines="@(MauiProcessedFont)" Overwrite="true" />
 			  </Target>
 			  <Target Name="VerifyCustomBackendAssets">
@@ -318,6 +319,27 @@ public class ResizetizerTests : BaseBuildTest
 			"ProcessMauiFonts should rerun when an expected copied font is missing.");
 		Assert.True(File.Exists(processedFontPath), $"Missing processed font was not restored: {processedFontPath}");
 		Assert.Equal(processedFont, Assert.Single(File.ReadAllLines(fontsFile)));
+
+		// iOS font processing also produces MauiInfo.plist outside the target's Outputs.
+		// A partial cache restore that loses only this side artifact must invalidate the
+		// retained stamp and restore both the file and PartialAppManifest contract.
+		var iosFontBuildProps = BuildProps;
+		iosFontBuildProps.Add("_ResizetizerIsiOSApp=true");
+		iosFontBuildProps.Add("ExpectFontPlist=true");
+		File.Delete(fontStampFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: iosFontBuildProps, output: _output),
+			"Custom backend project failed to bootstrap simulated iOS font registration.");
+		var fontPlistFile = Path.Combine(Path.GetDirectoryName(processedFontPath)!, "MauiInfo.plist");
+		Assert.True(File.Exists(fontPlistFile), $"iOS font partial manifest was not created: {fontPlistFile}");
+
+		var plistRecoverySentinel = DateTime.UtcNow.AddMinutes(1);
+		File.SetLastWriteTimeUtc(fontStampFile, plistRecoverySentinel);
+		File.Delete(fontPlistFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: iosFontBuildProps, output: _output),
+			"Custom backend project failed after deleting only the iOS font partial manifest.");
+		Assert.True(File.GetLastWriteTimeUtc(fontStampFile) < plistRecoverySentinel,
+			"ProcessMauiFonts should rerun when the iOS font partial manifest is missing.");
+		Assert.True(File.Exists(fontPlistFile), $"Missing iOS font partial manifest was not restored: {fontPlistFile}");
 
 		File.WriteAllText(
 			projectFile,
