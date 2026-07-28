@@ -44,6 +44,9 @@ namespace Microsoft.Maui.Hosting
 		/// this method blocks until asynchronous provider disposal completes. If provider
 		/// disposal requires the calling thread to remain responsive, such as explicitly
 		/// dispatching work to the UI thread, use <see cref="DisposeAsync"/> instead.
+		/// Disposal runs at most once: only the first caller to <see cref="Dispose"/> or
+		/// <see cref="DisposeAsync"/> performs teardown; a concurrent or later caller returns
+		/// immediately without observing the in-flight disposal's completion or exceptions.
 		/// </remarks>
 		public void Dispose()
 		{
@@ -92,6 +95,13 @@ namespace Microsoft.Maui.Hosting
 		}
 
 		/// <inheritdoc />
+		/// <remarks>
+		/// Disposal runs at most once: only the first caller to <see cref="Dispose"/> or
+		/// <see cref="DisposeAsync"/> performs teardown. A concurrent or later caller returns
+		/// immediately with a completed <see cref="ValueTask"/> without awaiting the in-flight
+		/// disposal and without observing any exception it throws. If you need to observe
+		/// completion or exceptions, dispose from a single owner and await that call.
+		/// </remarks>
 		public async ValueTask DisposeAsync()
 		{
 			if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)

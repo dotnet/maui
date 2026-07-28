@@ -202,6 +202,15 @@ namespace Microsoft.Maui.Hosting
 
 			public void Initialize(IServiceProvider services)
 			{
+				// The bridge lock is intentionally held across the whole of InitializeCore so that
+				// the process-global Essentials facades (Preferences.Default, AppInfo.Current, ...)
+				// are bridged atomically with respect to other overlapping MauiApp builds/disposals;
+				// this is what serializes concurrent initialization. The lock is re-entrant on the
+				// initializing thread, so a ConfigureEssentials delegate or DI factory that reads a
+				// bridged facade re-acquires it safely. The only deadlock is contrived: a user
+				// delegate/factory that synchronously blocks on a *different* thread which reads a
+				// bridged facade. Do not perform such cross-thread blocking waits from Essentials
+				// configuration callbacks.
 				lock (s_essentialsBridgeLock)
 					InitializeCore(services);
 			}
@@ -740,6 +749,12 @@ namespace Microsoft.Maui.Hosting
 				{
 					lock (FacadeBridgeState<T>.SyncRoot)
 					{
+						// Invariant: every bridged-facade mutation (SetDefault/SetCurrent, via
+						// TrackAndSet) must run under FacadeBridgeState<T>.SyncRoot. The get->check->set
+						// restoration below (read current, verify this assignment still owns it, restore
+						// Previous) is only atomic against those mutations while that invariant holds.
+						// Bridging a facade through a setter without taking this lock would reopen a
+						// TOCTOU window that could clobber a concurrent replacement with the predecessor.
 						var index = FacadeBridgeState<T>.Assignments.IndexOf(assignment);
 						if (index < 0)
 							return;
