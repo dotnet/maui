@@ -239,6 +239,10 @@ internal class FlyoutContainerManager
 		parentVC.SetNeedsStatusBarAppearanceUpdate();
 		parentVC.SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
+		// A newly-attached Detail VC (and its UINavigationBar, if any) needs the
+		// current flow direction applied — it won't have picked it up otherwise.
+		ApplySemanticContentAttribute();
+
 		ToggleAccessibilityElementsHidden();
 		NotifyLeftBarButtonNeedsUpdate();
 	}
@@ -324,9 +328,31 @@ internal class FlyoutContainerManager
 	internal void UpdateFlowDirection(FlowDirection direction)
 	{
 		_flowDirection = direction;
+		ApplySemanticContentAttribute();
+
 		if (_initialLayoutFinished)
 		{
 			LayoutPanes(animated: false);
+		}
+	}
+
+	/// <summary>
+	/// Mirrors the Detail's UINavigationController view and NavigationBar for RTL/LTR,
+	/// since neither inherits SemanticContentAttribute from its parent view.
+	/// </summary>
+	void ApplySemanticContentAttribute()
+	{
+		if (_detailVC is UINavigationController navController)
+		{
+			var semanticAttr = IsRTL
+				? UISemanticContentAttribute.ForceRightToLeft
+				: UISemanticContentAttribute.ForceLeftToRight;
+
+			if (navController.View is not null)
+			{
+				navController.View.SemanticContentAttribute = semanticAttr;
+			}
+			navController.NavigationBar.SemanticContentAttribute = semanticAttr;
 		}
 	}
 

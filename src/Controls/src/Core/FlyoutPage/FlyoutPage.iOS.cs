@@ -248,6 +248,19 @@ namespace Microsoft.Maui.Controls
                 var flowDirection = (view as IVisualElementController)?.EffectiveFlowDirection.ToFlowDirection()
                     ?? v.FlowDirection;
                 manager.UpdateFlowDirection(flowDirection);
+
+                // NavigationPage isn't auto-walked by Core's FlowDirection propagation, so
+                // manually re-trigger it on each page in the navigation stack.
+                if (view is FlyoutPage fp && fp.Detail is NavigationPage detailNavPage)
+                {
+                    foreach (var page in detailNavPage.Navigation.NavigationStack)
+                    {
+                    	if (page?.Handler is IElementHandler pageHandler)
+                    	{
+                    		pageHandler.UpdateValue(nameof(IView.FlowDirection));
+                    	}
+                    }
+                }
             }
         }
     }
