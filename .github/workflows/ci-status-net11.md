@@ -597,6 +597,13 @@ steps:
                   evidence.push(
                     `===== Helix console ${jobId}/${String(workItem.Name || 'unknown')} =====`,
                     consoleLog);
+                  // A DeviceTests submission task can be green in the AzDO timeline
+                  // while its Helix work items failed, so the first loop cannot see
+                  // this failure. Fold it in here — before the set is emitted below —
+                  // or the log carries real failure evidence yet stays absence-
+                  // skippable, which is the fail-open failed_leaf_log_ids exists to
+                  // close.
+                  failedLeafLogIds.add(logId);
                 }
               }
             }
@@ -817,7 +824,9 @@ pattern occurs in each one. Every failed-leaf
 log, plus every non-skipped `DeviceTests... (Unix|Windows)` Helix submission log
 in `maui-pr-devicetests` (including green AzDO jobs), must appear in at least one
 signature. The authoritative set is `required_log_ids` in the frozen evidence
-file, and `failed_leaf_log_ids` marks the subset that genuinely failed. When an
+file, and `failed_leaf_log_ids` marks the subset that genuinely failed — including
+a `DeviceTests... (Unix|Windows)` submission log that is green in the AzDO
+timeline but whose Helix work items failed. When an
 inspected source log yields no failure signature, record a
 deterministic skipped entry for that task/log with
 `signature-not-in-fetched-log`; never omit the source log from coverage. That
