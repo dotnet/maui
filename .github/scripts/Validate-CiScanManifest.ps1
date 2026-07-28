@@ -268,6 +268,31 @@ function Get-TrustedEvidenceMatchCount {
     return $trustedMatchCount
 }
 
+function Assert-TrustedEvidenceAbsent {
+    param(
+        [Parameter(Mandatory = $true)][string]$MatchPattern,
+        [Parameter(Mandatory = $true)][string]$PipelineName,
+        [Parameter(Mandatory = $true)][Int64]$BuildId,
+        [Parameter(Mandatory = $true)][string]$Fingerprint,
+        [Parameter(Mandatory = $true)][Int64[]]$SourceLogIds,
+        [Parameter(Mandatory = $true)][string]$TrustedEvidencePath
+    )
+
+    foreach ($sourceLogId in $SourceLogIds) {
+        $evidenceFile = Join-Path `
+            $TrustedEvidencePath `
+            "$PipelineName/$BuildId-$sourceLogId.log"
+        if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
+            throw "Trusted evidence file is missing for '$Fingerprint' source log $sourceLogId."
+        }
+        foreach ($line in [System.IO.File]::ReadLines($evidenceFile)) {
+            if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+                throw "signature-not-in-fetched-log for '$Fingerprint' is contradicted by trusted source log $sourceLogId."
+            }
+        }
+    }
+}
+
 function Assert-ValidIssuePayload {
     param(
         [Parameter(Mandatory = $true)][object]$Signature,
@@ -412,11 +437,8 @@ function Test-CiScanManifest {
         if ($name -ne $expected.Name -or $definitionId -ne $expected.DefinitionId) {
             throw "$context must be $($expected.Name) definition $($expected.DefinitionId) in configured order."
         }
-        if ($status -notin @('scanned', 'skipped-no-recent-build', 'skipped-cap-reached')) {
+        if ($status -notin @('scanned', 'skipped-no-recent-build')) {
             throw "$context has invalid status '$status'."
-        }
-        if ($filedCount -eq $script:IssueCap -and $status -ne 'skipped-cap-reached') {
-            throw "$context must be skipped-cap-reached because the issue cap was already reached."
         }
 
         $trustedStatus = $null
@@ -440,7 +462,7 @@ function Test-CiScanManifest {
             $trustedStatus = (ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $trustedPipeline -Name 'status' -Context "trusted $context"
             )).ToLowerInvariant()
-            if ($trustedStatus -notin @('scanned', 'skipped-no-recent-build', 'skipped-cap-reached')) {
+            if ($trustedStatus -notin @('scanned', 'skipped-no-recent-build')) {
                 throw "Trusted $context has invalid status '$trustedStatus'."
             }
             if ($trustedStatus -eq 'scanned') {
@@ -485,12 +507,6 @@ function Test-CiScanManifest {
                 $trustedStatus -ne 'skipped-no-recent-build') {
                 throw "$context cannot be skipped-no-recent-build because a trusted recent build exists."
             }
-            if ($status -eq 'skipped-cap-reached') {
-                if ($filedCount -ne $script:IssueCap) {
-                    throw "$context cannot be skipped-cap-reached before exactly $($script:IssueCap) issues are filed."
-                }
-                $hasCapSkip = $true
-            }
         }
 
         $normalizedSignatures = [System.Collections.Generic.List[object]]::new()
@@ -518,7 +534,6 @@ function Test-CiScanManifest {
                     if (-not $trustedRequiredLogIdSet.Contains($sourceLogId)) {
                         throw "$signatureContext source_log_id $sourceLogId is not in the trusted build evidence."
                     }
-                    [void]$coveredLogIds.Add($sourceLogId)
                 }
             }
 
@@ -594,10 +609,48 @@ function Test-CiScanManifest {
                     } elseif ($filedCount -eq $script:IssueCap) {
                         throw "$signatureContext must use cap-reached because the issue cap was already reached."
                     }
+
+                    # A skip still consumes terminal coverage for its source logs, so it
+                    # must prove the agent actually read the failure it is dismissing.
+                    # Without this an agent can mark every real failure 'not-actionable'
+                    # and the coverage gate passes having opened no evidence at all.
+                    $matchPattern = Get-ValidatedMatchPattern `
+                        -Signature $signature `
+                        -Fingerprint $fingerprint
+                    if ($TrustedEvidencePath) {
+                        if ($skipReason -eq 'signature-not-in-fetched-log') {
+                            Assert-TrustedEvidenceAbsent `
+                                -MatchPattern $matchPattern `
+                                -PipelineName $name `
+                                -BuildId $buildId `
+                                -Fingerprint $fingerprint `
+                                -SourceLogIds $sourceLogIds `
+                                -TrustedEvidencePath $TrustedEvidencePath
+                            $normalized.match_count = 0
+                        } else {
+                            $normalized.match_count = Get-TrustedEvidenceMatchCount `
+                                -MatchPattern $matchPattern `
+                                -PipelineName $name `
+                                -BuildId $buildId `
+                                -Fingerprint $fingerprint `
+                                -SourceLogIds $sourceLogIds `
+                                -TrustedEvidencePath $TrustedEvidencePath
+                        }
+                    }
+                    $normalized.match_pattern = $matchPattern
                     $normalized.skip_reason = $skipReason
                 }
                 default {
                     throw "$signatureContext has invalid disposition '$disposition'."
+                }
+            }
+
+            # Coverage is granted only after the disposition-specific proof above has
+            # succeeded. Adding it earlier would let an unproven disposition satisfy
+            # the terminal coverage gate.
+            if ($null -ne $trustedPipelines) {
+                foreach ($sourceLogId in $sourceLogIds) {
+                    [void]$coveredLogIds.Add($sourceLogId)
                 }
             }
 

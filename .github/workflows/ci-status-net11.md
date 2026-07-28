@@ -142,6 +142,52 @@ safe-outputs:
               persistResults();
 
               const expectedLabel = 'ci-scan-net11';
+              const markerPrefix = '<!-- ci-scan-fingerprint:';
+
+              // Legacy scanner issues predate reliable marker preservation, so the
+              // 59-issue backlog carries no fingerprint. Both the `existing` proof and
+              // the `filed` create path use this same deterministic identity test so a
+              // legacy tracking issue cannot be silently duplicated.
+              const legacyIdentityMatcher = (fingerprint, pipeline) => {
+                const parts = String(fingerprint).split('|');
+                const identity = String(parts[3] || '').toLowerCase().replace(/\s+/g, ' ');
+                const primaryError = String(parts[4] || '').toLowerCase().replace(/\s+/g, ' ');
+                if (identity.length < 5 || primaryError.length < 3) {
+                  return null;
+                }
+                const pipelineLine = `- **Pipeline**: ${pipeline}`;
+                // Legacy bodies write either "- **Pipeline**: maui-pr" or
+                // "- **Pipeline**: maui-pr-uitests (ID 313)". Compare the parsed value
+                // so the device/UI backlog is reachable, while still refusing to let
+                // maui-pr match maui-pr-uitests.
+                const hasPipelineLine = body => body.split(/\r?\n/).some(line => {
+                  const trimmed = line.trim();
+                  if (!trimmed.startsWith('- **Pipeline**:')) {
+                    return false;
+                  }
+                  const value = trimmed.slice('- **Pipeline**:'.length)
+                    .replace(/\(ID\s+\d+\)\s*$/i, '')
+                    .trim();
+                  return value === pipeline;
+                });
+                const containsEvidence = (searchable, value) => {
+                  if (value.length >= 5) {
+                    return searchable.includes(value);
+                  }
+                  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`).test(searchable);
+                };
+                return candidate => {
+                  const body = String(candidate.body || '');
+                  const searchable = `${candidate.title || ''}\n${body}`
+                    .toLowerCase()
+                    .replace(/\s+/g, ' ');
+                  return searchable.includes(identity) &&
+                    containsEvidence(searchable, primaryError) &&
+                    hasPipelineLine(body);
+                };
+              };
+
               const existingEntries = plan.pipelines.flatMap(p =>
                 p.signatures
                   .filter(s => s.disposition === 'existing')
@@ -171,7 +217,6 @@ safe-outputs:
                   throw new Error(`Existing issue #${entry.issue_number} does not contain the current trusted match pattern.`);
                 }
                 const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
-                const markerPrefix = '<!-- ci-scan-fingerprint:';
                 const markerCount = body.split(markerPrefix).length - 1;
                 if (markerCount > 0) {
                   if (markerCount !== 1 || !body.split(/\r?\n/).includes(exactMarker)) {
@@ -179,31 +224,10 @@ safe-outputs:
                   }
                   entry.coverage_proof = 'canonical-fingerprint';
                 } else {
-                  // Legacy scanner issues predate reliable marker preservation.
                   // Require identity, pipeline, and primary-error evidence so an
                   // unrelated labeled issue cannot claim coverage.
-                  const fingerprintParts = entry.fingerprint.split('|');
-                  const identity = fingerprintParts[3];
-                  const secondaryEvidence = fingerprintParts.slice(4, 6)
-                    .map(value => value.toLowerCase().replace(/\s+/g, ' '));
-                  const searchable = `${response.data.title || ''}\n${body}`
-                    .toLowerCase()
-                    .replace(/\s+/g, ' ');
-                  const containsEvidence = value => {
-                    if (value.length >= 5) {
-                      return searchable.includes(value);
-                    }
-                    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`).test(searchable);
-                  };
-                  const normalizedIdentity = identity.toLowerCase().replace(/\s+/g, ' ');
-                  const pipelineLine = `- **Pipeline**: ${entry.pipeline}`;
-                  const primaryErrorEvidence = secondaryEvidence[0];
-                  if (normalizedIdentity.length < 5 ||
-                      !primaryErrorEvidence || primaryErrorEvidence.length < 3 ||
-                      !searchable.includes(normalizedIdentity) ||
-                      !containsEvidence(primaryErrorEvidence) ||
-                      !body.split(/\r?\n/).includes(pipelineLine)) {
+                  const matches = legacyIdentityMatcher(entry.fingerprint, entry.pipeline);
+                  if (!matches || !matches(response.data)) {
                     throw new Error(`Legacy issue #${entry.issue_number} does not contain deterministic identity evidence for ${entry.fingerprint}.`);
                   }
                   entry.coverage_proof = 'legacy-identity-pipeline-and-primary-error';
@@ -240,6 +264,33 @@ safe-outputs:
                   });
                   persistResults();
                   continue;
+                }
+
+                // No canonical marker matched. The legacy backlog carries no markers at
+                // all, so fall back to the same deterministic identity proof used for
+                // `existing` rather than blindly creating a duplicate.
+                const matchesLegacy = legacyIdentityMatcher(issue.Fingerprint, issue.Pipeline);
+                if (matchesLegacy) {
+                  const legacyMatches = openTrackingIssues.filter(candidate =>
+                    !candidate.pull_request &&
+                    !String(candidate.body || '').includes(markerPrefix) &&
+                    matchesLegacy(candidate));
+                  if (legacyMatches.length > 1) {
+                    throw new Error(`Fingerprint ${issue.Fingerprint} ambiguously matches legacy issues ${legacyMatches.map(c => `#${c.number}`).join(', ')}.`);
+                  }
+                  if (legacyMatches.length === 1) {
+                    results.issues.push({
+                      pipeline: issue.Pipeline,
+                      fingerprint: issue.Fingerprint,
+                      disposition: 'existing',
+                      issue_number: legacyMatches[0].number,
+                      issue_url: legacyMatches[0].html_url,
+                      coverage_proof: 'legacy-identity-pipeline-and-primary-error',
+                      legacy_dedup: true,
+                    });
+                    persistResults();
+                    continue;
+                  }
                 }
                 issuesToCreate.push(issue);
               }
@@ -403,7 +454,12 @@ steps:
           });
           const builds = await fetchJson(
             `https://dev.azure.com/dnceng-public/public/_apis/build/builds?${query}`);
-          const build = Array.isArray(builds.value) ? builds.value[0] : undefined;
+          // A malformed-but-200 response must not read as "nothing has built".
+          // Only an explicitly empty array is an authoritative absence.
+          if (!builds || !Array.isArray(builds.value)) {
+            throw new Error(`AzDO returned a malformed build list for ${definition.name}.`);
+          }
+          const build = builds.value[0];
           if (!build || !build.finishTime || Date.parse(build.finishTime) < cutoff) {
             pipelines.push({
               ...definition,
@@ -420,7 +476,10 @@ steps:
           const buildId = Number(build.id);
           const timeline = await fetchJson(
             `https://dev.azure.com/dnceng-public/public/_apis/build/builds/${buildId}/timeline?api-version=7.1`);
-          const records = Array.isArray(timeline.records) ? timeline.records : [];
+          if (!timeline || !Array.isArray(timeline.records)) {
+            throw new Error(`AzDO returned a malformed timeline for ${definition.name} build ${buildId}.`);
+          }
+          const records = timeline.records;
           const children = new Map();
           for (const record of records) {
             if (!children.has(record.parentId)) {
@@ -736,19 +795,20 @@ Pipeline status must be one of:
 - `scanned` — include a positive integer `build_id` and a `signatures` array
   (which may be empty for a clean build).
 - `skipped-no-recent-build` — only when no completed build exists in the last
-  seven days and the issue cap has not already been reached; `signatures` must
-  be empty.
-- `skipped-cap-reached` — only after exactly five entries have disposition
-  `filed`; `signatures` must be empty. This status takes precedence for every
-  remaining pipeline once the cap is reached, even when that pipeline also has
-  no recent completed build.
+  seven days; `signatures` must be empty.
 
-Every signature has `fingerprint`, `disposition`, and a non-empty
-`source_log_ids` array of positive AzDO timeline `log.id` values from the latest
-build. Filed and existing signatures also have `match_pattern`: one stable
-8-500 character line that occurs in every listed source log. A deduplicated
-signature may list multiple source logs only when that exact pattern occurs in
-each one. Every failed-leaf
+Reaching the issue cap never changes a pipeline's status. Every pipeline that
+has a recent completed build must still be `scanned` and must still account for
+every one of its `required_log_ids`, even when no further issues may be filed.
+The cap limits issue *creation*, not scanning.
+
+Every signature has `fingerprint`, `disposition`, `match_pattern`, and a
+non-empty `source_log_ids` array of positive AzDO timeline `log.id` values from
+the latest build. `match_pattern` is one stable 8-500 character line drawn from
+the frozen evidence; it is required for *every* disposition, because a
+disposition is what consumes terminal coverage for its source logs. A
+deduplicated signature may list multiple source logs only when that exact
+pattern occurs in each one. Every failed-leaf
 log, plus every non-skipped `DeviceTests... (Unix|Windows)` Helix submission log
 in `maui-pr-devicetests` (including green AzDO jobs), must appear in at least one
 signature. The authoritative set is `required_log_ids` in the frozen evidence
@@ -763,12 +823,16 @@ Disposition-specific fields:
   referenced issue body, proving the current failure recurs there.
 - `skipped` — also include exactly one `skip_reason`:
   `not-recurring`, `not-actionable`, `infrastructure-noise`,
-  `signature-not-in-fetched-log`, or `cap-reached`.
+  `signature-not-in-fetched-log`, or `cap-reached`. For every reason except
+  `signature-not-in-fetched-log`, `match_pattern` must occur at least once in
+  each frozen source log, proving you actually read the failure you are
+  dismissing. For `signature-not-in-fetched-log` the opposite holds: the frozen
+  log must exist and must *not* contain `match_pattern`.
 
 Cap: 5 filed issues per run. `cap-reached` is valid only when exactly five
-entries are actually marked `filed`. Even after the cap is reached, include all
-three pipeline entries and explicitly mark every already-discovered remaining
-signature, or the whole remaining pipeline, as skipped due to the cap.
+entries are actually marked `filed`. Reaching the cap does not end the scan —
+continue classifying every remaining signature in every remaining pipeline with
+`cap-reached`, so terminal coverage stays complete and nothing goes unseen.
 
 Do not jump between pipelines. Finish all classifications for pipeline N before N+1.
 

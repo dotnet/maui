@@ -65,6 +65,7 @@ Assertion failed
             $signature.issue_number = $IssueNumber
         } elseif ($Disposition -eq 'skipped') {
             $signature.skip_reason = $SkipReason
+            $signature.match_pattern = $MatchPattern
         }
 
         return [pscustomobject]$signature
@@ -259,8 +260,14 @@ Describe 'CI scanner pipeline coverage gate' {
         $manifest = [pscustomobject]@{
             pipelines = @(
                 (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -Signatures $signatures)
-                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -Status 'skipped-cap-reached')
-                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -Status 'skipped-cap-reached')
+                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -BuildId 123457 -Signatures @(
+                        (New-TestSignature `
+                                -Pipeline 'maui-pr-devicetests' `
+                                -Fingerprint 'ci-scan-net11|net11.0|maui-pr-devicetests|device sample|assertion failed|android' `
+                                -Disposition 'skipped' `
+                                -SkipReason 'cap-reached')
+                    ))
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 123458)
             )
         }
 
@@ -276,8 +283,14 @@ Describe 'CI scanner pipeline coverage gate' {
                 (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -Signatures @(
                         (New-TestSignature)
                     ))
-                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -Status 'skipped-cap-reached')
-                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -Status 'skipped-cap-reached')
+                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -BuildId 123457 -Signatures @(
+                        (New-TestSignature `
+                                -Pipeline 'maui-pr-devicetests' `
+                                -Fingerprint 'ci-scan-net11|net11.0|maui-pr-devicetests|device sample|assertion failed|android' `
+                                -Disposition 'skipped' `
+                                -SkipReason 'cap-reached')
+                    ))
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 123458)
             )
         }
 
@@ -804,5 +817,205 @@ Describe 'CI scanner workflow source invariants' {
         $workflowSource | Should -Match "state !== 'finished' && state !== 'failed'"
         $workflowSource | Should -Match 'workItem\.ExitCode !== null'
         $workflowSource | Should -Match 'Failed Helix work item .* has no console output'
+    }
+}
+
+Describe 'CI scanner skip disposition evidence proof' {
+    It 'rejects an all-skipped manifest that never reads the trusted evidence' {
+        # Every real failure marked not-actionable used to satisfy terminal coverage
+        # with zero filed issues and no evidence opened.
+        $evidenceRoot = Join-Path $TestDrive 'skip-fabricated'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'not-actionable' `
+                    -MatchPattern 'Totally invented failure text')
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*must occur in trusted source log 1001*'
+    }
+
+    It 'requires a match_pattern on skipped signatures' {
+        $signature = New-TestSignature -Disposition 'skipped' -SkipReason 'not-actionable'
+        $signature.PSObject.Properties.Remove('match_pattern')
+        $manifest = New-CompleteManifest -MainSignatures @($signature)
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw "*missing required property 'match_pattern'*"
+    }
+
+    It 'accepts a skip proven against the trusted evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'skip-proven'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'infrastructure-noise' `
+                    -MatchPattern 'Assertion failed')
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.filed_count | Should -Be 0
+        $plan.pipelines[0].signatures[0].match_count | Should -Be 2
+    }
+
+    It 'rejects signature-not-in-fetched-log contradicted by the trusted evidence' {
+        $evidenceRoot = Join-Path $TestDrive 'skip-contradicted'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'signature-not-in-fetched-log' `
+                    -MatchPattern 'Assertion failed')
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*is contradicted by trusted source log 1001*'
+    }
+
+    It 'accepts signature-not-in-fetched-log when the pattern is genuinely absent' {
+        $evidenceRoot = Join-Path $TestDrive 'skip-absent'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'signature-not-in-fetched-log' `
+                    -MatchPattern 'No usable failure signature')
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.pipelines[0].signatures[0].match_count | Should -Be 0
+    }
+
+    It 'rejects a skip whose trusted evidence file is missing entirely' {
+        $evidenceRoot = Join-Path $TestDrive 'skip-missing-evidence'
+        New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'not-recurring' `
+                    -MatchPattern 'Assertion failed')
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*Trusted evidence file is missing*'
+    }
+}
+
+Describe 'CI scanner issue cap limits filing, not scanning' {
+    It 'rejects skipped-cap-reached as a pipeline status' {
+        $signatures = for ($i = 1; $i -le 5; $i++) {
+            $fingerprint = "ci-scan-net11|net11.0|maui-pr|sample test $i|assertion failed|windows"
+            New-TestSignature -Fingerprint $fingerprint -Body (New-TestBody -Fingerprint $fingerprint)
+        }
+        $manifest = [pscustomobject]@{
+            pipelines = @(
+                (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -Signatures $signatures)
+                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -Status 'skipped-cap-reached')
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -Status 'skipped-cap-reached')
+            )
+        }
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw "*has invalid status 'skipped-cap-reached'*"
+    }
+
+    It 'still enforces terminal coverage for later pipelines after the cap is reached' {
+        # The cap used to let device/UI failures go unscanned while the run stayed green.
+        $evidenceRoot = Join-Path $TestDrive 'cap-coverage'
+        for ($i = 1; $i -le 5; $i++) {
+            New-TestEvidence -Root $evidenceRoot -LogId (1000 + $i)
+        }
+        $signatures = for ($i = 1; $i -le 5; $i++) {
+            $fingerprint = "ci-scan-net11|net11.0|maui-pr|sample test $i|assertion failed|windows"
+            New-TestSignature `
+                -Fingerprint $fingerprint `
+                -SourceLogIds @(1000 + $i) `
+                -Body (New-TestBody -Fingerprint $fingerprint)
+        }
+        $expected = New-ExpectedBuilds -MainRequiredLogIds @(1001, 1002, 1003, 1004, 1005)
+        $expected[1].result = 'failed'
+        $expected[1].failed_record_count = 1
+        $expected[1].required_log_ids = @(2001)
+        $manifest = [pscustomobject]@{
+            pipelines = @(
+                (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -Signatures $signatures)
+                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -BuildId 123457)
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 123458)
+            )
+        }
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds $expected `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*missing terminal coverage for trusted log IDs: 2001*'
+    }
+
+    It 'accepts post-cap coverage recorded as cap-reached skips' {
+        $evidenceRoot = Join-Path $TestDrive 'cap-covered'
+        for ($i = 1; $i -le 5; $i++) {
+            New-TestEvidence -Root $evidenceRoot -LogId (1000 + $i)
+        }
+        New-TestEvidence `
+            -Root $evidenceRoot `
+            -Pipeline 'maui-pr-devicetests' `
+            -BuildId 123457 `
+            -LogId 2001 `
+            -Lines @('Device harness crashed')
+        $signatures = for ($i = 1; $i -le 5; $i++) {
+            $fingerprint = "ci-scan-net11|net11.0|maui-pr|sample test $i|assertion failed|windows"
+            New-TestSignature `
+                -Fingerprint $fingerprint `
+                -SourceLogIds @(1000 + $i) `
+                -Body (New-TestBody -Fingerprint $fingerprint)
+        }
+        $expected = New-ExpectedBuilds -MainRequiredLogIds @(1001, 1002, 1003, 1004, 1005)
+        $expected[1].result = 'failed'
+        $expected[1].failed_record_count = 1
+        $expected[1].required_log_ids = @(2001)
+        $manifest = [pscustomobject]@{
+            pipelines = @(
+                (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -Signatures $signatures)
+                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -BuildId 123457 -Signatures @(
+                        (New-TestSignature `
+                                -Pipeline 'maui-pr-devicetests' `
+                                -BuildId 123457 `
+                                -Fingerprint 'ci-scan-net11|net11.0|maui-pr-devicetests|device harness|crashed|android' `
+                                -Disposition 'skipped' `
+                                -SkipReason 'cap-reached' `
+                                -SourceLogIds @(2001) `
+                                -MatchPattern 'Device harness crashed')
+                    ))
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 123458)
+            )
+        }
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds $expected `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.filed_count | Should -Be 5
+        $plan.has_cap_skip | Should -BeTrue
     }
 }
