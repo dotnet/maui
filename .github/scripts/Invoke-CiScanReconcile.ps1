@@ -561,7 +561,10 @@ function Get-CiScanBuildCoverage {
         which the core converts to zero counted absences. That includes a 200 whose body
         is not a build at all: every field is read through `Get-CiScanJsonField`, because
         under `Set-StrictMode -Version Latest` dotting a missing property would abort the
-        caller's per-issue loop rather than quarantine this one build.
+        caller's per-issue loop rather than quarantine this one build. The same applies
+        one level down, to the individual timeline records: a well-formed `records` array
+        may still contain an entry with no `name`/`result`, so those are read through the
+        accessor too and an unreadable record is skipped rather than counted.
     #>
     [CmdletBinding()]
     param(
@@ -633,17 +636,29 @@ function Get-CiScanBuildCoverage {
             $result.Unverifiable = $true; $result.Reason = "timeline-fetch-failed:$buildId"; return $result
         }
 
+        # Guarding the `records` COLLECTION above is not enough: the individual records are
+        # a separate shape promise. A perfectly well-formed timeline — 200, `records`
+        # present, an array — can still carry one entry without `name` or `result`, and
+        # dotting into it throws for exactly the same StrictMode reason, aborting the run.
+        # The `$null -ne`/`$null -eq` tests below already expressed the right intent; they
+        # simply could not run, because the property READ throws before the guard evaluates.
+        #
+        # Skipping a malformed record is the conservative direction in all three positions:
+        # each filter can only SHRINK, which can only make `$allLegsRan` false and drop the
+        # build from `VerifiedAbsentBuilds`. A junk record can never help close an issue.
         $records = @($timelineRecords)
         $allLegsRan = $true
         foreach ($leg in $Legs) {
             $key = ($leg -split '—')[0].Trim()
             if ([string]::IsNullOrWhiteSpace($key)) { $allLegsRan = $false; break }
             $match = @($records | Where-Object {
-                $null -ne $_.name -and ([string]$_.name).IndexOf($key, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+                $recordName = Get-CiScanJsonField -Object $_ -Name 'name'
+                $null -ne $recordName -and ([string]$recordName).IndexOf($key, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
             })
             if ((Get-CiScanCount $match) -eq 0) { $allLegsRan = $false; break }
             $ran = @($match | Where-Object {
-                $r = if ($null -eq $_.result) { '' } else { [string]$_.result }
+                $recordResult = Get-CiScanJsonField -Object $_ -Name 'result'
+                $r = if ($null -eq $recordResult) { '' } else { [string]$recordResult }
                 $r -ne '' -and $d.NonRunningLegResults -notcontains $r
             })
             if ((Get-CiScanCount $ran) -eq 0) { $allLegsRan = $false; break }
@@ -654,8 +669,11 @@ function Get-CiScanBuildCoverage {
             # again and the scanner did not record it". A build-level `failed` is still
             # accepted (some unrelated leg can fail while this one is clean) — but if
             # THIS leg failed, the build proves nothing and must not be counted.
+            # Reachable-safe via `$ran` (anything here already produced a non-empty result),
+            # but read through the accessor anyway so the shape invariant is local rather
+            # than a two-hop proof — and so the unsafe idiom does not survive in this loop.
             $clean = @($ran | Where-Object {
-                $d.CleanLegResults -contains ([string]$_.result)
+                $d.CleanLegResults -contains ([string](Get-CiScanJsonField -Object $_ -Name 'result'))
             })
             if ((Get-CiScanCount $clean) -eq 0) { $allLegsRan = $false; break }
         }

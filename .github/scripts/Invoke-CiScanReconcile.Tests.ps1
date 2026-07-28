@@ -1403,6 +1403,52 @@ Describe 'AzDO coverage re-derivation' {
             }
         }
 
+        <#
+            Guarding the `records` collection did not guard the records INSIDE it. A
+            well-formed timeline — 200, `records` present, an array — carrying a single
+            entry without `name` or `result` still threw out of the per-issue loop, so
+            `Get-CiScanBuildCoverage`'s fail-closed contract held only while every record
+            matched the expected shape. The `$null -ne`/`$null -eq` tests already in the
+            loop expressed the right intent but could never run: the property READ throws
+            before the guard is evaluated.
+        #>
+        It 'skips a malformed record without throwing, and still credits the good one' {
+            foreach ($junk in @([pscustomobject]@{ result = 'succeeded' }, [pscustomobject]@{ },
+                    'not-a-record', [pscustomobject]@{ name = 'Some other leg' })) {
+                $script:MockBuild = New-MockBuild
+                $script:MockTimeline = [pscustomobject]@{ records = @(
+                        $junk,
+                        [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+                $c = $null
+                { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw
+                $c = $script:Probe
+                # Conservatism must not over-fire: a junk sibling may not suppress a
+                # legitimately clean leg, only fail to substitute for one.
+                $c.VerifiedAbsentBuilds | Should -Contain 42
+            }
+        }
+
+        It 'does not count a build whose only matching record is missing result' {
+            $script:MockBuild = New-MockBuild
+            $script:MockTimeline = [pscustomobject]@{ records = @(
+                    [pscustomobject]@{ name = 'Controls (v18.5) CollectionView' }) }
+            $c = $null
+            { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw
+            $c = $script:Probe
+            (Get-CiScanCount $c.VerifiedAbsentBuilds) | Should -Be 0
+        }
+
+        It 'does not count a build whose records are all unreadable' {
+            foreach ($records in @(@([pscustomobject]@{ }), @('junk'), @([pscustomobject]@{ result = 'succeeded' }))) {
+                $script:MockBuild = New-MockBuild
+                $script:MockTimeline = [pscustomobject]@{ records = $records }
+                $c = $null
+                { $script:Probe = Invoke-CoverageForFixtureLeg } | Should -Not -Throw
+                $c = $script:Probe
+                (Get-CiScanCount $c.VerifiedAbsentBuilds) | Should -Be 0
+            }
+        }
+
         It 'still reports a plain mismatch when the id is well-formed but belongs elsewhere' {
             $script:MockBuild = New-MockBuild -Definition ([pscustomobject]@{ id = 999 })
             $c = Invoke-CoverageForFixtureLeg
