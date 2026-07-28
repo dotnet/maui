@@ -1799,6 +1799,41 @@ Describe 'Static source invariants' {
             Where-Object { $_ -notmatch '^\s*#' } | ForEach-Object { ($_ -replace '\s+#(?!\{).*$', '') }) -join "`n"
     }
 
+    It 'keeps the reconciler JSON report out of the working tree' {
+        <#
+            A `-Mode report` run writes its JSON report to a RELATIVE path, so a local
+            run drops untracked files in the repo root that are one `git add -A` away
+            from being committed into this PR.
+
+            The ignore rule is keyed on the FILENAME PATTERN rather than fixed by moving
+            the default somewhere else, because the default is not the only exposure: the
+            workflow passes the same shape explicitly (`-OutputPath
+            "ci-scan-reconcile-$env:CI_SCAN_LABEL.json"`), so anyone copying the
+            invocation out of the YAML — the natural way to reproduce a CI run locally —
+            is equally exposed and a changed default would not help them.
+
+            Pinned here so the two halves cannot drift: renaming the report, or dropping
+            the ignore rule, fails this test instead of silently re-opening the hole.
+        #>
+        $script:OrchestratorText | Should -Match '\$OutputPath\s*=\s*"ci-scan-reconcile-'
+        $default = [regex]::Match($script:OrchestratorText,
+            '\$OutputPath\s*=\s*"(?<p>ci-scan-reconcile-[^"]*)"').Groups['p'].Value
+        $default | Should -Not -BeNullOrEmpty
+
+        # Render the interpolated label into a name the reconciler actually produces.
+        $sample = $default -replace '\$Label', 'ci-scan-net11'
+        $sample | Should -Not -Match '\$'
+
+        $ignoreLines = @(Get-Content -Path (Join-Path $PSScriptRoot '..' '..' '.gitignore') |
+                Where-Object { $_.Trim() -ne '' -and $_ -notmatch '^\s*#' })
+        $matched = @($ignoreLines | Where-Object {
+                $rx = '^' + ([regex]::Escape($_.Trim()) -replace '\\\*', '[^/]*') + '$'
+                $sample -match $rx
+            })
+        (Get-CiScanCount $matched) | Should -BeGreaterThan 0 `
+            -Because "'$sample' must be ignored, or a local report run can be committed by accident"
+    }
+
     It 'reads every AzDO payload field in Get-CiScanBuildCoverage through the accessor' {
         <#
             The behavioural tests can only pin the reads that are reachable TODAY. The
