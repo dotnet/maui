@@ -481,8 +481,9 @@ jobs:
             --limit 50 \
             --jq '. // [] | sort_by(.createdAt) | .[].number')
 
-          # Each immutable shipped/hotfix generation is create-once. This
-          # distinguishes an intentionally closed generation from one that was
+          # Each exact shipped-tag or hotfix-tip generation is create-once. A
+          # later hotfix commit intentionally has a new version@commit marker.
+          # This distinguishes an intentionally closed generation from one that was
           # never tracked (for example, a hotfix tag published before the first
           # scheduled updater run). Search the exact generated marker directly so
           # the result is not diluted by a generic-marker --limit window.
@@ -493,13 +494,26 @@ jobs:
               echo "::warning::Shipped report for ${TRACKER_KEY} has no lifecycle generation marker; refusing to create or infer closure state."
               exit 0
             fi
+            # Narrow server-side to issues created by the GitHub Actions app
+            # with the tracker label, then enforce exact marker lines locally.
             CLOSED_GENERATION=$(gh issue list \
               --repo "${{ github.repository }}" \
               --state closed \
+              --app github-actions \
+              --label area-infrastructure \
               --search "in:body \"${GENERATION_MARKER}\"" \
-              --json number,closedAt \
-              --limit 10 \
-              --jq 'sort_by(.closedAt) | last | .number // empty')
+              --json number,closedAt,body,author,labels \
+              --limit 100 | jq -r \
+                --arg tracker "$MARKER" \
+                --arg generation "$GENERATION_MARKER" '
+                  [.[] | select(
+                    (.author.login == "app/github-actions") and
+                    ([.labels[].name] | index("area-infrastructure") != null) and
+                    ((.body | gsub("\r"; "") | split("\n")) as $lines |
+                      ($lines | index($tracker) != null) and
+                      ($lines | index($generation) != null))
+                  )] | sort_by(.closedAt) | last | .number // empty
+                ')
             if [ -n "$CLOSED_GENERATION" ]; then
               echo "Tracker generation ${GENERATION_MARKER} was intentionally closed as #${CLOSED_GENERATION} — not recreating."
               exit 0

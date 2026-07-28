@@ -2737,31 +2737,39 @@ $notesBlockText = $notesSb.ToString()
 # NOT a confirmed blessed build. Confirming the blessed build, reconciling the VMR
 # pin locally, and verifying the two preview subscriptions are LOCAL tasks — the
 # callout below points the captain at the exact local prompt to run. Rendered OUTSIDE
-# the human-notes markers so it self-refreshes on every automated re-run.
-[void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + update paths")
-[void]$md.AppendLine("")
-[void]$md.AppendLine("> [!IMPORTANT]")
+# the human-notes markers so it self-refreshes on every automated re-run. Keep this
+# mandatory policy in a reusable block so the body cap can reserve and re-append it.
+$componentPolicySb = [System.Text.StringBuilder]::new()
+[void]$componentPolicySb.AppendLine("<!-- release-readiness:component-policy:begin -->")
+[void]$componentPolicySb.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + update paths")
+[void]$componentPolicySb.AppendLine("")
+[void]$componentPolicySb.AppendLine("> [!IMPORTANT]")
 $vmrPolicyText = if ($isCutPreview) {
     "VMR is intentionally different: there is **no dotnet/dotnet subscription** on a cut preview branch because the Maestro preview feed can differ from the official release source of truth; reconcile that pin locally against the official SDK/runtime build."
 } else {
     "Candidate mode surveys ``$SurveyRef``: its VMR flow signal describes the inflight branch subscription only and does **not** select or validate the official Preview $previewNumber SDK/runtime pin. After cut, use only Android/macOS-iOS subscriptions and reconcile VMR locally."
 }
-[void]$md.AppendLine("> **Branch pins** are read from ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT a confirmed official build**; this public workflow cannot resolve the authoritative release designation. $vmrPolicyText")
-[void]$md.AppendLine(">")
-[void]$md.AppendLine("> ``````")
+[void]$componentPolicySb.AppendLine("> **Branch pins** are read from ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT a confirmed official build**; this public workflow cannot resolve the authoritative release designation. $vmrPolicyText")
+[void]$componentPolicySb.AppendLine(">")
+[void]$componentPolicySb.AppendLine("> ``````")
 $localVerificationPrompt = if ($isCutPreview) {
     "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth, reconcile the MAUI SDK/VMR pin locally to that build, and verify only the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel."
 } else {
     "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth. Treat ``$SurveyRef`` VMR flow as inflight evidence only; after cut, add only dotnet/android + dotnet/macios subscriptions and reconcile MAUI's SDK/VMR pin locally."
 }
-[void]$md.AppendLine("> $localVerificationPrompt")
-[void]$md.AppendLine("> ``````")
-[void]$md.AppendLine("")
+[void]$componentPolicySb.AppendLine("> $localVerificationPrompt")
+[void]$componentPolicySb.AppendLine("> ``````")
+[void]$componentPolicySb.AppendLine("")
 
 if ($componentPinsCheck) {
-    [void]$md.AppendLine((Get-ComponentPinsUnavailableMarkdown))
-    [void]$md.AppendLine("")
+    [void]$componentPolicySb.AppendLine((Get-ComponentPinsUnavailableMarkdown))
+    [void]$componentPolicySb.AppendLine("")
 }
+[void]$componentPolicySb.AppendLine("<!-- release-readiness:component-policy:end -->")
+$componentPolicyText = $componentPolicySb.ToString()
+[void]$md.Append($componentPolicyText)
+[void]$md.AppendLine("")
+
 if ($componentPins) {
     # --- Inferred subscription health (public PR trail) ---
     # We can't read Maestro subscription config from CI, but a *working* sub
@@ -3016,23 +3024,29 @@ $markdownBody = [regex]::Replace(
 # byte-prefix cut could therefore drop the notes begin/end markers — and a
 # markerless fresh body makes the workflow skip the edit (freezing the tracker)
 # or, worse, overwrite live Release Captain Notes. So we mirror the SR engine:
-# strip the notes placeholder, truncate only the remaining content (reserving
-# room for the notes block + message), boundary-repair, then RE-APPEND the notes
-# block. This guarantees exactly one clean begin/end pair always survives for the
-# workflow splice, independent of section order. The placeholder carries no human
-# data (real notes live on the issue and are spliced in by the workflow), so
-# removing and re-adding it is lossless. The tracker markers sit at the very top,
-# well inside the reserved prefix, so they survive too.
+# strip the notes placeholder and mandatory component-policy block, truncate only
+# the remaining content (reserving room for both blocks + message), boundary-repair,
+# then RE-APPEND both. This guarantees exactly one clean pair of each marker survives
+# regardless of how large the uncapped high-priority section becomes.
 $bodyBytes = [System.Text.Encoding]::UTF8.GetByteCount($markdownBody)
 if ($bodyBytes -gt $MaxBodyBytes) {
     $truncateMsg = "`n`n> ⚠️ **Report truncated** ($bodyBytes bytes exceeded cap of $MaxBodyBytes). See full data in workflow artifacts.`n"
     $tail = [System.Text.Encoding]::UTF8.GetByteCount($truncateMsg)
     $notesTail = "`n" + $notesBlockText
     $notesReserve = [System.Text.Encoding]::UTF8.GetByteCount($notesTail)
-    $bodyNoNotes = $markdownBody.Replace($notesBlockText, '')
-    $targetLen = $MaxBodyBytes - $tail - $notesReserve
+    $componentPolicyMatch = [regex]::Match(
+        $markdownBody,
+        '(?s)<!-- release-readiness:component-policy:begin -->.*?<!-- release-readiness:component-policy:end -->\r?\n?'
+    )
+    $componentPolicyTail = if ($componentPolicyMatch.Success) { "`n" + $componentPolicyMatch.Value } else { '' }
+    $componentPolicyReserve = [System.Text.Encoding]::UTF8.GetByteCount($componentPolicyTail)
+    $bodyWithoutReservedBlocks = $markdownBody.Replace($notesBlockText, '')
+    if ($componentPolicyMatch.Success) {
+        $bodyWithoutReservedBlocks = $bodyWithoutReservedBlocks.Replace($componentPolicyMatch.Value, '')
+    }
+    $targetLen = $MaxBodyBytes - $tail - $notesReserve - $componentPolicyReserve
     if ($targetLen -lt 0) { $targetLen = 0 }
-    $allBytes = [System.Text.Encoding]::UTF8.GetBytes($bodyNoNotes)
+    $allBytes = [System.Text.Encoding]::UTF8.GetBytes($bodyWithoutReservedBlocks)
     if ($targetLen -gt $allBytes.Length) { $targetLen = $allBytes.Length }
     $truncatedBytes = New-Object byte[] $targetLen
     [Array]::Copy($allBytes, 0, $truncatedBytes, 0, $targetLen)
@@ -3058,7 +3072,8 @@ if ($bodyBytes -gt $MaxBodyBytes) {
             }
         }
     }
-    $markdownBody = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $notesTail + $truncateMsg
+    $markdownBody = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) +
+        $componentPolicyTail + $notesTail + $truncateMsg
 }
 
 # ===================================================================

@@ -126,6 +126,21 @@ foreach ($case in @(
     Assert-Eq -Label $case.Label -Expected $case.ShouldMatch -Actual $hit
 }
 
+# Static workflow/renderer contracts must run even when network E2E is skipped.
+$workflowContractText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml') -Raw
+Assert-Eq -Label "workflow verifies exact closed-generation body lines" -Expected $true `
+    -Actual ($workflowContractText.Contains('($lines | index($tracker) != null)') -and
+        $workflowContractText.Contains('($lines | index($generation) != null)'))
+Assert-Eq -Label "workflow accepts closed generations only from the trusted workflow bot" -Expected $true `
+    -Actual ($workflowContractText.Contains('--app github-actions') -and
+        $workflowContractText.Contains('.author.login == "app/github-actions"'))
+Assert-Eq -Label "workflow requires tracker label on a closed-generation match" -Expected $true `
+    -Actual $workflowContractText.Contains('index("area-infrastructure") != null')
+$previewContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1') -Raw
+Assert-Eq -Label "preview body cap reserves mandatory component policy" -Expected $true `
+    -Actual ($previewContractText.Contains('componentPolicyReserve') -and
+        $previewContractText.Contains('$componentPolicyTail + $notesTail + $truncateMsg'))
+
 # ─────────── E2E smoke test against SR7 ───────────
 
 if (-not $SkipE2E) {
@@ -1424,6 +1439,31 @@ try {
     Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
 }
 
+# ─────────── Shipped hotfix detection: branch movement before version bump ───────────
+Write-Host "`n[Unit] Test-BranchAdvancedBeyondTag" -ForegroundColor Cyan
+$origInvokeGitForTagAdvance = (Get-Item function:Invoke-Git).ScriptBlock
+$origTestCommitForTagAdvance = (Get-Item function:Test-CommitOnBranch).ScriptBlock
+try {
+    function Invoke-Git {
+        param([string]$Cmd)
+        if ($Cmd -match '^rev-parse --verify --quiet refs/tags/') { return 'tagcommit1234' }
+        return $null
+    }
+    function Test-CommitOnBranch {
+        param([string]$Sha, [string]$BranchRef)
+        return ($Sha -eq 'tagcommit1234' -and $BranchRef -eq 'headcommit5678')
+    }
+    Assert-Eq -Label "post-tag branch commit starts hotfix visibility before version bump" `
+        -Expected $true -Actual (Test-BranchAdvancedBeyondTag -Tag '10.0.90' -HeadSha 'headcommit5678')
+    Assert-Eq -Label "tagged HEAD does not start a hotfix generation" `
+        -Expected $false -Actual (Test-BranchAdvancedBeyondTag -Tag '10.0.90' -HeadSha 'tagcommit1234')
+    Assert-Eq -Label "unrelated divergent HEAD does not start a hotfix generation" `
+        -Expected $false -Actual (Test-BranchAdvancedBeyondTag -Tag '10.0.90' -HeadSha 'othercommit9999')
+} finally {
+    Set-Item function:Invoke-Git $origInvokeGitForTagAdvance
+    Set-Item function:Test-CommitOnBranch $origTestCommitForTagAdvance
+}
+
 # ─────────── Get-SrCommits: common-ancestry main revert coverage ───────────
 # A current SR can inherit both a source fix and its later main revert before
 # the SR cut. Both commits are then common ancestors of main and the SR, so the
@@ -2103,6 +2143,23 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
     $unreversedExpectation = 'Backport of #12345. PR #12345 was not initially expected to be needed, but it was not included.'
     Assert-Eq -Label "backport lineage: contrast does not rescue a final non-inclusion state" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unreversedExpectation) -join ',')
+    foreach ($hardRemovalBody in @(
+        'Backport of #12345 was reverted, but it is required for the next SR.',
+        'Backport of #12345 was rolled back, but it is needed for this fix.',
+        'Backport of #12345 was omitted, but it is applicable to this branch.',
+        'Backport of #12345 was not included, but it is required reading for this change.'
+    )) {
+        Assert-Eq -Label "backport lineage: contrast cannot rescue actual removal — $hardRemovalBody" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $hardRemovalBody) -join ',')
+    }
+    foreach ($unrelatedRepeatedMention in @(
+        "Backport of #12345 to fix the crash.`n`nAdditional context: the workaround added in #12345 was not needed after the platform update.",
+        "Backport of #12345 for the security fix.`n`nNote: the migration guide mentioned in #12345 does not apply to this branch's docs.",
+        "Backport of #12345.`n`nFollow-up: the temporary workaround from #12345 is no longer needed once #67890 lands."
+    )) {
+        Assert-Eq -Label "backport lineage: unrelated repeated mention cannot retract source — $unrelatedRepeatedMention" `
+            -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unrelatedRepeatedMention) -join ',')
+    }
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2843,6 +2900,23 @@ $candidateTargetIsMain = Classify-RegressionCandidate `
     -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
 Assert-Eq -Label "classifier guard: candidate target==main does not become in-sr-active" `
     -Expected 'merged-on-main-no-backport' -Actual $candidateTargetIsMain.classification
+
+$candidateCurrentMainFix = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @(35662) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate'; srRef = 'origin/main' } `
+    -SrContents @{
+        sourcePrs = @(35662)
+        reverts = @()
+        mainReverts = @()
+        commits = @(@{ sourcePr = 35662; backportPr = 0; sourcePrs = @(35662); fixedIssues = @(35615) })
+    }
+Assert-Eq -Label "classifier guard: populated candidate-main contents remain cut-lag risk" `
+    -Expected 'merged-on-main-no-backport' -Actual $candidateCurrentMainFix.classification
+Assert-Eq -Label "classifier guard: candidate-main contents are not claimed as verified SR ancestry" `
+    -Expected $false -Actual $candidateCurrentMainFix.verifiedFromSrContents
+Assert-Eq -Label "classifier guard: candidate-main fix instructs post-cut verification" `
+    -Expected $true -Actual ($candidateCurrentMainFix.recommendedAction -match 'cut can lag current main')
 
 # A revert can be the actual fix, but only with all conservative gates:
 # merged, explicit closing evidence, and verified target presence.
@@ -6078,6 +6152,24 @@ $hotfixInProgressCheck = Get-CheckByAreaPrefix -Checks $shippedContentChecks -Pr
 Assert-Eq -Label "shipped branch-ahead hotfix is surfaced as WATCH" -Expected 'WATCH' -Actual $hotfixInProgressCheck.Status
 Assert-Eq -Label "shipped branch-ahead hotfix keeps published anchor explicit" -Expected $true `
     -Actual ($hotfixInProgressCheck.Details -match '10\.0\.81' -and $hotfixInProgressCheck.Details -match '10\.0\.80')
+
+$preBumpHotfixChecks = Get-ReleaseShipChecks -Ctx @{
+    srBranch = 'release/10.0.1xx-sr8'
+    srRef = 'origin/release/10.0.1xx-sr8'
+    contentsRef = '10.0.80'
+    previousStableTag = '10.0.71'
+    liveBranchVersion = '10.0.80'
+    shippedTagVersion = '10.0.80'
+    hotfixHasPostTagCommits = $true
+    hotfixInProgress = $true
+    mainBranch = 'main'
+    mode = 'shipped'
+}
+$preBumpHotfixCheck = Get-CheckByAreaPrefix -Checks $preBumpHotfixChecks -Prefix 'Unpublished hotfix branch state'
+Assert-Eq -Label "shipped post-tag commit before version bump is surfaced as WATCH" `
+    -Expected 'WATCH' -Actual $preBumpHotfixCheck.Status
+Assert-Eq -Label "pre-bump hotfix WATCH explains unchanged Versions.props" `
+    -Expected $true -Actual ($preBumpHotfixCheck.Details -match 'still reports that version')
 
 Set-Item function:Get-FileFromRef $script:OrigGetFileFromRefForShipChecks
 $script:GetFileFromRefStub = $null

@@ -617,6 +617,24 @@ function Test-GitRefResolves {
     return [bool](Invoke-Git "rev-parse --verify --quiet $Ref`^{commit}")
 }
 
+function Test-BranchAdvancedBeyondTag {
+    param(
+        [Parameter(Mandatory)][string]$Tag,
+        [Parameter(Mandatory)][string]$HeadSha
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Tag) -or [string]::IsNullOrWhiteSpace($HeadSha)) {
+        return $false
+    }
+
+    $tagCommit = Invoke-Git "rev-parse --verify --quiet refs/tags/$Tag`^{commit}"
+    if ($tagCommit -is [array]) { $tagCommit = $tagCommit[0] }
+    $tagCommit = ([string]$tagCommit).Trim()
+    if (-not $tagCommit -or $tagCommit -eq $HeadSha) { return $false }
+
+    return Test-CommitOnBranch -Sha $tagCommit -BranchRef $HeadSha
+}
+
 function Get-PublishedStableTags {
     param([string]$Repo = 'dotnet/maui')
 
@@ -1212,10 +1230,18 @@ function Get-ReleaseShipChecks {
     if ($isShipped) {
         $liveVersion = [string](Get-MetadataValue -Container $Ctx -Name 'liveBranchVersion')
         $publishedVersion = [string](Get-MetadataValue -Container $Ctx -Name 'shippedTagVersion')
-        if ($liveVersion -and $publishedVersion -and $liveVersion -ne $publishedVersion) {
+        $hasPostTagCommits = [bool](Get-MetadataValue -Container $Ctx -Name 'hotfixHasPostTagCommits' -Default $false)
+        $hotfixInProgress = [bool](Get-MetadataValue -Container $Ctx -Name 'hotfixInProgress' `
+            -Default ($liveVersion -and $publishedVersion -and $liveVersion -ne $publishedVersion))
+        if ($hotfixInProgress) {
+            $hotfixEvidence = if ($hasPostTagCommits -and $liveVersion -eq $publishedVersion) {
+                "The live SR branch has commits after the published ``$publishedVersion`` tag even though ``eng/Versions.props`` still reports that version."
+            } else {
+                "The live SR branch reports ``$liveVersion``, while the latest published tag for this SR cycle is ``$publishedVersion``."
+            }
             $checks += New-ReadinessCheck -Area "Unpublished hotfix branch state" -Status 'WATCH' `
-                -Details "The live SR branch reports ``$liveVersion``, while the latest published tag for this SR cycle is ``$publishedVersion``. The shipped tracker remains anchored to the published tag until a newer stable tag exists." `
-                -NextAction "Treat ``$liveVersion`` as an in-progress hotfix candidate. Complete build/sign/validation and publish its stable tag before advancing the shipped-content anchor."
+                -Details "$hotfixEvidence The shipped tracker remains anchored to the published tag until a newer stable tag exists." `
+                -NextAction "Treat the post-tag branch state as an in-progress hotfix candidate. Bump the target version if needed, complete build/sign/validation, and publish its stable tag before advancing the shipped-content anchor."
         }
     }
 
@@ -2302,12 +2328,20 @@ function Test-IsLineageVerbNegated {
 }
 
 function Test-IsLineageReferenceNegated {
-    param([string]$Suffix)
+    param(
+        [string]$Suffix,
+        [switch]$PresenceOnly
+    )
 
     $suffix = $Suffix -replace '[\u2018\u2019]', "'"
     $lead = '(?:was|is|were|are|did|does|should|must|will|would|can|could)'
     $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
-    $effect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $presenceEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies)|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $effect = if ($PresenceOnly) {
+        $presenceEffect
+    } else {
+        '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    }
     $prefix = '\s*(?:[,\-–—.!?;]\s*)*[\(\[]?\s*(?:(?:which|that|this|it|though|but|although|yet|however)\s*[,;:]?\s+){0,3}'
     $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
     $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
@@ -2315,19 +2349,27 @@ function Test-IsLineageReferenceNegated {
     $omitted = "(?i)^$prefix(?:\w+\s+){0,8}?(?:omit(?:ted)?|exclude(?:d)?)\b"
     $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
     $rolledBack = "(?i)^$prefix(?:\w+\s+){0,8}?rolled\s+back\b"
-    $isNegated = ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect) -or
-        ($suffix -match $rollback) -or ($suffix -match $omitted) -or
+    $laterPresenceRemoval = "(?i)\b(?:but|however|although|yet|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:(?:was|is|were|are)\s+(?:not|never)\s+(?:\w+\s+){0,3}?(?:be\s+)?$presenceEffect\b|(?:was|is)\s+(?:revert(?:ed)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b)"
+    if ($suffix -match $laterPresenceRemoval) { return $true }
+    $isHardRemoval = ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
-    if (-not $isNegated) { return $false }
+    if ($isHardRemoval) { return $true }
 
-    # A contrastive correction in the same sentence can reverse an earlier
-    # expectation without reversing the actual lineage state:
+    $isNegated = ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect)
+    if (-not $isNegated) { return $false }
+    if ($PresenceOnly) { return $true }
+
+    # Only an explicit correction of a prior expectation can reverse a soft
+    # "not needed/required" phrase. Generic contrastive prose ("not backported,
+    # but it is required reading") and hard removal states never restore lineage.
     # "was not expected to be needed, but it is required for this backport."
     $firstSentence = ($suffix -split '(?<=[.;!?])\s|\r?\n', 2)[0]
-    $affirmativeEffect = '(?:require(?:d|s)?|need(?:ed|s)?|includ(?:e|ed|es)|appl(?:y|ies|ied|icable)|relevant|necessary|essential|kept|retain(?:ed|s)?)'
-    $affirmativeCopula = "(?:is|are|it's|it\s+is|remains?|was|will\s+be|must\s+be|should\s+be|still\s+(?:is\s+)?)"
-    $contrastiveAffirmation = "(?i)\b(?:but|however|nevertheless|nonetheless)\b(?:(?!\b(?:not|never)\b|n't)[^.;!?])*?\b$affirmativeCopula\s+$affirmativeEffect\b"
-    if ($firstSentence -match $contrastiveAffirmation) { return $false }
+    $expectationNegation = "(?i)^$prefix(?:(?:$lead\s+not)|$contraction)\s+(?:\w+\s+){0,2}(?:expected|planned|intended|supposed|anticipated)\s+to\s+be\s+(?:needed|required|relevant|applicable)\b"
+    $contrastiveLineageAffirmation = "(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:is|remains?|will\s+be|must\s+be|should\s+be|is\s+still)\s+(?:needed|required|included|applied|relevant)\s+(?:for|in|to)\s+(?:this|the)\s+(?:backport|fix|branch|SR)\b"
+    if (($firstSentence -match $expectationNegation) -and
+        ($firstSentence -match $contrastiveLineageAffirmation)) {
+        return $false
+    }
 
     return $true
 }
@@ -2395,6 +2437,7 @@ function Get-ExplicitBackportSourceNumbers {
                 $absoluteReferenceEnd = $clauseOffset + $clauseStart + $reference.Index + $reference.Length
                 $suffixLength = [Math]::Min(2048, $Text.Length - $absoluteReferenceEnd)
                 $suffix = $Text.Substring($absoluteReferenceEnd, $suffixLength)
+                $sawRepeatedReference = $false
                 # Negation after a later PR reference belongs to that later
                 # list item, not the current one.
                 while ($true) {
@@ -2402,15 +2445,23 @@ function Get-ExplicitBackportSourceNumbers {
                     if (-not $nextReference.Success) { break }
                     $nextNumber = ConvertTo-PrNumber -Value $nextReference.Groups['number'].Value
                     if ($nextNumber -eq $number) {
+                        $beforeRepeatedReference = $suffix.Substring(0, $nextReference.Index)
+                        if ($beforeRepeatedReference -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$') {
+                            # The number is an object in unrelated prose ("the
+                            # workaround from #N"), not a repeated lineage claim.
+                            $suffix = $beforeRepeatedReference
+                            break
+                        }
                         # A repeated mention of the same PR often introduces its
                         # non-inclusion reason ("#N, but #N was not included").
+                        $sawRepeatedReference = $true
                         $suffix = $suffix.Substring($nextReference.Index + $nextReference.Length)
                         continue
                     }
                     $suffix = $suffix.Substring(0, $nextReference.Index)
                     break
                 }
-                if (Test-IsLineageReferenceNegated -Suffix $suffix) {
+                if (Test-IsLineageReferenceNegated -Suffix $suffix -PresenceOnly:$sawRepeatedReference) {
                     # A later repeated mention can retract an earlier positive
                     # occurrence ("#A and #B, but #A was not included"). Remove
                     # any already-accepted occurrence before continuing.
@@ -2459,10 +2510,15 @@ function Get-ExplicitBackportSourceNumbers {
     foreach ($acceptedNumber in @($result)) {
         $acceptedPattern = "(?i)(?:pull/|#)$acceptedNumber(?![\p{L}\p{N}_])"
         foreach ($occurrence in [regex]::Matches($Text, $acceptedPattern)) {
+            $prefixStart = [Math]::Max(0, $occurrence.Index - 160)
+            $occurrencePrefix = $Text.Substring($prefixStart, $occurrence.Index - $prefixStart)
+            if ($occurrencePrefix -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$') {
+                continue
+            }
             $occurrenceEnd = $occurrence.Index + $occurrence.Length
             $remainingLength = [Math]::Min(2048, $Text.Length - $occurrenceEnd)
             $occurrenceSuffix = $Text.Substring($occurrenceEnd, $remainingLength)
-            if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix) {
+            if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix -PresenceOnly) {
                 [void]$result.Remove($acceptedNumber)
                 break
             }
@@ -3248,6 +3304,7 @@ function Classify-RegressionCandidate {
     $targetSrRef  = Get-MetadataValue -Container $Ctx -Name 'contentsRef' `
         -Default (Get-MetadataValue -Container $Ctx -Name 'srRef')
     $targetIsDistinct = ($ctxModeEarly -ne 'candidate') -and [bool]$targetSrRef
+    $candidateCutLagGuidance = 'Fix is already merged on main, but the selected Candidate cut can lag current main. Rerun readiness after the release/...-srN branch exists to verify inclusion and get the exact backport command if needed.'
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
     #
@@ -3299,6 +3356,18 @@ function Classify-RegressionCandidate {
 
         if ($unreverted.Count -gt 0) {
             $prList = ($unreverted | ForEach-Object { "#$_" }) -join ', '
+            if ($ctxModeEarly -eq 'candidate') {
+                return @{
+                    classification    = 'merged-on-main-no-backport'
+                    confidence        = 'medium'
+                    verifiedFromSrContents = $false
+                    evidence          = @("Candidate survey of current main includes a fix for #$($Issue.number) via $prList, but the eventual SR cut ancestry is not yet available")
+                    candidateFixPrs   = @($unreverted | ForEach-Object {
+                        @{ number = $_; baseRef = 'main'; state = 'MERGED'; onMain = $true; evidenceType = 'candidate-main-fix'; backports = @(); title = '' }
+                    })
+                    recommendedAction = $candidateCutLagGuidance
+                }
+            }
             return @{
                 classification    = 'in-sr-active'
                 confidence        = 'high'
@@ -3429,7 +3498,7 @@ function Classify-RegressionCandidate {
         $evidence = @()
 
         # In-SR (with revert check)
-        if ($sourcePrSet.ContainsKey($pr.number)) {
+        if ($targetIsDistinct -and $sourcePrSet.ContainsKey($pr.number)) {
             $mappedBackports = @()
             if ($sourceToBackportPrs.ContainsKey([int]$pr.number)) {
                 $mappedBackports = @($sourceToBackportPrs[[int]$pr.number])
@@ -3626,7 +3695,7 @@ function Classify-RegressionCandidate {
     # Candidate mode surveys current main, but an already-selected Candidate cut
     # commit can lag it. Keep the row as a risk until the SR branch exists and
     # ancestry can prove the fix was included.
-    $candidateMergedGuidance = 'Fix is already merged on main, but the selected Candidate cut can lag current main. Rerun readiness after the release/...-srN branch exists to verify inclusion and get the exact backport command if needed.'
+    $candidateMergedGuidance = $candidateCutLagGuidance
     $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
     # Shipped mode: the SR already tagged, so the current-SR `/backport` command no
     # longer applies. Reframe as a human hotfix/next-SR decision (never an automatic
@@ -6174,7 +6243,14 @@ function Invoke-Main {
         $ctx['excludeBranches'] = @($shippedRefs.ExcludeRefs)
         $ctx['previousStableTag'] = $shippedRefs.PreviousTag
         $shippedInfo.previousTag = $shippedRefs.PreviousTag
-        $shippedInfo.hotfixInProgress = [bool]($shippedInfo.liveVersion -and $shippedInfo.liveVersion -ne $anchorTag)
+        $hasPostTagCommits = Test-BranchAdvancedBeyondTag -Tag $anchorTag -HeadSha $ctx.srHeadSha
+        $shippedInfo.hotfixHasPostTagCommits = $hasPostTagCommits
+        $shippedInfo.hotfixInProgress = [bool](
+            ($shippedInfo.liveVersion -and $shippedInfo.liveVersion -ne $anchorTag) -or
+            $hasPostTagCommits
+        )
+        $ctx['hotfixHasPostTagCommits'] = $hasPostTagCommits
+        $ctx['hotfixInProgress'] = $shippedInfo.hotfixInProgress
         $data['shippedInfo'] = $shippedInfo
     }
 
