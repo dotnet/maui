@@ -17,6 +17,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class NativeElementDiagnosticsTests
 	{
 		[Fact]
+		public void EventNamesUseContractVersion()
+		{
+			var versionSuffix = $".v{NativeElementDiagnostics.ContractVersion}";
+
+			Assert.EndsWith(versionSuffix, NativeElementDiagnostics.RegisteredEventName, StringComparison.Ordinal);
+			Assert.EndsWith(versionSuffix, NativeElementDiagnostics.UnregisteredEventName, StringComparison.Ordinal);
+		}
+
+		[Fact]
 		public void RegisterEmitsVersionedLifecycleWithReferenceIdentity()
 		{
 			var owner = new object();

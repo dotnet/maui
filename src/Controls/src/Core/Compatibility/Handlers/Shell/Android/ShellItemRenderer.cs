@@ -208,86 +208,83 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var closure_i = i;
 				var shellContent = items[i];
-
 				var innerLayout = new LinearLayout(Context);
+				innerLayout.SetClipToOutline(true);
+				innerLayout.SetBackground(
+					RuntimeFeature.IsMaterial3Enabled
+						? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
+						: CreateItemBackgroundDrawable());
+				innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
+				innerLayout.Orientation = Orientation.Horizontal;
+				using (var param = new LP(LP.MatchParent, LP.WrapContent))
+					innerLayout.LayoutParameters = param;
+
+				// technically the unhook isn't needed
+				// we dont even unhook the events that dont fire
+				void clickCallback(object s, EventArgs e)
 				{
-					innerLayout.SetClipToOutline(true);
-					innerLayout.SetBackground(
+					selectCallback(closure_i, bottomSheetDialog);
+					if (!innerLayout.IsDisposed())
+						innerLayout.Click -= clickCallback;
+				}
+
+				innerLayout.Click += clickCallback;
+
+				var image = new ImageView(Context);
+				var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(32), (int)Context.ToPixels(32))
+				{
+					LeftMargin = (int)Context.ToPixels(20),
+					RightMargin = (int)Context.ToPixels(20),
+					TopMargin = (int)Context.ToPixels(6),
+					BottomMargin = (int)Context.ToPixels(6),
+					Gravity = GravityFlags.Center
+				};
+				image.LayoutParameters = lp;
+				lp.Dispose();
+
+				var services = MauiContext.Services;
+				var provider = services.GetRequiredService<IImageSourceServiceProvider>();
+				var icon = shellContent.Icon;
+
+				shellContent.Icon.LoadImage(
+					MauiContext,
+					(result) =>
+					{
+						image.SetImageDrawable(result?.Value);
+						if (result?.Value is not null)
+						{
+							var color = RuntimeFeature.IsMaterial3Enabled
+								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
+								: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
+							result.Value.SetTint(color);
+						}
+					});
+
+				innerLayout.AddView(image);
+
+				using (var text = new TextView(Context))
+				{
+					text.Typeface = services.GetRequiredService<IFontManager>()
+						.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
+
+					text.SetTextColor(
 						RuntimeFeature.IsMaterial3Enabled
-							? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
-							: CreateItemBackgroundDrawable());
-					innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
-					innerLayout.Orientation = Orientation.Horizontal;
-					using (var param = new LP(LP.MatchParent, LP.WrapContent))
-						innerLayout.LayoutParameters = param;
-
-					// technically the unhook isn't needed
-					// we dont even unhook the events that dont fire
-					void clickCallback(object s, EventArgs e)
+							? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
+							: AColor.Black);
+					text.Text = shellContent.Title;
+					lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 					{
-						selectCallback(closure_i, bottomSheetDialog);
-						if (!innerLayout.IsDisposed())
-							innerLayout.Click -= clickCallback;
-					}
-
-					innerLayout.Click += clickCallback;
-
-					var image = new ImageView(Context);
-					var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(32), (int)Context.ToPixels(32))
-					{
-						LeftMargin = (int)Context.ToPixels(20),
-						RightMargin = (int)Context.ToPixels(20),
-						TopMargin = (int)Context.ToPixels(6),
-						BottomMargin = (int)Context.ToPixels(6),
-						Gravity = GravityFlags.Center
+						Gravity = GravityFlags.Center,
+						Weight = 1
 					};
-					image.LayoutParameters = lp;
+					text.LayoutParameters = lp;
 					lp.Dispose();
 
-					var services = MauiContext.Services;
-					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-					var icon = shellContent.Icon;
-
-					shellContent.Icon.LoadImage(
-						MauiContext,
-						(result) =>
-						{
-							image.SetImageDrawable(result?.Value);
-							if (result?.Value is not null)
-							{
-								var color = RuntimeFeature.IsMaterial3Enabled
-									? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
-									: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
-								result.Value.SetTint(color);
-							}
-						});
-
-					innerLayout.AddView(image);
-
-					using (var text = new TextView(Context))
-					{
-						text.Typeface = services.GetRequiredService<IFontManager>()
-							.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
-
-						text.SetTextColor(
-							RuntimeFeature.IsMaterial3Enabled
-								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
-								: AColor.Black);
-						text.Text = shellContent.Title;
-						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
-						{
-							Gravity = GravityFlags.Center,
-							Weight = 1
-						};
-						text.LayoutParameters = lp;
-						lp.Dispose();
-
-						innerLayout.AddView(text);
-					}
-
-					bottomSheetLayout.AddView(innerLayout);
-					_moreItemViews.Add((shellContent, innerLayout));
+					innerLayout.AddView(text);
 				}
+
+				bottomSheetLayout.AddView(innerLayout);
+				_moreItemViews.Add((shellContent, innerLayout));
 			}
 
 			bottomSheetDialog.SetContentView(bottomSheetLayout);

@@ -90,12 +90,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				// only clear out the Element if the item has been removed
 				bool found = false;
-				foreach (var item in _listItems ?? new List<AdapterListItem>())
+				if (_listItems is not null)
 				{
-					if (item.Element == evh.Element)
+					foreach (var item in _listItems)
 					{
-						found = true;
-						break;
+						if (item.Element == evh.Element)
+						{
+							found = true;
+							break;
+						}
 					}
 				}
 

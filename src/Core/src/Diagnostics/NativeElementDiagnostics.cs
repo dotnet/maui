@@ -9,12 +9,28 @@ namespace Microsoft.Maui.Diagnostics
 	{
 		internal const int ContractVersion = 1;
 		internal const string ListenerName = "Microsoft.Maui.NativeElements";
-		internal const string RegisteredEventName = ListenerName + ".Registered.v1";
-		internal const string UnregisteredEventName = ListenerName + ".Unregistered.v1";
+		internal static readonly string RegisteredEventName = $"{ListenerName}.Registered.v{ContractVersion}";
+		internal static readonly string UnregisteredEventName = $"{ListenerName}.Unregistered.v{ContractVersion}";
 
 		static readonly DiagnosticListener s_listener = new DiagnosticListener(ListenerName);
 
 		internal static DiagnosticListener Listener => s_listener;
+
+		internal static bool IsRegistrationEnabled
+		{
+			get
+			{
+				try
+				{
+					return s_listener.IsEnabled(RegisteredEventName);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Native element diagnostics listener check failed: {ex}");
+					return false;
+				}
+			}
+		}
 
 		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
 			Justification = "The fixed object-array payload is consumed by index and does not require reflected members.")]
@@ -31,16 +47,8 @@ namespace Microsoft.Maui.Diagnostics
 			if (string.IsNullOrWhiteSpace(role))
 				throw new ArgumentException("A native element role is required.", nameof(role));
 
-			try
-			{
-				if (!s_listener.IsEnabled(RegisteredEventName))
-					return EmptyRegistration.Instance;
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine($"Native element diagnostics listener check failed: {ex}");
+			if (!IsRegistrationEnabled)
 				return EmptyRegistration.Instance;
-			}
 
 			var registration = new Registration(nativeElement);
 			try
