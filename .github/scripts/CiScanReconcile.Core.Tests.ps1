@@ -1694,14 +1694,24 @@ Describe 'The forward-only clock rule is enforced structurally' {
         # the same local and is not an AssignmentStatementAst, so keying purely on
         # assignments would leave an evasion that measures as fully green. Found by
         # mutation, not by inspection.
-        $script:CommandWrites = @($script:VerdictFn.FindAll({
+        #
+        # `Get-Variable` belongs on the same list even though it reads. It returns a
+        # PSVariable HANDLE, and `$handle.Value = $x` writes the local through it while
+        # being an assignment to `$handle.Value` — a MemberExpressionAst, so the census
+        # above does not match it, and no cmdlet named here did either. That evasion
+        # measured 161/161 green. Acquiring a handle by name IS the write capability, and
+        # there is no legitimate read-only use of it in this function: reading the clock is
+        # spelled `$clockStart`.
+        $script:IsCmdletWrite = {
             param($n)
             if ($n -isnot [System.Management.Automation.Language.CommandAst]) { return $false }
             $name = $n.GetCommandName()
-            if ($name -notin @('Set-Variable', 'New-Variable')) { return $false }
+            if ($name -notin @('Set-Variable', 'New-Variable', 'Get-Variable')) { return $false }
             $txt = $n.Extent.Text
             return ($txt -match '(?<![\w-])clockStart\b')
-        }, $true))
+        }
+
+        $script:CommandWrites = @($script:VerdictFn.FindAll($script:IsCmdletWrite, $true))
 
         $script:RhsName = {
             param($write)
@@ -1721,17 +1731,51 @@ Describe 'The forward-only clock rule is enforced structurally' {
         @($script:ClockWrites).Count | Should -BeGreaterOrEqual 4 -Because 'the known writers are the baseline, clock_start_at, last_present_at and the merged-fix reset'
     }
 
+    It 'detects cmdlet-shaped writes, on a synthetic AST rather than on this file' {
+        # The census below holds cmdlet-shaped writes to the same rule, and there are
+        # legitimately NONE in the file today. That makes the set correctly empty, which
+        # means it cannot carry a count floor the way $ClockWrites does — and an empty
+        # result is exactly what a broken predicate also returns. A typo in the cmdlet
+        # list ('Set-Varaible') would be invisible: still zero hits, still green.
+        #
+        # So the predicate is exercised against source that is guaranteed to contain each
+        # shape. This asserts the DETECTOR works without requiring the audited file to
+        # contain an offender, which is the only way to make a legitimately empty scan
+        # non-vacuous.
+        $synthetic = @'
+function Fake {
+    $clockStart = $a
+    Set-Variable -Name clockStart -Value $b
+    New-Variable -Name clockStart -Value $c
+    $h = Get-Variable -Name clockStart
+    Set-Variable -Name somethingElse -Value $d
+}
+'@
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput($synthetic, [ref]$null, [ref]$null)
+        $hits = @($ast.FindAll($script:IsCmdletWrite, $true))
+
+        @($hits).Count | Should -Be 3 -Because 'Set-Variable, New-Variable and Get-Variable naming clockStart are all write capabilities'
+        ($hits | Where-Object { $_.Extent.Text -match 'somethingElse' }) |
+            Should -BeNullOrEmpty -Because 'a cmdlet naming a different variable is not a write to this one'
+    }
+
     It 'records where this instrument stops' {
         # Measured limit, stated so the next reader does not assume more coverage than
         # exists. The scan resolves the variable by NAME at parse time, so it sees every
-        # assignment and every Set-Variable/New-Variable that names $clockStart literally.
-        # It does NOT see a write whose target name is computed at runtime --
-        # `Set-Variable -Name $someVar` or `$ExecutionContext.SessionState.PSVariable.Set(...)`.
+        # assignment, and every Set-Variable/New-Variable/Get-Variable that names
+        # $clockStart literally. It does NOT see a write whose target name is computed at
+        # runtime -- `Set-Variable -Name $someVar` or
+        # `$ExecutionContext.SessionState.PSVariable.Set(...)`.
         # Neither construct appears anywhere in this file, and this assertion is what keeps
         # that true: if one is introduced, the limit stops being theoretical and this fails.
+        #
+        # Note which limit this is. A handle write via `Get-Variable` was ALSO outside the
+        # scan and is statically visible, so it was fixed rather than documented. Only the
+        # runtime-computed name is genuinely beyond a parse-time scan; everything a parser
+        # can see should be covered, not recorded here.
         $src = Get-Content -Raw -Path $script:CorePath
         $src | Should -Not -Match 'PSVariable\.Set\(' -Because 'a runtime-named write would be invisible to a parse-time scan'
-        $src | Should -Not -Match 'Set-Variable\s+(-Name\s+)?\$' -Because 'a computed variable name would be invisible to a parse-time scan'
+        $src | Should -Not -Match '(Set|Get|New)-Variable\s+(-Name\s+)?\$' -Because 'a computed variable name would be invisible to a parse-time scan'
     }
 
     It 'recognises a real forward guard, so "guarded" is not vacuously true' {
