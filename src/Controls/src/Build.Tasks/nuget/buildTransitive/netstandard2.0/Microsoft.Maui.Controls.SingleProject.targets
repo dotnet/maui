@@ -47,10 +47,10 @@
     "Platforms\AppleLegacy\".
 
     Inclusion contract — a folder is kept when ANY of:
-      (A) It declares neither a TargetPlatformIdentifiers list nor an
-          ActivationValue. This is the legacy "always include" / condition-gated
-          folder (its MauiPlatformSpecificFolder item Condition already decided
-          participation at evaluation time).
+      (A) It declares neither a TargetPlatformIdentifiers list nor a non-empty
+          normalized ActivationValue. This is the legacy "always include" /
+          condition-gated folder (its MauiPlatformSpecificFolder item Condition
+          already decided participation at evaluation time).
       (B) TargetPlatformIdentifiers is a non-empty ';'-delimited list that
           contains the current recognized $(TargetPlatformIdentifier). Comparison
           is case-insensitive and tolerates any whitespace (ASCII space, tab, CR,
@@ -77,7 +77,7 @@
     <ItemGroup>
       <_MauiPlatformSpecificCompileItems
           Include="$([MSBuild]::EnsureTrailingSlash('%(MauiPlatformSpecificFolder.Identity)'))**/*$(DefaultLanguageSourceExtension)"
-          Condition=" ('%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder.ActivationValue)' == '') or ('$(TargetPlatformIdentifier)' != '' and $([System.Text.RegularExpressions.Regex]::Replace(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);', '\s+', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());'))) or ('$(TargetPlatformIdentifier)' == '' and '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)' != '' and '%(MauiPlatformSpecificFolder._MauiResolvedActivationValueNormalized)' == '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)') " />
+          Condition=" ('%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)' == '') or ('$(TargetPlatformIdentifier)' != '' and $([System.Text.RegularExpressions.Regex]::Replace(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);', '\s+', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());'))) or ('$(TargetPlatformIdentifier)' == '' and '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)' != '' and '%(MauiPlatformSpecificFolder._MauiResolvedActivationValueNormalized)' == '%(MauiPlatformSpecificFolder._MauiActivationValueNormalized)') " />
     </ItemGroup>
   </Target>
 

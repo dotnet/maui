@@ -920,11 +920,11 @@ public static class AppleXMarker
 		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
 		// or netstandard TFM) must keep removing platform folders that declare a
 		// non-empty TargetPlatformIdentifiers. An unconditioned shared folder with
-		// empty TargetPlatformIdentifiers and empty ActivationValue must still
-		// participate — locks in the "empty TPI + empty ActivationValue = always
-		// include" branch of _MauiCollectPlatformSpecificCompileItems. (Genuine
-		// item-Condition gating — where the mapping carries its own Condition — is
-		// covered separately by
+		// empty TargetPlatformIdentifiers and an ActivationValue that is empty or
+		// normalizes to empty must still participate — locks in the "empty TPI +
+		// empty normalized ActivationValue = always include" branch of
+		// _MauiCollectPlatformSpecificCompileItems. (Genuine item-Condition gating —
+		// where the mapping carries its own Condition — is covered separately by
 		// SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue.)
 		[Fact]
 		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsSharedFolder()
@@ -944,6 +944,9 @@ public static class AppleXMarker
 				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
 			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
 				.WithAttribute("Include", "Platforms\\Shared\\"));
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Whitespace\\")
+				.WithAttribute("ActivationValue", "   "));
 			project.Add(customMappings);
 
 			WriteFile("Entry.cs", @"
@@ -970,6 +973,14 @@ public static class SharedMarker
 	public static string Value => ""Shared"";
 }");
 
+			WriteFile("Platforms\\Whitespace\\WhitespaceMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class WhitespaceMarker
+{
+	public static string Value => ""Whitespace"";
+}");
+
 			AddSingleProjectTargetsImport(project);
 
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
@@ -983,6 +994,7 @@ public static class SharedMarker
 			AssertExists(testDll, nonEmpty: true);
 			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
 			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WhitespaceMarker");
 		}
 
 		// Genuine item-Condition gating: a MauiPlatformSpecificFolder mapping may
