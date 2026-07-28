@@ -27,6 +27,14 @@ namespace Microsoft.Maui.Controls.Xaml;
 [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 public static class XamlIncrementalHotReloadHandler
 {
+	// Per-type record of the last XAML content identity we observed, so a metadata update can be
+	// classified as a XAML change (the type's content hash changed) vs. a non-XAML change (a pure
+	// C#/code-behind edit that leaves the generated XAML code — and thus the hash — untouched).
+	// UpdateComponent() is always present now, so its mere presence can no longer be that signal.
+	// Dev-time (Hot Reload) only; keyed on Type, bounded by the app's XAML page count.
+	static readonly object _contentHashLock = new();
+	static readonly Dictionary<Type, int> _lastContentHash = new();
+
 	/// <summary>
 	/// Generator-only entry point retained for backward compatibility with previously
 	/// compiled <c>InitializeComponent()</c> bodies. <see cref="XamlComponentRegistry.Register"/>
@@ -73,9 +81,11 @@ public static class XamlIncrementalHotReloadHandler
 
 		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated
 		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
-		// handledTypes records every recognized incremental-XAML type (one carrying a generated
-		// UpdateComponent()), independent of whether it currently has live instances — this is the
-		// synchronous "what kind of update is this" signal surfaced on UpdateRequested/UpdateSkipped.
+		// handledTypes records every type whose XAML actually changed in THIS delta — the synchronous
+		// "what kind of update is this" signal surfaced on UpdateRequested/UpdateSkipped. A type is a
+		// XAML change only if its content identity (__XamlContentHash) differs from the last one we saw;
+		// a pure C#/code-behind edit to a XAML page leaves that hash untouched and is NOT a XAML change,
+		// even though the page still carries an (always-present) UpdateComponent().
 		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
 		var handledTypes = new List<Type>();
 
@@ -91,13 +101,14 @@ public static class XamlIncrementalHotReloadHandler
 #pragma warning restore IL2070, IL2075
 
 			if (ucMethod is null)
-				continue;
-
-			handledTypes.Add(type);
+				continue; // not an incremental-XAML type at all
 
 			var instances = XamlComponentRegistry.GetInstances(type);
-			if (instances.Count == 0)
-				continue;
+
+			if (!DidXamlContentChange(type, instances))
+				continue; // XAML unchanged in this delta (e.g. a pure C# edit) — not a XAML change
+
+			handledTypes.Add(type);
 
 			foreach (var instance in instances)
 				dispatchBatch.Add((instance, ucMethod, type));
@@ -154,6 +165,72 @@ public static class XamlIncrementalHotReloadHandler
 			// report; never returning it strands that wait until timeout.
 			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
 		});
+	}
+
+	/// <summary>
+	/// Determines whether the XAML content of <paramref name="type"/> actually changed in the current
+	/// metadata update, by comparing its current content identity (the EnC-updating
+	/// <c>__XamlContentHash()</c> baked into the generated <c>InitializeComponent</c>) against the last
+	/// identity observed for this type. A pure C#/code-behind edit does not regenerate the XAML code, so
+	/// the hash is unchanged and the update is not a XAML change — even though the type still carries an
+	/// always-present <c>UpdateComponent()</c>. On the very first update seen for a type, the pre-update
+	/// identity is recovered from a live instance's stamped <c>__version</c> (set by IC/UC before this
+	/// update); with neither a cached nor an instance baseline, we conservatively report a change.
+	/// </summary>
+	static bool DidXamlContentChange(Type type, IReadOnlyList<object> instances)
+	{
+		var current = TryGetCurrentContentHash(type);
+		if (current is null)
+			return true; // generated code predates the accessor — be conservative, treat as XAML change
+
+		lock (_contentHashLock)
+		{
+			bool haveBaseline;
+			int baseline;
+			if (_lastContentHash.TryGetValue(type, out baseline))
+			{
+				haveBaseline = true;
+			}
+			else
+			{
+				var prior = TryGetInstanceVersion(type, instances);
+				haveBaseline = prior.HasValue;
+				baseline = prior.GetValueOrDefault();
+			}
+
+			_lastContentHash[type] = current.Value;
+			return !haveBaseline || baseline != current.Value;
+		}
+	}
+
+	static int? TryGetCurrentContentHash(Type type)
+	{
+#pragma warning disable IL2070, IL2075
+		var accessor = type.GetMethod(
+			"__XamlContentHash",
+			BindingFlags.NonPublic | BindingFlags.Static,
+			binder: null,
+			types: Type.EmptyTypes,
+			modifiers: null);
+#pragma warning restore IL2070, IL2075
+		if (accessor is null)
+			return null;
+
+		return accessor.Invoke(null, null) is int hash ? hash : (int?)null;
+	}
+
+	static int? TryGetInstanceVersion(Type type, IReadOnlyList<object> instances)
+	{
+		if (instances.Count == 0)
+			return null;
+
+#pragma warning disable IL2070, IL2075
+		var field = type.GetField("__version", BindingFlags.NonPublic | BindingFlags.Instance);
+#pragma warning restore IL2070, IL2075
+		if (field is null)
+			return null;
+
+		return field.GetValue(instances[0]) is int version ? version : (int?)null;
 	}
 }
 #endif

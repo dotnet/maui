@@ -101,6 +101,16 @@ static class InitializeComponentCodeWriter
 					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 					codeWriter.WriteLine("private int __version = 0;");
 					codeWriter.WriteLine("#pragma warning restore CS0414");
+					// A static, EnC-updating accessor for the current XAML content identity. The MUH
+					// (XamlIncrementalHotReloadHandler) reads this per delta to decide whether a metadata
+					// update actually changed the XAML — a pure C#/code-behind edit leaves this method's
+					// body untouched (same hash), so it must NOT be reported as a XAML change. It hides a
+					// same-named base accessor when a XAML class derives from another (CS0108), just like
+					// UpdateComponent(); each level reports its own content identity.
+					codeWriter.WriteLine("#pragma warning disable CS0108 // Member hides inherited member; missing new keyword");
+					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+					codeWriter.WriteLine($"internal static int __XamlContentHash() => {GeneratorHelpers.StableContentHash(xamlItem.Xaml)};");
+					codeWriter.WriteLine("#pragma warning restore CS0108");
 					codeWriter.WriteLine();
 				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";

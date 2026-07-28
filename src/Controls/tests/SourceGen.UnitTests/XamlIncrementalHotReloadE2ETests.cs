@@ -25,6 +25,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
 using Xunit;
 
@@ -573,6 +574,11 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		// Fresh instances stamp the content hash of their own generation.
 		Assert.Contains($"__version = {h1};", icV1, StringComparison.Ordinal);
 		Assert.Contains($"__version = {h2};", icV2, StringComparison.Ordinal);
+		// The static content-identity accessor the runtime reads to classify a delta as XAML-vs-not
+		// carries the same deterministic hash, and is likewise revert-stable.
+		Assert.Contains($"__XamlContentHash() => {h1};", icV1, StringComparison.Ordinal);
+		Assert.Contains($"__XamlContentHash() => {h2};", icV2, StringComparison.Ordinal);
+		Assert.Contains($"__XamlContentHash() => {h1};", icV3, StringComparison.Ordinal);
 		// Determinism: the reverted generation (byte-identical to V1) reproduces V1's identity exactly —
 		// NOT h2+1 or any history-dependent value. This is the property the old monotonic counter broke.
 		Assert.Contains($"__version = {h1};", icV3, StringComparison.Ordinal);
@@ -688,6 +694,90 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 			$"Inherited-XAML generation should compile, but got:\n{string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"))}");
 	}
 
+	/// <summary>
+	/// Diagnostics classification (Kirill Ovchinnikov's requirement). Now that <c>UpdateComponent()</c>
+	/// is always present, the runtime must NOT classify a delta as a XAML change merely because the type
+	/// has a UC. Instead it compares the type's content identity (<c>__XamlContentHash()</c>) against the
+	/// last one it saw: a real XAML edit changes the hash (→ reported via <c>HandledTypes</c>), whereas a
+	/// pure C#/code-behind edit (or any delta that doesn't touch the XAML) leaves the hash unchanged
+	/// (→ NOT reported as a XAML change). This is the regression Kirill hit: with the naive UC-presence
+	/// signal, every change — even pure C# — was reported as IXHR.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void UpdateApplication_ReportsXamlChange_ButNotUnchangedContent()
+	{
+		XamlHotReloadState.Reset();
+
+		const string switchName = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
+		AppContext.TryGetSwitch(switchName, out var previousSwitch);
+		AppContext.SetSwitch(switchName, true);
+
+		string Page(string text) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label Text="{{text}}" />
+			</ContentPage>
+			""";
+
+		var xamlV1 = Page("Hello");
+		var xamlV2 = Page("World");
+
+		var (icV1, ucV1, icV2, ucV2, _, _) = RunSourceGenAllPhases(xamlV1, xamlV2, xamlV2);
+		Assert.NotNull(ucV1);
+		Assert.NotNull(ucV2);
+
+		// Baseline V1 = IC + UC (UC present from v0), no instances created — we only exercise the
+		// runtime's delta classification, not the UI dispatch (which would need a main-thread dispatcher).
+		var (peV1, pdbV1, compilationV1) = CompileSources(PageStub, icV1, StripGeneratedCodeAttribute(ucV1!));
+
+		var alc = new AssemblyLoadContext("E2EClassifyTest", isCollectible: true);
+		IReadOnlyList<Type>? lastHandled = null;
+		EventHandler<HotReloadRequestedEventArgs> capture = (_, e) => lastHandled = e.HandledTypes;
+		HotReloadDiagnostics.UpdateRequested += capture;
+		try
+		{
+			var assembly = alc.LoadFromStream(new MemoryStream(peV1), new MemoryStream(pdbV1));
+			var pageType = assembly.GetType(PageClass)!;
+
+			var compilationV2 = CreateMauiCompilation(new[]
+			{
+				CSharpSyntaxTree.ParseText(PageStub, path: "PageStub.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(icV2, path: "IC.cs", encoding: System.Text.Encoding.UTF8),
+				CSharpSyntaxTree.ParseText(StripGeneratedCodeAttribute(ucV2!), path: "UC.cs", encoding: System.Text.Encoding.UTF8),
+			});
+			AssertNoCompileErrors(compilationV2, "V2");
+
+			var baseline = EmitBaseline.CreateInitialBaseline(
+				compilationV1, ModuleMetadata.CreateFromImage(peV1),
+				debugInformationProvider: handle => default,
+				localSignatureProvider: handle => default,
+				hasPortableDebugInformation: true);
+
+			// Seed the per-type baseline (first delta ever seen for this type; no instances → no dispatch).
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { pageType });
+
+			// Real XAML edit: apply the V1→V2 delta (which rewrites __XamlContentHash to the new hash),
+			// then notify. The content identity changed → reported as a XAML change.
+			ApplyMethodBodyDelta(assembly, compilationV1, compilationV2, baseline);
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { pageType });
+			Assert.Contains(pageType, lastHandled!);
+
+			// A subsequent delta that does NOT change the XAML (content hash unchanged) — the stand-in
+			// for a pure C#/code-behind edit — must NOT be reported as a XAML change.
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { pageType });
+			Assert.DoesNotContain(pageType, lastHandled!);
+			Assert.Empty(lastHandled!);
+		}
+		finally
+		{
+			HotReloadDiagnostics.UpdateRequested -= capture;
+			alc.Unload();
+			AppContext.SetSwitch(switchName, previousSwitch);
+		}
+	}
+
 	static void AssertNoCompileErrors(CSharpCompilation comp, string label)
 	{
 		var errors = comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
@@ -719,6 +809,13 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 				oldType.GetMembers("UpdateComponent").Single(),
 				newType.GetMembers("UpdateComponent").Single()),
 		};
+
+		// The content-identity accessor is also a normal method-body update on a XAML edit; include it
+		// so the runtime's classify-by-hash path sees the new value after ApplyUpdate.
+		var oldHash = oldType.GetMembers("__XamlContentHash").OfType<IMethodSymbol>().FirstOrDefault();
+		var newHash = newType.GetMembers("__XamlContentHash").OfType<IMethodSymbol>().FirstOrDefault();
+		if (oldHash is not null && newHash is not null)
+			edits.Add(new SemanticEdit(SemanticEditKind.Update, oldHash, newHash));
 
 		using var mdDelta = new MemoryStream();
 		using var ilDelta = new MemoryStream();
