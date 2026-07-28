@@ -2398,7 +2398,13 @@ function Get-ExplicitBackportSourceNumbers {
                     $suffix = $suffix.Substring(0, $nextReference.Index)
                     break
                 }
-                if (Test-IsLineageReferenceNegated -Suffix $suffix) { continue }
+                if (Test-IsLineageReferenceNegated -Suffix $suffix) {
+                    # A later repeated mention can retract an earlier positive
+                    # occurrence ("#A and #B, but #A was not included"). Remove
+                    # any already-accepted occurrence before continuing.
+                    [void]$result.Remove($number)
+                    continue
+                }
 
                 if ($i -eq 0) {
                     # The first reference must be syntactically governed by the

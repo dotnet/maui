@@ -240,6 +240,7 @@ jobs:
                   milestoneName: .milestoneName,
                   recentCommitCount: .recentCommitCount,
                   hasRecentActivity: .hasRecentActivity,
+                  expectedTag: (.expectedTag // ""),
                   # SR-only fields (null for preview trackers)
                   priorSrBranch:    (.priorSrBranch // ""),
                   regressionLabels: (.regressionLabels // []),
@@ -317,10 +318,22 @@ jobs:
           TRACKER_KEY:   ${{ matrix.canonicalKey }}
           PRIOR_SR:      ${{ matrix.priorSrBranch }}
           REG_LABELS:    ${{ join(matrix.regressionLabels, ',') }}
+          EXPECTED_TAG:  ${{ matrix.expectedTag }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p readiness-out
+
+          # Detection and report generation are separate jobs. If an in-flight
+          # SR's stable tag lands in that gap, regenerate it as shipped now so
+          # the report body emits authoritative shipped-generation markers.
+          if [ "$BRANCH_TYPE" = "sr" ] \
+             && [ "$MODE" = "in-flight" ] \
+             && [ -n "$EXPECTED_TAG" ] \
+             && git rev-parse --verify --quiet "refs/tags/${EXPECTED_TAG}^{commit}" >/dev/null; then
+            echo "Stable tag ${EXPECTED_TAG} appeared after detection; generating this SR as shipped."
+            MODE="shipped"
+          fi
 
           if [ "$BRANCH_TYPE" = "sr" ]; then
             # SR readiness:

@@ -2758,10 +2758,11 @@ $localVerificationPrompt = if ($isCutPreview) {
 [void]$md.AppendLine("> ``````")
 [void]$md.AppendLine("")
 
-if (-not $componentPins) {
+if ($componentPinsCheck) {
     [void]$md.AppendLine((Get-ComponentPinsUnavailableMarkdown))
     [void]$md.AppendLine("")
-} else {
+}
+if ($componentPins) {
     # --- Inferred subscription health (public PR trail) ---
     # We can't read Maestro subscription config from CI, but a *working* sub
     # leaves a public trail of dependency-flow PRs into the branch. Gather that

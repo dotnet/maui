@@ -1361,6 +1361,10 @@ if (-not $SkipE2E) {
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
     Assert-Eq -Label "workflow lifecycle decisions use generated report shipped marker" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+    Assert-Eq -Label "workflow matrix carries expected tag for report-time lifecycle re-resolution" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'expectedTag:\s*\(\.expectedTag // ""\)'))
+    Assert-Eq -Label "workflow re-resolves shipped mode when stable tag lands after detection" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'MODE.*in-flight[\s\S]*refs/tags/\$\{EXPECTED_TAG\}.*MODE="shipped"'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
     Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
@@ -2057,6 +2061,12 @@ try {
     Assert-Eq -Label "backport lineage: post-list negation removes only the excluded source" `
         -Expected $true -Actual ((Test-IsExplicitBackportForSource -Pr $partiallyExcludedList -SourcePrNumber 12345) -and
             -not (Test-IsExplicitBackportForSource -Pr $partiallyExcludedList -SourcePrNumber 23456))
+    $repeatedNegatedList = [pscustomobject]@{
+        body = 'Backport of #12345 and #23456, but #12345 was not included'
+        headRefName = 'manual/backport'
+    }
+    Assert-Eq -Label "backport lineage: later negated repetition retracts earlier positive source" `
+        -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $repeatedNegatedList.body) -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -7464,6 +7474,8 @@ $partialPinsCheck = Get-ComponentPinsReadinessCheck -Pins ([pscustomobject]@{
 Assert-Eq -Label "partial component pins remain UNKNOWN" -Expected 'UNKNOWN' -Actual $partialPinsCheck.Status
 Assert-Eq -Label "partial component pins identify missing component and field" -Expected $true `
     -Actual ([bool]($partialPinsCheck.Details -match 'Android' -and $partialPinsCheck.Details -match 'Macios\.Sha'))
+Assert-Eq -Label "partial component pins use the same prominent caution as missing pins" `
+    -Expected $true -Actual ([bool]((Get-ComponentPinsUnavailableMarkdown) -match 'Component pins unavailable'))
 $completePins = [pscustomobject]@{
     Vmr = [pscustomobject]@{ Version = '11.0.100-preview.7.1'; Sha = ('a' * 40 -join '') }
     Android = [pscustomobject]@{ Version = '37.0.0-ci.main.1'; Sha = ('b' * 40 -join '') }
