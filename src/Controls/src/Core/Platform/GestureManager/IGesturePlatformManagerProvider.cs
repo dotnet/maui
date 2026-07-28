@@ -1,9 +1,11 @@
 namespace Microsoft.Maui.Controls.Platform
 {
 	/// <summary>
-	/// Provides gesture platform manager instances for a handler connection.
+	/// Provides a per-handler <see cref="IGesturePlatformManager"/> for a specific handler connection.
+	/// This is an internal escape hatch for handler-scoped customization; application-wide customization
+	/// should use the public <see cref="IGesturePlatformManagerFactory"/> registered via DI.
+	/// The factory takes precedence when both are present.
 	/// </summary>
-	// TODO: Make this public in a future release alongside IGesturePlatformManager. See #33364.
 	internal interface IGesturePlatformManagerProvider
 	{
 		/// <summary>
