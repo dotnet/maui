@@ -314,7 +314,10 @@ function Invoke-GhWrite {
             asserting it was invoked zero times.
 
         `Kind` is checked against the effective mode: closures and reopens require
-        'enforce'; labels and comments require 'comment' or 'enforce'.
+        'enforce'; labels and comments require 'comment' or 'enforce'. `Kind` is then
+        checked against `GhArgs` — it is a declaration, and until that check existed a
+        close could run under a label declaration, in comment mode, against a different
+        issue than the one validated.
     #>
     [CmdletBinding()]
     param(
@@ -332,6 +335,56 @@ function Invoke-GhWrite {
     }
     if ($IssueNumber -le 0) {
         throw "BUG: refusing to mutate non-positive issue number '$IssueNumber'."
+    }
+
+    <#
+        `Kind` is a caller DECLARATION. `$GhArgs` is what actually runs. Nothing tied
+        them together, so the gates above constrained a property the command need not
+        honour. Measured in comment mode against a stubbed `gh`, before this block existed:
+
+            -Kind close   -GhArgs @('issue','close','5')          -> BLOCKED  (honest call, gated)
+            -Kind label   -GhArgs @('issue','close','5')          -> EXECUTED (the same close)
+            -Kind comment -IssueNumber 5 -GhArgs @(...,'999',...) -> EXECUTED (mutated #999)
+
+        The control matters: an honest close IS blocked, so this was never "the gate
+        never worked" -- it was a gate on the wrong property. Consequences were
+        cumulative. A mislabeled close skipped $ClosuresAllowed entirely, drew its budget
+        from MaxLabelOps instead of MaxCloses (the budget table is keyed by the same
+        declaration), and reported itself as a label op. The design requires issue-number
+        provenance; #999 above is that requirement failing.
+
+        Every tier test asserts on `Kind` and stayed green through all of it, which is
+        why this is enforced here rather than pinned by another test.
+
+        label/unlabel/body all spell `gh issue edit`, so the verb alone cannot separate
+        them -- hence the flag, and the absence of its siblings. A `label` call that
+        carried --remove-label would otherwise be able to strip a human veto label while
+        declaring itself the additive kind.
+    #>
+    $shape = @{
+        label   = @{ Verb = 'edit'; Flag = '--add-label' }
+        unlabel = @{ Verb = 'edit'; Flag = '--remove-label' }
+        body    = @{ Verb = 'edit'; Flag = '--body' }
+        comment = @{ Verb = 'comment'; Flag = '--body' }
+        close   = @{ Verb = 'close'; Flag = $null }
+        reopen  = @{ Verb = 'reopen'; Flag = $null }
+    }[$Kind]
+
+    if ($GhArgs.Count -lt 3 -or $GhArgs[0] -ne 'issue' -or $GhArgs[1] -ne $shape.Verb) {
+        throw "BUG: '$Kind' must run 'gh issue $($shape.Verb)' on #$IssueNumber; got '$($GhArgs -join ' ')'."
+    }
+    if ($GhArgs[2] -ne "$IssueNumber") {
+        throw "BUG: '$Kind' validated #$IssueNumber but the command targets '$($GhArgs[2])'."
+    }
+    if ($shape.Flag -and $shape.Flag -notin $GhArgs) {
+        throw "BUG: '$Kind' must carry $($shape.Flag); got '$($GhArgs -join ' ')'."
+    }
+    if ($shape.Verb -eq 'edit') {
+        foreach ($sibling in @('--add-label', '--remove-label', '--body')) {
+            if ($sibling -ne $shape.Flag -and $sibling -in $GhArgs) {
+                throw "BUG: '$Kind' must not carry $sibling on issue #$IssueNumber."
+            }
+        }
     }
 
     $script:Counters.Writes++

@@ -1511,6 +1511,80 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
         }
     }
 
+    Context 'Kind is a declaration, so it must match what actually runs' {
+        <#
+            Found by probe, not by reading. In comment mode against a stubbed `gh`:
+
+                -Kind close   -GhArgs @('issue','close','5')  -> BLOCKED
+                -Kind label   -GhArgs @('issue','close','5')  -> EXECUTED
+                -Kind comment -IssueNumber 5 ... targets 999   -> EXECUTED
+
+            The first row is the control and it is what makes the other two meaningful:
+            the mode gate genuinely blocks an honest close, so this was a gate on the
+            wrong property rather than a gate that never worked. Every existing tier
+            test asserts on `Kind` and stayed green.
+
+            Each case below asserts the throw AND that `gh` was never reached, because
+            "it threw" and "it threw before mutating" are different guarantees and only
+            the second one is worth anything here.
+        #>
+        BeforeEach {
+            $global:ghCalls = @()
+            function global:gh {
+                param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+                $global:ghCalls += ($GhArgs -join ' ')
+                $global:LASTEXITCODE = 0
+            }
+            $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+        }
+        AfterEach {
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
+            Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+            Remove-Variable ghCalls -Scope Global -ErrorAction SilentlyContinue
+        }
+
+        It 'refuses <Kind> when the command verb belongs to another kind' -ForEach @(
+            @{ Kind = 'label'; CmdArgs = @('issue', 'close', '1') }
+            @{ Kind = 'comment'; CmdArgs = @('issue', 'close', '1') }
+            @{ Kind = 'label'; CmdArgs = @('issue', 'reopen', '1') }
+        ) {
+            { Invoke-GhWrite -Kind $Kind -IssueNumber 1 -GhArgs $CmdArgs } |
+                Should -Throw -ExpectedMessage "*must run 'gh issue*"
+            $global:ghCalls | Should -BeNullOrEmpty -Because 'the refusal must land before the network call'
+        }
+
+        It 'refuses a command that targets an issue other than the validated one' {
+            { Invoke-GhWrite -Kind comment -IssueNumber 5 -GhArgs @('issue', 'comment', '999', '--body', 'x') } |
+                Should -Throw -ExpectedMessage '*validated #5 but the command targets*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses an edit that carries a sibling flag from another edit-shaped kind' {
+            # The veto-strip shape: an additive `label` call that quietly removes one.
+            { Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'a', '--remove-label', 's/needs-info') } |
+                Should -Throw -ExpectedMessage '*must not carry --remove-label*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses an edit-shaped kind that carries no distinguishing flag at all' {
+            { Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1') } |
+                Should -Throw -ExpectedMessage '*must carry --add-label*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'still runs the honest shape for every kind, so the checks are not simply refusing everything' -ForEach @(
+            @{ Kind = 'label'; CmdArgs = @('issue', 'edit', '7', '--add-label', 'ci-scan-active') }
+            @{ Kind = 'unlabel'; CmdArgs = @('issue', 'edit', '7', '--remove-label', 'ci-scan-active') }
+            @{ Kind = 'body'; CmdArgs = @('issue', 'edit', '7', '--body', 'x') }
+            @{ Kind = 'comment'; CmdArgs = @('issue', 'comment', '7', '--body', 'x') }
+            @{ Kind = 'close'; CmdArgs = @('issue', 'close', '7', '--reason', 'completed') }
+            @{ Kind = 'reopen'; CmdArgs = @('issue', 'reopen', '7', '--comment', 'x') }
+        ) {
+            Invoke-GhWrite -Kind $Kind -IssueNumber 7 -GhArgs $CmdArgs | Should -BeTrue
+            $global:ghCalls.Count | Should -Be 1 -Because 'a check that refuses the legitimate shape too would pass every negative case above for the wrong reason'
+        }
+    }
+
     <#
         A failed write used to be a warning on an otherwise-green run. The dangerous
         shape is a close that lands followed by an `auto-closed-stale` label that does
@@ -1543,7 +1617,7 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:mockGhExitCode = 1
             $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
             Reset-CiScanCounters
-            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1')
+            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'ci-scan-active')
             $null = Set-CiScanReconcileMode -RequestedMode 'report'
 
             $ok | Should -BeFalse
@@ -1555,7 +1629,7 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:mockGhExitCode = 0
             $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
             Reset-CiScanCounters
-            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1')
+            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'ci-scan-active')
             $null = Set-CiScanReconcileMode -RequestedMode 'report'
 
             $ok | Should -BeTrue
