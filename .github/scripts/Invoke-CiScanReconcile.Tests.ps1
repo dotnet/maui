@@ -1237,6 +1237,86 @@ Describe 'Owned-label preflight gates every mutating run' {
         }
     }
 
+    <#
+        POSITIVE enforcement coverage. Every other enforce test in this file asserts that
+        something is REFUSED. That is only half the contract: a close path that is broken
+        would satisfy all of them and would only be discovered on the first real run
+        against live issues, which is the worst possible moment. These tests prove the
+        capability genuinely works when — and only when — every gate is satisfied.
+
+        `Invoke-GhWrite` is mocked throughout, so no GitHub call leaves the process.
+    #>
+    It 'closes a candidate and applies its marker when every gate passes' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+        $r.FailClosed | Should -BeFalse
+        $r.EffectiveMode | Should -Be 'enforce'
+        $r.Counters.Closes | Should -Be 1
+        $r.AbortedAt | Should -BeNullOrEmpty
+
+        # The close itself.
+        Should -Invoke Invoke-GhWrite -Times 1 -Exactly -ParameterFilter {
+            $Kind -eq 'close' -and $IssueNumber -eq 100
+        }
+        # The marker that makes the close reversible by `Get-CiScanReopenVerdict`.
+        Should -Invoke Invoke-GhWrite -Times 1 -Exactly -ParameterFilter {
+            $Kind -eq 'label' -and $IssueNumber -eq 100 -and $GhArgs -contains 'auto-closed-stale'
+        }
+    }
+
+    <#
+        Scope separation: `comment` is the shadow tier. It may annotate, but the
+        irreversible operation stays behind `enforce`. This is what makes it safe to run
+        `comment` for the review phase without also arming closure.
+    #>
+    It 'comments in comment mode but never closes' {
+        Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'comment'
+
+        $r.MutationsAllowed | Should -BeTrue
+        $r.ClosuresAllowed | Should -BeFalse
+        $r.Counters.Closes | Should -Be 0
+
+        # It really did annotate: the candidate label and the notice both went out.
+        $r.Counters.Comments | Should -Be 1
+        $r.Counters.LabelOps | Should -BeGreaterThan 0
+        Should -Invoke Invoke-GhWrite -Times 1 -Exactly -ParameterFilter {
+            $Kind -eq 'comment' -and $IssueNumber -eq 100
+        }
+        # ...but the irreversible half never fired.
+        Should -Invoke Invoke-GhWrite -Times 0 -Exactly -ParameterFilter { $Kind -eq 'close' }
+    }
+
+    <#
+        Abort-on-first-failure. The dangerous shape is a close that lands whose marker does
+        not: the issue is then closed WITHOUT the label the reopen path keys on. Continuing
+        to the next issue would manufacture more of them, so the loop stops dead.
+    #>
+    It 'stops the apply loop when the marker write fails after a close' {
+        Initialize-ReconcileMocks -Issues @(
+            (New-CandidateIssue -Number 100), (New-CandidateIssue -Number 101))
+        Mock Invoke-GhWrite {
+            if ($GhArgs -contains 'auto-closed-stale') { $script:Counters.WriteErrors++; return $false }
+            return $true
+        }
+
+        $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+            -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+        # Exactly one close, not two: the second issue was never reached.
+        $r.Counters.Closes | Should -Be 1
+        $r.AbortedAt | Should -BeLike '*CLOSED WITHOUT its marker*'
+        $r.WriteErrors | Should -BeGreaterThan 0
+        Should -Invoke Invoke-GhWrite -Times 0 -Exactly -ParameterFilter {
+            $Kind -eq 'close' -and $IssueNumber -eq 101
+        }
+    }
+
     It 'fail-closes an enforce run when auto-closed-stale is missing' {
         Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
             -RepoLabels @('ci-scan-stale-candidate', 'ci-fix-landed')
@@ -1297,8 +1377,13 @@ Describe 'Owned-label preflight gates every mutating run' {
         $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
             -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
 
-        $r.Counters.Closes | Should -Be 1
+        # The candidate label is applied BEFORE the close, so the abort fires first and
+        # the irreversible operation never runs at all. That is the point: a run that
+        # cannot even label is a run that must not close.
+        $r.Counters.Closes | Should -Be 0
         $r.WriteErrors | Should -BeGreaterThan 0
+        $r.AbortedAt | Should -BeLike "*ci-scan-stale-candidate*"
+        Should -Invoke Invoke-GhWrite -Times 0 -Exactly -ParameterFilter { $Kind -eq 'close' }
     }
 
     It 'reports zero write errors when every call lands' {
@@ -1503,6 +1588,48 @@ Describe 'Static source invariants' {
         $reportJob = ($script:WorkflowCode -split '(?m)^  mutate:')[0]
         $reportJob | Should -Not -BeLike '*-Mode ${{*'
         $reportJob | Should -Not -BeLike '*inputs.mode*'
+    }
+
+    <#
+        The kill switch has to gate EVERY mutating mode, not just enforce. A substring
+        assertion cannot tell the difference between a top-level conjunct and one nested
+        inside the enforce-only parenthetical — the latter would leave `comment` able to
+        write while the repository believes the automation is switched off.
+
+        So this parses the mutating job's `if:` into its depth-0 `&&` conjuncts and
+        requires the kill switch to be one of them.
+    #>
+    It 'applies the kill switch to every mutating mode, not just enforce' {
+        $ifBlock = [regex]::Match(
+            $script:WorkflowCode,
+            '(?ms)^\s*if:\s*>-\s*\n(.+?)\n\s*runs-on:')
+        $ifBlock.Success | Should -BeTrue
+
+        # Split on `&&` that sits outside any parentheses.
+        $expr = ($ifBlock.Groups[1].Value -replace '\s+', ' ').Trim()
+        $conjuncts = [System.Collections.Generic.List[string]]::new()
+        $depth = 0
+        $current = ''
+        for ($i = 0; $i -lt $expr.Length; $i++) {
+            $ch = $expr[$i]
+            if ($ch -eq '(') { $depth++ }
+            elseif ($ch -eq ')') { $depth-- }
+
+            if ($depth -eq 0 -and $ch -eq '&' -and $i + 1 -lt $expr.Length -and $expr[$i + 1] -eq '&') {
+                $conjuncts.Add($current.Trim()); $current = ''; $i++
+                continue
+            }
+            $current += $ch
+        }
+        $conjuncts.Add($current.Trim())
+
+        # The kill switch must be its own top-level conjunct: true for comment AND enforce.
+        @($conjuncts | Where-Object { $_ -match "^vars\.CI_SCAN_RECONCILE_DISABLED\s*!=\s*'true'$" }).Count |
+            Should -Be 1 -Because 'the kill switch must gate the whole job, not one mode'
+
+        # The enforce opt-in is deliberately NOT top-level; it is the mode-specific arm.
+        @($conjuncts | Where-Object { $_ -match "^vars\.CI_SCAN_RECONCILE_ENFORCE_ENABLED" }).Count |
+            Should -Be 0 -Because 'comment mode must stay reachable without the enforce opt-in'
     }
 
     It 'gates the mutating job on workflow_dispatch, an approved mode and an environment' {

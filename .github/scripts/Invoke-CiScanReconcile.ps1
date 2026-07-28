@@ -99,6 +99,10 @@ function Reset-CiScanCounters {
     [CmdletBinding()]
     param()
     $script:Counters = @{ Closes = 0; Reopens = 0; Comments = 0; LabelOps = 0; Writes = 0; ReadErrors = 0; WriteErrors = 0 }
+    # Set to a human-readable description of the write that stopped the apply loop.
+    # $null on a clean run. Surfaced in the result and the step summary so the operator
+    # sees exactly which issue was left mid-sequence.
+    $script:AbortedAt = $null
 }
 
 $script:SkipAzdo = [bool]$SkipAzdo
@@ -674,6 +678,9 @@ function Format-CiScanSummary {
     $null = $sb.AppendLine("| Mutating API calls made | **$($Report.Counters.Writes)** |")
     $null = $sb.AppendLine("| Read errors | $($Report.Counters.ReadErrors) |")
     $null = $sb.AppendLine("| Write errors | $($Report.Counters.WriteErrors) |")
+    if ($Report.AbortedAt) {
+        $null = $sb.AppendLine("| **Apply ABORTED at** | **$($Report.AbortedAt)** |")
+    }
     $null = $sb.AppendLine("| Fail-closed | $(if ($Report.FailClosed) { "**yes — $($Report.FailClosedReason)**" } else { 'no' }) |")
     $null = $sb.AppendLine("| Issues evaluated | $($Report.IssueCount) |")
     $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — issue listing was truncated by `-MaxIssues`; oldest issues shown**' } else { 'yes' }) |")
@@ -889,17 +896,30 @@ function Invoke-CiScanReconcile {
     # Every branch below routes through Invoke-GhWrite, which independently re-checks the
     # effective mode. This loop is unreachable in report mode, and would throw rather
     # than write if it somehow were reached.
+    #
+    # ABORT-ON-FIRST-FAILURE. The loop stops at the first failed write instead of carrying
+    # on to the next issue. The motivating shape is close-then-label: a close that lands
+    # whose `auto-closed-stale` marker does not leaves an issue closed WITHOUT the marker
+    # `Get-CiScanReopenVerdict` requires, so the automation can no longer recognise or undo
+    # its own irreversible action. Continuing would turn one such issue into many. Stopping
+    # bounds the damage at a single known issue, which the summary names explicitly, and the
+    # non-zero exit forces a human to look before anything runs again.
     if ($script:MutationsAllowed -and -not $failClosed) {
-        foreach ($v in $verdicts) {
+        :apply foreach ($v in $verdicts) {
             foreach ($action in @($v.ProposedActions)) {
                 if ($action.StartsWith('label:', [System.StringComparison]::Ordinal)) {
                     $name = $action.Substring('label:'.Length)
                     if ($script:CiScanOwnedLabels -cnotcontains $name) {
                         Write-Warning "Refusing to apply non-reconciler label '$name'."
+                        continue
                     }
-                    elseif (Invoke-GhWrite -Kind label -IssueNumber $v.Number -GhArgs @(
+                    if (Invoke-GhWrite -Kind label -IssueNumber $v.Number -GhArgs @(
                             'issue', 'edit', "$($v.Number)", '--repo', "$Owner/$Repo", '--add-label', $name)) {
                         $script:Counters.LabelOps++
+                    }
+                    else {
+                        $script:AbortedAt = "label '$name' on #$($v.Number)"
+                        break apply
                     }
                 }
                 elseif ($action -ceq 'comment:candidate-notice') {
@@ -908,22 +928,33 @@ function Invoke-CiScanReconcile {
                             'issue', 'comment', "$($v.Number)", '--repo', "$Owner/$Repo", '--body', $notice)) {
                         $script:Counters.Comments++
                     }
+                    else {
+                        $script:AbortedAt = "comment on #$($v.Number)"
+                        break apply
+                    }
                 }
                 elseif ($action -ceq 'close') {
                     # Redundant with the check inside Invoke-GhWrite. Kept deliberately:
                     # two independent guards on the only irreversible operation.
                     if ($script:ClosuresAllowed) {
                         $closing = New-CiScanClosingNotice -Verdict $v -Config $config
-                        if (Invoke-GhWrite -Kind close -IssueNumber $v.Number -GhArgs @(
-                                'issue', 'close', "$($v.Number)", '--repo', "$Owner/$Repo",
-                                '--reason', 'completed', '--comment', $closing)) {
-                            $script:Counters.Closes++
-                            if (Invoke-GhWrite -Kind label -IssueNumber $v.Number -GhArgs @(
-                                    'issue', 'edit', "$($v.Number)", '--repo', "$Owner/$Repo",
-                                    '--add-label', 'auto-closed-stale')) {
-                                $script:Counters.LabelOps++
-                            }
+                        if (-not (Invoke-GhWrite -Kind close -IssueNumber $v.Number -GhArgs @(
+                                    'issue', 'close', "$($v.Number)", '--repo', "$Owner/$Repo",
+                                    '--reason', 'completed', '--comment', $closing))) {
+                            $script:AbortedAt = "close of #$($v.Number)"
+                            break apply
                         }
+                        $script:Counters.Closes++
+
+                        # The marker half of the close. Losing this is the inconsistent
+                        # state described above, so it aborts rather than warns.
+                        if (-not (Invoke-GhWrite -Kind label -IssueNumber $v.Number -GhArgs @(
+                                    'issue', 'edit', "$($v.Number)", '--repo', "$Owner/$Repo",
+                                    '--add-label', 'auto-closed-stale'))) {
+                            $script:AbortedAt = "auto-closed-stale marker on #$($v.Number) (issue is CLOSED WITHOUT its marker)"
+                            break apply
+                        }
+                        $script:Counters.LabelOps++
                     }
                 }
                 else { Write-Warning "Unknown action '$action' ignored." }
@@ -956,6 +987,7 @@ function Invoke-CiScanReconcile {
         IssuesTruncated   = [bool]$issueIndex.Truncated
         PullRequestCount  = @($prIndex.PullRequests).Count
         WriteErrors       = $script:Counters.WriteErrors
+        AbortedAt         = $script:AbortedAt
         Counters          = $script:Counters
         Thresholds        = $defaults
         Verdicts          = @($verdicts)
@@ -993,5 +1025,6 @@ Write-Host "Done. mode=$($script:EffectiveMode) writes=$($script:Counters.Writes
 # no longer recognize. The report has already been written and uploaded, so the operator
 # has the full picture; this only denies the green check.
 if ($script:Counters.WriteErrors -gt 0) {
-    throw "$($script:Counters.WriteErrors) GitHub write call(s) failed in mode '$($script:EffectiveMode)'; the run applied only part of its plan. See the warnings above and the JSON report."
+    $where = if ($script:AbortedAt) { " The run STOPPED at: $($script:AbortedAt)." } else { '' }
+    throw "$($script:Counters.WriteErrors) GitHub write call(s) failed in mode '$($script:EffectiveMode)'; the run applied only part of its plan.$where See the warnings above and the JSON report."
 }

@@ -52,6 +52,14 @@
 #    `ENFORCE`. `Set-CiScanReconcileMode` in the script is case-SENSITIVE and accepts only
 #    the exact lowercase strings. A value that slips past the `if:` therefore still runs
 #    the job in report mode and performs zero writes. Neither check is load-bearing alone.
+#
+# 7. A MUTATING RUN STOPS AT ITS FIRST FAILED WRITE.
+#    Closing an issue takes two calls: the close, then the `auto-closed-stale` marker. If
+#    the close lands and the marker does not, the issue is closed WITHOUT the label the
+#    reopen path keys on, so the automation can no longer recognise or undo its own
+#    irreversible action. Rather than carry on and manufacture more of those, the apply
+#    loop aborts at the first failure, names the exact issue it stopped on in the step
+#    summary and JSON, and exits non-zero. Damage is bounded to one known issue.
 
 name: ci-scan reconcile
 
