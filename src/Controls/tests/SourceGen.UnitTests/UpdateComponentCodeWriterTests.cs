@@ -78,8 +78,7 @@ public class UpdateComponentCodeWriterTests
 			toVersion,
 			compilation,
 			xmlnsCache,
-			typeCache,
-			GeneratorHelpers.StableContentHash(xamlV2));
+			typeCache);
 	}
 
 	[Fact]
@@ -161,18 +160,17 @@ $"""
 	}
 
 	[Fact]
-	public void SinglePropertyChange_StampsContentIdentity()
+	public void SinglePropertyChange_ProducesNonEmptyPatchBody()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";
 		var v2 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"World\" /></ContentPage>";
 
 		var result = Generate(v1, v2);
 		Assert.NotNull(result);
-		// UC stamps __version with the deterministic content hash of the current XAML (not a monotonic
-		// counter), so a live instance and a freshly-created one report the same identity for identical
-		// content — and a revert restores the earlier identity.
-		var expected = $"__version = {GeneratorHelpers.StableContentHash(v2)};";
-		Assert.Contains(expected, result, System.StringComparison.Ordinal);
+		// A real XAML change yields a non-empty UpdateComponent() body (the patch), which is exactly the
+		// signal the runtime uses to classify the delta as a XAML change.
+		Assert.Contains("\"World\"", result, System.StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry.TryGet(this,", result, System.StringComparison.Ordinal);
 	}
 
 	[Fact]

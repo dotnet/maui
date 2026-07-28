@@ -163,8 +163,7 @@ static class UpdateComponentCodeWriter
 	public static string GenerateUpdateComponent(
 		INamedTypeSymbol rootType,
 		string accessModifier,
-		string? patchBody,
-		int contentHash)
+		string? patchBody)
 	{
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
 
@@ -186,17 +185,17 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 			codeWriter.WriteLine($"internal void UpdateComponent()");
 
+			// The method is ALWAYS emitted (member stability / no EnC churn), but its BODY is empty when
+			// this generation carries no XAML change (first compile, empty/reverted diff, structural
+			// reset). A non-empty body means the XAML actually changed. The SDK's MetadataUpdateHandler
+			// classifies a delta as a XAML change by inspecting whether this method's body is non-empty
+			// (its compiled IL is more than a trivial return) — an empty UpdateComponent() therefore reads
+			// as "not a XAML change", which is what keeps pure C#/code-behind edits out of the XAML-change
+			// signal while still guaranteeing the method never appears/disappears across generations.
 			using (PrePost.NewBlock(codeWriter))
 			{
 				if (!string.IsNullOrWhiteSpace(patchBody))
 					WriteIndentedBody(codeWriter, patchBody!);
-
-				// Record the content identity this instance has been brought to. This is the same
-				// deterministic content hash InitializeComponent stamps on fresh instances, so after
-				// UpdateComponent() runs, a live (previously-created) instance and a freshly-created
-				// instance report the same __version for identical XAML. Deterministic and revert-stable.
-				codeWriter.WriteLine($"__version = {contentHash};");
-				codeWriter.WriteLine("return;");
 			}
 		}
 
@@ -216,14 +215,13 @@ static class UpdateComponentCodeWriter
 		int toVersion,
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
-		IDictionary<XmlType, INamedTypeSymbol> typeCache,
-		int contentHash = 0)
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
 	{
 		var patchBody = GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache);
 		if (patchBody == null)
 			return null;
 
-		return GenerateUpdateComponent(rootType, accessModifier, patchBody, contentHash);
+		return GenerateUpdateComponent(rootType, accessModifier, patchBody);
 	}
 
 	static void WriteIndentedBody(IndentedTextWriter codeWriter, string body)

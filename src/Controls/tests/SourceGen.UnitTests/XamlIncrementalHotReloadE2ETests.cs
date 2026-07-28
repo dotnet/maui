@@ -578,15 +578,13 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		// NOT h2+1 or any history-dependent value. This is the property the old monotonic counter broke.
 		Assert.Contains($"__version = {h1};", icV3, StringComparison.Ordinal);
 
-		// Forward edit's UC brings live instances to V2 identity and value...
+		// Forward edit's UC applies the new value (its non-empty body is also the XAML-change signal)...
 		Assert.NotNull(ucV2);
-		Assert.Contains($"__version = {h2};", ucV2!, StringComparison.Ordinal);
 		Assert.Contains("\"World\"", ucV2!, StringComparison.Ordinal);
 
-		// ...and the reverse edit's UC brings them back to V1 identity and value (reverse transition),
-		// without retaining the intermediate "World".
+		// ...and the reverse edit's UC brings it back to the V1 value (reverse transition), without
+		// retaining the intermediate "World".
 		Assert.NotNull(ucV3);
-		Assert.Contains($"__version = {h1};", ucV3!, StringComparison.Ordinal);
 		Assert.Contains("\"Hello\"", ucV3!, StringComparison.Ordinal);
 		Assert.DoesNotContain("\"World\"", ucV3!, StringComparison.Ordinal);
 	}
@@ -690,24 +688,23 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 	}
 
 	/// <summary>
-	/// Diagnostics classification (Kirill Ovchinnikov's requirement), the post-dispatch design. Now that
-	/// <c>UpdateComponent()</c> is always present, the runtime must NOT classify a delta as a XAML change
-	/// merely because the type has a UC. Instead it runs UC (the same call that applies Hot Reload) and
-	/// observes whether the instance's <c>__version</c> content identity moved: a real XAML edit moves it
-	/// (→ surfaced on the AUTHORITATIVE <c>HotReloadAppliedEventArgs.HandledTypes</c>), whereas a delta
-	/// that doesn't change the XAML (e.g. a pure C#/code-behind edit) leaves it unchanged (→ excluded).
-	/// This is the regression Kirill hit: with the naive UC-presence signal, every change — even pure C#
-	/// — was reported as IXHR; and reflecting a static content-hash accessor pre-dispatch was unreliable.
+	/// Diagnostics classification (Kirill Ovchinnikov's requirement), the "empty UpdateComponent" design.
+	/// <c>UpdateComponent()</c> is always present (member stability / no EnC churn), but its BODY is empty
+	/// when a generation carries no XAML change and non-empty (a patch) when the XAML changed. The runtime
+	/// classifies a delta as a XAML change — SYNCHRONOUSLY, pre-dispatch, on
+	/// <c>HotReloadRequestedEventArgs.HandledTypes</c>, exactly where XamlTools reads it today — by
+	/// inspecting whether <c>UpdateComponent()</c>'s body is non-empty. An empty UC (a page whose XAML did
+	/// not change, e.g. a pure C#/code-behind edit) is correctly NOT reported as a XAML change. No live
+	/// instance or main-thread dispatcher is needed: classification is a property of the type's UC body.
 	/// </summary>
 	[MetadataUpdateFact]
-	public void UpdateApplied_ReportsXamlChange_ButNotUnchangedContent()
+	public void UpdateRequested_ReportsXamlChange_WhenUpdateComponentBodyIsNonEmpty()
 	{
 		XamlHotReloadState.Reset();
 
 		const string switchName = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
 		AppContext.TryGetSwitch(switchName, out var previousSwitch);
 		AppContext.SetSwitch(switchName, true);
-		SetSynchronousMainThread();
 
 		string Page(string text) => $$"""
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -724,24 +721,27 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		var xamlV2 = Page("World");
 
 		var (icV1, ucV1, icV2, ucV2, _, _) = RunSourceGenAllPhases(xamlV1, xamlV2, xamlV2);
-		Assert.NotNull(ucV1);
-		Assert.NotNull(ucV2);
+		Assert.NotNull(ucV1); // v1: UpdateComponent() present but EMPTY (first generation, no XAML change)
+		Assert.NotNull(ucV2); // v2: UpdateComponent() carries a patch (non-empty)
 
 		var (peV1, pdbV1, compilationV1) = CompileSources(PageStub, icV1, StripGeneratedCodeAttribute(ucV1!));
 
 		var alc = new AssemblyLoadContext("E2EClassifyTest", isCollectible: true);
-		IReadOnlyList<Type>? lastApplied = null;
-		EventHandler<HotReloadAppliedEventArgs> capture = (_, e) => lastApplied = e.HandledTypes;
-		HotReloadDiagnostics.UpdateApplied += capture;
+		IReadOnlyList<Type>? lastHandled = null;
+		EventHandler<HotReloadRequestedEventArgs> capture = (_, e) => lastHandled = e.HandledTypes;
+		HotReloadDiagnostics.UpdateRequested += capture;
 		try
 		{
 			var assembly = alc.LoadFromStream(new MemoryStream(peV1), new MemoryStream(pdbV1));
 			var pageType = assembly.GetType(PageClass)!;
 
-			// A live instance is required — the classification observes UC's effect on it (and its
-			// InitializeComponent registers it, so the handler finds it via XamlComponentRegistry).
-			var instance = Activator.CreateInstance(pageType)!;
+			// The loaded type's UpdateComponent() is EMPTY → the update is NOT a XAML change.
+			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { pageType });
+			Assert.NotNull(lastHandled);
+			Assert.DoesNotContain(pageType, lastHandled!);
 
+			// Apply the V1→V2 delta: UpdateComponent()'s body becomes non-empty. The same notification now
+			// classifies the type as a XAML change.
 			var compilationV2 = CreateMauiCompilation(new[]
 			{
 				CSharpSyntaxTree.ParseText(PageStub, path: "PageStub.cs", encoding: System.Text.Encoding.UTF8),
@@ -756,43 +756,17 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 				localSignatureProvider: handle => default,
 				hasPortableDebugInformation: true);
 
-			// Real XAML edit: apply the V1→V2 delta, then notify. Running UC moves the instance's
-			// __version, so UpdateApplied.HandledTypes reports the type as an actual XAML change.
 			ApplyMethodBodyDelta(assembly, compilationV1, compilationV2, baseline);
 			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { pageType });
-			Assert.NotNull(lastApplied);
-			Assert.Contains(pageType, lastApplied!);
-
-			// A subsequent apply with no new delta (stand-in for a pure C#/code-behind edit): UC runs but
-			// __version does not move, so the type must NOT appear as a XAML change.
-			XamlIncrementalHotReloadHandler.UpdateApplication(new[] { pageType });
-			Assert.NotNull(lastApplied);
-			Assert.DoesNotContain(pageType, lastApplied!);
-			Assert.Empty(lastApplied!);
+			Assert.NotNull(lastHandled);
+			Assert.Contains(pageType, lastHandled!);
 		}
 		finally
 		{
-			HotReloadDiagnostics.UpdateApplied -= capture;
-			ClearCustomMainThread();
+			HotReloadDiagnostics.UpdateRequested -= capture;
 			alc.Unload();
 			AppContext.SetSwitch(switchName, previousSwitch);
 		}
-	}
-
-	// The handler dispatches UpdateComponent() via MainThread.BeginInvokeOnMainThread. Install a
-	// synchronous main-thread implementation so the post-dispatch classification runs inline in the test.
-	static void SetSynchronousMainThread()
-	{
-		var setter = typeof(global::Microsoft.Maui.ApplicationModel.MainThread)
-			.GetMethod("SetCustomImplementation", BindingFlags.NonPublic | BindingFlags.Static);
-		setter!.Invoke(null, new object[] { (Func<bool>)(() => true), (Action<Action>)(a => a()) });
-	}
-
-	static void ClearCustomMainThread()
-	{
-		var clearer = typeof(global::Microsoft.Maui.ApplicationModel.MainThread)
-			.GetMethod("ClearCustomImplementation", BindingFlags.NonPublic | BindingFlags.Static);
-		clearer!.Invoke(null, null);
 	}
 
 	static void AssertNoCompileErrors(CSharpCompilation comp, string label)
@@ -800,94 +774,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 		var errors = comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();
 		if (errors.Length > 0)
 			Assert.Fail($"{label} compilation failed:\n{string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"))}");
-	}
-
-	static int ReadVersionField(object instance) =>
-		(int)instance.GetType().GetField("__version", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(instance)!;
-
-	/// <summary>
-	/// Validates the reliable signal for the post-dispatch classification (Option B → the discussion with
-	/// XamlTools): running <c>UpdateComponent()</c> — the very call that applies Hot Reload, and which is
-	/// confirmed to work — moves the instance's <c>__version</c> field to the new content hash on a XAML
-	/// change, and leaves it unchanged when nothing changed. Reading a field after UC runs is always
-	/// accurate, unlike reflecting the static <c>__XamlContentHash()</c> accessor (whose value can be
-	/// stale after a real delta — the reason Option C misclassified every XAML edit as pure-C#).
-	/// </summary>
-	[MetadataUpdateFact]
-	public void RunningUpdateComponent_MovesInstanceVersion_OnXamlChange_ButNotWhenUnchanged()
-	{
-		XamlHotReloadState.Reset();
-
-		string Page(string text) => $$"""
-			<?xml version="1.0" encoding="utf-8" ?>
-			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			             x:Class="TestE2EApp.MainPage">
-			    <VerticalStackLayout>
-			        <Label Text="{{text}}" />
-			    </VerticalStackLayout>
-			</ContentPage>
-			""";
-
-		var xamlV1 = Page("Hello");
-		var xamlV2 = Page("World");
-		int h1 = GeneratorHelpers.StableContentHash(xamlV1);
-		int h2 = GeneratorHelpers.StableContentHash(xamlV2);
-
-		var (icV1, ucV1, icV2, ucV2, _, _) = RunSourceGenAllPhases(xamlV1, xamlV2, xamlV2);
-		var (peV1, pdbV1, compilationV1) = CompileSources(PageStub, icV1, StripGeneratedCodeAttribute(ucV1!));
-
-		var alc = new AssemblyLoadContext("E2ESignalTest", isCollectible: true);
-		try
-		{
-			var assembly = alc.LoadFromStream(new MemoryStream(peV1), new MemoryStream(pdbV1));
-			var pageType = assembly.GetType(PageClass)!;
-			var instance = Activator.CreateInstance(pageType)!;
-			var page = (ContentPage)instance;
-			string CurrentText() => ((Layout)page.Content!).Children.OfType<Label>().First().Text;
-
-			// Fresh instance is stamped with the V1 content hash.
-			Assert.Equal(h1, ReadVersionField(instance));
-			Assert.Equal("Hello", CurrentText());
-
-			var updateMethod = pageType.GetMethod("UpdateComponent",
-				BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!;
-
-			var compilationV2 = CreateMauiCompilation(new[]
-			{
-				CSharpSyntaxTree.ParseText(PageStub, path: "PageStub.cs", encoding: System.Text.Encoding.UTF8),
-				CSharpSyntaxTree.ParseText(icV2, path: "IC.cs", encoding: System.Text.Encoding.UTF8),
-				CSharpSyntaxTree.ParseText(StripGeneratedCodeAttribute(ucV2!), path: "UC.cs", encoding: System.Text.Encoding.UTF8),
-			});
-			AssertNoCompileErrors(compilationV2, "V2");
-
-			var baseline = EmitBaseline.CreateInitialBaseline(
-				compilationV1, ModuleMetadata.CreateFromImage(peV1),
-				debugInformationProvider: handle => default,
-				localSignatureProvider: handle => default,
-				hasPortableDebugInformation: true);
-
-			// XAML change V1→V2: applying the delta + running UC moves __version h1→h2 (the reliable
-			// change signal), and actually applies the edit ("World").
-			var before = ReadVersionField(instance);
-			ApplyMethodBodyDelta(assembly, compilationV1, compilationV2, baseline);
-			updateMethod.Invoke(instance, null);
-			var after = ReadVersionField(instance);
-			Assert.NotEqual(before, after);
-			Assert.Equal(h2, after);
-			Assert.Equal("World", CurrentText());
-
-			// Re-running UC with no further delta (stand-in for an apply that did not change the XAML):
-			// __version is unchanged, so the post-dispatch signal correctly reports "no XAML change".
-			var before2 = ReadVersionField(instance);
-			updateMethod.Invoke(instance, null);
-			var after2 = ReadVersionField(instance);
-			Assert.Equal(before2, after2);
-		}
-		finally
-		{
-			alc.Unload();
-		}
 	}
 
 	/// <summary>

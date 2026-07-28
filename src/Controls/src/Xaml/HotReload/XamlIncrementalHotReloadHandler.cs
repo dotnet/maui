@@ -71,19 +71,18 @@ public static class XamlIncrementalHotReloadHandler
 		// building and main-thread dispatch latency, not just the UI-thread invoke loop.
 		var sw = Stopwatch.StartNew();
 
-		// Batch dispatch — collect ALL (instance, method, type, __version field) tuples across every
-		// updated type carrying a generated UpdateComponent(), then issue a single
-		// MainThread.BeginInvokeOnMainThread that iterates them.
+		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated type whose
+		// XAML actually changed in this delta, then issue a single MainThread.BeginInvokeOnMainThread.
 		//
-		// candidateTypes is a COARSE, synchronous, pre-dispatch hint: every updated type that has an
-		// UpdateComponent(). Because UC is now emitted on every XAML type from the first compile, its
-		// presence no longer means "this delta changed the XAML" — a pure C#/code-behind edit to a XAML
-		// page also lands here. The AUTHORITATIVE "which types actually changed their XAML" set is
-		// computed POST-dispatch below (see the dispatch loop): running UpdateComponent() — the same call
-		// that applies Hot Reload — stamps the instance's __version with the new content hash only when
-		// the XAML changed, so a moved __version is a reliable per-instance "XAML changed" signal.
-		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type, FieldInfo? VersionField)>();
-		var candidateTypes = new List<Type>();
+		// handledTypes is the synchronous, pre-dispatch "this is a XAML change" signal tooling reads.
+		// UpdateComponent() is now emitted on EVERY XAML type (member stability), so its mere presence no
+		// longer distinguishes a XAML edit from a pure C#/code-behind edit. Instead we look at whether the
+		// method's BODY is non-empty: the generator emits an EMPTY UpdateComponent() when a generation
+		// carries no XAML change, and a patched (non-empty) one when the XAML changed. A pure C# edit does
+		// not regenerate the XAML code, so UpdateComponent() stays empty for that page — correctly read as
+		// "not a XAML change" — while the method still never appears/disappears across generations.
+		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
+		var handledTypes = new List<Type>();
 
 		foreach (var type in updatedTypes)
 		{
@@ -94,33 +93,33 @@ public static class XamlIncrementalHotReloadHandler
 				binder: null,
 				types: Type.EmptyTypes,
 				modifiers: null);
-			var versionField = type.GetField("__version", BindingFlags.NonPublic | BindingFlags.Instance);
 #pragma warning restore IL2070, IL2075
 
 			if (ucMethod is null)
 				continue; // not an incremental-XAML type at all
 
-			candidateTypes.Add(type);
+			if (IsEmptyUpdateComponent(ucMethod))
+				continue; // XAML unchanged in this delta (e.g. a pure C# edit) — not a XAML change
+
+			handledTypes.Add(type);
 
 			var instances = XamlComponentRegistry.GetInstances(type);
 			foreach (var instance in instances)
-				dispatchBatch.Add((instance, ucMethod, type, versionField));
+				dispatchBatch.Add((instance, ucMethod, type));
 		}
 
-		// XamlTools contract: raised SYNCHRONOUSLY, before any dispatch. HandledTypes here is the COARSE
-		// candidate set (types carrying a UC). The precise XAML-vs-non-XAML classification is now on
-		// UpdateApplied.HandledTypes (post-apply); tooling should prefer that. Kept for the pre-dispatch
-		// "an update is happening" signal and back-compat.
-		HotReloadDiagnostics.OnUpdateRequested(typesArray, candidateTypes);
+		// XamlTools contract: raised SYNCHRONOUSLY, before any dispatch, carrying the recognized subset
+		// (HandledTypes) so tooling can classify the update type (XAML Incremental Hot Reload vs. non-XAML)
+		// inline, without awaiting the async apply. Keep this call synchronous and pre-dispatch.
+		HotReloadDiagnostics.OnUpdateRequested(typesArray, handledTypes);
 
 		if (dispatchBatch.Count == 0)
 		{
 			// XamlTools contract: terminal event when nothing is dispatched (no live instances) —
 			// UpdateApplied never fires on this path, so XamlTools uses UpdateSkipped as the definitive
-			// "no apply coming" signal and stops waiting. With no live instance we cannot observe a
-			// __version transition, so this path can only surface the coarse candidate set. No version is
-			// allocated here, keeping the diagnostic version stream gap-free.
-			HotReloadDiagnostics.OnUpdateSkipped(typesArray, candidateTypes);
+			// "no apply coming" signal and stops waiting. No version is allocated here, keeping the
+			// diagnostic version stream gap-free (every increment is paired with an UpdateApplied).
+			HotReloadDiagnostics.OnUpdateSkipped(typesArray, handledTypes);
 			return;
 		}
 
@@ -134,25 +133,13 @@ public static class XamlIncrementalHotReloadHandler
 		global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 		{
 			int instanceCount = 0;
-			// Types whose XAML actually changed in this apply — the authoritative classification.
-			var changedTypes = new List<Type>();
 
-			foreach (var (capturedInstance, capturedMethod, capturedType, versionField) in dispatchBatch)
+			foreach (var (capturedInstance, capturedMethod, capturedType) in dispatchBatch)
 			{
 				try
 				{
-					// Observe the content identity before/after running UpdateComponent(). UC — the same
-					// call that applies Hot Reload — stamps __version with the new content hash ONLY when
-					// the XAML changed (a pure C# delta leaves UC's body, and the stamp, untouched). A
-					// field read after the call is reliable even where reflecting the generated static
-					// content-hash accessor is not (which is why the pre-dispatch accessor approach failed).
-					var before = ReadVersion(versionField, capturedInstance);
 					capturedMethod.Invoke(capturedInstance, null);
 					instanceCount++;
-					var after = ReadVersion(versionField, capturedInstance);
-
-					if (before is int b && after is int a && b != a && !changedTypes.Contains(capturedType))
-						changedTypes.Add(capturedType);
 				}
 #pragma warning disable CA1031
 				catch (Exception ex)
@@ -168,13 +155,38 @@ public static class XamlIncrementalHotReloadHandler
 			sw.Stop();
 			// XamlTools contract: UpdateApplied is the TERMINAL event of a dispatched batch and must
 			// ALWAYS be raised here, after every per-instance OnUpdateFailed above — even if all failed
-			// (instanceCount == 0). Its HandledTypes is the AUTHORITATIVE set of types whose XAML changed
-			// (empty for a pure C# delta), which tooling should use to classify the cycle.
-			HotReloadDiagnostics.OnUpdateApplied(typesArray, changedTypes, instanceCount, fromVersion, toVersion, sw.Elapsed);
+			// (instanceCount == 0). XamlTools blocks briefly awaiting it to fold the stats into its
+			// report; never returning it strands that wait until timeout.
+			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
 		});
 	}
 
-	static int? ReadVersion(FieldInfo? versionField, object instance)
-		=> versionField?.GetValue(instance) is int version ? version : (int?)null;
+	// The generator emits an EMPTY UpdateComponent() body when a generation carries no XAML change, and a
+	// patched (non-empty) one when the XAML changed. An empty method compiles to a trivial body (just a
+	// return / a couple of nops), so its IL is only a few bytes; any real patch is far larger. This lets
+	// the handler distinguish a XAML change from a pure C#/code-behind edit without adding or removing the
+	// method across generations. Unlike reflecting a generated method's return value, UpdateComponent() is
+	// always part of a XAML-change delta (it is what applies Hot Reload), so its body is reliably current.
+	const int EmptyUpdateComponentMaxIL = 8;
+
+	static bool IsEmptyUpdateComponent(MethodInfo ucMethod)
+	{
+		try
+		{
+#pragma warning disable IL2026 // GetMethodBody: XIHR is a dev-time (Hot Reload) feature, never trimmed/AOT.
+			var body = ucMethod.GetMethodBody();
+#pragma warning restore IL2026
+			var il = body?.GetILAsByteArray();
+			return il is null || il.Length <= EmptyUpdateComponentMaxIL;
+		}
+#pragma warning disable CA1031
+		catch
+		{
+			// If the IL cannot be inspected on this runtime, fall back to treating the update as a XAML
+			// change (the pre-regression behavior) rather than silently dropping it.
+			return false;
+		}
+#pragma warning restore CA1031
+	}
 }
 #endif
