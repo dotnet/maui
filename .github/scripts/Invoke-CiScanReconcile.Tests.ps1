@@ -3098,5 +3098,18 @@ Describe 'Static source invariants' {
             'both converters must normalise a [datetime] through the Kind-aware helper'
         @($offenders) | Should -BeNullOrEmpty -Because `
             'ToUniversalTime on a possibly-Unspecified DateTime shifts it by the runner timezone'
+
+        # The checks above pin the ROUTING -- that both converters delegate, and that
+        # neither re-derives UTC itself. They do not pin the DESTINATION. Replacing the
+        # helper's body with a bare `return $Value.ToUniversalTime()` satisfies every
+        # assertion above (the helper still exists, both callers still route to it, and the
+        # bare call has no `[datetime]$Value)` prefix to match), while restoring the exact
+        # defect. Measured: with the helper gutted, TZ=UTC ran fully green.
+        $helper = [regex]::Match($src, '(?s)function ConvertTo-CiScanUtcDateTime\s*\{.*?\n\}').Value
+        $helper | Should -Not -BeNullOrEmpty -Because 'the invariant must find the body it constrains'
+        $helper | Should -Match 'DateTimeKind\]::Unspecified' -Because `
+            'the helper must branch on Unspecified rather than converting every Kind alike'
+        $helper | Should -Match 'SpecifyKind' -Because `
+            'an offsetless value must be relabelled UTC, never shifted by the local offset'
     }
 }

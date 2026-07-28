@@ -1128,6 +1128,83 @@ Describe 'A timestamp with no offset means UTC, whatever the runner is set to' {
         (ConvertTo-CiScanTimestamp -Value $fromJson) |
             Should -Be (ConvertTo-CiScanTimestamp -Value '2026-07-10T00:00:00')
     }
+
+    It 'holds when the runner is not on UTC, which is the only case where it can be wrong' {
+        # The four tests above are correct but cannot fail in CI: they read the AMBIENT
+        # timezone, GitHub runners are UTC, and at UTC the buggy `.ToUniversalTime()` and
+        # the fixed `SpecifyKind` return the same instant. So in the environment that
+        # actually gates this branch, only the source invariant was doing any work.
+        #
+        # This test moves the clock itself instead of hoping the machine is interesting,
+        # which makes the behavioural claim non-vacuous on a UTC runner. Ambient TZ is
+        # restored in `finally` regardless of outcome.
+        $originalTz = $env:TZ
+        try {
+            $env:TZ = 'Asia/Tokyo'
+            [System.TimeZoneInfo]::ClearCachedData()
+
+            # Anti-vacuity: if the platform ignored TZ (Windows does), every assertion
+            # below is satisfied by the bug too, so report "not run" rather than a green
+            # that means nothing.
+            if ([System.TimeZoneInfo]::Local.GetUtcOffset([datetime]::UtcNow) -eq [timespan]::Zero) {
+                Set-ItResult -Skipped -Because 'this platform does not honour $env:TZ, so a local-time shift cannot be observed'
+                return
+            }
+
+            $fromJson = ('{"t":"2026-07-21T04:00:00"}' | ConvertFrom-Json).t
+            $fromJson.Kind | Should -Be ([System.DateTimeKind]::Unspecified) -Because 'otherwise this fixture is not exercising the broken shape'
+
+            # Relabelled, not shifted: the wall-clock reading survives unchanged.
+            $converted = ConvertFrom-CiScanTimestamp -Value $fromJson
+            $converted.Kind | Should -Be ([System.DateTimeKind]::Utc)
+            $converted.Hour | Should -Be 4
+            $converted.Day | Should -Be 21
+
+            $converted | Should -Be (ConvertFrom-CiScanTimestamp -Value '2026-07-21T04:00:00') `
+                -Because 'the same instant spelled two ways cannot mean two different times'
+        }
+        finally {
+            $env:TZ = $originalTz
+            [System.TimeZoneInfo]::ClearCachedData()
+        }
+    }
+
+    It 'does not let the runner timezone change a staleness verdict' {
+        # The consequence, end to end, and the reason this direction is the unsafe one.
+        # East of UTC the shift moves `last_present_at` EARLIER, inflating the quiet
+        # period. Measured before the fix on one identical marker:
+        #   UTC        -> QuietDays 6 -> watching
+        #   Asia/Tokyo -> QuietDays 7 -> candidate   (crosses MinQuietDays = 7)
+        # A close candidate must never be manufactured by the machine that read the issue.
+        $originalTz = $env:TZ
+        try {
+            # `New-StateJson` OMITS last_present_at when unset rather than emitting null,
+            # so this has to go through -LastPresent. Building the JSON and patching the
+            # text instead yielded a fixture with no timestamp at all -- the loop below
+            # still ran three timezones and still passed, proving nothing.
+            $stateJson = New-StateJson -Absent (1..20) -Present @(1) `
+                -ClockStart '2026-06-01T00:00:00Z' -LastPresent '2026-07-21T04:00:00'
+            $stateJson | Should -Match '"last_present_at":"2026-07-21T04:00:00"' `
+                -Because 'the fixture must actually carry an offsetless timestamp'
+            $issue = New-TestIssue -Body (New-CanonicalBody -StateJson $stateJson)
+
+            $verdicts = foreach ($tz in 'UTC', 'Asia/Tokyo', 'America/Chicago') {
+                $env:TZ = $tz
+                [System.TimeZoneInfo]::ClearCachedData()
+                Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+                    -Coverage (New-Coverage -Verified (1..20))
+            }
+
+            @($verdicts.QuietDays | Sort-Object -Unique).Count | Should -Be 1 `
+                -Because 'one marker has one quiet period, whatever machine reads it'
+            @($verdicts.Decision | Sort-Object -Unique).Count | Should -Be 1 `
+                -Because 'a close candidate must not be created by the runner timezone'
+        }
+        finally {
+            $env:TZ = $originalTz
+            [System.TimeZoneInfo]::ClearCachedData()
+        }
+    }
 }
 
 Describe 'Timestamp handling is culture-independent' {
