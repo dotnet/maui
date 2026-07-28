@@ -294,11 +294,14 @@ function Get-CiScanOpenIssues {
         The same stranding bug class was fixed in the CI-fixer twins; see the
         `sort=created&direction=asc` prefetch in `ci-status-fix*.md`.
 
-        `Truncated` reports whether the listing is *proven* complete, so a bounded or
-        interrupted batch can never be misread as "these are all the open tracking
-        issues". That signal is only trustworthy if EVERY early exit is accounted for, so
-        the page ceiling is derived from `Max` instead of being a constant: a constant
-        ceiling silently caps the survey once `Max` exceeds ceiling x 100 and reports
+        `Truncated` means "this listing is NOT proven exhaustive", not "the bound
+        provably elided something" — a full page that exactly consumed the remaining
+        budget may or may not have more behind it, and the two cases are
+        indistinguishable without another request. Reporting the ambiguous case as
+        complete is the failure that matters, so it is reported as truncation. That
+        signal is only trustworthy if EVERY early exit is accounted for, so the page
+        ceiling is derived from `Max` instead of being a constant: a constant ceiling
+        silently caps the survey once `Max` exceeds ceiling x 100 and reports
         `Truncated` = $false while doing it. Hitting the ceiling is therefore reported
         as truncation, never as exhaustion — and so is a failed page read, which leaves
         the remaining pages unknown rather than known-empty.
@@ -695,7 +698,7 @@ function Format-CiScanSummary {
     }
     $null = $sb.AppendLine("| Fail-closed | $(if ($Report.FailClosed) { "**yes — $($Report.FailClosedReason)**" } else { 'no' }) |")
     $null = $sb.AppendLine("| Issues evaluated | $($Report.IssueCount) |")
-    $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — the open-issue listing was truncated (bounded by `-MaxIssues`, or interrupted by a failed page read); oldest issues shown**' } else { 'yes' }) |")
+    $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — may be incomplete: the listing hit the `-MaxIssues` bound or a page read failed; oldest issues shown**' } else { 'yes' }) |")
     $null = $sb.AppendLine("| Generated | $($Report.GeneratedAt) |")
     $null = $sb.AppendLine()
 

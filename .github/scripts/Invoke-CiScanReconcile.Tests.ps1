@@ -578,7 +578,9 @@ Describe 'CI scan reconciler' {
                 -MaxIssues 100 -MaxPullRequests 50 -RequestedMode 'report'
 
             $r.IssuesTruncated | Should -BeTrue
-            (Format-CiScanSummary -Report $r) | Should -BeLike '*truncated*'
+            # Assert the rendered claim, not just the flag: the row is what a human reads.
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*may be incomplete*'
+            (Format-CiScanSummary -Report $r) | Should -Not -BeLike '*| Survey complete | yes |*'
         }
 
         It 'reports Truncated = false when a short page proves the backlog is exhausted' {
@@ -618,7 +620,7 @@ Describe 'CI scan reconciler' {
 
             $script:IssuePageCalls | Should -BeGreaterThan 1
             $r.IssuesTruncated | Should -BeTrue
-            (Format-CiScanSummary -Report $r) | Should -BeLike '*truncated*'
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*may be incomplete*'
             (Format-CiScanSummary -Report $r) | Should -Not -BeLike '*| Survey complete | yes |*'
         }
     }
@@ -1494,6 +1496,22 @@ Describe 'Static source invariants' {
 
     It 'never lets the pure core emit the word close as a decision' {
         $script:CoreText | Should -Not -Match "Decision\s*=\s*'close'"
+    }
+
+    <#
+        The `report` job scans a CONSTANT matrix of both labels, so a concurrency group
+        keyed on `inputs.label` gave identical work two different groups: dispatching
+        `ci-scan` and `ci-scan-net11` ran the same read-heavy survey twice in parallel.
+        The cost is not just minutes — rate limiting shows up as read errors, which force
+        the run fail-closed and suppress the mutations it was dispatched to perform.
+    #>
+    It 'serialises runs on one constant concurrency group' {
+        $group = [regex]::Match($script:WorkflowCode, '(?m)^concurrency:\s*\n\s*group:\s*(.+)$')
+        $group.Success | Should -BeTrue
+        $group.Groups[1].Value.Trim() | Should -BeExactly 'ci-scan-reconcile'
+        # An expression here would re-introduce per-input groups.
+        $group.Groups[1].Value | Should -Not -BeLike '*${{*'
+        $script:WorkflowCode | Should -Match '(?m)^\s*cancel-in-progress:\s*false'
     }
 
     # ─────────────────────────────────────────────────────────────────────────────

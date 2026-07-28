@@ -90,7 +90,13 @@ on:
 permissions: {}
 
 concurrency:
-  group: ci-scan-reconcile-${{ github.event.inputs.label || 'all' }}
+  # Deliberately constant. The `report` job scans a fixed matrix of BOTH labels on every
+  # run, so keying this on `inputs.label` created distinct groups for dispatches that do
+  # identical work — two of them would run the same read-heavy survey in parallel. That
+  # matters beyond wasted minutes: this scanner's failure mode is GitHub/AzDO rate
+  # limiting, which surfaces as read errors, which force the run fail-closed and suppress
+  # the mutations it was dispatched to make. One survey at a time.
+  group: ci-scan-reconcile
   cancel-in-progress: false
 
 jobs:
