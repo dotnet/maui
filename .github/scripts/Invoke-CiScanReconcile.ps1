@@ -118,6 +118,20 @@ function Reset-CiScanCounters {
 }
 
 $script:SkipAzdo = [bool]$SkipAzdo
+# Stands in for the author of a comment that cannot be attributed to any account —
+# GitHub returns `user: null` once the account is deleted. Recorded instead of the
+# (absent) login so `Get-CiScanHumanCommenters` can veto the issue without inventing a
+# plausible-looking username.
+#
+# Two constraints, and they pull in opposite directions. It must be impossible to
+# confuse with a real commenter: GitHub logins are alphanumerics and single interior
+# hyphens only, so the parentheses here can never appear in one. And it must survive
+# MARKDOWN rendering, because this value reaches the operator through the run's step
+# summary (via the `human-comment:` verdict signal, rendered by `Format-...Summary`).
+# An angle-bracketed form would satisfy the first constraint and fail the second — GFM
+# would treat it as an HTML tag and swallow it, leaving the operator a bare
+# `human-comment:` with the reason silently deleted.
+$script:CiScanUnattributableCommenter = '(deleted-account)'
 $null = Set-CiScanReconcileMode -RequestedMode $Mode
 Reset-CiScanCounters
 
@@ -501,6 +515,14 @@ function Get-CiScanHumanCommenters {
         page ceiling is the same epistemic state — the absence of a human comment is
         unproven — and it would otherwise be downgraded per-issue while leaving every
         OTHER issue in the run free to mutate.
+
+        A third state sits between "history complete" and "history unreadable": a
+        comment whose `user` is null, which is what GitHub returns once the author's
+        account has been DELETED. The history is complete, so `Ok` stays `$true`, but
+        that one comment cannot be attributed — and since bot accounts are not deleted,
+        the overwhelmingly likely author is a human. It is therefore reported as a
+        commenter (under a fixed sentinel login), which vetoes this one issue without
+        suppressing the whole run.
     #>
     [CmdletBinding()]
     param([string]$Owner, [string]$Repo, [int]$Number)
@@ -533,10 +555,32 @@ function Get-CiScanHumanCommenters {
         # `$null -eq $c.user` was the same dead guard as the timeline records: under
         # StrictMode the read throws before the comparison, so a comment payload without
         # `user` aborted the run rather than being skipped.
+        #
+        # But `continue` is the wrong landing spot for it, and it is wrong in the
+        # dangerous direction. GitHub nulls `user` when the ACCOUNT WAS DELETED, and
+        # deleted accounts are humans — bots are not deleted. So the single payload shape
+        # that most strongly means "a human was here" was the one shape discarded, while
+        # the loop fell through to `Ok = $true` and certified the history as proving the
+        # absence of human comments. This function's whole contract (see .DESCRIPTION) is
+        # to prove that absence; a comment it cannot attribute is precisely the evidence
+        # it cannot prove it from. Unattributable therefore counts AS human.
+        #
+        # Recorded as a fixed sentinel, never as payload text: the login is echoed into a
+        # `human-comment:` verdict signal, so an attacker-chosen string must not reach it.
+        # The sentinel contains characters GitHub logins cannot ('<', '>'), so it can
+        # never collide with a real commenter.
+        #
+        # This is a PER-ISSUE veto, not a run-level read error. The history here is
+        # complete — every page was fetched — so the run-wide `Ok = $false` suppression
+        # reserved for an unreadable history would be disproportionate; the correct scope
+        # is "this one issue has a comment that might be human, so leave it alone".
         $user = Get-CiScanJsonField -Object $c -Name 'user'
-        if ($null -eq $user) { continue }
-        $login = [string](Get-CiScanJsonField -Object $user -Name 'login')
-        $type = [string](Get-CiScanJsonField -Object $user -Name 'type')
+        $login = if ($null -eq $user) { '' } else { [string](Get-CiScanJsonField -Object $user -Name 'login') }
+        $type = if ($null -eq $user) { '' } else { [string](Get-CiScanJsonField -Object $user -Name 'type') }
+        if ([string]::IsNullOrWhiteSpace($login)) {
+            $logins += $script:CiScanUnattributableCommenter
+            continue
+        }
         if ($type -eq 'Bot') { continue }
         # `-like '*[bot]'` would be a WILDCARD CHARACTER CLASS: it matches any login
         # ending in b, o or t (dropping humans such as `rmarinho`) while NOT matching
@@ -690,10 +734,22 @@ function Get-CiScanBuildCoverage {
             # Reachable-safe via `$ran` (anything here already produced a non-empty result),
             # but read through the accessor anyway so the shape invariant is local rather
             # than a two-hop proof — and so the unsafe idiom does not survive in this loop.
+            #
+            # EVERY ran record must be clean, not merely one of them. `$key` is matched by
+            # SUBSTRING (`IndexOf`, above), so a single leg key routinely selects more than
+            # one timeline record: matrix legs sharing a name prefix, and — the case that
+            # matters — a failed attempt plus its retry. Asking only whether a clean record
+            # EXISTS turns `Leg = failed` + `Leg retry = succeeded` into a verified absence,
+            # which is the exact inversion the paragraph above forbids: the signature fired,
+            # and the build gets counted as proof that it did not. `-eq 0` was answering
+            # "did anything pass?" when the contract asks "did anything fail?". Comparing
+            # the two counts asks the second question, and it degrades the right way — an
+            # ambiguous leg is dropped rather than credited, so a still-red pipeline cannot
+            # accumulate absences toward a close.
             $clean = @($ran | Where-Object {
                 $d.CleanLegResults -contains ([string](Get-CiScanJsonField -Object $_ -Name 'result'))
             })
-            if ((Get-CiScanCount $clean) -eq 0) { $allLegsRan = $false; break }
+            if ((Get-CiScanCount $clean) -ne (Get-CiScanCount $ran)) { $allLegsRan = $false; break }
         }
         if (-not $allLegsRan) { continue }
 

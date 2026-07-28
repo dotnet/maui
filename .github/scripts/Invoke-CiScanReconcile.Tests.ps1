@@ -924,6 +924,123 @@ Describe 'CI scan reconciler' {
             @($c.Logins).Count | Should -Be 0
         }
 
+        <#
+            GitHub returns `user: null` once the comment author's account has been
+            DELETED — and deleted accounts are humans, because bot accounts are not
+            deleted. So the one payload shape that most strongly indicates "a human was
+            here" was being `continue`d past while the function still returned
+            `Ok = $true`, certifying a history it had just discarded evidence from. An
+            issue a human had commented on could therefore be closed.
+
+            The direction matters: this is not a parsing nicety. The StrictMode fix in an
+            earlier round correctly stopped the read from THROWING, but landed on a silent
+            skip when the safe landing spot was "cannot attribute ⇒ count as human".
+
+            Scope is deliberately per-issue, not run-wide: the comment history is complete
+            here (every page was read), so the run-level `Ok = $false` suppression
+            reserved for an UNREADABLE history would be disproportionate.
+        #>
+        It 'treats a comment whose author account was deleted as a human commenter' -ForEach @(
+            @{ Label = 'user is explicitly null'; Comment = @{ user = $null } }
+            @{ Label = 'user field is absent entirely'; Comment = @{ body = 'orphaned' } }
+        ) {
+            $payload = [pscustomobject]$Comment
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') { return , @($payload) }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            # The history itself was readable, so this is a per-issue veto, not a
+            # run-level read failure.
+            $c.Ok | Should -BeTrue -Because $Label
+            @($c.Logins).Count | Should -Be 1 -Because $Label
+        }
+
+        # A present-but-empty user object is the same epistemic state as a null one:
+        # there is no login to classify, so it cannot be cleared as a bot.
+        It 'treats a comment with an unnamed author as a human commenter' {
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') {
+                    return , @([pscustomobject]@{ user = [pscustomobject]@{ type = 'User' } })
+                }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Ok | Should -BeTrue
+            @($c.Logins).Count | Should -Be 1
+        }
+
+        <#
+            An unattributable author must NOT be recorded under a login-shaped string: the
+            value is echoed into a `human-comment:<logins>` verdict signal, so a
+            plausible-looking username would be indistinguishable from a real commenter in
+            the operator-facing output.
+
+            It also has to SURVIVE that output. The signal is rendered into the run's
+            Markdown step summary, so an angle-bracketed sentinel would be parsed as an
+            HTML tag and silently dropped — leaving a bare `human-comment:` and hiding the
+            very reason the issue was vetoed. Both properties are pinned here because they
+            constrain the value from opposite sides.
+        #>
+        It 'records the unattributable author under a sentinel that is neither a login nor markup' {
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') {
+                    return , @([pscustomobject]@{ user = $null })
+                }
+                return , @()
+            }
+
+            $login = @((Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100).Logins)[0]
+            # GitHub logins are alphanumerics and hyphens only, so this can never collide.
+            $login | Should -Not -Match '^[A-Za-z0-9-]+$'
+            # ...and it must not be swallowed by the Markdown step summary.
+            $login | Should -Not -Match '[<>]'
+            [string]::IsNullOrWhiteSpace($login) | Should -BeFalse
+        }
+
+        # Deletion of one author must not blind the reader to the rest of the history.
+        It 'still reports a named human alongside a deleted author' {
+            Mock Invoke-GhRead {
+                if (($GhArgs -join ' ') -like '*/comments*') {
+                    return , @(
+                        [pscustomobject]@{ user = $null },
+                        [pscustomobject]@{ user = [pscustomobject]@{ login = 'rmarinho'; type = 'User' } })
+                }
+                return , @()
+            }
+
+            $c = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+            $c.Logins | Should -Contain 'rmarinho'
+            @($c.Logins).Count | Should -Be 2
+        }
+
+        <#
+            End to end: the veto has to actually reach the mutation decision, not merely
+            appear in the returned login set. A candidate issue whose only comment came
+            from a deleted account must be left completely alone.
+        #>
+        It 'refuses to mutate a candidate whose only commenter was deleted' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like 'label list*') { return , @($script:RepoLabels) }
+                if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+                if ($joined -like '*/comments*') {
+                    return , @([pscustomobject]@{ user = $null })
+                }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce' `
+                -WarningAction SilentlyContinue
+
+            Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+        }
+
         It 'refuses to mutate an issue a human whose login ends in o commented on' {
             Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
             Mock Invoke-GhRead {
@@ -1554,6 +1671,96 @@ Describe 'AzDO coverage re-derivation' {
         It 'counts succeededWithIssues, which is a completed clean leg' {
             $script:LegResult = 'succeededWithIssues'
             (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Contain 42
+        }
+    }
+
+    <#
+        The gate above is necessary but was not sufficient, and the fixtures it runs on
+        are the reason: each mocks exactly ONE timeline record for the leg, so "some
+        matching record is clean" and "every matching record is clean" give the same
+        answer and the difference is unobservable.
+
+        Real timelines are not single-record. The leg key is matched by SUBSTRING, so one
+        key routinely selects several records — matrix legs sharing a name prefix, and a
+        failed attempt alongside its retry. Under the old `count($clean) -eq 0` test a leg
+        that FAILED and was then retried green counted as a verified absence, because one
+        clean record was enough. That is the same "execution is not absence" inversion the
+        Context above closes, arriving through a shape those tests cannot construct: the
+        signature fired, and the build was credited as proof that it did not.
+
+        Every record that ran must be clean. These fixtures therefore mock MULTIPLE
+        records per leg, which is the only way the distinction becomes visible.
+    #>
+    Context 'every record matching the affected leg must be clean, not merely one' {
+        BeforeEach {
+            $script:LegRecords = @()
+            Mock Invoke-HttpGetJson {
+                if ($Url -like '*/timeline*') {
+                    return [pscustomobject]@{ records = @($script:LegRecords) }
+                }
+                return [pscustomobject]@{
+                    definition   = [pscustomobject]@{ id = 313 }
+                    sourceBranch = 'refs/heads/net11.0'
+                    status       = 'completed'
+                    result       = 'failed'
+                }
+            }
+        }
+
+        # The reported case: the leg failed, a retry passed, and the build was counted.
+        It 'does not count a build where the leg failed and only its retry succeeded' {
+            $script:LegRecords = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' }
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView retry'; result = 'succeeded' })
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeFalse
+            $c.VerifiedAbsentBuilds | Should -Not -Contain 42
+            (Get-CiScanCount $c.VerifiedAbsentBuilds) | Should -Be 0
+        }
+
+        # Order must not decide the verdict. With the clean record first, a
+        # short-circuiting or first-match reading would accept the build.
+        It 'does not count a build where the clean record precedes the failed one' {
+            $script:LegRecords = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView retry'; result = 'succeeded' }
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Not -Contain 42
+        }
+
+        # A matrix leg: same name prefix, two configurations, one of them red.
+        It 'does not count a build where one matrix configuration of the leg failed' {
+            $script:LegRecords = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (iOS)'; result = 'succeeded' }
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (Android)'; result = 'failed' })
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Not -Contain 42
+        }
+
+        # The rule must not become "more than one record disqualifies": an all-green
+        # multi-record leg is still a legitimate absence, otherwise every retried or
+        # matrixed leg would be permanently unusable and nothing would ever close.
+        It 'still counts a build when every matching record is clean' {
+            $script:LegRecords = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (iOS)'; result = 'succeeded' }
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (Android)'; result = 'succeededWithIssues' })
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Contain 42
+        }
+
+        # Records that did not run are filtered before the clean check, so a skipped
+        # sibling must neither disqualify the build nor count as clean.
+        It 'ignores a non-running sibling record and counts the clean leg' {
+            $script:LegRecords = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (skipped shard)'; result = 'skipped' })
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Contain 42
+        }
+
+        # ...but a skipped record alongside a FAILED one must still disqualify: the
+        # filtering must not let the failure escape with it.
+        It 'still rejects the build when a failed record sits beside a skipped one' {
+            $script:LegRecords = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' }
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (skipped shard)'; result = 'skipped' })
+            (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Not -Contain 42
         }
     }
 }
