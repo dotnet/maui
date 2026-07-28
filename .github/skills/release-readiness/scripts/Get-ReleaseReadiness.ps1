@@ -2296,8 +2296,8 @@ function Test-IsLineageVerbNegated {
 
     $prefix = $Prefix -replace '[\u2018\u2019]', "'"
     $between = $Between -replace '[\u2018\u2019]', "'"
-    $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot|against|avoid(?:ing)?)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bnot\s+(?:(?:going|planning|intending|expected|allowed|supposed|ready|able)\s+|(?:think|believe)(?:\s+\w+){0,5}\s+)to\s+$|\bnot\s*,\s*(?:after|following|pending)\b[^,]{0,80},\s*to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
-    $postVerbNegation = "(?i)(?:\bnot\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
+    $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot|against|avoid(?:ing)?)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bnot\s+(?:(?:going|planning|intending|expected|allowed|authorized|permitted|supposed|ready|able)\s+|(?:think|believe)(?:\s+\w+){0,5}\s+)to\s+$|\bnot\s*,\s*(?:after|following|pending)\b[^,]*,\s*to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
+    $postVerbNegation = "(?i)(?:\bnot\b|\bno\s+longer\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
     return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation)
 }
 
@@ -2307,7 +2307,7 @@ function Test-IsLineageReferenceNegated {
     $suffix = $Suffix -replace '[\u2018\u2019]', "'"
     $lead = '(?:was|is|were|are|did|does|should|must|will|would|can|could)'
     $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
-    $effect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $effect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
     $prefix = '\s*(?:[,\-–—.!?;]\s*)*[\(\[]?\s*(?:(?:which|that|this|it|though|but|although|yet|however)\s*[,;:]?\s+){0,3}'
     $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
     $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
@@ -2332,9 +2332,15 @@ function Get-ExplicitBackportSourceNumbers {
 
     if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
     $Text = $Text -replace "`r`n", "`n"
-    # Preserve paragraph boundaries, but fold wrapped single lines so
-    # `Backport of` + newline + `#N` remains one explicit lineage clause.
-    $Text = [regex]::Replace($Text, '(?<!\n)\n(?!\n)', ' ')
+    $Text = $Text -replace "`r", "`n"
+    $Text = $Text -replace '\u2028', "`n"
+    $Text = $Text -replace '\u2029', "`n`n"
+    # Preserve paragraphs and Markdown block/list boundaries, but fold genuine
+    # wrapped continuation lines so `Backport of` + newline + `#N` remains one
+    # explicit lineage clause. A new bullet is independent evidence and must
+    # never bind to the prior bullet's lineage verb.
+    $newMarkdownBlock = '(?![ \t]*(?:[-*+]\s+|\d+[.)]\s+|>\s+|#{1,6}\s+))'
+    $Text = [regex]::Replace($Text, "(?<!\n)\n(?!\n)$newMarkdownBlock", ' ')
     $result = [System.Collections.Generic.HashSet[int]]::new()
     # A period terminates only when followed by whitespace/end, preserving dots
     # inside github.com URLs while preventing a later sentence's PR mention from
@@ -2895,7 +2901,7 @@ function Get-IssueCommentPrs {
         # URLs/paths, bare `#123` and `PR#123` are all accepted. The
         # `qual`/`urlrepo`/`pathrepo` groups capture any owner/repo qualifier so a
         # foreign one can be skipped.
-        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)(?![\p{L}\p{N}_])')
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(?<number>\d+)(?![\p{L}\p{N}_])')
         foreach ($m in $refs) {
             $qual     = $m.Groups['qual'].Value
             $urlRepo  = $m.Groups['urlrepo'].Value
@@ -2903,7 +2909,7 @@ function Get-IssueCommentPrs {
             if ($qual     -and $qual     -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
             if ($urlRepo  -and $urlRepo  -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
             if ($pathRepo -and $pathRepo -ne $Repo) { continue }   # cross-repo scheme-less owner/repo/pull/N
-            $num = ConvertTo-PrNumber -Value $m.Groups[1].Value
+            $num = ConvertTo-PrNumber -Value $m.Groups['number'].Value
             if ($null -eq $num) { continue }
             # Does THIS comment pair the reference with fix/resolve/close language
             # within a short window (tolerates the long ".../pull/" URL prefix)?
@@ -4273,7 +4279,9 @@ function Get-VerdictTier {
 function Get-EffectiveVerdictTier {
     <#
     .SYNOPSIS
-        Applies lifecycle-specific tier adjustments to a regression classification.
+        Applies state-sensitive tier adjustments to a regression classification.
+        The Mode parameter is retained so verdict, hash, and renderer callers share
+        one stable policy surface as lifecycle-specific rules evolve.
     #>
     param(
         [string]$Classification,
@@ -5058,6 +5066,10 @@ function Format-MarkdownReport {
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
     $hotfixMarkerInfo = Get-MetadataValue -Container $Data -Name 'shippedInfo'
+    $shippedMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'version')
+    if ($shippedMarkerVersion) {
+        [void]$sb.AppendLine("<!-- release-readiness-shipped: $shippedMarkerVersion -->")
+    }
     if ([bool](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'hotfixInProgress' -Default $false)) {
         $hotfixMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'liveVersion')
         $hotfixMarkerCommit = [string](Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha')

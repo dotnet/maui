@@ -158,6 +158,7 @@ $Script:StrictStableTagRegex = '^(\d+)\.0\.(\d+)$'
 #   Preview tag: `<major>.0.0-preview.<N>.<YYYYMMDD>[.<build>]`
 #     e.g., 11.0.0-preview.5.26304.4
 $Script:StrictPreviewTagRegex = '^(\d+)\.0\.0-preview\.(\d+)\.\d+(?:\.\d+)?$'
+$Script:FinalPreviewNumber = 7
 
 # Backwards-compatible exports for tests that dot-source this script.
 # Tests assert against the same regex strings the algorithm uses.
@@ -314,6 +315,16 @@ function Test-IsUnpublishedHotfixOnLatestShippedSr {
         $BranchPatch -gt $HighestShippedPatch -and
         $BranchPatch -ge $patchFloor -and
         $BranchPatch -lt ($patchFloor + 10)
+}
+
+function Test-IsPatchInSrCycle {
+    param(
+        [Parameter(Mandatory)][int]$SrNumber,
+        [Parameter(Mandatory)][int]$Patch
+    )
+
+    $patchFloor = $SrNumber * 10
+    return $Patch -ge $patchFloor -and $Patch -lt ($patchFloor + 10)
 }
 
 function Test-IsStaleSrBranch {
@@ -751,6 +762,10 @@ function Invoke-DetectionForMajor {
         }
         $branchPatch = [int]$Matches[2]
         $expectedTag = $versionInfo.Tag
+        if (-not (Test-IsPatchInSrCycle -SrNumber $sr -Patch $branchPatch)) {
+            Write-Warning "[major $Major] Branch '$branch' declares patch $branchPatch outside SR$sr's [$($sr * 10)..$(($sr * 10) + 9)] range — skipping Lane 1 to avoid duplicate/misnumbered trackers."
+            continue
+        }
 
         $isUnpublishedLatestSrHotfix = Test-IsUnpublishedHotfixOnLatestShippedSr `
             -SrNumber $sr -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
@@ -936,7 +951,28 @@ function Invoke-DetectionForMajor {
         if ($previewAlreadyShipped) {
             Write-Host "[major $Major] preview$candidatePreviewN (from $previewCandidateRef) already shipped — skipping Lane 4" -ForegroundColor DarkGray
         } elseif ($previewBranchAlreadyExists) {
-            Write-Host "[major $Major] preview$candidatePreviewN already has a branch; covered by Lane 3" -ForegroundColor DarkGray
+            if ($candidatePreviewN -lt $Script:FinalPreviewNumber) {
+                # Cut-before-bump transition: Preview N has its own branch, so its
+                # report intentionally excludes net<N>.0. Keep net<N>.0 covered by
+                # a separate Preview N+1 candidate immediately; its iteration
+                # check will stay BLOCKED until the source branch actually bumps.
+                $nextPreviewN = $candidatePreviewN + 1
+                $nextAlreadyShipped = $shippedPreviews.Contains($nextPreviewN)
+                $nextBranchExists = $previewBranches | Where-Object { $_.previewNumber -eq $nextPreviewN }
+                if (-not $nextAlreadyShipped -and -not $nextBranchExists) {
+                    $recent = Get-RecentCommitCount -Ref $previewCandidateRef -Days $ActivityWindowDays
+                    $tracker = New-PreviewTracker -Major $Major -PreviewNumber $nextPreviewN -Mode 'candidate' `
+                        -BranchName $null -SurveyRef $previewCandidateRef `
+                        -HasRecentActivityCount $recent
+                    $trackers.Add($tracker)
+                    Write-Host "  -> cut-before-bump candidate preview tracker: preview$nextPreviewN (surveyRef=$previewCandidateRef still advertises preview$candidatePreviewN, recent=$recent)" -ForegroundColor Yellow
+                }
+            } else {
+                # Preview 7 is the final preview; its next cycle is rc1, not
+                # preview8. Keep the current Preview 7 tracker scoped to its branch
+                # and warn until the dedicated RC lane exists.
+                Write-Warning "[major $Major] preview$candidatePreviewN is cut while $previewCandidateRef still advertises preview$candidatePreviewN. The next cycle is rc1, but RC tracking is not yet implemented; no preview8 tracker will be invented."
+            }
         } else {
             $recent = Get-RecentCommitCount -Ref $previewCandidateRef -Days $ActivityWindowDays
             $tracker = New-PreviewTracker -Major $Major -PreviewNumber $candidatePreviewN -Mode 'candidate' `

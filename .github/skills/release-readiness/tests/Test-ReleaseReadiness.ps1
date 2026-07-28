@@ -455,6 +455,12 @@ if (-not (Test-Path $detectScriptPath)) {
               -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 100 -HighestShippedPatch 90)
     Assert-Eq -Label "already-tagged patch equality is not an unpublished hotfix" `
               -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 90 -HighestShippedPatch 90)
+    Assert-Eq -Label "SR9 patch 99 remains in SR9 decade" -Expected $true `
+              -Actual (Test-IsPatchInSrCycle -SrNumber 9 -Patch 99)
+    Assert-Eq -Label "SR9 patch 100 is rejected as SR10 decade" -Expected $false `
+              -Actual (Test-IsPatchInSrCycle -SrNumber 9 -Patch 100)
+    Assert-Eq -Label "SR10 patch 100 belongs to SR10 decade" -Expected $true `
+              -Actual (Test-IsPatchInSrCycle -SrNumber 10 -Patch 100)
 
     # Empty ship set: every branch must be in-flight.
     Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
@@ -945,6 +951,22 @@ if (-not $SkipE2E) {
                 $net11 = $byMajor[11]
                 Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
                 Assert-Eq -Label "net11 highestShippedTag is null (pre-GA)" -Expected $true -Actual ([string]::IsNullOrEmpty($net11.highestShippedTag))
+                $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
+                $srTrackers      = @($net11.trackers | Where-Object branchType -eq 'sr')
+                $net11VersionInfo = Get-VersionFromGitRef -GitRef "origin/$($net11.mainBranch)" -Repo $multi.repo
+
+                if ($net11VersionInfo -and $net11VersionInfo.PreLabel -eq 'rc') {
+                    # preview7 is the final preview. Once the source flips to rc1,
+                    # no preview8 candidate may be required; RC tracking is a
+                    # separate lane and the detector emits an explicit warning
+                    # until that lane exists.
+                    Assert-Eq -Label "net11 rc phase has no preview candidate tracker" `
+                        -Expected 0 -Actual @($previewTrackers | Where-Object mode -eq 'candidate').Count
+                    Assert-Eq -Label "net11 rc phase never invents preview8" `
+                        -Expected 0 -Actual @($previewTrackers | Where-Object { [int]$_.previewNumber -ge 8 }).Count
+                    Assert-Eq -Label "net11 rc phase still has no SR tracker before GA" `
+                        -Expected 0 -Actual $srTrackers.Count
+                } else {
 
                 # Drift-proof preview lane: derive the expected candidate preview number
                 # from the LIVE highestShippedPreviewTag instead of pinning a specific tag
@@ -958,8 +980,6 @@ if (-not $SkipE2E) {
                 $shippedPreviewN = if ($shippedPreviewMatch.Success) { [int]$shippedPreviewMatch.Groups[1].Value } else { -1 }
                 $candidateN = $shippedPreviewN + 1
 
-                $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
-                $srTrackers      = @($net11.trackers | Where-Object branchType -eq 'sr')
                 # Steady post-ship state = 1 preview tracker (the candidate). A transient
                 # second tracker appears only while the previous preview's branch is cut but
                 # its tag is unpublished (in-flight + candidate). Bound the count rather than
@@ -1064,6 +1084,7 @@ if (-not $SkipE2E) {
                               -Expected "regressed-in-11.0.0-preview$($candidateN-1),regressed-in-11.0.0-preview$candidateN" `
                               -Actual ($candidate.regressionLabels -join ',')
                 }
+                }
             } else {
                 Write-Host "  ❌ majors[] missing net11 entry" -ForegroundColor Red; $script:failed++
             }
@@ -1154,6 +1175,17 @@ if (-not $SkipE2E) {
             -Expected '10.0.90' -Actual $syntheticHotfixShipped9.expectedTag
         Assert-Eq -Label "synthetic unpublished SR9 hotfix does not emit in-flight SR9" `
             -Expected 0 -Actual @($syntheticHotfixSrTrackers | Where-Object mode -eq 'in-flight').Count
+
+        $script:SyntheticSrBranchTag = '10.0.100'
+        $syntheticRollover = Invoke-DetectionForMajor -Major 10
+        $syntheticRolloverSrTrackers = @($syntheticRollover.trackers | Where-Object branchType -eq 'sr')
+        Assert-Eq -Label "synthetic SR9 patch-decade rollover emits no SR9 tracker" `
+            -Expected 0 -Actual @($syntheticRolloverSrTrackers | Where-Object { [int]$_.srNumber -eq 9 }).Count
+        $rolloverSr10 = @($syntheticRolloverSrTrackers | Where-Object { [int]$_.srNumber -eq 10 })
+        Assert-Eq -Label "synthetic SR9 patch-decade rollover emits exactly one SR10 tracker" `
+            -Expected 1 -Actual $rolloverSr10.Count
+        Assert-Eq -Label "synthetic rollover SR10 owns tag 10.0.100" `
+            -Expected '10.0.100' -Actual $rolloverSr10[0].expectedTag
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
@@ -1189,9 +1221,14 @@ if (-not $SkipE2E) {
             param([int]$Major)
             ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview6'; previewNumber = 6 })
         }
+        $script:SyntheticPreviewIteration = 7
         function Get-VersionFromGitRef {
             param([string]$GitRef, [string]$Repo)
-            [pscustomobject]@{ Tag = '11.0.0-preview.7.26000.1'; PreLabel = 'preview'; PreIter = 7 }
+            [pscustomobject]@{
+                Tag = "11.0.0-preview.$($script:SyntheticPreviewIteration).26000.1"
+                PreLabel = 'preview'
+                PreIter = $script:SyntheticPreviewIteration
+            }
         }
         function Get-RecentCommitCount { param([string]$Ref, [int]$Days) 1 }
         function Invoke-GitOrFail {
@@ -1214,6 +1251,18 @@ if (-not $SkipE2E) {
         Assert-Eq -Label "synthetic preview7 mode = candidate" -Expected 'candidate' -Actual $candidate7.mode
         Assert-Eq -Label "synthetic preview7 branchExists = false" -Expected $false -Actual $candidate7.branchExists
         Assert-Eq -Label "synthetic preview7 surveyRef = net11.0" -Expected 'net11.0' -Actual $candidate7.surveyRef
+
+        $script:SyntheticPreviewIteration = 6
+        $cutBeforeBump = Invoke-DetectionForMajor -Major 11
+        $cutBeforeBumpTrackers = @($cutBeforeBump.trackers | Where-Object branchType -eq 'preview')
+        $cutPreview6 = $cutBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 6 } | Select-Object -First 1
+        $preBumpPreview7 = $cutBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+        Assert-Eq -Label "cut-before-bump keeps Preview 6 on its release branch" `
+            -Expected 'in-flight' -Actual $cutPreview6.mode
+        Assert-Eq -Label "cut-before-bump creates separate Preview 7 candidate" `
+            -Expected 'candidate' -Actual $preBumpPreview7.mode
+        Assert-Eq -Label "cut-before-bump Preview 7 candidate surveys net11.0" `
+            -Expected 'net11.0' -Actual $preBumpPreview7.surveyRef
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
@@ -1223,6 +1272,7 @@ if (-not $SkipE2E) {
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        Remove-Variable -Name SyntheticPreviewIteration -Scope Script -ErrorAction SilentlyContinue
     }
 
     # Synthetic rc window: the pre-release train continues past the final preview
@@ -1307,14 +1357,16 @@ if (-not $SkipE2E) {
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixVersion:\s*\(\.hotfixVersion // ""\)'))
     Assert-Eq -Label "workflow matrix carries hotfix branch generation" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixCommit:\s*\(\.hotfixCommit // ""\)'))
-    Assert-Eq -Label "workflow shipped refresh-only guard exempts active hotfix" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$MODE.*shipped.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
-    Assert-Eq -Label "workflow activity gate exempts active hotfix" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$RECENT_COMMIT_COUNT.*-eq 0.*\$HOTFIX_IN_PROGRESS.*!=.*true.*\$EXISTING'))
-    Assert-Eq -Label "workflow closed-hotfix guard searches version-specific marker" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'release-readiness-hotfix: \$\{HOTFIX_VERSION\}@\$\{HOTFIX_COMMIT\}'))
-    Assert-Eq -Label "workflow closed-hotfix guard suppresses recreation" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'Hotfix tracker.*was closed.*not recreating'))
+    Assert-Eq -Label "workflow lifecycle decisions use generated report hotfix marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+    Assert-Eq -Label "workflow lifecycle decisions use generated report shipped marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+    Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
+    Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
+    Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'PRE_EDIT_STATE=.*gh issue view'))
 
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
@@ -1849,6 +1901,9 @@ try {
         'We cannot backport #32537',
         'We agreed not to backport #32537',
         'We never intended to backport #32537',
+        'We are not authorized to backport #32537',
+        'We are not permitted to backport #32537',
+        ("We decided not, after " + ('x' * 81) + ", to backport #32537"),
         "This isn’t intended to be cherry-picked from #32537",
         "This wasn’t cherry-picked from #32537",
         'No backport of #32537',
@@ -1973,7 +2028,9 @@ try {
         'Backport of #32537 is no longer applicable',
         'Backport of #32537 is no longer relevant',
         'Backport of #32537 is no longer needed',
+        'Backport of #32537 is no longer required',
         'Backport of #32537 does not apply',
+        'Backport of #32537 does not pertain to this release',
         'Backport of #32537 has been rolled back',
         'Backport of #32537. This was later reverted due to test failures.',
         'Backport of #32537, though it got reverted the next day.',
@@ -2008,6 +2065,34 @@ try {
         Assert-Eq -Label "backport lineage: qualified explicit list preserves later source — $qualifiedListBody" -Expected $true `
             -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
                 body = $qualifiedListBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    foreach ($negatedQualifiedListBody in @(
+        'Backport of #1234, (not authorized to land), and #32610',
+        'Backport of #1234, (not permitted for this release), and #32610',
+        'Backport of #1234, (no longer required), and #32610',
+        'Backport of #1234, (does not pertain to this release), and #32610'
+    )) {
+        Assert-Eq -Label "backport lineage: negated list qualifier is fail-closed — $negatedQualifiedListBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $negatedQualifiedListBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    foreach ($wrappedSeparator in @("`r`n", "`r", [string][char]0x2028)) {
+        $wrappedBody = "Backport of${wrappedSeparator}#32610"
+        Assert-Eq -Label "backport lineage: wrapped continuation separator is normalized" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $wrappedBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    foreach ($bulletSeparator in @("`n", "`r`n", "`r", [string][char]0x2028, [string][char]0x2029)) {
+        $bulletBody = "- Discussed a backport${bulletSeparator}- #32610 is context only"
+        Assert-Eq -Label "backport lineage: Markdown bullet boundary does not bind unrelated PR" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $bulletBody
                 headRefName = 'manual/backport'
             }) -SourcePrNumber 32610)
     }
@@ -4467,6 +4552,8 @@ $hotfixMd = Format-MarkdownReport -Data $hotfixMdData -RepoUrl 'https://github.c
     -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
 Assert-Eq -Label "active hotfix report emits version-specific hidden marker" -Expected $true `
     -Actual ($hotfixMd -match '<!-- release-readiness-hotfix: 10\.0\.91@aaaaaaaa1111bbbbbbbb2222cccccccc -->')
+Assert-Eq -Label "active hotfix report emits immutable shipped-generation marker" -Expected $true `
+    -Actual ($hotfixMd -match '<!-- release-readiness-shipped: 10\.0\.90 -->')
 Assert-Eq -Label "active hotfix report renders operational follow-up section" -Expected $true `
     -Actual ($hotfixMd -match '(?s)Post-ship operational follow-ups.*Unpublished hotfix branch state')
 Assert-Eq -Label "active hotfix report does not claim no urgent follow-ups" -Expected $false `
@@ -7355,6 +7442,20 @@ Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundC
 # -Branch is required to satisfy the mandatory parameter + branch parse.
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
+
+# A component-pin fetch failure must fail closed without suppressing the
+# mandatory local VMR reconciliation handoff.
+$missingPinsCheck = Get-ComponentPinsReadinessCheck -Pins $null `
+    -SurveyRef 'release/11.0.1xx-preview7'
+Assert-Eq -Label "component pins failure emits UNKNOWN check" `
+    -Expected 'UNKNOWN' -Actual $missingPinsCheck.Status
+Assert-Eq -Label "component pins failure names unverified SDK/VMR evidence" `
+    -Expected $true -Actual ([bool]($missingPinsCheck.Details -match 'SDK/VMR builds are unverified'))
+$missingPinsMarkdown = Get-ComponentPinsUnavailableMarkdown
+Assert-Eq -Label "component pins failure still renders mandatory local VMR guidance" `
+    -Expected $true -Actual ([bool]($missingPinsMarkdown -match 'mandatory local SDK/VMR reconciliation'))
+Assert-Eq -Label "available component pins do not emit UNKNOWN check" `
+    -Expected $true -Actual ($null -eq (Get-ComponentPinsReadinessCheck -Pins ([pscustomobject]@{ Vmr = @{} }) -SurveyRef 'x'))
 
 # The report scope must follow the preview lifecycle: after Preview N is cut,
 # only PRs targeting its release branch belong in its report. net<N>.0 is queried

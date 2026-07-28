@@ -410,9 +410,6 @@ jobs:
           BODY_FILE:          ${{ steps.report.outputs.body-file }}
           RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
           MODE:               ${{ matrix.mode }}
-          HOTFIX_IN_PROGRESS: ${{ matrix.hotfixInProgress }}
-          HOTFIX_VERSION:     ${{ matrix.hotfixVersion }}
-          HOTFIX_COMMIT:      ${{ matrix.hotfixCommit }}
         shell: bash
         run: |
           set -euo pipefail
@@ -421,6 +418,16 @@ jobs:
           # This is the idempotent join key — Get-ReleaseReadiness / Get-PreviewReadiness
           # both embed `<!-- release-readiness-tracker: $TRACKER_KEY -->`.
           MARKER="<!-- release-readiness-tracker: ${TRACKER_KEY} -->"
+          # The generated report is authoritative for lifecycle state. Detector
+          # matrix values can become stale if a tag or branch commit lands between
+          # detection and report generation; the body markers reflect the exact
+          # refs the report actually surveyed.
+          HOTFIX_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-hotfix: [^>]+ -->$' "$BODY_FILE" || true)
+          SHIPPED_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-shipped: [^>]+ -->$' "$BODY_FILE" || true)
+          REPORT_HOTFIX_IN_PROGRESS=false
+          [ -n "$HOTFIX_MARKER" ] && REPORT_HOTFIX_IN_PROGRESS=true
+          CREATE_GENERATION=false
+
           EXISTING=$(gh issue list \
             --repo "${{ github.repository }}" \
             --state open \
@@ -429,42 +436,36 @@ jobs:
             --limit 50 \
             --jq '. // [] | sort_by(.createdAt) | .[].number')
 
-          # Shipped trackers are REFRESH-ONLY. The most-recently-shipped SR keeps
-          # surfacing post-ship follow-up (adding the build to the GitHub issue
-          # version dropdown, release notes, milestone close-out) while its tracker
-          # issue stays OPEN, but we never (re)create it. Once a human closes the
-          # tracker, it stays closed — "update until closed manually" without
-          # resurrecting a closed issue on the next scheduled run.
-          if [ "$MODE" = "shipped" ] && [ "$HOTFIX_IN_PROGRESS" != "true" ] && [ -z "$EXISTING" ]; then
-            echo "Shipped tracker ${TRACKER_KEY}: no open issue (closed or never created) — refresh-only, nothing to do."
-            exit 0
-          fi
-
-          # An active hotfix is create-capable even if the ordinary shipped
-          # tracker was closed. But once a human closes THIS hotfix version's
-          # tracker, do not recreate it every day. A later commit or hotfix
-          # version gets a distinct marker and can create its own tracker.
-          if [ "$HOTFIX_IN_PROGRESS" = "true" ] && [ -z "$EXISTING" ]; then
-            HOTFIX_MARKER="<!-- release-readiness-hotfix: ${HOTFIX_VERSION}@${HOTFIX_COMMIT} -->"
-            CLOSED_HOTFIX=$(gh issue list \
-              --repo "${{ github.repository }}" \
-              --state closed \
-              --search "in:body \"${MARKER}\"" \
-              --json number,body,closedAt \
-              --limit 50 |
-              jq -r --arg marker "$HOTFIX_MARKER" \
-                '[.[] | select(.body | contains($marker))] | sort_by(.closedAt) | last | .number // empty')
-            if [ -n "$CLOSED_HOTFIX" ]; then
-              echo "Hotfix tracker ${TRACKER_KEY} ${HOTFIX_VERSION}@${HOTFIX_COMMIT} was closed as #${CLOSED_HOTFIX} — not recreating."
+          # Each immutable shipped/hotfix generation is create-once. This
+          # distinguishes an intentionally closed generation from one that was
+          # never tracked (for example, a hotfix tag published before the first
+          # scheduled updater run). Search the exact generated marker directly so
+          # the result is not diluted by a generic-marker --limit window.
+          if [ "$MODE" = "shipped" ] && [ -z "$EXISTING" ]; then
+            GENERATION_MARKER="$SHIPPED_MARKER"
+            [ "$REPORT_HOTFIX_IN_PROGRESS" = "true" ] && GENERATION_MARKER="$HOTFIX_MARKER"
+            if [ -z "$GENERATION_MARKER" ]; then
+              echo "::warning::Shipped report for ${TRACKER_KEY} has no lifecycle generation marker; refusing to create or infer closure state."
               exit 0
             fi
+            CLOSED_GENERATION=$(gh issue list \
+              --repo "${{ github.repository }}" \
+              --state closed \
+              --search "in:body \"${GENERATION_MARKER}\"" \
+              --json number,closedAt,updatedAt \
+              --limit 10 \
+              --jq '[.[] | select((.closedAt // "") >= (.updatedAt // ""))] | sort_by(.closedAt) | last | .number // empty')
+            if [ -n "$CLOSED_GENERATION" ]; then
+              echo "Tracker generation ${GENERATION_MARKER} was intentionally closed as #${CLOSED_GENERATION} — not recreating."
+              exit 0
+            fi
+            CREATE_GENERATION=true
           fi
 
           # Activity gate: when there is no recent activity AND no open tracker issue,
-          # skip new-issue creation. Active hotfixes are exempt: the live version
-          # mismatch is itself actionable even when the bump is older than the
-          # recent-commit window. (If an existing issue is open, we still refresh it.)
-          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ "$HOTFIX_IN_PROGRESS" != "true" ] && [ -z "$EXISTING" ]; then
+          # skip new-issue creation. A newly observed shipped/hotfix generation
+          # is exempt even when its commits fall outside the activity window.
+          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ "$CREATE_GENERATION" != "true" ] && [ -z "$EXISTING" ]; then
             echo "Skipping ${TRACKER_KEY}: no recent commits and no open tracker issue."
             exit 0
           fi
@@ -626,10 +627,21 @@ jobs:
                 if [ -n "$NEW_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
                   echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
                 else
-                  gh issue edit "$CANONICAL" \
+                  # A human can close the issue while this run is preparing the
+                  # notes splice. Re-read state immediately before the write so
+                  # we never attach a new generation marker to an issue that is
+                  # already closed.
+                  PRE_EDIT_STATE=$(gh issue view "$CANONICAL" \
                     --repo "${{ github.repository }}" \
-                    --title "$ISSUE_TITLE" \
-                    --body-file "$BODY_FILE"
+                    --json state --jq '.state // ""' 2>/dev/null || true)
+                  if [ "$PRE_EDIT_STATE" != "OPEN" ]; then
+                    echo "::warning::Issue #${CANONICAL} is no longer open; skipping refresh to preserve the human closure."
+                  else
+                    gh issue edit "$CANONICAL" \
+                      --repo "${{ github.repository }}" \
+                      --title "$ISSUE_TITLE" \
+                      --body-file "$BODY_FILE"
+                  fi
                 fi
               fi
             fi

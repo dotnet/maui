@@ -1758,6 +1758,22 @@ function New-Check {
     }
 }
 
+function Get-ComponentPinsReadinessCheck {
+    param(
+        $Pins,
+        [string]$SurveyRef
+    )
+
+    if ($Pins) { return $null }
+    return New-Check -Area "Component pins (eng/Version.Details.xml)" -Status "UNKNOWN" `
+        -Details "Could not read or parse component pins from ``$SurveyRef``. The bundled Android, macOS/iOS, and SDK/VMR builds are unverified." `
+        -NextAction "Restore access to ``eng/Version.Details.xml``, resolve the official SDK/runtime build locally, and rerun readiness before treating component selection as verified."
+}
+
+function Get-ComponentPinsUnavailableMarkdown {
+    return "> [!CAUTION]`n> **Component pins unavailable.** The mandatory local SDK/VMR reconciliation above still applies, but no bundled component versions can be verified from this run. See the ``Component pins`` UNKNOWN checklist row."
+}
+
 function Get-PublicSafeInternalPipelineText {
     param([string]$Status)
 
@@ -2464,6 +2480,21 @@ if ($PublicSafe -and $internalStatus -ne "READY") {
 
 $checks += New-Check -Area "Internal release pipelines" -Status $internalStatus -Details $internalDetails -NextAction $internalAction
 
+# --- Component pin inventory ---
+# This evidence is required for the local VMR reconciliation handoff. A
+# transient file/API failure must not silently remove that guidance or let the
+# report look fully verified.
+$isCutPreview = $Mode -eq 'in-flight'
+$componentPins = if ($surveyExists) {
+    Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
+} else {
+    $null
+}
+$componentPinsCheck = Get-ComponentPinsReadinessCheck -Pins $componentPins -SurveyRef $SurveyRef
+if ($componentPinsCheck) {
+    $checks += $componentPinsCheck
+}
+
 $overallStatus = Get-OverallStatus -Checks $checks
 $readinessVerdict = Get-ReadinessVerdict -Checks $checks
 
@@ -2680,9 +2711,30 @@ $notesBlockText = $notesSb.ToString()
 # pin locally, and verifying the two preview subscriptions are LOCAL tasks — the
 # callout below points the captain at the exact local prompt to run. Rendered OUTSIDE
 # the human-notes markers so it self-refreshes on every automated re-run.
-$componentPins = Get-BranchComponentPins -Ref $SurveyRef -Major $majorVersion
-if ($componentPins) {
-    $isCutPreview = $Mode -eq 'in-flight'
+[void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + update paths")
+[void]$md.AppendLine("")
+[void]$md.AppendLine("> [!IMPORTANT]")
+$vmrPolicyText = if ($isCutPreview) {
+    "VMR is intentionally different: there is **no dotnet/dotnet subscription** on a cut preview branch because the Maestro preview feed can differ from the official release source of truth; reconcile that pin locally against the official SDK/runtime build."
+} else {
+    "Candidate mode surveys ``$SurveyRef``: its VMR flow signal describes the inflight branch subscription only and does **not** select or validate the official Preview $previewNumber SDK/runtime pin. After cut, use only Android/macOS-iOS subscriptions and reconcile VMR locally."
+}
+[void]$md.AppendLine("> **Branch pins** are read from ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT a confirmed official build**; this public workflow cannot resolve the authoritative release designation. $vmrPolicyText")
+[void]$md.AppendLine(">")
+[void]$md.AppendLine("> ``````")
+$localVerificationPrompt = if ($isCutPreview) {
+    "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth, reconcile the MAUI SDK/VMR pin locally to that build, and verify only the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel."
+} else {
+    "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth. Treat ``$SurveyRef`` VMR flow as inflight evidence only; after cut, add only dotnet/android + dotnet/macios subscriptions and reconcile MAUI's SDK/VMR pin locally."
+}
+[void]$md.AppendLine("> $localVerificationPrompt")
+[void]$md.AppendLine("> ``````")
+[void]$md.AppendLine("")
+
+if (-not $componentPins) {
+    [void]$md.AppendLine((Get-ComponentPinsUnavailableMarkdown))
+    [void]$md.AppendLine("")
+} else {
     # --- Inferred subscription health (public PR trail) ---
     # We can't read Maestro subscription config from CI, but a *working* sub
     # leaves a public trail of dependency-flow PRs into the branch. Gather that
@@ -2706,26 +2758,7 @@ if ($componentPins) {
     $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
     $depFlowPRs      = @($allPRsForFlow | Where-Object { Test-IsDependencyFlowPr $_ })
 
-    [void]$md.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + update paths")
-    [void]$md.AppendLine("")
-    [void]$md.AppendLine("> [!IMPORTANT]")
-    $vmrPolicyText = if ($isCutPreview) {
-        "VMR is intentionally different: there is **no dotnet/dotnet subscription** on a cut preview branch because the Maestro preview feed can differ from the official release source of truth; reconcile that pin locally against the official SDK/runtime build."
-    } else {
-        "Candidate mode surveys ``$SurveyRef``: its VMR flow signal describes the inflight branch subscription only and does **not** select or validate the official Preview $previewNumber SDK/runtime pin. After cut, use only Android/macOS-iOS subscriptions and reconcile VMR locally."
-    }
-    [void]$md.AppendLine("> **Branch pins** below are the component builds **currently bundled** on ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT a confirmed official build**; this public workflow cannot resolve the authoritative release designation. The **Update path / flow signal** column infers subscription health from the **public dependency-flow PR trail**. $vmrPolicyText")
-    [void]$md.AppendLine(">")
     [void]$md.AppendLine("> The **Upstream** column is a hard git fact (not an inference): it compares our pinned SHA against the tip of each component's same-named branch (``$SurveyRef`` — derived, never hardcoded) via the public compare API. ⬆️ *N ahead* means the source moved past what we bundle — an FYI you *may* want to pull in, **not** a required bump (maui pins blessed builds deliberately, so those commits may be post-preview churn or not yet blessed).")
-    [void]$md.AppendLine(">")
-    [void]$md.AppendLine("> ``````")
-    $localVerificationPrompt = if ($isCutPreview) {
-        "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth, reconcile the MAUI SDK/VMR pin locally to that build, and verify only the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel."
-    } else {
-        "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth. Treat ``$SurveyRef`` VMR flow as inflight evidence only; after cut, add only dotnet/android + dotnet/macios subscriptions and reconcile MAUI's SDK/VMR pin locally."
-    }
-    [void]$md.AppendLine("> $localVerificationPrompt")
-    [void]$md.AppendLine("> ``````")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Update path / flow signal | Upstream (vs our pin) |")
     [void]$md.AppendLine("|-----------|----------------------|--------|---------------------------|-----------------------|")
@@ -2905,7 +2938,8 @@ if ($openPrMetadataUsedRest) {
 
 [void]$md.AppendLine("## Release branch PRs")
 [void]$md.AppendLine("")
-$releasePullRequestListUrl = "https://github.com/$Repository/pulls?q=$([uri]::EscapeDataString("is:open is:pr base:$SurveyRef"))"
+$releasePullRequestQuery = "is:open is:pr base:$SurveyRef"
+$releasePullRequestListUrl = "https://github.com/$Repository/pulls?q=$([uri]::EscapeDataString($releasePullRequestQuery))"
 Add-PRTable -Builder $md -PRs $targetHumanPRs -MaxRows 15 -SortByActionability -FullListUrl $releasePullRequestListUrl
 
 [void]$md.AppendLine("## Priority release-blocking issues (p/0/p/1)")
