@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -64,6 +67,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			//Assert
 			Assert.Null(indicatorView.IndicatorLayout);
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task IndicatorViewItemsSourceDoesNotLeak()
+		{
+			// A long-lived collection (e.g. the same ObservableCollection a CarouselView is bound to)
+			// that outlives the IndicatorView.
+			var sharedSource = new ObservableCollection<string> { "a", "b", "c" };
+
+			WeakReference CreateReference()
+			{
+				var indicatorView = new IndicatorView();
+				indicatorView.ItemsSource = sharedSource;
+				return new WeakReference(indicatorView);
+			}
+
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
+
+			Assert.False(await reference.WaitForCollect(), "IndicatorView should not be alive!");
+
+			// Ensure the shared source stays alive for the duration of the test.
+			GC.KeepAlive(sharedSource);
 		}
 	}
 }
