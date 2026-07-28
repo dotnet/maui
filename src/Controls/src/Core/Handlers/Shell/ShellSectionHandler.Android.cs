@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Android.Content;
 using Android.OS;
@@ -198,6 +199,10 @@ namespace Microsoft.Maui.Controls.Handlers
             // Subscribe to visible items collection changes (fires on add/remove AND visibility changes)
             SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 
+            foreach (var item in SectionController.GetItems())
+            {
+                item.PropertyChanged += OnShellContentPropertyChanged;
+            }
             // Wait for the view to be attached before setting up the adapter
             // This ensures the parent fragment is set
             _rootLayout?.ViewAttachedToWindow += OnRootLayoutAttachedToWindow;
@@ -425,6 +430,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
+            foreach (var item in SectionController.GetItems())
+            {
+                item.PropertyChanged -= OnShellContentPropertyChanged;
+            }
             // Only remove top tabs from the shared container if this is the active section.
             // When inactive sections are disconnected (e.g., VP2 adapter updates recreate
             // fragments for bottom tabs that reappeared), their DisconnectHandler must NOT
@@ -493,6 +502,19 @@ namespace Microsoft.Maui.Controls.Handlers
                 {
                     handler._viewPager.SetCurrentItem(targetIndex, true);
                 }
+            }
+        }
+
+        void OnShellContentPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not ShellContent shellContent || _adapter is null)
+            {
+                return;
+            }
+
+            if (e.PropertyName == ShellContent.ContentProperty.PropertyName)
+            {
+                _adapter.InvalidateShellContent(shellContent);
             }
         }
 
@@ -732,6 +754,17 @@ namespace Microsoft.Maui.Controls.Handlers
                 _contentIds.Remove(item);
 
             _visibleItems = newItems;
+        }
+
+        public void InvalidateShellContent(ShellContent shellContent)
+        {
+            if (_visibleItems is null || !_visibleItems.Contains(shellContent))
+            {
+                return;
+            }
+
+            _contentIds.Remove(shellContent);
+            NotifyDataSetChanged();
         }
 
         public override Fragment CreateFragment(int position)
