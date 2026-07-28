@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 				[nameof(ITextStyle.Font)] = MapFont,
 				[nameof(IMenuElement.Source)] = MapSource,
+				[nameof(ISwipeItemMenuItem.IconColor)] = MapIconColor,
 			};
 
 		public static CommandMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> CommandMapper =
@@ -60,6 +61,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
+
+		// The tint is resolved while the icon is being applied to the platform view, so reloading the
+		// source is what re-evaluates it. This also guarantees a previously applied tint is cleared
+		// rather than left stale when IconColor changes (for example on an app theme switch).
+		public static void MapIconColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
+			MapSource(handler, view);
 
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{

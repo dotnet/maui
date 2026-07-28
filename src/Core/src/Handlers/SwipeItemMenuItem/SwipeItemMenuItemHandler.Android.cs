@@ -184,21 +184,16 @@ namespace Microsoft.Maui.Handlers
 						platformImage.SetBounds(0, 0, iconWidth, iconHeight);
 					}
 
-					if (item.Source is IFontImageSource fontImageSource)
-					{
-						if (fontImageSource.Color is not null)
-						{
-							platformImage.SetColorFilter(fontImageSource.Color.ToPlatform(), FilterMode.SrcAtop);
-						}
-						else
-						{
-							var textColor = item.GetTextColor()?.ToPlatform();
+					var tintColor = item.GetIconTintColor()?.ToPlatform();
 
-							if (textColor is not null)
-							{
-								platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
-							}
-						}
+					if (tintColor is not null)
+					{
+						platformImage.SetColorFilter(tintColor.Value, FilterMode.SrcAtop);
+					}
+					else
+					{
+						// Drawables can be cached and reused, so an earlier tint has to be cleared explicitly.
+						platformImage.ClearColorFilter();
 					}
 				}
 

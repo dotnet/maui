@@ -65,6 +65,23 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// ImageIconSource renders the image as-is and ignores Foreground, so an explicit tint has to go
+			// through BitmapIconSource/FontIconSource instead, which honor Foreground (BitmapIconSource
+			// draws the bitmap as a monochrome mask by default).
+			var tintColor = item.GetIconTintColor();
+
+			if (tintColor is not null)
+			{
+				var tintedIconSource = item.Source.ToIconSource(handler.MauiContext);
+
+				if (tintedIconSource is not null)
+				{
+					tintedIconSource.Foreground = tintColor.ToPlatform();
+					swipeItem.IconSource = tintedIconSource;
+					return;
+				}
+			}
+
 			var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 			var source = item.Source;

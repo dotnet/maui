@@ -19,6 +19,24 @@ namespace Microsoft.Maui.Platform
 			return (luminosity < 0.75f ? Colors.White : Colors.Black);
 		}
 
+		/// <summary>
+		/// Resolves the color that should tint the swipe item's icon, or <see langword="null"/>
+		/// when the icon must render with its own colors.
+		/// </summary>
+		internal static Color? GetIconTintColor(this ISwipeItemMenuItem swipeItemMenuItem)
+		{
+			if (swipeItemMenuItem.IconColor is Color iconColor)
+				return iconColor;
+
+			// Font glyphs are single-color vectors, so tinting them is meaningful: use the explicit
+			// glyph color when there is one, otherwise fall back to a color contrasting the background.
+			// Raster and SVG sources carry their own colors and are left untouched.
+			if (swipeItemMenuItem.Source is IFontImageSource fontImageSource)
+				return fontImageSource.Color ?? swipeItemMenuItem.GetTextColor();
+
+			return null;
+		}
+
 		internal static ISwipeItems? GetSwipeItemsByDirection(this ISwipeView swipeView, SwipeDirection? swipeDirection)
 		{
 			ISwipeItems? swipeItems = null;

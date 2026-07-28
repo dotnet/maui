@@ -683,6 +683,77 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new WeakReference(sv);
 		}
 
+		[Fact]
+		public void SwipeItemIconColorDefaultsToNull()
+		{
+			Assert.Null(new SwipeItem().IconColor);
+		}
+
+		[Fact]
+		public void ImageIconKeepsItsOwnColorsWhenIconColorIsNotSet()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = "icon.png"
+			};
+
+			Assert.Null(((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void ImageIconIsTintedWhenIconColorIsSet()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = "icon.png",
+				IconColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void FontIconUsesItsOwnColorWhenIconColorIsNotSet()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
+			};
+
+			Assert.Equal(Colors.Green, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Theory]
+		// A dark background needs a light glyph, a light background needs a dark one.
+		[InlineData(false, "#000000")]
+		[InlineData(true, "#FFFFFF")]
+		public void ColorlessFontIconContrastsWithTheBackground(bool darkBackground, string expected)
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = darkBackground ? Colors.Black : Colors.White,
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+
+			Assert.Equal(Color.FromArgb(expected), ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
+		[Fact]
+		public void IconColorOverridesTheFontImageSourceColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green },
+				IconColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
+		}
+
 		static void ForceFullGC()
 		{
 			for (int i = 0; i < 5; i++)
