@@ -354,17 +354,38 @@ safe-outputs:
 
 post-steps:
   - name: Require every registered safe output to be captured
-    # A dry_run must be able to validate a candidate diff (which registers an expectation)
-    # and then correctly emit nothing. Without this guard that combination trips the
-    # reconciliation and turns an intentional preview red. The condition is evaluated by
-    # Actions, not by the agent, so a compromised agent cannot switch the gate off; real
-    # scheduled runs have an empty inputs.dry_run and stay fully fail-closed.
-    if: always() && github.event.inputs.dry_run != 'true'
+    # DETECTIVE, NOT PREVENTIVE -- and deliberately so. This step runs inside the `agent`
+    # job, whose failure does NOT skip the privileged `safe_outputs` job: gh-aw generates
+    # that gate as `needs.agent.result != 'skipped'` and exposes no source-level knob for
+    # it, and the lock is compiler-generated and must never be hand-edited. The actual
+    # preventive boundary is the SHA-pinned, config-locked gh-aw handler, which this
+    # workflow constrains so that EVERY mutating output is bounded to this workflow's own
+    # `[ci-fix]`-prefixed, `agentic-workflows`-labelled PRs within per-run caps. So an
+    # out-of-band output cannot escalate privilege; this step exists to make it loud and
+    # to redden the run.
+    #
+    # This step is therefore never skipped. A dry_run used to skip it entirely, which
+    # left the one seam where "detective" degraded to "absent": `safe_outputs` has no
+    # dry-run predicate, so a mutating output emitted against the dry-run contract was
+    # both applied and unreported. Under dry_run the check now INVERTS instead of
+    # disappearing -- the contract is "emit nothing", so any captured mutating output is
+    # a defect regardless of what was registered, and only the forward
+    # registered-but-not-captured direction (which a correct dry_run legitimately trips)
+    # is suspended. The condition is evaluated from a step env var populated by Actions,
+    # not by the agent, so a compromised agent cannot switch the gate off.
+    if: always()
     shell: bash
+    env:
+      CI_FIX_DRY_RUN: ${{ github.event.inputs.dry_run }}
     run: |
       set -euo pipefail
       expectations=/tmp/gh-aw/agent/ci-fix-output-expectations
       output=/tmp/gh-aw/agent_output.json
+      dry_run=""
+      if [ "${CI_FIX_DRY_RUN:-}" = "true" ]; then
+        dry_run="true"
+        echo "::notice::dry_run: enforcing the emit-nothing contract; any captured mutating output is a defect."
+      fi
 
       if [ -f "${output}" ] && ! jq -e '(.errors // []) | length == 0' "${output}" >/dev/null; then
         echo "::error::The agent reported safe-output collection errors."
@@ -408,7 +429,13 @@ post-steps:
           add_labels; do
           captured="$(jq --arg type "${mutating_type}" \
             '[.items[]? | select(.type == $type)] | length' "${output}")"
-          registered="$(count_registered "${mutating_type}")"
+          # A dry_run promises to emit nothing, so its allowance is zero no matter how
+          # many expectations were registered while validating the candidate diff.
+          if [ -n "${dry_run}" ]; then
+            registered=0
+          else
+            registered="$(count_registered "${mutating_type}")"
+          fi
           if [ "${captured}" -gt "${registered}" ]; then
             echo "::error::gh-aw captured ${captured} ${mutating_type} output(s) but only ${registered} were registered."
             failed=1
@@ -416,7 +443,10 @@ post-steps:
         done
       fi
 
-      if [ -z "${expectation_files}" ]; then
+      # Forward direction only: a correct dry_run registers expectations while validating
+      # a candidate diff and then emits nothing, so "registered but not captured" is the
+      # expected shape rather than a defect. The reverse check above already ran.
+      if [ -n "${dry_run}" ] || [ -z "${expectation_files}" ]; then
         exit "${failed}"
       fi
       if [ ! -f "${output}" ] || ! jq -e '.items | type == "array"' "${output}" >/dev/null; then

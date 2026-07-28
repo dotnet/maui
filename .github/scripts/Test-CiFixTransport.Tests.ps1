@@ -288,7 +288,8 @@ Describe 'CI-fixer safe-output reconciliation' {
             param(
                 [string]$LockFileName,
                 [string[]]$Expectations,
-                [AllowNull()][string]$AgentOutput)
+                [AllowNull()][string]$AgentOutput,
+                [switch]$DryRun)
 
             $root = Join-Path ([IO.Path]::GetTempPath()) ("recon-" + [Guid]::NewGuid().ToString('N'))
             $expectationDir = Join-Path $root 'exp'
@@ -314,8 +315,15 @@ Describe 'CI-fixer safe-output reconciliation' {
             Set-Content -LiteralPath $scriptPath -Value $body -Encoding UTF8
 
             $stderrPath = Join-Path $root 'stderr.txt'
-            & bash $scriptPath 2>$stderrPath | Out-Null
-            $exitCode = $LASTEXITCODE
+            # Actions populates this from `github.event.inputs.dry_run`; the agent cannot
+            # reach it, so the step env is the faithful way to drive the dry-run branch.
+            $env:CI_FIX_DRY_RUN = if ($DryRun) { 'true' } else { '' }
+            try {
+                & bash $scriptPath 2>$stderrPath | Out-Null
+                $exitCode = $LASTEXITCODE
+            } finally {
+                Remove-Item Env:CI_FIX_DRY_RUN -ErrorAction SilentlyContinue
+            }
             Remove-Item -Recurse -Force -LiteralPath $root -ErrorAction SilentlyContinue
             return $exitCode
         }
@@ -372,6 +380,57 @@ Describe 'CI-fixer safe-output reconciliation' {
             Output = '{"items":[{"type":"create_pull_request"}]}' }
     ) {
         script:Invoke-Reconcile -LockFileName $Lock -Expectations $Expectations -AgentOutput $Output |
+            Should -Be 0
+    }
+
+    # A dry_run promises to emit nothing. The step used to be skipped outright under
+    # dry_run (`if: ... github.event.inputs.dry_run != 'true'`), and the privileged
+    # safe_outputs job has no dry-run predicate of its own, so a mutating output emitted
+    # against that contract was both applied and unreported. The step now runs always and
+    # inverts under dry_run instead of disappearing.
+    It 'fails <Lock> when a dry_run emits a registered <Type>' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml'; Type = 'push_to_pull_request_branch' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml'; Type = 'create_pull_request' }
+    ) {
+        # Registering the expectation is exactly what made this invisible before: the
+        # reverse check compared against the registration count, so captured == registered
+        # looked clean even though the dry_run allowance is zero.
+        script:Invoke-Reconcile -LockFileName $Lock -DryRun `
+            -Expectations @("{`"type`":`"$Type`",`"pullRequestNumber`":5}") `
+            -AgentOutput "{`"items`":[{`"type`":`"$Type`",`"pull_request_number`":5}]}" |
+            Should -Be 1
+    }
+
+    It 'fails <Lock> when a dry_run emits an unregistered mutating output' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml' }
+    ) {
+        script:Invoke-Reconcile -LockFileName $Lock -DryRun `
+            -Expectations @() `
+            -AgentOutput '{"items":[{"type":"add_comment","pull_request_number":5}]}' |
+            Should -Be 1
+    }
+
+    It 'passes <Lock> for a dry_run that registers an expectation and emits nothing' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml' }
+    ) {
+        # The reason the step was skipped under dry_run in the first place: validating a
+        # candidate diff registers an expectation, and honouring the contract then emits
+        # nothing. That combination must stay green or previews go permanently red.
+        script:Invoke-Reconcile -LockFileName $Lock -DryRun `
+            -Expectations @('{"type":"push_to_pull_request_branch","pullRequestNumber":5}') `
+            -AgentOutput '{"items":[]}' |
+            Should -Be 0
+    }
+
+    It 'passes <Lock> for a dry_run that emits diagnostics only' -Skip:(-not $script:reconcileAvailable) -ForEach @(
+        @{ Lock = 'ci-status-fix.lock.yml' }
+        @{ Lock = 'ci-status-fix-net11.lock.yml' }
+    ) {
+        script:Invoke-Reconcile -LockFileName $Lock -DryRun `
+            -Expectations @() `
+            -AgentOutput '{"items":[{"type":"missing_tool"},{"type":"noop"}]}' |
             Should -Be 0
     }
 }
