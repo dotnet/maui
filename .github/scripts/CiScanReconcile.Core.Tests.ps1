@@ -1035,6 +1035,71 @@ Describe 'Get-CiScanReopenVerdict' {
     }
 }
 
+Describe 'A timestamp with no offset means UTC, whatever the runner is set to' {
+    <#
+        `ToUniversalTime()` reads a DateTime whose Kind is `Unspecified` as LOCAL and
+        shifts it by the machine offset. That is reachable rather than theoretical:
+        `ConvertFrom-Json` hands back `Kind=Unspecified` for any timestamp serialised
+        without an offset, so a marker holding `"last_present_at":"2026-07-10T00:00:00"`
+        reaches the converters as a DateTime, not as a string — and the string path was
+        the only one parsing with `AssumeUniversal`. Measured on one input:
+
+            TZ=UTC             2026-07-10T00:00:00Z
+            TZ=America/Chicago 2026-07-10T05:00:00Z
+            TZ=Europe/Warsaw   2026-07-09T22:00:00Z
+
+        East of UTC the stamp moves EARLIER, which resets the quiet clock earlier and
+        inflates QuietDays — the permissive direction.
+
+        These assertions are honest about their own limits: under a UTC runner, local and
+        UTC coincide, so they would pass against the defect. They pin the intended
+        semantics and catch the regression for anyone running the suite off UTC, but the
+        instrument with signal in CI is the static invariant in Invoke-CiScanReconcile.Tests.ps1
+        that forbids `.ToUniversalTime()` on these branches. Noted here because a test that
+        cannot fail in the environment that runs it is worth labelling rather than trusting.
+    #>
+    It 'treats an Unspecified DateTime as already UTC rather than as local' {
+        $unspecified = [datetime]::SpecifyKind(
+            [datetime]::new(2026, 7, 10, 0, 0, 0), [System.DateTimeKind]::Unspecified)
+        $result = ConvertTo-CiScanUtcDateTime -Value $unspecified
+
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result.ToString('o', [cultureinfo]::InvariantCulture) | Should -Be '2026-07-10T00:00:00.0000000Z'
+    }
+
+    It 'still converts a genuinely Local DateTime rather than relabelling it' {
+        $local = [datetime]::SpecifyKind(
+            [datetime]::new(2026, 7, 10, 0, 0, 0), [System.DateTimeKind]::Local)
+        $result = ConvertTo-CiScanUtcDateTime -Value $local
+
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be $local.ToUniversalTime()
+    }
+
+    It 'leaves a UTC DateTime exactly as it is' {
+        $utc = [datetime]::SpecifyKind(
+            [datetime]::new(2026, 7, 10, 0, 0, 0), [System.DateTimeKind]::Utc)
+        (ConvertTo-CiScanUtcDateTime -Value $utc).ToString('o', [cultureinfo]::InvariantCulture) |
+            Should -Be '2026-07-10T00:00:00.0000000Z'
+    }
+
+    <#
+        The property that actually matters: an offsetless timestamp must mean the same
+        instant whether it arrives as text or as a ConvertFrom-Json DateTime. The two
+        paths disagreed, and the DateTime one was wrong.
+    #>
+    It 'reads an offsetless stamp identically as text and as a ConvertFrom-Json value' {
+        $fromJson = ('{"t":"2026-07-10T00:00:00"}' | ConvertFrom-Json).t
+        $fromJson | Should -BeOfType [datetime]
+        $fromJson.Kind | Should -Be ([System.DateTimeKind]::Unspecified)
+
+        (ConvertFrom-CiScanTimestamp -Value $fromJson) |
+            Should -Be (ConvertFrom-CiScanTimestamp -Value '2026-07-10T00:00:00')
+        (ConvertTo-CiScanTimestamp -Value $fromJson) |
+            Should -Be (ConvertTo-CiScanTimestamp -Value '2026-07-10T00:00:00')
+    }
+}
+
 Describe 'Timestamp handling is culture-independent' {
     # Regression: state timestamps used to be `[string]`-cast out of `ConvertFrom-Json`
     # and re-read with `[datetime]::TryParse` under the CURRENT culture. The cast renders

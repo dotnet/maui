@@ -117,6 +117,41 @@ $script:CiScanDefaults = @{
     StateMarkerVersion       = 1
 }
 
+function ConvertTo-CiScanUtcDateTime {
+    <#
+    .SYNOPSIS
+        Normalises a [datetime] to UTC, treating an Unspecified Kind as already-UTC.
+    .DESCRIPTION
+        `ToUniversalTime()` interprets a DateTime whose Kind is `Unspecified` as LOCAL and
+        shifts it by the machine's offset. That is the wrong reading here, and it is
+        reachable: `ConvertFrom-Json` returns `Kind=Unspecified` for any timestamp written
+        without an offset, so a state marker holding `"last_present_at":"2026-07-10T00:00:00"`
+        arrives at this function as an Unspecified DateTime rather than as a string.
+
+        The result was a timestamp that moved with the runner's timezone — and it moved in
+        the unsafe direction east of UTC, where an earlier `last_present_at` resets the
+        quiet clock earlier and INFLATES QuietDays. Measured on the same input:
+
+            TZ=UTC             2026-07-10T00:00:00Z
+            TZ=America/Chicago 2026-07-10T05:00:00Z
+            TZ=Europe/Warsaw   2026-07-09T22:00:00Z
+
+        The string path never had this problem because it parses with `AssumeUniversal`.
+        This makes the [datetime] path agree with it: no offset means UTC, everywhere.
+        Kind=Utc is already correct and Kind=Local genuinely needs converting, so only
+        Unspecified is reinterpreted.
+
+        CI runs in UTC, which is exactly why this could not surface there.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][datetime]$Value)
+
+    if ($Value.Kind -eq [System.DateTimeKind]::Unspecified) {
+        return [datetime]::SpecifyKind($Value, [System.DateTimeKind]::Utc)
+    }
+    return $Value.ToUniversalTime()
+}
+
 function ConvertTo-CiScanTimestamp {
     <#
     .SYNOPSIS
@@ -141,7 +176,7 @@ function ConvertTo-CiScanTimestamp {
     param([AllowNull()]$Value)
 
     if ($null -eq $Value) { return $null }
-    if ($Value -is [datetime]) { return ([datetime]$Value).ToUniversalTime().ToString('o', [cultureinfo]::InvariantCulture) }
+    if ($Value -is [datetime]) { return (ConvertTo-CiScanUtcDateTime -Value ([datetime]$Value)).ToString('o', [cultureinfo]::InvariantCulture) }
     if ($Value -is [datetimeoffset]) { return ([datetimeoffset]$Value).UtcDateTime.ToString('o', [cultureinfo]::InvariantCulture) }
 
     $parsed = ConvertFrom-CiScanTimestamp -Value $Value
@@ -166,7 +201,7 @@ function ConvertFrom-CiScanTimestamp {
     param([AllowNull()]$Value)
 
     if ($null -eq $Value) { return $null }
-    if ($Value -is [datetime]) { return ([datetime]$Value).ToUniversalTime() }
+    if ($Value -is [datetime]) { return (ConvertTo-CiScanUtcDateTime -Value ([datetime]$Value)) }
     if ($Value -is [datetimeoffset]) { return ([datetimeoffset]$Value).UtcDateTime }
 
     $text = [string]$Value

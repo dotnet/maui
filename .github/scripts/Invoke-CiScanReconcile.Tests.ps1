@@ -2812,4 +2812,50 @@ Describe 'Static source invariants' {
         @($owners | Sort-Object -Unique) | Should -Be @('CiScanReconcile.Core.ps1:Get-CiScanIssueLabelNames') -Because `
             'every consumer must call the one label reader instead of re-implementing its loop'
     }
+
+    <#
+        `ToUniversalTime()` treats a DateTime whose Kind is `Unspecified` as LOCAL, and
+        ConvertFrom-Json produces exactly that Kind for any offsetless timestamp, so the
+        two converters used to shift a marker stamp by the runner's UTC offset — earlier
+        east of UTC, which inflates QuietDays.
+
+        This invariant carries the whole regression, because the behavioural tests for it
+        CANNOT fail where it matters: CI runs in UTC, where local and UTC coincide and the
+        defect is invisible. A source assertion has no such blind spot. It is the same
+        argument as the docblock-versus-static-assertion one elsewhere in this file, but
+        arrived at from the other side — here the behavioural instrument is structurally
+        vacuous in the only environment that gates the branch.
+
+        Asserted on the converters alone rather than repo-wide: `.ToUniversalTime()` is
+        correct on a value already known to be Local or Utc, and these two functions are
+        the boundary where a Kind-unknown value enters.
+    #>
+    It 'never lets an offsetless DateTime be read as local time' {
+        $strip = {
+            param($text)
+            $noBlocks = [regex]::Replace($text, '(?s)<#.*?#>', '')
+            (($noBlocks -split "`n") | Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+        }
+
+        $src = & $strip $script:CoreText
+        $src | Should -Match 'function ConvertTo-CiScanUtcDateTime' -Because `
+            'the comment stripper must not have eaten the file, and the helper must exist'
+
+        $guarded = @('ConvertTo-CiScanTimestamp', 'ConvertFrom-CiScanTimestamp')
+        $current = '<file scope>'
+        $offenders = @()
+        $routed = @()
+        foreach ($line in ($src -split "`n")) {
+            $fn = [regex]::Match($line, '^function\s+(?<f>[\w-]+)')
+            if ($fn.Success) { $current = $fn.Groups['f'].Value }
+            if ($guarded -notcontains $current) { continue }
+            if ($line -match '\[datetime\]\$Value\)\.ToUniversalTime\(\)') { $offenders += "${current}: $($line.Trim())" }
+            if ($line -match 'ConvertTo-CiScanUtcDateTime') { $routed += $current }
+        }
+
+        @($routed | Sort-Object -Unique) | Should -Be @($guarded | Sort-Object) -Because `
+            'both converters must normalise a [datetime] through the Kind-aware helper'
+        @($offenders) | Should -BeNullOrEmpty -Because `
+            'ToUniversalTime on a possibly-Unspecified DateTime shifts it by the runner timezone'
+    }
 }
