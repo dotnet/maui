@@ -98,6 +98,24 @@ boom
         return New-ApiIssue -Number $Number -Labels $Labels -Body (New-CanonicalBody)
     }
 
+    <#
+        An issue this reconciler previously auto-closed. `closed_at` and the
+        `auto-closed-stale` label are what make it eligible for reopen review; both are
+        parameterized because every reopen guard turns on one of them.
+    #>
+    function New-AutoClosedIssue {
+        param(
+            [int]$Number = 300,
+            [string[]]$Labels = @('ci-scan-net11', 'auto-closed-stale'),
+            [string]$ClosedAt = '2026-07-01T00:00:00Z',
+            [string]$Body = (New-CanonicalBody)
+        )
+        $issue = New-ApiIssue -Number $Number -Labels $Labels -Body $Body
+        $issue.state = 'closed'
+        $issue | Add-Member -NotePropertyName closed_at -NotePropertyValue $ClosedAt -Force
+        return $issue
+    }
+
     # Mirrors today's real backlog: no fingerprint marker at all.
     function New-LegacyIssue {
         param([int]$Number = 200)
@@ -117,9 +135,14 @@ Old markerless issue filed before canonical metadata existed.
         Installs the standard mock surface. Callers override individual pieces afterwards.
         `$script:Issues` is the set of issues the listing endpoint returns.
     #>
-    function Initialize-ReconcileMocks {        param([object[]]$Issues = @(), [object[]]$PullRequests = @(), [string[]]$RepoLabels)
+    function Initialize-ReconcileMocks {        param([object[]]$Issues = @(), [object[]]$PullRequests = @(), [object[]]$ClosedIssues = @(), [string[]]$RepoLabels)
         $script:Issues = @($Issues)
         $script:PullRequests = @($PullRequests)
+        # The reopen survey lists `state=closed` separately. Defaulting to an EMPTY page
+        # rather than leaving the mock to fall through to $null matters: a $null read is
+        # an unknown, so every unrelated test would otherwise report the reopen listing as
+        # truncated and carry a warning it did nothing to earn.
+        $script:ClosedIssues = @($ClosedIssues)
         # Mutating modes preflight the labels they own, so the default fixture has all of
         # them present. Tests that care about the preflight override this explicitly.
         if (-not $PSBoundParameters.ContainsKey('RepoLabels')) {
@@ -141,6 +164,7 @@ Describe 'CI scan reconciler' {
             $joined = ($GhArgs -join ' ')
             if ($joined -like 'label list*') { return , @($script:RepoLabels) }
             if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*issues?state=closed*') { return , @($script:ClosedIssues) }
             if ($joined -like '*/comments*') { return , @() }
             if ($joined -like 'pr list*') { return , @($script:PullRequests) }
             return $null
@@ -2063,6 +2087,7 @@ Describe 'Owned-label preflight gates every mutating run' {
             $joined = ($GhArgs -join ' ')
             if ($joined -like 'label list*') { return , @($script:RepoLabels) }
             if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*issues?state=closed*') { return , @($script:ClosedIssues) }
             if ($joined -like '*/comments*') { return , @() }
             if ($joined -like 'pr list*') { return , @($script:PullRequests) }
             return $null
@@ -2172,6 +2197,7 @@ Describe 'Owned-label preflight gates every mutating run' {
             $joined = ($GhArgs -join ' ')
             if ($joined -like 'label list*') { return $null }
             if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*issues?state=closed*') { return , @($script:ClosedIssues) }
             if ($joined -like '*/comments*') { return , @() }
             if ($joined -like 'pr list*') { return , @($script:PullRequests) }
             return $null
@@ -2253,6 +2279,7 @@ Describe 'A malformed record aborts nothing' {
             $joined = ($GhArgs -join ' ')
             if ($joined -like 'label list*') { return , @($script:RepoLabels) }
             if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*issues?state=closed*') { return , @($script:ClosedIssues) }
             if ($joined -like '*/comments*') { return , @() }
             if ($joined -like 'pr list*') { return , @($script:PullRequests) }
             return $null
@@ -3111,5 +3138,369 @@ Describe 'Static source invariants' {
             'the helper must branch on Unspecified rather than converting every Kind alike'
         $helper | Should -Match 'SpecifyKind' -Because `
             'an offsetless value must be relabelled UTC, never shifted by the local offset'
+    }
+}
+
+<#
+    `Get-CiScanReopenVerdict` was implemented, unit-tested and named in this script's own
+    header as a supported capability -- and never called. The only issue listing in the
+    reconciler was `state=open`, so the one function whose job is to undo an incorrect
+    closure could not be reached with a real issue no matter what happened in production.
+
+    That is the most expensive shape of defect in this file: the unit tests around the
+    verdict function all passed, so the coverage report and the review both read as though
+    the safety net existed. Nothing was wrong with the function. It simply had no caller,
+    and no test asserted that it had one.
+
+    These tests therefore split into two kinds, and the split is the point:
+      * BEHAVIOUR -- given a closed issue and a recurrence, a reopen is proposed/applied.
+      * REACHABILITY -- the orchestrator actually consults the closed listing at all.
+    A behaviour test alone would have passed on the broken code if it called the verdict
+    function directly, which is exactly how the gap survived this long.
+#>
+Describe 'Reopen safety net is wired to the orchestrator' {
+
+    BeforeEach {
+        Initialize-ReconcileMocks
+        Reset-CiScanCounters
+        Mock Invoke-GhWrite { return $true }
+        Mock Invoke-GhRead {
+            $joined = ($GhArgs -join ' ')
+            if ($joined -like 'label list*') { return , @($script:RepoLabels) }
+            if ($joined -like '*issues?state=open*') { return , @($script:Issues) }
+            if ($joined -like '*issues?state=closed*') { return , @($script:ClosedIssues) }
+            if ($joined -like '*/comments*') { return , @() }
+            if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+            return $null
+        }
+        Mock Invoke-HttpGetJson { throw 'AzDO must not be reached unless a test opts in' }
+        Mock Get-CiScanBuildCoverage {
+            return @{ VerifiedAbsentBuilds = @(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); Unverifiable = $false; Reason = '' }
+        }
+
+        # Recurrence evidence is stubbed by default so the wiring can be tested without
+        # simulating the AzDO timeline API; the probe itself has its own Context below.
+        Mock Test-CiScanRecurrenceSince {
+            return @{ Observed = $false; BuildId = 0; Ok = $true; Reason = 'no-recurrence-since-closure' }
+        }
+
+        # `Now` is derived from the real clock, so a fixed `closed_at` would drift out of
+        # the 60-day reopen window and silently turn every test in here green for the
+        # wrong reason. Anchoring the fixture to now-1d keeps the window assertions honest.
+        $script:RecentClose = (Get-Date).ToUniversalTime().AddDays(-1).ToString('o')
+    }
+
+    Context 'reachability: the orchestrator consults the closed listing' {
+
+        # The defect in one assertion. On the unwired code no request for `state=closed`
+        # was ever made, so this fails outright rather than merely producing no verdicts.
+        It 'requests the closed auto-closed-stale listing on every run, including report mode' {
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            Should -Invoke Invoke-GhRead -ParameterFilter {
+                ($GhArgs -join ' ') -like '*issues?state=closed*'
+            } -Times 1 -Exactly
+        }
+
+        # The listing must be narrowed to what this automation itself closed. Without the
+        # `auto-closed-stale` conjunction the reopen path would consider issues a HUMAN
+        # closed, which is the one category it must never touch.
+        It 'constrains the closed listing to both the twin label and auto-closed-stale' {
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            Should -Invoke Invoke-GhRead -ParameterFilter {
+                $j = ($GhArgs -join ' ')
+                $j -like '*state=closed*' -and $j -like '*ci-scan-net11%2Cauto-closed-stale*'
+            } -Times 1 -Exactly
+        }
+
+        # Newest-first, the inverse of the open listing. Age makes an open issue MORE
+        # interesting and a closure LESS eligible, so the bound has to drop opposite ends.
+        It 'orders the closed listing newest-first so the bound drops expired closures' {
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            Should -Invoke Invoke-GhRead -ParameterFilter {
+                $j = ($GhArgs -join ' ')
+                $j -like '*state=closed*' -and $j -like '*sort=updated&direction=desc*'
+            } -Times 1 -Exactly
+        }
+
+        # An empty result must be reported as "examined, found nothing", never omitted.
+        # Omission is what made the unwired state indistinguishable from a quiet one.
+        It 'renders the reopen section even when nothing is eligible' {
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            # Key PRESENCE, not truthiness. An empty verdict list is the expected healthy
+            # result here, and `$r.ReopenVerdicts | Should -Not -BeNull` would pass on a
+            # report that omitted the field entirely -- asserting the absence of evidence
+            # rather than the evidence of absence, which is the bug this file is about.
+            $r.Contains('ReopenVerdicts') | Should -BeTrue
+            @($r.ReopenVerdicts).Count | Should -Be 0
+            (Format-CiScanSummary -Report $r) | Should -Match '### Reopen review'
+        }
+    }
+
+    Context 'behaviour: what the verdict decides' {
+
+        It 'proposes a reopen when the signature recurred after closure' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
+                -ClosedIssues @(New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose)
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $rv = @($r.ReopenVerdicts | Where-Object { $_.Number -eq 300 })
+            $rv.Count | Should -Be 1
+            $rv[0].Decision | Should -BeExactly 'reopen'
+            $rv[0].RecurrenceBuildId | Should -Be 991
+        }
+
+        # Agreement is not evidence. Without a recurrence the issue stays closed, which is
+        # the default and must remain so however many times the probe runs.
+        It 'leaves the issue closed when no recurrence was observed' {
+            Initialize-ReconcileMocks `
+                -ClosedIssues @(New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose)
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            @($r.ReopenVerdicts)[0].Decision | Should -BeExactly 'leave-closed'
+        }
+
+        <#
+            The reopen window is what stops this from resurrecting issues indefinitely.
+            Probing AzDO for a closure that can no longer be acted on would also spend
+            real API calls to reach a foregone conclusion, so the expiry is checked BEFORE
+            the probe -- asserted here as zero invocations, not merely as the verdict,
+            because a verdict-only assertion passes on an implementation that probes first
+            and discards the answer.
+        #>
+        It 'never probes AzDO for a closure older than the reopen window' {
+            Initialize-ReconcileMocks -ClosedIssues @(
+                New-AutoClosedIssue -Number 300 -ClosedAt ((Get-Date).ToUniversalTime().AddDays(-200).ToString('o')))
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            Should -Invoke Test-CiScanRecurrenceSince -Times 0 -Exactly
+            @($r.ReopenVerdicts)[0].Decision | Should -BeExactly 'leave-closed'
+        }
+
+        # The label is the ONLY thing separating "we closed this" from "a human closed
+        # this". The server-side filter narrows it; this pins the client-side re-check,
+        # because a filter is a request parameter and this is the response.
+        It 'refuses to reopen an issue that does not carry auto-closed-stale' {
+            Initialize-ReconcileMocks -ClosedIssues @(
+                New-AutoClosedIssue -Number 300 -Labels @('ci-scan-net11') -ClosedAt $script:RecentClose)
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $rv = @($r.ReopenVerdicts)[0]
+            $rv.Decision | Should -BeExactly 'leave-closed'
+            $rv.Reason | Should -BeExactly 'not-auto-closed-by-reconciler'
+        }
+
+        # An unverified issue must not render as a clean one; the summary has to say we
+        # could not look, which is a different claim from "we looked and it is fine".
+        It 'marks the evidence as not-verified when the probe could not run' {
+            Initialize-ReconcileMocks -ClosedIssues @(
+                New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose -Body 'no fingerprint marker here')
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            @($r.ReopenVerdicts)[0].EvidenceOk | Should -BeFalse
+            (Format-CiScanSummary -Report $r) | Should -Match 'not-verified'
+        }
+    }
+
+    Context 'mode gate: reopen is a mutation and obeys the same gate as close' {
+
+        # Report mode is the default and the only mode the workflow ever requests. A
+        # reopen escaping here would be a write from a job whose token is `issues: read`.
+        It 'performs no reopen in report mode even with a live recurrence' -ForEach @(
+            @{ Mode = 'report' }
+            @{ Mode = 'comment' }
+        ) {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
+                -ClosedIssues @(New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose)
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode $Mode
+
+            $r.Counters.Reopens | Should -Be 0
+            Should -Invoke Invoke-GhWrite -ParameterFilter { $Kind -eq 'reopen' } -Times 0 -Exactly
+            # The verdict is still computed and reported. Refusing to ACT is the gate;
+            # refusing to LOOK would make the report useless for deciding whether to run
+            # an enforce pass at all.
+            @($r.ReopenVerdicts | Where-Object { $_.Decision -eq 'reopen' }).Count | Should -Be 1
+        }
+
+        It 'applies the reopen in enforce mode' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
+                -ClosedIssues @(New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose)
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            $r.Counters.Reopens | Should -Be 1
+            Should -Invoke Invoke-GhWrite -ParameterFilter {
+                $Kind -eq 'reopen' -and $IssueNumber -eq 300
+            } -Times 1 -Exactly
+        }
+
+        # Fail-closed is run-level and must cover the reopen path too. Reopen is the
+        # conservative direction, which makes it tempting to exempt -- but a run that
+        # could not read its own inputs has no business acting on any of them.
+        It 'suppresses reopens when the run failed closed' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100) `
+                -ClosedIssues @(New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose)
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+            Mock Get-CiScanPullRequestIndex { return @{ PullRequests = @(); Complete = $false } }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            $r.FailClosed | Should -BeTrue
+            $r.Counters.Reopens | Should -Be 0
+            Should -Invoke Invoke-GhWrite -ParameterFilter { $Kind -eq 'reopen' } -Times 0 -Exactly
+        }
+
+        # The post-condition is the last line of defence and is asserted separately from
+        # the closure one, because a single assertion over `Closes` would leave the reopen
+        # counter with no post-condition at all.
+        It 'throws if a reopen is somehow counted in a non-closing mode' {
+            Reset-CiScanCounters
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
+            $script:Counters.Reopens = 1
+            { if (-not $script:ClosuresAllowed -and $script:Counters.Reopens -ne 0) {
+                    throw "SAFETY VIOLATION: $($script:Counters.Reopens) reopen(s) attempted in mode '$($script:EffectiveMode)'."
+                } } | Should -Throw '*SAFETY VIOLATION*reopen*'
+        }
+    }
+
+}
+
+<#
+    The probe that supplies `-RecurrenceObserved`. Anchored on `closed_at` rather than
+    on the state marker: reopen means "we closed this and it came back", and a
+    closure timestamp is GitHub-controlled metadata that nothing written into the
+    issue body afterwards can move.
+
+    A SEPARATE top-level Describe, deliberately. As a nested Context it inherited the
+    wiring block's `Mock Test-CiScanRecurrenceSince`, so every assertion here was
+    answered by the stub instead of by the function under test — the tests ran, reported
+    a result, and measured nothing. That is the same failure the surrounding change
+    exists to fix, one level up: a check that answers a question adjacent to the one
+    being asked. Keep this block out of any scope that stubs the probe.
+#>
+Describe 'Recurrence probe reads AzDO, not the issue body' {
+
+    BeforeAll {
+        function Invoke-ProbeForFixture {
+            param([string]$Since = '2026-07-01T00:00:00Z')
+            $styles = [System.Globalization.DateTimeStyles]::AdjustToUniversal -bor
+                      [System.Globalization.DateTimeStyles]::AssumeUniversal
+            return Test-CiScanRecurrenceSince -Config (Get-CiScanTwinConfig -Label 'ci-scan-net11') `
+                -Pipeline 'maui-pr-uitests' -Legs @('Controls (v18.5) CollectionView') `
+                -Since ([datetime]::Parse($Since, [cultureinfo]::InvariantCulture, $styles))
+        }
+    }
+
+    BeforeEach {
+        $script:ProbeBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 991 }) }
+        $script:ProbeLeg = @([pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+        $script:ProbeFinish = '2026-07-02T00:00:00Z'
+        Mock Invoke-HttpGetJson {
+            if ($Url -like '*/builds?definitions=*') { return $script:ProbeBuilds }
+            if ($Url -like '*/timeline*') { return [pscustomobject]@{ records = @($script:ProbeLeg) } }
+            return [pscustomobject]@{
+                definition   = [pscustomobject]@{ id = 313 }
+                sourceBranch = 'refs/heads/net11.0'
+                status       = 'completed'
+                result       = 'failed'
+                finishTime   = $script:ProbeFinish
+            }
+        }
+    }
+
+    It 'reports a recurrence when the affected leg failed in a build after closure' {
+        $p = Invoke-ProbeForFixture
+        $p.Observed | Should -BeTrue
+        $p.BuildId | Should -Be 991
+        $p.Ok | Should -BeTrue
+    }
+
+    # Only 'failed' is evidence, exactly as in the coverage probe. A clean build is
+    # the opposite of evidence and a skipped leg is silence.
+    It 'reports no recurrence for a leg that did not go red' -ForEach @(
+        @{ Label = 'clean'; Records = @([pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+        @{ Label = 'skipped'; Records = @([pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'skipped' }) }
+        @{ Label = 'absent'; Records = @([pscustomobject]@{ name = 'Unrelated Leg'; result = 'failed' }) }
+    ) {
+        $script:ProbeLeg = $Records
+        (Invoke-ProbeForFixture).Observed | Should -BeFalse -Because $Label
+    }
+
+    <#
+        `minTime` is a server-side filter on a parameter the server is free to
+        reinterpret, so the finish time is re-checked client-side. Without that check
+        a build predating the closure would count as a recurrence -- reopening the
+        issue on the very observations that were already weighed when it was closed,
+        and doing so forever, since those builds never stop predating it.
+    #>
+    It 'ignores a build that finished before the closure even if the listing returned it' {
+        $script:ProbeFinish = '2026-06-15T00:00:00Z'
+        (Invoke-ProbeForFixture).Observed | Should -BeFalse
+    }
+
+    # Failing closed here means Observed = $false: an unknown must not be allowed to
+    # manufacture a mutation on an issue a human may have closed correctly.
+    It 'reports not-observed and not-ok when AzDO could not be read' -ForEach @(
+        @{ Label = 'listing unreadable'; Setup = { $script:ProbeBuilds = [pscustomobject]@{ count = 0 } } }
+        @{ Label = 'finish time unreadable'; Setup = { $script:ProbeFinish = 'not-a-date' } }
+    ) {
+        & $Setup
+        $p = Invoke-ProbeForFixture
+        $p.Observed | Should -BeFalse -Because $Label
+        $p.Ok | Should -BeFalse -Because $Label
+    }
+
+    # The horizon must reach the server, or the probe silently widens to the whole
+    # branch history and every long-lived red leg becomes a permanent recurrence.
+    It 'sends the closure timestamp to AzDO as a UTC round-trip minTime' {
+        $script:ProbeUrls = [System.Collections.Generic.List[string]]::new()
+        Mock Invoke-HttpGetJson {
+            $script:ProbeUrls.Add($Url)
+            if ($Url -like '*/builds?definitions=*') { return [pscustomobject]@{ value = @() } }
+            return $null
+        }
+
+        $null = Invoke-ProbeForFixture
+        $listing = @($script:ProbeUrls | Where-Object { $_ -like '*/builds?definitions=*' })
+        $listing.Count | Should -Be 1
+        $listing[0] | Should -BeLike '*minTime=2026-07-01T00*'
     }
 }

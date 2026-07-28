@@ -25,8 +25,14 @@
                         requires workflow_dispatch + a protected deployment environment.
       2. Script level — `Invoke-GhWrite` is the single choke point for every mutating
                         API call and re-checks the effective mode on every invocation.
-      3. Logic level  — the pure core (`CiScanReconcile.Core.ps1`) can only ever emit the
-                        decision 'candidate'; it has no vocabulary for "close".
+      3. Logic level  — the pure core (`CiScanReconcile.Core.ps1`) has no vocabulary for
+                        "close": the strongest thing it can say about an OPEN issue is
+                        'candidate'. Its only other decision, 'reopen', is emitted for
+                        already-CLOSED issues and is recoverable by construction — the
+                        worst outcome of a wrong reopen is a maintainer re-closing an
+                        issue, whereas a wrong close silently buries a live failure.
+                        Both still travel through `Invoke-GhWrite`, and 'reopen' is
+                        gated on the same `ClosuresAllowed` flag that permits closing.
 
     Issue numbers are only ever obtained from a GitHub listing filtered by label +
     creator + state and then re-verified by `Test-CiScanIssueProvenance`. No integer
@@ -411,6 +417,60 @@ function Get-CiScanOpenIssues {
     return @{ Issues = @($issues); Truncated = $truncated }
 }
 
+function Get-CiScanClosedReconcilerIssues {
+    <#
+    .SYNOPSIS
+        Lists issues this reconciler itself auto-closed, newest closure first.
+
+    .DESCRIPTION
+        The second, much smaller origin of issue numbers, and the one that makes
+        `Get-CiScanReopenVerdict` reachable at all. Until this existed the reconciler only
+        ever listed `state=open`, so the reopen verdict — implemented, tested, documented
+        in the header as a supported capability — could never be called with a real issue.
+        The safety net was a claim, not a mechanism.
+
+        Constrained server-side to `state=closed` AND both labels: the twin label and
+        `auto-closed-stale`. GitHub treats a comma-separated `labels=` as a conjunction,
+        so the listing itself already excludes anything this automation did not close.
+        That is a narrowing, not the guarantee — `Test-CiScanIssueProvenance` and
+        `Get-CiScanReopenVerdict` both re-check the label client-side, because a
+        server-side filter is a request parameter and this is the response.
+
+        ORDERING IS INVERTED RELATIVE TO `Get-CiScanOpenIssues`, and the inversion is
+        deliberate rather than an oversight. There, `Max` must drop the youngest, because
+        staleness accrues with age and the oldest issues are the whole point. Here
+        eligibility EXPIRES with age: a closure older than `ReopenWindowDays` cannot be
+        reopened at all, so the newest closures are the only ones that can produce an
+        action and newest-first is what keeps the bound from stranding them.
+
+        `Truncated` carries the same meaning as in the open listing — "not proven
+        exhaustive" — for the same reasons and by the same rules.
+    #>
+    [CmdletBinding()]
+    param([string]$Owner, [string]$Repo, [string]$Label, [int]$Max)
+
+    $issues = @()
+    $page = 1
+    $truncated = $false
+    $maxPages = [math]::Max(1, [int][math]::Ceiling($Max / 100.0))
+    $labels = [uri]::EscapeDataString("$Label,auto-closed-stale")
+    while ($issues.Count -lt $Max) {
+        if ($page -gt $maxPages) { $truncated = $true; break }
+        $perPage = [math]::Min(100, $Max - $issues.Count)
+        $path = "repos/$Owner/$Repo/issues?state=closed&labels=$labels" +
+                "&sort=updated&direction=desc&per_page=$perPage&page=$page"
+        $batch = Invoke-GhRead -GhArgs @('api', $path)
+        if ($null -eq $batch) { $truncated = $true; break }
+        $batch = @($batch)
+        if ($batch.Count -eq 0) { break }
+        $issues += $batch
+        if ($batch.Count -lt $perPage) { break }
+        if ($issues.Count -ge $Max) { $truncated = $true; break }
+        $page++
+    }
+    return @{ Issues = @($issues); Truncated = $truncated }
+}
+
 function Get-CiScanPullRequestIndex {
     <#
     .SYNOPSIS
@@ -736,7 +796,8 @@ function Get-CiScanBuildsAfter {
     param(
         [Parameter(Mandatory)][int]$DefinitionId,
         [Parameter(Mandatory)][string]$Branch,
-        [Parameter(Mandatory)][int]$AfterBuildId,
+        [int]$AfterBuildId = 0,
+        [datetime]$MinFinishTime = [datetime]::MinValue,
         [Parameter(Mandatory)][int]$Max
     )
 
@@ -745,6 +806,15 @@ function Get-CiScanBuildsAfter {
            "?definitions=$DefinitionId" +
            "&branchName=$([uri]::EscapeDataString("refs/heads/$Branch"))" +
            "&statusFilter=completed&queryOrder=finishTimeDescending&`$top=$top&api-version=7.1"
+
+    # `minTime` filters the field named by `queryOrder`, which is `finishTime` above. It
+    # is a server-side narrowing only: the caller still fails closed on truncation, so a
+    # server that ignored the parameter would produce a more conservative answer, never a
+    # more permissive one. Sent in round-trip UTC form because AzDO reads an offsetless
+    # timestamp in the ORGANIZATION's timezone, not ours.
+    if ($MinFinishTime -gt [datetime]::MinValue) {
+        $url += "&minTime=$([uri]::EscapeDataString($MinFinishTime.ToUniversalTime().ToString('o')))"
+    }
 
     $page = Invoke-HttpGetJson -Url $url
     # `value` is tested for PRESENCE, not for null, and the difference is load-bearing.
@@ -971,6 +1041,117 @@ function Get-CiScanBuildCoverage {
     return $result
 }
 
+function Test-CiScanRecurrenceSince {
+    <#
+    .SYNOPSIS
+        Asks AzDO whether an affected leg went red on the twin since a point in time.
+
+    .DESCRIPTION
+        This is the evidence primitive for the reopen safety net, and it is the reason
+        `Get-CiScanReopenVerdict` was previously unreachable: the verdict function has
+        always demanded `-RecurrenceObserved` from "trusted validated scanner output",
+        and nothing in the reconciler could produce that. The newer-build probe added for
+        the stale-marker fix already knows how to ask AzDO what has run on a branch and
+        how to classify a leg in a timeline; this reuses both against a TIME horizon
+        instead of a build-ID horizon.
+
+        The horizon is `closed_at`, deliberately not the state marker's newest build.
+        Reopen means "we closed this, and then it came back". Anchoring on the closure:
+
+          * needs no state marker, so a closed issue whose marker is missing or corrupt
+            is still protected by the safety net rather than silently excluded from it;
+          * cannot be moved by anything written into the issue body after the fact, since
+            `closed_at` is GitHub-controlled timeline metadata;
+          * is strictly narrower than a marker-anchored horizon, so the only errors it
+            can make are failures to reopen, never spurious reopens.
+
+        FAILING CLOSED HERE MEANS `Observed = $false`, which is the inverse of the
+        coverage path and is deliberate. There, an unknown must not be allowed to justify
+        closing an issue, so unknown blocks the action. Here the action IS the safety net,
+        and the unknown must not be allowed to manufacture a mutation on an issue a human
+        may have closed correctly. In both cases the unknown blocks the write. `Ok` is
+        reported separately so the summary can say "we could not check" rather than
+        implying a clean bill of health.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][hashtable]$Config,
+        [Parameter(Mandatory)][string]$Pipeline,
+        [Parameter(Mandatory)][string[]]$Legs,
+        [Parameter(Mandatory)][datetime]$Since
+    )
+
+    $result = @{ Observed = $false; BuildId = 0; Ok = $true; Reason = 'no-recurrence-since-closure' }
+
+    # Same escape hatch the coverage path honours. Without it, `-SkipAzdo` would disable
+    # the closure evidence but leave the reopen evidence still calling AzDO — a switch
+    # that means "do not touch AzDO" would then half-touch it.
+    if ($script:SkipAzdo) { $result.Ok = $false; $result.Reason = 'azdo-skipped'; return $result }
+
+    $d = Get-CiScanDefaults
+    # `Pipelines` is a LIST of { Name; DefinitionId }, not a keyed map. Read it exactly the
+    # way `Get-CiScanBuildCoverage` does — a second, differently-shaped accessor for the
+    # same data is how the two paths drift apart.
+    $definition = @($Config.Pipelines | Where-Object { $_.Name -ceq $Pipeline })
+    if ((Get-CiScanCount $definition) -ne 1) {
+        $result.Ok = $false; $result.Reason = "unknown-pipeline:$Pipeline"; return $result
+    }
+    $definitionId = [int]$definition[0].DefinitionId
+    if ($definitionId -le 0) {
+        $result.Ok = $false; $result.Reason = "unknown-pipeline:$Pipeline"; return $result
+    }
+    if ((Get-CiScanCount $Legs) -eq 0) {
+        # No affected leg means there is no timeline record to look for, so no observation
+        # is possible. Reported as not-checked rather than as a clean result.
+        $result.Ok = $false; $result.Reason = 'no-affected-legs'; return $result
+    }
+
+    $listing = Get-CiScanBuildsAfter -DefinitionId $definitionId -Branch $Config.Branch `
+        -MinFinishTime $Since -Max $script:CiScanMaxNewerBuildsProbed
+    if (-not $listing.Ok) {
+        $result.Ok = $false; $result.Reason = 'build-listing-failed'; return $result
+    }
+    # Truncation is not fatal here the way it is for coverage. We are looking for the
+    # EXISTENCE of one red build, and a truncated page still contains real builds — if one
+    # of them is red the evidence is genuine. What truncation costs is only the ability to
+    # say "definitely none", so it is carried into the reason when nothing was found.
+    $expectedBranch = "refs/heads/$($Config.Branch)"
+
+    foreach ($buildId in @($listing.Builds)) {
+        $build = Invoke-HttpGetJson -Url "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId`?api-version=7.1"
+        if ($null -eq $build) { $result.Ok = $false; $result.Reason = "build-fetch-failed:$buildId"; return $result }
+        if ([string](Get-CiScanJsonField -Object $build -Name 'sourceBranch') -cne $expectedBranch) { continue }
+        if ($d.AcceptedBuildResults -notcontains [string](Get-CiScanJsonField -Object $build -Name 'result')) { continue }
+
+        # `minTime` is a server-side filter on a parameter the server is free to
+        # interpret, so the finish time is re-checked against the same horizon here. A
+        # build that finished BEFORE the closure is not evidence that the signature came
+        # back after it, and accepting one would reopen an issue on the very observations
+        # that were already weighed when it was closed.
+        $finished = ConvertFrom-CiScanTimestamp (Get-CiScanJsonField -Object $build -Name 'finishTime')
+        if ($null -eq $finished) { $result.Ok = $false; $result.Reason = "unreadable-finish-time:$buildId"; return $result }
+        if ($finished -le $Since.ToUniversalTime()) { continue }
+
+        $timeline = Invoke-HttpGetJson -Url "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId/timeline`?api-version=7.1"
+        $timelineRecords = Get-CiScanJsonField -Object $timeline -Name 'records'
+        if ($null -eq $timeline -or $null -eq $timelineRecords) {
+            $result.Ok = $false; $result.Reason = "timeline-fetch-failed:$buildId"; return $result
+        }
+
+        # Only 'failed' counts. 'no-run' is silence and 'clean' is the opposite of
+        # evidence, exactly as in the coverage probe.
+        if ((Get-CiScanLegOutcome -Records @($timelineRecords) -Legs $Legs -Defaults $d) -eq 'failed') {
+            $result.Observed = $true
+            $result.BuildId = $buildId
+            $result.Reason = "affected-leg-failed-in-build:$buildId"
+            return $result
+        }
+    }
+
+    if ($listing.Truncated) { $result.Reason = 'no-recurrence-in-probed-builds-listing-truncated' }
+    return $result
+}
+
 #endregion
 
 #region Notices ---------------------------------------------------------------
@@ -1036,6 +1217,42 @@ Each of those builds was re-fetched from Azure DevOps by this workflow and confi
 **If this failure recurs, the scanner will file a fresh issue** — closing here loses no coverage. Reopen this issue if you disagree.
 
 <sub>Closed by the ``ci-scan-reconcile`` workflow (``auto-closed-stale``).</sub>
+"@
+}
+
+function New-CiScanReopenNotice {
+    <#
+    .SYNOPSIS
+        Builds the reopening-evidence comment. Same trusted-values-only rule as above.
+    .DESCRIPTION
+        Every interpolated value is either a workflow constant or an integer this script
+        parsed itself — the build ID comes from an AzDO listing, never from issue text.
+        Nothing an issue body, comment, or CI log can influence reaches this string, which
+        is the same rule the candidate and closing notices follow and the reason none of
+        them accept free text.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)]$Verdict, [Parameter(Mandatory)][hashtable]$Config)
+
+    $d = Get-CiScanDefaults
+    $build = if ($Verdict.RecurrenceBuildId -gt 0) {
+        "[$($Verdict.RecurrenceBuildId)](https://dev.azure.com/dnceng-public/public/_build/results?buildId=$($Verdict.RecurrenceBuildId))"
+    }
+    else { 'n/a' }
+
+    return @"
+🤖 **Reopening: this signature came back**
+
+This issue was auto-closed as stale, and the failure it tracks has since been observed again on ``$($Config.Branch)``.
+
+- Recurrence observed in build: $build
+- An affected leg of ``$($Verdict.Pipeline)`` ran in that build and **failed**.
+- The build finished **after** this issue was closed.
+- Closure was inside the $($d.ReopenWindowDays)-day reopen window.
+
+Closing this issue was therefore premature, and the automation is undoing its own action rather than leaving a real failure untracked.
+
+<sub>Reopened by the ``ci-scan-reconcile`` workflow. Only issues carrying ``auto-closed-stale`` are eligible.</sub>
 "@
 }
 
@@ -1174,6 +1391,58 @@ function Format-CiScanSummary {
         }
     }
     $null = $sb.AppendLine()
+
+    <#
+        The reopen section is rendered UNCONDITIONALLY, including when it is empty and
+        including in report mode. An empty section is the evidence that the safety net ran
+        and found nothing; omitting it when there is nothing to say would make "the net is
+        attached but quiet" and "the net was never invoked" render identically — which is
+        precisely the state this whole change corrects, and the operator would have no way
+        to tell the difference from the summary alone.
+
+        A report that does not carry the field at all is a THIRD state, and it is rendered
+        as its own warning rather than folded into either. `$Report.ReopenVerdicts` on a
+        report lacking the key is a terminating error under StrictMode, and this function
+        renders the audit trail for a run that may have already mutated issues — so a
+        missing field must never be the thing that destroys the record of what was done.
+        Degrading loudly keeps the summary total; degrading silently into "nothing to
+        reopen" would be the same conflation one level up.
+    #>
+    $hasReopenField = if ($Report -is [System.Collections.IDictionary]) {
+        $Report.Contains('ReopenVerdicts')
+    }
+    else { Test-CiScanHasField -Object $Report -Name 'ReopenVerdicts' }
+
+    if (-not $hasReopenField) {
+        $null = $sb.AppendLine('### Reopen review')
+        $null = $sb.AppendLine()
+        $null = $sb.AppendLine('> ⚠️ This report carries no reopen data. The false-close safety net did **not** run for this report.')
+    }
+    else {
+        $reopens = @($Report.ReopenVerdicts)
+        $toReopen = @($reopens | Where-Object { $_.Decision -eq 'reopen' })
+        $null = $sb.AppendLine("### Reopen review ($(@($reopens).Count) auto-closed issue(s) examined, $(@($toReopen).Count) to reopen)")
+        $null = $sb.AppendLine()
+        if ($Report.ReopensTruncated) {
+            $null = $sb.AppendLine('> ⚠️ The auto-closed listing was truncated; this reopen review is **not** exhaustive.')
+            $null = $sb.AppendLine()
+        }
+        if (@($reopens).Count -eq 0) {
+            $null = $sb.AppendLine('_No issue carries `auto-closed-stale`, so there is nothing this automation could have closed incorrectly._')
+        }
+        else {
+            $null = $sb.AppendLine('| Issue | Decision | Reason | Recurrence build | Evidence | Applied |')
+            $null = $sb.AppendLine('|---:|---|---|---|---|---|')
+            foreach ($rv in ($reopens | Sort-Object Decision, Number)) {
+                $rbuild = if ($rv.RecurrenceBuildId -gt 0) { "``$($rv.RecurrenceBuildId)``" } else { '—' }
+                # An unchecked issue must not read as a clean one. `EvidenceOk = $false` means
+                # we could not look, which is a different claim from "we looked and it is fine".
+                $ev = if ($rv.EvidenceOk) { $rv.EvidenceReason } else { "⚠️ not-verified: $($rv.EvidenceReason)" }
+                $null = $sb.AppendLine("| [#$($rv.Number)](https://github.com/$($Report.Owner)/$($Report.Repo)/issues/$($rv.Number)) | ``$($rv.Decision)`` | $($rv.Reason) | $rbuild | $ev | $(if ($rv.Applied) { 'yes' } else { 'no' }) |")
+            }
+        }
+    }
+    $null = $sb.AppendLine()
     $null = $sb.AppendLine('### Escalations and exclusions')
     $null = $sb.AppendLine()
     $null = $sb.AppendLine('| Issue | Decision | Reason | Detail |')
@@ -1283,6 +1552,69 @@ function Invoke-CiScanReconcile {
             -NotePropertyValue ($labelNames -ccontains 'ci-scan-stale-candidate') -Force
         $verdict | Add-Member -NotePropertyName ExistingLabels -NotePropertyValue @($labelNames) -Force
         $verdicts += $verdict
+    }
+
+    # ---- Reopen survey (the false-close safety net) ---------------------------
+    <#
+        `Get-CiScanReopenVerdict` has existed, been tested, and been advertised in this
+        script's own header since the first draft, but nothing ever called it: the only
+        issue listing in the reconciler was `state=open`, so the one function whose job is
+        to undo an incorrect closure could never be handed a closed issue. An untested
+        safety net is a risk; a net that is fully tested and simply not attached is worse,
+        because the tests make it look present.
+
+        This survey is what attaches it. It is read-only in every mode — the verdicts are
+        computed and reported unconditionally, and only the apply loop below (already
+        gated on `enforce`) can act on them. A report run therefore says exactly what it
+        would have reopened, which is the same contract the closure path offers.
+    #>
+    $reopenVerdicts = @()
+    $closedIndex = Get-CiScanClosedReconcilerIssues -Owner $Owner -Repo $Repo -Label $Label -Max $defaults.MaxCloses
+    Write-Host "Fetched $(@($closedIndex.Issues).Count) auto-closed issue(s) for reopen review; truncated=$($closedIndex.Truncated)."
+
+    foreach ($issue in @($closedIndex.Issues)) {
+        if ($null -eq $issue) { continue }
+
+        $rnumber = 0
+        if (-not [int]::TryParse([string](Get-CiScanJsonField -Object $issue -Name 'number'), [ref]$rnumber) -or $rnumber -le 0) {
+            Write-Warning 'A closed issue record has no readable number; skipping it and failing the run closed.'
+            $script:Counters.ReadErrors++
+            continue
+        }
+
+        # Same provenance gate the open path uses. A closed issue carrying our label is
+        # still only a candidate for reopening if it is genuinely one of ours.
+        $rprov = Test-CiScanIssueProvenance -Issue $issue -Config $config
+        if (-not $rprov.Ok) { continue }
+
+        # Evidence first, verdict second — and the evidence is only gathered for issues
+        # that could still act on it. Probing AzDO for a closure that is already outside
+        # the reopen window would spend real API calls to reach a foregone conclusion.
+        $closedAt = ConvertFrom-CiScanTimestamp (Get-CiScanJsonField -Object $issue -Name 'closed_at')
+        $recurrence = @{ Observed = $false; BuildId = 0; Ok = $true; Reason = 'not-probed' }
+        $rpipeline = 'unknown'
+        if ($null -ne $closedAt -and ($now - $closedAt).TotalDays -le $defaults.ReopenWindowDays) {
+            $rbody = [string](Get-CiScanJsonField -Object $issue -Name 'body')
+            $rfp = Get-CiScanFingerprintMarker -Body $rbody -Config $config
+            if ($null -ne $rfp) {
+                $rpipeline = [string]$rfp.Pipeline
+                $recurrence = Test-CiScanRecurrenceSince -Config $config -Pipeline $rfp.Pipeline `
+                    -Legs (Get-CiScanAffectedLegs -Body $rbody) -Since $closedAt
+            }
+            else {
+                $recurrence.Ok = $false
+                $recurrence.Reason = 'no-canonical-fingerprint'
+            }
+        }
+
+        $rv = Get-CiScanReopenVerdict -Issue $issue -Config $config -Now $now `
+            -RecurrenceObserved:([bool]$recurrence.Observed)
+        $rv | Add-Member -NotePropertyName EvidenceOk -NotePropertyValue ([bool]$recurrence.Ok) -Force
+        $rv | Add-Member -NotePropertyName EvidenceReason -NotePropertyValue ([string]$recurrence.Reason) -Force
+        $rv | Add-Member -NotePropertyName RecurrenceBuildId -NotePropertyValue ([int]$recurrence.BuildId) -Force
+        $rv | Add-Member -NotePropertyName Pipeline -NotePropertyValue $rpipeline -Force
+        $rv | Add-Member -NotePropertyName Applied -NotePropertyValue $false -Force
+        $reopenVerdicts += $rv
     }
 
     # ---- Run-level fail-closed ------------------------------------------------
@@ -1399,6 +1731,33 @@ function Invoke-CiScanReconcile {
                 else { Write-Warning "Unknown action '$action' ignored." }
             }
         }
+
+        <#
+            Reopens run after the close/label/comment pass, in their own loop, for a
+            reason that is not cosmetic: the two collections are disjoint (open issues vs
+            closed ones) but the abort semantics are not shared. `break apply` above stops
+            the closure pass at the first failed write to bound the damage of a
+            half-applied close. A reopen has no second half — it is one call, and it is
+            the only mutation in this script that makes the world MORE conservative — so
+            failing to reopen issue A is not a reason to skip issue B. It is counted,
+            which fails the run closed, and the loop continues.
+
+            Still gated on `$script:ClosuresAllowed`, and `Invoke-GhWrite` re-checks it
+            independently, so this is two guards on the reopen path exactly as on close.
+        #>
+        if ($script:ClosuresAllowed) {
+            $reopenBudget = $defaults.MaxCloses
+            foreach ($rv in @($reopenVerdicts | Where-Object { $_.Decision -eq 'reopen' })) {
+                if ($reopenBudget -le 0) { $rv.Reason = 'cap-reached:reopen'; continue }
+                $reopenBudget--
+                if (Invoke-GhWrite -Kind reopen -IssueNumber $rv.Number -GhArgs @(
+                        'issue', 'reopen', "$($rv.Number)", '--repo', "$Owner/$Repo",
+                        '--comment', (New-CiScanReopenNotice -Verdict $rv -Config $config))) {
+                    $rv.Applied = $true
+                    $script:Counters.Reopens++
+                }
+            }
+        }
     }
 
     # ---- Post-condition: a non-mutating mode MUST have made zero mutating calls ------
@@ -1409,6 +1768,13 @@ function Invoke-CiScanReconcile {
     }
     if (-not $script:ClosuresAllowed -and $script:Counters.Closes -ne 0) {
         throw "SAFETY VIOLATION: $($script:Counters.Closes) closure(s) attempted in mode '$($script:EffectiveMode)'."
+    }
+    # Reopens are asserted separately rather than folded into the closure check. They are
+    # a distinct counter incremented on a distinct code path, so a single assertion over
+    # `Closes` would leave the reopen path with no post-condition at all — the exact shape
+    # of "tested but never reached" that this whole change exists to remove.
+    if (-not $script:ClosuresAllowed -and $script:Counters.Reopens -ne 0) {
+        throw "SAFETY VIOLATION: $($script:Counters.Reopens) reopen(s) attempted in mode '$($script:EffectiveMode)'."
     }
 
     return @{
@@ -1434,6 +1800,8 @@ function Invoke-CiScanReconcile {
         Counters          = $script:Counters
         Thresholds        = $defaults
         Verdicts          = @($verdicts)
+        ReopenVerdicts    = @($reopenVerdicts)
+        ReopensTruncated  = [bool]$closedIndex.Truncated
         GeneratedAt       = $now.ToString('o')
     }
 }
