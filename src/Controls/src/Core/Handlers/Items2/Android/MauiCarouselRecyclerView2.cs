@@ -82,8 +82,7 @@ public class MauiCarouselRecyclerView2 :
         // the empty state here.
         if (GetAdapter() is Items.EmptyViewAdapter)
         {
-            _carouselSnapHelper?.AttachToRecyclerView(null);
-            _carouselSnapHelper = null;
+            DetachSnapHelper();
             return new LinearLayoutManager(Context, orientation, false);
         }
 
@@ -103,8 +102,7 @@ public class MauiCarouselRecyclerView2 :
     protected override void UpdateSnapBehavior()
     {
         // Detach any previous snap helper to avoid duplicate fling listeners.
-        _carouselSnapHelper?.AttachToRecyclerView(null);
-        _carouselSnapHelper = null;
+        DetachSnapHelper();
 
         // CarouselSnapHelper requires a CarouselLayoutManager. While the EmptyView is
         // showing we use a LinearLayoutManager, so don't attach the snap helper.
@@ -126,6 +124,12 @@ public class MauiCarouselRecyclerView2 :
         // does not attach a conflicting snap helper.
         _carouselSnapHelper = new CarouselSnapHelper();
         _carouselSnapHelper.AttachToRecyclerView(this);
+    }
+
+    void DetachSnapHelper()
+    {
+        _carouselSnapHelper?.AttachToRecyclerView(null);
+        _carouselSnapHelper = null;
     }
 
     public override void UpdateFlowDirection()
@@ -152,23 +156,35 @@ public class MauiCarouselRecyclerView2 :
 
     public override void UpdateLayoutManager()
     {
+        // Capture the ItemsLayout reference before the base call so we can tell whether
+        // base.UpdateLayoutManager() actually rebuilt the layout manager. It early-returns
+        // (and leaves ItemsLayout unchanged) when the ItemsLayout object is the same, which
+        // is the case on every EmptyView <-> items transition; otherwise it assigns the new
+        // ItemsLayout and calls SetLayoutManager().
+        var previousItemsLayout = ItemsLayout;
         base.UpdateLayoutManager();
+        var baseRebuiltLayout = !ReferenceEquals(previousItemsLayout, ItemsLayout);
 
-        // base.UpdateLayoutManager() early-returns when the ItemsLayout object is
-        // unchanged, which is the case on every EmptyView <-> items transition. That
-        // leaves the layout manager from the previous state attached. Ensure items always
-        // use the Material CarouselLayoutManager and the EmptyView uses a plain
-        // LinearLayoutManager.
+        // The base early-return leaves the layout manager from the previous state attached.
+        // Ensure items always use the Material CarouselLayoutManager and the EmptyView uses
+        // a plain LinearLayoutManager.
         var needsCarousel = GetAdapter() is not Items.EmptyViewAdapter;
         var hasCarousel = GetLayoutManager() is CarouselLayoutManager;
-        if (needsCarousel != hasCarousel)
+        var switchedLayout = needsCarousel != hasCarousel;
+        if (switchedLayout)
         {
             SetLayoutManager(SelectLayoutManager(ItemsLayout));
         }
 
-        // Re-attach the CarouselSnapHelper to the current Material layout manager. The
-        // helper is skipped while a LinearLayoutManager is active for the EmptyView.
-        UpdateSnapBehavior();
+        // Only cycle the CarouselSnapHelper when the layout manager was actually (re)built —
+        // either by the base call or by the EmptyView <-> items switch above. Cycling it on a
+        // genuine no-op would needlessly detach/re-attach the helper; if that ever coincided
+        // with an in-progress fling, the recycler would briefly have no snap helper and the
+        // fling could overshoot before the replacement attaches.
+        if (baseRebuiltLayout || switchedLayout)
+        {
+            UpdateSnapBehavior();
+        }
     }
 
     protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
@@ -209,10 +225,15 @@ public class MauiCarouselRecyclerView2 :
         if (disposing && !_disposed)
         {
             _disposed = true;
-            _carouselSnapHelper?.AttachToRecyclerView(null);
-            _carouselSnapHelper = null;
+            DetachSnapHelper();
         }
 
         base.Dispose(disposing);
+    }
+
+    public override void TearDownOldElement(CarouselView oldElement)
+    {
+        DetachSnapHelper();
+        base.TearDownOldElement(oldElement);
     }
 }
