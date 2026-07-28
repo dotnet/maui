@@ -2917,6 +2917,100 @@ Describe 'Static source invariants' {
         $script:CoreText | Should -Not -Match '&\s+gh\s'
     }
 
+    <#
+        A static invariant over the TEST sources rather than the production ones, because
+        the defect it guards lives in the harness.
+
+        Pester binds each `-ForEach` hashtable key as a variable inside the test body. When
+        a key collides with a PowerShell automatic variable, the name never resolves to the
+        bound value -- and what it resolves to instead depends on nesting, which is what
+        makes this hard to spot. Measured with `-ForEach @(@{ Args = @('a','b','c') })`:
+
+            $Args directly in the It body      -> Count 6   (the invocation's own args)
+            $Args inside a nested scriptblock  -> Count 0   (that block's empty args)
+            $CmdArgs inside a nested block     -> Count 3   (control: the name is the bug)
+
+        Neither reading is the value that was bound. The nested form is how this first
+        surfaced -- `{ Invoke-GhWrite -GhArgs $Args } | Should -Throw` passed an empty
+        array, and the resulting "Cannot bind argument to parameter 'GhArgs' because it is
+        an empty array" named the production parameter for a defect entirely in the test.
+
+        A FAILING test is the lucky case. The same nested collision under an absence
+        assertion passes vacuously -- measured, with a safe-key control that correctly
+        fails on the same data. That is the zero-expectation shape arriving through the
+        harness: the phantom is empty, and empty is what the assertion wanted.
+
+        The ban list cannot be hand-typed and left at that -- a misspelled entry bans
+        nothing while reading as coverage. Every entry is proven automatic by the runtime
+        instead, and it takes two oracles because neither is complete on its own: most
+        automatics exist in a pristine runspace, but `Matches`, `PSItem` and `Switch` only
+        materialize in context and are absent from that list. Those are proven by making
+        them materialize. A typo survives neither oracle.
+    #>
+    It 'never binds a -ForEach key that PowerShell will silently swallow' {
+        # Oracle 1: ground truth from a pristine runspace, not from this session, whose
+        # variables include everything these tests have defined.
+        $ps = [powershell]::Create()
+        $null = $ps.AddScript('Get-Variable | Select-Object -ExpandProperty Name')
+        $sessionAutomatics = @($ps.Invoke())
+        $ps.Dispose()
+        $sessionAutomatics.Count | Should -BeGreaterThan 10 -Because 'a runspace that returned nothing would ban nothing'
+
+        # Oracle 2: automatics that only exist inside a construct. Each probe RETURNS the
+        # variable, so a name that is not really automatic yields nothing and fails here.
+        $contextProbes = @{
+            Matches = { $null = 'x' -match 'x'; Get-Variable -Name Matches -ErrorAction SilentlyContinue }
+            PSItem  = { 1 | ForEach-Object { Get-Variable -Name PSItem -ErrorAction SilentlyContinue } }
+            switch  = { switch (1) { default { Get-Variable -Name switch -ErrorAction SilentlyContinue } } }
+        }
+        $contextAutomatics = foreach ($name in $contextProbes.Keys) {
+            # Assert on the returned VARIABLE, not merely that the probe returned something.
+            # A probe rewritten to emit any truthy junk satisfies -Not -BeNullOrEmpty and
+            # leaves the name banned on no evidence; this was caught by mutating it.
+            $probed = @(& $contextProbes[$name])
+            $probed.Count | Should -Be 1 -Because "the probe for '$name' must resolve exactly one variable"
+            $probed[0] -is [System.Management.Automation.PSVariable] | Should -BeTrue -Because "'$name' must be proven automatic by resolving it, not by returning a value"
+            $probed[0].Name | Should -BeExactly $name -Because "the probe for '$name' must resolve that name and not some other variable"
+            $name
+        }
+
+        $banned = @($sessionAutomatics) + @($contextAutomatics)
+
+        # Single definition: the sweep below and the controls here use the same predicate.
+        $collides = { param([string]$Key) $banned -contains $Key }
+
+        (& $collides -Key 'Args') | Should -BeTrue -Because 'the detector must flag a real collision, or a clean sweep proves nothing'
+        (& $collides -Key 'Matches') | Should -BeTrue -Because 'context-only automatics must be caught too; the runspace list alone does not contain Matches'
+        (& $collides -Key 'CmdArgs') | Should -BeFalse -Because 'the detector must not flag an ordinary key, or every test file would fail'
+
+        $offenders = @()
+        $keyCount = 0
+        foreach ($file in @(Get-ChildItem -Path $script:ScriptDir -Filter '*.Tests.ps1')) {
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$null)
+            foreach ($cmd in $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)) {
+                $els = $cmd.CommandElements
+                for ($i = 0; $i -lt $els.Count - 1; $i++) {
+                    if ($els[$i] -isnot [System.Management.Automation.Language.CommandParameterAst] -or
+                        $els[$i].ParameterName -ne 'ForEach') { continue }
+                    foreach ($table in $els[$i + 1].FindAll({ param($n) $n -is [System.Management.Automation.Language.HashtableAst] }, $true)) {
+                        foreach ($pair in $table.KeyValuePairs) {
+                            $keyCount++
+                            $key = $pair.Item1.Extent.Text.Trim("'", '"')
+                            if (& $collides -Key $key) {
+                                $offenders += "$($file.Name):$($table.Extent.StartLineNumber) binds -ForEach key '$key'"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        # The floor: -ForEach keys genuinely exist here, so a walk that matched nothing
+        # fails instead of reporting every file clean.
+        $keyCount | Should -BeGreaterThan 0 -Because 'the AST walk must actually be finding -ForEach keys'
+        $offenders -join '; ' | Should -BeExactly ''
+    }
+
     It 'never lets the pure core emit the word close as a decision' {
         $script:CoreText | Should -Not -Match "Decision\s*=\s*'close'"
     }
