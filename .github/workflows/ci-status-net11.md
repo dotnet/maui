@@ -488,6 +488,7 @@ steps:
             children.get(record.parentId).push(record);
           }
           const requiredLogIds = new Set();
+          const failedLeafLogIds = new Set();
           for (const record of records) {
             const logId = Number(record.log?.id);
             if (!Number.isSafeInteger(logId) || logId <= 0) {
@@ -500,8 +501,12 @@ steps:
               record.type === 'Task' &&
               /^DeviceTests.+ \((?:Unix|Windows)\)$/.test(String(record.name || '')) &&
               record.result !== 'skipped';
-            if ((record.result === 'failed' && !hasFailedChild) || isDeviceHelixSubmission) {
+            const isFailedLeaf = record.result === 'failed' && !hasFailedChild;
+            if (isFailedLeaf || isDeviceHelixSubmission) {
               requiredLogIds.add(logId);
+            }
+            if (isFailedLeaf) {
+              failedLeafLogIds.add(logId);
             }
           }
           const result = String(build.result || '').toLowerCase();
@@ -608,6 +613,7 @@ steps:
             result,
             failed_record_count: failedRecordCount,
             required_log_ids: [...requiredLogIds].sort((a, b) => a - b),
+            failed_leaf_log_ids: [...failedLeafLogIds].sort((a, b) => a - b),
           });
         }
 
@@ -812,9 +818,11 @@ pattern occurs in each one. Every failed-leaf
 log, plus every non-skipped `DeviceTests... (Unix|Windows)` Helix submission log
 in `maui-pr-devicetests` (including green AzDO jobs), must appear in at least one
 signature. The authoritative set is `required_log_ids` in the frozen evidence
-file. When an inspected source log yields no failure signature, record a
+file, and `failed_leaf_log_ids` marks the subset that genuinely failed. When an
+inspected source log yields no failure signature, record a
 deterministic skipped entry for that task/log with
-`signature-not-in-fetched-log`; never omit the source log from coverage.
+`signature-not-in-fetched-log`; never omit the source log from coverage. That
+reason is rejected for logs in `failed_leaf_log_ids`.
 
 Disposition-specific fields:
 - `filed` — also include `title` and the complete `body`.
@@ -827,7 +835,11 @@ Disposition-specific fields:
   `signature-not-in-fetched-log`, `match_pattern` must occur at least once in
   each frozen source log, proving you actually read the failure you are
   dismissing. For `signature-not-in-fetched-log` the opposite holds: the frozen
-  log must exist and must *not* contain `match_pattern`.
+  log must exist and must *not* contain `match_pattern`. Because an absence
+  proof establishes nothing about the failure, `signature-not-in-fetched-log`
+  may only cover logs listed in `required_log_ids` but *not* in
+  `failed_leaf_log_ids`. A failed-leaf log really failed, so it must be covered
+  by a signature whose `match_pattern` is present in it.
 
 Cap: 5 filed issues per run. `cap-reached` is valid only when exactly five
 entries are actually marked `filed`. Reaching the cap does not end the scan —

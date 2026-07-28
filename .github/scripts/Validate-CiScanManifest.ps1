@@ -410,6 +410,12 @@ function Test-CiScanManifest {
 
     $trustedPipelines = $null
     if ($null -ne $ExpectedBuilds) {
+        # Terminal coverage is only meaningful when every disposition can be proven
+        # against frozen evidence. Accepting a trusted inventory without an evidence
+        # path would grant coverage on unproven dispositions, so require both together.
+        if (-not $TrustedEvidencePath) {
+            throw 'A trusted build inventory requires a trusted evidence path.'
+        }
         $trustedPipelines = @($ExpectedBuilds)
         if ($trustedPipelines.Count -ne $script:ConfiguredPipelines.Count) {
             throw "Trusted build inventory must contain exactly $($script:ConfiguredPipelines.Count) pipelines."
@@ -447,6 +453,7 @@ function Test-CiScanManifest {
         $trustedFailedRecordCount = $null
         $trustedRequiredLogIds = @()
         $trustedRequiredLogIdSet = [System.Collections.Generic.HashSet[Int64]]::new()
+        $trustedFailedLeafLogIdSet = [System.Collections.Generic.HashSet[Int64]]::new()
         if ($null -ne $trustedPipelines) {
             $trustedPipeline = $trustedPipelines[$pipelineIndex]
             $trustedName = ConvertTo-TrimmedString (
@@ -484,6 +491,20 @@ function Test-CiScanManifest {
                     -AllowEmpty)
                 foreach ($logId in $trustedRequiredLogIds) {
                     [void]$trustedRequiredLogIdSet.Add($logId)
+                }
+                # Failed-leaf logs are the records that actually failed with no failed
+                # child, i.e. the logs that must contain a real failure. Required logs
+                # that are not failed leaves (e.g. a green Helix submission task) may
+                # legitimately lack a signature; failed leaves may not.
+                $trustedFailedLeafLogIds = @(ConvertTo-PositiveIntegerArray `
+                        -Value (Get-RequiredProperty -Object $trustedPipeline -Name 'failed_leaf_log_ids' -Context "trusted $context") `
+                        -Context "trusted $context failed_leaf_log_ids" `
+                        -AllowEmpty)
+                foreach ($logId in $trustedFailedLeafLogIds) {
+                    if (-not $trustedRequiredLogIdSet.Contains($logId)) {
+                        throw "Trusted $context failed_leaf_log_ids entry $logId is not in required_log_ids."
+                    }
+                    [void]$trustedFailedLeafLogIdSet.Add($logId)
                 }
             }
         }
@@ -619,6 +640,16 @@ function Test-CiScanManifest {
                         -Fingerprint $fingerprint
                     if ($TrustedEvidencePath) {
                         if ($skipReason -eq 'signature-not-in-fetched-log') {
+                            # An absence proof is satisfiable by any fabricated pattern, so
+                            # it establishes nothing about the failure. It may therefore only
+                            # cover required logs that did not themselves fail. A failed-leaf
+                            # log has a real failure in it and must be covered by a
+                            # presence-proving disposition (filed/existing or an
+                            # evidence-backed skip).
+                            $failedLeafSourceLogIds = @($sourceLogIds | Where-Object { $trustedFailedLeafLogIdSet.Contains($_) })
+                            if ($failedLeafSourceLogIds.Count -gt 0) {
+                                throw "$signatureContext cannot use signature-not-in-fetched-log for failed log IDs: $($failedLeafSourceLogIds -join ', ')."
+                            }
                             Assert-TrustedEvidenceAbsent `
                                 -MatchPattern $matchPattern `
                                 -PipelineName $name `

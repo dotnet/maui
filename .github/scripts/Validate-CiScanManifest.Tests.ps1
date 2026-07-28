@@ -106,8 +106,16 @@ Assertion failed
             [Int64]$MainBuildId = 123456,
             [string]$MainResult = 'failed',
             [Int64]$MainFailedRecordCount = 1,
-            [Int64[]]$MainRequiredLogIds = @(1001)
+            [Int64[]]$MainRequiredLogIds = @(1001),
+            [AllowNull()][object]$MainFailedLeafLogIds = $null
         )
+
+        # A failed-leaf log is a required log that actually failed. Absent an explicit
+        # override, treat every required log of a non-successful build as a failed leaf,
+        # which is the strict case the coverage gate has to hold under.
+        if ($null -eq $MainFailedLeafLogIds) {
+            $MainFailedLeafLogIds = if ($MainResult -eq 'succeeded') { @() } else { $MainRequiredLogIds }
+        }
 
         @(
             [pscustomobject]@{
@@ -118,6 +126,7 @@ Assertion failed
                 result              = $MainResult
                 failed_record_count = $MainFailedRecordCount
                 required_log_ids    = $MainRequiredLogIds
+                failed_leaf_log_ids = @($MainFailedLeafLogIds)
             }
             [pscustomobject]@{
                 name                = 'maui-pr-devicetests'
@@ -127,6 +136,7 @@ Assertion failed
                 result              = 'succeeded'
                 failed_record_count = 0
                 required_log_ids    = @()
+                failed_leaf_log_ids = @()
             }
             [pscustomobject]@{
                 name                = 'maui-pr-uitests'
@@ -136,6 +146,7 @@ Assertion failed
                 result              = 'succeeded'
                 failed_record_count = 0
                 required_log_ids    = @()
+                failed_leaf_log_ids = @()
             }
         )
     }
@@ -184,20 +195,42 @@ Describe 'CI scanner pipeline coverage gate' {
     }
 
     It 'rejects fabricated all-clean coverage with untrusted build IDs' {
+        $evidenceRoot = Join-Path $TestDrive 'untrusted-build-evidence'
+        New-TestEvidence -Root $evidenceRoot
         $manifest = New-CompleteManifest
 
-        { Test-CiScanManifest -Manifest $manifest -ExpectedBuilds (New-ExpectedBuilds -MainBuildId 999999) } |
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds -MainBuildId 999999) `
+                -TrustedEvidencePath $evidenceRoot } |
             Should -Throw '*build_id must match the trusted recent completed build*'
     }
 
-    It 'rejects empty coverage when the trusted build contains required logs' {
+    It 'rejects a trusted build inventory supplied without frozen evidence' {
+        # Coverage is granted per disposition, and every disposition proof is evidence
+        # backed. Accepting an inventory with no evidence path would make every
+        # disposition cover its source logs with nothing proven.
         $manifest = New-CompleteManifest
 
         { Test-CiScanManifest -Manifest $manifest -ExpectedBuilds (New-ExpectedBuilds) } |
+            Should -Throw '*trusted build inventory requires a trusted evidence path*'
+    }
+
+    It 'rejects empty coverage when the trusted build contains required logs' {
+        $evidenceRoot = Join-Path $TestDrive 'empty-coverage-evidence'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
             Should -Throw '*missing terminal coverage for trusted log IDs: 1001*'
     }
 
     It 'accepts empty coverage for a trusted successful build' {
+        $evidenceRoot = Join-Path $TestDrive 'clean-build-evidence'
+        New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
         $manifest = New-CompleteManifest
 
         $plan = Test-CiScanManifest `
@@ -205,13 +238,16 @@ Describe 'CI scanner pipeline coverage gate' {
             -ExpectedBuilds (New-ExpectedBuilds `
                 -MainResult 'succeeded' `
                 -MainFailedRecordCount 0 `
-                -MainRequiredLogIds @())
+                -MainRequiredLogIds @()) `
+            -TrustedEvidencePath $evidenceRoot
 
         $plan.pipelines[0].build_result | Should -Be 'succeeded'
         $plan.pipelines[0].failed_records | Should -Be 0
     }
 
     It 'accepts hidden failure coverage from a trusted successful build' {
+        $evidenceRoot = Join-Path $TestDrive 'hidden-failure-evidence'
+        New-TestEvidence -Root $evidenceRoot
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Disposition 'skipped' -SkipReason 'not-recurring')
         )
@@ -221,31 +257,40 @@ Describe 'CI scanner pipeline coverage gate' {
             -ExpectedBuilds (New-ExpectedBuilds `
                 -MainResult 'succeeded' `
                 -MainFailedRecordCount 0 `
-                -MainRequiredLogIds @(1001))
+                -MainRequiredLogIds @(1001)) `
+            -TrustedEvidencePath $evidenceRoot
 
         $plan.pipelines[0].required_log_ids | Should -Be @(1001)
         $plan.pipelines[0].signatures[0].source_log_ids | Should -Be @(1001)
     }
 
     It 'rejects partial coverage of the trusted candidate logs' {
+        $evidenceRoot = Join-Path $TestDrive 'partial-coverage-evidence'
+        New-TestEvidence -Root $evidenceRoot -LogId 1001
+        New-TestEvidence -Root $evidenceRoot -LogId 1002
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -SourceLogIds @(1001))
         )
 
         { Test-CiScanManifest `
                 -Manifest $manifest `
-                -ExpectedBuilds (New-ExpectedBuilds -MainFailedRecordCount 2 -MainRequiredLogIds @(1001, 1002)) } |
+                -ExpectedBuilds (New-ExpectedBuilds -MainFailedRecordCount 2 -MainRequiredLogIds @(1001, 1002)) `
+                -TrustedEvidencePath $evidenceRoot } |
             Should -Throw '*missing terminal coverage for trusted log IDs: 1002*'
     }
 
     It 'accepts one deduplicated signature that covers multiple trusted logs' {
+        $evidenceRoot = Join-Path $TestDrive 'dedup-coverage-evidence'
+        New-TestEvidence -Root $evidenceRoot -LogId 1001
+        New-TestEvidence -Root $evidenceRoot -LogId 1002
         $manifest = New-CompleteManifest -MainSignatures @(
-            (New-TestSignature -SourceLogIds @(1001, 1002))
+            (New-TestSignature -SourceLogIds @(1001, 1002) -Body (New-TestBody -MatchCount 4))
         )
 
         $plan = Test-CiScanManifest `
             -Manifest $manifest `
-            -ExpectedBuilds (New-ExpectedBuilds -MainFailedRecordCount 2 -MainRequiredLogIds @(1001, 1002))
+            -ExpectedBuilds (New-ExpectedBuilds -MainFailedRecordCount 2 -MainRequiredLogIds @(1001, 1002)) `
+            -TrustedEvidencePath $evidenceRoot
 
         $plan.pipelines[0].signatures[0].source_log_ids | Should -Be @(1001, 1002)
     }
@@ -880,12 +925,15 @@ Describe 'CI scanner skip disposition evidence proof' {
 
         { Test-CiScanManifest `
                 -Manifest $manifest `
-                -ExpectedBuilds (New-ExpectedBuilds) `
+                -ExpectedBuilds (New-ExpectedBuilds -MainFailedLeafLogIds @()) `
                 -TrustedEvidencePath $evidenceRoot } |
             Should -Throw '*is contradicted by trusted source log 1001*'
     }
 
-    It 'accepts signature-not-in-fetched-log when the pattern is genuinely absent' {
+    It 'accepts signature-not-in-fetched-log for a required log that did not fail' {
+        # The legitimate case: a required log that is not a failed leaf (e.g. a green
+        # Helix submission task that still has to be inspected). An absence proof is
+        # the only proof available there, because there is no failure to cite.
         $evidenceRoot = Join-Path $TestDrive 'skip-absent'
         New-TestEvidence -Root $evidenceRoot
         $manifest = New-CompleteManifest -MainSignatures @(
@@ -897,10 +945,67 @@ Describe 'CI scanner skip disposition evidence proof' {
 
         $plan = Test-CiScanManifest `
             -Manifest $manifest `
-            -ExpectedBuilds (New-ExpectedBuilds) `
+            -ExpectedBuilds (New-ExpectedBuilds -MainFailedLeafLogIds @()) `
             -TrustedEvidencePath $evidenceRoot
 
         $plan.pipelines[0].signatures[0].match_count | Should -Be 0
+    }
+
+    It 'rejects signature-not-in-fetched-log that dismisses a genuinely failed log' {
+        # Regression: an absence proof is satisfiable by any fabricated pattern, so it
+        # establishes nothing about the failure. Allowing it on a failed-leaf log let an
+        # agent dismiss a real required-log failure with a strawman pattern and still
+        # satisfy the complete-coverage gate having filed zero issues.
+        $evidenceRoot = Join-Path $TestDrive 'skip-absent-failed-leaf'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'signature-not-in-fetched-log' `
+                    -MatchPattern 'zzzzzzzz-not-present-anywhere')
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds -MainFailedLeafLogIds @(1001)) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*cannot use signature-not-in-fetched-log for failed log IDs: 1001*'
+    }
+
+    It 'rejects signature-not-in-fetched-log on a failed leaf mixed with a clean required log' {
+        $evidenceRoot = Join-Path $TestDrive 'skip-absent-mixed'
+        New-TestEvidence -Root $evidenceRoot -LogId 1001 -Lines @('Green submission log')
+        New-TestEvidence -Root $evidenceRoot -LogId 1002 -Lines @('Green submission log')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'skipped' `
+                    -SkipReason 'signature-not-in-fetched-log' `
+                    -SourceLogIds @(1001, 1002) `
+                    -MatchPattern 'zzzzzzzz-not-present-anywhere')
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds `
+                    -MainFailedRecordCount 2 `
+                    -MainRequiredLogIds @(1001, 1002) `
+                    -MainFailedLeafLogIds @(1002)) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*cannot use signature-not-in-fetched-log for failed log IDs: 1002*'
+    }
+
+    It 'rejects a trusted failed_leaf_log_ids entry outside required_log_ids' {
+        $evidenceRoot = Join-Path $TestDrive 'failed-leaf-out-of-range'
+        New-TestEvidence -Root $evidenceRoot
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds -MainFailedLeafLogIds @(1001, 9999)) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*failed_leaf_log_ids entry 9999 is not in required_log_ids*'
     }
 
     It 'rejects a skip whose trusted evidence file is missing entirely' {
