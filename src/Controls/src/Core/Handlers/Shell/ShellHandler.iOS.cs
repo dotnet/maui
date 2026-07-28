@@ -499,9 +499,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 await _activeTransition;
 
                 // Symmetrically remove the old child view controller from its parent.
-                oldRenderer.ViewController.WillMoveToParentViewController(null);
-                oldRenderer.ViewController.View?.RemoveFromSuperview();
-                oldRenderer.ViewController.RemoveFromParentViewController();
+                oldRenderer.ViewController?.WillMoveToParentViewController(null);
+                oldRenderer.ViewController?.View?.RemoveFromSuperview();
+                oldRenderer.ViewController?.RemoveFromParentViewController();
                 oldRenderer.Dispose();
             }
 

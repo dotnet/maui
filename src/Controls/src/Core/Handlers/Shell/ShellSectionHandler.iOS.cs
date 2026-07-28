@@ -243,6 +243,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 // MoreNavigationController resolvable.
                 _navigationController?.BeginInvokeOnMainThread(() =>
                 {
+                    // Guard against a handler that was disconnected while this callback was
+                    // queued (e.g. Shell.Items.Clear() or a fast section swap) - _appearanceTracker
+                    // is nulled out in DisconnectHandler, so skip applying appearance to a stale
+                    // MoreNavigationController on an already-torn-down section.
+                    if (_appearanceTracker is null)
+                        return;
+
                     var deferredMoreNavigationController = _navigationController?.TabBarController?.MoreNavigationController;
                     if (deferredMoreNavigationController is not null)
                         SetOrResetMoreNavigationControllerAppearance(deferredMoreNavigationController, appearance);
