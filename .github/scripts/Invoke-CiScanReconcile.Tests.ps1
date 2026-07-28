@@ -1434,17 +1434,80 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
         $distinct | Should -Contain 'close'
         $distinct | Should -Contain 'reopen'
 
-        foreach ($undecided in @('body', 'unlabel')) {
+        <#
+            Per-kind, because the two hazards are not the same and a generic message would
+            be read as "labels are reversible, comment tier is fine" — which is the exact
+            conclusion 'unlabel' must not be allowed to reach by default.
+        #>
+        $hazards = [ordered]@{
+            body    = @'
+Overwriting an issue body is the most destructive operation in the vocabulary short of a
+close, and nothing captures the prior content first. Every other comment-tier kind is
+additive or trivially reversible; this one is neither.
+'@
+            unlabel = @'
+'label' is comment-tier AND safe, but NOT because of its tier -- the apply loop refuses any
+name outside $script:CiScanOwnedLabels before it ever reaches Invoke-GhWrite (pinned by
+'Label vocabulary is closed' -> 'refuses to apply a label the reconciler does not own', and
+by the disjointness invariant below). That allow-list lives at the CALL SITE, so a new
+'unlabel' call inherits label's tier and none of its protection.
+An unguarded 'unlabel' can remove s/*, area-*, partner/*, p/* or legacy-area-* -- which ARE
+the veto: Test-CiScanHumanTouched reports `label:<name>` for exactly those patterns. The
+damage is cross-mode and the label is not the damage. The removal lands in COMMENT mode, the
+mode meant to run for weeks writing nothing consequential; the CLOSE lands in a later ENFORCE
+run, against an issue that now looks untouched and whose audit trail shows a legitimate close.
+Re-adding the label afterwards does not un-close it.
+'@
+        }
+
+        foreach ($undecided in $hazards.Keys) {
             $distinct | Should -Not -Contain $undecided -Because @"
 Invoke-CiScanReconcile.ps1 now calls Invoke-GhWrite -Kind $undecided, which nothing did before.
 '$undecided' is gated only by `$script:MutationsAllowed, so this write is permitted in COMMENT mode
-alongside labels and notices. Confirm that is intended before landing:
+alongside labels and notices.
+
+WHY THIS KIND IS NOT A DEFAULT-TIER DECISION:
+$($hazards[$undecided])
+Confirm the tier is intended before landing:
   * if it is, extend the contract sentence in the Invoke-GhWrite docblock to name '$undecided'
     and its tier, and update the workflow's mode dropdown if "labels+notice" no longer describes it;
   * if it is not, add '$undecided' to `$script:ClosuresAllowed and to the 'throws for close and
-    reopen in comment mode' case above.
+    reopen in comment mode' case above -- or, if the hazard is argument-scoped rather than
+    kind-scoped, guard the call site the way the 'label' branch is guarded.
 Then remove '$undecided' from this list. Do not delete the test.
 "@
+        }
+    }
+
+    <#
+        The 'unlabel' hazard above rests on a premise no existing test carries: that the
+        labels the reconciler may WRITE and the labels that VETO a close are disjoint sets.
+        The allow-list itself is already pinned by 'Label vocabulary is closed', but it is
+        pinned as a filter, not as a filter over the right set -- adding 'area-*' to the
+        owned labels would keep every one of those tests green while making the reconciler
+        able to write, and a future 'unlabel' able to remove, a signal that
+        Test-CiScanHumanTouched treats as human ownership.
+
+        Both sets are non-empty and that is asserted, so this carries its own floor: a
+        lookup that stopped resolving returns nothing and fails the count check rather than
+        satisfying the disjointness check vacuously.
+    #>
+    It 'cannot write any label that Test-CiScanHumanTouched treats as a human veto' {
+        $owned = @($script:CiScanOwnedLabels)
+        $vetoPatterns = @($script:CiScanHumanLabelPatterns)
+
+        $owned.Count | Should -BeGreaterThan 0
+        $vetoPatterns.Count | Should -BeGreaterThan 0
+
+        foreach ($name in $owned) {
+            foreach ($pattern in $vetoPatterns) {
+                ($name -like $pattern) | Should -BeFalse -Because @"
+The reconciler-owned label '$name' matches the human-veto pattern '$pattern'.
+The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched reports
+`label:$name` as human ownership -- so the reconciler would be manufacturing, and a future
+'unlabel' call could remove, the very signal that decides whether an issue is closable.
+"@
+            }
         }
     }
 
