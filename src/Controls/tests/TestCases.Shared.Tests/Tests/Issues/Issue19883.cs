@@ -12,17 +12,29 @@ public class Issue19883 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void SettingThumbColorToNullResetsToDefault()
+	public void ThumbColorPersistsAcrossToggleAndResetsWhenNull()
 	{
 		Exception? exception = null;
 		App.WaitForElement("TestSwitch");
 
-		// Initial state: ThumbColor is Orange, no OnColor set
+		// Initial off state: the custom blue ThumbColor is applied.
 		VerifyScreenshotOrSetException(ref exception, "Issue19883_ThumbColorBlue");
 
-		// Reset ThumbColor to null: switch should revert to the default thumb color
+		// Toggle on: the track uses the Orange OnColor while the thumb stays blue.
+		App.Tap("TestSwitch");
+		VerifyScreenshotOrSetException(ref exception, "Issue19883_SwitchOn");
+
+		// Toggle off again: the custom blue ThumbColor must be restored and must not
+		// revert to the system default (this is the regression reported in the issue).
+		App.Tap("TestSwitch");
+		VerifyScreenshotOrSetException(ref exception, "Issue19883_SwitchOff");
+
+		// Reset ThumbColor to null at runtime: the thumb must revert to the
+		// system default color instead of keeping the previous custom color.
+		// This step is performed last because it permanently clears the color.
 		App.Tap("ResetThumbColorButton");
 		VerifyScreenshotOrSetException(ref exception, "Issue19883_ThumbColorNull");
+
 		if (exception is not null)
 		{
 			throw exception;

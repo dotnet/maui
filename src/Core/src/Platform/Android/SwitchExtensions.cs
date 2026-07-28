@@ -16,6 +16,13 @@ namespace Microsoft.Maui.Platform
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
 
+		// Tracks SwitchCompat instances that have had a custom ThumbColor applied, so the
+		// platform default thumb tint is only rebuilt when a previously-set custom color is
+		// cleared. Default switches that never had a custom ThumbColor keep their native/theme
+		// thumb appearance untouched.
+		static readonly ConditionalWeakTable<ASwitch, object> _customThumbTintApplied = new();
+		static readonly object s_customThumbTintMarker = new();
+
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
 			aSwitch.Checked = view.IsOn;
@@ -96,15 +103,20 @@ namespace Microsoft.Maui.Platform
 				// Use ThumbTintList instead of SetColorFilter to preserve the thumb shadow
 				// SetColorFilter flattens the drawable and removes the shadow effect
 				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
+
+				// Remember that a custom tint was applied so the platform default can be
+				// restored if ThumbColor is later cleared to null.
+				_customThumbTintApplied.Remove(aSwitch);
+				_customThumbTintApplied.Add(aSwitch, s_customThumbTintMarker);
 			}
-			else
+			else if (_customThumbTintApplied.TryGetValue(aSwitch, out _))
 			{
-				// Once a custom tint has been applied, SwitchCompat keeps applying a tint list
-				// to the thumb; simply clearing it (setting null) strips the native state-based
-				// colors and leaves a white/transparent thumb. Rebuild the platform default thumb
-				// tint (skyblue when on, light grey when off, opaque grey when disabled) so the
-				// native appearance is restored.
+				// A custom tint was previously applied; simply clearing it (setting null)
+				// strips the native state-based colors and leaves a white/transparent thumb.
+				// Rebuild the platform default thumb tint (skyblue when on, light grey when off,
+				// opaque grey when disabled) so the native appearance is restored.
 				aSwitch.ThumbTintList = aSwitch.GetDefaultThumbColorStateList();
+				_customThumbTintApplied.Remove(aSwitch);
 			}
 		}
 

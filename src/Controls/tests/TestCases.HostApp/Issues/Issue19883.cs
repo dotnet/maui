@@ -7,7 +7,7 @@ public class Issue19883 : ContentPage
 	{
 		var instructionsLabel = new Label
 		{
-			Text = "ThumbColor is initially Orange (no OnColor set). Tap the button to reset ThumbColor to null and observe the switch.",
+			Text = "Toggle the switch on and then off: the thumb must keep its blue ThumbColor in every state and must not revert to the system default when toggled off (when on, the track should use the Orange OnColor). Tapping 'Reset ThumbColor to null' should revert the thumb to the system default color.",
 			FontSize = 14,
 		};
 
@@ -15,8 +15,10 @@ public class Issue19883 : ContentPage
 		{
 			IsToggled = false,
 			ThumbColor = Colors.Blue,
+			OnColor = Colors.Orange,
 			AutomationId = "TestSwitch",
 			Margin = new Thickness(10, 20, 15, 0),
+			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
 
