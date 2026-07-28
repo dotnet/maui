@@ -465,6 +465,42 @@ Describe 'Set-CiScanStateMarker' {
         $j = New-StateJson
         Set-CiScanStateMarker -Body "<!-- ci-scan-state: $j -->`n<!-- ci-scan-state: $j -->" -State $state | Should -BeNullOrEmpty
     }
+
+    It 'has no production caller, so the absence criterion cannot fire yet' {
+        # This function is fully implemented and tested, and nothing in the reconciler
+        # calls it. The READ side is live -- `Get-CiScanStateMarker` runs at
+        # Invoke-CiScanReconcile.ps1:1428 -- so the state marker is consumed but never
+        # produced. Consequence, measured below in 'never becomes a close candidate
+        # without observation state': an issue with no marker stops at
+        # `awaiting-canonical-data`, so `candidate` is unreachable in production today
+        # regardless of mode. That is a second safety property independent of report-only,
+        # and reviewers should know the N-consecutive-absence criterion has never executed
+        # end to end rather than assume it has.
+        #
+        # If you are reading this because the test failed, that is the intended trigger:
+        # a writer has been wired, which makes the criterion live and `candidate`
+        # reachable for the first time. Remedy: update the .DESCRIPTION on
+        # Set-CiScanStateMarker in CiScanReconcile.Core.ps1 (it currently documents what
+        # "the caller" does and there is no caller), confirm the enforce-mode review gate
+        # is configured, then delete this test -- do not simply widen it.
+        $strip = {
+            param($text)
+            $noBlocks = [regex]::Replace($text, '(?s)<#.*?#>', '')
+            (($noBlocks -split "`n") | Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+        }
+        $core = & $strip (Get-Content -Raw -Path (Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1'))
+        $orch = & $strip (Get-Content -Raw -Path (Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1'))
+
+        $core | Should -Match 'function Set-CiScanStateMarker' -Because 'the stripper must not have eaten the file'
+        # Anti-vacuity: the scan must be able to SEE a call site in the orchestrator at
+        # all, otherwise "no calls found" proves nothing about Set- and everything about
+        # the regex. Get- is genuinely called there, so it is the control.
+        $orch | Should -Match 'Get-CiScanStateMarker\s+-Body' -Because 'the scan must detect a call that really exists'
+
+        $callers = @(($core + "`n" + $orch) -split "`n" |
+            Where-Object { $_ -match 'Set-CiScanStateMarker' -and $_ -notmatch '^\s*function\s' })
+        $callers | Should -BeNullOrEmpty -Because 'wiring a writer makes stale-close candidates reachable and must be a deliberate, reviewed change'
+    }
 }
 
 Describe 'Body field parsers' {
@@ -792,6 +828,27 @@ Describe 'Get-CiScanIssueVerdict — gates' {
     It 'reaches candidate when everything passes' {
         (Get-CiScanIssueVerdict -Issue $script:CanonicalIssue -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage).Decision |
             Should -Be 'candidate'
+    }
+
+    It 'never becomes a close candidate without observation state' {
+        # The gate that makes closure unreachable in production today: nothing writes the
+        # ci-scan-state marker (see 'has no production caller' above), and without one the
+        # verdict stops here. Worth pinning explicitly rather than leaving implicit,
+        # because it is the property that bounds the blast radius of every other gate --
+        # if a refactor lets a markerless issue through, closure becomes reachable for
+        # every legacy issue in the backlog at once.
+        $noState = New-TestIssue -Body (New-CanonicalBody)   # -StateJson omitted entirely
+
+        $v = Get-CiScanIssueVerdict -Issue $noState -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
+        $v.Decision | Should -Be 'awaiting-canonical-data'
+        $v.Reason | Should -Be 'no-observation-state-recorded'
+
+        # Positive control: the ONLY difference is the marker. Without this, the test
+        # would still pass if the fixture were malformed in some unrelated way and every
+        # issue were being rejected for a different reason.
+        $withState = New-TestIssue -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..20)))
+        (Get-CiScanIssueVerdict -Issue $withState -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage).Decision |
+            Should -Be 'candidate' -Because 'the marker must be the only thing standing between this fixture and candidate'
     }
 
     It 'is not a candidate when coverage is unverifiable (AzDO API failure)' {
