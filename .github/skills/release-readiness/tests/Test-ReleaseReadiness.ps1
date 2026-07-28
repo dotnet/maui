@@ -943,23 +943,52 @@ if (-not $SkipE2E) {
 
                         # Dual-tracker window (PR #36497 review, Finding 4): once
                         # shipped+1 has been CUT to a real branch (branchExists=true =>
-                        # in-flight), the detector must ALSO surface a fresh shipped+2
-                        # CANDIDATE from main (net11.0's PreReleaseVersionIteration has
-                        # advanced by one). The previous bound only looked at shipped+1,
-                        # so a Lane 4 regression that dropped the shipped+2 row during the
-                        # cut->tag window would still pass. This is dormant in steady state
-                        # — it only fires once shipped+1's branch actually exists.
-                        $candidateN2 = $shippedPreviewN + 2
-                        $candidate2 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $candidateN2 } | Select-Object -First 1
-                        if ($null -eq $candidate2) {
-                            Write-Host "  ❌ net11 missing preview$candidateN2 candidate tracker (dual-tracker window)" -ForegroundColor Red; $script:failed++
+                        # in-flight), the detector must ALSO surface a fresh candidate
+                        # from the survey ref. The previous bound only looked at
+                        # shipped+1, so a Lane 4 regression that dropped that second row
+                        # during the cut->tag window would still pass.
+                        #
+                        # The window has TWO independent preconditions, not one: the
+                        # branch must be cut AND the survey ref must have been bumped to
+                        # the next iteration. Those are separate maintainer actions, so
+                        # gating on branchExists alone made this fail for the whole
+                        # (legitimate) interval between the cut and the bump — a real
+                        # repo state, not a regression. Read the survey ref's actual
+                        # PreReleaseVersionIteration and only assert once it has moved
+                        # past the in-flight preview.
+                        #
+                        # The expected number comes from that iteration rather than
+                        # shipped+2, because the pre-release train is not a plain
+                        # increment: after preview7 the next cycle is rc1, so a hardcoded
+                        # shipped+2 would demand a `preview8` that will never exist.
+                        # Deterministic coverage of the invariant itself lives in the
+                        # synthetic dual-preview-window test below, which mocks BOTH
+                        # preconditions and therefore always runs.
+                        $surveyIter = $null
+                        try {
+                            $repoRootForProps = Resolve-Path (Join-Path $PSScriptRoot '..' '..' '..' '..')
+                            $propsText = (& git -C $repoRootForProps show "origin/$($net11.mainBranch):eng/Versions.props" 2>$null) -join "`n"
+                            if ($propsText -match '<PreReleaseVersionIteration>\s*(\d+)\s*</PreReleaseVersionIteration>') {
+                                $surveyIter = [int]$Matches[1]
+                            }
+                        } catch { $surveyIter = $null }
+
+                        if ($null -eq $surveyIter) {
+                            Write-Host "  ⏭️  dual-tracker window: could not read PreReleaseVersionIteration from origin/$($net11.mainBranch) — skipped (synthetic test covers the invariant)" -ForegroundColor DarkGray
+                        } elseif ($surveyIter -le $candidateN) {
+                            Write-Host "  ⏭️  dual-tracker window not open: $($net11.mainBranch) is still at iteration $surveyIter (preview$candidateN cut, not yet bumped) — skipped (synthetic test covers the invariant)" -ForegroundColor DarkGray
                         } else {
-                            Assert-Eq -Label "shipped+2 candidate mode = candidate (not cut yet)" `
-                                      -Expected 'candidate' -Actual $candidate2.mode
-                            Assert-Eq -Label "shipped+2 candidate branchExists = false" `
-                                      -Expected $false -Actual $candidate2.branchExists
-                            Assert-Eq -Label "shipped+2 candidate surveyRef = mainBranch" `
-                                      -Expected $net11.mainBranch -Actual $candidate2.surveyRef
+                            $candidate2 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $surveyIter } | Select-Object -First 1
+                            if ($null -eq $candidate2) {
+                                Write-Host "  ❌ net11 missing iteration-$surveyIter candidate tracker (dual-tracker window)" -ForegroundColor Red; $script:failed++
+                            } else {
+                                Assert-Eq -Label "shipped+2 candidate mode = candidate (not cut yet)" `
+                                          -Expected 'candidate' -Actual $candidate2.mode
+                                Assert-Eq -Label "shipped+2 candidate branchExists = false" `
+                                          -Expected $false -Actual $candidate2.branchExists
+                                Assert-Eq -Label "shipped+2 candidate surveyRef = mainBranch" `
+                                          -Expected $net11.mainBranch -Actual $candidate2.surveyRef
+                            }
                         }
                     } else {
                         Assert-Eq -Label "candidate mode = candidate (no branch yet)" -Expected 'candidate' -Actual $candidate.mode
@@ -1105,6 +1134,79 @@ if (-not $SkipE2E) {
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+    }
+
+    # Synthetic rc window: the pre-release train continues past the final preview
+    # into rc1/rc2, so the survey ref eventually reads label=rc rather than an
+    # eighth preview. Lane 4 only emits preview trackers, and this case used to
+    # fall into the same DarkGray "No active preview cycle" line that a major
+    # legitimately in SR phase prints — so the missing rc tracker was completely
+    # silent. Pin the warning, and pin that it does NOT fire for a genuinely
+    # inactive cycle (otherwise "always warn" would satisfy the first assertion).
+    Write-Host "`n[Unit] Tracker detection synthetic rc window" -ForegroundColor Cyan
+    $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
+    $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
+    $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
+    $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
+    $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
+    $origWriteWarning = (Get-Item function:Write-Warning -ErrorAction SilentlyContinue)
+    $script:rcWarnings = New-Object System.Collections.Generic.List[string]
+    try {
+        function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'net11.0' }
+        function Get-StableTagsForMajor { param([int]$Major) ,@() }
+        # preview7 has shipped — the final preview of the major.
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@('11.0.0-preview.7.26000.1') }
+        function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
+        function Get-RemotePreviewBranchesForMajor {
+            param([int]$Major)
+            ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview7'; previewNumber = 7 })
+        }
+        function Get-RecentCommitCount { param([string]$Ref, [int]$Days) 1 }
+        function Invoke-GitOrFail {
+            param([string[]]$ArgList, [string]$FailureMessage)
+            if (($ArgList -join ' ') -match 'ls-remote --heads origin net11\.0') {
+                return @('0123456789abcdef0123456789abcdef01234567	refs/heads/net11.0')
+            }
+            return @()
+        }
+        function Write-Warning { param([Parameter(ValueFromPipeline)][string]$Message) $script:rcWarnings.Add($Message) }
+
+        # net11.0 has been bumped past preview7 → rc1.
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{ Tag = '11.0.0'; PreLabel = 'rc'; PreIter = 1 }
+        }
+        $rcSynthetic = Invoke-DetectionForMajor -Major 11
+        $rcCandidates = @($rcSynthetic.trackers | Where-Object { $_.branchType -eq 'preview' -and $_.mode -eq 'candidate' })
+
+        Assert-Eq -Label "rc window emits no preview candidate tracker" -Expected 0 -Actual $rcCandidates.Count
+        Assert-Eq -Label "rc window warns instead of silently skipping" `
+                  -Expected $true -Actual ($script:rcWarnings.Count -gt 0)
+        Assert-Eq -Label "rc window warning names the missing rc tracker" `
+                  -Expected $true -Actual ([bool](@($script:rcWarnings) -match 'rc1'))
+
+        # Negative control: an inactive pre-release cycle (SR phase) must stay quiet.
+        $script:rcWarnings.Clear()
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{ Tag = '11.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
+        }
+        $null = Invoke-DetectionForMajor -Major 11
+        Assert-Eq -Label "inactive cycle does not emit the rc warning" -Expected 0 -Actual $script:rcWarnings.Count
+    } finally {
+        Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
+        Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
+        Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
+        Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
+        Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
+        Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        if ($origWriteWarning) { Set-Item function:Write-Warning $origWriteWarning.ScriptBlock }
+        else { Remove-Item function:Write-Warning -ErrorAction SilentlyContinue }
     }
 
     # Fail-closed: bad repo path should exit non-zero
@@ -5016,10 +5118,262 @@ Assert-Eq -Label "M15: RC branch shape → 0 checks (can't infer milestone name)
 
 # ── Scenario M16: API failure → UNKNOWN check (gh auth gap) ──
 $m16 = Invoke-MilestoneChecksWithMocks -ApiFail
-$m16Unk = Get-MilestoneCheckByPrefix -Checks $m16 -Prefix 'Milestone hygiene'
-Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual $m16Unk.Status
-Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
-    -Actual ($m16Unk.NextAction -match 'gh auth status')
+$m16Unk = Get-MilestoneCheckByPrefix -Checks $m16 -Prefix 'Milestone hygiene (API failure)'
+Assert-Eq -Label "M16: API fail check present" -Expected $true -Actual ($null -ne $m16Unk)
+if ($null -ne $m16Unk) {
+    Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual $m16Unk.Status
+    # Distinct Area from the branch-shape UNKNOWN (M20c): the agent's remediation table
+    # keys on Area, and only the API-failure case should route to "fix gh auth".
+    Assert-Eq -Label "M16: API fail Area is the API-failure variant" -Expected 'Milestone hygiene (API failure)' -Actual $m16Unk.Area
+    Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
+        -Actual ($m16Unk.NextAction -match 'gh auth status')
+}
+
+# ── Scenario M17: preview7 is the FINAL preview → next cycle is rc1, NOT preview8 ──
+# Regression guard. .NET ships preview1..preview7 → rc1 → rc2 → GA; there is no
+# preview8. Naively incrementing the preview number told release captains to
+# create a `.NET 11.0-preview8` milestone that .NET never ships.
+$m17Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+)
+$m17 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m17Data
+$m17Next = Get-MilestoneCheckByPrefix -Checks $m17 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M17: preview7 missing next → CLEANUP" -Expected 'CLEANUP' -Actual $m17Next.Status
+Assert-Eq -Label "M17: next cycle after preview7 is rc1" -Expected $true `
+    -Actual ($m17Next.Area -match '\.NET 11\.0-rc1')
+Assert-Eq -Label "M17: next cycle after preview7 is NOT preview8" -Expected $false `
+    -Actual ($m17Next.Area -match 'preview8')
+Assert-Eq -Label "M17: NextAction creates the rc1 milestone" -Expected $true `
+    -Actual ($m17Next.NextAction -match 'title="\.NET 11\.0-rc1"')
+
+# ── Scenario M18: preview7 + rc1 both present → no next-cycle check ──
+$m18Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+)
+$m18 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m18Data
+Assert-Eq -Label "M18: preview7 + rc1 present → 0 checks" -Expected 0 -Actual @($m18).Count
+
+# ── Scenario M19: preview6 still increments normally (cadence untouched below 7) ──
+$m19Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview6' -Number 302 -DueOn $daysAhead30)
+)
+$m19 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview6' -MilestonesResponse $m19Data
+$m19Next = Get-MilestoneCheckByPrefix -Checks $m19 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M19: next cycle after preview6 is still preview7" -Expected $true `
+    -Actual ($m19Next.Area -match '\.NET 11\.0-preview7')
+
+# ── Scenario M20: candidate mode off preview7 → current=rc1, next=rc2 ──
+# Candidate mode increments the ordinal, so "candidate after preview7" is rc1
+# and its roll-forward is rc2 — neither may render as a preview.
+$m20Data = @(
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+)
+$m20 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m20Data
+$m20Current = Get-MilestoneCheckByPrefix -Checks $m20 -Prefix 'Milestone for current cycle'
+$m20Next = Get-MilestoneCheckByPrefix -Checks $m20 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M20: candidate off preview7 → rc1 exists, no current-cycle BLOCK" -Expected $true -Actual ($null -eq $m20Current)
+Assert-Eq -Label "M20: candidate off preview7 → next cycle is rc2" -Expected $true `
+    -Actual ($m20Next.Area -match '\.NET 11\.0-rc2')
+
+# ── Scenario M20b: candidate off preview7, rc1 MISSING → BLOCKED naming rc1 (not preview8) ──
+# Negative-case guard for the newly-reachable rc *current*-cycle check. This PR is
+# what first makes an rc title reachable as a CURRENT cycle; every other current-cycle
+# BLOCKED assertion (M2, M4) is SR-shaped, and M20 only asserts the *absence* of a check
+# when rc1 is present. Without this, mutating Check 1 to skip BLOCKED for `-rc\d+$` titles
+# still passes the whole suite. Drives a *missing* rc1 through Check 1 and pins the render.
+$m20b = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview7' -MilestonesResponse @()
+$m20bCur = Get-MilestoneCheckByPrefix -Checks $m20b -Prefix 'Milestone for current cycle'
+# Guard the dereference: if the current-cycle check regresses to absent, fail cleanly
+# here rather than dying with a StrictMode null-property throw that aborts the whole
+# suite (and silently skips every later scenario).
+Assert-Eq -Label "M20b: candidate off preview7, rc1 missing → current-cycle check present" -Expected $true -Actual ($null -ne $m20bCur)
+if ($null -ne $m20bCur) {
+    Assert-Eq -Label "M20b: candidate off preview7, rc1 missing → BLOCKED" -Expected 'BLOCKED' -Actual $m20bCur.Status
+    Assert-Eq -Label "M20b: current title is rc1 (not preview8)" -Expected $true `
+        -Actual ($m20bCur.Area -match '\.NET 11\.0-rc1')
+    Assert-Eq -Label "M20b: NextAction creates rc1, not preview8" -Expected $true `
+        -Actual ($m20bCur.NextAction -match 'title="\.NET 11\.0-rc1"' -and $m20bCur.NextAction -notmatch 'preview8')
+}
+
+# ── Scenario M20c: preview0 branch → UNKNOWN, NOT a silent skip ──
+# `preview(\d+)` syntactically accepts 0, mapping to ordinal 0 which has no train
+# member. A matched branch shape with an out-of-range ordinal is a misconfiguration,
+# so it must surface as UNKNOWN rather than silently dropping the current-cycle
+# signal — distinct from the legitimate past-rc2 empty result asserted by M20d.
+$m20c = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview0' -MilestonesResponse @()
+$m20cHygiene = Get-MilestoneCheckByPrefix -Checks $m20c -Prefix 'Milestone hygiene (branch shape)'
+Assert-Eq -Label "M20c: branch-shape check present" -Expected $true -Actual ($null -ne $m20cHygiene)
+if ($null -ne $m20cHygiene) {
+    Assert-Eq -Label "M20c: preview0 ordinal → UNKNOWN (not silent skip)" -Expected 'UNKNOWN' -Actual $m20cHygiene.Status
+    # Distinct Area from the API-failure UNKNOWN (M16) so the agent doesn't route a bad
+    # branch name to "fix gh auth" (which cannot resolve it).
+    Assert-Eq -Label "M20c: Area is the branch-shape variant" -Expected 'Milestone hygiene (branch shape)' -Actual $m20cHygiene.Area
+    Assert-Eq -Label "M20c: UNKNOWN details name the bad ordinal" -Expected $true `
+        -Actual ($m20cHygiene.Details -match 'ordinal')
+}
+
+# ── Scenario M20d: past-rc2 ordinal → legitimate silent skip (0 checks, NOT UNKNOWN) ──
+# Counterpart to M20c. 'preview9' is synthetic (like M21's preview8) purely to push the
+# candidate-mode ordinal to 10 (past rc2). GA has no milestone in this naming convention,
+# so an empty result is correct here — this pins that only sub-1 ordinals surface UNKNOWN.
+$m20d = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview9' -MilestonesResponse @()
+Assert-Eq -Label "M20d: past-rc2 ordinal → 0 checks (silent skip, GA has no milestone)" -Expected 0 -Actual @($m20d).Count
+
+# ── Scenario M21: rc2 is the end of the train → no next-cycle check (GA follows) ──
+# NOTE: 'preview8' below is deliberately NOT a real cycle — this PR removes preview8 as a
+# roll-forward target. It is a synthetic PriorSrBranch used only to drive the candidate-mode
+# ordinal math onto rc2 so this test can exercise the "rc2 is the end of the train" path.
+# Real RC branch shapes are intentionally skipped by the parser, so a preview-shaped input is
+# the only way to reach rc2 here; do not read this as implying preview8 exists.
+$m21Data = @(
+    (New-MockMilestone -Title '.NET 11.0-rc2' -Number 303 -DueOn $daysAhead30)
+)
+$m21 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview8' -MilestonesResponse $m21Data
+$m21Next = Get-MilestoneCheckByPrefix -Checks $m21 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M21: rc2 has no roll-forward milestone (GA is next) → no next check" -Expected $true -Actual ($null -eq $m21Next)
+
+# ── Scenario M22: stale rc milestones flagged alongside stale previews ──
+# preview and rc are one continuous pre-release train, so a stale rc (one that
+# isn't the current or next-cycle target) is the same housekeeping debt as a
+# stale preview5.
+$m22Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview5' -State 'open' -Number 304 -OpenIssues 3 -DueOn $daysAgo60)
+)
+$m22 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22Data
+$m22Stale = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22: stale preview5 flagged when surveying preview7" -Expected 'CLEANUP' -Actual $m22Stale.Status
+# Negative half of Check 3b: it must select ONLY the next-cycle title. Here rc1 IS
+# the next-cycle target but is not past due, and preview5 is past due but is not the
+# next-cycle target — so Check 3b must stay silent. Without this, widening 3b's
+# membership predicate (e.g. to `$true`) would mislabel already-shipped preview5 as
+# "the target open issues roll forward to" and no assertion would notice.
+$m22Slipped = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22: on-time next-cycle rc1 + stale preview5 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22Slipped)
+
+# M22b: an rc-shaped title IS caught by the widened `(preview|rc)` stale filter.
+# Use rc2 (not rc1): when surveying preview7 the next-cycle target is rc1, which
+# M22c pins as *excluded*; rc2 is neither current nor next, so a past-due open rc2
+# is genuine cross-cycle debt and must surface — proving the rc half of the filter
+# still works after the next-cycle exclusion added for the slipped-rc1 case.
+$m22bData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc2' -State 'open' -Number 302 -OpenIssues 2 -DueOn $daysAgo60)
+)
+$m22b = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22bData
+$m22bStale = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22b: stale rc2 check present" -Expected $true -Actual ($null -ne $m22bStale)
+if ($null -ne $m22bStale) {
+    Assert-Eq -Label "M22b: stale rc2 (neither current nor next) flagged on the preview train" -Expected 'CLEANUP' -Actual $m22bStale.Status
+}
+# Second negative for Check 3b, with the next-cycle milestone ABSENT rather than
+# on time: rc1 doesn't exist (Check 2 asks for it), and the only past-due milestone
+# is rc2, which is not the roll-forward target. Check 3b must stay silent.
+$m22bSlipped = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22b: missing next-cycle rc1 + stale rc2 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22bSlipped)
+
+# ── Scenario M22e: rendered stale ordering is deterministic on tied due_on ──
+# Nothing pinned the ORDER of the rendered milestone list, so a reversed or permuted
+# sort survived every other scenario. This locks it, and specifically guards the
+# `-Stable` switch on Get-PastDueOpenMilestones' Sort-Object.
+#
+# Why the fixture is padded: PowerShell's default Sort-Object is NOT stable (ties are
+# only kept in received order with -Top/-Bottom/-Stable), but .NET falls back to a
+# stable insertion sort below ~16 elements — so a small fixture cannot detect an
+# unstable sort. Since sorting now happens on the whole past-due set BEFORE each
+# check's discriminator, the set that must cross that threshold is the PADDING plus
+# the real ones. The 18 `.NET 10.0-preview*` entries are past due and open (so they
+# land in $pastDueOpen) but belong to a different major, so $cycleFilter drops them
+# from $staleMs. All entries share ONE due_on, making every comparison a tie: with
+# -Stable the four .NET 11 entries render in input order; without it they permute.
+$m22eData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1'      -Number 301 -DueOn $daysAhead30)
+)
+$m22eData += 1..18 | ForEach-Object {
+    New-MockMilestone -Title ".NET 10.0-preview$_" -State 'open' -Number (400 + $_) -OpenIssues 1 -DueOn $daysAgo60
+}
+$m22eExpectedOrder = @('.NET 11.0-preview2', '.NET 11.0-preview4', '.NET 11.0-preview1', '.NET 11.0-preview3')
+$m22eData += $m22eExpectedOrder | ForEach-Object {
+    New-MockMilestone -Title $_ -State 'open' -Number (500 + $m22eExpectedOrder.IndexOf($_)) -OpenIssues 1 -DueOn $daysAgo60
+}
+$m22e = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22eData
+$m22eStale = Get-MilestoneCheckByPrefix -Checks $m22e -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22e: cross-major padding is filtered out; only the 4 same-major stale ones surface" `
+          -Expected 'Stale open milestones (4)' -Actual $m22eStale.Area
+# Extract the titles in rendered order and compare as a single string.
+$m22eRendered = @([regex]::Matches($m22eStale.Details, '\[(\.NET [^\]]+)\]') | ForEach-Object { $_.Groups[1].Value }) -join ','
+Assert-Eq -Label "M22e: tied due_on preserves input order (guards Sort-Object -Stable)" `
+          -Expected ($m22eExpectedOrder -join ',') -Actual $m22eRendered
+
+# M22f: sort DIRECTION — oldest-first. M22e's entries are all tied, so it cannot
+# distinguish ascending from descending (a `-Descending` mutant survives it). Here
+# the three due dates are distinct and deliberately supplied out of order, so the
+# rendered sequence pins "oldest debt first", which is the order the NextAction's
+# triage advice assumes.
+$m22fData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1'      -Number 301 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview1' -State 'open' -Number 601 -OpenIssues 1 -DueOn $daysAgo30)
+    (New-MockMilestone -Title '.NET 11.0-preview2' -State 'open' -Number 602 -OpenIssues 1 -DueOn $daysAgo60)
+    (New-MockMilestone -Title '.NET 11.0-preview3' -State 'open' -Number 603 -OpenIssues 1 -DueOn $daysAgo10)
+)
+$m22f = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22fData
+$m22fStale = Get-MilestoneCheckByPrefix -Checks $m22f -Prefix 'Stale open milestones'
+$m22fRendered = @([regex]::Matches($m22fStale.Details, '\[(\.NET [^\]]+)\]') | ForEach-Object { $_.Groups[1].Value }) -join ','
+Assert-Eq -Label "M22f: distinct due_on renders oldest-first (guards sort direction)" `
+          -Expected '.NET 11.0-preview2,.NET 11.0-preview1,.NET 11.0-preview3' -Actual $m22fRendered
+
+# M22c: a slipped next-cycle rc1 is NOT "already-shipped debt" — but it is NOT silently
+# dropped either. Check 3b re-classifies it into a distinct "Next-cycle milestone past due"
+# row (findings 1-2, round-2), preserving the signal without the misleading wording.
+# Surveying preview7 with an open, past-due rc1:
+#   - Check 3 ("Stale open milestones") must NOT include it (it's the roll-forward target)
+#   - Check 3b ("Next-cycle milestone past due") MUST surface it
+$m22cData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -State 'open' -Number 301 -OpenIssues 2 -DueOn $daysAgo60)
+)
+$m22c = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22cData
+$m22cStale = Get-MilestoneCheckByPrefix -Checks $m22c -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22c: slipped next-cycle rc1 is NOT flagged as stale debt" -Expected $true -Actual ($null -eq $m22cStale)
+$m22cSlipped = Get-MilestoneCheckByPrefix -Checks $m22c -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22c: slipped next-cycle rc1 IS surfaced by Check 3b" -Expected $true -Actual ($null -ne $m22cSlipped)
+if ($null -ne $m22cSlipped) {
+    Assert-Eq -Label "M22c: slipped rc1 re-classified as next-cycle-past-due CLEANUP" -Expected 'CLEANUP' -Actual $m22cSlipped.Status
+    Assert-Eq -Label "M22c: next-cycle-past-due row names rc1" -Expected $true `
+        -Actual ($m22cSlipped.Details -match '\.NET 11\.0-rc1')
+}
+
+# M22d: SR-lane counterpart to M22c (finding 1). The next-cycle exclusion from Check 3 is
+# lane-agnostic, so a slipped SR next-cycle milestone must ALSO re-classify into the
+# "Next-cycle milestone past due" row rather than vanish — restoring the SR-captain signal
+# the bare exclusion had dropped. Surveying SR8 with an open, past-due .NET 10 SR9:
+$m22dData = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -OpenIssues 50 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -State 'open' -Number 118 -OpenIssues 4 -DueOn $daysAgo60)
+)
+$m22d = Invoke-MilestoneChecksWithMocks -SrBranch 'release/10.0.1xx-sr8' -MilestonesResponse $m22dData
+$m22dStale = Get-MilestoneCheckByPrefix -Checks $m22d -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22d: slipped next-cycle SR9 is NOT flagged as stale debt" -Expected $true -Actual ($null -eq $m22dStale)
+$m22dSlipped = Get-MilestoneCheckByPrefix -Checks $m22d -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22d: slipped next-cycle SR9 IS surfaced by Check 3b (SR lane)" -Expected $true -Actual ($null -ne $m22dSlipped)
+if ($null -ne $m22dSlipped) {
+    Assert-Eq -Label "M22d: slipped SR9 re-classified as next-cycle-past-due CLEANUP" -Expected 'CLEANUP' -Actual $m22dSlipped.Status
+    Assert-Eq -Label "M22d: next-cycle-past-due row names SR9" -Expected $true `
+        -Actual ($m22dSlipped.Details -match 'SR9')
+}
+
+# ── Scenario M23: Get-PreviewTrainMilestoneTitle pure-function mapping ──
+Assert-Eq -Label "M23: ordinal 1 → preview1" -Expected '.NET 11.0-preview1' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 1)
+Assert-Eq -Label "M23: ordinal 7 → preview7" -Expected '.NET 11.0-preview7' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 7)
+Assert-Eq -Label "M23: ordinal 8 → rc1 (not preview8)" -Expected '.NET 11.0-rc1' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 8)
+Assert-Eq -Label "M23: ordinal 9 → rc2" -Expected '.NET 11.0-rc2' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 9)
+Assert-Eq -Label "M23: ordinal 10 → null (GA, no milestone)" -Expected $true -Actual ($null -eq (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 10))
+Assert-Eq -Label "M23: ordinal 0 → null (invalid)" -Expected $true -Actual ($null -eq (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 0))
+Assert-Eq -Label "M23: major is honoured (10 → rc1)" -Expected '.NET 10.0-rc1' -Actual (Get-PreviewTrainMilestoneTitle -Major 10 -Ordinal 8)
 
 Set-Item function:Get-AllMilestones $script:OrigGetAllMilestonesForHygiene
 $script:MilestoneStub = $null
