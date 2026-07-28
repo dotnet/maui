@@ -1112,6 +1112,51 @@ Describe 'Staleness is recency-aware' {
         $v.AbsentBuildIds | Should -Contain 6
     }
 
+    <#
+        The two tests above always record a build-ID watermark, so neither can reach the
+        state where a recurrence is PROVEN by `last_present_at` but no watermark exists.
+        Presence is tracked on two channels — a timestamp and a build-ID set — and only
+        the build-ID one gated the filter, so `$newestPresence -gt 0` read
+        "it recurred but I recorded no build" as "it never recurred", and every
+        pre-recurrence absence survived into the threshold.
+
+        Both shapes below reach that state by different routes: an empty array, and an
+        array whose only element is null (the max loop skips nulls, so by the time the
+        test runs the two are indistinguishable).
+    #>
+    It 'discards absences it cannot order when a recurrence is proven but no watermark was recorded' {
+        $recurred = $script:Now.AddDays(-10).ToString('o')
+        $withWatermark = New-TestIssue -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..20) -Present @(21) -LastPresent $recurred))
+        $control = Get-CiScanIssueVerdict -Issue $withWatermark -Config $script:Net11 `
+            -Now $script:Now -Coverage (New-Coverage -Verified (1..20))
+
+        foreach ($shape in @(
+                @{ Name = 'empty array'; Json = (New-StateJson -Absent (1..20) -LastPresent $recurred) },
+                @{ Name = 'array of only nulls'
+                    Json = (New-StateJson -Absent (1..20) -LastPresent $recurred).Replace('"present_builds":[]', '"present_builds":[null]') })) {
+
+            $v = Get-CiScanIssueVerdict -Issue (New-TestIssue -Body (New-CanonicalBody -StateJson $shape.Json)) `
+                -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified (1..20))
+
+            $v.VerifiedAbsences | Should -Be 0 -Because "$($shape.Name): unorderable absences must not count"
+            $v.Decision | Should -Not -Be 'candidate' -Because "$($shape.Name): a proven recurrence must not make an issue closable"
+            $v.Detail | Should -Contain 'absences-unorderable-against-recurrence-discarded:20'
+
+            # The invariant, not just the outcome: knowing LESS about a recurrence must
+            # never be more permissive than knowing more.
+            $v.VerifiedAbsences | Should -BeLessOrEqual $control.VerifiedAbsences -Because "$($shape.Name)"
+        }
+
+        # Anti-vacuity: this must not have become a blanket lockout. With no recurrence
+        # recorded at all there is nothing to order against, and the absences still count.
+        $never = Get-CiScanIssueVerdict -Config $script:Net11 -Now $script:Now `
+            -Issue (New-TestIssue -Body (New-CanonicalBody -StateJson (New-StateJson -Absent (1..20)))) `
+            -Coverage (New-Coverage -Verified (1..20))
+        $never.VerifiedAbsences | Should -Be 20
+        $never.Decision | Should -Be 'candidate'
+    }
+
     It 'resets the quiet clock to the last observed recurrence' {
         # The signature failed one day before Now, so it has been quiet for 1 day,
         # not the ~61 days implied by a clock_start_at of 2026-06-01.

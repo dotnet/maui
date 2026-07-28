@@ -1165,6 +1165,10 @@ function Get-CiScanIssueVerdict {
     # ordering watermark: any absence at or below it was observed BEFORE the signature
     # last recurred and says nothing about whether it is gone now. Dropping them is what
     # stops "20 absences from before the regression" from satisfying the threshold.
+    #
+    # The watermark is the ONLY thing that makes the absence set orderable. When a
+    # recurrence is known to have happened but no watermark was recorded, the set cannot
+    # be ordered at all and is discarded wholesale — see the elseif below.
     $newestPresence = 0
     foreach ($p in @($state.present_builds)) {
         if ($null -eq $p) { continue }
@@ -1176,6 +1180,50 @@ function Get-CiScanIssueVerdict {
             $verdict.Detail += "absences-before-last-presence-discarded:$((Get-CiScanCount $stale))"
         }
         $verified = @($verified | Where-Object { [int]$_ -gt $newestPresence })
+    }
+    elseif ($null -ne $lastPresent) {
+        <#
+            A recurrence is PROVEN (`last_present_at` parsed) but no usable build-ID
+            watermark exists, so there is nothing to order the absences against.
+
+            Presence is tracked on two independent channels — a timestamp and a build-ID
+            set — and only the timestamp channel is consulted above, at Gate 4, where it
+            resets the clock. The build-ID channel gates the absence filter. Testing
+            `$newestPresence -gt 0` therefore conflates two different states:
+
+                "the signature never recurred"          -> absences are all current
+                "it recurred, but I recorded no build"  -> absences are unorderable
+
+            The second is the one that matters, and it took the first one's path: every
+            absence survived, including the ones observed BEFORE the recurrence, which is
+            precisely what the filter above exists to discard. The two channels disagreed
+            and the permissive one won.
+
+            Measured, with identical recurrence evidence and identical absence sets:
+
+                present_builds = [500]   -> 20 discarded ->  0 absences -> watching
+                present_builds = []      ->  0 discarded -> 20 absences -> CANDIDATE
+                present_builds = [null]  ->  0 discarded -> 20 absences -> CANDIDATE
+
+            `[null]` reaches this state by a second route: the loop above skips null
+            elements, so an array of nothing but nulls is indistinguishable from an empty
+            one by the time the test runs.
+
+            Fail closed by discarding the whole set. Since the missing watermark could
+            have been any build ID, the only sound assumption is the highest one, which
+            discards everything — making this branch agree with the `[500]` row above
+            rather than with the no-recurrence row. Invariant: proving that a signature
+            RECURRED must never make its issue easier to close.
+
+            Deliberately NOT extended to the merged-fix clock reset on the same gate. A
+            merged fix is evidence that a fix landed, not evidence that the signature was
+            present, so absences recorded around it remain real observations. Uniformity
+            would be the tidier rule; it would not be a fix.
+        #>
+        if ((Get-CiScanCount $verified) -gt 0) {
+            $verdict.Detail += "absences-unorderable-against-recurrence-discarded:$((Get-CiScanCount $verified))"
+        }
+        $verified = @()
     }
 
     $verdict.AbsentBuildIds = @($verified)

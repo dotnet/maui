@@ -2487,6 +2487,30 @@ Describe 'Static source invariants' {
             [int]$floor.Groups[1].Value | Should -BeGreaterOrEqual 100
         }
 
+        It 'asserts container health, which the floor alone cannot do' {
+            <#
+                The floor above detects TOTAL collapse. It cannot detect PARTIAL collapse,
+                and partial is the reachable case: the two gated suites hold 141 and 194
+                tests against a floor of 150, so losing the 141-test decision-logic file
+                leaves 194 -- clear of the floor -- and the gate opens with every verdict,
+                threshold and fail-closed test unexecuted. The floor sits between the two
+                containers, so it catches losing the larger one and misses the smaller.
+
+                Measured in isolation, both failure modes are invisible to FailedCount:
+
+                  file throws at discovery -> container exists, Passed = false
+                  file missing or renamed  -> no container at all, nothing reports false
+
+                The two checks are therefore disjoint, not redundant: the `Passed` sweep
+                cannot see a renamed file, and the container-count check cannot see a file
+                that loaded and exploded. Both must be present.
+            #>
+            $script:WorkflowCode | Should -Match 'Run\.Path\.Value\.Count\s*-\s*\$result\.Containers\.Count' `
+                -Because 'a renamed or deleted suite produces no container and no failure'
+            $script:WorkflowCode | Should -Match 'Containers\s*\|\s*Where-Object\s*\{\s*-not\s*\$_\.Passed\s*\}' `
+                -Because 'a suite that throws during discovery reports zero failures'
+        }
+
         It 'keeps these suites hermetic so the shared-session gate stays green' {
             <#
                 #36842's gate runs `Invoke-Pester` ONCE over `.github/scripts`, so every

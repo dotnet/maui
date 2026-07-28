@@ -183,8 +183,32 @@ jobs:
           if ($result.FailedCount -gt 0) {
             throw "$($result.FailedCount) reconciler safety test(s) failed; refusing to run the reconciler."
           }
-          # Anti-vacuous: a discovery failure reports zero failures, which would otherwise
-          # look like a pass and open the gate.
+
+          # A file that throws during DISCOVERY contributes zero tests and zero failures,
+          # so `FailedCount -eq 0` cannot distinguish "everything passed" from "a whole
+          # file never ran". Verified in isolation: two files, one throwing at discovery,
+          # reports Total=2 Passed=2 Failed=0 while two tests never existed.
+          #
+          # Assert container health directly. This is exact and needs no threshold: every
+          # configured path must produce a container, and every container must have loaded.
+          $missing = $config.Run.Path.Value.Count - $result.Containers.Count
+          if ($missing -ne 0) {
+            throw "Expected $($config.Run.Path.Value.Count) test container(s), got $($result.Containers.Count); a test file failed to load."
+          }
+          foreach ($c in $result.Containers) {
+            if (-not $c.Passed) {
+              Write-Output "::error::Test container did not load or did not pass: $($c.Item)"
+            }
+          }
+          if (@($result.Containers | Where-Object { -not $_.Passed }).Count -gt 0) {
+            throw "One or more test containers failed to load; refusing to run the reconciler."
+          }
+
+          # Anti-vacuous floor, kept as defence in depth. Note it cannot stand alone: the
+          # two suites hold 141 and 194 tests, so losing the 141-test decision-logic file
+          # leaves 194 -- above this floor -- and the gate would have opened with every
+          # verdict, threshold and fail-closed test unexecuted. The container assertions
+          # above are what actually close that hole.
           if ($result.TotalCount -lt 150) {
             throw "Only $($result.TotalCount) test(s) ran; the suite did not load correctly."
           }
