@@ -149,17 +149,21 @@ function Get-ScannerManifestFromAgentOutput {
     }
 
     $rawManifest = Get-RequiredProperty -Object $items[0] -Name 'manifest' -Context 'submit_ci_scan item'
-    if ($rawManifest -is [string]) {
-        if ([string]::IsNullOrWhiteSpace($rawManifest)) {
-            throw 'submit_ci_scan manifest is empty.'
-        }
-        if ($rawManifest.Length -gt 500000) {
-            throw 'submit_ci_scan manifest exceeds the 500000 character limit.'
-        }
-        return $rawManifest | ConvertFrom-Json
+    # The safe-output tool declares `manifest` as a string, but agent_output.json is
+    # agent-controlled and this is the fail-closed boundary, so the contract is enforced
+    # rather than assumed. Accepting an already-decoded object would hand back a payload
+    # that never passed the emptiness and size limits below.
+    if ($rawManifest -isnot [string]) {
+        throw 'submit_ci_scan manifest must be a JSON string.'
+    }
+    if ([string]::IsNullOrWhiteSpace($rawManifest)) {
+        throw 'submit_ci_scan manifest is empty.'
+    }
+    if ($rawManifest.Length -gt 500000) {
+        throw 'submit_ci_scan manifest exceeds the 500000 character limit.'
     }
 
-    return $rawManifest
+    return $rawManifest | ConvertFrom-Json
 }
 
 function Get-CiScanExpectedBuilds {

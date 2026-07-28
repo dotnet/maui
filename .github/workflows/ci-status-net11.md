@@ -155,7 +155,6 @@ safe-outputs:
                 if (identity.length < 5 || primaryError.length < 3) {
                   return null;
                 }
-                const pipelineLine = `- **Pipeline**: ${pipeline}`;
                 // Legacy bodies write either "- **Pipeline**: maui-pr" or
                 // "- **Pipeline**: maui-pr-uitests (ID 313)". Compare the parsed value
                 // so the device/UI backlog is reachable, while still refusing to let

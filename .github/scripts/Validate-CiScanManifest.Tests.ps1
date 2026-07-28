@@ -819,6 +819,45 @@ Describe 'CI scanner agent output gate' {
         { Get-ScannerManifestFromAgentOutput -Path $path } |
             Should -Throw '*exactly one item of type submit_ci_scan and no alternate outputs*'
     }
+
+    It 'rejects a manifest that is not a JSON string' {
+        # agent_output.json is agent-controlled. An already-decoded object used to be
+        # returned verbatim, so it reached validation without passing the emptiness or
+        # 500000-character limits that guard the string form.
+        $path = Join-Path $TestDrive 'object-manifest.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan'; manifest = @{ pipelines = @() } }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Get-ScannerManifestFromAgentOutput -Path $path } |
+            Should -Throw '*manifest must be a JSON string*'
+    }
+
+    It 'rejects a manifest string over the size limit' {
+        $path = Join-Path $TestDrive 'oversized-manifest.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan'; manifest = ('x' * 500001) }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Get-ScannerManifestFromAgentOutput -Path $path } |
+            Should -Throw '*exceeds the 500000 character limit*'
+    }
+
+    It 'accepts a well-formed manifest string' {
+        $path = Join-Path $TestDrive 'good-manifest.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan'; manifest = '{"pipelines":[]}' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        $result = Get-ScannerManifestFromAgentOutput -Path $path
+        @($result.pipelines).Count | Should -Be 0
+    }
 }
 
 Describe 'CI scanner workflow source invariants' {
