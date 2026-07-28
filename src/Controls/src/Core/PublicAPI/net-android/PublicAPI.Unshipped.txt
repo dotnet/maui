@@ -208,6 +208,7 @@ Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
 Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Duration.get -> System.TimeSpan
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.FromVersion.get -> int
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.InstanceCount.get -> int
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Timestamp.get -> System.DateTimeOffset

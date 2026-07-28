@@ -27,14 +27,6 @@ namespace Microsoft.Maui.Controls.Xaml;
 [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 public static class XamlIncrementalHotReloadHandler
 {
-	// Per-type record of the last XAML content identity we observed, so a metadata update can be
-	// classified as a XAML change (the type's content hash changed) vs. a non-XAML change (a pure
-	// C#/code-behind edit that leaves the generated XAML code — and thus the hash — untouched).
-	// UpdateComponent() is always present now, so its mere presence can no longer be that signal.
-	// Dev-time (Hot Reload) only; keyed on Type, bounded by the app's XAML page count.
-	static readonly object _contentHashLock = new();
-	static readonly Dictionary<Type, int> _lastContentHash = new();
-
 	/// <summary>
 	/// Generator-only entry point retained for backward compatibility with previously
 	/// compiled <c>InitializeComponent()</c> bodies. <see cref="XamlComponentRegistry.Register"/>
@@ -79,15 +71,19 @@ public static class XamlIncrementalHotReloadHandler
 		// building and main-thread dispatch latency, not just the UI-thread invoke loop.
 		var sw = Stopwatch.StartNew();
 
-		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated
-		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
-		// handledTypes records every type whose XAML actually changed in THIS delta — the synchronous
-		// "what kind of update is this" signal surfaced on UpdateRequested/UpdateSkipped. A type is a
-		// XAML change only if its content identity (__XamlContentHash) differs from the last one we saw;
-		// a pure C#/code-behind edit to a XAML page leaves that hash untouched and is NOT a XAML change,
-		// even though the page still carries an (always-present) UpdateComponent().
-		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
-		var handledTypes = new List<Type>();
+		// Batch dispatch — collect ALL (instance, method, type, __version field) tuples across every
+		// updated type carrying a generated UpdateComponent(), then issue a single
+		// MainThread.BeginInvokeOnMainThread that iterates them.
+		//
+		// candidateTypes is a COARSE, synchronous, pre-dispatch hint: every updated type that has an
+		// UpdateComponent(). Because UC is now emitted on every XAML type from the first compile, its
+		// presence no longer means "this delta changed the XAML" — a pure C#/code-behind edit to a XAML
+		// page also lands here. The AUTHORITATIVE "which types actually changed their XAML" set is
+		// computed POST-dispatch below (see the dispatch loop): running UpdateComponent() — the same call
+		// that applies Hot Reload — stamps the instance's __version with the new content hash only when
+		// the XAML changed, so a moved __version is a reliable per-instance "XAML changed" signal.
+		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type, FieldInfo? VersionField)>();
+		var candidateTypes = new List<Type>();
 
 		foreach (var type in updatedTypes)
 		{
@@ -98,34 +94,33 @@ public static class XamlIncrementalHotReloadHandler
 				binder: null,
 				types: Type.EmptyTypes,
 				modifiers: null);
+			var versionField = type.GetField("__version", BindingFlags.NonPublic | BindingFlags.Instance);
 #pragma warning restore IL2070, IL2075
 
 			if (ucMethod is null)
 				continue; // not an incremental-XAML type at all
 
+			candidateTypes.Add(type);
+
 			var instances = XamlComponentRegistry.GetInstances(type);
-
-			if (!DidXamlContentChange(type, instances))
-				continue; // XAML unchanged in this delta (e.g. a pure C# edit) — not a XAML change
-
-			handledTypes.Add(type);
-
 			foreach (var instance in instances)
-				dispatchBatch.Add((instance, ucMethod, type));
+				dispatchBatch.Add((instance, ucMethod, type, versionField));
 		}
 
-		// XamlTools contract: raised SYNCHRONOUSLY, before any dispatch, carrying the recognized subset
-		// (HandledTypes) so tooling can classify the update type (XAML Incremental Hot Reload vs. non-XAML)
-		// inline, without awaiting the async apply. Keep this call synchronous and pre-dispatch.
-		HotReloadDiagnostics.OnUpdateRequested(typesArray, handledTypes);
+		// XamlTools contract: raised SYNCHRONOUSLY, before any dispatch. HandledTypes here is the COARSE
+		// candidate set (types carrying a UC). The precise XAML-vs-non-XAML classification is now on
+		// UpdateApplied.HandledTypes (post-apply); tooling should prefer that. Kept for the pre-dispatch
+		// "an update is happening" signal and back-compat.
+		HotReloadDiagnostics.OnUpdateRequested(typesArray, candidateTypes);
 
 		if (dispatchBatch.Count == 0)
 		{
 			// XamlTools contract: terminal event when nothing is dispatched (no live instances) —
 			// UpdateApplied never fires on this path, so XamlTools uses UpdateSkipped as the definitive
-			// "no apply coming" signal and stops waiting. No version is allocated here, keeping the
-			// diagnostic version stream gap-free (every increment is paired with an UpdateApplied).
-			HotReloadDiagnostics.OnUpdateSkipped(typesArray, handledTypes);
+			// "no apply coming" signal and stops waiting. With no live instance we cannot observe a
+			// __version transition, so this path can only surface the coarse candidate set. No version is
+			// allocated here, keeping the diagnostic version stream gap-free.
+			HotReloadDiagnostics.OnUpdateSkipped(typesArray, candidateTypes);
 			return;
 		}
 
@@ -139,13 +134,25 @@ public static class XamlIncrementalHotReloadHandler
 		global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 		{
 			int instanceCount = 0;
+			// Types whose XAML actually changed in this apply — the authoritative classification.
+			var changedTypes = new List<Type>();
 
-			foreach (var (capturedInstance, capturedMethod, capturedType) in dispatchBatch)
+			foreach (var (capturedInstance, capturedMethod, capturedType, versionField) in dispatchBatch)
 			{
 				try
 				{
+					// Observe the content identity before/after running UpdateComponent(). UC — the same
+					// call that applies Hot Reload — stamps __version with the new content hash ONLY when
+					// the XAML changed (a pure C# delta leaves UC's body, and the stamp, untouched). A
+					// field read after the call is reliable even where reflecting the generated static
+					// content-hash accessor is not (which is why the pre-dispatch accessor approach failed).
+					var before = ReadVersion(versionField, capturedInstance);
 					capturedMethod.Invoke(capturedInstance, null);
 					instanceCount++;
+					var after = ReadVersion(versionField, capturedInstance);
+
+					if (before is int b && after is int a && b != a && !changedTypes.Contains(capturedType))
+						changedTypes.Add(capturedType);
 				}
 #pragma warning disable CA1031
 				catch (Exception ex)
@@ -161,76 +168,13 @@ public static class XamlIncrementalHotReloadHandler
 			sw.Stop();
 			// XamlTools contract: UpdateApplied is the TERMINAL event of a dispatched batch and must
 			// ALWAYS be raised here, after every per-instance OnUpdateFailed above — even if all failed
-			// (instanceCount == 0). XamlTools blocks briefly awaiting it to fold the stats into its
-			// report; never returning it strands that wait until timeout.
-			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
+			// (instanceCount == 0). Its HandledTypes is the AUTHORITATIVE set of types whose XAML changed
+			// (empty for a pure C# delta), which tooling should use to classify the cycle.
+			HotReloadDiagnostics.OnUpdateApplied(typesArray, changedTypes, instanceCount, fromVersion, toVersion, sw.Elapsed);
 		});
 	}
 
-	/// <summary>
-	/// Determines whether the XAML content of <paramref name="type"/> actually changed in the current
-	/// metadata update, by comparing its current content identity (the EnC-updating
-	/// <c>__XamlContentHash()</c> baked into the generated <c>InitializeComponent</c>) against the last
-	/// identity observed for this type. A pure C#/code-behind edit does not regenerate the XAML code, so
-	/// the hash is unchanged and the update is not a XAML change — even though the type still carries an
-	/// always-present <c>UpdateComponent()</c>. On the very first update seen for a type, the pre-update
-	/// identity is recovered from a live instance's stamped <c>__version</c> (set by IC/UC before this
-	/// update); with neither a cached nor an instance baseline, we conservatively report a change.
-	/// </summary>
-	static bool DidXamlContentChange(Type type, IReadOnlyList<object> instances)
-	{
-		var current = TryGetCurrentContentHash(type);
-		if (current is null)
-			return true; // generated code predates the accessor — be conservative, treat as XAML change
-
-		lock (_contentHashLock)
-		{
-			bool haveBaseline;
-			int baseline;
-			if (_lastContentHash.TryGetValue(type, out baseline))
-			{
-				haveBaseline = true;
-			}
-			else
-			{
-				var prior = TryGetInstanceVersion(type, instances);
-				haveBaseline = prior.HasValue;
-				baseline = prior.GetValueOrDefault();
-			}
-
-			_lastContentHash[type] = current.Value;
-			return !haveBaseline || baseline != current.Value;
-		}
-	}
-
-	static int? TryGetCurrentContentHash(Type type)
-	{
-#pragma warning disable IL2070, IL2075
-		var accessor = type.GetMethod(
-			"__XamlContentHash",
-			BindingFlags.NonPublic | BindingFlags.Static,
-			binder: null,
-			types: Type.EmptyTypes,
-			modifiers: null);
-#pragma warning restore IL2070, IL2075
-		if (accessor is null)
-			return null;
-
-		return accessor.Invoke(null, null) is int hash ? hash : (int?)null;
-	}
-
-	static int? TryGetInstanceVersion(Type type, IReadOnlyList<object> instances)
-	{
-		if (instances.Count == 0)
-			return null;
-
-#pragma warning disable IL2070, IL2075
-		var field = type.GetField("__version", BindingFlags.NonPublic | BindingFlags.Instance);
-#pragma warning restore IL2070, IL2075
-		if (field is null)
-			return null;
-
-		return field.GetValue(instances[0]) is int version ? version : (int?)null;
-	}
+	static int? ReadVersion(FieldInfo? versionField, object instance)
+		=> versionField?.GetValue(instance) is int version ? version : (int?)null;
 }
 #endif

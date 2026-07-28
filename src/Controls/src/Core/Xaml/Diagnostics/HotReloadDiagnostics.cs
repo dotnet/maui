@@ -62,9 +62,9 @@ public static class HotReloadDiagnostics
 		Raise(UpdateRequested, new HotReloadRequestedEventArgs(updatedTypes, handledTypes, DateTimeOffset.Now));
 	}
 
-	internal static void OnUpdateApplied(IReadOnlyList<Type> updatedTypes, int instanceCount, int fromVersion, int toVersion, TimeSpan duration)
+	internal static void OnUpdateApplied(IReadOnlyList<Type> updatedTypes, IReadOnlyList<Type> handledTypes, int instanceCount, int fromVersion, int toVersion, TimeSpan duration)
 	{
-		Raise(UpdateApplied, new HotReloadAppliedEventArgs(updatedTypes, instanceCount, fromVersion, toVersion, duration, DateTimeOffset.Now));
+		Raise(UpdateApplied, new HotReloadAppliedEventArgs(updatedTypes, handledTypes, instanceCount, fromVersion, toVersion, duration, DateTimeOffset.Now));
 	}
 
 	internal static void OnUpdateFailed(Type updatedType, object instance, Exception exception, int version)

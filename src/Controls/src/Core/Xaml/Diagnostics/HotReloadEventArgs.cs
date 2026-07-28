@@ -42,6 +42,7 @@ public class HotReloadAppliedEventArgs : EventArgs
 {
 	internal HotReloadAppliedEventArgs(
 		IReadOnlyList<Type> updatedTypes,
+		IReadOnlyList<Type> handledTypes,
 		int instanceCount,
 		int fromVersion,
 		int toVersion,
@@ -49,6 +50,7 @@ public class HotReloadAppliedEventArgs : EventArgs
 		DateTimeOffset timestamp)
 	{
 		UpdatedTypes = updatedTypes;
+		HandledTypes = handledTypes;
 		InstanceCount = instanceCount;
 		FromVersion = fromVersion;
 		ToVersion = toVersion;
@@ -58,6 +60,18 @@ public class HotReloadAppliedEventArgs : EventArgs
 
 	/// <summary>Gets the types that were successfully updated.</summary>
 	public IReadOnlyList<Type> UpdatedTypes { get; }
+
+	/// <summary>
+	/// Gets the AUTHORITATIVE subset of <see cref="UpdatedTypes"/> that actually had a XAML change in
+	/// this apply — the types whose source-generated content identity moved when
+	/// <c>UpdateComponent()</c> ran. Empty when the delta changed no XAML (e.g. a pure C#/code-behind
+	/// edit that happened to touch a XAML page type). Unlike
+	/// <see cref="HotReloadRequestedEventArgs.HandledTypes"/> (a synchronous, pre-dispatch <em>candidate</em>
+	/// hint that includes every updated type carrying an always-present <c>UpdateComponent()</c>), this
+	/// set is computed post-apply from the observed effect, so it correctly distinguishes XAML changes
+	/// from non-XAML changes. Tooling should use THIS as the "is this an incremental XAML update" signal.
+	/// </summary>
+	public IReadOnlyList<Type> HandledTypes { get; }
 
 	/// <summary>Gets the total number of live instances that were patched.</summary>
 	public int InstanceCount { get; }
