@@ -572,15 +572,49 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
     }
     It 'clamps a zero numerator to the rarity floor instead of falling back' {
         # "0 in last n builds" is parseable and means "as rare as we can observe", so it
-        # must clamp to the 0.05 floor. Returning $null here would make the caller
-        # substitute DefaultRecurrenceRate (0.30), which demands FEWER absences than the
-        # floor does — the unsafe direction for staleness thresholding.
-        $d = Get-CiScanDefaults
+        # clamps to the 0.05 floor rather than falling back.
+        #
+        # The ORIGINAL justification for this floor no longer holds, and is recorded here
+        # so it is not re-asserted: $null used to route to a default rate of 0.30, so the
+        # floor was what stopped the rarest signal getting the most permissive answer.
+        # Since the fail-closed fix, $null yields MaxRequiredAbsences -- the SAME 25 the
+        # floor produces. The two paths are indistinguishable downstream at the shipped
+        # config, so no threshold assertion can tell them apart.
+        #
+        # What still justifies the floor is REPORTING fidelity, not thresholding: 0.05 is
+        # a measurement ("rarest observable"), $null is the absence of one, and the
+        # verdict records the difference. The assertion below is therefore a monotonicity
+        # statement, not the reason this branch exists.
         $rate = Get-CiScanRecurrenceRate -Body '- **Occurrences**: 0 in last 10 builds'
 
         $rate | Should -Be 0.05
         Get-CiScanRequiredAbsences -RecurrenceRate $rate |
-            Should -BeGreaterThan (Get-CiScanRequiredAbsences -RecurrenceRate $d.DefaultRecurrenceRate)
+            Should -BeGreaterThan (Get-CiScanRequiredAbsences -RecurrenceRate 0.30)
+    }
+    <#
+        The fail-closed fix removed the ONLY reader of `DefaultRecurrenceRate`, but left
+        the key defined at 0.30 in `Get-CiScanDefaults`. A config value nothing reads is
+        strictly worse than no value: it reads as operative, its comment described the
+        substitution in the present tense, and re-arming the exact regression a reviewer
+        had just filed as HIGH was a one-line change against an existing, documented key.
+
+        The key is gone. This pins its absence, because "delete it" is undone by anyone
+        who reads the historical comments and helpfully restores what they describe.
+    #>
+    It 'defines no fallback recurrence rate for the unparseable case' {
+        $keys = @((Get-CiScanDefaults).Keys)
+        $keys | Should -Not -Contain 'DefaultRecurrenceRate' -Because @'
+re-introducing a default rate is the fail-open regression: a LOWER rate demands MORE
+absences, so any mid-range default lets corrupt Occurrences data buy a SHORTER wait than
+real data gets. The unparseable case must reach MaxRequiredAbsences. If a fallback is
+genuinely wanted, it has to be argued on its own terms, not restored from a comment.
+'@
+        # Anti-vacuity: the table is real and this scan can see keys in it.
+        $keys | Should -Contain 'MaxRequiredAbsences'
+
+        # And the behaviour the missing key protects, stated directly.
+        Get-CiScanRequiredAbsences -RecurrenceRate $null |
+            Should -Be (Get-CiScanDefaults).MaxRequiredAbsences
     }
     It 'requires more absences for rarer failures' {
         $rare = Get-CiScanRequiredAbsences -RecurrenceRate 0.1
@@ -600,7 +634,7 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
 
         The safe direction here is counter-intuitive and worth pinning: a LOWER rate
         yields MORE required absences, so an uninformative rate must fall back to the
-        MAXIMUM wait, not to DefaultRecurrenceRate (which is the more permissive answer).
+        MAXIMUM wait, not to a default rate of 0.30 (which is the more permissive answer).
     #>
     It 'fails closed to the maximum wait for a non-finite rate' {
         $d = Get-CiScanDefaults
@@ -608,9 +642,12 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
             { Get-CiScanRequiredAbsences -RecurrenceRate $bad } | Should -Not -Throw
             Get-CiScanRequiredAbsences -RecurrenceRate $bad | Should -Be $d.MaxRequiredAbsences
         }
-        # Strictly more conservative than the fallback it must NOT collapse to.
+        # Strictly more conservative than the 0.30 fallback it must NOT collapse to.
+        # 0.30 is a literal, not a config read: the DefaultRecurrenceRate key was removed
+        # precisely so nothing can wire it back in, and this assertion must keep naming
+        # the value that regression would use.
         $d.MaxRequiredAbsences |
-            Should -BeGreaterThan (Get-CiScanRequiredAbsences -RecurrenceRate $d.DefaultRecurrenceRate)
+            Should -BeGreaterThan (Get-CiScanRequiredAbsences -RecurrenceRate 0.30)
     }
 
     <#
@@ -638,7 +675,7 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
         `Get-CiScanRecurrenceRate` answers `$null` for BOTH a missing Occurrences line and
         a malformed one, and the canonical scanner template always emits the field — so
         `$null` means non-canonical or corrupt, i.e. no information, and the docblock's
-        rule applies: maximum wait, not DefaultRecurrenceRate.
+        rule applies: maximum wait, not a default rate of 0.30.
 
         This test previously asserted the opposite. That is what made the defect durable:
         corrupting `- **Occurrences**: 0 in last 10 builds` into anything unparseable
@@ -876,7 +913,7 @@ Describe 'Get-CiScanIssueVerdict — gates' {
 
     It 'does not shorten the absence clock for a zero-occurrence issue' {
         # A "0 in last n builds" body used to parse to a rate of 0, which the parser
-        # reported as unparseable, so the caller substituted DefaultRecurrenceRate (0.30)
+        # reported as unparseable, so the caller substituted a default rate of 0.30
         # and demanded FEWER absences than the rarity floor does. That let the rarest
         # signatures reach candidate soonest — backwards.
         $d = Get-CiScanDefaults
@@ -888,7 +925,7 @@ Describe 'Get-CiScanIssueVerdict — gates' {
         $v = Get-CiScanIssueVerdict -Issue $zero -Config $script:Net11 -Now $script:Now -Coverage $script:FullCoverage
 
         $v.RecurrenceRate | Should -Be 0.05
-        $v.RecurrenceRate | Should -Not -Be $d.DefaultRecurrenceRate
+        $v.RecurrenceRate | Should -Not -Be 0.30
         $v.RequiredAbsences | Should -Be $d.MaxRequiredAbsences
         $v.RequiredAbsences | Should -BeGreaterThan $baseline.RequiredAbsences
         # 20 verified absences no longer clear the bar a 0.30 fallback would have set.
@@ -897,7 +934,7 @@ Describe 'Get-CiScanIssueVerdict — gates' {
     }
 
     It 'reports the recurrence rate it measured, never a plausible substitute' {
-        # The verdict used to record DefaultRecurrenceRate whenever the Occurrences line
+        # The verdict used to record a default rate of 0.30 whenever the Occurrences line
         # was missing or malformed. That did not merely lose the reading, it invented
         # one: 0.30 sitting beside RequiredAbsences = 25, when 0.30 actually yields 9.
         # Anyone reconciling the two numbers would find them irreconcilable, and 0.30 is

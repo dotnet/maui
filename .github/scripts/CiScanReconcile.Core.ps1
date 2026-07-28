@@ -90,8 +90,12 @@ $script:CiScanDefaults = @{
     # Bounds on the required number of consecutive complete absences.
     MinRequiredAbsences      = 8
     MaxRequiredAbsences      = 25
-    # Used when '- **Occurrences**: k in last n builds' cannot be parsed.
-    DefaultRecurrenceRate    = 0.30
+    # There is deliberately NO fallback recurrence rate here. An unparseable
+    # '- **Occurrences**: k in last n builds' line is no information, and the safe answer
+    # is MaxRequiredAbsences -- a LOWER rate demands MORE absences, so any mid-range
+    # default buys corrupt data a SHORTER wait than real data gets. A key named
+    # DefaultRecurrenceRate = 0.30 used to sit here; it had no reader once the fail-closed
+    # path landed, but leaving it made re-introducing that regression a one-line change.
     # Confidence target for "the signature is really gone".
     AbsenceConfidence        = 0.95
     # Per-run blast-radius caps.
@@ -705,7 +709,7 @@ function Get-CiScanRequiredAbsences {
         A non-finite rate is not a low rate; it is no information at all, so it fails
         closed to MaxRequiredAbsences. Note the conservative direction is COUNTER-
         intuitive: a lower p yields MORE required absences, so the safe fallback is the
-        maximum wait, not DefaultRecurrenceRate.
+        maximum wait, not a mid-range default rate.
 
         That rule governs EVERY uninformative input, not just the non-finite one, and the
         other two used to violate it six lines below where it is written:
@@ -714,7 +718,7 @@ function Get-CiScanRequiredAbsences {
             line AND for a malformed one. The canonical scanner template always emits
             `- **Occurrences**: <k> in last <n> builds`, so absence means the issue is
             non-canonical or the field is corrupt. Either way it is no information.
-            Routing it to DefaultRecurrenceRate meant CORRUPTING the line LOWERED the bar
+            Routing it to a default rate of 0.30 meant CORRUPTING the line LOWERED the bar
             from 25 absences to 9 — degrading the data made closure easier, which is the
             definition of failing open.
 
@@ -1082,7 +1086,7 @@ function Get-CiScanIssueVerdict {
     $verdict.Legs = @(Get-CiScanAffectedLegs -Body $body | Where-Object { $null -ne $_ })
     $rate = Get-CiScanRecurrenceRate -Body $body
     # Record the rate that was actually measured, including `$null` for "no usable
-    # Occurrences line". Substituting DefaultRecurrenceRate here used to FABRICATE a
+    # Occurrences line". Substituting a default rate of 0.30 here used to FABRICATE a
     # reading: the verdict claimed a measured 0.30 while RequiredAbsences was 25, and
     # 0.30 yields 9 — so the two fields disagreed by a factor of three and the number
     # shown was the ordinary default, giving no sign that the fail-closed path had
