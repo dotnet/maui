@@ -8,6 +8,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -373,7 +374,8 @@ namespace Microsoft.Maui.Controls.Platform
 					string role,
 					string discriminator)
 				{
-					if (Volatile.Read(ref _disposed) != 0)
+					if (Volatile.Read(ref _disposed) != 0 ||
+						!NativeElementDiagnostics.IsRegistrationEnabled)
 						return;
 
 					_registrations.Register(owner, nativeElement, role, discriminator);
@@ -381,7 +383,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				public void RegisterAlertActionViews(object owner, UIAlertController alert)
 				{
-					if (Volatile.Read(ref _disposed) != 0)
+					if (Volatile.Read(ref _disposed) != 0 ||
+						!NativeElementDiagnostics.IsRegistrationEnabled)
 						return;
 
 					alert.View.LayoutIfNeeded();
@@ -424,7 +427,9 @@ namespace Microsoft.Maui.Controls.Platform
 					object owner,
 					IReadOnlyDictionary<UIAlertAction, MenuItem> logicalActions)
 				{
-					if (Volatile.Read(ref _disposed) != 0 || logicalActions is null)
+					if (Volatile.Read(ref _disposed) != 0 ||
+						logicalActions is null ||
+						!NativeElementDiagnostics.IsRegistrationEnabled)
 						return;
 
 					foreach (var logicalAction in logicalActions.Values)
@@ -525,7 +530,8 @@ namespace Microsoft.Maui.Controls.Platform
 					object owner,
 					UIAlertController presentedController)
 				{
-					if (Volatile.Read(ref _disposed) != 0)
+					if (Volatile.Read(ref _disposed) != 0 ||
+						!NativeElementDiagnostics.IsRegistrationEnabled)
 						return;
 
 					var weakController = new WeakReference<UIAlertController>(presentedController);
@@ -537,6 +543,11 @@ namespace Microsoft.Maui.Controls.Platform
 						{
 							if (Volatile.Read(ref _disposed) != 0)
 								return;
+							if (!NativeElementDiagnostics.IsRegistrationEnabled)
+							{
+								Dispose();
+								return;
+							}
 							if (weakController.TryGetTarget(out var controller)
 								&& controller.PresentingViewController is not null
 								&& controller.ViewIfLoaded?.Window is not null)
