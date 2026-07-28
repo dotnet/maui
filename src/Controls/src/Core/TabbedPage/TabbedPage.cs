@@ -28,6 +28,18 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
 
+		// Stores the collection change args from OnPagesChanged so MapItemsSource
+		// can handle Add/Remove incrementally instead of full rebuild.
+		internal NotifyCollectionChangedEventArgs _pendingPagesChangedArgs;
+
+		// Stores the page whose Title/Icon changed so the mapper can refresh
+		// only that page's tab bar item instead of all children.
+		internal Page _pendingPropertyChangedPage;
+
+		// Tracks pages with active PropertyChanged subscriptions so they can be
+		// unsubscribed on Reset (where Children is already empty and e.OldItems is null).
+		HashSet<Page> _subscribedPages;
+
 		/// <summary>Gets or sets the background color of the tab bar. This is a bindable property.</summary>
 		public Color BarBackgroundColor
 		{
@@ -110,7 +122,38 @@ namespace Microsoft.Maui.Controls
 			void OnPagesChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				WireUnwireChanges(false);
+
+				// Unsubscribe removed pages — they're no longer in Children after mutation.
+				// On Reset, e.OldItems is null and Children is already empty, so use _subscribedPages.
+				if (e.OldItems is not null)
+				{
+					foreach (var item in e.OldItems)
+					{
+						if (item is Page page)
+						{
+							page.PropertyChanged -= OnPagePropertyChanged;
+							_subscribedPages?.Remove(page);
+						}
+					}
+				}
+				else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset
+					&& _subscribedPages is not null)
+				{
+					// Reset path: Children is already empty, e.OldItems is null.
+					// Unsubscribe all previously tracked pages.
+					foreach (var page in _subscribedPages)
+					{
+						page.PropertyChanged -= OnPagePropertyChanged;
+					}
+					_subscribedPages.Clear();
+				}
+
+				_pendingPagesChangedArgs = e;
 				Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
+
+				// Clear after UpdateValue — iOS mapper consumes it synchronously during the call above.
+				// On other platforms the mapper doesn't use it, so clear to avoid retaining removed pages.
+				_pendingPagesChangedArgs = null;
 				WireUnwireChanges(true);
 			}
 
@@ -119,16 +162,28 @@ namespace Microsoft.Maui.Controls
 				foreach (var page in Children)
 				{
 					if (wire)
+					{
 						page.PropertyChanged += OnPagePropertyChanged;
+						_subscribedPages ??= new HashSet<Page>();
+						_subscribedPages.Add(page);
+					}
 					else
+					{
 						page.PropertyChanged -= OnPagePropertyChanged;
+						_subscribedPages?.Remove(page);
+					}
 				}
 			}
 
 			void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 			{
-				if (e.PropertyName == Page.TitleProperty.PropertyName)
+				if (e.PropertyName == Page.TitleProperty.PropertyName ||
+					e.PropertyName == Page.IconImageSourceProperty.PropertyName)
+				{
+					_pendingPropertyChangedPage = sender as Page;
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
+					_pendingPropertyChangedPage = null;
+				}
 			}
 		}
 

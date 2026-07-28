@@ -18,7 +18,14 @@
         does NOT exist on origin, the branch is in-flight — the release
         notes for that exact patch haven't been published yet, so it hasn't
         shipped. If the tag exists, the branch has already shipped that
-        patch and is skipped.
+        patch. Shipped SRs are normally retired, EXCEPT the most-recently-
+        shipped one (highest shipped patch), which is emitted as
+        mode='shipped' so its tracker keeps refreshing through post-ship
+        follow-up (adding the new build to the GitHub issue version dropdown,
+        release notes, milestone close-out). The workflow treats 'shipped'
+        as REFRESH-ONLY: it updates the tracker issue while it stays open but
+        never re-creates it, so once a human closes it, it stays closed.
+        Older shipped SRs are skipped.
 
       Lane 2 — next SR off main
         Identifies the highest SR (across in-flight branches AND shipped tags)
@@ -538,7 +545,7 @@ function New-Tracker {
     param(
         [int]$Major,
         [int]$SrNumber,
-        [string]$Mode,                 # 'in-flight' or 'candidate'
+        [string]$Mode,                 # 'in-flight', 'candidate', or 'shipped'
         [string]$BranchName,            # nullable for candidate without branch
         [string]$SurveyRef,             # branch or development ref to survey
         [string]$PriorSrBranch,         # nullable; used as -SrBranch for -Candidate mode
@@ -560,6 +567,9 @@ function New-Tracker {
     $title = "[Release Readiness] .NET $Major SR$SrNumber — $branchDisplay"
     if ($Mode -eq 'candidate') {
         $title = "[Release Readiness] .NET $Major SR$SrNumber — candidate from $SurveyRef"
+    }
+    elseif ($Mode -eq 'shipped') {
+        $title = "[Release Readiness] .NET $Major SR$SrNumber — shipped ($branchDisplay)"
     }
     return [pscustomobject]@{
         branchType           = 'sr'
@@ -728,7 +738,28 @@ function Invoke-DetectionForMajor {
             $inflightBranchesBySr[$sr] = $branch
             Write-Host "  -> in-flight SR tracker: SR$sr (patch=$branchPatch, no tag $expectedTag yet, recent=$recent)" -ForegroundColor Green
         } else {
-            Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
+            # Already shipped (the stable tag exists). We normally retire the
+            # tracker here, BUT the most-recently-shipped SR still has post-ship
+            # follow-up the tracker should keep surfacing until a human signs off
+            # (e.g. adding the new build to the GitHub issue version dropdown,
+            # release notes, closing out the milestone). So keep emitting the
+            # HIGHEST shipped SR as mode='shipped'. The workflow consumes this as
+            # REFRESH-ONLY: it refreshes the tracker issue while it stays open and
+            # never re-creates it once a human closes it — implementing
+            # "update until closed manually" without resurrecting a closed tracker.
+            # Lower (older) shipped SRs stay retired.
+            if ($branchPatch -eq $highestShippedPatch) {
+                $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+                $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'shipped' `
+                    -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                    -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                    -ExpectedPatch $branchPatch -ExpectedTag $expectedTag `
+                    -HasRecentActivityCount $recent
+                $trackers.Add($tracker)
+                Write-Host "  -> shipped SR tracker (refresh-until-closed): SR$sr (patch=$branchPatch, tag $expectedTag exists, recent=$recent)" -ForegroundColor Yellow
+            } else {
+                Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
+            }
         }
     }
 
@@ -863,6 +894,40 @@ function Invoke-DetectionForMajor {
             $trackers.Add($tracker)
             Write-Host "  -> candidate preview tracker: preview$candidatePreviewN (surveyRef=$previewCandidateRef, recent=$recent)" -ForegroundColor Green
         }
+    } elseif ($candidatePreviewVersionInfo -and $candidatePreviewVersionInfo.PreLabel -eq 'rc') {
+        # The pre-release train does NOT end at the last preview: .NET ships
+        # preview1..preview7, then rc1, rc2, then GA (the same discontinuity
+        # Get-ReleaseReadiness.ps1's Get-PreviewTrainMilestoneTitle exists to
+        # handle). Once the survey ref is bumped past the final preview it flips
+        # to label=rc/iteration=1 rather than preview8 — verified against this
+        # repo: release/10.0.1xx-rc1's Versions.props carries rc/1, and the rc
+        # branches and tags use naming exactly parallel to previews
+        # (release/<major>.0.1xx-rc<N>, <major>.0.0-rc.<N>.<build>).
+        #
+        # The `PreLabel -eq 'preview'` guard above therefore stops matching for
+        # the whole rc window, and this lane produces no tracker for rc1 or rc2.
+        # Emitting one here is NOT the fix: the rest of the preview lane is still
+        # preview-only, so an rc tracker would break downstream rather than help.
+        # Closing the gap requires, together:
+        #   1. Get-PreviewReadiness.ps1 — its branch parser hard-`throw`s on any
+        #      ref that isn't `release/<major>.0.1xx-preview<N>`, so an rc tracker
+        #      would fail the workflow's report job outright.
+        #   2. Lane 3 + Get-RemotePreviewBranchesForMajor / Get-PreviewTagsForMajor
+        #      — rc branches and tags don't match the strict preview regexes, so
+        #      in-flight detection and the "already shipped / already has a branch"
+        #      dedup would never fire and this lane would re-propose the same rc
+        #      candidate forever, even after it was cut and shipped.
+        #   3. New-PreviewTracker / New-PreviewRegressionLabelList — canonicalKey,
+        #      milestoneName, expectedTagPrefix and labels are all preview-shaped.
+        #
+        # Until that lands, WARN loudly. The bug that matters most here is not the
+        # missing tracker but the silence: this case previously fell into the
+        # generic DarkGray "No active preview cycle" line below, which is also what
+        # a major legitimately in SR phase prints. A release captain had no way to
+        # tell "nothing to do" apart from "rc1 needs a tracker and you won't get one".
+        $rcIter = $candidatePreviewVersionInfo.PreIter
+        Write-Warning ("[major $Major] $previewCandidateRef is in the rc phase (label=rc, iteration=$rcIter) but this lane only emits preview trackers, " +
+                       "so no rc$rcIter tracker will be created. Track rc$rcIter manually until rc support is added to the preview lane.")
     } else {
         $labelDisplay = if ($candidatePreviewVersionInfo) { ($candidatePreviewVersionInfo.PreLabel) } else { '<n/a>' }
         $iterDisplay  = if ($candidatePreviewVersionInfo) { ($candidatePreviewVersionInfo.PreIter)  } else { '<n/a>' }
@@ -885,7 +950,10 @@ function Invoke-DetectionForMajor {
 
 # Guard: skip the driver when dot-sourced (tests dot-source to access helpers
 # like New-RegressionLabelList and the strict regex constants).
-if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+# `InvocationName -eq '.'` alone reliably detects dot-sourcing across every form;
+# matching `$MyInvocation.Line` against a leading dot is avoided because that text
+# can be the whole command line and would wrongly skip a later `&`/`-File` call.
+if ($MyInvocation.InvocationName -eq '.') { return }
 
 if (-not (Test-Path (Join-Path $Repo '.git'))) {
     throw "Fail-closed: $Repo is not a git repository. Pass -Repo <checkout>."

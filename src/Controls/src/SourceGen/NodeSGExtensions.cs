@@ -404,7 +404,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
-				return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
+				return $"(sbyte){SymbolDisplay.FormatPrimitive(sbyteValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
@@ -413,7 +413,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
-				return SymbolDisplay.FormatPrimitive(byteValue, true, false);
+				return $"(byte){SymbolDisplay.FormatPrimitive(byteValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
@@ -422,7 +422,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
-				return SymbolDisplay.FormatPrimitive(shortValue, true, false);
+				return $"(short){SymbolDisplay.FormatPrimitive(shortValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
@@ -430,8 +430,8 @@ static class NodeSGExtensions
 		{
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
-			if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
-				return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
+			if (ushort.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
+				return $"(ushort){SymbolDisplay.FormatPrimitive(ushortValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
