@@ -53,10 +53,18 @@ namespace Microsoft.Maui.Controls.Handlers
         readonly Dictionary<ShellContent, IPlatformViewHandler> _contentRenderers = new();
         IShellPageRendererTracker? _rootTracker;
         bool _didLayoutSubviews;
+        bool _isRotating;
         int _lastTabThickness = int.MinValue;
         Thickness _lastInset;
         UIViewPropertyAnimator? _pageAnimation;
         UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
+
+        // Prevents multiple concurrent GoToAsync("..") dispatches from SendPop().
+        // On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+        // and combinations that may cause SendPop() to be called multiple times.
+        // Once a back-navigation dispatch is in flight, all subsequent calls are blocked
+        // until it completes (success or cancel).
+        bool _sendPopPending;
 
         // Root view controller for content hosting
         ShellSectionRootViewController? _rootViewController;
@@ -782,6 +790,17 @@ namespace Microsoft.Maui.Controls.Handlers
             if (ActiveViewControllers().Length < _navigationController.NavigationBar.Items!.Length)
                 return true;
 
+            // On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+            // and fire multiple times for a single user back action. Guard against multiple
+            // concurrent GoToAsync("..") dispatches to prevent navigating to the wrong page.
+            if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+            {
+                if (_sendPopPending)
+                    return false;
+
+                _sendPopPending = true;
+            }
+
             topViewController ??= _navigationController.TopViewController;
             foreach (var tracker in _trackers)
             {
@@ -794,6 +813,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
                     if (!enabled)
                     {
+                        _sendPopPending = false;  // reset before returning
                         return false;
                     }
 
@@ -801,11 +821,19 @@ namespace Microsoft.Maui.Controls.Handlers
                     {
                         if (command.CanExecute(commandParameter))
                             command.Execute(commandParameter);
+                        // Reset the iOS 26+ guard so subsequent back presses are not blocked.
+                        _sendPopPending = false;
                         return false;
                     }
 
-                    if (tracker.Value.Page?.SendBackButtonPressed() == true)
+                    // Route through Shell.SendBackButtonPressed so that Shell subclass overrides
+                    // are invoked consistently for both the navigation bar back button and the
+                    // hardware/system back button.
+                    if (_shellContext?.Shell?.SendBackButtonPressed() == true)
+                    {
+                        _sendPopPending = false;  // reset before returning
                         return false;
+                    }
 
                     break;
                 }
@@ -814,11 +842,21 @@ namespace Microsoft.Maui.Controls.Handlers
             CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(async () =>
             {
                 if (_shellContext?.Shell is null)
+                {
+                    _sendPopPending = false;
                     return;
+                }
 
                 var navItemsCount = _navigationController.NavigationBar.Items!.Length;
 
-                await _shellContext.Shell.GoToAsync("..", true);
+                try
+                {
+                    await _shellContext.Shell.GoToAsync("..", true);
+                }
+                finally
+                {
+                    _sendPopPending = false;
+                }
 
                 // Navigation was cancelled — restore nav bar alpha
                 if (_navigationController.NavigationBar.Items!.Length == navItemsCount)
@@ -1009,6 +1047,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _containerArea.Frame = _rootViewController.View.Bounds;
             LayoutContentRenderers();
             LayoutHeader();
+            _isRotating = false;
         }
 
         void LayoutContentRenderers()
@@ -1209,6 +1248,15 @@ namespace Microsoft.Maui.Controls.Handlers
                 GetHandler()?.LayoutRootSubviews();
             }
 
+            public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+            {
+                base.ViewWillTransitionToSize(toSize, coordinator);
+
+                var handler = GetHandler();
+                if (handler is not null)
+                    handler._isRotating = true;
+            }
+
             public override void ViewWillAppear(bool animated)
             {
                 base.ViewWillAppear(animated);
@@ -1220,7 +1268,7 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 base.ViewSafeAreaInsetsDidChange();
                 var handler = GetHandler();
-                if (handler is not null && handler._didLayoutSubviews)
+                if (handler is not null && handler._didLayoutSubviews && !handler._isRotating)
                     handler.LayoutHeader();
             }
 
@@ -1315,6 +1363,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _popCompletionTask?.TrySetCanceled();
             _popCompletionTask = null;
             _pendingViewControllers = null;
+            _sendPopPending = false;
         }
 
         (bool isHidden, bool animate) GetNavigationBarVisibility(UIViewController viewController)
@@ -1341,7 +1390,7 @@ namespace Microsoft.Maui.Controls.Handlers
             if (!context.IsCancelled)
             {
                 _popCompletionTask = new TaskCompletionSource<bool>();
-                SendPoppedOnCompletion(Task.CompletedTask);
+                SendPoppedOnCompletion(_popCompletionTask.Task);
             }
         }
 
