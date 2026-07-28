@@ -101,25 +101,6 @@ namespace Microsoft.Maui.Controls.Handlers
                     }
 
                     accept = ((IShellItemController)VirtualView).ProposeSection(renderer.ShellSection, false);
-                    if (accept)
-                    {
-                        // UIKit hasn't switched _tabBarController.SelectedViewController to this tab
-                        // yet at this point — that happens right after this delegate returns true.
-                        // Setting CurrentItem here re-enters GoTo()/SetSelectedViewController()
-                        // synchronously, which must not assign SelectedViewController itself:
-                        // if it did, UIKit would see the tab it's about to select as already
-                        // selected and treat it as a repeat tap on the active tab, automatically
-                        // popping that tab's navigation stack to its root view controller.
-                        _isHandlingNativeTabSelection = true;
-                        try
-                        {
-                            VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
-                        }
-                        finally
-                        {
-                            _isHandlingNativeTabSelection = false;
-                        }
-                    }
                 }
 
                 return accept;
@@ -266,15 +247,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetSelectedViewController(UIViewController? value)
         {
-            // When invoked re-entrantly from ShouldSelectViewController (native tab tap in
-            // progress), UIKit is about to assign _tabBarController.SelectedViewController itself
-            // right after the delegate returns. Skip our own assignment here so UIKit doesn't
-            // observe the destination tab as already selected — which would make it treat this as
-            // a repeat tap and auto pop-to-root the tab's navigation stack.
-            if (!_isHandlingNativeTabSelection)
-            {
-                _tabBarController.SelectedViewController = value;
-            }
+            _tabBarController.SelectedViewController = value;
 
             var renderer = value is not null ? RendererForViewController(value) : null;
             if (renderer is not null)
@@ -317,7 +290,6 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         MoreNavigationDelegate? _moreNavigationDelegate;
-        bool _isHandlingNativeTabSelection;
 
         /// <summary>
         /// Delegate for MoreNavigationController to handle DidShowViewController.
@@ -744,13 +716,21 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            if (_tabBarController.TabBar.Items.Length >= items.Count)
+            // When there are more than 5 sections, iOS collapses the overflow behind a system
+            // "More" tab, so TabBar.Items.Length (visible items, including the "More" item
+            // itself) is less than items.Count. The previous "TabBar.Items.Length >= items.Count"
+            // guard skipped this entire method in that case - meaning even the first 4 visible
+            // (non-More) tabs never had their initial enabled/badge state applied. Compute how
+            // many section tabs are actually visible, excluding the system "More" item, so those
+            // still get updated - mirrors the legacy ShellItemRenderer's ApplyInitialDisabledState.
+            var visibleSectionTabs = items.Count > _tabBarController.TabBar.Items.Length
+                ? _tabBarController.TabBar.Items.Length - 1
+                : Math.Min(_tabBarController.TabBar.Items.Length, items.Count);
+
+            for (int tabIndex = 0; tabIndex < visibleSectionTabs; tabIndex++)
             {
-                for (int tabIndex = 0; tabIndex < items.Count; tabIndex++)
-                {
-                    UpdateTabBarItemEnabled(_tabBarController.TabBar.Items[tabIndex], items[tabIndex].IsEnabled);
-                    UpdateTabBarItemBadge(_tabBarController.TabBar.Items[tabIndex], items[tabIndex]);
-                }
+                UpdateTabBarItemEnabled(_tabBarController.TabBar.Items[tabIndex], items[tabIndex].IsEnabled);
+                UpdateTabBarItemBadge(_tabBarController.TabBar.Items[tabIndex], items[tabIndex]);
             }
         }
 
