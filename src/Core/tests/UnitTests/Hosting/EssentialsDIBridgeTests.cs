@@ -82,6 +82,28 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			field.SetValue(null, null);
 		}
 
+		static void InvokeTrackInitializedOrOwned<T>(
+			T implementation,
+			T? original,
+			Func<T?> getter,
+			Action<T?> setter,
+			List<Action> facadeCleanups)
+			where T : class
+		{
+			var initializerType = typeof(EssentialsExtensions).GetNestedType(
+				"EssentialsInitializer",
+				System.Reflection.BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("EssentialsInitializer type was not found.");
+			var method = initializerType.GetMethod(
+				"TrackInitializedOrOwned",
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+				?? throw new InvalidOperationException("TrackInitializedOrOwned method was not found.");
+
+			method.MakeGenericMethod(typeof(T)).Invoke(
+				null,
+				new object?[] { implementation, original, getter, setter, facadeCleanups });
+		}
+
 		static void ResetStaticField(string typeName, string fieldName)
 		{
 			var assemblyName = typeof(AppInfo).Assembly.GetName().Name;
@@ -398,6 +420,43 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				factory.DisposeInnerProvider();
 				Preferences.SetDefault(original);
 			}
+		}
+
+		[Fact]
+		public void UseVersionTrackingDoesNotAdoptConcurrentExclusiveFacade()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IVersionTracking, DisposableStubVersionTracking>();
+			var app = builder.Build();
+			var exclusiveVersionTracking = Assert.IsType<DisposableStubVersionTracking>(
+				app.Services.GetRequiredService<IVersionTracking>());
+			var simulatedConcurrentCleanups = new List<Action>();
+
+			try
+			{
+				// Simulate another app having captured original == null immediately before
+				// this app installed its exclusive DI-owned facade.
+				InvokeTrackInitializedOrOwned(
+					exclusiveVersionTracking,
+					original: null,
+					VersionTracking.GetDefault,
+					VersionTracking.SetDefault,
+					simulatedConcurrentCleanups);
+
+				Assert.Empty(simulatedConcurrentCleanups);
+				Assert.Same(
+					exclusiveVersionTracking,
+					GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			}
+			finally
+			{
+				EssentialsExtensions.RestoreFacadeCleanups(simulatedConcurrentCleanups);
+				app.Dispose();
+			}
+
+			Assert.True(exclusiveVersionTracking.IsDisposed);
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
 		}
 
 		[Fact]

@@ -151,6 +151,63 @@ public class EssentialsDIBridgeTests
 	}
 
 	[Fact]
+	public async Task MapServiceTokenSetterDoesNotBlockConcurrentAppBuild()
+	{
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var timeout = TimeSpan.FromSeconds(30);
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var firstSetterEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var secondSetterCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var first = new CallbackPlatformGeocoding(value =>
+		{
+			if (!string.Equals(value, firstToken, StringComparison.Ordinal))
+				return;
+
+			firstSetterEntered.TrySetResult(true);
+			Assert.True(
+				secondSetterCompleted.Task.Wait(timeout),
+				"The first map-token setter blocked the second app build under the global bookkeeping lock.");
+		});
+		var second = new CallbackPlatformGeocoding(value =>
+		{
+			if (string.Equals(value, secondToken, StringComparison.Ordinal))
+				secondSetterCompleted.TrySetResult(true);
+		});
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(first);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			var firstBuild = Task.Run(firstBuilder.Build);
+
+			await firstSetterEntered.Task.WaitAsync(timeout);
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(second);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			var secondBuild = Task.Run(secondBuilder.Build);
+
+			var apps = await Task.WhenAll(firstBuild, secondBuild).WaitAsync(timeout);
+			firstApp = apps[0];
+			secondApp = apps[1];
+
+			Assert.Equal(firstToken, first.MapServiceToken);
+			Assert.Equal(secondToken, second.MapServiceToken);
+		}
+		finally
+		{
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
 	public void MapServiceTokenCleanupRestoresPlatformTokenWhenGeocoderRestoreThrows()
 	{
 		const string originalInstanceToken = "original-instance-token";
@@ -551,6 +608,27 @@ public class EssentialsDIBridgeTests
 	sealed class StubPlatformGeocoding : StubGeocoding, IPlatformGeocoding
 	{
 		public string? MapServiceToken { get; set; }
+	}
+
+	sealed class CallbackPlatformGeocoding : StubGeocoding, IPlatformGeocoding
+	{
+		readonly Action<string?> _onSet;
+		string? _mapServiceToken;
+
+		public CallbackPlatformGeocoding(Action<string?> onSet)
+		{
+			_onSet = onSet;
+		}
+
+		public string? MapServiceToken
+		{
+			get => _mapServiceToken;
+			set
+			{
+				_onSet(value);
+				_mapServiceToken = value;
+			}
+		}
 	}
 
 	sealed class ThrowingRestorePlatformGeocoding : StubGeocoding, IPlatformGeocoding

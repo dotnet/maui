@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Hosting
 	public static class EssentialsExtensions
 	{
 		// Serializes access to the shared map-token bookkeeping (s_mapTokenAssignments) only.
-		// It is intentionally NOT held across user code (ConfigureEssentials delegates, DI factory
-		// resolution) or facade reads. Facade ownership bookkeeping is serialized per type by
-		// FacadeBridgeState<T>.SyncRoot instead. See EssentialsInitializer.InitializeCore.
+		// It is intentionally NOT held across user code, facade reads, or user-implementable
+		// IPlatformGeocoding token accessors. Facade ownership bookkeeping is serialized per
+		// type by FacadeBridgeState<T>.SyncRoot instead. See EssentialsInitializer.InitializeCore.
 #if WINDOWS || TIZEN
 		static readonly object s_mapTokenLock = new();
 #endif
@@ -565,16 +565,19 @@ namespace Microsoft.Maui.Hosting
 				string mapServiceToken,
 				List<Action> facadeCleanups)
 			{
+				var previousToken = implementation.MapServiceToken;
+				MapTokenAssignment assignment;
+
 				lock (s_mapTokenLock)
 				{
 #if WINDOWS
 					var previousPlatformToken = WindowsMapServiceTokenGetter();
 					var previousPlatformOwner = FindMapTokenOwner(previousPlatformToken);
 #endif
-					var assignment = new MapTokenAssignment(
+					assignment = new MapTokenAssignment(
 						implementation,
 						mapServiceToken,
-						implementation.MapServiceToken
+						previousToken
 #if WINDOWS
 						, previousPlatformToken
 						, previousPlatformOwner
@@ -582,17 +585,32 @@ namespace Microsoft.Maui.Hosting
 					);
 
 					s_mapTokenAssignments.Add(assignment);
-					try
-					{
-						implementation.MapServiceToken = mapServiceToken;
-					}
-					catch
-					{
-						s_mapTokenAssignments.Remove(assignment);
-						throw;
-					}
-					facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
 				}
+
+				try
+				{
+					// IPlatformGeocoding is user-implementable. Never invoke its setter while
+					// holding the process-static bookkeeping lock.
+					implementation.MapServiceToken = mapServiceToken;
+				}
+				catch
+				{
+					lock (s_mapTokenLock)
+					{
+						RemoveMapTokenAssignmentLocked(
+							assignment,
+							out _
+#if WINDOWS
+							, out _,
+							out _
+#endif
+						);
+					}
+
+					throw;
+				}
+
+				facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
 			}
 
 #if WINDOWS
@@ -611,15 +629,115 @@ namespace Microsoft.Maui.Hosting
 
 			static void CleanupMapServiceToken(MapTokenAssignment assignment)
 			{
+				bool hasImplementationSuccessor;
+#if WINDOWS
+				string? platformSuccessorToken;
+				string? platformPredecessorToken;
+				Exception? platformException = null;
+#endif
+
 				lock (s_mapTokenLock)
-					CleanupMapServiceTokenLocked(assignment);
+				{
+					var index = s_mapTokenAssignments.IndexOf(assignment);
+					if (index < 0)
+					{
+						return;
+					}
+
+					hasImplementationSuccessor = false;
+					for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
+					{
+						if (ReferenceEquals(s_mapTokenAssignments[i].Implementation, assignment.Implementation))
+						{
+							hasImplementationSuccessor = true;
+							break;
+						}
+					}
+				}
+
+				List<Exception>? exceptions = null;
+				if (!hasImplementationSuccessor)
+				{
+					try
+					{
+						// This accessor is user-implementable, so restoration is intentionally
+						// best-effort under concurrent mutation of the same implementation.
+						if (string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
+							assignment.Implementation.MapServiceToken = assignment.PreviousToken;
+					}
+					catch (Exception ex)
+					{
+						(exceptions ??= new()).Add(ex);
+					}
+				}
+#if WINDOWS
+				lock (s_mapTokenLock)
+				{
+					if (RemoveMapTokenAssignmentLocked(
+						assignment,
+						out _,
+						out platformSuccessorToken,
+						out platformPredecessorToken))
+					{
+						// The Windows token and its assignment-owner graph are both process-global.
+						// Keep their compare/restore operation atomic under the bookkeeping lock,
+						// after the user implementation has restored its own token.
+						try
+						{
+							if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
+							{
+								WindowsMapServiceTokenSetter(
+									platformSuccessorToken ??
+									platformPredecessorToken ??
+									assignment.PreviousPlatformToken);
+							}
+						}
+						catch (Exception ex)
+						{
+							platformException = ex;
+						}
+					}
+				}
+
+				if (platformException is not null)
+					(exceptions ??= new()).Add(platformException);
+#else
+				lock (s_mapTokenLock)
+				{
+					RemoveMapTokenAssignmentLocked(assignment, out _);
+				}
+#endif
+
+				if (exceptions is null)
+					return;
+
+				if (exceptions.Count == 1)
+					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+				throw new AggregateException("Map service token restoration failed.", exceptions);
 			}
 
-			static void CleanupMapServiceTokenLocked(MapTokenAssignment assignment)
+			// Caller must hold s_mapTokenLock. This mutates bookkeeping only and never
+			// invokes user/platform token accessors.
+			static bool RemoveMapTokenAssignmentLocked(
+				MapTokenAssignment assignment,
+				out bool hasImplementationSuccessor
+#if WINDOWS
+				, out string? platformSuccessorToken,
+				out string? platformPredecessorToken
+#endif
+			)
 			{
 				var index = s_mapTokenAssignments.IndexOf(assignment);
 				if (index < 0)
-					return;
+				{
+					hasImplementationSuccessor = false;
+#if WINDOWS
+					platformSuccessorToken = null;
+					platformPredecessorToken = null;
+#endif
+					return false;
+				}
 
 				MapTokenAssignment? implementationSuccessor = null;
 				for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
@@ -636,6 +754,7 @@ namespace Microsoft.Maui.Hosting
 				{
 					implementationSuccessor.PreviousToken = assignment.PreviousToken;
 				}
+				hasImplementationSuccessor = implementationSuccessor is not null;
 #if WINDOWS
 				MapTokenAssignment? platformSuccessor = null;
 				var platformPredecessor = index > 0
@@ -662,47 +781,12 @@ namespace Microsoft.Maui.Hosting
 
 					previousDependent = candidate;
 				}
+				platformSuccessorToken = platformSuccessor?.AppliedToken;
+				platformPredecessorToken = platformPredecessor?.AppliedToken;
 #endif
 
 				s_mapTokenAssignments.RemoveAt(index);
-
-				List<Exception>? exceptions = null;
-				if (implementationSuccessor is null)
-				{
-					try
-					{
-						if (string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
-							assignment.Implementation.MapServiceToken = assignment.PreviousToken;
-					}
-					catch (Exception ex)
-					{
-						(exceptions ??= new()).Add(ex);
-					}
-				}
-#if WINDOWS
-				try
-				{
-					if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
-					{
-						WindowsMapServiceTokenSetter(
-							platformSuccessor?.AppliedToken ??
-							platformPredecessor?.AppliedToken ??
-							assignment.PreviousPlatformToken);
-					}
-				}
-				catch (Exception ex)
-				{
-					(exceptions ??= new()).Add(ex);
-				}
-#endif
-
-				if (exceptions is null)
-					return;
-
-				if (exceptions.Count == 1)
-					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
-
-				throw new AggregateException("Map service token restoration failed.", exceptions);
+				return true;
 			}
 #endif
 
@@ -718,18 +802,34 @@ namespace Microsoft.Maui.Hosting
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
-					var previousOwner = FacadeBridgeState<T>.FindOwner(original);
-					if (original is not null && previousOwner is null)
+					if (!ReferenceEquals(getter(), impl))
 						return;
 
-					// Direct DI implementations belong to the app that resolved them. Only
-					// framework-owned defaults and owner-aware wrappers can outlive that app.
-					if (previousOwner is not null && !previousOwner.AllowsSharedOwnership)
-						return;
+					var currentOwner = FacadeBridgeState<T>.FindOwner(impl);
+					T? previous;
+					FacadeAssignment<T>? previousOwner;
+					if (currentOwner is null)
+					{
+						if (original is not null)
+							return;
+
+						previous = original;
+						previousOwner = null;
+					}
+					else
+					{
+						// Direct DI implementations belong to the app that resolved them.
+						// Only framework-owned defaults and owner-aware wrappers can be shared.
+						if (!currentOwner.AllowsSharedOwnership)
+							return;
+
+						previous = impl;
+						previousOwner = currentOwner;
+					}
 
 					assignment = new FacadeAssignment<T>(
 						impl,
-						original,
+						previous,
 						previousOwner,
 						allowsSharedOwnership: true);
 					FacadeBridgeState<T>.Assignments.Add(assignment);
