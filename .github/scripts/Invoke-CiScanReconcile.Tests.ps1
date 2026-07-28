@@ -1407,6 +1407,21 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
 
 
 Describe 'AzDO coverage re-derivation' {
+    <#
+        Every mock in this Describe answers the newer-build listing with an empty page.
+
+        That listing is not incidental plumbing to be stubbed away — it is the probe that
+        stops a stale marker from certifying an absence, so leaving it unmocked would make
+        each test below fail closed for a reason it is not about. An empty page states the
+        premise these tests actually rely on: "nothing has run on this branch since the
+        marker's horizon", which is what makes the claimed builds the whole story. The
+        marker-freshness behaviour itself is exercised in its own Context, where this
+        default is deliberately overridden.
+    #>
+    BeforeEach {
+        $script:MockNewerBuilds = [pscustomobject]@{ value = @() }
+    }
+
     It 'is unverifiable when AzDO is skipped' {
         $script:SkipAzdo = $true
         try {
@@ -1449,6 +1464,7 @@ Describe 'AzDO coverage re-derivation' {
             $script:MockTimeline = [pscustomobject]@{ records = @(
                     [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
             Mock Invoke-HttpGetJson {
+                if ($Url -like '*/builds?definitions=*') { return $script:MockNewerBuilds }
                 if ($Url -like '*/timeline*') { return $script:MockTimeline }
                 return $script:MockBuild
             }
@@ -1607,6 +1623,7 @@ Describe 'AzDO coverage re-derivation' {
                 '- `Build Windows (Release)` — flaky since Tuesday'))
 
         Mock Invoke-HttpGetJson {
+            if ($Url -like '*/builds?definitions=*') { return $script:MockNewerBuilds }
             if ($Url -like '*/timeline*') {
                 return [pscustomobject]@{ records = @(
                         [pscustomobject]@{ name = 'Build Windows (Release)'; result = 'succeeded' }) }
@@ -1640,6 +1657,7 @@ Describe 'AzDO coverage re-derivation' {
         BeforeEach {
             $script:LegResult = 'succeeded'
             Mock Invoke-HttpGetJson {
+                if ($Url -like '*/builds?definitions=*') { return $script:MockNewerBuilds }
                 if ($Url -like '*/timeline*') {
                     return [pscustomobject]@{ records = @(
                             [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = $script:LegResult }) }
@@ -1695,6 +1713,7 @@ Describe 'AzDO coverage re-derivation' {
         BeforeEach {
             $script:LegRecords = @()
             Mock Invoke-HttpGetJson {
+                if ($Url -like '*/builds?definitions=*') { return $script:MockNewerBuilds }
                 if ($Url -like '*/timeline*') {
                     return [pscustomobject]@{ records = @($script:LegRecords) }
                 }
@@ -1761,6 +1780,228 @@ Describe 'AzDO coverage re-derivation' {
                 [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' }
                 [pscustomobject]@{ name = 'Controls (v18.5) CollectionView (skipped shard)'; result = 'skipped' })
             (Invoke-CoverageForFixtureLeg).VerifiedAbsentBuilds | Should -Not -Contain 42
+        }
+    }
+
+    <#
+        Everything above re-derives builds the MARKER named. That is a closed loop: the
+        only build IDs the coverage loop could ever fetch came from `absent_builds`, so
+        the reconciler's view of the branch ended wherever the scanner's last write did.
+        A marker written in June carrying nine clean builds still reads as nine clean
+        builds in August, and the July build in which the signature recurred is not
+        rejected — it is never requested. No test above can see this, because every one
+        of them supplies the build list it then verifies.
+
+        These tests supply a branch history the marker does NOT know about, which is the
+        only way the distinction becomes observable.
+
+        The asymmetry between the three leg outcomes is the substance of the fix, so each
+        is pinned separately: only a leg that RAN AND WENT RED is evidence of recurrence.
+        A clean newer build agrees but must not be counted (it would lower the bar to
+        close using evidence the scanner never vetted), and a skipped leg is silence
+        rather than agreement.
+    #>
+    Context 'builds newer than the marker horizon are probed, not assumed absent' {
+        BeforeEach {
+            $script:NewerTimelines = @{}
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @() }
+            Mock Invoke-HttpGetJson {
+                if ($Url -like '*/builds?definitions=*') { return $script:MockNewerBuilds }
+
+                # Which build's timeline is being asked for decides the answer, so the
+                # horizon build and the newer ones can disagree — the entire point here.
+                if ($Url -like '*/timeline*') {
+                    $id = [regex]::Match($Url, '/builds/(\d+)/timeline').Groups[1].Value
+                    if ($script:NewerTimelines.ContainsKey($id)) {
+                        return [pscustomobject]@{ records = @($script:NewerTimelines[$id]) }
+                    }
+                    return [pscustomobject]@{ records = @(
+                            [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+                }
+
+                return [pscustomobject]@{
+                    definition   = [pscustomobject]@{ id = 313 }
+                    sourceBranch = 'refs/heads/net11.0'
+                    status       = 'completed'
+                    result       = 'failed'
+                }
+            }
+        }
+
+        # The reported failure: a recurrence in a build the marker never recorded.
+        It 'fails closed when the affected leg went red in a build after the horizon' {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:NewerTimelines['77'] = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeTrue
+            $c.Reason | Should -BeExactly 'recurrence-after-horizon:77'
+        }
+
+        # Agreement must not accelerate a closure: the absence threshold is calibrated
+        # against scanner-recorded observations, and silently adding unvetted ones would
+        # lower the bar to close rather than raise confidence.
+        It 'accepts a clean newer build without counting it as an absence' {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeFalse
+            $c.VerifiedAbsentBuilds | Should -Contain 42
+            $c.VerifiedAbsentBuilds | Should -Not -Contain 77
+        }
+
+        # Silence is not a recurrence. Vetoing here would strand every issue whose leg is
+        # conditionally scheduled, which is most of them.
+        It 'does not veto on a newer build where the affected leg did not run' -ForEach @(
+            @{ Label = 'leg skipped'; Records = @([pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'skipped' }) }
+            @{ Label = 'leg absent from timeline'; Records = @([pscustomobject]@{ name = 'Some Other Leg'; result = 'succeeded' }) }
+        ) {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:NewerTimelines['77'] = $Records
+
+            (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeFalse -Because $Label
+        }
+
+        <#
+            The steady state. An empty listing means the scanner is current, and it has to
+            stay cheap: `Get-CiScanJsonField` returns the empty `value` array through a
+            function boundary, where PowerShell unrolls it to `$null`. A null test would
+            read the healthiest possible response as a failed read and fail EVERY issue
+            closed to `needs-human` — a reconciler-wide denial of service wearing the
+            costume of a safety property. Pinned because the failure is invisible: the
+            run still exits green with a full report, every row simply says `needs-human`.
+        #>
+        It 'treats an empty newer-build listing as proof the marker is current' {
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeFalse
+            $c.VerifiedAbsentBuilds | Should -Contain 42
+        }
+
+        # A listing we could not read leaves the newer builds unknown, which is exactly
+        # the blindness this probe exists to remove.
+        It 'fails closed when the newer-build listing cannot be read' -ForEach @(
+            @{ Label = 'read failed'; Page = $null }
+            @{ Label = 'response carries no value property'; Page = [pscustomobject]@{ count = 0 } }
+        ) {
+            $script:MockNewerBuilds = $Page
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeTrue -Because $Label
+            $c.Reason | Should -BeLike 'newer-build-listing-failed:*' -Because $Label
+        }
+
+        # An unreadable build id cannot be compared against the horizon; dropping it
+        # would let the one build we could not parse be the one that recurred.
+        It 'fails closed when a listed build has an unreadable id' {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 'not-a-number' }) }
+            (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeTrue
+        }
+
+        <#
+            The grossly stale marker from the report. More newer builds than we are
+            willing to probe means we cannot prove any of them was clean, and probing
+            forever is not an option, so the honest answer is "a human should look".
+            The overflow is detected by requesting one MORE than the cap, so a listing
+            that exactly fills the cap is still reported as exhaustive.
+        #>
+        It 'fails closed when more builds than the probe cap have run since the horizon' {
+            $script:MockNewerBuilds = [pscustomobject]@{
+                value = @(1..($script:CiScanMaxNewerBuildsProbed + 1) | ForEach-Object {
+                        [pscustomobject]@{ id = 100 + $_ } })
+            }
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeTrue
+            $c.Reason | Should -BeLike 'marker-horizon-stale:*'
+        }
+
+        It 'still probes normally when the listing exactly fills the probe cap' {
+            $script:MockNewerBuilds = [pscustomobject]@{
+                value = @(1..$script:CiScanMaxNewerBuildsProbed | ForEach-Object {
+                        [pscustomobject]@{ id = 100 + $_ } })
+            }
+            (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeFalse
+        }
+
+        <#
+            The horizon is the newest build the marker accounts for in EITHER direction.
+            Taking it from `absent_builds` alone would re-probe every build the scanner
+            already classified as a PRESENCE and report each one as a fresh recurrence —
+            turning the known, already-weighed history into a permanent veto. Build 90 is
+            a recorded presence with a red leg; it must not be treated as news.
+        #>
+        It 'draws the horizon from recorded presences as well as absences' {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 90 }) }
+            $script:NewerTimelines['90'] = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+
+            $config = Get-CiScanTwinConfig -Label 'ci-scan-net11'
+            $withPresence = Get-CiScanBuildCoverage -Config $config -Pipeline 'maui-pr-uitests' `
+                -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42) -KnownBuildIds @(90)
+            $withPresence.Unverifiable | Should -BeFalse
+
+            # Same build, same red leg, but no longer inside the marker's horizon.
+            $withoutPresence = Get-CiScanBuildCoverage -Config $config -Pipeline 'maui-pr-uitests' `
+                -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42)
+            $withoutPresence.Unverifiable | Should -BeTrue
+        }
+
+        <#
+            The overflow signal only exists if we ASK for one more than we are willing to
+            probe: `Truncated` is `count -gt Max`, so a request capped at exactly `Max`
+            can never return `Max + 1` and the grossly-stale marker would come back
+            looking exhaustive. No behavioural test can see this — the mock returns
+            whatever it is handed regardless of `$top` — so the off-by-one survived
+            deliberate mutation while every other guard here died. Asserting the request
+            itself is the only place the contract is observable.
+        #>
+        It 'requests one more build than the probe cap so overflow stays detectable' {
+            $script:RequestedUrls = [System.Collections.Generic.List[string]]::new()
+            Mock Invoke-HttpGetJson {
+                $script:RequestedUrls.Add($Url)
+                if ($Url -like '*/builds?definitions=*') { return [pscustomobject]@{ value = @() } }
+                if ($Url -like '*/timeline*') {
+                    return [pscustomobject]@{ records = @(
+                            [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+                }
+                return [pscustomobject]@{
+                    definition   = [pscustomobject]@{ id = 313 }
+                    sourceBranch = 'refs/heads/net11.0'
+                    status       = 'completed'
+                    result       = 'failed'
+                }
+            }
+
+            $null = Invoke-CoverageForFixtureLeg
+            $listing = @($script:RequestedUrls | Where-Object { $_ -like '*/builds?definitions=*' })
+            $listing.Count | Should -Be 1
+            $listing[0] | Should -BeLike "*`$top=$($script:CiScanMaxNewerBuildsProbed + 1)*"
+        }
+
+        # A newer build on a different branch says nothing about this twin.
+        It 'ignores a newer build whose sourceBranch does not match the twin' {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:NewerTimelines['77'] = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+            Mock Invoke-HttpGetJson {
+                if ($Url -like '*/builds?definitions=*') { return $script:MockNewerBuilds }
+                if ($Url -like '*/timeline*') {
+                    $id = [regex]::Match($Url, '/builds/(\d+)/timeline').Groups[1].Value
+                    if ($script:NewerTimelines.ContainsKey($id)) {
+                        return [pscustomobject]@{ records = @($script:NewerTimelines[$id]) }
+                    }
+                    return [pscustomobject]@{ records = @(
+                            [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+                }
+                $branch = if ($Url -like '*/builds/77*') { 'refs/heads/main' } else { 'refs/heads/net11.0' }
+                return [pscustomobject]@{
+                    definition   = [pscustomobject]@{ id = 313 }
+                    sourceBranch = $branch
+                    status       = 'completed'
+                    result       = 'failed'
+                }
+            }
+
+            (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeFalse
         }
     }
 }

@@ -132,6 +132,20 @@ $script:SkipAzdo = [bool]$SkipAzdo
 # would treat it as an HTML tag and swallow it, leaving the operator a bare
 # `human-comment:` with the reason silently deleted.
 $script:CiScanUnattributableCommenter = '(deleted-account)'
+# How many builds newer than the state marker's horizon the coverage layer will fetch
+# before it gives up and fails closed.
+#
+# This is a driver-layer AzDO budget, not a staleness policy, which is why it lives here
+# rather than in `CiScanReconcile.Core.ps1` with the decision thresholds: it bounds HTTP
+# calls (two per probed build), and Core has no AzDO concept at all.
+#
+# The value is a real trade-off in one direction only. Too low and a healthy twin whose
+# scanner is merely a few builds behind fails closed to `needs-human` — noisy, but safe.
+# Too high and a grossly stale marker gets probed for a long time before reaching the same
+# answer, at real API cost. 20 covers roughly a day of `main`/`net11.0` CI activity, which
+# is comfortably more than the lag between scanner runs and far less than the weeks-long
+# gap that the "June marker read in August" failure describes.
+$script:CiScanMaxNewerBuildsProbed = 20
 $null = Set-CiScanReconcileMode -RequestedMode $Mode
 Reset-CiScanCounters
 
@@ -596,6 +610,170 @@ function Get-CiScanHumanCommenters {
 
 #region AzDO coverage ---------------------------------------------------------
 
+function Get-CiScanLegOutcome {
+    <#
+    .SYNOPSIS
+        Classifies one build's timeline against the issue's affected legs.
+
+    .DESCRIPTION
+        Returns exactly one of three values, and the distinction between the last two is
+        the whole point of the function:
+
+          'clean'  — every affected leg matched a record, ran, and EVERY matching ran
+                     record completed cleanly. Only this counts as a verified absence.
+          'failed' — some affected leg ran and at least one of its matching records did
+                     not complete cleanly. This is positive evidence that the leg where
+                     the signature surfaces went red.
+          'no-run' — no usable observation: a leg matched nothing, matched only
+                     non-running records, or carried an unreadable key. Says nothing in
+                     either direction.
+
+        The caller for CLAIMED builds treats 'failed' and 'no-run' identically (neither
+        is an absence), which is why this used to be a single `$allLegsRan` boolean. The
+        caller for builds NEWER than the marker's horizon cannot: for those, 'failed' is
+        evidence the signature came back, while 'no-run' is merely silence. Collapsing
+        them there would either veto on silence or ignore a recurrence, so the third
+        state has to exist before the newer-build probe can be written at all.
+
+        'failed' is deliberately checked per-leg and returned immediately: one red
+        affected leg is enough, and continuing could downgrade it to 'no-run' on a later
+        leg that simply did not run.
+
+        Every field is read through `Get-CiScanJsonField`. Under
+        `Set-StrictMode -Version Latest` a missing property is a TERMINATING error, so a
+        well-formed `records` array carrying one entry without `name`/`result` would
+        abort the caller's per-issue loop rather than quarantine this one build. Skipping
+        a malformed record is conservative in all three positions: each filter can only
+        SHRINK, which can only move the answer away from 'clean'. A junk record can never
+        help close an issue.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][array]$Records,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Legs,
+        [Parameter(Mandatory)][hashtable]$Defaults
+    )
+
+    # No legs is not a clean build: with nothing to check, "every leg was clean" is
+    # vacuously true and would credit an absence on zero evidence.
+    if ((Get-CiScanCount $Legs) -eq 0) { return 'no-run' }
+
+    foreach ($leg in $Legs) {
+        $key = ($leg -split '—')[0].Trim()
+        if ([string]::IsNullOrWhiteSpace($key)) { return 'no-run' }
+
+        $match = @($Records | Where-Object {
+            $recordName = Get-CiScanJsonField -Object $_ -Name 'name'
+            $null -ne $recordName -and ([string]$recordName).IndexOf($key, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+        })
+        if ((Get-CiScanCount $match) -eq 0) { return 'no-run' }
+
+        $ran = @($match | Where-Object {
+            $recordResult = Get-CiScanJsonField -Object $_ -Name 'result'
+            $r = if ($null -eq $recordResult) { '' } else { [string]$recordResult }
+            $r -ne '' -and $Defaults.NonRunningLegResults -notcontains $r
+        })
+        if ((Get-CiScanCount $ran) -eq 0) { return 'no-run' }
+
+        # Execution is not absence. The affected leg is precisely where this signature
+        # surfaces, so a leg that RAN AND FAILED is the one outcome that cannot
+        # distinguish "the signature is gone" from "the signature fired again and the
+        # scanner did not record it". A build-level `failed` is still accepted (some
+        # unrelated leg can fail while this one is clean) — but if THIS leg failed, the
+        # build proves nothing about absence.
+        #
+        # EVERY ran record must be clean, not merely one of them. `$key` is matched by
+        # SUBSTRING (`IndexOf`, above), so a single leg key routinely selects more than
+        # one timeline record: matrix legs sharing a name prefix, and — the case that
+        # matters — a failed attempt plus its retry. Asking only whether a clean record
+        # EXISTS turns `Leg = failed` + `Leg retry = succeeded` into a verified absence,
+        # which is the exact inversion the paragraph above forbids: the signature fired,
+        # and the build gets counted as proof that it did not. Comparing the two counts
+        # asks "did anything fail?" instead of "did anything pass?", and it degrades the
+        # right way — an ambiguous leg is reported red rather than credited clean.
+        $clean = @($ran | Where-Object {
+            $Defaults.CleanLegResults -contains ([string](Get-CiScanJsonField -Object $_ -Name 'result'))
+        })
+        if ((Get-CiScanCount $clean) -ne (Get-CiScanCount $ran)) { return 'failed' }
+    }
+
+    return 'clean'
+}
+
+function Get-CiScanBuildsAfter {
+    <#
+    .SYNOPSIS
+        Lists completed builds on the twin's definition + branch newer than a horizon.
+
+    .DESCRIPTION
+        The reconciler's view of a signature's history is the state marker, and the
+        marker only knows the builds the SCANNER recorded. `Get-CiScanBuildCoverage`
+        enumerated exactly those build IDs, so the reconciler's window closed wherever
+        the marker's did. A marker last written in June, carrying nine clean builds, is
+        still nine clean builds in August — and the July build in which the signature
+        recurred was never fetched, because nothing in the loop was ever going to ask for
+        a build ID the marker did not already name. Absence of evidence was being read as
+        evidence of absence, with the marker choosing the evidence.
+
+        This asks AzDO directly instead: what has run on this branch since the newest
+        build the marker accounts for? It is the only call in the reconciler whose result
+        is not derived from the issue body.
+
+        `Truncated` carries the same meaning as in `Get-CiScanOpenIssues`: "this listing
+        is NOT proven exhaustive". `$top` is requested one HIGHER than the cap precisely
+        so the two cases stay distinguishable — a page that comes back at or under the cap
+        proves we saw every newer build, while one that overflows proves only that there
+        are more than we are willing to fetch. The overflow case is exactly the grossly
+        stale marker (a scanner stalled for weeks), so reporting it as truncation and
+        letting the caller fail closed is the whole point rather than a limitation.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$DefinitionId,
+        [Parameter(Mandatory)][string]$Branch,
+        [Parameter(Mandatory)][int]$AfterBuildId,
+        [Parameter(Mandatory)][int]$Max
+    )
+
+    $top = $Max + 1
+    $url = "https://dev.azure.com/dnceng-public/public/_apis/build/builds" +
+           "?definitions=$DefinitionId" +
+           "&branchName=$([uri]::EscapeDataString("refs/heads/$Branch"))" +
+           "&statusFilter=completed&queryOrder=finishTimeDescending&`$top=$top&api-version=7.1"
+
+    $page = Invoke-HttpGetJson -Url $url
+    # `value` is tested for PRESENCE, not for null, and the difference is load-bearing.
+    # An empty listing is the healthy steady state — the scanner is current and nothing
+    # has run since — but `Get-CiScanJsonField` returns that empty array through a
+    # function boundary, where PowerShell unrolls it to `$null`. A null test therefore
+    # reads "no newer builds" as "the listing failed" and fails every healthy issue
+    # closed to `needs-human`, which is a silent denial-of-service on the whole
+    # reconciler rather than a safety property. Presence separates the two: a response
+    # with no `value` at all really is the wrong shape.
+    if ($null -eq $page -or -not (Test-CiScanHasField -Object $page -Name 'value')) {
+        return @{ Builds = @(); Ok = $false; Truncated = $false }
+    }
+    $value = Get-CiScanJsonField -Object $page -Name 'value'
+
+    $newer = @()
+    foreach ($b in @($value)) {
+        if ($null -eq $b) { continue }
+        $id = 0
+        # An unreadable id cannot be compared against the horizon, and silently dropping
+        # it would let the one build we could not parse be the one that recurred.
+        if (-not [int]::TryParse([string](Get-CiScanJsonField -Object $b -Name 'id'), [ref]$id)) {
+            return @{ Builds = @(); Ok = $false; Truncated = $false }
+        }
+        if ($id -gt $AfterBuildId) { $newer += $id }
+    }
+
+    $newer = @($newer | Sort-Object -Unique -Descending)
+    if ((Get-CiScanCount $newer) -gt $Max) {
+        return @{ Builds = @($newer | Select-Object -First $Max); Ok = $true; Truncated = $true }
+    }
+    return @{ Builds = @($newer); Ok = $true; Truncated = $false }
+}
+
 function Get-CiScanBuildCoverage {
     <#
     .SYNOPSIS
@@ -633,7 +811,8 @@ function Get-CiScanBuildCoverage {
         [Parameter(Mandatory)][hashtable]$Config,
         [Parameter(Mandatory)][string]$Pipeline,
         [Parameter(Mandatory)][string[]]$Legs,
-        [int[]]$ClaimedBuildIds = @()
+        [int[]]$ClaimedBuildIds = @(),
+        [int[]]$KnownBuildIds = @()
     )
 
     $result = @{ VerifiedAbsentBuilds = @(); Unverifiable = $false; Reason = '' }
@@ -698,65 +877,92 @@ function Get-CiScanBuildCoverage {
             $result.Unverifiable = $true; $result.Reason = "timeline-fetch-failed:$buildId"; return $result
         }
 
-        # Guarding the `records` COLLECTION above is not enough: the individual records are
-        # a separate shape promise. A perfectly well-formed timeline — 200, `records`
-        # present, an array — can still carry one entry without `name` or `result`, and
-        # dotting into it throws for exactly the same StrictMode reason, aborting the run.
-        # The `$null -ne`/`$null -eq` tests below already expressed the right intent; they
-        # simply could not run, because the property READ throws before the guard evaluates.
-        #
-        # Skipping a malformed record is the conservative direction in all three positions:
-        # each filter can only SHRINK, which can only make `$allLegsRan` false and drop the
-        # build from `VerifiedAbsentBuilds`. A junk record can never help close an issue.
-        $records = @($timelineRecords)
-        $allLegsRan = $true
-        foreach ($leg in $Legs) {
-            $key = ($leg -split '—')[0].Trim()
-            if ([string]::IsNullOrWhiteSpace($key)) { $allLegsRan = $false; break }
-            $match = @($records | Where-Object {
-                $recordName = Get-CiScanJsonField -Object $_ -Name 'name'
-                $null -ne $recordName -and ([string]$recordName).IndexOf($key, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
-            })
-            if ((Get-CiScanCount $match) -eq 0) { $allLegsRan = $false; break }
-            $ran = @($match | Where-Object {
-                $recordResult = Get-CiScanJsonField -Object $_ -Name 'result'
-                $r = if ($null -eq $recordResult) { '' } else { [string]$recordResult }
-                $r -ne '' -and $d.NonRunningLegResults -notcontains $r
-            })
-            if ((Get-CiScanCount $ran) -eq 0) { $allLegsRan = $false; break }
-
-            # Execution is not absence. The affected leg is precisely where this
-            # signature surfaces, so a leg that RAN AND FAILED is the one outcome that
-            # cannot distinguish "the signature is gone" from "the signature fired
-            # again and the scanner did not record it". A build-level `failed` is still
-            # accepted (some unrelated leg can fail while this one is clean) — but if
-            # THIS leg failed, the build proves nothing and must not be counted.
-            # Reachable-safe via `$ran` (anything here already produced a non-empty result),
-            # but read through the accessor anyway so the shape invariant is local rather
-            # than a two-hop proof — and so the unsafe idiom does not survive in this loop.
-            #
-            # EVERY ran record must be clean, not merely one of them. `$key` is matched by
-            # SUBSTRING (`IndexOf`, above), so a single leg key routinely selects more than
-            # one timeline record: matrix legs sharing a name prefix, and — the case that
-            # matters — a failed attempt plus its retry. Asking only whether a clean record
-            # EXISTS turns `Leg = failed` + `Leg retry = succeeded` into a verified absence,
-            # which is the exact inversion the paragraph above forbids: the signature fired,
-            # and the build gets counted as proof that it did not. `-eq 0` was answering
-            # "did anything pass?" when the contract asks "did anything fail?". Comparing
-            # the two counts asks the second question, and it degrades the right way — an
-            # ambiguous leg is dropped rather than credited, so a still-red pipeline cannot
-            # accumulate absences toward a close.
-            $clean = @($ran | Where-Object {
-                $d.CleanLegResults -contains ([string](Get-CiScanJsonField -Object $_ -Name 'result'))
-            })
-            if ((Get-CiScanCount $clean) -ne (Get-CiScanCount $ran)) { $allLegsRan = $false; break }
-        }
-        if (-not $allLegsRan) { continue }
+        if ((Get-CiScanLegOutcome -Records @($timelineRecords) -Legs $Legs -Defaults $d) -ne 'clean') { continue }
 
         $verified += [int]$buildId
     }
 
     $result.VerifiedAbsentBuilds = @($verified | Sort-Object -Unique)
+
+    <#
+        Everything above re-derives the marker's OWN claims. That is necessary and not
+        sufficient: it can only ever disprove a build the marker already named, so the
+        reconciler's field of view ends exactly where the scanner's last write did. The
+        reported failure mode is a marker last updated in June with nine clean builds
+        still reading as nine clean builds in August — the July build in which the
+        signature recurred is not rejected, it is never requested, because no build ID
+        outside `absent_builds` is reachable from this loop.
+
+        So ask AzDO what has happened since, and subject it to the same leg test. The
+        horizon is the newest build the marker accounts for in EITHER direction: absences
+        alone would understate it, since a recorded PRESENCE is also proof the scanner
+        looked at that build.
+
+        Only 'failed' vetoes. The three outcomes are not symmetric here:
+          * 'failed'  — the affected leg ran and went red after our evidence window. That
+                        is the recurrence, and certifying absence across it is the bug.
+          * 'clean'   — a newer clean build agrees with the absence claim. It is NOT added
+                        to `VerifiedAbsentBuilds`: the count threshold is calibrated
+                        against scanner-recorded observations, and quietly inflating it
+                        here would lower the bar to close using evidence the scanner never
+                        vetted. Agreeing evidence should not accelerate a closure.
+          * 'no-run'  — the leg was skipped or absent from the timeline. Silence, not
+                        agreement, and vetoing on it would strand every issue whose leg is
+                        conditionally scheduled.
+
+        Fail closed on anything we could not enumerate: a failed listing leaves the newer
+        builds unknown, and an overflowing one means the marker is further behind than we
+        are willing to probe — which is the grossly-stale scanner the reported failure
+        describes. Both are `Unverifiable`, which the core converts to zero counted
+        absences.
+    #>
+    $horizon = 0
+    foreach ($k in (@($ClaimedBuildIds) + @($KnownBuildIds))) {
+        if ($null -eq $k) { continue }
+        $kid = 0
+        if (-not [int]::TryParse([string]$k, [ref]$kid)) { continue }
+        if ($kid -gt $horizon) { $horizon = $kid }
+    }
+    if ($horizon -le 0) {
+        $result.Unverifiable = $true; $result.Reason = 'no-build-horizon'; return $result
+    }
+
+    $newer = Get-CiScanBuildsAfter -DefinitionId $definitionId -Branch $Config.Branch `
+        -AfterBuildId $horizon -Max $script:CiScanMaxNewerBuildsProbed
+    if (-not $newer.Ok) {
+        $result.Unverifiable = $true; $result.Reason = "newer-build-listing-failed:$horizon"; return $result
+    }
+    if ($newer.Truncated) {
+        $result.Unverifiable = $true
+        $result.Reason = "marker-horizon-stale:more-than-$($script:CiScanMaxNewerBuildsProbed)-builds-since-$horizon"
+        return $result
+    }
+
+    foreach ($buildId in @($newer.Builds)) {
+        $build = Invoke-HttpGetJson -Url "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId`?api-version=7.1"
+        if ($null -eq $build) { $result.Unverifiable = $true; $result.Reason = "newer-build-fetch-failed:$buildId"; return $result }
+
+        # The listing was already filtered server-side by definition and branch, but it is
+        # re-checked here for the same reason the claimed loop does it: the filter is a
+        # request parameter, and this is the response. Only the branch can realistically
+        # drift (a renamed twin branch), and reading it wrong in the permissive direction
+        # would mean probing another branch's builds for a recurrence on this one.
+        if ([string](Get-CiScanJsonField -Object $build -Name 'sourceBranch') -cne $expectedBranch) { continue }
+        if ($d.AcceptedBuildResults -notcontains [string](Get-CiScanJsonField -Object $build -Name 'result')) { continue }
+
+        $timeline = Invoke-HttpGetJson -Url "https://dev.azure.com/dnceng-public/public/_apis/build/builds/$buildId/timeline`?api-version=7.1"
+        $timelineRecords = Get-CiScanJsonField -Object $timeline -Name 'records'
+        if ($null -eq $timeline -or $null -eq $timelineRecords) {
+            $result.Unverifiable = $true; $result.Reason = "newer-timeline-fetch-failed:$buildId"; return $result
+        }
+
+        if ((Get-CiScanLegOutcome -Records @($timelineRecords) -Legs $Legs -Defaults $d) -eq 'failed') {
+            $result.Unverifiable = $true
+            $result.Reason = "recurrence-after-horizon:$buildId"
+            return $result
+        }
+    }
+
     return $result
 }
 
@@ -1054,7 +1260,8 @@ function Invoke-CiScanReconcile {
         if ($null -ne $fp -and $stateResult.Status -eq 'ok') {
             $coverage = Get-CiScanBuildCoverage -Config $config -Pipeline $fp.Pipeline `
                 -Legs (Get-CiScanAffectedLegs -Body $body) `
-                -ClaimedBuildIds @($stateResult.State.absent_builds)
+                -ClaimedBuildIds @($stateResult.State.absent_builds) `
+                -KnownBuildIds @($stateResult.State.present_builds)
         }
 
         $verdict = Get-CiScanIssueVerdict -Issue $issue -Config $config -Now $now `
