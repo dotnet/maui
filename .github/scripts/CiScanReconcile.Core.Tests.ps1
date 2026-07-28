@@ -1547,6 +1547,53 @@ Describe 'Staleness is recency-aware' {
         $c.Reason | Should -Not -Be 'clock-start-before-created-at'
         $c.QuietDays | Should -Be 17
     }
+
+    It 'holds QuietDays <= AgeDays across every clock source' {
+        # The forward-only rule is stated three times in prose — Core.ps1:507, Core.ps1:1215,
+        # and the test above — and asserted nowhere as a property. The test above pins the
+        # one clock source that violated it. It cannot see a FOURTH writer of $clockStart,
+        # because a newly added backward move would be different code: a correctly written
+        # assignment nobody has a fixture for.
+        #
+        # QuietDays > AgeDays means the tool claims the signature was quiet for longer than
+        # the issue has existed, which is the direction that manufactures closure.
+        #
+        # Scope, measured rather than assumed. Asserting the CONSEQUENCE makes this
+        # independent of the SHAPE of the write, but not of the INPUT that reaches it: a
+        # mutation adding an unguarded writer keyed on a state field absent from the matrix
+        # below (`first_absent_at`) leaves all 156 Core tests green, this one included. So
+        # the guarantee is "no clock source reachable from these inputs can move backward",
+        # and extending the matrix is what extends the guarantee.
+        $cases = @(
+            @{ Name = 'default clock'; Clock = '2026-06-01T00:00:00Z'; Present = $null }
+            @{ Name = 'clock at creation'; Clock = '2026-06-01T00:00:00Z'; Present = $null }
+            @{ Name = 'clock after creation'; Clock = '2026-07-20T00:00:00Z'; Present = $null }
+            @{ Name = 'recurrence moves clock forward'; Clock = '2026-06-01T00:00:00Z'; Present = '2026-07-25T00:00:00Z' }
+            @{ Name = 'recurrence older than clock is ignored'; Clock = '2026-07-01T00:00:00Z'; Present = '2026-05-01T00:00:00Z' }
+            @{ Name = 'recurrence at Now'; Clock = '2026-06-01T00:00:00Z'; Present = '2026-08-01T00:00:00Z' }
+            @{ Name = 'clock backdated one day'; Clock = '2026-05-31T00:00:00Z'; Present = $null }
+            @{ Name = 'clock backdated years'; Clock = '2020-01-01T00:00:00Z'; Present = $null }
+        )
+
+        $measured = 0
+        foreach ($case in $cases) {
+            $json = New-StateJson -Absent (1..30) -ClockStart $case.Clock -LastPresent $case.Present
+            $issue = New-TestIssue -CreatedAt '2026-06-01T00:00:00Z' -Body (New-CanonicalBody -StateJson $json)
+            $v = Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now `
+                -Coverage (New-Coverage -Verified (1..30))
+
+            # A quarantined marker never computes QuietDays; those cases are covered above.
+            if ($null -eq $v.QuietDays) { continue }
+            $measured++
+            $v.AgeDays | Should -Not -BeNullOrEmpty -Because "$($case.Name) must establish an age to compare against"
+            $v.QuietDays | Should -BeLessOrEqual $v.AgeDays -Because "$($case.Name) must not report more quiet time than the issue has existed"
+        }
+
+        # Anti-vacuity. Without this the property is satisfied by skipping every case, which
+        # is exactly how a future gate added ABOVE the QuietDays computation would silently
+        # retire this test while leaving the invariant unguarded.
+        $measured | Should -BeGreaterOrEqual 6 -Because 'the property must be exercised, not skipped into passing'
+    }
 }
 
 Describe 'A human reopen is a permanent veto' {
