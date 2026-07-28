@@ -662,9 +662,9 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   ```
 
 - **HWND**: the API is modal on a top-level window. Acquire the current window handle from the MAUI
-  window (`WinRT.Interop.WindowNative.GetWindowHandle(...)`) and invoke the synchronous native call on
-  the caller's UI thread so the owner window remains in the same COM apartment. As with other
-  window-bound Essentials APIs, the implementation does not dispatch or move the operation to a worker.
+  window (`WinRT.Interop.WindowNative.GetWindowHandle(...)`) on the caller's UI thread, then invoke the
+  synchronous native call on a worker. Keeping the WinUI dispatcher unblocked is required for activation
+  and z-order processing so the Windows Security modal remains in front of its owner.
 - **`ClientDataJson` & origin**: the WebAuthn options JSON does **not** contain an `origin` (in a browser
   the user agent supplies it from the current page). For a native app there is no page, so the platform
   determines the origin from the app's verified identity, and the RP server must be configured to accept

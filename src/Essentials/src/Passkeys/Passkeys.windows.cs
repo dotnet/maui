@@ -26,26 +26,26 @@ partial class PasskeysImplementation : IPasskeys
 		}
 	}
 
-	public Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
+	public async Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
 		cancellationToken.ThrowIfCancellationRequested();
 
-		// WebAuthn is a synchronous Win32 modal API. Keep the HWND lookup and native call on the
-		// caller's UI thread so the owner window remains in the same apartment.
-		var response = MakeCredential(GetHwnd(), options, cancellationToken);
-		return Task.FromResult(response);
+		// Resolve the owner HWND on the caller's UI thread, then move only the blocking native
+		// ceremony off the UI thread so WinUI can process activation and z-order changes.
+		var hwnd = GetHwnd();
+		return await Task.Run(() => MakeCredential(hwnd, options, cancellationToken), cancellationToken);
 	}
 
-	public Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
+	public async Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
 		cancellationToken.ThrowIfCancellationRequested();
 
-		var response = GetAssertion(GetHwnd(), options, cancellationToken);
-		return Task.FromResult(response);
+		var hwnd = GetHwnd();
+		return await Task.Run(() => GetAssertion(hwnd, options, cancellationToken), cancellationToken);
 	}
 
 	void EnsureSupported()
@@ -56,8 +56,7 @@ partial class PasskeysImplementation : IPasskeys
 
 	static IntPtr GetHwnd()
 	{
-		var window = Microsoft.Maui.ApplicationModel.WindowStateManager.Default.GetActiveWindowHandle(true);
-		return window;
+		return WindowStateManager.Default.GetActiveWindowHandle(true);
 	}
 
 	static PasskeyCreationResponse MakeCredential(IntPtr hwnd, PasskeyCreationOptions options, CancellationToken cancellationToken)
