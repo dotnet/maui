@@ -579,8 +579,107 @@ Describe 'CI scan reconciler' {
 
             $r.IssuesTruncated | Should -BeTrue
             # Assert the rendered claim, not just the flag: the row is what a human reads.
-            (Format-CiScanSummary -Report $r) | Should -BeLike '*may be incomplete*'
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*Issue listing bounded | **yes*'
             (Format-CiScanSummary -Report $r) | Should -Not -BeLike '*| Survey complete | yes |*'
+        }
+
+        <#
+            The bound signal and the read-completeness signal are independent, and the
+            summary has to keep them apart. `IssuesTruncated` only ever describes the ISSUE
+            LISTING; a failure reading the PR index, an issue's comments, or the label list
+            leaves it $false. Collapsing the two let a run that read the whole issue list
+            but failed three PR reads print "Survey complete | yes" directly beneath
+            "Read errors | 3".
+
+            Mutations are already fail-closed in that state, so this is a reporting defect
+            rather than a safety one — but the report is exactly what a human reads during
+            the review phase, so over-claiming there is how a bad threshold gets approved.
+        #>
+        It 'never claims a complete survey when a non-listing read failed' {
+            $report = @{
+                Label = 'ci-scan-net11'; Branch = 'net11.0'
+                RequestedMode = 'report'; EffectiveMode = 'report'
+                MutationsAllowed = $false; ClosuresAllowed = $false
+                FailClosed = $true; FailClosedReason = 'read-errors:3'
+                IssueCount = 59; IssuesTruncated = $false; PullRequestCount = 0
+                PullRequestIndexComplete = $true
+                WriteErrors = 0; AbortedAt = $null
+                Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
+                              LabelOps = 0; ReadErrors = 3; WriteErrors = 0 }
+                Thresholds = @{}; Verdicts = @(); GeneratedAt = '2026-07-28T00:00:00Z'
+            }
+
+            $md = Format-CiScanSummary -Report $report
+
+            # The listing genuinely was exhaustive, and the report still says so...
+            $md | Should -BeLike '*Issue listing bounded | no*'
+            # ...but it must not turn that into a claim about the survey as a whole.
+            $md | Should -Not -BeLike '*| Survey complete | yes |*'
+            $md | Should -BeLike '*All reads succeeded | **no*'
+        }
+
+        <#
+            The PR index is the third way a survey falls short, and the least obvious: it
+            can be read with zero errors and still be short of every open fix PR, because
+            it stops at `-MaxPullRequests`. An open `[ci-fix]` PR is a closure BLOCKER, so
+            a short index is precisely the case where the reconciler would under-count
+            blockers. A live report run hit this (197 PRs, bound 100) while printing
+            "Survey complete | yes", so the claim has to answer to this signal too.
+        #>
+        It 'never claims a complete survey when the PR blocker index was bounded' {
+            $report = @{
+                Label = 'ci-scan-net11'; Branch = 'net11.0'
+                RequestedMode = 'report'; EffectiveMode = 'report'
+                MutationsAllowed = $false; ClosuresAllowed = $false
+                FailClosed = $true; FailClosedReason = 'pull-request-index-incomplete'
+                IssueCount = 58; IssuesTruncated = $false; PullRequestCount = 197
+                PullRequestIndexComplete = $false
+                WriteErrors = 0; AbortedAt = $null
+                Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
+                              LabelOps = 0; ReadErrors = 0; WriteErrors = 0 }
+                Thresholds = @{}; Verdicts = @(); GeneratedAt = '2026-07-28T00:00:00Z'
+            }
+
+            $md = Format-CiScanSummary -Report $report
+
+            $md | Should -Not -BeLike '*| Survey complete | yes |*'
+            $md | Should -BeLike '*PR blocker index complete | **no*'
+        }
+
+        <#
+            A real run must populate the field. If `Invoke-CiScanReconcile` ever stops
+            returning it, every fixture above keeps passing while live reports silently
+            fall back to "not complete" — so pin it end to end, not just in the renderer.
+        #>
+        It 'returns PR index completeness from a real reconcile run' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 100 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $r.PSObject.Properties.Name + $r.Keys | Should -Contain 'PullRequestIndexComplete'
+            $r.PullRequestIndexComplete | Should -BeTrue
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*| Survey complete | yes |*'
+        }
+
+        It 'reports a fully clean survey as complete' {
+            $report = @{
+                Label = 'ci-scan-net11'; Branch = 'net11.0'
+                RequestedMode = 'report'; EffectiveMode = 'report'
+                MutationsAllowed = $false; ClosuresAllowed = $false
+                FailClosed = $false; FailClosedReason = ''
+                IssueCount = 59; IssuesTruncated = $false; PullRequestCount = 12
+                PullRequestIndexComplete = $true
+                WriteErrors = 0; AbortedAt = $null
+                Counters = @{ Writes = 0; Closes = 0; Reopens = 0; Comments = 0
+                              LabelOps = 0; ReadErrors = 0; WriteErrors = 0 }
+                Thresholds = @{}; Verdicts = @(); GeneratedAt = '2026-07-28T00:00:00Z'
+            }
+
+            $md = Format-CiScanSummary -Report $report
+
+            $md | Should -BeLike '*| Survey complete | yes |*'
+            $md | Should -BeLike '*All reads succeeded | yes*'
         }
 
         It 'reports Truncated = false when a short page proves the backlog is exhausted' {
@@ -620,7 +719,7 @@ Describe 'CI scan reconciler' {
 
             $script:IssuePageCalls | Should -BeGreaterThan 1
             $r.IssuesTruncated | Should -BeTrue
-            (Format-CiScanSummary -Report $r) | Should -BeLike '*may be incomplete*'
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*Issue listing bounded | **yes*'
             (Format-CiScanSummary -Report $r) | Should -Not -BeLike '*| Survey complete | yes |*'
         }
     }
@@ -1528,6 +1627,46 @@ Describe 'Static source invariants' {
         $description.Success | Should -BeTrue
         $description.Groups[1].Value | Should -Match 'comment/enforce'
         $description.Groups[1].Value | Should -Match 'both'
+    }
+
+    <#
+        Safety-model note 5 used to assert "The checkout is the default branch". No
+        checkout step pins `ref:`, so `actions/checkout` takes `github.ref` — which on
+        `workflow_dispatch` is whatever ref the operator selected. The claim therefore
+        contradicted the `test` job's own rationale ("`workflow_dispatch` lets the
+        operator pick ANY ref"), and that one is load-bearing: it is the entire reason
+        the in-workflow Pester gate exists. A reader who believed note 5 would conclude
+        the gate was redundant and could delete it.
+
+        Asserted conditionally so the note stays true in EITHER world: pin a ref and the
+        note must say so, leave it unpinned and the note must name `workflow_dispatch`
+        and `github.ref` as the reason the default branch is not guaranteed.
+
+        Deliberately NOT asserted as `Should -Not -Match 'checkout is the default
+        branch'`: a scheduled run genuinely does check out the default branch, so the
+        honest note has to say the phrase in order to disclaim it. A substring ban would
+        forbid the correct text along with the wrong one.
+    #>
+    It 'describes the checkout ref the workflow actually uses' {
+        $note = [regex]::Match($script:WorkflowText,
+            '(?ms)^# 5\..*?(?=^# 6\.)')
+        $note.Success | Should -BeTrue
+
+        # The guarantee that holds for every trigger, pinned or not.
+        $note.Value | Should -Match 'pull_request_target'
+
+        if ($script:WorkflowCode -match '(?m)^\s*ref:\s*\S') {
+            # A pinned ref would make the default-branch claim true again — say which.
+            $note.Value | Should -Match 'ref:'
+        }
+        else {
+            # Unpinned: the note must name the trigger that makes the ref operator-chosen
+            # and the context expression that carries it, and must mark the default-branch
+            # reading as the thing that is NOT guaranteed.
+            $note.Value | Should -Match 'NOT guaranteed'
+            $note.Value | Should -Match 'workflow_dispatch'
+            $note.Value | Should -Match 'github\.ref'
+        }
     }
 
     # ─────────────────────────────────────────────────────────────────────────────

@@ -698,7 +698,25 @@ function Format-CiScanSummary {
     }
     $null = $sb.AppendLine("| Fail-closed | $(if ($Report.FailClosed) { "**yes — $($Report.FailClosedReason)**" } else { 'no' }) |")
     $null = $sb.AppendLine("| Issues evaluated | $($Report.IssueCount) |")
-    $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — may be incomplete: the listing hit the `-MaxIssues` bound or a page read failed; oldest issues shown**' } else { 'yes' }) |")
+
+    # Three independent ways the survey can fall short, deliberately reported apart.
+    #
+    # `IssuesTruncated` is a BOUND signal: the issue listing hit `-MaxIssues` (or a page
+    # read failed), so there may be issues nobody looked at. `ReadErrors` is a COMPLETENESS
+    # signal covering every other read — issue comments, label listing — any of which
+    # failing means a verdict was computed from partial data. The PR index carries its own
+    # BOUND signal: it can be read without error yet still be short of every open fix PR,
+    # which is the one index whose incompleteness could hide a closure blocker.
+    #
+    # Collapsing them lets a run that read the whole issue list but failed three PR reads
+    # print "Survey complete: yes" next to "Read errors: 3". Mutations are already
+    # fail-closed in that state, but the report is what a human reads during the review
+    # phase, and it must not over-claim.
+    $null = $sb.AppendLine("| Issue listing bounded | $(if ($Report.IssuesTruncated) { '**yes — hit the `-MaxIssues` bound or a page read failed; oldest issues shown**' } else { 'no — listing read to exhaustion' }) |")
+    $null = $sb.AppendLine("| All reads succeeded | $(if ($Report.Counters.ReadErrors -gt 0) { "**no — $($Report.Counters.ReadErrors) read(s) failed; verdicts below used partial data**" } else { 'yes' }) |")
+    $null = $sb.AppendLine("| PR blocker index complete | $(if ($Report.PullRequestIndexComplete) { 'yes' } else { '**no — hit the `-MaxPullRequests` bound; an open fix PR may have been missed**' }) |")
+    $surveyComplete = (-not $Report.IssuesTruncated) -and ($Report.Counters.ReadErrors -eq 0) -and $Report.PullRequestIndexComplete
+    $null = $sb.AppendLine("| Survey complete | $(if ($surveyComplete) { 'yes' } else { '**no — see the rows above**' }) |")
     $null = $sb.AppendLine("| Generated | $($Report.GeneratedAt) |")
     $null = $sb.AppendLine()
 
@@ -1001,6 +1019,7 @@ function Invoke-CiScanReconcile {
         IssueCount        = @($issues).Count
         IssuesTruncated   = [bool]$issueIndex.Truncated
         PullRequestCount  = @($prIndex.PullRequests).Count
+        PullRequestIndexComplete = [bool]$prIndex.Complete
         WriteErrors       = $script:Counters.WriteErrors
         AbortedAt         = $script:AbortedAt
         Counters          = $script:Counters

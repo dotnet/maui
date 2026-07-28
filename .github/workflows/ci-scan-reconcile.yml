@@ -42,10 +42,19 @@
 #    Permanent:  the checked-in default is `report`; reverting to it is a one-line change.
 #    Nuclear:    disable the workflow in the Actions UI.
 #
-# 5. NO UNTRUSTED CODE EXECUTION.
-#    No PR-ref checkout, no `pull_request_target`, no execution of repository content
-#    authored by a pull request. The checkout is the default branch with
-#    `persist-credentials: false`.
+# 5. NO FORK-AUTHORED CODE EXECUTION.
+#    No `pull_request_target` and no PR-ref checkout, so content authored in a fork pull
+#    request is never executed here. That guarantee holds for every trigger, and it is
+#    the one this note exists to make. Every checkout uses `persist-credentials: false`.
+#
+#    What is NOT guaranteed is that the checkout is the default branch. No step pins
+#    `ref:`, so `actions/checkout` takes `github.ref`: the default branch on a schedule,
+#    but on `workflow_dispatch` whatever ref the operator picked. Dispatch requires write
+#    access, so that code is collaborator-authored — but it need not be reviewed, merged,
+#    or even on the default branch. What bounds it is the `test` job that every other job
+#    `needs`, plus least-privilege permissions; NOT the identity of the checked-out
+#    branch. The `test` job's own header depends on this being stated honestly: it exists
+#    precisely because a dispatch can run an arbitrary ref.
 #
 # 6. THE TWO MODE CHECKS ARE DELIBERATELY DIFFERENT.
 #    GitHub Actions expression `==` is CASE-INSENSITIVE, so the `if:` below would accept
