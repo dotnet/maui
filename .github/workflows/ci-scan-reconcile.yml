@@ -189,6 +189,12 @@ jobs:
       pull-requests: read
     strategy:
       fail-fast: false
+      # One survey at a time, for the same reason the concurrency group is constant:
+      # both legs hit the same GitHub/AzDO read paths, and rate limiting surfaces as
+      # read errors that force the run fail-closed. Running them in parallel would
+      # halve the wall clock and double the peak read rate — the wrong trade for a
+      # scanner whose whole job is to be trusted when it says "nothing to do".
+      max-parallel: 1
       matrix:
         # Deliberately a constant. Nothing about this job — not the mode, not the twin —
         # is derived from a workflow input, so no dispatch input can steer it.

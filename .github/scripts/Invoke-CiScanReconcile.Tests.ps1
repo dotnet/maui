@@ -1512,6 +1512,9 @@ Describe 'Static source invariants' {
         # An expression here would re-introduce per-input groups.
         $group.Groups[1].Value | Should -Not -BeLike '*${{*'
         $script:WorkflowCode | Should -Match '(?m)^\s*cancel-in-progress:\s*false'
+        # A constant group serialises RUNS; max-parallel serialises the matrix legs
+        # inside one run. Both are needed for "one survey at a time" to be true.
+        $script:WorkflowCode | Should -Match '(?m)^\s*max-parallel:\s*1'
     }
 
     <#
