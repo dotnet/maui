@@ -744,6 +744,18 @@ configuration:
           - titleContains:
               pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-preview7''$'
               isRegex: True
+        - and:
+          - targetsBranch:
+              branch: release/11.0.1xx-rc1
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc1''$'
+              isRegex: True
+        - and:
+          - targetsBranch:
+              branch: release/11.0.1xx-rc2
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc2''$'
+              isRegex: True
       then:
       - approvePullRequest:
           comment: Auto-approved automated inter-branch merge.
