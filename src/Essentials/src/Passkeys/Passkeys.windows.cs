@@ -1,8 +1,10 @@
 #nullable enable
 using System;
+using System.Buffers.Text;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -67,25 +69,28 @@ namespace Microsoft.Maui.Authentication
 
 		static PasskeyCreationResponse MakeCredential(PasskeyCreationOptions options, CancellationToken cancellationToken)
 		{
-			var root = JsonDocument.Parse(options.ToString()).RootElement;
+			var creation = Deserialize(options.ToString(), PasskeyJsonContext.Default.CreationOptions, "creation options");
 
-			var rp = GetRequiredObject(root, "rp");
-			var rpId = GetRequiredString(rp, "id");
-			var rpName = rp.TryGetProperty("name", out var rn) ? rn.GetString() ?? rpId : rpId;
+			var rpId = creation.Rp?.Id
+				?? throw new ArgumentException("The creation options are missing the 'rp.id'.", nameof(options));
+			var rpName = creation.Rp?.Name ?? rpId;
 
-			var user = GetRequiredObject(root, "user");
-			var userId = GetRequiredBytes(user, "id");
-			var userName = user.TryGetProperty("name", out var un) ? un.GetString() ?? string.Empty : string.Empty;
-			var userDisplayName = user.TryGetProperty("displayName", out var dn) ? dn.GetString() ?? userName : userName;
+			var user = creation.User
+				?? throw new ArgumentException("The creation options are missing the 'user'.", nameof(options));
+			var userId = DecodeRequired(user.Id, "user.id");
+			var userName = user.Name ?? string.Empty;
+			var userDisplayName = user.DisplayName ?? userName;
 
-			var challenge = GetRequiredBytes(root, "challenge");
+			var challenge = DecodeRequired(creation.Challenge, "challenge");
 			var clientDataJson = BuildClientDataJson("webauthn.create", challenge, rpId);
 
-			var coseParams = ReadCoseParameters(root);
-			var timeout = root.TryGetProperty("timeout", out var to) && to.TryGetInt32(out var toMs) ? (uint)toMs : 60000u;
-			var uv = ReadUserVerification(root);
-			var attachment = ReadAuthenticatorAttachment(root);
-			var attestation = ReadAttestation(root);
+			var coseParams = MapCoseParameters(creation.PubKeyCredParams);
+			var timeout = (uint)(creation.Timeout ?? 60000);
+			var uv = MapUserVerification(creation.AuthenticatorSelection?.UserVerification ?? creation.UserVerification);
+			var attachment = MapAuthenticatorAttachment(creation.AuthenticatorSelection?.AuthenticatorAttachment);
+			var attestation = MapAttestation(creation.Attestation);
+			var requireResidentKey = creation.AuthenticatorSelection?.RequireResidentKey == true;
+			var excludeCredentials = MapCredentialIds(creation.ExcludeCredentials);
 
 			var native = new WindowsNativeBuffers();
 			var (cancellationId, cancellationRegistration) = RegisterCancellation(cancellationToken);
@@ -127,12 +132,12 @@ namespace Microsoft.Maui.Authentication
 					CredentialList = default,
 					Extensions = default,
 					dwAuthenticatorAttachment = attachment,
-					bRequireResidentKey = ReadRequireResidentKey(root),
+					bRequireResidentKey = requireResidentKey,
 					dwUserVerificationRequirement = uv,
 					dwAttestationConveyancePreference = attestation,
 					dwFlags = 0,
 					pCancellationId = native.PinCancellationId(cancellationId),
-					pExcludeCredentialList = native.PinCredentialList(ReadCredentialIds(root, "excludeCredentials")),
+					pExcludeCredentialList = native.PinCredentialList(excludeCredentials),
 				};
 
 				var hr = NativeMethods.WebAuthNAuthenticatorMakeCredential(
@@ -169,14 +174,16 @@ namespace Microsoft.Maui.Authentication
 
 		static PasskeyAssertionResponse GetAssertion(PasskeyRequestOptions options, CancellationToken cancellationToken)
 		{
-			var root = JsonDocument.Parse(options.ToString()).RootElement;
+			var request = Deserialize(options.ToString(), PasskeyJsonContext.Default.RequestOptions, "request options");
 
-			var rpId = GetRequiredString(root, "rpId");
-			var challenge = GetRequiredBytes(root, "challenge");
+			var rpId = request.RpId
+				?? throw new ArgumentException("The request options are missing the 'rpId'.", nameof(options));
+			var challenge = DecodeRequired(request.Challenge, "challenge");
 			var clientDataJson = BuildClientDataJson("webauthn.get", challenge, rpId);
 
-			var timeout = root.TryGetProperty("timeout", out var to) && to.TryGetInt32(out var toMs) ? (uint)toMs : 60000u;
-			var uv = ReadUserVerification(root);
+			var timeout = (uint)(request.Timeout ?? 60000);
+			var uv = MapUserVerification(request.UserVerification);
+			var allowCredentials = MapCredentialIds(request.AllowCredentials);
 
 			var native = new WindowsNativeBuffers();
 			var (cancellationId, cancellationRegistration) = RegisterCancellation(cancellationToken);
@@ -203,7 +210,7 @@ namespace Microsoft.Maui.Authentication
 					pwszU2fAppId = null,
 					pbU2fAppId = IntPtr.Zero,
 					pCancellationId = native.PinCancellationId(cancellationId),
-					pAllowCredentialList = native.PinCredentialList(ReadCredentialIds(root, "allowCredentials")),
+					pAllowCredentialList = native.PinCredentialList(allowCredentials),
 				};
 
 				var hr = NativeMethods.WebAuthNAuthenticatorGetAssertion(
@@ -258,35 +265,35 @@ namespace Microsoft.Maui.Authentication
 			return (id, registration);
 		}
 
-		static JsonElement GetRequiredObject(JsonElement root, string propertyName)
+		static T Deserialize<T>(string json, JsonTypeInfo<T> typeInfo, string what)
+			where T : class
 		{
-			if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Object)
-				return value;
-
-			throw new PasskeyException($"The options are missing the '{propertyName}' object.");
+			try
+			{
+				return JsonSerializer.Deserialize(json, typeInfo)
+					?? throw new ArgumentException($"The {what} JSON was empty.", "options");
+			}
+			catch (JsonException ex)
+			{
+				throw new ArgumentException($"The {what} JSON could not be parsed.", "options", ex);
+			}
 		}
 
-		static string GetRequiredString(JsonElement root, string propertyName)
+		static byte[] DecodeRequired(string? value, string name)
+			=> string.IsNullOrEmpty(value)
+				? throw new ArgumentException($"The options are missing the '{name}'.", "options")
+				: Base64Url.DecodeFromChars(value);
+
+		static byte[][] MapCredentialIds(List<WebAuthn.CredentialDescriptor>? credentials)
 		{
-			if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String)
-				return value.GetString()!;
-
-			throw new PasskeyException($"The options are missing the '{propertyName}' string.");
-		}
-
-		static byte[] GetRequiredBytes(JsonElement root, string propertyName)
-			=> Base64Url.Decode(GetRequiredString(root, propertyName));
-
-		static byte[][] ReadCredentialIds(JsonElement root, string propertyName)
-		{
-			if (!root.TryGetProperty(propertyName, out var arr) || arr.ValueKind != JsonValueKind.Array)
+			if (credentials is null || credentials.Count == 0)
 				return Array.Empty<byte[]>();
 
-			var list = new System.Collections.Generic.List<byte[]>();
-			foreach (var item in arr.EnumerateArray())
+			var list = new List<byte[]>();
+			foreach (var credential in credentials)
 			{
-				if (item.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
-					list.Add(Base64Url.Decode(id.GetString()!));
+				if (!string.IsNullOrEmpty(credential.Id))
+					list.Add(Base64Url.DecodeFromChars(credential.Id));
 			}
 
 			return list.ToArray();
@@ -305,7 +312,7 @@ namespace Microsoft.Maui.Authentication
 				throw new TaskCanceledException();
 
 			var message = NativeMethods.GetErrorName(hr);
-			throw new PasskeyException($"WebAuthn operation failed (0x{hr:X8}): {message}");
+			throw new InvalidOperationException($"WebAuthn operation failed (0x{hr:X8}): {message}");
 		}
 
 		static byte[] ReadBytes(IntPtr ptr, uint length)
@@ -320,79 +327,65 @@ namespace Microsoft.Maui.Authentication
 
 		static byte[] BuildClientDataJson(string type, byte[] challenge, string rpId)
 		{
-			using var stream = new System.IO.MemoryStream();
-			using (var writer = new Utf8JsonWriter(stream))
+			var clientData = new WebAuthn.ClientData
 			{
-				writer.WriteStartObject();
-				writer.WriteString("type", type);
-				writer.WriteString("challenge", Base64Url.Encode(challenge));
-				writer.WriteString("origin", $"https://{rpId}");
-				writer.WriteBoolean("crossOrigin", false);
-				writer.WriteEndObject();
-			}
+				Type = type,
+				Challenge = Base64Url.EncodeToString(challenge),
+				Origin = $"https://{rpId}",
+				CrossOrigin = false,
+			};
 
-			return stream.ToArray();
+			return JsonSerializer.SerializeToUtf8Bytes(clientData, PasskeyJsonContext.Default.ClientData);
 		}
 
 		static string BuildRegistrationResponseJson(byte[] credentialId, byte[] attestationObject, byte[] clientDataJson)
 		{
-			using var stream = new System.IO.MemoryStream();
-			using (var writer = new Utf8JsonWriter(stream))
+			var response = new WebAuthn.RegistrationResponse
 			{
-				writer.WriteStartObject();
-				writer.WriteString("id", Base64Url.Encode(credentialId));
-				writer.WriteString("rawId", Base64Url.Encode(credentialId));
-				writer.WriteString("type", "public-key");
-				writer.WriteStartObject("response");
-				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
-				writer.WriteString("attestationObject", Base64Url.Encode(attestationObject));
-				writer.WriteEndObject();
-				writer.WriteStartObject("clientExtensionResults");
-				writer.WriteEndObject();
-				writer.WriteEndObject();
-			}
+				Id = Base64Url.EncodeToString(credentialId),
+				RawId = Base64Url.EncodeToString(credentialId),
+				Response = new WebAuthn.RegistrationResponseData
+				{
+					ClientDataJson = Base64Url.EncodeToString(clientDataJson),
+					AttestationObject = Base64Url.EncodeToString(attestationObject),
+				},
+			};
 
-			return Encoding.UTF8.GetString(stream.ToArray());
+			return JsonSerializer.Serialize(response, PasskeyJsonContext.Default.RegistrationResponse);
 		}
 
 		static string BuildAssertionResponseJson(byte[] credentialId, byte[] authenticatorData, byte[] signature, byte[] clientDataJson, byte[] userHandle)
 		{
-			using var stream = new System.IO.MemoryStream();
-			using (var writer = new Utf8JsonWriter(stream))
+			var response = new WebAuthn.AssertionResponse
 			{
-				writer.WriteStartObject();
-				writer.WriteString("id", Base64Url.Encode(credentialId));
-				writer.WriteString("rawId", Base64Url.Encode(credentialId));
-				writer.WriteString("type", "public-key");
-				writer.WriteStartObject("response");
-				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
-				writer.WriteString("authenticatorData", Base64Url.Encode(authenticatorData));
-				writer.WriteString("signature", Base64Url.Encode(signature));
-				if (userHandle.Length > 0)
-					writer.WriteString("userHandle", Base64Url.Encode(userHandle));
-				writer.WriteEndObject();
-				writer.WriteStartObject("clientExtensionResults");
-				writer.WriteEndObject();
-				writer.WriteEndObject();
-			}
+				Id = Base64Url.EncodeToString(credentialId),
+				RawId = Base64Url.EncodeToString(credentialId),
+				Response = new WebAuthn.AssertionResponseData
+				{
+					ClientDataJson = Base64Url.EncodeToString(clientDataJson),
+					AuthenticatorData = Base64Url.EncodeToString(authenticatorData),
+					Signature = Base64Url.EncodeToString(signature),
+					UserHandle = userHandle.Length > 0 ? Base64Url.EncodeToString(userHandle) : null,
+				},
+			};
 
-			return Encoding.UTF8.GetString(stream.ToArray());
+			return JsonSerializer.Serialize(response, PasskeyJsonContext.Default.AssertionResponse);
 		}
 
-		static NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER[] ReadCoseParameters(JsonElement root)
+		static NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER[] MapCoseParameters(List<WebAuthn.CredentialParameter>? pubKeyCredParams)
 		{
-			if (root.TryGetProperty("pubKeyCredParams", out var arr) && arr.ValueKind == JsonValueKind.Array && arr.GetArrayLength() > 0)
+			if (pubKeyCredParams is { Count: > 0 })
 			{
-				var list = new System.Collections.Generic.List<NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER>();
-				foreach (var item in arr.EnumerateArray())
+				var list = new List<NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER>();
+				foreach (var param in pubKeyCredParams)
 				{
-					if (item.TryGetProperty("alg", out var alg) && alg.TryGetInt32(out var algValue))
+					if (param.Alg is int alg)
 					{
 						list.Add(new NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER
 						{
 							dwVersion = NativeMethods.WEBAUTHN_COSE_CREDENTIAL_PARAMETER_CURRENT_VERSION,
 							pwszCredentialType = "public-key",
-							lAlg = algValue,
+							lAlg = alg,
 						});
 					}
 				}
@@ -409,50 +402,27 @@ namespace Microsoft.Maui.Authentication
 			};
 		}
 
-		static uint ReadUserVerification(JsonElement root)
+		static uint MapUserVerification(string? value) => value switch
 		{
-			var value = root.TryGetProperty("authenticatorSelection", out var sel) && sel.TryGetProperty("userVerification", out var uv)
-				? uv.GetString()
-				: (root.TryGetProperty("userVerification", out var uv2) ? uv2.GetString() : null);
+			"required" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_REQUIRED,
+			"discouraged" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_DISCOURAGED,
+			"preferred" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_PREFERRED,
+			_ => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_ANY,
+		};
 
-			return value switch
-			{
-				"required" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_REQUIRED,
-				"discouraged" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_DISCOURAGED,
-				"preferred" => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_PREFERRED,
-				_ => NativeMethods.WEBAUTHN_USER_VERIFICATION_REQUIREMENT_ANY,
-			};
-		}
-
-		static uint ReadAuthenticatorAttachment(JsonElement root)
+		static uint MapAuthenticatorAttachment(string? value) => value switch
 		{
-			if (root.TryGetProperty("authenticatorSelection", out var sel) && sel.TryGetProperty("authenticatorAttachment", out var att))
-			{
-				return att.GetString() switch
-				{
-					"platform" => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_PLATFORM,
-					"cross-platform" => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM,
-					_ => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
-				};
-			}
+			"platform" => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_PLATFORM,
+			"cross-platform" => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM,
+			_ => NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
+		};
 
-			return NativeMethods.WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
-		}
-
-		static uint ReadAttestation(JsonElement root)
+		static uint MapAttestation(string? value) => value switch
 		{
-			return root.TryGetProperty("attestation", out var att) ? att.GetString() switch
-			{
-				"direct" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT,
-				"indirect" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_INDIRECT,
-				"none" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
-				_ => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ANY,
-			} : NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ANY;
-		}
-
-		static bool ReadRequireResidentKey(JsonElement root)
-			=> root.TryGetProperty("authenticatorSelection", out var sel) &&
-				sel.TryGetProperty("requireResidentKey", out var rk) &&
-				rk.ValueKind == JsonValueKind.True;
+			"direct" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT,
+			"indirect" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_INDIRECT,
+			"none" => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE,
+			_ => NativeMethods.WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ANY,
+		};
 	}
 }

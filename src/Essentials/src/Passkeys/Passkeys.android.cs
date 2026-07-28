@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Authentication
 				cancellationToken).ConfigureAwait(false);
 
 			var response = result.JavaCast<CreatePublicKeyCredentialResponse>()
-				?? throw new PasskeyException("The credential provider did not return a passkey registration response.");
+				?? throw new InvalidOperationException("The credential provider did not return a passkey registration response.");
 
 			return new PasskeyCreationResponse(response.RegistrationResponseJson!);
 		}
@@ -59,10 +59,10 @@ namespace Microsoft.Maui.Authentication
 				cancellationToken).ConfigureAwait(false);
 
 			var response = result.JavaCast<GetCredentialResponse>()
-				?? throw new PasskeyException("The credential provider did not return a sign-in response.");
+				?? throw new InvalidOperationException("The credential provider did not return a sign-in response.");
 
 			var credential = response.Credential.JavaCast<PublicKeyCredential>()
-				?? throw new PasskeyException("The returned credential was not a passkey.");
+				?? throw new InvalidOperationException("The returned credential was not a passkey.");
 
 			return new PasskeyAssertionResponse(credential.AuthenticationResponseJson!);
 		}
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Authentication
 			if (ex.GetType().Name.Contains("Cancellation", StringComparison.Ordinal))
 				return new TaskCanceledException();
 
-			return new PasskeyException(ex.Message, ex);
+			return new InvalidOperationException(ex.Message, ex);
 		}
 
 		static bool IsCancellation(string typeName)
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Authentication
 			public void OnResult(Java.Lang.Object? result)
 			{
 				if (result is null)
-					_tcs.TrySetException(new PasskeyException("The credential provider returned no result."));
+					_tcs.TrySetException(new InvalidOperationException("The credential provider returned no result."));
 				else
 					_tcs.TrySetResult(result);
 			}
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Authentication
 				if (IsCancellation(typeName))
 					_tcs.TrySetCanceled();
 				else
-					_tcs.TrySetException(new PasskeyException(e?.ToString() ?? "The passkey operation failed."));
+					_tcs.TrySetException(new InvalidOperationException(e?.ToString() ?? "The passkey operation failed."));
 			}
 		}
 	}

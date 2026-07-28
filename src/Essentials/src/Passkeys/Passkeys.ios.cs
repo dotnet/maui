@@ -1,7 +1,7 @@
 #nullable enable
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,13 +23,15 @@ namespace Microsoft.Maui.Authentication
 			ArgumentNullException.ThrowIfNull(options);
 			EnsureSupported();
 
-			var creation = JsonDocument.Parse(options.ToString()).RootElement;
+			var creation = Deserialize(options.ToString(), PasskeyJsonContext.Default.CreationOptions, "creation options");
 
-			var rpId = GetRelyingPartyId(creation, "rp");
-			var challenge = GetBytes(creation, "challenge");
-			var user = creation.GetProperty("user");
-			var userId = GetBytes(user, "id");
-			var userName = user.GetProperty("name").GetString() ?? string.Empty;
+			var rpId = creation.Rp?.Id
+				?? throw new ArgumentException("The creation options are missing the 'rp.id'.", nameof(options));
+			var challenge = DecodeRequired(creation.Challenge, "challenge");
+			var user = creation.User
+				?? throw new ArgumentException("The creation options are missing the 'user'.", nameof(options));
+			var userId = DecodeRequired(user.Id, "user.id");
+			var userName = user.Name ?? string.Empty;
 
 			var provider = new ASAuthorizationPlatformPublicKeyCredentialProvider(rpId);
 			var request = provider.CreateCredentialRegistrationRequest(
@@ -37,10 +39,12 @@ namespace Microsoft.Maui.Authentication
 				userName,
 				NSData.FromArray(userId));
 
-			if (TryGetUserVerification(creation, out var uv))
-				request.UserVerificationPreference = uv;
+			var userVerification = MapUserVerification(creation.AuthenticatorSelection?.UserVerification ?? creation.UserVerification);
+			if (userVerification is not null)
+				request.UserVerificationPreference = userVerification;
 
-			if (TryGetAttestation(creation, out var attestation))
+			var attestation = MapAttestation(creation.Attestation);
+			if (attestation is not null)
 				request.AttestationPreference = attestation;
 
 			var authorization = await PerformAsync(request, options.PreferImmediatelyAvailable, cancellationToken)
@@ -48,10 +52,22 @@ namespace Microsoft.Maui.Authentication
 
 			var registration = authorization.GetCredential<ASAuthorizationPlatformPublicKeyCredentialRegistration>();
 			if (registration is null)
-				throw new PasskeyException("The authenticator did not return a registration credential.");
+				throw new InvalidOperationException("The authenticator did not return a registration credential.");
 
-			var json = BuildRegistrationResponseJson(registration);
-			return new PasskeyCreationResponse(json);
+			var credentialId = registration.CredentialId?.ToArray() ?? Array.Empty<byte>();
+			var response = new WebAuthn.RegistrationResponse
+			{
+				Id = Base64Url.EncodeToString(credentialId),
+				RawId = Base64Url.EncodeToString(credentialId),
+				Response = new WebAuthn.RegistrationResponseData
+				{
+					ClientDataJson = Base64Url.EncodeToString(registration.RawClientDataJson?.ToArray() ?? Array.Empty<byte>()),
+					AttestationObject = Base64Url.EncodeToString(registration.RawAttestationObject?.ToArray() ?? Array.Empty<byte>()),
+					Transports = new List<string> { "internal" },
+				},
+			};
+
+			return new PasskeyCreationResponse(JsonSerializer.Serialize(response, PasskeyJsonContext.Default.RegistrationResponse));
 		}
 
 		public async Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default)
@@ -59,19 +75,21 @@ namespace Microsoft.Maui.Authentication
 			ArgumentNullException.ThrowIfNull(options);
 			EnsureSupported();
 
-			var request = JsonDocument.Parse(options.ToString()).RootElement;
+			var request = Deserialize(options.ToString(), PasskeyJsonContext.Default.RequestOptions, "request options");
 
-			var rpId = request.GetProperty("rpId").GetString()
-				?? throw new PasskeyException("The request options are missing the 'rpId'.");
-			var challenge = GetBytes(request, "challenge");
+			var rpId = request.RpId
+				?? throw new ArgumentException("The request options are missing the 'rpId'.", nameof(options));
+			var challenge = DecodeRequired(request.Challenge, "challenge");
 
 			var provider = new ASAuthorizationPlatformPublicKeyCredentialProvider(rpId);
 			var assertionRequest = provider.CreateCredentialAssertionRequest(NSData.FromArray(challenge));
 
-			if (TryGetUserVerification(request, out var uv))
-				assertionRequest.UserVerificationPreference = uv;
+			var userVerification = MapUserVerification(request.UserVerification);
+			if (userVerification is not null)
+				assertionRequest.UserVerificationPreference = userVerification;
 
-			if (TryGetAllowedCredentials(request, out var allowed))
+			var allowed = MapAllowedCredentials(request.AllowCredentials);
+			if (allowed is not null)
 				assertionRequest.AllowedCredentials = allowed;
 
 			var authorization = await PerformAsync(assertionRequest, options.PreferImmediatelyAvailable, cancellationToken)
@@ -79,16 +97,81 @@ namespace Microsoft.Maui.Authentication
 
 			var assertion = authorization.GetCredential<ASAuthorizationPlatformPublicKeyCredentialAssertion>();
 			if (assertion is null)
-				throw new PasskeyException("The authenticator did not return an assertion credential.");
+				throw new InvalidOperationException("The authenticator did not return an assertion credential.");
 
-			var json = BuildAssertionResponseJson(assertion);
-			return new PasskeyAssertionResponse(json);
+			var credentialId = assertion.CredentialId?.ToArray() ?? Array.Empty<byte>();
+			var userHandle = assertion.UserId?.ToArray();
+			var response = new WebAuthn.AssertionResponse
+			{
+				Id = Base64Url.EncodeToString(credentialId),
+				RawId = Base64Url.EncodeToString(credentialId),
+				Response = new WebAuthn.AssertionResponseData
+				{
+					ClientDataJson = Base64Url.EncodeToString(assertion.RawClientDataJson?.ToArray() ?? Array.Empty<byte>()),
+					AuthenticatorData = Base64Url.EncodeToString(assertion.RawAuthenticatorData?.ToArray() ?? Array.Empty<byte>()),
+					Signature = Base64Url.EncodeToString(assertion.Signature?.ToArray() ?? Array.Empty<byte>()),
+					UserHandle = userHandle is { Length: > 0 } ? Base64Url.EncodeToString(userHandle) : null,
+				},
+			};
+
+			return new PasskeyAssertionResponse(JsonSerializer.Serialize(response, PasskeyJsonContext.Default.AssertionResponse));
 		}
 
 		void EnsureSupported()
 		{
 			if (!IsSupported)
 				throw new FeatureNotSupportedException("Passkeys require iOS 16.0 or Mac Catalyst 16.0 or later.");
+		}
+
+		static T Deserialize<T>(string json, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo, string what)
+			where T : class
+		{
+			try
+			{
+				return JsonSerializer.Deserialize(json, typeInfo)
+					?? throw new ArgumentException($"The {what} JSON was empty.", "options");
+			}
+			catch (JsonException ex)
+			{
+				throw new ArgumentException($"The {what} JSON could not be parsed.", "options", ex);
+			}
+		}
+
+		static byte[] DecodeRequired(string? value, string name)
+			=> string.IsNullOrEmpty(value)
+				? throw new ArgumentException($"The options are missing the '{name}'.", "options")
+				: Base64Url.DecodeFromChars(value);
+
+		static NSString? MapUserVerification(string? value) => value switch
+		{
+			null => null,
+			"required" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Required,
+			"discouraged" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Discouraged,
+			_ => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Preferred,
+		};
+
+		static NSString? MapAttestation(string? value) => value switch
+		{
+			null => null,
+			"direct" => ASAuthorizationPublicKeyCredentialAttestationKind.Direct,
+			"indirect" => ASAuthorizationPublicKeyCredentialAttestationKind.Indirect,
+			"enterprise" => ASAuthorizationPublicKeyCredentialAttestationKind.Enterprise,
+			_ => ASAuthorizationPublicKeyCredentialAttestationKind.None,
+		};
+
+		static ASAuthorizationPlatformPublicKeyCredentialDescriptor[]? MapAllowedCredentials(List<WebAuthn.CredentialDescriptor>? allow)
+		{
+			if (allow is null || allow.Count == 0)
+				return null;
+
+			var list = new List<ASAuthorizationPlatformPublicKeyCredentialDescriptor>();
+			foreach (var credential in allow)
+			{
+				if (!string.IsNullOrEmpty(credential.Id))
+					list.Add(new ASAuthorizationPlatformPublicKeyCredentialDescriptor(NSData.FromArray(Base64Url.DecodeFromChars(credential.Id))));
+			}
+
+			return list.Count == 0 ? null : list.ToArray();
 		}
 
 		static async Task<ASAuthorization> PerformAsync(ASAuthorizationRequest request, bool preferImmediatelyAvailable, CancellationToken cancellationToken)
@@ -113,157 +196,6 @@ namespace Microsoft.Maui.Authentication
 
 				return await manager.Task.ConfigureAwait(false);
 			}
-		}
-
-		static bool TryGetUserVerification(JsonElement root, out NSString preference)
-		{
-			preference = null!;
-
-			// userVerification lives under authenticatorSelection for creation options, but is a top-level
-			// field for request (assertion) options — check both.
-			string? value = null;
-			if (root.TryGetProperty("authenticatorSelection", out var selection) &&
-				selection.TryGetProperty("userVerification", out var nested) &&
-				nested.ValueKind == JsonValueKind.String)
-			{
-				value = nested.GetString();
-			}
-			else if (root.TryGetProperty("userVerification", out var top) && top.ValueKind == JsonValueKind.String)
-			{
-				value = top.GetString();
-			}
-
-			if (value is null)
-				return false;
-
-			preference = value switch
-			{
-				"required" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Required,
-				"discouraged" => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Discouraged,
-				_ => ASAuthorizationPublicKeyCredentialUserVerificationPreference.Preferred,
-			};
-			return true;
-		}
-
-		static bool TryGetAttestation(JsonElement root, out NSString attestation)
-		{
-			attestation = null!;
-
-			if (root.TryGetProperty("attestation", out var value) && value.ValueKind == JsonValueKind.String)
-			{
-				attestation = value.GetString() switch
-				{
-					"direct" => ASAuthorizationPublicKeyCredentialAttestationKind.Direct,
-					"indirect" => ASAuthorizationPublicKeyCredentialAttestationKind.Indirect,
-					"enterprise" => ASAuthorizationPublicKeyCredentialAttestationKind.Enterprise,
-					_ => ASAuthorizationPublicKeyCredentialAttestationKind.None,
-				};
-				return true;
-			}
-
-			return false;
-		}
-
-		static bool TryGetAllowedCredentials(JsonElement root, out ASAuthorizationPlatformPublicKeyCredentialDescriptor[] descriptors)
-		{
-			descriptors = Array.Empty<ASAuthorizationPlatformPublicKeyCredentialDescriptor>();
-
-			if (!root.TryGetProperty("allowCredentials", out var allow) || allow.ValueKind != JsonValueKind.Array)
-				return false;
-
-			var list = new List<ASAuthorizationPlatformPublicKeyCredentialDescriptor>();
-			foreach (var item in allow.EnumerateArray())
-			{
-				if (item.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
-				{
-					var bytes = Base64Url.Decode(id.GetString()!);
-					list.Add(new ASAuthorizationPlatformPublicKeyCredentialDescriptor(NSData.FromArray(bytes)));
-				}
-			}
-
-			if (list.Count == 0)
-				return false;
-
-			descriptors = list.ToArray();
-			return true;
-		}
-
-		static string GetRelyingPartyId(JsonElement root, string containerName)
-		{
-			if (root.TryGetProperty(containerName, out var container) &&
-				container.TryGetProperty("id", out var id) &&
-				id.ValueKind == JsonValueKind.String)
-			{
-				return id.GetString()!;
-			}
-
-			throw new PasskeyException($"The creation options are missing the '{containerName}.id'.");
-		}
-
-		static byte[] GetBytes(JsonElement root, string propertyName)
-		{
-			if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String)
-				return Base64Url.Decode(value.GetString()!);
-
-			throw new PasskeyException($"The options are missing the '{propertyName}'.");
-		}
-
-		static string BuildRegistrationResponseJson(ASAuthorizationPlatformPublicKeyCredentialRegistration registration)
-		{
-			var credentialId = registration.CredentialId?.ToArray() ?? Array.Empty<byte>();
-			var attestationObject = registration.RawAttestationObject?.ToArray() ?? Array.Empty<byte>();
-			var clientDataJson = registration.RawClientDataJson?.ToArray() ?? Array.Empty<byte>();
-
-			using var stream = new System.IO.MemoryStream();
-			using (var writer = new Utf8JsonWriter(stream))
-			{
-				writer.WriteStartObject();
-				writer.WriteString("id", Base64Url.Encode(credentialId));
-				writer.WriteString("rawId", Base64Url.Encode(credentialId));
-				writer.WriteString("type", "public-key");
-				writer.WriteStartObject("response");
-				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
-				writer.WriteString("attestationObject", Base64Url.Encode(attestationObject));
-				writer.WriteStartArray("transports");
-				writer.WriteStringValue("internal");
-				writer.WriteEndArray();
-				writer.WriteEndObject();
-				writer.WriteStartObject("clientExtensionResults");
-				writer.WriteEndObject();
-				writer.WriteEndObject();
-			}
-
-			return Encoding.UTF8.GetString(stream.ToArray());
-		}
-
-		static string BuildAssertionResponseJson(ASAuthorizationPlatformPublicKeyCredentialAssertion assertion)
-		{
-			var credentialId = assertion.CredentialId?.ToArray() ?? Array.Empty<byte>();
-			var authenticatorData = assertion.RawAuthenticatorData?.ToArray() ?? Array.Empty<byte>();
-			var signature = assertion.Signature?.ToArray() ?? Array.Empty<byte>();
-			var clientDataJson = assertion.RawClientDataJson?.ToArray() ?? Array.Empty<byte>();
-			var userHandle = assertion.UserId?.ToArray();
-
-			using var stream = new System.IO.MemoryStream();
-			using (var writer = new Utf8JsonWriter(stream))
-			{
-				writer.WriteStartObject();
-				writer.WriteString("id", Base64Url.Encode(credentialId));
-				writer.WriteString("rawId", Base64Url.Encode(credentialId));
-				writer.WriteString("type", "public-key");
-				writer.WriteStartObject("response");
-				writer.WriteString("clientDataJSON", Base64Url.Encode(clientDataJson));
-				writer.WriteString("authenticatorData", Base64Url.Encode(authenticatorData));
-				writer.WriteString("signature", Base64Url.Encode(signature));
-				if (userHandle is { Length: > 0 })
-					writer.WriteString("userHandle", Base64Url.Encode(userHandle));
-				writer.WriteEndObject();
-				writer.WriteStartObject("clientExtensionResults");
-				writer.WriteEndObject();
-				writer.WriteEndObject();
-			}
-
-			return Encoding.UTF8.GetString(stream.ToArray());
 		}
 	}
 
@@ -293,7 +225,7 @@ namespace Microsoft.Maui.Authentication
 			if (error.Code == 1001)
 				_tcs.TrySetCanceled();
 			else
-				_tcs.TrySetException(new PasskeyException(error.LocalizedDescription));
+				_tcs.TrySetException(new InvalidOperationException(error.LocalizedDescription));
 		}
 	}
 }

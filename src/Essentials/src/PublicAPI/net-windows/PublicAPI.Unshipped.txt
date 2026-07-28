@@ -36,9 +36,6 @@ Microsoft.Maui.Authentication.PasskeyCreationOptions.PreferImmediatelyAvailable.
 Microsoft.Maui.Authentication.PasskeyCreationOptions.PreferImmediatelyAvailable.set -> void
 Microsoft.Maui.Authentication.PasskeyCreationResponse
 Microsoft.Maui.Authentication.PasskeyCreationResponse.Id.get -> string!
-Microsoft.Maui.Authentication.PasskeyException
-Microsoft.Maui.Authentication.PasskeyException.PasskeyException(string! message) -> void
-Microsoft.Maui.Authentication.PasskeyException.PasskeyException(string! message, System.Exception? innerException) -> void
 Microsoft.Maui.Authentication.PasskeyRequestOptions
 Microsoft.Maui.Authentication.PasskeyRequestOptions.PasskeyRequestOptions(string! requestOptionsJson) -> void
 Microsoft.Maui.Authentication.PasskeyRequestOptions.PreferImmediatelyAvailable.get -> bool

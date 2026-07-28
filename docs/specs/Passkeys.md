@@ -272,18 +272,13 @@ public static class Passkeys
     public static IPasskeys Default => defaultImplementation ??= new PasskeysImplementation();
     internal static void SetDefault(IPasskeys? implementation) => defaultImplementation = implementation;
 }
-
-/// <summary>
-/// Thrown when a passkey ceremony fails for a reason other than user cancellation
-/// (<see cref="TaskCanceledException"/>) — e.g. no matching credential, a misconfigured domain
-/// association, or an underlying platform error. See §8 for the full mapping.
-/// </summary>
-public class PasskeyException : Exception
-{
-    public PasskeyException(string message, Exception? innerException = null)
-        : base(message, innerException) { }
-}
 ```
+
+Failures surface as **BCL exceptions** (no custom exception type): malformed/missing options are an
+`ArgumentException`; a genuine ceremony/platform failure (no matching credential, misconfigured domain
+association, native error) is an `InvalidOperationException`; user cancellation is a
+`TaskCanceledException`; and an unsupported OS is a `FeatureNotSupportedException`. See §8 for the full
+mapping.
 
 **On the response properties (the 80/20).** Rather than extension methods, the two or three fields most
 apps actually read on-device are exposed as **real, cached properties** directly on the response types.
@@ -544,7 +539,7 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   OS-native from 34.
 - Exceptions map from `CreateCredentialException` / `GetCredentialException` subclasses (e.g.
   `*CancellationException` → `TaskCanceledException`; all other failures, including `NoCredentialException`,
-  → `PasskeyException`, matching §8).
+  → `InvalidOperationException`, matching §8).
 
 ### 7.2 Apple — AuthenticationServices (iOS / iPadOS / Mac Catalyst)
 
@@ -744,7 +739,7 @@ and fail-fast. (The separate, deferred "no modal at all / inline autofill" mode 
 | **`true`** | Silent/local if present; else fails fast (`NoCredentialException`) — no hybrid | Presents only if a local passkey exists; else errors — no QR | **Ignored (no-op)** — modal still shown |
 
 *Notes:* best-effort (Windows no-op must be documented). "No credential available" (`NoCredentialException`)
-is a distinct outcome, **not** a user-cancel, so it surfaces as a `PasskeyException` (per §8) rather than
+is a distinct outcome, **not** a user-cancel, so it surfaces as an `InvalidOperationException` (per §8) rather than
 `TaskCanceledException`. Mostly relevant for *authentication*.
 
 #### 7.5.2 Presentation anchor / parent window — internal (v1)
@@ -838,10 +833,10 @@ cancel must come from a different thread than the blocking call, using the pre-a
 |---|---|
 | OS/version without passkey support | `IsSupported == false`; calls throw `FeatureNotSupportedException` |
 | User cancels the native UI | `TaskCanceledException` (matches `WebAuthenticator`) |
-| No matching credential (authenticate) | `PasskeyException` — no passkey available (distinct from user cancellation) |
+| No matching credential (authenticate) | `InvalidOperationException` — no passkey available (distinct from user cancellation) |
 | Malformed options JSON | `ArgumentException` |
-| Domain association not configured | Platform error surfaced as `PasskeyException` with the native message |
-| Any other native failure | `PasskeyException` wrapping the platform exception/HRESULT |
+| Domain association not configured | Platform error surfaced as `InvalidOperationException` with the native message |
+| Any other native failure | `InvalidOperationException` wrapping the platform exception/HRESULT |
 
 ## 9. Dependencies & packaging impact
 - **Android**: adds **`Xamarin.AndroidX.Credentials` only** (version pinned via `eng/Versions.props`). We

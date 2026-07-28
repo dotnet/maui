@@ -419,9 +419,6 @@ namespace Samples.ViewModel
 				case OperationCanceledException:
 					Log("⚠️ Canceled by the user.");
 					break;
-				case PasskeyException pk:
-					Log($"❌ Passkey error: {pk.Message}");
-					break;
 				case HttpRequestException http:
 					Log($"❌ Network error: {http.Message}. Is the server URL correct and reachable?");
 					break;

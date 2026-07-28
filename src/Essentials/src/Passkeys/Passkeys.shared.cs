@@ -30,8 +30,9 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
 		/// <returns>The WebAuthn registration response to send back to the RP server.</returns>
 		/// <exception cref="FeatureNotSupportedException">Thrown when passkeys are not supported on this platform or OS version.</exception>
+		/// <exception cref="ArgumentException">Thrown when the creation options JSON is malformed or missing required fields.</exception>
 		/// <exception cref="TaskCanceledException">Thrown when the user cancels the flow or the operation is canceled.</exception>
-		/// <exception cref="PasskeyException">Thrown when the ceremony fails (e.g. misconfigured domain association or a platform error).</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the ceremony fails (e.g. misconfigured domain association or a platform error).</exception>
 		Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default);
 
 		/// <summary>
@@ -41,8 +42,9 @@ namespace Microsoft.Maui.Authentication
 		/// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
 		/// <returns>The WebAuthn assertion response to send back to the RP server.</returns>
 		/// <exception cref="FeatureNotSupportedException">Thrown when passkeys are not supported on this platform or OS version.</exception>
+		/// <exception cref="ArgumentException">Thrown when the request options JSON is malformed or missing required fields.</exception>
 		/// <exception cref="TaskCanceledException">Thrown when the user cancels the flow or the operation is canceled.</exception>
-		/// <exception cref="PasskeyException">Thrown when the ceremony fails (e.g. no matching credential or a platform error).</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the ceremony fails (e.g. no matching credential or a platform error).</exception>
 		Task<PasskeyAssertionResponse> AssertAsync(PasskeyRequestOptions options, CancellationToken cancellationToken = default);
 	}
 
@@ -109,8 +111,13 @@ namespace Microsoft.Maui.Authentication
 		internal PasskeyCreationResponse(string registrationResponseJson)
 		{
 			_json = registrationResponseJson ?? throw new ArgumentNullException(nameof(registrationResponseJson));
-			_id = PasskeyResponseParser.GetString(_json, "id")
-				?? throw new PasskeyException("The registration response JSON did not contain a credential 'id'.");
+#if NETSTANDARD
+			// Passkeys are not supported on this target; a response is never constructed here at runtime.
+			_id = string.Empty;
+#else
+			_id = PasskeyResponseReader.ReadRegistration(_json).Id
+				?? throw new InvalidOperationException("The registration response JSON did not contain a credential 'id'.");
+#endif
 		}
 
 		/// <summary>
@@ -137,9 +144,16 @@ namespace Microsoft.Maui.Authentication
 		internal PasskeyAssertionResponse(string authenticationResponseJson)
 		{
 			_json = authenticationResponseJson ?? throw new ArgumentNullException(nameof(authenticationResponseJson));
-			_id = PasskeyResponseParser.GetString(_json, "id")
-				?? throw new PasskeyException("The authentication response JSON did not contain a credential 'id'.");
-			_userHandle = PasskeyResponseParser.GetString(_json, "userHandle");
+#if NETSTANDARD
+			// Passkeys are not supported on this target; a response is never constructed here at runtime.
+			_id = string.Empty;
+			_userHandle = null;
+#else
+			var parsed = PasskeyResponseReader.ReadAssertion(_json);
+			_id = parsed.Id
+				?? throw new InvalidOperationException("The authentication response JSON did not contain a credential 'id'.");
+			_userHandle = parsed.Response?.UserHandle;
+#endif
 		}
 
 		/// <summary>
@@ -157,36 +171,6 @@ namespace Microsoft.Maui.Authentication
 
 		/// <summary>Returns the full WebAuthn authentication response JSON.</summary>
 		public override string ToString() => _json;
-	}
-
-	/// <summary>
-	/// The exception that is thrown when a passkey ceremony fails for a reason other than user cancellation.
-	/// </summary>
-	/// <remarks>
-	/// User cancellation is surfaced as a <see cref="TaskCanceledException"/>. This exception covers other
-	/// failures such as no matching credential, a misconfigured domain association, or an underlying platform
-	/// error.
-	/// </remarks>
-	public class PasskeyException : Exception
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PasskeyException"/> class.
-		/// </summary>
-		/// <param name="message">The message that describes the error.</param>
-		public PasskeyException(string message)
-			: base(message)
-		{
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PasskeyException"/> class.
-		/// </summary>
-		/// <param name="message">The message that describes the error.</param>
-		/// <param name="innerException">The exception that is the cause of the current exception.</param>
-		public PasskeyException(string message, Exception? innerException)
-			: base(message, innerException)
-		{
-		}
 	}
 
 	/// <summary>
@@ -233,96 +217,5 @@ namespace Microsoft.Maui.Authentication
 
 		internal static void SetDefault(IPasskeys? implementation) =>
 			defaultImplementation = implementation;
-	}
-
-	/// <summary>
-	/// Minimal, dependency-free extractor for the couple of base64url string fields exposed as decoded
-	/// properties (<c>id</c>, <c>userHandle</c>). WebAuthn response values for these keys are base64url
-	/// strings (URL-safe alphabet, no quotes or backslashes), so a small scanner is sufficient and avoids a
-	/// JSON dependency in the shared, multi-target assembly.
-	/// </summary>
-	static class PasskeyResponseParser
-	{
-		public static string? GetString(string json, string key)
-		{
-			if (string.IsNullOrEmpty(json))
-				return null;
-
-			var token = "\"" + key + "\"";
-			var searchFrom = 0;
-
-			while (true)
-			{
-				var keyIndex = json.IndexOf(token, searchFrom, StringComparison.Ordinal);
-				if (keyIndex < 0)
-					return null;
-
-				var i = keyIndex + token.Length;
-
-				// Skip whitespace before the colon.
-				while (i < json.Length && char.IsWhiteSpace(json[i]))
-					i++;
-
-				// Must be followed by a colon to be a real key/value pair.
-				if (i >= json.Length || json[i] != ':')
-				{
-					searchFrom = keyIndex + token.Length;
-					continue;
-				}
-
-				i++; // consume ':'
-
-				// Skip whitespace before the value.
-				while (i < json.Length && char.IsWhiteSpace(json[i]))
-					i++;
-
-				if (i >= json.Length)
-					return null;
-
-				// Explicit JSON null.
-				if (json[i] == 'n' && string.CompareOrdinal(json, i, "null", 0, 4) == 0)
-					return null;
-
-				// String value.
-				if (json[i] == '"')
-				{
-					i++; // consume opening quote
-					var start = i;
-					while (i < json.Length && json[i] != '"')
-						i++;
-
-					// Unterminated string (no closing quote before end of input).
-					if (i >= json.Length)
-						return null;
-
-					return json.Substring(start, i - start);
-				}
-
-				// Not a string value for this key; keep searching for another occurrence.
-				searchFrom = keyIndex + token.Length;
-			}
-		}
-	}
-
-	/// <summary>
-	/// base64url helpers (RFC 4648 §5, no padding) shared by the platform implementations that translate
-	/// between the WebAuthn JSON (base64url strings) and native binary buffers.
-	/// </summary>
-	static class Base64Url
-	{
-		public static string Encode(byte[] bytes)
-			=> Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-
-		public static byte[] Decode(string value)
-		{
-			var s = value.Replace('-', '+').Replace('_', '/');
-			switch (s.Length % 4)
-			{
-				case 2: s += "=="; break;
-				case 3: s += "="; break;
-			}
-
-			return Convert.FromBase64String(s);
-		}
 	}
 }
