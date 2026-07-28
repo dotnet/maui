@@ -18,6 +18,7 @@
         RowSpacing="8">
     <!-- Slider Control -->
     <Grid x:Name="SliderGrid"
+          AutomationId="SliderGrid"
           Grid.Row="0"
           Grid.Column="0"
           Grid.ColumnSpan="2">

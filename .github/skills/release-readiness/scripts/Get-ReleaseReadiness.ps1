@@ -1170,6 +1170,99 @@ function Get-AllMilestones {
     }
 }
 
+# .NET ships preview1..preview7, then rc1, rc2, then GA. There is NO preview8 —
+# preview7 is the FINAL preview of a major, and the milestone that follows it is
+# `.NET <major>.0-rc1`. Verified against dotnet/maui's own history:
+#   .NET 9  → 9.0.0-preview.7.24407.4  → 9.0.0-rc.1.24453.9  → 9.0.0-rc.2.24503.2
+#   .NET 10 → 10.0.0-preview.7.25406.3 → 10.0.0-rc.1.25424.2 → 10.0.0-rc.2.25504.7
+# and the matching milestones `.NET 10.0-preview7` → `.NET 10.0-rc1` → `.NET 10.0-rc2`.
+# (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since
+# .NET 6. If that ever changes, this constant is the single place to update.)
+$script:FinalPreviewNumber = 7
+$script:RcCountPerMajor    = 2
+
+function Get-PreviewTrainMilestoneTitle {
+    <#
+    .SYNOPSIS
+        PURE. Maps a 1-based preview-train ordinal to its GitHub milestone title,
+        honouring the preview→rc transition.
+    .DESCRIPTION
+        The pre-release train for a major is a single ordered sequence, so
+        "the cycle after preview7" is rc1 — not the non-existent preview8.
+        Naively incrementing the preview number is the bug this replaces: it
+        told release captains to create a `.NET <major>.0-preview8` milestone
+        that .NET never ships.
+
+            ordinal 1..7  → ".NET <major>.0-preview<ordinal>"
+            ordinal 8     → ".NET <major>.0-rc1"
+            ordinal 9     → ".NET <major>.0-rc2"
+            ordinal 10+   → $null   (GA — no further pre-release milestone)
+
+        Returning $null for post-rc2 ordinals lets callers skip the roll-forward
+        check rather than inventing an "rc3" that will never exist.
+    .OUTPUTS
+        [string] milestone title, or $null when the ordinal runs past rc2.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$Major,
+        [Parameter(Mandatory)][int]$Ordinal
+    )
+
+    if ($Ordinal -lt 1) { return $null }
+    if ($Ordinal -le $script:FinalPreviewNumber) {
+        return ".NET $Major.0-preview$Ordinal"
+    }
+
+    $rcNumber = $Ordinal - $script:FinalPreviewNumber
+    if ($rcNumber -le $script:RcCountPerMajor) {
+        return ".NET $Major.0-rc$rcNumber"
+    }
+    return $null
+}
+
+function Get-PastDueOpenMilestones {
+    <#
+    .SYNOPSIS
+        Open milestones whose `due_on` lapsed before $Cutoff, oldest first.
+    .DESCRIPTION
+        The single definition of "past due" shared by Check 3 (already-shipped
+        debt) and Check 3b (slipped next-cycle target). Those two checks partition
+        the same milestone set on the next-cycle title — one excludes it, the other
+        selects it — so they MUST agree on what "past due" means. If the state /
+        due_on / cutoff test drifted between them, a milestone could either
+        double-report or fall through both checks unreported, which is exactly the
+        bug class Check 3b was added to fix. Keeping the test here makes that
+        agreement structural rather than a copy-paste invariant nothing enforces.
+
+        `-Stable` is required, not cosmetic. PowerShell's default `Sort-Object` is
+        NOT stable — per the cmdlet docs, equal-key inputs are only delivered in
+        received order when `-Top`, `-Bottom`, or `-Stable` is used. In practice the
+        default stays ordered below .NET's ~16-element insertion-sort threshold and
+        starts permuting ties above it, so a bug here would stay invisible in small
+        fixtures and only appear on a repo with many past-due milestones. Because
+        sorting now happens BEFORE each caller's discriminator instead of after,
+        a stable sort is what makes the two orderings equivalent: filtering a stably
+        sorted list preserves relative order, so each caller sees the same sequence
+        it would have produced by filtering first. It also makes tie order
+        deterministic, which the previous filter-then-sort code did not guarantee
+        either.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [array] $Milestones,
+
+        [Parameter(Mandatory)]
+        [datetime] $Cutoff
+    )
+
+    return @($Milestones | Where-Object {
+        $_.state -eq 'open' -and
+        $_.due_on -and
+        ([datetime]$_.due_on).ToUniversalTime() -lt $Cutoff
+    } | Sort-Object -Stable { [datetime]$_.due_on })
+}
+
 function Get-MilestoneHygieneChecks {
     <#
     .SYNOPSIS
@@ -1220,9 +1313,37 @@ function Get-MilestoneHygieneChecks {
         $major = [int]$previewMatch.Groups[1].Value
         $cycleNum = [int]$previewMatch.Groups[2].Value
         if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
-        $expectedTitlesCurrent = @(".NET $major.0-preview$cycleNum")
-        $expectedTitlesNext    = @(".NET $major.0-preview$($cycleNum + 1)")
-        $cycleLabel = "preview$cycleNum"
+        # Walk the preview train (preview1..preview7 → rc1 → rc2), NOT a naive
+        # preview number increment — .NET has no preview8, so the cycle after
+        # preview7 is rc1.
+        $currentTrainTitle = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal $cycleNum
+        $nextTrainTitle    = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal ($cycleNum + 1)
+        if (-not $currentTrainTitle) {
+            if ($cycleNum -lt 1) {
+                # Nonsensical ordinal (e.g. a `release/<major>.0.1xx-preview0`
+                # branch — the `\d+` capture syntactically accepts 0). The
+                # pre-release train has no member below 1. This is a MATCHED
+                # branch shape with an out-of-range ordinal — a misconfiguration,
+                # not the legitimate end of the train — so surface UNKNOWN rather
+                # than silently dropping the current-cycle signal, which would let
+                # a bad branch name masquerade as "all clear". Distinct from the
+                # past-rc2 case just below, where no milestone exists by design and
+                # an empty result is correct.
+                return @(New-ReadinessCheck -Area "Milestone hygiene (branch shape)" -Status 'UNKNOWN' `
+                    -Details "Unrecognized pre-release ordinal ``$cycleNum`` derived from branch ``$branchToParse`` — cannot map it to a preview/rc milestone title." `
+                    -NextAction "Verify the branch follows the ``release/<major>.0.<feature>xx-preview<n>`` convention with ``n >= 1``.")
+            }
+            # Past rc2 — the pre-release train is over and GA milestones don't
+            # follow this naming convention. Skip silently rather than guess.
+            return @()
+        }
+        $expectedTitlesCurrent = @($currentTrainTitle)
+        # NOTE: assign via a statement, not `= if (...) { @($x) } else { @() }` —
+        # an if-expression unrolls a single-element array back to a scalar, which
+        # then blows up on `.Count` under `Set-StrictMode -Version Latest`.
+        $expectedTitlesNext = @()
+        if ($nextTrainTitle) { $expectedTitlesNext = @($nextTrainTitle) }
+        $cycleLabel = $currentTrainTitle -replace "^\.NET $major\.0-", ''
     } else {
         # Unknown branch shape — can't derive milestone names. Skip silently.
         return @()
@@ -1230,7 +1351,7 @@ function Get-MilestoneHygieneChecks {
 
     $milestonesResult = Get-AllMilestones -Repo $Ctx.repo
     if (-not $milestonesResult.Success) {
-        return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+        return @(New-ReadinessCheck -Area "Milestone hygiene (API failure)" -Status 'UNKNOWN' `
             -Details "Failed to query milestones from GitHub API for ``$($Ctx.repo)``." `
             -NextAction "Re-run with valid 'gh' auth: ``gh auth status`` and ``gh api repos/$($Ctx.repo)/milestones``")
     }
@@ -1254,12 +1375,17 @@ function Get-MilestoneHygieneChecks {
     # create it any time before the next cycle starts. In candidate mode this
     # is especially conservative: SR9 candidate would otherwise BLOCK on
     # missing SR10, even though we're not yet ready to cut SR9.
-    $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
-    $nextTitle = $expectedTitlesNext[0]
-    if ($nextMs.Count -eq 0) {
-        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
-            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
-            -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+    #
+    # $expectedTitlesNext is empty when the pre-release train has no successor
+    # (i.e. we're on rc2, after which comes GA) — skip rather than invent one.
+    if ($expectedTitlesNext.Count -gt 0) {
+        $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
+        $nextTitle = $expectedTitlesNext[0]
+        if ($nextMs.Count -eq 0) {
+            $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
+                -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
+                -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+        }
     }
 
     # === Check 3: Stale open milestones with past due_on ===
@@ -1270,6 +1396,12 @@ function Get-MilestoneHygieneChecks {
     # triggering BLOCKED.
     # Also excluded:
     #   - the current cycle (still being prepped)
+    #   - the next cycle (the roll-forward target Check 2 may have just told the
+    #     captain to create; a slipped next-cycle milestone whose due_on passed is
+    #     NOT "already-shipped debt" — flagging it here would contradict Check 2's
+    #     "create it" advice. It is instead re-classified by Check 3b below, so the
+    #     signal is preserved rather than dropped. Lane-agnostic: this holds for an
+    #     SR next-cycle milestone as much as a preview/rc one.)
     #   - "Backlog" (intentional long-running)
     #   - ".NET N Planning" (intentional long-running planning ms)
     #   - milestones without due_on (caller has no schedule, no signal)
@@ -1279,16 +1411,19 @@ function Get-MilestoneHygieneChecks {
         # Match ".NET <major> SR<n>" and ".NET <major>.0 SR<n>" (and SR<n>.<patch>)
         "^\.NET\s+$major(\.0)?\s+SR\d+(\.\d+)?$"
     } else {
-        # Match ".NET <major>.0-preview<n>"
-        "^\.NET\s+$major\.0-preview\d+$"
+        # Match ".NET <major>.0-preview<n>" AND ".NET <major>.0-rc<n>" — preview
+        # and rc are one continuous pre-release train, so a stale rc1 milestone
+        # is the same class of housekeeping debt as a stale preview6 one.
+        "^\.NET\s+$major\.0-(preview|rc)\d+$"
     }
-    $staleMs = @($allMs | Where-Object {
-        $_.state -eq 'open' -and
-        $_.due_on -and
-        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
+    # Shared "past due" set — Check 3 and Check 3b select disjoint halves of it.
+    $pastDueOpen = Get-PastDueOpenMilestones -Milestones $allMs -Cutoff $graceCutoff
+
+    $staleMs = @($pastDueOpen | Where-Object {
         ($expectedTitlesCurrent -notcontains $_.title) -and
+        ($expectedTitlesNext -notcontains $_.title) -and
         ($_.title -match $cycleFilter)
-    } | Sort-Object { [datetime]$_.due_on })
+    })
 
     if ($staleMs.Count -gt 0) {
         $list = ($staleMs | ForEach-Object {
@@ -1302,6 +1437,32 @@ function Get-MilestoneHygieneChecks {
         $checks += New-ReadinessCheck -Area "Stale open milestones ($($staleMs.Count))" -Status 'CLEANUP' `
             -Details "$($staleMs.Count) milestone(s) in the .NET $major cycle are past due (>7 days) and still open: $list. These represent already-shipped releases that were never closed out — accumulating open issues that should have been rolled forward." `
             -NextAction "For each: triage the open issues (close-as-fixed, move to current cycle, or move to Backlog), then close the milestone: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
+    }
+
+    # === Check 3b: Next-cycle milestone exists but has slipped past its due date ===
+    # Check 3 deliberately excludes the next-cycle (roll-forward target) milestone
+    # from the "already-shipped debt" bucket — calling it that would contradict
+    # Check 2's advice to create it. But an EXISTING next-cycle milestone that is
+    # well past due must not become invisible: an unbounded slip usually means the
+    # schedule moved, or the cycle was skipped and the milestone abandoned. Re-classify
+    # it into its own row with accurate wording so the signal is preserved without the
+    # misleading "already shipped" framing. Lane-agnostic — fires for an SR next-cycle
+    # milestone (e.g. a long-overdue SR9 while surveying SR8) exactly as for a slipped
+    # preview/rc one, which is the SR-lane signal the bare Check-3 exclusion had dropped.
+    $slippedNext = @($pastDueOpen | Where-Object {
+        $expectedTitlesNext -contains $_.title
+    })
+
+    if ($slippedNext.Count -gt 0) {
+        $slippedList = ($slippedNext | ForEach-Object {
+            $dueDate = ([datetime]$_.due_on).ToUniversalTime().ToString('yyyy-MM-dd')
+            "[$($_.title)](https://github.com/$($Ctx.repo)/milestone/$($_.number)) (due $dueDate, $($_.open_issues) open)"
+        }) -join '; '
+        # CLEANUP, not BLOCKED — like stale debt, a slipped roll-forward target is
+        # housekeeping, not a blocker on THIS cycle shipping.
+        $checks += New-ReadinessCheck -Area "Next-cycle milestone past due ($($slippedNext.Count))" -Status 'CLEANUP' `
+            -Details "The next-cycle roll-forward milestone(s) exist but are past due (>7 days) and still open: $slippedList. This is NOT already-shipped debt — it's the target open issues roll forward to after ``$cycleLabel`` ships. A slip usually means the schedule moved, or the cycle was skipped and the milestone was abandoned." `
+            -NextAction "If the schedule slipped, update the milestone's ``due_on``; if the cycle was skipped, triage its open issues and close it: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
     }
 
     return $checks

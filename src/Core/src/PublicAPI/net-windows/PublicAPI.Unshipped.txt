@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated
 Microsoft.Maui.Platform.MauiLayoutAutomationPeer
 Microsoft.Maui.Platform.MauiLayoutAutomationPeer.MauiLayoutAutomationPeer(Microsoft.Maui.Platform.LayoutPanel! owner) -> void
 override Microsoft.Maui.Platform.LayoutPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
@@ -14,6 +15,9 @@ Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker
 Microsoft.Maui.IHybridWebView.Invoker.set -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
+static Microsoft.Maui.LifecycleEvents.WindowsLifecycleBuilderExtensions.OnAppInstanceActivated(this Microsoft.Maui.LifecycleEvents.IWindowsLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated! del) -> Microsoft.Maui.LifecycleEvents.IWindowsLifecycleBuilder!
+virtual Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated.Invoke(Microsoft.UI.Xaml.Application! application, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
+virtual Microsoft.Maui.MauiWinUIApplication.OnAppInstanceActivated(Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
 override Microsoft.Maui.Platform.ContentPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
 override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
 Microsoft.Maui.ITab

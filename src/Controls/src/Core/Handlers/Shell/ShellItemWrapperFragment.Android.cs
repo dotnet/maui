@@ -108,6 +108,114 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        public override void OnDestroyView()
+        {
+            // Null out view references so we don't hold on to detached views
+            // when the fragment is placed on the back stack (view destroyed, fragment alive).
+            // Also null _adapter so SetupViewPagerAdapter re-creates it and assigns it
+            // to the new ViewPager2 on the next OnViewCreated (adapter reset path).
+            if (_handler is not null)
+            {
+                // Unregister appearance observer before view is gone.
+                // RegisterAppearanceObserver() runs again on OnViewCreated via bare List.Add —
+                // without removal here, each back-stack return stacks a duplicate registration.
+                if (_handler._registeredShell is not null)
+                {
+                    ((IShellController)_handler._registeredShell).RemoveAppearanceObserver(_handler);
+                    _handler._registeredShell = null;
+                }
+
+                // Unregister displayed-page observer before view is gone.
+                // SwitchToSection() only removes the observer when _shellSection != newSection —
+                // on same-section view recreation, no removal happens, causing AddDisplayedPageObserver
+                // to stack a duplicate entry on each back-stack return.
+                if (_handler._shellSection is not null)
+                {
+                    ((IShellSectionController)_handler._shellSection).RemoveDisplayedPageObserver(_handler);
+                    _handler._shellSection = null;
+                }
+
+                // Reset _displayedPage so UpdateDisplayedPage re-runs fully on back-stack return
+                // instead of early-returning due to the same page reference, leaving the toolbar unconfigured.
+                _handler._displayedPage = null;
+
+                // Null _bottomNavigationView so appearance callbacks don't update stale views
+                // while the fragment sits on the back stack.
+                _handler._bottomNavigationView = null;
+
+                // Tear down TabbedViewManager before view recreation.
+                // SetupTabbedViewManager overwrites _tabbedViewManager/_shellItemAdapter silently —
+                // without teardown here, old BNV listeners and event subscriptions leak.
+                // Note: SetElement(null) already calls RemoveTabs() internally — no need to call it explicitly.
+                if (_handler._tabbedViewManager is not null)
+                {
+                    _handler._tabbedViewManager.SetElement(null);
+                    _handler._tabbedViewManager = null;
+                }
+                _handler._shellItemAdapter = null;
+
+                // Tear down toolbar to prevent duplicate toolbars and tracker leaks on view recreation.
+                // SetupToolbar() runs again on OnViewCreated, so old trackers must be disposed
+                // and old toolbar removed from _appBarLayout before that happens.
+                _handler._toolbarAppearanceTracker?.Dispose();
+                _handler._toolbarAppearanceTracker = null;
+
+                _handler._toolbarTracker?.Dispose();
+                _handler._toolbarTracker = null;
+
+                if (_handler._toolbar?.Parent is ViewGroup toolbarParent)
+                {
+                    toolbarParent.RemoveView(_handler._toolbar);
+                }
+
+                _handler._toolbar = null;
+
+                // Null _shellToolbar — mirrors DisconnectHandler's cleanup.
+                // SetupToolbar() creates a new one on OnViewCreated.
+                _handler._shellToolbar = null;
+
+                // Null _appBarLayout — set in SetupToolbar() from OnViewCreated.
+                // Leaving it non-null holds a detached view reference after view destruction.
+                _handler._appBarLayout = null;
+
+                // Unregister page-change callback before nulling _viewPager.
+                // SetupViewPagerAdapter guards on `if (_pageChangeCallback is null)` —
+                // if not nulled here, the new ViewPager2 never receives the callback
+                // and toolbar/top-tab sync silently breaks on back-stack return.
+                if (_handler._pageChangeCallback is not null && _handler._viewPager is not null)
+                {
+                    _handler._viewPager.UnregisterOnPageChangeCallback(_handler._pageChangeCallback);
+                }
+                _handler._pageChangeCallback = null;
+
+                // Clear adapter before nulling _viewPager to detach FragmentStateAdapter.
+                // FragmentStateAdapter unregisters lifecycle/adapter observers only when cleared,
+                // not when the view is destroyed — mirrors DisconnectHandler's adapter/viewpager cleanup.
+                if (_handler._viewPager is not null)
+                {
+                    _handler._viewPager.Adapter = null;
+                }
+                _handler._viewPager = null;
+                _handler._adapter = null;
+            }
+
+            // Remove window insets listener before nulling _rootLayout.
+            // Dispose guards on `_rootLayout is not null` — if nulled here first,
+            // Dispose skips the removal and the listener is never unregistered.
+            if (_rootLayout is not null)
+            {
+                MauiWindowInsetListener.RemoveViewWithLocalListener(_rootLayout);
+            }
+
+            _rootLayout = null;
+
+            // _backPressedCallback is auto-removed by ViewLifecycleOwner when the view is destroyed.
+            // Null here for symmetry — OnViewCreated recreates it.
+            _backPressedCallback = null;
+
+            base.OnDestroyView();
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)

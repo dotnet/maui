@@ -190,13 +190,17 @@ internal class KnownMarkups
 			}
 			else if (ancestorTypeNode is ValueNode vnType)
 			{
-				// Try to parse as a type name directly (without x:Type)
+				// Try to parse as a type name directly (without x:Type).
+				// Cache the resolved symbol in context.Types keyed by the ValueNode so that
+				// TryGetRelativeSourceAncestorType can look it up without re-resolving.
 				var typeName = vnType.Value as string;
 				if (!IsNullOrEmpty(typeName))
 				{
 					XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
 					xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var resolvedType);
 					ancestorTypeSymbol = resolvedType;
+					if (resolvedType is not null)
+						context.Types[vnType] = resolvedType;
 				}
 			}
 		}
@@ -344,20 +348,41 @@ internal class KnownMarkups
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
 		
-		// When Source is RelativeSource, the type is determined at runtime — skip compilation.
-		// When Source is x:Reference, resolve the referenced element's type and compile against it.
-		// Otherwise, use x:DataType from the current scope.
-		bool hasRelativeSource = HasRelativeSourceBinding(markupNode);
-		
 		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
 		
-		if (   !hasRelativeSource
-			&& extVariable is not null)
+		if (extVariable is not null)
 		{
-			ITypeSymbol? xRefSourceType = TryResolveXReferenceSourceType(markupNode, context);
-			dataTypeSymbol = xRefSourceType;
-			if (dataTypeSymbol is null)
-				TryGetXDataType(markupNode, context, out dataTypeSymbol);
+			// Determine the source type for compiled binding based on the binding's Source configuration:
+			//
+			// 1. RelativeSource with a resolvable AncestorType: use the AncestorType as the source
+			//    type. The symbol is already registered in context.Types by
+			//    ProvideValueForRelativeSourceExtension, enabling trim-safe TypedBinding generation.
+			//
+			// 2. RelativeSource without AncestorType (Self, TemplatedParent, or FindAncestor without
+			//    a type): the binding source is resolved at runtime. Using x:DataType as the source
+			//    type here would produce a compiled binding with an incorrect source type, leading to
+			//    runtime failures. Fall through to the string-based Binding path instead.
+			//
+			// 3. x:Reference: resolve the referenced element's type and compile against it.
+			//
+			// 4. No explicit source: use x:DataType if available to produce a compiled TypedBinding.
+			// isAncestorTypeSource is true whenever AncestorType was present, regardless of whether
+			// the type resolved successfully. This prevents a BindingPropertyNotFound diagnostic from
+			// firing on a path that was never compiled before — even when resolution fails.
+			TryGetRelativeSourceAncestorType(markupNode, context, out var ancestorTypeSymbol, out bool isAncestorTypeSource);
+			ITypeSymbol? xRefSourceType = null;
+			if (ancestorTypeSymbol is not null)
+			{
+				dataTypeSymbol = ancestorTypeSymbol;
+			}
+
+			if (!isAncestorTypeSource && !HasRelativeSourceBinding(markupNode))
+			{
+				xRefSourceType = TryResolveXReferenceSourceType(markupNode, context);
+				dataTypeSymbol = xRefSourceType;
+				if (dataTypeSymbol is null)
+					TryGetXDataType(markupNode, context, out dataTypeSymbol);
+			}
 
 			if (dataTypeSymbol is not null)
 			{
@@ -368,10 +393,17 @@ internal class KnownMarkups
 					return true;
 				}
 
-				// Emit property-not-found diagnostic only for x:DataType-sourced bindings.
-				// For x:Reference bindings, silently fall back to runtime — these bindings
-				// were never compiled before, so emitting a new warning would be a regression.
-				if (propertyNotFoundDiagnostic is not null && xRefSourceType is null)
+				// Emit property-not-found diagnostic when the source type was known at compile time
+				// but the binding path doesn't exist on that type. Specifically:
+				// - x:DataType bindings: always emit (existing behavior).
+				// - AncestorType bindings with a resolved type: emit, because the type is known and the
+				//   path is provably wrong — consistent with x:DataType behavior. Suppress only when the
+				//   AncestorType itself failed to resolve (ancestorTypeSymbol == null), since no type
+				//   inference was possible.
+				// - x:Reference bindings: always suppress — they were never compiled before.
+				if (propertyNotFoundDiagnostic is not null
+					&& xRefSourceType is null
+					&& (!isAncestorTypeSource || ancestorTypeSymbol is not null))
 				{
 					context.ReportDiagnostic(propertyNotFoundDiagnostic);
 				}
@@ -724,6 +756,69 @@ internal class KnownMarkups
 			}
 
 			return null;
+		}
+
+		// Checks if the binding has a Source property that is a RelativeSource extension
+		// with a resolvable AncestorType. If so, returns the already-resolved AncestorType
+		// symbol from context.Types (populated earlier by ProvideValueForRelativeSourceExtension).
+		// This allows AncestorType bindings to use the compiled (trim-safe) TypedBinding path.
+		//
+		// Ordering guarantee: RelativeSourceExtension is registered in GetKnownEarlyMarkupExtensions
+		// and BindingExtension in GetKnownLateMarkupExtensions (see NodeSGExtensions.cs). Early markup
+		// extensions are always resolved before late ones, so context.Types is guaranteed to already
+		// contain the AncestorType symbol (if resolvable) by the time this method runs — no re-resolution
+		// or ordering fallback is needed here.
+		static bool TryGetRelativeSourceAncestorType(ElementNode bindingNode, SourceGenContext context, out ITypeSymbol? ancestorType, out bool hasAncestorType)
+		{
+			ancestorType = null;
+			hasAncestorType = false;
+
+			// Check if Source property exists
+			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
+				&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+			{
+				return false;
+			}
+
+			// Check if the Source is a RelativeSourceExtension
+			if (sourceNode is not ElementNode relativeSourceNode
+				|| (relativeSourceNode.XmlType.Name != "RelativeSourceExtension"
+					&& relativeSourceNode.XmlType.Name != "RelativeSource"))
+			{
+				return false;
+			}
+
+			// Find the AncestorType property on the RelativeSource node
+			if (!relativeSourceNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode? ancestorTypeNode)
+				&& !relativeSourceNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
+				relativeSourceNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "AncestorType"), out ancestorTypeNode);
+
+			if (ancestorTypeNode is null)
+			{
+				return false;
+			}
+
+			// AncestorType node is present — mark the attempt regardless of resolution outcome.
+			hasAncestorType = true;
+
+			// The AncestorType is typically an x:Type extension (ElementNode).
+			// ProvideValueForRelativeSourceExtension already resolved this type
+			// and registered it in context.Types — just look it up.
+			if (ancestorTypeNode is ElementNode typeExtNode)
+			{
+				return context.Types.TryGetValue(typeExtNode, out ancestorType) && ancestorType is not null;
+			}
+
+			// AncestorType may also be a bare string (ValueNode), e.g. AncestorType="local:MyViewModel".
+			// ProvideValueForRelativeSourceExtension resolves this form and caches the result in
+			// context.Types, so reuse that cached value here to avoid duplicating resolution logic.
+			if (ancestorTypeNode is ValueNode vnType)
+			{
+				context.Types.TryGetValue(vnType, out ancestorType);
+				return ancestorType is not null;
+			}
+
+			return false;
 		}
 	}
 

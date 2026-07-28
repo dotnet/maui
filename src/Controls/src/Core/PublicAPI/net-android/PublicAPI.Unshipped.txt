@@ -196,6 +196,7 @@ override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreat
 override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnDestroyView() -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnDestroyView() -> void
 override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
@@ -214,6 +215,9 @@ Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnActionSheetRequeste
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnAlertRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
 Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Duration.get -> System.TimeSpan
 Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.FromVersion.get -> int
