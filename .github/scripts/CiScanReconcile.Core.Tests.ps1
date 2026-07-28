@@ -1494,6 +1494,59 @@ Describe 'Staleness is recency-aware' {
         $v.Decision | Should -Be 'needs-human'
         $v.Reason | Should -Be 'malformed-state-marker'
     }
+
+    It 'a clock backdated before created_at cannot manufacture quiet days' {
+        # `clock_start_at` was the one clock source applied unconditionally, while the
+        # recurrence and merged-fix resets below it are both guarded by `-gt $clockStart`.
+        # So it was also the only one that could move the clock BACKWARD, inflating
+        # QuietDays out of a value no writer in this tool produces — the field is parsed
+        # from the issue body and never emitted, so every value is external input.
+
+        # Honest control: the clock legitimately starts AFTER created_at. Four quiet days
+        # is under MinQuietDays, so this issue is genuinely still 'watching'.
+        $honest = New-TestIssue -CreatedAt '2026-07-15T00:00:00Z' -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..30) -ClockStart '2026-07-28T00:00:00Z'))
+        $h = Get-CiScanIssueVerdict -Issue $honest -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..30))
+        $h.QuietDays | Should -Be 4
+        $h.Decision | Should -Be 'watching'
+        $h.Reason | Should -Be 'threshold-not-met'
+
+        # The same issue with the clock backdated ONE DAY before created_at. This is the
+        # case that matters, and it is why the fix quarantines instead of clamping.
+        # Clamping to created_at yields QuietDays == AgeDays, and MinIssueAgeDays (14)
+        # already exceeds MinQuietDays (7) — so every issue old enough to be considered
+        # clears the quiet gate on the clamped value, and this fixture would still reach
+        # 'candidate' on a fabricated 17 days. Only rejecting the marker holds it.
+        $backdated = New-TestIssue -CreatedAt '2026-07-15T00:00:00Z' -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..30) -ClockStart '2026-07-14T00:00:00Z'))
+        $b = Get-CiScanIssueVerdict -Issue $backdated -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..30))
+
+        $b.Decision | Should -Not -Be 'candidate' -Because 'an impossible clock must never reach the closable set'
+        $b.Decision | Should -Be 'needs-human'
+        $b.Reason | Should -Be 'clock-start-before-created-at'
+
+        # A large backdate must report the SAME reason. Today it happens to trip
+        # `QuietDays > MaxWaitDays` and escalate, which looks like protection but is
+        # coincidence — it holds only while the fabricated number is big enough, and the
+        # small backdate above sails under it. Pinning the reason keeps the real guard
+        # from being mistaken for the accidental one.
+        $ancient = New-TestIssue -CreatedAt '2026-07-15T00:00:00Z' -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..30) -ClockStart '2020-01-01T00:00:00Z'))
+        $a = Get-CiScanIssueVerdict -Issue $ancient -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..30))
+        $a.Reason | Should -Be 'clock-start-before-created-at' -Because 'not max-wait-exceeded, which would only be reached by accident'
+
+        # Anti-vacuity: a clock exactly AT created_at is legitimate and must survive, so
+        # the guard cannot have been written as `-le`.
+        $atCreation = New-TestIssue -CreatedAt '2026-07-15T00:00:00Z' -Body (New-CanonicalBody -StateJson (
+                New-StateJson -Absent (1..30) -ClockStart '2026-07-15T00:00:00Z'))
+        $c = Get-CiScanIssueVerdict -Issue $atCreation -Config $script:Net11 -Now $script:Now `
+            -Coverage (New-Coverage -Verified (1..30))
+        $c.Reason | Should -Not -Be 'clock-start-before-created-at'
+        $c.QuietDays | Should -Be 17
+    }
 }
 
 Describe 'A human reopen is a permanent veto' {

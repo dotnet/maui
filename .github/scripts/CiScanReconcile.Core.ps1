@@ -1208,6 +1208,39 @@ function Get-CiScanIssueVerdict {
     # issue creation and `Now` ever moved the start.
     $clockStart = $createdAt
     $parsedClock = ConvertFrom-CiScanTimestamp $state.clock_start_at
+    # `clock_start_at` is the ONE clock source that could move the start BACKWARD, and
+    # until now it was the one applied unconditionally. The other two below are guarded
+    # by `-gt $clockStart`; this was a bare assignment. That contradicted the invariant
+    # Get-CiScanStateMarker cites to justify rejecting unparseable timestamps -- that
+    # "`$clockStart` in Get-CiScanIssueVerdict only ever moves FORWARD from `created_at`".
+    # It did not, so the property that comment leans on held for every field EXCEPT the
+    # clock itself.
+    #
+    # A clock cannot legitimately start before the issue that carries it. Nothing in this
+    # tool writes the field -- it is parsed from the issue body and never emitted -- so
+    # every value is external input, and one predating `created_at` is impossible rather
+    # than merely surprising. It is therefore treated as marker corruption, exactly like
+    # the `malformed-state-marker` gate, and quarantined to a human.
+    #
+    # QUARANTINE, NOT CLAMP -- and the difference is the whole finding. Clamping to
+    # `created_at` looks like the conservative repair and is not, because it yields
+    # `QuietDays == AgeDays`, and `MinIssueAgeDays` (14) already exceeds `MinQuietDays`
+    # (7). Any issue old enough to be considered therefore clears the quiet gate on the
+    # clamped value, so the clamp leaves the fail-open exactly where it found it: a clock
+    # backdated ONE DAY before `created_at` still carries a genuinely 4-day-quiet issue
+    # (`watching`, `quiet:4<7d`) to `candidate` on a fabricated 17. Pinned in
+    # 'a clock backdated before created_at cannot manufacture quiet days'.
+    #
+    # Nor does the max-wait ceiling cover this. A LARGE backdate trips
+    # `QuietDays > MaxWaitDays` and escalates, which reads as protection but is
+    # coincidence -- it holds only while the fabricated number is big enough. The small
+    # backdate, which is the one that changes a verdict, sails under it. Relying on that
+    # ceiling would be a guard that works only on the inputs that were never the threat.
+    if ($null -ne $parsedClock -and $parsedClock -lt $createdAt) {
+        $verdict.Decision = 'needs-human'
+        $verdict.Reason = 'clock-start-before-created-at'
+        return $verdict
+    }
     if ($null -ne $parsedClock) { $clockStart = $parsedClock }
     $lastPresent = ConvertFrom-CiScanTimestamp $state.last_present_at
     if ($null -ne $lastPresent -and $lastPresent -gt $clockStart) {
