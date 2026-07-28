@@ -162,14 +162,14 @@ public class ResizetizerTests : BaseBuildTest
 		// rerun image processing, and restore the processed-image contract.
 		var resizetizerOutputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.outputs");
 		Assert.True(File.Exists(resizetizerOutputsFile), $"Resizetizer output list does not exist: {resizetizerOutputsFile}");
-		var stampWriteTime = File.GetLastWriteTimeUtc(resizetizerStampFile);
+		var invalidationSentinel = DateTime.UtcNow.AddMinutes(1);
+		File.SetLastWriteTimeUtc(resizetizerStampFile, invalidationSentinel);
 		File.Delete(resizetizerOutputsFile);
 		File.Delete(outputsFile);
-		System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
 
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
 			"Custom backend project failed after deleting only the persisted image output list.");
-		Assert.True(File.GetLastWriteTimeUtc(resizetizerStampFile) > stampWriteTime,
+		Assert.True(File.GetLastWriteTimeUtc(resizetizerStampFile) < invalidationSentinel,
 			"ResizetizeImages should rerun when the persisted output list is missing.");
 		Assert.True(File.Exists(resizetizerOutputsFile), "Resizetizer output list was not restored.");
 		Assert.Equal(2, File.ReadAllLines(outputsFile).Length);
@@ -298,14 +298,26 @@ public class ResizetizerTests : BaseBuildTest
 
 		var fontStampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauifont.stamp");
 		Assert.True(File.Exists(fontStampFile), $"Font stamp file does not exist: {fontStampFile}");
-		var fontStampWriteTime = File.GetLastWriteTimeUtc(fontStampFile);
+		File.SetLastWriteTimeUtc(fontStampFile, DateTime.UtcNow.AddMinutes(1));
+		var noOpFontStampWriteTime = File.GetLastWriteTimeUtc(fontStampFile);
 		File.Delete(fontsFile);
-		System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
 			"Custom backend project failed on a no-op font rebuild. Check test output for errors.");
-		Assert.Equal(fontStampWriteTime, File.GetLastWriteTimeUtc(fontStampFile));
+		Assert.Equal(noOpFontStampWriteTime, File.GetLastWriteTimeUtc(fontStampFile));
 		Assert.True(File.Exists(fontsFile), "Custom backend font output list was not recreated on the no-op rebuild.");
 		Assert.Single(File.ReadAllLines(fontsFile));
+
+		// A partial cache restore can retain the future-dated stamp while losing a copied font.
+		// The guard must invalidate the stamp, rerun ProcessMauiFonts, and restore both the
+		// physical copy and the processed-font contract exposed to the backend.
+		File.Delete(processedFontPath);
+		File.Delete(fontsFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
+			"Custom backend project failed after deleting only a copied processed font.");
+		Assert.True(File.GetLastWriteTimeUtc(fontStampFile) < noOpFontStampWriteTime,
+			"ProcessMauiFonts should rerun when an expected copied font is missing.");
+		Assert.True(File.Exists(processedFontPath), $"Missing processed font was not restored: {processedFontPath}");
+		Assert.Equal(processedFont, Assert.Single(File.ReadAllLines(fontsFile)));
 
 		File.WriteAllText(
 			projectFile,
