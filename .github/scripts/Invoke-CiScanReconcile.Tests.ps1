@@ -2764,19 +2764,63 @@ Describe 'Static source invariants' {
         $offenders | Should -BeNullOrEmpty -Because 'AzDO payload fields must go through Get-CiScanJsonField'
     }
 
+    <#
+        `gh issue close/edit/comment/reopen` and `gh api -X` are the mutating shapes. They
+        may appear only inside an Invoke-GhWrite -GhArgs argument list.
+
+        Both halves of this were blind, and this is the invariant that guards the close
+        capability itself, so the blindness was the most consequential on the branch.
+        Measured: truncate the `& gh` pattern to `&\s+ghz\s` AND add a real
+        `& gh issue close $Number --repo dotnet/maui` to the orchestrator -> 233/233 green.
+        Same for the api half with a real `@('api', ..., '-X', 'PATCH')` call. The scan whose
+        only job is to forbid an unrouted mutation reported clean with one in production code.
+
+        The count line looked like the floor and was not one. `.Matches.Count` on a
+        Select-String result only has the assumed shape at exactly 2 matches: at 1 the single
+        Match unrolls and has no .Count, at 0 there is no .Matches at all, so under StrictMode
+        BOTH crash before `Should -BeLessOrEqual 2` ever evaluates. It is red below 2 by
+        accident, via a shape assumption rather than an assertion, and the message names
+        neither the invariant nor the choke point. It is now an EXACT count over
+        [regex]::Matches, which asserts instead of throwing and supplies a real non-zero
+        floor: losing a choke point fails legibly, and 3+ still fails as before.
+
+        The offender rule is a predicate, not a pattern -- the `-notmatch 'GhArgs'` exclusion
+        is what distinguishes a routed call from a raw one, so testing the regex alone would
+        leave the part that does the discriminating unexercised. One KnownBad per alternation:
+        an anchor built from a compound sample is only as strong as its most robust branch.
+    #>
     It 'routes every mutating gh subcommand through Invoke-GhWrite' {
-        # `gh issue close/edit/comment/reopen` and `gh api -X` are the mutating shapes.
-        # They may appear only inside an Invoke-GhWrite -GhArgs argument list.
+        # Single definition: the scan below and the samples here use the same predicate,
+        # so a sample can never pass against a rule the scan does not actually apply.
+        $script:IsUnroutedGhLine = {
+            param([string]$Line)
+            ($Line -match '&\s+gh\s' -and $Line -notmatch 'GhArgs') -or ($Line -match "'api'.*-X")
+        }
+
+        foreach ($bad in @(
+                '    & gh issue close $Number --repo dotnet/maui',
+                '    $a = @(''api'', "repos/$Owner/$Repo/issues/$N", ''-X'', ''PATCH'')')) {
+            (& $script:IsUnroutedGhLine -Line $bad) |
+                Should -BeTrue -Because "the scan must still detect the unrouted call '$bad'; a corrupted pattern reports the whole file clean, including a real backdoor"
+        }
+        foreach ($good in @(
+                '    & gh @GhArgs',
+                '    Invoke-GhWrite -Kind close -IssueNumber $n -GhArgs @(''issue'', ''close'')',
+                '    $a = @(''api'', "repos/$Owner/$Repo/issues/$N")')) {
+            (& $script:IsUnroutedGhLine -Line $good) |
+                Should -BeFalse -Because "the scan must not flag the sanctioned form '$good', or a clean scan proves nothing"
+        }
+
         $lines = $script:OrchestratorText -split "`n"
         $offenders = @()
         for ($i = 0; $i -lt $lines.Count; $i++) {
-            $line = $lines[$i]
-            if ($line -match '&\s+gh\s' -and $line -notmatch 'GhArgs') { $offenders += "line $($i + 1): $line" }
-            if ($line -match "'api'.*-X" ) { $offenders += "line $($i + 1): $line" }
+            if (& $script:IsUnroutedGhLine -Line $lines[$i]) { $offenders += "line $($i + 1): $($lines[$i])" }
         }
-        # The only two `& gh @GhArgs` sites are inside Invoke-GhRead and Invoke-GhWrite.
-        @($script:OrchestratorText | Select-String -Pattern '&\s+gh\s+@GhArgs' -AllMatches).Matches.Count |
-            Should -BeLessOrEqual 2
+
+        # The floor. Exactly two `& gh @GhArgs` sites exist -- Invoke-GhRead and
+        # Invoke-GhWrite -- so this is a non-zero expectation the absence check can lean on.
+        @([regex]::Matches($script:OrchestratorText, '&\s+gh\s+@GhArgs')).Count |
+            Should -Be 2 -Because 'the only sanctioned gh invocations are the read and write choke points; losing one means a caller now reaches gh another way, and gaining one means a third path exists'
         $offenders -join '; ' | Should -BeExactly ''
     }
 
