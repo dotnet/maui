@@ -79,6 +79,7 @@
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- wasdk -->
+    <MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>0.5.0</MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>
     <MicrosoftWindowsAppSDKPackageVersion>2.3.1</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.28000.2526</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.4.0</MicrosoftGraphicsWin2DPackageVersion>
