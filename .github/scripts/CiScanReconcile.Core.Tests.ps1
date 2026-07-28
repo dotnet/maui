@@ -1616,3 +1616,175 @@ Describe 'A human reopen is a permanent veto' {
         $v.Decision | Should -Be 'candidate'
     }
 }
+
+Describe 'The forward-only clock rule is enforced structurally' {
+    # The rule "$clockStart only ever moves FORWARD from created_at" is now asserted three
+    # ways, and each previous instrument stopped somewhere the next one has to start.
+    #
+    #   1. 'a clock backdated before created_at cannot manufacture quiet days' pins the ONE
+    #      source that violated it. Shape-bound: it cannot see a new writer.
+    #   2. 'holds QuietDays <= AgeDays across every clock source' asserts the CONSEQUENCE,
+    #      which buys shape-independence. But a property assertion inherits its fixture's
+    #      input space: a writer keyed on a state field no fixture populates is never
+    #      reached, so the property is never violated. Measured, not assumed — an unguarded
+    #      writer keyed on `first_absent_at` leaves all 156 behavioural tests green.
+    #   3. This test. It reads the SOURCE, not the behaviour, and is keyed on the VARIABLE
+    #      rather than on the shape of the write or the input that reaches it. A writer
+    #      that no fixture can trigger is still a writer in the AST.
+    #
+    # Why the AST and not a regex: `$clockStart = ...` as text cannot tell an assignment
+    # from a comparison, a comment, or a string, and every prior scanning instrument in
+    # this repo that used text got fooled by exactly that. The parser answers the question
+    # the rule actually asks — "what writes this variable?" — directly.
+    #
+    # If this test failed because you added a legitimate writer: prove it moves the clock
+    # FORWARD (guard it with `-gt $clockStart`, or screen the value against `$createdAt`
+    # first as the `clock_start_at` quarantine does), then add it below. Do not widen the
+    # rule to make the failure go away — a backward-moving clock manufactures quiet days,
+    # which is the one direction that manufactures closure.
+
+    BeforeAll {
+        $script:CorePath = Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1'
+        $parseErrors = $null
+        $script:CoreAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:CorePath, [ref]$null, [ref]$parseErrors)
+        $script:ParseErrors = $parseErrors
+
+        $script:VerdictFn = $script:CoreAst.Find({
+            param($n)
+            $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $n.Name -eq 'Get-CiScanIssueVerdict'
+        }, $true)
+
+        # Every assignment whose target is the bare variable $clockStart.
+        $script:ClockWrites = @($script:VerdictFn.FindAll({
+            param($n)
+            $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+            $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+            $n.Left.VariablePath.UserPath -eq 'clockStart'
+        }, $true))
+
+        # A write is forward-guarded when some enclosing `if` compares against the current
+        # clock with -gt. Walking PARENTS (not siblings) is what makes this dominance and
+        # not proximity: a guard that does not enclose the write does not protect it.
+        $script:IsForwardGuarded = {
+            param($write)
+            $node = $write.Parent
+            while ($null -ne $node) {
+                if ($node -is [System.Management.Automation.Language.IfStatementAst]) {
+                    foreach ($clause in $node.Clauses) {
+                        $gt = $clause.Item1.Find({
+                            param($c)
+                            $c -is [System.Management.Automation.Language.BinaryExpressionAst] -and
+                            $c.Operator -eq [System.Management.Automation.Language.TokenKind]::Igt -and
+                            (
+                                ($c.Left  -is [System.Management.Automation.Language.VariableExpressionAst] -and $c.Left.VariablePath.UserPath  -eq 'clockStart') -or
+                                ($c.Right -is [System.Management.Automation.Language.VariableExpressionAst] -and $c.Right.VariablePath.UserPath -eq 'clockStart')
+                            )
+                        }, $true)
+                        if ($null -ne $gt) { return $true }
+                    }
+                }
+                $node = $node.Parent
+            }
+            return $false
+        }
+
+        # A write does not have to be an assignment. `Set-Variable -Name clockStart` sets
+        # the same local and is not an AssignmentStatementAst, so keying purely on
+        # assignments would leave an evasion that measures as fully green. Found by
+        # mutation, not by inspection.
+        $script:CommandWrites = @($script:VerdictFn.FindAll({
+            param($n)
+            if ($n -isnot [System.Management.Automation.Language.CommandAst]) { return $false }
+            $name = $n.GetCommandName()
+            if ($name -notin @('Set-Variable', 'New-Variable')) { return $false }
+            $txt = $n.Extent.Text
+            return ($txt -match '(?<![\w-])clockStart\b')
+        }, $true))
+
+        $script:RhsName = {
+            param($write)
+            if ($write.Right.Expression -is [System.Management.Automation.Language.VariableExpressionAst]) {
+                return $write.Right.Expression.VariablePath.UserPath
+            }
+            return $write.Right.Extent.Text
+        }
+    }
+
+    It 'parses, and the scan actually finds the writers it claims to audit' {
+        # Anti-vacuity. If the file stops parsing, or the AST query stops matching, every
+        # assertion below passes over an empty set and proves nothing. This is the failure
+        # mode that made two earlier probes in this branch print confident empty results.
+        $script:ParseErrors | Should -BeNullOrEmpty -Because 'a file that does not parse cannot be audited'
+        $script:VerdictFn | Should -Not -BeNullOrEmpty -Because 'the function must be found by name'
+        @($script:ClockWrites).Count | Should -BeGreaterOrEqual 4 -Because 'the known writers are the baseline, clock_start_at, last_present_at and the merged-fix reset'
+    }
+
+    It 'records where this instrument stops' {
+        # Measured limit, stated so the next reader does not assume more coverage than
+        # exists. The scan resolves the variable by NAME at parse time, so it sees every
+        # assignment and every Set-Variable/New-Variable that names $clockStart literally.
+        # It does NOT see a write whose target name is computed at runtime --
+        # `Set-Variable -Name $someVar` or `$ExecutionContext.SessionState.PSVariable.Set(...)`.
+        # Neither construct appears anywhere in this file, and this assertion is what keeps
+        # that true: if one is introduced, the limit stops being theoretical and this fails.
+        $src = Get-Content -Raw -Path $script:CorePath
+        $src | Should -Not -Match 'PSVariable\.Set\(' -Because 'a runtime-named write would be invisible to a parse-time scan'
+        $src | Should -Not -Match 'Set-Variable\s+(-Name\s+)?\$' -Because 'a computed variable name would be invisible to a parse-time scan'
+    }
+
+    It 'recognises a real forward guard, so "guarded" is not vacuously true' {
+        # Control for the guard detector itself. The recurrence and merged-fix resets are
+        # genuinely guarded by `-gt $clockStart`; if the detector cannot see them it would
+        # report every write as unguarded and the real test below would fail for the wrong
+        # reason. Two independent guarded writers, so one rewrite cannot silently empty this.
+        $guarded = @($script:ClockWrites | Where-Object { & $script:IsForwardGuarded $_ })
+        @($guarded).Count | Should -BeGreaterOrEqual 2 -Because 'last_present_at and the merged-fix reset are both guarded by -gt $clockStart'
+    }
+
+    It 'has no writer that can move the clock backward' {
+        # The census. Keyed on the variable, so it sees a writer regardless of which state
+        # field triggers it, whether any fixture populates that field, or what shape the
+        # assignment takes.
+        $allowedUnguarded = @(
+            'createdAt'    # the baseline: the clock starts at issue creation by definition
+            'parsedClock'  # clock_start_at, screened by the quarantine asserted below
+        )
+
+        $offenders = @($script:ClockWrites |
+            Where-Object { -not (& $script:IsForwardGuarded $_) } |
+            Where-Object { (& $script:RhsName $_) -notin $allowedUnguarded } |
+            ForEach-Object { "line $($_.Extent.StartLineNumber): $($_.Extent.Text)" })
+
+        # Cmdlet-shaped writes are held to the same rule. There are none today, so any hit
+        # is new by definition.
+        $offenders += @($script:CommandWrites |
+            Where-Object { -not (& $script:IsForwardGuarded $_) } |
+            ForEach-Object { "line $($_.Extent.StartLineNumber): $($_.Extent.Text)" })
+
+        $offenders | Should -BeNullOrEmpty -Because 'every write to $clockStart must be guarded by -gt $clockStart, screened against $createdAt, or be the baseline'
+    }
+
+    It 'still screens the one unguarded writer it exempts' {
+        # `parsedClock` is exempt from the -gt rule only because a preceding gate returns
+        # before it when the value predates the issue. Remove that gate and the exemption
+        # above becomes a hole, so the exemption and its justification are asserted together
+        # rather than the exemption being taken on trust.
+        $quarantine = $script:VerdictFn.Find({
+            param($n)
+            $n -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+            $n.Value -eq 'clock-start-before-created-at'
+        }, $true)
+        $quarantine | Should -Not -BeNullOrEmpty -Because 'the clock_start_at exemption depends on this gate existing'
+
+        $lt = $script:VerdictFn.Find({
+            param($n)
+            $n -is [System.Management.Automation.Language.BinaryExpressionAst] -and
+            $n.Operator -eq [System.Management.Automation.Language.TokenKind]::Ilt -and
+            $n.Right -is [System.Management.Automation.Language.VariableExpressionAst] -and
+            $n.Right.VariablePath.UserPath -eq 'createdAt'
+        }, $true)
+        $lt | Should -Not -BeNullOrEmpty -Because 'the gate must compare the parsed clock against $createdAt'
+    }
+}
