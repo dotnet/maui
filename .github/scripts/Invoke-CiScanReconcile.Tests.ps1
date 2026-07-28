@@ -2271,4 +2271,86 @@ Describe 'Static source invariants' {
             $u.Groups[1].Value | Should -Match '@[0-9a-f]{40}$'
         }
     }
+
+    <#
+        A bounded digit capture must be narrow enough for whatever numeric type
+        consumes it. This branch shipped `(?<id>\d{1,12})` feeding a bare `[int]` --
+        max 999999999999 against an Int32 ceiling of 2147483647 -- while
+        `(?<n>\d{1,9})` four hundred lines away was deliberately sized to fit. The
+        correct precedent and the defect coexisted; nothing connected them, so review
+        was the only thing standing between the two, and review missed it.
+
+        Pairing is per-FUNCTION, not per-name, because the name alone is ambiguous:
+        two different patterns both capture `<n>`, at widths 4 and 9, feeding
+        `[double]` and `[int]` respectively. Pairing by name would silently compare
+        the wrong width against the wrong ceiling.
+
+        Only HARD casts are checked. `[int]::TryParse` is the escape hatch and is
+        correctly used at the widest capture in the file, so a width rule that ignored
+        the consumption mode would flag the fix rather than the bug.
+
+        Comments are stripped first, and that is not defensive boilerplate: the very
+        first run of this test failed on `CiScanReconcile.Core.ps1:595`, which QUOTES
+        `[int]$Matches['id']` in prose as the unsafe form it warns against. A scan for
+        a dangerous spelling will always find the docblock explaining why the spelling
+        is dangerous.
+
+        This generalizes the width half of the Occurrences-specific test in
+        CiScanReconcile.Core.Tests.ps1, which stays: that one also drives the widest
+        admissible value end to end through Get-CiScanRequiredAbsences, which a source
+        scan cannot do.
+    #>
+    It 'keeps every bounded digit capture narrow enough for the cast that consumes it' {
+        $ceilings = @{
+            'int'     = [double][int]::MaxValue
+            'long'    = [double][long]::MaxValue
+            'decimal' = [double][decimal]::MaxValue
+            # A double does not throw on overflow, it yields Infinity -- which then
+            # poisons downstream arithmetic as NaN rather than failing loudly. The
+            # ceiling is the point at which the literal stops being finite.
+            'double'  = [double]::MaxValue
+        }
+
+        # Block comments first, then whole-line comments. Trailing `# ...` is left
+        # alone deliberately: `#` is a literal in the issue-reference patterns
+        # (`dotnet/maui#`), and stripping it would corrupt the very captures scanned.
+        $strip = {
+            param($text)
+            $noBlocks = [regex]::Replace($text, '(?s)<#.*?#>', '')
+            (($noBlocks -split "`n") | Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+        }
+
+        $capturesFound = 0
+        $pairsChecked = 0
+        foreach ($raw in @($script:CoreText, $script:OrchestratorText)) {
+            $src = & $strip $raw
+            $src | Should -Match 'function Get-CiScan' -Because 'the comment stripper must not have eaten the code'
+            foreach ($block in [regex]::Split($src, '(?m)^function\s+')) {
+                $widths = @{}
+                foreach ($m in [regex]::Matches($block, '\(\?<(?<nm>\w+)>\\d\{1,(?<w>\d+)\}\)')) {
+                    $nm = $m.Groups['nm'].Value
+                    $w = [int]$m.Groups['w'].Value
+                    if (-not $widths.ContainsKey($nm) -or $widths[$nm] -lt $w) { $widths[$nm] = $w }
+                    $capturesFound++
+                }
+                foreach ($nm in $widths.Keys) {
+                    $castPattern = '\[(?<t>int|long|double|decimal)\]\s*\$(?:Matches|\w+\.Groups)\[' +
+                                   '[''"]' + [regex]::Escape($nm) + '[''"]\]'
+                    foreach ($cast in [regex]::Matches($block, $castPattern)) {
+                        $type = $cast.Groups['t'].Value
+                        $widest = [double]('9' * $widths[$nm])
+                        $widest | Should -BeLessOrEqual $ceilings[$type] -Because `
+                            "(?<$nm>\d{1,$($widths[$nm])}) is cast to [$type]; widen the type or narrow the capture"
+                        $pairsChecked++
+                    }
+                }
+            }
+        }
+
+        # Anti-vacuity. A refactor that renames the capture syntax, moves these
+        # patterns out of `function` blocks, or switches every call site to TryParse
+        # would leave this test passing over nothing at all.
+        $capturesFound | Should -BeGreaterOrEqual 3 -Because 'the scan must still be finding real digit captures'
+        $pairsChecked | Should -BeGreaterOrEqual 2 -Because 'the scan must still be finding real hard casts to check'
+    }
 }
