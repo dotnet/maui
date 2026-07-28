@@ -24,6 +24,12 @@
                                   clock access (caller passes -Now), so it is fully
                                   unit-testable offline with fixtures.
 
+      Format-ReportFreshnessBanner — PURE, deterministic renderer for the report's OWN
+                                  freshness banner ("🕐 generated N ago", with a ⏳ stale
+                                  flag past a threshold). Caller passes -Now, so it is
+                                  fully unit-testable. MUST NOT be folded into the SR
+                                  semantic hash (it is a render-time presentation concern).
+
     This file contains ONLY function/constant definitions (no top-level side effects), so
     it is safe to dot-source from either engine or from the test harness.
 
@@ -388,3 +394,92 @@ function Format-NightlyFeedBanner {
     }
     return "**Nightly dogfood feed:** ✅ $lane — latest ``$version`` built $whenPhrase."
 }
+
+function Format-ReportFreshnessBanner {
+    <#
+    .SYNOPSIS
+        Render a one-line markdown banner describing how long ago THIS report was generated,
+        with a ⏳ "may be stale" note once the age crosses a threshold. PURE + deterministic:
+        output depends only on the arguments (no ambient clock — caller passes -Now), so it is
+        fully unit-testable and can exercise the stale path with an injected past -GeneratedAt.
+
+    .DESCRIPTION
+        This is the report's OWN freshness banner (distinct from Format-NightlyFeedBanner, which
+        describes the dogfood FEED build age). It is DERIVED-AT-RENDER from the generation
+        timestamp and is a pure presentation concern — it MUST NOT be folded into
+        Get-ReportSemanticHash. If it were, two runs on identical data would produce different
+        ages → different hashes → the idempotent no-op would break and churn every run.
+
+        In normal operation generation ≈ render, so the age is ~0 and the ⏳ note does not fire;
+        the absolute "**Generated**:" timestamp above this banner remains the durable staleness
+        signal for a body frozen by the no-op. On the hash-gated SR engine the ⏳ path is
+        therefore effectively test-only: a body the semantic-hash no-op declines to re-render
+        keeps whatever banner text it last wrote, so ⏳ can never NEWLY surface through a frozen
+        body — rely on the absolute "**Generated**:" line there. The ⏳ path IS live on the
+        preview engine, which re-renders every run. Unit tests inject a far-past -GeneratedAt to
+        exercise ⏳ directly.
+
+    .PARAMETER GeneratedAt
+        When the report data was generated (the same instant rendered on the "**Generated**:"
+        line). Accepts a [datetime] or an ISO-8601 string; unparseable input returns '' (no banner).
+
+    .PARAMETER Now
+        UTC reference time used to compute age. Caller supplies it so the function is
+        deterministic and testable.
+
+    .PARAMETER StaleHours
+        Age (in hours) at or beyond which the ⏳ "may be stale" note is appended. Default 4.
+    #>
+    param(
+        $GeneratedAt,
+        [datetime]$Now,
+        [double]$StaleHours = 4
+    )
+
+    if ($null -eq $GeneratedAt) { return '' }
+
+    # Normalize GeneratedAt to a UTC [datetime]. Tolerate both a real [datetime] and the
+    # ISO-8601 string the engines store in metadata.fetchedAt / $generatedAt.
+    $genUtc = $null
+    if ($GeneratedAt -is [datetime]) {
+        $genUtc = ([datetime]$GeneratedAt).ToUniversalTime()
+    } else {
+        $parsed = [datetime]::MinValue
+        if ([datetime]::TryParse(
+                [string]$GeneratedAt, [System.Globalization.CultureInfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::AdjustToUniversal -bor
+                [System.Globalization.DateTimeStyles]::AssumeUniversal, [ref]$parsed)) {
+            $genUtc = $parsed.ToUniversalTime()
+        } else {
+            return ''   # unparseable → render nothing rather than a bogus age
+        }
+    }
+
+    $span = $Now.ToUniversalTime() - $genUtc
+    $totalMinutes = $span.TotalMinutes
+    if ($totalMinutes -lt 0) { $totalMinutes = 0 }   # clamp clock skew / just-generated
+
+    # Humanize the age into a compact "<n> minutes/hours/days ago" phrase.
+    if ($totalMinutes -lt 1) {
+        $agePhrase = 'moments ago'
+    } elseif ($totalMinutes -lt 60) {
+        $m = [int][Math]::Floor($totalMinutes)
+        $agePhrase = "$m minute$(if ($m -ne 1) { 's' }) ago"
+    } elseif ($totalMinutes -lt 1440) {
+        $h = [int][Math]::Floor($totalMinutes / 60)
+        $agePhrase = "$h hour$(if ($h -ne 1) { 's' }) ago"
+    } else {
+        $d = [int][Math]::Floor($totalMinutes / 1440)
+        $agePhrase = "$d day$(if ($d -ne 1) { 's' }) ago"
+    }
+
+    if ($span.TotalHours -ge $StaleHours) {
+        # Render the ACTUAL threshold (culture-invariant) so a fractional -StaleHours (e.g.
+        # 2.5) reads "older than 2.5h" rather than a floored, misleading "2h". Whole-number
+        # thresholds (the default 4) still render as "4h".
+        $staleH = ([double]$StaleHours).ToString([System.Globalization.CultureInfo]::InvariantCulture)
+        return "> ⏳ _Report generated **$agePhrase** — data may be stale (older than ${staleH}h). A fresh run is scheduled every few hours._"
+    }
+    return "> 🕐 _Report generated $agePhrase._"
+}
+

@@ -189,8 +189,135 @@ public class XamlGenerator : IIncrementalGenerator
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
 					return;
 
+				// Incremental Hot Reload: compute the diff and update state BEFORE generating IC,
+				// so that IC can read the latest version from XamlHotReloadState and set __version correctly.
+				string? ucCode = null;
+				var assemblyName = compilation.AssemblyName ?? string.Empty;
+				var targetFramework = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
+				// Key the incremental-HR patch-chain state on the XAML file's absolute path (not its
+				// project-relative path) via ProjectItem.HotReloadStateKey. Roslyn source generators
+				// live in a long-lived VBCSCompiler process shared across many project builds; keying on
+				// (AssemblyName, TFM, RelativePath) lets a patch chain leak between two projects that
+				// merely share an assembly name and a file name. A leaked patch can even reference a type
+				// the other project doesn't reference (e.g. a BlazorWebView from a Blazor app bleeding
+				// into a plain app), producing uncompilable generated code.
+				var stateKey = xamlItem.ProjectItem.HotReloadStateKey;
+				string? previousXaml = null;
+				SGRootNode? previousRoot = null;
+				Dictionary<ElementNode, string>? previousNodeIds = null;
+				int previousNextId = 0;
+				int previousVersion = 0;
+				var hadPreviousEntry = xamlItem.ProjectItem.EnableIncrementalHotReload
+					&& xamlItem.Xaml is not null
+					&& XamlHotReloadState.TryGetPrevious(assemblyName, targetFramework, stateKey, out previousXaml, out previousRoot, out previousNodeIds, out previousNextId, out previousVersion);
+				if (hadPreviousEntry
+					&& previousXaml != xamlItem.Xaml
+					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var rootType, out var accessModifier)
+					&& rootType != null)
+				{
+					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
+						previousRoot,
+						previousNodeIds,
+						previousNextId,
+						previousXaml!,
+						xamlItem.Xaml!,
+						fromVersion: previousVersion,
+						toVersion: previousVersion + 1,
+						rootType,
+						compilation,
+						xmlnsCache,
+						typeCache,
+						sourceProductionContext,
+						xamlItem.ProjectItem,
+						out var parsedNewRoot,
+						out var effectiveNewIds,
+						out var newNextNodeId,
+						out var parseError,
+						out var emptyDiff);
+
+					if (parseError)
+					{
+						// New XAML is invalid — keep last-good state untouched. IC generation below
+						// will re-attempt parsing the same broken XAML, throw, and the outer catch
+						// will emit the parse-error diagnostic. No UC update for this iteration.
+					}
+					else if (patchBody != null)
+					{
+						var version = previousVersion + 1;
+						// Append the new patch body and update state (with cached parsed tree + effective IDs) BEFORE IC generation
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, version, patchBody);
+						var allPatches = XamlHotReloadState.GetPatchBodies(assemblyName, targetFramework, stateKey);
+
+						// Generate UC source (emitted after IC below)
+						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, allPatches);
+					}
+					else if (emptyDiff)
+					{
+						// Round-3 fix: semantically empty diff (e.g., formatting / comment-only XAML edit).
+						// DO NOT reset Version or clear PatchBodies — live instances at version N would be
+						// stranded when the next real edit emits `if (__version == 0)`. Just refresh the
+						// cached XAML text + parsed tree so future diffs compare against current text.
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion);
+
+						// Round-4 fix: if patches already exist, re-emit the UC partial so it doesn't
+						// transiently disappear from the compilation between two real edits. Metadata-update
+						// tooling tolerates this poorly (it can look like a type-removal delta).
+						var existingPatches = XamlHotReloadState.GetPatchBodies(assemblyName, targetFramework, stateKey);
+						if (existingPatches.Count > 0)
+						{
+							ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, existingPatches);
+						}
+					}
+					else
+					{
+						// Structural change: update state with new XAML and parsed tree, reset version.
+						// Assign fresh IDs for the new tree (reset counter since patches are cleared).
+						Dictionary<ElementNode, string>? freshIds = null;
+						int freshNextId = 0;
+						if (parsedNewRoot != null)
+						{
+							freshIds = NodeIdHelper.AssignIds(parsedNewRoot, 0, out freshNextId);
+						}
+						XamlHotReloadState.UpdateAndClearPatches(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0);
+					}
+				}
+				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
+				{
+					// First run for this file (no cache entry): seed the cache at version 0 with parsed tree and fresh IDs.
+					// IMPORTANT: this branch must NOT fire when the cache already exists with the same XAML —
+					// doing so would reset Version to 0 while preserving accumulated PatchBodies, causing the
+					// next genuine edit to emit a patch gated on __version == 0 that collides with an existing one.
+					SGRootNode? seedRoot = null;
+					Dictionary<ElementNode, string>? seedIds = null;
+					int seedNextId = 0;
+					try
+					{
+						seedRoot = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache);
+						if (seedRoot != null)
+						{
+							seedIds = NodeIdHelper.AssignIds(seedRoot, 0, out seedNextId);
+						}
+					}
+					catch (Exception)
+					{
+						// Best-effort seed only: if the initial XAML can't be parsed, seed with a null
+						// tree so state still exists at version 0. IC generation below re-parses the same
+						// XAML and the outer catch surfaces the real parse-error diagnostic — swallowing
+						// here just avoids reporting it twice.
+					}
+					XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml, seedRoot, seedIds, seedNextId, 0);
+				}
+				// else: cache exists and XAML unchanged (or rootType lookup failed). Leave state untouched.
+
+				// Generate IC — reads latest version from XamlHotReloadState
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+
+				// Emit UC source if a diff was computed
+				if (ucCode != null)
+				{
+					sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "uc.xsg"), ucCode);
+				}
 			}
 			catch (Exception e)
 			{

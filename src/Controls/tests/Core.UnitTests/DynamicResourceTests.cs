@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -170,6 +171,160 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ParentSetAppliesDynamicResourceFromParentWithoutListener()
+		{
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary {
+					{ "foo", "FOO" },
+					{ "unrelated", "UNRELATED" },
+				}
+			};
+			var label = new Label();
+			label.SetDynamicResource(Label.TextProperty, "foo");
+
+			label.Parent = parent;
+
+			Assert.Equal("FOO", label.Text);
+		}
+
+		[Fact]
+		public void ParentSetDoesNotClearDynamicResourceWhenNewParentDoesNotContainKey()
+		{
+			var layout0 = new ContentView { Resources = new ResourceDictionary { { "foo", "FOO" } } };
+			var layout1 = new ContentView { Resources = new ResourceDictionary { { "bar", "BAR" } } };
+			var label = new Label();
+			label.SetDynamicResource(Label.TextProperty, "foo");
+			label.Parent = layout0;
+
+			Assert.Equal("FOO", label.Text);
+
+			label.Parent = layout1;
+
+			Assert.Equal("FOO", label.Text);
+		}
+
+		[Fact]
+		public void ParentSetDoesNotOverrideLocalDynamicResourceValue()
+		{
+			var parent = new ContentView { Resources = new ResourceDictionary { { "foo", "PARENT" } } };
+			var label = new Label
+			{
+				Resources = new ResourceDictionary {
+					{ "foo", "LOCAL" },
+				}
+			};
+			label.SetDynamicResource(Label.TextProperty, "foo");
+
+			Assert.Equal("LOCAL", label.Text);
+
+			label.Parent = parent;
+
+			Assert.Equal("LOCAL", label.Text);
+		}
+
+		[Fact]
+		public void ParentSetAppliesImplicitLabelStyleWithoutListener()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Red },
+				}
+			};
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary {
+					{ "unrelated", "UNRELATED" },
+					style,
+				}
+			};
+			var label = new Label();
+
+			label.Parent = parent;
+
+			Assert.Equal(Colors.Red, label.TextColor);
+		}
+
+		[Fact]
+		public void ParentSetMergesStyleClassResourcesWithoutListener()
+		{
+			var buttonStyle = new Style(typeof(Button))
+			{
+				Setters = {
+					new Setter { Property = Button.TextColorProperty, Value = Colors.Pink },
+				},
+				Class = "pink",
+				ApplyToDerivedTypes = true,
+			};
+			var labelStyle = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Green },
+				},
+				Class = "pink",
+			};
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary {
+					buttonStyle,
+				}
+			};
+			var button = new Button
+			{
+				StyleClass = new[] { "pink" },
+				Resources = new ResourceDictionary {
+					labelStyle,
+				}
+			};
+
+			button.Parent = parent;
+
+			Assert.Equal(Colors.Pink, button.TextColor);
+		}
+
+		[Fact]
+		public void ParentSetAppliesMultipleDynamicResourcesInFullSnapshotOrderWithoutListener()
+		{
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary {
+					{ "first", "FIRST" },
+					{ "second", "SECOND" },
+				}
+			};
+			var view = new DynamicResourceOrderView();
+			view.SetDynamicResource(DynamicResourceOrderView.SecondProperty, "second");
+			view.SetDynamicResource(DynamicResourceOrderView.FirstProperty, "first");
+
+			view.Parent = parent;
+
+			Assert.Equal(new[] { "FIRST", "SECOND" }, view.Changes);
+			Assert.Equal("FIRST", view.First);
+			Assert.Equal("SECOND", view.Second);
+		}
+
+		[Fact]
+		public void ParentSetAppliesBindableObjectResourceBindingContextWithoutListener()
+		{
+			var resourceLabel = new Label();
+			var parent = new ContentView
+			{
+				BindingContext = "PARENT-CONTEXT",
+				Resources = new ResourceDictionary {
+					{ "resource-label", resourceLabel },
+				}
+			};
+			var view = new BindableResourceView();
+			view.SetDynamicResource(BindableResourceView.ResourceProperty, "resource-label");
+
+			view.Parent = parent;
+
+			Assert.Same(resourceLabel, view.Resource);
+			Assert.Equal("PARENT-CONTEXT", resourceLabel.BindingContext);
+		}
+
+		[Fact]
 		public void ClearedResourcesDoesNotClearValues()
 		{
 			var layout0 = new ContentView { Resources = new ResourceDictionary { { "foo", "FOO" } } };
@@ -211,6 +366,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetDynamicResource(Label.TextProperty, "foo");
 
 			Assert.Equal("FOO", label.Text);
+		}
+
+		class DynamicResourceOrderView : View
+		{
+			public static readonly BindableProperty FirstProperty = BindableProperty.Create(nameof(First), typeof(string), typeof(DynamicResourceOrderView), default(string),
+				propertyChanged: (bindable, oldValue, newValue) => ((DynamicResourceOrderView)bindable).Changes.Add((string)newValue));
+
+			public static readonly BindableProperty SecondProperty = BindableProperty.Create(nameof(Second), typeof(string), typeof(DynamicResourceOrderView), default(string),
+				propertyChanged: (bindable, oldValue, newValue) => ((DynamicResourceOrderView)bindable).Changes.Add((string)newValue));
+
+			public IList<string> Changes { get; } = new List<string>();
+
+			public string First => (string)GetValue(FirstProperty);
+
+			public string Second => (string)GetValue(SecondProperty);
+		}
+
+		class BindableResourceView : View
+		{
+			public static readonly BindableProperty ResourceProperty = BindableProperty.Create(nameof(Resource), typeof(object), typeof(BindableResourceView));
+
+			public object Resource => GetValue(ResourceProperty);
 		}
 	}
 }
