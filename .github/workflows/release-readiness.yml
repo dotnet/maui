@@ -401,6 +401,28 @@ jobs:
             echo "::error::Readiness body file is empty: $BODY_FILE"
             exit 1
           fi
+
+          # Reconcile the user-visible title from the generated lifecycle markers
+          # too. A hotfix commit or tag can land between detector and report jobs;
+          # body markers are already authoritative for gating, so the title must
+          # describe the same report-time generation.
+          if [ "$BRANCH_TYPE" = "sr" ]; then
+            REPORT_HOTFIX_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-hotfix: [^>]+ -->$' "$BODY_FILE" || true)
+            REPORT_SHIPPED_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-shipped: [^>]+ -->$' "$BODY_FILE" || true)
+            TRACKER_MAJOR="${TRACKER_KEY#net}"
+            TRACKER_MAJOR="${TRACKER_MAJOR%%-*}"
+            TRACKER_SR="${TRACKER_KEY##*-sr}"
+            if [ -n "$REPORT_HOTFIX_MARKER" ]; then
+              REPORT_HOTFIX_ID="${REPORT_HOTFIX_MARKER#<!-- release-readiness-hotfix: }"
+              REPORT_HOTFIX_ID="${REPORT_HOTFIX_ID% -->}"
+              REPORT_HOTFIX_VERSION="${REPORT_HOTFIX_ID%%@*}"
+              ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix ${REPORT_HOTFIX_VERSION} in progress (${BRANCH_NAME})"
+              MODE="shipped"
+            elif [ -n "$REPORT_SHIPPED_MARKER" ]; then
+              ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — shipped (${BRANCH_NAME})"
+              MODE="shipped"
+            fi
+          fi
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
           echo "issue_title=$ISSUE_TITLE" >> "$GITHUB_OUTPUT"
 

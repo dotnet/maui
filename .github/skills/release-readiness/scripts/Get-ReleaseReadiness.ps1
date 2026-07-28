@@ -2315,9 +2315,21 @@ function Test-IsLineageReferenceNegated {
     $omitted = "(?i)^$prefix(?:\w+\s+){0,8}?(?:omit(?:ted)?|exclude(?:d)?)\b"
     $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
     $rolledBack = "(?i)^$prefix(?:\w+\s+){0,8}?rolled\s+back\b"
-    return ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect) -or
+    $isNegated = ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect) -or
         ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
+    if (-not $isNegated) { return $false }
+
+    # A contrastive correction in the same sentence can reverse an earlier
+    # expectation without reversing the actual lineage state:
+    # "was not expected to be needed, but it is required for this backport."
+    $firstSentence = ($suffix -split '(?<=[.;!?])\s|\r?\n', 2)[0]
+    $affirmativeEffect = '(?:require(?:d|s)?|need(?:ed|s)?|includ(?:e|ed|es)|appl(?:y|ies|ied|icable)|relevant|necessary|essential|kept|retain(?:ed|s)?)'
+    $affirmativeCopula = "(?:is|are|it's|it\s+is|remains?|was|will\s+be|must\s+be|should\s+be|still\s+(?:is\s+)?)"
+    $contrastiveAffirmation = "(?i)\b(?:but|however|nevertheless|nonetheless)\b(?:(?!\b(?:not|never)\b|n't)[^.;!?])*?\b$affirmativeCopula\s+$affirmativeEffect\b"
+    if ($firstSentence -match $contrastiveAffirmation) { return $false }
+
+    return $true
 }
 
 function Get-ExplicitBackportSourceNumbers {

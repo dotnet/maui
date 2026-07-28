@@ -1379,6 +1379,12 @@ if (-not $SkipE2E) {
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
     Assert-Eq -Label "workflow propagates report-time resolved issue title" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
+    Assert-Eq -Label "workflow derives hotfix title from generated report marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_HOTFIX_MARKER=.*BODY_FILE[\s\S]*ISSUE_TITLE=.*hotfix.*REPORT_HOTFIX_VERSION'))
+    Assert-Eq -Label "workflow hotfix marker takes precedence over shipped title" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'if \[ -n "\$REPORT_HOTFIX_MARKER" \][\s\S]*elif \[ -n "\$REPORT_SHIPPED_MARKER" \]'))
+    Assert-Eq -Label "workflow derives plain shipped title when no hotfix marker exists" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_SHIPPED_MARKER[\s\S]*ISSUE_TITLE=.*— shipped'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
     Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
@@ -2087,6 +2093,16 @@ try {
     $distantRetraction = "Backport of #12345 and #23456. " + ('context ' * 90) + '#12345 was not included.'
     Assert-Eq -Label "backport lineage: distant repeated negation remains visible within bounded scan" `
         -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $distantRetraction) -join ',')
+    $correctedExpectation = @'
+Backport of #12345.
+
+Note: PR #12345 was not initially expected to be needed here, but it is required for this backport.
+'@
+    Assert-Eq -Label "backport lineage: contrastive correction preserves an actual backport" `
+        -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text $correctedExpectation) -join ',')
+    $unreversedExpectation = 'Backport of #12345. PR #12345 was not initially expected to be needed, but it was not included.'
+    Assert-Eq -Label "backport lineage: contrast does not rescue a final non-inclusion state" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unreversedExpectation) -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
