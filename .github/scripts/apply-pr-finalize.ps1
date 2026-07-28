@@ -76,6 +76,27 @@ $script:PlatformPrefixes = @(
 # Sentence that uniquely identifies the repo's required "dogfood this PR" note.
 $script:TestingNoteMarker = 'Are you waiting for the changes in this PR to be merged?'
 
+function ConvertTo-AzdoSafeConsole {
+    <#
+    .SYNOPSIS
+        Defangs AzDO logging commands in PR-controlled text before it is written to stdout.
+    .DESCRIPTION
+        Mirrors the canonical implementation in Review-PR.ps1. It is duplicated rather than
+        imported because this script also runs standalone (and is dot-sourced by Pester), so
+        it cannot depend on the orchestrator's scope. Apply-PRFinalize.Tests.ps1 pins the same
+        behaviours that Review-PR.Tests.ps1 asserts for the original.
+
+        Required by rule 6 of ci-copilot-pipeline-security.instructions.md: the Post phase runs
+        with GH_COMMENT_TOKEN and sets GateFailed/CopilotFailed, so an unsanitized "##vso[...]"
+        reaching stdout here could mask a gate failure.
+    #>
+    param([string]$Text)
+
+    # Collapse CR/LF/FF/VT so PR-influenceable text can't fabricate a fresh column-0 line,
+    # then defang the AzDO logging-command prefixes.
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
 function Test-FinalizeIsNoOp {
     <#
     .SYNOPSIS
@@ -129,7 +150,9 @@ function Get-FinalizeRecommendation {
     $body = $bodyMatch.Groups['value'].Value.Trim()
 
     # A multi-line "title" means the fences were mis-parsed; refuse rather than mangle the PR.
-    if ([string]::IsNullOrWhiteSpace($title) -or $title -match "`n") { return $null }
+    # Matches any line break, not just "`n": $normalized only collapses CRLF pairs, so a lone
+    # CR would otherwise survive and let the title open a new column-0 console line.
+    if ([string]::IsNullOrWhiteSpace($title) -or $title -match '[\r\n]') { return $null }
     if ([string]::IsNullOrWhiteSpace($body)) { return $null }
 
     return @{ Title = $title; Body = $body }
@@ -163,6 +186,12 @@ function Merge-PreservedTitlePrefix {
     foreach ($tagMatch in [regex]::Matches($leading.Value, '\[([^\]]+)\]')) {
         $tag = $tagMatch.Groups[1].Value.Trim()
         if ([string]::IsNullOrWhiteSpace($tag)) { continue }
+
+        # Defence in depth: only carry over tags that look like real triage/status markers
+        # ([WIP], [inflight regression], [net11.0], [release/10.0.1xx]). The title is
+        # author-controlled, so this stops control characters or an "##vso[" fragment from
+        # riding a preserved tag into the PR title and the Post phase's console stream.
+        if ($tag -notmatch '^[A-Za-z0-9][A-Za-z0-9 ._/\-]*$') { continue }
 
         # Platform tag? The recommendation owns those. Strip any trailing version
         # (e.g. "iOS18" -> "ios") so versioned platform tags still match.
@@ -236,7 +265,7 @@ if ([string]::IsNullOrWhiteSpace($ContentFile)) {
 Write-Host "  📝 PR finalize — applying recommended title/description..." -ForegroundColor Cyan
 
 if (-not (Test-Path -LiteralPath $ContentFile)) {
-    Write-Host "     ℹ️  No pr-finalize content at '$ContentFile' — nothing to apply." -ForegroundColor Gray
+    Write-Host "     ℹ️  No pr-finalize content at '$(ConvertTo-AzdoSafeConsole $ContentFile)' — nothing to apply." -ForegroundColor Gray
     exit 0
 }
 
@@ -260,7 +289,7 @@ $prJson = $null
 try {
     $prJson = gh pr view $PRNumber --repo $Repo --json title,body 2>$null | ConvertFrom-Json
 } catch {
-    Write-Host "     ⚠️  Could not read the current PR metadata ($_) — skipping to avoid clobbering it." -ForegroundColor Yellow
+    Write-Host "     ⚠️  Could not read the current PR metadata ($(ConvertTo-AzdoSafeConsole "$_")) — skipping to avoid clobbering it." -ForegroundColor Yellow
     exit 0
 }
 
@@ -293,14 +322,17 @@ if ($bodyChanged -and
     if (-not $titleChanged) { exit 0 }
 }
 
-Write-Host "     Title: $newTitle" -ForegroundColor Gray
+# Every value below is PR/agent-derived, so it goes through the sanitizer before reaching
+# stdout (rule 6). The Post phase sets GateFailed/CopilotFailed, so an unsanitized
+# "##vso[task.setvariable ...]" echoed here could mask a gate failure.
+Write-Host "     Title: $(ConvertTo-AzdoSafeConsole $newTitle)" -ForegroundColor Gray
 Write-Host "     Changed: title=$titleChanged body=$bodyChanged" -ForegroundColor Gray
 
 if ($DryRun) {
     if ($bodyChanged) {
         Write-Host "     --- body preview (first 15 lines) ---" -ForegroundColor DarkGray
         foreach ($line in (($newBody -split "`r?`n") | Select-Object -First 15)) {
-            Write-Host "     | $line" -ForegroundColor DarkGray
+            Write-Host "     | $(ConvertTo-AzdoSafeConsole $line)" -ForegroundColor DarkGray
         }
         Write-Host "     --- end preview ---" -ForegroundColor DarkGray
     }
@@ -321,10 +353,11 @@ try {
         Write-Host "     ✅ Applied the recommended PR title/description." -ForegroundColor Green
     } else {
         # Non-fatal: the review comment still carries the recommendation for a human.
-        Write-Host "     ⚠️  gh pr edit failed (non-fatal): $output" -ForegroundColor Yellow
+        # gh echoes back the title/body it was given, so this is PR-derived too.
+        Write-Host "     ⚠️  gh pr edit failed (non-fatal): $(ConvertTo-AzdoSafeConsole ($output -join ' '))" -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "     ⚠️  Failed to apply the PR finalize recommendation (non-fatal): $_" -ForegroundColor Yellow
+    Write-Host "     ⚠️  Failed to apply the PR finalize recommendation (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
 } finally {
     Remove-Item -LiteralPath $bodyFile -Force -ErrorAction SilentlyContinue
 }

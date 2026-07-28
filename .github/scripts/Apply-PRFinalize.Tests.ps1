@@ -33,6 +33,7 @@ BeforeAll {
     }
 
     foreach ($functionName in @(
+        'ConvertTo-AzdoSafeConsole',
         'Test-FinalizeIsNoOp',
         'Get-FinalizeRecommendation',
         'Merge-PreservedTitlePrefix',
@@ -221,5 +222,98 @@ Old description.
 
     It 'handles an empty current body' {
         Merge-PreservedBodyPreamble -CurrentBody '' -RecommendedBody '### New' | Should -Be '### New'
+    }
+}
+
+Describe 'ConvertTo-AzdoSafeConsole' {
+    # Behaviour is pinned to the canonical implementation in Review-PR.ps1; these mirror the
+    # assertions in Review-PR.Tests.ps1 so the duplicated copy can't silently drift.
+    It 'defangs the task.setvariable logging command' {
+        ConvertTo-AzdoSafeConsole '##vso[task.setvariable variable=x]y' |
+            Should -Be '## vso[task.setvariable variable=x]y'
+    }
+
+    It 'defangs the bare ## command prefix' {
+        ConvertTo-AzdoSafeConsole '##[command]z' | Should -Be '## [command]z'
+    }
+
+    It 'collapses a lone CR so it cannot open a column-0 line' {
+        ConvertTo-AzdoSafeConsole "safe`r##vso[task.complete]" | Should -Be 'safe ## vso[task.complete]'
+    }
+
+    It 'collapses LF' {
+        ConvertTo-AzdoSafeConsole "Reviewing`n##vso[task.complete result=Succeeded;]done" |
+            Should -Be 'Reviewing ## vso[task.complete result=Succeeded;]done'
+    }
+
+    It 'leaves an innocent ## alone' {
+        ConvertTo-AzdoSafeConsole 'Reading file src/Foo.cs (## of total)' |
+            Should -Be 'Reading file src/Foo.cs (## of total)'
+    }
+}
+
+Describe 'Security regressions — AzDO logging-command injection' {
+    # Regression coverage for the review finding: the Post phase runs with GH_COMMENT_TOKEN
+    # and sets GateFailed/CopilotFailed, so PR-controlled text reaching stdout unsanitized
+    # could set those variables and mask a failing gate.
+
+    It 'does not carry an "##vso[" payload out of an author-controlled title tag' {
+        $evil = '[##vso[task.setvariable variable=GateFailed] x] fix'
+        $result = Merge-PreservedTitlePrefix -CurrentTitle $evil -RecommendedTitle '[iOS] Clean title'
+        $result | Should -Not -Match '##'
+        $result | Should -Be '[iOS] Clean title'
+    }
+
+    It 'rejects a recommended title containing a lone CR' {
+        $CR = [char]13
+        $fence = '```'
+        $content = @(
+            '**Recommended title**'
+            "${fence}text"
+            "harmless${CR}##vso[task.setvariable variable=GateFailed]x"
+            $fence
+            ''
+            '**Recommended description**'
+            "${fence}text"
+            'body'
+            $fence
+        ) -join "`n"
+
+        Get-FinalizeRecommendation -Content $content | Should -BeNullOrEmpty
+    }
+
+    It 'rejects a recommended title containing an LF' {
+        $fence = '```'
+        $content = @(
+            '**Recommended title**'
+            "${fence}text"
+            'line one'
+            'line two'
+            $fence
+            ''
+            '**Recommended description**'
+            "${fence}text"
+            'body'
+            $fence
+        ) -join "`n"
+
+        Get-FinalizeRecommendation -Content $content | Should -BeNullOrEmpty
+    }
+
+    It 'still preserves legitimate triage tags after the tag hardening' {
+        Merge-PreservedTitlePrefix -CurrentTitle '[WIP][iOS] old' -RecommendedTitle '[iOS] new' |
+            Should -Be '[WIP][iOS] new'
+        Merge-PreservedTitlePrefix -CurrentTitle '[inflight regression][iOS] old' -RecommendedTitle '[iOS] new' |
+            Should -Be '[inflight regression][iOS] new'
+        Merge-PreservedTitlePrefix -CurrentTitle '[net11.0][iOS] old' -RecommendedTitle '[iOS] new' |
+            Should -Be '[net11.0][iOS] new'
+        Merge-PreservedTitlePrefix -CurrentTitle '[release/10.0.1xx][iOS] old' -RecommendedTitle '[iOS] new' |
+            Should -Be '[release/10.0.1xx][iOS] new'
+    }
+
+    It 'drops a tag carrying a control character' {
+        $tag = "[wi{0}p][iOS] old" -f [char]13
+        Merge-PreservedTitlePrefix -CurrentTitle $tag -RecommendedTitle '[iOS] new' |
+            Should -Be '[iOS] new'
     }
 }
