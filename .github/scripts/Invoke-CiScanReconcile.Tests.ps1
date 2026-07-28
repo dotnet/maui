@@ -589,6 +589,38 @@ Describe 'CI scan reconciler' {
 
             $r.IssuesTruncated | Should -BeFalse
         }
+
+        <#
+            A failed page read is an UNKNOWN, not an exhausted list. Breaking out of the
+            loop without setting the flag let a survey that never saw pages 2..n report
+            "Survey complete | yes", which is the one claim this signal exists to prevent.
+        #>
+        It 'reports Truncated when a page read fails part-way through the backlog' {
+            $full = 1..100 | ForEach-Object { New-CandidateIssue -Number $_ }
+            Initialize-ReconcileMocks -Issues $full
+            $script:IssuePageCalls = 0
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like 'label list*') { return , @($script:RepoLabels) }
+                if ($joined -like '*issues?state=open*') {
+                    $script:IssuePageCalls++
+                    # Page 1 comes back full, so the loop must continue; page 2 fails.
+                    if ($script:IssuePageCalls -eq 1) { return , @($script:Issues) }
+                    return $null
+                }
+                if ($joined -like '*/comments*') { return , @() }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 300 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $script:IssuePageCalls | Should -BeGreaterThan 1
+            $r.IssuesTruncated | Should -BeTrue
+            (Format-CiScanSummary -Report $r) | Should -BeLike '*truncated*'
+            (Format-CiScanSummary -Report $r) | Should -Not -BeLike '*| Survey complete | yes |*'
+        }
     }
 
     <#
@@ -963,6 +995,32 @@ Describe 'Invoke-GhRead — read-only by construction' {
         @{ GhArgv = @('api', 'repos/dotnet/maui/issues/1', '-Fstate=closed') }
     ) {
         { Invoke-GhRead -GhArgs $GhArgv } | Should -Throw -ExpectedMessage '*request-shaping flag*'
+    }
+
+    <#
+        The allow-list has to be pinned from BOTH sides. Only the trailing clause of the
+        original condition actually admitted `gh api <path>` (the leading `$verb -cne 'api'`
+        compared the first TWO tokens, so it never matched a real call), which made the
+        guard correct only by accident and easy to break while "simplifying" it.
+    #>
+    It 'admits exactly the read shapes the reconciler issues' -ForEach @(
+        @{ GhArgv = @('api', 'repos/dotnet/maui/issues?state=open&per_page=100&page=1') }
+        @{ GhArgv = @('api') }
+        @{ GhArgv = @('pr', 'list', '--repo', 'dotnet/maui', '--state', 'open') }
+        @{ GhArgv = @('label', 'list', '--repo', 'dotnet/maui') }
+    ) {
+        # The guard runs before gh is invoked; a stubbed gh proves we got past it.
+        Mock gh { $global:LASTEXITCODE = 0; return '[]' }
+        { Invoke-GhRead -GhArgs $GhArgv } | Should -Not -Throw
+    }
+
+    It 'refuses read-shaped lookalikes that are not on the allow-list' -ForEach @(
+        @{ GhArgv = @('pr', 'create', '--title', 'x') }
+        @{ GhArgv = @('label', 'create', 'x') }
+        @{ GhArgv = @('issue', 'api') }
+        @{ GhArgv = @('API', 'repos/dotnet/maui') }
+    ) {
+        { Invoke-GhRead -GhArgs $GhArgv } | Should -Throw -ExpectedMessage '*non-read invocation*'
     }
 
     <#

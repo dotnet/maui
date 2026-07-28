@@ -164,8 +164,16 @@ function Invoke-GhRead {
     # vector, so on its own it would be a second, unguarded mutation path. Constrain it to
     # the read shapes the reconciler actually uses. `gh api` defaults to GET, so the only
     # way to make it write is a method flag or a request parameter.
-    $verb = ($GhArgs | Select-Object -First 2) -join ' '
-    if ($verb -cne 'api' -and $verb -cne 'pr list' -and $verb -cne 'label list' -and $GhArgs[0] -cne 'api') {
+    #
+    # The allow-list is expressed as whole command shapes rather than as a chain of
+    # negated comparisons: `gh api <path>` is matched on its first token alone (the path
+    # varies), while the list subcommands are matched on their first two tokens. A guard
+    # this security-sensitive has to be readable at a glance, because the failure mode of
+    # a subtly wrong condition is a silent write path.
+    $allowed =
+        $GhArgs[0] -ceq 'api' -or
+        (($GhArgs | Select-Object -First 2) -join ' ') -cin @('pr list', 'label list')
+    if (-not $allowed) {
         throw "BUG: Invoke-GhRead refuses non-read invocation 'gh $($GhArgs -join ' ')'."
     }
     foreach ($a in $GhArgs) {
@@ -286,13 +294,14 @@ function Get-CiScanOpenIssues {
         The same stranding bug class was fixed in the CI-fixer twins; see the
         `sort=created&direction=asc` prefetch in `ci-status-fix*.md`.
 
-        `Truncated` reports whether the bound actually elided anything, so a bounded
-        batch can never be misread as "these are all the open tracking issues". That
-        signal is only trustworthy if EVERY early exit is accounted for, so the page
-        ceiling is derived from `Max` instead of being a constant: a constant ceiling
-        silently caps the survey once `Max` exceeds ceiling x 100 and reports
+        `Truncated` reports whether the listing is *proven* complete, so a bounded or
+        interrupted batch can never be misread as "these are all the open tracking
+        issues". That signal is only trustworthy if EVERY early exit is accounted for, so
+        the page ceiling is derived from `Max` instead of being a constant: a constant
+        ceiling silently caps the survey once `Max` exceeds ceiling x 100 and reports
         `Truncated` = $false while doing it. Hitting the ceiling is therefore reported
-        as truncation, never as exhaustion.
+        as truncation, never as exhaustion — and so is a failed page read, which leaves
+        the remaining pages unknown rather than known-empty.
 
         Only a SHORT page is treated as proof of exhaustion — that is GitHub's documented
         pagination contract (fewer items than `per_page` means the last page).
@@ -310,7 +319,10 @@ function Get-CiScanOpenIssues {
         $path = "repos/$Owner/$Repo/issues?state=open&labels=$([uri]::EscapeDataString($Label))" +
                 "&sort=created&direction=asc&per_page=$perPage&page=$page"
         $batch = Invoke-GhRead -GhArgs @('api', $path)
-        if ($null -eq $batch) { break }
+        # A failed read is an unknown, not an exhausted list: the pages we never saw may
+        # hold tracking issues. Reporting this exit as exhaustion would let a partial
+        # survey claim completeness, which is the one thing `Truncated` exists to prevent.
+        if ($null -eq $batch) { $truncated = $true; break }
         $batch = @($batch)
         if ($batch.Count -eq 0) { break }
         $issues += $batch
@@ -683,7 +695,7 @@ function Format-CiScanSummary {
     }
     $null = $sb.AppendLine("| Fail-closed | $(if ($Report.FailClosed) { "**yes — $($Report.FailClosedReason)**" } else { 'no' }) |")
     $null = $sb.AppendLine("| Issues evaluated | $($Report.IssueCount) |")
-    $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — issue listing was truncated by `-MaxIssues`; oldest issues shown**' } else { 'yes' }) |")
+    $null = $sb.AppendLine("| Survey complete | $(if ($Report.IssuesTruncated) { '**no — the open-issue listing was truncated (bounded by `-MaxIssues`, or interrupted by a failed page read); oldest issues shown**' } else { 'yes' }) |")
     $null = $sb.AppendLine("| Generated | $($Report.GeneratedAt) |")
     $null = $sb.AppendLine()
 
