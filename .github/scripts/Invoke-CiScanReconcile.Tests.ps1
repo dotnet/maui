@@ -1514,6 +1514,19 @@ Describe 'Static source invariants' {
         $script:WorkflowCode | Should -Match '(?m)^\s*cancel-in-progress:\s*false'
     }
 
+    <#
+        The `label` dispatch input steers ONLY the mutating job; the report job surveys
+        both twins from a constant matrix. A description that reads like it selects what
+        gets scanned is actively misleading under the default mode=report.
+    #>
+    It 'tells the operator that label only steers the mutating job' {
+        $description = [regex]::Match($script:WorkflowText,
+            '(?m)^\s*label:\s*\n(?:\s*#.*\n)*\s*description:\s*(.+)$')
+        $description.Success | Should -BeTrue
+        $description.Groups[1].Value | Should -Match 'comment/enforce'
+        $description.Groups[1].Value | Should -Match 'both'
+    }
+
     # ─────────────────────────────────────────────────────────────────────────────
     # CI EXECUTION OF THIS SUITE.
     #

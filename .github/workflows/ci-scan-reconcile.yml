@@ -70,7 +70,10 @@ on:
   workflow_dispatch:
     inputs:
       label:
-        description: 'Scanner twin to reconcile'
+        # Applies to comment/enforce ONLY. The report job deliberately ignores this and
+        # always surveys both twins from a constant matrix, so under the default
+        # mode=report this choice has no effect on what is scanned.
+        description: 'Twin to MUTATE (comment/enforce only — report always surveys both)'
         type: choice
         required: true
         default: 'ci-scan-net11'
