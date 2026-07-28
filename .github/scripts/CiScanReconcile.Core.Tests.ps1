@@ -348,6 +348,97 @@ Describe 'Every payload consumer survives a field-less object' {
     }
 }
 
+Describe 'Every payload consumer survives a field-less ELEMENT inside a collection' {
+    <#
+        The block above passes the field-less object as the ISSUE. That reaches each
+        consumer's own `labels` lookup, which returns a default and short-circuits — so
+        the loop BODY never runs, and every one of those tests passes with the element
+        read left bare.
+
+        The container and the elements it carries have different provenance. The wrapper
+        is reached through an accessor; the records inside it are still raw API data, and
+        `$null -eq $l` screens a null element but not a malformed one. `[string]$l.name`
+        on `{}` is a TERMINATING error under StrictMode.
+
+        Two of the four call sites were Test-CiScanIssueProvenance and
+        Test-CiScanHumanTouched — the gate deciding whether an issue is ours, and the
+        human-ownership veto. The orchestrator's per-issue loop has no try/catch, so one
+        malformed label record ended the whole survey.
+
+        Each shape must fail CLOSED: an unreadable label is not the exact label, so
+        provenance fails and the issue is escalated rather than acted on.
+    #>
+    BeforeAll {
+        function New-LabelIssue {
+            param($Labels)
+            [pscustomobject]@{
+                number = 100; title = '[ci-scan-net11] x'; body = ''
+                labels = $Labels
+                user = [pscustomobject]@{ login = 'github-actions[bot]' }
+                created_at = '2025-01-01T00:00:00Z'; milestone = $null
+                assignees = @(); state = 'open'
+            }
+        }
+        # Only shapes that are NOT a string and carry no readable `name`. A null element
+        # is already screened, and a string element is handled by the `-is [string]` arm.
+        $script:BadLabels = @{
+            'an object with no fields' = ('[{}]' | ConvertFrom-Json)
+            'a number'                 = @(5)
+            'a nested array'           = @(, @(1, 2))
+        }
+    }
+
+    It 'Get-CiScanIssueLabelNames reads a <_> element as an empty name instead of throwing' -ForEach @(
+        'an object with no fields', 'a number', 'a nested array'
+    ) {
+        $issue = New-LabelIssue -Labels $script:BadLabels[$_]
+        $call = { Get-CiScanIssueLabelNames -Issue $issue }
+        $call | Should -Not -Throw
+        # '' is exactly what `[string]$l.name` produced for a present-but-null name, so
+        # the total read changes nothing that already worked.
+        @(& $call) | Should -Be @('')
+    }
+
+    It 'Test-CiScanIssueProvenance fails closed on a <_> element instead of throwing' -ForEach @(
+        'an object with no fields', 'a number', 'a nested array'
+    ) {
+        $issue = New-LabelIssue -Labels $script:BadLabels[$_]
+        $call = { Test-CiScanIssueProvenance -Issue $issue -Config $script:Net11 }
+        $call | Should -Not -Throw
+        $r = & $call
+        $r.Ok | Should -BeFalse
+        $r.Failures | Should -Contain 'missing-exact-label' -Because 'an unreadable label cannot be the exact label'
+    }
+
+    It 'Test-CiScanHumanTouched reports untouched on a <_> element instead of throwing' -ForEach @(
+        'an object with no fields', 'a number', 'a nested array'
+    ) {
+        $issue = New-LabelIssue -Labels $script:BadLabels[$_]
+        $call = { Test-CiScanHumanTouched -Issue $issue }
+        $call | Should -Not -Throw
+        # Also pins that the '' an unreadable label collapses to matches no human-label
+        # pattern. If any pattern were widened to '*', every malformed record would
+        # forge a human-ownership veto.
+        (& $call).Touched | Should -BeFalse
+    }
+
+    It 'Get-CiScanReopenVerdict survives a field-less label element' {
+        $issue = New-LabelIssue -Labels ('[{}]' | ConvertFrom-Json)
+        $call = { Get-CiScanReopenVerdict -Issue $issue -Config $script:Net11 -Now $script:Now }
+        $call | Should -Not -Throw
+        (& $call).Reason | Should -Be 'not-auto-closed-by-reconciler'
+    }
+
+    It 'the survey verdict escalates rather than aborting on a field-less label element' {
+        $issue = New-LabelIssue -Labels ('[{}]' | ConvertFrom-Json)
+        $call = { Get-CiScanIssueVerdict -Issue $issue -Config $script:Net11 -Now $script:Now -Coverage (New-Coverage -Verified @()) }
+        $call | Should -Not -Throw -Because 'the per-issue loop has no try/catch — one bad label must not end the survey'
+        $v = & $call
+        $v.Decision | Should -Be 'needs-human'
+        $v.Decision | Should -Not -Be 'close'
+    }
+}
+
 Describe 'Set-CiScanStateMarker' {
     It 'appends a marker when none exists and is replay-idempotent' {
         $state = @{ label = 'ci-scan-net11'; branch = 'net11.0'; pipeline = 'maui-pr'

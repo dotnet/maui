@@ -757,11 +757,7 @@ function Test-CiScanIssueProvenance {
         $failures += 'is-pull-request'
     }
 
-    $labelNames = @()
-    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
-        if ($null -eq $l) { continue }
-        $labelNames += if ($l -is [string]) { $l } else { [string]$l.name }
-    }
+    $labelNames = @(Get-CiScanIssueLabelNames -Issue $Issue)
     if ($labelNames -cnotcontains $Config.Label) { $failures += 'missing-exact-label' }
 
     $title = [string](Get-CiScanFieldValue -Object $Issue -Name 'title')
@@ -795,11 +791,7 @@ function Test-CiScanHumanTouched {
     if ((Test-CiScanHasField -Object $Issue -Name 'milestone') -and $null -ne $Issue.milestone) { $signals += 'milestone' }
     if ((Test-CiScanHasField -Object $Issue -Name 'assignees') -and @($Issue.assignees).Count -gt 0) { $signals += 'assignee' }
 
-    $labelNames = @()
-    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
-        if ($null -eq $l) { continue }
-        $labelNames += if ($l -is [string]) { $l } else { [string]$l.name }
-    }
+    $labelNames = @(Get-CiScanIssueLabelNames -Issue $Issue)
     foreach ($name in $labelNames) {
         foreach ($pattern in $script:CiScanHumanLabelPatterns) {
             if ($name -like $pattern) { $signals += "label:$name"; break }
@@ -1243,6 +1235,23 @@ function Get-CiScanIssueLabelNames {
     <#
     .SYNOPSIS
         Normalizes an issue's labels to a plain string array.
+
+    .DESCRIPTION
+        THE single label-name reader. Three other functions used to carry a verbatim copy
+        of this loop, which is why the shape defect below was a four-site defect rather
+        than a one-site one: fixing any single copy left the other three intact, and the
+        copies were in Test-CiScanIssueProvenance and Test-CiScanHumanTouched — the gate
+        that decides whether an issue is ours, and the human-ownership veto.
+
+        `$null -eq $l` screens a null ELEMENT but not a malformed one. A label record that
+        is neither a string nor an object carrying `name` — `{}` from a 200 whose body is
+        not the array we asked for — makes `[string]$l.name` a TERMINATING error under
+        StrictMode, and the orchestrator's per-issue loop has no try/catch, so one such
+        record ends the whole survey.
+
+        The element is read through the same total accessor every other payload field uses.
+        A missing or null `name` still yields '' exactly as `[string]$l.name` did, so no
+        shape that works today changes; only the shapes that used to throw do.
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)]$Issue)
@@ -1251,7 +1260,7 @@ function Get-CiScanIssueLabelNames {
     if (-not (Test-CiScanHasField -Object $Issue -Name 'labels')) { return $names }
     foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
         if ($null -eq $l) { continue }
-        $names += if ($l -is [string]) { $l } else { [string]$l.name }
+        $names += if ($l -is [string]) { $l } else { [string](Get-CiScanFieldValue -Object $l -Name 'name') }
     }
     return @($names)
 }
@@ -1284,11 +1293,7 @@ function Get-CiScanReopenVerdict {
         Reason   = 'no-recurrence-evidence'
     }
 
-    $labelNames = @()
-    foreach ($l in @(Get-CiScanFieldValue -Object $Issue -Name 'labels')) {
-        if ($null -eq $l) { continue }
-        $labelNames += if ($l -is [string]) { $l } else { [string]$l.name }
-    }
+    $labelNames = @(Get-CiScanIssueLabelNames -Issue $Issue)
     if ($labelNames -cnotcontains 'auto-closed-stale') {
         $verdict.Reason = 'not-auto-closed-by-reconciler'
         return $verdict

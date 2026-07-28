@@ -2519,4 +2519,46 @@ Describe 'Static source invariants' {
         $capturesFound | Should -BeGreaterOrEqual 3 -Because 'the scan must still be finding real digit captures'
         $pairsChecked | Should -BeGreaterOrEqual 2 -Because 'the scan must still be finding real hard casts to check'
     }
+
+    <#
+        Keeps label-name extraction in ONE function.
+
+        The unsafe element read `[string]$l.name` existed in four places, because three
+        functions carried a verbatim copy of a loop that had already been extracted into
+        Get-CiScanIssueLabelNames. Duplication is what turned a one-site shape defect into
+        a four-site one, and two of the copies were in the provenance gate and the
+        human-ownership veto.
+
+        Behaviour tests pin what the reader does with a malformed record. They cannot stop
+        a fifth copy appearing, because a copy is correct-looking code that no fixture is
+        written against. This is the ratchet for that.
+
+        Asserting on the FIELD rather than the loop shape is deliberate: a copy written
+        with `for`, `ForEach-Object`, or `.Where{}` would evade a loop-shaped pattern, but
+        it cannot avoid naming the field it reads.
+    #>
+    It 'reads the labels field in exactly one function' {
+        $strip = {
+            param($text)
+            $noBlocks = [regex]::Replace($text, '(?s)<#.*?#>', '')
+            (($noBlocks -split "`n") | Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+        }
+
+        $owners = @()
+        foreach ($raw in @(@{ n = 'CiScanReconcile.Core.ps1'; t = $script:CoreText },
+                           @{ n = 'Invoke-CiScanReconcile.ps1'; t = $script:OrchestratorText })) {
+            $src = & $strip $raw.t
+            $src | Should -Match 'function Get-CiScan' -Because 'the comment stripper must not have eaten the file'
+            $current = '<file scope>'
+            foreach ($line in ($src -split "`n")) {
+                $fn = [regex]::Match($line, '^function\s+(?<f>[\w-]+)')
+                if ($fn.Success) { $current = $fn.Groups['f'].Value }
+                if ($line -match "-Name\s+'labels'") { $owners += "$($raw.n):$current" }
+            }
+        }
+
+        @($owners).Count | Should -BeGreaterOrEqual 1 -Because 'the scan must still be finding the label reader'
+        @($owners | Sort-Object -Unique) | Should -Be @('CiScanReconcile.Core.ps1:Get-CiScanIssueLabelNames') -Because `
+            'every consumer must call the one label reader instead of re-implementing its loop'
+    }
 }
