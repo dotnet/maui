@@ -491,14 +491,38 @@ Describe 'Set-CiScanStateMarker' {
         $core = & $strip (Get-Content -Raw -Path (Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1'))
         $orch = & $strip (Get-Content -Raw -Path (Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1'))
 
-        $core | Should -Match 'function Set-CiScanStateMarker' -Because 'the stripper must not have eaten the file'
+        # The name is written ONCE and reused for the existence anchor, the caller scan and
+        # the self-exclusion. That is not tidiness -- it is what makes the scan falsifiable.
+        # Measured: typo this literal in the caller scan while wiring a REAL production
+        # writer, and the whole suite stays green. The invariant whose entire job is to
+        # forbid that writer cannot see it, because a misspelled pattern and an absent
+        # caller produce the identical empty set. Sharing the literal means a typo fails
+        # the existence anchor below instead of silently disarming the scan.
+        $fnName = 'Set-CiScanStateMarker'
+
+        # `\b` is load-bearing, not decoration. `-Match` is a substring test, so a TRUNCATION
+        # typo ('...StateMarke') is a substring of the real name and would satisfy a bare
+        # anchor while the caller scan below silently matched nothing. Measured both ways.
+        $core | Should -Match "function $fnName\b" -Because 'anchors the spelling to a real occurrence: a misspelled name fails here rather than matching nothing later'
         # Anti-vacuity: the scan must be able to SEE a call site in the orchestrator at
         # all, otherwise "no calls found" proves nothing about Set- and everything about
         # the regex. Get- is genuinely called there, so it is the control.
         $orch | Should -Match 'Get-CiScanStateMarker\s+-Body' -Because 'the scan must detect a call that really exists'
 
-        $callers = @(($core + "`n" + $orch) -split "`n" |
-            Where-Object { $_ -match 'Set-CiScanStateMarker' -and $_ -notmatch '^\s*function\s' })
+        # Single definition, exercised below against known inputs. A count-based floor is
+        # unavailable here because the correct answer is zero, and a zero-expectation scan
+        # looks identical whether it is working or broken -- so the DETECTOR is asserted
+        # instead of the count.
+        $isCallerLine = {
+            param($line)
+            $line -match $fnName -and $line -notmatch '^\s*function\s'
+        }
+
+        (& $isCallerLine "    `$b = $fnName -Body `$x -State `$s") | Should -BeTrue  -Because 'a real call site must be detected'
+        (& $isCallerLine "function $fnName {")                     | Should -BeFalse -Because 'the definition is not a call'
+        (& $isCallerLine '    $m = Get-CiScanStateMarker -Body $x') | Should -BeFalse -Because 'the read side is not a write'
+
+        $callers = @(($core + "`n" + $orch) -split "`n" | Where-Object { & $isCallerLine $_ })
         $callers | Should -BeNullOrEmpty -Because 'wiring a writer makes stale-close candidates reachable and must be a deliberate, reviewed change'
     }
 }
@@ -603,7 +627,27 @@ Describe 'Get-CiScanRecurrenceRate / Get-CiScanRequiredAbsences' {
     #>
     It 'defines no fallback recurrence rate for the unparseable case' {
         $keys = @((Get-CiScanDefaults).Keys)
-        $keys | Should -Not -Contain 'DefaultRecurrenceRate' -Because @'
+
+        # Same zero-expectation hole as the no-caller invariant: `Should -Not -Contain`
+        # with a misspelled literal passes whether or not the key came back, and the
+        # `-Contain 'MaxRequiredAbsences'` control below proves only that the COLLECTION is
+        # real, never that this literal is spelled the way the key would be. Measured:
+        # typo it and restore the key unwired, and the suite stays green.
+        #
+        # Anchor it to a real occurrence. The removal comment in Core.ps1 still names the
+        # key, so the spelling is verifiable against the production file rather than taken
+        # on trust. If that comment is ever deleted this fails -- update it deliberately,
+        # do not weaken it, because the comment is itself load-bearing (it is what stops a
+        # reader from "helpfully" restoring the key it describes).
+        $forbiddenKey = 'DefaultRecurrenceRate'
+        # `\b` is load-bearing: `-Match` is a substring test, so the truncation typo
+        # 'DefaultRecurrenceRat' matches INSIDE the real key and would satisfy a bare
+        # anchor while `-Not -Contain` matched nothing. Found by mutating the fix, not the
+        # code -- the first version of this anchor let exactly that through.
+        (Get-Content -Raw -Path (Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1')) |
+            Should -Match "$forbiddenKey\b" -Because 'the literal must match something real, or its absence proves nothing'
+
+        $keys | Should -Not -Contain $forbiddenKey -Because @'
 re-introducing a default rate is the fail-open regression: a LOWER rate demands MORE
 absences, so any mid-range default lets corrupt Occurrences data buy a SHORTER wait than
 real data gets. The unparseable case must reach MaxRequiredAbsences. If a fallback is
