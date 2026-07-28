@@ -19,28 +19,30 @@ public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
     MauiMaterialEditText? _inputEditText;
     PickerClickListener? _clickListener;
 
-    protected MauiMaterialDateTimePicker(Context context, int endIconResource) : base(context)
+    protected MauiMaterialDateTimePicker(Context context, int endIconResource, string? hint = null) : base(context)
     {
         // Outlined box is the Material 3 resting-state appearance for date/time fields.
         BoxBackgroundMode = BoxBackgroundOutline;
 
+        // The floating label shown at the top-left, cut into the outlined border (e.g. "Date").
+        // Subclasses supply the text; when null no label is shown.
+        Hint = hint;
+
         _inputEditText = new MauiMaterialEditText(Context!);
         AddView(_inputEditText);
 
-        // Make the field focusable on tap so the TextInputLayout draws its highlighted (focused)
-        // outline just like the Entry control. The soft keyboard and blinking cursor are suppressed
-        // because the value is chosen through the picker dialog rather than typed.
+        // Keep the field focusable so the TextInputLayout can draw its highlighted (focused)
+        // outline while the picker dialog is open (the handler requests focus when showing it).
+        // The soft keyboard and blinking cursor are suppressed because the value is chosen through
+        // the picker dialog rather than typed. Tapping the field itself does NOT open the dialog.
         _inputEditText.FocusableInTouchMode = true;
-        _inputEditText.Clickable = true;
         _inputEditText.InputType = InputTypes.Null;
         _inputEditText.KeyListener = null;
         _inputEditText.SetCursorVisible(false);
 
         _clickListener = new PickerClickListener(this);
-        _inputEditText.SetOnClickListener(_clickListener);
-        _inputEditText.SetOnTouchListener(_clickListener);
 
-        // Custom mode shows the icon regardless of focus state (matching Material 2 behavior).
+        // Only the trailing (calendar/clock) end icon opens the picker dialog.
         EndIconMode = EndIconCustom;
         SetEndIconDrawable(endIconResource);
         SetEndIconOnClickListener(_clickListener);
@@ -68,9 +70,6 @@ public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
         {
             SetEndIconOnClickListener(null);
 
-            _inputEditText?.SetOnClickListener(null);
-            _inputEditText?.SetOnTouchListener(null);
-
             _clickListener?.Dispose();
             _clickListener = null;
 
@@ -80,50 +79,16 @@ public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
         base.Dispose(disposing);
     }
 
-    sealed class PickerClickListener : Java.Lang.Object, IOnClickListener, IOnTouchListener
+    sealed class PickerClickListener : Java.Lang.Object, IOnClickListener
     {
         readonly WeakReference<MauiMaterialDateTimePicker> _layout;
-        readonly int _touchSlop;
-        float _downX;
-        float _downY;
 
         public PickerClickListener(MauiMaterialDateTimePicker layout)
         {
             _layout = new WeakReference<MauiMaterialDateTimePicker>(layout);
-            _touchSlop = layout.Context is { } context ? ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 0 : 0;
         }
 
         public void OnClick(View? v)
-        {
-            Open();
-        }
-
-        // A focusable-in-touch-mode view swallows its first tap just to acquire focus and only
-        // fires OnClick on the second tap. To open on the very first tap we detect the tap here
-        // (an ACTION_UP with no significant movement) and still return false so the view can take
-        // focus and the outlined layout shows its highlighted state. OnClick remains wired for
-        // the end icon and accessibility activation.
-        public bool OnTouch(View? v, MotionEvent? e)
-        {
-            switch (e?.Action)
-            {
-                case MotionEventActions.Down:
-                    _downX = e.RawX;
-                    _downY = e.RawY;
-                    break;
-                case MotionEventActions.Up:
-                    if (Math.Abs(e.RawX - _downX) <= _touchSlop &&
-                        Math.Abs(e.RawY - _downY) <= _touchSlop)
-                    {
-                        Open();
-                    }
-                    break;
-            }
-
-            return false;
-        }
-
-        void Open()
         {
             if (_layout.TryGetTarget(out var layout))
             {
