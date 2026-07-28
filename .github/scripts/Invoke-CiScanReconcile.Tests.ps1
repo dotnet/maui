@@ -1377,6 +1377,78 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
     }
 
     <#
+        The ValidateSet declares six kinds; only four are ever called. The two that are
+        not — 'unlabel' and 'body' — are ALSO the two the function's own contract sentence
+        omits ("closures and reopens require 'enforce'; labels and comments require
+        'comment' or 'enforce'"). That correspondence is the finding: the tiers were
+        written by reading the call sites, so the unused kinds never got a tier decision.
+        They fall through to $MutationsAllowed, which is the COMMENT tier.
+
+        That is load-bearing for 'body'. Overwriting an issue body is the most destructive
+        operation in the vocabulary short of a close, and it is pre-authorized at the tier
+        the operator dropdown describes as "labels+notice" — a phrase no one reads as
+        "may rewrite the issue". Every other comment-tier kind is additive or trivially
+        reversible; this one replaces content that is not captured anywhere first.
+
+        It is not a live bug, because nothing calls it. It is a primed one, because the
+        remaining enforcement prerequisite is a state-marker writer and
+        `Set-CiScanStateMarker` returns A BODY. Wire it the obvious way and the write
+        lands in comment mode — the mode intended to run for weeks in shadow, writing
+        nothing. This test does not decide the tier: shadow mode arguably NEEDS marker
+        writes to accumulate absence counts, so restricting 'body' to enforce would
+        foreclose the rollout plan. It exists so the decision cannot be made by default.
+
+        Non-vacuous by construction, which is the point. A zero-expectation assertion
+        ("nothing calls 'body'") cannot carry a count floor and looks identical whether
+        it is working or broken. Pairing it with a NON-zero expectation in the same
+        assertion supplies the floor from real data: a matcher that stopped matching
+        returns an empty set, which fails the four-kind half before it can pass the
+        two-kind half.
+    #>
+    It 'has no caller for the kinds whose tier was never decided' {
+        $scriptPath = Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$null, [ref]$null)
+
+        $callSites = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.CommandAst] -and
+                $n.GetCommandName() -eq 'Invoke-GhWrite'
+            }, $true)
+
+        $calledKinds = foreach ($call in $callSites) {
+            $elements = $call.CommandElements
+            for ($i = 0; $i -lt $elements.Count - 1; $i++) {
+                if ($elements[$i] -is [System.Management.Automation.Language.CommandParameterAst] -and
+                    $elements[$i].ParameterName -eq 'Kind') {
+                    $elements[$i + 1].Extent.Text.Trim("'", '"')
+                }
+            }
+        }
+        $distinct = @($calledKinds | Sort-Object -Unique)
+
+        # The floor. Four kinds are genuinely called; an AST walk that matched nothing —
+        # renamed function, changed parameter, broken predicate — fails here rather than
+        # sailing through the absence check below on an empty set.
+        $distinct | Should -Contain 'label'
+        $distinct | Should -Contain 'comment'
+        $distinct | Should -Contain 'close'
+        $distinct | Should -Contain 'reopen'
+
+        foreach ($undecided in @('body', 'unlabel')) {
+            $distinct | Should -Not -Contain $undecided -Because @"
+Invoke-CiScanReconcile.ps1 now calls Invoke-GhWrite -Kind $undecided, which nothing did before.
+'$undecided' is gated only by `$script:MutationsAllowed, so this write is permitted in COMMENT mode
+alongside labels and notices. Confirm that is intended before landing:
+  * if it is, extend the contract sentence in the Invoke-GhWrite docblock to name '$undecided'
+    and its tier, and update the workflow's mode dropdown if "labels+notice" no longer describes it;
+  * if it is not, add '$undecided' to `$script:ClosuresAllowed and to the 'throws for close and
+    reopen in comment mode' case above.
+Then remove '$undecided' from this list. Do not delete the test.
+"@
+        }
+    }
+
+    <#
         A failed write used to be a warning on an otherwise-green run. The dangerous
         shape is a close that lands followed by an `auto-closed-stale` label that does
         not: the issue is then closed without the marker `Get-CiScanReopenVerdict`
