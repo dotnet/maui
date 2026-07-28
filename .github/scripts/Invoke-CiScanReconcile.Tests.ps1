@@ -1024,27 +1024,50 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
         not: the issue is then closed without the marker `Get-CiScanReopenVerdict`
         requires, so the automation can no longer undo its own irreversible action.
         Counting the failure is what lets the caller exit non-zero.
+
+        These two tests stub `gh` rather than shelling out to the real binary. A test
+        that runs the real `gh` is not hermetic: its result depends on the agent having
+        the CLI installed, and — because Pester dot-sources every suite in `.github/scripts`
+        into ONE session — on whether a sibling suite still has its own `function global:gh`
+        in scope. `Find-RegressionFixPRs.Tests.ps1` installs exactly such a shim, which
+        made these two tests pass alone and fail in the repo-wide run.
     #>
-    It 'counts a failed write and still reports failure to the caller' {
-        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
-        Reset-CiScanCounters
-        # A `gh` invocation that is guaranteed to exit non-zero without touching GitHub.
-        $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('--this-flag-does-not-exist')
-        $null = Set-CiScanReconcileMode -RequestedMode 'report'
+    Context 'write-error accounting' {
+        BeforeEach {
+            $global:mockGhExitCode = 0
+            function global:gh {
+                param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GhArgs)
+                $global:LASTEXITCODE = $global:mockGhExitCode
+            }
+        }
 
-        $ok | Should -BeFalse
-        $script:Counters.Writes | Should -Be 1
-        $script:Counters.WriteErrors | Should -Be 1
-    }
+        AfterAll {
+            Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
+            Remove-Variable mockGhExitCode -Scope Global -ErrorAction SilentlyContinue
+        }
 
-    It 'leaves the write-error counter at zero for a successful write' {
-        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
-        Reset-CiScanCounters
-        $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('--version')
-        $null = Set-CiScanReconcileMode -RequestedMode 'report'
+        It 'counts a failed write and still reports failure to the caller' {
+            $global:mockGhExitCode = 1
+            $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+            Reset-CiScanCounters
+            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1')
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
 
-        $ok | Should -BeTrue
-        $script:Counters.WriteErrors | Should -Be 0
+            $ok | Should -BeFalse
+            $script:Counters.Writes | Should -Be 1
+            $script:Counters.WriteErrors | Should -Be 1
+        }
+
+        It 'leaves the write-error counter at zero for a successful write' {
+            $global:mockGhExitCode = 0
+            $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+            Reset-CiScanCounters
+            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1')
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
+
+            $ok | Should -BeTrue
+            $script:Counters.WriteErrors | Should -Be 0
+        }
     }
 }
 
@@ -1294,7 +1317,7 @@ Describe 'Static source invariants' {
         $script:OrchestratorText = Get-Content -Raw -Path (Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1')
         $script:CoreText = Get-Content -Raw -Path (Join-Path $PSScriptRoot 'CiScanReconcile.Core.ps1')
         $script:WorkflowText = Get-Content -Raw -Path (Join-Path $PSScriptRoot '..' 'workflows' 'ci-scan-reconcile.yml')
-        $script:TestsWorkflowPath = Join-Path $PSScriptRoot '..' 'workflows' 'powershell-script-tests.yml'
+        $script:ScriptDir = $PSScriptRoot
 
         # The workflow header is a long safety rationale that names the very strings these
         # tests forbid ("issues: write", "pull_request", ...). Assertions about what the
@@ -1340,60 +1363,58 @@ Describe 'Static source invariants' {
     # quietly narrow it so it stops covering `.github/scripts`, and this suite fails.
     # ─────────────────────────────────────────────────────────────────────────────
     Context 'the Pester suites are executed by CI' {
-        BeforeAll {
-            $script:TestsWorkflowText = Get-Content -Raw -Path $script:TestsWorkflowPath
-            $script:TestsWorkflowCode = (($script:TestsWorkflowText -split "`n") |
-                Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
-        }
+        <#
+            Ownership note: the repo-wide PR-time gate for `.github/scripts/**` is
+            `.github/workflows/powershell-script-tests.yml`, which is added by PR #36842
+            (`pureween-fix-ci-fixer-runtime`). This PR deliberately does NOT ship a second
+            copy of that workflow — two files at the same path would conflict on merge.
 
-        It 'has a PR-time workflow covering .github/scripts' {
-            Test-Path $script:TestsWorkflowPath | Should -BeTrue
-            $script:TestsWorkflowCode | Should -BeLike '*pull_request*'
-            $script:TestsWorkflowCode | Should -BeLike "*.github/scripts/**"
-        }
-
-        It 'runs this suite and the core suite' {
-            # Discovery is a recursive glob rather than a hard-coded list, so assert the
-            # glob and the directory instead of file names.
-            $script:TestsWorkflowCode | Should -BeLike '*`*.Tests.ps1*'
-            $script:TestsWorkflowCode | Should -BeLike '*Invoke-Pester*'
-        }
-
-        It 'grants the test job no write permission' {
-            # `permissions: {}` at top level plus `contents: read` on the job. Any write
-            # scope here would hand a token to code that dot-sources 16 test files.
-            $script:TestsWorkflowCode | Should -BeLike '*permissions: {}*'
-            $script:TestsWorkflowCode | Should -Not -Match 'issues:\s*write'
-            $script:TestsWorkflowCode | Should -Not -Match 'contents:\s*write'
-            $script:TestsWorkflowCode | Should -Not -Match 'pull-requests:\s*write'
-        }
-
-        It 'runs each suite in its own process' {
-            # Load-bearing, not stylistic: a single shared Pester session dot-sources all
-            # 16 files together, so same-named helpers collide and `Mock` binds to
-            # whichever loaded last. That combination currently reports 12 failures that
-            # do not reproduce per-file. If someone "simplifies" this to one invocation
-            # over the directory, this fails.
-            $script:TestsWorkflowCode | Should -BeLike '*pwsh -NoProfile -NonInteractive*'
-        }
-
-        It 'treats a suite that ran zero tests as a failure' {
-            # A file that fails to PARSE reports 0 tests and 0 failures, which looks
-            # exactly like a pass to a FailedCount-only check. This is the anti-vacuous
-            # guard, and it is the specific defence against "the suite does not parse".
-            $script:TestsWorkflowCode | Should -Match 'Total\)?\s*-eq 0'
-            $script:TestsWorkflowCode | Should -BeLike '*ZERO tests*'
-        }
-
-        It 'parses every script before running anything' {
-            $script:TestsWorkflowCode | Should -BeLike '*Parser`]::ParseFile*'
-        }
+            What this PR owns and therefore asserts unconditionally is (a) the in-workflow
+            Pester gate that stands in front of the reconciler's own mutating job, and
+            (b) that these suites actually survive #36842's execution model.
+        #>
 
         It 'keeps the reconciler workflow safety gate in front of both jobs' {
             # `report` and `mutate` must both stay behind the in-workflow Pester gate.
-            # PR-time testing does not cover a `workflow_dispatch` from an arbitrary ref.
+            # PR-time testing does not cover a `workflow_dispatch` from an arbitrary ref,
+            # so this gate — not the repo-wide one — is what protects the mutating job.
             $script:WorkflowCode | Should -Match 'needs:\s*test'
             $script:WorkflowCode | Should -Match 'needs:\s*\[test, report\]'
+        }
+
+        It 'keeps an anti-vacuous floor on the in-workflow gate' {
+            # A suite that fails to PARSE reports 0 tests and 0 failures, which looks
+            # exactly like a pass to a FailedCount-only check. The floor is the specific
+            # defence against "the suite silently stopped running".
+            #
+            # Asserting only that SOME floor exists is not enough: `-lt 0` matches that
+            # shape and can never fire. Pin the magnitude so the guard cannot be neutered
+            # to a value the suite would clear even if every test vanished.
+            $floor = [regex]::Match($script:WorkflowCode, 'TotalCount\s*-lt\s*(\d+)')
+            $floor.Success | Should -BeTrue
+            [int]$floor.Groups[1].Value | Should -BeGreaterOrEqual 100
+        }
+
+        It 'keeps these suites hermetic so the shared-session gate stays green' {
+            <#
+                #36842's gate runs `Invoke-Pester` ONCE over `.github/scripts`, so every
+                suite is dot-sourced into a single session and `function global:gh` shims
+                installed by sibling suites remain in scope. Any test here that shells out
+                to the real `gh` therefore passes in isolation and fails in the repo-wide
+                run. Asserting the absence of real-CLI invocations keeps that from
+                regressing and keeps this PR from turning #36842's gate red.
+            #>
+            $ownSuites = @(
+                (Join-Path $script:ScriptDir 'Invoke-CiScanReconcile.Tests.ps1'),
+                (Join-Path $script:ScriptDir 'CiScanReconcile.Core.Tests.ps1')
+            )
+
+            foreach ($suite in $ownSuites) {
+                $body = (Get-Content -Raw -Path $suite)
+                $code = (($body -split "`n") | Where-Object { $_ -notmatch '^\s*#' }) -join "`n"
+                # `--version` / bare passthrough flags are the shapes that reach the real CLI.
+                $code | Should -Not -Match "GhArgs @\('--"
+            }
         }
     }
 
