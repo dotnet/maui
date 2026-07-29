@@ -162,8 +162,8 @@ public class ResizetizerTests : BaseBuildTest
 		// rerun image processing, and restore the processed-image contract.
 		var resizetizerOutputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.outputs");
 		Assert.True(File.Exists(resizetizerOutputsFile), $"Resizetizer output list does not exist: {resizetizerOutputsFile}");
-		var invalidationSentinel = DateTime.UtcNow.AddHours(1);
-		File.SetLastWriteTimeUtc(resizetizerStampFile, invalidationSentinel);
+		File.SetLastWriteTimeUtc(resizetizerStampFile, DateTime.UtcNow.AddHours(1));
+		var invalidationSentinel = File.GetLastWriteTimeUtc(resizetizerStampFile);
 		File.Delete(resizetizerOutputsFile);
 		File.Delete(outputsFile);
 
@@ -332,8 +332,8 @@ public class ResizetizerTests : BaseBuildTest
 		var fontPlistFile = Path.Combine(Path.GetDirectoryName(processedFontPath)!, "MauiInfo.plist");
 		Assert.True(File.Exists(fontPlistFile), $"iOS font partial manifest was not created: {fontPlistFile}");
 
-		var plistRecoverySentinel = DateTime.UtcNow.AddHours(1);
-		File.SetLastWriteTimeUtc(fontStampFile, plistRecoverySentinel);
+		File.SetLastWriteTimeUtc(fontStampFile, DateTime.UtcNow.AddHours(1));
+		var plistRecoverySentinel = File.GetLastWriteTimeUtc(fontStampFile);
 		File.Delete(fontPlistFile);
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: iosFontBuildProps, output: _output),
 			"Custom backend project failed after deleting only the iOS font partial manifest.");
