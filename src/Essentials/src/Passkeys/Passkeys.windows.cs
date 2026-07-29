@@ -69,11 +69,11 @@ partial class PasskeysImplementation : IPasskeys
 
 		var user = creation.User
 			?? throw new ArgumentException("The creation options are missing the 'user'.", nameof(options));
-		var userId = DecodeRequired(user.Id, "user.id");
+		var userId = WebAuthn.DecodeRequired(user.Id, "user.id");
 		var userName = user.Name ?? string.Empty;
 		var userDisplayName = user.DisplayName ?? userName;
 
-		var challenge = DecodeRequired(creation.Challenge, "challenge");
+		var challenge = WebAuthn.DecodeRequired(creation.Challenge, "challenge");
 		var clientDataJson = BuildClientDataJson("webauthn.create", challenge, rpId);
 
 		var result = WindowsWebAuthn.MakeCredential(
@@ -111,7 +111,7 @@ partial class PasskeysImplementation : IPasskeys
 
 		var rpId = request.RpId
 			?? throw new ArgumentException("The request options are missing the 'rpId'.", nameof(options));
-		var challenge = DecodeRequired(request.Challenge, "challenge");
+		var challenge = WebAuthn.DecodeRequired(request.Challenge, "challenge");
 		var clientDataJson = BuildClientDataJson("webauthn.get", challenge, rpId);
 
 		var result = WindowsWebAuthn.GetAssertion(
@@ -151,11 +151,6 @@ partial class PasskeysImplementation : IPasskeys
 		}
 	}
 
-	static byte[] DecodeRequired(string? value, string name)
-		=> string.IsNullOrEmpty(value)
-			? throw new ArgumentException($"The options are missing the '{name}'.", "options")
-			: Base64Url.DecodeFromChars(value);
-
 	static byte[][] MapCredentialIds(List<WebAuthn.CredentialDescriptor>? credentials)
 	{
 		if (credentials is null || credentials.Count == 0)
@@ -165,7 +160,7 @@ partial class PasskeysImplementation : IPasskeys
 		foreach (var credential in credentials)
 		{
 			if (!string.IsNullOrEmpty(credential.Id))
-				list.Add(Base64Url.DecodeFromChars(credential.Id));
+				list.Add(WebAuthn.Decode(credential.Id, "credential.id"));
 		}
 
 		return list.ToArray();

@@ -22,15 +22,16 @@ partial class PasskeysImplementation : IPasskeys
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
+		cancellationToken.ThrowIfCancellationRequested();
 
 		var creation = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.CreationOptions, "creation options");
 
 		var rpId = creation.Rp?.Id
 			?? throw new ArgumentException("The creation options are missing the 'rp.id'.", nameof(options));
-		var challenge = DecodeRequired(creation.Challenge, "challenge");
+		var challenge = WebAuthn.DecodeRequired(creation.Challenge, "challenge");
 		var user = creation.User
 			?? throw new ArgumentException("The creation options are missing the 'user'.", nameof(options));
-		var userId = DecodeRequired(user.Id, "user.id");
+		var userId = WebAuthn.DecodeRequired(user.Id, "user.id");
 		var userName = user.Name ?? string.Empty;
 
 		var provider = new ASAuthorizationPlatformPublicKeyCredentialProvider(rpId);
@@ -73,12 +74,13 @@ partial class PasskeysImplementation : IPasskeys
 	{
 		ArgumentNullException.ThrowIfNull(options);
 		EnsureSupported();
+		cancellationToken.ThrowIfCancellationRequested();
 
 		var request = Deserialize(options.ToString(), WebAuthn.JsonContext.Default.RequestOptions, "request options");
 
 		var rpId = request.RpId
 			?? throw new ArgumentException("The request options are missing the 'rpId'.", nameof(options));
-		var challenge = DecodeRequired(request.Challenge, "challenge");
+		var challenge = WebAuthn.DecodeRequired(request.Challenge, "challenge");
 
 		var provider = new ASAuthorizationPlatformPublicKeyCredentialProvider(rpId);
 		var assertionRequest = provider.CreateCredentialAssertionRequest(NSData.FromArray(challenge));
@@ -135,11 +137,6 @@ partial class PasskeysImplementation : IPasskeys
 		}
 	}
 
-	static byte[] DecodeRequired(string? value, string name)
-		=> string.IsNullOrEmpty(value)
-			? throw new ArgumentException($"The options are missing the '{name}'.", "options")
-			: Base64Url.DecodeFromChars(value);
-
 	static NSString? MapUserVerification(string? value) => value switch
 	{
 		null => null,
@@ -157,16 +154,16 @@ partial class PasskeysImplementation : IPasskeys
 		_ => ASAuthorizationPublicKeyCredentialAttestationKind.None,
 	};
 
-	static ASAuthorizationPlatformPublicKeyCredentialDescriptor[]? MapAllowedCredentials(List<WebAuthn.CredentialDescriptor>? allow)
+	static ASAuthorizationPlatformPublicKeyCredentialDescriptor[]? MapAllowedCredentials(List<WebAuthn.CredentialDescriptor>? credentials)
 	{
-		if (allow is null || allow.Count == 0)
+		if (credentials is null || credentials.Count == 0)
 			return null;
 
 		var list = new List<ASAuthorizationPlatformPublicKeyCredentialDescriptor>();
-		foreach (var credential in allow)
+		foreach (var credential in credentials)
 		{
 			if (!string.IsNullOrEmpty(credential.Id))
-				list.Add(new ASAuthorizationPlatformPublicKeyCredentialDescriptor(NSData.FromArray(Base64Url.DecodeFromChars(credential.Id))));
+				list.Add(new ASAuthorizationPlatformPublicKeyCredentialDescriptor(NSData.FromArray(WebAuthn.Decode(credential.Id, "credential.id"))));
 		}
 
 		return list.Count == 0 ? null : list.ToArray();
@@ -174,23 +171,39 @@ partial class PasskeysImplementation : IPasskeys
 
 	static async Task<ASAuthorization> PerformAsync(ASAuthorizationRequest request, bool preferImmediatelyAvailable, CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+
 		var manager = new PasskeyAuthorizationManager(WindowStateManager.Default.GetCurrentUIWindow(true)!);
 		var controller = new ASAuthorizationController(new[] { request })
 		{
 			Delegate = manager,
 			PresentationContextProvider = manager,
 		};
+		var gate = new object();
+		var started = false;
 
 		using (cancellationToken.Register(() =>
 		{
-			controller.Cancel();
-			manager.TrySetCanceled();
+			lock (gate)
+			{
+				if (started)
+					controller.Cancel();
+
+				manager.TrySetCanceled();
+			}
 		}))
 		{
-			if (preferImmediatelyAvailable)
-				controller.PerformRequests(ASAuthorizationControllerRequestOptions.ImmediatelyAvailableCredentials);
-			else
-				controller.PerformRequests();
+			lock (gate)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
+
+				if (preferImmediatelyAvailable)
+					controller.PerformRequests(ASAuthorizationControllerRequestOptions.ImmediatelyAvailableCredentials);
+				else
+					controller.PerformRequests();
+
+				started = true;
+			}
 
 			return await manager.Task;
 		}

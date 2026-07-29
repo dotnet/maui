@@ -308,7 +308,8 @@ if (!Passkeys.IsSupported)
     return; // fall back to password UI
 
 // 1. Ask your server to begin registration; it returns PublicKeyCredentialCreationOptions JSON.
-string creationOptionsJson = await httpClient.GetStringAsync("/passkey/register/begin");
+using var beginResponse = await httpClient.PostAsync("/passkeys/register/begin", content: null);
+string creationOptionsJson = await beginResponse.Content.ReadAsStringAsync();
 
 // 2. Drive the native create-credential UI (Face ID / Windows Hello / Android biometric).
 PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson);
@@ -317,7 +318,7 @@ PasskeyCreationResponse created = await Passkeys.CreateAsync(creationOptionsJson
 //    `created.ToString()` is *already* WebAuthn JSON, so post it as a raw application/json
 //    body — do NOT use PostAsJsonAsync, which would re-encode the string as a quoted JSON literal.
 using var body = new StringContent(created.ToString(), Encoding.UTF8, "application/json");
-await httpClient.PostAsync("/passkey/register/finish", body);
+await httpClient.PostAsync("/passkeys/register/finish", body);
 
 // Optional: store the credential id so you can reference this passkey later.
 string credentialId = created.Id;   // base64url
@@ -338,7 +339,8 @@ if (!Passkeys.IsSupported)
     return; // fall back to password UI
 
 // 1. Ask your server to begin sign-in; it returns PublicKeyCredentialRequestOptions JSON.
-string requestOptionsJson = await httpClient.GetStringAsync("/passkey/login/begin");
+using var beginResponse = await httpClient.PostAsync("/passkeys/login/begin", content: null);
+string requestOptionsJson = await beginResponse.Content.ReadAsStringAsync();
 
 // 2. Drive the native get-credential UI so the user selects a passkey and authenticates.
 PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJson);
@@ -346,7 +348,7 @@ PasskeyAssertionResponse asserted = await Passkeys.AssertAsync(requestOptionsJso
 // 3. Send the raw response JSON back to the server to verify the signature and finish sign-in.
 //    Post the already-serialized WebAuthn JSON as a raw application/json body (not PostAsJsonAsync).
 using var body = new StringContent(asserted.ToString(), Encoding.UTF8, "application/json");
-await httpClient.PostAsync("/passkey/login/finish", body);
+await httpClient.PostAsync("/passkeys/login/finish", body);
 
 // Optional: a couple of commonly-needed fields are available directly as (cached) properties.
 string credentialId = asserted.Id;          // base64url — which passkey was used
@@ -701,7 +703,7 @@ inside the WebAuthn options JSON** and needs no cross-platform API knob. A small
 | `authenticatorSelection.authenticatorAttachment` | platform (device passkey) vs cross-platform (security key/phone) | via `requestJson` | request subclass | `dwAuthenticatorAttachment` |
 | `authenticatorSelection.residentKey` / `requireResidentKey` | Discoverable ("username-less") credential | via `requestJson` | implicit (passkeys are discoverable) | `bRequireResidentKey` |
 | `timeout` | Ceremony timeout | via `requestJson` | — (OS-managed) | `dwTimeoutMilliseconds` |
-| `excludeCredentials` / `allowCredentials` | Prevent re-reg / scope sign-in | via `requestJson` | `ExcludedCredentials` / `AllowedCredentials` | exclude / allow list |
+| `excludeCredentials` / `allowCredentials` | Prevent re-reg / scope sign-in | via `requestJson` | — / `AllowedCredentials` (native app registration API has no exclude-list property) | exclude / allow list |
 | `attestation` | Attestation conveyance | via `requestJson` | `AttestationPreference` | `dwAttestationConveyancePreference` |
 | `extensions` (e.g. `credProps`, `prf`, `largeBlob`) | WebAuthn extensions | via `requestJson` | per-extension API | JSON extension fields (WebAuthn API v7+) |
 | `hints` | UI hint (security-key/hybrid/client-device) | via `requestJson` | — | — |
@@ -873,25 +875,17 @@ cancel must come from a different thread than the blocking call, using the pre-a
   association, so full end-to-end is hard to automate in CI. On-device tests verify `IsSupported`, request
   construction, and JSON translation; the interactive ceremony runs behind a manual/sample test with a
   reference RP server.
-- **Reference RP server (test backend)**: the repo ships one at
-  [`src/Essentials/samples/Samples.WebServer`](../../src/Essentials/samples/Samples.WebServer).
-  It is the **default .NET Blazor Web App template with ASP.NET Core Identity "Individual Accounts"**
-  — which includes built-in passkey support since .NET 10 — so the browser passkey UI works out of the
-  box and provides a spec-conformant `PublicKeyCredentialCreationOptions` / `RequestOptions` producer
-  and response verifier for free. Because it's the *official* ASP.NET Core Identity implementation, it
-  doubles as an interop conformance check across Apple, Android, and Windows. The same server also
-  hosts the OAuth pass-through backend for the `WebAuthenticator` sample, so one web app backs both
-  Essentials auth samples.
-
-  On top of the template it adds a small **native-app-facing JSON API** (`PasskeyApiEndpoints.cs`) so
-  the MAUI native `CreateAsync` / `AssertAsync` calls can drive the ceremony directly — no browser,
-  no antiforgery:
+- **Reference RP server (test backend)**: the repo ships a small headless ASP.NET Core Identity server at
+  [`src/Essentials/samples/Samples.Server.Passkeys`](../../src/Essentials/samples/Samples.Server.Passkeys).
+  Its `PasskeyEndpoints.cs` exposes the native-app-facing JSON ceremony API and platform association
+  documents. ASP.NET Core Identity generates and validates the WebAuthn options/responses, so successful
+  registration and sign-in provide an interop conformance check across Apple, Android, and Windows.
 
   ```
-  POST /passkeys/register/begin?username=…   -> PublicKeyCredentialCreationOptions JSON
+  POST /passkeys/register/begin              -> PublicKeyCredentialCreationOptions JSON
   POST /passkeys/register/finish  (body: attestation JSON)  -> { registered, username }
-  POST /passkeys/login/begin?username=…      -> PublicKeyCredentialRequestOptions JSON
-  POST /passkeys/login/finish     (body: assertion JSON)    -> { authenticated, username }
+  POST /passkeys/login/begin                 -> PublicKeyCredentialRequestOptions JSON
+  POST /passkeys/login/finish     (body: assertion JSON)    -> { authenticated }
   ```
 
   The WebAuthn challenge state is correlated through the Identity auth cookie between `begin` and
@@ -905,9 +899,9 @@ cancel must come from a different thread than the blocking call, using the pre-a
   });
   ```
 
-  It is a local dev tool (auto-creates users, no password). It is part of the solution and builds in
-  CI, but you run it locally to test on devices:
-  `dotnet run --project src/Essentials/samples/Samples.WebServer`.
+  It is a local dev tool with username/password registration and an in-memory SQLite store. It is part
+  of the solution and builds in CI, but you run it locally to test on devices:
+  `dotnet run --project src/Essentials/samples/Samples.Server.Passkeys --launch-profile http`.
   Docs: [Passkeys in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/) ·
   [Blazor Web App passkeys](https://learn.microsoft.com/aspnet/core/security/authentication/passkeys/blazor).
 - **Stable public domain (dev tunnels)**: passkeys are bound to a domain (the RP ID) and `localhost`

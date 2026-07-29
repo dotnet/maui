@@ -154,10 +154,6 @@
         NoWarn="NU1605"
     />
     <PackageReference
-        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
-        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
-    />
-    <PackageReference
         Update="Microsoft.Web.WebView2"
         Version="$(MicrosoftWindowsWebView2PackageVersion)"
         NoWarn="NU1605"

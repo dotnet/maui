@@ -1,6 +1,7 @@
 #nullable enable
 #if !NETSTANDARD
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -177,6 +178,26 @@ static partial class WebAuthn
 			"preferred" or "discouraged" => false,
 			_ => selection?.RequireResidentKey == true,
 		};
+
+	internal static byte[] DecodeRequired(string? value, string name)
+	{
+		if (string.IsNullOrEmpty(value))
+			throw new ArgumentException($"The options are missing the '{name}'.", "options");
+
+		return Decode(value, name);
+	}
+
+	internal static byte[] Decode(string value, string name)
+	{
+		try
+		{
+			return Base64Url.DecodeFromChars(value);
+		}
+		catch (FormatException ex)
+		{
+			throw new ArgumentException($"The options contain an invalid '{name}' Base64Url value.", "options", ex);
+		}
+	}
 
 	internal static uint GetTimeout(int? timeout)
 	{

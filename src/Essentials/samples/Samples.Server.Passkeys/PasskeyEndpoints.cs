@@ -81,6 +81,7 @@ internal static class PasskeyEndpoints
 		// An optional ?name= (the app passes an auto-generated device label) is stored so passkeys created
 		// on different devices are distinguishable in the list.
 		group.MapPost("/register/finish", async (
+			HttpContext context,
 			JsonElement credential,
 			string? name,
 			UserManager<IdentityUser> userManager,
@@ -100,10 +101,13 @@ internal static class PasskeyEndpoints
 			if (!attestation.Succeeded)
 				return Results.BadRequest($"Attestation failed: {attestation.Failure?.Message}");
 
-			var user = await userManager.FindByIdAsync(attestation.UserEntity.Id)
-				?? await userManager.FindByNameAsync(attestation.UserEntity.Name);
+			var user = await userManager.GetUserAsync(context.User);
 			if (user is null)
-				return Results.BadRequest("Unable to resolve the user for this passkey.");
+				return Results.Unauthorized();
+
+			var userId = await userManager.GetUserIdAsync(user);
+			if (!string.Equals(userId, attestation.UserEntity.Id, StringComparison.Ordinal))
+				return Results.BadRequest("The passkey registration user does not match the signed-in user.");
 
 			if (!string.IsNullOrWhiteSpace(name))
 				attestation.Passkey.Name = name.Trim();
@@ -113,7 +117,7 @@ internal static class PasskeyEndpoints
 				return Results.BadRequest("Failed to store passkey.");
 
 			return Results.Ok(new { registered = true, username = user.UserName, name = attestation.Passkey.Name });
-		});
+		}).RequireAuthorization();
 
 		// Sign-in begin: returns the WebAuthn request options for username-less (discoverable) sign-in.
 		// No username is needed - the passkey itself carries the identity, and the server only learns who

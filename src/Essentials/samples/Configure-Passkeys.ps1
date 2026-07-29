@@ -535,7 +535,7 @@ else {
     Write-Host "  In ANOTHER terminal, run the server: dotnet run --project `"$project`" --launch-profile http"
     Write-Host "  (this terminal is about to host the tunnel — pass -NoStartHost to skip that)"
 }
-Write-Host "  Then build/run the sample — its Passkeys page now defaults to $uri (editable via the Server button)."
+Write-Host "  Then build/run the sample — its Passkeys page defaults to $uri."
 
 if (-not $NoStartHost) {
     Write-Host ""

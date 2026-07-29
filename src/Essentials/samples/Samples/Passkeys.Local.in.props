@@ -1,5 +1,5 @@
 <!-- TEMPLATE for local passkey testing. Copy to Passkeys.Local.props (git-ignored) and fill in, or
-     just run `pwsh ../Configure.ps1` which generates Passkeys.Local.props for you. This .in template is
+     just run `pwsh ../Configure-Passkeys.ps1` which generates Passkeys.Local.props for you. This .in template is
      committed for reference; the real Passkeys.Local.props is never committed. See ../README.md. -->
 <Project>
 

@@ -81,6 +81,13 @@ public class Passkeys_Tests
 	}
 
 	[Fact]
+	public void DecodeRequired_Rejects_Invalid_Base64Url_As_ArgumentException()
+	{
+		var exception = Assert.Throws<ArgumentException>(() => WebAuthn.DecodeRequired("***", "challenge"));
+		Assert.IsType<FormatException>(exception.InnerException);
+	}
+
+	[Fact]
 	public void Extensions_RoundTrip_As_Json()
 	{
 		using var extensions = JsonDocument.Parse("""{"credProps":true}""");
