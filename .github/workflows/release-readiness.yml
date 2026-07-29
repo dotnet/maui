@@ -16,7 +16,12 @@ name: Release Readiness
 
 on:
   schedule:
-    - cron: "30 8 * * 1-5"  # Weekdays at 08:30 UTC
+    # Every 3h from 08:30 to 20:30 UTC, all 7 days. Runs more often (vs the old
+    # weekdays-only 08:30) so a material change (CI flip, new source PR, milestone
+    # gate) is picked up within ~3h instead of a day — WITHOUT spamming watchers:
+    # the SR engine's semantic-hash no-op skips `gh issue edit` when nothing
+    # material changed, and issue-body edits are notification-silent regardless.
+    - cron: "30 8-20/3 * * *"
   workflow_dispatch:
     inputs:
       branch:
@@ -35,12 +40,57 @@ on:
       - '.github/skills/release-readiness/**'
       - '.github/scripts/shared/MauiReleaseVersioning.psm1'
 
+  # ── Scoped base-repo event triggers (refresh ONLY the affected tracker) ──
+  # These keep trackers fresh between the 3-hourly schedule when a MATERIAL
+  # signal changes, without a full fan-out. The "Detect release trackers" step
+  # maps each event to a BRANCH_FILTER / MAJOR_FILTER so only the relevant
+  # tracker(s) recompute (see that step). All are BASE-REPO events — no fork
+  # code is ever checked out or executed — and every attacker-influencable
+  # field (issue/milestone title, label name) is read via env:, never inlined
+  # into a run: block. pull_request_target is deliberately NOT used (fork
+  # secret-exfil vector).
+  issues:
+    # A regressed-in-* / high-priority label added or an issue closed changes
+    # the regression + high-priority sections of the affected major's tracker.
+    types: [labeled, closed]
+  milestone:
+    # Creating/closing a milestone flips ship-check gates (e.g. the preview
+    # milestone existence check).
+    types: [created, closed]
+  push:
+    # A push advances HEAD on a tracked line, which is exactly what flips CI
+    # freshness to stale. No path filter: any commit on these branches matters.
+    branches:
+      - main
+      - net11.0
+      - 'release/**'
+
 permissions:
   contents: read
 
+# Run-level concurrency. Keyed by event + PR/branch so redundant runs of the SAME
+# kind collapse. cancel-in-progress is TRUE only for pull_request (a new push
+# supersedes a stale validation — saves CI) and FALSE for every writer event
+# (schedule / workflow_dispatch / push / issues / milestone): such a run must
+# never be cancelled mid-flight, because its per-tracker job may be part-way
+# through a `gh issue edit` that splices human-authored Release Captain Notes.
+# cancel-in-progress:false does NOT let bursts pile up — GitHub keeps at most one
+# in-progress run plus one pending run per group and cancels any older PENDING
+# run, so a flurry of pushes/labels collapses to (running + latest-pending)
+# without ever killing the in-flight writer. That bounds the request budget while
+# keeping the issue edit atomic. NOTE: this run-level group only serializes runs
+# of the SAME event kind. The real cross-run guard against two DIFFERENT event
+# kinds racing the same tracker's issue edit is the per-tracker concurrency group
+# on the per-tracker-report job below.
 concurrency:
-  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || 'all' }}
-  cancel-in-progress: true
+  # The pushed branch (github.ref_name) is folded into the key so a burst of pushes to
+  # DIFFERENT tracked branches (main / net11.0 / release/**) does NOT collapse into one
+  # 'push-all' group and drop a needed per-branch refresh when pending-run supersede
+  # cancels the older PENDING run. For non-push events ref_name resolves to the default
+  # branch, so their keys are unchanged (pull_request → PR number; workflow_dispatch →
+  # inputs.branch; schedule/issues/milestone → default branch, i.e. one group each).
+  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || github.ref_name || 'all' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # ────────────────────────────────────────────────────────────────────
@@ -49,7 +99,10 @@ jobs:
   detect-trackers:
     name: Detect release trackers
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    # Skip PR validation runs (handled by the validate job) and never run on a
+    # fork — the writer path manages issues on github.repository, so restrict the
+    # whole pipeline to the canonical repo (mirrors the org gate in rebase.yml).
+    if: github.event_name != 'pull_request' && github.repository == 'dotnet/maui'
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has-trackers: ${{ steps.detect.outputs.has-trackers }}
@@ -64,10 +117,89 @@ jobs:
         id: detect
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH_FILTER: ${{ inputs.branch || '' }}
+          # Raw event context. SECURITY: every attacker-influencable field
+          # (issue label names, milestone title) is passed as an env var here and
+          # parsed with jq/grep in the script below — NONE is interpolated into
+          # the run: block via ${{ }}, so untrusted text can never reach the shell
+          # as code. github.ref_name / inputs.branch are likewise env-passed.
+          EVENT_NAME:      ${{ github.event_name }}
+          DISPATCH_BRANCH: ${{ inputs.branch }}
+          PUSH_REF_NAME:   ${{ github.ref_name }}
+          LABELS_JSON:     ${{ toJson(github.event.issue.labels) }}
+          MILESTONE_TITLE: ${{ github.event.milestone.title }}
         shell: bash
         run: |
           set -euo pipefail
+
+          # ── Resolve the triggering event → scope filters ────────────────────
+          # BRANCH_FILTER matches a tracker's branchName/surveyRef exactly;
+          # MAJOR_FILTER is a comma-list of .NET majors matched against
+          # .majorVersion. FANOUT=1 marks the ONLY events for which an empty filter
+          # means "refresh ALL trackers": schedule and workflow_dispatch. For every
+          # scoped EVENT trigger (push / issues / milestone) FANOUT stays 0, so an
+          # empty filter yields an EMPTY matrix and the pipeline short-circuits
+          # (has-trackers=false) instead of fanning out to every tracker. An
+          # unrelated issue close, a non-`regressed-in` label, or a non-versioned
+          # milestone must NOT recompute the world — the 3-hourly schedule backstops
+          # full coverage. This reuses the existing single-tracker plumbing
+          # (workflow_dispatch already fed BRANCH_FILTER) so events only recompute
+          # the tracker(s) they actually affect.
+          BRANCH_FILTER=""
+          MAJOR_FILTER=""
+          FANOUT="0"
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              # Manual refresh. Empty branch ⇒ intentional full fan-out (FANOUT=1);
+              # a specific branch narrows via BRANCH_FILTER below.
+              BRANCH_FILTER="${DISPATCH_BRANCH:-}"
+              FANOUT="1"
+              ;;
+            push)
+              # A push advances HEAD on exactly one branch → refresh the tracker
+              # that surveys it (SR branchName, or a preview surveyRef like net11.0).
+              # A branch with no tracker (e.g. main during an SR-only phase) yields
+              # an empty matrix and the pipeline short-circuits.
+              BRANCH_FILTER="${PUSH_REF_NAME:-}"
+              ;;
+            issues)
+              # Union of the .NET majors named by this issue's regressed-in-<major>*
+              # labels (covers both `labeled` — the new label is already in the set
+              # — and `closed`). Reduced to digits so nothing but a version number
+              # reaches jq. An issue that names no tracked major yields an empty
+              # MAJOR_FILTER and (FANOUT=0) an EMPTY matrix → the run short-circuits
+              # rather than recomputing every tracker for an unrelated close/label.
+              # The next scheduled run still covers it.
+              MAJOR_FILTER="$(
+                printf '%s' "${LABELS_JSON:-[]}" \
+                  | jq -r '.[]?.name // empty' 2>/dev/null \
+                  | grep -oiE 'regressed-in-[0-9]+' \
+                  | grep -oE '[0-9]+' | sort -u | paste -sd, - || true
+              )"
+              ;;
+            milestone)
+              # First version-looking number in the milestone title (".NET 11" →
+              # 11, "10.0.1xx-sr8" → 10). Digits only; a non-versioned title
+              # (e.g. "Backlog") yields an empty MAJOR_FILTER and (FANOUT=0) an
+              # empty matrix → skip, not a full fan-out.
+              MAJOR_FILTER="$(
+                printf '%s' "${MILESTONE_TITLE:-}" \
+                  | grep -oE '[0-9]+' | head -1 || true
+              )"
+              ;;
+            schedule)
+              # The recurring cron: the ONE event that intentionally recomputes
+              # every tracker. Empty filters + FANOUT=1 ⇒ full fan-out.
+              FANOUT="1"
+              ;;
+            *)
+              # Any future/unrecognized event: leave FANOUT=0 so an empty filter
+              # skips rather than surprising us with an unscoped full fan-out. A new
+              # trigger that WANTS fan-out must opt in with its own case arm above.
+              :
+              ;;
+          esac
+          echo "Event='$EVENT_NAME'  BranchFilter='${BRANCH_FILTER}'  MajorFilter='${MAJOR_FILTER}'  Fanout='${FANOUT}'"
+
           pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
             -AllActiveMajors \
             -OutputJson trackers.json
@@ -77,11 +209,19 @@ jobs:
             exit 1
           fi
 
-          # Flatten majors[].trackers[] into a single matrix array. If BRANCH_FILTER
-          # is set, narrow to trackers whose branchName OR surveyRef matches.
-          jq --arg filter "$BRANCH_FILTER" '
+          # Flatten majors[].trackers[] into a single matrix array. Narrow by
+          # BRANCH_FILTER (exact branchName/surveyRef) OR MAJOR_FILTER (any major
+          # in the comma-list vs .majorVersion). Empty filters keep ALL trackers
+          # ONLY when FANOUT=1 (schedule / workflow_dispatch); for a scoped event
+          # trigger with no computed filter the select matches nothing → empty
+          # matrix → has-trackers=false → the report job is skipped.
+          jq --arg filter "$BRANCH_FILTER" --arg major "$MAJOR_FILTER" --arg fanout "$FANOUT" '
             [ .majors[].trackers[]
-              | select($filter == "" or .branchName == $filter or .surveyRef == $filter)
+              | select(
+                  ($fanout == "1" and $filter == "" and $major == "")
+                  or ($filter != "" and (.branchName == $filter or .surveyRef == $filter))
+                  or ($major  != "" and ((.majorVersion | tostring) as $mv | ($major | split(",")) | index($mv) != null))
+                )
               | {
                   canonicalKey: .canonicalKey,
                   branchType:   .branchType,
@@ -134,6 +274,20 @@ jobs:
     needs: detect-trackers
     if: needs.detect-trackers.outputs.has-trackers == 'true'
     runs-on: ubuntu-latest
+    # Per-tracker writer serialization. This is the load-bearing guard against the
+    # Release Captain Notes clobber race: the "Update or create tracker issue" step
+    # re-reads the live issue body and awk-splices the human-notes block back into the
+    # fresh report just before `gh issue edit`. Two runs writing the SAME tracker
+    # concurrently (e.g. a scheduled run and an event-triggered run — added in a later
+    # commit) could interleave read/splice/edit and silently drop notes. Keying this
+    # group on matrix.canonicalKey forces same-tracker writers to run one-at-a-time
+    # ACROSS runs, regardless of event kind (the run-level group only serializes runs
+    # of the same event kind). Different trackers stay parallel (distinct keys).
+    # cancel-in-progress is FALSE on purpose: serialize, don't cancel, so an in-flight
+    # `gh issue edit` always completes rather than being killed part-way.
+    concurrency:
+      group: release-readiness-tracker-${{ matrix.canonicalKey }}
+      cancel-in-progress: false
     permissions:
       contents: read
       issues: write
@@ -184,6 +338,12 @@ jobs:
               fi
               SR_ARG="$PRIOR_SR"
               CANDIDATE_ARG=(-Candidate)
+            elif [ "$MODE" = "shipped" ]; then
+              # Already-tagged SR: survey the branch directly (same as in-flight),
+              # but pass -Shipped so the rendered header reads mode=shipped rather
+              # than misreporting the post-ship tracker as in-flight.
+              SR_ARG="$BRANCH_NAME"
+              CANDIDATE_ARG=(-Shipped)
             else
               SR_ARG="$BRANCH_NAME"
             fi
@@ -234,7 +394,11 @@ jobs:
           retention-days: 30
 
       - name: Update or create tracker issue
-        if: github.event_name == 'schedule' || inputs.create_issue
+        # Write for every trigger that reaches this job EXCEPT a workflow_dispatch
+        # that explicitly opted out via create_issue=false. schedule/push/issues/
+        # milestone always write; pull_request never reaches here (separate
+        # validate job, gated by the detect-trackers if:).
+        if: github.event_name != 'workflow_dispatch' || inputs.create_issue
         env:
           GH_TOKEN: ${{ github.token }}
           TRACKER_KEY:        ${{ matrix.canonicalKey }}
@@ -242,6 +406,7 @@ jobs:
           MILESTONE_NAME:     ${{ matrix.milestoneName }}
           BODY_FILE:          ${{ steps.report.outputs.body-file }}
           RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
+          MODE:               ${{ matrix.mode }}
         shell: bash
         run: |
           set -euo pipefail
@@ -257,6 +422,17 @@ jobs:
             --json number,title,createdAt \
             --limit 50 \
             --jq '. // [] | sort_by(.createdAt) | .[].number')
+
+          # Shipped trackers are REFRESH-ONLY. The most-recently-shipped SR keeps
+          # surfacing post-ship follow-up (adding the build to the GitHub issue
+          # version dropdown, release notes, milestone close-out) while its tracker
+          # issue stays OPEN, but we never (re)create it. Once a human closes the
+          # tracker, it stays closed — "update until closed manually" without
+          # resurrecting a closed issue on the next scheduled run.
+          if [ "$MODE" = "shipped" ] && [ -z "$EXISTING" ]; then
+            echo "Shipped tracker ${TRACKER_KEY}: no open issue (closed or never created) — refresh-only, nothing to do."
+            exit 0
+          fi
 
           # Activity gate: when there is no recent activity AND no open tracker issue,
           # skip new-issue creation. (If an existing issue is open, we still refresh it.)
@@ -285,6 +461,15 @@ jobs:
             # churning the issue when nothing material changed. Both engines emit
             # <!-- release-readiness:human-notes:begin/end --> markers; the SR engine
             # additionally embeds <!-- release-readiness-hash: sha=... -->.
+            #
+            # Concurrency note: the per-tracker `concurrency` group on this job
+            # (release-readiness-tracker-<canonicalKey>, cancel-in-progress:false) is
+            # the PRIMARY guard against two runs racing this splice+edit for the same
+            # tracker — it serializes same-tracker writers across every event kind. The
+            # read-modify-write below (re-read live body → splice notes → edit) is the
+            # defense-in-depth second layer: even if serialization were ever bypassed,
+            # the fetch is taken IMMEDIATELY before the edit and every ambiguous state
+            # skips the edit (see the guards below) rather than risk clobbering notes.
             CUR_BODY_FILE="$(mktemp)"
             # Capture the live issue body. A transient fetch failure must NOT lead
             # to an overwrite: an empty CUR_BODY_FILE would skip the notes splice
@@ -426,10 +611,19 @@ jobs:
               --repo "${{ github.repository }}"
               --title "$ISSUE_TITLE"
               --body-file "$BODY_FILE"
-              --label "report"
-              --label "s/triaged"
-              --label "area-release-readiness"
             )
+            # Best-effort label attach — never fail the job for a label that does
+            # not exist in this repo. `gh issue create` hard-fails (422) on an
+            # unknown label, so attaching one that was renamed/removed would abort
+            # every auto-create. Probe each label and skip (with a warning) any
+            # that is missing, exactly like the milestone handling below.
+            for lbl in "report" "s/triaged" "area-infrastructure"; do
+              if gh api "repos/${{ github.repository }}/labels/${lbl//\//%2F}" --jq '.name' >/dev/null 2>&1; then
+                CREATE_ARGS+=(--label "$lbl")
+              else
+                echo "::warning::Label '$lbl' not found; creating issue without it."
+              fi
+            done
             # Best-effort milestone attach — never fail the job for a missing milestone.
             if [ -n "$MILESTONE_NAME" ]; then
               if gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" \
@@ -516,6 +710,12 @@ jobs:
               if [ "$MODE" = "candidate" ]; then
                 SR_ARG="$PRIOR_SR"
                 CANDIDATE_ARG=(-Candidate)
+              elif [ "$MODE" = "shipped" ]; then
+                # Mirror the production job: survey the branch directly but pass
+                # -Shipped so the smoke-run exercises the shipped code path (header
+                # relabel + semantic-hash mode fold) instead of running as in-flight.
+                SR_ARG="$BRANCH_NAME"
+                CANDIDATE_ARG=(-Shipped)
               else
                 SR_ARG="$BRANCH_NAME"
               fi

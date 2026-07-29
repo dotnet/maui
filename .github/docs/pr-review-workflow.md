@@ -3,7 +3,6 @@
 This guide explains the automated review commands used in dotnet/maui pull requests:
 
 - `/review`
-- `/review rerun`
 - `/review tests`
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
@@ -14,21 +13,13 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | --- | --- | --- | --- |
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
-| `/review rerun` | Repository users with write, maintain, or admin access; or non-first-time PR authors on their own PR | Requests a fresh full review after comments, commits, or CI context changed. Applies the `s/agent-ready-for-rerun` label; the hourly scanner then triggers the review pipeline. | Adds or replaces a review session in the `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Adds or updates a `Test Failure Review` comment. |
 
-Community contributors can trigger `/review rerun` on their own PR after their first contribution. For `/review` and `/review tests`, only repository users with write access can trigger these commands. If you are a first-time contributor, ask a maintainer to run the relevant command for your PR.
+Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
 ## Choosing the right command
 
 Use `/review` when you want the complete automated PR review. This is the normal entry point for maintainers reviewing a PR.
-
-Use `/review rerun` when the PR already has an AI review but something changed enough that the previous review may be stale. Typical reasons:
-
-- the author pushed new commits;
-- the author replied to review feedback;
-- CI or test results changed;
-- a maintainer wants a deterministic fresh review session without manually interpreting older output.
 
 Use `/review tests` when the question is specifically about CI/test failures, for example:
 
@@ -72,7 +63,7 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 
 The workflow intentionally does not handle `/review tests`; that subcommand is reserved for the test-failure review workflow.
 
-**Note**: Command comments are minimized (collapsed as "Resolved") after authorization to reduce conversation clutter while preserving the comment history for the automated rerun scanner. Unauthorized or malformed command comments remain fully visible.
+**Note**: Command comments are minimized (collapsed as "Resolved") after authorization to reduce conversation clutter while preserving the comment history. Unauthorized or malformed command comments remain fully visible.
 
 ### Platform inference
 
@@ -105,26 +96,16 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 
 The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
 
-## `/review rerun`: fresh full review
+## Automatic fresh reviews
 
-Comment `/review rerun` when you want a new full review session after the PR changed.
-
-Operationally, `/review rerun` applies the `s/agent-ready-for-rerun` label to your PR. The hourly `rerun-review-scanner` workflow checks for eligible PRs with this label and triggers the review pipeline. This means your review may be delayed up to ~1 hour, or may not run if the PR is ineligible.
-
-If you need an immediate review, use `/review` instead (write access required).
-
-### Eligibility requirements
-
-The `/review rerun` workflow checks for **PR author activity** since the latest AI Summary or rerun checkpoint:
+After an AI Summary is posted, deterministic rerun automation can queue a fresh full review when it detects new **PR author activity**:
 
 - New commits (head SHA changed)
 - New non-command comments from the PR author
 
-**Important**: Reviewer or maintainer reminder comments do NOT satisfy the rerun eligibility check. Only author activity triggers a rerun.
+The automation applies the `s/agent-ready-for-rerun` label. An hourly scanner processes queued reruns and triggers them when appropriate. No comment command is required, and identical PR state cannot be re-queued.
 
-When eligible, the workflow applies the `s/agent-ready-for-rerun` label. An automated hourly scanner processes queued reruns and triggers them when appropriate.
-
-### Automated rerun scanner
+Reviewer or maintainer reminder comments do not satisfy the eligibility check. If an immediate review is needed, a maintainer can run `/review`.
 
 The repository includes an hourly gh-aw workflow (`.github/workflows/rerun-review-scanner.md`) that:
 
@@ -134,17 +115,6 @@ The repository includes an hourly gh-aw workflow (`.github/workflows/rerun-revie
 4. Cleans up queue labels and posts reactions
 
 This ensures reruns are processed automatically without manual intervention.
-
-### When to use `/review rerun`
-
-Use it when:
-
-- a previous AI summary is stale;
-- the author pushed a fix after review feedback;
-- the previous run analyzed the wrong commit or incomplete context;
-- a maintainer wants to replace an older session with a fresh one for the current PR head.
-
-Avoid using it repeatedly without new commits or author comments. It consumes CI and agent capacity, and repeated identical runs are unlikely to add useful information.
 
 ## `/review tests`: test-failure review
 
@@ -234,7 +204,7 @@ Do not treat `Insufficient data` as "unrelated." It means a human or a rerun wit
 
 ### AI Summary
 
-The full `/review` and `/review rerun` pipeline posts an `AI Summary` comment. It may include:
+The full `/review` pipeline and automatic reruns post an `AI Summary` comment. It may include:
 
 - gate status;
 - UI test results;
@@ -264,7 +234,7 @@ The verdict details and "Test Failure Review" label live in badges and in the ex
 2. Run `/review` when a PR is ready for automated review.
 3. Read the `AI Summary` comment and check whether the review found actionable issues.
 4. If CI is red or ambiguous, run `/review tests` to get a focused failure-causality report.
-5. If the author pushes fixes or comments materially change the context, run `/review rerun`.
+5. If the author pushes fixes or adds material context, allow the automatic rerun queue to process it or run `/review` for an immediate review.
 6. Use human judgment for merge decisions. These workflows provide evidence and recommendations, not final approval authority.
 
 ## Recommended workflow for community contributors
@@ -274,7 +244,7 @@ The verdict details and "Test Failure Review" label live in badges and in the ex
 3. If you need an automated review, ask a maintainer to run `/review`.
 4. If CI is red and you are unsure whether it is caused by your changes, ask a maintainer to run `/review tests`.
 5. When an automated comment is posted, read the summary first, then expand evidence sections for details.
-6. Push fixes or reply with clarifying information, then ask a maintainer whether `/review rerun` is useful.
+6. Push fixes or reply with clarifying information; eligible author activity is detected automatically for a fresh review.
 
 ## Safety and trust boundaries
 
@@ -284,6 +254,7 @@ Important safeguards:
 
 - `/review` requires repository write-level permissions and queues a trusted AzDO pipeline.
 - `/review tests` is comment-only and uses gh-aw safe outputs for PR comments.
+- Automatic reruns require deterministic new PR-author activity before the queue label is applied.
 - The full review pipeline keeps PR-controlled code separated from trusted scripts where possible.
 - Review comments should be treated as assistant-generated evidence, not as a substitute for human review.
 
@@ -294,9 +265,8 @@ Important safeguards:
 | `/review` does nothing | The commenter does not have write/maintain/admin access, or the comment is not on a PR. | Ask a maintainer to run the command on the PR. |
 | `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
-| The AI Summary looks stale | New commits or comments landed after the last review. | Run `/review rerun`. |
+| The AI Summary looks stale | New commits or author comments landed after the last review. | Wait for the automatic rerun queue, or ask a maintainer to run `/review` for an immediate review. |
 | There are multiple old AI Summary comments | Each comment holds only the latest session (keyed to its HEAD commit); previous review comments are minimized and hidden as outdated. | Expand the **Review Sessions** section in the newest comment — it reflects the current HEAD commit. |
-| `/review rerun` didn't trigger | Only PR author activity (commits or non-command comments) satisfies eligibility. Reviewer comments don't trigger reruns. | Wait for author activity or use `/review` to force a new review. |
 | Command comment is still visible | The commenter may lack authorization, or the command was malformed. | Check actor permissions and command syntax. Authorized commands are minimized after processing. |
 
 ## Related files
@@ -306,7 +276,7 @@ Important safeguards:
 - `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
 - `.github/workflows/copilot-review-tests.md` — gh-aw source for `/review tests`.
-- `.github/workflows/rerun-review-scanner.md` — gh-aw hourly scanner for queued `/review rerun` requests.
+- `.github/workflows/rerun-review-scanner.md` — gh-aw hourly scanner for automatically queued fresh reviews.
 - `.github/scripts/Resolve-RerunEligibility.ps1` — determines if a PR is eligible for rerun based on author activity.
 - `.github/scripts/Query-RerunReadyPRs.ps1` — queries PRs labeled `s/agent-ready-for-rerun`.
 - `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.

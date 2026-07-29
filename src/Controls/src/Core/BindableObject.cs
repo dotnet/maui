@@ -253,6 +253,19 @@ namespace Microsoft.Maui.Controls
 			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
+		/// <summary>
+		/// Determines whether a bindable property has been set by a local value, style, binding, or other non-default specificity.
+		/// Unlike IsSet, default-value creation does not count as explicit.
+		/// </summary>
+		/// <param name="targetProperty">The bindable property to check if a value is explicitly set.</param>
+		/// <returns><see langword="true"/> if the target property exists and has been explicitly set. Otherwise <see langword="false"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="targetProperty"/> is <see langword="null"/>.</exception>
+		internal bool IsSetExplicitly(BindableProperty targetProperty)
+		{
+			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
+			return bpcontext is not null && bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
+		}
+
 
 		/// <summary>
 		/// Removes a previously set binding from a bindable property.
@@ -307,6 +320,18 @@ namespace Microsoft.Maui.Controls
 				var currentValue = context.Values.GetValue();
 
 				context.Values.Remove(currentSpecificity);
+				// Also remove any ManualValueSetter entries that might interfere with binding value comparison.
+				// This fixes issue #29459 where switching bindings didn't trigger propertyChanged.
+				//
+				// Intentional trade-off: if a higher-priority setter (e.g. Trigger, VisualStateSetter) was
+				// the active specificity while a ManualValueSetter entry also existed, both are cleaned up
+				// here. The manual fallback value is discarded when switching bindings. This is acceptable
+				// because keeping stale TwoWay write-back values would silently suppress propertyChanged
+				// notifications on subsequent binding switches, which is the original bug.
+				if (currentSpecificity != SetterSpecificity.ManualValueSetter)
+				{
+					context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				}
 				context.Values.SetValue(SetterSpecificity.FromBinding, currentValue);
 			}
 
