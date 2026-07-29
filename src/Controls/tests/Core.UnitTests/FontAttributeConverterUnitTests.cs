@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -29,6 +30,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var converted = conv.ConvertToInvariantString(attributes);
 
 			Assert.Equal(attributes, conv.ConvertFromInvariantString(converted));
+		}
+
+		[Theory]
+		[InlineData(",")]
+		[InlineData(",,")]
+		[InlineData("Bold,,Italic")]
+		[InlineData(",Bold")]
+		[InlineData("Bold,")]
+		public void MalformedCommaTokensThrow(string input)
+		{
+			var conv = new FontAttributesConverter();
+
+			Assert.Throws<InvalidOperationException>(() => conv.ConvertFromInvariantString(input));
 		}
 	}
 }

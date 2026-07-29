@@ -61,6 +61,9 @@ public partial class CompiledTypeConverter : ContentPage
 	public IShape RoundRectangleShape { get; set; }
 
 	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+	public IShape NumericRoundRectangleShape { get; set; }
+
+	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 	public IShape PathShape { get; set; }
 
 	[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
@@ -105,6 +108,7 @@ public partial class CompiledTypeConverter : ContentPage
 			Assert.Equal(10, ((Shapes.Polyline)p.PolylineShape).Points.Count);
 			Assert.IsType<Rectangle>(p.RectangleShape);
 			Assert.Equal(new CornerRadius(1, 2, 3, 4), ((RoundRectangle)p.RoundRectangleShape).CornerRadius);
+			Assert.Equal(new CornerRadius(100), Assert.IsType<RoundRectangle>(p.NumericRoundRectangleShape).CornerRadius);
 			Assert.Equal(3, ((PathGeometry)((Path)p.PathShape).Data).Figures.Count);
 			Assert.Equal(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 			var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);
@@ -207,6 +211,9 @@ public partial class CompiledTypeConverter : ContentPage
 
 	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 	public IShape RoundRectangleShape { get; set; }
+
+	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
+	public IShape NumericRoundRectangleShape { get; set; }
 
 	[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 	public IShape PathShape { get; set; }

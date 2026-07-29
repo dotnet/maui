@@ -157,7 +157,7 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 			return trigger.TargetType;
 		}
 
-		// These must be part of a Style; verify that 
+		// These must be part of a Style; verify that
 		if (parents[5] is Style style)
 		{
 			return style.TargetType;

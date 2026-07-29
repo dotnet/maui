@@ -38,16 +38,16 @@ public sealed class FontAttributesConverter : TypeConverter
 		FontAttributes attributes = FontAttributes.None;
 		if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 		{
-			//Xaml
-			foreach (var part in strValue.Split([','], StringSplitOptions.RemoveEmptyEntries))
+			// Xaml
+			foreach (var part in strValue.Split(','))
 			{
 				attributes |= ParseSingleAttribute(part, strValue);
 			}
 		}
 		else
 		{
-			//CSS or single value
-			foreach (var part in strValue.Split([' '], StringSplitOptions.RemoveEmptyEntries))
+			// CSS or single value
+			foreach (var part in strValue.Split(' '))
 			{
 				attributes |= ParseSingleAttribute(part, strValue);
 			}
@@ -55,7 +55,7 @@ public sealed class FontAttributesConverter : TypeConverter
 		return attributes;
 	}
 
-	static FontAttributes ParseSingleAttribute(string part, string originalvalue)
+	static FontAttributes ParseSingleAttribute(string part, string originalValue)
 	{
 		part = part.Trim();
 		if (Enum.TryParse(part, true, out FontAttributes attr))
@@ -73,7 +73,7 @@ public sealed class FontAttributesConverter : TypeConverter
 			return FontAttributes.Italic;
 		}
 
-		throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", originalvalue, typeof(FontAttributes)));
+		throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", originalValue, typeof(FontAttributes)));
 	}
 
 	public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)

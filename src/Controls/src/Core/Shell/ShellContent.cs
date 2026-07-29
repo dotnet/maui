@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls
 							{
 								// Handle nullable types
 								Type targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-								
+
 								if (value == null)
 								{
 									prop.SetValue(content, null);
