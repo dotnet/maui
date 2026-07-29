@@ -52,7 +52,6 @@ class Issue35125PageTwo : ContentPage
 	public Issue35125PageTwo()
 	{
 		Title = "Page Two";
-		BackgroundColor = Colors.Green;
 		Content = new Label
 		{
 			Text = "The test passes if the unselected tabs are visible in view.",
