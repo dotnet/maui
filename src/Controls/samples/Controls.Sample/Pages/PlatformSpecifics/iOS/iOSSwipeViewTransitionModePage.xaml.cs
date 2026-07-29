@@ -14,13 +14,13 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnSwipeViewTransitionModeChanged(object sender, EventArgs e)
+		void OnSwipeViewTransitionModeChanged(object? sender, EventArgs e)
 		{
 			SwipeTransitionMode transitionMode = (SwipeTransitionMode)(sender as EnumPicker)!.SelectedItem;
 			swipeView.On<iOS>().SetSwipeTransitionMode(transitionMode);
 		}
 
-		async void OnDeleteSwipeItemInvoked(object sender, EventArgs e)
+		async void OnDeleteSwipeItemInvoked(object? sender, EventArgs e)
 		{
 			await DisplayAlertAsync("SwipeView", "Delete invoked.", "OK");
 		}

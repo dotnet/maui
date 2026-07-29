@@ -34,9 +34,9 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = this;
 		}
 
-		private void OnDragStarting(object sender, DragStartingEventArgs e)
+		private void OnDragStarting(object? sender, DragStartingEventArgs e)
 		{
-			var boxView = (View)((Element)sender)!.Parent;
+			var boxView = (View)((Element)sender!).Parent!;
 			DragStartingTitle.IsVisible = true;
 			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(boxView)!.Value.X}, Y:{(int)e.GetPosition(boxView)!.Value.Y}";
 			DragStartingScreenPositionLabel.Text = $"- Screen X:{(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
@@ -52,9 +52,9 @@ namespace Maui.Controls.Sample.Pages
 				SLAllColors.Background = SolidColorBrush.LightBlue;
 		}
 
-		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
+		private void OnDropCompleted(object? sender, DropCompletedEventArgs e)
 		{
-			var sl = ((Element)sender).Parent as StackLayout;
+			var sl = ((Element)sender!).Parent as StackLayout;
 
 			if (sl == SLAllColors)
 				SLRainbow.Background = SolidColorBrush.White;
@@ -63,9 +63,9 @@ namespace Maui.Controls.Sample.Pages
 
 		}
 
-		private void OnDragOver(object sender, DragEventArgs e)
+		private void OnDragOver(object? sender, DragEventArgs e)
 		{
-			var sl = (StackLayout)((Element)sender).Parent;
+			var sl = (StackLayout)((Element)sender!).Parent!;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -84,9 +84,9 @@ namespace Maui.Controls.Sample.Pages
 			sl.Background = SolidColorBrush.LightPink;
 		}
 
-		private void OnDragLeave(object sender, DragEventArgs e)
+		private void OnDragLeave(object? sender, DragEventArgs e)
 		{
-			var sl = (StackLayout)((Element)sender).Parent;
+			var sl = (StackLayout)((Element)sender!).Parent!;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -105,9 +105,9 @@ namespace Maui.Controls.Sample.Pages
 			sl.Background = SolidColorBrush.LightBlue;
 		}
 
-		private void OnDrop(object sender, DropEventArgs e)
+		private void OnDrop(object? sender, DropEventArgs e)
 		{
-			var sl = ((Element)sender).Parent as StackLayout;
+			var sl = ((Element)sender!).Parent as StackLayout;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;

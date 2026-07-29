@@ -238,7 +238,8 @@
         <ItemGroup>
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
-            <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != '' and '%(MauiIcon.MonochromeFile)' == ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != '' and '%(MauiIcon.MonochromeFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" MonochromeFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.MonochromeFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
             <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" ProjectDirectory="$(MSBuildProjectDirectory)" />
             <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
@@ -325,7 +326,7 @@
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
             File="$(_ResizetizerInputsFile)"
-            Lines="@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile)')"
+            Lines="@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile);MonochromeFile=%(MonochromeFile)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 

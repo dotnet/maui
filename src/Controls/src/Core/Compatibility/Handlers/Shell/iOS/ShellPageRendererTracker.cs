@@ -607,26 +607,46 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem.LeftBarButtonItem != null)
 				{
+					var customAccessibilityLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
+					bool hasCustomLabel = !string.IsNullOrEmpty(customAccessibilityLabel);
+
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
-							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = hasCustomLabel ? customAccessibilityLabel : "Menu";
 						}
 						else
+						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
+							if (hasCustomLabel)
+							{
+								NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
+							}
+							else
+							{
+								NavigationItem.LeftBarButtonItem.AccessibilityLabel = null;
+							}
+						}
 					}
 					else
 					{
 						NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
+						if (hasCustomLabel)
+						{
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
+						}
 					}
 
 					if (image != null)
 					{
 #pragma warning disable CS0618 // Type or member is obsolete
 						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
-						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+						if (!hasCustomLabel)
+						{
+							NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+						}
 #pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
@@ -645,6 +665,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var behavior = BackButtonBehavior;
 			var text = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.TextOverrideProperty, null);
+			var accessibilityLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
 
 			var navController = ViewController?.NavigationController;
 
@@ -661,13 +682,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						var previousNavItem = viewControllers[count - 2].NavigationItem;
 						if (previousNavItem != null)
 						{
-							if (text is not null)
+							if (text is not null || !string.IsNullOrEmpty(accessibilityLabel))
 							{
 								var barButtonItem = (previousNavItem.BackBarButtonItem ??= new UIBarButtonItem());
-								barButtonItem.Title = text;
+								if (text is not null)
+								{
+									barButtonItem.Title = text;
+								}
+								else if (barButtonItem.Title is null)
+								{
+									// Preserve default back button title when only accessibility label is set
+									barButtonItem.Title = previousNavItem.Title;
+								}
+								if (!string.IsNullOrEmpty(accessibilityLabel))
+								{
+									barButtonItem.AccessibilityLabel = accessibilityLabel;
+								}
+								else
+								{
+									barButtonItem.AccessibilityLabel = null;
+								}
 							}
 							else if (previousNavItem.BackBarButtonItem != null)
 							{
+								previousNavItem.BackBarButtonItem.AccessibilityLabel = null;
 								previousNavItem.BackBarButtonItem = null;
 							}
 						}
@@ -1144,9 +1182,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (result != null)
 				{
 					var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Normal);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Highlighted);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Selected);
 				}
 			});
 		}

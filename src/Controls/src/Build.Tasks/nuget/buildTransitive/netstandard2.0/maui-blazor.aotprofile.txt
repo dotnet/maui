@@ -312,7 +312,6 @@ Methods:
 	bool Microsoft.Maui.RuntimeFeature:get_EnableDiagnostics ()
 	bool Microsoft.Maui.RuntimeFeature:get_EnableMauiAspire ()
 	bool Microsoft.Maui.RuntimeFeature:get_EnableMauiDiagnostics ()
-	bool Microsoft.Maui.RuntimeFeature:get_IsHybridWebViewSupported ()
 	bool Microsoft.Maui.RuntimeFeature:InitializeIsMeterSupported ()
 	bool Microsoft.Maui.ViewExtensions:NeedsContainer (Microsoft.Maui.IView)
 	bool Microsoft.Maui.VisualDiagnostics:get_IsEnabled ()

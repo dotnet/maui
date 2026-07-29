@@ -46,6 +46,11 @@
         <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
         <ShellContent Title = "Window Title Bar"  ContentTemplate="{DataTemplate pages:WindowTitleBar}"></ShellContent>
     </FlyoutItem>
+    <FlyoutItem Title = "Badge Gallery">
+        <ShellContent Icon="calculator.png" Title = "Badge Demo" ContentTemplate="{DataTemplate shellPages:ShellBadgeGallery}"></ShellContent>
+        <ShellContent Icon="coffee.png" Title = "Tab 2" BadgeText="3" BadgeColor="Red" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
+        <ShellContent Title = "Tab 3" BadgeText="New" BadgeColor="Blue" ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
+    </FlyoutItem>
     <FlyoutItem Title = "Flyout Item 2" FlyoutDisplayOptions="AsMultipleItems">
         <ShellSection Title = "Tab 1">
             <ShellContent  Icon="calculator.png" Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
