@@ -48,8 +48,20 @@ param(
     # review over a FAILED gate. Empty/omitted (local/manual runs that never post
     # APPROVE) is treated as the non-blocking 'SKIPPED' sentinel.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
-    [string]$TrustedGateResult = ''
+    # TIMEDOUT is a pipeline-supplied sentinel meaning the Gate task itself did not finish
+    # (stopped by its 150-min hang-safety timeout, or it produced no verdict). It renders an
+    # honest "gate did not complete" section and vetoes APPROVE (the fix was not verified).
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+    [string]$TrustedGateResult = '',
+
+    # Optional review/deep-run platform supplied by the pipeline (${{ parameters.Platform }}).
+    # Used ONLY as a fallback for the Platform status chip when the summary content carries no
+    # "**Platform:**" line — e.g. a deep-only re-run with no code-review phase, where the
+    # deep clearly ran on a platform but nothing in the text names it (dotnet/maui#35606 rendered
+    # "Platform Unknown"). A full review still prefers the code-review-derived platform. Empty for
+    # local/manual runs → behaves exactly as before.
+    [Parameter(Mandatory = $false)]
+    [string]$Platform = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -166,7 +178,25 @@ function Add-MissingUITestResultsNote {
         return $Content
     }
 
-    $note = @'
+    # Tailor the guidance to the ACTUAL gate outcome (already present in $Content)
+    # instead of always blaming "the PR build failed (see the Gate section)". Only a
+    # FAILED gate means the PR build is the likely blocker. A gate that PASSED, was
+    # SKIPPED (no tests), or was INCONCLUSIVE means the PR build itself was fine — so
+    # the deep UI stage produced nothing because it was skipped or died on
+    # INFRASTRUCTURE (the merge-for-testing step, emulator/simulator boot, or an
+    # Appium hang), NOT because of this PR's code. Pointing the author at "fix the
+    # build/gate" in that case sends them down the wrong path (e.g. PR #36544, whose
+    # gate was SKIPPED and whose deep stage failed at the Windows autocrlf merge step).
+    # A FAILED gate — or an unknown/absent gate outcome — falls back to the neutral
+    # "fix the build/gate and push again" guidance; only an explicit non-FAILED gate
+    # (PASSED/SKIPPED/INCONCLUSIVE) points at infrastructure.
+    $gateState = ''
+    if ($Content -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+        $gateState = $Matches[1].ToUpperInvariant()
+    }
+
+    if ($gateState -eq 'FAILED' -or $gateState -eq '') {
+        $note = @'
 
 > [!WARNING]
 > **No UI test results were produced for the detected categories.** The platform-pool run
@@ -174,6 +204,17 @@ function Add-MissingUITestResultsNote {
 > the deep UI test stage was skipped. Fix the build/gate issues and push again; the review
 > re-runs on new commits (a maintainer can also re-run it).
 '@
+    } else {
+        # PASSED / SKIPPED / INCONCLUSIVE / unknown → the PR build was not the blocker.
+        $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The PR build itself was
+> fine — the deep UI stage was skipped or interrupted on **infrastructure** (the
+> merge-for-testing step, emulator/simulator boot, or an Appium hang), not by this PR's code.
+> This is usually transient; the review re-runs on new commits (a maintainer can also re-run it).
+'@
+    }
     return ($Content.TrimEnd() + [Environment]::NewLine + $note)
 }
 
@@ -188,7 +229,7 @@ function ConvertTo-TitleCase {
     switch -Regex ($trimmed) {
         '(?i)^android$' { return 'Android' }
         '(?i)^ios$' { return 'iOS' }
-        '(?i)^maccatalyst$' { return 'MacCatalyst' }
+        '(?i)^(mac)?catalyst$' { return 'MacCatalyst' }
         '(?i)^windows$' { return 'Windows' }
         '(?i)^all$' { return 'All' }
     }
@@ -229,19 +270,24 @@ function Get-GateStatus {
     # the bug" = passes with and without the fix). Surface those as 'Partial' rather than a
     # flat 'Failed'. A SKIPPED gate means no runnable tests were detected → 'No Tests'.
     # INCONCLUSIVE means the tests could not be built/run (build or env error) → 'Inconclusive'.
+    # TIMEDOUT means the gate task itself was stopped by its hang-safety timeout (or produced no
+    # verdict at all) → 'Timed Out': the fix was NOT verified, but this is an infra outcome, not a
+    # real test failure, so it renders teal like Inconclusive rather than red.
     $isPartial = ($GateContent -match '(?i)Regression in another test' -or
                   $GateContent -match '(?i)Test does not reproduce the bug')
 
-    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE|TIMEDOUT)') {
         switch ($Matches[1].ToUpperInvariant()) {
             'PASSED'       { return 'Passed' }
             'SKIPPED'      { return 'No Tests' }
             'INCONCLUSIVE' { return 'Inconclusive' }
+            'TIMEDOUT'     { return 'Timed Out' }
             'FAILED'       { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
         }
     }
 
     if ($GateContent -match '(?i)\binconclusive\b') { return 'Inconclusive' }
+    if ($GateContent -match '(?i)\btimed[\s-]?out\b') { return 'Timed Out' }
     if ($isPartial) { return 'Partial' }
     if ($GateContent -match '(?i)\bfailed\b') { return 'Failed' }
     if ($GateContent -match '(?i)\bpassed\b') { return 'Passed' }
@@ -298,9 +344,11 @@ function New-StatusChipRow {
         'Passed'       { '1a7f37' }   # green
         'Partial'      { 'bf8700' }   # amber — mixed/inconclusive
         'Inconclusive' { '0e7490' }   # teal — could not build/run (infra), not a real fail (avoid purple ~ GitHub "merged")
+        'Timed Out'    { '0e7490' }   # teal — gate stopped by its hang-safety timeout (infra), fix unverified
         'No Tests'     { '57606a' }   # neutral gray — nothing to verify
+        'Unknown'      { '57606a' }   # neutral gray — gate did not run / no verdict (deep-only rerun); absence of data, NOT a failure
         'Failed'       { 'd1242f' }   # red
-        default        { 'd1242f' }
+        default        { '57606a' }   # any unrecognized status renders neutral gray — red is reserved for a confirmed Failed gate only
     }
     $confidenceColor = switch ($Confidence) {
         'High' { '0969da' }
@@ -464,7 +512,9 @@ function Test-RunValidationFailed {
     # gate/gate-result.txt or gate/content.md from $PRAgentDir — both live in the agent-writable
     # worktree/artifact, so a prompt-injected review agent could overwrite a real FAILED gate
     # with "PASSED" before this trusted posting step and bypass the APPROVE veto.
-    if ($TrustedGateResult -match '(?im)^\s*FAILED\s*$') { return $true }
+    # FAILED = a real test regression; TIMEDOUT = the gate never finished (fix unverified) —
+    # both must veto an APPROVE. INCONCLUSIVE/SKIPPED stay non-blocking sentinels.
+    if ($TrustedGateResult -match '(?im)^\s*(FAILED|TIMEDOUT)\s*$') { return $true }
 
     # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
     # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
@@ -601,6 +651,36 @@ $gateContent
     }
 } else {
     Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
+}
+
+# When the pipeline reports a timed-out / no-verdict gate (its 150-min hang-safety cap fired,
+# or the gate task crashed before writing a verdict), the agent-written gate/content.md is
+# usually absent. Synthesize an honest Gate section from the trusted TIMEDOUT verdict so the
+# AI Summary still renders normally (the rest of the review ran fine) and the Gate section
+# itself explains why test verification did not complete. Guarded to TIMEDOUT so normal runs
+# and local/manual runs (empty verdict → SKIPPED) are unaffected.
+if ([string]::IsNullOrWhiteSpace($gateContent) -and $TrustedGateResult -match '(?i)TIMEDOUT') {
+    $gateContent = @'
+### Gate Result: TIMEDOUT — test verification did not finish
+
+The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 150 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
+
+- This is almost always a transient **infrastructure** issue on the CI agent — **not** a problem with your PR.
+- Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
+- The rest of the review below (expert analysis and findings) ran as usual.
+
+**Next step:** re-comment `/review` to retry the gate on a fresh agent.
+'@
+    Write-Host "  ⏱️  gate (synthesized TIMEDOUT section — gate did not complete)" -ForegroundColor Yellow
+    $gateSection = @"
+<details open>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
+<br/>
+
+$gateContent
+
+</details>
+"@
 }
 
 $phaseSections = @()
@@ -746,10 +826,17 @@ if ($prAuthor) {
 }
 
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
+$resolvedPlatform = Get-PlatformStatus -Contents $summaryContent
+# Fall back to the pipeline-supplied review/deep platform when the content names none
+# (e.g. a deep-only rerun with no code-review phase) so the chip shows the real platform
+# instead of a misleading "Unknown" (dotnet/maui#35606).
+if ($resolvedPlatform -eq 'Unknown' -and -not [string]::IsNullOrWhiteSpace($Platform)) {
+    $resolvedPlatform = ConvertTo-TitleCase $Platform
+}
 $statusChipRow = New-StatusChipRow `
     -GateStatus (Get-GateStatus -GateContent $gateContent) `
     -Confidence (Get-ConfidenceStatus -Contents $summaryContent) `
-    -Platform (Get-PlatformStatus -Contents $summaryContent)
+    -Platform $resolvedPlatform
 $futureActionSection = New-FutureActionSection -PRAgentDir $PRAgentDir
 
 $commentBody = @"
@@ -790,37 +877,125 @@ if ($DryRun) {
 # HIDE STALE GENERATED ARTIFACTS, THEN POST REVIEW
 # ============================================================================
 
-if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
-    Hide-StaleMauiBotIssueComments `
-        -PRNumber $PRNumber `
-        -IncludeAISummary `
-        -IncludeLegacyGate `
-        -IncludeMergeConflict `
-        -IncludeTryFix `
-        -Reason "stale generated PR review artifact"
-}
-
-if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
-    Hide-StaleMauiBotPullRequestReviews `
-        -PRNumber $PRNumber `
-        -IncludeAISummary `
-        -IncludeTryFix `
-        -Reason "stale generated PR review" `
-        -DismissFormalReviews
-}
-
-Write-Host "Creating new AI Summary PR review ($reviewEvent)..." -ForegroundColor Yellow
+# ============================================================================
+# HIDE STALE GENERATED ARTIFACTS, THEN POST
+# ============================================================================
+#
+# The pipeline's posting token (GH_COMMENT_TOKEN, a GitHub App token) can CREATE PR
+# reviews but CANNOT update / dismiss / minimize them (PUT + dismiss both return HTTP 404
+# in-pipeline, though they succeed with a full-permission PAT), so posting the AI Summary
+# as a REVIEW every build stacks them indefinitely (observed 40+ on one PR). Issue
+# comments, by contrast, ARE editable by this token. So for the common COMMENT verdict
+# (no formal veto) we post/UPDATE a single AI-Summary ISSUE COMMENT in place — it never
+# stacks. Formal APPROVE / CHANGES_REQUESTED verdicts still post a review (they carry the
+# review state and are far less frequent). Any failure in the comment path falls back to
+# posting a review, so the worst case is the previous behavior.
+$review = $null
 $postedEvent = $reviewEvent
-try {
-    $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
-} catch {
-    if ($postedEvent -eq 'COMMENT') {
-        throw
+
+if ($reviewEvent -eq 'COMMENT') {
+    # Most recent existing AI-Summary issue comment (if any) — update it in place.
+    $reuseComment = $null
+    if ($existingObjs -and $existingObjs.Count -gt 0) {
+        $reuseComment = $existingObjs | Sort-Object { $_.created_at } | Select-Object -Last 1
     }
 
-    Write-Host "⚠️ Formal $postedEvent review was rejected; retrying as COMMENT: $_" -ForegroundColor Yellow
-    $postedEvent = 'COMMENT'
-    $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+    # Minimize stale AI-Summary issue comments (and other stale notices) EXCEPT the one we
+    # will update in place, so the fresh summary is never collapsed.
+    if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+        $preserveCommentIds = @()
+        $preserveCommentNodeIds = @()
+        if ($reuseComment) {
+            $preserveCommentIds = @([string]$reuseComment.id)
+            if ($reuseComment.node_id) { $preserveCommentNodeIds = @([string]$reuseComment.node_id) }
+        }
+        Hide-StaleMauiBotIssueComments `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeLegacyGate `
+            -IncludeMergeConflict `
+            -IncludeTryFix `
+            -IncludeReviewIncomplete `
+            -PreserveIds $preserveCommentIds `
+            -PreserveNodeIds $preserveCommentNodeIds `
+            -Reason "stale generated PR review artifact"
+    }
+    # Best-effort collapse of any stale AI-Summary REVIEWS left from before this change
+    # (no-op for the token in-pipeline, but harmless and correct with a full-perm token).
+    if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -IncludeAISummary -IncludeTryFix -Reason "stale generated PR review" -DismissFormalReviews
+    }
+
+    try {
+        $bodyTmp = New-TemporaryFile
+        @{ body = $commentBody } | ConvertTo-Json -Depth 6 | Set-Content $bodyTmp.FullName -Encoding UTF8
+        if ($reuseComment) {
+            Write-Host "Updating existing AI Summary issue comment $($reuseComment.id) in place (no stacking)..." -ForegroundColor Yellow
+            $cRaw = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($reuseComment.id)" --input $bodyTmp.FullName 2>&1
+        } else {
+            Write-Host "Creating AI Summary issue comment..." -ForegroundColor Yellow
+            $cRaw = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $bodyTmp.FullName 2>&1
+        }
+        Remove-Item $bodyTmp.FullName -ErrorAction SilentlyContinue
+        if ($LASTEXITCODE -eq 0) {
+            $review = $cRaw | ConvertFrom-Json
+            $postedEvent = 'COMMENT'
+            Write-Host "✅ AI Summary issue comment posted/updated in place (ID: $($review.id))" -ForegroundColor Green
+            # If we reused (PATCHed) an existing comment, it may have been minimized by an
+            # earlier stale-artifact sweep — a REST PATCH updates the body but does NOT un-hide
+            # a collapsed comment, so the fresh summary would stay invisible (observed on #35110:
+            # summary updated in place but the comment was still collapsed as 'outdated'). Un-hide
+            # it so the current summary is always shown.
+            if ($reuseComment -and (Get-Command Invoke-GitHubUnminimizeComment -ErrorAction SilentlyContinue)) {
+                $reuseNodeId = if ($review.node_id) { [string]$review.node_id } elseif ($reuseComment.node_id) { [string]$reuseComment.node_id } else { $null }
+                if ($reuseNodeId) {
+                    Invoke-GitHubUnminimizeComment -SubjectNodeId $reuseNodeId -Reason "reused AI Summary issue comment" | Out-Null
+                }
+            }
+        } else {
+            Write-Host "⚠️ Issue-comment post/update failed; falling back to a review. $cRaw" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "⚠️ Issue-comment path threw; falling back to a review: $_" -ForegroundColor Yellow
+    }
+}
+
+if (-not $review) {
+    # Formal verdict (APPROVE / CHANGES_REQUESTED) OR the issue-comment path failed:
+    # post a PR review (the previous behavior).
+    if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotIssueComments `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeLegacyGate `
+            -IncludeMergeConflict `
+            -IncludeTryFix `
+            -IncludeReviewIncomplete `
+            -Reason "stale generated PR review artifact"
+    }
+
+    if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotPullRequestReviews `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeTryFix `
+            -Reason "stale generated PR review" `
+            -DismissFormalReviews
+    }
+
+    Write-Host "Creating new AI Summary PR review ($reviewEvent)..." -ForegroundColor Yellow
+    $postedEvent = $reviewEvent
+    try {
+        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+    } catch {
+        if ($postedEvent -eq 'COMMENT') {
+            throw
+        }
+
+        Write-Host "⚠️ Formal $postedEvent review was rejected; retrying as COMMENT: $_" -ForegroundColor Yellow
+        $postedEvent = 'COMMENT'
+        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+    }
 }
 
 $reviewId = [string]$review.id

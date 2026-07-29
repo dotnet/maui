@@ -263,6 +263,14 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
+    # Re-assert ANR/crash-dialog suppression right before dotnet test. The emulator-setup
+    # step sets `hide_error_dialogs` at boot, but the deep stage runs many categories on one
+    # emulator and a mid-run "System UI isn't responding" ANR overlaying the HostApp is the
+    # top "produced no results" cause — this global flag is idempotent, so re-assert it here.
+    if ($settingsReady) {
+        & adb -s $DeviceUdid shell settings put global hide_error_dialogs 1 2>$null
+    }
+
     # Warm up the emulator / SystemUI right before launching the app for tests.
     # On the deep-UI-test (platform-pool) stage the emulator may have sat idle
     # for ~15-20 min during workload install + the app build, after which SystemUI
@@ -323,6 +331,22 @@ $testStartTime = Get-Date
 # The app has built-in file logging that writes directly to MAUI_LOG_FILE path
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
+    # Dismiss the macOS "Sign in to your Apple Account" Setup Assistant modal
+    # before launching the app. On CI mac agents this pane is presented over the
+    # app under test, so Appium's mac2 driver sees no elements and EVERY test
+    # fails with a WaitForElement timeout. Running it here (not just once at job
+    # start) re-clears the screen before each category in the deep loop, in case
+    # the modal re-appears between categories. Best-effort; never blocks the run.
+    $dismissDialog = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/dismiss-apple-account-dialog.sh"))
+    if (Test-Path $dismissDialog) {
+        try {
+            & chmod +x $dismissDialog 2>$null
+            & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
+        } catch {
+            Write-Warn "Apple Account dialog dismissal failed (non-fatal): $_"
+        }
+    }
+
     # Determine runtime identifier
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
@@ -343,6 +367,32 @@ if ($Platform -eq "catalyst") {
         # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
         $env:MAC_APP_PATH = $appPath
         Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
+
+        # Register the freshly-built .app with LaunchServices so the Appium
+        # mac2 driver can resolve it by bundle ID. WebDriverAgentMac looks the
+        # app up via LaunchServices (NSWorkspace) using the bundleId capability;
+        # a newly-built, unregistered Catalyst app is not in the LaunchServices
+        # database, so OneTimeSetUp fails for EVERY test with
+        # "The app representing com.microsoft.maui.uitests could not be found"
+        # (0 passed / all errored). Setting MAC_APP_PATH / options.App alone is
+        # NOT sufficient — the driver still resolves via bundleId. `lsregister -f`
+        # force-registers this exact bundle so the lookup succeeds.
+        # Probe multiple known lsregister locations (the short symlinked path and
+        # the canonical Versions/A path) so a differing framework symlink layout
+        # on any agent macOS version can't silently skip registration and leave
+        # every catalyst test failing.
+        $lsregisterCandidates = @(
+            "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        )
+        $lsregister = $lsregisterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($lsregister) {
+            Write-Info "Registering app with LaunchServices (lsregister -f) via $lsregister ..."
+            & $lsregister -f $appPath 2>&1 | Out-Null
+            Write-Success "Registered MacCatalyst app with LaunchServices"
+        } else {
+            Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
+        }
     } else {
         Write-Warn "MacCatalyst app not found at: $appPath"
         Write-Warn "Test may use wrong app bundle if another version is registered"
@@ -426,14 +476,22 @@ try {
         $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
     }
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
-    $testOutput = & dotnet test @testArgs 2>&1
-    
+    # Stream each line to this script's output stream *as it is produced* (via
+    # Tee-Object pass-through) while still capturing every line into $testOutput.
+    # Streaming live is essential: the deep per-category loop runs this script
+    # under a bounded runner that detects hangs by watching the child's stdout
+    # for growth. `dotnet test` (which includes the multi-minute HostApp build)
+    # emits nothing until it finishes when its output is captured silently, so a
+    # slow-but-healthy build on a saturated agent looked identical to a hang and
+    # got idle-killed mid-build (observed: catalyst CollectionView killed 3x at
+    # ~26 min, whole category falsely failed). Tee gives the idle detector a real
+    # progress signal, keeps $testOutput for the TRX/marker logic below, and — via
+    # the success stream — still reaches gate callers that capture with `2>&1`.
+    # (Do NOT revert to a silent `$testOutput = & dotnet test ... 2>&1` capture.)
+    & dotnet test @testArgs 2>&1 | Tee-Object -Variable testOutput
+
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
-    
-    # Output test results to the output stream so callers can capture them
-    # (Write-Host goes to the Information stream which is not captured by 2>&1)
-    $testOutput | ForEach-Object { Write-Output $_ }
 
     # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
     # and Review-PR.ps1) can locate the authoritative results file regardless
@@ -625,6 +683,38 @@ Write-Info "Test artifacts collected: $screenshotCount screenshot(s), $pageSourc
 
 #region Capture Device Logs
 
+# Run a diagnostic command with a hard timeout so a wedged tool (notably
+# `xcrun simctl spawn booted log show`, which can hang indefinitely when the
+# simulator is left in a bad state after a test-host crash) cannot consume the
+# whole per-category time budget. Observed live: an iOS CollectionView run hit
+# MSBUILD MSB4166 (test-host node crash) mid-run, then `log show` hung for ~48
+# min until the loop's 50-min hard-kill, wasting the category. The command runs
+# in a child pwsh (so any redirection inside $Command still works) and the whole
+# process tree is killed on timeout. Returns $true if it finished in time.
+function Invoke-ScriptWithTimeout {
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [int]$TimeoutSec = 120
+    )
+    $pwshExe = (Get-Process -Id $PID -ErrorAction SilentlyContinue).Path
+    if (-not $pwshExe) { $pwshExe = 'pwsh' }
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $pwshExe
+    $psi.ArgumentList.Add('-NoProfile')
+    $psi.ArgumentList.Add('-NonInteractive')
+    $psi.ArgumentList.Add('-Command')
+    $psi.ArgumentList.Add($Command)
+    $psi.UseShellExecute = $false
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    if (-not $proc.WaitForExit($TimeoutSec * 1000)) {
+        # Kill the entire tree (child pwsh + xcrun + log). Fall back to a plain
+        # kill if the tree overload is unavailable.
+        try { $proc.Kill($true) } catch { try { $proc.Kill() } catch { <# best effort #> } }
+        return $false
+    }
+    return $true
+}
+
 Write-Step "Capturing device logs..."
 
 if ($Platform -eq "android") {
@@ -649,9 +739,11 @@ if ($Platform -eq "android") {
     
     $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
     
-    Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
-    
-    Write-Info "iOS logs saved to: $deviceLogFile"
+    if (Invoke-ScriptWithTimeout -Command "$iosLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120) {
+        Write-Info "iOS logs saved to: $deviceLogFile"
+    } else {
+        Write-Warn "iOS log capture (log show) exceeded 120s and was killed — continuing without full device logs"
+    }
 } elseif ($Platform -eq "catalyst") {
     # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
     # Just verify the file exists and has content
@@ -662,7 +754,9 @@ if ($Platform -eq "android") {
         Write-Info "File logging output was minimal, using os_log fallback..."
         $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
         $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
-        Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+        if (-not (Invoke-ScriptWithTimeout -Command "$catalystLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120)) {
+            Write-Warn "MacCatalyst os_log capture exceeded 120s and was killed — continuing"
+        }
     }
     
     Write-Info "MacCatalyst logs saved to: $deviceLogFile"

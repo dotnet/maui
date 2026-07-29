@@ -54,6 +54,16 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotCliUsageLineData')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
+}
+
+Describe 'Phase worktree requirements' {
+    It 'requires the prepared review worktree for Gate and CopilotReview only' {
+        Test-PhaseRequiresReviewWorktree -PhaseName 'Setup' | Should -BeFalse
+        Test-PhaseRequiresReviewWorktree -PhaseName 'Gate' | Should -BeTrue
+        Test-PhaseRequiresReviewWorktree -PhaseName 'CopilotReview' | Should -BeTrue
+        Test-PhaseRequiresReviewWorktree -PhaseName 'Post' | Should -BeFalse
+    }
 }
 
 Describe 'Copilot token usage helpers' {

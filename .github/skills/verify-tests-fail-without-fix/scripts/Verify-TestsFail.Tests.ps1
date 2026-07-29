@@ -23,12 +23,14 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    $function = $ast.Find({
-        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'Get-TestResultFromOutput'
-    }, $true)
-    if (-not $function) { throw "Function 'Get-TestResultFromOutput' not found" }
-    Invoke-Expression $function.Extent.Text
+    foreach ($fnName in @('Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual')) {
+        $fn = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $fnName
+        }, $true)
+        if (-not $fn) { throw "Function '$fnName' not found" }
+        Invoke-Expression $fn.Extent.Text
+    }
 
     function New-LogFile {
         param([string]$Content)
@@ -91,5 +93,239 @@ Build succeeded.
         $r.BuildError | Should -Not -BeTrue
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Get-TestResultFromOutput — filter mismatch classification' {
+    # A -filter that matches 0 test cases means the deciding test never ran, so the gate
+    # verified nothing. The parser MUST flag this as FilterMismatch (not EnvError, not
+    # BuildError, not a plain FAIL) because the verdict logic routes FilterMismatch to
+    # INCONCLUSIVE via $gateInfraError (guarded by $withFixGenuineFailCount -eq 0). Without
+    # this contract a platform-gated test — e.g. one excluded on Android by a category or
+    # #if TEST_FAILS_ON_ANDROID — falsely blocks the PR. Guards real build 14634904
+    # (#35998 android, Issue26049: both runs "No test matches ... 'Issue26049'").
+    It 'flags "No test matches the given testcase filter" as FilterMismatch (real 14634904 #35998 Issue26049)' {
+        $log = New-LogFile @'
+  A total of 1 test files matched the specified pattern.
+No test matches the given testcase filter `Issue26049` in /a/b/Controls.TestCases.Android.Tests.dll
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'Issue26049'
+        $r.FilterMismatch | Should -BeTrue
+        $r.Passed        | Should -BeFalse
+        $r.EnvError      | Should -Not -BeTrue
+        $r.BuildError    | Should -Not -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'extracts the single-quoted filter name from the runner message' {
+        $log = New-LogFile "No test matches the given testcase filter 'SomeMissingTest' in x.dll"
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.FilterMismatch | Should -BeTrue
+        $r.Error | Should -Match 'SomeMissingTest'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'flags "Test count: 0" as FilterMismatch' {
+        $log = New-LogFile "Starting test execution, please wait...`nTest count: 0"
+        (Get-TestResultFromOutput -LogFile $log -TestFilter 'X').FilterMismatch | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Get-TestResultFromOutput — environment/infra classification' {
+    # These lock in the campaign's env-class fixes: an Appium/Selenium fixture setup flake or
+    # a brand-new snapshot with no committed baseline is NOT a fix failure — the gate could
+    # not verify, so it must be EnvError (-> INCONCLUSIVE), never a plain FAIL that blocks.
+    It 'flags an Appium OneTimeSetUp Selenium error as an env error (real #27477 Issue19752)' {
+        $log = New-LogFile @'
+OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side error occurred while processing the command. Original error: The app representing com.microsoft.maui.uitests could not be found.
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.Passed   | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'flags "Call InitialSetup before accessing the App property" as an env error' {
+        $log = New-LogFile "System.InvalidOperationException : Call InitialSetup before accessing the App property"
+        (Get-TestResultFromOutput -LogFile $log).EnvError | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'flags a brand-new snapshot with no committed baseline as env/SnapshotBaselineMissing' {
+        $log = New-LogFile "VisualTestFailedException : Baseline snapshot not yet created for MyNewTest"
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.SnapshotBaselineMissing | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    # A native shared-library load failure (DllNotFoundException / "Unable to load shared
+    # library") means the test process could not load a required NATIVE dependency (e.g.
+    # libSkiaSharp on a Linux/android gate agent). The test COULD NOT RUN, so nothing about
+    # the fix was verified -> EnvError (INCONCLUSIVE), never a plain FAIL that blocks. Guards
+    # real build 14699033 (#36653 [Build] Resizetizer external backend): the gate detected
+    # ResizetizeImagesTests at CLASS level and ran the whole class on an android agent with no
+    # SkiaSharp runtime, so image-rasterization tests threw DllNotFoundException in BOTH the
+    # without-fix and with-fix runs -> false FAILED, even though the PR's logic tests passed
+    # and real maui-pr CI (Windows Helix Unit Tests) passes these.
+    It 'flags a libSkiaSharp DllNotFoundException as env/NativeLibLoadFailure (real #36653 build 14699033)' {
+        $log = New-LogFile @'
+  Failed BasicImageProcessingWorks [1 s]
+  Error Message:
+   System.DllNotFoundException : Unable to load shared library 'libSkiaSharp' or one of its dependencies. In order to help diagnose loading problems, consider setting the LD_DEBUG environment variable: liblibSkiaSharp: cannot open shared object file: No such file or directory
+Test Run Failed.
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.Passed   | Should -BeFalse
+        $r.Error    | Should -Match 'libSkiaSharp'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'flags a Windows "Unable to load DLL" native-load failure as an env error' {
+        $log = New-LogFile "System.DllNotFoundException : Unable to load DLL 'libHarfBuzzSharp': The specified module could not be found. (0x8007007E)`nTest Run Failed."
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.NativeLibLoadFailure | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    # The MIXED pass+fail case the FIRST native-lib fix MISSED: when SOME tests pass and SOME
+    # fail on the missing native lib, the "trust the counts" path returns a plain FAIL BEFORE the
+    # dedicated env block ever runs — so that path must ANNOTATE NativeLibLoadFailure. The
+    # aggregation then excludes the test only when the SAME load failure is present in BOTH the
+    # without-fix and with-fix runs. Real build 14699033 (#36653) ResizetizeImagesTests reported
+    # Passed:9 Failed:12 (every failure libSkiaSharp — some direct DllNotFoundException, one a
+    # downstream "File did not exist" because the image was never generated) and was counted as a
+    # genuine with-fix failure -> blocking FAILED, while the real repro DpiPathTests went FAIL->PASS.
+    It 'annotates NativeLibLoadFailure on a MIXED pass+fail run of libSkiaSharp failures (real #36653 ResizetizeImagesTests)' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests+ExecuteForAndroid.SingleRasterAppIcon [FAIL]
+      There was an exception processing the image ''. System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+      /home/vsts/work/1/s/artifacts/bin/Resizetizer.UnitTests/Debug/net11.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+    ResizetizeImagesTests+ExecuteForCustomPlatform.UsesGenericDesktopFallback [FAIL]
+      File did not exist: /tmp/.../camera.png
+  Failed!  - Failed:    12, Passed:     9, Skipped:     0, Total:    21
+  Test Run Failed.
+  Total tests: 21
+       Passed: 9
+       Failed: 12
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
+        $r.Passed               | Should -BeFalse
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.FailCount            | Should -Be 12
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    # SAFETY counterpart: a MIXED pass+fail run whose failures are GENUINE managed assertions
+    # (no native lib in the log) must NOT be annotated, so a real regression is never masked by
+    # the both-states native-lib exclusion. (#36653 DpiPathTests: NullReference/ArgumentNull —
+    # the actual bug the fix resolves; it must still drive the FAIL->PASS repro count.)
+    It 'does NOT annotate NativeLibLoadFailure on a mixed run of genuine NRE/assert failures (real #36653 DpiPathTests)' {
+        $log = New-LogFile @'
+  Failed DpiPathTests+GetAppIconDpis.ReturnsGenericDesktopFallback(platform: "gtk") [< 1 ms]
+  Error Message:
+   System.NullReferenceException : Object reference not set to an instance of an object.
+  Failed DpiPathTests+GetDpis.ReturnsGenericDesktopFallback(platform: "gtk") [14 ms]
+  Error Message:
+   System.ArgumentNullException : Value cannot be null. (Parameter 'collection')
+  Test Run Failed.
+  Total tests: 22
+       Passed: 13
+       Failed: 9
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'DpiPathTests'
+        $r.Passed               | Should -BeFalse
+        $r.NativeLibLoadFailure | Should -Not -BeTrue
+        $r.FailCount            | Should -Be 9
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does NOT flag a genuine ran-and-failed assertion as a native-lib env error' {
+        $log = New-LogFile "Build succeeded.`n    0 Error(s)`n  Failed:  2`n  Passed:  3`nAssert.Equal() Failure: Expected 5 but got 4"
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.NativeLibLoadFailure | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Get-SnapshotDiffMap — snapshot diff extraction' {
+    It 'extracts { filename -> percent } from "Snapshot different than baseline" lines' {
+        $log = New-LogFile @'
+  Snapshot different than baseline: Issue33037NonShell_ListView_AfterScroll.png (0.65% difference)
+  Snapshot different than baseline: Issue33037NonShell_GridScrollView_AfterScroll.png (2.63% difference)
+'@
+        $m = Get-SnapshotDiffMap -LogFile $log
+        $m.Count | Should -Be 2
+        $m['issue33037nonshell_listview_afterscroll.png'] | Should -Be 0.65
+        $m['issue33037nonshell_gridscrollview_afterscroll.png'] | Should -Be 2.63
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps the MAX percent when the same file appears more than once' {
+        $log = New-LogFile @'
+  Snapshot different than baseline: a.png (0.40% difference)
+  Snapshot different than baseline: a.png (0.90% difference)
+'@
+        (Get-SnapshotDiffMap -LogFile $log)['a.png'] | Should -Be 0.90
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'returns an empty map for a log with no snapshot diffs' {
+        $log = New-LogFile "everything is fine, no visual failures here"
+        (Get-SnapshotDiffMap -LogFile $log).Count | Should -Be 0
+        Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Test-SnapshotEnvironmentalResidual — FAIL->FAIL environmental downgrade' {
+    # Guards commit ecf272c7a8. The gate runs the SAME visual test WITHOUT and WITH the fix,
+    # so it can tell a fix-caused diff (present without, gone/smaller with) from an
+    # environmental one (present at ~the same magnitude in BOTH runs). The downgrade to
+    # INCONCLUSIVE must fire ONLY for a genuine environmental residual and must NEVER mask a
+    # real regression — these tests pin both directions. Data mirrors real iOS #36511
+    # (build 14635697) Issue33037NonShell.
+    It 'returns TRUE for the real #36511 case (fix collapses the 2 real diffs; 4 sub-1% residuals no larger than without-fix)' {
+        $wo = @{ FailCount = 5; SnapshotDiffMap = @{
+            'direct.png' = 0.70; 'grid.png' = 2.63; 'contentviewgrid.png' = 3.01; 'listview.png' = 0.65; 'collectionview.png' = 0.77 } }
+        $w  = @{ FailCount = 4; SnapshotDiffMap = @{
+            'direct.png' = 0.70; 'contentviewgrid.png' = 0.54; 'listview.png' = 0.65; 'collectionview.png' = 0.77 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeTrue
+    }
+
+    It 'returns FALSE when the fix WORSENS a snapshot (real regression, not environmental)' {
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        $w  = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.90 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'returns FALSE when the fix NEWLY breaks a snapshot absent from the without-fix run' {
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        $w  = @{ FailCount = 1; SnapshotDiffMap = @{ 'newlybroken.png' = 0.30 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'returns FALSE when any residual exceeds the ~1% environmental ceiling' {
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 2.00 } }
+        $w  = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 1.50 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'returns FALSE when a non-snapshot failure hides among the diffs (FailCount > snapshot files)' {
+        $wo = @{ FailCount = 5; SnapshotDiffMap = @{ 'direct.png' = 0.70; 'listview.png' = 0.65 } }
+        $w  = @{ FailCount = 2; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+
+    It 'is fail-safe: returns FALSE for null inputs and an empty with-fix map' {
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $null -WithFixResult $null | Should -BeFalse
+        $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
+        $w  = @{ FailCount = 0; SnapshotDiffMap = @{} }
+        Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
     }
 }

@@ -35,7 +35,12 @@ jobs:
   match:
     if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    # The actual work (a bash regex match) takes <1s, but GitHub-hosted runner
+    # provisioning ("Set up job") can take ~2 min under load. A 2-minute cap let that
+    # provisioning latency cancel the whole job mid-setup, skipping trigger-review so the
+    # AzDO pipeline never queued (e.g. dotnet/maui#36307 comment 4925414214). Give the
+    # runner ample headroom — the trivial step can't itself hang for minutes.
+    timeout-minutes: 10
     outputs:
       matched: ${{ steps.check.outputs.matched }}
     steps:
@@ -109,6 +114,24 @@ jobs:
           # Valid platforms (from AzDO pipeline definition)
           VALID_PLATFORMS="android ios catalyst windows"
 
+          # Normalize a user-supplied platform token to the canonical AzDO value.
+          # Accepts friendly aliases (macos / maccatalyst / mac -> catalyst,
+          # win -> windows) so an explicit '-p macos' is not silently dropped —
+          # a dropped token falls through to label inference and can pick the
+          # wrong platform (e.g. 'ios' on a dual iOS/MacCatalyst PR). Prints the
+          # canonical token and returns 0 on success; returns 1 if unrecognized.
+          normalize_platform() {
+            _cand=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+            case "${_cand}" in
+              macos|maccatalyst|mac) _cand="catalyst" ;;
+              win) _cand="windows" ;;
+            esac
+            for _p in ${VALID_PLATFORMS}; do
+              if [ "${_cand}" = "${_p}" ]; then printf '%s' "${_cand}"; return 0; fi
+            done
+            return 1
+          }
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${INPUT_PR_NUMBER}"
             PLATFORM="${INPUT_PLATFORM}"
@@ -120,6 +143,7 @@ jobs:
             # prefix and parse remaining args.
             TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
             ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
@@ -138,34 +162,28 @@ jobs:
                   fi
                   ;;
                 --platform=*|-p=*)
-                  CANDIDATE=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
-                  for p in ${VALID_PLATFORMS}; do
-                    if [ "${CANDIDATE}" = "${p}" ]; then
-                      PLATFORM="${p}"
-                      break
-                    fi
-                  done
+                  if _NORM=$(normalize_platform "${1#*=}"); then
+                    PLATFORM="${_NORM}"
+                  else
+                    echo "::warning::Ignoring unrecognized platform '${1#*=}' (valid: ${VALID_PLATFORMS}; aliases: macos/maccatalyst=catalyst)."
+                  fi
                   ;;
                 --platform|-p)
                   shift
                   if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
-                    CANDIDATE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-                    for p in ${VALID_PLATFORMS}; do
-                      if [ "${CANDIDATE}" = "${p}" ]; then
-                        PLATFORM="${p}"
-                        break
-                      fi
-                    done
+                    if _NORM=$(normalize_platform "$1"); then
+                      PLATFORM="${_NORM}"
+                    else
+                      echo "::warning::Ignoring unrecognized platform '$1' (valid: ${VALID_PLATFORMS}; aliases: macos/maccatalyst=catalyst)."
+                    fi
                   fi
                   ;;
                 *)
-                  # Check if it's a valid platform name
-                  for p in ${VALID_PLATFORMS}; do
-                    if [ "$(echo "$1" | tr '[:upper:]' '[:lower:]')" = "${p}" ]; then
-                      PLATFORM="${p}"
-                      break
-                    fi
-                  done
+                  # Accept a bare positional platform token (incl. aliases);
+                  # silently ignore anything that isn't a platform.
+                  if _NORM=$(normalize_platform "$1"); then
+                    PLATFORM="${_NORM}"
+                  fi
                   ;;
               esac
               shift || true
@@ -234,6 +252,46 @@ jobs:
               "locked=true" >> $env:GITHUB_OUTPUT
               "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
+
+              # Make the skip VISIBLE to the maintainer. Previously this path only
+              # wrote to the (invisible) job step-summary, so re-commenting /review
+              # while a review is in flight — which can now run for hours once the
+              # deep UI-test stage queues — looked like it silently did nothing.
+              # Post ONE concise, AI-attributed notice per in-progress cycle, deduped
+              # against the current lock's applied time so repeat /review comments
+              # during the same run don't spam the PR.
+              try {
+                $skipMarker = '<!-- copilot-review-inprogress-skip -->'
+                $appliedAt = Get-AgentReviewInProgressAppliedAt -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+                $alreadyNoticed = $false
+                if ($appliedAt) {
+                  # Fetch only comments created/updated since the lock was applied
+                  # (GitHub's default comment order is OLDEST-first, so a plain
+                  # per_page window would miss the newest notice on a busy PR);
+                  # `since` + --paginate reliably surfaces our marker comment.
+                  $sinceIso = $appliedAt.UtcDateTime.ToString('o')
+                  $noticeTimes = @(gh api --paginate "repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/$($env:PR_NUMBER)/comments?per_page=100&since=$sinceIso" --jq ".[] | select(.body | contains(`"$skipMarker`")) | .created_at" 2>$null)
+                  foreach ($t in $noticeTimes) {
+                    if ([datetimeoffset]::Parse([string]$t, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal) -gt $appliedAt) { $alreadyNoticed = $true; break }
+                  }
+                }
+                if (-not $alreadyNoticed) {
+                  $skipBody = @(
+                    $skipMarker,
+                    '> [!NOTE]',
+                    '> ### 🔍 `/review` skipped — a review is already running',
+                    '>',
+                    '> This PR already holds the `s/agent-review-in-progress` lock, so a new review was **not** started (only one review runs at a time to avoid duplicate, racing reviews). The in-flight run must finish first — this can take a while when the deep UI-test stage is queued.',
+                    '>',
+                    '> Re-comment `/review` once it completes to start a fresh run.',
+                    '>',
+                    '> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline.</sub>'
+                  ) -join "`n"
+                  $skipBody | gh pr comment $env:PR_NUMBER --repo '${{ github.repository_owner }}/${{ github.event.repository.name }}' --body-file - | Out-Null
+                }
+              } catch {
+                Write-Host "  ⚠️  Could not post in-progress skip notice: $($_.Exception.Message)"
+              }
               exit 0
             }
           }
@@ -344,7 +402,7 @@ jobs:
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
           # Platform is always resolved at this point (inferred or explicit)
-          # Build JSON payload safely with jq to avoid injection
+          # Build JSON payload safely with jq to avoid injection.
           PAYLOAD=$(jq -n \
             --arg pr "${PR_NUMBER}" \
             --arg plat "${PLATFORM}" \

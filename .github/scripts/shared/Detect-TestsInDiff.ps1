@@ -216,6 +216,32 @@ function Get-ClassNameFromFile {
     return $null
 }
 
+function Test-CsFileHasTestMethods {
+    <#
+    .SYNOPSIS
+        Returns $true only if a .cs file actually declares test methods.
+    .DESCRIPTION
+        Test-support files (helpers, base classes, fixtures, data builders) live under the
+        same test projects but contain NO [Fact]/[Test] methods. Detecting one as a "test"
+        (e.g. VisualStateTestHelpers.cs) makes the gate run a filter that matches zero tests;
+        the empty run is then scored as a failure and drags the whole gate to FAILED even when
+        the PR's real tests pass FAIL→PASS. Requiring at least one test-method attribute keeps
+        those support files out of the detected-test set.
+    #>
+    param([string]$RelativePath)
+    $candidates = @($RelativePath)
+    if ($RepoRootForRead) { $candidates += (Join-Path $RepoRootForRead $RelativePath) }
+    foreach ($p in $candidates) {
+        if (Test-Path $p) {
+            try { $content = Get-Content $p -Raw -ErrorAction Stop } catch { continue }
+            # xUnit: [Fact] [Theory]; NUnit: [Test] [TestCase] [TestCaseSource]; MSTest: [TestMethod]
+            return ($content -match '(?m)\[\s*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b')
+        }
+    }
+    # File unreadable (deleted/unresolvable) — don't over-filter; let existing fallbacks handle it.
+    return $true
+}
+
 foreach ($file in $ChangedFiles) {
     # Skip non-code files
     if ($file -notmatch "\.(cs|xaml)$") { continue }
@@ -224,6 +250,16 @@ foreach ($file in $ChangedFiles) {
     # Skip infrastructure files (MauiProgram.cs, Startup.cs, etc.)
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file) -replace '\.(iOS|Android|Windows|MacCatalyst)$', ''
     if ($baseName -in $IgnoredFileNames) { continue }
+
+    # Skip test-support .cs files that contain NO test methods (helpers, base classes,
+    # fixtures, data builders). Detecting e.g. VisualStateTestHelpers.cs as a "test" makes
+    # the gate run a filter that matches nothing; that empty run is scored as a failure and
+    # drags the whole gate to FAILED even when the PR's real tests pass. HostApp companion
+    # pages and .xaml files legitimately have no test attributes, so exempt them here — they
+    # are matched/merged separately.
+    if ($file -match '\.cs$' -and $file -notmatch 'TestCases\.HostApp') {
+        if (-not (Test-CsFileHasTestMethods -RelativePath $file)) { continue }
+    }
 
     foreach ($rule in $TestTypeRules) {
         if ($file -match $rule.PathPattern) {
@@ -367,9 +403,26 @@ foreach ($key in @($testGroups.Keys)) {
 
     # Try to find added [Fact] or [Test] methods from the diff
     $addedMethods = @()
-    # Cache PR files API response once before the inner loop
+    # Cache PR files API response once before the inner loop.
+    # This block is display-only (it extracts added test-method names for nicer output);
+    # a failure here must NEVER abort the gate. The script runs under
+    # $ErrorActionPreference='Stop', so an unguarded parse error is terminating: `gh api`
+    # can return an HTML error page (rate-limit / transient 5xx) — as seen on PR #36572,
+    # where "ConvertFrom-Json: parsing value: <" crashed the gate to exit 3 / INCONCLUSIVE —
+    # and `--paginate` alone emits multiple concatenated JSON arrays for >30-file PRs, which
+    # also breaks ConvertFrom-Json. Fetch defensively: --slurp yields one well-formed array
+    # of pages, validate it's JSON, flatten one level, and swallow any error (degrading to
+    # no method-name display; the category-based filter is unaffected).
     if ($PRNumber -and -not $script:_cachedPRFiles) {
-        $script:_cachedPRFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate 2>$null | ConvertFrom-Json
+        try {
+            $rawPRFiles = (gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
+            if ($rawPRFiles.StartsWith('[')) {
+                # --slurp wraps each page as one element ([[file,...],[file,...]]) — flatten a level.
+                $script:_cachedPRFiles = @(($rawPRFiles | ConvertFrom-Json) | ForEach-Object { $_ })
+            }
+        } catch {
+            Write-Host "  ℹ️  PR files fetch failed (non-fatal; skipping method-name display): $($_.Exception.Message)"
+        }
         if (-not $script:_cachedPRFiles) { $script:_cachedPRFiles = @() }
     }
     $effectiveMergeBase = if ($mergeBase) { $mergeBase } else { "HEAD~1" }
@@ -404,44 +457,57 @@ foreach ($key in @($testGroups.Keys)) {
         $group.TestName = "$($group.TestName) ($($addedMethods -join ', '))"
         $group.Methods = $addedMethods
 
-        # Find [Category] attribute from the main (non-platform) test class file
+        # Find [Category] attribute (and the namespace, for a fully-qualified class filter)
+        # from the main (non-platform) test class file.
         $baseClassName = ($group.TestName -split ' \(')[0]
         $repoRoot = git rev-parse --show-toplevel 2>$null
         $categoryFilter = $null
+        $classNamespace = $null
 
         foreach ($file in $group.Files) {
-            if ($file -match "\.cs$") {
-                # Try the main class file (without platform suffix)
-                $testDir = [System.IO.Path]::GetDirectoryName($file)
-                $mainFile = if ($repoRoot) { Join-Path $repoRoot "$testDir/$baseClassName.cs" } else { $null }
-                if ($mainFile -and (Test-Path $mainFile)) {
-                    $content = Get-Content $mainFile -Raw -ErrorAction SilentlyContinue
-                    # Match [Category(TestCategory.X)] or [Category("X")]
-                    if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
-                        $categoryFilter = "Category=$($matches[1])"
-                        break
-                    }
+            if ($file -notmatch "\.cs$") { continue }
+
+            # Probe the main class file (without platform suffix) first, then the changed file.
+            $testDir = [System.IO.Path]::GetDirectoryName($file)
+            $candidates = @()
+            if ($repoRoot) { $candidates += (Join-Path $repoRoot "$testDir/$baseClassName.cs") }
+            $candidates += $(if ($repoRoot) { Join-Path $repoRoot $file } else { $file })
+
+            foreach ($candidate in $candidates) {
+                if (-not ($candidate -and (Test-Path $candidate))) { continue }
+                $content = Get-Content $candidate -Raw -ErrorAction SilentlyContinue
+                if (-not $content) { continue }
+
+                # Capture the namespace (block-scoped or file-scoped) once. $matches is read
+                # immediately, before the [Category] match below can overwrite it.
+                if (-not $classNamespace -and $content -match '(?m)^\s*namespace\s+([A-Za-z_][\w.]*)') {
+                    $classNamespace = $matches[1]
                 }
-                # Also check the changed file itself
-                $fullPath = if ($repoRoot) { Join-Path $repoRoot $file } else { $file }
-                if (Test-Path $fullPath) {
-                    $content = Get-Content $fullPath -Raw -ErrorAction SilentlyContinue
+
+                # Match [Category(TestCategory.X)] or [Category("X")] once.
+                if (-not $categoryFilter) {
                     if ($content -match '\[Category\(TestCategory\.(\w+)\)\]') {
                         $categoryFilter = "Category=$($matches[1])"
-                        break
                     } elseif ($content -match '\[Category\("([^"]+)"\)\]') {
                         $categoryFilter = "Category=$($matches[1])"
-                        break
                     }
                 }
             }
+
+            if ($categoryFilter -and $classNamespace) { break }
         }
 
-        # Use Category filter if found, otherwise fall back to class name
+        # Use Category filter if found, otherwise fall back to class name.
         $group.Filter = if ($categoryFilter) { $categoryFilter } else { $baseClassName }
+
+        # For device tests, also emit a fully-qualified class name so the gate can run ONLY the
+        # PR's test class (XHarness SkipClass include filter) instead of the whole Category. A
+        # single unrelated crashing test in the same category otherwise APP_CRASHes the run and
+        # turns the verdict INCONCLUSIVE (e.g. dotnet/maui#36616). Additive: $group.Filter still
+        # carries the whole-Category value for Windows + fallback, so existing behaviour is kept.
+        if ($group.Type -eq "DeviceTest" -and $baseClassName) {
+            $group.ClassFilter = if ($classNamespace) { "$classNamespace.$baseClassName" } else { $baseClassName }
+        }
     }
 }
 

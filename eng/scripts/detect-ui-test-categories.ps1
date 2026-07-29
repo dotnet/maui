@@ -187,8 +187,21 @@ if ($isManualPrTest) {
         # contains the PR changes and the fork-head checkout below is redundant and
         # would abort on the trusted-scripts overlay. In that case use the current
         # HEAD for the diff and skip the checkout. (See Test-PreparedReviewWorktreeSubject.)
+        #
+        # Inflight-targeted PRs (base 'inflight/current' / 'inflight/candidate') are NOT
+        # squash-merged — Review-PR.ps1 resets the review branch to the PR head as-is, so
+        # the subject is the PR's own commit, not "squashed for review". Detect that case
+        # by SHA: when the local HEAD already equals the PR head sha, the worktree is the
+        # PR and the fork-head checkout is likewise redundant.
         $headSubject = (& git log -1 --format=%s HEAD 2>$null)
         $alreadyOnPrWorktree = Test-PreparedReviewWorktreeSubject -HeadSubject $headSubject -PrNumber $PrNumber
+        if (-not $alreadyOnPrWorktree) {
+            $localHeadSha = (& git rev-parse HEAD 2>$null)
+            if ($localHeadSha -and $headSha -and ($localHeadSha.Trim() -eq $headSha.Trim())) {
+                Write-Host "Local HEAD ($localHeadSha) already equals the PR head sha — treating as prepared review worktree (inflight-targeted PR)." -ForegroundColor Cyan
+                $alreadyOnPrWorktree = $true
+            }
+        }
 
         try {
             # Use Invoke-Git so a silent non-zero exit (network drop, bad URL, missing
@@ -356,9 +369,30 @@ $pathToCategoryMap = @(
     @{ Pattern = 'src/Controls/src/Core/VisualStateManager';  Category = 'VisualStateManager' }
     @{ Pattern = 'src/Controls/src/Core/Shadow';              Category = 'Shadow' }
     @{ Pattern = 'src/Controls/src/Core/Brush';               Category = 'Brush' }
+    # Brush-family types live as FLAT files directly under Core/ (not in the
+    # Core/Brush/ folder), so the `Core/Brush*` prefix above does NOT match
+    # them (e.g. `Core/GradientBrush.cs` starts with `Core/G`, not `Core/Brush`).
+    # Map them explicitly so brush PRs (e.g. #36521 GradientBrush leak-fix) get
+    # the specific 'Brush' category instead of falling through to the run-all
+    # path (which the deep stage skips → "No UI test results" warning).
+    @{ Pattern = 'src/Controls/src/Core/GradientBrush';       Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/LinearGradientBrush'; Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/RadialGradientBrush'; Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/SolidColorBrush';     Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/ImageBrush';          Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/ImmutableBrush';      Category = 'Brush' }
+    @{ Pattern = 'src/Controls/src/Core/GradientStop';        Category = 'Brush' }
     @{ Pattern = 'src/Core/src/Handlers/HybridWebView';       Category = 'WebView' }
     @{ Pattern = 'src/Core/src/Platform/';                    Category = 'ViewBaseTests' }
     @{ Pattern = 'src/Core/src/Handlers/';                    Category = 'ViewBaseTests' }
+    # The animation infrastructure (PlatformTicker, Animatable, AnimationExtensions,
+    # etc.) drives EVERY animation, so a change here has broad blast radius but no
+    # Controls-level file to key off — without this a PR that only touches
+    # src/Core/src/Animations (e.g. #35846 Reduce-Motion accessibility on the ticker)
+    # detects NO category and the deep stage is SKIPPED, leaving the reviewer with
+    # zero UI-test coverage. Map it to the Animation category (5 tagged tests) so such
+    # PRs at least verify animations still run end-to-end.
+    @{ Pattern = 'src/Core/src/Animations/';                  Category = 'Animation' }
     @{ Pattern = 'src/Essentials/';                           Category = 'Essentials' }
     @{ Pattern = 'src/Controls/src/Core/Handlers/FlyoutPage'; Category = 'FlyoutPage' }
     @{ Pattern = 'src/Controls/src/Core/Handlers/TabbedPage'; Category = 'TabbedPage' }
@@ -520,14 +554,17 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 # FINAL DECISION
 # ============================================================================
 
-# Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
-# eng/Versions.props, or darc-managed versions in eng/Version.Details.xml) don't
-# touch any specific control, but they CAN cause broad rendering/runtime
-# regressions across the whole app. Rather than skipping UI tests entirely
-# ("No UI-relevant changes"), run a small, fixed, representative smoke set so the
-# bump is actually validated — without falling back to ALL (which the deep stage
-# skips as it can't finish in the time budget). Tunable: keep this set small and
-# fast (core control + text + layout rendering).
+# A small, fixed, representative UI smoke set (core control + text + layout
+# rendering) used as the "always produce results" fallback in two cases below:
+#   1. Product code under src/Controls/Core/Essentials changed but mapped to no
+#      specific category (broad binding/infra changes).
+#   2. Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
+#      eng/Versions.props, or darc-managed versions in eng/Version.Details.xml)
+#      that don't touch any specific control but CAN cause broad regressions.
+# In both cases running this bounded set is strictly better than falling back to
+# ALL — which the deep stage SKIPS (it can't finish the unfiltered suite in the
+# time budget), surfacing the "No UI test results were produced" warning. Keep
+# this set small and fast.
 $dependencyInfraFiles = @('eng/Versions.props', 'eng/Version.Details.xml')
 $dependencyInfraChanged = @($allChangedFiles | Where-Object {
     $f = $_.Replace('\', '/')
@@ -537,9 +574,17 @@ $smokeCategories = @('Button', 'Label', 'Layout')
 
 if ($addedCategories.Count -eq 0) {
     if ($touchesControls) {
-        # Changed files under src/Controls/ but couldn't map to specific categories — run all
-        Write-Host "Changed files touch Controls/Core/Essentials but no specific categories identified. Running all." -ForegroundColor Yellow
-        Write-CategoryListOutput ''
+        # Changed files under src/Controls/Core/Essentials but couldn't map to a
+        # specific category (e.g. broad binding / BindableObject / Element / brush
+        # infrastructure changes). Rather than emitting '' — which Review-PR.ps1
+        # maps to 'ALL' and the deep stage SKIPS (the unfiltered full suite can't
+        # finish within the task budget), surfacing the "No UI test results were
+        # produced" warning users complain about — run the same small, fixed,
+        # representative smoke set used for dependency/SDK bumps below. This
+        # GUARANTEES the deep stage always produces UI results for any product-code
+        # change, at a bounded cost (the per-category loop is time-budgeted).
+        Write-Host "Changed files touch Controls/Core/Essentials but no specific category mapped — running a representative UI smoke set ($([string]::Join(', ', $smokeCategories))) instead of ALL (which the deep stage skips) so UI results are always produced." -ForegroundColor Yellow
+        Write-CategoryListOutput ([string]::Join(',', $smokeCategories))
         return
     } elseif ($dependencyInfraChanged) {
         # Dependency/SDK version bump with no specific control mapped — run a

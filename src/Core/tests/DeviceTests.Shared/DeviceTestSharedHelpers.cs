@@ -73,5 +73,43 @@ namespace Microsoft.Maui.DeviceTests
 
 			return new List<String>();
 		}
+
+		/// <summary>
+		/// Returns the list of fully-qualified test class names that should be run exclusively,
+		/// read from the <c>IncludeClasses</c> host argument (Android instrumentation arg /
+		/// iOS+MacCatalyst environment variable). Value is a comma/semicolon-separated list of
+		/// fully-qualified class names (e.g. <c>Microsoft.Maui.DeviceTests.ShellTests</c>).
+		/// Returns an empty list when the argument is absent, so normal runs are unaffected.
+		/// This is used by the Copilot review gate to verify only a PR's specific test class
+		/// instead of its whole <c>Category</c> (which can be blocked by unrelated crashes).
+		/// </summary>
+		public static List<String> GetIncludedTestClasses(this Type testCategoryType)
+		{
+			string? includeValue = null;
+
+#if IOS || MACCATALYST
+			foreach (var en in Foundation.NSProcessInfo.ProcessInfo.Environment)
+			{
+				string key = $"{en.Key}";
+				if (key == "IncludeClasses")
+				{
+					includeValue = $"{en.Value}";
+					break;
+				}
+			}
+#elif ANDROID
+			includeValue = MauiTestInstrumentation.Current?.Arguments?.GetString("IncludeClasses");
+#endif
+
+			if (string.IsNullOrWhiteSpace(includeValue))
+				return new List<String>();
+
+			Console.WriteLine($"IncludeClasses: {includeValue}");
+			return includeValue
+				.Split(new[] { ',', ';' })
+				.Select(c => c.Trim())
+				.Where(c => !string.IsNullOrWhiteSpace(c))
+				.ToList();
+		}
 	}
 }

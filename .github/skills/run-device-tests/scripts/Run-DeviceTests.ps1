@@ -82,6 +82,20 @@ param(
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
+    # Comma/semicolon-separated fully-qualified test class names to run exclusively
+    # (Android/iOS/MacCatalyst only). Additive include filter used by the Copilot review
+    # gate to narrow a run to a PR's specific test class instead of its whole Category.
+    [string]$IncludeClasses,
+
+    [Parameter(Mandatory = $false)]
+    # Comma/semicolon-separated test METHOD names (e.g. "CompletedFiresOnRealEnterKeyPress").
+    # Windows-only, additive: when the gate full-runs a no-discovery app (Core/Essentials/
+    # Graphics) it scopes the post-hoc pass/fail tally to these specific methods within
+    # -IncludeClasses, so an unrelated pre-existing/flaky failure elsewhere in the same
+    # class cannot falsely redden the A/B verdict. Empty = fall back to whole-class scoping.
+    [string]$IncludeMethods,
+
+    [Parameter(Mandatory = $false)]
     [switch]$BuildOnly,
 
     [Parameter(Mandatory = $false)]
@@ -180,13 +194,30 @@ function Select-WindowsDeviceTestCategories {
         return @($AllCategories)
     }
 
-    return @($AllCategories | Where-Object {
-        $category = $_
-        @($filters | Where-Object {
-            $category.Equals($_, [System.StringComparison]::OrdinalIgnoreCase) -or
-            $category.IndexOf($_, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
-        }).Count -gt 0
-    })
+    # Match each filter token EXACTLY first, falling back to substring matching only
+    # when no category equals the token. A bare category name is frequently a substring
+    # of many others — "View" is contained in BoxView, CarouselView, CollectionView,
+    # ScrollView, WebView, … — so a naive substring match fans a single
+    # "Category=View" filter out to every *View* category. That runs a dozen unrelated
+    # categories (minutes of wasted device time) and, when their result files are
+    # aggregated, previously surfaced as a spurious gate "ENV ERROR". Preferring an
+    # exact match keeps "Category=View" scoped to the View category while still
+    # allowing genuine partial filters (no exact category) to substring-match.
+    $selected = [System.Collections.Generic.List[string]]::new()
+    foreach ($token in $filters) {
+        $exact = @($AllCategories | Where-Object { $_.Equals($token, [System.StringComparison]::OrdinalIgnoreCase) })
+        $candidates = if ($exact.Count -gt 0) {
+            $exact
+        } else {
+            @($AllCategories | Where-Object { $_.IndexOf($token, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+        }
+        foreach ($c in $candidates) {
+            if (-not $selected.Contains($c)) { $selected.Add($c) }
+        }
+    }
+
+    # Return in discovery order for deterministic, stable output.
+    return @($AllCategories | Where-Object { $selected.Contains($_) })
 }
 
 function Wait-ForPath {
@@ -220,8 +251,55 @@ function Wait-ForPath {
     return (Test-Path $Path)
 }
 
+function ConvertTo-DeviceTestCount {
+    <#
+    .SYNOPSIS
+        Coerces an xUnit result-XML count attribute to a non-negative [int], safely.
+    .DESCRIPTION
+        PowerShell's XML adapter returns an [object[]] for a property when the element
+        exposes it more than once (e.g. an attribute AND a like-named child element).
+        A direct [int](...) cast of that array throws
+        "Cannot convert the ""System.Object[]"" value ... to type ""System.Int32""",
+        which the gate surfaces as a spurious "ENV ERROR" with no results. Take the
+        first value, tolerate nulls/blanks, and default to 0 so aggregation can never
+        throw on an unexpected result-file shape.
+    #>
+    param($Value)
+
+    if ($null -eq $Value) { return 0 }
+    if ($Value -is [System.Array]) { $Value = @($Value)[0] }
+    $parsed = 0
+    if ([int]::TryParse([string]$Value, [ref]$parsed)) { return $parsed }
+    return 0
+}
+
 function Get-WindowsDeviceTestResultSummary {
-    param([Parameter(Mandatory = $true)][string[]]$ResultFiles)
+    param(
+        [Parameter(Mandatory = $true)][string[]]$ResultFiles,
+
+        # When set, the pass/fail tallies count ONLY tests whose fully-qualified name
+        # belongs to one of these classes (comma/semicolon separated). Used to scope a
+        # full-suite result file down to the class(es) under test — see the call site.
+        [string]$IncludeClasses,
+
+        # When set (in addition to -IncludeClasses), narrows the tally further to ONLY these
+        # method names (comma/semicolon separated). This is the precise scope the gate wants:
+        # a full-suite run of a no-discovery app contains every method of the target class,
+        # but the PR only added/changed specific methods — counting the whole class lets an
+        # unrelated pre-existing/flaky failure in a sibling method falsely redden the verdict.
+        # Empty = fall back to whole-class scoping.
+        [string]$IncludeMethods
+    )
+
+    $classList = @()
+    if (-not [string]::IsNullOrWhiteSpace($IncludeClasses)) {
+        $classList = @($IncludeClasses -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
+
+    $methodList = @()
+    if (-not [string]::IsNullOrWhiteSpace($IncludeMethods)) {
+        $methodList = @($IncludeMethods -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
 
     $summary = @{
         Total = 0
@@ -229,22 +307,158 @@ function Get-WindowsDeviceTestResultSummary {
         Failed = 0
         Skipped = 0
         Errors = 0
+        FailedTests = [System.Collections.Generic.List[string]]::new()
     }
+
+    # Diagnostics for the class-filtered path: how many <test> nodes the file(s) held in
+    # total (regardless of class) and a small sample of the DISTINCT classes they belong
+    # to. When the class filter matches nothing, these disambiguate "the app produced no
+    # results at all" from "the results are there but under classes we didn't expect" —
+    # see the throw below. $diagClassMatchCount counts tests whose CLASS matched (before
+    # any method narrowing) so we can further distinguish "class present but none of the
+    # target methods ran" when method-scoping is active.
+    $diagTotalTests = 0
+    $diagClassMatchCount = 0
+    $diagSampleClasses = [System.Collections.Generic.List[string]]::new()
 
     foreach ($file in $ResultFiles) {
         if (-not (Test-Path $file)) {
             continue
         }
 
-        [xml]$xml = Get-Content $file -Raw
-        $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
-        foreach ($assembly in $assemblies) {
-            $summary.Total += [int]($assembly.total ?? 0)
-            $summary.Passed += [int]($assembly.passed ?? 0)
-            $summary.Failed += [int]($assembly.failed ?? 0)
-            $summary.Skipped += [int]($assembly.skipped ?? 0)
-            $summary.Errors += [int]($assembly.errors ?? 0)
+        # The result file can be observed on disk (Test-Path true) a moment
+        # before the device-test app has finished flushing its XML, so a naive
+        # `Get-Content` can read empty or partial content. Casting null/blank
+        # content to [xml] yields $null, and the subsequent .SelectNodes() call
+        # throws the cryptic "You cannot call a method on a null-valued
+        # expression" — which the gate surfaces as an opaque ENV ERROR with no
+        # results (observed on Windows Controls device-test gates). Retry the
+        # read briefly to absorb that write race (recovering the REAL results,
+        # so a transient race no longer collapses to an inconclusive verdict),
+        # then fail with a descriptive message if the file is genuinely empty or
+        # malformed (e.g. the app crashed before writing results).
+        $xml = $null
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            $raw = Get-Content $file -Raw -ErrorAction SilentlyContinue
+            if (-not [string]::IsNullOrWhiteSpace($raw)) {
+                try {
+                    $xml = [xml]$raw
+                    break
+                } catch {
+                    # Partial/malformed XML — may still be mid-write; retry.
+                    $xml = $null
+                }
+            }
+            Start-Sleep -Milliseconds 500
         }
+
+        if ($null -eq $xml) {
+            throw "Windows device test result file '$file' is empty or not valid XML (the device-test app likely crashed or exited before writing results)."
+        }
+
+        if ($classList.Count -gt 0) {
+            # Per-test counting, filtered to the class(es) under test. A full-suite result
+            # file contains every test in the suite; counting only the requested classes
+            # keeps the gate's A/B verdict focused on what the PR changed and immune to
+            # unrelated/flaky suite failures.
+            foreach ($test in @($xml.SelectNodes('//test'))) {
+                # xUnit v2 records the fully-qualified CLASS in the `type` attribute and a
+                # display/theory name in `name` (e.g. "PlatformView Transforms are not
+                # empty(size: 1)"), so the class filter MUST match on `type`. Matching on
+                # `name` misses every MAUI test that uses theory data or a [Fact]/[Theory]
+                # DisplayName — which produced a false INCONCLUSIVE when the Core Windows
+                # full run of 2090 tests reported 0 EntryHandlerTests even though they ran
+                # (build 14695285, #36577). GetAttribute is used so the lookup is
+                # unambiguous (avoids XmlElement's CLR .Name shadowing the `name` attribute)
+                # and yields '' when the attribute is absent.
+                $testType = $test.GetAttribute('type')
+                $testName = $test.GetAttribute('name')
+                if ([string]::IsNullOrWhiteSpace($testType) -and [string]::IsNullOrWhiteSpace($testName)) { continue }
+                $diagTotalTests++
+                # Sample DISTINCT class names (fall back to the raw name when a runner omits
+                # `type`) so a no-match throw shows which classes the suite actually ran.
+                $diagLabel = if (-not [string]::IsNullOrWhiteSpace($testType)) { $testType } else { $testName }
+                if ($diagLabel -and $diagSampleClasses.Count -lt 8 -and -not $diagSampleClasses.Contains($diagLabel)) {
+                    $diagSampleClasses.Add($diagLabel)
+                }
+                $isMatch = $false
+                foreach ($cls in $classList) {
+                    if ($testType -eq $cls -or
+                        $testName -eq $cls -or
+                        (-not [string]::IsNullOrWhiteSpace($testType) -and $testType.StartsWith("$cls.", [System.StringComparison]::Ordinal)) -or
+                        (-not [string]::IsNullOrWhiteSpace($testName) -and $testName.StartsWith("$cls.", [System.StringComparison]::Ordinal))) {
+                        $isMatch = $true
+                        break
+                    }
+                }
+                if (-not $isMatch) { continue }
+                $diagClassMatchCount++
+
+                # Optional method-level narrowing: when the gate knows the PR's specific
+                # methods, count ONLY those (matched on the xUnit `method` attribute, which
+                # is the real C# method name — for a [Theory] every data-case <test> row
+                # shares the same `method`, so all cases of a target method are counted).
+                # This keeps an unrelated pre-existing/flaky failure in a sibling method of
+                # the same class from falsely reddening the A/B verdict.
+                if ($methodList.Count -gt 0) {
+                    $testMethod = $test.GetAttribute('method')
+                    if ([string]::IsNullOrWhiteSpace($testMethod)) {
+                        # Runner omitted `method` — recover it from the FQN tail of `type.method`
+                        # or a "Class.Method" display name so method-scoping still works.
+                        $probe = if (-not [string]::IsNullOrWhiteSpace($testName)) { $testName } else { $testType }
+                        if ($probe -and $probe.Contains('.')) { $testMethod = $probe.Substring($probe.LastIndexOf('.') + 1) }
+                    }
+                    if ($methodList -notcontains $testMethod) { continue }
+                }
+
+                $summary.Total++
+                switch ([string]$test.GetAttribute('result')) {
+                    'Pass' { $summary.Passed++ }
+                    'Fail' {
+                        $summary.Failed++
+                        # Capture the identity of each failing test so a FAILED verdict is
+                        # auditable from the gate log (target-method failure vs unrelated).
+                        $failId = if (-not [string]::IsNullOrWhiteSpace($testType)) {
+                            $m = $test.GetAttribute('method')
+                            if (-not [string]::IsNullOrWhiteSpace($m)) { "$testType.$m" } else { $testType }
+                        } elseif (-not [string]::IsNullOrWhiteSpace($testName)) { $testName } else { '(unnamed)' }
+                        if ($summary.FailedTests.Count -lt 20 -and -not $summary.FailedTests.Contains($failId)) {
+                            $summary.FailedTests.Add($failId)
+                        }
+                    }
+                    'Skip' { $summary.Skipped++ }
+                    default { }
+                }
+            }
+        }
+        else {
+            $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
+            foreach ($assembly in $assemblies) {
+                $summary.Total += ConvertTo-DeviceTestCount $assembly.total
+                $summary.Passed += ConvertTo-DeviceTestCount $assembly.passed
+                $summary.Failed += ConvertTo-DeviceTestCount $assembly.failed
+                $summary.Skipped += ConvertTo-DeviceTestCount $assembly.skipped
+                $summary.Errors += ConvertTo-DeviceTestCount $assembly.errors
+            }
+        }
+    }
+
+    if ($classList.Count -gt 0 -and $summary.Total -eq 0) {
+        # The class(es) under test produced no results in the suite output — treat this as
+        # an environment/harness error (INCONCLUSIVE) rather than silently reporting a
+        # false pass (0 failed) for tests that never actually ran. Include diagnostics so
+        # the two distinct causes are distinguishable from the gate log:
+        #   * total <test> nodes = 0  -> the app produced no results (crash/early exit)
+        #   * total > 0 but no match  -> results exist under classes we didn't expect
+        #     (namespace/name-format mismatch, or the target class was not in this suite).
+        if ($methodList.Count -gt 0 -and $diagClassMatchCount -gt 0) {
+            # The class WAS present, but none of the target methods ran — the PR's specific
+            # methods didn't execute (renamed/removed method, or a method-name mismatch),
+            # which the gate cannot verify. Distinct from "class absent".
+            throw "Windows device test result file(s) contained the class(es) '$IncludeClasses' ($diagClassMatchCount test(s)) but none of the target method(s) '$IncludeMethods' ran (the target tests did not run)."
+        }
+        $sample = if ($diagSampleClasses.Count -gt 0) { " Sample classes present: " + ($diagSampleClasses -join '; ') + '.' } else { '' }
+        throw "Windows device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run). Total tests found in result file(s): $diagTotalTests.$sample"
     }
 
     return $summary
@@ -265,6 +479,10 @@ function Invoke-WindowsDeviceTestApp {
         [string]$OutputDirectory,
 
         [string]$TestFilter,
+
+        [string]$IncludeClasses,
+
+        [string]$IncludeMethods,
 
         [string]$Timeout = "01:00:00"
     )
@@ -290,16 +508,49 @@ function Invoke-WindowsDeviceTestApp {
     Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
 
     $resultFiles = @()
-    if ($Project -eq "Controls") {
+
+    # Decide whether to drive the app via per-category discovery/index runs instead of a
+    # single full-suite launch:
+    #   - Controls: ALWAYS. Its Windows app registers only the discovery/index runner, so
+    #     a plain full launch has no runner and exits without results.
+    #   - Core/Essentials/Graphics/BlazorWebView: only when a filter is supplied. Their
+    #     apps gained the discovery/index runner once AppHostBuilderExtensions
+    #     .UseHeadlessRunner registers it on Windows, so we can now run ONLY the changed
+    #     category instead of launching the entire app — which, for large suites like
+    #     Core, can crash/exit before writing results and collapse the gate to an
+    #     inconclusive "empty results" verdict (see PR #36577).
+    #
+    # Only the Controls device-test app registers the discovery-capable
+    # ControlsHeadlessTestRunner (MauiProgramDefaults.cs gates UseControlsHeadlessRunner on
+    # the Controls.DeviceTests assembly). Core/Essentials/Graphics/etc. use the generic
+    # HeadlessTestRunner, which has NO category discovery — so a discovery attempt there is
+    # guaranteed to time out after 120s AND leaves a half-written result file from the
+    # killed discovery process, before the inevitable full-suite fallback. Skip discovery
+    # entirely for those apps: go straight to a clean full run and scope the summary to the
+    # class(es) under test. Controls keeps strict discovery (throw on failure) because it
+    # has no full-suite runner to fall back to.
+    $requireDiscovery = ($Project -eq "Controls")
+    $attemptDiscovery = $requireDiscovery
+    $useCategoryFiltering = $false
+    if ($attemptDiscovery) {
         Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
         $discoveryProcess = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, "-1") -PassThru
-        if (-not (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess)) {
+        if (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess) {
+            $useCategoryFiltering = $true
+        } else {
             if ($discoveryProcess -and -not $discoveryProcess.HasExited) {
                 Stop-Process -Id $discoveryProcess.Id -Force -ErrorAction SilentlyContinue
             }
-            throw "Windows device test category discovery did not create $categoriesFile"
+            if ($requireDiscovery) {
+                throw "Windows device test category discovery did not create $categoriesFile"
+            }
+            Write-Warning "Windows '$Project' device test app did not produce a category list within 120s; falling back to a full device-test run."
         }
+    } elseif ($TestFilter) {
+        Write-Host "Windows '$Project' device test app has no category discovery; running the full suite and scoping results to the class(es) under test." -ForegroundColor Gray
+    }
 
+    if ($useCategoryFiltering) {
         $allCategories = @(Get-Content $categoriesFile | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
         $selectedCategories = @(Select-WindowsDeviceTestCategories -AllCategories $allCategories -Filter $TestFilter)
         if ($selectedCategories.Count -eq 0) {
@@ -328,23 +579,45 @@ function Invoke-WindowsDeviceTestApp {
             $resultFiles += $categoryResultFile
         }
     } else {
-        if ($TestFilter) {
-            Write-Warning "Windows non-Controls device tests do not support dynamic category filtering; running the full $Project device test app."
-        }
+        # Full-suite run: either no filter was requested, or category discovery was not
+        # available for this app. Remove any partial result file a failed discovery
+        # attempt may have left behind so the summary reflects only this run.
+        Remove-Item -LiteralPath $resultFile -Force -ErrorAction SilentlyContinue
 
         Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
         $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile) -PassThru
-        if (-not (Wait-ForPath -Path $resultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
-            if ($process -and -not $process.HasExited) {
+
+        # A full-suite app creates its single results file and finalizes it only when the
+        # whole run completes, so waiting for the file to merely APPEAR (as the per-category
+        # path can, because each category file is written at that category's completion)
+        # races the writer and reads an empty/partial XML — surfacing as a false
+        # "empty or not valid XML" ENV ERROR even though the run is healthy (PR #36577: the
+        # Core Windows full run was read at 247s while it was still executing). Wait for the
+        # process to EXIT instead, mirroring how eng/devices/windows.cake launches the
+        # unpackaged app with a blocking StartProcess and only then checks the result file.
+        if (-not $process.WaitForExit($timeoutSeconds * 1000)) {
+            if (-not $process.HasExited) {
                 Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
             }
-            throw "Windows device test app did not create $resultFile"
+            throw "Windows device test app did not exit within ${timeoutSeconds}s while running the full suite."
+        }
+        if (-not (Test-Path $resultFile)) {
+            throw "Windows device test app exited without creating $resultFile"
         }
 
         $resultFiles += $resultFile
     }
 
-    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles
+    # When a full-suite fallback ran (no per-category isolation available for this app —
+    # e.g. a Core/Essentials/Graphics app built from a PR tree that predates the
+    # discovery-runner registration), the result file holds EVERY test in the suite, not
+    # just the changed area. Narrow the pass/fail summary to the class(es) under test so
+    # the gate's A/B verdict reflects only the tests the PR actually changed instead of
+    # being polluted (or falsely reddened) by unrelated/flaky suite tests. Category-
+    # isolated runs already scope the result file, so they keep the whole-file aggregate.
+    $summaryClassFilter = if (-not $useCategoryFiltering) { $IncludeClasses } else { $null }
+    $summaryMethodFilter = if (-not $useCategoryFiltering) { $IncludeMethods } else { $null }
+    $summary = Get-WindowsDeviceTestResultSummary -ResultFiles $resultFiles -IncludeClasses $summaryClassFilter -IncludeMethods $summaryMethodFilter
     $script:WindowsDeviceTestSummary = $summary
     $script:WindowsDeviceTestResultFiles = $resultFiles
 
@@ -476,6 +749,9 @@ try {
     }
     if ($TestFilter) {
         Write-Host "Test Filter:   $TestFilter" -ForegroundColor Yellow
+    }
+    if ($IncludeClasses) {
+        Write-Host "Include Class: $IncludeClasses" -ForegroundColor Yellow
     }
     Write-Host ""
 
@@ -774,6 +1050,14 @@ try {
             }
         }
 
+        if ($IncludeClasses) {
+            if ($Platform -eq "android") {
+                $xharnessArgs += "--arg", "IncludeClasses=$IncludeClasses"
+            } else {
+                $xharnessArgs += "--set-env=IncludeClasses=$IncludeClasses"
+            }
+        }
+
         if ($useLocalXharness) {
             $xharnessCommand = "dotnet xharness"
         } else {
@@ -810,6 +1094,8 @@ try {
             -AppName $appName `
             -OutputDirectory $OutputDirectory `
             -TestFilter $TestFilter `
+            -IncludeClasses $IncludeClasses `
+            -IncludeMethods $IncludeMethods `
             -Timeout $Timeout
 
         if ($script:WindowsDeviceTestSummary) {
@@ -818,6 +1104,14 @@ try {
             Write-Output "  Failed: $($script:WindowsDeviceTestSummary.Failed + $script:WindowsDeviceTestSummary.Errors)"
             Write-Output "  Skipped: $($script:WindowsDeviceTestSummary.Skipped)"
             Write-Output "  Total: $($script:WindowsDeviceTestSummary.Total)"
+            if ($IncludeMethods) {
+                Write-Host "  Scoped to method(s): $IncludeMethods" -ForegroundColor Gray
+            }
+            # Naming the failing tests makes a FAILED verdict auditable from the gate log
+            # (distinguishes a genuine target-method failure from an unrelated one).
+            if ($script:WindowsDeviceTestSummary.FailedTests -and $script:WindowsDeviceTestSummary.FailedTests.Count -gt 0) {
+                Write-Host "  Failed test(s): $($script:WindowsDeviceTestSummary.FailedTests -join '; ')" -ForegroundColor Gray
+            }
             Write-Host "  Result file(s): $($script:WindowsDeviceTestResultFiles -join ', ')" -ForegroundColor Gray
         }
     }
