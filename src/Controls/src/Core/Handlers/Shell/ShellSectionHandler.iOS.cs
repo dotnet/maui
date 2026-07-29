@@ -1051,6 +1051,11 @@ namespace Microsoft.Maui.Controls.Handlers
                     image = TabbedViewExtensions.AutoResizeTabBarImage(_navigationController.TraitCollection, icon.Value);
                 _navigationController.TabBarItem = new UITabBarItem(VirtualView.Title, image, null);
                 _navigationController.TabBarItem.AccessibilityIdentifier = VirtualView.AutomationId ?? VirtualView.Title;
+
+                // Creating a new UITabBarItem above discards any previously-applied Badge state
+                // (matching the legacy ShellSectionRenderer.UpdateTabBarItem, which re-applied the
+                // badge immediately after recreating TabBarItem for the same reason).
+                ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, VirtualView);
             });
         }
 
@@ -1080,14 +1085,16 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Sync tracked pages' FlowDirection with Shell to trigger MAUI layout re-arrangement.
             // Shell section pages have a disconnected visual tree so MatchParent cannot auto-resolve.
-            if (_rootTracker?.Page is { } rootPage)
+            // Only resolve MatchParent (inherited) pages — pages with an explicit FlowDirection
+            // override must not be silently overwritten (matches legacy ShellSectionRootRenderer).
+            if (_rootTracker?.Page is { FlowDirection: FlowDirection.MatchParent } rootPage)
             {
                 rootPage.FlowDirection = shell.FlowDirection;
             }
 
             foreach (var tracker in _trackers.Values)
             {
-                if (tracker.Page is { } page)
+                if (tracker.Page is { FlowDirection: FlowDirection.MatchParent } page)
                 {
                     page.FlowDirection = shell.FlowDirection;
                 }

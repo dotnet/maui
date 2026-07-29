@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -116,9 +115,6 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.ConnectHandler(platformView);
 
-            // Subscribe to Shell property changes for flyout state
-            VirtualView!.PropertyChanged += OnShellPropertyChanged;
-
             // Register as appearance observer
             ShellController.AddAppearanceObserver(this, VirtualView);
 
@@ -134,8 +130,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override void DisconnectHandler(UIView platformView)
         {
-            VirtualView.PropertyChanged -= OnShellPropertyChanged;
-
             ShellController.RemoveAppearanceObserver(this);
             ((IShellController)VirtualView).RemoveFlyoutBehaviorObserver(this);
 
@@ -524,28 +518,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             PlatformView.BackgroundColor = color;
-        }
-
-        #endregion
-
-        #region Shell Property Changes
-
-        void OnShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
-            {
-                var isPresented = VirtualView.FlyoutIsPresented;
-
-                if (IsOpen != isPresented)
-                {
-                    IsOpen = isPresented;
-                    LayoutSidebar(true, true);
-                }
-            }
-            else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-            {
-                UpdateFlowDirection(true);
-            }
         }
 
         #endregion

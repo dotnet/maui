@@ -5,15 +5,6 @@ namespace Microsoft.Maui.Controls
 {
     public partial class Shell
     {
-        // ── Flyout gesture write-back ─────────────────────────────────────────────
-        // Called when a pan gesture or tap-to-close changes the flyout open state.
-        // Writes the new value back to Shell.FlyoutIsPresented via SetValueFromRenderer
-        // so bindings and MVVM subscribers see the change.
-        internal static void OnPresentedChangedByGesture(Shell shell, bool isPresented)
-        {
-            shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, isPresented);
-        }
-
         // ── Status bar / home indicator ───────────────────────────────────────────
         // Propagate to the current item renderer's VC so UIKit re-queries the
         // preference from the full VC hierarchy (TabBarController → NavController → Page).
