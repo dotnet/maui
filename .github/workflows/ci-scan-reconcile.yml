@@ -116,12 +116,21 @@ jobs:
   # SAFETY TESTS — gate for everything below. The most privileged thing this job can
   # do is read the repository.
   #
-  # The claim "report mode cannot mutate" is enforced by the Pester suite, not by
-  # inspection. Nothing else in this workflow re-checks it at run time, and
-  # `workflow_dispatch` lets the operator pick ANY ref — so without this job an
-  # unreviewed branch could reach the `mutate` job's `issues: write` token. PR-time
-  # gating (`powershell-script-tests.yml`) does not cover that path, because a dispatch
-  # does not have to run from a merged commit.
+  # What this job gates is the WRITE path, not report mode. Report mode is already
+  # enforced at run time by the credential — note 1 above: the `report` job holds
+  # `issues: read` only — so attributing that guarantee to this suite would misname the
+  # load-bearing control, and a header that points at the weaker of two controls is how
+  # the stronger one gets deleted as redundant. The `mutate` job is what has no such
+  # backstop: `workflow_dispatch` lets the operator pick ANY ref, so without this job an
+  # unreviewed branch could reach that job's `issues: write` token. PR-time gating
+  # (`powershell-script-tests.yml`) does not cover that path, because a dispatch does not
+  # have to run from a merged commit.
+  #
+  # The suite does still assert that a report-mode run performs zero writes, and that is
+  # not the same guarantee restated. The token stops a write from LANDING; the suite
+  # stops one from being ATTEMPTED — which is what keeps `-Mode report` a decision the
+  # script makes, rather than an error the API returns on whichever call happened to run
+  # first. Two independent controls, and this job is the weaker one.
   #
   # Note the stronger fact behind that: PR-time gating does not exist YET at all.
   # `powershell-script-tests.yml` arrives with dotnet/maui#36842, and no workflow in the

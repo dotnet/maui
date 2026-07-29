@@ -3520,6 +3520,88 @@ Describe 'Static source invariants' {
             }
         }
 
+        It 'never lets a header name the test suite as what keeps report mode read-only' {
+            <#
+                The safety-test header used to open with: "The claim 'report mode cannot
+                mutate' is enforced by the Pester suite, not by inspection. Nothing else in
+                this workflow re-checks it at run time." Both halves are false, and the file
+                says so twelve lines from the top — SAFETY MODEL note 1 states that read-only
+                is enforced BY THE TOKEN, and the `report` job is granted `issues: read`.
+
+                A wrong sentence about which control is load-bearing is not a typo in a
+                security header. It is an argument for deleting the right one: a reviewer
+                who believes the suite is what keeps report mode read-only reads
+                `issues: read` as belt-and-braces and drops it in the next permissions
+                tidy-up — and the suite they kept cannot stop a write, it can only fail
+                after one is attempted. The overstatement points AWAY from the only control
+                that holds when the script is wrong, which is the case it exists for.
+
+                Pinned rather than corrected once, because the sentence is attractive: this
+                job really is a gate, and describing a gate by the strongest thing it sounds
+                like it protects is the natural way to write it down.
+
+                Zero-expectation scan, so half 2 of anti-vacuity cannot come from the file:
+                a correct workflow contains no offender, and a matcher that stopped matching
+                is indistinguishable from one that found nothing. The rule is defined ONCE
+                and exercised on samples the workflow cannot supply.
+            #>
+            # Matched against the header FLATTENED to one line: the offending sentence
+            # wrapped across two comment lines, so a per-line scan would have missed the
+            # very text this test was written for.
+            $headerLines = @($script:WorkflowText -split "`r?`n" | Where-Object { $_ -match '^\s*#' })
+            $flat = (($headerLines | ForEach-Object { $_ -replace '^\s*#\s?', '' }) -join ' ') -replace '\s+', ' '
+
+            # Two independent ways to say it, so neither branch carries the rule alone:
+            # crediting the suite, and denying that anything else acts at run time.
+            $misattributionPatterns = @(
+                '\b(?:report[- ]only|report\s+mode|read[- ]only)\b[^.]{0,160}?\b(?:enforced|guaranteed|ensured|assured|backed|protected)\s+by\s+(?:the\s+)?(?:pester\s+|test\s+|safety\s+)*suite\b'
+                '\bnothing\s+else\b[^.]{0,160}?\bre-?checks?\b'
+                '\bnothing\s+else\b[^.]{0,160}?\bat\s+run[- ]time\b'
+            )
+            $misattributionRegex = '(?i)(?:' + ($misattributionPatterns -join '|') + ')'
+
+            # Single definition of the rule; controls and scan alike go through it, so a
+            # corrupted rule cannot pass the controls and fail the scan, or vice versa.
+            $isMisattributing = { param([string]$Text) $Text -match $misattributionRegex }
+
+            # Half 2: the rule detects what it claims to. One bad sample per alternation --
+            # a compound sample keeps the control green while a single branch rots.
+            $knownBad = @(
+                "The claim report mode cannot mutate is enforced by the Pester suite, not by inspection."
+                "Nothing else in this workflow re-checks it."
+                "Nothing else in this workflow guards it at run time."
+            )
+            for ($i = 0; $i -lt $knownBad.Count; $i++) {
+                (& $isMisattributing -Text $knownBad[$i]) |
+                    Should -BeTrue -Because "alternation $i of the misattribution rule must detect '$($knownBad[$i])'; if it does not, the zero-offender result below means nothing"
+            }
+
+            # ...and does not fire on the accurate statements, which must stay sayable.
+            $knownGood = @(
+                'Report mode is already enforced at run time by the credential.'
+                'The suite does still assert that a report-mode run performs zero writes.'
+                'Read-only is enforced by the token, not by the script.'
+            )
+            foreach ($good in $knownGood) {
+                (& $isMisattributing -Text $good) |
+                    Should -BeFalse -Because "a header must remain able to state the truth: '$good'"
+            }
+
+            # Half 1: the premise is real. The misattribution is only wrong BECAUSE a
+            # run-time control exists, so both halves of that are asserted from the file
+            # itself rather than assumed -- if the token were ever loosened, this test
+            # should fail here and be rewritten, not keep policing a stale rule.
+            $flat | Should -Match '(?i)enforced\s+by\s+the\s+token' -Because 'SAFETY MODEL note 1 must keep stating that read-only is a credential guarantee; without it the rule below has no premise'
+            $script:WorkflowText | Should -Match '(?ms)^\s{2}report:.*?^\s{6}issues:\s*read\s*$' -Because 'the report job must actually hold issues: read, which is the run-time control the header must not talk past'
+
+            # The scan itself.
+            (& $isMisattributing -Text $flat) |
+                Should -BeFalse -Because (
+                    'the ci-scan-reconcile.yml header must not credit the Pester suite with keeping report mode ' +
+                    'read-only, nor deny that anything re-checks it at run time: the report job holds issues: read, ' +
+                    'and naming the weaker control is how the stronger one gets removed as redundant')
+        }
+
         It 'never lets a job header claim it runs unconditionally when a needs: gate can skip it' {
             <#
                 The `report` header read "always runs, for every trigger" while the job
