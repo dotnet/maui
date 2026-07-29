@@ -3654,6 +3654,31 @@ Describe 'Static source invariants' {
             'the comment stripper must not have eaten the file, and the helper must exist'
 
         $guarded = @('ConvertTo-CiScanTimestamp', 'ConvertFrom-CiScanTimestamp')
+
+        <#
+            The offender rule is the zero-expectation half, so nothing in the file can
+            prove it still matches -- the file is required to contain no match. The
+            `Should -Match` above anchors the STRIPPER, and the routing assertion below
+            anchors a DIFFERENT literal; between them they prove the input is real and
+            leave this matcher unproven, which reads exactly like coverage.
+
+            Measured: truncate `ToUniversalTime` by one character AND add a real
+            offsetless branch to `ConvertTo-CiScanTimestamp` -- the kind of refactor that
+            keeps routing intact, so the assertion below still passes -- and the whole
+            suite reports 251/251 green with the defect live in production.
+
+            Defined once and exercised on samples the file cannot supply.
+        #>
+        $isOffendingLine = { param([string]$Line) $Line -cmatch '\[datetime\]\$Value\)\.ToUniversalTime\(\)' }
+        foreach ($knownBad in @(
+                '    if ($Value -is [string]) { return ([datetime]$Value).ToUniversalTime().ToString(''o'') }',
+                '        $utc = ([datetime]$Value).ToUniversalTime()')) {
+            (& $isOffendingLine -Line $knownBad) | Should -BeTrue -Because `
+                "the offender rule must still match a real offsetless conversion: $knownBad"
+        }
+        (& $isOffendingLine -Line '    return (ConvertTo-CiScanUtcDateTime -Value ([datetime]$Value)).ToString(''o'')') |
+            Should -BeFalse -Because 'the routed form must not be reported as an offender, or the rule would fire on correct code'
+
         $current = '<file scope>'
         $offenders = @()
         $routed = @()
@@ -3661,7 +3686,7 @@ Describe 'Static source invariants' {
             $fn = [regex]::Match($line, '^function\s+(?<f>[\w-]+)')
             if ($fn.Success) { $current = $fn.Groups['f'].Value }
             if ($guarded -notcontains $current) { continue }
-            if ($line -match '\[datetime\]\$Value\)\.ToUniversalTime\(\)') { $offenders += "${current}: $($line.Trim())" }
+            if (& $isOffendingLine -Line $line) { $offenders += "${current}: $($line.Trim())" }
             if ($line -match 'ConvertTo-CiScanUtcDateTime') { $routed += $current }
         }
 
