@@ -547,15 +547,10 @@ jobs:
                 ')
 
             if [ -n "$EXACT_OPEN" ]; then
-              # Prefer the current generation even when an older generic tracker
-              # is still open; duplicate cleanup will retire the stale issue.
-              GENERATION_CANONICAL=$(echo "$EXACT_OPEN" | head -n 1)
-              REORDERED_EXISTING="$GENERATION_CANONICAL"
-              for issue in $EXISTING; do
-                [ "$issue" = "$GENERATION_CANONICAL" ] && continue
-                REORDERED_EXISTING="${REORDERED_EXISTING}"$'\n'"${issue}"
-              done
-              EXISTING="$REORDERED_EXISTING"
+              # The exact open proves this generation was tracked, but the oldest
+              # generic tracker remains canonical. It may carry Release Captain
+              # Notes that must not be discarded when duplicate cleanup runs.
+              echo "Current generation is already open as issue(s): $(echo "$EXACT_OPEN" | tr '\n' ' '); preserving oldest tracker #$(echo "$EXISTING" | head -n 1) as canonical."
             else
             # Narrow server-side to tracker-labeled issues, then enforce exact
             # marker lines locally. Legacy/current trackers may be human-created
@@ -792,24 +787,39 @@ jobs:
                     if [ "$GENERATION_TRANSITION" = "true" ]; then
                       POST_EDIT_META=$(gh issue view "$CANONICAL" \
                         --repo "${{ github.repository }}" \
-                        --json state,closedAt,updatedAt \
-                        --jq '[.state, (.closedAt // ""), (.updatedAt // "")] | @tsv' 2>/dev/null || true)
-                      IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT <<< "$POST_EDIT_META"
+                       --json state,closedAt,updatedAt,body \
+                       --jq '[.state, (.closedAt // ""), (.updatedAt // ""), ((.body // "") | @base64)] | @tsv' 2>/dev/null || true)
+                      IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT POST_BODY_B64 <<< "$POST_EDIT_META"
                       if [ "$POST_EDIT_STATE" = "CLOSED" ] &&
                          [ -n "$POST_CLOSED_AT" ] &&
-                         { [ "$POST_UPDATED_AT" \> "$POST_CLOSED_AT" ] ||
-                           [ "$POST_UPDATED_AT" = "$POST_CLOSED_AT" ]; }; then
-                       # The edit happened after the human closure, or GitHub's
-                       # second-resolution timestamps cannot prove ordering.
-                       # Prefer recreating visible release evidence over silently
-                       # consuming a new generation on the raced closed issue.
+                        [ -n "$POST_BODY_B64" ] &&
+                        [ "$POST_UPDATED_AT" \> "$POST_CLOSED_AT" ]; then
+                       # The edit provably happened after the human closure.
+                       # Start from the live closed body, then recheck its revision
+                       # immediately before removing only the raced marker.
+                       RACE_CURRENT_BODY_FILE="$(mktemp)"
                         RACE_BODY_FILE="$(mktemp)"
-                        LC_ALL=C grep -Fvx "$GENERATION_MARKER" "$BODY_FILE" > "$RACE_BODY_FILE" || true
-                        gh issue edit "$CANONICAL" \
-                          --repo "${{ github.repository }}" \
-                          --body-file "$RACE_BODY_FILE" || true
-                        rm -f "$RACE_BODY_FILE"
-                        echo "::warning::Issue #${CANONICAL} closed before the generation-transition edit completed; removed the raced marker so the next run can recreate the new generation."
+                       echo "$POST_BODY_B64" | base64 --decode > "$RACE_CURRENT_BODY_FILE"
+                       LC_ALL=C grep -Fvx "$GENERATION_MARKER" "$RACE_CURRENT_BODY_FILE" > "$RACE_BODY_FILE" || true
+                       PRE_RACE_META=$(gh issue view "$CANONICAL" \
+                         --repo "${{ github.repository }}" \
+                         --json state,updatedAt,body \
+                         --jq '[.state, .updatedAt, ((.body // "") | @base64)] | @tsv' 2>/dev/null || true)
+                       IFS=$'\t' read -r PRE_RACE_STATE PRE_RACE_UPDATED_AT PRE_RACE_BODY_B64 <<< "$PRE_RACE_META"
+                       if [ "$PRE_RACE_STATE" != "CLOSED" ] ||
+                          [ "$PRE_RACE_UPDATED_AT" != "$POST_UPDATED_AT" ] ||
+                          [ "$PRE_RACE_BODY_B64" != "$POST_BODY_B64" ]; then
+                         echo "::warning::Issue #${CANONICAL} changed during generation-race compensation; preserving the latest human body and leaving reconciliation to the next run."
+                       else
+                         if gh issue edit "$CANONICAL" \
+                           --repo "${{ github.repository }}" \
+                           --body-file "$RACE_BODY_FILE"; then
+                           echo "::warning::Issue #${CANONICAL} closed before the generation-transition edit completed; removed the raced marker from the live closed body so the next run can recreate the new generation."
+                         else
+                           echo "::warning::Could not remove the raced generation marker from closed issue #${CANONICAL}; manual reconciliation may be required."
+                         fi
+                       fi
+                       rm -f "$RACE_CURRENT_BODY_FILE" "$RACE_BODY_FILE"
                       fi
                     fi
                   fi

@@ -200,8 +200,8 @@ Assert-Eq -Label "workflow refuses duplicate creation when an unlabeled tracker 
         $workflowContractText.Contains('Restore the area-infrastructure label before automation resumes'))
 Assert-Eq -Label "workflow resolves exact current-generation opens before exact closures" -Expected $true `
     -Actual ($workflowContractText.IndexOf('EXACT_OPEN=') -lt $workflowContractText.IndexOf('CLOSED_GENERATION='))
-Assert-Eq -Label "workflow prefers exact current generation before generic canonical fallback" -Expected $true `
-    -Actual ($workflowContractText.Contains('GENERATION_CANONICAL=$(echo "$EXACT_OPEN" | head -n 1)') -and
+Assert-Eq -Label "workflow preserves the oldest notes-bearing tracker when an exact-generation duplicate exists" -Expected $false `
+    -Actual ($workflowContractText.Contains('GENERATION_CANONICAL=') -or
         $workflowContractText.Contains('EXISTING="$REORDERED_EXISTING"'))
 Assert-Eq -Label "workflow refreshes an open generic tracker across generation commits" -Expected $true `
     -Actual $workflowContractText.Contains('[ -z "$EXISTING" ] && CREATE_GENERATION=true')
@@ -212,11 +212,12 @@ Assert-Eq -Label "workflow reconciles stale opens before honoring exact closure"
 Assert-Eq -Label "workflow compensates a generation edit proven to land after closure" -Expected $true `
     -Actual ($workflowContractText.Contains('POST_EDIT_META=') -and
         $workflowContractText.Contains('removed the raced marker'))
-Assert-Eq -Label "workflow compensates ambiguous same-second generation close/edit races" -Expected $true `
+Assert-Eq -Label "workflow gives ambiguous same-second close/edit races to the human closure" -Expected $false `
     -Actual $workflowContractText.Contains('[ "$POST_UPDATED_AT" = "$POST_CLOSED_AT" ]')
-Assert-Eq -Label "workflow rechecks body revision before overwriting captain notes" -Expected $true `
-    -Actual ($workflowContractText.Contains('PRE_EDIT_BODY_B64') -and
-        $workflowContractText.Contains('changed while this refresh was preparing'))
+Assert-Eq -Label "workflow rechecks exact state and body revision before overwriting captain notes" -Expected $true `
+    -Actual ([bool]($workflowContractText -match 'elif \[ "\$PRE_EDIT_UPDATED_AT" != "\$CUR_UPDATED_AT" \] \|\| \[ "\$PRE_EDIT_BODY_B64" != "\$CUR_BODY_B64" \]; then'))
+Assert-Eq -Label "workflow race compensation starts from and rechecks the live closed body" -Expected $true `
+    -Actual ([bool]($workflowContractText -match 'POST_BODY_B64[\s\S]*base64 --decode[\s\S]*PRE_RACE_UPDATED_AT.*!=.*POST_UPDATED_AT[\s\S]*PRE_RACE_BODY_B64.*!=.*POST_BODY_B64'))
 Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
     -Actual $workflowContractText.Contains('hotfix version pending')
 # ─────────── E2E smoke test against SR7 ───────────
@@ -360,7 +361,7 @@ if (-not $SkipE2E) {
             Assert-Eq -Label "Preview driver applies PublicSafe to Markdown and JSON" `
                 -Expected $false -Actual ([bool](("$previewMarkdown`n$previewJsonText") -match 'dnceng/internal|\.NET Release Tracker|dotnet-release-tracker|api://'))
             Assert-Eq -Label "Preview driver PublicSafe assertion is discriminating in Markdown and JSON" `
-                -Expected $true -Actual ([bool]($previewMarkdown -match 'internal source' -and $previewJsonText -match 'internal source'))
+                -Expected $true -Actual ([bool]($previewMarkdown -match '_internal URL omitted_' -and $previewJsonText -match '_internal URL omitted_'))
         }
     } finally {
         if (Test-Path $previewOut) { Remove-Item -Recurse -Force $previewOut }
@@ -1506,7 +1507,7 @@ if (-not $SkipE2E) {
     Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
     Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'PRE_EDIT_STATE=.*gh issue view'))
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'PRE_EDIT_META=.*gh issue view'))
 
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
@@ -3126,6 +3127,10 @@ foreach ($negatedClosingText in @(
     "Don't; fix #35615",
     'This no longer fixes #35615',
     "This doesn’t close #35615 after $([string]::new('x', 120))"
+    'This fails to fix #35615'
+    'This failed to fully fix #35615'
+    'This is unable to fix #35615'
+    'This only partially fixes #35615'
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
@@ -8071,6 +8076,9 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/Dev Div/_workitems/edit/123?token=DEVDIVSPACESECRET',
         'DevDiv/_workitems/edit/123?token=BAREDEVDIVSECRET',
         'Dev Div/_workitems/edit/123?token=BARESPACEDSECRET',
+        'https://dev.azure.com/dnceng//internal/_build?token=DOUBLESLASHSECRET',
+        'https://dev.azure.com/dnceng/%2finternal/_build?token=MIXEDSLASHSECRET',
+        'https://dnceng.visualstudio.com:443/internal/_build?token=PORTSECRET',
         'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
         "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET",
         "https://dev.azure.com/dnceng/in$([char]0x0422)ernal/_build?token=CYRILLICUPPERSECRET"
@@ -8078,10 +8086,15 @@ function Assert-PublicSanitizerEdgeCases {
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|NAMEDINVISIBLESECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET|DEVDIVSPACESECRET|BAREDEVDIVSECRET|BARESPACEDSECRET|DOTSEGMENTSECRET|CYRILLICSECRET|CYRILLICUPPERSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|NAMEDINVISIBLESECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET|DEVDIVSPACESECRET|BAREDEVDIVSECRET|BARESPACEDSECRET|DOUBLESLASHSECRET|MIXEDSLASHSECRET|PORTSECRET|DOTSEGMENTSECRET|CYRILLICSECRET|CYRILLICUPPERSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
+    $publicQuerySafe = ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build?token=PUBLICQUERYSECRET'
+    Assert-Eq -Label "$Lane sanitizer removes query values from recognized Azure DevOps hosts" -Expected $false `
+        -Actual ($publicQuerySafe -match 'PUBLICQUERYSECRET')
+    Assert-Eq -Label "$Lane sanitizer marks removed Azure DevOps query values" -Expected $true `
+        -Actual ($publicQuerySafe -match '_query_omitted_')
     Assert-Eq -Label "$Lane sanitizer preserves ordinary percentage prose byte-for-byte" -Expected 'Coverage results: 6%62% relative improvement' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'Coverage results: 6%62% relative improvement')
     Assert-Eq -Label "$Lane sanitizer preserves emoji variation and joiners outside URLs" -Expected 'Status ⚠️ family 👨‍👩‍👧‍👦' `

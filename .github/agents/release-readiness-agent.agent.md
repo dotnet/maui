@@ -207,8 +207,8 @@ missing or incomplete flow plumbing, the prioritized action list MUST start with
 dependency order, even when other report rows are marked `BLOCKED`:
 
 1. Add the Preview N default-channel mapping.
-2. Add the Android and macOS/iOS subscriptions; note that they are inert until
-   the `maestro-configuration` PR merges into `production`.
+2. Add the Android and macOS/iOS subscriptions; confirm their configuration has
+   reached `production` before treating them as active.
 3. Reconcile MAUI's SDK/VMR pin locally with the official Preview N build and
    recommend a focused component-bump PR. Never request a dotnet/VMR subscription:
    the Maestro preview feed can differ from the release source of truth.

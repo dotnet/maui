@@ -44,6 +44,7 @@ function ConvertTo-PublicSafeMarkdown {
         $canonical = [regex]::Replace($canonical, '&[A-Za-z][A-Za-z0-9]+;', '')
         $canonical = $canonical -replace '[\p{Cf}\u00AD\u180E\uFE00-\uFE0F]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
+        $canonical = [regex]::Replace($canonical, '(?<!:)/{2,}', '/')
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
         $canonical = $canonical.Replace('Т', 'T').Replace('Н', 'H').Replace('В', 'B').Replace('М', 'M').Replace('К', 'K')
@@ -63,7 +64,7 @@ function ConvertTo-PublicSafeMarkdown {
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
         $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
-        if ($detection -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com/DevDiv|devdiv\.visualstudio\.com/DevDiv|^DevDiv))(?:[/?:#]|$)') {
+        if ($detection -match '(?i)(?:(?:dev\.azure\.com(?::\d+)?/dnceng|dnceng\.visualstudio\.com(?::\d+)?)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com(?::\d+)?/DevDiv|devdiv\.visualstudio\.com(?::\d+)?/DevDiv|^DevDiv))(?:[/?:#]|$)') {
             return '_internal URL omitted_'
         }
         return $original
@@ -86,6 +87,10 @@ function ConvertTo-PublicSafeMarkdown {
         $safe,
         '(?i)(?:\.NET Release Tracker|\bdotnet-release-tracker\b|\bdotnet/release\b)',
         'official release source')
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)(?<base>https?://(?:(?:dev\.azure\.com(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com(?::\d+)?))(?:/[^\s<>"''`|)?#]*)?)\?[^\s<>"''`|)]*',
+        '${base}?_query_omitted_')
     return $safe
 }
 
