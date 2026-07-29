@@ -30,6 +30,22 @@ public class BindablePropertyConverterTests : BaseTestFixture
 		Assert.Contains($"Expected {nameof(VisualStateGroup)}", exception.Message, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void InvalidVisualStateGroupListUsesSpecificError()
+	{
+		var exception = ConvertWithParents(new Setter(), new VisualState(), new VisualStateGroup(), new object());
+
+		Assert.Contains($"Expected {nameof(VisualStateGroupList)}", exception.Message, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void InvalidSetterUsesSpecificError()
+	{
+		var exception = ConvertWithParents(new Setter(), new VisualState(), new VisualStateGroup(), new VisualStateGroupList(), new object());
+
+		Assert.Contains($"Expected {nameof(Setter)}", exception.Message, StringComparison.Ordinal);
+	}
+
 	static void AssertMissingTargetType(params object[] parents)
 	{
 		var exception = ConvertWithParents(parents);

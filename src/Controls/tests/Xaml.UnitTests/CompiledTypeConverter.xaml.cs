@@ -124,11 +124,19 @@ public partial class CompiledTypeConverter : ContentPage
 		[Fact]
 		internal void CompiledStrokeShapeUsesInvariantCulture()
 		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+			var originalCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+			try
+			{
+				System.Threading.Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
 
-			MockCompiler.Compile(typeof(CompiledTypeConverter), out _, out bool hasLoggedErrors);
+				MockCompiler.Compile(typeof(CompiledTypeConverter), out _, out bool hasLoggedErrors);
 
-			Assert.False(hasLoggedErrors);
+				Assert.False(hasLoggedErrors);
+			}
+			finally
+			{
+				System.Threading.Thread.CurrentThread.CurrentCulture = originalCulture;
+			}
 		}
 
 		public static IEnumerable<object[]> ConverterTestData =>
