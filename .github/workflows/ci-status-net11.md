@@ -524,7 +524,18 @@ steps:
             throw new Error(`AzDO returned a malformed build list for ${definition.name}.`);
           }
           const build = builds.value[0];
-          if (!build || !build.finishTime || Date.parse(build.finishTime) < cutoff) {
+          if (!build) {
+            pipelines.push({
+              ...definition,
+              status: 'skipped-no-recent-build',
+            });
+            continue;
+          }
+          const finishTime = Date.parse(build.finishTime);
+          if (!Number.isFinite(finishTime)) {
+            throw new Error(`AzDO returned an invalid finishTime for ${definition.name}.`);
+          }
+          if (finishTime < cutoff) {
             pipelines.push({
               ...definition,
               status: 'skipped-no-recent-build',
@@ -614,12 +625,22 @@ steps:
                     Number.isSafeInteger(finishedCount) &&
                     finishedCount >= initialCount &&
                     pendingCounts.every(count => Number.isSafeInteger(count) && count >= 0);
+                  const terminalItems = items.every(workItem => {
+                    const state = String(workItem.State || '').toLowerCase();
+                    const hasExitCode =
+                      workItem.ExitCode !== null &&
+                      workItem.ExitCode !== undefined &&
+                      workItem.ExitCode !== '' &&
+                      Number.isSafeInteger(Number(workItem.ExitCode));
+                    return (state === 'finished' || state === 'failed') &&
+                      (state === 'failed' || hasExitCode);
+                  });
                   terminalJob =
                     validCounts &&
                     Boolean(details?.Finished) &&
-                    pendingCounts.every(count => count === 0) &&
                     finishedCount > 0 &&
-                    items.length >= finishedCount;
+                    items.length >= finishedCount &&
+                    terminalItems;
                   if (terminalJob) {
                     workItems = items;
                     break;

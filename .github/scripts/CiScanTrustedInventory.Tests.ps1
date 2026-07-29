@@ -128,7 +128,12 @@ $body
             [Parameter(Mandatory = $true)][string]$TaskResult,
             [Parameter(Mandatory = $true)][string]$WorkItemState,
             [Parameter(Mandatory = $true)][int]$WorkItemExitCode,
-            [string]$ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Controls.DeviceTests.log'
+            [string]$ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Controls.DeviceTests.log',
+            [object]$BuildFinishTime = (Get-Date).ToUniversalTime().ToString('o'),
+            [int]$InitialWorkItemCount = 1,
+            [int]$FinishedWorkItemCount = 1,
+            [int]$UnscheduledWorkItemCount = 0,
+            [object[]]$WorkItems
         )
 
         $emptyBuilds = [pscustomobject]@{ value = @() }
@@ -136,6 +141,16 @@ $body
             'Helix Job: submitted',
             "https://helix.dot.net/api/jobs/$($script:HelixJobId)/workitems"
         ) -join "`n"
+        if (-not $PSBoundParameters.ContainsKey('WorkItems')) {
+            $WorkItems = @(
+                [pscustomobject]@{
+                    Name             = 'Controls.DeviceTests'
+                    State            = $WorkItemState
+                    ExitCode         = $WorkItemExitCode
+                    ConsoleOutputUri = $ConsoleOutputUri
+                }
+            )
+        }
 
         return @(
             # maui-pr and maui-pr-uitests have no recent build, so only the
@@ -148,7 +163,7 @@ $body
                     value = @(
                         [pscustomobject]@{
                             id           = 5000
-                            finishTime   = (Get-Date).ToUniversalTime().ToString('o')
+                            finishTime   = $BuildFinishTime
                             status       = 'completed'
                             result       = 'succeeded'
                             sourceBranch = "refs/heads/$($script:ScannerBranch)"
@@ -176,11 +191,11 @@ $body
             [pscustomobject]@{
                 match = "jobs/$($script:HelixJobId)/details"
                 json  = [pscustomobject]@{
-                    Finished             = $true
-                    InitialWorkItemCount = 1
+                    Finished             = '2026-07-28T17:16:15.8550000+00:00'
+                    InitialWorkItemCount = $InitialWorkItemCount
                     WorkItems            = [pscustomobject]@{
-                        Finished    = 1
-                        Unscheduled = 0
+                        Finished    = $FinishedWorkItemCount
+                        Unscheduled = $UnscheduledWorkItemCount
                         Waiting     = 0
                         Running     = 0
                     }
@@ -188,14 +203,7 @@ $body
             }
             [pscustomobject]@{
                 match = "jobs/$($script:HelixJobId)/workitems"
-                json  = @(
-                    [pscustomobject]@{
-                        Name             = 'Controls.DeviceTests'
-                        State            = $WorkItemState
-                        ExitCode         = $WorkItemExitCode
-                        ConsoleOutputUri = $ConsoleOutputUri
-                    }
-                )
+                json  = $WorkItems
             }
             [pscustomobject]@{
                 match = 'helix.blob.core.windows.net'
@@ -301,6 +309,73 @@ Describe 'trusted build-evidence collector: <_.Name>' -ForEach $script:Collector
         $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
         @($devicePipeline.required_log_ids) | Should -Be @(1001)
         @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
+    }
+
+    It 'accepts the completed Helix response whose Unscheduled count remains cumulative' -Skip:(-not $script:NodeAvailable) {
+        # Live response from job a755e8d4-4f81-48be-8dbc-13e723054eb5:
+        # InitialWorkItemCount=5, Finished=6, Unscheduled=5, with six terminal
+        # returned items. Unscheduled is not a pending count once the job has
+        # Finished, so terminality must come from the returned work-item states.
+        $terminalItems = @(
+            [pscustomobject]@{
+                Name = 'com.microsoft.maui.controls.devicetests-Signed'
+                State = 'Finished'
+                ExitCode = -1
+                ConsoleOutputUri = 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
+            }
+            [pscustomobject]@{
+                Name = 'com.microsoft.maui.mauiblazorwebview.devicetests-Signed'
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/MauiBlazorWebView.DeviceTests.log'
+            }
+            [pscustomobject]@{
+                Name = 'com.microsoft.maui.graphics.devicetests-Signed'
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Graphics.DeviceTests.log'
+            }
+            [pscustomobject]@{
+                Name = 'com.microsoft.maui.essentials.devicetests-Signed'
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Essentials.DeviceTests.log'
+            }
+            [pscustomobject]@{
+                Name = 'com.microsoft.maui.core.devicetests-Signed'
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = 'https://helix.blob.core.windows.net/console/Core.DeviceTests.log'
+            }
+            [pscustomobject]@{
+                Name = 'HelixController Work Queueing'
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = ''
+            }
+        )
+        $inventory = Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -InitialWorkItemCount 5 `
+                -FinishedWorkItemCount 6 `
+                -UnscheduledWorkItemCount 5 `
+                -WorkItems $terminalItems)
+
+        $devicePipeline = @($inventory.pipelines | Where-Object { $_.name -eq 'maui-pr-devicetests' })[0]
+        $devicePipeline.status | Should -Be 'scanned'
+        @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
+    }
+
+    It 'rejects a truthy but invalid AzDO finishTime' -Skip:(-not $script:NodeAvailable) {
+        {
+            Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                    -TaskResult 'succeeded' `
+                    -WorkItemState 'Finished' `
+                    -WorkItemExitCode 0 `
+                    -BuildFinishTime 'not-a-date')
+        } | Should -Throw '*invalid finishTime*'
     }
 
     It 'records the deadletter URI as evidence without fetching it' -Skip:(-not $script:NodeAvailable) {

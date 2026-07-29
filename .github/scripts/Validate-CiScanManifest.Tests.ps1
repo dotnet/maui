@@ -1136,7 +1136,8 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
     It 'fails closed on incomplete Helix work-item evidence' {
         $workflowSource | Should -Match 'attempt <= 6'
         $workflowSource | Should -Match 'items\.length >= finishedCount'
-        $workflowSource | Should -Match 'pendingCounts\.every\(count => count === 0\)'
+        $workflowSource | Should -Match 'const terminalItems = items\.every'
+        $workflowSource | Should -Not -Match 'pendingCounts\.every\(count => count === 0\)'
         $workflowSource | Should -Match 'did not provide complete terminal work-item evidence'
         $workflowSource | Should -Match "state !== 'finished' && state !== 'failed'"
         $workflowSource | Should -Match 'workItem\.ExitCode !== null'
