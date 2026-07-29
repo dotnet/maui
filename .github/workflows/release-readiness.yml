@@ -797,11 +797,12 @@ jobs:
                       IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT <<< "$POST_EDIT_META"
                       if [ "$POST_EDIT_STATE" = "CLOSED" ] &&
                          [ -n "$POST_CLOSED_AT" ] &&
-                         [ "$POST_UPDATED_AT" \> "$POST_CLOSED_AT" ]; then
-                        # The edit happened after the human closure. Remove only
-                        # the newly introduced generation marker so the next run
-                        # can create that generation instead of mistaking this
-                        # raced closure for an intentional close of new evidence.
+                         { [ "$POST_UPDATED_AT" \> "$POST_CLOSED_AT" ] ||
+                           [ "$POST_UPDATED_AT" = "$POST_CLOSED_AT" ]; }; then
+                       # The edit happened after the human closure, or GitHub's
+                       # second-resolution timestamps cannot prove ordering.
+                       # Prefer recreating visible release evidence over silently
+                       # consuming a new generation on the raced closed issue.
                         RACE_BODY_FILE="$(mktemp)"
                         LC_ALL=C grep -Fvx "$GENERATION_MARKER" "$BODY_FILE" > "$RACE_BODY_FILE" || true
                         gh issue edit "$CANONICAL" \

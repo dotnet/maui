@@ -314,11 +314,9 @@ function Test-IsUnpublishedHotfixOnLatestShippedSr {
 
     if ($HighestShippedPatch -le 0) { return $false }
     $highestShippedSr = [int][math]::Floor($HighestShippedPatch / 10)
-    $patchFloor = $SrNumber * 10
     return $SrNumber -eq $highestShippedSr -and
         $BranchPatch -gt $HighestShippedPatch -and
-        $BranchPatch -ge $patchFloor -and
-        $BranchPatch -lt ($patchFloor + 10)
+        (Test-IsPatchInSrCycle -SrNumber $SrNumber -Patch $BranchPatch)
 }
 
 function Test-IsPatchInSrCycle {
@@ -748,11 +746,11 @@ function Invoke-DetectionForMajor {
     $srBranches = Get-RemoteSrBranchesForMajor -Major $Major
     Write-Host "[major $Major] Found $($srBranches.Count) strict release/$Major.0.*xx-sr* branches on origin" -ForegroundColor Cyan
     $highestBranchSr = 0
+    $validSrBranches = [System.Collections.Generic.List[object]]::new()
     $inflightBranchesBySr = @{}
     foreach ($entry in $srBranches) {
         $branch = $entry.branch
         $sr     = $entry.srNumber
-        if ($sr -gt $highestBranchSr) { $highestBranchSr = $sr }
 
         Write-Verbose "Inspecting branch $branch (sr$sr)..."
         $versionInfo = Get-VersionFromGitRef -GitRef "origin/$branch" -Repo $Repo
@@ -770,6 +768,8 @@ function Invoke-DetectionForMajor {
             Write-Warning "[major $Major] Branch '$branch' declares patch $branchPatch outside SR$sr's [$($sr * 10)..$(($sr * 10) + 9)] range — skipping Lane 1 to avoid duplicate/misnumbered trackers."
             continue
         }
+        $validSrBranches.Add($entry)
+        if ($sr -gt $highestBranchSr) { $highestBranchSr = $sr }
 
         $isUnpublishedLatestSrHotfix = Test-IsUnpublishedHotfixOnLatestShippedSr `
             -SrNumber $sr -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
@@ -843,7 +843,7 @@ function Invoke-DetectionForMajor {
         $highestShippedSr = [int]([math]::Floor($highestShippedPatch / 10))
         $highestSr        = [int][math]::Max([int]$highestBranchSr, [int]$highestShippedSr)
         $nextSr           = $highestSr + 1
-        $nextSrBranchExists = $srBranches | Where-Object { $_.srNumber -eq $nextSr }
+        $nextSrBranchExists = $validSrBranches | Where-Object { $_.srNumber -eq $nextSr }
 
         if (-not $nextSrBranchExists) {
             $candidateRef = $mainBranchForMajor
@@ -868,7 +868,7 @@ function Invoke-DetectionForMajor {
             # are NOT the prior of a current candidate.
             $priorSrNumber = $nextSr - 1
             $priorSrBranchName = "release/$Major.0.1xx-sr$priorSrNumber"
-            $priorSrBranchExists = $srBranches | Where-Object { $_.branch -eq $priorSrBranchName }
+            $priorSrBranchExists = $validSrBranches | Where-Object { $_.branch -eq $priorSrBranchName }
             $priorSrBranch = $null
             if ($priorSrBranchExists) {
                 $priorSrBranch = $priorSrBranchName

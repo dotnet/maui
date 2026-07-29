@@ -184,6 +184,12 @@ if (Test-Path $nightlyFeedHelperPath) {
     Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled." -WarningAction Continue
 }
 
+$publicSanitizerHelperPath = Join-Path $PSScriptRoot 'PublicReportSanitizer.ps1'
+if (-not (Test-Path $publicSanitizerHelperPath)) {
+    throw "Required public-report sanitizer not found at $publicSanitizerHelperPath."
+}
+. $publicSanitizerHelperPath
+
 # DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
 # Refuse to operate on any `inflight/*` or `staging/*` ref — those are
 # integration branches, not SR sources. This guard exists because conflating
@@ -264,124 +270,6 @@ function Invoke-Gh([string[]]$GhArgs, [switch]$Quiet) {
     } finally {
         if (Test-Path $errFile) { Remove-Item $errFile -ErrorAction SilentlyContinue }
     }
-}
-
-function ConvertTo-PublicSafeMarkdown {
-    param([AllowNull()][AllowEmptyString()][string]$Text)
-
-    if ([string]::IsNullOrEmpty($Text)) { return $Text }
-
-    $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
-    $safe = $safe -replace '(?i)&sol;|&frasl;', '/'
-    $safe = $safe -replace '(?i)&period;', '.'
-    $safe = $safe -replace '(?i)&colon;', ':'
-    $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
-    $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
-    $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
-    $safe = [regex]::Replace($safe, '(?i)D\s*e\s*v\s*D\s*i\s*v(?=[/\\])', 'DevDiv')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
-        '${prefix}internal')
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
-        param($match)
-        $original = $match.Value
-        $canonical = $original
-        for ($decodePass = 0; $decodePass -lt 6; $decodePass++) {
-            try {
-                $decoded = [System.Uri]::UnescapeDataString($canonical)
-                if ($decoded -eq $canonical) { break }
-                $canonical = $decoded
-            } catch { break }
-        }
-        $canonical = [regex]::Replace($canonical, '(?i)&#(?:(?:x(?<hex>[0-9a-f]+))|(?<dec>\d+));', {
-            param($entity)
-            try {
-                $value = if ($entity.Groups['hex'].Success) {
-                    [Convert]::ToInt32($entity.Groups['hex'].Value, 16)
-                } else {
-                    [Convert]::ToInt32($entity.Groups['dec'].Value, 10)
-                }
-            } catch { return $entity.Value }
-            if ($value -le 0xffff) { return [char]$value }
-            return $entity.Value
-        })
-        $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
-        $canonical = [regex]::Replace($canonical, '&[A-Za-z][A-Za-z0-9]+;', '')
-        $canonical = $canonical -replace '[\p{Cf}\u00AD\u180E\uFE00-\uFE0F]', ''
-        $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
-        $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
-        $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
-        $canonical = $canonical.Replace('Т', 'T').Replace('Н', 'H').Replace('В', 'B').Replace('М', 'M').Replace('К', 'K')
-        $canonical = $canonical.ToLowerInvariant()
-        $confusables = @{
-            'а'='a'; 'е'='e'; 'і'='i'; 'о'='o'; 'р'='p'; 'с'='c'; 'х'='x'; 'у'='y'
-            'α'='a'; 'ε'='e'; 'ι'='i'; 'ο'='o'; 'ρ'='p'; 'χ'='x'; 'υ'='y'
-        }
-        foreach ($key in $confusables.Keys) { $canonical = $canonical.Replace($key, $confusables[$key]) }
-        do {
-            $beforeDots = $canonical
-            $canonical = [regex]::Replace($canonical, '/\.(?=/)', '')
-            $canonical = [regex]::Replace($canonical, '/(?!\.\.?/)[^/?#]+/\.\.(?=/)', '')
-        } while ($canonical -ne $beforeDots)
-        $canonical = [regex]::Replace(
-            $canonical,
-            '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
-            '$1')
-        $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
-        if ($detection -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com/DevDiv|devdiv\.visualstudio\.com/DevDiv|^DevDiv))(?:[/?:#]|$)') {
-            return '_internal URL omitted_'
-        }
-        return $original
-    })
-    $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
-    $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
-    $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)[^\s<>"''`|)]*',
-        { param($match) $match.Value -replace '\\', '/' })
-    $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
-    $safe = [regex]::Replace($safe, '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
-    $safe = [regex]::Replace($safe, '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
-    $safe = [regex]::Replace($safe, '(?i)https(?:%3a|%253a)(?:%2f|%252f){2}(?:(?:dev\.azure\.com(?:%2f|%252f)dnceng)|dnceng\.visualstudio\.com)(?:%2f|%252f)(?:DefaultCollection(?:%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
-    $safe = [regex]::Replace($safe, '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', 'internal source')
-    $safe = [regex]::Replace($safe, '(?i)\bdnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', 'internal source')
-    $safe = [regex]::Replace($safe, '(?i)\bapi://[A-Za-z0-9._/-]+', '_internal identifier omitted_')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?:\.NET Release Tracker|\bdotnet-release-tracker\b|\bdotnet/release\b)',
-        'official release source')
-    return $safe
-}
-
-function ConvertTo-PublicSafeValue {
-    param([AllowNull()]$Value)
-
-    if ($null -eq $Value) { return $null }
-    if ($Value -is [string]) { return ConvertTo-PublicSafeMarkdown -Text $Value }
-    if ($Value -is [System.Collections.IDictionary]) {
-        $copy = [ordered]@{}
-        foreach ($key in $Value.Keys) {
-            $copy[$key] = ConvertTo-PublicSafeValue -Value $Value[$key]
-        }
-        return $copy
-    }
-    if ($Value -is [System.Collections.IEnumerable]) {
-        $items = [System.Collections.Generic.List[object]]::new()
-        foreach ($item in $Value) {
-            [void]$items.Add((ConvertTo-PublicSafeValue -Value $item))
-        }
-        return ,$items.ToArray()
-    }
-    if ($Value -is [PSCustomObject]) {
-        $copy = [ordered]@{}
-        foreach ($property in $Value.PSObject.Properties) {
-            $copy[$property.Name] = ConvertTo-PublicSafeValue -Value $property.Value
-        }
-        return [PSCustomObject]$copy
-    }
-    return $Value
 }
 
 function Get-FileFromRef {
@@ -867,7 +755,7 @@ function Test-StableTagMatchesSr {
         $tagVersion.Build -ge $patchFloor -and $tagVersion.Build -lt ($patchFloor + 10)
 }
 
-function Get-PreviousStableTag {
+function Get-PreviousSrBaselineTag {
     param(
         [string]$Version,
         [string[]]$PublishedTags
@@ -875,14 +763,19 @@ function Get-PreviousStableTag {
 
     [version]$current = $null
     if (-not [version]::TryParse($Version, [ref]$current)) { return $null }
+    $srPatchFloor = [int][math]::Floor($current.Build / 10) * 10
     $parsedTags = @()
     foreach ($tag in @($PublishedTags)) {
         if ($tag -notmatch '^\d+\.\d+\.\d+$') { continue }
         [version]$parsedTag = $null
         if (-not [version]::TryParse([string]$tag, [ref]$parsedTag)) { continue }
-        if ($parsedTag -lt $current) {
-            $parsedTags += [PSCustomObject]@{ Name = [string]$tag; Version = $parsedTag }
-        }
+        if ($parsedTag -ge $current) { continue }
+        # A hotfix tag must retain the full SR inventory, not only the delta
+        # since the previous tag in the same patch decade.
+        if ($parsedTag.Major -eq $current.Major -and
+            $parsedTag.Minor -eq $current.Minor -and
+            $parsedTag.Build -ge $srPatchFloor) { continue }
+        $parsedTags += [PSCustomObject]@{ Name = [string]$tag; Version = $parsedTag }
     }
     $prior = @($parsedTags | Sort-Object Version -Descending | Select-Object -First 1)
     if ($prior.Count -gt 0) { return [string]$prior[0].Name }
@@ -908,9 +801,9 @@ function Resolve-ShippedContentsRefs {
     if (@($PublishedTags) -notcontains $Version) {
         throw "Stable tag '$Version' is not present in the supplied stable-tag evidence set."
     }
-    $previousTag = Get-PreviousStableTag -Version $Version -PublishedTags $PublishedTags
+    $previousTag = Get-PreviousSrBaselineTag -Version $Version -PublishedTags $PublishedTags
     if (-not $previousTag -or -not (Test-GitRefResolves -Ref $previousTag)) {
-        throw "Cannot resolve a prior stable tag to bound shipped contents for '$Version'. Fetch stable tags before generating a shipped tracker."
+        throw "Cannot resolve a prior SR baseline tag to bound shipped contents for '$Version'. Fetch stable tags before generating a shipped tracker."
     }
     return [PSCustomObject]@{
         ContentsRef = $Version
@@ -2513,6 +2406,7 @@ function Get-ClosingIssueNumbers {
     return @($matches | ForEach-Object {
         $prefixStart = [Math]::Max(0, $_.Index - 512)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
+        $prefix = [regex]::Split($prefix, '\r\n|\r|\n')[-1]
         $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
@@ -5437,13 +5331,14 @@ function Get-ReportSemanticHash {
                       } else { $null }
         shipChecks = if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
                          @($Data['shipChecks'] | Sort-Object Area | ForEach-Object {
+                             $details = [string](Get-MetadataValue -Container $_ -Name 'Details' -Default '')
                              $na = ''
                              if ($_ -is [System.Collections.IDictionary]) {
                                  if ($_.Contains('NextAction')) { $na = [string]$_['NextAction'] }
                              } elseif ($_.PSObject.Properties['NextAction']) {
                                  $na = [string]$_.NextAction
                              }
-                             "$($_.Area):$($_.Status):$na"
+                             "$($_.Area):$($_.Status):${details}:$na"
                          }) -join '|'
                      } else { '' }
         # Nightly dogfood feed banner state. Folded in so a feed going stale (or a

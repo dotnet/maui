@@ -212,16 +212,13 @@ Assert-Eq -Label "workflow reconciles stale opens before honoring exact closure"
 Assert-Eq -Label "workflow compensates a generation edit proven to land after closure" -Expected $true `
     -Actual ($workflowContractText.Contains('POST_EDIT_META=') -and
         $workflowContractText.Contains('removed the raced marker'))
+Assert-Eq -Label "workflow compensates ambiguous same-second generation close/edit races" -Expected $true `
+    -Actual $workflowContractText.Contains('[ "$POST_UPDATED_AT" = "$POST_CLOSED_AT" ]')
 Assert-Eq -Label "workflow rechecks body revision before overwriting captain notes" -Expected $true `
     -Actual ($workflowContractText.Contains('PRE_EDIT_BODY_B64') -and
         $workflowContractText.Contains('changed while this refresh was preparing'))
 Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
     -Actual $workflowContractText.Contains('hotfix version pending')
-$previewContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1') -Raw
-Assert-Eq -Label "preview body cap reserves mandatory component policy" -Expected $true `
-    -Actual ($previewContractText.Contains('componentPolicyReserve') -and
-        $previewContractText.Contains('$componentPolicyTail + $notesTail + $truncateMsg'))
-
 # ─────────── E2E smoke test against SR7 ───────────
 
 if (-not $SkipE2E) {
@@ -1203,6 +1200,8 @@ if (-not $SkipE2E) {
     $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
     $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
     try {
+        $script:SyntheticSrBranchName = 'release/10.0.1xx-sr9'
+        $script:SyntheticSrNumber = 9
         $script:SyntheticSrBranchTag = '10.0.90'
         function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'main' }
         function Get-StableTagsForMajor { param([int]$Major) ,@('10.0.0', '10.0.90') }
@@ -1210,14 +1209,14 @@ if (-not $SkipE2E) {
         function Get-RemoteSrBranchesForMajor {
             param([int]$Major)
             ,@([pscustomobject]@{
-                branch = 'release/10.0.1xx-sr9'; srNumber = 9
+                branch = $script:SyntheticSrBranchName; srNumber = $script:SyntheticSrNumber
                 sha = '0123456789abcdef0123456789abcdef01234567'
             })
         }
         function Get-RemotePreviewBranchesForMajor { param([int]$Major) ,@() }
         function Get-VersionFromGitRef {
             param([string]$GitRef, [string]$Repo)
-            if ($GitRef -eq 'origin/release/10.0.1xx-sr9') {
+            if ($GitRef -eq "origin/$($script:SyntheticSrBranchName)") {
                 return [pscustomobject]@{ Tag = $script:SyntheticSrBranchTag; PreLabel = ''; PreIter = 0 }
             }
             [pscustomobject]@{ Tag = '10.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
@@ -1282,6 +1281,18 @@ if (-not $SkipE2E) {
             -Expected 1 -Actual $rolloverSr10.Count
         Assert-Eq -Label "synthetic rollover SR10 owns tag 10.0.100" `
             -Expected '10.0.100' -Actual $rolloverSr10[0].expectedTag
+
+        $script:SyntheticSrBranchName = 'release/10.0.1xx-sr10'
+        $script:SyntheticSrNumber = 10
+        $script:SyntheticSrBranchTag = '10.0.90'
+        $syntheticMisconfiguredSr10 = Invoke-DetectionForMajor -Major 10
+        $misconfiguredSrTrackers = @($syntheticMisconfiguredSr10.trackers | Where-Object branchType -eq 'sr')
+        Assert-Eq -Label "misconfigured SR10 patch90 does not advance candidate to SR11" `
+            -Expected 0 -Actual @($misconfiguredSrTrackers | Where-Object { [int]$_.srNumber -eq 11 }).Count
+        Assert-Eq -Label "misconfigured SR10 patch90 leaves the real SR10 candidate visible" `
+            -Expected 1 -Actual @($misconfiguredSrTrackers | Where-Object {
+                [int]$_.srNumber -eq 10 -and $_.mode -eq 'candidate'
+            }).Count
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
@@ -1292,6 +1303,8 @@ if (-not $SkipE2E) {
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
         Remove-Variable -Name SyntheticSrBranchTag -Scope Script -ErrorAction SilentlyContinue
+        Remove-Variable -Name SyntheticSrBranchName -Scope Script -ErrorAction SilentlyContinue
+        Remove-Variable -Name SyntheticSrNumber -Scope Script -ErrorAction SilentlyContinue
     }
 
     # Synthetic dual-tracker window: shipped preview N has a tag, preview N+1
@@ -1649,8 +1662,8 @@ try {
         -PublishedTags $tagBeforeReleaseEvidence
     Assert-Eq -Label "tag-before-Release: immutable contents anchor to local 10.0.91 tag" `
         -Expected '10.0.91' -Actual $tagBeforeReleaseRefs.ContentsRef
-    Assert-Eq -Label "tag-before-Release: immediate predecessor remains 10.0.90" `
-        -Expected '10.0.90' -Actual $tagBeforeReleaseRefs.PreviousTag
+    Assert-Eq -Label "tag-before-Release: hotfix contents retain the full SR9 baseline" `
+        -Expected '10.0.80' -Actual $tagBeforeReleaseRefs.PreviousTag
     Assert-Eq -Label "publication state: per-tag release proof overrides failed list query" `
         -Expected 'published' -Actual (Resolve-ShippedPublicationState `
             -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'github-release')
@@ -1682,7 +1695,7 @@ try {
     }
     $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
-    Assert-Eq -Label "shipped contents: prior immutable stable tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
+    Assert-Eq -Label "shipped contents: prior SR baseline tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
     $firstBandRefs = Resolve-ShippedContentsRefs -Version '10.0.0' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: first stable tag in a band uses prior major's latest stable tag" `
         -Expected '9.0.500' -Actual $firstBandRefs.PreviousTag
@@ -1707,7 +1720,7 @@ try {
     } catch {
         $missingPredecessorThrew = $true
     }
-    Assert-Eq -Label "shipped contents: missing authoritative immediate predecessor fails explicitly" `
+    Assert-Eq -Label "shipped contents: missing authoritative SR baseline fails explicitly" `
         -Expected $true -Actual $missingPredecessorThrew
 
     $originalPublishedTagInvokeGh = (Get-Item function:Invoke-Gh).ScriptBlock
@@ -2004,12 +2017,12 @@ try {
     Assert-Eq -Label "backport lineage: verb-governed fix-from-PR body is explicit" -Expected $true `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
             body = 'This PR backports the fix from PR #32660'
-            headRefName = 'copilot/backport-fix-from-pr-32660'
+            headRefName = 'manual/backport'
         }) -SourcePrNumber 32660)
     Assert-Eq -Label "backport lineage: concise Backports body is explicit" -Expected $true `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
             body = 'Backports #32295'
-            headRefName = 'copilot/backport-dotnet-maui-32295'
+            headRefName = 'manual/backport'
         }) -SourcePrNumber 32295)
     Assert-Eq -Label "backport lineage: background-only parenthetical is not a source list" -Expected $false `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
@@ -3119,6 +3132,8 @@ foreach ($negatedClosingText in @(
 }
 Assert-Eq -Label "closing evidence: 'not only' does not negate a real fix" `
     -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text 'This not only fixes #35615, it adds a regression test.') -join ',')
+Assert-Eq -Label "closing evidence: unrelated prior-line 'not' does not cross a heading" `
+    -Expected '34310' -Actual ((Get-ClosingIssueNumbers -Text "MauiContext is not null is the canonical signal`n`nIssues Fixed`n`nFixes #34310") -join ',')
 Assert-Eq -Label "closing evidence: struck closing keyword is withdrawn" `
     -Expected '' -Actual ((Get-ClosingIssueNumbers -Text 'This ~~Fixes #35615~~ was superseded.') -join ',')
 $oversizedClosingThrew = $false; $oversizedClosingIssues = @()
@@ -4273,6 +4288,15 @@ try {
         -Expected '2026-07-10T15:21:27.0000000Z' -Actual $fallbackStableTag.Date.ToString('o')
     Assert-Eq -Label "stable tag fallback is labeled as tagged-commit evidence" `
         -Expected 'tagged-commit' -Actual $fallbackStableTag.DateSource
+
+    function Invoke-Git {
+        param([string]$Cmd)
+        if ($Cmd -like 'cat-file*') { return 'tag' }
+        return '2026-07-10T16:21:27+01:00'
+    }
+    $annotatedStableTag = Get-StableTagInfo -Version '10.0.90'
+    Assert-Eq -Label "stable tag fallback identifies annotated tag evidence" `
+        -Expected 'annotated-tag' -Actual $annotatedStableTag.DateSource
 } finally {
     Set-Item function:Invoke-Gh $origStableTagInvokeGh
     Set-Item function:Invoke-Git $origStableTagInvokeGit
@@ -8067,8 +8091,8 @@ function Assert-PublicSanitizerEdgeCases {
     Assert-Eq -Label "$Lane sanitizer tolerates oversized numeric entities" -Expected $false -Actual $oversizedEntityThrew
 }
 
-# The SR engine is currently dot-sourced; exercise its copy before Preview
-# intentionally replaces the same helper names in this PowerShell scope.
+# The SR engine is currently dot-sourced; exercise the shared helper before
+# Preview loads the same required dependency.
 Assert-PublicSanitizerEdgeCases -Lane 'SR'
 
 # Dot-source the preview engine to access its helpers without running the
@@ -8077,6 +8101,30 @@ Assert-PublicSanitizerEdgeCases -Lane 'SR'
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
 Assert-PublicSanitizerEdgeCases -Lane 'Preview'
+
+$previewNotesBlock = @"
+<!-- release-readiness:human-notes:begin -->
+_Captain notes._
+<!-- release-readiness:human-notes:end -->
+"@
+$previewComponentBlock = @"
+<!-- release-readiness:component-policy:begin -->
+Mandatory local VMR reconciliation.
+<!-- release-readiness:component-policy:end -->
+"@
+$oversizedPreviewBody = ([string]::new('x', 1200)) + "`n" + $previewComponentBlock + "`n" + $previewNotesBlock
+$cappedPreviewBody = Limit-PreviewTrackerBody -MarkdownBody $oversizedPreviewBody `
+    -NotesBlockText $previewNotesBlock -MaxBodyBytes 600
+Assert-Eq -Label "preview body cap retains exactly one component-policy begin marker" -Expected 1 `
+    -Actual ([regex]::Matches($cappedPreviewBody, '<!-- release-readiness:component-policy:begin -->').Count)
+Assert-Eq -Label "preview body cap retains exactly one component-policy end marker" -Expected 1 `
+    -Actual ([regex]::Matches($cappedPreviewBody, '<!-- release-readiness:component-policy:end -->').Count)
+Assert-Eq -Label "preview body cap retains exactly one captain-notes marker pair" -Expected 2 `
+    -Actual ([regex]::Matches($cappedPreviewBody, '<!-- release-readiness:human-notes:(?:begin|end) -->').Count)
+Assert-Eq -Label "preview body cap stays within the configured UTF-8 limit" -Expected $true `
+    -Actual ([System.Text.Encoding]::UTF8.GetByteCount($cappedPreviewBody) -le 600)
+Assert-Eq -Label "preview body cap reports truncation" -Expected $true `
+    -Actual ($cappedPreviewBody -match 'Report truncated')
 
 # A component-pin fetch failure must fail closed without suppressing the
 # mandatory local VMR reconciliation handoff.
@@ -8354,12 +8402,15 @@ try {
     Assert-Eq -Label "preview open-PR fallback: records affected base branch" -Expected $true -Actual $script:OpenPullRequestMetadataRestBases.Contains('net11.0')
     Assert-Eq -Label "preview open-PR fallback: fewer than 100 REST results remain complete" -Expected $false `
         -Actual $script:OpenPullRequestScanIncompleteBases.Contains('net11.0')
-    Assert-Eq -Label "preview merge-up empty state: complete target scan is READY" -Expected 'READY' `
-        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $false).Status
-    Assert-Eq -Label "preview merge-up empty state: incomplete target scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
-        -Actual (Get-MergeUpEmptyCheckState -TargetScanIncomplete $true).Status
-    Assert-Eq -Label "preview merge-up empty state: action is scoped to target base" -Expected $true `
-        -Actual ((Get-MergeUpEmptyCheckState -TargetScanIncomplete $true).Action -match 'full target PR list')
+    Assert-Eq -Label "preview empty PR state: complete target scan is READY" -Expected 'READY' `
+        -Actual (Get-EmptyPrCheckState -TargetScanIncomplete $false `
+            -IncompleteAction 'Inspect the full target PR list.' -ReadyAction 'Continue monitoring.').Status
+    Assert-Eq -Label "preview empty PR state: incomplete target scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
+        -Actual (Get-EmptyPrCheckState -TargetScanIncomplete $true `
+            -IncompleteAction 'Inspect the full target PR list.' -ReadyAction 'Continue monitoring.').Status
+    Assert-Eq -Label "preview empty PR state: action is caller-defined" -Expected $true `
+        -Actual ((Get-EmptyPrCheckState -TargetScanIncomplete $true `
+            -IncompleteAction 'Inspect the full target PR list.' -ReadyAction 'Continue monitoring.').Action -match 'full target PR list')
 
     $fallbackMergedPrs = @(Get-MergedPullRequests -BaseBranch 'net11.0')
     Assert-Eq -Label "preview merged-PR fallback: excludes closed-unmerged PRs" -Expected 1 -Actual $fallbackMergedPrs.Count
@@ -9598,7 +9649,8 @@ function New-GuidanceHashData {
     param(
         [int]$MainFixPr = 40002,
         [string]$RecommendedAction = 'Wait for main merge; then backport',
-        [string]$NextAction = 'No action'
+        [string]$NextAction = 'No action',
+        [string]$ShipCheckDetails = 'Feed is available'
     )
     @{
         metadata   = @{ srHeadSha = 'cafe12345678'; mainBranch = 'main' }
@@ -9618,7 +9670,7 @@ function New-GuidanceHashData {
         )
         openSrPrs = @()
         shipChecks = @(
-            @{ Area = 'Ship Assessment validation feed'; Status = 'READY'; NextAction = $NextAction }
+            @{ Area = 'Ship Assessment validation feed'; Status = 'READY'; Details = $ShipCheckDetails; NextAction = $NextAction }
         )
     }
 }
@@ -9629,6 +9681,7 @@ $guidanceSame = New-GuidanceHashData
 $guidanceDifferentPr = New-GuidanceHashData -MainFixPr 40003
 $guidanceDifferentAction = New-GuidanceHashData -RecommendedAction 'Post the backport command after merge'
 $guidanceDifferentNextAction = New-GuidanceHashData -NextAction 'Paste the validation feed into ship assessment'
+$guidanceDifferentDetails = New-GuidanceHashData -ShipCheckDetails 'Feed publication is still pending'
 
 $hGuidanceBase = Get-ReportSemanticHash -Data $guidanceBase -Verdict $guidanceV
 Assert-Eq -Label "hash: rendered guidance fold is deterministic" `
@@ -9639,6 +9692,8 @@ Assert-Eq -Label "hash: recommendedAction change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentAction -Verdict $guidanceV))
 Assert-Eq -Label "hash: shipCheck NextAction change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentNextAction -Verdict $guidanceV))
+Assert-Eq -Label "hash: rendered shipCheck Details change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentDetails -Verdict $guidanceV))
 
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in
