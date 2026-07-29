@@ -132,12 +132,15 @@ jobs:
   # script makes, rather than an error the API returns on whichever call happened to run
   # first. Two independent controls, and this job is the weaker one.
   #
-  # Note the stronger fact behind that: PR-time gating does not exist YET at all.
-  # `powershell-script-tests.yml` arrives with dotnet/maui#36842, and no workflow in the
-  # repository currently runs this suite on `pull_request` — the triggers above are
-  # `schedule` and `workflow_dispatch` only. Until #36842 lands, THIS JOB IS THE ONLY
-  # PLACE THE SUITE RUNS, which is why its floor check below is not decorative and why
-  # the gate must not be weakened to "report-only runs may skip the tests".
+  # Note the stronger fact behind that. PR-time gating now EXISTS —
+  # `powershell-script-tests.yml` landed with dotnet/maui#36842 and runs both suites on
+  # `pull_request` for `.github/scripts/**` — but it gates MERGES, and this workflow is
+  # never reached by one: the triggers above are `schedule` and `workflow_dispatch` only.
+  # A dispatch names its own ref, so a branch that never opened a pull request reaches
+  # the `mutate` job with the repo-wide gate having never run against the code being
+  # executed. FOR THE REF A DISPATCH ACTUALLY RUNS, THIS JOB IS STILL THE ONLY PLACE THE
+  # SUITE RUNS, which is why its floor check below is not decorative and why the gate
+  # must not be weakened to "report-only runs may skip the tests".
   #
   # The test SUITE is offline — it reaches neither `gh` nor AzDO. The JOB is not: it
   # checks out the repo and installs Pester from PSGallery. So the guarantee here is

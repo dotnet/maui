@@ -4178,9 +4178,11 @@ Describe 'Static source invariants' {
     Context 'the Pester suites are executed by CI' {
         <#
             Ownership note: the repo-wide PR-time gate for `.github/scripts/**` is
-            `.github/workflows/powershell-script-tests.yml`, which is added by PR #36842
-            (`pureween-fix-ci-fixer-runtime`). This PR deliberately does NOT ship a second
-            copy of that workflow — two files at the same path would conflict on merge.
+            `.github/workflows/powershell-script-tests.yml`, which landed on `main` with
+            PR #36842 (`pureween-fix-ci-fixer-runtime`). This PR deliberately does NOT
+            ship a second copy of that workflow — two files at the same path would
+            conflict on merge — and for the same reason asserts nothing about its
+            contents, which that PR owns.
 
             What this PR owns and therefore asserts unconditionally is (a) the in-workflow
             Pester gate that stands in front of the reconciler's own mutating job, and
@@ -4195,51 +4197,48 @@ Describe 'Static source invariants' {
             $script:WorkflowCode | Should -Match 'needs:\s*\[test, report\]'
         }
 
-        It 'keeps the PR-time-gating note true while that workflow is absent' {
+        It 'keeps the dispatch gap named, and the retired "not yet" note deleted' {
             <#
+                This assertion used to be a FORCING FUNCTION, and it has now fired.
+
                 The workflow header explains that PR-time gating does not cover a
                 `workflow_dispatch` from an arbitrary ref. That sentence is true, but on
-                its own it implies PR-time gating EXISTS — and today it does not:
-                `powershell-script-tests.yml` ships with #36842, and this workflow's own
-                triggers are `schedule` and `workflow_dispatch` only. So the in-workflow
-                gate is currently the ONLY place these suites run.
+                its own it implies PR-time gating EXISTS — and while #36842 was still
+                open it did not, so the header said "does not exist YET" and this test
+                asserted the phrase was present, keyed on `Test-Path` of the gate file so
+                that merging #36842 would fail it and force a rewrite.
 
-                That is a claim about repository state, and an unpinned claim in a safety
-                header is the defect this suite exists to prevent. Tie it to the fact
-                instead: while the file is absent the header must say so, and once #36842
-                lands this fails and forces the note to be rewritten rather than quietly
-                becoming false.
+                #36842 HAS MERGED. `powershell-script-tests.yml` is on `main`, the note
+                has been rewritten, and the `Test-Path` branch is retired with it — a
+                conditional whose other arm can never be taken again is not coverage, it
+                is a second, unexercised description of the header that would quietly
+                disagree with the live one. It was also actively misleading: it keyed on
+                a file that is absent from any branch which has not merged `main`, so the
+                same commit passed locally and failed on the merge ref, which is how this
+                was found.
 
-                The failure lands on WHOEVER MERGES #36842, not on whoever wrote the note:
-                that PR adds `powershell-script-tests.yml` under a `pull_request` trigger
-                filtered to `.github/scripts/**`, so its own merge-ref runs this suite and
-                trips this test against a file it never touched. A forcing function is only
-                worth its cost if the person who trips it can tell what to change, so the
-                assertion is made against the single offending LINE rather than the whole
-                header — matching a 100-line comment block prints all 100 lines and buries
-                the reason — and both messages name the file and the exact phrase.
+                What remains is the durable claim, asserted unconditionally: the retired
+                phrase must be gone, and the header must still name the gap the repo-wide
+                gate does NOT close. That gap does not expire — `workflow_dispatch` will
+                always be able to name a ref no pull request ever gated — so unlike the
+                phrase it replaced, this is not a claim about repository state.
             #>
-            $prGate = Join-Path $PSScriptRoot '..' 'workflows' 'powershell-script-tests.yml'
             $headerLines = @($script:WorkflowText -split "`n" | Where-Object { $_ -match '^\s*#' })
             $header = $headerLines -join "`n"
             $noteLines = @($headerLines | Where-Object { $_ -match 'does not exist YET' })
 
-            if (Test-Path -LiteralPath $prGate) {
-                @($noteLines).Count | Should -Be 0 -Because (
-                    "powershell-script-tests.yml now EXISTS, so PR-time gating is real and the " +
-                    "'does not exist YET' note in .github/workflows/ci-scan-reconcile.yml is stale. " +
-                    "Delete that note (it names #36842) and keep the surrounding sentence about " +
-                    "workflow_dispatch not being covered, which is still true. Offending line(s): " +
-                    ($noteLines -join ' / '))
-            }
-            else {
-                @($noteLines).Count | Should -BeGreaterOrEqual 1 -Because (
-                    "nothing runs these suites on pull_request yet — powershell-script-tests.yml " +
-                    "does not exist and ci-scan-reconcile.yml triggers on schedule/dispatch only — " +
-                    "so the header of .github/workflows/ci-scan-reconcile.yml must say 'does not " +
-                    "exist YET' rather than implying PR-time gating covers this")
-                $header | Should -Match '36842' -Because 'the note in .github/workflows/ci-scan-reconcile.yml must name the PR that supplies PR-time gating'
-            }
+            @($noteLines).Count | Should -Be 0 -Because (
+                "powershell-script-tests.yml EXISTS on main as of dotnet/maui#36842, so a " +
+                "'does not exist YET' note in .github/workflows/ci-scan-reconcile.yml is " +
+                "stale. Offending line(s): " + ($noteLines -join ' / '))
+
+            # The half of the note that outlived the forcing function. Losing this would
+            # leave the header implying the repo-wide gate covers the mutating job, which
+            # is the reading that makes this in-workflow gate look redundant.
+            $header | Should -Match 'workflow_dispatch' -Because (
+                'the header must keep naming the trigger the repo-wide PR-time gate cannot cover')
+            $header | Should -Match 'powershell-script-tests\.yml' -Because (
+                'the header must name the repo-wide gate it is distinguishing itself from')
         }
 
         It 'never lets a header name the test suite as what keeps report mode read-only' {
