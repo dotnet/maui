@@ -1823,12 +1823,12 @@ function ConvertTo-PublicSafeMarkdown {
 
     $safe = [regex]::Replace(
         $Text,
-        '(?i)https?://dev\.azure\.com/dnceng/internal(?:/[^\s<>"''`|)]*)?',
+        '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
         '_internal URL omitted_'
     )
     $safe = [regex]::Replace(
         $safe,
-        '(?i)\b(?:dev\.azure\.com/)?dnceng/internal(?:/[A-Za-z0-9._-]+)*\b',
+        '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
         'internal source'
     )
     $safe = [regex]::Replace(

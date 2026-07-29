@@ -252,7 +252,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 2. **`per-tracker-report`** — matrix-expanded job per tracker:
    - Dispatches to `Get-ReleaseReadiness.ps1` (SR) or `Get-PreviewReadiness.ps1` (Preview) based on `branchType`.
    - Looks for an open tracker issue by the canonical marker `<!-- release-readiness-tracker: <key> -->`.
-     - **Refresh path**: in shipped mode, prefer an open issue carrying the exact current shipped/hotfix generation marker; otherwise adopt the oldest labeled tracker issue. Close remaining duplicates.
+     - **Refresh path**: in shipped mode, refresh only an open issue carrying the exact current shipped/hotfix generation marker. If only an older generic generation is open, create the new exact generation first and then retire the stale tracker; never migrate a generation marker onto an older issue in place. For non-shipped trackers, adopt the oldest labeled tracker issue and close remaining duplicates.
      - **Create path**: open a new issue with the mandatory `area-infrastructure` ownership label (creation fails rather than producing a tracker the lifecycle lookup cannot recognize); attach `report` / `s/triaged` best-effort.
    - **Activity gate**: skip new-issue creation when `recentCommitCount == 0` AND no open tracker issue exists. (Existing open issues are still refreshed.)
 3. **`validate`** — PR-trigger path. Runs the test suite + smoke-runs all three scripts. **Does not create or modify issues.**

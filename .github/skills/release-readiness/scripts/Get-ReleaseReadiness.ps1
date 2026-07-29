@@ -2384,7 +2384,7 @@ function Test-IsLineageReferenceNegated {
     if ($suffix -match $laterPresenceRemoval) { return $true }
     $negatedHardRemoval = "(?i)^$prefix(?:\w+\s+){0,6}?(?:not|never)\s+(?:\w+\s+){0,2}?(?:revert(?:s|ed|ing)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b"
     if ($suffix -match $negatedHardRemoval) { return $false }
-    $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b(?:(?!\b(?:not|never)\b|n''t)[^.;!?])*?\b(?:included|applied|landed|shipped|backported|retained|restored)\b'
+    $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:(?:(?:it|this\s+(?:change|fix|PR)|the\s+(?:change|fix))\s+(?:(?:was|is|has\s+been)\s+)?)|(?:(?:now|later|then|subsequently|ultimately)\s+))?(?:included|applied|landed|shipped|backported|retained|restored)\b'
     $isHardRemoval = ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
     if ($isHardRemoval) { return -not ($suffix -match $restoredPresence) }
@@ -2406,6 +2406,12 @@ function Test-IsLineageReferenceNegated {
     }
 
     return $true
+}
+
+function Test-IsDirectLineageReferenceSubject {
+    param([string]$Prefix)
+
+    return $Prefix -match '(?i)(?:^|[.!?;,:]\s*|\bPR\s*)(?:(?:however|but|although|though|yet|nevertheless|nonetheless)\b[\s,;:]*)?$'
 }
 
 function Get-ExplicitBackportSourceNumbers {
@@ -2491,7 +2497,7 @@ function Get-ExplicitBackportSourceNumbers {
                         }
                         $repeatedReferenceIsDirectSubject =
                             (-not $contextualObject) -and
-                            ($beforeRepeatedReference -match '(?i)(?:^|[.!?;,:]\s*|\bPR\s*)$')
+                            (Test-IsDirectLineageReferenceSubject -Prefix $beforeRepeatedReference)
                         # A repeated mention of the same PR often introduces its
                         # non-inclusion reason ("#N, but #N was not included").
                         $sawRepeatedReference = $true
@@ -2559,7 +2565,7 @@ function Get-ExplicitBackportSourceNumbers {
             if ($contextualObject -and -not $lineageObject) { continue }
             $occurrenceIsDirectSubject =
                 (-not $contextualObject) -and
-                ($occurrencePrefix -match '(?i)(?:^|[.!?;,:]\s*|\bPR\s*)$')
+                (Test-IsDirectLineageReferenceSubject -Prefix $occurrencePrefix)
             $occurrenceEnd = $occurrence.Index + $occurrence.Length
             $remainingLength = [Math]::Min(2048, $Text.Length - $occurrenceEnd)
             $occurrenceSuffix = $Text.Substring($occurrenceEnd, $remainingLength)
@@ -3553,9 +3559,11 @@ function Classify-RegressionCandidate {
         $subreasonPr = $null
         $confidence = 'high'
         $evidence = @()
+        $verifiedFromSrContents = $false
 
         # In-SR (with revert check)
         if ($targetIsDistinct -and $sourcePrSet.ContainsKey($pr.number)) {
+            $verifiedFromSrContents = $true
             $mappedBackports = @()
             if ($sourceToBackportPrs.ContainsKey([int]$pr.number)) {
                 $mappedBackports = @($sourceToBackportPrs[[int]$pr.number])
@@ -3604,6 +3612,7 @@ function Classify-RegressionCandidate {
             elseif ($mergedBackport) {
                 # backport landed but PR # is different from what we tracked → check sourcePrSet for backport #
                 if ($sourcePrSet.ContainsKey([int]$mergedBackport.number)) {
+                    $verifiedFromSrContents = $true
                     if ($revertedPrSet.ContainsKey([int]$mergedBackport.number)) {
                         $verdict = 'in-sr-reverted'
                         $evidence += "Backport PR #$($mergedBackport.number) in SR but reverted"
@@ -3631,6 +3640,7 @@ function Classify-RegressionCandidate {
                 # reverted-on-main is handled by the hoisted guard above, so a PR
                 # reaching here is known NOT to have been reverted on main.
                 if ($pr.onTarget) {
+                    $verifiedFromSrContents = $true
                     # Merge commit is verifiably an ancestor of the SR branch, even
                     # though it fell out of the differential source-PR set (common
                     # ancestry with main — merged before the cut or via catch-up
@@ -3680,7 +3690,15 @@ function Classify-RegressionCandidate {
             }
         }
 
-        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; subreason = $subreason; subreasonPr = $subreasonPr; confidence = $confidence; evidence = $evidence }
+        $perPrVerdicts += @{
+            pr = $pr
+            verdict = $verdict
+            subreason = $subreason
+            subreasonPr = $subreasonPr
+            confidence = $confidence
+            evidence = $evidence
+            verifiedFromSrContents = $verifiedFromSrContents
+        }
     }
 
     # Pick the highest-priority verdict (in-sr-active > backport-in-progress > ... > no-fix-yet)
@@ -3797,6 +3815,7 @@ function Classify-RegressionCandidate {
     @{
         classification = $best.verdict
         confidence = $best.confidence
+        verifiedFromSrContents = [bool]$best.verifiedFromSrContents
         evidence = $best.evidence
         candidateFixPrs = @($strongPrs | ForEach-Object { @{
             number = $_.number; title = $_.title; state = $_.state
@@ -4025,11 +4044,11 @@ function Get-RegressionCandidates {
         $issueEvidenceFailures = @($Script:RegressionEvidenceFailures | Select-Object -Skip $evidenceFailureStart)
         if ($issueEvidenceFailures.Count -gt 0) {
             [void]$failedIssues.Add([int]$iss.number)
-            # Verified active target contents are sufficient positive proof even if a
-            # secondary lookup failed. Every other verdict can be understated or
-            # over-confident when evidence is missing, so downgrade it for review.
+            # Deterministic target-content evidence is sufficient even if an
+            # unrelated secondary lookup failed. Active and reverted verdicts
+            # receive the same protection when their git evidence is complete.
             $verifiedFromSrContents = [bool](Get-MetadataValue -Container $classify -Name 'verifiedFromSrContents' -Default $false)
-            if (-not $verifiedFromSrContents -and $classify.classification -ne 'in-sr-active') {
+            if (-not $verifiedFromSrContents) {
                 $classify = @{
                     classification    = 'needs-human-review'
                     confidence        = 'low'

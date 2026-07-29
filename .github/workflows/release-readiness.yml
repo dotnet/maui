@@ -476,6 +476,7 @@ jobs:
           REPORT_HOTFIX_IN_PROGRESS=false
           [ -n "$HOTFIX_MARKER" ] && REPORT_HOTFIX_IN_PROGRESS=true
           CREATE_GENERATION=false
+          SUPERSEDED_EXISTING=""
           GENERATION_MARKER=""
           if [ "$MODE" = "shipped" ]; then
             GENERATION_MARKER="$SHIPPED_MARKER"
@@ -581,7 +582,15 @@ jobs:
               echo "Tracker generation ${GENERATION_MARKER} was intentionally closed as #${CLOSED_GENERATION} — not recreating."
               exit 0
             fi
-              [ -z "$EXISTING" ] && CREATE_GENERATION=true
+              # Never stamp a new generation marker onto an older generic
+              # tracker: a human close can race that edit and make the new
+              # generation look intentionally closed. Create the exact generation
+              # first, then retire stale open trackers only after creation succeeds.
+              CREATE_GENERATION=true
+              if [ -n "$EXISTING" ]; then
+                SUPERSEDED_EXISTING="$EXISTING"
+                EXISTING=""
+              fi
             fi
           fi
 
@@ -802,7 +811,22 @@ jobs:
                 echo "::warning::Milestone '$MILESTONE_NAME' not found; creating issue without milestone."
               fi
             fi
-            gh issue create "${CREATE_ARGS[@]}"
+            NEW_TRACKER_URL=$(gh issue create "${CREATE_ARGS[@]}")
+            echo "$NEW_TRACKER_URL"
+            if [ -n "$SUPERSEDED_EXISTING" ]; then
+              NEW_TRACKER_NUMBER="${NEW_TRACKER_URL##*/}"
+              if [[ "$NEW_TRACKER_NUMBER" =~ ^[0-9]+$ ]]; then
+                for old in $SUPERSEDED_EXISTING; do
+                  echo "Closing superseded tracker issue #$old after creating exact generation #$NEW_TRACKER_NUMBER"
+                  gh issue close "$old" \
+                    --repo "${{ github.repository }}" \
+                    --reason "completed" \
+                    --comment "Superseded by exact release-readiness generation #${NEW_TRACKER_NUMBER}. Closing only after the new tracker was created successfully." || true
+                done
+              else
+                echo "::warning::Created the new tracker but could not parse its issue number from '$NEW_TRACKER_URL'; stale tracker(s) remain open for manual cleanup: $(echo "$SUPERSEDED_EXISTING" | tr '\n' ' ')"
+              fi
+            fi
           fi
 
   # ────────────────────────────────────────────────────────────────────
