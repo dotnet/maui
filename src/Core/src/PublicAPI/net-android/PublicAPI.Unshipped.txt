@@ -97,15 +97,16 @@ Microsoft.Maui.Platform.MauiDrawerLayout.SetGestureEnabled(bool enabled) -> void
 Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper
 Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper.MauiMaterialContextThemeWrapper(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialDatePicker
-Microsoft.Maui.Platform.MauiMaterialDatePicker.HidePicker.get -> System.Action?
-Microsoft.Maui.Platform.MauiMaterialDatePicker.HidePicker.set -> void
 Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
-Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.Platform.MauiMaterialDatePicker.OnClick(Android.Views.View? v) -> void
-Microsoft.Maui.Platform.MauiMaterialDatePicker.ShowPicker.get -> System.Action?
-Microsoft.Maui.Platform.MauiMaterialDatePicker.ShowPicker.set -> void
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.HidePicker.get -> System.Action?
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.HidePicker.set -> void
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.InputEditText.get -> Microsoft.Maui.Platform.MauiMaterialEditText?
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.MauiMaterialDateTimePickerBase(Android.Content.Context! context, int endIconResource) -> void
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.MauiMaterialDateTimePickerBase(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.ShowPicker.get -> System.Action?
+Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.ShowPicker.set -> void
 Microsoft.Maui.Platform.MauiMaterialEditText
 Microsoft.Maui.Platform.MauiMaterialEditText.MauiMaterialEditText(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialEditText.MauiMaterialEditText(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
@@ -130,11 +131,7 @@ Microsoft.Maui.Platform.MauiMaterialTextInputLayout.MauiMaterialTextInputLayout(
 Microsoft.Maui.Platform.MauiMaterialTextView
 Microsoft.Maui.Platform.MauiMaterialTextView.MauiMaterialTextView(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker
-Microsoft.Maui.Platform.MauiMaterialTimePicker.HidePicker.get -> System.Action?
-Microsoft.Maui.Platform.MauiMaterialTimePicker.HidePicker.set -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
-Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.get -> System.Action?
@@ -198,6 +195,8 @@ override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int 
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageStarted(Android.Webkit.WebView? view, string? url, Android.Graphics.Bitmap? favicon) -> void
 override Microsoft.Maui.Platform.MauiMaterialDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.MauiMaterialPicker.Dispose(bool disposing) -> void
