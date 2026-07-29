@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override UIView CreatePlatformElement()
         {
-            _tabBarController = new UITabBarController();
+            _tabBarController = new ShellItemTabBarController(this);
             _tabBarController.DisableiOS18ToolbarTabs();
             return _tabBarController.View!;
         }
@@ -874,6 +874,50 @@ namespace Microsoft.Maui.Controls.Handlers
         public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem shellItem)
         {
             handler.UpdateTabBarHidden();
+        }
+
+        #endregion
+
+        #region Tab Bar Controller
+
+        /// <summary>
+        /// Thin UITabBarController subclass so UIKit can deliver TraitCollectionDidChange,
+        /// ViewWillLayoutSubviews, and ViewDidLayoutSubviews back to the handler. A plain
+        /// UITabBarController never receives these as handler callbacks since nothing else
+        /// forwards them.
+        /// </summary>
+        internal sealed class ShellItemTabBarController : UITabBarController
+        {
+            readonly WeakReference<ShellItemHandler> _handlerRef;
+
+            public ShellItemTabBarController(ShellItemHandler handler)
+            {
+                _handlerRef = new WeakReference<ShellItemHandler>(handler);
+            }
+
+            public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+            {
+                base.TraitCollectionDidChange(previousTraitCollection);
+
+                if (_handlerRef.TryGetTarget(out var handler))
+                    handler.OnTraitCollectionDidChange(previousTraitCollection);
+            }
+
+            public override void ViewWillLayoutSubviews()
+            {
+                base.ViewWillLayoutSubviews();
+
+                if (_handlerRef.TryGetTarget(out var handler))
+                    handler.ViewWillLayoutSubviews();
+            }
+
+            public override void ViewDidLayoutSubviews()
+            {
+                base.ViewDidLayoutSubviews();
+
+                if (_handlerRef.TryGetTarget(out var handler))
+                    handler.ViewDidLayoutSubviews();
+            }
         }
 
         #endregion

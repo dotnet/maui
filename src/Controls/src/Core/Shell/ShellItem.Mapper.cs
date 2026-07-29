@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 			ShellItemHandler.Mapper.AppendToMapping(
 				PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName,
 				MapPrefersStatusBarHidden);
+			ShellItemHandler.Mapper.AppendToMapping(
+				PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName,
+				MapPreferredStatusBarUpdateAnimation);
 #endif
         }
     }
