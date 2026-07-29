@@ -317,10 +317,6 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 			var newUC = newPageType.GetMembers("UpdateComponent").Single();
 			edits.Add(new SemanticEdit(SemanticEditKind.Insert, null, newUC));
 
-			// __version field syntax changed (initializer may differ) — but fields cannot be updated via EnC.
-			// The __version field was already emitted in V1 as `private int __version = 0;`.
-			// In V2, it's still `private int __version = 0;` in the generated code.
-
 			// Step 7: Emit delta
 			using var mdDelta = new MemoryStream();
 			using var ilDelta = new MemoryStream();
@@ -542,14 +538,13 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 	}
 
 	/// <summary>
-	/// Determinism + reverse-transition (Tomas Matousek's determinism principle + Kirill's revert
-	/// requirement). The generated content identity (<c>__version</c>) is a pure function of the
-	/// current XAML content — so a revert to identical content restores the identical identity, not
-	/// an ever-growing counter. And the reverse edit's <c>UpdateComponent()</c> carries an absolute
-	/// patch that restores the baseline value on live instances.
+	/// Reverse-transition (Kirill's revert requirement): editing a property forward then reverting must
+	/// produce a <c>UpdateComponent()</c> that restores the baseline value on live instances, without
+	/// retaining the intermediate value. (Determinism of the generated output is covered separately and
+	/// exhaustively by <see cref="RevertedGeneration_InitializeComponent_IsByteIdentical_ToInitialGeneration"/>.)
 	/// </summary>
 	[Fact]
-	public void ContentHash_IsDeterministic_And_RevertRestoresIdentity()
+	public void ReverseEdit_UC_RestoresBaselineValue_WithoutRetainingIntermediate()
 	{
 		XamlHotReloadState.Reset();
 
@@ -564,19 +559,9 @@ public class XamlIncrementalHotReloadE2ETests : IDisposable
 
 		var v1 = Page("Hello");
 		var v2 = Page("World");
-		int h1 = GeneratorHelpers.StableContentHash(v1);
-		int h2 = GeneratorHelpers.StableContentHash(v2);
-		Assert.NotEqual(h1, h2); // different content => different identity
 
-		// V1 -> V2 -> V1 (revert). Reverting to identical content must restore the identical identity.
-		var (icV1, _, icV2, ucV2, icV3, ucV3) = RunSourceGenAllPhases(v1, v2, v1);
-
-		// Fresh instances stamp the content hash of their own generation.
-		Assert.Contains($"__version = {h1};", icV1, StringComparison.Ordinal);
-		Assert.Contains($"__version = {h2};", icV2, StringComparison.Ordinal);
-		// Determinism: the reverted generation (byte-identical to V1) reproduces V1's identity exactly —
-		// NOT h2+1 or any history-dependent value. This is the property the old monotonic counter broke.
-		Assert.Contains($"__version = {h1};", icV3, StringComparison.Ordinal);
+		// V1 -> V2 -> V1 (revert).
+		var (_, _, _, ucV2, _, ucV3) = RunSourceGenAllPhases(v1, v2, v1);
 
 		// Forward edit's UC applies the new value (its non-empty body is also the XAML-change signal)...
 		Assert.NotNull(ucV2);

@@ -189,8 +189,7 @@ public class XamlGenerator : IIncrementalGenerator
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
 					return;
 
-				// Incremental Hot Reload: compute the diff and update state BEFORE generating IC,
-				// so that IC can read the latest version from XamlHotReloadState and set __version correctly.
+				// Incremental Hot Reload: compute the diff and update state BEFORE generating IC.
 				string? ucCode = null;
 				// Resolve the root type once. UpdateComponent() must be present on EVERY generation
 				// (first compile, no-op edits, unchanged rebuilds), so a XIHR type never gains or loses
@@ -290,10 +289,9 @@ public class XamlGenerator : IIncrementalGenerator
 				}
 				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
 				{
-					// First run for this file (no cache entry): seed the cache at version 0 with parsed tree and fresh IDs.
+					// First run for this file (no cache entry): seed the cache with parsed tree and fresh IDs.
 					// IMPORTANT: this branch must NOT fire when the cache already exists with the same XAML —
-					// doing so would reset Version to 0 while preserving accumulated PatchBodies, causing the
-					// next genuine edit to emit a patch gated on __version == 0 that collides with an existing one.
+					// doing so would reset the cached state and re-diff the next edit against the wrong baseline.
 					SGRootNode? seedRoot = null;
 					Dictionary<ElementNode, string>? seedIds = null;
 					int seedNextId = 0;
