@@ -63,7 +63,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         _positiveButtonClickListener = null;
         _dismissListener?.Dispose();
         _dismissListener = null;
-
+        platformView.Dispose();
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
 
@@ -90,6 +90,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
     {
         if (_dialog is null)
         {
+            PlatformView?.InputEditText?.ClearFocus();
             UpdateIsOpenState(false);
             return;
         }
@@ -102,6 +103,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         }
 
         _dialog = null;
+        PlatformView?.InputEditText?.ClearFocus();
         UpdateIsOpenState(false);
     }
 
@@ -147,6 +149,10 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         }
 
         _dialog.Show(fragmentManager, "MaterialTimePicker");
+
+        // Focus the field so the outlined layout shows its highlighted (focused) state while the
+        // dialog is open. This also covers opens triggered programmatically via IsOpen.
+        PlatformView?.InputEditText?.RequestFocus();
 
         UpdateIsOpenState(true);
     }
@@ -209,13 +215,6 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         var fontManager = handler.GetRequiredService<IFontManager>();
 
         handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
-
-        // TextInputLayout has its own Typeface for the hint/label text,
-        // separate from the edit text's Typeface which only affects the displayed value.
-        if (handler.PlatformView is { } platformView)
-        {
-            platformView.Typeface = fontManager.GetTypeface(picker.Font);
-        }
     }
 
     public static void MapCharacterSpacing(TimePickerHandler2 handler, ITimePicker picker)
@@ -287,7 +286,7 @@ public class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterf
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
-
+        handler.PlatformView?.InputEditText?.ClearFocus();
         handler.UpdateIsOpenState(false);
     }
 }

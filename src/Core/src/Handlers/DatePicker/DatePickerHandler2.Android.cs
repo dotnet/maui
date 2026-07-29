@@ -70,6 +70,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         _dismissListener?.Dispose();
         _dismissListener = null;
 
+        platformView.Dispose();
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
 
@@ -124,13 +125,6 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         var fontManager = handler.GetRequiredService<IFontManager>();
 
         handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
-
-        // TextInputLayout has its own Typeface for the hint/label text,
-        // separate from the edit text's Typeface which only affects the displayed value.
-        if (handler.PlatformView is { } platformView)
-        {
-            platformView.Typeface = fontManager.GetTypeface(picker.Font);
-        }
     }
 
     static void MapDate(DatePickerHandler2 handler, IDatePicker picker)

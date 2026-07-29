@@ -4,7 +4,6 @@ using Android.Runtime;
 using Android.Text;
 using Android.Views;
 using Google.Android.Material.TextField;
-using static Android.Views.View;
 
 namespace Microsoft.Maui.Platform;
 
@@ -14,20 +13,15 @@ namespace Microsoft.Maui.Platform;
 /// and a trailing icon (calendar/clock) whose tap opens the platform picker dialog. Subclasses
 /// only supply the end-icon drawable to use.
 /// </summary>
-public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
+public abstract class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
 {
     MauiMaterialEditText? _inputEditText;
     PickerClickListener? _clickListener;
 
-    protected MauiMaterialDateTimePicker(Context context, int endIconResource, string? hint = null) : base(context)
+    protected MauiMaterialDateTimePickerBase(Context context, int endIconResource) : base(context)
     {
         // Outlined box is the Material 3 resting-state appearance for date/time fields.
         BoxBackgroundMode = BoxBackgroundOutline;
-
-        // The floating label shown at the top-left, cut into the outlined border (e.g. "Date").
-        // Subclasses supply the text; when null no label is shown.
-        Hint = hint;
-
         _inputEditText = new MauiMaterialEditText(Context!);
         AddView(_inputEditText);
 
@@ -48,7 +42,7 @@ public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
         SetEndIconOnClickListener(_clickListener);
     }
 
-    protected MauiMaterialDateTimePicker(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+    protected MauiMaterialDateTimePickerBase(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
     {
     }
 
@@ -63,6 +57,21 @@ public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
 
     /// <summary>Invoked to dismiss the picker dialog.</summary>
     public Action? HidePicker { get; set; }
+
+    protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+        if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
+        {
+            var maximumHeight = MeasureSpec.GetSize(heightMeasureSpec);
+            var intrinsicHeightMeasureSpec = MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified);
+
+            base.OnMeasure(widthMeasureSpec, intrinsicHeightMeasureSpec);
+            SetMeasuredDimension(MeasuredWidth, Math.Min(MeasuredHeight, maximumHeight));
+            return;
+        }
+
+        base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
 
     protected override void Dispose(bool disposing)
     {
@@ -81,11 +90,11 @@ public abstract class MauiMaterialDateTimePicker : MauiMaterialTextInputLayout
 
     sealed class PickerClickListener : Java.Lang.Object, IOnClickListener
     {
-        readonly WeakReference<MauiMaterialDateTimePicker> _layout;
+        readonly WeakReference<MauiMaterialDateTimePickerBase> _layout;
 
-        public PickerClickListener(MauiMaterialDateTimePicker layout)
+        public PickerClickListener(MauiMaterialDateTimePickerBase layout)
         {
-            _layout = new WeakReference<MauiMaterialDateTimePicker>(layout);
+            _layout = new WeakReference<MauiMaterialDateTimePickerBase>(layout);
         }
 
         public void OnClick(View? v)
