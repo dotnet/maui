@@ -36,6 +36,35 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
+	/// <summary>
+	/// A stable, deterministic 32-bit content hash (FNV-1a) of the XAML text, used as the
+	/// <c>__version</c> content identity for XAML Incremental Hot Reload. Unlike a monotonically
+	/// increasing counter (which depends on edit history held in mutable static state and makes the
+	/// generator non-deterministic), this value is a pure function of the current XAML content, so
+	/// identical content always yields the same identity — and a revert to earlier content restores
+	/// the earlier identity. Unlike <see cref="string.GetHashCode()"/> it is not randomized per
+	/// process, so it is reproducible across builds/hosts. Returned as a non-negative int.
+	/// </summary>
+	public static int StableContentHash(string? content)
+	{
+		unchecked
+		{
+			const uint fnvOffset = 2166136261;
+			const uint fnvPrime = 16777619;
+			uint hash = fnvOffset;
+			if (content != null)
+			{
+				foreach (char c in content)
+				{
+					hash = (hash ^ (byte)(c & 0xFF)) * fnvPrime;
+					hash = (hash ^ (byte)((c >> 8) & 0xFF)) * fnvPrime;
+				}
+			}
+			// Fold to a non-negative int so it renders as a plain integer literal.
+			return (int)(hash & 0x7FFFFFFF);
+		}
+	}
+
 	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
