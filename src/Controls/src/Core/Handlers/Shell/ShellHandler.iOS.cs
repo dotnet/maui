@@ -466,6 +466,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_detailView is null)
             {
+                // Handler disconnected while this transition's await was pending, so neither
+                // renderer will ever be attached to a view. Dispose both to avoid leaking
+                // (oldRenderer was only Disconnect()'d above, never Dispose()'d).
+                (newRenderer as IDisconnectable)?.Disconnect();
+                newRenderer.Dispose();
+                oldRenderer?.Dispose();
+                _currentShellItemRenderer = null;
                 return;
             }
 
