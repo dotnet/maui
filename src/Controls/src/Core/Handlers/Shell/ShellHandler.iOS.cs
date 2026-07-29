@@ -9,6 +9,7 @@ using MediaPlayer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -104,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // UIKit's nav-bar layout relies on for bar-button-item positioning (hamburger icon,
             // toolbar items). Hosting a real UIViewController here, like the legacy ShellRenderer
             // did, restores proper containment.
-            var hostVC = new UIViewController();
+            var hostVC = new ShellHostViewController(this);
             hostVC.View = container;
             ViewController = hostVC;
 
@@ -633,6 +634,49 @@ namespace Microsoft.Maui.Controls.Handlers
         public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell shell)
         {
             handler.GetFlyoutContentRenderer()?.UpdateVerticalScrollMode();
+        }
+
+        #endregion
+
+        #region Host View Controller
+
+        /// <summary>
+        /// Hosts Shell's content. Delegates status-bar/home-indicator preferences to the
+        /// currently displayed page, mirroring legacy <c>ShellRenderer</c>'s overrides — without
+        /// this, <c>Page.On&lt;iOS&gt;().SetPrefersStatusBarHidden()</c> and
+        /// <c>SetPrefersHomeIndicatorAutoHidden()</c> have no effect.
+        /// </summary>
+        sealed class ShellHostViewController : UIViewController
+        {
+            readonly WeakReference<ShellHandler> _handlerRef;
+
+            public ShellHostViewController(ShellHandler handler)
+            {
+                _handlerRef = new WeakReference<ShellHandler>(handler);
+            }
+
+            Shell? Shell => _handlerRef.TryGetTarget(out var handler) ? handler.VirtualView : null;
+
+            public override bool PrefersHomeIndicatorAutoHidden
+                => Shell?.CurrentPage?.OnThisPlatform()?.PrefersHomeIndicatorAutoHidden() ?? base.PrefersHomeIndicatorAutoHidden;
+
+            public override bool PrefersStatusBarHidden()
+                => Shell?.CurrentPage?.OnThisPlatform()?.PrefersStatusBarHidden() == StatusBarHiddenMode.True;
+
+            public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
+            {
+                get
+                {
+                    var mode = Shell?.CurrentPage?.OnThisPlatform()?.PreferredStatusBarUpdateAnimation();
+                    return mode switch
+                    {
+                        PlatformConfiguration.iOSSpecific.UIStatusBarAnimation.None => UIKit.UIStatusBarAnimation.None,
+                        PlatformConfiguration.iOSSpecific.UIStatusBarAnimation.Fade => UIKit.UIStatusBarAnimation.Fade,
+                        PlatformConfiguration.iOSSpecific.UIStatusBarAnimation.Slide => UIKit.UIStatusBarAnimation.Slide,
+                        _ => base.PreferredStatusBarUpdateAnimation,
+                    };
+                }
+            }
         }
 
         #endregion
