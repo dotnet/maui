@@ -763,9 +763,13 @@ jobs:
                   echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
                 else
                   # A human can close the issue while this run is preparing the
-                  # notes splice. Re-read state immediately before the write so
-                  # we never attach a new generation marker to an issue that is
-                  # already closed.
+                  # notes splice. Re-read state immediately before the write to
+                  # minimize the close/edit race, then compensate below when
+                  # GitHub timestamps prove the edit landed after the closure.
+                  GENERATION_TRANSITION=false
+                  if [ -n "$GENERATION_MARKER" ] && ! LC_ALL=C grep -Fqx "$GENERATION_MARKER" "$CUR_BODY_FILE"; then
+                    GENERATION_TRANSITION=true
+                  fi
                   PRE_EDIT_STATE=$(gh issue view "$CANONICAL" \
                     --repo "${{ github.repository }}" \
                     --json state --jq '.state // ""' 2>/dev/null || true)
@@ -776,6 +780,28 @@ jobs:
                       --repo "${{ github.repository }}" \
                       --title "$ISSUE_TITLE" \
                       --body-file "$BODY_FILE"
+                    if [ "$GENERATION_TRANSITION" = "true" ]; then
+                      POST_EDIT_META=$(gh issue view "$CANONICAL" \
+                        --repo "${{ github.repository }}" \
+                        --json state,closedAt,updatedAt \
+                        --jq '[.state, (.closedAt // ""), (.updatedAt // "")] | @tsv' 2>/dev/null || true)
+                      IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT <<< "$POST_EDIT_META"
+                      if [ "$POST_EDIT_STATE" = "CLOSED" ] &&
+                         [ -n "$POST_CLOSED_AT" ] &&
+                         [ "$POST_UPDATED_AT" \> "$POST_CLOSED_AT" ]; then
+                        # The edit happened after the human closure. Remove only
+                        # the newly introduced generation marker so the next run
+                        # can create that generation instead of mistaking this
+                        # raced closure for an intentional close of new evidence.
+                        RACE_BODY_FILE="$(mktemp)"
+                        LC_ALL=C grep -Fvx "$GENERATION_MARKER" "$BODY_FILE" > "$RACE_BODY_FILE" || true
+                        gh issue edit "$CANONICAL" \
+                          --repo "${{ github.repository }}" \
+                          --body-file "$RACE_BODY_FILE" || true
+                        rm -f "$RACE_BODY_FILE"
+                        echo "::warning::Issue #${CANONICAL} closed before the generation-transition edit completed; removed the raced marker so the next run can recreate the new generation."
+                      fi
+                    fi
                   fi
                 fi
               fi

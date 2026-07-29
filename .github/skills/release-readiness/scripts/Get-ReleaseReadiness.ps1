@@ -163,7 +163,10 @@ param(
     # turn permanently parks the verdict at 🟡 Conditionally Ready with a
     # bogus "unknown" Tier 2 reason. Enable when running locally with AzDO
     # auth (az login / PAT) and you actually want internal signal.
-    [switch]$IncludeInternal
+    [switch]$IncludeInternal,
+    # Redact private/internal coordinates from Markdown and JSON outputs. Keep
+    # enabled for any report that may be posted to a public GitHub issue.
+    [bool]$PublicSafe = $true
 )
 
 $ErrorActionPreference = 'Stop'
@@ -254,12 +257,60 @@ function Invoke-Gh([string[]]$GhArgs, [switch]$Quiet) {
                 $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
                 Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
             }
+
             return $null
         }
         return $out
     } finally {
         if (Test-Path $errFile) { Remove-Item $errFile -ErrorAction SilentlyContinue }
     }
+}
+
+function ConvertTo-PublicSafeMarkdown {
+    param([AllowNull()][AllowEmptyString()][string]$Text)
+
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+
+    $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
+    $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
+    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
+    $safe = [regex]::Replace($safe, '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
+    $safe = [regex]::Replace($safe, '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
+    $safe = [regex]::Replace($safe, '(?i)https(?:%3a|%253a)(?:%2f|%252f){2}(?:(?:dev\.azure\.com(?:%2f|%252f)dnceng)|dnceng\.visualstudio\.com)(?:%2f|%252f)(?:DefaultCollection(?:%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
+    $safe = [regex]::Replace($safe, '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', 'internal source')
+    $safe = [regex]::Replace($safe, '(?i)\bdnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', 'internal source')
+    $safe = [regex]::Replace($safe, '(?i)\bapi://[A-Za-z0-9._/-]+', '_internal identifier omitted_')
+    return $safe
+}
+
+function ConvertTo-PublicSafeValue {
+    param([AllowNull()]$Value)
+
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [string]) { return ConvertTo-PublicSafeMarkdown -Text $Value }
+    if ($Value -is [System.Collections.IDictionary]) {
+        $copy = [ordered]@{}
+        foreach ($key in $Value.Keys) {
+            $copy[$key] = ConvertTo-PublicSafeValue -Value $Value[$key]
+        }
+        return $copy
+    }
+    if ($Value -is [System.Collections.IEnumerable]) {
+        $items = [System.Collections.Generic.List[object]]::new()
+        foreach ($item in $Value) {
+            [void]$items.Add((ConvertTo-PublicSafeValue -Value $item))
+        }
+        return ,$items.ToArray()
+    }
+    if ($Value -is [PSCustomObject]) {
+        $copy = [ordered]@{}
+        foreach ($property in $Value.PSObject.Properties) {
+            $copy[$property.Name] = ConvertTo-PublicSafeValue -Value $property.Value
+        }
+        return [PSCustomObject]$copy
+    }
+    return $Value
 }
 
 function Get-FileFromRef {
@@ -2292,6 +2343,11 @@ function Get-RevertedPrFromSubject {
     #>
     param([string]$Subject)
     if (-not $Subject) { return $null }
+    # Common hand-authored forms without GitHub's quoted-title convention.
+    $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ing)?\s+(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    $m = [regex]::Match($Subject, '(?i)^Backing\s+out\s+(?:the\s+)?fix\s+(?:for\s+)?#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     # Explicit "Revert PR #NNNN" form.
     $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)(?![\p{L}\p{N}_])')
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
@@ -2321,6 +2377,19 @@ function Get-RevertedPrFromSubject {
     return $null
 }
 
+function ConvertTo-NegationNormalizedText {
+    param([AllowNull()][AllowEmptyString()][string]$Text)
+
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+    $normalized = $Text -replace '\*\*|__|~~', ''
+    $normalized = $normalized -replace '(?<!\w)[*_](?=\w)|(?<=\w)[*_](?!\w)', ''
+    $normalized = [regex]::Replace(
+        $normalized,
+        '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-])\s*',
+        '$1 ')
+    return $normalized
+}
+
 function Get-ClosingIssueNumbers {
     <#
     .SYNOPSIS
@@ -2328,6 +2397,7 @@ function Get-ClosingIssueNumbers {
     #>
     param([string]$Text)
     if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
+    $Text = ConvertTo-NegationNormalizedText -Text $Text
 
     $matches = [regex]::Matches(
         $Text,
@@ -2357,8 +2427,8 @@ function Test-IsLineageVerbNegated {
         [string]$Between
     )
 
-    $prefix = $Prefix -replace '[\u2018\u2019]', "'"
-    $between = $Between -replace '[\u2018\u2019]', "'"
+    $prefix = ConvertTo-NegationNormalizedText -Text ($Prefix -replace '[\u2018\u2019]', "'")
+    $between = ConvertTo-NegationNormalizedText -Text ($Between -replace '[\u2018\u2019]', "'")
     $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot|against|avoid(?:ing)?)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bnot\s+(?:(?:going|planning|intending|expected|allowed|authorized|permitted|supposed|ready|able)\s+|(?:think|believe)(?:\s+\w+){0,5}\s+)to\s+$|\bnot\s*,\s*(?:after|following|pending)\b[^,]*,\s*to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
     $postVerbNegation = "(?i)(?:\bnot\b|\bno\s+longer\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
     return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation)
@@ -2371,7 +2441,7 @@ function Test-IsLineageReferenceNegated {
         [switch]$DirectPrSubject
     )
 
-    $suffix = $Suffix -replace '[\u2018\u2019]', "'"
+    $suffix = ConvertTo-NegationNormalizedText -Text ($Suffix -replace '[\u2018\u2019]', "'")
     $lead = '(?:was|is|were|are|did|does|should|must|will|would|can|could)'
     $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
     $presenceEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies)|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
@@ -2390,8 +2460,8 @@ function Test-IsLineageReferenceNegated {
     if ($suffix -match $negatedHardRemoval) { return $false }
     if ($suffix -match $laterPresenceRemoval) { return $true }
     $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:(?:(?:it|this\s+(?:change|fix|PR)|the\s+(?:change|fix))\s+)?(?:(?:was|is|has\s+been)\s+)?(?:(?:now|later|then|subsequently|ultimately|eventually|afterwards?)\s+)?)?(?:re-?)?(?:included|applied|landed|shipped|backported|retained|restored)\b'
-    $decisionRetraction = '(?i)^.{0,240}?\b(?:(?:we|the\s+team|maintainers?)\s+)?(?:(?:decided|opted|chose|elected)\s+(?:against\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport|(?:including|applying|landing|shipping|backporting|cherry-picking)\s+it)|not\s+to\s+(?:proceed|include|apply|land|ship|backport|cherry-pick))|(?:rejected|declined|abandoned)\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport))\b'
-    if ($suffix -match $decisionRetraction) { return $true }
+    $decisionRetraction = '(?is)^[\s\S]{0,240}?\b(?:(?:we|(?:the\s+)?team|maintainers?)\s+)?(?:(?:decided|opted|chose|elected)\s+(?:against\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport|(?:including|applying|landing|shipping|backporting|cherry-picking)\s+it)|not\s+to\s+(?:proceed|include|apply|land|ship|backport|cherry-pick))|(?:rejected|declined|abandoned)\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport))\b'
+    if ($suffix -match $decisionRetraction) { return -not ($suffix -match $restoredPresence) }
     $isHardRemoval = ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
     if ($isHardRemoval) { return -not ($suffix -match $restoredPresence) }
@@ -3301,7 +3371,7 @@ function Resolve-ClosedFixUnlinked {
         return @{
             classification = 'closed-fix-unlinked'
             confidence = 'high'
-            verifiedFromSrContents = $true
+            verifiedFromSrContents = $false
             evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
             candidateFixPrs = @($verifiedFixes | ForEach-Object {
                 @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
@@ -5228,7 +5298,13 @@ function Select-OpenMainFixPr {
 }
 
 function Format-MarkdownReport {
-    param($Data, [string]$RepoUrl, [string]$TrackerKey, [int]$MaxBodyBytes = 60000)
+    param(
+        $Data,
+        [string]$RepoUrl,
+        [string]$TrackerKey,
+        [int]$MaxBodyBytes = 60000,
+        [bool]$PublicSafe = $true
+    )
     $Data = ConvertTo-TopLevelDictionary -Container $Data
 
     $ctx = $Data.metadata
@@ -6088,6 +6164,9 @@ function Format-MarkdownReport {
     }
 
     $body = $sb.ToString()
+    if ($PublicSafe) {
+        $body = ConvertTo-PublicSafeMarkdown -Text $body
+    }
 
     # === SAFETY NET: defang any bare @-mentions ===
     # Primary defense is Format-GitHubHandle at emit time, but PR/issue
@@ -6550,8 +6629,10 @@ function Invoke-Main {
     }
 
     # Output
-    $jsonOut = $data | ConvertTo-Json -Depth 20 -Compress:$false
-    $mdOut = Format-MarkdownReport -Data $data -RepoUrl $RepoUrl -TrackerKey $TrackerKey -MaxBodyBytes $MaxBodyBytes
+    $jsonData = if ($PublicSafe) { ConvertTo-PublicSafeValue -Value $data } else { $data }
+    $jsonOut = $jsonData | ConvertTo-Json -Depth 20 -Compress:$false
+    $mdOut = Format-MarkdownReport -Data $data -RepoUrl $RepoUrl -TrackerKey $TrackerKey `
+        -MaxBodyBytes $MaxBodyBytes -PublicSafe:$PublicSafe
 
     if ($OutputDir) {
         if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir | Out-Null }

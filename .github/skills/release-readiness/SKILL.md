@@ -219,6 +219,8 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-NoFetch` | No | off | Skip `git fetch`. |
 | `-SkipMaestroChecks` | No | off | Skip BAR/darc operational checks (default-channel mapping + per-HEAD build lookup). Auto-skipped silently if `darc` isn't on PATH; this switch forces the skip even when darc IS available. |
 | `-SkipMilestoneChecks` | No | off | Skip GitHub-milestone hygiene checks (current/next milestone existence + stale-open detection). |
+| `-IncludeInternal` | No | off | Release-captain only — augments the local survey with internal pipeline status when AzDO auth is available. |
+| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from SR Markdown and JSON. Set false only for local artifacts that will not be posted publicly. |
 
 ### `Get-PreviewReadiness.ps1` (Preview)
 
@@ -232,7 +234,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-OutputDir` | No | — | If set, writes `preview-readiness.{json,md}`. |
 | `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
 | `-IncludeInternal`, `-InternalBuildId` | No | — | Release-captain only — augments report with internal pipeline status when AzDO auth is available. |
-| `-PublicSafe` | No | `$true` | Sanitizes non-READY internal status from public output. |
+| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON. |
 
 ## Outputs
 

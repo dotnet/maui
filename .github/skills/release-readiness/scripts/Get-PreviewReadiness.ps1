@@ -1821,29 +1821,33 @@ function ConvertTo-PublicSafeMarkdown {
 
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
+    $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
+    $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
+    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
     $safe = [regex]::Replace(
-        $Text,
-        '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
+        $safe,
+        '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*',
         '_internal URL omitted_'
     )
     $safe = [regex]::Replace(
         $safe,
-        '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
+        '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*',
         '_internal URL omitted_'
     )
     $safe = [regex]::Replace(
         $safe,
-        '(?i)https(?:%3a|%253a)(?:%2f|%252f){2}(?:(?:dev\.azure\.com(?:%2f|%252f)dnceng)|dnceng\.visualstudio\.com)(?:%2f|%252f)internal[^\s<>"''`|)]*',
+        '(?i)https(?:%3a|%253a)(?:%2f|%252f){2}(?:(?:dev\.azure\.com(?:%2f|%252f)dnceng)|dnceng\.visualstudio\.com)(?:%2f|%252f)(?:DefaultCollection(?:%2f|%252f))?internal[^\s<>"''`|)]*',
         '_internal URL omitted_'
     )
     $safe = [regex]::Replace(
         $safe,
-        '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
+        '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*',
         'internal source'
     )
     $safe = [regex]::Replace(
         $safe,
-        '(?i)\bdnceng\.visualstudio\.com(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
+        '(?i)\bdnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*',
         'internal source'
     )
     $safe = [regex]::Replace(
