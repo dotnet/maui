@@ -1263,9 +1263,16 @@ function Get-CiScanIssueVerdict {
     }
 
     # --- Gate 3: canonical data required -------------------------------------
-    # The entire current backlog stops here. gh-aw's create-issue safe output strips
-    # HTML comments, so no pre-#36848 issue carries a fingerprint marker. Closing an
-    # issue we cannot key is exactly the failure mode this design exists to prevent.
+    # The entire current backlog stops here, and will keep stopping here. The marker
+    # template lives in the scanner's source `.md` (twice) but survives into NO compiled
+    # `.lock.yml` -- both twins, before and after #36848. Reproduce:
+    #   git show <ref>:.github/workflows/ci-status-net11.md      | grep -c 'ci-scan-fingerprint: {FINGERPRINT}'  -> 2
+    #   git show <ref>:.github/workflows/ci-status-net11.lock.yml | grep -c 'ci-scan-fingerprint: {FINGERPRINT}'  -> 0
+    # So the agent is never SHOWN the template and cannot emit it. That alone explains
+    # every markerless issue; output-side sanitization is not needed to explain the data
+    # and is untested here -- unobservable while nothing is emitted to sanitize. Do not
+    # "fix" this by bypassing safe outputs: the loss is upstream of them.
+    # Closing an issue we cannot key is exactly the failure mode this design prevents.
     if ($null -eq $fp) {
         $verdict.Decision = 'awaiting-canonical-data'
         $verdict.Reason = 'no-canonical-fingerprint-marker'

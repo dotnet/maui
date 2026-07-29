@@ -2113,3 +2113,55 @@ true -- the static invariants they power are the strongest tests in this file.
         $script:InvokedNames | Should -Contain 'should' -Because 'a scan that cannot see the commands this file DOES invoke proves nothing about the ones it does not'
     }
 }
+
+Describe 'The fingerprint marker never survives compilation into the agent prompt' {
+    # WHY THIS EXISTS: the reconciler's entire eligibility model assumes issues can be
+    # keyed by a canonical fingerprint marker. Today none can be, and the reason is not
+    # the one previously recorded. The marker template IS in each scanner's source `.md`
+    # and is ABSENT from every compiled `.lock.yml`, so the agent is never shown it and
+    # cannot emit it. Output-side sanitization is not needed to explain the absence.
+    #
+    # If this test fails, gh-aw has changed and the template now reaches the prompt.
+    # That is good news and a REQUIRED REVIEW: markers will start appearing, issues
+    # become keyable, and `candidate` stops being unreachable. Re-read Gate 3 in
+    # CiScanReconcile.Core.ps1 and the enforcement rollout before updating this test.
+    BeforeAll {
+        $script:WfDir = Join-Path (Split-Path -Parent $PSScriptRoot) 'workflows'
+        $script:Tmpl = 'ci-scan-fingerprint: {FINGERPRINT}'
+        $script:Pairs = @()
+        foreach ($stem in @('ci-status-main', 'ci-status-net11')) {
+            $md = Join-Path $script:WfDir "$stem.md"
+            $lock = Join-Path $script:WfDir "$stem.lock.yml"
+            if ((Test-Path -LiteralPath $md) -and (Test-Path -LiteralPath $lock)) {
+                $script:Pairs += @{
+                    Stem = $stem
+                    Md   = (Get-Content -Raw -LiteralPath $md)
+                    Lock = (Get-Content -Raw -LiteralPath $lock)
+                }
+            }
+        }
+    }
+
+    It 'finds at least one scanner source/lock pair to judge' {
+        # Anti-vacuity floor: without this, a renamed workflow or a partial checkout
+        # would make every assertion below iterate an empty set and pass green.
+        @($script:Pairs).Count |
+            Should -BeGreaterThan 0 -Because 'the assertions below are vacuous with no pair to read'
+    }
+
+    It 'still carries the marker template in the scanner source' {
+        # Control for the assertion that follows: proves the needle is findable at all,
+        # so a zero count in the lock means "stripped", not "wrong search string".
+        foreach ($p in $script:Pairs) {
+            ([regex]::Matches($p.Md, [regex]::Escape($script:Tmpl))).Count |
+                Should -BeGreaterThan 0 -Because "$($p.Stem).md must still instruct the agent to emit a marker"
+        }
+    }
+
+    It 'loses that template in the compiled lock, which is why no issue can be keyed' {
+        foreach ($p in $script:Pairs) {
+            ([regex]::Matches($p.Lock, [regex]::Escape($script:Tmpl))).Count |
+                Should -Be 0 -Because "$($p.Stem).lock.yml reaching the agent with the template would make issues keyable and change Gate 3's premise"
+        }
+    }
+}
