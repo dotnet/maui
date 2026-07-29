@@ -394,7 +394,8 @@ if (-not $SkipE2E) {
             -Mode in-flight `
             -TrackerKey 'dnceng/internal/_git/public-safe-sentinel' `
             -OutputDir $previewOut `
-            -OutputFormat both 2>&1 | Out-Null
+            -OutputFormat both `
+            -PublicSafe:$true 2>&1 | Out-Null
         Assert-Eq -Label "Preview driver exits successfully" -Expected 0 -Actual $LASTEXITCODE
 
         $previewJsonPath = Join-Path $previewOut 'preview-readiness.json'
@@ -8599,6 +8600,202 @@ Assert-Eq -Label "preview iteration: Preview 8 candidate blocks until net11.0 is
     -Expected 'BLOCKED' -Actual $preview8Iteration.Status
 Assert-Eq -Label "preview iteration: Preview 8 candidate expects iteration 8" `
     -Expected $true -Actual ([bool]($preview8Iteration.Details -match 'expected 8'))
+
+# =========================================================================
+# Internal official build health — definition 1095, offline fixtures only
+# =========================================================================
+Write-Host "`n[Unit] Internal official build health (offline fixtures)" -ForegroundColor Cyan
+
+$internalInflightRef = 'refs/heads/net11.0'
+$internalReleaseRef = 'refs/heads/release/11.0.1xx-preview7'
+$internalInflightHead = '1111111111111111111111111111111111111111'
+$internalReleaseHead = '7777777777777777777777777777777777777777'
+
+function New-InternalBuildFixture {
+    param(
+        [string]$BranchRef,
+        [string]$Sha,
+        [string]$Status = 'completed',
+        [AllowNull()][string]$Result = 'succeeded',
+        [int]$Id = 3034000,
+        [string]$Number = '20260729.1'
+    )
+    return [PSCustomObject]@{
+        id = $Id
+        buildNumber = $Number
+        status = $Status
+        result = $Result
+        sourceBranch = $BranchRef
+        sourceVersion = $Sha
+        url = "https://internal.example.invalid/build/$Id"
+    }
+}
+
+function New-InternalFixtureFetcher {
+    param([hashtable]$Fixtures)
+    $fixtureMap = $Fixtures
+    return {
+        param([string]$BranchRef)
+        if (-not $fixtureMap.ContainsKey($BranchRef)) {
+            return [PSCustomObject]@{ Success = $true; Build = $null }
+        }
+        return $fixtureMap[$BranchRef]
+    }.GetNewClosure()
+}
+
+function New-InternalHeadFixtureFetcher {
+    param([hashtable]$Heads)
+    $headMap = $Heads
+    return {
+        param([string]$BranchRef)
+        if ($headMap.ContainsKey($BranchRef)) { return $headMap[$BranchRef] }
+        return $null
+    }.GetNewClosure()
+}
+
+$internalHeads = @{
+    $internalInflightRef = $internalInflightHead
+    $internalReleaseRef = $internalReleaseHead
+}
+$internalHeadFetcher = New-InternalHeadFixtureFetcher $internalHeads
+
+function Invoke-InternalFixtureHealth {
+    param([hashtable]$Fixtures, [bool]$GitHubActions = $false)
+    return Get-InternalOfficialBuildHealth `
+        -MajorVersion 11 `
+        -ReleaseBranch 'release/11.0.1xx-preview7' `
+        -ReleaseBranchExists $true `
+        -BuildFetcher (New-InternalFixtureFetcher $Fixtures) `
+        -HeadFetcher $internalHeadFetcher `
+        -GitHubActions:$GitHubActions
+}
+
+$bothGreen = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Id 1 -Number 'green-net') }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 2 -Number 'green-release') }
+}
+Assert-Eq -Label "internal both-green: queries both refs" -Expected 2 -Actual $bothGreen.branches.Count
+Assert-Eq -Label "internal both-green: overall green" -Expected 'green' -Actual $bothGreen.overall
+Assert-Eq -Label "internal both-green: preserves build ID/number" -Expected '2/green-release' -Actual "$($bothGreen.branches[1].build.id)/$($bothGreen.branches[1].build.buildNumber)"
+Assert-Eq -Label "internal both-green: preserves source SHA and canonical build URL" -Expected "$internalReleaseHead/https://dev.azure.com/dnceng/internal/_build/results?buildId=2" -Actual "$($bothGreen.branches[1].build.sourceSha)/$($bothGreen.branches[1].build.url)"
+
+$netRed = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Result 'failed' -Id 3) }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 4) }
+}
+Assert-Eq -Label "internal net11 red + release green: overall red" -Expected 'red' -Actual $netRed.overall
+Assert-Eq -Label "internal net11 red + release green: readiness blocks" -Expected 'BLOCKED' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $netRed -PublicSafe:$false)[0].Status)
+
+$releaseRed = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Id 5) }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Result 'failed' -Id 6) }
+}
+Assert-Eq -Label "internal release red + net11 green: overall red" -Expected 'red' -Actual $releaseRed.overall
+Assert-Eq -Label "internal release red + net11 green: release row blocks" -Expected 'BLOCKED' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $releaseRed -PublicSafe:$false)[1].Status)
+
+$missingRelease = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Id 7) }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = $null }
+}
+Assert-Eq -Label "internal missing release build: overall unknown" -Expected 'unknown' -Actual $missingRelease.overall
+Assert-Eq -Label "internal missing release build: release reason no-build" -Expected 'no-build' -Actual $missingRelease.branches[1].reason
+
+$script:InternalAccessFetchCount = 0
+$accessFailureFetcher = {
+    param([string]$BranchRef)
+    $script:InternalAccessFetchCount++
+    return [PSCustomObject]@{ Success = $false; FailureKind = 'access'; Message = 'fixture denied' }
+}
+$inaccessible = Get-InternalOfficialBuildHealth `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists $true `
+    -BuildFetcher $accessFailureFetcher `
+    -HeadFetcher $internalHeadFetcher `
+    -GitHubActions:$false
+Assert-Eq -Label "internal inaccessible auth: fail-open skipped" -Expected 'skipped' -Actual $inaccessible.overall
+Assert-Eq -Label "internal inaccessible auth: classified reason" -Expected 'internal-auth-unavailable' -Actual $inaccessible.skipReason
+Assert-Eq -Label "internal inaccessible auth: stops after first denied query" -Expected 1 -Actual $script:InternalAccessFetchCount
+Assert-Eq -Label "internal inaccessible auth: adds no local checklist row" -Expected 0 -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $inaccessible -PublicSafe:$false).Count)
+
+$script:InternalGhaFetchCount = 0
+$ghaFetcher = {
+    param([string]$BranchRef)
+    $script:InternalGhaFetchCount++
+    throw 'GitHub Actions must not call internal Azure DevOps'
+}
+$ghaSkipped = Get-InternalOfficialBuildHealth `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists $true `
+    -BuildFetcher $ghaFetcher `
+    -HeadFetcher $internalHeadFetcher `
+    -GitHubActions:$true
+Assert-Eq -Label "internal GitHub Actions: skipped" -Expected 'skipped' -Actual $ghaSkipped.overall
+Assert-Eq -Label "internal GitHub Actions: skip reason" -Expected 'github-actions' -Actual $ghaSkipped.skipReason
+Assert-Eq -Label "internal GitHub Actions: fetcher never invoked" -Expected 0 -Actual $script:InternalGhaFetchCount
+$ghaPublicSafeChecks = @(Convert-InternalOfficialBuildHealthToChecks -Health $ghaSkipped -PublicSafe:$true)
+Assert-Eq -Label "internal GitHub Actions: public-safe row says query was skipped" -Expected $true -Actual ([bool]($ghaPublicSafeChecks[0].Details -match 'not queried'))
+Assert-Eq -Label "internal GitHub Actions: public-safe row does not imply evaluated status" -Expected $false -Actual ([bool]($ghaPublicSafeChecks[0].Details -match 'status is'))
+
+$staleNet = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha '0000000000000000000000000000000000000000' -Id 8) }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 9) }
+}
+Assert-Eq -Label "internal stale source SHA: overall stale" -Expected 'stale' -Actual $staleNet.overall
+Assert-Eq -Label "internal stale source SHA: readiness blocks" -Expected 'BLOCKED' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $staleNet -PublicSafe:$false)[0].Status)
+
+$inProgress = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Status 'inProgress' -Result $null -Id 10) }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 11) }
+}
+Assert-Eq -Label "internal in-progress: overall in-progress" -Expected 'in-progress' -Actual $inProgress.overall
+Assert-Eq -Label "internal in-progress: readiness watches" -Expected 'WATCH' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $inProgress -PublicSafe:$false)[0].Status)
+
+$canceled = Get-InternalOfficialBuildClassification `
+    -Build (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Result 'canceled' -Id 12) `
+    -ExpectedBranchRef $internalInflightRef `
+    -BranchHeadSha $internalInflightHead
+Assert-Eq -Label "internal canceled build: classified red" -Expected 'red' -Actual $canceled.Classification
+
+$malformed = Get-InternalOfficialBuildClassification `
+    -Build ([PSCustomObject]@{ id = 13; sourceBranch = $internalInflightRef }) `
+    -ExpectedBranchRef $internalInflightRef `
+    -BranchHeadSha $internalInflightHead
+Assert-Eq -Label "internal malformed build: classified unknown" -Expected 'unknown' -Actual $malformed.Classification
+
+$publicSafeHealth = [PSCustomObject]@{
+    overall = 'red'
+    skipReason = $null
+    branches = @([PSCustomObject]@{
+        branch = 'net11.0'
+        classification = 'red'
+        build = [PSCustomObject]@{
+            id = 999999
+            buildNumber = 'secret-build-number'
+            status = 'completed'
+            result = 'failed'
+            sourceSha = 'secret-source-sha'
+            url = 'https://internal.example.invalid/private-build'
+        }
+    })
+}
+$publicSafeChecks = @(Convert-InternalOfficialBuildHealthToChecks -Health $publicSafeHealth -PublicSafe:$true)
+$publicSafeText = $publicSafeChecks | ConvertTo-Json -Depth 8
+Assert-Eq -Label "internal public-safe: red still blocks" -Expected 'BLOCKED' -Actual $publicSafeChecks[0].Status
+Assert-Eq -Label "internal public-safe: build ID/number/SHA/URL redacted" -Expected $false -Actual ([bool]($publicSafeText -match '999999|secret-build-number|secret-source-sha|private-build'))
+Assert-Eq -Label "internal public-safe: local table omitted" -Expected '' -Actual (Format-InternalOfficialBuildTable -Health $publicSafeHealth -PublicSafe:$true)
+
+$candidateRefs = @(Get-InternalOfficialBuildBranches `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists:$false)
+Assert-Eq -Label "internal candidate before branch cut: only net11.0 queried" -Expected $internalInflightRef -Actual ($candidateRefs -join ',')
+$dedupedRefs = @(Get-InternalOfficialBuildBranches `
+    -MajorVersion 11 `
+    -ReleaseBranch 'net11.0' `
+    -ReleaseBranchExists:$true)
+Assert-Eq -Label "internal identical refs: duplicate query avoided" -Expected 1 -Actual $dedupedRefs.Count
 
 # GitHub's GraphQL endpoint can fail independently of the REST API. Prove open
 # and merged PR discovery retain the engine's expected object shape and do not
