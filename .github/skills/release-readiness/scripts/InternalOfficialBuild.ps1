@@ -118,6 +118,30 @@ function Get-InternalOfficialBuildOverallClassification {
     return $worst
 }
 
+function Select-LatestInternalOfficialBuild {
+    param([AllowNull()][object[]]$Builds)
+
+    return @($Builds) |
+        Sort-Object -Property @(
+            @{ Expression = {
+                $queueTime = Get-InternalBuildProperty $_ 'queueTime'
+                if ($queueTime) {
+                    try { return [DateTimeOffset]::Parse([string]$queueTime) } catch { }
+                }
+                return [DateTimeOffset]::MinValue
+            }; Descending = $true },
+            @{ Expression = {
+                $id = Get-InternalBuildProperty $_ 'id'
+                $parsedId = 0L
+                if ($null -ne $id -and [long]::TryParse([string]$id, [ref]$parsedId)) {
+                    return $parsedId
+                }
+                return 0L
+            }; Descending = $true }
+        ) |
+        Select-Object -First 1
+}
+
 function New-AzdoInternalOfficialBuildFetcher {
     param(
         [int]$DefinitionId = $Script:InternalOfficialBuildDefinitionId,
@@ -157,7 +181,7 @@ function New-AzdoInternalOfficialBuildFetcher {
                 'pipelines', 'build', 'list',
                 '--definition-ids', "$definition",
                 '--branch', $BranchRef,
-                '--top', '1',
+                '--top', '20',
                 '--org', "https://dev.azure.com/$organization",
                 '--project', $projectName,
                 '-o', 'json'
@@ -194,7 +218,7 @@ function New-AzdoInternalOfficialBuildFetcher {
         $build = if (-not [string]::IsNullOrWhiteSpace($manualId) -and $BranchRef -eq $manualRef) {
             $parsed
         } else {
-            @($parsed) | Select-Object -First 1
+            Select-LatestInternalOfficialBuild -Builds @($parsed)
         }
         return [PSCustomObject]@{ Success = $true; Build = $build }
     }.GetNewClosure()
