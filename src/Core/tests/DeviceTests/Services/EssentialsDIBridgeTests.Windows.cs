@@ -17,10 +17,7 @@ public class EssentialsDIBridgeTests
 	[Fact]
 	public void MauiAppBuildWithoutMapTokenDoesNotInitializeGeocoding()
 	{
-		var field = typeof(Geocoding).GetField(
-			"defaultImplementation",
-			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-			?? throw new InvalidOperationException("Geocoding backing field was not found.");
+		var field = GetGeocodingBackingField();
 		var original = field.GetValue(null);
 
 		try
@@ -35,6 +32,30 @@ public class EssentialsDIBridgeTests
 		finally
 		{
 			field.SetValue(null, original);
+		}
+	}
+
+	[Fact]
+	public void RestoreGeocodingReplacesLeakedFacade()
+	{
+		var field = GetGeocodingBackingField();
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+
+		try
+		{
+			field.SetValue(null, new StubGeocoding());
+
+			RestoreGeocoding(original, originalToken);
+
+			Assert.Same(original, field.GetValue(null));
+		}
+		finally
+		{
+			field.SetValue(null, original);
+
+			if (original is IPlatformGeocoding platformGeocoding)
+				platformGeocoding.MapServiceToken = originalToken;
 		}
 	}
 
@@ -668,14 +689,17 @@ public class EssentialsDIBridgeTests
 
 	static void RestoreGeocoding(IGeocoding original, string? originalToken)
 	{
-		var builder = MauiApp.CreateBuilder();
-		builder.Services.AddSingleton(original);
-
-		using var app = builder.Build();
+		GetGeocodingBackingField().SetValue(null, original);
 
 		if (original is IPlatformGeocoding platformGeocoding)
 			platformGeocoding.MapServiceToken = originalToken;
 	}
+
+	static System.Reflection.FieldInfo GetGeocodingBackingField() =>
+		typeof(Geocoding).GetField(
+			"defaultImplementation",
+			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+		?? throw new InvalidOperationException("Geocoding backing field was not found.");
 
 	class StubGeocoding : IGeocoding
 	{
