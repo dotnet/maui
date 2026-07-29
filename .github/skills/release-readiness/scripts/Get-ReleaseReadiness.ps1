@@ -273,6 +273,10 @@ function ConvertTo-PublicSafeMarkdown {
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)\\[^\s<>"''`|)]*',
+        { param($match) $match.Value -replace '\\', '/' })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
     $safe = [regex]::Replace($safe, '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
@@ -281,6 +285,10 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = [regex]::Replace($safe, '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', 'internal source')
     $safe = [regex]::Replace($safe, '(?i)\bdnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', 'internal source')
     $safe = [regex]::Replace($safe, '(?i)\bapi://[A-Za-z0-9._/-]+', '_internal identifier omitted_')
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)(?:\.NET Release Tracker|\bdotnet-release-tracker\b|\bdotnet/release\b)',
+        'official release source')
     return $safe
 }
 
@@ -2381,12 +2389,24 @@ function ConvertTo-NegationNormalizedText {
     param([AllowNull()][AllowEmptyString()][string]$Text)
 
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
-    $normalized = $Text -replace '\*\*|__|~~', ''
+    # Struck text is explicitly withdrawn; remove it rather than turning
+    # `~~Fixes #N~~` into affirmative evidence.
+    $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')
+    $normalized = $normalized -replace '\*\*|__', ''
     $normalized = $normalized -replace '(?<!\w)[*_](?=\w)|(?<=\w)[*_](?!\w)', ''
+    $asidePattern = '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-])\s*'
+    do {
+        $previous = $normalized
+        $normalized = [regex]::Replace($normalized, $asidePattern, '$1 ')
+    } while ($normalized -ne $previous)
     $normalized = [regex]::Replace(
         $normalized,
-        '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-])\s*',
-        '$1 ')
+        "(?i)\b(?<neg>not|never)\b(?<gap>[^.!?;`r`n]{0,100}?)(?=\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?|require(?:d)?|need(?:ed)?|relevant|applicable)\b)",
+        {
+            param($match)
+            $gap = [regex]::Replace($match.Groups['gap'].Value, '[^\p{L}\p{N}_'']+', ' ')
+            "$($match.Groups['neg'].Value) $($gap.Trim()) "
+        })
     return $normalized
 }
 
@@ -2405,7 +2425,7 @@ function Get-ClosingIssueNumbers {
     return @($matches | ForEach-Object {
         $prefixStart = [Math]::Max(0, $_.Index - 80)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
-        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,3}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,3}$|\bnever(?:\s+\w+){0,3}\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,3}$)"
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
         }
@@ -2448,8 +2468,8 @@ function Test-IsLineageReferenceNegated {
     $fullEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|necessary|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
     $effect = if ($PresenceOnly -and -not $DirectPrSubject) { $presenceEffect } else { $fullEffect }
     $prefix = '\s*(?:[,\-–—.!?;]\s*)*[\(\[]?\s*(?:(?:which|that|this|it|though|but|although|yet|however)\s*[,;:]?\s+){0,3}'
-    $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,3}?\s+(?:be\s+)?$effect\b"
-    $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,3}?$effect\b"
+    $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,8}?\s+(?:be\s+)?$effect\b"
+    $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,8}?$effect\b"
     $passiveRemovalLead = '(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:(?:since|later|subsequently|ultimately)\s+))?'
     $rollback = "(?i)^$prefix$passiveRemovalLead" + 'revert(?:s|ed|ing)?\b'
     $omitted = "(?i)^$prefix$passiveRemovalLead" + '(?:omit(?:ted)?|exclude(?:d)?)\b'
@@ -2747,19 +2767,16 @@ function Get-CommitsForRevSpec {
             $fixedIssues.Add($n) | Out-Null
         }
 
-        # Revert detection — matches "Revert ", "[Revert]", or "[branch-prefix] Revert ..."
-        $isRevert = ($subject -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($subject -match '\[Revert\]')
-        $revertsCommit = $null
-        $revertsPr = $null
+        # Revert detection uses the same parser as the extracted PR identity so
+        # hand-authored "This reverts", "Reverting", and "Backing out" subjects
+        # cannot be parsed successfully but skipped by a narrower outer gate.
+        $revertsPr = Get-RevertedPrFromSubject -Subject $subject
+        $revM = [regex]::Match($body, '(?im)This reverts commit\s+([0-9a-f]{7,40})')
+        $revertsCommit = if ($revM.Success) { $revM.Groups[1].Value } else { $null }
+        $isRevert = ($null -ne $revertsPr) -or ($null -ne $revertsCommit) -or
+            ($subject -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or
+            ($subject -match '\[Revert\]')
         if ($isRevert) {
-            $revM = [regex]::Match($body, '(?im)This reverts commit\s+([0-9a-f]{7,40})')
-            if ($revM.Success) { $revertsCommit = $revM.Groups[1].Value }
-
-            # Recover the ORIGINAL (reverted) PR number from the subject. See
-            # Get-RevertedPrFromSubject for why the trailing (#N) on a revert
-            # subject is the revert's OWN PR and must not be used here.
-            $revertsPr = Get-RevertedPrFromSubject -Subject $subject
-
             # Authoritative override: when we know the reverted commit SHA, read its
             # real subject — its trailing (#NNNN) IS the reverted PR's own number.
             # This is ground truth and overrides any subject-based guess above.

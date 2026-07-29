@@ -1427,8 +1427,13 @@ if (-not $SkipE2E) {
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_SHIPPED_MARKER[\s\S]*ISSUE_TITLE=.*— shipped'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
+    $closedLookupStart = $releaseWorkflowText.IndexOf('CLOSED_GENERATION=$(gh issue list')
+    $closedLookupEnd = $releaseWorkflowText.IndexOf('if [ -n "$CLOSED_GENERATION" ]', $closedLookupStart)
+    $closedLookupBlock = if ($closedLookupStart -ge 0 -and $closedLookupEnd -gt $closedLookupStart) {
+        $releaseWorkflowText.Substring($closedLookupStart, $closedLookupEnd - $closedLookupStart)
+    } else { '' }
     Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
-        -Expected $false -Actual ([bool]($releaseWorkflowText -match 'closedAt.*updatedAt|updatedAt.*closedAt'))
+        -Expected $false -Actual ([bool]($closedLookupBlock -match 'updatedAt'))
     Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
     Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
@@ -2264,13 +2269,15 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
     foreach ($punctuatedNegation in @(
         'Backport of #100 was **not** included.',
         'Backport of #100 was _not_ included.',
-        'Backport of #100 was ~~not~~ included.',
         'Backport of #100 was not, in fact, included.',
-        'Backport of #100 was not (yet) applied.'
+        'Backport of #100 was not (yet) applied.',
+        'Backport of #100 was not, to be fair, in my view, included.'
     )) {
         Assert-Eq -Label "backport lineage: Markdown/punctuation negation removes source — $punctuatedNegation" `
             -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $punctuatedNegation) -join ',')
     }
+    Assert-Eq -Label "backport lineage: struck negation is withdrawn rather than applied" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100 was ~~not~~ included.') -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2663,6 +2670,9 @@ foreach ($manualRevertSubject in @(
     Assert-Eq -Label "Reverted-PR from common hand-authored subject — $manualRevertSubject" `
         -Expected 35100 -Actual (Get-RevertedPrFromSubject -Subject $manualRevertSubject)
 }
+$releaseScriptText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
+Assert-Eq -Label "commit scanner gates revert rows with shared subject parser" -Expected $true `
+    -Actual ([bool]($releaseScriptText -match '\$revertsPr = Get-RevertedPrFromSubject[\s\S]{0,400}\$isRevert = \(\$null -ne \$revertsPr\)'))
 Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
     -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
 Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
@@ -2953,13 +2963,16 @@ foreach ($negatedClosingText in @(
     "This doesn't close #35615",
     'This does **not** fix #35615',
     'This does not, in fact, fix #35615',
-    'This will not (yet) resolve #35615'
+    'This will not (yet) resolve #35615',
+    'This does not, to be fair, in my view, fix #35615'
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
 }
 Assert-Eq -Label "closing evidence: 'not only' does not negate a real fix" `
     -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text 'This not only fixes #35615, it adds a regression test.') -join ',')
+Assert-Eq -Label "closing evidence: struck closing keyword is withdrawn" `
+    -Expected '' -Actual ((Get-ClosingIssueNumbers -Text 'This ~~Fixes #35615~~ was superseded.') -join ',')
 $oversizedClosingThrew = $false; $oversizedClosingIssues = @()
 try {
     $oversizedClosingIssues = @(Get-ClosingIssueNumbers -Text 'Fixes #999999999999999999999 and Fixes #35615abc')
@@ -4819,6 +4832,8 @@ Assert-Eq -Label "SR local non-public Markdown can retain internal pipeline evid
 $safeSrJson = (ConvertTo-PublicSafeValue -Value $internalMdData) | ConvertTo-Json -Depth 20
 Assert-Eq -Label "SR public-safe JSON redacts internal pipeline URL and token" -Expected $false `
     -Actual ($safeSrJson -match 'dnceng|SRSECRET|DefaultCollection')
+Assert-Eq -Label "SR public-safe sanitizer redacts private release-tool names" -Expected $false `
+    -Actual ((ConvertTo-PublicSafeMarkdown -Text 'Build lives in the .NET Release Tracker and dotnet/release.') -match '\.NET Release Tracker|dotnet/release')
 $hotfixMdData = $mdData.Clone()
 $hotfixMdData['metadata'] = $mdData.metadata.Clone()
 $hotfixMdData.metadata.mode = 'shipped'
@@ -7855,12 +7870,13 @@ Add-CheckTable -Builder $safePublicBuilder -Checks @(
 [void]$safePublicBuilder.AppendLine('Collection private URL: https://dev.azure.com/dnceng/DefaultCollection/internal/_build?token=COLLECTIONSECRET')
 [void]$safePublicBuilder.AppendLine('HTML private URL: https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET')
 [void]$safePublicBuilder.AppendLine('Unicode private URL: https://dev.azure.com／dnceng／internal／_build?token=UNICODESECRET')
+[void]$safePublicBuilder.AppendLine('Backslash private URL: https://dev.azure.com\dnceng\internal\_build?token=BACKSLASHSECRET')
 [void]$safePublicBuilder.AppendLine('Internal identifier: api://example/resource')
 [void]$safePublicBuilder.AppendLine('Fetched title names .NET Release Tracker, dotnet-release-tracker, and dotnet/release')
 [void]$safePublicBuilder.AppendLine('Public feed: https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11')
 $safePublicMarkdown = ConvertTo-PublicSafeMarkdown -Text $safePublicBuilder.ToString()
 Assert-Eq -Label "preview rendered public-safe text omits internal coordinates" `
-    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|COLLECTIONSECRET|HTMLSECRET|UNICODESECRET|fragment'))
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|COLLECTIONSECRET|HTMLSECRET|UNICODESECRET|BACKSLASHSECRET|fragment'))
 Assert-Eq -Label "preview rendered public-safe text omits private release-tool names" `
     -Expected $false -Actual ([bool]($safePublicMarkdown -match '\.NET Release Tracker|dotnet-release-tracker|dotnet/release'))
 Assert-Eq -Label "preview public-safe sanitizer preserves public feed URL" `
