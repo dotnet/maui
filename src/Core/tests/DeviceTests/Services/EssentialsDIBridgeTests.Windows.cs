@@ -180,14 +180,16 @@ public class EssentialsDIBridgeTests
 
 		try
 		{
-			var firstBuilder = MauiApp.CreateBuilder();
+			// Isolate the Essentials initializer from the default Windows MauiCoreInitializer,
+			// which requires the UI application dispatcher and cannot be built on Task.Run.
+			var firstBuilder = MauiApp.CreateBuilder(useDefaults: false);
 			firstBuilder.Services.AddSingleton<IGeocoding>(first);
 			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
 			var firstBuild = Task.Run(firstBuilder.Build);
 
 			await firstSetterEntered.Task.WaitAsync(timeout);
 
-			var secondBuilder = MauiApp.CreateBuilder();
+			var secondBuilder = MauiApp.CreateBuilder(useDefaults: false);
 			secondBuilder.Services.AddSingleton<IGeocoding>(second);
 			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
 			var secondBuild = Task.Run(secondBuilder.Build);
