@@ -149,6 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             foreach (var renderer in _contentRenderers)
             {
+                (renderer.Key.Handler as IElementHandler)?.DisconnectHandler();
                 renderer.Value.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
                 renderer.Value.ViewController?.RemoveFromParentViewController();
                 (renderer.Value.VirtualView as IView)?.DisconnectHandlers();
@@ -364,6 +365,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 var renderer = SetPageRenderer(page, item);
 
                 _rootViewController!.AddChildViewController(renderer.ViewController!);
+                EnsureShellContentHandler(item);
 
                 if (item == currentItem)
                 {
@@ -371,6 +373,51 @@ namespace Microsoft.Maui.Controls.Handlers
                     _currentContent = currentItem;
                     _currentIndex = i;
                 }
+            }
+        }
+
+        // Concern #4: gives ShellContent a genuine Handler/Mapper on iOS (see
+        // ShellContentHandler.iOS.cs) so Content changes are observed the same way any other
+        // mapped property is - instead of a manual PropertyChanged subscription.
+        static void EnsureShellContentHandler(ShellContent shellContent)
+        {
+            if (shellContent.Handler is not null)
+                return;
+
+            var mauiContext = shellContent.FindMauiContext();
+            if (mauiContext is not null)
+                shellContent.ToHandler(mauiContext);
+        }
+
+        // Concern #4: a ShellContent's Content can be swapped in place at runtime
+        // while it remains the ShellSection's CurrentItem. Since CurrentItem doesn't
+        // change, OnShellSectionCurrentItemChanged never fires, so the cached
+        // renderer for this content would otherwise go stale. Rebuild it here.
+        // Called by ShellContentHandler.MapContent when ShellContent.Content changes.
+        internal void OnShellContentContentChanged(ShellContent shellContent)
+        {
+            if (!_contentRenderers.TryGetValue(shellContent, out var oldRenderer))
+                return;
+
+            var newPage = ((IShellContentController)shellContent).GetOrCreateContent();
+            if (oldRenderer.VirtualView == newPage)
+                return;
+
+            bool isCurrent = shellContent == _currentContent;
+
+            oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
+            oldRenderer.ViewController?.RemoveFromParentViewController();
+            (oldRenderer.VirtualView as IView)?.DisconnectHandlers();
+
+            var newRenderer = SetPageRenderer(newPage, shellContent);
+            _rootViewController?.AddChildViewController(newRenderer.ViewController!);
+
+            if (isCurrent && _containerArea is not null && _rootViewController?.View is not null)
+            {
+                newRenderer.ViewController!.View!.Frame = _containerArea.Bounds;
+                _containerArea.AddSubview(newRenderer.ViewController!.View!);
+                if (_rootTracker is not null)
+                    _rootTracker.Page = newPage;
             }
         }
 
@@ -591,6 +638,7 @@ namespace Microsoft.Maui.Controls.Handlers
                         _currentIndex--;
 
                     _contentRenderers.Remove(oldItem);
+                    (oldItem.Handler as IElementHandler)?.DisconnectHandler();
                     oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
                     oldRenderer.ViewController?.RemoveFromParentViewController();
                     (oldRenderer.VirtualView as IView)?.DisconnectHandlers();
@@ -608,6 +656,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     var renderer = SetPageRenderer(page, newItem);
 
                     _rootViewController?.AddChildViewController(renderer.ViewController!);
+                    EnsureShellContentHandler(newItem);
                 }
             }
         }
@@ -935,6 +984,7 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 _displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
                 UpdateNavigationBarHasShadow();
+                RefreshStatusBarAndHomeIndicatorAppearance();
             }
         }
 
@@ -944,6 +994,33 @@ namespace Microsoft.Maui.Controls.Handlers
                 UpdateNavigationBarHidden();
             else if (e.PropertyName == Shell.NavBarHasShadowProperty.PropertyName)
                 UpdateNavigationBarHasShadow();
+            else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
+                     e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName ||
+                     e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName)
+                RefreshStatusBarAndHomeIndicatorAppearance(e.PropertyName);
+        }
+
+        // Concern #9: Shell.Mapper.cs/ShellItem.Mapper.cs already register mapper entries for
+        // these Page-scoped attached properties, but they're keyed to Shell/ShellItem's own
+        // PropertyMapper, which only dispatches when Shell/ShellItem itself raises
+        // PropertyChanged with that name — never true for a Page-level attached property. This
+        // forwards the displayed page's change to the Shell handler via UpdateValue(), which
+        // invokes those existing (previously unreachable) mapper actions instead of manually
+        // poking the view controller here.
+        void RefreshStatusBarAndHomeIndicatorAppearance(string? propertyName = null)
+        {
+            if (_shellContext is not IElementHandler shellHandler)
+                return;
+
+            if (propertyName is not null)
+            {
+                shellHandler.UpdateValue(propertyName);
+                return;
+            }
+
+            shellHandler.UpdateValue(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName);
+            shellHandler.UpdateValue(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName);
+            shellHandler.UpdateValue(PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName);
         }
 
         void OnNavigating(object? sender, ShellNavigatingEventArgs e)

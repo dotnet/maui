@@ -340,13 +340,10 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 var shellSection = (ShellSection)sender!;
                 var renderer = RendererForShellContent(shellSection);
-                if (renderer is not null && _tabBarController.ViewControllers is not null)
+                var tabBarItem = renderer?.ViewController?.TabBarItem;
+                if (tabBarItem is not null)
                 {
-                    var index = Array.IndexOf(_tabBarController.ViewControllers, renderer.ViewController);
-                    if (index >= 0 && _tabBarController.TabBar?.Items is not null && index < _tabBarController.TabBar.Items.Length)
-                    {
-                        UpdateTabBarItemEnabled(_tabBarController.TabBar.Items[index], shellSection.IsEnabled);
-                    }
+                    UpdateTabBarItemEnabled(tabBarItem, shellSection.IsEnabled);
                 }
             }
             else if (e.PropertyName == BaseShellItem.BadgeTextProperty.PropertyName ||
@@ -355,13 +352,10 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 var shellSection = (ShellSection)sender!;
                 var renderer = RendererForShellContent(shellSection);
-                if (renderer is not null && _tabBarController.ViewControllers is not null)
+                var tabBarItem = renderer?.ViewController?.TabBarItem;
+                if (tabBarItem is not null)
                 {
-                    var index = Array.IndexOf(_tabBarController.ViewControllers, renderer.ViewController);
-                    if (index >= 0 && _tabBarController.TabBar?.Items is not null && index < _tabBarController.TabBar.Items.Length)
-                    {
-                        UpdateTabBarItemBadge(_tabBarController.TabBar.Items[index], shellSection);
-                    }
+                    UpdateTabBarItemBadge(tabBarItem, shellSection);
                 }
             }
         }
@@ -704,11 +698,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetTabItemsEnabledState()
         {
-            if (_tabBarController.TabBar?.Items is null)
-            {
-                return;
-            }
-
             var items = ShellItemController.GetItems();
 
             if (items is null)
@@ -716,21 +705,29 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // When there are more than 5 sections, iOS collapses the overflow behind a system
-            // "More" tab, so TabBar.Items.Length (visible items, including the "More" item
-            // itself) is less than items.Count. The previous "TabBar.Items.Length >= items.Count"
-            // guard skipped this entire method in that case - meaning even the first 4 visible
-            // (non-More) tabs never had their initial enabled/badge state applied. Compute how
-            // many section tabs are actually visible, excluding the system "More" item, so those
-            // still get updated - mirrors the legacy ShellItemRenderer's ApplyInitialDisabledState.
-            var visibleSectionTabs = items.Count > _tabBarController.TabBar.Items.Length
-                ? _tabBarController.TabBar.Items.Length - 1
-                : Math.Min(_tabBarController.TabBar.Items.Length, items.Count);
+            var viewControllers = _tabBarController.ViewControllers;
 
-            for (int tabIndex = 0; tabIndex < visibleSectionTabs; tabIndex++)
+            if (viewControllers is null)
             {
-                UpdateTabBarItemEnabled(_tabBarController.TabBar.Items[tabIndex], items[tabIndex].IsEnabled);
-                UpdateTabBarItemBadge(_tabBarController.TabBar.Items[tabIndex], items[tabIndex]);
+                return;
+            }
+
+            // When there are more than 5 sections, iOS collapses the overflow behind a system
+            // "More" tab. TabBar.Items only reflects the visible native tabs (including the
+            // "More" item itself), so it can never be used to reach the overflow sections'
+            // badge/enabled state - not even on initial render. Each section's own
+            // ViewController.TabBarItem is what iOS actually renders for both the visible tabs
+            // and the "More" list, so update those directly - mirrors the legacy
+            // ShellItemRenderer's ApplyInitialDisabledState.
+            var count = Math.Min(items.Count, viewControllers.Length);
+            for (int tabIndex = 0; tabIndex < count; tabIndex++)
+            {
+                var tabBarItem = viewControllers[tabIndex].TabBarItem;
+                if (tabBarItem is null)
+                    continue;
+
+                UpdateTabBarItemEnabled(tabBarItem, items[tabIndex].IsEnabled);
+                UpdateTabBarItemBadge(tabBarItem, items[tabIndex]);
             }
         }
 
