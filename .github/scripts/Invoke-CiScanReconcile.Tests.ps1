@@ -2974,13 +2974,30 @@ Describe 'Static source invariants' {
             $name
         }
 
-        $banned = @($sessionAutomatics) + @($contextAutomatics)
+        # Oracle 3: the engine's own catalogue of special variables. Neither oracle above
+        # reaches it, and the 19 names it adds are not exotic -- they include `_`, which is
+        # the worst possible key here. A `-ForEach` key named `_` is swallowed by every
+        # nested `ForEach-Object` and `Where-Object` in the test body, so the case data is
+        # replaced by whatever happens to be in the pipeline rather than by nothing. Also
+        # `foreach`, `this`, `PSCmdlet`, `LASTEXITCODE`, `OFS`.
+        $special = [psobject].Assembly.GetType('System.Management.Automation.SpecialVariables')
+        $special | Should -Not -BeNullOrEmpty -Because 'the special-variable catalogue must resolve, or this oracle silently contributes nothing'
+        $catalogue = @(
+            $special.GetFields('Static,NonPublic,Public') |
+                Where-Object { $_.FieldType -eq [string] } |
+                ForEach-Object { $_.GetValue($null) } |
+                Where-Object { $_ } | Sort-Object -Unique)
+        $catalogue.Count | Should -BeGreaterThan 40 -Because 'a catalogue that returned almost nothing would ban almost nothing'
+        $catalogue | Should -Contain '_' -Because 'the name this oracle exists to add must actually be in it'
+
+        $banned = @($sessionAutomatics) + @($contextAutomatics) + $catalogue
 
         # Single definition: the sweep below and the controls here use the same predicate.
         $collides = { param([string]$Key) $banned -contains $Key }
 
         (& $collides -Key 'Args') | Should -BeTrue -Because 'the detector must flag a real collision, or a clean sweep proves nothing'
         (& $collides -Key 'Matches') | Should -BeTrue -Because 'context-only automatics must be caught too; the runspace list alone does not contain Matches'
+        (& $collides -Key '_') | Should -BeTrue -Because 'neither the runspace nor the context probes contain `_`, and it is the key that gets swallowed most widely'
         (& $collides -Key 'CmdArgs') | Should -BeFalse -Because 'the detector must not flag an ordinary key, or every test file would fail'
 
         $offenders = @()
@@ -3459,6 +3476,7 @@ Describe 'Static source invariants' {
         $capturesFound | Should -BeGreaterOrEqual 3 -Because 'the scan must still be finding real digit captures'
         $pairsChecked | Should -BeGreaterOrEqual 2 -Because 'the scan must still be finding real hard casts to check'
     }
+
 
     <#
         Keeps label-name extraction in ONE function.
