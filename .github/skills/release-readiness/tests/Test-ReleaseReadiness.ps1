@@ -36,14 +36,6 @@ function Test-AssertionEqual {
                 if (-not [string]::Equals($expectedItems[$i], $actualItems[$i], [System.StringComparison]::Ordinal)) { return $false }
             } elseif ($expectedItems[$i] -ne $actualItems[$i]) { return $false }
         }
-        $deepEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=DEEPCODESECRET'
-        foreach ($pass in 1..7) { $deepEncodedInternal = [uri]::EscapeDataString($deepEncodedInternal) }
-        Assert-Eq -Label "$Lane sanitizer decodes seven-pass private URL before classification" `
-            -Expected '_internal URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $deepEncodedInternal)
-        $overEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=OVERENCODESECRET'
-        foreach ($pass in 1..13) { $overEncodedInternal = [uri]::EscapeDataString($overEncodedInternal) }
-        Assert-Eq -Label "$Lane sanitizer fails closed when URL encoding exceeds decode budget" `
-            -Expected '_encoded URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $overEncodedInternal)
         return $true
     }
     if ($Expected -is [string] -and $Actual -is [string]) {
@@ -267,6 +259,12 @@ if grep -Fq 'release-readiness-shipped' "$output"; then
 fi
 grep -Fq 'before' "$output"
 grep -Fq 'after' "$output"
+printf 'prefix <!-- release-readiness-shipped: 10.0.90 --> suffix\r\n' > "$input"
+if rr_has_exact_marker_line "$input" '<!-- release-readiness-shipped: 10.0.90 -->'; then
+  exit 13
+fi
+rr_remove_exact_marker_line "$input" "$output" '<!-- release-readiness-shipped: 10.0.90 -->'
+grep -Fq 'prefix <!-- release-readiness-shipped: 10.0.90 --> suffix' "$output"
 rm -f "$input" "$output"
 '@
 try {
@@ -8272,6 +8270,12 @@ function Assert-PublicSanitizerEdgeCases {
     Assert-Eq -Label "$Lane sanitizer canonicalizes homoglyph-prefixed private reference" `
         -Expected '_internal URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text "$([char]0x0501)nceng/internal/_git/secret")
+    Assert-Eq -Label "$Lane sanitizer canonicalizes mid-token homoglyph in legacy dnceng host" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text "dnc$([char]0x0435)ng.visualstudio.com/internal/_build?token=SECRET")
+    Assert-Eq -Label "$Lane sanitizer canonicalizes mid-token homoglyph in legacy DevDiv host" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text "d$([char]0x0435)vdiv.visualstudio.com/OneDotNet/_build?token=SECRET")
     Assert-Eq -Label "$Lane sanitizer omits embedded DevDiv URL while preserving surrounding key" `
         -Expected 'buildUrl=_internal URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'buildUrl=https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1234?token=EMBEDDEDDEVDIVSECRET')
@@ -8289,6 +8293,14 @@ function Assert-PublicSanitizerEdgeCases {
         Assert-Eq -Label "$Lane sanitizer marks encoded query omission — $publicEncodedQuery" -Expected $true `
             -Actual ($encodedQuerySafe -match '_query_omitted_')
     }
+    $deepEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=DEEPCODESECRET'
+    foreach ($pass in 1..7) { $deepEncodedInternal = [uri]::EscapeDataString($deepEncodedInternal) }
+    Assert-Eq -Label "$Lane sanitizer decodes seven-pass private URL before classification" `
+        -Expected '_internal URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $deepEncodedInternal)
+    $overEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=OVERENCODESECRET'
+    foreach ($pass in 1..13) { $overEncodedInternal = [uri]::EscapeDataString($overEncodedInternal) }
+    Assert-Eq -Label "$Lane sanitizer fails closed when URL encoding exceeds decode budget" `
+        -Expected '_encoded URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $overEncodedInternal)
     foreach ($bareAzdoQuery in @(
         'dnceng/foo?token=BAREQUERYSECRET'
         'dnceng?token=BAREHOSTSECRET'

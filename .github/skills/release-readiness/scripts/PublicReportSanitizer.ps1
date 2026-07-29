@@ -1,5 +1,11 @@
 #Requires -Version 7.0
 
+$Script:PublicSafeConfusables = @{
+    'ԁ'='d'; 'ɡ'='g'; 'г'='r'; 'ӏ'='l'
+    'а'='a'; 'е'='e'; 'і'='i'; 'о'='o'; 'р'='p'; 'с'='c'; 'х'='x'; 'у'='y'
+    'α'='a'; 'ε'='e'; 'ι'='i'; 'ο'='o'; 'ρ'='p'; 'χ'='x'; 'υ'='y'
+}
+
 function Get-PublicSafeCanonicalLiteralPattern {
     param(
         [Parameter(Mandatory)][string]$Literal,
@@ -26,6 +32,12 @@ function Get-PublicSafeCanonicalLiteralPattern {
         if ($character -eq ' ') {
             [void]$forms.Add([regex]::Escape([string][char]0x3000))
         }
+        $latinCharacter = [string][char]::ToLowerInvariant($character)
+        foreach ($confusable in $Script:PublicSafeConfusables.Keys) {
+            if ($Script:PublicSafeConfusables[$confusable] -eq $latinCharacter) {
+                [void]$forms.Add([regex]::Escape([string]$confusable))
+            }
+        }
         '(?:' + (@($forms | Sort-Object -Unique) -join '|') + ')'
     }
     return ($patterns -join $InterCharacterPattern)
@@ -44,7 +56,6 @@ $Script:PublicSafeUrlCandidatePattern = @(
     Get-PublicSafeCanonicalLiteralPattern -Literal 'dnceng' -InterCharacterPattern $candidateNoise
     Get-PublicSafeCanonicalLiteralPattern -Literal 'DevDiv' -InterCharacterPattern $candidateNoise
     '[\uFF01-\uFF5E]'
-    '[\u0080-\uFFFF]'
     '%(?:25)?[0-9a-f]{2}'
     '&#(?:x[0-9a-f]+|\d+);'
 ) -join '|'
@@ -119,12 +130,9 @@ function ConvertTo-PublicSafeMarkdown {
         $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
         $canonical = $canonical.Replace('Т', 'T').Replace('Н', 'H').Replace('В', 'B').Replace('М', 'M').Replace('К', 'K')
         $canonical = $canonical.ToLowerInvariant()
-        $confusables = @{
-            'ԁ'='d'; 'ɡ'='g'; 'г'='r'; 'ӏ'='l'
-            'а'='a'; 'е'='e'; 'і'='i'; 'о'='o'; 'р'='p'; 'с'='c'; 'х'='x'; 'у'='y'
-            'α'='a'; 'ε'='e'; 'ι'='i'; 'ο'='o'; 'ρ'='p'; 'χ'='x'; 'υ'='y'
+        foreach ($key in $Script:PublicSafeConfusables.Keys) {
+            $canonical = $canonical.Replace($key, $Script:PublicSafeConfusables[$key])
         }
-        foreach ($key in $confusables.Keys) { $canonical = $canonical.Replace($key, $confusables[$key]) }
         do {
             $beforeDots = $canonical
             $canonical = [regex]::Replace($canonical, '/\.(?=/)', '')
