@@ -1449,7 +1449,18 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
         # Inducing the state is what makes the assertion possible, and the assertion is
         # about WHICH refusal fires -- "it threw" is satisfied equally by the StrictMode
         # property crash this replaced, whose message names neither the kind nor the set.
-        $saved = $script:CiScanWriteShapes.Clone()
+        # DEEP copy, not `.Clone()`. A hashtable clone is SHALLOW, so `$saved` would hold
+        # the same inner entry references and an in-place edit of a nested `Allowed` array
+        # would survive the restore below. The removal this test performs today is
+        # top-level and unaffected -- but the obvious next test ("widen Allowed and prove
+        # the allow-list rejects it") is not, and it would leave the production authority
+        # table widened for every later test in this container. Measured: with `.Clone()`,
+        # `$t['label'].Allowed += '--body-file'` leaks past the restore.
+        $saved = @{}
+        foreach ($k in $script:CiScanWriteShapes.Keys) {
+            $e = $script:CiScanWriteShapes[$k]
+            $saved[$k] = @{ Verb = $e.Verb; Flag = $e.Flag; Allowed = @($e.Allowed) }
+        }
         $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
         try {
             $script:CiScanWriteShapes.Remove('close')
@@ -1469,8 +1480,18 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
         # The test above mutates shared script state. If its restore ever regresses, every
         # later assertion in this file runs against a truncated vocabulary and the damage
         # would surface as unrelated failures elsewhere.
-        @($script:CiScanWriteShapes.Keys | Sort-Object) |
-            Should -Be @('body', 'close', 'comment', 'label', 'reopen', 'unlabel')
+        #
+        # Pins CONTENTS, not just key names. A key-set check is blind to the failure the
+        # deep copy above exists to prevent: a leaked in-place widen of a nested `Allowed`
+        # array changes no key, so this control would stay green while the production
+        # allow-list carried an extra flag for the rest of the run. The allow-list IS the
+        # authority table, so "the keys are all still here" is not the property that matters.
+        $actual = ($script:CiScanWriteShapes.Keys | Sort-Object | ForEach-Object {
+                $e = $script:CiScanWriteShapes[$_]
+                '{0}|{1}|{2}|{3}' -f $_, $e.Verb, $e.Flag, (@($e.Allowed) -join ',')
+            }) -join ' ; '
+
+        $actual | Should -Be 'body|edit|--body|--repo,--body ; close|close||--repo,--reason,--comment ; comment|comment|--body|--repo,--body ; label|edit|--add-label|--repo,--add-label ; reopen|reopen||--repo,--comment ; unlabel|edit|--remove-label|--repo,--remove-label'
     }
 
     It 'keeps the shape table written once and read only at the choke point' {
