@@ -1190,14 +1190,24 @@ namespace Microsoft.Maui.Hosting
 
 			public void SetFacadeCleanups(List<Action> cleanups)
 			{
-				_facadeCleanups.AddRange(cleanups);
+				lock (_sync)
+				{
+					if (_cleanedUp)
+						throw new ObjectDisposedException(nameof(EssentialsCleanup));
+					_facadeCleanups.AddRange(cleanups);
+				}
 			}
 
 #if !TIZEN
 			public void Subscribe(IAppActions appActions, EventHandler<AppActionEventArgs> handler)
 			{
-				_appActionSubscriptions.Add((appActions, handler));
-				appActions.AppActionActivated += handler;
+				lock (_sync)
+				{
+					if (_cleanedUp)
+						throw new ObjectDisposedException(nameof(EssentialsCleanup));
+					appActions.AppActionActivated += handler;
+					_appActionSubscriptions.Add((appActions, handler));
+				}
 			}
 #endif
 

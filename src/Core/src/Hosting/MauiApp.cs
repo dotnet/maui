@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Hosting
 		// same completion so it observes when teardown finishes and rethrows the winner's error.
 		private readonly object _disposeGate = new();
 		private readonly AsyncLocal<bool> _disposeScope = new();
+		private readonly AsyncLocal<InitializationScope?> _initializeScope = new();
 		private TaskCompletionSource<ExceptionDispatchInfo?>? _disposeCompletion;
+		private int _initializeInFlight;
 
 		internal MauiApp(IServiceProvider services)
 		{
@@ -57,7 +59,8 @@ namespace Microsoft.Maui.Hosting
 		/// and every other caller waits for it to finish and observes the same exception. A caller
 		/// that re-enters disposal from the logical execution flow already performing it returns
 		/// immediately without waiting to avoid deadlocking on itself, and therefore does not observe
-		/// completion or exceptions.
+		/// completion or exceptions. After teardown completes, subsequent non-reentrant calls return
+		/// immediately on success or rethrow the recorded teardown exception.
 		/// </para>
 		/// </remarks>
 		public void Dispose()
@@ -105,7 +108,8 @@ namespace Microsoft.Maui.Hosting
 		/// and every other caller awaits its completion and observes the same exception. A caller
 		/// that re-enters disposal from the logical execution flow already performing it returns
 		/// immediately without awaiting to avoid deadlocking on itself, and therefore does not
-		/// observe completion or exceptions.
+		/// observe completion or exceptions. After teardown completes, subsequent non-reentrant calls
+		/// return immediately on success or rethrow the recorded teardown exception.
 		/// </remarks>
 		public async ValueTask DisposeAsync()
 		{
@@ -144,7 +148,7 @@ namespace Microsoft.Maui.Hosting
 
 		// Returns true and hands back a fresh completion when the caller wins the one-shot race and
 		// must perform the teardown. Returns false otherwise: 'completion' is the shared completion to
-		// wait on, or null when the current logical flow is re-entering teardown or teardown is complete.
+		// wait on, or null when the current logical flow is re-entering teardown.
 		private bool TryBeginDispose([NotNullWhen(true)] out TaskCompletionSource<ExceptionDispatchInfo?>? completion)
 		{
 			lock (_disposeGate)
@@ -155,16 +159,49 @@ namespace Microsoft.Maui.Hosting
 					return false;
 				}
 
+				if (_initializeScope.Value?.Depth > 0)
+					throw new InvalidOperationException("MauiApp cannot be disposed from app-service initialization.");
+
 				if (_disposeCompletion is not null)
 				{
-					completion = _disposeCompletion.Task.IsCompleted ? null : _disposeCompletion;
+					completion = _disposeCompletion;
 					return false;
 				}
 
 				completion = _disposeCompletion = new TaskCompletionSource<ExceptionDispatchInfo?>(
 					TaskCreationOptions.RunContinuationsAsynchronously);
 				_disposeScope.Value = true;
+				while (_initializeInFlight > 0)
+					Monitor.Wait(_disposeGate);
+
 				return true;
+			}
+		}
+
+		internal void EnterInitializeAppServices()
+		{
+			lock (_disposeGate)
+			{
+				if (_disposeCompletion is not null)
+					throw new ObjectDisposedException(nameof(MauiApp), "Cannot initialize app services after MauiApp disposal has begun.");
+
+				_initializeInFlight++;
+				var scope = _initializeScope.Value;
+				if (scope is null)
+					_initializeScope.Value = scope = new InitializationScope();
+				scope.Depth++;
+			}
+		}
+
+		internal void ExitInitializeAppServices()
+		{
+			lock (_disposeGate)
+			{
+				if (_initializeScope.Value is { } scope && --scope.Depth == 0)
+					_initializeScope.Value = null;
+
+				if (--_initializeInFlight == 0)
+					Monitor.PulseAll(_disposeGate);
 			}
 		}
 
@@ -260,6 +297,11 @@ namespace Microsoft.Maui.Hosting
 			// Explicitly dispose the Configuration, since it is added as a singleton object that the ServiceProvider
 			// won't dispose.
 			(Configuration as IDisposable)?.Dispose();
+		}
+
+		private sealed class InitializationScope
+		{
+			public int Depth { get; set; }
 		}
 	}
 
