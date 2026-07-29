@@ -1826,15 +1826,17 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '(?i)&period;', '.'
     $safe = $safe -replace '(?i)&colon;', ':'
     $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
+    $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
+    $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng\.visualstudio\.com/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
+        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
         '${prefix}internal')
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
-        for ($decodePass = 0; $decodePass -lt 3; $decodePass++) {
+        for ($decodePass = 0; $decodePass -lt 6; $decodePass++) {
             try {
                 $decoded = [System.Uri]::UnescapeDataString($canonical)
                 if ($decoded -eq $canonical) { break }

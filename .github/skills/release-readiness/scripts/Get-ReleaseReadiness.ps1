@@ -276,15 +276,17 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '(?i)&period;', '.'
     $safe = $safe -replace '(?i)&colon;', ':'
     $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
+    $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
+    $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng\.visualstudio\.com/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
+        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
         '${prefix}internal')
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
-        for ($decodePass = 0; $decodePass -lt 3; $decodePass++) {
+        for ($decodePass = 0; $decodePass -lt 6; $decodePass++) {
             try {
                 $decoded = [System.Uri]::UnescapeDataString($canonical)
                 if ($decoded -eq $canonical) { break }
@@ -2399,6 +2401,7 @@ function Get-RevertedPrFromSubject {
     param([string]$Subject)
     if (-not $Subject) { return $null }
     $Subject = $Subject -replace '[\u201C\u201D]', '"'
+    $Subject = [regex]::Replace($Subject, '^(?i)(?:\[(?!Revert\])[^]]+\]\s+)+', '')
     # Common hand-authored forms without GitHub's quoted-title convention.
     $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ing)?\s+(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
@@ -2451,7 +2454,7 @@ function ConvertTo-NegationNormalizedText {
     param([AllowNull()][AllowEmptyString()][string]$Text)
 
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
-    $Text = $Text -replace '[\u2018\u2019]', "'"
+    $Text = $Text -replace '[\u2018\u2019\u02BC\uFF07]', "'"
     # Struck text is explicitly withdrawn; remove it rather than turning
     # `~~Fixes #N~~` into affirmative evidence.
     $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')
@@ -2496,7 +2499,7 @@ function Get-ClosingIssueNumbers {
     return @($matches | ForEach-Object {
         $prefixStart = [Math]::Max(0, $_.Index - 512)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
-        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
         }
@@ -2522,7 +2525,7 @@ function Test-IsLineageVerbNegated {
     $between = ConvertTo-NegationNormalizedText -Text ($Between -replace '[\u2018\u2019]', "'")
     $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot|against|avoid(?:ing)?)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bnot\s+(?:(?:going|planning|intending|expected|allowed|authorized|permitted|supposed|ready|able)\s+|(?:think|believe)(?:\s+\w+){0,5}\s+)to\s+$|\bnot\s*,\s*(?:after|following|pending)\b[^,]*,\s*to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
     $postVerbNegation = "(?i)(?:\bnot\b|\bno\s+longer\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
-    $clauseNegation = $prefix -match "(?i)\b(?:not(?!\s+(?:only|unusual|unlikely|impossible)\b)|never|cannot|can't|couldn't|shouldn't|mustn't|won't|wouldn't|don't|doesn't|didn't)\b(?:(?!\b(?:but|however|nevertheless|nonetheless|so|agreed|decided|chose|want(?:ed)?|went\s+ahead)\b|\b(?:and|yet|still|plus|then|therefore|thus|hence|instead|meanwhile|regardless)\s+(?:we|i|it|this|that|they|maintainers?|the\s+(?:team|fix|change|pr))\b)[^.!?;]){0,2048}$"
+    $clauseNegation = $prefix -match "(?i)\b(?:not(?!\s+(?:only|unusual|unlikely|impossible)\b)|never|cannot|isn't|wasn't|aren't|weren't|can't|couldn't|shouldn't|mustn't|won't|wouldn't|don't|doesn't|didn't)\b(?:(?!\b(?:but|however|nevertheless|nonetheless|so|agreed|decided|chose|want(?:ed)?|went\s+ahead)\b|\b(?:and|yet|still|plus|then|therefore|thus|hence|instead|meanwhile|regardless)\s+(?:we|i|it|this|that|they|maintainers?|the\s+(?:team|fix|change|pr))\b)[^.!?;]){0,2048}$"
     return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation) -or $clauseNegation
 }
 
@@ -2708,6 +2711,10 @@ function Get-ExplicitBackportSourceNumbers {
                     }
                     $suffix = $suffix.Substring(0, $nextReference.Index)
                     break
+                }
+                if ($suffix -match '(?i)^\s*(?:is|was)\s+(?:(?:only\s+)?(?:context|background|reference)(?:\s+only)?)\b') {
+                    [void]$result.Remove($number)
+                    continue
                 }
                 if (Test-IsLineageReferenceNegated -Suffix $suffix `
                     -PresenceOnly:$sawRepeatedReference `
@@ -5362,7 +5369,17 @@ function Get-ReportSemanticHash {
                           }) -join '|'
                       } else { '' }
         openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
-                        @($Data['openSrPrs'] | Sort-Object number | ForEach-Object { $_.number }) -join ','
+                        @($Data['openSrPrs'] | Sort-Object number | ForEach-Object {
+                            $author = Get-MetadataValue -Container $_ -Name 'author'
+                            @(
+                                Get-MetadataValue -Container $_ -Name 'number'
+                                Get-MetadataValue -Container $_ -Name 'title'
+                                Get-MetadataValue -Container $author -Name 'login'
+                                [bool](Get-MetadataValue -Container $_ -Name 'isDraft' -Default $false)
+                                Get-MetadataValue -Container $_ -Name 'reviewDecision'
+                                Get-MetadataValue -Container $_ -Name 'updatedAt'
+                            ) -join '~'
+                        }) -join '|'
                     } else { '' }
         candidatePr = if ($Data.ContainsKey('candidatePr') -and $Data['candidatePr']) {
                           $candidateResolution = $Data['candidatePr']

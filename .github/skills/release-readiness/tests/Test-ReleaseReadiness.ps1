@@ -2231,6 +2231,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport per the failure analysis in #35410, and #35415.') -join ',')
     Assert-Eq -Label "backport lineage: alternate contextual wording does not promote tail item" `
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is context only.') -join ',')
+    Assert-Eq -Label "backport lineage: comma-listed contextual item is not promoted" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, and #200 is context only.') -join ',')
     foreach ($repeatedSemanticRetraction in @(
         'Backport of #12345. PR #12345 is no longer required.',
         'Backport of #12345. PR #12345 is no longer needed.',
@@ -2713,7 +2715,9 @@ foreach ($manualRevertSubject in @(
     'Revert of #35100',
     'Revert - fix for #35100',
     '[Revert] Undo the change in #35100',
-    'Revert “Original title (#35100)” (#36152)'
+    'Revert “Original title (#35100)” (#36152)',
+    '[release/10.0.1xx-sr9] Backing out the fix for #35100 due to CI regressions',
+    '[release/10.0.1xx-sr9] [Revert] Undo the change in #35100'
 )) {
     Assert-Eq -Label "Reverted-PR from common hand-authored subject — $manualRevertSubject" `
         -Expected 35100 -Actual (Get-RevertedPrFromSubject -Subject $manualRevertSubject)
@@ -3043,6 +3047,7 @@ foreach ($negatedClosingText in @(
     'This will not actually resolve #35615',
     "This doesn't close #35615",
     "This doesn’t close #35615",
+    "This doesnʼt close #35615",
     'This does **not** fix #35615',
     'This does not, in fact, fix #35615',
     'This will not (yet) resolve #35615',
@@ -4447,6 +4452,16 @@ $dataC = $dataA.Clone()
 $dataC['metadata'] = @{ srHeadSha = 'bbbbbbbb2222'; fetchedAt = '2025-01-01T00:00:00Z' }
 $hashC = Get-ReportSemanticHash -Data $dataC -Verdict $verdictA
 Assert-Eq -Label "Hash changes when srHeadSha changes" -Expected $false -Actual ($hashA -eq $hashC)
+$dataOpenPrChanged = $dataA.Clone()
+$dataOpenPrChanged['openSrPrs'] = @(
+    @{
+        number = 35100; title = 'Backport fix'; author = @{ login = 'maintainer' }
+        isDraft = $true; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-01-02T00:00:00Z'
+    }
+)
+$hashOpenPrChanged = Get-ReportSemanticHash -Data $dataOpenPrChanged -Verdict $verdictA
+Assert-Eq -Label "Hash changes when rendered open-SR-PR fields change" -Expected $false `
+    -Actual ($hashA -eq $hashOpenPrChanged)
 
 # Regression classification change → DIFFERENT hash
 $dataD = $dataA.Clone()
@@ -7937,6 +7952,7 @@ function Assert-PublicSanitizerEdgeCases {
         "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET",
         'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
         'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
+        'https://dev.azure.com/d n c e n g/internal/_build?token=ORGSPACESECRET',
         '%64%6E%63%65%6E%67.visualstudio.com/internal/_build?token=SCHEMELESSSECRET',
         '&#100;nceng.visualstudio.com/internal/_build?token=ENTITYSECRET',
         '%252564%25256E%252563%252565%25256E%252567.visualstudio.com/internal/_build?token=TRIPLESECRET',
@@ -7947,7 +7963,7 @@ function Assert-PublicSanitizerEdgeCases {
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
