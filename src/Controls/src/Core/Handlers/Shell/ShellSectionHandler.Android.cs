@@ -508,7 +508,7 @@ namespace Microsoft.Maui.Controls.Handlers
             if (visibleItems is not null && currentItem is not null)
             {
                 {
-                    handler._adapter?.SafeNotifyDataSetChanged();
+                    handler.SafeNotifyDataSetChanged();
                 }
 
                 var targetIndex = visibleItems.IndexOf(currentItem);
@@ -528,7 +528,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (e.PropertyName == ShellContent.ContentProperty.PropertyName)
             {
-                _adapter.InvalidateShellContent(shellContent);
+                InvalidateShellContent(shellContent);
 
                 // Keep toolbar state in sync when the active tab's content page is replaced.
                 if (VirtualView?.CurrentItem == shellContent)
@@ -540,6 +540,35 @@ namespace Microsoft.Maui.Controls.Handlers
                         toolbarTracker?.Page = page;
                     }
                 }
+            }
+        }
+
+        void InvalidateShellContent(ShellContent shellContent)
+        {
+            // The page inside this ShellContent changed — force ViewPager2 to recreate the
+            // fragment so it picks up the new content.
+            _adapter?.InvalidateShellContent(shellContent);
+            SafeNotifyDataSetChanged();
+        }
+
+        void SafeNotifyDataSetChanged()
+        {
+            var adapter = _adapter;
+            var viewPager = _viewPager;
+            if (adapter is null || viewPager is null || !viewPager.IsAlive())
+            {
+                return;
+            }
+
+            // https://stackoverflow.com/questions/43221847/cannot-call-this-method-while-recyclerview-is-computing-a-layout-or-scrolling-wh
+            // ViewPager2 is based on RecyclerView which really doesn't like NotifyDataSetChanged when a layout is happening
+            if (!viewPager.IsInLayout)
+            {
+                adapter.NotifyDataSetChanged();
+            }
+            else
+            {
+                viewPager.Post(() => adapter.NotifyDataSetChanged());
             }
         }
 
@@ -620,7 +649,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             else
             {
-                _adapter.SafeNotifyDataSetChanged();
+                SafeNotifyDataSetChanged();
             }
 
             // Update OffscreenPageLimit for new visible count
@@ -826,7 +855,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _visibleItems = newItems;
         }
 
-        public void InvalidateShellContent(ShellContent shellContent)
+        internal void InvalidateShellContent(ShellContent shellContent)
         {
             if (_visibleItems is null || !_visibleItems.Contains(shellContent))
             {
@@ -834,32 +863,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             _contentIds.Remove(shellContent);
-            SafeNotifyDataSetChanged();
-        }
-
-        public void SafeNotifyDataSetChanged(int iteration = 0)
-        {
-            var viewPager = Handler?.ViewPager;
-            if (viewPager is null || !viewPager.IsAlive())
-            {
-                return;
-            }
-
-            if (iteration >= 10)
-            {
-                _mauiContext.CreateLogger<ShellContentFragmentAdapter>()?
-                    .LogWarning("ViewPager2 stuck in layout, unable to NotifyDataSetChanged;");
-                return;
-            }
-
-            if (!viewPager.IsInLayout)
-            {
-                NotifyDataSetChanged();
-            }
-            else
-            {
-                viewPager.Post(() => SafeNotifyDataSetChanged(++iteration));
-            }
         }
 
         public override Fragment CreateFragment(int position)
