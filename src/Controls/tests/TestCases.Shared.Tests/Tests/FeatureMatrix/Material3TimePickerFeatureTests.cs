@@ -18,12 +18,17 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	{
 	}
 
+	void OpenTimePickerDialog()
+	{
+		App.WaitForElement("TimePickerControl");
+		App.Tap(AppiumQuery.ById("text_input_end_icon"));
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("TimePickerControl");
-		App.Tap("TimePickerControl");
+		OpenTimePickerDialog();
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 

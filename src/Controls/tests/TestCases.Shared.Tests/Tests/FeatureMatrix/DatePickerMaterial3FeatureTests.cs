@@ -13,12 +13,20 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	{
 	}
 
+	// The Material 3 DatePicker only opens the dialog when its trailing calendar icon is tapped,
+	// not when tapping the field body. The icon is the TextInputLayout's end icon
+	// (native resource id "text_input_end_icon").
+	void OpenDatePickerDialog()
+	{
+		App.WaitForElement("DatePickerControl");
+		App.Tap(AppiumQuery.ById("text_input_end_icon"));
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("OK");
 		App.Tap("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -28,8 +36,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_ModifyOldDateAndNewDate_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.Tap("26");
 		App.WaitForElement("OK");
 		App.Tap("OK");
@@ -40,14 +47,12 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_OldDateAndNewDate_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("26");
 		App.Tap("26");
 		App.WaitForElement("OK");
 		App.Tap("OK");
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("28");
 		App.Tap("28");
 		App.WaitForElement("Cancel");
