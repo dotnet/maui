@@ -113,7 +113,14 @@
           Remove="@(_MauiPlatformSpecificCompileItems)"
           MatchOnMetadata="FullPath"
           MatchOnMetadataOptions="PathLike" />
-      <_MauiCompileItemsToUnflip Include="@(Compile)" />
+      <!--
+        Built-in active-platform items were already flipped to false during
+        evaluation. Skip them here so the remove/re-add below does not perturb
+        Compile ordering and generated WinRT metadata.
+      -->
+      <_MauiCompileItemsToUnflip
+          Include="@(Compile)"
+          Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' " />
       <_MauiCompileItemsToUnflip
           Remove="@(_MauiCompileItemsNotToUnflip)"
           MatchOnMetadata="FullPath"

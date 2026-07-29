@@ -1214,6 +1214,93 @@ public static class SharedMarker
 				"_MauiUnflipKeptCompileItemMetadata must preserve unrelated Compile metadata. Build log:\n" + log);
 		}
 
+		[Fact]
+		public void SingleProject_UnflipKeptCompileItemMetadata_PreservesAlreadyActiveCompileItemOrder()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Before.cs"));
+			var activePlatformCompile = NewElement("Compile").WithAttribute("Include", "Platforms\\Windows\\WindowsMarker.cs");
+			activePlatformCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			compileItems.Add(activePlatformCompile);
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "After.cs"));
+			project.Add(compileItems);
+
+			WriteFile("Before.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Before
+{
+	public static string Value => ""Before"";
+}");
+
+			WriteFile("Platforms\\Windows\\WindowsMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class WindowsMarker
+{
+	public static string Value => ""Windows"";
+}");
+
+			WriteFile("After.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class After
+{
+	public static string Value => ""After"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// The synthetic TPI is assigned during target execution, after the
+			// evaluation-time built-in folder metadata flips have already run.
+			// Model the resulting active-platform metadata before the shipping
+			// unflip target so this test covers its ordering behavior.
+			var markActivePlatformItemTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestMarkActivePlatformCompile")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems")
+				.WithAttribute("BeforeTargets", "_MauiUnflipKeptCompileItemMetadata");
+			var markActivePlatformItemGroup = NewElement("ItemGroup");
+			var markActivePlatformCompile = NewElement("Compile")
+				.WithAttribute("Update", "Platforms\\Windows\\WindowsMarker.cs");
+			markActivePlatformCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			markActivePlatformItemGroup.Add(markActivePlatformCompile);
+			markActivePlatformItemTarget.Add(markActivePlatformItemGroup);
+			project.Add(markActivePlatformItemTarget);
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpCompileOrder")
+				.WithAttribute("AfterTargets", "_MauiUnflipKeptCompileItemMetadata");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_ORDER: @(Compile->'%(Filename)', '|')"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=windows");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.Before");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WindowsMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.After");
+			Assert.Contains(
+				"COMPILE_ORDER: Before|WindowsMarker|After",
+				log,
+				StringComparison.OrdinalIgnoreCase);
+		}
+
 		// Backward compatibility: a folder that declares only the legacy singular
 		// TargetPlatformIdentifier metadata must continue to match exactly that TPI.
 		[Theory]
