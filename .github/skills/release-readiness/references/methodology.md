@@ -1,6 +1,6 @@
 # Release Readiness — Methodology
 
-This document captures the deterministic algorithms used by the SR and Preview readiness engines, including **the seven gotchas** discovered through real SR analysis and the Preview **consumer-installability gate**.
+This document captures the deterministic algorithms used by the SR and Preview readiness engines, including **the eight gotchas** discovered through real release analysis and the Preview **consumer-installability gate**.
 
 ## Gotcha #1: Cherry-Pick Number Swap
 
@@ -309,6 +309,55 @@ catches it.
 
 The report derives and surfaces the feed URL but remains report-only — it does
 not create channels, promote builds, or edit the Assessment.
+
+## Gotcha #8: Internal Official-Build Evidence Must Stay Local
+
+### The trap
+
+The public tracker can inspect public GitHub and BAR state, but the signed
+`dotnet-maui` official pipeline lives in Azure DevOps org `dnceng`, project
+`internal`, definition `1095`. GitHub-hosted public automation has no credential
+for it. Querying that endpoint unconditionally causes slow 401/403 failures,
+turns every public tracker into `UNKNOWN`, and risks copying private build URLs
+or identifiers into a public issue.
+
+Checking only one manually supplied build ID is also insufficient. A net11
+preview decision has two independent official-build surfaces:
+
+- `refs/heads/net11.0`, the survey/inflight source.
+- The specific `refs/heads/release/11.0.1xx-previewN` branch, when it exists.
+
+A green release-branch build does not compensate for a red inflight build, and
+vice versa. A green build for an older SHA also does not prove the current branch
+HEAD.
+
+### The algorithm
+
+`InternalOfficialBuild.ps1` keeps fetch, parsing/classification, aggregation, and
+formatting separate:
+
+1. Before any Azure invocation, skip when `GITHUB_ACTIONS=true` or the major is
+   not net11.
+2. Build a unique ref list containing `net11.0` and, when it exists, the
+   evaluated release branch.
+3. Query the latest definition-1095 build independently for each ref.
+4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
+5. Classify deterministically:
+   - exact-HEAD completed/succeeded → `green`
+   - exact-HEAD failed, partially succeeded, or canceled → `red`
+   - queued, not started, running, postponed, or canceling → `in-progress`
+   - build SHA different from branch HEAD → `stale`
+   - no build, malformed response, missing SHA/HEAD, or unknown result → `unknown`
+   - GitHub Actions or unavailable internal authentication → `skipped`
+6. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
+   `in-progress` → `WATCH`, `unknown` → `UNKNOWN`; `skipped` is fail-open.
+7. In public-safe mode, omit the internal branch records and local table
+   completely. Never serialize build IDs, numbers, SHAs, URLs, raw Azure errors,
+   account details, or internal branch evidence into public tracker output.
+
+The helper accepts build and branch-HEAD fetchers, so all classification and
+redaction behavior is covered with offline fixtures. Tests must never depend on
+live dnceng/internal access.
 
 ## Revert Detection
 

@@ -2,8 +2,8 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Generates a public-safe .NET MAUI preview release-readiness report
-    for a specific net<major>.0-previewN branch.
+    Generates a .NET MAUI preview release-readiness report for a specific
+    net<major>.0-previewN branch.
 
 .DESCRIPTION
     This is the "preview lane" companion to Get-ReleaseReadiness.ps1 (SR lane).
@@ -17,7 +17,10 @@
         - Known Build Error issues tagged release-relevant
         - Xcode requirement variables (from eng/pipelines/common/variables.yml)
         - CI truth (placeholder — not wired to #35052 yet)
-        - Internal release pipelines (READY/UNKNOWN classification — sanitized)
+        - Local net11 official-build health when authorized access is available
+
+    GitHub Actions and public-safe runs do not query the internal pipeline and
+    retain only generic public-safe guidance.
 
     Deterministic by design — does NOT approve, merge, rerun, promote, or
     mutate GitHub / Maestro / darc state.
@@ -63,16 +66,19 @@
     markdown body is also returned to stdout).
 
 .PARAMETER IncludeInternal
-    When set, attempts to query internal dnceng Azure DevOps via `az` CLI
-    for the supplied -InternalBuildId. Only relevant for local runs by
-    release captains with internal access.
+    Forces the local internal check even when -PublicSafe is enabled. Local
+    net11 runs query the internal official pipeline automatically when Azure
+    DevOps access is available; GitHub Actions always skips the query.
 
 .PARAMETER InternalBuildId
-    Internal AzDO build ID used when -IncludeInternal is set.
+    Optional compatibility/debug override for the evaluated release branch.
+    Normal local runs discover the latest definition-1095 build independently
+    for net11.0 and the evaluated release branch.
 
 .PARAMETER PublicSafe
-    When true (default), any non-READY internal status is sanitized to
-    omit raw error/log payloads before being included in the report.
+    When true, internal build details are omitted and only the existing generic
+    public-safe row is rendered. Defaults to true in GitHub Actions and for
+    non-net11 lanes, and false for local net11 runs.
 
 .PARAMETER ConfirmedWorkloadSetVersion
     Exact workload-set CLI version confirmed by the release owner, for
@@ -125,7 +131,7 @@ param(
     [string]$InternalBuildId,
 
     [Parameter(Mandatory = $false)]
-    [bool]$PublicSafe = $true,
+    [Nullable[bool]]$PublicSafe = $null,
 
     [Parameter(Mandatory = $false)]
     [string]$ConfirmedWorkloadSetVersion,
@@ -170,6 +176,18 @@ if (-not (Test-Path $publicSanitizerHelperPath)) {
 }
 . $publicSanitizerHelperPath
 
+# Local-only official-build health. The helper is loaded before the dot-source
+# guard so its pure classification/rendering functions are available to the
+# offline test harness.
+$Script:InternalOfficialBuildHelperLoaded = $false
+$internalOfficialBuildHelperPath = Join-Path $PSScriptRoot 'InternalOfficialBuild.ps1'
+if (Test-Path $internalOfficialBuildHelperPath) {
+    . $internalOfficialBuildHelperPath
+    $Script:InternalOfficialBuildHelperLoaded = $true
+} else {
+    Write-Warning "InternalOfficialBuild.ps1 helper not found at $internalOfficialBuildHelperPath — local internal checks disabled." -WarningAction Continue
+}
+
 # ===================================================================
 # BRANCH PARSING
 # ===================================================================
@@ -181,6 +199,16 @@ if ($Branch -notmatch '^release/(\d+)\.0\.1xx-preview(\d+)$') {
 $majorVersion = [int]$Matches[1]
 $previewNumber = [int]$Matches[2]
 $mainBranch = "net$majorVersion.0"
+$isGitHubActions = if (Get-Command Test-IsGitHubActions -ErrorAction SilentlyContinue) {
+    Test-IsGitHubActions
+} else {
+    "$env:GITHUB_ACTIONS" -ieq 'true'
+}
+$effectivePublicSafe = if ($null -eq $PublicSafe) {
+    $isGitHubActions -or $majorVersion -ne 11
+} else {
+    [bool]$PublicSafe
+}
 
 # In candidate mode, the preview branch hasn't been cut yet — survey the
 # source instead (caller passes net<major>.0 via -SurveyRef). In in-flight
@@ -2565,66 +2593,47 @@ if ($Script:PreviewInstallabilityHelperLoaded) {
         -NextAction 'Restore PreviewInstallability.ps1 and rerun the preview readiness report.'
 }
 
-# --- Internal release pipelines (sanitized) ---
-$internalStatus = "UNKNOWN"
-$internalDetails = "Internal release pipeline details are not queried in public workflow mode."
-$internalAction = "Run this script locally with internal access, then publish only sanitized status."
+# --- Internal official pipeline (definition 1095; local net11 only) ---
+# Public/GitHub Actions runs retain the existing generic row and never invoke
+# internal Azure DevOps. Local net11 runs auto-discover both net11.0 and the
+# evaluated release branch (when it exists), with an optional manual build-ID
+# override retained for diagnostics/backward compatibility.
+$internalOfficialBuildHealth = [PSCustomObject]@{
+    overall = 'skipped'
+    skipReason = if ($isGitHubActions) { 'github-actions' } else { 'public-safe' }
+    branches = @()
+}
+$shouldQueryInternal = $Script:InternalOfficialBuildHelperLoaded -and
+    $majorVersion -eq 11 -and
+    -not $isGitHubActions -and
+    (-not $effectivePublicSafe -or $IncludeInternal -or -not [string]::IsNullOrWhiteSpace($InternalBuildId))
 
-if ($IncludeInternal) {
-    if ([string]::IsNullOrWhiteSpace($InternalBuildId)) {
-        $internalStatus = "UNKNOWN"
-        $internalDetails = "Internal validation requested, but no InternalBuildId was provided."
-        $internalAction = "Run with -InternalBuildId <build-id> or extend the local adapter for the target internal pipeline."
-    } elseif (Get-Command az -ErrorAction SilentlyContinue) {
-        try {
-            $azArgs = @(
-                "pipelines", "build", "show",
-                "--id", $InternalBuildId,
-                "--org", "https://dev.azure.com/dnceng",
-                "--project", "internal",
-                "--query", "{status:status,result:result}",
-                "-o", "json"
-            )
-            $azOutput = & az @azArgs 2>$null
-            if ($LASTEXITCODE -eq 0 -and $azOutput) {
-                $internal = $azOutput | ConvertFrom-Json
-                if ($internal.status -eq "completed" -and $internal.result -eq "succeeded") {
-                    $internalStatus = "READY"
-                    $internalDetails = "Local internal validation found a completed/succeeded internal build."
-                    $internalAction = "Keep detailed diagnostics internal; public issue may report READY."
-                } elseif ($internal.result) {
-                    $internalStatus = "BLOCKED"
-                    $internalDetails = "Local internal validation found an internal build that did not succeed."
-                    $internalAction = "Release owner should inspect internal pipeline details ASAP."
-                } else {
-                    $internalStatus = "WATCH"
-                    $internalDetails = "Local internal validation found an internal build still in progress."
-                    $internalAction = "Wait for completion or inspect internally if stale."
-                }
-            } else {
-                $internalStatus = "UNKNOWN"
-                $internalDetails = "Internal build query did not return usable status."
-                $internalAction = "Inspect internal Azure DevOps directly."
-            }
-        } catch {
-            $internalStatus = "UNKNOWN"
-            $internalDetails = "Internal validation failed locally."
-            $internalAction = "Inspect internal Azure DevOps directly; do not publish raw error details."
-        }
-    } else {
-        $internalStatus = "UNKNOWN"
-        $internalDetails = "Azure CLI is not available for local internal validation."
-        $internalAction = "Install/configure Azure CLI or inspect internal Azure DevOps directly."
-    }
+if ($shouldQueryInternal) {
+    $manualBranchRef = "refs/heads/$Branch"
+    $buildFetcher = New-AzdoInternalOfficialBuildFetcher `
+        -ManualBuildId $InternalBuildId `
+        -ManualBuildBranchRef $manualBranchRef
+    $headFetcher = New-GitHubBranchHeadFetcher -Repository $Repository
+    $internalOfficialBuildHealth = Get-InternalOfficialBuildHealth `
+        -MajorVersion $majorVersion `
+        -ReleaseBranch $Branch `
+        -ReleaseBranchExists $targetBranchExists `
+        -BuildFetcher $buildFetcher `
+        -HeadFetcher $headFetcher `
+        -GitHubActions:$false
 }
 
-if ($PublicSafe -and $internalStatus -ne "READY") {
-    $publicInternalText = Get-PublicSafeInternalPipelineText -Status $internalStatus
-    $internalDetails = $publicInternalText.Details
-    $internalAction = $publicInternalText.NextAction
+if ($Script:InternalOfficialBuildHelperLoaded) {
+    $checks += @(Convert-InternalOfficialBuildHealthToChecks `
+        -Health $internalOfficialBuildHealth `
+        -PublicSafe $effectivePublicSafe)
+} else {
+    $checks += New-Check `
+        -Area "Internal release pipelines" `
+        -Status "UNKNOWN" `
+        -Details "Internal release pipeline details are not queried in public workflow mode." `
+        -NextAction "Run this script locally with internal access, then publish only sanitized status."
 }
-
-$checks += New-Check -Area "Internal release pipelines" -Status $internalStatus -Details $internalDetails -NextAction $internalAction
 
 # --- Component pin inventory ---
 # This evidence is required for the local VMR reconciliation handoff. A
@@ -2672,6 +2681,9 @@ $report = [PSCustomObject]@{
     CiScanIssues          = $ciScanIssues
     ConsumerInstallability = $consumerInstallability
     NightlyFeed           = $null
+}
+if (-not $effectivePublicSafe) {
+    $report | Add-Member -NotePropertyName InternalOfficialBuilds -NotePropertyValue $internalOfficialBuildHealth
 }
 
 # Nightly dogfood feed freshness (preview lane). Tracks the inflight/current dogfood stream
@@ -3073,6 +3085,15 @@ if ($generatedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction Sil
 [void]$md.AppendLine("")
 Add-CheckTable -Builder $md -Checks $checks
 
+if (-not $effectivePublicSafe -and $Script:InternalOfficialBuildHelperLoaded) {
+    [void]$md.AppendLine("## Local internal official-build health")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("Definition ``1095`` (``dotnet-maui``) is queried independently for the inflight and release refs. This section is local-only and must not be copied into a public tracker issue.")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine((Format-InternalOfficialBuildTable -Health $internalOfficialBuildHealth -PublicSafe:$false))
+    [void]$md.AppendLine("")
+}
+
 [void]$md.AppendLine("## Maestro / dependency-flow PRs")
 [void]$md.AppendLine("")
 # Highlight any open SDK/VMR bump: its landed pin is only a candidate until the
@@ -3108,14 +3129,18 @@ Add-IssueTable -Builder $md -Issues $kbeIssues
 
 [void]$md.AppendLine("## Public/internal data boundary")
 [void]$md.AppendLine("")
-[void]$md.AppendLine((Get-PublicDataBoundaryText))
+if ($effectivePublicSafe) {
+    [void]$md.AppendLine((Get-PublicDataBoundaryText))
+} else {
+    [void]$md.AppendLine("This local report includes internal build IDs, source SHAs, and private Azure DevOps URLs. Do not paste this local-only section into a public GitHub tracker issue; rerun with ``-PublicSafe:`$true`` for public output.")
+}
 [void]$md.AppendLine("")
 
 $markdownBody = $md.ToString()
 
 # Public-safe mode sanitizes fetched text too (for example, PR titles can contain
 # internal repository coordinates even when every generated sentence is neutral).
-if ($PublicSafe) {
+if ($effectivePublicSafe) {
     $markdownBody = ConvertTo-PublicSafeMarkdown -Text $markdownBody
 }
 
@@ -3154,7 +3179,7 @@ $markdownBody = Limit-PreviewTrackerBody -MarkdownBody $markdownBody `
 # ===================================================================
 # OUTPUT
 # ===================================================================
-$reportJson = ConvertTo-PreviewReportJson -Report $report -PublicSafe:$PublicSafe
+$reportJson = ConvertTo-PreviewReportJson -Report $report -PublicSafe:$effectivePublicSafe
 
 if ($OutputDir) {
     if (-not (Test-Path $OutputDir)) {

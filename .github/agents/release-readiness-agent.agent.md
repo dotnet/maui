@@ -168,9 +168,32 @@ Never silently accept inferred labels for the final report.
 
 Use the routing and lifecycle decision from steps 0-1. For the SR lane, append the resolved `-Candidate` or `-Shipped [-ShippedTag <tag>]` arguments; do not run an existing tagged SR with default in-flight semantics. See SKILL.md for the full parameter contract. Tell the user the script is running — for large repos this is 60-120s.
 
+For a **local net11 preview run**, do not ask the user to find an internal build
+ID and do not manually query one build. Run `Get-PreviewReadiness.ps1` normally.
+When local dnceng/internal access is available, the script automatically checks
+official `dotnet-maui` definition `1095` for both `refs/heads/net11.0` and the
+evaluated release branch (when it exists). Candidate mode still checks
+`net11.0`; a not-yet-created release branch is skipped.
+
+GitHub Actions/public tracker runs are different: `GITHUB_ACTIONS=true` skips the
+internal query before Azure CLI is invoked, and public-safe output contains no
+internal build IDs, numbers, SHAs, URLs, or failure details. Never copy the
+local-only internal table into a public tracker issue. If local auth is
+unavailable, accept the script's fail-open `skipped` result and clearly state
+that the verdict uses public evidence only.
+
 ### 4. Read the JSON output
 
 Read the `*-readiness.json` file emitted to `<OutputDir>`. **Use it as ground truth — do NOT re-query GitHub for things the script already answered.**
+
+For local net11 preview output, also read `InternalOfficialBuilds`:
+
+- Report each queried branch's classification, build ID/number, source SHA, and
+  URL.
+- Treat `red` or `stale` as release-blocking, `in-progress` as conditional/watch,
+  and `unknown` as insufficient evidence.
+- `skipped` because internal auth is unavailable is fail-open; do not claim the
+  internal pipeline is green.
 
 ### 5. (SR lane only) Enrich `rejected-from-sr` entries with WorkIQ
 
