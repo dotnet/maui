@@ -942,7 +942,8 @@ internal class FlyoutContainerManager
 
 		if (_detailContainerView is not null)
 		{
-			_detailContainerView.AccessibilityElementsHidden = _isPresented;
+			// Only hide Detail when the Flyout is actually covering it, not in split mode.
+			_detailContainerView.AccessibilityElementsHidden = _isPresented && !ShouldShowSplitMode;
 		}
 	}
 
