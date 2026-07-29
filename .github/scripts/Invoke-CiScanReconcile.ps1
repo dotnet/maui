@@ -252,12 +252,12 @@ function Invoke-GhRead {
           * `Get-CiScanHumanCommenters` reported an issue with zero comments as an
             unreadable comment history.
 
-        `,@( <pipeline> )` fixes all of them at the source. The array subexpression
-        collects the pipeline's OUTPUT, so no output stays an empty array rather than
-        collapsing to `$null`, and the leading comma wraps it so `return` unrolls the
-        wrapper instead of the payload. It must stay in the direct-pipeline form: `@($x)`
-        applied to an already-assigned `$x` that holds `$null` yields a one-element array
-        containing `$null`, which is a different bug.
+        Collecting the pipeline's OUTPUT with `@( <pipeline> )` fixes all of them at the
+        source: no output stays an empty array rather than collapsing to `$null`. The
+        collection must stay in the direct-pipeline form and must be reached by
+        ASSIGNMENT, never by `return @(...)`, because `return` unrolls a zero- or
+        one-element array and would reinstate the very collapse this exists to prevent.
+        The single `return ,$payload` below carries the wrapping comma for that reason.
 
         This is the same `[]`-to-`$null` gotcha already documented and handled on the
         AzDO side of the reconciler in `Get-CiScanBuildsAfter`; it is handled here, at
@@ -267,6 +267,30 @@ function Invoke-GhRead {
         A JSON OBJECT response therefore arrives as a one-element array. Every current
         caller reads a list, so nothing needs the scalar shape; a future object-shaped
         read must index the result rather than assume the object.
+
+        A PAYLOAD CONTAINING A `$null` RECORD IS A FAILED READ, not a successful one.
+        Collecting the pipeline is what makes that check necessary as well as possible:
+        a JSON `null` — and equally `[null]`, or `[{...}, null]` — survives collection as
+        a NON-NULL array holding `$null`, so it sails past every caller's
+        `$null -eq $result` failure test. That is a fail-OPEN in a tool whose entire
+        design is to fail closed on anything it cannot prove, and the consequences are
+        not uniform:
+
+          * `Get-CiScanPullRequestIndex` certifies `Complete = $true` over an EMPTY
+            blocker index, skipping the `pull-request-index-incomplete` guard. A blocker
+            index that is empty because it was never readable is the one shape that can
+            let an issue close.
+          * `Get-CiScanOpenIssues` and `Get-CiScanClosedReconcilerIssues` admit the
+            `$null` itself into the surveyed backlog as an issue RECORD, so a decision
+            loop that is supposed to read only well-formed issues is handed a record with
+            no number, no body and no fingerprint.
+
+        No GitHub list endpoint any of the six callers uses returns `null` in place of
+        `[]`, so this is a hardening rather than a live bug — but "unreachable today" is
+        the wrong basis on which to leave a fail-open at the one seam every read crosses.
+        Rejecting is deliberately restricted to `$null` RECORDS: the deleted-account
+        shape `Get-CiScanHumanCommenters` depends on is a well-formed comment object
+        whose `user` is null, which is a real payload and must keep flowing.
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)][string[]]$GhArgs, [switch]$Raw)
@@ -302,10 +326,23 @@ function Invoke-GhRead {
     $text = ($out | Out-String)
     if ($Raw) { return $text }
     if ([string]::IsNullOrWhiteSpace($text)) { return $null }
-    # See .DESCRIPTION: the `,@( ... )` form is what keeps an empty listing an empty
+    # See .DESCRIPTION: collecting the pipeline is what keeps an empty listing an empty
     # array instead of collapsing it into the $null that means "the read failed".
-    try { return ,@($text | ConvertFrom-Json -ErrorAction Stop) }
+    try { $payload = @($text | ConvertFrom-Json -ErrorAction Stop) }
     catch { $script:Counters.ReadErrors++; return $null }
+    foreach ($record in $payload) {
+        # A $null record would otherwise ride out of here inside a NON-null array and pass
+        # every caller's `$null -eq` failure test. See .DESCRIPTION: that is a fail-open,
+        # so an unusable payload is reported as the failed read it effectively is.
+        if ($null -eq $record) {
+            $script:Counters.ReadErrors++
+            Write-Warning "gh read returned a null record: gh $($GhArgs -join ' ')"
+            return $null
+        }
+    }
+    # The comma is load-bearing: bare `return $payload` unrolls a zero- or one-element
+    # array and undoes the collection above.
+    return ,$payload
 }
 
 function Invoke-HttpGetJson {

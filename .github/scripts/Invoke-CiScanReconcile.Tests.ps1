@@ -1528,6 +1528,50 @@ Describe 'Invoke-GhRead separates an empty listing from a failed read' {
         @($r)[0].number | Should -Be 11
         @($r)[1].number | Should -Be 22
     }
+
+    <#
+        The documented scalar contract: a JSON OBJECT is a successful read that arrives
+        as a ONE-ELEMENT array. No current caller reads an object, so this pins the
+        promise the .DESCRIPTION makes to a future one — and, just as importantly, it is
+        what stops the null-record rejection below from being widened into a
+        "reject anything that is not a list" rule that would silently break that promise.
+    #>
+    It 'preserves a single JSON object as a one-element array' {
+        Mock gh { $global:LASTEXITCODE = 0; return '{"number":11}' }
+
+        $r = Invoke-GhRead -GhArgs @('api', 'repos/dotnet/maui/issues/11')
+
+        $null -eq $r | Should -BeFalse
+        @($r).Count | Should -Be 1
+        @($r)[0].number | Should -Be 11
+        $script:Counters.ReadErrors | Should -Be 0
+    }
+
+    <#
+        The other edge of the same seam, and the one the empty-listing fix opened.
+
+        Collecting the pipeline is what makes `[]` survive — but it also turns a JSON
+        `null` into a NON-NULL array holding `$null`, which passes every caller's
+        `$null -eq $result` failure test. In a tool that fails closed on everything it
+        cannot prove, a payload that cannot be read must not arrive looking like one that
+        could, so an unusable record is reported as the failed read it effectively is.
+
+        `[{...},null]` is here because dropping just the bad record would SHRINK a
+        listing while still reporting it complete, and a short blocker index is the one
+        direction that can let an issue close.
+    #>
+    It 'returns $null and counts a read error for a payload with a null record' -ForEach @(
+        @{ Label = 'a bare JSON null';          Json = 'null' }
+        @{ Label = 'a list holding only null';  Json = '[null]' }
+        @{ Label = 'a list with a null record'; Json = '[{"number":11},null]' }
+    ) {
+        Mock gh { $global:LASTEXITCODE = 0; return $Json }
+
+        $r = Invoke-GhRead -GhArgs @('api', 'repos/dotnet/maui/issues?state=open') -WarningAction SilentlyContinue
+
+        $null -eq $r | Should -BeTrue -Because "$Label cannot be read, so it must not arrive looking like a successful read"
+        $script:Counters.ReadErrors | Should -Be 1
+    }
 }
 
 <#
@@ -1593,6 +1637,56 @@ Describe 'A healthy empty GitHub listing is read as empty, not as unreadable' {
         $idx = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 50
 
         $idx.Complete | Should -BeFalse
+    }
+
+    <#
+        The production consequences of the null-record edge, driven through the real
+        parse. Both were fail-OPEN before the rejection above, and they fail open
+        differently, which is why one assertion would not have caught both:
+
+          * the PR index certified `Complete = $true` over an index with nothing in it,
+            which retires the `pull-request-index-incomplete` guard — an empty blocker
+            index is the one shape that can let an issue close; and
+          * the backlog survey admitted the `$null` itself as an issue RECORD, handing
+            the decision loop an "issue" with no number, body or fingerprint.
+
+        Asserting the record COUNT alongside the flag is what pins the second one: a fix
+        that only repaired the flag would still leave the phantom record in the listing.
+    #>
+    It 'reads a null pull-request payload as an incomplete index, not an empty one' {
+        Mock gh { $global:LASTEXITCODE = 0; return 'null' }
+
+        $idx = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 50 -WarningAction SilentlyContinue
+
+        $idx.Complete | Should -BeFalse -Because 'an index that is empty because it was unreadable must not veto nothing'
+        @($idx.PullRequests).Count | Should -Be 0
+    }
+
+    It 'reads a null issue payload as truncated, and admits no phantom record' {
+        Mock gh { $global:LASTEXITCODE = 0; return 'null' }
+
+        $listing = Get-CiScanOpenIssues -Owner 'dotnet' -Repo 'maui' -Label 'ci-scan-net11' -Max 50 -WarningAction SilentlyContinue
+
+        $listing.Truncated | Should -BeTrue
+        @($listing.Issues).Count | Should -Be 0 -Because 'a $null is not an issue record'
+        $script:Counters.ReadErrors | Should -Be 1
+    }
+
+    <#
+        The over-reach guard. `Get-CiScanHumanCommenters` depends on GitHub's
+        deleted-account shape — a well-formed comment object whose `user` is null — to
+        veto an issue, and that is a REAL payload the rejection above must keep passing.
+        Every other test of that path mocks `Invoke-GhRead` and hands back a hand-built
+        object, so this is the only one that proves the shape survives the real parse.
+    #>
+    It 'still reads a deleted-account comment as an unattributable human commenter' {
+        Mock gh { $global:LASTEXITCODE = 0; return '[{"user":null,"body":"hi"}]' }
+
+        $h = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+
+        $h.Ok | Should -BeTrue -Because 'a null AUTHOR is a readable comment; only a null RECORD is not'
+        @($h.Logins) | Should -Be @($script:CiScanUnattributableCommenter)
+        $script:Counters.ReadErrors | Should -Be 0
     }
 }
 
