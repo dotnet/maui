@@ -306,7 +306,7 @@ function ConvertTo-PublicSafeMarkdown {
             return $entity.Value
         })
         $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
-        $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
+        $canonical = $canonical -replace '[\p{Cf}\u00AD\u180E\uFE00-\uFE0F]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
@@ -319,7 +319,7 @@ function ConvertTo-PublicSafeMarkdown {
         }
         return $original
     })
-    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = $safe -replace '[\p{Cf}\u00AD\u180E]', ''
     $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
     $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
@@ -2401,7 +2401,7 @@ function Get-RevertedPrFromSubject {
     param([string]$Subject)
     if (-not $Subject) { return $null }
     $Subject = $Subject -replace '[\u201C\u201D]', '"'
-    $Subject = [regex]::Replace($Subject, '^(?i)(?:\[(?!Revert\])[^]]+\]\s+)+', '')
+    $Subject = [regex]::Replace($Subject, '^(?i)(?:\[(?!Revert\])[^]]+\]\s*)+', '')
     # Common hand-authored forms without GitHub's quoted-title convention.
     $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ing)?\s+(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
@@ -2454,7 +2454,7 @@ function ConvertTo-NegationNormalizedText {
     param([AllowNull()][AllowEmptyString()][string]$Text)
 
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
-    $Text = $Text -replace '[\u2018\u2019\u02BC\uFF07]', "'"
+    $Text = $Text -replace '[\u2018\u2019\u201B\u02BC\uA78C\uFF07]', "'"
     # Struck text is explicitly withdrawn; remove it rather than turning
     # `~~Fixes #N~~` into affirmative evidence.
     $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')

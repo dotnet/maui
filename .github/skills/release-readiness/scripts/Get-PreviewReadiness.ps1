@@ -1856,7 +1856,7 @@ function ConvertTo-PublicSafeMarkdown {
             return $entity.Value
         })
         $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
-        $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
+        $canonical = $canonical -replace '[\p{Cf}\u00AD\u180E\uFE00-\uFE0F]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
@@ -1869,7 +1869,7 @@ function ConvertTo-PublicSafeMarkdown {
         }
         return $original
     })
-    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = $safe -replace '[\p{Cf}\u00AD\u180E]', ''
     $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
     $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'

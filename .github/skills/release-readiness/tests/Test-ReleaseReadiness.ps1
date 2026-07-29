@@ -2717,7 +2717,8 @@ foreach ($manualRevertSubject in @(
     '[Revert] Undo the change in #35100',
     'Revert “Original title (#35100)” (#36152)',
     '[release/10.0.1xx-sr9] Backing out the fix for #35100 due to CI regressions',
-    '[release/10.0.1xx-sr9] [Revert] Undo the change in #35100'
+    '[release/10.0.1xx-sr9] [Revert] Undo the change in #35100',
+    '[release/10.0.1xx-sr9][Revert] Undo the change in #35100'
 )) {
     Assert-Eq -Label "Reverted-PR from common hand-authored subject — $manualRevertSubject" `
         -Expected 35100 -Actual (Get-RevertedPrFromSubject -Subject $manualRevertSubject)
@@ -3048,6 +3049,8 @@ foreach ($negatedClosingText in @(
     "This doesn't close #35615",
     "This doesn’t close #35615",
     "This doesnʼt close #35615",
+    "This doesn‛t close #35615",
+    "This doesnꞌt close #35615",
     'This does **not** fix #35615',
     'This does not, in fact, fix #35615',
     'This will not (yet) resolve #35615',
@@ -7950,6 +7953,8 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnc%65ng/int%65rnal/_build?token=LETTERSECRET',
         'https://dev.azure.com/dnceng/DefaultCollection%5Cinternal/_build?token=BACKSLASHENCODED',
         "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET",
+        "https://dev.azure.com/dnceng/inter$([char]0x00AD)nal/_build?token=SOFTHYPHENSECRET",
+        "https://dev.azure.com/dnceng/inter$([char]0x2060)nal/_build?token=WORDJOINERSECRET",
         'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
         'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
         'https://dev.azure.com/d n c e n g/internal/_build?token=ORGSPACESECRET',
@@ -7963,7 +7968,7 @@ function Assert-PublicSanitizerEdgeCases {
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')

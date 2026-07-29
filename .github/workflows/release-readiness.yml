@@ -496,7 +496,7 @@ jobs:
               --arg tracker "$MARKER" '
                 [.[] | select(
                   ([.labels[].name] | index("area-infrastructure") != null) and
-                  ((.body | gsub("\r"; "") | split("\n") | index($tracker)) != null)
+                  (((.body // "") | gsub("\r"; "") | split("\n") | index($tracker)) != null)
                 )] | sort_by(.createdAt) | .[].number
               ')
 
@@ -513,7 +513,7 @@ jobs:
                 --arg tracker "$MARKER" '
                   [.[] | select(
                     ([.labels[].name] | index("area-infrastructure") == null) and
-                    ((.body | gsub("\r"; "") | split("\n") | index($tracker)) != null)
+                    (((.body // "") | gsub("\r"; "") | split("\n") | index($tracker)) != null)
                   )] | sort_by(.createdAt) | .[].number
                 ')
             if [ -n "$UNOWNED_EXISTING" ]; then
@@ -540,7 +540,7 @@ jobs:
                 --arg generation "$GENERATION_MARKER" '
                   [.[] | select(
                     ([.labels[].name] | index("area-infrastructure") != null) and
-                    ((.body | gsub("\r"; "") | split("\n")) as $lines |
+                    (((.body // "") | gsub("\r"; "") | split("\n")) as $lines |
                       ($lines | index($tracker) != null) and
                       ($lines | index($generation) != null))
                   )] | sort_by(.createdAt) | .[].number
@@ -572,7 +572,7 @@ jobs:
                 --arg generation "$GENERATION_MARKER" '
                   [.[] | select(
                     ([.labels[].name] | index("area-infrastructure") != null) and
-                    ((.body | gsub("\r"; "") | split("\n")) as $lines |
+                    (((.body // "") | gsub("\r"; "") | split("\n")) as $lines |
                       ($lines | index($tracker) != null) and
                       ($lines | index($generation) != null))
                   )] | sort_by(.closedAt) | last | .number // empty
