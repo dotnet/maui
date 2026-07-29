@@ -334,6 +334,9 @@ internal class FlyoutContainerManager
 		{
 			LayoutPanes(animated: false);
 		}
+
+		// Recreate the hamburger bar button so it renders correctly under the new flow direction.
+		NotifyLeftBarButtonNeedsUpdate();
 	}
 
 	/// <summary>
