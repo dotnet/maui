@@ -5,8 +5,16 @@
     Pester tests for CiScanReconcile.Core.ps1 — the pure decision core.
 
 .DESCRIPTION
-    Every test here is fully offline and deterministic: no network, no `gh`, no AzDO, no
-    filesystem. Nothing in this file can touch a real GitHub issue.
+    Every test here is fully offline and deterministic: no network, no `gh`, no AzDO.
+    Nothing in this file can touch a real GitHub issue.
+
+    It does read from disk, and deliberately. The dot-source below and the static
+    invariants further down open CiScanReconcile.Core.ps1 and Invoke-CiScanReconcile.ps1
+    with Get-Content to assert structural properties of the production source -- those
+    reads are the strongest tests in this file, not an incidental dependency. The
+    guarantee is "reaches no network and mutates nothing, anywhere", not "performs no
+    I/O". Both halves of that sentence are asserted below rather than asked for on trust,
+    because this suite is safety evidence for a workflow that can write to issues.
 
 .EXAMPLE
     Invoke-Pester ./CiScanReconcile.Core.Tests.ps1 -Output Detailed
@@ -1965,5 +1973,112 @@ function Fake {
             $n.Right.VariablePath.UserPath -eq 'createdAt'
         }, $true)
         $lt | Should -Not -BeNullOrEmpty -Because 'the gate must compare the parsed clock against $createdAt'
+    }
+}
+
+<#
+    The .DESCRIPTION at the top of this file is the first thing a reviewer reads when
+    deciding whether this suite can be trusted as safety evidence for a workflow that
+    can write to issues. If that prose overstates the isolation, the reviewer stops
+    checking exactly where checking mattered.
+
+    It did overstate it. The header read "no network, no `gh`, no AzDO, no filesystem"
+    while six sites opened the production sources from disk -- the dot-source at the top
+    and five Get-Content reads powering the static invariants above. The suite was green
+    the entire time, because nothing measured the prose against the code.
+
+    The correction is easy to get wrong in either direction, so both are pinned here:
+
+      * Delete the reads to make the old sentence true.  The reads ARE the static
+        invariants; that "fix" would trade the strongest tests in the file for a
+        tidier comment.
+      * Delete the claims to make the assertion pass.  A header that promises nothing
+        cannot be wrong, and is also worth nothing.
+
+    So this asserts the header against the file's real command surface, in both
+    directions, each with its own control. It reads the AST rather than the text on
+    purpose: `gh issue edit` appears in a comment further up, and a substring scan would
+    read that prose as a network call and fail for a reason that has nothing to do with
+    what this file executes.
+#>
+Describe 'The suite header describes this file''s real I/O surface' {
+    BeforeAll {
+        $script:SelfPath = Join-Path $PSScriptRoot 'CiScanReconcile.Core.Tests.ps1'
+        $script:SelfSrc = Get-Content -Raw -Path $script:SelfPath
+
+        $parseErrors = $null
+        $script:SelfAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:SelfPath, [ref]$null, [ref]$parseErrors)
+        @($parseErrors) | Should -BeNullOrEmpty -Because 'a file that does not parse cannot be scanned for what it invokes'
+
+        # Only the leading comment-based help block. Claims made in the body are the
+        # body's business; this rule is about the header a reader trusts up front.
+        $script:HeaderMatch = [regex]::Match($script:SelfSrc, '(?s)<#.*?#>')
+        $script:HeaderMatch.Success | Should -BeTrue -Because 'the header is what this rule is about'
+        $script:Header = $script:HeaderMatch.Value
+
+        # Every statically-named command this file actually invokes. `& $scriptblock`
+        # yields no name and is correctly ignored -- the deny-list below is about named
+        # commands, and no call operator here targets one.
+        $script:InvokedNames = @(
+            $script:SelfAst.FindAll({
+                param($n) $n -is [System.Management.Automation.Language.CommandAst]
+            }, $true) |
+            ForEach-Object { $_.GetCommandName() } |
+            Where-Object { $_ } |
+            ForEach-Object { $_.ToLowerInvariant() } |
+            Sort-Object -Unique)
+    }
+
+    It 'reads from disk, so the header may not claim it does not' {
+        # Anti-vacuity, and it is the load-bearing half: if the reads ever disappear this
+        # fails LOUDLY rather than quietly re-licensing the wording it exists to forbid.
+        #
+        # Keyed on the ACT of reading, not on one cmdlet's name. A refactor from
+        # `Get-Content` to `[IO.File]::ReadAllText` keeps every read and every invariant
+        # intact, and must not be reported as "the reads went away" -- a control that
+        # cries wolf on a no-op refactor is a control people delete.
+        $readsViaCmdlet = $script:InvokedNames -contains 'get-content'
+        $readsViaType = $script:SelfAst.FindAll({
+            param($n)
+            $n -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -and
+            $n.Expression -is [System.Management.Automation.Language.TypeExpressionAst] -and
+            $n.Expression.TypeName.FullName -match '(?i)^(System\.)?IO\.File$' -and
+            $n.Member.Value -match '(?i)^Read'
+        }, $true)
+        ($readsViaCmdlet -or @($readsViaType).Count -gt 0) |
+            Should -BeTrue -Because 'the static invariants above read the production sources, which is what makes a "no filesystem" claim false'
+
+        $script:SelfSrc | Should -Match '(?m)^\s*\.\s+\(Join-Path \$PSScriptRoot' -Because 'the suite also dot-sources the production core from disk'
+
+        $script:Header | Should -Not -Match '(?i)no\s+file\s*system' -Because @'
+the header claimed "no filesystem" while this suite opened its production siblings six
+times. Reword the claim to what is true. Do NOT delete the reads to make the old sentence
+true -- the static invariants they power are the strongest tests in this file.
+'@
+    }
+
+    It 'still claims the isolation it genuinely honours, so the correction did not gut it' {
+        # The counterweight. Without this, the previous test is satisfiable by deleting
+        # every promise the header makes.
+        $script:Header | Should -Match '(?i)no\s+network' -Because 'the network claim is true and is the one carrying the safety argument'
+        $script:Header | Should -Match '(?i)touch a real GitHub issue' -Because 'the no-mutation claim is the reason this suite counts as safety evidence'
+    }
+
+    It 'invokes nothing that could reach a network or a subprocess' {
+        # And the surviving claims are true, measured rather than asserted in prose.
+        # Deliberately includes the shell-out verbs: a `gh`/`az`/`curl` call would falsify
+        # the header even though none of them is an HTTP cmdlet by name.
+        $forbidden = @(
+            'invoke-restmethod', 'invoke-webrequest', 'invoke-expression'
+            'start-process', 'start-job', 'start-threadjob'
+            'gh', 'az', 'curl', 'wget', 'git', 'dotnet'
+        )
+        $offenders = @($script:InvokedNames | Where-Object { $_ -in $forbidden })
+        $offenders | Should -BeNullOrEmpty -Because 'the header promises no network and no gh/AzDO, and this file must not be the thing that makes that false'
+
+        # Control for the scan itself: a deny-list that can see nothing would pass above
+        # no matter what this file invoked. It can see the commands that are really here.
+        $script:InvokedNames | Should -Contain 'should' -Because 'a scan that cannot see the commands this file DOES invoke proves nothing about the ones it does not'
     }
 }
