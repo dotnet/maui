@@ -2308,7 +2308,6 @@ $p0Prs            = @($prScope.P0Prs)
 $maestroPRs       = @($prScope.MaestroPRs)
 $mergeUpPRs       = @($prScope.MergeUpPRs)
 $targetHumanPRs   = @($prScope.TargetHumanPRs)
-$inflightHumanPRs = @()
 
 if ($openPrMetadataUsedRest) {
     $restBases = ($openPrMetadataRestBases | ForEach-Object { "``$_``" }) -join ', '
@@ -2571,7 +2570,6 @@ $report = [PSCustomObject]@{
     ReleasePullRequests   = $targetHumanPRs
     P0PullRequests        = $p0Prs
     MergeUpPullRequests   = $mergeUpPRs
-    InflightPullRequests  = $inflightHumanPRs
     OpenPullRequestMetadataUsedRest = $openPrMetadataUsedRest
     OpenPullRequestMetadataRestBases = $openPrMetadataRestBases
     OpenPullRequestScanIncompleteBases = $openPrScanIncompleteBases

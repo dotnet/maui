@@ -2217,6 +2217,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
     $otherPrRetracted = 'Backport: #100 and #200. #200 was a follow-up, but it was reverted.'
     Assert-Eq -Label "backport lineage: another PR retraction cannot remove prior source" `
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $otherPrRetracted) -join ',')
+    Assert-Eq -Label "backport lineage: semicolon before list continuation preserves final source" `
+        -Expected '100,200,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, #200; and #300.') -join ',')
     foreach ($repeatedSemanticRetraction in @(
         'Backport of #12345. PR #12345 is no longer required.',
         'Backport of #12345. PR #12345 is no longer needed.',
@@ -2691,6 +2693,12 @@ Assert-Eq -Label "revert-of-revert restores the original fix in net revert state
     -Actual $netRevertSet.ContainsKey(100)
 Assert-Eq -Label "revert-of-revert marks the reverted revert PR instead" -Expected $true `
     -Actual $netRevertSet.ContainsKey(200)
+$duplicateRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 100; revertBackportPr = 300 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "independent duplicate reverts keep the target reverted" -Expected $true `
+    -Actual $duplicateRevertSet.ContainsKey(100)
 Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
     -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
 Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
@@ -7827,11 +7835,35 @@ Assert-Eq -Label "Get-P0PrChecks: empty input → READY" -Expected 'READY' -Actu
 # WATCH rows. Test-IsP0Pr is the predicate that carves them out for hoisting.
 Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundColor Cyan
 
+function Assert-PublicSanitizerEdgeCases {
+    param([string]$Lane)
+
+    $cases = @(
+        'https://dev.azure.com/dnceng/internal/_build?token=PLAINSECRET',
+        'https://dev.azure.com/dnceng/DefaultCollection\internal/_build?token=MIXEDSECRET',
+        'https://dnceng.visualstudio.com/internal/_build?token=LEGACYSECRET',
+        'https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET',
+        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=ENCODEDSECRET'
+    )
+    foreach ($case in $cases) {
+        $safe = ConvertTo-PublicSafeMarkdown -Text $case
+        Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET')
+    }
+    Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
+        -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
+}
+
+# The SR engine is currently dot-sourced; exercise its copy before Preview
+# intentionally replaces the same helper names in this PowerShell scope.
+Assert-PublicSanitizerEdgeCases -Lane 'SR'
+
 # Dot-source the preview engine to access its helpers without running the
 # main driver (the InvocationName guard returns on dot-source). A valid
 # -Branch is required to satisfy the mandatory parameter + branch parse.
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
+Assert-PublicSanitizerEdgeCases -Lane 'Preview'
 
 # A component-pin fetch failure must fail closed without suppressing the
 # mandatory local VMR reconciliation handoff.
@@ -7873,7 +7905,8 @@ Assert-Eq -Label "preview public output never names the private release source" 
     -Expected 0 -Actual $publicTrackerLeakLines.Count
 $previewSourceText = Get-Content -LiteralPath $prevScript -Raw
 Assert-Eq -Label "preview report does not publish an unwired inflight completeness field" `
-    -Expected $false -Actual $previewSourceText.Contains('InflightOpenPullRequestScanIncomplete')
+    -Expected $false -Actual ($previewSourceText.Contains('InflightOpenPullRequestScanIncomplete') -or
+        $previewSourceText.Contains('InflightPullRequests  ='))
 
 $safeInternalText = Get-PublicSafeInternalPipelineText -Status 'UNKNOWN'
 $safePublicBuilder = [System.Text.StringBuilder]::new()

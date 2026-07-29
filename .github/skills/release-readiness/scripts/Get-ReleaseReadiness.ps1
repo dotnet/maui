@@ -2543,6 +2543,12 @@ function Get-ExplicitBackportSourceNumbers {
     $Text = $Text -replace "`r", "`n"
     $Text = $Text -replace '\u2028', "`n"
     $Text = $Text -replace '\u2029', "`n`n"
+    # A semicolon can be list punctuation rather than a clause boundary:
+    # `#A, #B; and #C`. Normalize only this structured continuation.
+    $Text = [regex]::Replace(
+        $Text,
+        '(?i)(?<ref>(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+)\s*;\s*(?=(?:and|plus)\s+(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+)',
+        '${ref}, ')
     # Preserve paragraphs and Markdown block/list boundaries, but fold genuine
     # wrapped continuation lines so `Backport of` + newline + `#N` remains one
     # explicit lineage clause. A new bullet is independent evidence and must
@@ -3439,11 +3445,21 @@ function Get-NetRevertedPrSet {
         if (-not $targetPr) { continue }
         $visited = @{}
         $current = $targetPr
+        $isDirectTarget = $true
         while ($current -and -not $visited.ContainsKey($current)) {
             $visited[$current] = $true
-            if ($net.ContainsKey($current)) { [void]$net.Remove($current) }
-            else { $net[$current] = $true }
+            if ($isDirectTarget) {
+                # Multiple independent revert commits for the same PR are
+                # idempotent: the fix remains reverted. Only traversing through
+                # a reverted revert PR toggles the earlier effect.
+                $net[$current] = $true
+            } elseif ($net.ContainsKey($current)) {
+                [void]$net.Remove($current)
+            } else {
+                $net[$current] = $true
+            }
             $current = if ($revertTargets.ContainsKey($current)) { [int]$revertTargets[$current] } else { 0 }
+            $isDirectTarget = $false
         }
     }
     return $net
