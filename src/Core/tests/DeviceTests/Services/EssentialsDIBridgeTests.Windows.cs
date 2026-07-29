@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Devices.Sensors;
@@ -404,6 +405,74 @@ public class EssentialsDIBridgeTests
 		}
 	}
 
+	[Fact]
+	public async Task ConcurrentSharedMapServiceTokenCleanupRestoresOriginalToken()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var timeout = TimeSpan.FromSeconds(30);
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		var initialStateCount = GetMapTokenImplementationStateCount();
+		var restoreEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var releaseRestore = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var blockRestore = 0;
+		var restoreBlocked = 0;
+		var shared = new CallbackPlatformGeocoding(value =>
+		{
+			if (Volatile.Read(ref blockRestore) == 1 &&
+				string.Equals(value, firstToken, StringComparison.Ordinal) &&
+				Interlocked.CompareExchange(ref restoreBlocked, 1, 0) == 0)
+			{
+				restoreEntered.TrySetResult(true);
+				Assert.True(releaseRestore.Task.Wait(timeout));
+			}
+		})
+		{
+			MapServiceToken = originalInstanceToken,
+		};
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder();
+			firstBuilder.Services.AddSingleton<IGeocoding>(shared);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+
+			var secondBuilder = MauiApp.CreateBuilder();
+			secondBuilder.Services.AddSingleton<IGeocoding>(shared);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondApp = secondBuilder.Build();
+
+			Volatile.Write(ref blockRestore, 1);
+			var secondDispose = Task.Run(secondApp.Dispose);
+			await restoreEntered.Task.WaitAsync(timeout);
+
+			var firstDispose = Task.Run(firstApp.Dispose);
+			await firstDispose.WaitAsync(timeout);
+			firstApp = null;
+
+			releaseRestore.TrySetResult(true);
+			await secondDispose.WaitAsync(timeout);
+			secondApp = null;
+
+			Assert.Equal(originalInstanceToken, shared.MapServiceToken);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Equal(initialStateCount, GetMapTokenImplementationStateCount());
+		}
+		finally
+		{
+			releaseRestore.TrySetResult(true);
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
 	[Theory]
 	[InlineData(false)]
 	[InlineData(true)]
@@ -551,6 +620,16 @@ public class EssentialsDIBridgeTests
 			"s_mapTokenAssignments",
 			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
 			?? throw new InvalidOperationException("Map-token assignment field was not found.");
+
+		return ((System.Collections.ICollection)field.GetValue(null)!).Count;
+	}
+
+	static int GetMapTokenImplementationStateCount()
+	{
+		var field = typeof(EssentialsExtensions).GetField(
+			"s_mapTokenImplementationStates",
+			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+			?? throw new InvalidOperationException("Map-token implementation-state field was not found.");
 
 		return ((System.Collections.ICollection)field.GetValue(null)!).Count;
 	}

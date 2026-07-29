@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Hosting
 
 	public static class EssentialsExtensions
 	{
-		// Serializes access to the shared map-token bookkeeping (s_mapTokenAssignments) only.
+		// Serializes the shared map-token assignment graph and per-implementation state.
 		// It is intentionally NOT held across user code, facade reads, or user-implementable
 		// IPlatformGeocoding token accessors. Facade ownership bookkeeping is serialized per
 		// type by FacadeBridgeState<T>.SyncRoot instead. See EssentialsInitializer.InitializeCore.
@@ -51,6 +51,7 @@ namespace Microsoft.Maui.Hosting
 #endif
 #if WINDOWS || TIZEN
 		static readonly List<MapTokenAssignment> s_mapTokenAssignments = new();
+		static readonly List<MapTokenImplementationState> s_mapTokenImplementationStates = new();
 #endif
 #if WINDOWS
 		internal static Func<string?> WindowsMapServiceTokenGetter { get; set; } =
@@ -565,41 +566,61 @@ namespace Microsoft.Maui.Hosting
 				string mapServiceToken,
 				List<Action> facadeCleanups)
 			{
-				var previousToken = implementation.MapServiceToken;
-				MapTokenAssignment assignment;
-
+				MapTokenImplementationState implementationState;
 				lock (s_mapTokenLock)
 				{
-#if WINDOWS
-					var previousPlatformToken = WindowsMapServiceTokenGetter();
-					var previousPlatformOwner = FindMapTokenOwner(previousPlatformToken);
-#endif
-					assignment = new MapTokenAssignment(
-						implementation,
-						mapServiceToken,
-						previousToken
-#if WINDOWS
-						, previousPlatformToken
-						, previousPlatformOwner
-#endif
-					);
+					implementationState = FindMapTokenImplementationState(implementation)
+						?? new MapTokenImplementationState(implementation);
+					if (!s_mapTokenImplementationStates.Contains(implementationState))
+						s_mapTokenImplementationStates.Add(implementationState);
+					implementationState.ActiveOperations++;
+				}
 
-					s_mapTokenAssignments.Add(assignment);
+				MapTokenAssignment assignment;
+				try
+				{
+					var previousToken = implementation.MapServiceToken;
+					lock (s_mapTokenLock)
+					{
+						if (!implementationState.BaseTokenInitialized)
+						{
+							implementationState.BaseToken = previousToken;
+							implementationState.BaseTokenInitialized = true;
+						}
+#if WINDOWS
+						var previousPlatformToken = WindowsMapServiceTokenGetter();
+						var previousPlatformOwner = FindMapTokenOwner(previousPlatformToken);
+#endif
+						assignment = new MapTokenAssignment(
+							implementationState,
+							mapServiceToken
+#if WINDOWS
+							, previousPlatformToken
+							, previousPlatformOwner
+#endif
+						);
+
+						s_mapTokenAssignments.Add(assignment);
+						implementationState.Version++;
+					}
+				}
+				finally
+				{
+					ReleaseMapTokenImplementationState(implementationState);
 				}
 
 				try
 				{
-					// IPlatformGeocoding is user-implementable. Never invoke its setter while
-					// holding the process-static bookkeeping lock.
-					implementation.MapServiceToken = mapServiceToken;
+					ReconcileMapServiceToken(implementationState);
 				}
-				catch
+				catch (Exception applyException)
 				{
+					Exception? rollbackException = null;
 					lock (s_mapTokenLock)
 					{
+						implementationState.ActiveOperations++;
 						RemoveMapTokenAssignmentLocked(
-							assignment,
-							out _
+							assignment
 #if WINDOWS
 							, out _,
 							out _
@@ -607,10 +628,111 @@ namespace Microsoft.Maui.Hosting
 						);
 					}
 
+					try
+					{
+						ReconcileMapServiceToken(implementationState);
+					}
+					catch (Exception ex)
+					{
+						rollbackException = ex;
+					}
+					finally
+					{
+						ReleaseMapTokenImplementationState(implementationState);
+					}
+
+					if (rollbackException is not null)
+					{
+						throw new AggregateException(
+							"Map service token assignment and rollback both failed.",
+							applyException,
+							rollbackException);
+					}
+
 					throw;
 				}
 
 				facadeCleanups.Add(() => CleanupMapServiceToken(assignment));
+			}
+
+			// Caller must hold s_mapTokenLock.
+			static MapTokenImplementationState? FindMapTokenImplementationState(IPlatformGeocoding implementation)
+			{
+				for (int i = s_mapTokenImplementationStates.Count - 1; i >= 0; i--)
+				{
+					if (ReferenceEquals(s_mapTokenImplementationStates[i].Implementation, implementation))
+						return s_mapTokenImplementationStates[i];
+				}
+
+				return null;
+			}
+
+			static void ReconcileMapServiceToken(MapTokenImplementationState implementationState)
+			{
+				lock (s_mapTokenLock)
+					implementationState.ActiveOperations++;
+
+				try
+				{
+					while (true)
+					{
+						int version;
+						string? desiredToken;
+						lock (s_mapTokenLock)
+						{
+							version = implementationState.Version;
+							desiredToken = implementationState.BaseToken;
+							for (int i = s_mapTokenAssignments.Count - 1; i >= 0; i--)
+							{
+								if (ReferenceEquals(
+									s_mapTokenAssignments[i].ImplementationState,
+									implementationState))
+								{
+									desiredToken = s_mapTokenAssignments[i].AppliedToken;
+									break;
+								}
+							}
+						}
+
+						// IPlatformGeocoding is user-implementable. Never invoke its accessors
+						// while holding the process-static bookkeeping lock.
+						if (!string.Equals(
+							implementationState.Implementation.MapServiceToken,
+							desiredToken,
+							StringComparison.Ordinal))
+						{
+							implementationState.Implementation.MapServiceToken = desiredToken;
+						}
+
+						lock (s_mapTokenLock)
+						{
+							if (implementationState.Version == version)
+								return;
+						}
+					}
+				}
+				finally
+				{
+					ReleaseMapTokenImplementationState(implementationState);
+				}
+			}
+
+			static void ReleaseMapTokenImplementationState(MapTokenImplementationState implementationState)
+			{
+				lock (s_mapTokenLock)
+				{
+					implementationState.ActiveOperations--;
+					if (implementationState.ActiveOperations != 0)
+						return;
+
+					foreach (var assignment in s_mapTokenAssignments)
+					{
+						if (ReferenceEquals(assignment.ImplementationState, implementationState))
+							return;
+					}
+
+					s_mapTokenImplementationStates.Remove(implementationState);
+				}
 			}
 
 #if WINDOWS
@@ -629,7 +751,6 @@ namespace Microsoft.Maui.Hosting
 
 			static void CleanupMapServiceToken(MapTokenAssignment assignment)
 			{
-				bool hasImplementationSuccessor;
 #if WINDOWS
 				string? platformSuccessorToken;
 				string? platformPredecessorToken;
@@ -638,74 +759,56 @@ namespace Microsoft.Maui.Hosting
 
 				lock (s_mapTokenLock)
 				{
-					var index = s_mapTokenAssignments.IndexOf(assignment);
-					if (index < 0)
+					assignment.ImplementationState.ActiveOperations++;
+					if (!RemoveMapTokenAssignmentLocked(
+						assignment
+#if WINDOWS
+						, out platformSuccessorToken,
+						out platformPredecessorToken
+#endif
+					))
 					{
+						ReleaseMapTokenImplementationState(assignment.ImplementationState);
 						return;
 					}
 
-					hasImplementationSuccessor = false;
-					for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
-					{
-						if (ReferenceEquals(s_mapTokenAssignments[i].Implementation, assignment.Implementation))
-						{
-							hasImplementationSuccessor = true;
-							break;
-						}
-					}
-				}
-
-				List<Exception>? exceptions = null;
-				if (!hasImplementationSuccessor)
-				{
+#if WINDOWS
+					// The Windows token and its assignment-owner graph are both process-global.
+					// Remove/rebase the graph and restore the platform token atomically before
+					// a concurrent app can capture a stale token with no previous owner.
 					try
 					{
-						// This accessor is user-implementable, so restoration is intentionally
-						// best-effort under concurrent mutation of the same implementation.
-						if (string.Equals(assignment.Implementation.MapServiceToken, assignment.AppliedToken, StringComparison.Ordinal))
-							assignment.Implementation.MapServiceToken = assignment.PreviousToken;
+						if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
+						{
+							WindowsMapServiceTokenSetter(
+								platformSuccessorToken ??
+								platformPredecessorToken ??
+								assignment.PreviousPlatformToken);
+						}
 					}
 					catch (Exception ex)
 					{
-						(exceptions ??= new()).Add(ex);
+						platformException = ex;
 					}
-				}
-#if WINDOWS
-				lock (s_mapTokenLock)
-				{
-					if (RemoveMapTokenAssignmentLocked(
-						assignment,
-						out _,
-						out platformSuccessorToken,
-						out platformPredecessorToken))
-					{
-						// The Windows token and its assignment-owner graph are both process-global.
-						// Keep their compare/restore operation atomic under the bookkeeping lock,
-						// after the user implementation has restored its own token.
-						try
-						{
-							if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
-							{
-								WindowsMapServiceTokenSetter(
-									platformSuccessorToken ??
-									platformPredecessorToken ??
-									assignment.PreviousPlatformToken);
-							}
-						}
-						catch (Exception ex)
-						{
-							platformException = ex;
-						}
-					}
+#endif
 				}
 
+				List<Exception>? exceptions = null;
+				try
+				{
+					ReconcileMapServiceToken(assignment.ImplementationState);
+				}
+				catch (Exception ex)
+				{
+					(exceptions ??= new()).Add(ex);
+				}
+				finally
+				{
+					ReleaseMapTokenImplementationState(assignment.ImplementationState);
+				}
+#if WINDOWS
 				if (platformException is not null)
 					(exceptions ??= new()).Add(platformException);
-#else
-				lock (s_mapTokenLock)
-				{
-					RemoveMapTokenAssignmentLocked(assignment, out _);
-				}
 #endif
 
 				if (exceptions is null)
@@ -720,8 +823,7 @@ namespace Microsoft.Maui.Hosting
 			// Caller must hold s_mapTokenLock. This mutates bookkeeping only and never
 			// invokes user/platform token accessors.
 			static bool RemoveMapTokenAssignmentLocked(
-				MapTokenAssignment assignment,
-				out bool hasImplementationSuccessor
+				MapTokenAssignment assignment
 #if WINDOWS
 				, out string? platformSuccessorToken,
 				out string? platformPredecessorToken
@@ -731,7 +833,6 @@ namespace Microsoft.Maui.Hosting
 				var index = s_mapTokenAssignments.IndexOf(assignment);
 				if (index < 0)
 				{
-					hasImplementationSuccessor = false;
 #if WINDOWS
 					platformSuccessorToken = null;
 					platformPredecessorToken = null;
@@ -739,22 +840,6 @@ namespace Microsoft.Maui.Hosting
 					return false;
 				}
 
-				MapTokenAssignment? implementationSuccessor = null;
-				for (int i = index + 1; i < s_mapTokenAssignments.Count; i++)
-				{
-					if (ReferenceEquals(s_mapTokenAssignments[i].Implementation, assignment.Implementation))
-					{
-						implementationSuccessor = s_mapTokenAssignments[i];
-						break;
-					}
-				}
-
-				if (implementationSuccessor is not null &&
-					string.Equals(implementationSuccessor.PreviousToken, assignment.AppliedToken, StringComparison.Ordinal))
-				{
-					implementationSuccessor.PreviousToken = assignment.PreviousToken;
-				}
-				hasImplementationSuccessor = implementationSuccessor is not null;
 #if WINDOWS
 				MapTokenAssignment? platformSuccessor = null;
 				var platformPredecessor = index > 0
@@ -786,6 +871,7 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 				s_mapTokenAssignments.RemoveAt(index);
+				assignment.ImplementationState.Version++;
 				return true;
 			}
 #endif
@@ -1141,32 +1227,48 @@ namespace Microsoft.Maui.Hosting
 		}
 
 #if WINDOWS || TIZEN
+		sealed class MapTokenImplementationState
+		{
+			public MapTokenImplementationState(IPlatformGeocoding implementation)
+			{
+				Implementation = implementation;
+			}
+
+			public IPlatformGeocoding Implementation { get; }
+
+			public string? BaseToken { get; set; }
+
+			public bool BaseTokenInitialized { get; set; }
+
+			public int Version { get; set; }
+
+			public int ActiveOperations { get; set; }
+		}
+
 		sealed class MapTokenAssignment
 		{
 			public MapTokenAssignment(
-				IPlatformGeocoding implementation,
-				string appliedToken,
-				string? previousToken
+				MapTokenImplementationState implementationState,
+				string appliedToken
 #if WINDOWS
 				, string? previousPlatformToken
 				, MapTokenAssignment? previousPlatformOwner
 #endif
 			)
 			{
-				Implementation = implementation;
+				ImplementationState = implementationState;
 				AppliedToken = appliedToken;
-				PreviousToken = previousToken;
 #if WINDOWS
 				PreviousPlatformToken = previousPlatformToken;
 				PreviousPlatformOwner = previousPlatformOwner;
 #endif
 			}
 
-			public IPlatformGeocoding Implementation { get; }
+			public MapTokenImplementationState ImplementationState { get; }
+
+			public IPlatformGeocoding Implementation => ImplementationState.Implementation;
 
 			public string AppliedToken { get; }
-
-			public string? PreviousToken { get; set; }
 
 #if WINDOWS
 			public string? PreviousPlatformToken { get; set; }
