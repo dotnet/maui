@@ -1822,7 +1822,7 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc)[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc|%(?:25)?[0-9a-f]{2})[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
@@ -1835,6 +1835,7 @@ function ConvertTo-PublicSafeMarkdown {
         }
         $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
+        $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace(
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
@@ -1845,6 +1846,7 @@ function ConvertTo-PublicSafeMarkdown {
         return $original
     })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
     $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(

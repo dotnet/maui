@@ -272,7 +272,7 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc)[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc|%(?:25)?[0-9a-f]{2})[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
@@ -285,6 +285,7 @@ function ConvertTo-PublicSafeMarkdown {
         }
         $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
+        $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace(
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
@@ -295,6 +296,7 @@ function ConvertTo-PublicSafeMarkdown {
         return $original
     })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
     $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
@@ -2442,6 +2444,10 @@ function ConvertTo-NegationNormalizedText {
         '${neg} ')
     $normalized = [regex]::Replace(
         $normalized,
+        "(?i)\b(?<neg>don't|doesn't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s*;\s*(?=(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|(?:re-?)?backport(?:ed)?|cherry[-\s]pick(?:ed)?)\b)",
+        '${neg} ')
+    $normalized = [regex]::Replace(
+        $normalized,
         "(?i)\b(?<neg>not|never)\b(?<gap>[^.!?;`r`n]{0,100}?)(?=\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?|require(?:d)?|need(?:ed)?|relevant|applicable)\b)",
         {
             param($match)
@@ -2466,7 +2472,7 @@ function Get-ClosingIssueNumbers {
     return @($matches | ForEach-Object {
         $prefixStart = [Math]::Max(0, $_.Index - 80)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
-        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
         }
@@ -2492,7 +2498,8 @@ function Test-IsLineageVerbNegated {
     $between = ConvertTo-NegationNormalizedText -Text ($Between -replace '[\u2018\u2019]', "'")
     $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot|against|avoid(?:ing)?)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bnot\s+(?:(?:going|planning|intending|expected|allowed|authorized|permitted|supposed|ready|able)\s+|(?:think|believe)(?:\s+\w+){0,5}\s+)to\s+$|\bnot\s*,\s*(?:after|following|pending)\b[^,]*,\s*to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
     $postVerbNegation = "(?i)(?:\bnot\b|\bno\s+longer\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
-    return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation)
+    $clauseNegation = $prefix -match "(?i)\b(?:not(?!\s+(?:only|unusual|unlikely|impossible)\b)|never|cannot|can't|couldn't|shouldn't|mustn't|won't|wouldn't|don't|doesn't|didn't)\b(?:(?!\b(?:but|however|nevertheless|nonetheless|so|agreed|decided|chose|want(?:ed)?|went\s+ahead)\b)[^.!?;]){0,512}$"
+    return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation) -or $clauseNegation
 }
 
 function Test-IsLineageReferenceNegated {
@@ -2577,10 +2584,14 @@ function Get-ExplicitBackportSourceNumbers {
         $Text,
         '(?i)\b(?<neg>not|never)(?:;\s*[^;\r\n]{0,80})*;\s*(?=(?:a\s+)?(?:re-?)?backport|cherry[-\s]pick)',
         '${neg} ')
+    $Text = [regex]::Replace(
+        $Text,
+        "(?i)\b(?<neg>don't|doesn't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s*;\s*(?=(?:a\s+)?(?:re-?)?backport|cherry[-\s]pick)",
+        '${neg} ')
     # Drop a contextual middle item without orphaning later explicit list items.
     $Text = [regex]::Replace(
         $Text,
-        '(?i);\s*(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])\s+(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\s*;\s*(?=(?:and|plus)\s+(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))',
+        '(?i)(?:;\s*(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])\s+(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\s*)+;\s*(?=(?:and|plus)\s+(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))',
         ', ')
     # A semicolon can be list punctuation rather than a clause boundary:
     # `#A, #B; and #C`. Normalize only this structured continuation.
@@ -3498,13 +3509,19 @@ function Get-NetRevertedPrSet {
         if ($memo.ContainsKey($PrNumber)) { return [bool]$memo[$PrNumber] }
         if ($visiting.ContainsKey($PrNumber)) {
             # Cyclic metadata is ambiguous; fail safe rather than claiming active.
+            foreach ($cyclePr in @($visiting.Keys)) { $memo[[int]$cyclePr] = $true }
             return $true
         }
         $visiting[$PrNumber] = $true
         $isReverted = $false
         if ($targetToReverters.ContainsKey($PrNumber)) {
             foreach ($reverter in $targetToReverters[$PrNumber]) {
-                if (-not (& $resolve ([int]$reverter))) {
+                $reverterIsReverted = & $resolve ([int]$reverter)
+                if ($memo.ContainsKey($PrNumber) -and [bool]$memo[$PrNumber]) {
+                    [void]$visiting.Remove($PrNumber)
+                    return $true
+                }
+                if (-not $reverterIsReverted) {
                     $isReverted = $true
                     break
                 }

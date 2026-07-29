@@ -2225,6 +2225,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is only context.') -join ',')
     Assert-Eq -Label "backport lineage: contextual middle item does not orphan later source" `
         -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: consecutive contextual items do not orphan later source" `
+        -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; #250 is only background; and #300.') -join ',')
     foreach ($repeatedSemanticRetraction in @(
         'Backport of #12345. PR #12345 is no longer required.',
         'Backport of #12345. PR #12345 is no longer needed.',
@@ -2299,6 +2301,10 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Do not; backport #32537.') -join ',')
     Assert-Eq -Label "backport lineage: semicolon aside allows article before verb" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'This is not; strictly speaking; a backport of #32537.') -join ',')
+    Assert-Eq -Label "backport lineage: contraction plus semicolon remains negated" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; backport #32537.") -join ',')
+    Assert-Eq -Label "backport lineage: long same-clause negation remains governing" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'We should not, given the current release schedule and the risk this introduces to other subsystems, backport #32537.') -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2721,6 +2727,14 @@ Assert-Eq -Label "revert-of-revert preserves an independent revert contribution"
     -Actual $compoundRevertSet.ContainsKey(100)
 Assert-Eq -Label "compound revert graph marks the reverted reverter" -Expected $true `
     -Actual $compoundRevertSet.ContainsKey(200)
+$cycleRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 200; revertBackportPr = 100 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "cyclic revert metadata fails safe for first participant" -Expected $true `
+    -Actual $cycleRevertSet.ContainsKey(100)
+Assert-Eq -Label "cyclic revert metadata fails safe for second participant" -Expected $true `
+    -Actual $cycleRevertSet.ContainsKey(200)
 Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
     -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
 Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
@@ -3014,7 +3028,9 @@ foreach ($negatedClosingText in @(
     'This will not (yet) resolve #35615',
     'This does not, to be fair, in my view, fix #35615',
     'This does not; to be fair; in my view; fix #35615',
-    'Do not; fix #35615'
+    'Do not; fix #35615',
+    "Don't; fix #35615",
+    'This no longer fixes #35615'
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
@@ -7898,12 +7914,14 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnc%65ng/int%65rnal/_build?token=LETTERSECRET',
         'https://dev.azure.com/dnceng/DefaultCollection%5Cinternal/_build?token=BACKSLASHENCODED',
         "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET",
-        'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET'
+        'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
+        'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
+        '%64%6E%63%65%6E%67.visualstudio.com/internal/_build?token=SCHEMELESSSECRET'
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
