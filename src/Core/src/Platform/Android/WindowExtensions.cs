@@ -42,7 +42,8 @@ namespace Microsoft.Maui
 				.SetSoftInputMode(inputMode);
 		}
 
-		public static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
+		//TODO : Make it public in NET 11.
+		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
 			if (window is null)
 			{
