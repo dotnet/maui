@@ -189,7 +189,7 @@
         "datatype": "bool",
         "defaultValue": "false",
         "displayName": "_Use Avalonia handlers",
-        "description": "Adds the Avalonia.Controls.Maui handlers and an Avalonia desktop target framework, rendering the app with Avalonia on desktop and embedding Avalonia on mobile and Windows. Ignored when sample content is included."
+        "description": "Adds the Avalonia.Controls.Maui handlers and an Avalonia desktop target framework, rendering the app with Avalonia on desktop and embedding Avalonia on the mobile and Windows heads. Ignored when sample content is included."
       },
       "UseAvaloniaHandlers": {
         "type": "computed",
@@ -197,9 +197,9 @@
       },
       "avaloniaControlsMauiVersion": {
         "type": "parameter",
-        "dataType": "string",
+        "datatype": "string",
         "replaces": "AVALONIA_CONTROLS_MAUI_VERSION",
-        "defaultValue": "11.0.0-preview.*",
+        "defaultValue": "AVALONIA_CONTROLS_MAUI_VERSION_VALUE",
         "description": "Overrides the Avalonia.Controls.Maui package version referenced when --with-avalonia is used."
       },
       "skipRestore": {
