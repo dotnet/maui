@@ -3285,6 +3285,102 @@ Describe 'Static source invariants' {
             }
         }
 
+        It 'never lets a job header claim it runs unconditionally when a needs: gate can skip it' {
+            <#
+                The `report` header read "always runs, for every trigger" while the job
+                carried `needs: test`, so a failing safety suite skipped it. The gating is
+                correct and deliberate; the sentence describing it was not.
+
+                That asymmetry is why this is worth a permanent check rather than a one-line
+                correction. These headers are the safety documentation — they are what a
+                reviewer reads to decide whether a `needs:` edit is load-bearing — and a
+                header that overstates when a job runs makes the gate look removable. The
+                failure is silent in both directions: CI is green with the wrong sentence,
+                and green again if someone later "restores" the claim by deleting `needs:`.
+
+                Zero-expectation scan, so half 2 of anti-vacuity cannot come from the file:
+                a correct workflow contains no offender, and a matcher that stopped matching
+                is indistinguishable from one that found nothing. The rule is therefore
+                defined ONCE and exercised on samples the workflow cannot supply.
+
+                One KnownBad per alternation, not one compound sample. A sample carrying two
+                phrases keeps the control satisfied while a single branch rots — the anchor
+                is then only as strong as its most robust branch.
+
+                The real `report` job is a KnownGood: it still says "runs for every trigger",
+                which is true and must stay sayable. A rule broadened to fire on any mention
+                of running is caught by that case rather than by a reviewer.
+            #>
+            # \b-bounded on BOTH ends, and that is load-bearing rather than tidy. `-match` is a
+            # substring search, so an UNbounded pattern still matches after it is truncated at
+            # either end -- `runs\s+regardles` is happily found inside "runs regardless". The
+            # first cut of this test measured exactly that: truncating one alternation left the
+            # whole suite green, so the control meant to prove the matcher works was itself
+            # blind to the canonical way a matcher breaks. The bounds are what make the
+            # KnownBad samples below able to fail.
+            $claimPatterns = @(
+                '\balways\s+runs\b'
+                '\bruns\s+unconditionally\b'
+                '\bruns\s+regardless\b'
+                '\bruns\s+no\s+matter\b'
+            )
+            $claimRegex = '(?i)(?:' + ($claimPatterns -join '|') + ')'
+
+            # Single definition of the rule. Everything below — controls and scan alike —
+            # goes through this, so a corrupted rule cannot pass the controls and fail the
+            # scan, or vice versa.
+            $isOverclaimingJob = {
+                param([string]$Header, [string]$Body)
+                ($Header -match $claimRegex) -and ($Body -match '(?m)^\s{4}needs:')
+            }
+
+            # Half 2: the rule detects what it claims to. One bad sample per alternation.
+            foreach ($phrase in @('always runs', 'runs unconditionally', 'runs regardless', 'runs no matter what')) {
+                (& $isOverclaimingJob -Header "  # WIDGET — $phrase, with a read-only token." -Body "    needs: test`n    runs-on: ubuntu-latest") |
+                    Should -BeTrue -Because "the rule must detect the phrase '$phrase'; if it does not, the zero-offender result below means nothing"
+            }
+            # ...and does not fire on the two shapes that are legitimate.
+            (& $isOverclaimingJob -Header '  # WIDGET — always runs, for every trigger.' -Body "    runs-on: ubuntu-latest") |
+                Should -BeFalse -Because 'a job with no needs: gate may honestly say it always runs'
+            (& $isOverclaimingJob -Header '  # WIDGET — runs after the safety suite.' -Body "    needs: test") |
+                Should -BeFalse -Because 'a gated job that describes its gate accurately is not an offender'
+
+            # A job key is the contiguous comment run immediately above it; a non-comment,
+            # non-blank line resets that run so one job's body cannot be read as the next
+            # job's header.
+            $jobs = @()
+            $inJobs = $false
+            $run = [System.Collections.Generic.List[string]]::new()
+            $cur = $null
+            foreach ($ln in ($script:WorkflowText -split "`r?`n")) {
+                if (-not $inJobs) { if ($ln -match '^jobs:\s*$') { $inJobs = $true }; continue }
+                if ($ln -match '^\s{2}([a-z][a-z0-9_-]*):\s*$') {
+                    $cur = [pscustomobject]@{ Name = $Matches[1]; Header = ($run -join "`n"); Body = [System.Collections.Generic.List[string]]::new() }
+                    $jobs += $cur
+                    $run = [System.Collections.Generic.List[string]]::new()
+                    continue
+                }
+                if ($ln -match '^\s*#') { $run.Add($ln) }
+                elseif ($ln.Trim() -ne '') { $run = [System.Collections.Generic.List[string]]::new() }
+                if ($cur) { $cur.Body.Add($ln) }
+            }
+
+            # Half 1: the input is real. A parse that silently produced nothing would report
+            # zero offenders too, so this is asserted from the same data as a NON-zero count.
+            @($jobs).Count | Should -BeGreaterOrEqual 3 -Because 'ci-scan-reconcile.yml defines test, report and mutate; finding fewer means the job walk broke, not that the workflow shrank'
+            foreach ($expected in @('test', 'report', 'mutate')) {
+                @($jobs | ForEach-Object { $_.Name }) | Should -Contain $expected -Because 'the walk must reach every gated job, or the scan below is scanning a subset'
+            }
+            @($jobs | Where-Object { $_.Body.Count -gt 0 }).Count | Should -Be @($jobs).Count -Because 'a job parsed with an empty body cannot carry a needs: gate, so it would be scanned vacuously'
+
+            $offenders = @($jobs | Where-Object { & $isOverclaimingJob -Header $_.Header -Body ($_.Body -join "`n") })
+            @($offenders).Count | Should -Be 0 -Because (
+                "these headers are the safety documentation for this workflow, so a job that " +
+                "advertises unconditional execution while carrying a needs: gate misdescribes " +
+                "the gate a reviewer would consult before editing it. Say what the gate is and " +
+                "why, as the report job does. Offending job(s): " + ((@($offenders) | ForEach-Object { $_.Name }) -join ', '))
+        }
+
         It 'keeps an anti-vacuous floor on the in-workflow gate' {
             # A suite that fails to PARSE reports 0 tests and 0 failures, which looks
             # exactly like a pass to a FailedCount-only check. The floor is the specific

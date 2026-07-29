@@ -215,7 +215,14 @@ jobs:
           Write-Output "Reconciler safety suite: $($result.PassedCount)/$($result.TotalCount) passed."
 
   # ─────────────────────────────────────────────────────────────────────────────────
-  # REPORT — always runs, for every trigger, with a read-only token.
+  # REPORT — runs for every trigger, once the safety suite passes, with a read-only token.
+  #
+  # "For every trigger" is literal: no `github.event_name` appears in its `if`, so a
+  # schedule and a dispatch reach it identically. It is NOT unconditional — `needs: test`
+  # skips it whenever the safety suite fails, which is deliberate. A survey is only worth
+  # reading if the logic that produced it was verified first, and a skipped report is a
+  # visibly absent one, whereas a published survey from unverified logic reads exactly
+  # like a trustworthy one.
   # ─────────────────────────────────────────────────────────────────────────────────
   report:
     name: Report (read-only)
