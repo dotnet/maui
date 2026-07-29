@@ -2306,6 +2306,9 @@ if ($maestroPRs.Count -eq 0) {
     } else {
         "No open Maestro PRs target ``$SurveyRef``."
     }
+    if ($targetOpenPrScanIncomplete) {
+        $maestroReadyDetails = "No open Maestro PRs were found in the capped scan for ``$SurveyRef``; the incomplete result cannot prove none exist."
+    }
     $maestroEmptyState = Get-EmptyPrCheckState -TargetScanIncomplete $targetOpenPrScanIncomplete `
         -IncompleteAction 'Inspect the full target-branch PR list; the capped scan cannot prove that no dependency-flow PR exists.' `
         -ReadyAction 'Continue monitoring for new dependency-flow PRs.'
@@ -2325,7 +2328,12 @@ if ($targetHumanPRs.Count -eq 0) {
     $releasePrEmptyState = Get-EmptyPrCheckState -TargetScanIncomplete $targetOpenPrScanIncomplete `
         -IncompleteAction 'Inspect the full target-branch PR list; the capped scan cannot prove that no release PR exists.' `
         -ReadyAction 'No direct release-branch PR action from this check.'
-    $checks += New-Check -Area "Release branch PRs" -Status $releasePrEmptyState.Status -Details "No non-Maestro open PRs were found in the scanned results for ``$SurveyRef``." -NextAction $releasePrEmptyState.Action
+    $releasePrEmptyDetails = if ($targetOpenPrScanIncomplete) {
+        "No non-Maestro open PRs were found in the capped scan for ``$SurveyRef``; the incomplete result cannot prove none exist."
+    } else {
+        "No non-Maestro open PRs were found in the scanned results for ``$SurveyRef``."
+    }
+    $checks += New-Check -Area "Release branch PRs" -Status $releasePrEmptyState.Status -Details $releasePrEmptyDetails -NextAction $releasePrEmptyState.Action
 } else {
     # Generic open PRs are NOT release blockers — only P/0 issues block the
     # release (and those have a dedicated check above + hoisted section).
@@ -2358,7 +2366,12 @@ if ($p0Prs.Count -gt 0) {
     $p0EmptyState = Get-EmptyPrCheckState -TargetScanIncomplete $targetOpenPrScanIncomplete `
         -IncompleteAction 'Inspect the full target-branch PR list before concluding that no P/0 PR is open.' `
         -ReadyAction 'No action required.'
-    $checks += New-Check -Area "P/0 release-branch PRs" -Status $p0EmptyState.Status -Details "No open P/0-labelled PRs were found in the scanned results for ``$SurveyRef``." -NextAction $p0EmptyState.Action
+    $p0EmptyDetails = if ($targetOpenPrScanIncomplete) {
+        "No open P/0-labelled PRs were found in the capped scan for ``$SurveyRef``; the incomplete result cannot prove none exist."
+    } else {
+        "No open P/0-labelled PRs were found in the scanned results for ``$SurveyRef``."
+    }
+    $checks += New-Check -Area "P/0 release-branch PRs" -Status $p0EmptyState.Status -Details $p0EmptyDetails -NextAction $p0EmptyState.Action
 }
 
 # --- Release-relevant issues ---
@@ -2394,7 +2407,12 @@ if ($mergeUpPRs.Count -gt 0) {
     $mergeUpEmptyState = Get-EmptyPrCheckState -TargetScanIncomplete $targetOpenPrScanIncomplete `
         -IncompleteAction 'Inspect the full target PR list before concluding that no merge-up PR is open.' `
         -ReadyAction 'Continue monitoring.'
-    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status $mergeUpEmptyState.Status -Details "No open merge-up PRs were found in the scanned results for the ``$mergeUpChainLabel`` daily-flow chain." -NextAction $mergeUpEmptyState.Action
+    $mergeUpEmptyDetails = if ($targetOpenPrScanIncomplete) {
+        "No open merge-up PRs were found in the capped scan for the ``$mergeUpChainLabel`` daily-flow chain; the incomplete result cannot prove none exist."
+    } else {
+        "No open merge-up PRs were found in the scanned results for the ``$mergeUpChainLabel`` daily-flow chain."
+    }
+    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status $mergeUpEmptyState.Status -Details $mergeUpEmptyDetails -NextAction $mergeUpEmptyState.Action
 }
 
 if ($kbeIssues.Count -gt 0) {

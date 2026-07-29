@@ -2407,7 +2407,7 @@ function Get-ClosingIssueNumbers {
         $prefixStart = [Math]::Max(0, $_.Index - 512)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
         $prefix = [regex]::Split($prefix, '\r\n|\r|\n')[-1]
-        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\b(?:fail(?:s|ed)?|unable)\s+to(?:\s+\w+){0,3}\s+$|\bonly\s+partial(?:ly)?\s+$)"
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bunable\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bonly\s+partial(?:ly)?\s+$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
         }

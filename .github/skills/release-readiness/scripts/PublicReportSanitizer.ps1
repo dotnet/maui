@@ -64,8 +64,16 @@ function ConvertTo-PublicSafeMarkdown {
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
         $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
-        if ($detection -match '(?i)(?:(?:dev\.azure\.com(?::\d+)?/dnceng|dnceng\.visualstudio\.com(?::\d+)?)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com(?::\d+)?/DevDiv|devdiv\.visualstudio\.com(?::\d+)?/DevDiv|^DevDiv))(?:[/?:#]|$)') {
+        $isInternal = $detection -match '(?i)^(?:(?:https?://)?(?:dev\.azure\.com(?::\d+)?/dnceng|dnceng\.visualstudio\.com(?::\d+)?)/(?:DefaultCollection/)?internal|dnceng/(?:DefaultCollection/)?internal|(?:https?://)?(?:dev\.azure\.com(?::\d+)?/DevDiv|devdiv\.visualstudio\.com(?::\d+)?/DevDiv)|DevDiv)(?:[/?:#]|$)'
+        if ($isInternal) {
             return '_internal URL omitted_'
+        }
+        $isRecognizedAzdoHost = $detection -match '(?i)^(?:https?://)?(?:(?:dev\.azure\.com(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com(?::\d+)?))(?:[/?:#]|$)'
+        if ($isRecognizedAzdoHost -and $canonical.Contains('?')) {
+            return [regex]::Replace($original, '(?i)(?:\?|%(?:25)*3f)[\s\S]*$', '?_query_omitted_')
+        }
+        if ($isRecognizedAzdoHost -and $canonical.Contains('#')) {
+            return [regex]::Replace($original, '(?i)(?:#|%(?:25)*23)[\s\S]*$', '#_fragment_omitted_')
         }
         return $original
     })

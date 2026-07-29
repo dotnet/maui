@@ -38,6 +38,8 @@ This skill has **three** PowerShell entry points and one workflow:
 | [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). |
 | [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Three-hourly daytime UTC schedule + event-driven refreshes + manual dispatch + PR validation. Runs `Find-Trackers -AllActiveMajors`, fans out a matrix job per tracker, and writes idempotent `[Release Readiness]` issues per branch. |
 
+Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
+
 ### Tag-existence rule (canonical signal)
 
 The trackers detector is grounded in **tag existence as the source of truth for "shipped vs in-flight"**. A release is in-flight if and only if its expected tag has NOT been published — branch existence, commit recency, and milestone state are all secondary signals.
@@ -148,8 +150,8 @@ row instead directs the captain to local official-build reconciliation. The
 checks below are the **authoritative** confirmation a local run adds on top of that
 inference (`darc`/BAR can see the subscription itself; CI can only see its PR
 exhaust). Run them when the inferred signal is ⚠️/❌, or to confirm a ✅ before ship.
-A complete *"is preview N ready?"* answer runs three more **public** (BAR/Maestro + git)
-checks alongside the survey and the blessed-build lookup:
+A complete *"is preview N ready?"* answer runs two public BAR/Maestro + git checks
+and one access-tiered official-build check alongside the survey:
 
 - **Subscriptions wired?** Confirm the `release/11.0.1xx-previewN` branch has its default-channel mapping **and** the baseline two subscriptions (android + macios on `.NET 11.0.1xx SDK Preview N`). There is intentionally **no dotnet/VMR subscription**: reconcile that pin locally against the official SDK/runtime build because the Maestro channel can differ from the release source of truth. Branch cut + default-channel present but either subscription missing = a start-of-preview flow gap → surface as an **FYI note** (not a ship blocker), naming the missing source repos.
 - **Feed matches the branch?** Compare the latest build promoted to the `.NET 11.0.1xx SDK Preview N` channel (`maestro_latest_build`) against `origin/release/11.0.1xx-previewN` HEAD. Branch ahead of the promoted build = stale feed → flag it.

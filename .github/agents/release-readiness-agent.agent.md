@@ -80,7 +80,7 @@ If the user wants the raw deterministic report with no judgment layer (e.g. for 
 
 **If the user named a specific release** (or the current branch is a release branch), inspect it:
 
-- `release/<major>.0.1xx-sr<N>` → **SR lane** → `Get-ReleaseReadiness.ps1` (`-Candidate` if the branch doesn't exist yet)
+- `release/<major>.0.1xx-sr<N>` → **SR lane** → `Get-ReleaseReadiness.ps1` (`-Candidate` if the branch doesn't exist yet; `-Shipped` if that SR cycle has a stable tag)
 - `release/<major>.0.1xx-preview<N>` → **Preview lane** → `Get-PreviewReadiness.ps1` (`-Mode candidate -SurveyRef net<major>.0` if the preview branch doesn't exist yet)
 
 **If the user asked a portfolio / cross-release question** (plural "releases", "status overview", "what needs attention across releases", "what's next" — no single branch named) → **Portfolio path (§0a)**. Do NOT ask "which release?" — the whole point is they may not know which releases exist.
@@ -121,6 +121,13 @@ When the user wants status **across all active releases**, read the live tracker
 - Use the branch the user named, OR the current branch if it matches a release shape, OR ask.
 - Confirm it exists: `git rev-parse --verify origin/<branch>`.
 - If missing → switch to **Candidate mode** (step 1b). Do NOT silently substitute another branch.
+- For an existing SR branch, resolve its lifecycle before running the report:
+  1. Run `Find-ReleaseReadinessTrackers.ps1 -MajorVersion <major>` and use the matching branch descriptor when one is emitted.
+  2. If its `mode` is `shipped`, pass `-Shipped -ShippedTag <expectedTag>`.
+  3. Older shipped SRs are intentionally omitted from the active detector matrix. If no descriptor is emitted, inspect stable tags in the branch's SR patch decade (`SR<N>` owns patches `N*10..N*10+9`). If any matching stable tag exists, pass `-Shipped` and let the script select the latest immutable tag in that decade.
+  4. Only an existing SR with no stable tag in its cycle uses the default in-flight semantics.
+
+Never infer shipped state from branch existence or the branch's current `PatchVersion` alone; a live branch can already have a shipped tag and can advance to an unpublished hotfix.
 
 ### 1b. Candidate mode (branch not cut yet)
 
@@ -159,7 +166,7 @@ Never silently accept inferred labels for the final report.
 
 ### 3. Run the script
 
-Use the routing decision from step 0. See SKILL.md for the full parameter contract. Tell the user the script is running — for large repos this is 60-120s.
+Use the routing and lifecycle decision from steps 0-1. For the SR lane, append the resolved `-Candidate` or `-Shipped [-ShippedTag <tag>]` arguments; do not run an existing tagged SR with default in-flight semantics. See SKILL.md for the full parameter contract. Tell the user the script is running — for large repos this is 60-120s.
 
 ### 4. Read the JSON output
 
@@ -208,7 +215,9 @@ dependency order, even when other report rows are marked `BLOCKED`:
 
 1. Add the Preview N default-channel mapping.
 2. Add the Android and macOS/iOS subscriptions; confirm their configuration has
-   reached `production` before treating them as active.
+   reached `production` before treating them as active. The config PR merge is
+   necessary but not sufficient: verify BAR ingestion with
+   `darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch <preview-branch>`.
 3. Reconcile MAUI's SDK/VMR pin locally with the official Preview N build and
    recommend a focused component-bump PR. Never request a dotnet/VMR subscription:
    the Maestro preview feed can differ from the release source of truth.

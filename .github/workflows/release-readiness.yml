@@ -462,6 +462,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          source .github/skills/release-readiness/scripts/TrackerIssueLifecycle.sh
 
           # Find any open issue whose body carries the canonical marker for this tracker.
           # This is the idempotent join key — Get-ReleaseReadiness / Get-PreviewReadiness
@@ -550,7 +551,7 @@ jobs:
               # The exact open proves this generation was tracked, but the oldest
               # generic tracker remains canonical. It may carry Release Captain
               # Notes that must not be discarded when duplicate cleanup runs.
-              echo "Current generation is already open as issue(s): $(echo "$EXACT_OPEN" | tr '\n' ' '); preserving oldest tracker #$(echo "$EXISTING" | head -n 1) as canonical."
+              echo "Current generation is already open as issue(s): $(echo "$EXACT_OPEN" | tr '\n' ' '); preserving oldest tracker #$(rr_select_oldest_tracker "$EXISTING") as canonical."
             else
             # Narrow server-side to tracker-labeled issues, then enforce exact
             # marker lines locally. Legacy/current trackers may be human-created
@@ -603,7 +604,7 @@ jobs:
           if [ -n "$EXISTING" ]; then
             # Reuse the OLDEST open tracker issue (first in chronological order).
             # Close any duplicates created by past misfires before refreshing the canonical one.
-            CANONICAL=$(echo "$EXISTING" | head -n 1)
+            CANONICAL=$(rr_select_oldest_tracker "$EXISTING")
             DUPLICATES=$(echo "$EXISTING" | tail -n +2 || true)
 
             for dup in $DUPLICATES; do
@@ -785,22 +786,26 @@ jobs:
                       --title "$ISSUE_TITLE" \
                       --body-file "$BODY_FILE"
                     if [ "$GENERATION_TRANSITION" = "true" ]; then
-                      POST_EDIT_META=$(gh issue view "$CANONICAL" \
-                        --repo "${{ github.repository }}" \
+                      POST_EDIT_META=''
+                      if ! POST_EDIT_META=$(gh issue view "$CANONICAL" \
+                       --repo "${{ github.repository }}" \
                        --json state,closedAt,updatedAt,body \
-                       --jq '[.state, (.closedAt // ""), (.updatedAt // ""), ((.body // "") | @base64)] | @tsv' 2>/dev/null || true)
-                      IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT POST_BODY_B64 <<< "$POST_EDIT_META"
+                       --jq '[.state, (.closedAt // ""), (.updatedAt // ""), ((.body // "") | @base64)] | @tsv' 2>/dev/null); then
+                       echo "::warning::Could not re-read issue #${CANONICAL} after the generation-transition edit; race compensation could not be evaluated."
+                      elif [ -z "$POST_EDIT_META" ]; then
+                       echo "::warning::Issue #${CANONICAL} returned no post-edit metadata; race compensation could not be evaluated."
+                      else
+                       IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT POST_BODY_B64 <<< "$POST_EDIT_META"
                       if [ "$POST_EDIT_STATE" = "CLOSED" ] &&
-                         [ -n "$POST_CLOSED_AT" ] &&
                         [ -n "$POST_BODY_B64" ] &&
-                        [ "$POST_UPDATED_AT" \> "$POST_CLOSED_AT" ]; then
+                        rr_edit_landed_after_close "$POST_CLOSED_AT" "$POST_UPDATED_AT"; then
                        # The edit provably happened after the human closure.
                        # Start from the live closed body, then recheck its revision
                        # immediately before removing only the raced marker.
                        RACE_CURRENT_BODY_FILE="$(mktemp)"
                         RACE_BODY_FILE="$(mktemp)"
                        echo "$POST_BODY_B64" | base64 --decode > "$RACE_CURRENT_BODY_FILE"
-                       LC_ALL=C grep -Fvx "$GENERATION_MARKER" "$RACE_CURRENT_BODY_FILE" > "$RACE_BODY_FILE" || true
+                       rr_remove_exact_marker_line "$RACE_CURRENT_BODY_FILE" "$RACE_BODY_FILE" "$GENERATION_MARKER"
                        PRE_RACE_META=$(gh issue view "$CANONICAL" \
                          --repo "${{ github.repository }}" \
                          --json state,updatedAt,body \
@@ -820,6 +825,7 @@ jobs:
                          fi
                        fi
                        rm -f "$RACE_CURRENT_BODY_FILE" "$RACE_BODY_FILE"
+                      fi
                       fi
                     fi
                   fi
