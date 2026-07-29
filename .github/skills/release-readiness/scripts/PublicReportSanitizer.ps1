@@ -1,5 +1,53 @@
 #Requires -Version 7.0
 
+function Get-PublicSafeCanonicalLiteralPattern {
+    param(
+        [Parameter(Mandatory)][string]$Literal,
+        [string]$InterCharacterPattern = ''
+    )
+
+    $patterns = foreach ($character in $Literal.ToCharArray()) {
+        $codePoints = @([int]$character)
+        if ([char]::IsLetter($character)) {
+            $codePoints += [int][char]::ToLowerInvariant($character)
+            $codePoints += [int][char]::ToUpperInvariant($character)
+        }
+
+        $forms = [System.Collections.Generic.List[string]]::new()
+        [void]$forms.Add([regex]::Escape([string]$character))
+        foreach ($codePoint in @($codePoints | Sort-Object -Unique)) {
+            [void]$forms.Add("&#0*$codePoint;")
+            [void]$forms.Add(('&#x0*{0:x};' -f $codePoint))
+            [void]$forms.Add(('%(?:25){{0,5}}{0:x2}' -f $codePoint))
+            if ($codePoint -ge 0x21 -and $codePoint -le 0x7e) {
+                [void]$forms.Add([regex]::Escape([string][char]($codePoint + 0xfee0)))
+            }
+        }
+        if ($character -eq ' ') {
+            [void]$forms.Add([regex]::Escape([string][char]0x3000))
+        }
+        '(?:' + (@($forms | Sort-Object -Unique) -join '|') + ')'
+    }
+    return ($patterns -join $InterCharacterPattern)
+}
+
+$Script:PublicSafePrivateToolPattern = @(
+    Get-PublicSafeCanonicalLiteralPattern -Literal '.NET Release Tracker'
+    Get-PublicSafeCanonicalLiteralPattern -Literal 'dotnet-release-tracker'
+    Get-PublicSafeCanonicalLiteralPattern -Literal 'dotnet/release'
+) -join '|'
+
+$candidateNoise = '(?:[^A-Za-z0-9:/?._#&=%\s<>"''`|)]*)'
+$Script:PublicSafeUrlCandidatePattern = @(
+    'https'
+    'dev\.azure\.com'
+    Get-PublicSafeCanonicalLiteralPattern -Literal 'dnceng' -InterCharacterPattern $candidateNoise
+    Get-PublicSafeCanonicalLiteralPattern -Literal 'DevDiv' -InterCharacterPattern $candidateNoise
+    '[\uFF01-\uFF5E]'
+    '%(?:25)?[0-9a-f]{2}'
+    '&#(?:x[0-9a-f]+|\d+);'
+) -join '|'
+
 function ConvertTo-PublicSafeMarkdown {
     param([AllowNull()][AllowEmptyString()][string]$Text)
 
@@ -31,7 +79,7 @@ function ConvertTo-PublicSafeMarkdown {
             $collection = if ($match.Groups['collection'].Success) { 'DefaultCollection/' } else { '' }
             "$($match.Groups['prefix'].Value)${collection}internal"
         })
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|(?<![A-Za-z0-9])d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?:' + $Script:PublicSafeUrlCandidatePattern + ')[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
@@ -89,10 +137,16 @@ function ConvertTo-PublicSafeMarkdown {
         }
         $isRecognizedAzdoHost = $detection -match "(?i)(?:(?:https?://)?$azdoAuthority|^(?:dnceng|DevDiv))(?=[/?:#]|$)"
         if ($isRecognizedAzdoHost -and $canonical.Contains('?')) {
-            return [regex]::Replace($original, '(?i)(?:\?|\uFF1F|%(?:25)*3f)[\s\S]*$', '?_query_omitted_')
+            return [regex]::Replace(
+                $original,
+                '(?i)(?:\?|\uFF1F|&#(?:x0*3f|0*63);|%(?:25)*3f)[\s\S]*$',
+                '?_query_omitted_')
         }
         if ($isRecognizedAzdoHost -and $canonical.Contains('#')) {
-            return [regex]::Replace($original, '(?i)(?:#|\uFF03|%(?:25)*23)[\s\S]*$', '#_fragment_omitted_')
+            return [regex]::Replace(
+                $original,
+                '(?i)(?:#|\uFF03|&#(?:x0*23|0*35);|%(?:25)*23)[\s\S]*$',
+                '#_fragment_omitted_')
         }
         return $original
     })
@@ -110,7 +164,7 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = [regex]::Replace($safe, '(?i)\bapi://[A-Za-z0-9._/-]+', '_internal identifier omitted_')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?:\.NET Release Track(?:e|&#(?:x0*65|0*101);)r|\bdotnet-release-tracker\b|\bdotnet/release\b)',
+        '(?i)(?:' + $Script:PublicSafePrivateToolPattern + ')',
         'official release source')
     $safe = [regex]::Replace(
         $safe,

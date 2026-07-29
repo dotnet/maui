@@ -181,6 +181,9 @@ foreach ($case in @(
 
 # Static workflow/renderer contracts must run even when network E2E is skipped.
 $workflowContractText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml') -Raw
+$srScriptContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
+Assert-Eq -Label "SR auxiliary commits artifact uses the same public-safe data graph as the primary JSON" -Expected $true `
+    -Actual $srScriptContractText.Contains('$commitsJson = $outputSrContents | ConvertTo-Json')
 Assert-Eq -Label "workflow verifies exact closed-generation body lines" -Expected $true `
     -Actual ($workflowContractText.Contains('($lines | index($tracker) != null)') -and
         $workflowContractText.Contains('($lines | index($generation) != null)'))
@@ -209,10 +212,14 @@ Assert-Eq -Label "workflow reconciles stale opens before honoring exact closure"
         $workflowContractText.IndexOf('Closing stale tracker issue') -lt
         $workflowContractText.IndexOf('not recreating.'))
 Assert-Eq -Label "workflow compensates a generation edit proven to land after closure" -Expected $true `
-    -Actual ($workflowContractText.Contains('POST_EDIT_META=') -and
+    -Actual ($workflowContractText.Contains('EDIT_RESULT=$(gh api --method PATCH') -and
+        $workflowContractText.Contains('POST_EDIT_META=') -and
         $workflowContractText.Contains('removed the raced marker'))
-Assert-Eq -Label "workflow uses the tested strict timestamp-order helper for race compensation" -Expected $true `
-    -Actual $workflowContractText.Contains('rr_edit_landed_after_close "$POST_CLOSED_AT" "$POST_UPDATED_AT"')
+Assert-Eq -Label "workflow uses the exact edit response timestamp rather than mutable post-read updatedAt" -Expected $true `
+    -Actual ($workflowContractText.Contains('rr_edit_landed_after_close "$POST_CLOSED_AT" "$EDIT_UPDATED_AT"') -and
+        -not $workflowContractText.Contains('rr_edit_landed_after_close "$POST_CLOSED_AT" "$POST_UPDATED_AT"'))
+Assert-Eq -Label "workflow proves the exact edited body is still live before race compensation" -Expected $true `
+    -Actual $workflowContractText.Contains('[ "$POST_BODY_B64" = "$EDIT_BODY_B64" ]')
 Assert-Eq -Label "workflow rechecks exact state and body revision before overwriting captain notes" -Expected $true `
     -Actual ([bool]($workflowContractText -match 'elif \[ "\$PRE_EDIT_UPDATED_AT" != "\$CUR_UPDATED_AT" \] \|\| \[ "\$PRE_EDIT_BODY_B64" != "\$CUR_BODY_B64" \]; then'))
 Assert-Eq -Label "workflow race compensation starts from and rechecks the live closed body" -Expected $true `
@@ -237,6 +244,9 @@ source "$1"
 rr_edit_landed_after_close '2026-07-29T10:00:00Z' '2026-07-29T10:00:01Z'
 if rr_edit_landed_after_close '2026-07-29T10:00:00Z' '2026-07-29T10:00:00Z'; then
   exit 10
+fi
+if rr_edit_landed_after_close '2026-07-29T10:00:01Z' '2026-07-29T10:00:00Z'; then
+  exit 12
 fi
 
 input="$(mktemp)"
@@ -3170,7 +3180,10 @@ Assert-Eq -Label "commit evidence: full issue URL is parsed by the shared closin
     -Expected $true -Actual ($directSrUrlIssues -contains 35615)
 foreach ($negatedClosingText in @(
     'This does not fix #35615',
+    "This does not`nfix #35615",
     'This will not actually resolve #35615',
+    'This failed to adequately fix #35615',
+    'This is unable to reliably resolve #35615',
     "This doesn't close #35615",
     "This doesn’t close #35615",
     "This doesnʼt close #35615",
@@ -3196,6 +3209,8 @@ foreach ($negatedClosingText in @(
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
 }
+Assert-Eq -Label "closing evidence: affirmative adverb-separated fix remains recognized" `
+    -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text 'This adequately fixes #35615') -join ',')
 foreach ($affirmativeClosingText in @(
     'After the patch we are unable to reproduce and fixes #35615'
     'The app is unable to crash and fixes #35615'
@@ -8204,6 +8219,8 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnceng/public/_build%3Ftoken=PARTIALENCODESECRET'
         'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Fpublic%2F_build%3Ftoken=ENCODEDPUBLICSECRET'
         'https%253A%252F%252Fdev.azure.com%252Fdnceng%252Fpublic%252F_build%253Ftoken=DOUBLEENCODEDPUBLICSECRET'
+        'https://dev.azure.com/dnceng/public/_build&#63;token=DECIMALQUERYSECRET'
+        'https://dev.azure.com/dnceng/public/_build&#x3f;token=HEXQUERYSECRET'
         "https://dev.azure.com/dnceng/public/_build$([char]0xFF1F)token=FULLWIDTHQUERYSECRET"
     )) {
         $encodedQuerySafe = ConvertTo-PublicSafeMarkdown -Text $publicEncodedQuery
@@ -8250,6 +8267,20 @@ function Assert-PublicSanitizerEdgeCases {
     Assert-Eq -Label "$Lane sanitizer redacts encoded official release source name" `
         -Expected 'official release source' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text '.NET Release Track&#101;r')
+    foreach ($ordinaryDWord in @('dependency', 'does', 'documentation')) {
+        Assert-Eq -Label "$Lane sanitizer skips expensive URL canonicalization for ordinary d-word — $ordinaryDWord" `
+            -Expected $false -Actual ([regex]::IsMatch($ordinaryDWord, '(?i)^(?:' + $Script:PublicSafeUrlCandidatePattern + ')'))
+    }
+    foreach ($dPrefixedPrivateCandidate in @(
+        'dnceng/internal'
+        'd%6eceng/internal'
+        'd&#110;ceng/internal'
+        "d$([char]0x200B)nceng/internal"
+        'DevDiv/_workitems'
+    )) {
+        Assert-Eq -Label "$Lane sanitizer still canonicalizes d-prefixed private candidate — $dPrefixedPrivateCandidate" `
+            -Expected $true -Actual ([regex]::IsMatch($dPrefixedPrivateCandidate, '(?i)^(?:' + $Script:PublicSafeUrlCandidatePattern + ')'))
+    }
     Assert-Eq -Label "$Lane sanitizer preserves emoji variation and joiners outside URLs" -Expected 'Status ⚠️ family 👨‍👩‍👧‍👦' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'Status ⚠️ family 👨‍👩‍👧‍👦')
     $oversizedEntityThrew = $false

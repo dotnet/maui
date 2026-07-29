@@ -2435,7 +2435,7 @@ function Get-ClosingIssueNumbers {
         if ($prefixLines.Count -ge 2 -and -not [string]::IsNullOrWhiteSpace($prefixLines[-2])) {
             $prefix = "$($prefixLines[-2]) $prefix"
         }
-        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\bcannot(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bunable\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bonly\s+(?:partial(?:ly)?|partly)\s+$)"
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\bcannot(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+\w+ly){0,8}\s+$|\bunable\s+to(?:\s+\w+ly){0,8}\s+$|\bonly\s+(?:partial(?:ly)?|partly)\s+$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
         }
