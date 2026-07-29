@@ -9169,6 +9169,182 @@ Assert-Eq -Label "installability check: missing maps to BLOCKED" `
 Assert-Eq -Label "installability check: unknown maps to UNKNOWN" `
     -Expected 'UNKNOWN' -Actual (ConvertTo-PreviewInstallabilityCheck $iiPrivateResult).Status
 
+# -------------------------------------------------------------------------
+# Regression tests: redaction/consensus fixes found during adversarial review
+# -------------------------------------------------------------------------
+
+# Fix: an additional/internal source that fails for ONE package but is never
+# selected as that package's resolving source (because a later source in the
+# probe order succeeds) never lands in $Result.RequiredSources — the
+# 'installable' path only carries additional sources when they were actually
+# used. Its real name can still leak through an individual location's
+# UnknownSources unless the public sanitizer is told about every source that
+# was *configured* for the run (-Sources), not just the ones RequiredSources
+# ended up keeping.
+$iiFailedButUnusedSource = [PSCustomObject]@{
+    Name = 'internal_preview6_unused'
+    Uri  = 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/unused/nuget/v3/index.json'
+    Role = 'additional'; IsAdditional = $true; IsInternal = $true
+}
+$iiInstallableWithHiddenFailure = [PSCustomObject]@{
+    Status = 'installable'; Summary = 'ok'; SdkVersion = '11.0.100-preview.6.1'
+    SdkFeatureBand = '11.0.100'; PackageId = 'Example.Package'; CliVersion = '11.0.100-preview.6.2'
+    NuGetVersion = '11.100.0-preview.6.2'; VersionConfirmed = $false; PinComparisons = @()
+    ManifestPackages = @([PSCustomObject]@{
+        WorkloadId = 'Example.Workload'; PackageId = 'Example.Manifest'; Version = '1.0.0'; Status = 'found'
+        ResolvedSource = [PSCustomObject]@{ Source = [PSCustomObject]@{ Name = 'public'; Role = 'shared'; IsAdditional = $false; IsInternal = $false } }
+        # The failed additional source shows up here even though the package was
+        # ultimately found via 'public' — this is the leak vector.
+        UnknownSources = @('internal_preview6_unused')
+    })
+    PackProbes = @(); RequiredSources = @([PSCustomObject]@{ Name = 'public'; Role = 'shared'; Uri = 'https://api.nuget.org/v3/index.json'; IsAdditional = $false; IsInternal = $false })
+    NuGetConfig = $null; InstallCommand = 'dotnet workload install maui --version 11.0.100-preview.6.2 --configfile ./preview-nuget.config'
+}
+$iiRedactedWithSources = ConvertTo-PublicInstallabilityResult -Result $iiInstallableWithHiddenFailure `
+    -Sources @($iiFailedButUnusedSource)
+Assert-Eq -Label "installability: source that failed but was never required is still redacted when -Sources is supplied" `
+    -Expected $false -Actual (($iiRedactedWithSources | ConvertTo-Json -Depth 10).Contains('internal_preview6_unused'))
+Assert-Eq -Label "installability: redacted UnknownSources uses the generic authenticated-source placeholder" `
+    -Expected 'authenticated-source' -Actual $iiRedactedWithSources.ManifestPackages[0].UnknownSources[0]
+
+$iiRedactedWithoutSources = ConvertTo-PublicInstallabilityResult -Result $iiInstallableWithHiddenFailure
+Assert-Eq -Label "installability: without -Sources, a source outside RequiredSources is NOT recognized as sensitive (documents why -Sources must be passed at every call site)" `
+    -Expected 'internal_preview6_unused' -Actual $iiRedactedWithoutSources.ManifestPackages[0].UnknownSources[0]
+
+# Fix: a release-owner-confirmed workload set's exact CLI/NuGet version and
+# per-component "Actual" build numbers must be embargoed in public-safe output
+# even though they are only referenced by the install command string, not just
+# the top-level CliVersion/NuGetVersion fields.
+$iiConfirmedLeakResult = [PSCustomObject]@{
+    Status = 'installable'; Summary = 'ok'; SdkVersion = '11.0.100-preview.6.1'
+    SdkFeatureBand = '11.0.100'; PackageId = 'Microsoft.NET.Workloads.11.0.100-preview.6'
+    CliVersion = '11.0.100-preview.6.SECRETBUILD'; NuGetVersion = '11.100.0-preview.6.SECRETBUILD'
+    VersionConfirmed = $true
+    PinComparisons = @([PSCustomObject]@{
+        WorkloadId = 'Microsoft.NET.Sdk.Android'; Expected = '37.0.0-preview.6.59'
+        Actual = '37.0.0-preview.6.SECRETBUILD'; Status = 'match'
+    })
+    ManifestPackages = @(); PackProbes = @(); RequiredSources = @()
+    NuGetConfig = $null
+    InstallCommand = 'dotnet workload install maui --version 11.0.100-preview.6.SECRETBUILD --configfile ./preview-nuget.config'
+}
+$iiConfirmedLeakPublic = ConvertTo-PublicInstallabilityResult -Result $iiConfirmedLeakResult
+Assert-Eq -Label "installability: confirmed CliVersion is withheld in public-safe output" `
+    -Expected 'withheld' -Actual $iiConfirmedLeakPublic.CliVersion
+Assert-Eq -Label "installability: confirmed NuGetVersion is withheld in public-safe output" `
+    -Expected 'withheld' -Actual $iiConfirmedLeakPublic.NuGetVersion
+Assert-Eq -Label "installability: confirmed InstallCommand does not leak the embargoed build number" `
+    -Expected $false -Actual ($iiConfirmedLeakPublic.InstallCommand.Contains('SECRETBUILD'))
+Assert-Eq -Label "installability: confirmed pin comparison Actual value is withheld" `
+    -Expected 'withheld' -Actual $iiConfirmedLeakPublic.PinComparisons[0].Actual
+Assert-Eq -Label "installability: confirmed pin comparison WorkloadId/Expected/Status survive redaction (coherence signal preserved)" `
+    -Expected $true -Actual (
+        $iiConfirmedLeakPublic.PinComparisons[0].WorkloadId -eq 'Microsoft.NET.Sdk.Android' -and
+        $iiConfirmedLeakPublic.PinComparisons[0].Expected -eq '37.0.0-preview.6.59' -and
+        $iiConfirmedLeakPublic.PinComparisons[0].Status -eq 'match'
+    )
+
+$iiUnconfirmedResult = [PSCustomObject]@{
+    Status = 'installable'; Summary = 'ok'; SdkVersion = '11.0.100-preview.6.1'
+    SdkFeatureBand = '11.0.100'; PackageId = 'Microsoft.NET.Workloads.11.0.100-preview.6'
+    CliVersion = '11.0.100-preview.6.26363.2'; NuGetVersion = '11.100.0-preview.6.26363.2'
+    VersionConfirmed = $false
+    PinComparisons = @([PSCustomObject]@{
+        WorkloadId = 'Microsoft.NET.Sdk.Android'; Expected = '37.0.0-preview.6.59'
+        Actual = '37.0.0-preview.6.59'; Status = 'match'
+    })
+    ManifestPackages = @(); PackProbes = @(); RequiredSources = @()
+    NuGetConfig = $null
+    InstallCommand = 'dotnet workload install maui --version 11.0.100-preview.6.26363.2 --configfile ./preview-nuget.config'
+}
+$iiUnconfirmedPublic = ConvertTo-PublicInstallabilityResult -Result $iiUnconfirmedResult
+Assert-Eq -Label "installability: unconfirmed (discovered) version is not embargoed - it's just the newest public candidate" `
+    -Expected '11.0.100-preview.6.26363.2' -Actual $iiUnconfirmedPublic.CliVersion
+Assert-Eq -Label "installability: unconfirmed InstallCommand keeps the discovered version" `
+    -Expected $true -Actual ($iiUnconfirmedPublic.InstallCommand.Contains('11.0.100-preview.6.26363.2'))
+
+# Fix: an unconfirmed run (no release-owner-supplied CLI version) whose only
+# discoverable workload-set candidate fails branch-pin coherence must remain
+# 'unknown', not be promoted to 'mismatched' (which maps to BLOCKED). Only a
+# genuinely confirmed candidate's mismatch is evidence of a real problem.
+$iiAlwaysMismatchedManifest = [ordered]@{}
+foreach ($entry in $iiWorkloadSetManifest.GetEnumerator()) { $iiAlwaysMismatchedManifest[$entry.Key] = $entry.Value }
+$iiAlwaysMismatchedManifest['Microsoft.NET.Sdk.Android'] = '37.0.0-preview.6.999/11.0.100-preview.6'
+$iiMismatchPackageReader = {
+    param($ResolvedSource, $PackageId, $Version, $EntryNames)
+    if ($PackageId -like 'Microsoft.NET.Workloads.*') {
+        return @{ 'data/microsoft.net.workloads.workloadset.json' = $iiAlwaysMismatchedManifest }
+    }
+    return @{
+        'data/WorkloadDependencies.json' = $iiDependencies
+        'data/WorkloadManifest.json'     = $iiComponentManifest
+    }
+}.GetNewClosure()
+$iiUnconfirmedMismatch = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -PublicSafe $false -Fetcher $iiFetcher -PackageReader $iiMismatchPackageReader
+Assert-Eq -Label "installability: unconfirmed candidate that fails pin coherence stays unknown (not promoted to BLOCKED)" `
+    -Expected 'unknown' -Actual $iiUnconfirmedMismatch.Status
+
+$iiConfirmedMismatch = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiFetcher -PackageReader $iiMismatchPackageReader
+Assert-Eq -Label "installability: confirmed candidate that fails pin coherence is still mismatched (real BLOCKED signal preserved)" `
+    -Expected 'mismatched' -Actual $iiConfirmedMismatch.Status
+
+# Fix: a pin whose expected value could not be determined at all (e.g. the
+# branch pins document is missing that component) compares as 'unverified' -
+# distinct from 'match'. An 'unverified' component must not silently count as
+# coherent, because that would let a confirmed workload set with genuinely
+# unknown pin data for one component still be reported 'installable'.
+$iiPinsMissingAndroid = [PSCustomObject]@{
+    Vmr    = $iiPins.Vmr
+    Macios = $iiPins.Macios
+    # Android intentionally omitted -> Compare-PreviewWorkloadSetPins cannot
+    # verify that component's pin and must report 'unverified', not 'match'.
+}
+$iiUnverifiedComparisons = Compare-PreviewWorkloadSetPins -Manifest $iiWorkloadSetManifest `
+    -Pins $iiPinsMissingAndroid -Major 11 -Preview 6
+Assert-Eq -Label "installability: pin with no expected value to verify against is 'unverified', not 'match'" `
+    -Expected 'unverified' -Actual (@($iiUnverifiedComparisons | Where-Object WorkloadId -eq 'Microsoft.NET.Sdk.Android')[0]).Status
+
+$iiConfirmedUnverifiedRun = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPinsMissingAndroid `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: 'unverified' pin blocks the coherent-candidate selection (status is not 'installable')" `
+    -Expected $false -Actual ($iiConfirmedUnverifiedRun.Status -eq 'installable')
+
+# Fix: markdown table cells built from feed/source-supplied strings (NuGet
+# source names) must not be able to break table structure (a literal '|')
+# or be misread as an HTML tag/comment start (a literal '<') by downstream
+# markdown renderers.
+Assert-Eq -Label "installability markdown: pipe in source name does not break table structure" `
+    -Expected 'a \| b' -Actual (Format-InstallabilityMarkdownCell 'a | b')
+Assert-Eq -Label "installability markdown: angle brackets are escaped" `
+    -Expected '&lt;script&gt;' -Actual (Format-InstallabilityMarkdownCell '<script>')
+Assert-Eq -Label "installability markdown: embedded newline is collapsed so a table row cannot be split" `
+    -Expected 'a b' -Actual (Format-InstallabilityMarkdownCell "a`nb")
+Assert-Eq -Label "installability markdown: null value renders as empty string, not a throw" `
+    -Expected '' -Actual (Format-InstallabilityMarkdownCell $null)
+
+$iiMarkdownInjectionResult = [PSCustomObject]@{
+    Status = 'unknown'; Summary = 'evidence gathering'; SdkVersion = '11.0.100-preview.6.1'
+    SdkFeatureBand = '11.0.100'; PackageId = 'Example.Package'; CliVersion = $null; NuGetVersion = $null
+    VersionConfirmed = $false; PinComparisons = @()
+    ManifestPackages = @([PSCustomObject]@{
+        WorkloadId = 'Example.Workload'; PackageId = 'Example.Manifest'; Version = '1.0.0'; Status = 'unknown'
+        ContentStatus = 'unknown'
+        ResolvedSource = [PSCustomObject]@{ Source = [PSCustomObject]@{ Name = 'weird | source <b>'; Role = 'shared' } }
+        UnknownSources = @()
+    })
+    PackProbes = @(); RequiredSources = @(); PlatformRequirements = $null
+    NuGetConfig = $null; InstallCommand = $null
+}
+$iiInjectionMarkdown = Format-PreviewInstallabilityMarkdown -Result $iiMarkdownInjectionResult -PublicSafe $false
+Assert-Eq -Label "installability markdown: a source name with a raw pipe cannot inject an extra table column" `
+    -Expected $false -Actual ($iiInjectionMarkdown -match '\| weird \| source')
+Assert-Eq -Label "installability markdown: a source name with angle brackets cannot be read as an HTML tag" `
+    -Expected $false -Actual ($iiInjectionMarkdown.Contains('<b>'))
+
 $p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
 $nonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'area-xaml' }, [PSCustomObject]@{ name = 'p/1' }) }
 $missingLbls = [PSCustomObject]@{ number = 12345 }            # no labels property at all

@@ -3,6 +3,26 @@
 
 Set-StrictMode -Version Latest
 
+function Format-InstallabilityMarkdownCell {
+    <#
+        Escapes markdown-significant characters in values that can originate from
+        outside this script's control (NuGet package source names supplied via
+        -AdditionalPackageSource, or feed-hosted package/version identifiers) before
+        they are interpolated into a rendered markdown table. Without this, a source
+        name containing a literal `|` breaks the table's column alignment, and a `<`
+        can be interpreted as the start of an HTML tag/comment by downstream markdown
+        renderers. This mirrors Format-MarkdownCell's escaping intent in
+        Get-PreviewReadiness.ps1, duplicated locally so this file stays independently
+        loadable/testable (it is dot-sourced standalone in unit tests).
+    #>
+    param([AllowNull()][string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) { return '' }
+    $escaped = $Value -replace "`r`n", ' ' -replace "`n", ' ' -replace "`r", ' '
+    $escaped = $escaped -replace '\|', '\|'
+    $escaped = $escaped -replace '<', '&lt;' -replace '>', '&gt;'
+    return $escaped
+}
+
 function Get-InstallabilityProperty {
     param(
         [AllowNull()]$Object,
@@ -665,10 +685,21 @@ function ConvertTo-IsolatedNuGetConfig {
 }
 
 function ConvertTo-PublicInstallabilityResult {
-    param([Parameter(Mandatory)]$Result)
+    param(
+        [Parameter(Mandatory)]$Result,
+        [AllowNull()][array]$Sources = @()
+    )
 
+    # Build the sensitive-name set from every additional/internal source that was
+    # configured for this run, not just the ones that ended up in $Result.RequiredSources.
+    # RequiredSources only lists sources actually needed by the final outcome (and, on
+    # the 'installable' path, omits additional sources entirely - see the requiredSources
+    # assembly below). A source that failed for one package but was never "required"
+    # because a later source satisfied the request can still appear in an individual
+    # location's UnknownSources; sourcing sensitivity from $Sources instead of
+    # $Result.RequiredSources ensures its real name is redacted there too.
     $sensitiveSourceNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    foreach ($source in @($Result.RequiredSources)) {
+    foreach ($source in (@($Sources) + @($Result.RequiredSources))) {
         if ([bool](Get-InstallabilityProperty $source 'IsAdditional') -or
             [bool](Get-InstallabilityProperty $source 'IsInternal')) {
             [void]$sensitiveSourceNames.Add([string](Get-InstallabilityProperty $source 'Name'))
@@ -711,9 +742,33 @@ function ConvertTo-PublicInstallabilityResult {
     }
 
     $copy.NuGetConfig = $null
-    $copy.InstallCommand = if ($Result.CliVersion) {
-        "dotnet workload install maui --version $($Result.CliVersion) --configfile <local-nuget-config>"
-    } else { $null }
+    # A release-owner-confirmed workload-set build is embargoed (withheld from the public
+    # issue), consistent with this skill's existing "blessed build" handling elsewhere
+    # (see SKILL.md's Preview tracker gotchas). Withhold the exact CLI/NuGet version, the
+    # install command that names it, and each component's resolved build number here so a
+    # public-safe report never leaks the confirmed build ahead of its official
+    # announcement; the match/mismatch/missing Status alone still conveys pin coherence
+    # without revealing the build itself. An unconfirmed discovered candidate is not
+    # embargoed (it's just the newest public coherent package), so it is left intact.
+    if ($Result.VersionConfirmed) {
+        $copy.CliVersion = 'withheld'
+        $copy.NuGetVersion = 'withheld'
+        $copy.InstallCommand = if ($Result.CliVersion) {
+            'dotnet workload install maui --version <withheld> --configfile <local-nuget-config>'
+        } else { $null }
+        $copy.PinComparisons = @($Result.PinComparisons | ForEach-Object {
+            [PSCustomObject]@{
+                WorkloadId = $_.WorkloadId
+                Expected   = $_.Expected
+                Actual     = if ([string]::IsNullOrWhiteSpace([string]$_.Actual)) { $_.Actual } else { 'withheld' }
+                Status     = $_.Status
+            }
+        })
+    } else {
+        $copy.InstallCommand = if ($Result.CliVersion) {
+            "dotnet workload install maui --version $($Result.CliVersion) --configfile <local-nuget-config>"
+        } else { $null }
+    }
     $copy.ManifestPackages = @($Result.ManifestPackages | ForEach-Object { & $sanitizeLocation $_ })
     $copy.PackProbes = @($Result.PackProbes | ForEach-Object { & $sanitizeLocation $_ })
     $copy.RequiredSources = @(
@@ -741,11 +796,12 @@ function ConvertTo-PublicInstallabilityResult {
 function Complete-PreviewInstallabilityResult {
     param(
         [Parameter(Mandatory)]$Result,
-        [bool]$PublicSafe
+        [bool]$PublicSafe,
+        [AllowNull()][array]$Sources = @()
     )
 
     if ($PublicSafe) {
-        return ConvertTo-PublicInstallabilityResult -Result $Result
+        return ConvertTo-PublicInstallabilityResult -Result $Result -Sources $Sources
     }
     return $Result
 }
@@ -839,7 +895,7 @@ function Get-PreviewConsumerInstallability {
             RequiredSources = @($sources); PlatformRequirements = $null
             NuGetConfig = $null; InstallCommand = $null
         }
-        return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe
+        return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe -Sources $sources
     }
 
     $package = $null
@@ -860,7 +916,7 @@ function Get-PreviewConsumerInstallability {
                 RequiredSources = @($sources); PlatformRequirements = $null
                 NuGetConfig = $null; InstallCommand = $null
             }
-            return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe
+            return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe -Sources $sources
         }
 
         $package = [PSCustomObject]@{
@@ -881,7 +937,7 @@ function Get-PreviewConsumerInstallability {
                 RequiredSources = @($sources); PlatformRequirements = $null
                 NuGetConfig = $null; InstallCommand = $null
             }
-            return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe
+            return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe -Sources $sources
         }
     }
 
@@ -904,7 +960,11 @@ function Get-PreviewConsumerInstallability {
             $comparisons = @(Compare-PreviewWorkloadSetPins -Manifest $manifest -Pins $Pins -Major $Major -Preview $Preview `
                 -ExpectedMauiManifestVersion $ExpectedMauiManifestVersion)
             $lastComparisons = $comparisons
-            if (@($comparisons | Where-Object { $_.Status -in @('mismatch', 'missing') }).Count -eq 0) {
+            # 'unverified' means the expected pin value itself was unavailable (see
+            # Compare-PreviewWorkloadSetPins) — i.e. this component's pin was never
+            # actually checked, not that it matched. Treating it as coherent would let
+            # incomplete branch-pin data silently pass a full pin-coherence claim.
+            if (@($comparisons | Where-Object { $_.Status -in @('mismatch', 'missing', 'unverified') }).Count -eq 0) {
                 $selectedVersion = $version
                 $selectedManifest = $manifest
                 $selectedComparisons = $comparisons
@@ -916,11 +976,24 @@ function Get-PreviewConsumerInstallability {
     }
 
     if (-not $selectedManifest) {
-        $status = if ($lastComparisons.Count -gt 0) { 'mismatched' } else { 'unknown' }
+        # An unconfirmed run (no release-owner-supplied CLI version) that finds no
+        # fully-coherent candidate among the discovered versions must remain 'unknown',
+        # not 'mismatched' -> BLOCKED: the newest public candidate not yet matching
+        # branch pins is not evidence of a real installability problem when nothing has
+        # been confirmed. Only a confirmed candidate's genuine pin mismatch is BLOCKED.
+        $status = if (-not $WorkloadSetCliVersion) {
+            'unknown'
+        } elseif ($lastComparisons.Count -gt 0) {
+            'mismatched'
+        } else {
+            'unknown'
+        }
         $result = [PSCustomObject]@{
             Status = $status
             Summary = if ($status -eq 'mismatched') {
                 'Available workload-set candidates do not match the branch component pins.'
+            } elseif (-not $WorkloadSetCliVersion -and $lastComparisons.Count -gt 0) {
+                'No discovered workload-set candidate has branch-pin-coherent contents, and no release-owner-confirmed version was supplied to evaluate directly.'
             } else {
                 'The workload-set package was found, but its manifest could not be read.'
             }
@@ -930,7 +1003,7 @@ function Get-PreviewConsumerInstallability {
             RequiredSources = @($package.Source.Source); PlatformRequirements = $null
             NuGetConfig = $null; InstallCommand = $null
         }
-        return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe
+        return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe -Sources $sources
     }
 
     $selectedCliVersion = ConvertTo-WorkloadSetCliVersion -NuGetVersion $selectedVersion -SdkFeatureBand $featureBand
@@ -1012,11 +1085,15 @@ function Get-PreviewConsumerInstallability {
     $unreadableManifests = @($manifestLocations | Where-Object {
         $_.Status -eq 'found' -and $_.ContentStatus -ne 'read'
     })
-    $status = if ($missing.Count -gt 0) {
+    $status = if (-not $WorkloadSetCliVersion) {
+        # Unconfirmed run: no release-owner-blessed version was supplied, so even a
+        # missing/unresolvable asset for the auto-discovered candidate is not proof this
+        # preview is uninstallable - it's proof this particular unconfirmed candidate is
+        # not fully resolvable. Only a confirmed candidate's asset gaps are BLOCKED.
+        'unknown'
+    } elseif ($missing.Count -gt 0) {
         'missing'
     } elseif ($unknown.Count -gt 0 -or $unreadableManifests.Count -gt 0) {
-        'unknown'
-    } elseif (-not $WorkloadSetCliVersion) {
         'unknown'
     } else {
         'installable'
@@ -1069,7 +1146,7 @@ function Get-PreviewConsumerInstallability {
         InstallCommand       = $command
     }
 
-    return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe
+    return Complete-PreviewInstallabilityResult -Result $result -PublicSafe $PublicSafe -Sources $sources
 }
 
 function Format-PreviewInstallabilityMarkdown {
@@ -1115,7 +1192,7 @@ function Format-PreviewInstallabilityMarkdown {
             if ([string]::IsNullOrWhiteSpace([string]$sourceName)) { $sourceName = '—' }
             $contentStatus = Get-InstallabilityProperty $manifestPackage 'ContentStatus'
             if ([string]::IsNullOrWhiteSpace([string]$contentStatus)) { $contentStatus = '—' }
-            [void]$builder.AppendLine("| ``$($manifestPackage.PackageId)`` | ``$($manifestPackage.Version)`` | **$($manifestPackage.Status)** | **$contentStatus** | ``$sourceName`` |")
+            [void]$builder.AppendLine("| ``$($manifestPackage.PackageId)`` | ``$($manifestPackage.Version)`` | **$($manifestPackage.Status)** | **$contentStatus** | ``$(Format-InstallabilityMarkdownCell $sourceName)`` |")
         }
         [void]$builder.AppendLine('')
     }
@@ -1132,13 +1209,13 @@ function Format-PreviewInstallabilityMarkdown {
             if ([string]::IsNullOrWhiteSpace([string]$sourceName)) { $sourceName = '—' }
             $packageId = if ([string]::IsNullOrWhiteSpace([string]$packProbe.PackageId)) { 'not derived' } else { "``$($packProbe.PackageId)``" }
             $version = if ([string]::IsNullOrWhiteSpace([string]$packProbe.Version)) { '—' } else { "``$($packProbe.Version)``" }
-            [void]$builder.AppendLine("| $($packProbe.Category) | $packageId | $version | **$($packProbe.Status)** | ``$sourceName`` |")
+            [void]$builder.AppendLine("| $($packProbe.Category) | $packageId | $version | **$($packProbe.Status)** | ``$(Format-InstallabilityMarkdownCell $sourceName)`` |")
         }
         [void]$builder.AppendLine('')
     }
 
     if (@($Result.RequiredSources).Count -gt 0) {
-        $sourceNames = @($Result.RequiredSources | ForEach-Object { "``$($_.Name)``" }) -join ', '
+        $sourceNames = @($Result.RequiredSources | ForEach-Object { "``$(Format-InstallabilityMarkdownCell $_.Name)``" }) -join ', '
         [void]$builder.AppendLine("**Required package sources:** $sourceNames")
         [void]$builder.AppendLine('')
     }
