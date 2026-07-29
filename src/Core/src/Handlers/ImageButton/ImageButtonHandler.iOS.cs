@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -44,6 +45,31 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 
 			SourceLoader.Reset();
+		}
+
+		//TODO : Make it public in NET 11.
+		internal static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
+		{
+			var platformView = handler.PlatformView;
+
+			if (platformView is null)
+				return;
+
+			if (imageButton.Background is ImageSourcePaint imagePaint)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(imagePaint.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (imageButton.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = UIColor.Clear;
+			}
+			else
+			{
+				platformView.UpdateBackground(imageButton);
+			}
 		}
 
 		public static void MapStrokeColor(IImageButtonHandler handler, IButtonStroke buttonStroke)

@@ -32,5 +32,35 @@ namespace Microsoft.Maui.DeviceTests
 			var id = await GetValueAsync(view, handler => GetVisibility(handler));
 			Assert.Equal(view.Visibility, id);
 		}
+
+		[Fact(DisplayName = "Deferred Show Does Not Resurrect A Hidden Indicator")]
+		public async Task DeferredShowDoesNotResurrectHiddenIndicator()
+		{
+			var activityIndicator = new ActivityIndicatorStub
+			{
+				IsRunning = true,
+				Visibility = Visibility.Visible
+			};
+
+			var visibility = await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(activityIndicator);
+				var progressBar = handler.PlatformView;
+
+				activityIndicator.IsRunning = false;
+				activityIndicator.Visibility = Visibility.Collapsed;
+
+				ViewStates result = ViewStates.Visible;
+				await progressBar.AttachAndRun(async () =>
+				{
+					await Task.Delay(100);
+					result = progressBar.Visibility;
+				});
+
+				return result;
+			});
+
+			Assert.Equal(ViewStates.Gone, visibility);
+		}
 	}
 }

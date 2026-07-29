@@ -58,6 +58,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var textBlockInlines = textBlock.Inlines;
 			textBlockInlines.Clear();
+			var textHighlighters = textBlock.TextHighlighters;
+			textHighlighters.Clear();
 
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
@@ -97,7 +99,7 @@ namespace Microsoft.Maui.Controls.Platform
 					};
 
 					run.Foreground = textColor?.ToPlatform();
-					textBlock.TextHighlighters.Add(textHighlighter);
+					textHighlighters.Add(textHighlighter);
 				}
 
 				currentTextIndex += runTextLength;

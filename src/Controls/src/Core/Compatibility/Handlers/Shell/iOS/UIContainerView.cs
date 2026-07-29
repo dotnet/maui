@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -10,16 +11,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	public class UIContainerView : UIView
 	{
 		readonly View _view;
+		readonly bool _ownsHandler;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Captured handler reference is cleared in Disconnect; owning flyout containers also disconnect it.")]
 		IPlatformViewHandler _renderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Platform view is owned as a UIKit subview and detached and cleared in Disconnect.")]
 		UIView _platformView;
 		bool _disposed;
 		double _measuredHeight;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event subscribers are cleared in Dispose(bool).")]
 		internal event EventHandler HeaderSizeChanged;
 
 		public UIContainerView(View view)
+			: this(view, ownsHandler: false)
+		{
+		}
+
+		internal UIContainerView(View view, bool ownsHandler)
 		{
 			_view = view;
+			_ownsHandler = ownsHandler;
 
 			UpdatePlatformView();
 			ClipsToBounds = true;
@@ -101,7 +112,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void WillRemoveSubview(UIView uiview)
 		{
-			Disconnect();
 			base.WillRemoveSubview(uiview);
 		}
 
@@ -137,6 +147,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			var renderer = _renderer;
+			var platformView = _platformView;
+
+			_renderer = null;
+			_platformView = null;
+
+			if (platformView?.Superview == this)
+				platformView.RemoveFromSuperview();
+
+			if (_ownsHandler)
+				renderer?.DisconnectHandler();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -147,12 +168,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (disposing)
 			{
 				Disconnect();
-
-				if (_platformView.Superview == this)
-					_platformView.RemoveFromSuperview();
-
-				_renderer = null;
-				_platformView = null;
+				HeaderSizeChanged = null;
 				_disposed = true;
 			}
 
