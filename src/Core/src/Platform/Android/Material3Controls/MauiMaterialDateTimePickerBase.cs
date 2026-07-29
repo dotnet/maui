@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform;
 /// and a trailing icon (calendar/clock) whose tap opens the platform picker dialog. Subclasses
 /// only supply the end-icon drawable to use.
 /// </summary>
-public abstract class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
+public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
 {
     MauiMaterialEditText? _inputEditText;
     PickerClickListener? _clickListener;
