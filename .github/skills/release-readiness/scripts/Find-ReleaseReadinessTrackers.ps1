@@ -763,8 +763,25 @@ function Invoke-DetectionForMajor {
             continue
         }
         $branchPatch = [int]$Matches[2]
+        $branchMajor = [int]$Matches[1]
         $expectedTag = $versionInfo.Tag
         if (-not (Test-IsPatchInSrCycle -SrNumber $sr -Patch $branchPatch)) {
+            $expectedPatchFloor = $sr * 10
+            $isCutBeforeBump = $branchPatch -ge (($sr - 1) * 10) -and $branchPatch -lt $expectedPatchFloor
+            if ($isCutBeforeBump) {
+                $validSrBranches.Add($entry)
+                if ($sr -gt $highestBranchSr) { $highestBranchSr = $sr }
+                $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+                $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'in-flight' `
+                    -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                    -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                    -ExpectedPatch $expectedPatchFloor -ExpectedTag "$branchMajor.0.$expectedPatchFloor" `
+                    -HasRecentActivityCount $recent
+                $trackers.Add($tracker)
+                $inflightBranchesBySr[$sr] = $branch
+                Write-Host "  -> in-flight SR tracker in cut-before-bump state: SR$sr (live patch=$branchPatch, expected patch=$expectedPatchFloor, recent=$recent)" -ForegroundColor Yellow
+                continue
+            }
             Write-Warning "[major $Major] Branch '$branch' declares patch $branchPatch outside SR$sr's [$($sr * 10)..$(($sr * 10) + 9)] range — skipping Lane 1 to avoid duplicate/misnumbered trackers."
             continue
         }

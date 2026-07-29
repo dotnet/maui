@@ -13,15 +13,15 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
     $safe = $safe -replace '(?i)&quest;|&#(?:x0*3f|0*63);', '?'
     $safe = $safe -replace '(?i)&num;|&hash;|&#(?:x0*23|0*35);', '#'
-    $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
-    $safe = [regex]::Replace($safe, '(?i)D\s*e\s*v\s*D\s*i\s*v(?=[/\\])', 'DevDiv')
+    $safe = [regex]::Replace($safe, '(?i)d[\s\-_.]*n[\s\-_.]*c[\s\-_.]*e[\s\-_.]*n[\s\-_.]*g(?=[./\\])', 'dnceng')
+    $safe = [regex]::Replace($safe, '(?i)D[\s\-_.]*e[\s\-_.]*v[\s\-_.]*D[\s\-_.]*i[\s\-_.]*v(?=[/\\])', 'DevDiv')
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?<host>(?:dev\.azure\.com/)?dnceng|dnceng\.visualstudio\.com)\s*(?=/)',
         '${host}')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
+        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i[\s\-_.]*n[\s\-_.]*t[\s\-_.]*e[\s\-_.]*r[\s\-_.]*n[\s\-_.]*a[\s\-_.]*l',
         '${prefix}internal')
     $safe = [regex]::Replace(
         $safe,
@@ -31,7 +31,7 @@ function ConvertTo-PublicSafeMarkdown {
             $collection = if ($match.Groups['collection'].Success) { 'DefaultCollection/' } else { '' }
             "$($match.Groups['prefix'].Value)${collection}internal"
         })
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|(?<![A-Za-z0-9])d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
@@ -77,12 +77,17 @@ function ConvertTo-PublicSafeMarkdown {
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
-        $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
-        $isInternal = $detection -match '(?i)^(?:(?:https?://)?(?:dev\.azure\.com(?::\d+)?/dnceng|dnceng\.visualstudio\.com(?::\d+)?)/(?:DefaultCollection/)?internal|dnceng/(?:DefaultCollection/)?internal|(?:https?://)?(?:dev\.azure\.com(?::\d+)?/DevDiv|devdiv\.visualstudio\.com(?::\d+)?/DevDiv)|DevDiv)(?:[/?:#]|$)'
+        $detection = [regex]::Replace($canonical, '[^A-Za-z0-9@:/?._#&=%-]', '')
+        $azdoAuthority = '(?:(?:dev\.azure\.com(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com(?::\d+)?))'
+        $hasAzdoUserInfo = $detection -match "(?i)https?://[^/@]+@$azdoAuthority(?:[/?:#]|$)"
+        if ($hasAzdoUserInfo) {
+            return '_credential-bearing URL omitted_'
+        }
+        $isInternal = $detection -match "(?i)(?:https?://(?:dev\.azure\.com(?::\d+)?/dnceng|dnceng\.visualstudio\.com(?::\d+)?)/(?:DefaultCollection/)?internal|https?://(?:dev\.azure\.com(?::\d+)?/DevDiv|devdiv\.visualstudio\.com(?::\d+)?/DevDiv)|^(?:dnceng(?:\.visualstudio\.com)?/(?:DefaultCollection/)?internal|DevDiv))(?:[/?:#]|$)"
         if ($isInternal) {
             return '_internal URL omitted_'
         }
-        $isRecognizedAzdoHost = $detection -match '(?i)^(?:https?://)?(?:(?:dev\.azure\.com(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com(?::\d+)?))(?:[/?:#]|$)'
+        $isRecognizedAzdoHost = $detection -match "(?i)(?:https?://$azdoAuthority|^(?:dnceng|DevDiv)(?:/|$))(?:[/?:#]|$)"
         if ($isRecognizedAzdoHost -and $canonical.Contains('?')) {
             return [regex]::Replace($original, '(?i)(?:\?|\uFF1F|%(?:25)*3f)[\s\S]*$', '?_query_omitted_')
         }

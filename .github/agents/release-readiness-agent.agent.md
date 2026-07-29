@@ -209,18 +209,10 @@ Lead with a 1-2 sentence overall verdict (Ready 🟢 / Conditionally Ready 🟡 
 - Surface fresh ci-scan WATCH signals if the scanner just flagged something
 - For preview candidates, frame as "what would ship if we cut today," not "is this ready"
 
-**Preview action-plan ordering (mandatory).** For a newly cut preview branch with
-missing or incomplete flow plumbing, the prioritized action list MUST start with this
-dependency order, even when other report rows are marked `BLOCKED`:
-
-1. Add the Preview N default-channel mapping.
-2. Add the Android and macOS/iOS subscriptions; confirm their configuration has
-   reached `production` before treating them as active. The config PR merge is
-   necessary but not sufficient: verify BAR ingestion with
-   `darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch <preview-branch>`.
-3. Reconcile MAUI's SDK/VMR pin locally with the official Preview N build and
-   recommend a focused component-bump PR. Never request a dotnet/VMR subscription:
-   the Maestro preview feed can differ from the release source of truth.
+**Preview action-plan ordering (mandatory).** Follow the canonical dependency-ordered
+list in the release-readiness SKILL.md **Preview action ordering** section. Do not
+restate or reorder it here; that section owns the production-ingestion check and the
+rule that SDK/VMR reconciliation is local rather than a VMR subscription.
 
 If the official SDK/runtime build is unavailable under the access-tier workflow,
 report the public-feed build as display-only and leave VMR validation `UNKNOWN`.

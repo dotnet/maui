@@ -242,6 +242,7 @@ fi
 input="$(mktemp)"
 output="$(mktemp)"
 printf 'before\r\n<!-- release-readiness-shipped: 10.0.90 -->\r\nafter\r\n' > "$input"
+rr_has_exact_marker_line "$input" '<!-- release-readiness-shipped: 10.0.90 -->'
 rr_remove_exact_marker_line "$input" "$output" '<!-- release-readiness-shipped: 10.0.90 -->'
 if grep -Fq 'release-readiness-shipped' "$output"; then
   exit 11
@@ -257,7 +258,7 @@ try {
 } finally {
     Remove-Item $lifecycleProbePath -Force -ErrorAction SilentlyContinue
 }
-Assert-Eq -Label "tracker lifecycle helper preserves oldest tracker, strict race ordering, and CRLF marker removal" `
+Assert-Eq -Label "tracker lifecycle helper preserves oldest tracker, strict race ordering, and CRLF marker detection/removal" `
     -Expected 0 -Actual $lifecycleProbeExit
 
 # ─────────── E2E smoke test against SR7 ───────────
@@ -1328,12 +1329,15 @@ if (-not $SkipE2E) {
         $script:SyntheticSrBranchTag = '10.0.90'
         $syntheticMisconfiguredSr10 = Invoke-DetectionForMajor -Major 10
         $misconfiguredSrTrackers = @($syntheticMisconfiguredSr10.trackers | Where-Object branchType -eq 'sr')
-        Assert-Eq -Label "misconfigured SR10 patch90 does not advance candidate to SR11" `
+        Assert-Eq -Label "cut-before-bump SR10 patch90 does not advance candidate to SR11" `
             -Expected 0 -Actual @($misconfiguredSrTrackers | Where-Object { [int]$_.srNumber -eq 11 }).Count
-        Assert-Eq -Label "misconfigured SR10 patch90 leaves the real SR10 candidate visible" `
+        Assert-Eq -Label "cut-before-bump SR10 patch90 emits the existing branch as in-flight" `
             -Expected 1 -Actual @($misconfiguredSrTrackers | Where-Object {
-                [int]$_.srNumber -eq 10 -and $_.mode -eq 'candidate'
+                [int]$_.srNumber -eq 10 -and $_.mode -eq 'in-flight' -and $_.branchExists
             }).Count
+        $cutBeforeBumpSr10 = @($misconfiguredSrTrackers | Where-Object { [int]$_.srNumber -eq 10 })[0]
+        Assert-Eq -Label "cut-before-bump SR10 advertises its own expected patch decade" `
+            -Expected '10.0.100' -Actual $cutBeforeBumpSr10.expectedTag
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
@@ -1875,6 +1879,11 @@ try {
                                               -SrContents $scanContents -MaxIssues 10
     Assert-Eq -Label "regression scan: non-array JSON root marks scan incomplete" -Expected $false -Actual $wrongRootScan.IsComplete
 
+    $script:GhStub = { param([string[]]$GhArgs) return '42' }
+    $scalarRootScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                               -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: scalar JSON root marks scan incomplete" -Expected $false -Actual $scalarRootScan.IsComplete
+
     $script:GhStub = { param([string[]]$GhArgs) return '   ' }
     $whitespaceScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
                                               -SrContents $scanContents -MaxIssues 10
@@ -2314,6 +2323,9 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         Assert-Eq -Label "backport lineage: unrelated repeated mention cannot retract source — $unrelatedRepeatedMention" `
             -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unrelatedRepeatedMention) -join ',')
     }
+    Assert-Eq -Label "backport lineage: single-sentence contextual workaround mention cannot retract source" `
+        -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text `
+            'Backport of #12345. The workaround for #12345 is no longer required.') -join ',')
     foreach ($contextualRetraction in @(
         'Backport of #12345. The change from #12345 was reverted in this branch.',
         'Backport of #12345. The fix from #12345 was not included in this SR.',
@@ -3173,6 +3185,8 @@ foreach ($negatedClosingText in @(
     'This failed to fully fix #35615'
     'This is unable to fix #35615'
     'This only partially fixes #35615'
+    'This cannot fix #35615 until the upstream change lands'
+    'This cannot resolve #35615'
     "This does not`nfix #35615"
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
@@ -3736,6 +3750,9 @@ $script:mockCommentsJson = @'
   ,{ "body": "This issue was partially fixed by PR #80005; remaining work is tracked separately." }
   ,{ "body": "Resolved by #80006, though only partially; follow-up remains." }
   ,{ "body": "This closes #80007. Note: it is only a partial fix, more work is needed." }
+  ,{ "body": "Fixed by #80008. This also removes the temporary workaround added in SR6." }
+  ,{ "body": "This issue was partly fixed by #80009; remaining work is tracked separately." }
+  ,{ "body": "This partially fixes #80010; remaining work is tracked separately." }
 ]
 '@
 function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
@@ -3761,6 +3778,12 @@ try {
         -Expected 'mention' -Actual $byNum[80006]
     Assert-Eq -Label "next-sentence partial qualifier is demoted to mention" `
         -Expected 'mention' -Actual $byNum[80007]
+    Assert-Eq -Label "unrelated next-sentence workaround does not demote a full fix" `
+        -Expected 'fix-phrase' -Actual $byNum[80008]
+    Assert-Eq -Label "partly-fixed phrase is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80009]
+    Assert-Eq -Label "partially-fixed phrase without 'only' is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80010]
 } finally {
     ${function:Invoke-Gh} = $origInvokeGh
 }
@@ -5417,6 +5440,19 @@ Assert-Eq -Label "shipped markdown: BLOCKED ship check uses operational follow-u
     -Actual ($mdBlockedShipCheck -match 'Post-ship operational follow-ups' -and $mdBlockedShipCheck -match 'Servicing flip')
 Assert-Eq -Label "shipped markdown: BLOCKED ship check is not placed under regression hotfix caption" -Expected $false `
     -Actual ($mdBlockedShipCheck -match 'Each needs a human hotfix-vs-next-SR decision')
+$mdDataWatchShipCheck = $mdDataBlockedShipCheck.Clone()
+$mdDataWatchShipCheck['shipChecks'] = @(
+    [pscustomobject]@{
+        Area = 'Known Build Errors'; Status = 'WATCH'; Details = 'One issue needs review'
+        NextAction = 'Review the open KBE.'
+    }
+)
+$mdWatchShipCheck = Format-MarkdownReport -Data $mdDataWatchShipCheck -RepoUrl 'https://github.com/dotnet/maui' `
+                                         -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: WATCH ship check appears in operational follow-ups" -Expected $true `
+    -Actual ($mdWatchShipCheck -match 'Post-ship operational follow-ups' -and
+        $mdWatchShipCheck -match 'Known Build Errors' -and
+        $mdWatchShipCheck -notmatch 'No urgent post-ship follow-ups')
 
 $mdDataP0ContentDecision = $mdDataShipped.Clone()
 $mdDataP0ContentDecision['regressions'] = @()
@@ -8130,6 +8166,7 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnceng//internal/_build?token=DOUBLESLASHSECRET',
         'https://dev.azure.com/dnceng/%2finternal/_build?token=MIXEDSLASHSECRET',
         'https://dnceng.visualstudio.com:443/internal/_build?token=PORTSECRET',
+        'https://dev.azure.com/d-n-c-e-n-g/internal/_build?token=HYPHENORGSECRET',
         'https://dev.azure.com/dnceng/ internal/_build?token=SPACEBEFORESECRET',
         'https://dev.azure.com/dnceng/internal /_build?token=SPACEAFTERINTSECRET',
         'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
@@ -8153,6 +8190,12 @@ function Assert-PublicSanitizerEdgeCases {
         -Actual ($publicFragmentSafe -match 'PUBLICFRAGMENTSECRET')
     Assert-Eq -Label "$Lane sanitizer marks removed Azure DevOps fragments" -Expected $true `
         -Actual ($publicFragmentSafe -match '_fragment_omitted_')
+    Assert-Eq -Label "$Lane sanitizer fully omits credential-bearing Azure DevOps URL" `
+        -Expected '_credential-bearing URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://user:PAT@dev.azure.com/dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer omits embedded DevDiv URL while preserving surrounding key" `
+        -Expected 'buildUrl=_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'buildUrl=https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1234?token=EMBEDDEDDEVDIVSECRET')
     foreach ($publicEncodedQuery in @(
         'https://dev.azure.com/dnceng/public/_build%3Ftoken=PARTIALENCODESECRET'
         'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Fpublic%2F_build%3Ftoken=ENCODEDPUBLICSECRET'
@@ -8244,6 +8287,15 @@ Assert-Eq -Label "preview body cap stays within the configured UTF-8 limit" -Exp
     -Actual ([System.Text.Encoding]::UTF8.GetByteCount($cappedPreviewBody) -le 600)
 Assert-Eq -Label "preview body cap reports truncation" -Expected $true `
     -Actual ($cappedPreviewBody -match 'Report truncated')
+$previewUtf8Body = ([string]::new([char]0x4E2D, 600)) + "`n" + $previewComponentBlock + "`n" + $previewNotesBlock
+foreach ($previewUtf8Cap in 500..520) {
+    $previewUtf8Capped = Limit-PreviewTrackerBody -MarkdownBody $previewUtf8Body `
+        -NotesBlockText $previewNotesBlock -MaxBodyBytes $previewUtf8Cap
+    Assert-Eq -Label "preview UTF-8 truncation stays within cap $previewUtf8Cap" -Expected $true `
+        -Actual ([System.Text.Encoding]::UTF8.GetByteCount($previewUtf8Capped) -le $previewUtf8Cap)
+    Assert-Eq -Label "preview UTF-8 truncation avoids replacement character at cap $previewUtf8Cap" -Expected $false `
+        -Actual ($previewUtf8Capped.Contains([char]0xFFFD))
+}
 
 # A component-pin fetch failure must fail closed without suppressing the
 # mandatory local VMR reconciliation handoff.

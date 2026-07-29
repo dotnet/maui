@@ -10,6 +10,21 @@ rr_edit_landed_after_close() {
   [ -n "$closed_at" ] && [[ "$updated_at" > "$closed_at" ]]
 }
 
+rr_has_exact_marker_line() {
+  local input_file="$1"
+  local marker="$2"
+
+  LC_ALL=C awk -v marker="$marker" '{
+    normalized = $0
+    sub(/\r$/, "", normalized)
+    if (normalized == marker) {
+      found = 1
+      exit
+    }
+  }
+  END { exit(found ? 0 : 1) }' "$input_file"
+}
+
 rr_remove_exact_marker_line() {
   local input_file="$1"
   local output_file="$2"

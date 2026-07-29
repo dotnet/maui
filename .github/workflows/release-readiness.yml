@@ -768,7 +768,7 @@ jobs:
                   # minimize the close/edit race, then compensate below when
                   # GitHub timestamps prove the edit landed after the closure.
                   GENERATION_TRANSITION=false
-                  if [ -n "$GENERATION_MARKER" ] && ! LC_ALL=C grep -Fqx "$GENERATION_MARKER" "$CUR_BODY_FILE"; then
+                  if [ -n "$GENERATION_MARKER" ] && ! rr_has_exact_marker_line "$CUR_BODY_FILE" "$GENERATION_MARKER"; then
                     GENERATION_TRANSITION=true
                   fi
                   PRE_EDIT_META=$(gh issue view "$CANONICAL" \

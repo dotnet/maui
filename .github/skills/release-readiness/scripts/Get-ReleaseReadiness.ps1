@@ -2423,7 +2423,7 @@ function Get-ClosingIssueNumbers {
         if ($prefixLines.Count -ge 2 -and -not [string]::IsNullOrWhiteSpace($prefixLines[-2])) {
             $prefix = "$($prefixLines[-2]) $prefix"
         }
-        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bunable\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bonly\s+partial(?:ly)?\s+$)"
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\bcannot(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bunable\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bonly\s+(?:partial(?:ly)?|partly)\s+$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
         }
@@ -3208,10 +3208,11 @@ function Get-IssueCommentPrs {
             # matches; only a SOLELY-(adjacently-)negated reference is demoted. A
             # non-adjacent negation ("won't be fixed by #X") is not caught here, but
             # the caller's merged-AND-on-branch gates still bound the blast radius.
-            $partialQualifier = '(?:partial(?:ly)?|temporar(?:y|ily)|workaround|in\s+part)'
+            $partialQualifier = '(?:partial(?:ly)?|partly|temporar(?:y|ily)|workaround|in\s+part)'
             $fixVerb = '(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)'
             $partialFix = ($body -match "(?i)\b$partialQualifier\s+$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b") -or
-                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b[\s\S]{0,160}?\b$partialQualifier\b")
+                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b[^.!?`r`n]{0,100}?\b$partialQualifier\b") -or
+                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b\s*[.!?]\s*(?:Note:\s*)?(?:it|this|that|the\s+(?:change|fix|resolution))\s+(?:is|was)\s+(?:only\s+)?(?:a\s+)?$partialQualifier(?:\s+fix)?\b")
             $isFix = (-not $partialFix) -and
                 ($body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b")
             $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
@@ -5663,7 +5664,8 @@ function Format-MarkdownReport {
             $isHotfixWatch = $isShippedRender -and
                 $sc.Status -eq 'WATCH' -and
                 $sc.Area -eq 'Unpublished hotfix branch state'
-            if ($sc.Status -eq 'BLOCKED' -or $isHotfixWatch) {
+            $isShippedFollowUp = $isShippedRender -and $sc.Status -in @('BLOCKED', 'WATCH', 'UNKNOWN')
+            if ($sc.Status -eq 'BLOCKED' -or $isHotfixWatch -or $isShippedFollowUp) {
                 $shipCheckItem = @{
                     area = "🛠️ $($sc.Area)"
                     details = $sc.Details

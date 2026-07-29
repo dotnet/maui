@@ -176,8 +176,9 @@ as a dependency-ordered sequence. Do **not** sort unrelated `BLOCKED`/`WATCH` ro
 of these prerequisites:
 
 1. Add the Preview N default-channel mapping.
-2. Add the baseline Android and macOS/iOS subscriptions and wait for the
-   `maestro-configuration` PR to merge into `production`.
+2. Add the baseline Android and macOS/iOS subscriptions. Wait for the
+   `maestro-configuration` PR to merge into `production`, then verify BAR ingestion
+   with `darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch <preview-branch>`.
 3. Reconcile MAUI's SDK/VMR pin **locally** with the official Preview N build and
    open the resulting focused component-bump PR. Do not add a VMR subscription.
 4. Build branch HEAD and promote the resulting MAUI build to the Preview N channel.
@@ -207,7 +208,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 |-----------|----------|---------|-------------|
 | `-SrBranch` | Yes | — | SR branch name (e.g. `release/10.0.1xx-sr8`). In `-Candidate` mode, pass the **prior** SR — it's the exclude baseline for "what's new". |
 | `-Candidate` | No | off | Pre-flight mode — survey `main` (with `-SrBranch` as the prior-SR baseline) to show what WOULD ship in the next SR. |
-| `-Shipped` | No | off | Post-ship mode for the most recently tagged SR. Uses immutable stable-tag contents while keeping operational checks live; publication metadata enriches the date when available. |
+| `-Shipped` | No | off | Post-ship mode for any explicitly requested tagged SR. Uses immutable stable-tag contents while keeping operational checks live; scheduled trackers normally emit only the most recently tagged SR. |
 | `-ShippedTag` | No | latest local stable tag in the SR patch range | Explicit immutable shipped-anchor override for deterministic/manual runs. |
 | `-InheritFromPriorSr` | No | off | In `-Candidate` mode, model the workflow where the prior SR is merged into the new branch after cut. Candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits. |
 | `-RegressionLabels` | One of these | — | Comma-separated `regressed-in-*` labels. |

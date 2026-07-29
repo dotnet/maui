@@ -2438,9 +2438,9 @@ if ($ciScanQueryFailed) {
         -Details "Could not query ci-scan issues (label ``$ciScanLabel`` — gh exited non-zero after retries). Treating as missing signal so the verdict reflects unknown state." `
         -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable, triage ci-scan manually."
 } elseif (-not $ciScanLabel) {
-    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" `
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "INSUFFICIENT_DATA" `
         -Details "No per-branch CI Failure Scanner is configured for ``$SurveyRef``. Add a case to Get-CiScanLabelForBranch if a scanner is added later." `
-        -NextAction "No action — this branch is not continuously scanned."
+        -NextAction "Use the branch CI/device/UI checks; no continuous scanner signal exists for this ref."
 } elseif ($freshCiScan.Count -gt 0) {
     $detail = "$($freshCiScan.Count) ci-scan issue(s) on ``$SurveyRef`` (label ``$ciScanLabel``) filed in the last 24h ($($ciScanIssues.Count) total open). Likely affects this release."
     $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details $detail -NextAction "Review the freshest ci-scan issues; decide whether any affect ship-readiness."
