@@ -2065,6 +2065,8 @@ try {
             body = 'Backports #32295'
             headRefName = 'manual/backport'
         }) -SourcePrNumber 32295)
+    Assert-Eq -Label "issue #36154 lineage: same-repo source shorthand is explicit" -Expected '36499' `
+        -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of dotnet/maui#36499') -join ',')
     Assert-Eq -Label "backport lineage: background-only parenthetical is not a source list" -Expected $false `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
             body = 'Backport of #99999, (for background only), and #32295'
@@ -3171,6 +3173,7 @@ foreach ($negatedClosingText in @(
     'This failed to fully fix #35615'
     'This is unable to fix #35615'
     'This only partially fixes #35615'
+    "This does not`nfix #35615"
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
@@ -8096,7 +8099,7 @@ Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundC
 function Assert-PublicSanitizerEdgeCases {
     param([string]$Lane)
 
-    $cases = @(
+    $internalCases = @(
         'https://dev.azure.com/dnceng/internal/_build?token=PLAINSECRET',
         'https://dev.azure.com/dnceng/DefaultCollection\internal/_build?token=MIXEDSECRET',
         'https://dnceng.visualstudio.com/internal/_build?token=LEGACYSECRET',
@@ -8127,17 +8130,16 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnceng//internal/_build?token=DOUBLESLASHSECRET',
         'https://dev.azure.com/dnceng/%2finternal/_build?token=MIXEDSLASHSECRET',
         'https://dnceng.visualstudio.com:443/internal/_build?token=PORTSECRET',
-        'https://dev.azure.com/dnceng/public/_build%3Ftoken=PARTIALENCODESECRET',
-        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Fpublic%2F_build%3Ftoken=ENCODEDPUBLICSECRET',
-        'https%253A%252F%252Fdev.azure.com%252Fdnceng%252Fpublic%252F_build%253Ftoken=DOUBLEENCODEDPUBLICSECRET',
+        'https://dev.azure.com/dnceng/ internal/_build?token=SPACEBEFORESECRET',
+        'https://dev.azure.com/dnceng/internal /_build?token=SPACEAFTERINTSECRET',
         'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
         "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET",
         "https://dev.azure.com/dnceng/in$([char]0x0422)ernal/_build?token=CYRILLICUPPERSECRET"
     )
-    foreach ($case in $cases) {
+    foreach ($case in $internalCases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
-        Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|NAMEDINVISIBLESECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET|DEVDIVSPACESECRET|BAREDEVDIVSECRET|BARESPACEDSECRET|DOUBLESLASHSECRET|MIXEDSLASHSECRET|PORTSECRET|PARTIALENCODESECRET|ENCODEDPUBLICSECRET|DOUBLEENCODEDPUBLICSECRET|DOTSEGMENTSECRET|CYRILLICSECRET|CYRILLICUPPERSECRET')
+        Assert-Eq -Label "$Lane sanitizer fully omits internal URL — $case" `
+            -Expected '_internal URL omitted_' -Actual $safe
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
@@ -8151,19 +8153,40 @@ function Assert-PublicSanitizerEdgeCases {
         -Actual ($publicFragmentSafe -match 'PUBLICFRAGMENTSECRET')
     Assert-Eq -Label "$Lane sanitizer marks removed Azure DevOps fragments" -Expected $true `
         -Actual ($publicFragmentSafe -match '_fragment_omitted_')
+    foreach ($publicEncodedQuery in @(
+        'https://dev.azure.com/dnceng/public/_build%3Ftoken=PARTIALENCODESECRET'
+        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Fpublic%2F_build%3Ftoken=ENCODEDPUBLICSECRET'
+        'https%253A%252F%252Fdev.azure.com%252Fdnceng%252Fpublic%252F_build%253Ftoken=DOUBLEENCODEDPUBLICSECRET'
+        "https://dev.azure.com/dnceng/public/_build$([char]0xFF1F)token=FULLWIDTHQUERYSECRET"
+    )) {
+        $encodedQuerySafe = ConvertTo-PublicSafeMarkdown -Text $publicEncodedQuery
+        Assert-Eq -Label "$Lane sanitizer removes encoded query value — $publicEncodedQuery" -Expected $false `
+            -Actual ($encodedQuerySafe -match 'SECRET')
+        Assert-Eq -Label "$Lane sanitizer marks encoded query omission — $publicEncodedQuery" -Expected $true `
+            -Actual ($encodedQuerySafe -match '_query_omitted_')
+    }
+    $fullwidthFragmentSafe = ConvertTo-PublicSafeMarkdown -Text "https://dev.azure.com/dnceng/public/_build$([char]0xFF03)token=FULLWIDTHFRAGMENTSECRET"
+    Assert-Eq -Label "$Lane sanitizer removes fullwidth fragment value" -Expected $false `
+        -Actual ($fullwidthFragmentSafe -match 'FULLWIDTHFRAGMENTSECRET')
+    Assert-Eq -Label "$Lane sanitizer marks fullwidth fragment omission" -Expected $true `
+        -Actual ($fullwidthFragmentSafe -match '_fragment_omitted_')
     Assert-Eq -Label "$Lane sanitizer does not over-redact an internal-host string in another host's path" `
         -Expected 'https://example.com/dnceng.visualstudio.com:443/internal/docs' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://example.com/dnceng.visualstudio.com:443/internal/docs')
-    foreach ($internalVariant in @(
-        'https://dev.azure.com/dnceng//internal/_build?token=DOUBLESLASHSECRET'
-        'https://dev.azure.com/dnceng/%2finternal/_build?token=MIXEDSLASHSECRET'
-        'https://dnceng.visualstudio.com:443/internal/_build?token=PORTSECRET'
-    )) {
-        Assert-Eq -Label "$Lane sanitizer fully omits normalized internal URL — $internalVariant" `
-            -Expected '_internal URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $internalVariant)
-    }
     Assert-Eq -Label "$Lane sanitizer preserves ordinary percentage prose byte-for-byte" -Expected 'Coverage results: 6%62% relative improvement' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'Coverage results: 6%62% relative improvement')
+    foreach ($ordinaryProse in @(
+        'Investigate dnceng internal build flakiness'
+        'The dnceng internal feed was down'
+        'internal / external split noted'
+        'DefaultCollection internal notes'
+    )) {
+        Assert-Eq -Label "$Lane sanitizer preserves ordinary source prose byte-for-byte — $ordinaryProse" `
+            -Expected $ordinaryProse -Actual (ConvertTo-PublicSafeMarkdown -Text $ordinaryProse)
+    }
+    Assert-Eq -Label "$Lane sanitizer redacts encoded official release source name" `
+        -Expected 'official release source' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text '.NET Release Track&#101;r')
     Assert-Eq -Label "$Lane sanitizer preserves emoji variation and joiners outside URLs" -Expected 'Status ⚠️ family 👨‍👩‍👧‍👦' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'Status ⚠️ family 👨‍👩‍👧‍👦')
     $oversizedEntityThrew = $false
@@ -8174,6 +8197,22 @@ function Assert-PublicSanitizerEdgeCases {
 # The SR engine is currently dot-sourced; exercise the shared helper before
 # Preview loads the same required dependency.
 Assert-PublicSanitizerEdgeCases -Lane 'SR'
+$artifactData = @{
+    srContents = @{
+        sourcePrs = @(36499, 36506)
+        commits = @(
+            @{ subject = 'Internal build'; url = 'https://dev.azure.com/dnceng/internal/_build?token=ARTIFACTSECRET' }
+        )
+    }
+}
+$safeArtifactContents = Select-OutputSrContents -Data $artifactData -PublicSafe:$true
+$unsafeArtifactContents = Select-OutputSrContents -Data $artifactData -PublicSafe:$false
+Assert-Eq -Label "SR artifact projection redacts private commit metadata" -Expected '_internal URL omitted_' `
+    -Actual $safeArtifactContents.commits[0].url
+Assert-Eq -Label "SR artifact projection preserves source PR numbers" -Expected '36499,36506' `
+    -Actual ($safeArtifactContents.sourcePrs -join ',')
+Assert-Eq -Label "SR artifact projection honors explicit non-public local mode" -Expected $true `
+    -Actual ($unsafeArtifactContents.commits[0].url -match 'ARTIFACTSECRET')
 
 # Dot-source the preview engine to access its helpers without running the
 # main driver (the InvocationName guard returns on dot-source). A valid
@@ -9730,7 +9769,8 @@ function New-GuidanceHashData {
         [int]$MainFixPr = 40002,
         [string]$RecommendedAction = 'Wait for main merge; then backport',
         [string]$NextAction = 'No action',
-        [string]$ShipCheckDetails = 'Feed is available'
+        [string]$ShipCheckDetails = 'Feed is available',
+        [string]$RegressionTitle = 'Regression title'
     )
     @{
         metadata   = @{ srHeadSha = 'cafe12345678'; mainBranch = 'main' }
@@ -9739,6 +9779,7 @@ function New-GuidanceHashData {
         regressions = @(
             @{
                 issue = 35000
+                title = $RegressionTitle
                 state = 'OPEN'
                 classification = 'open-on-main'
                 candidateFixPrs = @(
@@ -9762,6 +9803,7 @@ $guidanceDifferentPr = New-GuidanceHashData -MainFixPr 40003
 $guidanceDifferentAction = New-GuidanceHashData -RecommendedAction 'Post the backport command after merge'
 $guidanceDifferentNextAction = New-GuidanceHashData -NextAction 'Paste the validation feed into ship assessment'
 $guidanceDifferentDetails = New-GuidanceHashData -ShipCheckDetails 'Feed publication is still pending'
+$guidanceDifferentTitle = New-GuidanceHashData -RegressionTitle 'Clarified regression scope'
 
 $hGuidanceBase = Get-ReportSemanticHash -Data $guidanceBase -Verdict $guidanceV
 Assert-Eq -Label "hash: rendered guidance fold is deterministic" `
@@ -9774,6 +9816,8 @@ Assert-Eq -Label "hash: shipCheck NextAction change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentNextAction -Verdict $guidanceV))
 Assert-Eq -Label "hash: rendered shipCheck Details change → DIFFERENT" `
     -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentDetails -Verdict $guidanceV))
+Assert-Eq -Label "hash: rendered regression title change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentTitle -Verdict $guidanceV))
 
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in

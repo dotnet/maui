@@ -190,6 +190,18 @@ if (-not (Test-Path $publicSanitizerHelperPath)) {
 }
 . $publicSanitizerHelperPath
 
+function Select-OutputSrContents {
+    param(
+        [Parameter(Mandatory)]$Data,
+        [bool]$PublicSafe = $true
+    )
+
+    $srContents = Get-MetadataValue -Container $Data -Name 'srContents'
+    if ($null -eq $srContents) { return $null }
+    if ($PublicSafe) { return ConvertTo-PublicSafeValue -Value $srContents }
+    return $srContents
+}
+
 # DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
 # Refuse to operate on any `inflight/*` or `staging/*` ref — those are
 # integration branches, not SR sources. This guard exists because conflating
@@ -2406,7 +2418,11 @@ function Get-ClosingIssueNumbers {
     return @($matches | ForEach-Object {
         $prefixStart = [Math]::Max(0, $_.Index - 512)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
-        $prefix = [regex]::Split($prefix, '\r\n|\r|\n')[-1]
+        $prefixLines = @([regex]::Split($prefix, '\r\n|\r|\n'))
+        $prefix = $prefixLines[-1]
+        if ($prefixLines.Count -ge 2 -and -not [string]::IsNullOrWhiteSpace($prefixLines[-2])) {
+            $prefix = "$($prefixLines[-2]) $prefix"
+        }
         $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bunable\s+to(?:\s+(?:fully|actually|completely))?\s+$|\bonly\s+partial(?:ly)?\s+$)"
         if (-not $negated) {
             ConvertTo-PrNumber -Value $_.Groups[1].Value
@@ -2533,7 +2549,7 @@ function Get-ExplicitBackportSourceNumbers {
     # `#A, #B; and #C`. Normalize only this structured continuation.
     $Text = [regex]::Replace(
         $Text,
-        '(?i)(?<ref>(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))\s*;\s*(?=(?:(?:and|plus)\s+)?(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])(?!(?:\s+)(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\b))',
+        '(?i)(?<ref>(?:(?:https://github\.com/dotnet/maui/)?pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))\s*;\s*(?=(?:(?:and|plus)\s+)?(?:(?:https://github\.com/dotnet/maui/)?pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])(?!(?:\s+)(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\b))',
         '${ref}, ')
     # Preserve paragraphs and Markdown block/list boundaries, but fold genuine
     # wrapped continuation lines so `Backport of` + newline + `#N` remains one
@@ -2569,7 +2585,7 @@ function Get-ExplicitBackportSourceNumbers {
             $windowLength = [Math]::Min(2048, $clause.Length - $clauseStart)
             $window = $clause.Substring($clauseStart, $windowLength)
             $references = @([regex]::Matches($window,
-                '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
+                '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|dotnet/maui#|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
             if ($references.Count -eq 0) { continue }
             $acceptedReferenceIndexes = [System.Collections.Generic.HashSet[int]]::new()
 
@@ -2595,7 +2611,7 @@ function Get-ExplicitBackportSourceNumbers {
                 # Negation after a later PR reference belongs to that later
                 # list item, not the current one.
                 while ($true) {
-                    $nextReference = [regex]::Match($suffix, '(?i)(?:pull/|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+                    $nextReference = [regex]::Match($suffix, '(?i)(?:pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
                     if (-not $nextReference.Success) { break }
                     $nextNumber = ConvertTo-PrNumber -Value $nextReference.Groups['number'].Value
                     if ($nextNumber -eq $number) {
@@ -2678,7 +2694,7 @@ function Get-ExplicitBackportSourceNumbers {
     # for any repeated negated occurrence across the bounded full text so list
     # order and sentence boundaries cannot preserve false-positive lineage.
     foreach ($acceptedNumber in @($result)) {
-        $acceptedPattern = "(?i)(?:pull/|#)$acceptedNumber(?![\p{L}\p{N}_])"
+        $acceptedPattern = "(?i)(?:pull/|dotnet/maui#|#)$acceptedNumber(?![\p{L}\p{N}_])"
         foreach ($occurrence in [regex]::Matches($Text, $acceptedPattern)) {
             $prefixStart = [Math]::Max(0, $occurrence.Index - 160)
             $occurrencePrefix = $Text.Substring($prefixStart, $occurrence.Index - $prefixStart)
@@ -2696,7 +2712,7 @@ function Get-ExplicitBackportSourceNumbers {
             # repeated occurrence of the same number is evaluated separately.
             $nextReference = [regex]::Match(
                 $occurrenceSuffix,
-                '(?i)(?:pull/|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+                '(?i)(?:pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
             if ($nextReference.Success) {
                 $occurrenceSuffix = $occurrenceSuffix.Substring(0, $nextReference.Index)
             }
@@ -5251,6 +5267,7 @@ function Get-ReportSemanticHash {
                               }
                               $lifecycleBucket = ''
                               $regressionState = [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN')
+                              $regressionTitle = [string](Get-MetadataValue -Container $_ -Name 'title' -Default '')
                               if ($modeForHash -eq 'shipped') {
                                   $effectiveTier = Get-EffectiveVerdictTier -Classification $_.classification -Mode $modeForHash -State $regressionState
                                   if ($effectiveTier -lt 3) {
@@ -5277,9 +5294,9 @@ function Get-ReportSemanticHash {
                               } else { '' }
                               if ($_.classification -eq 'no-fix-yet') {
                                   $nfyTier = if ($regressionState -eq 'OPEN') { 't1' } else { 't3' }
-                                  "$($_.issue):$($_.classification):$($nfyTier):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
+                                  "$($_.issue):${regressionTitle}:$($_.classification):$($nfyTier):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
                               } else {
-                                  "$($_.issue):$($_.classification):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
+                                  "$($_.issue):${regressionTitle}:$($_.classification):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
                               }
                           }) -join '|'
                       } else { '' }
@@ -6769,10 +6786,11 @@ function Invoke-Main {
             Set-Content -Path (Join-Path $OutputDir 'release-readiness.md') -Value $mdOut -Encoding UTF8
         }
         if ($data.ContainsKey('srContents')) {
-            $srcPrs = $data['srContents'].sourcePrs -join "`n"
+            $outputSrContents = Select-OutputSrContents -Data $data -PublicSafe:$PublicSafe
+            $srcPrs = (Get-MetadataValue -Container $outputSrContents -Name 'sourcePrs' -Default @()) -join "`n"
             Set-Content -Path (Join-Path $OutputDir 'sr-source-prs.txt') -Value $srcPrs -Encoding UTF8
 
-            $commitsJson = $data['srContents'] | ConvertTo-Json -Depth 10
+            $commitsJson = $outputSrContents | ConvertTo-Json -Depth 10
             Set-Content -Path (Join-Path $OutputDir 'sr-commits.json') -Value $commitsJson -Encoding UTF8
         }
         Write-Host "`nWrote outputs to: $OutputDir" -ForegroundColor Green

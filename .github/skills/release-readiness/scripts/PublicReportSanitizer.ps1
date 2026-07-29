@@ -11,12 +11,26 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '(?i)&colon;', ':'
     $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
     $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
+    $safe = $safe -replace '(?i)&quest;|&#(?:x0*3f|0*63);', '?'
+    $safe = $safe -replace '(?i)&num;|&hash;|&#(?:x0*23|0*35);', '#'
     $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
     $safe = [regex]::Replace($safe, '(?i)D\s*e\s*v\s*D\s*i\s*v(?=[/\\])', 'DevDiv')
     $safe = [regex]::Replace(
         $safe,
+        '(?i)(?<host>(?:dev\.azure\.com/)?dnceng|dnceng\.visualstudio\.com)\s*(?=/)',
+        '${host}')
+    $safe = [regex]::Replace(
+        $safe,
         '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
         '${prefix}internal')
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)(?<prefix>(?:https?://)?(?:(?:dev\.azure\.com(?::\d+)?/dnceng)|(?:dnceng\.visualstudio\.com(?::\d+)?)|dnceng)/)\s*(?<collection>DefaultCollection\s*[/\\]\s*)?internal\s*(?=[/\\])',
+        {
+            param($match)
+            $collection = if ($match.Groups['collection'].Success) { 'DefaultCollection/' } else { '' }
+            "$($match.Groups['prefix'].Value)${collection}internal"
+        })
     $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|d|[\uFF01-\uFF5E]|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
@@ -70,21 +84,19 @@ function ConvertTo-PublicSafeMarkdown {
         }
         $isRecognizedAzdoHost = $detection -match '(?i)^(?:https?://)?(?:(?:dev\.azure\.com(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com(?::\d+)?))(?:[/?:#]|$)'
         if ($isRecognizedAzdoHost -and $canonical.Contains('?')) {
-            return [regex]::Replace($original, '(?i)(?:\?|%(?:25)*3f)[\s\S]*$', '?_query_omitted_')
+            return [regex]::Replace($original, '(?i)(?:\?|\uFF1F|%(?:25)*3f)[\s\S]*$', '?_query_omitted_')
         }
         if ($isRecognizedAzdoHost -and $canonical.Contains('#')) {
-            return [regex]::Replace($original, '(?i)(?:#|%(?:25)*23)[\s\S]*$', '#_fragment_omitted_')
+            return [regex]::Replace($original, '(?i)(?:#|\uFF03|%(?:25)*23)[\s\S]*$', '#_fragment_omitted_')
         }
         return $original
     })
     $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
-    $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)[^\s<>"''`|)]*',
         { param($match) $match.Value -replace '\\', '/' })
-    $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
     $safe = [regex]::Replace($safe, '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
     $safe = [regex]::Replace($safe, '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
     $safe = [regex]::Replace($safe, '(?i)https(?:%3a|%253a)(?:%2f|%252f){2}(?:(?:dev\.azure\.com(?:%2f|%252f)dnceng)|dnceng\.visualstudio\.com)(?:%2f|%252f)(?:DefaultCollection(?:%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
@@ -93,7 +105,7 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = [regex]::Replace($safe, '(?i)\bapi://[A-Za-z0-9._/-]+', '_internal identifier omitted_')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?:\.NET Release Tracker|\bdotnet-release-tracker\b|\bdotnet/release\b)',
+        '(?i)(?:\.NET Release Track(?:e|&#(?:x0*65|0*101);)r|\bdotnet-release-tracker\b|\bdotnet/release\b)',
         'official release source')
     $safe = [regex]::Replace(
         $safe,
