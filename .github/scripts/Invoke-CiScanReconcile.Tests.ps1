@@ -1555,6 +1555,37 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
             $r.Extent.StartOffset | Should -BeGreaterOrEqual $span.StartOffset -Because "a read at offset $($r.Extent.StartOffset) sits outside Invoke-GhWrite"
             $r.Extent.EndOffset | Should -BeLessOrEqual $span.EndOffset -Because "a read at offset $($r.Extent.StartOffset) sits outside Invoke-GhWrite"
         }
+
+        # Every query above is blind to BY-NAME access, and blind by construction rather
+        # than by oversight: `Set-Variable -Name '...'` and `(Get-Variable -Name '...').Value`
+        # produce no VariableExpressionAst at all -- they are CommandAsts carrying a string.
+        # Measured against a synthetic mirror, both forms return the control's exact
+        # reading (refs=2, writes=1, escaped=0), so nothing above can distinguish them
+        # from a clean file.
+        #
+        # This is the rule established earlier in this suite -- acquiring a handle by NAME
+        # is the write capability -- arriving in the test written to enforce it.
+        #
+        # Constrained by SHAPE, not by enumerating cmdlets. A Set-Variable/Get-Variable/
+        # New-Variable list is the same hand-typed deny-list this file has now found short
+        # three times: it misses the aliases (`sv`/`gv`/`nv`) and `Set-Item variable:`.
+        # The invariant that needs no list: legitimate code names this table as a
+        # VARIABLE, never as a STRING. Verified to catch all six by-name forms above,
+        # single- and double-quoted, bare, aliased, and via Set-Item -- while the honest
+        # `$script:CiScanWriteShapes = @{}` control stays clean. Production holds zero
+        # such strings today, so this pins current behaviour exactly.
+        #
+        # Bound stated honestly: a NAME assembled at runtime ('CiScan' + 'WriteShapes')
+        # is not a string constant and is not caught. That is deliberate obfuscation
+        # rather than a writer added in good faith, and the threat model above already
+        # establishes there is no data-to-code path for an attacker to reach it.
+        $nameStrings = $ast.FindAll({
+                param($n)
+                ($n -is [System.Management.Automation.Language.StringConstantExpressionAst] -or
+                $n -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) -and
+                $n.Value -like '*CiScanWriteShapes*'
+            }, $true)
+        @($nameStrings).Count | Should -Be 0 -Because 'a string holding the table name is a by-name handle, which every AST query above is structurally unable to see'
     }
 
     <#
