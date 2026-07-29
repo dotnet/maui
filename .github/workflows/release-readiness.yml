@@ -781,11 +781,16 @@ jobs:
                   elif [ "$PRE_EDIT_UPDATED_AT" != "$CUR_UPDATED_AT" ] || [ "$PRE_EDIT_BODY_B64" != "$CUR_BODY_B64" ]; then
                     echo "::warning::Issue #${CANONICAL} changed while this refresh was preparing; skipping edit to preserve concurrent Release Captain Notes. The next run will merge the latest body."
                   else
-                    gh issue edit "$CANONICAL" \
-                      --repo "${{ github.repository }}" \
-                      --title "$ISSUE_TITLE" \
-                      --body-file "$BODY_FILE"
                     if [ "$GENERATION_TRANSITION" = "true" ]; then
+                      # Capture the timestamp and body from this exact mutation.
+                      # A later issue event can advance the aggregate updatedAt,
+                      # so a post-read timestamp cannot prove edit/close order.
+                      EDIT_RESULT=$(gh api --method PATCH \
+                        "repos/${{ github.repository }}/issues/${CANONICAL}" \
+                        -F title="$ISSUE_TITLE" \
+                        -F body=@"$BODY_FILE" \
+                        --jq '[.updated_at, ((.body // "") | @base64)] | @tsv')
+                      IFS=$'\t' read -r EDIT_UPDATED_AT EDIT_BODY_B64 <<< "$EDIT_RESULT"
                       POST_EDIT_META=''
                       if ! POST_EDIT_META=$(gh issue view "$CANONICAL" \
                        --repo "${{ github.repository }}" \
@@ -797,9 +802,12 @@ jobs:
                       else
                        IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT POST_BODY_B64 <<< "$POST_EDIT_META"
                       if [ "$POST_EDIT_STATE" = "CLOSED" ] &&
+                        [ -n "$EDIT_BODY_B64" ] &&
                         [ -n "$POST_BODY_B64" ] &&
-                        rr_edit_landed_after_close "$POST_CLOSED_AT" "$POST_UPDATED_AT"; then
-                       # The edit provably happened after the human closure.
+                        [ "$POST_BODY_B64" = "$EDIT_BODY_B64" ] &&
+                        rr_edit_landed_after_close "$POST_CLOSED_AT" "$EDIT_UPDATED_AT"; then
+                       # The mutation response proves this exact edit happened
+                       # after the human closure and remains the live body.
                        # Start from the live closed body, then recheck its revision
                        # immediately before removing only the raced marker.
                        RACE_CURRENT_BODY_FILE="$(mktemp)"
@@ -827,6 +835,11 @@ jobs:
                        rm -f "$RACE_CURRENT_BODY_FILE" "$RACE_BODY_FILE"
                       fi
                       fi
+                    else
+                      gh issue edit "$CANONICAL" \
+                       --repo "${{ github.repository }}" \
+                       --title "$ISSUE_TITLE" \
+                       --body-file "$BODY_FILE"
                     fi
                   fi
                 fi

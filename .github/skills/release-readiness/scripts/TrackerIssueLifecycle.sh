@@ -6,8 +6,8 @@ rr_select_oldest_tracker() {
 
 rr_edit_landed_after_close() {
   local closed_at="$1"
-  local updated_at="$2"
-  [ -n "$closed_at" ] && [[ "$updated_at" > "$closed_at" ]]
+  local edit_updated_at="$2"
+  [ -n "$closed_at" ] && [ -n "$edit_updated_at" ] && [[ "$edit_updated_at" > "$closed_at" ]]
 }
 
 rr_has_exact_marker_line() {
