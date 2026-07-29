@@ -76,6 +76,20 @@ BeforeAll {
         $segments += [pscustomobject]@{ content = "===== AzDO log $BuildId/$sourceLogId =====" }
         foreach ($segment in $segments) {'
         }
+        # Run-specific AzDO transport timestamps remain part of evidence identity.
+        'timestamp-sensitive-identity' = @{
+            Find    = '    if ($StripAzdoTransportTimestamp) {
+        # Azure DevOps prepends a run-specific UTC timestamp to every stored log
+        # line. Segment provenance decides whether it is transport framing; the
+        # same timestamp in Helix or other evidence remains part of the message.
+        $normalized = [regex]::Replace(
+            $normalized,
+            ''^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?Z[ \t]+'',
+            ''''
+        )
+    }'
+            Replace = ''
+        }
     }
 
     function New-MutatedValidator {
@@ -357,6 +371,30 @@ Describe 'CI scanner marker mutation coverage' {
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*scanner marker content*'
+    }
+
+    It 'baseline: AzDO transport timestamps do not prevent trusted body binding' {
+        $trusted = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n##[error]Path does not exist: artifacts/bin"
+        $result = Invoke-ValidatorProbe `
+            -MatchPattern 'Path does not exist' `
+            -EvidenceLines @($trusted) `
+            -Body $body
+
+        $result.ok | Should -BeTrue
+    }
+
+    It 'mutation "timestamp-sensitive-identity": realistic cross-build body binding fails' {
+        $trusted = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n##[error]Path does not exist: artifacts/bin"
+        $result = Invoke-ValidatorProbe `
+            -Mutation @('timestamp-sensitive-identity') `
+            -MatchPattern 'Path does not exist' `
+            -EvidenceLines @($trusted) `
+            -Body $body
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*must contain a full trusted evidence line*'
     }
 }
 

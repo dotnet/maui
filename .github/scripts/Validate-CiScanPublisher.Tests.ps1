@@ -26,16 +26,14 @@ BeforeDiscovery {
 
 BeforeAll {
     $script:LockPath = Join-Path $PSScriptRoot '../workflows/ci-status-net11.lock.yml'
+    . (Join-Path $PSScriptRoot 'Validate-CiScanManifest.ps1')
 
     function New-EvidenceProof {
         param([Parameter(Mandatory = $true)][string]$Line)
 
-        $normalized = ([regex]::Replace(
-                $Line.Replace([string][char]0x200B, '').
-                    Normalize([System.Text.NormalizationForm]::FormKC).Trim(),
-                '\s+',
-                ' '
-            )).ToLowerInvariant()
+        $normalized = ConvertTo-EvidenceIdentityLine `
+            -Value $Line `
+            -StripAzdoTransportTimestamp
         $lineHashBytes = [System.Security.Cryptography.SHA256]::HashData(
             [System.Text.Encoding]::UTF8.GetBytes($normalized)
         )
@@ -50,7 +48,9 @@ BeforeAll {
     }
 
     function Get-LegacyMatcherSource {
-        $lock = Get-Content -LiteralPath $script:LockPath -Raw
+        param([string]$LockPath = $script:LockPath)
+
+        $lock = Get-Content -LiteralPath $LockPath -Raw
         $start = $lock.IndexOf('const evidenceKeyPrefix')
         if ($start -lt 0) {
             throw 'The compiled lock no longer contains trusted evidence matching.'
@@ -59,7 +59,7 @@ BeforeAll {
         $matcherStart = $lock.IndexOf('const legacyEvidenceMatcher', $helperEnd)
         $end = $lock.IndexOf('const existingEntries', $matcherStart)
         if ($helperEnd -lt 0 -or $matcherStart -lt 0 -or $end -lt 0) {
-            throw 'Could not find the end of the legacyIdentityMatcher block.'
+            throw 'Could not find the end of the legacyEvidenceMatcher block.'
         }
 
         $segment = $lock.Substring($start, $helperEnd - $start) + "`n" +
@@ -85,8 +85,11 @@ BeforeAll {
             [Parameter(Mandatory = $true)][string]$EvidenceLine,
             [Parameter(Mandatory = $true)][string]$Pipeline,
             [Parameter(Mandatory = $true)][object[]]$Candidates,
+            [string]$LockPath = $script:LockPath,
             [switch]$CountTrustedStateLines,
-            [switch]$IgnoreEvidenceIdentity
+            [switch]$IgnoreEvidenceIdentity,
+            [switch]$KeepTimestampSensitiveIdentity,
+            [switch]$RemoveDefinitionSuffixSupport
         )
 
         $harness = Join-Path $TestDrive 'matcher.js'
@@ -98,7 +101,7 @@ BeforeAll {
             evidence_line_hashes = $proof.EvidenceLineHashes
         }
 
-        $matcherSource = Get-LegacyMatcherSource
+        $matcherSource = Get-LegacyMatcherSource -LockPath $LockPath
         if ($CountTrustedStateLines) {
             $needle = 'if (isTrustedStateLine(restored)) {'
             $matcherSource.Contains($needle) | Should -BeTrue
@@ -112,6 +115,18 @@ BeforeAll {
                 $matcherSource,
                 $pattern,
                 'return hasPipelineLine(body, pipeline);')
+        }
+        if ($KeepTimestampSensitiveIdentity) {
+            $needle = ".replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?Z[ \t]+/, '')"
+            $matcherSource.Contains($needle) | Should -BeTrue
+            $matcherSource = $matcherSource.Replace($needle, '')
+        }
+        if ($RemoveDefinitionSuffixSupport) {
+            $needle = '(?:ID|definition)'
+            $matcherSource.Contains($needle) | Should -BeTrue
+            $matcherSource = $matcherSource.Replace(
+                $needle,
+                'ID')
         }
 
         $script = @"
@@ -281,7 +296,7 @@ $(Get-AdoptPathSource)
     }
 }
 
-Describe 'ci-status-net11 trusted evidence recurrence matcher' {
+Describe 'CI scanner legacy recurrence diagnostics' {
     It 'is present in the compiled lock' {
         Get-LegacyMatcherSource | Should -Match 'legacyEvidenceMatcher'
         Get-LegacyMatcherSource | Should -Match 'hasTrustedEvidenceLine'
@@ -302,21 +317,66 @@ Describe 'ci-status-net11 trusted evidence recurrence matcher' {
             Should -Be '36827'
     }
 
-    It 'matches legacy bodies that suffix the pipeline with an ID' -Skip:(-not $script:NodeAvailable) {
-        # Device and UI tracking issues write "- **Pipeline**: maui-pr-uitests (ID 313)".
-        # An exact-line comparison silently never matched them.
-        $candidates = @(
-            (New-LegacyIssue -Number 36207 `
-                    -Title 'DownSizeImageAppearProperly visual snapshot test fails' `
-                    -PipelineLine '- **Pipeline**: maui-pr-uitests (ID 313)' `
-                    -Error 'visual snapshot mismatch')
+    It 'recognizes no suffix, ID, and live definition suffixes for every pipeline in both twins' -Skip:(-not $script:NodeAvailable) {
+        . (Join-Path $PSScriptRoot 'CiScanTwins.Helpers.ps1')
+        $twins = @(Get-CiScanTwin)
+        $pipelines = @(
+            @{ Name = 'maui-pr'; Definition = 302 }
+            @{ Name = 'maui-pr-devicetests'; Definition = 314 }
+            @{ Name = 'maui-pr-uitests'; Definition = 313 }
         )
+        $suffixes = @('', ' (ID {0})', ' (definition {0})')
+
+        $twins.Count | Should -Be 2
+        foreach ($twin in $twins) {
+            foreach ($pipeline in $pipelines) {
+                foreach ($suffix in $suffixes) {
+                    $line = "- **Pipeline**: $($pipeline.Name)" +
+                        ($suffix -f $pipeline.Definition)
+                    $candidate = New-LegacyIssue `
+                        -Number 36207 `
+                        -Title 'Legacy scanner issue' `
+                        -PipelineLine $line `
+                        -Error 'visual snapshot mismatch'
+
+                    Invoke-LegacyMatcher `
+                        -EvidenceLine 'visual snapshot mismatch' `
+                        -Pipeline $pipeline.Name `
+                        -Candidates @($candidate) `
+                        -LockPath $twin.LockPath |
+                        Should -Be '36207'
+                }
+            }
+        }
+    }
+
+    It 'mutation "definition-suffix-unsupported": live legacy pipeline lines no longer match' -Skip:(-not $script:NodeAvailable) {
+        $candidate = New-LegacyIssue `
+            -Number 36858 `
+            -Title 'Live-format legacy issue' `
+            -PipelineLine '- **Pipeline**: maui-pr-uitests (definition 313)' `
+            -Error 'visual snapshot mismatch'
 
         Invoke-LegacyMatcher `
             -EvidenceLine 'visual snapshot mismatch' `
             -Pipeline 'maui-pr-uitests' `
-            -Candidates $candidates |
-            Should -Be '36207'
+            -Candidates @($candidate) `
+            -RemoveDefinitionSuffixSupport |
+            Should -Be 'NONE'
+    }
+
+    It 'rejects a legacy suffix whose definition does not match the configured pipeline' -Skip:(-not $script:NodeAvailable) {
+        $candidate = New-LegacyIssue `
+            -Number 36858 `
+            -Title 'Wrong-definition legacy issue' `
+            -PipelineLine '- **Pipeline**: maui-pr-uitests (definition 302)' `
+            -Error 'visual snapshot mismatch'
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine 'visual snapshot mismatch' `
+            -Pipeline 'maui-pr-uitests' `
+            -Candidates @($candidate) |
+            Should -Be 'NONE'
     }
 
     It 'does not let maui-pr claim a maui-pr-uitests issue' -Skip:(-not $script:NodeAvailable) {
@@ -365,7 +425,7 @@ Describe 'ci-status-net11 trusted evidence recurrence matcher' {
             Should -Be 'NONE'
     }
 
-    It 'still adopts the same real failure line across runs' -Skip:(-not $script:NodeAvailable) {
+    It 'still recognizes the same real failure line across runs' -Skip:(-not $script:NodeAvailable) {
         $line = 'System.NullReferenceException in Microsoft.Maui.DeviceTests.ButtonTests'
         $candidates = @(
             (New-LegacyIssue -Number 36827 `
@@ -379,6 +439,39 @@ Describe 'ci-status-net11 trusted evidence recurrence matcher' {
             -Pipeline 'maui-pr-devicetests' `
             -Candidates $candidates |
             Should -Be '36827'
+    }
+
+    It 'normalizes different AzDO transport timestamps across legacy diagnostic recurrence' -Skip:(-not $script:NodeAvailable) {
+        $currentLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $legacyLine = '2026-07-29T03:04:05.1234567Z ##[error]Path does not exist: artifacts/bin'
+        $candidate = New-LegacyIssue `
+            -Number 36827 `
+            -Title 'Recurring build failure' `
+            -PipelineLine '- **Pipeline**: maui-pr (definition 302)' `
+            -Error $legacyLine
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine $currentLine `
+            -Pipeline 'maui-pr' `
+            -Candidates @($candidate) |
+            Should -Be '36827'
+    }
+
+    It 'mutation "timestamp-sensitive-identity": cross-build recurrence no longer matches' -Skip:(-not $script:NodeAvailable) {
+        $currentLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $legacyLine = '2026-07-29T03:04:05.1234567Z ##[error]Path does not exist: artifacts/bin'
+        $candidate = New-LegacyIssue `
+            -Number 36827 `
+            -Title 'Recurring build failure' `
+            -PipelineLine '- **Pipeline**: maui-pr (definition 302)' `
+            -Error $legacyLine
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine $currentLine `
+            -Pipeline 'maui-pr' `
+            -Candidates @($candidate) `
+            -KeepTimestampSensitiveIdentity |
+            Should -Be 'NONE'
     }
 
     It 'ignores trusted marker and state lines during recurrence matching' -Skip:(-not $script:NodeAvailable) {
@@ -432,12 +525,13 @@ Describe 'ci-status-net11 trusted evidence recurrence matcher' {
 }
 
 Describe 'ci-status-net11 publisher create path' {
-    It 'consults trusted evidence recurrence before creating an issue' {
+    It 'does not let markerless recurrence suppress canonical issue creation' {
         $lock = Get-Content -LiteralPath $script:LockPath -Raw
         $createPath = $lock.Substring($lock.IndexOf('const issuesToCreate = []'))
 
-        $createPath | Should -Match 'legacyEvidenceMatcher\(issue, issue\.Pipeline\)'
-        $createPath | Should -Match 'ambiguously matches legacy issues'
+        $createPath | Should -Not -Match 'legacyEvidenceMatcher\(issue, issue\.Pipeline\)'
+        $createPath | Should -Not -Match 'legacy_dedup'
+        $createPath | Should -Match 'Without a publisher-owned historical identity'
     }
 
 
@@ -600,6 +694,12 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
         $script:TwinLock | Should -Match "ci-scan-match-count: \[1-9\]"
     }
 
+    It 'normalizes only AzDO transport timestamps in evidence identity' {
+        $script:TwinLock | Should -Match 'stripAzdoTransportTimestamp'
+        $script:TwinLock | Should -Match '\\d\{4\}.*Z\[ \\t\]\+'
+        $script:TwinLock | Should -Match 'definition'
+    }
+
     It 'preflights every planned payload before any write' {
         $publisher = $script:TwinLock.Substring($script:TwinLock.IndexOf('const assertCanonicalPayload'))
         $preflightIndex = $publisher.IndexOf("assertCanonicalPayload(issue, issue.Body, 'Validated plan')")
@@ -618,8 +718,8 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
 
     It 'keeps the fail-closed dedup, cap, and provenance guards' {
         $script:TwinLock | Should -Match 'ambiguously matches open issues'
-        $script:TwinLock | Should -Match 'ambiguously matches legacy issues'
-        $script:TwinLock | Should -Match 'legacyEvidenceMatcher\(issue, issue\.Pipeline\)'
+        $script:TwinLock | Should -Match 'markerless issues are not authoritative coverage'
+        $script:TwinLock | Should -Not -Match 'legacy_dedup'
         $script:TwinLock | Should -Match 'hasTrustedEvidenceLine'
         $script:TwinLock | Should -Match 'exceeds the issue cap'
         $script:TwinLock | Should -Match 'is not an open \$\{expectedLabel\} tracking issue'
@@ -650,6 +750,8 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
                 [hashtable]$ExistingIssues = @{},
                 [switch]$DryRun,
                 [switch]$TamperCreatedBody,
+                [switch]$AllowMarkerlessCoverage,
+                [switch]$AllowMarkerlessAutoAdoption,
                 [string]$ScannerIdOverride,
                 [string]$BranchOverride,
                 [string]$LabelOverride
@@ -668,6 +770,30 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
                         existingIssues = $ExistingIssues
                         tamper         = [bool]$TamperCreatedBody
                     }) | ConvertTo-Json -Depth 12)
+
+            $publisherSource = Get-CiScanPublisherScript -LockPath $script:TwinLockPath
+            if ($AllowMarkerlessCoverage) {
+                $needle = 'throw new Error(`Legacy issue #${entry.issue_number} matches current evidence but markerless issues are not authoritative coverage; submit a filed payload so the publisher can create canonical markers.`);'
+                $publisherSource.Contains($needle) | Should -BeTrue
+                $publisherSource = $publisherSource.Replace(
+                    $needle,
+                    "entry.coverage_proof = 'legacy-pipeline-and-trusted-evidence-line'; return;")
+            }
+            if ($AllowMarkerlessAutoAdoption) {
+                $needle = 'issuesToCreate.push(issue);'
+                ([regex]::Matches($publisherSource, [regex]::Escape($needle))).Count | Should -Be 1
+                $replacement = @'
+const legacyMatch = openTrackingIssues.find(candidate =>
+  !candidate.pull_request &&
+  !String(candidate.body || '').includes(markerPrefix) &&
+  legacyEvidenceMatcher(issue, issue.Pipeline)(candidate));
+if (legacyMatch) {
+  continue;
+}
+issuesToCreate.push(issue);
+'@
+                $publisherSource = $publisherSource.Replace($needle, $replacement)
+            }
 
             $harness = @"
 const stubs = require($($stubsPath | ConvertTo-Json));
@@ -703,7 +829,7 @@ globalThis.github = {
 };
 
 (async () => {
-$(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
+$publisherSource
 })()
   .then(() => console.log('RESULT ' + JSON.stringify({ ok: true, created })))
   .catch(error => console.log('RESULT ' + JSON.stringify({
@@ -740,19 +866,22 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
                 [string]$Identity = 'sample test',
                 [string]$Pipeline = 'maui-pr',
                 [int]$MatchCount = 2,
+                [string]$EvidenceLine = '',
                 [string]$BodyOverride
             )
 
             $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|$Pipeline|$Identity|assertion failed|windows"
-            $evidenceLine = "Assertion failed for $Identity"
-            $proof = New-EvidenceProof -Line $evidenceLine
+            if (-not $EvidenceLine) {
+                $EvidenceLine = "Assertion failed for $Identity"
+            }
+            $proof = New-EvidenceProof -Line $EvidenceLine
             $body = if ($PSBoundParameters.ContainsKey('BodyOverride')) {
                 $BodyOverride
             } else {
                 "<!-- ci-scan-fingerprint: $fingerprint -->`n" +
                     "<!-- ci-scan-match-count: $MatchCount hits in failure.log -->`n" +
                     "<!-- ci-scan-evidence-key: $($proof.EvidenceKey) -->`n`n" +
-                    "## Summary`nRecurring $Identity.`n`n## Error Message`n$evidenceLine"
+                    "## Summary`nRecurring $Identity.`n`n## Error Message`n$EvidenceLine"
             }
 
             [pscustomobject]@{
@@ -955,6 +1084,26 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
         @($result.created).Count | Should -Be 0
     }
 
+    It 'reuses canonical recurrence across different AzDO transport timestamps' {
+        $currentLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $storedLine = '2026-07-29T03:04:05.1234567Z ##[error]Path does not exist: artifacts/bin'
+        $plan = New-ExistingPlan -EvidenceLine $currentLine
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+$storedLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
     It 'fails closed when GitHub does not preserve the injected marker' {
         $result = Invoke-Publisher -Plan (New-Plan -Issues @((New-PlannedIssue))) -TamperCreatedBody
 
@@ -970,14 +1119,64 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
         @($result.created).Count | Should -Be 0
     }
 
-    It 'accepts markerless legacy recurrence only on a trusted full raw-evidence line' {
+    It 'rejects markerless explicit recurrence even with live pipeline format and trusted evidence' {
         $plan = New-ExistingPlan
         $existing = New-ExistingIssueStub `
-            -Body "## Build Information`n- **Pipeline**: maui-pr`n`n## Error Message`nUnique current raw failure line"
+            -Body "## Build Information`n- **Pipeline**: maui-pr (definition 302)`n`n## Error Message`nUnique current raw failure line"
 
         $result = Invoke-Publisher `
             -Plan $plan `
             -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*markerless issues are not authoritative coverage*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'mutation "markerless-coverage-enabled": explicit generic recurrence suppresses coverage' {
+        $plan = New-ExistingPlan -EvidenceLine 'Build FAILED.'
+        $existing = New-ExistingIssueStub `
+            -Body "## Build Information`n- **Pipeline**: maui-pr (definition 302)`n`n## Error Message`nDifferent root cause`nBuild FAILED."
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing } `
+            -AllowMarkerlessCoverage
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'does not auto-adopt an unrelated same-pipeline legacy issue sharing a generic line' {
+        $issue = New-PlannedIssue -Identity 'distinct current failure' -EvidenceLine 'Build FAILED.'
+        $legacy = [pscustomobject]@{
+            number   = 40001
+            title    = 'Unrelated legacy failure'
+            body     = "## Build Information`n- **Pipeline**: maui-pr (definition 302)`n`n## Error Message`nDifferent root cause`nBuild FAILED."
+            html_url = 'https://github.com/dotnet/maui/issues/40001'
+        }
+
+        $result = Invoke-Publisher `
+            -Plan (New-Plan -Issues @($issue)) `
+            -OpenIssues @($legacy)
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 1
+    }
+
+    It 'mutation "markerless-auto-adoption-enabled": generic boilerplate suppresses a distinct failure' {
+        $issue = New-PlannedIssue -Identity 'distinct current failure' -EvidenceLine 'Build FAILED.'
+        $legacy = [pscustomobject]@{
+            number   = 40001
+            title    = 'Unrelated legacy failure'
+            body     = "## Build Information`n- **Pipeline**: maui-pr (definition 302)`n`n## Error Message`nDifferent root cause`nBuild FAILED."
+            html_url = 'https://github.com/dotnet/maui/issues/40001'
+        }
+
+        $result = Invoke-Publisher `
+            -Plan (New-Plan -Issues @($issue)) `
+            -OpenIssues @($legacy) `
+            -AllowMarkerlessAutoAdoption
 
         $result.ok | Should -BeTrue
         @($result.created).Count | Should -Be 0

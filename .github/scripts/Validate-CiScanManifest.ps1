@@ -370,9 +370,13 @@ function Assert-CanonicalPublishedBody {
             $trimmedLine -match '^- \*\*(?:Pipeline|Build ID|Branch)\*\*:') {
             continue
         }
-        $identityLine = ConvertTo-EvidenceIdentityLine -Value $line
-        if ($identityLine) {
-            [void]$publishedEvidenceLineHashes.Add((Get-Sha256Hex -Value $identityLine))
+        foreach ($stripAzdoTimestamp in @($false, $true)) {
+            $identityLine = ConvertTo-EvidenceIdentityLine `
+                -Value $line `
+                -StripAzdoTransportTimestamp:$stripAzdoTimestamp
+            if ($identityLine) {
+                [void]$publishedEvidenceLineHashes.Add((Get-Sha256Hex -Value $identityLine))
+            }
         }
     }
     if (-not @($EvidenceLineHashes | Where-Object {
@@ -464,10 +468,23 @@ function Get-Sha256Hex {
 }
 
 function ConvertTo-EvidenceIdentityLine {
-    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value)
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value,
+        [switch]$StripAzdoTransportTimestamp
+    )
 
     $normalized = $Value.Replace([string][char]0x200B, '').
         Normalize([System.Text.NormalizationForm]::FormKC).Trim()
+    if ($StripAzdoTransportTimestamp) {
+        # Azure DevOps prepends a run-specific UTC timestamp to every stored log
+        # line. Segment provenance decides whether it is transport framing; the
+        # same timestamp in Helix or other evidence remains part of the message.
+        $normalized = [regex]::Replace(
+            $normalized,
+            '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?Z[ \t]+',
+            ''
+        )
+    }
     return ([regex]::Replace($normalized, '\s+', ' ')).ToLowerInvariant()
 }
 
@@ -560,7 +577,9 @@ function Get-TrustedEvidenceMatchProof {
         foreach ($segment in $segments) {
             foreach ($line in ($segment.content -split '\r?\n')) {
                 if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
-                    $identityLine = ConvertTo-EvidenceIdentityLine -Value $line
+                    $identityLine = ConvertTo-EvidenceIdentityLine `
+                        -Value $line `
+                        -StripAzdoTransportTimestamp:($segment.kind -ceq 'azdo-log')
                     if (-not $identityLine) {
                         throw "match_pattern for '$Fingerprint' matched an empty trusted evidence line."
                     }

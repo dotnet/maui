@@ -866,6 +866,61 @@ Describe 'CI scanner issue payload gate' {
         $firstProof.EvidenceLineHashes | Should -BeExactly $secondProof.EvidenceLineHashes
     }
 
+    It 'keeps AzDO task-command identity stable across transport timestamps' {
+        $firstLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $secondLine = '2026-07-29T03:04:05.1234567Z ##[error]Path does not exist: artifacts/bin'
+        $firstRoot = Join-Path $TestDrive 'timestamped-failure-first'
+        $secondRoot = Join-Path $TestDrive 'timestamped-failure-second'
+        New-TestEvidence -Root $firstRoot -BuildId 900001 -Lines @($firstLine)
+        New-TestEvidence -Root $secondRoot -BuildId 900002 -Lines @($secondLine)
+
+        $firstProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'Path does not exist' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900001 `
+            -Fingerprint 'first-timestamped-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $firstRoot
+        $secondProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'Path does not exist' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900002 `
+            -Fingerprint 'second-timestamped-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $secondRoot
+
+        $firstProof.EvidenceKey | Should -BeExactly $secondProof.EvidenceKey
+        $firstProof.EvidenceLineHashes | Should -BeExactly $secondProof.EvidenceLineHashes
+    }
+
+    It 'binds a timestamped AzDO log to the timestamp-free issue excerpt' {
+        $evidenceRoot = Join-Path $TestDrive 'timestamped-body-binding'
+        $trustedLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $bodyLine = '##[error]Path does not exist: artifacts/bin'
+        New-TestEvidence -Root $evidenceRoot -Lines @($trustedLine)
+        $body = (New-TestBody).Replace('Assertion failed', $bodyLine)
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Path does not exist' -Body $body)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].MatchCount | Should -Be 1
+        $plan.issues[0].Body | Should -Match "(?m)^$([regex]::Escape($bodyLine))$"
+    }
+
+    It 'preserves timestamps that are part of the failure message' {
+        $message = '2026-07-20T18:34:13.9100750Z server clock skew exceeded threshold'
+
+        ConvertTo-EvidenceIdentityLine -Value $message |
+            Should -BeExactly $message.ToLowerInvariant()
+        ConvertTo-EvidenceIdentityLine -Value $message -StripAzdoTransportTimestamp |
+            Should -BeExactly 'server clock skew exceeded threshold'
+    }
+
     It 'rejects more than 200 distinct matching evidence lines before publication' {
         $evidenceRoot = Join-Path $TestDrive 'excess-evidence-lines'
         $lines = 1..201 | ForEach-Object { "Unique failure line $_" }
