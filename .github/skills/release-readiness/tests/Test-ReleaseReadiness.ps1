@@ -22,18 +22,37 @@ Set-StrictMode -Version Latest
 $script:passed = 0
 $script:failed = 0
 
-function Assert-Eq {
-    param([string]$Label, $Expected, $Actual)
-    $equal = if ($Expected -is [string] -and $Actual -is [string]) {
+function Test-AssertionEqual {
+    param($Expected, $Actual)
+    return $(if ($Expected -is [string] -and $Actual -is [string]) {
         [string]::Equals($Expected, $Actual, [System.StringComparison]::Ordinal)
     } elseif ($Expected -ceq $Actual) {
         $true
     } else {
-        [string]::Equals(
-            (@($Expected) -join ','),
-            (@($Actual) -join ','),
-            [System.StringComparison]::Ordinal)
-    }
+        $expectedCollection = $Expected -is [System.Collections.IEnumerable] -and $Expected -isnot [string]
+        $actualCollection = $Actual -is [System.Collections.IEnumerable] -and $Actual -isnot [string]
+        if ($expectedCollection -ne $actualCollection) {
+            $false
+        } elseif ($expectedCollection) {
+            $expectedItems = @($Expected)
+            $actualItems = @($Actual)
+            if ($expectedItems.Count -ne $actualItems.Count) { $false }
+            else {
+                $same = $true
+                for ($i = 0; $i -lt $expectedItems.Count; $i++) {
+                    if ($expectedItems[$i] -is [string] -and $actualItems[$i] -is [string]) {
+                        if (-not [string]::Equals($expectedItems[$i], $actualItems[$i], [System.StringComparison]::Ordinal)) { $same = $false; break }
+                    } elseif ($expectedItems[$i] -cne $actualItems[$i]) { $same = $false; break }
+                }
+                $same
+            }
+        } else { $false }
+    })
+}
+
+function Assert-Eq {
+    param([string]$Label, $Expected, $Actual)
+    $equal = Test-AssertionEqual -Expected $Expected -Actual $Actual
     if ($equal) {
         Write-Host "  ✅ $Label" -ForegroundColor Green
         $script:passed++
@@ -43,7 +62,11 @@ function Assert-Eq {
         Write-Host "     actual  : $Actual" -ForegroundColor DarkRed
         $script:failed++
     }
+
 }
+
+Assert-Eq -Label "assertion helper distinguishes array shape from joined scalar" -Expected $false `
+    -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a,b')
 
 # ─────────── Parser/regex unit tests (no network) ───────────
 
@@ -3618,6 +3641,7 @@ $script:mockCommentsJson = @'
   { "body": "see #60003 for related context" },
   { "body": "not fixed by #70004 yet" },
   { "body": "update: now fixed by #70004" }
+  ,{ "body": "This issue was partially fixed by PR #80005; remaining work is tracked separately." }
 ]
 '@
 function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
@@ -3637,6 +3661,8 @@ try {
     # confirmed in another -> the non-negated fix phrase upgrades it to fix-phrase.
     Assert-Eq -Label "#70004 negated once + confirmed once -> fix-phrase wins" `
         -Expected 'fix-phrase' -Actual $byNum[70004]
+    Assert-Eq -Label "partial fix phrase is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80005]
 } finally {
     ${function:Invoke-Gh} = $origInvokeGh
 }
@@ -4589,6 +4615,19 @@ $dataShippedNewAnchorHash['shippedInfo'] = @{
 $hShippedNewAnchor = Get-ReportSemanticHash -Data $dataShippedNewAnchorHash -Verdict @{ symbol = '🟡' }
 Assert-Eq -Label "hash: shipped version/date anchor change refreshes tracker" `
     -Expected $false -Actual ($hShippedFollowUp -eq $hShippedNewAnchor)
+$dataHotfixPendingHash = $dataShippedFollowUpHash.Clone()
+$dataHotfixPendingHash['shippedInfo'] = @{
+    version = '10.0.90'; liveVersion = $null; hotfixInProgress = $true
+    tagDate = '2026-07-10T15:21:27Z'; dateSource = 'github-release'; srNumber = 9; major = 10
+}
+$dataHotfixVersionHash = $dataShippedFollowUpHash.Clone()
+$dataHotfixVersionHash['shippedInfo'] = @{
+    version = '10.0.90'; liveVersion = '10.0.91'; hotfixInProgress = $true
+    tagDate = '2026-07-10T15:21:27Z'; dateSource = 'github-release'; srNumber = 9; major = 10
+}
+Assert-Eq -Label "hash: version-pending to resolved hotfix version refreshes marker/title" -Expected $false `
+    -Actual ((Get-ReportSemanticHash -Data $dataHotfixPendingHash -Verdict @{ symbol = '🟡' }) -eq
+        (Get-ReportSemanticHash -Data $dataHotfixVersionHash -Verdict @{ symbol = '🟡' }))
 
 $dataShippedPublicationPending = $dataShippedFollowUpHash.Clone()
 $dataShippedPublicationPending['shippedInfo'] = @{
@@ -7965,6 +8004,8 @@ function Assert-PublicSanitizerEdgeCases {
         "https://dev.azure.com/dnceng/inter$([char]0x00AD)nal/_build?token=SOFTHYPHENSECRET",
         "https://dev.azure.com/dnceng/inter$([char]0x2060)nal/_build?token=WORDJOINERSECRET",
         "dnceng/i$([char]0xFE0F)nternal/_build?token=BAREVSSECRET",
+        "https://dev.azure.com/dnceng/i$([char]0x034F)nternal/_build?token=CGJSECRET",
+        "https://dev.azure.com/dnceng/i$([System.Char]::ConvertFromUtf32(0xE0061))nternal/_build?token=TAGSECRET",
         'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
         'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
         'https://dev.azure.com/d n c e n g/internal/_build?token=ORGSPACESECRET',
@@ -7973,12 +8014,13 @@ function Assert-PublicSanitizerEdgeCases {
         '%252564%25256E%252563%252565%25256E%252567.visualstudio.com/internal/_build?token=TRIPLESECRET',
         'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET',
         'https&colon;&sol;&sol;dev&period;azure&period;com&sol;dnceng&sol;internal&sol;_build?token=NAMEDENTITYSECRET',
-        "https://dev.azure.com/dnceng/$((('internal'.ToCharArray() | ForEach-Object { [char]([int]$_ + 0xFEE0) }) -join ''))/_build?token=FULLWIDTHSECRET"
+        "https://dev.azure.com/dnceng/$((('internal'.ToCharArray() | ForEach-Object { [char]([int]$_ + 0xFEE0) }) -join ''))/_build?token=FULLWIDTHSECRET",
+        'https://dev.azure.com/DevDiv/DevDiv/_workitems/edit/123?token=DEVDIVSECRET'
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')

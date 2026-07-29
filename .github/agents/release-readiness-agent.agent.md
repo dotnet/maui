@@ -112,7 +112,7 @@ When the user wants status **across all active releases**, read the live tracker
    - **Generated report** (verdict, CI table, port candidates) — authoritative *as of the issue's `updatedAt`*.
    - **Release Captain Notes** (between `<!-- release-readiness:human-notes:begin -->` and `:end -->`) — **human authority that supersedes the automated verdict.** Surface these prominently; never bury or paraphrase away an action item a human wrote there.
 
-3. **Judge staleness before trusting content for a ship call.** The cron refresh runs weekdays 08:30 UTC. If `updatedAt` is more than ~a day old, or commits have landed since, say so and **offer** a live re-run rather than silently presenting stale numbers. (SR bodies embed `<!-- release-readiness-hash: sha=... -->`; an unchanged hash across runs means the last run was a no-op — not that work has stalled.)
+3. **Judge staleness before trusting content for a ship call.** Scheduled refreshes run every three hours from 08:30–20:30 UTC daily, with additional targeted refreshes on release pushes and relevant issue/milestone events. If `updatedAt` is unexpectedly old or commits have landed since, say so and **offer** a live re-run rather than silently presenting stale numbers. (SR bodies embed `<!-- release-readiness-hash: sha=... -->`; an unchanged hash across runs means the last run was a no-op — not that work has stalled.)
 
 4. **Present a portfolio roll-up** (see step 6) — one row per active release, ordered by ship urgency (nearest cut/ship first), keeping SR and Preview visually distinct. Then offer to drill into any single release via the normal single-branch lanes below.
 

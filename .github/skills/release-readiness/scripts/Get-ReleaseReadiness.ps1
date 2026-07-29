@@ -314,7 +314,8 @@ function ConvertTo-PublicSafeMarkdown {
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
-        if ($canonical -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal)(?:[/?:#]|$)') {
+        $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
+        if ($detection -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com/DevDiv|devdiv\.visualstudio\.com/DevDiv))(?:[/?:#]|$)') {
             return '_internal URL omitted_'
         }
         return $original
@@ -3283,7 +3284,9 @@ function Get-IssueCommentPrs {
             # matches; only a SOLELY-(adjacently-)negated reference is demoted. A
             # non-adjacent negation ("won't be fixed by #X") is not caught here, but
             # the caller's merged-AND-on-branch gates still bound the blast radius.
-            $isFix = $body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            $partialFix = $body -match "(?i)\b(?:partial(?:ly)?|temporar(?:y|ily)|workaround|in\s+part)\s+(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            $isFix = (-not $partialFix) -and
+                ($body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b")
             $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
             if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
         }
@@ -5294,7 +5297,9 @@ function Get-ReportSemanticHash {
         mode = $modeForHash
         shippedAnchor = if ($shippedInfoForHash) {
             $shipDateToken = if ($shipDateForHash) { $shipDateForHash.ToString('o') } else { '' }
-            "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash|$shipPublicationStateForHash"
+            $hotfixVersion = [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'liveVersion')
+            $hotfixInProgress = [bool](Get-MetadataValue -Container $shippedInfoForHash -Name 'hotfixInProgress' -Default $false)
+            "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash|$shipPublicationStateForHash|$hotfixInProgress|$hotfixVersion"
         } else { '' }
         regressionScan = if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
             $failedLabels = @(@(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels')) | Sort-Object)

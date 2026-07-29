@@ -1864,7 +1864,8 @@ function ConvertTo-PublicSafeMarkdown {
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
-        if ($canonical -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal)(?:[/?:#]|$)') {
+        $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
+        if ($detection -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com/DevDiv|devdiv\.visualstudio\.com/DevDiv))(?:[/?:#]|$)') {
             return '_internal URL omitted_'
         }
         return $original

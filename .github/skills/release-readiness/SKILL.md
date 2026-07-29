@@ -36,7 +36,7 @@ This skill has **three** PowerShell entry points and one workflow:
 | [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | both | Detects active in-flight & candidate trackers (SR and Preview) across all active majors using a four-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
 | [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight, `-Candidate`, or `-Shipped`). `-Shipped` surveys the same branch with post-ship verdict, carry-forward, and hotfix-vs-next-SR guidance semantics. |
 | [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). |
-| [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Daily cron + manual dispatch + PR validation. Runs `Find-Trackers -AllActiveMajors`, fans out a matrix job per tracker, and writes idempotent `[Release Readiness]` issues per branch. |
+| [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Three-hourly daytime UTC schedule + event-driven refreshes + manual dispatch + PR validation. Runs `Find-Trackers -AllActiveMajors`, fans out a matrix job per tracker, and writes idempotent `[Release Readiness]` issues per branch. |
 
 ### Tag-existence rule (canonical signal)
 
@@ -248,7 +248,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 
 ## Daily workflow
 
-`.github/workflows/release-readiness.yml` runs **weekdays at 08:30 UTC** plus `workflow_dispatch` + `pull_request` validation:
+`.github/workflows/release-readiness.yml` runs every three hours from **08:30–20:30 UTC daily**, plus targeted `issues`, `milestone`, and `push` refreshes, `workflow_dispatch`, and `pull_request` validation:
 
 1. **`detect-trackers`** — runs `Find-Trackers -AllActiveMajors`, emits a matrix of tracker descriptors.
 2. **`per-tracker-report`** — matrix-expanded job per tracker:
@@ -269,7 +269,7 @@ gh issue list --repo dotnet/maui --state open \
   --json number,title,updatedAt --limit 50
 ```
 
-Each result is one active SR or Preview. Read the body for the generated verdict **and** the human **Release Captain Notes** (between `<!-- release-readiness:human-notes:begin -->` / `:end -->`), which carry decisions that override the automated report. Treat the content as fresh only up to the issue's `updatedAt` (cron refreshes weekdays 08:30 UTC); re-run the survey script for a given branch when you need live numbers. The natural-language **`release-readiness-agent`** wraps this as its Portfolio path (§0a).
+Each result is one active SR or Preview. Read the body for the generated verdict **and** the human **Release Captain Notes** (between `<!-- release-readiness:human-notes:begin -->` / `:end -->`), which carry decisions that override the automated report. Treat the content as fresh only up to the issue's `updatedAt` (scheduled refreshes run every three hours from 08:30–20:30 UTC, with additional targeted event refreshes); re-run the survey script for a given branch when you need live numbers. The natural-language **`release-readiness-agent`** wraps this as its Portfolio path (§0a).
 
 ## Verdict Classification (SR & Preview)
 
