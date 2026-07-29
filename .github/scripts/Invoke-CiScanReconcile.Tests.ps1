@@ -1572,13 +1572,70 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:ghCalls | Should -BeNullOrEmpty
         }
 
+        <#
+            The verb and number checks above still left the target REPOSITORY unbound, and
+            #5 exists in every repository. Measured against a stubbed `gh` in comment mode
+            at the commit that added those checks -- both EXECUTED:
+
+                -Kind label -IssueNumber 5 -GhArgs @('issue','edit','5','--repo','attacker/evil',...)
+                -Kind label -IssueNumber 5 -GhArgs @('issue','edit','5','--add-label',...)
+
+            The second is the quieter one: with no --repo, `gh` resolves the repository
+            from the working directory, so the target depends on where the run happens to
+            be standing rather than on anything the reconciler validated.
+        #>
+        It 'refuses a command aimed at a repository the run does not own' {
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @('issue', 'edit', '5', '--repo', 'attacker/evil', '--add-label', 'ci-scan-active') } |
+                Should -Throw -ExpectedMessage '*validated #5 in dotnet/maui but the command targets*'
+            $global:ghCalls | Should -BeNullOrEmpty -Because 'the refusal must land before the network call'
+        }
+
+        It 'refuses a command that names no repository at all' {
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @('issue', 'edit', '5', '--add-label', 'ci-scan-active') } |
+                Should -Throw -ExpectedMessage '*must carry --repo dotnet/maui*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a repository that differs from the run only by case' {
+            # GitHub routes repository names case-insensitively, so this one does reach the
+            # intended repo and a relaxed `-ne` would accept it. It is refused anyway, and
+            # the reason is provenance rather than routing: every call site builds --repo
+            # from the same "$Owner/$Repo" the check compares against, so an exact match is
+            # always available and a case-variant means something built the argument by
+            # another route. Refusing is the safe direction -- a false refusal is a loud
+            # no-op, never a write to the wrong place. Without this the strict comparison
+            # is an unpinned distinction that any later edit would silently relax.
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @('issue', 'edit', '5', '--repo', 'DotNet/MAUI', '--add-label', 'a') } |
+                Should -Throw -ExpectedMessage '*but the command targets*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a trailing --repo that has no value to check' {
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @('issue', 'edit', '5', '--add-label', 'a', '--repo') } |
+                Should -Throw -ExpectedMessage '*must carry --repo dotnet/maui*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'fails closed when the run cannot resolve its own repository' {
+            # The check is only worth anything if an unresolvable repo refuses rather than
+            # skips; a guard that falls through when its input is missing is not a guard.
+            $saved = $script:TargetRepo
+            try {
+                $script:TargetRepo = ''
+                { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'a') } |
+                    Should -Throw -ExpectedMessage '*cannot be checked against the run*'
+                $global:ghCalls | Should -BeNullOrEmpty
+            }
+            finally { $script:TargetRepo = $saved }
+        }
+
         It 'still runs the honest shape for every kind, so the checks are not simply refusing everything' -ForEach @(
-            @{ Kind = 'label'; CmdArgs = @('issue', 'edit', '7', '--add-label', 'ci-scan-active') }
-            @{ Kind = 'unlabel'; CmdArgs = @('issue', 'edit', '7', '--remove-label', 'ci-scan-active') }
-            @{ Kind = 'body'; CmdArgs = @('issue', 'edit', '7', '--body', 'x') }
-            @{ Kind = 'comment'; CmdArgs = @('issue', 'comment', '7', '--body', 'x') }
-            @{ Kind = 'close'; CmdArgs = @('issue', 'close', '7', '--reason', 'completed') }
-            @{ Kind = 'reopen'; CmdArgs = @('issue', 'reopen', '7', '--comment', 'x') }
+            @{ Kind = 'label'; CmdArgs = @('issue', 'edit', '7', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-active') }
+            @{ Kind = 'unlabel'; CmdArgs = @('issue', 'edit', '7', '--repo', 'dotnet/maui', '--remove-label', 'ci-scan-active') }
+            @{ Kind = 'body'; CmdArgs = @('issue', 'edit', '7', '--repo', 'dotnet/maui', '--body', 'x') }
+            @{ Kind = 'comment'; CmdArgs = @('issue', 'comment', '7', '--repo', 'dotnet/maui', '--body', 'x') }
+            @{ Kind = 'close'; CmdArgs = @('issue', 'close', '7', '--repo', 'dotnet/maui', '--reason', 'completed') }
+            @{ Kind = 'reopen'; CmdArgs = @('issue', 'reopen', '7', '--repo', 'dotnet/maui', '--comment', 'x') }
         ) {
             Invoke-GhWrite -Kind $Kind -IssueNumber 7 -GhArgs $CmdArgs | Should -BeTrue
             $global:ghCalls.Count | Should -Be 1 -Because 'a check that refuses the legitimate shape too would pass every negative case above for the wrong reason'
@@ -1617,7 +1674,7 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:mockGhExitCode = 1
             $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
             Reset-CiScanCounters
-            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'ci-scan-active')
+            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-active')
             $null = Set-CiScanReconcileMode -RequestedMode 'report'
 
             $ok | Should -BeFalse
@@ -1629,7 +1686,7 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:mockGhExitCode = 0
             $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
             Reset-CiScanCounters
-            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'ci-scan-active')
+            $ok = Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-active')
             $null = Set-CiScanReconcileMode -RequestedMode 'report'
 
             $ok | Should -BeTrue

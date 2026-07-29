@@ -152,6 +152,14 @@ $script:CiScanUnattributableCommenter = '(deleted-account)'
 # is comfortably more than the lag between scanner runs and far less than the weeks-long
 # gap that the "June marker read in August" failure describes.
 $script:CiScanMaxNewerBuildsProbed = 20
+# The repository every write must name, resolved once from this run's own parameters.
+# Assigned with `$script:` rather than read back off the param variables inside the write
+# choke point: a param variable resolves to whatever scope bound it, which is the caller's
+# when the script is dot-sourced, so `Get-Variable -Scope Script` for `Owner` finds nothing
+# under Pester and the choke point fails closed on every legitimate call. This is the same
+# mechanism `$script:MutationsAllowed` already relies on -- written and read through the
+# same scope by functions in this file.
+$script:TargetRepo = "$Owner/$Repo"
 $null = Set-CiScanReconcileMode -RequestedMode $Mode
 Reset-CiScanCounters
 
@@ -385,6 +393,37 @@ function Invoke-GhWrite {
                 throw "BUG: '$Kind' must not carry $sibling on issue #$IssueNumber."
             }
         }
+    }
+
+    <#
+        An issue number does not identify an issue -- #5 exists in every repository. The
+        checks above bind the verb and the number; the repository was the remaining half
+        of the target identity, and it stayed unbound after they landed. Measured against
+        a stubbed `gh` in comment mode, at the commit that added those checks:
+
+            -Kind label -IssueNumber 5 -GhArgs @('issue','edit','5','--repo','attacker/evil',...)
+                -> EXECUTED, against a repository the run never surveyed
+            -Kind label -IssueNumber 5 -GhArgs @('issue','edit','5','--add-label',...)
+                -> EXECUTED, and `gh` then falls back to whatever repo the CWD happens to be
+
+        Both declare #5, both were accepted, and the "validated #5 but the command targets
+        ..." message would have read as satisfied in each. Unlike the number, `--repo` is
+        never derived from issue data -- every call site passes the run's own -Owner/-Repo
+        -- so this pins current behaviour rather than fixing a reachable escape.
+
+        Fail closed: if the run's own repository cannot be resolved, refuse the write
+        instead of letting it through unchecked.
+    #>
+    if (-not $script:TargetRepo) {
+        throw "BUG: '$Kind' on issue #$IssueNumber cannot be checked against the run's own repository."
+    }
+    $expectedRepo = $script:TargetRepo
+    $repoIndex = [array]::IndexOf($GhArgs, '--repo')
+    if ($repoIndex -lt 0 -or $repoIndex -ge $GhArgs.Count - 1) {
+        throw "BUG: '$Kind' must carry --repo $expectedRepo on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
+    }
+    if ($GhArgs[$repoIndex + 1] -cne $expectedRepo) {
+        throw "BUG: '$Kind' validated #$IssueNumber in $expectedRepo but the command targets '$($GhArgs[$repoIndex + 1])'."
     }
 
     $script:Counters.Writes++
