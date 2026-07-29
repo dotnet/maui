@@ -87,7 +87,7 @@ function ConvertTo-PublicSafeMarkdown {
         if ($isInternal) {
             return '_internal URL omitted_'
         }
-        $isRecognizedAzdoHost = $detection -match "(?i)(?:https?://$azdoAuthority|^(?:dnceng|DevDiv)(?:/|$))(?:[/?:#]|$)"
+        $isRecognizedAzdoHost = $detection -match "(?i)(?:(?:https?://)?$azdoAuthority|^(?:dnceng|DevDiv))(?=[/?:#]|$)"
         if ($isRecognizedAzdoHost -and $canonical.Contains('?')) {
             return [regex]::Replace($original, '(?i)(?:\?|\uFF1F|%(?:25)*3f)[\s\S]*$', '?_query_omitted_')
         }
@@ -138,7 +138,7 @@ function ConvertTo-PublicSafeValue {
         }
         return ,$items.ToArray()
     }
-    if ($Value -is [PSCustomObject]) {
+    if ($Value.PSObject.BaseObject.GetType().FullName -eq 'System.Management.Automation.PSCustomObject') {
         $copy = [ordered]@{}
         foreach ($property in $Value.PSObject.Properties) {
             $copy[$property.Name] = ConvertTo-PublicSafeValue -Value $property.Value

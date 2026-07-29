@@ -1741,6 +1741,10 @@ try {
     $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
     Assert-Eq -Label "shipped contents: prior SR baseline tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
+    $shippedContextProjection = @{ mainRevertBaselineRef = 'origin/release/10.0.1xx-sr8' }
+    Set-ShippedContentsRefs -Context $shippedContextProjection -ShippedRefs $resolvedShippedRefs
+    Assert-Eq -Label "shipped contents: immutable prior tag replaces mutable main-revert baseline" `
+        -Expected '10.0.80' -Actual $shippedContextProjection.mainRevertBaselineRef
     $firstBandRefs = Resolve-ShippedContentsRefs -Version '10.0.0' -PublishedTags $publishedFixtureTags
     Assert-Eq -Label "shipped contents: first stable tag in a band uses prior major's latest stable tag" `
         -Expected '9.0.500' -Actual $firstBandRefs.PreviousTag
@@ -8208,6 +8212,22 @@ function Assert-PublicSanitizerEdgeCases {
         Assert-Eq -Label "$Lane sanitizer marks encoded query omission — $publicEncodedQuery" -Expected $true `
             -Actual ($encodedQuerySafe -match '_query_omitted_')
     }
+    foreach ($bareAzdoQuery in @(
+        'dnceng/foo?token=BAREQUERYSECRET'
+        'dnceng?token=BAREHOSTSECRET'
+        'dnceng.visualstudio.com/foo?token=BARELEGACYSECRET'
+    )) {
+        $bareQuerySafe = ConvertTo-PublicSafeMarkdown -Text $bareAzdoQuery
+        Assert-Eq -Label "$Lane sanitizer removes bare Azure DevOps query — $bareAzdoQuery" -Expected $false `
+            -Actual ($bareQuerySafe -match 'SECRET')
+        Assert-Eq -Label "$Lane sanitizer marks bare Azure DevOps query omission — $bareAzdoQuery" -Expected $true `
+            -Actual ($bareQuerySafe -match '_query_omitted_')
+    }
+    $bareFragmentSafe = ConvertTo-PublicSafeMarkdown -Text 'DevDiv/foo#token=BAREFRAGMENTSECRET'
+    Assert-Eq -Label "$Lane sanitizer removes bare Azure DevOps fragment" -Expected $false `
+        -Actual ($bareFragmentSafe -match 'BAREFRAGMENTSECRET')
+    Assert-Eq -Label "$Lane sanitizer fully omits bare DevDiv reference" -Expected '_internal URL omitted_' `
+        -Actual $bareFragmentSafe
     $fullwidthFragmentSafe = ConvertTo-PublicSafeMarkdown -Text "https://dev.azure.com/dnceng/public/_build$([char]0xFF03)token=FULLWIDTHFRAGMENTSECRET"
     Assert-Eq -Label "$Lane sanitizer removes fullwidth fragment value" -Expected $false `
         -Actual ($fullwidthFragmentSafe -match 'FULLWIDTHFRAGMENTSECRET')
@@ -8256,6 +8276,12 @@ Assert-Eq -Label "SR artifact projection preserves source PR numbers" -Expected 
     -Actual ($safeArtifactContents.sourcePrs -join ',')
 Assert-Eq -Label "SR artifact projection honors explicit non-public local mode" -Expected $true `
     -Actual ($unsafeArtifactContents.commits[0].url -match 'ARTIFACTSECRET')
+$sortedSourcePrSet = [System.Collections.Generic.HashSet[int]]::new()
+[void]$sortedSourcePrSet.Add(35428)
+[void]$sortedSourcePrSet.Add(36506)
+$safeSortedSourcePrs = ConvertTo-PublicSafeValue -Value @($sortedSourcePrSet | Sort-Object)
+Assert-Eq -Label "public-safe projection preserves sorted integer collection values" `
+    -Expected '35428,36506' -Actual ($safeSortedSourcePrs -join ',')
 
 # Dot-source the preview engine to access its helpers without running the
 # main driver (the InvocationName guard returns on dot-source). A valid

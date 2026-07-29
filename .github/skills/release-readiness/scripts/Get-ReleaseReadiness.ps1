@@ -824,6 +824,18 @@ function Resolve-ShippedContentsRefs {
     }
 }
 
+function Set-ShippedContentsRefs {
+    param(
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Context,
+        [Parameter(Mandatory)]$ShippedRefs
+    )
+
+    $Context['contentsRef'] = $ShippedRefs.ContentsRef
+    $Context['excludeBranches'] = @($ShippedRefs.ExcludeRefs)
+    $Context['previousStableTag'] = $ShippedRefs.PreviousTag
+    $Context['mainRevertBaselineRef'] = $ShippedRefs.PreviousTag
+}
+
 function Test-IsCarryForwardRegression {
     <#
     .SYNOPSIS
@@ -6548,9 +6560,7 @@ function Invoke-Main {
         }
         $shippedInfo.tagFound = $true
         $shippedRefs = Resolve-ShippedContentsRefs -Version $anchorTag -Repo $ctx.repo -PublishedTags $stableTagsForBounds
-        $ctx['contentsRef'] = $shippedRefs.ContentsRef
-        $ctx['excludeBranches'] = @($shippedRefs.ExcludeRefs)
-        $ctx['previousStableTag'] = $shippedRefs.PreviousTag
+        Set-ShippedContentsRefs -Context $ctx -ShippedRefs $shippedRefs
         $shippedInfo.previousTag = $shippedRefs.PreviousTag
         $hasPostTagCommits = Test-BranchAdvancedBeyondTag -Tag $anchorTag -HeadSha $ctx.srHeadSha
         $shippedInfo.hotfixHasPostTagCommits = $hasPostTagCommits
