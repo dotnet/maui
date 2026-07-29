@@ -2227,6 +2227,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; and #300.') -join ',')
     Assert-Eq -Label "backport lineage: consecutive contextual items do not orphan later source" `
         -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; #250 is only background; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: alternate contextual wording does not promote tail item" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is context only.') -join ',')
     foreach ($repeatedSemanticRetraction in @(
         'Backport of #12345. PR #12345 is no longer required.',
         'Backport of #12345. PR #12345 is no longer needed.',
@@ -2303,8 +2305,18 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'This is not; strictly speaking; a backport of #32537.') -join ',')
     Assert-Eq -Label "backport lineage: contraction plus semicolon remains negated" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; backport #32537.") -join ',')
+    Assert-Eq -Label "backport lineage: contraction plus semicolon aside remains negated" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; after review; backport #32537.") -join ',')
     Assert-Eq -Label "backport lineage: long same-clause negation remains governing" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'We should not, given the current release schedule and the risk this introduces to other subsystems, backport #32537.') -join ',')
+    foreach ($affirmativeAfterUnrelatedNegation in @(
+        'This pattern is not commonly recommended and we will backport #300.',
+        'The regression is not obvious therefore we still backport #300.',
+        'The crash is not reproducible on Android and we backport #300.'
+    )) {
+        Assert-Eq -Label "backport lineage: independent affirmative clause resets unrelated negation — $affirmativeAfterUnrelatedNegation" `
+            -Expected '300' -Actual ((Get-ExplicitBackportSourceNumbers -Text $affirmativeAfterUnrelatedNegation) -join ',')
+    }
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2704,6 +2716,8 @@ foreach ($manualRevertSubject in @(
 $releaseScriptText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
 Assert-Eq -Label "commit scanner gates revert rows with shared subject parser" -Expected $true `
     -Actual ([bool]($releaseScriptText -match '\$revertsPr = Get-RevertedPrFromSubject[\s\S]{0,400}\$isRevert = \(\$null -ne \$revertsPr\)'))
+Assert-Eq -Label "main revert scan enumerates Backing-out subjects" -Expected $true `
+    -Actual ($releaseScriptText.Contains('--grep=Revert --grep=Backing'))
 $netRevertSet = Get-NetRevertedPrSet -Reverts @(
     @{ revertsPr = 200; revertBackportPr = 300 }
     @{ revertsPr = 100; revertBackportPr = 200 }
@@ -7916,12 +7930,15 @@ function Assert-PublicSanitizerEdgeCases {
         "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET",
         'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
         'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
-        '%64%6E%63%65%6E%67.visualstudio.com/internal/_build?token=SCHEMELESSSECRET'
+        '%64%6E%63%65%6E%67.visualstudio.com/internal/_build?token=SCHEMELESSSECRET',
+        '&#100;nceng.visualstudio.com/internal/_build?token=ENTITYSECRET',
+        '%252564%25256E%252563%252565%25256E%252567.visualstudio.com/internal/_build?token=TRIPLESECRET',
+        'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET'
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')

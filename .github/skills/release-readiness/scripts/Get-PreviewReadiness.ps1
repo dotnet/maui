@@ -1822,20 +1822,35 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
-    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc|%(?:25)?[0-9a-f]{2})[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng\.visualstudio\.com/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
+        '${prefix}internal')
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc|%(?:25)?[0-9a-f]{2}|&#(?:x[0-9a-f]+|\d+);)[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
-        for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
+        for ($decodePass = 0; $decodePass -lt 3; $decodePass++) {
             try {
                 $decoded = [System.Uri]::UnescapeDataString($canonical)
                 if ($decoded -eq $canonical) { break }
                 $canonical = $decoded
             } catch { break }
         }
+        $canonical = [regex]::Replace($canonical, '(?i)&#(?:(?:x(?<hex>[0-9a-f]+))|(?<dec>\d+));', {
+            param($entity)
+            $value = if ($entity.Groups['hex'].Success) {
+                [Convert]::ToInt32($entity.Groups['hex'].Value, 16)
+            } else {
+                [Convert]::ToInt32($entity.Groups['dec'].Value, 10)
+            }
+            if ($value -le 0xffff) { return [char]$value }
+            return $entity.Value
+        })
         $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
+        $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
         $canonical = [regex]::Replace(
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
