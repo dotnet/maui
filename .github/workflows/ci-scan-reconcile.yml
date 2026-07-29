@@ -164,6 +164,15 @@ jobs:
           # test body and fails tests that pass everywhere else.
           $ErrorActionPreference = 'Stop'
 
+          # `-SkipPublisherCheck` is a no-op on this runner and is kept for portability,
+          # not to relax anything. The publisher check is an Authenticode comparison, and
+          # `Get-AuthenticodeSignature` does not exist off Windows -- it raises
+          # CommandNotFoundException -- so there is no verification here to bypass. The
+          # flag matters only if `runs-on` ever becomes a Windows image, where the in-box
+          # Microsoft-signed Pester 3.4.0 otherwise blocks installing 5.x from PSGallery.
+          # Removing it would therefore buy no supply-chain posture today and would break
+          # the job the day the image changes. What actually constrains supply chain here
+          # is the exact pinned version, on both lines.
           Install-Module Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
           Import-Module Pester -RequiredVersion 5.9.0
 
