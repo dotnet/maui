@@ -44,7 +44,8 @@ BeforeAll {
 
     function Invoke-Collector {
         param(
-            [Parameter(Mandatory = $true)][object[]]$Fixtures
+            [Parameter(Mandatory = $true)][object[]]$Fixtures,
+            [switch]$ConstantDeadletterContent
         )
 
         $runnerTemp = Join-Path $TestDrive 'runner-temp'
@@ -54,15 +55,24 @@ BeforeAll {
         New-Item -ItemType Directory -Force -Path $runnerTemp, $agentRoot | Out-Null
         Set-Content -LiteralPath $fixturePath -Value ($Fixtures | ConvertTo-Json -Depth 8 -AsArray)
 
-        # Two substitutions, both unavoidable outside a real Actions run:
+        # Three substitutions, all unavoidable outside a real Actions run:
         #   * `${{ github.workflow_sha }}` is an Actions expression, not JS.
         #   * `agentRoot` is the hard-coded gh-aw runtime path; redirect it into
         #     TestDrive so the suite never writes outside its own sandbox.
+        #   * Terminality retries stay live, but test fixtures need no wall-clock delay.
         $body = (Get-CollectorSource).
         Replace('${{ github.workflow_sha }}', ('a' * 40)).
         Replace(
             "const agentRoot = '/tmp/gh-aw/agent/trusted';",
-            'const agentRoot = process.env.CI_SCAN_TEST_AGENT_ROOT;')
+            'const agentRoot = process.env.CI_SCAN_TEST_AGENT_ROOT;').
+        Replace('await sleep(5000);', 'await sleep(0);')
+        if ($ConstantDeadletterContent) {
+            $needle = 'content: deadletterEvidenceLine,'
+            if (($body.Split($needle).Count - 1) -ne 1) {
+                throw 'The constant-deadletter-content mutation no longer matches the collector.'
+            }
+            $body = $body.Replace($needle, 'content: deadletterUrl.toString(),')
+        }
 
         $script = @"
 const fixtures = require($($fixturePath | ConvertTo-Json));
@@ -133,6 +143,8 @@ $body
             [int]$InitialWorkItemCount = 1,
             [int]$FinishedWorkItemCount = 1,
             [int]$UnscheduledWorkItemCount = 0,
+            [int]$WaitingWorkItemCount = 0,
+            [int]$RunningWorkItemCount = 0,
             [object[]]$WorkItems
         )
 
@@ -196,8 +208,8 @@ $body
                     WorkItems            = [pscustomobject]@{
                         Finished    = $FinishedWorkItemCount
                         Unscheduled = $UnscheduledWorkItemCount
-                        Waiting     = 0
-                        Running     = 0
+                        Waiting     = $WaitingWorkItemCount
+                        Running     = $RunningWorkItemCount
                     }
                 }
             }
@@ -403,6 +415,26 @@ Describe 'trusted build-evidence collector: <_.Name>' -ForEach $script:Collector
         @($devicePipeline.failed_leaf_log_ids) | Should -Be @(1001)
     }
 
+    It 'rejects a Helix response that claims Finished while work items are waiting' -Skip:(-not $script:NodeAvailable) {
+        {
+            Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                    -TaskResult 'succeeded' `
+                    -WorkItemState 'Finished' `
+                    -WorkItemExitCode 0 `
+                    -WaitingWorkItemCount 1)
+        } | Should -Throw '*did not provide complete terminal work-item evidence*'
+    }
+
+    It 'rejects a Helix response that claims Finished while work items are running' -Skip:(-not $script:NodeAvailable) {
+        {
+            Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                    -TaskResult 'succeeded' `
+                    -WorkItemState 'Finished' `
+                    -WorkItemExitCode 0 `
+                    -RunningWorkItemCount 1)
+        } | Should -Throw '*did not provide complete terminal work-item evidence*'
+    }
+
     It 'rejects a truthy but invalid AzDO finishTime' -Skip:(-not $script:NodeAvailable) {
         {
             Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
@@ -413,10 +445,10 @@ Describe 'trusted build-evidence collector: <_.Name>' -ForEach $script:Collector
         } | Should -Throw '*invalid finishTime*'
     }
 
-    It 'records the deadletter URI as evidence without fetching it' -Skip:(-not $script:NodeAvailable) {
-        # The placeholder carries no run-specific diagnostics, so the URI itself
-        # is the evidence. Pin that it lands in the evidence file, otherwise the
-        # log could be marked failed-leaf with nothing explaining why.
+    It 'records stable work-item-bound deadletter evidence without fetching it' -Skip:(-not $script:NodeAvailable) {
+        # The placeholder carries no diagnostics and is constant across Helix.
+        # The countable evidence line therefore binds it to the trusted work-item
+        # name while remaining stable across builds for legitimate recurrence.
         $inventory = Invoke-Collector `
             -Fixtures (New-DeviceTestsFixtures `
                 -TaskResult 'succeeded' `
@@ -431,6 +463,93 @@ Describe 'trusted build-evidence collector: <_.Name>' -ForEach $script:Collector
         $evidence | Should -Match ([regex]::Escape('https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'))
         # The blob-only console fetch must not have run for a deadletter.
         $evidence | Should -Not -Match 'Helix console '
+
+        $raw = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.evidence.json' |
+            ConvertFrom-Json
+        $deadletter = @($raw.segments | Where-Object kind -eq 'helix-deadletter-uri')
+        $deadletter.Count | Should -Be 1
+        $deadletter[0].source | Should -Be "$($script:HelixJobId)/Controls.DeviceTests"
+        $deadletter[0].content | Should -BeExactly (
+            'Helix work item Controls.DeviceTests was deadlettered: ' +
+            'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt')
+    }
+
+    It 'binds unrelated deadletters to distinct work-item evidence' -Skip:(-not $script:NodeAvailable) {
+        $newDeadletter = {
+            param([string]$Name)
+            [pscustomobject]@{
+                Name = $Name
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
+            }
+        }
+
+        Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -WorkItems @(& $newDeadletter 'android-emulator-boot')) | Out-Null
+        $android = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.evidence.json' |
+            ConvertFrom-Json
+
+        Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -WorkItems @(& $newDeadletter 'ios-device-lost')) | Out-Null
+        $ios = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.evidence.json' |
+            ConvertFrom-Json
+
+        $android.segments[-1].content | Should -Not -BeExactly $ios.segments[-1].content
+        $android.segments[-1].content | Should -Match 'android-emulator-boot'
+        $ios.segments[-1].content | Should -Match 'ios-device-lost'
+    }
+
+    It 'mutation "constant-deadletter-content": unrelated work items collapse to one identity' -Skip:(-not $script:NodeAvailable) {
+        $newDeadletter = {
+            param([string]$Name)
+            [pscustomobject]@{
+                Name = $Name
+                State = 'Finished'
+                ExitCode = 0
+                ConsoleOutputUri = 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
+            }
+        }
+
+        Invoke-Collector `
+            -ConstantDeadletterContent `
+            -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -WorkItems @(& $newDeadletter 'android-emulator-boot')) | Out-Null
+        $android = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.evidence.json' |
+            ConvertFrom-Json
+
+        Invoke-Collector `
+            -ConstantDeadletterContent `
+            -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Finished' `
+                -WorkItemExitCode 0 `
+                -WorkItems @(& $newDeadletter 'ios-device-lost')) | Out-Null
+        $ios = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.evidence.json' |
+            ConvertFrom-Json
+
+        $android.segments[-1].content | Should -BeExactly $ios.segments[-1].content
+        $android.segments[-1].content |
+            Should -BeExactly 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
     }
 
     It 'still marks a deadlettered work item on a blob-hosted URI as failed-leaf' -Skip:(-not $script:NodeAvailable) {

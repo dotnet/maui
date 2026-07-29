@@ -41,6 +41,8 @@ engine:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 concurrency:
+  # A fixed group permits one running and one pending run. Do not cancel a
+  # publisher after issue writes may have started; later runs remain serialized.
   group: "ci-failure-scan-net11"
   cancel-in-progress: false
 
@@ -656,17 +658,16 @@ steps:
                   const counts = details?.WorkItems;
                   const initialCount = Number(details?.InitialWorkItemCount);
                   const finishedCount = Number(counts?.Finished);
-                  const pendingCounts = [
-                    Number(counts?.Unscheduled),
-                    Number(counts?.Waiting),
-                    Number(counts?.Running),
-                  ];
+                  const unscheduledCount = Number(counts?.Unscheduled);
+                  const waitingCount = Number(counts?.Waiting);
+                  const runningCount = Number(counts?.Running);
+                  const workItemCounts = [unscheduledCount, waitingCount, runningCount];
                   const validCounts =
                     Number.isSafeInteger(initialCount) &&
                     initialCount >= 0 &&
                     Number.isSafeInteger(finishedCount) &&
                     finishedCount >= initialCount &&
-                    pendingCounts.every(count => Number.isSafeInteger(count) && count >= 0);
+                    workItemCounts.every(count => Number.isSafeInteger(count) && count >= 0);
                   const terminalItems = items.every(workItem => {
                     const state = String(workItem.State || '').toLowerCase();
                     const hasExitCode =
@@ -681,6 +682,8 @@ steps:
                     validCounts &&
                     Boolean(details?.Finished) &&
                     finishedCount > 0 &&
+                    waitingCount === 0 &&
+                    runningCount === 0 &&
                     items.length >= finishedCount &&
                     terminalItems;
                   if (terminalJob) {
@@ -695,6 +698,12 @@ steps:
                   throw new Error(`Helix job ${jobId} did not provide complete terminal work-item evidence.`);
                 }
                 for (const workItem of workItems) {
+                  const workItemName = String(workItem.Name ?? '').trim();
+                  if (!workItemName ||
+                      workItemName.length > 1000 ||
+                      /[\r\n]/.test(workItemName)) {
+                    throw new Error(`Helix job ${jobId} returned an invalid work-item name.`);
+                  }
                   const state = String(workItem.State || '').toLowerCase();
                   const hasExitCode =
                     workItem.ExitCode !== null &&
@@ -702,10 +711,10 @@ steps:
                     workItem.ExitCode !== '' &&
                     Number.isSafeInteger(Number(workItem.ExitCode));
                   if (state !== 'finished' && state !== 'failed') {
-                    throw new Error(`Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} is not terminal.`);
+                    throw new Error(`Helix work item ${workItemName} in job ${jobId} is not terminal.`);
                   }
                   if (state !== 'failed' && !hasExitCode) {
-                    throw new Error(`Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} has no terminal exit code.`);
+                    throw new Error(`Helix work item ${workItemName} in job ${jobId} has no terminal exit code.`);
                   }
                   // A deadlettered work item never ran, so Helix can report it
                   // as Finished with exit code 0 even though nothing executed.
@@ -724,7 +733,7 @@ steps:
                     continue;
                   }
                   if (!workItem.ConsoleOutputUri) {
-                    throw new Error(`Failed Helix work item ${String(workItem.Name || 'unknown')} in job ${jobId} has no console output.`);
+                    throw new Error(`Failed Helix work item ${workItemName} in job ${jobId} has no console output.`);
                   }
                   // A deadletter's console URI is a fixed Helix documentation
                   // placeholder (in production
@@ -733,22 +742,26 @@ steps:
                   // allows. Fetching it would have to either throw on that
                   // allowlist -- aborting the whole scan on the first real
                   // deadletter -- or force the allowlist open to a second host.
-                  // The placeholder carries no run-specific diagnostics anyway,
-                  // so the URI itself is the evidence. Record it and fold the
-                  // log in without widening the egress surface.
+                  // The placeholder carries no run-specific diagnostics. Bind
+                  // the countable line to the trusted work-item name: including
+                  // the job/build would prevent recurrence across runs, while
+                  // hashing the constant URI alone would collapse every
+                  // unrelated deadletter onto one global dedup identity.
                   if (isDeadletter) {
                     const deadletterUrl = new URL(workItem.ConsoleOutputUri);
                     if (deadletterUrl.protocol !== 'https:') {
                       throw new Error(`Helix returned an invalid deadletter URL for job ${jobId}.`);
                     }
+                    const deadletterEvidenceLine =
+                      `Helix work item ${workItemName} was deadlettered: ${deadletterUrl.toString()}`;
                     evidence.push(
-                      `===== Helix deadletter ${jobId}/${String(workItem.Name || 'unknown')} =====`,
+                      `===== Helix deadletter ${jobId}/${workItemName} =====`,
                       `Work item was deadlettered (State=${String(workItem.State || 'unknown')}, ExitCode=${String(workItem.ExitCode)}); it never ran.`,
-                      deadletterUrl.toString());
+                      deadletterEvidenceLine);
                     rawSegments.push({
                       kind: 'helix-deadletter-uri',
-                      source: `${jobId}/${String(workItem.Name || 'unknown')}`,
-                      content: deadletterUrl.toString(),
+                      source: `${jobId}/${workItemName}`,
+                      content: deadletterEvidenceLine,
                     });
                     failedLeafLogIds.add(logId);
                     continue;
@@ -760,13 +773,13 @@ steps:
                   }
                   const consoleLog = await fetchText(
                     consoleUrl.toString(),
-                    `Helix console ${jobId}/${String(workItem.Name || 'unknown')}`);
+                    `Helix console ${jobId}/${workItemName}`);
                   evidence.push(
-                    `===== Helix console ${jobId}/${String(workItem.Name || 'unknown')} =====`,
+                    `===== Helix console ${jobId}/${workItemName} =====`,
                     consoleLog);
                   rawSegments.push({
                     kind: 'helix-console',
-                    source: `${jobId}/${String(workItem.Name || 'unknown')}`,
+                    source: `${jobId}/${workItemName}`,
                     content: consoleLog,
                   });
                   // A DeviceTests submission task can be green in the AzDO timeline

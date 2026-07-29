@@ -349,6 +349,38 @@ Describe 'ci-status-net11 trusted evidence recurrence matcher' {
             Should -Be 'NONE'
     }
 
+    It 'does not adopt an unrelated deadletter with the same placeholder URL' -Skip:(-not $script:NodeAvailable) {
+        $url = 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
+        $candidates = @(
+            (New-LegacyIssue -Number 36827 `
+                    -Title 'Unrelated iOS deadletter' `
+                    -PipelineLine '- **Pipeline**: maui-pr-devicetests' `
+                    -Error "Helix work item ios-device-lost was deadlettered: $url")
+        )
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine "Helix work item android-emulator-boot was deadlettered: $url" `
+            -Pipeline 'maui-pr-devicetests' `
+            -Candidates $candidates |
+            Should -Be 'NONE'
+    }
+
+    It 'still adopts the same real failure line across runs' -Skip:(-not $script:NodeAvailable) {
+        $line = 'System.NullReferenceException in Microsoft.Maui.DeviceTests.ButtonTests'
+        $candidates = @(
+            (New-LegacyIssue -Number 36827 `
+                    -Title 'Recurring device-test failure' `
+                    -PipelineLine '- **Pipeline**: maui-pr-devicetests' `
+                    -Error $line)
+        )
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine $line `
+            -Pipeline 'maui-pr-devicetests' `
+            -Candidates $candidates |
+            Should -Be '36827'
+    }
+
     It 'ignores trusted marker and state lines during recurrence matching' -Skip:(-not $script:NodeAvailable) {
         $candidates = @(
             [pscustomobject]@{
@@ -473,6 +505,20 @@ Describe 'CI scanner twin inventory' {
         @($script:Twins.ScannerId | Sort-Object) | Should -Be @('ci-scan', 'ci-scan-net11')
         @($script:Twins.Branch | Sort-Object) | Should -Be @('main', 'net11.0')
         @($script:Twins.Label | Sort-Object) | Should -Be @('ci-scan', 'ci-scan-net11')
+    }
+
+    It 'serializes each twin without cancelling an active publisher' {
+        $groups = foreach ($twin in $script:Twins) {
+            $sourcePath = $twin.LockPath -replace '\.lock\.yml$', '.md'
+            $source = Get-Content -LiteralPath $sourcePath -Raw
+            $match = [regex]::Match(
+                $source,
+                '(?m)^concurrency:[ \t]*\r?\n(?:[ \t]*#[^\r\n]*\r?\n)*[ \t]*group:[ \t]*"(?<group>[^"]+)"[ \t]*\r?\n[ \t]*cancel-in-progress:[ \t]*false')
+            $match.Success | Should -BeTrue -Because "$($twin.Name) must serialize runs without cancelling a publisher after writes begin"
+            $match.Groups['group'].Value
+        }
+
+        @($groups | Sort-Object) | Should -Be @('ci-failure-scan', 'ci-failure-scan-net11')
     }
 
     It 'keeps the two workflow sources identical apart from scanner tokens' {

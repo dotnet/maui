@@ -160,9 +160,14 @@ Assertion failed
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
             [Int64]$LogId = 1001,
-            [string[]]$Lines = @('Assertion failed', 'Assertion failed')
+            [string[]]$Lines = @('Assertion failed', 'Assertion failed'),
+            [string]$SegmentKind = 'azdo-log',
+            [string]$SegmentSource = ''
         )
 
+        if (-not $SegmentSource) {
+            $SegmentSource = "$BuildId/$LogId"
+        }
         $directory = Join-Path $Root $Pipeline
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
         Set-Content `
@@ -175,8 +180,8 @@ Assertion failed
             log_id         = $LogId
             segments       = @(
                 [pscustomobject]@{
-                    kind    = 'azdo-log'
-                    source  = "$BuildId/$LogId"
+                    kind    = $SegmentKind
+                    source  = $SegmentSource
                     content = $Lines -join "`n"
                 }
             )
@@ -799,6 +804,68 @@ Describe 'CI scanner issue payload gate' {
         $plan.issues[0].Body | Should -Match '(?m)^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
     }
 
+    It 'gives unrelated deadletter work items distinct trusted evidence proofs' {
+        $url = 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
+        $androidLine = "Helix work item android-emulator-boot was deadlettered: $url"
+        $iosLine = "Helix work item ios-device-lost was deadlettered: $url"
+        $androidRoot = Join-Path $TestDrive 'android-deadletter'
+        $iosRoot = Join-Path $TestDrive 'ios-deadletter'
+        New-TestEvidence `
+            -Root $androidRoot `
+            -Lines @($androidLine) `
+            -SegmentKind 'helix-deadletter-uri' `
+            -SegmentSource 'job-android/android-emulator-boot'
+        New-TestEvidence `
+            -Root $iosRoot `
+            -Lines @($iosLine) `
+            -SegmentKind 'helix-deadletter-uri' `
+            -SegmentSource 'job-ios/ios-device-lost'
+
+        $androidProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'helix-workitem-deadletter.txt' `
+            -PipelineName 'maui-pr' `
+            -BuildId 123456 `
+            -Fingerprint 'android-deadletter' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $androidRoot
+        $iosProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'helix-workitem-deadletter.txt' `
+            -PipelineName 'maui-pr' `
+            -BuildId 123456 `
+            -Fingerprint 'ios-deadletter' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $iosRoot
+
+        $androidProof.EvidenceKey | Should -Not -BeExactly $iosProof.EvidenceKey
+        $androidProof.EvidenceLineHashes[0] | Should -Not -BeExactly $iosProof.EvidenceLineHashes[0]
+    }
+
+    It 'keeps real failure identity stable across builds' {
+        $line = 'System.NullReferenceException in Microsoft.Maui.DeviceTests.ButtonTests'
+        $firstRoot = Join-Path $TestDrive 'real-failure-first'
+        $secondRoot = Join-Path $TestDrive 'real-failure-second'
+        New-TestEvidence -Root $firstRoot -BuildId 900001 -Lines @($line)
+        New-TestEvidence -Root $secondRoot -BuildId 900002 -Lines @($line)
+
+        $firstProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'NullReferenceException' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900001 `
+            -Fingerprint 'first-real-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $firstRoot
+        $secondProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'NullReferenceException' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900002 `
+            -Fingerprint 'second-real-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $secondRoot
+
+        $firstProof.EvidenceKey | Should -BeExactly $secondProof.EvidenceKey
+        $firstProof.EvidenceLineHashes | Should -BeExactly $secondProof.EvidenceLineHashes
+    }
+
     It 'rejects more than 200 distinct matching evidence lines before publication' {
         $evidenceRoot = Join-Path $TestDrive 'excess-evidence-lines'
         $lines = 1..201 | ForEach-Object { "Unique failure line $_" }
@@ -1227,7 +1294,9 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
         $workflowSource | Should -Match 'attempt <= 6'
         $workflowSource | Should -Match 'items\.length >= finishedCount'
         $workflowSource | Should -Match 'const terminalItems = items\.every'
-        $workflowSource | Should -Not -Match 'pendingCounts\.every\(count => count === 0\)'
+        $workflowSource | Should -Match 'waitingCount === 0'
+        $workflowSource | Should -Match 'runningCount === 0'
+        $workflowSource | Should -Not -Match 'unscheduledCount === 0'
         $workflowSource | Should -Match 'did not provide complete terminal work-item evidence'
         $workflowSource | Should -Match "state !== 'finished' && state !== 'failed'"
         $workflowSource | Should -Match 'workItem\.ExitCode !== null'
