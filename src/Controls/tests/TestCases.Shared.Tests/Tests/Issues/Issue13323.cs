@@ -16,18 +16,15 @@ public class Issue13323 : _IssuesUITest
 	public void CarouselView_EntryTap_DoesNotChangePosition()
 	{
 		App.WaitForElement("CarouselView13323", timeout: TimeSpan.FromSeconds(30));
-		App.WaitForElement("PositionLabel", timeout: TimeSpan.FromSeconds(15));
 
 		App.Tap("GoToItem2");
+		App.WaitForTextToBePresentInElement("PositionLabel", "Position:2");
 		App.WaitForElement("CenterEntry_2", timeout: TimeSpan.FromSeconds(10));
-
-		var positionBefore = App.FindElement("PositionLabel").GetText();
-		Assert.That(positionBefore, Is.EqualTo("Position:2"), $"CarouselView did not reach Position:2 before tapping Entry. Actual: {positionBefore}");
 
 		App.Tap("CenterEntry_2");
 
-		var positionAfter = App.FindElement("PositionLabel").GetText();
-		Assert.That(positionAfter, Is.EqualTo("Position:2"), $"CarouselView jumped after tapping Center-aligned Entry. Before: {positionBefore}, After: {positionAfter}");
+		Assert.That(App.FindElement("PositionLabel").GetText(), Is.EqualTo("Position:2"),
+			"CarouselView jumped after tapping Center-aligned Entry.");
 
 		App.DismissKeyboard();
 #if ANDROID
@@ -40,18 +37,15 @@ public class Issue13323 : _IssuesUITest
 	public void CarouselView_Loop_EntryTap_DoesNotChangePosition()
 	{
 		App.WaitForElement("LoopCarouselView13323", timeout: TimeSpan.FromSeconds(30));
-		App.WaitForElement("LoopPositionLabel", timeout: TimeSpan.FromSeconds(15));
 
 		App.Tap("LoopGoToItem2");
+		App.WaitForTextToBePresentInElement("LoopPositionLabel", "LoopPosition:2");
 		App.WaitForElement("LoopCenterEntry_2", timeout: TimeSpan.FromSeconds(10));
-
-		var positionBefore = App.FindElement("LoopPositionLabel").GetText();
-		Assert.That(positionBefore, Is.EqualTo("LoopPosition:2"), $"Loop CarouselView did not reach LoopPosition:2 before tapping Entry. Actual: {positionBefore}");
 
 		App.Tap("LoopCenterEntry_2");
 
-		var positionAfter = App.FindElement("LoopPositionLabel").GetText();
-		Assert.That(positionAfter, Is.EqualTo("LoopPosition:2"), $"CarouselView (Loop=true) jumped after tapping Center-aligned Entry. Before: {positionBefore}, After: {positionAfter}");
+		Assert.That(App.FindElement("LoopPositionLabel").GetText(), Is.EqualTo("LoopPosition:2"),
+			"CarouselView (Loop=true) jumped after tapping Center-aligned Entry.");
 
 		App.DismissKeyboard();
 #if ANDROID
