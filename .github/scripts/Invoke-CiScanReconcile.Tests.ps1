@@ -1703,6 +1703,99 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             @($global:ghCalls).Count | Should -Be 1 -Because 'the honest single-flag call must still reach gh'
         }
 
+        <#
+            Searching the vector for '--repo' answers "does this token appear", not "is
+            this token a flag". Argument vectors are flat, so a token in VALUE position
+            is indistinguishable from the flag it spells. Measured against a stubbed
+            `gh`, with the search form of the check in place:
+
+                -Kind comment -GhArgs @('issue','comment','5','--body','--repo','dotnet/maui')
+                    -> EXECUTED, and the command carries NO --repo at all
+
+            The search matched the BODY TEXT at index 4 and read the next element as its
+            value. Both reads are self-consistent and neither token is a flag; `gh` then
+            falls back to the working directory. That is the same redirect the binding
+            exists to prevent, reached by satisfying the binding.
+
+            Two rules now stand between that input and `gh`, and which one answers was
+            measured rather than assumed. With BOTH halves of the repository binding
+            disabled, the well-formedness rule catches the first two cases below on the
+            trailing bare token -- so they are ITS cases, and its diagnosis is the better
+            one: the hazard is a second target, not a missing flag. The third case
+            survives that isolation and EXECUTES, because a --repo sitting outside the
+            fixed prefix is perfectly well-formed. That one is the binding rule's, and it
+            is the only case here that is.
+
+            So the first two are ordering pins, not coverage. Both orders refuse the same
+            inputs; only the diagnosis moves. A future edit that hoists the binding rule
+            above well-formedness stays green on every other test in this file and
+            silently degrades the message on the shape that motivated the rule.
+
+            The positive control is the load-bearing half: the reconciler's own notices
+            are free text, and a body that MENTIONS --repo is honest. A rule that refused
+            it would be refusing the product rather than the attack.
+        #>
+        It 'diagnoses <name>' -ForEach @(
+            @{ name = 'a body whose text is --repo as the second target it leaves behind'
+                Kind = 'comment'
+                CmdArgs = @('issue', 'comment', '5', '--body', '--repo', 'dotnet/maui')
+                expected = "*carries the bare argument 'dotnet/maui'*" }
+            @{ name = 'that same body text even when a real --repo follows it'
+                Kind = 'comment'
+                CmdArgs = @('issue', 'comment', '5', '--body', '--repo', 'dotnet/maui', '--repo', 'attacker/evil')
+                expected = "*carries the bare argument 'dotnet/maui'*" }
+            @{ name = 'a well-formed vector whose --repo sits outside the fixed prefix'
+                Kind = 'label'
+                CmdArgs = @('issue', 'edit', '5', '--add-label', 'ci-scan-active', '--repo', 'dotnet/maui')
+                expected = '*must carry --repo dotnet/maui as its first flag*' }
+        ) {
+            { Invoke-GhWrite -Kind $Kind -IssueNumber 5 -GhArgs $CmdArgs } |
+                Should -Throw -ExpectedMessage $expected
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'still runs a notice whose own text mentions --repo' {
+            Invoke-GhWrite -Kind comment -IssueNumber 5 -GhArgs @(
+                'issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'the call passes --repo explicitly')
+            @($global:ghCalls).Count | Should -Be 1 -Because 'the position rule must read flags, not scan prose'
+        }
+
+        It 'leaves a later duplicate to the duplication rule, so neither check subsumes the other' {
+            # A correct prefix followed by a second --repo satisfies the position rule and
+            # is still honoured by gh, so it must fail on the OTHER message. Asserting the
+            # message rather than the throw is what distinguishes two live rules from one
+            # rule doing double duty and one dead.
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @(
+                    'issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'a', '--repo', 'attacker/evil') } |
+                Should -Throw -ExpectedMessage '*exactly one --repo*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'names the rule when --repo has no value, instead of dying on the array bound' {
+            # Both forms refuse this, so the throw alone proves nothing. Without the length
+            # floor the refusal comes from reading past the end of the vector, which under
+            # `Set-StrictMode -Version Latest` reports "Index was outside the bounds of the
+            # array" -- naming neither the flag nor the invariant. Fail-closed either way;
+            # the floor buys the diagnosis. Asserting the message is the only way to tell
+            # a guard that fired from a crash standing where the guard should be.
+            { Invoke-GhWrite -Kind close -IssueNumber 5 -GhArgs @('issue', 'close', '5', '--repo') } |
+                Should -Throw -ExpectedMessage '*must carry --repo dotnet/maui as its first flag*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a --repo spelled in another case, on the same provenance argument as its value' {
+            # `-ne` is case-insensitive in PowerShell, so a relaxed comparison accepts
+            # --REPO. gh would then reject it, which makes this fail-loud rather than
+            # dangerous -- but every call site emits the flag lowercase, so a variant did
+            # not come from one of them. The duplication rule below happens to catch this
+            # too, which is exactly why the expected message pins the position rule: an
+            # accidental cover is not coverage.
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @(
+                    'issue', 'edit', '5', '--REPO', 'dotnet/maui', '--add-label', 'ci-scan-active') } |
+                Should -Throw -ExpectedMessage '*must carry --repo dotnet/maui as its first flag*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
         It 'refuses a repository that differs from the run only by case' {
             # GitHub routes repository names case-insensitively, so this one does reach the
             # intended repo and a relaxed `-ne` would accept it. It is refused anyway, and

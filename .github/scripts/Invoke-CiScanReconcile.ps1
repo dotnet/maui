@@ -414,16 +414,94 @@ function Invoke-GhWrite {
         Fail closed: if the run's own repository cannot be resolved, refuse the write
         instead of letting it through unchecked.
     #>
+    <#
+        Every check above reads ONE position for the target: `$GhArgs[2]`. `gh issue edit`
+        reads ALL of them -- its grammar is `{<numbers> | <urls>}`, plural, while `close`,
+        `reopen` and `comment` are singular. Measured read-only, arity errors only:
+
+            gh issue edit    999999998 999999999  -> "field to edit flag required"  (accepted)
+            gh issue close   999999998 999999999  -> "accepts 1 arg(s), received 2"
+            gh issue comment 999999998 999999999  -> "accepts 1 arg(s), received 2"
+
+        So cobra's arity check has been doing this validation for three of the four verbs,
+        for free and invisibly -- and `edit` is the verb behind `label`, `unlabel` AND `body`.
+        Positionals are also collected interspersed among flags and after a `--` terminator,
+        so a second target can sit anywhere in the array:
+
+            gh issue close 999999998 --repo dotnet/maui    999999999 -> received 2
+            gh issue close 999999998 --repo dotnet/maui -- 999999999 -> received 2
+
+        All six shapes executed against every other check in this function: verb correct,
+        $GhArgs[2] correct, exactly one --repo, exactly one kind flag, no sibling flags.
+        Nothing looked at the extra token.
+
+        This runs BEFORE the repository binding below, and the order is load-bearing rather
+        than cosmetic. Well-formedness is prior to binding: "index 3 is the repo flag" is
+        only meaningful once the vector is known to be flag-shaped. Both orders refuse the
+        same inputs, so only the DIAGNOSIS differs -- and for a bare token "gh would read it
+        as a second target" is the accurate one, while "--repo is not the first flag" is
+        true but describes a symptom.
+
+        The worst shape is a URL, because a `gh` issue URL CARRIES ITS OWN REPOSITORY. It
+        does not have to beat the --repo binding -- it goes around it, never touching --repo
+        at all. That is why this is not an extension of the --repo work: it bypasses it.
+
+        Same class as the repeated-flag defect one level down -- there, the validator read
+        the first occurrence and the consumer read the last; here the validator reads one
+        position and the consumer reads every one. A positional has no name, so there is no
+        occurrence to count, and the shape must be constrained instead.
+
+        Constrained rather than enumerated: the array must be `issue <verb> <number>`
+        followed only by `--flag value` pairs or `--flag=value` singles. No bare tokens, no
+        `--`. Enumerating the attacks would leave the next spelling open; this leaves only
+        the shape every honest call site already emits. A future boolean flag makes this
+        refuse loudly rather than mispair silently, which is the same fail-closed trade as
+        the case-sensitive --repo comparison.
+    #>
+    for ($i = 3; $i -lt $GhArgs.Count; $i++) {
+        $token = [string]$GhArgs[$i]
+        if ($token -eq '--') {
+            throw "BUG: '$Kind' must not carry a '--' terminator on issue #$IssueNumber; gh still collects positional targets after it. Got '$($GhArgs -join ' ')'."
+        }
+        if ($token -clike '--*=*') { continue }   # --flag=value consumes nothing
+        if ($token -clike '--*') { $i++; continue }   # --flag consumes exactly its value
+        throw "BUG: '$Kind' on issue #$IssueNumber carries the bare argument '$token'; gh would read it as a SECOND target. Got '$($GhArgs -join ' ')'."
+    }
+
     if (-not $script:TargetRepo) {
         throw "BUG: '$Kind' on issue #$IssueNumber cannot be checked against the run's own repository."
     }
+    <#
+        Searching the array for '--repo' asks "does this token appear", not "is this
+        token a flag". Argument vectors are flat: a token in VALUE position is
+        indistinguishable from the flag it spells. Measured against a stubbed `gh`,
+        with the search form in place:
+
+            -Kind comment -GhArgs @('issue','comment','5','--body','--repo','dotnet/maui')
+                -> EXECUTED, and the command carries NO --repo at all
+
+        The search found '--repo' at index 4 -- the BODY TEXT -- and read 'dotnet/maui'
+        after it as the flag's value. Both reads are self-consistent; neither token is
+        a flag. `gh` then falls back to the working directory, which is the exact
+        redirect the repository binding exists to prevent, reached by satisfying it.
+
+        Deciding which positions are flags requires knowing each flag's arity, i.e.
+        re-implementing the consumer -- the same trap refused below. So the repository
+        is pinned to a POSITION instead: it is part of the fixed prefix that indices
+        0-2 already pin, and all five call sites emit exactly this shape. A token in
+        value position cannot reach index 3 without breaking the verb/number checks
+        that ran above.
+
+        This does not subsume the duplication check below, and is not subsumed by it:
+        a correct prefix followed by a LATER second --repo passes here and is honoured
+        by `gh`. Both are load-bearing.
+    #>
     $expectedRepo = $script:TargetRepo
-    $repoIndex = [array]::IndexOf($GhArgs, '--repo')
-    if ($repoIndex -lt 0 -or $repoIndex -ge $GhArgs.Count - 1) {
-        throw "BUG: '$Kind' must carry --repo $expectedRepo on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
+    if ($GhArgs.Count -lt 5 -or $GhArgs[3] -cne '--repo') {
+        throw "BUG: '$Kind' must carry --repo $expectedRepo as its first flag on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
     }
-    if ($GhArgs[$repoIndex + 1] -cne $expectedRepo) {
-        throw "BUG: '$Kind' validated #$IssueNumber in $expectedRepo but the command targets '$($GhArgs[$repoIndex + 1])'."
+    if ($GhArgs[4] -cne $expectedRepo) {
+        throw "BUG: '$Kind' validated #$IssueNumber in $expectedRepo but the command targets '$($GhArgs[4])'."
     }
 
     <#
@@ -451,53 +529,6 @@ function Invoke-GhWrite {
         if ($occurrences.Count -ne 1) {
             throw "BUG: '$Kind' must carry exactly one $flag on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
         }
-    }
-
-    <#
-        Every check above reads ONE position for the target: `$GhArgs[2]`. `gh issue edit`
-        reads ALL of them -- its grammar is `{<numbers> | <urls>}`, plural, while `close`,
-        `reopen` and `comment` are singular. Measured read-only, arity errors only:
-
-            gh issue edit    999999998 999999999  -> "field to edit flag required"  (accepted)
-            gh issue close   999999998 999999999  -> "accepts 1 arg(s), received 2"
-            gh issue comment 999999998 999999999  -> "accepts 1 arg(s), received 2"
-
-        So cobra's arity check has been doing this validation for three of the four verbs,
-        for free and invisibly -- and `edit` is the verb behind `label`, `unlabel` AND `body`.
-        Positionals are also collected interspersed among flags and after a `--` terminator,
-        so a second target can sit anywhere in the array:
-
-            gh issue close 999999998 --repo dotnet/maui    999999999 -> received 2
-            gh issue close 999999998 --repo dotnet/maui -- 999999999 -> received 2
-
-        All six shapes executed against the checks above: verb correct, $GhArgs[2] correct,
-        exactly one --repo, exactly one kind flag, no sibling flags. Nothing looked at the
-        extra token.
-
-        The worst shape is a URL, because a `gh` issue URL CARRIES ITS OWN REPOSITORY. It
-        does not have to beat the --repo binding -- it goes around it, never touching --repo
-        at all. That is why this is not an extension of the --repo work: it bypasses it.
-
-        Same class as the repeated-flag defect one level down -- there, the validator read
-        the first occurrence and the consumer read the last; here the validator reads one
-        position and the consumer reads every one. A positional has no name, so there is no
-        occurrence to count, and the shape must be constrained instead.
-
-        Constrained rather than enumerated: the array must be `issue <verb> <number>`
-        followed only by `--flag value` pairs or `--flag=value` singles. No bare tokens, no
-        `--`. Enumerating the attacks would leave the next spelling open; this leaves only
-        the shape every honest call site already emits. A future boolean flag makes this
-        refuse loudly rather than mispair silently, which is the same fail-closed trade as
-        the case-sensitive --repo comparison.
-    #>
-    for ($i = 3; $i -lt $GhArgs.Count; $i++) {
-        $token = [string]$GhArgs[$i]
-        if ($token -eq '--') {
-            throw "BUG: '$Kind' must not carry a '--' terminator on issue #$IssueNumber; gh still collects positional targets after it. Got '$($GhArgs -join ' ')'."
-        }
-        if ($token -clike '--*=*') { continue }   # --flag=value consumes nothing
-        if ($token -clike '--*') { $i++; continue }   # --flag consumes exactly its value
-        throw "BUG: '$Kind' on issue #$IssueNumber carries the bare argument '$token'; gh would read it as a SECOND target. Got '$($GhArgs -join ' ')'."
     }
 
     $script:Counters.Writes++
