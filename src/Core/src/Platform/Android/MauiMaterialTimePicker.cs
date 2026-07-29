@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Platform;
 /// Material 3 TimePicker field on Android: an outlined text field with a trailing clock icon.
 /// Tapping the clock icon opens the platform <c>MaterialTimePicker</c> dialog.
 /// </summary>
-public class MauiMaterialTimePicker : MauiMaterialDateTimePicker
+public class MauiMaterialTimePicker : MauiMaterialDateTimePickerBase
 {
     public MauiMaterialTimePicker(Context context)
-        : base(context, Resource.Drawable.ic_clock_black_24dp, "Time")
+        : base(context, Resource.Drawable.ic_clock_black_24dp)
     {
     }
 
