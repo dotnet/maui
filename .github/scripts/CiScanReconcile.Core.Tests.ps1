@@ -109,7 +109,11 @@ Describe 'Get-CiScanTwinConfig' {
         (Get-CiScanTwinConfig -Label 'ci-scan-net11').Branch | Should -Be 'net11.0'
     }
     It 'rejects an unknown label rather than inventing a config' {
-        { Get-CiScanTwinConfig -Label 'ci-scan-evil' } | Should -Throw
+        # Pinned to the message, not just to throwing. A bare `-Throw` is satisfied by any
+        # refusal, including a StrictMode property error from a half-broken lookup -- which
+        # is the failure this test exists to distinguish from a deliberate rejection.
+        { Get-CiScanTwinConfig -Label 'ci-scan-evil' } |
+            Should -Throw -ExpectedMessage '*Unknown ci-scan twin label*'
     }
     It 'returns a copy so callers cannot poison the shared table' {
         $a = Get-CiScanTwinConfig -Label 'ci-scan'

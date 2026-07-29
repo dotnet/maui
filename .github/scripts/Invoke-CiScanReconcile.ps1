@@ -160,6 +160,30 @@ $script:CiScanMaxNewerBuildsProbed = 20
 # mechanism `$script:MutationsAllowed` already relies on -- written and read through the
 # same scope by functions in this file.
 $script:TargetRepo = "$Owner/$Repo"
+
+<#
+    The argument contract for every operation the reconciler may perform. Hoisted to
+    script scope rather than left inline in Invoke-GhWrite for one reason: the
+    declared-but-unshaped state has to be INDUCIBLE, or the refusal that handles it
+    cannot be pinned.
+
+    That was measured. With the table inline, deleting the named refusal left the suite
+    at 290/290 green -- the state it guards is unreachable in unmutated code, so no test
+    could bind to it, and the only thing distinguishing "refused by name" from "crashed
+    on a property lookup" was unasserted. A test can now remove a key, observe which
+    refusal fires, and put it back.
+
+    This weakens nothing: the table was already effectively constant, it is written once
+    here, and Invoke-GhWrite is the sole reader.
+#>
+$script:CiScanWriteShapes = @{
+    label   = @{ Verb = 'edit'; Flag = '--add-label';    Allowed = @('--repo', '--add-label') }
+    unlabel = @{ Verb = 'edit'; Flag = '--remove-label'; Allowed = @('--repo', '--remove-label') }
+    body    = @{ Verb = 'edit'; Flag = '--body';         Allowed = @('--repo', '--body') }
+    comment = @{ Verb = 'comment'; Flag = '--body';      Allowed = @('--repo', '--body') }
+    close   = @{ Verb = 'close'; Flag = $null;           Allowed = @('--repo', '--reason', '--comment') }
+    reopen  = @{ Verb = 'reopen'; Flag = $null;          Allowed = @('--repo', '--comment') }
+}
 $null = Set-CiScanReconcileMode -RequestedMode $Mode
 Reset-CiScanCounters
 
@@ -369,14 +393,25 @@ function Invoke-GhWrite {
         carried --remove-label would otherwise be able to strip a human veto label while
         declaring itself the additive kind.
     #>
-    $shape = @{
-        label   = @{ Verb = 'edit'; Flag = '--add-label';    Allowed = @('--repo', '--add-label') }
-        unlabel = @{ Verb = 'edit'; Flag = '--remove-label'; Allowed = @('--repo', '--remove-label') }
-        body    = @{ Verb = 'edit'; Flag = '--body';         Allowed = @('--repo', '--body') }
-        comment = @{ Verb = 'comment'; Flag = '--body';      Allowed = @('--repo', '--body') }
-        close   = @{ Verb = 'close'; Flag = $null;           Allowed = @('--repo', '--reason', '--comment') }
-        reopen  = @{ Verb = 'reopen'; Flag = $null;          Allowed = @('--repo', '--comment') }
-    }[$Kind]
+    $shape = $script:CiScanWriteShapes[$Kind]
+
+    # A kind admitted by the ValidateSet but absent from this table is refused here, by
+    # name. Without this line it is still refused -- but by a StrictMode property crash on
+    # `$shape.Verb` reporting "The property 'Verb' cannot be found on this object", which
+    # names neither the kind nor the vocabulary. That is the third instance on this branch
+    # of a crash standing in for a guard, and the most consequential: this table IS the
+    # closed set of operations the reconciler may perform.
+    #
+    # The ordering matters. An untiered kind falls through to $MutationsAllowed -- the
+    # COMMENT tier -- so a kind added to the ValidateSet is pre-authorized at the tier
+    # meant to run for weeks in shadow. The only thing standing between that and a live
+    # write is a shape-table entry, which is exactly what someone wiring a new kind adds
+    # next. Failing by name here makes the missing tier decision visible at the moment it
+    # is skipped, instead of surfacing as a property error someone "fixes" by adding the
+    # entry.
+    if ($null -eq $shape) {
+        throw "BUG: '$Kind' is in the Kind vocabulary but has no shape entry, so its argument contract and tier were never decided."
+    }
 
     if ($GhArgs.Count -lt 3 -or $GhArgs[0] -ne 'issue' -or $GhArgs[1] -ne $shape.Verb) {
         throw "BUG: '$Kind' must run 'gh issue $($shape.Verb)' on #$IssueNumber; got '$($GhArgs -join ' ')'."

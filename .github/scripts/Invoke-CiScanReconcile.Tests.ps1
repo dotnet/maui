@@ -405,8 +405,12 @@ Describe 'CI scan reconciler' {
         }
 
         It 'refuses an unknown label instead of guessing a branch' {
+            # Message-pinned for the same reason as the twin-config test: the survey must
+            # stop because the LABEL is unknown, not because something downstream of an
+            # unresolved config happened to dereference a null.
             { Invoke-CiScanReconcile -Label 'ci-scan-evil' -Owner 'dotnet' -Repo 'maui' `
-                    -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report' } | Should -Throw
+                    -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report' } |
+                Should -Throw -ExpectedMessage '*Unknown ci-scan twin label*'
             Should -Invoke Invoke-GhWrite -Times 0 -Exactly
         }
     }
@@ -1374,6 +1378,99 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
         $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
         { Invoke-GhWrite -Kind 'delete' -IssueNumber 1 -GhArgs @('x') } | Should -Throw
         $null = Set-CiScanReconcileMode -RequestedMode 'report'
+    }
+
+    <#
+        The test above does NOT pin the vocabulary, and that was measured rather than
+        assumed. Adding 'delete' to the ValidateSet -- the closed set of operations this
+        reconciler may ever perform -- left the whole suite at 287/287 GREEN, including
+        the test named for rejecting kinds outside it. Its `-Throw` is satisfied by the
+        argument-shape check, because `@('x')` is malformed whatever the kind is, so it
+        never depended on 'delete' being unbindable.
+
+        The sibling test 'has no caller for the kinds whose tier was never decided' does
+        not cover it either: it reads CALL SITES, so a declared-but-uncalled kind is
+        exactly what it expects to find.
+
+        So the declared vocabulary had no guard at all. What made that safe was a
+        StrictMode crash on `$shape.Verb` -- fail-closed, but reporting "The property
+        'Verb' cannot be found on this object", naming neither the kind nor the set.
+
+        The oracle below is deliberately NOT the source text. Reading the ValidateSet by
+        parsing the file would derive both halves of the comparison from the same literal,
+        which is the vacuity this whole exercise keeps rediscovering; a scan cannot supply
+        its own control. `Get-Command` reports the attribute as PowerShell actually bound
+        it, which is the thing that governs at runtime.
+    #>
+    It 'pins the mutation vocabulary to the shapes that have an argument contract' {
+        $validateSet = (Get-Command Invoke-GhWrite).Parameters['Kind'].Attributes |
+            Where-Object { $_ -is [System.Management.Automation.ValidateSetAttribute] }
+        $declared = @($validateSet.ValidValues | Sort-Object)
+
+        # Anti-vacuity floor: an empty declared set would satisfy every comparison below.
+        $declared.Count | Should -BeGreaterThan 0 -Because 'a lookup that returned nothing would satisfy set equality vacuously'
+        $declared | Should -Be @('body', 'close', 'comment', 'label', 'reopen', 'unlabel') -Because 'a seventh operation must not enter the vocabulary without a tier decision'
+
+        # The relationship, not just the literal: every declared kind must have a shape.
+        # Asserted by catching, not by `Should -Not -Throw -ExpectedMessage`, which does
+        # NOT filter -- it fails on any exception, and every kind throws here for its own
+        # unrelated reason (the argument vector is deliberately malformed). What is being
+        # asserted is which refusal fires, never that none does.
+        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+        try {
+            foreach ($kind in $declared) {
+                $msg = ''
+                try { Invoke-GhWrite -Kind $kind -IssueNumber 1 -GhArgs @('issue') } catch { $msg = $_.Exception.Message }
+                $msg | Should -Not -BeNullOrEmpty -Because "'$kind' with a one-element vector must be refused by something"
+                $msg | Should -Not -BeLike '*has no shape entry*' -Because "'$kind' is declared, so it must have an argument contract"
+            }
+        } finally {
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
+        }
+    }
+
+    It 'refuses a kind outside the vocabulary by name, at binding' {
+        # Anti-vacuity for the pin above: it must be possible to be refused, and the
+        # refusal must identify what was refused. ValidateSet does this for a kind that
+        # was never declared; the production check inside the function does it for one
+        # that is declared but unshaped, which only a mutation can produce.
+        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+        try {
+            { Invoke-GhWrite -Kind 'transfer' -IssueNumber 1 -GhArgs @('issue', 'transfer', '1') } |
+                Should -Throw -ExpectedMessage '*transfer*'
+        } finally {
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
+        }
+    }
+
+    It 'names the unshaped kind instead of leaking a property-lookup crash' {
+        # The declared-but-unshaped state cannot occur in unmutated code, so the refusal
+        # that handles it had nothing to bind to: deleting it left the suite at 290/290.
+        # Inducing the state is what makes the assertion possible, and the assertion is
+        # about WHICH refusal fires -- "it threw" is satisfied equally by the StrictMode
+        # property crash this replaced, whose message names neither the kind nor the set.
+        $saved = $script:CiScanWriteShapes.Clone()
+        $null = Set-CiScanReconcileMode -RequestedMode 'enforce'
+        try {
+            $script:CiScanWriteShapes.Remove('close')
+            $msg = ''
+            try { Invoke-GhWrite -Kind close -IssueNumber 1 -GhArgs @('issue', 'close', '1', '--repo', 'dotnet/maui') } catch { $msg = $_.Exception.Message }
+
+            $msg | Should -BeLike '*close*' -Because 'a refusal that does not name the kind is one a reader treats as a bug in the lookup'
+            $msg | Should -BeLike '*no shape entry*' -Because 'the reason must be the missing contract, not an incidental property error'
+            $msg | Should -Not -BeLike "*property 'Verb' cannot be found*" -Because 'the crash this replaced is also a refusal, and is the one that reads as fixable by adding the entry'
+        } finally {
+            $script:CiScanWriteShapes = $saved
+            $null = Set-CiScanReconcileMode -RequestedMode 'report'
+        }
+    }
+
+    It 'still has every shape it started with after the induced-removal test' {
+        # The test above mutates shared script state. If its restore ever regresses, every
+        # later assertion in this file runs against a truncated vocabulary and the damage
+        # would surface as unrelated failures elsewhere.
+        @($script:CiScanWriteShapes.Keys | Sort-Object) |
+            Should -Be @('body', 'close', 'comment', 'label', 'reopen', 'unlabel')
     }
 
     <#
