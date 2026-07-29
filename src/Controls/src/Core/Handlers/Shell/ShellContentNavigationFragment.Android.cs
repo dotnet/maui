@@ -7,7 +7,6 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
@@ -179,26 +178,15 @@ namespace Microsoft.Maui.Controls.Handlers
             _stackNavigationManager.Connect(_navigationViewAdapter, _navigationContainer);
 
             // Apply background to the navigation container when the page has no explicit Background.
-            // For Material3: use ShellRenderer.DefaultBackgroundColor (colorSurface = #FEF7FF light / #141218 dark)
-            //   matching what the old ShellPageContainer did via GetThemeAttrColor(colorSurface).
-            // For Material2: use the platform default BackgroundLight/BackgroundDark.
+            // Matches old ShellPageContainer constructor behavior.
             if (_rootPage is IView view && view.Background is null && _navigationContainer is not null)
             {
                 var context = _mauiContext!.Context!;
-                global::Android.Graphics.Color bgColor;
-                if (RuntimeFeature.IsMaterial3Enabled)
-                {
-                    bgColor = ShellRenderer.DefaultBackgroundColor.ToPlatform();
-                }
-                else
-                {
-                    bool isDark = Controls.Application.Current?.RequestedTheme == ApplicationModel.AppTheme.Dark;
-                    int resourceColor = isDark
-                        ? AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundDark)
-                        : AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundLight);
-                    bgColor = new global::Android.Graphics.Color(resourceColor);
-                }
-                _navigationContainer.SetBackgroundColor(bgColor);
+                bool isDark = Controls.Application.Current?.RequestedTheme == ApplicationModel.AppTheme.Dark;
+                int bgColor = RuntimeFeature.IsMaterial3Enabled
+                    ? GetMaterial3Background(context)
+                    : GetResourceBackground(context, isDark);
+                _navigationContainer.SetBackgroundColor(new global::Android.Graphics.Color(bgColor));
             }
 
             // Subscribe to navigation events if not already subscribed
@@ -553,6 +541,20 @@ namespace Microsoft.Maui.Controls.Handlers
                 _rootPage = null;
             }
             base.Dispose(disposing);
+        }
+
+        static int GetMaterial3Background(Context context)
+        {
+            // Material3 colorSurface automatically adapts to light/dark theme.
+            // The theme resolution happens in GetThemeAttrColor based on the active theme.
+            return ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+        }
+
+        static int GetResourceBackground(Context context, bool isDark)
+        {
+            return isDark
+                ? AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundDark)
+                : AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundLight);
         }
     }
 
