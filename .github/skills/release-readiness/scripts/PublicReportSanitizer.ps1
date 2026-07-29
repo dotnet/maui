@@ -39,7 +39,7 @@ $Script:PublicSafePrivateToolPattern = @(
 
 $candidateNoise = '(?:[^A-Za-z0-9:/?._#&=%\s<>"''`|)]*)'
 $Script:PublicSafeUrlCandidatePattern = @(
-    'https'
+    'https?'
     'dev\.azure\.com'
     Get-PublicSafeCanonicalLiteralPattern -Literal 'dnceng' -InterCharacterPattern $candidateNoise
     Get-PublicSafeCanonicalLiteralPattern -Literal 'DevDiv' -InterCharacterPattern $candidateNoise
@@ -112,6 +112,7 @@ function ConvertTo-PublicSafeMarkdown {
         $canonical = $canonical.Replace('Т', 'T').Replace('Н', 'H').Replace('В', 'B').Replace('М', 'M').Replace('К', 'K')
         $canonical = $canonical.ToLowerInvariant()
         $confusables = @{
+            'ԁ'='d'; 'ɡ'='g'; 'г'='r'; 'ӏ'='l'
             'а'='a'; 'е'='e'; 'і'='i'; 'о'='o'; 'р'='p'; 'с'='c'; 'х'='x'; 'у'='y'
             'α'='a'; 'ε'='e'; 'ι'='i'; 'ο'='o'; 'ρ'='p'; 'χ'='x'; 'υ'='y'
         }

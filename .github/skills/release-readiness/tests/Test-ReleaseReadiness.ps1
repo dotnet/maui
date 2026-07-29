@@ -1719,6 +1719,18 @@ try {
         -Expected '10.0.91' -Actual $tagBeforeReleaseRefs.ContentsRef
     Assert-Eq -Label "tag-before-Release: hotfix contents retain the full SR9 baseline" `
         -Expected '10.0.80' -Actual $tagBeforeReleaseRefs.PreviousTag
+    $publishedBounds = @(Get-ShippedStableTagsForBounds -AnchorTag '10.0.91' `
+        -PublishedTags @('10.0.80', '10.0.90') `
+        -LocalStableTags @('10.0.80', '10.0.85', '10.0.90', '10.0.91') `
+        -PublicationQueryFailed $false)
+    Assert-Eq -Label "published bounds exclude abandoned unpublished predecessor tags" `
+        -Expected '10.0.80,10.0.90,10.0.91' -Actual ($publishedBounds -join ',')
+    $outageBounds = @(Get-ShippedStableTagsForBounds -AnchorTag '10.0.91' `
+        -PublishedTags @() `
+        -LocalStableTags @('10.0.80', '10.0.90', '10.0.91') `
+        -PublicationQueryFailed $true)
+    Assert-Eq -Label "release API outage retains local immutable tag bounds" `
+        -Expected '10.0.80,10.0.90,10.0.91' -Actual ($outageBounds -join ',')
     Assert-Eq -Label "publication state: per-tag release proof overrides failed list query" `
         -Expected 'published' -Actual (Resolve-ShippedPublicationState `
             -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'github-release')
@@ -8191,6 +8203,9 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
         "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET",
         "https://dev.azure.com/dnceng/in$([char]0x0422)ernal/_build?token=CYRILLICUPPERSECRET"
+        "https://dev.azure.com/dnceng/inte$([char]0x0433)nal/_build?token=CYRILLICRSECRET"
+        "https://dev.azure.com/$([char]0x0501)nceng/internal/_build?token=CYRILLICDSECRET"
+        "https://dev.azure.com/dnceng/interna$([char]0x04CF)/_build?token=CYRILLICLSECRET"
     )
     foreach ($case in $internalCases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
@@ -8212,6 +8227,9 @@ function Assert-PublicSanitizerEdgeCases {
     Assert-Eq -Label "$Lane sanitizer fully omits credential-bearing Azure DevOps URL" `
         -Expected '_credential-bearing URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://user:PAT@dev.azure.com/dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits HTTP credential-bearing Azure DevOps URL" `
+        -Expected '_credential-bearing URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'http://user:PAT@dev.azure.com/dnceng/internal/_build')
     Assert-Eq -Label "$Lane sanitizer omits embedded DevDiv URL while preserving surrounding key" `
         -Expected 'buildUrl=_internal URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'buildUrl=https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1234?token=EMBEDDEDDEVDIVSECRET')

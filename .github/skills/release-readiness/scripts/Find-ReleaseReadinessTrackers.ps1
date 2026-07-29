@@ -770,7 +770,6 @@ function Invoke-DetectionForMajor {
             $isCutBeforeBump = $branchPatch -ge (($sr - 1) * 10) -and $branchPatch -lt $expectedPatchFloor
             if ($isCutBeforeBump) {
                 $validSrBranches.Add($entry)
-                if ($sr -gt $highestBranchSr) { $highestBranchSr = $sr }
                 $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
                 $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'in-flight' `
                     -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `

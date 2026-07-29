@@ -836,6 +836,20 @@ function Set-ShippedContentsRefs {
     $Context['mainRevertBaselineRef'] = $ShippedRefs.PreviousTag
 }
 
+function Get-ShippedStableTagsForBounds {
+    param(
+        [string]$AnchorTag,
+        [string[]]$PublishedTags,
+        [string[]]$LocalStableTags,
+        [bool]$PublicationQueryFailed
+    )
+
+    if ($PublicationQueryFailed) {
+        return @(Get-NonEmptyStringValues -Value $LocalStableTags | Sort-Object -Unique)
+    }
+    return @(Get-NonEmptyStringValues -Value @($PublishedTags + $AnchorTag) | Sort-Object -Unique)
+}
+
 function Test-IsCarryForwardRegression {
     <#
     .SYNOPSIS
@@ -6539,7 +6553,11 @@ function Invoke-Main {
         if (-not $anchorTag) {
             throw "No stable tag was found for shipped branch '$($ctx.srBranch)'."
         }
-        $stableTagsForBounds = @((@($publishedTags) + @($localStableTags)) | Sort-Object -Unique)
+        $stableTagsForBounds = @(Get-ShippedStableTagsForBounds `
+            -AnchorTag $anchorTag `
+            -PublishedTags @($publishedTags) `
+            -LocalStableTags @($localStableTags) `
+            -PublicationQueryFailed $publicationQueryFailed)
         $anchorIsPublished = @($publishedTags) -contains $anchorTag
         $shippedInfo.version = $anchorTag
         $ctx['shippedTagVersion'] = $anchorTag
