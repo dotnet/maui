@@ -23,7 +23,7 @@ This skill **reports**. It does **not** execute release operations against dotne
 - "Are there any regression fixes I should backport to SR8?"
 - "What's new in SR8 since the last sync?"
 - "Give me a status on all releases" / "release status overview" / "what needs attention across releases" (**portfolio** — read the open `[Release Readiness]` tracker issues first; see [Reading trackers directly](#reading-trackers-directly-ad-hoc-status) below)
-- Daily release-tracking automation across all active majors
+- Scheduled and event-driven release tracking across all active majors
 
 > **For per-PR regression risk** (deletions reverting prior bug-fix lines), use [`find-regression-risk`](../find-regression-risk/SKILL.md) instead — it answers a different question.
 
@@ -246,7 +246,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `sr-commits.json` | Get-ReleaseReadiness | Raw SR-only commit metadata |
 | `preview-readiness.{json,md}` | Get-PreviewReadiness | Full Preview readiness report |
 
-## Daily workflow
+## Tracker refresh workflow
 
 `.github/workflows/release-readiness.yml` runs every three hours from **08:30–20:30 UTC daily**, plus targeted `issues`, `milestone`, and `push` refreshes, `workflow_dispatch`, and `pull_request` validation:
 

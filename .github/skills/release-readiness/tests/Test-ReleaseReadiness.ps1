@@ -41,8 +41,24 @@ function Test-AssertionEqual {
     if ($Expected -is [string] -and $Actual -is [string]) {
         return [string]::Equals($Expected, $Actual, [System.StringComparison]::Ordinal)
     }
-    if (($Expected -is [string]) -ne ($Actual -is [string]) -or
-        ($Expected -is [bool]) -ne ($Actual -is [bool])) {
+    if (($Expected -is [string]) -ne ($Actual -is [string])) {
+        $stringValue = if ($Expected -is [string]) { $Expected } else { $Actual }
+        $numericValue = if ($Expected -is [string]) { $Actual } else { $Expected }
+        $numericType = $numericValue -is [sbyte] -or $numericValue -is [byte] -or
+            $numericValue -is [int16] -or $numericValue -is [uint16] -or
+            $numericValue -is [int32] -or $numericValue -is [uint32] -or
+            $numericValue -is [int64] -or $numericValue -is [uint64]
+        [long]$parsedInteger = 0
+        if ($numericType -and [long]::TryParse(
+                $stringValue,
+                [System.Globalization.NumberStyles]::Integer,
+                [System.Globalization.CultureInfo]::InvariantCulture,
+                [ref]$parsedInteger)) {
+            return $parsedInteger -eq $numericValue
+        }
+        return $false
+    }
+    if (($Expected -is [bool]) -ne ($Actual -is [bool])) {
         return $false
     }
     if ($null -eq $Expected -or $null -eq $Actual) {
@@ -70,6 +86,8 @@ Assert-Eq -Label "assertion helper distinguishes array shape from joined scalar"
     -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a,b')
 Assert-Eq -Label "assertion helper distinguishes collection from matching member scalar" -Expected $false `
     -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a')
+Assert-Eq -Label "assertion helper accepts bare negative numeric parameter literals" -Expected $true `
+    -Actual (Test-AssertionEqual -Expected -2 -Actual ([int]-2))
 
 # ─────────── Parser/regex unit tests (no network) ───────────
 
@@ -3646,6 +3664,7 @@ $script:mockCommentsJson = @'
   { "body": "update: now fixed by #70004" }
   ,{ "body": "This issue was partially fixed by PR #80005; remaining work is tracked separately." }
   ,{ "body": "Resolved by #80006, though only partially; follow-up remains." }
+  ,{ "body": "This closes #80007. Note: it is only a partial fix, more work is needed." }
 ]
 '@
 function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
@@ -3669,6 +3688,8 @@ try {
         -Expected 'mention' -Actual $byNum[80005]
     Assert-Eq -Label "trailing partial qualifier is demoted to mention" `
         -Expected 'mention' -Actual $byNum[80006]
+    Assert-Eq -Label "next-sentence partial qualifier is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80007]
 } finally {
     ${function:Invoke-Gh} = $origInvokeGh
 }
@@ -8025,13 +8046,15 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/DevDiv/DevDiv/_workitems/edit/123?token=DEVDIVSECRET',
         'https://dev.azure.com/Dev Div/_workitems/edit/123?token=DEVDIVSPACESECRET',
         'DevDiv/_workitems/edit/123?token=BAREDEVDIVSECRET',
+        'Dev Div/_workitems/edit/123?token=BARESPACEDSECRET',
         'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
-        "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET"
+        "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET",
+        "https://dev.azure.com/dnceng/in$([char]0x0422)ernal/_build?token=CYRILLICUPPERSECRET"
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|NAMEDINVISIBLESECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET|DEVDIVSPACESECRET|BAREDEVDIVSECRET|DOTSEGMENTSECRET|CYRILLICSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|NAMEDINVISIBLESECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET|DEVDIVSPACESECRET|BAREDEVDIVSECRET|BARESPACEDSECRET|DOTSEGMENTSECRET|CYRILLICSECRET|CYRILLICUPPERSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')

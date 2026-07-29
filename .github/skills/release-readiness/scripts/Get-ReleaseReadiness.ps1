@@ -278,7 +278,7 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
     $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
     $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
-    $safe = [regex]::Replace($safe, '(?i)(?<prefix>(?:https?://dev\.azure\.com/|https?://devdiv\.visualstudio\.com/))D\s*e\s*v\s*D\s*i\s*v', '${prefix}DevDiv')
+    $safe = [regex]::Replace($safe, '(?i)D\s*e\s*v\s*D\s*i\s*v(?=[/\\])', 'DevDiv')
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
@@ -312,6 +312,7 @@ function ConvertTo-PublicSafeMarkdown {
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
+        $canonical = $canonical.Replace('Т', 'T').Replace('Н', 'H').Replace('В', 'B').Replace('М', 'M').Replace('К', 'K')
         $canonical = $canonical.ToLowerInvariant()
         $confusables = @{
             'а'='a'; 'е'='e'; 'і'='i'; 'о'='o'; 'р'='p'; 'с'='c'; 'х'='x'; 'у'='y'
@@ -3300,7 +3301,7 @@ function Get-IssueCommentPrs {
             $partialQualifier = '(?:partial(?:ly)?|temporar(?:y|ily)|workaround|in\s+part)'
             $fixVerb = '(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)'
             $partialFix = ($body -match "(?i)\b$partialQualifier\s+$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b") -or
-                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b[^.!?`r`n]{0,100}?\b$partialQualifier\b")
+                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b[\s\S]{0,160}?\b$partialQualifier\b")
             $isFix = (-not $partialFix) -and
                 ($body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b")
             $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
