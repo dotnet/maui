@@ -272,6 +272,10 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
+    $safe = $safe -replace '(?i)&sol;|&frasl;', '/'
+    $safe = $safe -replace '(?i)&period;', '.'
+    $safe = $safe -replace '(?i)&colon;', ':'
+    $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng\.visualstudio\.com/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
@@ -2443,6 +2447,7 @@ function ConvertTo-NegationNormalizedText {
     param([AllowNull()][AllowEmptyString()][string]$Text)
 
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
+    $Text = $Text -replace '[\u2018\u2019]', "'"
     # Struck text is explicitly withdrawn; remove it rather than turning
     # `~~Fixes #N~~` into affirmative evidence.
     $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')

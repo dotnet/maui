@@ -3037,6 +3037,7 @@ foreach ($negatedClosingText in @(
     'This does not fix #35615',
     'This will not actually resolve #35615',
     "This doesn't close #35615",
+    "This doesn’t close #35615",
     'This does **not** fix #35615',
     'This does not, in fact, fix #35615',
     'This will not (yet) resolve #35615',
@@ -7933,12 +7934,13 @@ function Assert-PublicSanitizerEdgeCases {
         '%64%6E%63%65%6E%67.visualstudio.com/internal/_build?token=SCHEMELESSSECRET',
         '&#100;nceng.visualstudio.com/internal/_build?token=ENTITYSECRET',
         '%252564%25256E%252563%252565%25256E%252567.visualstudio.com/internal/_build?token=TRIPLESECRET',
-        'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET'
+        'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET',
+        'https&colon;&sol;&sol;dev&period;azure&period;com&sol;dnceng&sol;internal&sol;_build?token=NAMEDENTITYSECRET'
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
