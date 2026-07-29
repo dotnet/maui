@@ -1473,6 +1473,69 @@ Describe 'Invoke-GhWrite — the single mutation choke point' {
             Should -Be @('body', 'close', 'comment', 'label', 'reopen', 'unlabel')
     }
 
+    It 'keeps the shape table written once and read only at the choke point' {
+        <#
+            This pins a guarantee that hoisting the table COST, and it is the honest price
+            of making the unshaped state inducible.
+
+            Inline, the table was immutable by construction: rebuilt on every call, so no
+            code path could alter what the security check reads, and changing it required
+            editing the choke point itself -- visible in any review of that function. At
+            script scope it is shared mutable state, alterable by code added ANYWHERE in
+            the file. That is action at a distance, which is the specific thing a choke
+            point exists to prevent, and it now holds the per-kind flag allow-list.
+
+            The threat model bounds this. There is no path from data to code -- no
+            Invoke-Expression, no ScriptBlock::Create, no Add-Type anywhere in either
+            script -- so no issue body, CI log or agent response can assign a PowerShell
+            variable. The residual risk is entirely "someone later adds a writer", which
+            is what this asserts against.
+
+            AST rather than regex, because the question is structural: a text scan cannot
+            distinguish an assignment from a read, and `-notmatch` over source is the
+            vacuity trap this suite keeps rediscovering.
+        #>
+        $scriptPath = Join-Path $PSScriptRoot 'Invoke-CiScanReconcile.ps1'
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$null, [ref]$null)
+
+        $refs = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                $n.VariablePath.UserPath -eq 'script:CiScanWriteShapes'
+            }, $true)
+
+        # Anti-vacuity floor, and it guards the containment loop specifically. An empty
+        # match would also fail the single-writer count below, so that claim is protected
+        # independently -- but a query that still sees the WRITE while going blind to
+        # reads leaves the loop iterating one element it skips, and the whole containment
+        # claim passes having checked nothing. Measured: with this line removed, such a
+        # query is green. Two is the real expectation, the definition and the one read.
+        @($refs).Count | Should -BeGreaterOrEqual 2 -Because 'a lookup blind to reads would satisfy the containment loop vacuously, since it skips the definition and finds nothing else'
+
+        $writes = @($refs | Where-Object {
+                $_.Parent -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                $_.Parent.Left -eq $_
+            })
+        @($writes).Count | Should -Be 1 -Because 'a second writer could widen the per-kind flag allow-list from anywhere in the file'
+
+        # Every read must be inside Invoke-GhWrite. A reader elsewhere is not itself a
+        # vulnerability, but it means the table has escaped the choke point, and the next
+        # edit to that reader is reviewed without the choke point in view.
+        $chokePoint = $ast.FindAll({
+                param($n)
+                $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq 'Invoke-GhWrite'
+            }, $true)
+        @($chokePoint).Count | Should -Be 1 -Because 'the choke point must be a single function for this containment claim to mean anything'
+
+        $span = $chokePoint[0].Extent
+        foreach ($r in $refs) {
+            $isDefinition = $r.Parent -is [System.Management.Automation.Language.AssignmentStatementAst] -and $r.Parent.Left -eq $r
+            if ($isDefinition) { continue }
+            $r.Extent.StartOffset | Should -BeGreaterOrEqual $span.StartOffset -Because "a read at offset $($r.Extent.StartOffset) sits outside Invoke-GhWrite"
+            $r.Extent.EndOffset | Should -BeLessOrEqual $span.EndOffset -Because "a read at offset $($r.Extent.StartOffset) sits outside Invoke-GhWrite"
+        }
+    }
+
     <#
         The ValidateSet declares six kinds; only four are ever called. The two that are
         not — 'unlabel' and 'body' — are ALSO the two the function's own contract sentence
