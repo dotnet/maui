@@ -1,15 +1,29 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Builds bounded context for open ci-fix PRs watched by the ci-status-fix gh-aw workflow.
+    Builds bounded exact-label issue evidence and open-PR watch context for the CI-fixer.
 #>
 
 param(
     [int]$MaxPRs = 20,
+    [ValidateRange(1, 50)]
+    [int]$MaxIssues = 20,
     [string]$Owner = 'dotnet',
     [string]$Repo = 'maui',
     [string]$OutputPath = "CustomAgentLogsTmp/CiFixScanner/candidates.json",
     [string]$TitlePrefix = '[ci-fix]',
+    [string]$IssueLabel = 'ci-scan',
+    # The twin workflow's label. Issues carrying BOTH labels are owned by the twin and are
+    # excluded here deterministically, because the agent has no live issue tools and so
+    # cannot enforce that ownership rule from the prompt.
+    [AllowEmptyString()]
+    [string]$ExcludeIssueLabel = '',
+    [AllowEmptyString()]
+    [string]$IssueNumber = '',
+    [ValidateRange(64, 1024)]
+    [int]$MaxIssueTitleChars = 256,
+    [ValidateRange(256, 16384)]
+    [int]$MaxIssueBodyChars = 12000,
     # The base branch this workflow instance owns. Each ci-status-fix twin watches ONLY
     # PRs targeting its own base (main -> 'main', net11 -> 'net11.0'). See the baseRefName
     # guard in the candidate loop for why this is load-bearing, not cosmetic.
@@ -19,30 +33,24 @@ param(
 $ErrorActionPreference = 'Stop'
 # Pin native-command error handling OFF so `& gh ... 2>&1` in Invoke-GhCommand never
 # throws at invocation on a non-zero exit (404 on an orphaned SHA, transient rate-limit).
-# The whole prefetch's graceful degradation depends on the -AllowFailure path returning
-# $null on expected failures rather than terminating; a future runner image or profile
-# that flips this preference to $true would bypass -AllowFailure and crash the loop.
+# The whole prefetch's graceful degradation depends on the -AllowFailure/-AllowNotFound
+# paths returning $null on expected failures rather than terminating; a future runner
+# image or profile that flips this preference to $true would bypass them and crash the
+# loop.
 $PSNativeCommandUseErrorActionPreference = $false
 
 $BotLogins = @(
     'github-actions[bot]',
     'github-actions',
-    # NOTE: 'web-flow' is deliberately NOT listed. It is GitHub's system account for
-    # web-UI git operations (notably a maintainer clicking "Update branch"). Treating it
-    # as human is correct on BOTH axes the watch loop cares about: (1) human engagement —
-    # a maintainer who updates the branch via the web UI SHOULD trip the hand-off boundary
-    # (Test-AnyHumanCommitActor inspects the committer, which is web-flow on those merges);
-    # (2) attempt accounting — botCommitCount is author-based, so a web-flow-*authored*
-    # commit must NOT inflate the count toward the 10-cap. The workflow's own pushes are
-    # authored AND committed by github-actions[bot], never web-flow, so treating web-flow
-    # as human never masks a genuine bot attempt.
+    # 'web-flow' is deliberately absent. It represents GitHub web UI operations, never a
+    # ci-fixer attempt, so its commits must not consume the bot's attempt budget.
     'app/github-actions',
     'dotnet-maestro[bot]',
     'azure-pipelines[bot]',
     'dotnet-policy-service[bot]',
     # dotnet-bot, MauiBot and maui-bot are MAUI/dotnet automation accounts whose logins
-    # do NOT carry the '[bot]' suffix, so the Test-IsHumanLogin suffix rule would otherwise
-    # count their comments/commits as human engagement and prematurely hand the PR off.
+    # do NOT carry the '[bot]' suffix, so classify them as bot actors for attempt accounting
+    # and Track C response-marker filtering.
     # The repo posts CI/review automation as 'maui-bot' / 'MauiBot' (see
     # .github/scripts/shared/Remove-StaleMauiBotComments.ps1 and the ci-copilot pipeline);
     # 'mauibot' covers 'MauiBot' case-insensitively, but the hyphenated 'maui-bot' login is
@@ -53,6 +61,7 @@ $BotLogins = @(
     'maui-bot',
     'maui-bot[bot]'
 )
+
 # NOTE: 'action_required' is deliberately EXCLUDED. That conclusion means a human
 # must act (an Actions approval gate, or an integration awaiting a manual run) —
 # it reports status=completed, so treating it as a failure would let a settled head
@@ -85,31 +94,85 @@ $FailureStatusStates = @('failure', 'error')
 # the safety bound never depends solely on an LLM-authored body marker.
 $AttemptMax = 10
 
+# The prefetch runs before the agent, so a transient GitHub API outage would otherwise
+# suppress the entire scheduled sweep. Keep retries bounded and preserve the existing
+# fail-closed result after the final attempt.
+$TransientGhHttpStatusCodes = @(429, 500, 502, 503, 504)
+$MaxTransientGhAttempts = 4
+$TransientGhRetryBaseDelaySeconds = 2
+
+function Test-IsTransientGhFailure {
+    param([AllowEmptyString()][string]$Detail)
+
+    foreach ($statusCode in $TransientGhHttpStatusCodes) {
+        if ($Detail -match "(?i)\bHTTP $statusCode\b") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-IsGhNotFoundFailure {
+    param([AllowEmptyString()][string]$Detail)
+
+    # Only a CONFIRMED 404 means "this issue is genuinely not in scope". Auth
+    # (401/403), rate-limit (429), server (5xx) and network failures must NOT be
+    # collapsed into "not found" — on the discovery path that would silently look
+    # like "no ci-fix work" and skip the whole sweep. Match the HTTP code, never
+    # gh's prose, so a body containing the words "Not Found" cannot fake it.
+    return [bool]($Detail -match '(?i)\bHTTP 404\b')
+}
+
 function Invoke-GhCommand {
     param(
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [Parameter(Mandatory = $true)][string]$Description,
-        [switch]$AllowFailure
+        # Degrade to $null on ANY non-transient failure. Reserved for callers that
+        # track their own "known" flag and fail closed from it (Get-HeadCheckState,
+        # Get-PullRequestBody).
+        [switch]$AllowFailure,
+        # Degrade to $null ONLY on a confirmed HTTP 404, and propagate everything
+        # else. Use this on discovery reads, where an empty result is indistinguishable
+        # from "nothing to do" and therefore must never be produced by an auth,
+        # rate-limit, server or network failure.
+        [switch]$AllowNotFound
     )
 
-    $output = & gh @Arguments 2>&1
-    $exitCode = $LASTEXITCODE
+    for ($attempt = 1; $attempt -le $MaxTransientGhAttempts; $attempt++) {
+        $output = & gh @Arguments 2>&1
+        $exitCode = $LASTEXITCODE
 
-    # `2>&1` folds gh's stderr into the pipeline as ErrorRecord objects while real
-    # stdout stays as strings. Separate the two by type so a success-path caller
-    # never receives a stderr line (gh progress/deprecation/rate-limit notices)
-    # concatenated into the JSON it is about to parse. On failure, both streams are
-    # surfaced in the exception/warning message for diagnosability.
-    $stdoutText = (@($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) |
-        ForEach-Object { $_.ToString() }) -join "`n"
-    $stderrText = (@($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) |
-        ForEach-Object { $_.ToString() }) -join "`n"
+        # `2>&1` folds gh's stderr into the pipeline as ErrorRecord objects while real
+        # stdout stays as strings. Separate the two by type so a success-path caller
+        # never receives a stderr line (gh progress/deprecation/rate-limit notices)
+        # concatenated into the JSON it is about to parse. On failure, both streams are
+        # surfaced in the exception/warning message for diagnosability.
+        $stdoutText = (@($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) |
+            ForEach-Object { $_.ToString() }) -join "`n"
+        $stderrText = (@($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) |
+            ForEach-Object { $_.ToString() }) -join "`n"
 
-    if ($exitCode -ne 0) {
+        if ($exitCode -eq 0) {
+            return $stdoutText
+        }
+
         $message = "gh $Description failed with exit code $exitCode."
         $detail = (@($stderrText, $stdoutText) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ' '
         if (-not [string]::IsNullOrWhiteSpace($detail)) {
             $message = "$message Output: $detail"
+        }
+
+        if ((Test-IsTransientGhFailure -Detail $detail) -and ($attempt -lt $MaxTransientGhAttempts)) {
+            $delaySeconds = $TransientGhRetryBaseDelaySeconds * [Math]::Pow(2, $attempt - 1)
+            Write-Warning "$message Retrying in $delaySeconds second(s) ($attempt/$MaxTransientGhAttempts)."
+            Start-Sleep -Seconds $delaySeconds
+            continue
+        }
+
+        if ($AllowNotFound -and (Test-IsGhNotFoundFailure -Detail $detail)) {
+            Write-Warning $message
+            return $null
         }
 
         if ($AllowFailure) {
@@ -120,7 +183,7 @@ function Invoke-GhCommand {
         throw $message
     }
 
-    return $stdoutText
+    throw "gh $Description exhausted its retry budget unexpectedly."
 }
 
 function ConvertFrom-JsonLines {
@@ -142,6 +205,231 @@ function ConvertFrom-JsonLines {
     return @($items)
 }
 
+function Resolve-IssueScopeNumber {
+    param([AllowEmptyString()][string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return $null
+    }
+
+    $parsed = [int]0
+    if (-not [int]::TryParse($Value, [ref]$parsed) -or $parsed -le 0) {
+        throw "IssueNumber must be empty or a positive Int32 issue number."
+    }
+
+    return $parsed
+}
+
+function ConvertTo-BoundedUntrustedText {
+    param(
+        [AllowNull()][string]$Value,
+        [Parameter(Mandatory = $true)][int]$MaxChars
+    )
+
+    $original = if ($null -eq $Value) { '' } else { [string]$Value }
+    $sanitized = $original.Replace("`r`n", "`n").Replace("`r", "`n")
+    $sanitized = [regex]::Replace(
+        $sanitized,
+        "[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]",
+        ' '
+    )
+
+    $truncated = $sanitized.Length -gt $MaxChars
+    if ($truncated) {
+        $length = $MaxChars
+        if ($length -gt 0 -and [char]::IsHighSurrogate($sanitized[$length - 1])) {
+            $length--
+        }
+        $sanitized = $sanitized.Substring(0, $length)
+    }
+
+    return [pscustomobject]@{
+        text           = $sanitized
+        truncated      = [bool]$truncated
+        originalLength = [int]$original.Length
+    }
+}
+
+function Test-IssueHasExactLabel {
+    param(
+        [AllowNull()][object[]]$Labels,
+        [Parameter(Mandatory = $true)][string]$ExactLabel
+    )
+
+    foreach ($label in @($Labels)) {
+        $name = if ($label -is [string]) { [string]$label } elseif ($label.name) { [string]$label.name } else { '' }
+        if ($name.Equals($ExactLabel, [StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function ConvertTo-CiFixIssueEvidence {
+    param(
+        [AllowNull()][object[]]$Issues,
+        [Parameter(Mandatory = $true)][string]$ExactLabel,
+        [AllowNull()][string]$ExcludeLabel,
+        [Parameter(Mandatory = $true)][int]$Limit,
+        [Parameter(Mandatory = $true)][int]$TitleMaxChars,
+        [Parameter(Mandatory = $true)][int]$BodyMaxChars
+    )
+
+    $evidence = @()
+    $excludedIssueNumbers = @()
+    $eligibleCount = 0
+    $seenIssueNumbers = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($issue in @($Issues)) {
+        if ($null -eq $issue -or
+            ([string]$issue.state).ToLowerInvariant() -ne 'open' -or
+            $issue.pull_request -or
+            -not (Test-IssueHasExactLabel -Labels @($issue.labels) -ExactLabel $ExactLabel)) {
+            continue
+        }
+
+        $number = [int]0
+        if (-not [int]::TryParse([string]$issue.number, [ref]$number) -or $number -le 0) {
+            continue
+        }
+        if (-not $seenIssueNumbers.Add($number)) {
+            continue
+        }
+
+        # The twin workflow owns dual-labelled issues. Decide ownership deterministically
+        # here: the agent cannot see raw labels (the `issues` toolset is deliberately
+        # removed), so a prompt-level "skip if it also carries <twin label>" rule would be
+        # unenforceable and both twins could open a PR for the same issue.
+        if (-not [string]::IsNullOrWhiteSpace($ExcludeLabel) -and
+            (Test-IssueHasExactLabel -Labels @($issue.labels) -ExactLabel $ExcludeLabel)) {
+            $excludedIssueNumbers += $number
+            continue
+        }
+
+        # Count every eligible issue, but only materialize up to $Limit, so the caller can
+        # report a truthful backlog total instead of implying the batch is the whole queue.
+        $eligibleCount++
+        if ($evidence.Count -ge $Limit) {
+            continue
+        }
+
+        $title = ConvertTo-BoundedUntrustedText -Value ([string]$issue.title) -MaxChars $TitleMaxChars
+        $body = ConvertTo-BoundedUntrustedText -Value ([string]$issue.body -as [string]) -MaxChars $BodyMaxChars
+        $evidence += [pscustomobject]@{
+            issueNumber       = $number
+            url               = [string]$issue.html_url
+            state             = 'open'
+            exactLabel        = $ExactLabel
+            title             = $title.text
+            body              = $body.text
+            titleTruncated    = [bool]$title.truncated
+            bodyTruncated     = [bool]$body.truncated
+            titleOriginalChars = [int]$title.originalLength
+            bodyOriginalChars = [int]$body.originalLength
+            createdAt         = [string]$issue.created_at
+            updatedAt         = [string]$issue.updated_at
+            untrusted         = $true
+        }
+    }
+
+    return [pscustomobject]@{
+        items = @($evidence)
+        totalMatched = $eligibleCount
+        truncated = ($eligibleCount -gt @($evidence).Count)
+        excludedDualLabelled = @($excludedIssueNumbers)
+    }
+}
+
+function Get-CiFixIssueEvidence {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryOwner,
+        [Parameter(Mandatory = $true)][string]$RepositoryName,
+        [Parameter(Mandatory = $true)][string]$ExactLabel,
+        [AllowNull()][string]$ExcludeLabel,
+        [AllowNull()][Nullable[int]]$ScopedIssueNumber,
+        [AllowNull()][object[]]$PriorityIssueNumbers,
+        [Parameter(Mandatory = $true)][int]$Limit,
+        [Parameter(Mandatory = $true)][int]$TitleMaxChars,
+        [Parameter(Mandatory = $true)][int]$BodyMaxChars
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExactLabel) -or
+        $ExactLabel.Length -gt 100 -or
+        $ExactLabel -notmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()-]*$') {
+        throw "IssueLabel must be a non-empty GitHub label name of at most 100 safe characters."
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ExcludeLabel) -and
+        ($ExcludeLabel.Length -gt 100 -or
+        $ExcludeLabel -notmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()-]*$')) {
+        throw "ExcludeLabel must be a GitHub label name of at most 100 safe characters."
+    }
+
+    if ($null -ne $ScopedIssueNumber) {
+        # A stale or mistyped dispatch number must produce the documented
+        # "skipped: dispatch issue_number not an in-scope ci-scan issue" record, not a hard
+        # failure of the whole pre-activation job before the agent ever runs. Only a
+        # confirmed 404 qualifies: -AllowNotFound propagates auth/rate-limit/5xx/network
+        # failures so a transient blip can never masquerade as "not in scope".
+        $issueJson = Invoke-GhCommand `
+            -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$ScopedIssueNumber") `
+            -Description "read scoped issue #$ScopedIssueNumber" `
+            -AllowNotFound
+        $issues = if ([string]::IsNullOrWhiteSpace($issueJson)) { @() } else { @(ConvertFrom-Json $issueJson) }
+    }
+    else {
+        $issues = @()
+        $seenPriorityNumbers = [System.Collections.Generic.HashSet[int]]::new()
+        foreach ($candidateNumber in @($PriorityIssueNumbers)) {
+            $number = [int]0
+            if (-not [int]::TryParse([string]$candidateNumber, [ref]$number) -or
+                $number -le 0 -or
+                -not $seenPriorityNumbers.Add($number) -or
+                $seenPriorityNumbers.Count -gt $Limit) {
+                continue
+            }
+
+            # A watch issue that was deleted/transferred (404) is legitimately gone, so
+            # skip it. Anything else (auth, rate-limit, 5xx, network) must fail the
+            # prefetch instead of silently dropping a watched issue from the snapshot.
+            $priorityJson = Invoke-GhCommand `
+                -Arguments @('api', "repos/$RepositoryOwner/$RepositoryName/issues/$number") `
+                -Description "read priority watch issue #$number" `
+                -AllowNotFound
+            if (-not [string]::IsNullOrWhiteSpace($priorityJson)) {
+                $issues += ConvertFrom-Json $priorityJson
+            }
+        }
+
+        # Page to completion, oldest-first. `sort=updated&direction=desc` with a single
+        # `per_page=$Limit` page silently stranded the oldest still-open issues forever:
+        # the batch is capped, the agent has no live issue tools to compensate, and every
+        # issue the agent touches bubbles back to the top of the window. Ascending
+        # creation order makes the cap drain the backlog FIFO instead.
+        $issueLines = Invoke-GhCommand `
+            -Arguments @(
+                'api', '--method', 'GET', "repos/$RepositoryOwner/$RepositoryName/issues",
+                '-f', 'state=open',
+                '-f', "labels=$ExactLabel",
+                '-f', 'sort=created',
+                '-f', 'direction=asc',
+                '-f', 'per_page=100',
+                '--paginate',
+                '--jq', '.[]'
+            ) `
+            -Description "list open issues with exact label '$ExactLabel'"
+        $issues += @(ConvertFrom-JsonLines -JsonLines $issueLines)
+    }
+
+    return ConvertTo-CiFixIssueEvidence `
+        -Issues $issues `
+        -ExactLabel $ExactLabel `
+        -ExcludeLabel $ExcludeLabel `
+        -Limit $Limit `
+        -TitleMaxChars $TitleMaxChars `
+        -BodyMaxChars $BodyMaxChars
+}
+
 function Test-IsHumanLogin {
     param([AllowNull()][string]$Login)
 
@@ -159,58 +447,6 @@ function Test-IsHumanLogin {
     }
 
     return $true
-}
-
-function Test-IsCiControlComment {
-    param([AllowNull()][string]$Body)
-
-    # Round 1 REQUIRES a maintainer to post a bare CI-trigger comment (e.g. `/azp run maui-pr`)
-    # because GITHUB_TOKEN pushes fire no Actions/AzDO events. Such a comment is a CI kick,
-    # NOT a human taking over the PR, so it must not trip humanEngaged and stall the loop.
-    # Only a single-line comment whose ENTIRE body is exactly one such slash-command (an
-    # optional single pipeline argument for `/azp run`) is excluded; any trailing prose
-    # (e.g. `/azp run maui-pr still looks broken`) or multi-line body still counts as
-    # engagement, so a maintainer's substantive feedback attached to a re-run is honored.
-    if ([string]::IsNullOrWhiteSpace($Body)) {
-        return $false
-    }
-
-    $trimmed = $Body.Trim()
-    if ($trimmed -match '[\r\n]') {
-        return $false
-    }
-
-    return ($trimmed -match '^/azp\s+run(\s+[A-Za-z0-9._\-/]+)?\s*$') -or
-           ($trimmed -match '^/azp\s+(list|where|help)\s*$') -or
-           ($trimmed -match '^/rebase(-help)?\s*$')
-}
-
-function Test-AnyHumanActor {
-    param([object[]]$Items)
-
-    foreach ($item in @($Items)) {
-        $login = if ($item.user -and $item.user.login) { [string]$item.user.login } else { $null }
-        if (Test-IsHumanLogin -Login $login) {
-            return $true
-        }
-    }
-
-    return $false
-}
-
-function Test-AnyHumanCommitActor {
-    param([object[]]$Commits)
-
-    foreach ($commit in @($Commits)) {
-        $authorLogin = if ($commit.author -and $commit.author.login) { [string]$commit.author.login } else { $null }
-        $committerLogin = if ($commit.committer -and $commit.committer.login) { [string]$commit.committer.login } else { $null }
-
-        if ((Test-IsHumanLogin -Login $authorLogin) -or (Test-IsHumanLogin -Login $committerLogin)) {
-            return $true
-        }
-    }
-
-    return $false
 }
 
 function Get-PullRequestBody {
@@ -392,7 +628,7 @@ function Get-HeadCheckState {
     }
 }
 
-function Get-HumanEngagementState {
+function Get-PullRequestWatchState {
     param([int]$Number)
 
     $allSucceeded = $true
@@ -407,30 +643,6 @@ function Get-HumanEngagementState {
     }
     else {
         $issueComments = @(ConvertFrom-JsonLines -JsonLines $issueCommentLines)
-    }
-
-    $reviewLines = Invoke-GhCommand `
-        -Arguments @('api', "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100", '--paginate', '--jq', '.[]') `
-        -Description "read reviews for PR #$Number" `
-        -AllowFailure
-    if ($null -eq $reviewLines) {
-        $allSucceeded = $false
-        $reviews = @()
-    }
-    else {
-        $reviews = @(ConvertFrom-JsonLines -JsonLines $reviewLines)
-    }
-
-    $reviewCommentLines = Invoke-GhCommand `
-        -Arguments @('api', "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100", '--paginate', '--jq', '.[]') `
-        -Description "read review comments for PR #$Number" `
-        -AllowFailure
-    if ($null -eq $reviewCommentLines) {
-        $allSucceeded = $false
-        $reviewComments = @()
-    }
-    else {
-        $reviewComments = @(ConvertFrom-JsonLines -JsonLines $reviewCommentLines)
     }
 
     $commitLines = Invoke-GhCommand `
@@ -482,14 +694,6 @@ function Get-HumanEngagementState {
             Sort-Object -Unique
     )
 
-    $engagementComments = @($issueComments | Where-Object { -not (Test-IsCiControlComment -Body $_.body) })
-
-    $humanEngaged =
-        (Test-AnyHumanActor -Items $engagementComments) -or
-        (Test-AnyHumanActor -Items $reviews) -or
-        (Test-AnyHumanActor -Items $reviewComments) -or
-        (Test-AnyHumanCommitActor -Commits $commits)
-
     # Append-only floor for the attempt counter: every push the workflow makes is a
     # bot-authored commit on the PR branch. Counting them gives an authoritative lower
     # bound that CANNOT be rewound, so a stale/dropped body-marker bump can never let
@@ -505,7 +709,6 @@ function Get-HumanEngagementState {
 
     return [pscustomobject]@{
         Succeeded                = $allSucceeded
-        humanEngaged             = [bool]$humanEngaged
         botCommitCount           = [int]$botCommitCount
         respondedTrackCReviewIds = @($respondedTrackCReviewIds)
     }
@@ -550,9 +753,10 @@ foreach ($pr in @($searchResult)) {
     # "[ci-fix]" prefix (renamed to "[ci-fix-net11]" in this change), so open legacy net11
     # PRs still carry "[ci-fix]" + base net11.0. Without this guard the main twin's
     # "[ci-fix]" search would ADOPT those net11.0-based PRs and push main-based fix commits
-    # onto them. Scoping to $BaseBranch mirrors the create-PR `base-branch` /
-    # `allowed-base-branches` pin onto the watch/advance path so the two twins never
-    # cross-drive each other's PRs. An empty/unexpected base fails closed (skipped).
+    # onto them. Scoping to $BaseBranch mirrors the workflow handler-base contract
+    # and create-PR `allowed-base-branches` pin onto the watch/advance path so the
+    # two twins never cross-drive each other's PRs. An empty/unexpected base fails
+    # closed (skipped).
     if (-not $baseRefName.Equals($BaseBranch, [StringComparison]::OrdinalIgnoreCase)) {
         continue
     }
@@ -564,9 +768,9 @@ foreach ($pr in @($searchResult)) {
     $bodyResult = Get-PullRequestBody -Number $number
     $markers = Get-CiFixMarkers -Body $bodyResult.Body
     $checkState = Get-HeadCheckState -HeadSha ([string]$pr.headRefOid)
-    $engagementState = Get-HumanEngagementState -Number $number
+    $watchState = Get-PullRequestWatchState -Number $number
 
-    $dataComplete = $bodyResult.Succeeded -and $checkState.Succeeded -and $engagementState.Succeeded
+    $dataComplete = $bodyResult.Succeeded -and $checkState.Succeeded -and $watchState.Succeeded
     # Authoritative attempt counter: the higher of the (possibly stale) body-marker
     # numerator and the append-only bot-commit floor, gated by the fixed $AttemptMax
     # constant. A null marker contributes 0, so the bot-commit floor governs on its own.
@@ -581,11 +785,10 @@ foreach ($pr in @($searchResult)) {
     $markerAttempt = if ($null -eq $markers.attempt) { 0 } else {
         [int][Math]::Min([long]$markers.attempt, [long]$markers.attemptMax)
     }
-    $effectiveAttempt = [Math]::Max($markerAttempt, [int]$engagementState.botCommitCount)
+    $effectiveAttempt = [Math]::Max($markerAttempt, [int]$watchState.botCommitCount)
     $actionable = $dataComplete -and
         $checkState.checksSettled -and
         ($checkState.overallConclusion -eq 'failure') -and
-        (-not $engagementState.humanEngaged) -and
         ($effectiveAttempt -lt [int]$markers.attemptMax)
 
     $candidates += [pscustomobject]@{
@@ -598,25 +801,33 @@ foreach ($pr in @($searchResult)) {
         refsIssue         = $markers.refsIssue
         attempt           = $markers.attempt
         attemptMax        = [int]$markers.attemptMax
-        botCommitCount    = [int]$engagementState.botCommitCount
+        botCommitCount    = [int]$watchState.botCommitCount
         effectiveAttempt  = [int]$effectiveAttempt
-        respondedTrackCReviewIds = @($engagementState.respondedTrackCReviewIds)
+        respondedTrackCReviewIds = @($watchState.respondedTrackCReviewIds)
         checksSettled     = [bool]$checkState.checksSettled
         overallConclusion = [string]$checkState.overallConclusion
         failedLegs        = @($checkState.failedLegs)
-        humanEngaged      = [bool]$engagementState.humanEngaged
         # dataComplete is false when ANY prefetch source (PR body, head check-state,
-        # or human-engagement) hit an API error. The agent MUST treat an incomplete
-        # candidate as "wait" (Step 3.5 gate 2): humanEngaged/attempt/overallConclusion
-        # may be understated on a partial read, so advancing on them would risk pushing
-        # onto a PR a human just touched, or mis-counting the attempt. `actionable`
-        # already requires dataComplete; surfacing it lets the gates be conservative too.
+        # or watch state) hit an API error. The agent MUST treat an incomplete candidate
+        # as "wait" because its attempt count or Track C response dedup may be incomplete.
         dataComplete      = [bool]$dataComplete
         actionable        = [bool]$actionable
     }
 }
 
 $anyActionable = @($candidates | Where-Object { $_.actionable }).Count -gt 0
+$scopedIssueNumber = Resolve-IssueScopeNumber -Value $IssueNumber
+$issueEvidence = Get-CiFixIssueEvidence `
+    -RepositoryOwner $Owner `
+    -RepositoryName $Repo `
+    -ExactLabel $IssueLabel `
+    -ExcludeLabel $ExcludeIssueLabel `
+    -ScopedIssueNumber $scopedIssueNumber `
+    -PriorityIssueNumbers @($candidates | ForEach-Object { $_.refsIssue }) `
+    -Limit $MaxIssues `
+    -TitleMaxChars $MaxIssueTitleChars `
+    -BodyMaxChars $MaxIssueBodyChars
+$issueEvidenceItems = @($issueEvidence.items)
 
 $outputDir = Split-Path -Parent $OutputPath
 if ($outputDir) {
@@ -624,11 +835,30 @@ if ($outputDir) {
 }
 
 $json = [ordered]@{
-    generatedAt   = (Get-Date).ToUniversalTime().ToString('o')
+    schemaVersion = 2
+    generatedAt = (Get-Date).ToUniversalTime().ToString('o')
+    repository = "$Owner/$Repo"
+    issueEvidence = [ordered]@{
+        authoritative = $true
+        exactLabel = $IssueLabel
+        excludeLabel = $ExcludeIssueLabel
+        scopedIssueNumber = $scopedIssueNumber
+        maxIssues = $MaxIssues
+        titleMaxChars = $MaxIssueTitleChars
+        bodyMaxChars = $MaxIssueBodyChars
+        count = $issueEvidenceItems.Count
+        # totalMatched counts every eligible open exact-label issue, not just the bounded
+        # batch. truncated=true means work remains beyond this run's window; it must never
+        # be read as "no other candidates exist".
+        totalMatched = [int]$issueEvidence.totalMatched
+        truncated = [bool]$issueEvidence.truncated
+        excludedDualLabelled = @($issueEvidence.excludedDualLabelled)
+        issues = @($issueEvidenceItems)
+    }
     anyActionable = [bool]$anyActionable
-    candidates    = @($candidates)
+    candidates = @($candidates)
 } | ConvertTo-Json -Depth 20
 $json | Set-Content -LiteralPath $OutputPath -Encoding UTF8
 
-Write-Host "Wrote $($candidates.Count) ci-fix candidate(s) (anyActionable=$anyActionable) to $OutputPath"
+Write-Host "Wrote $($candidates.Count) ci-fix candidate(s) and $($issueEvidenceItems.Count) exact-label issue(s) (anyActionable=$anyActionable) to $OutputPath"
 Write-Output $json

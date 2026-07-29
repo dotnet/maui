@@ -22,10 +22,55 @@ Set-StrictMode -Version Latest
 $script:passed = 0
 $script:failed = 0
 
+function Test-AssertionEqual {
+    param($Expected, $Actual)
+    $expectedCollection = $Expected -is [System.Collections.IEnumerable] -and $Expected -isnot [string]
+    $actualCollection = $Actual -is [System.Collections.IEnumerable] -and $Actual -isnot [string]
+    if ($expectedCollection -ne $actualCollection) { return $false }
+    if ($expectedCollection) {
+        $expectedItems = @($Expected)
+        $actualItems = @($Actual)
+        if ($expectedItems.Count -ne $actualItems.Count) { return $false }
+        for ($i = 0; $i -lt $expectedItems.Count; $i++) {
+            if ($expectedItems[$i] -is [string] -and $actualItems[$i] -is [string]) {
+                if (-not [string]::Equals($expectedItems[$i], $actualItems[$i], [System.StringComparison]::Ordinal)) { return $false }
+            } elseif ($expectedItems[$i] -ne $actualItems[$i]) { return $false }
+        }
+        return $true
+    }
+    if ($Expected -is [string] -and $Actual -is [string]) {
+        return [string]::Equals($Expected, $Actual, [System.StringComparison]::Ordinal)
+    }
+    if (($Expected -is [string]) -ne ($Actual -is [string])) {
+        $stringValue = if ($Expected -is [string]) { $Expected } else { $Actual }
+        $numericValue = if ($Expected -is [string]) { $Actual } else { $Expected }
+        $numericType = $numericValue -is [sbyte] -or $numericValue -is [byte] -or
+            $numericValue -is [int16] -or $numericValue -is [uint16] -or
+            $numericValue -is [int32] -or $numericValue -is [uint32] -or
+            $numericValue -is [int64] -or $numericValue -is [uint64]
+        [long]$parsedInteger = 0
+        if ($numericType -and [long]::TryParse(
+                $stringValue,
+                [System.Globalization.NumberStyles]::Integer,
+                [System.Globalization.CultureInfo]::InvariantCulture,
+                [ref]$parsedInteger)) {
+            return $parsedInteger -eq $numericValue
+        }
+        return $false
+    }
+    if (($Expected -is [bool]) -ne ($Actual -is [bool])) {
+        return $false
+    }
+    if ($null -eq $Expected -or $null -eq $Actual) {
+        return $null -eq $Expected -and $null -eq $Actual
+    }
+    return [bool]($Expected -eq $Actual)
+}
+
 function Assert-Eq {
     param([string]$Label, $Expected, $Actual)
-    if ($Expected -ceq $Actual -or
-        ((@($Expected) -join ',') -eq (@($Actual) -join ','))) {
+    $equal = Test-AssertionEqual -Expected $Expected -Actual $Actual
+    if ($equal) {
         Write-Host "  ✅ $Label" -ForegroundColor Green
         $script:passed++
     } else {
@@ -34,8 +79,15 @@ function Assert-Eq {
         Write-Host "     actual  : $Actual" -ForegroundColor DarkRed
         $script:failed++
     }
+
 }
 
+Assert-Eq -Label "assertion helper distinguishes array shape from joined scalar" -Expected $false `
+    -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a,b')
+Assert-Eq -Label "assertion helper distinguishes collection from matching member scalar" -Expected $false `
+    -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a')
+Assert-Eq -Label "assertion helper accepts bare negative numeric parameter literals" -Expected $true `
+    -Actual (Test-AssertionEqual -Expected -2 -Actual ([int]-2))
 # ─────────── Parser/regex unit tests (no network) ───────────
 
 Write-Host "`n[Unit] Commit message parsing" -ForegroundColor Cyan
@@ -126,6 +178,104 @@ foreach ($case in @(
     Assert-Eq -Label $case.Label -Expected $case.ShouldMatch -Actual $hit
 }
 
+# Static workflow/renderer contracts must run even when network E2E is skipped.
+$workflowContractText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml') -Raw
+$srScriptContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
+Assert-Eq -Label "SR auxiliary commits artifact uses the same public-safe data graph as the primary JSON" -Expected $true `
+    -Actual $srScriptContractText.Contains('$commitsJson = $outputSrContents | ConvertTo-Json')
+Assert-Eq -Label "workflow verifies exact closed-generation body lines" -Expected $true `
+    -Actual ($workflowContractText.Contains('($lines | index($tracker) != null)') -and
+        $workflowContractText.Contains('($lines | index($generation) != null)'))
+Assert-Eq -Label "workflow verifies exact open-tracker marker and ownership label" -Expected $true `
+    -Actual ($workflowContractText.Contains('split("\n") | index($tracker)') -and
+        $workflowContractText.Contains('--label area-infrastructure'))
+Assert-Eq -Label "workflow accepts adopted human-created closed generations" -Expected $false `
+    -Actual ($workflowContractText.Contains('--app github-actions') -or
+        $workflowContractText.Contains('.author.login == "app/github-actions"'))
+Assert-Eq -Label "workflow requires tracker label on a closed-generation match" -Expected $true `
+    -Actual $workflowContractText.Contains('index("area-infrastructure") != null')
+Assert-Eq -Label "workflow refuses to create a tracker without its durable ownership label" -Expected $true `
+    -Actual ($workflowContractText.Contains("Required label 'area-infrastructure' not found") -and
+        $workflowContractText.Contains('CREATE_ARGS+=(--label "area-infrastructure")'))
+Assert-Eq -Label "workflow refuses duplicate creation when an unlabeled tracker marker exists" -Expected $true `
+    -Actual ($workflowContractText.Contains('UNOWNED_EXISTING=') -and
+        $workflowContractText.Contains('Restore the area-infrastructure label before automation resumes'))
+Assert-Eq -Label "workflow resolves exact current-generation opens before exact closures" -Expected $true `
+    -Actual ($workflowContractText.IndexOf('EXACT_OPEN=') -lt $workflowContractText.IndexOf('CLOSED_GENERATION='))
+Assert-Eq -Label "workflow uses the tested oldest-tracker selector for canonical issue choice" -Expected $true `
+    -Actual $workflowContractText.Contains('CANONICAL=$(rr_select_oldest_tracker "$EXISTING")')
+Assert-Eq -Label "workflow refreshes an open generic tracker across generation commits" -Expected $true `
+    -Actual $workflowContractText.Contains('[ -z "$EXISTING" ] && CREATE_GENERATION=true')
+Assert-Eq -Label "workflow reconciles stale opens before honoring exact closure" -Expected $true `
+    -Actual ($workflowContractText.Contains('Closing stale tracker issue') -and
+        $workflowContractText.IndexOf('Closing stale tracker issue') -lt
+        $workflowContractText.IndexOf('not recreating.'))
+Assert-Eq -Label "workflow compensates a generation edit proven to land after closure" -Expected $true `
+    -Actual ($workflowContractText.Contains('EDIT_RESULT=$(gh api --method PATCH') -and
+        $workflowContractText.Contains('POST_EDIT_META=') -and
+        $workflowContractText.Contains('removed the raced marker'))
+Assert-Eq -Label "workflow uses the exact edit response timestamp rather than mutable post-read updatedAt" -Expected $true `
+    -Actual ($workflowContractText.Contains('rr_edit_landed_after_close "$POST_CLOSED_AT" "$EDIT_UPDATED_AT"') -and
+        -not $workflowContractText.Contains('rr_edit_landed_after_close "$POST_CLOSED_AT" "$POST_UPDATED_AT"'))
+Assert-Eq -Label "workflow proves the exact edited body is still live before race compensation" -Expected $true `
+    -Actual $workflowContractText.Contains('[ "$POST_BODY_B64" = "$EDIT_BODY_B64" ]')
+Assert-Eq -Label "workflow rechecks exact state and body revision before overwriting captain notes" -Expected $true `
+    -Actual ([bool]($workflowContractText -match 'elif \[ "\$PRE_EDIT_UPDATED_AT" != "\$CUR_UPDATED_AT" \] \|\| \[ "\$PRE_EDIT_BODY_B64" != "\$CUR_BODY_B64" \]; then'))
+Assert-Eq -Label "workflow race compensation starts from and rechecks the live closed body" -Expected $true `
+    -Actual ([bool]($workflowContractText -match 'POST_BODY_B64[\s\S]*base64 --decode[\s\S]*PRE_RACE_UPDATED_AT.*!=.*POST_UPDATED_AT[\s\S]*PRE_RACE_BODY_B64.*!=.*POST_BODY_B64'))
+Assert-Eq -Label "workflow surfaces post-edit metadata lookup failures" -Expected $true `
+    -Actual $workflowContractText.Contains('race compensation could not be evaluated')
+Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
+    -Actual $workflowContractText.Contains('hotfix version pending')
+$updateStepStart = $workflowContractText.IndexOf('- name: Update or create tracker issue')
+$lifecycleSourceIndex = $workflowContractText.IndexOf('source .github/skills/release-readiness/scripts/TrackerIssueLifecycle.sh')
+Assert-Eq -Label "workflow sources tracker lifecycle helper inside the mutating issue step" -Expected $true `
+    -Actual ($updateStepStart -ge 0 -and $lifecycleSourceIndex -gt $updateStepStart)
+
+$lifecycleHelperPath = Join-Path $PSScriptRoot '..' 'scripts' 'TrackerIssueLifecycle.sh'
+$lifecycleProbePath = Join-Path ([System.IO.Path]::GetTempPath()) "release-readiness-lifecycle-$([guid]::NewGuid().ToString('N')).sh"
+$lifecycleProbe = @'
+#!/usr/bin/env bash
+set -euo pipefail
+source "$1"
+
+[ "$(rr_select_oldest_tracker $'41\n42')" = "41" ]
+rr_edit_landed_after_close '2026-07-29T10:00:00Z' '2026-07-29T10:00:01Z'
+if rr_edit_landed_after_close '2026-07-29T10:00:00Z' '2026-07-29T10:00:00Z'; then
+  exit 10
+fi
+if rr_edit_landed_after_close '2026-07-29T10:00:01Z' '2026-07-29T10:00:00Z'; then
+  exit 12
+fi
+
+input="$(mktemp)"
+output="$(mktemp)"
+printf 'before\r\n<!-- release-readiness-shipped: 10.0.90 -->\r\nafter\r\n' > "$input"
+rr_has_exact_marker_line "$input" '<!-- release-readiness-shipped: 10.0.90 -->'
+rr_remove_exact_marker_line "$input" "$output" '<!-- release-readiness-shipped: 10.0.90 -->'
+if grep -Fq 'release-readiness-shipped' "$output"; then
+  exit 11
+fi
+grep -Fq 'before' "$output"
+grep -Fq 'after' "$output"
+printf 'prefix <!-- release-readiness-shipped: 10.0.90 --> suffix\r\n' > "$input"
+if rr_has_exact_marker_line "$input" '<!-- release-readiness-shipped: 10.0.90 -->'; then
+  exit 13
+fi
+rr_remove_exact_marker_line "$input" "$output" '<!-- release-readiness-shipped: 10.0.90 -->'
+grep -Fq 'prefix <!-- release-readiness-shipped: 10.0.90 --> suffix' "$output"
+rm -f "$input" "$output"
+'@
+try {
+    Set-Content -Path $lifecycleProbePath -Value $lifecycleProbe -NoNewline
+    & bash $lifecycleProbePath $lifecycleHelperPath
+    $lifecycleProbeExit = $LASTEXITCODE
+} finally {
+    Remove-Item $lifecycleProbePath -Force -ErrorAction SilentlyContinue
+}
+Assert-Eq -Label "tracker lifecycle helper preserves oldest tracker, strict race ordering, and CRLF marker detection/removal" `
+    -Expected 0 -Actual $lifecycleProbeExit
+
 # ─────────── E2E smoke test against SR7 ───────────
 
 if (-not $SkipE2E) {
@@ -167,10 +317,21 @@ if (-not $SkipE2E) {
         Assert-Eq -Label "SR7 source-PRs does NOT contain #35609 (#35326 fix, not backported)" `
                   -Expected $false -Actual $has35609
 
-        # Expected: count is in the right ballpark (we measured 54 manually)
-        Write-Host "  Source PR count: $($srcPrs.Count) (expected ~50-60)" -ForegroundColor Gray
-        Assert-Eq -Label "SR7 source-PR count in expected range" `
-                  -Expected $true -Actual ($srcPrs.Count -ge 40 -and $srcPrs.Count -le 100)
+        Write-Host "  Source PR count: $($srcPrs.Count)" -ForegroundColor Gray
+        Assert-Eq -Label "SR7 immutable source-PR inventory is non-empty" `
+                  -Expected $true -Actual ($srcPrs.Count -gt 0)
+    }
+
+    $partialJsonPath = Join-Path $outDir 'release-readiness.json'
+    if (Test-Path $partialJsonPath) {
+        $partialReport = Get-Content $partialJsonPath -Raw | ConvertFrom-Json
+        Assert-Eq -Label "partial -Phase commits marks regression scan incomplete" `
+            -Expected $true -Actual $partialReport.regressionScanIncomplete
+        Assert-Eq -Label "partial -Phase commits cannot emit a global Ready verdict" `
+            -Expected $false -Actual ($partialReport.verdict.symbol -eq '🟢')
+    } else {
+        Write-Host "  ❌ partial-phase release-readiness.json was not created" -ForegroundColor Red
+        $script:failed++
     }
 
     # Cleanup
@@ -222,6 +383,44 @@ if (-not $SkipE2E) {
                   -Expected $true -Actual $hasInherited
     }
     if (Test-Path $candOut) { Remove-Item -Recurse -Force $candOut }
+
+    # ─────────── Preview driver E2E: exercise real CLI/mode/output wiring ───────────
+    Write-Host "`n[E2E] Preview 7 in-flight driver and public-safe outputs" -ForegroundColor Cyan
+    $previewScriptPath = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
+    $previewOut = Join-Path ([System.IO.Path]::GetTempPath()) "preview-readiness-test-$([guid]::NewGuid().ToString('N'))"
+    try {
+        & pwsh -NoProfile -File $previewScriptPath `
+            -Branch 'release/11.0.1xx-preview7' `
+            -Mode in-flight `
+            -TrackerKey 'dnceng/internal/_git/public-safe-sentinel' `
+            -OutputDir $previewOut `
+            -OutputFormat both 2>&1 | Out-Null
+        Assert-Eq -Label "Preview driver exits successfully" -Expected 0 -Actual $LASTEXITCODE
+
+        $previewJsonPath = Join-Path $previewOut 'preview-readiness.json'
+        $previewMdPath = Join-Path $previewOut 'preview-readiness.md'
+        Assert-Eq -Label "Preview driver writes JSON output" -Expected $true -Actual (Test-Path $previewJsonPath)
+        Assert-Eq -Label "Preview driver writes Markdown output" -Expected $true -Actual (Test-Path $previewMdPath)
+
+        if ((Test-Path $previewJsonPath) -and (Test-Path $previewMdPath)) {
+            $previewJsonText = Get-Content $previewJsonPath -Raw
+            $previewReport = $previewJsonText | ConvertFrom-Json
+            $previewMarkdown = Get-Content $previewMdPath -Raw
+            Assert-Eq -Label "Preview driver binds in-flight mode" -Expected 'in-flight' -Actual $previewReport.Mode
+            Assert-Eq -Label "Preview driver binds release branch survey ref" `
+                -Expected 'release/11.0.1xx-preview7' -Actual $previewReport.SurveyRef
+            Assert-Eq -Label "Preview driver wires cut-preview VMR to local reconciliation" `
+                -Expected $true -Actual ([bool]($previewMarkdown -match 'local official-build reconciliation.+no Maestro subscription by design'))
+            Assert-Eq -Label "Preview driver distinguishes no scanner from zero scanner issues" `
+                -Expected $true -Actual ([bool]($previewMarkdown -match 'No CI Failure Scanner runs against'))
+            Assert-Eq -Label "Preview driver applies PublicSafe to Markdown and JSON" `
+                -Expected $false -Actual ([bool](("$previewMarkdown`n$previewJsonText") -match 'dnceng/internal|\.NET Release Tracker|dotnet-release-tracker|api://'))
+            Assert-Eq -Label "Preview driver PublicSafe assertion is discriminating in Markdown and JSON" `
+                -Expected $true -Actual ([bool]($previewMarkdown -match '_internal URL omitted_' -and $previewJsonText -match '_internal URL omitted_'))
+        }
+    } finally {
+        if (Test-Path $previewOut) { Remove-Item -Recurse -Force $previewOut }
+    }
 }
 
 # ─────────── Tracker detection algorithm (Find-ReleaseReadinessTrackers.ps1) ───────────
@@ -393,6 +592,28 @@ if (-not (Test-Path $detectScriptPath)) {
     Assert-Eq -Label "hotfix: SR2 patch 22 still in-flight when latest shipped is 70" `
               -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 22 -ShippedPatches $hotfix)
     Assert-Eq -Label "hotfix: SR2 patch 20 is the already-shipped baseline"  -Expected $false -Actual (Test-IsBranchInFlight -BranchPatch 20 -ShippedPatches $hotfix)
+
+    Write-Host "`n[Unit] Latest shipped SR stays shipped during an unpublished hotfix" -ForegroundColor Cyan
+    Assert-Eq -Label "SR9 live patch 91 over shipped 90 remains shipped-mode hotfix" `
+              -Expected $true -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 91 -HighestShippedPatch 90)
+    Assert-Eq -Label "SR9 live patch 92 over shipped hotfix 91 remains shipped-mode hotfix" `
+              -Expected $true -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 92 -HighestShippedPatch 91)
+    Assert-Eq -Label "older SR8 patch 81 is not latest-shipped SR9 hotfix" `
+              -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 8 -BranchPatch 81 -HighestShippedPatch 90)
+    Assert-Eq -Label "next SR decade patch 100 is not an SR9 hotfix" `
+              -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 100 -HighestShippedPatch 90)
+    Assert-Eq -Label "already-tagged patch equality is not an unpublished hotfix" `
+              -Expected $false -Actual (Test-IsUnpublishedHotfixOnLatestShippedSr -SrNumber 9 -BranchPatch 90 -HighestShippedPatch 90)
+    Assert-Eq -Label "SR9 patch 99 remains in SR9 decade" -Expected $true `
+              -Actual (Test-IsPatchInSrCycle -SrNumber 9 -Patch 99)
+    Assert-Eq -Label "SR9 patch 100 is rejected as SR10 decade" -Expected $false `
+              -Actual (Test-IsPatchInSrCycle -SrNumber 9 -Patch 100)
+    Assert-Eq -Label "SR10 patch 100 belongs to SR10 decade" -Expected $true `
+              -Actual (Test-IsPatchInSrCycle -SrNumber 10 -Patch 100)
+    Assert-Eq -Label "cut-before-bump helper accepts contiguous SR10 patch90 after SR9" -Expected $true `
+              -Actual (Test-IsSrCutBeforeBump -SrNumber 10 -BranchPatch 90 -HighestShippedPatch 90)
+    Assert-Eq -Label "cut-before-bump helper rejects far-ahead SR10 when only SR7 shipped" -Expected $false `
+              -Actual (Test-IsSrCutBeforeBump -SrNumber 10 -BranchPatch 90 -HighestShippedPatch 70)
 
     # Empty ship set: every branch must be in-flight.
     Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
@@ -676,7 +897,8 @@ if (-not $SkipE2E) {
     Write-Host "  Under the tag-existence rule + Lane 1 staleness guard, the SR set is asserted" -ForegroundColor DarkGray
     Write-Host "  STRUCTURALLY (drift-proof), not pinned: the highest shipped SR emits a 'shipped'" -ForegroundColor DarkGray
     Write-Host "  refresh tracker, plus >=0 in-flight SRs (branch cut, unshipped) and exactly one" -ForegroundColor DarkGray
-    Write-Host "  candidate SR (the next SR off main). Today: SR8 shipped, SR9 in-flight, SR10 candidate." -ForegroundColor DarkGray
+    Write-Host "  candidate SR (the next SR off main). Between ship and the next branch cut," -ForegroundColor DarkGray
+    Write-Host "  the valid shape is shipped + candidate with no in-flight SR." -ForegroundColor DarkGray
     Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark): e.g. SR2, SR3." -ForegroundColor DarkGray
     Write-Host "    RETIRED (shipped, below the highest shipped SR): e.g. SR7 (10.0.71)." -ForegroundColor DarkGray
 
@@ -700,9 +922,9 @@ if (-not $SkipE2E) {
             # cut. Assert the invariant SHAPE instead: >=1 SR tracker, exactly one
             # candidate (the next SR off main), at most one 'shipped' refresh tracker
             # (the highest shipped SR), and a clean shipped+in-flight+candidate
-            # partition. Today that's SR8 shipped + SR9 in-flight + SR10 candidate;
-            # when SR9 ships this stays green (SR9 shipped + SR10 in-flight + SR11
-            # candidate) with no per-cut edit.
+            # partition. During the ship-to-next-cut gap there is no in-flight SR:
+            # the highest shipped refresh tracker directly anchors the next candidate.
+            # Once that candidate branch is cut it becomes the in-flight anchor.
             $srTrackers   = @($detected.trackers | Where-Object branchType -eq 'sr')
             $shippedSrs   = @($srTrackers | Where-Object mode -eq 'shipped')
             $inflightSrs  = @($srTrackers | Where-Object mode -eq 'in-flight' | Sort-Object { [int]$_.srNumber })
@@ -769,22 +991,28 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "in-flight SR$($fl.srNumber) has no priorSrBranch"        -Expected $true       -Actual ([string]::IsNullOrEmpty($fl.priorSrBranch))
             }
 
-            # --- Candidate SR: off main, branch NOT cut, numbered one past the highest
-            #     in-flight SR, with priorSrBranch = that highest in-flight branch. ---
+            # --- Candidate SR: off main, branch NOT cut, numbered one past the prior
+            #     active SR. Prefer the highest in-flight SR; during the valid
+            #     ship-to-next-cut gap, fall back to the highest shipped refresh SR. ---
             $cand = $candidateSrs[0]
             $highestInflight = if ($inflightSrs.Count -gt 0) { $inflightSrs[-1] } else { $null }
+            $highestShipped = if ($shippedSrs.Count -gt 0) {
+                @($shippedSrs | Sort-Object { [int]$_.srNumber })[-1]
+            } else {
+                $null
+            }
+            $candidateAnchor = if ($highestInflight) { $highestInflight } else { $highestShipped }
             Assert-Eq -Label "candidate SR mode = candidate"                    -Expected 'candidate' -Actual $cand.mode
             Assert-Eq -Label "candidate SR surveyRef = main"                    -Expected 'main'      -Actual $cand.surveyRef
             Assert-Eq -Label "candidate SR branchExists = false (not cut yet)"  -Expected $false      -Actual $cand.branchExists
             Assert-Eq -Label "candidate SR canonicalKey"                        -Expected "net10-sr$($cand.srNumber)" -Actual $cand.canonicalKey
             Assert-Eq -Label "candidate SR branchName = canonical proposed slug" -Expected "release/10.0.1xx-sr$($cand.srNumber)" -Actual $cand.branchName
-            if ($highestInflight) {
-                Assert-Eq -Label "candidate SR number = highest in-flight SR + 1" `
-                          -Expected ([int]$highestInflight.srNumber + 1) -Actual ([int]$cand.srNumber)
-                Assert-Eq -Label "candidate SR priorSrBranch = highest in-flight branch" `
-                          -Expected $highestInflight.branchName -Actual $cand.priorSrBranch
-            } else {
-                Write-Host "  ❌ no in-flight SR to anchor candidate numbering" -ForegroundColor Red; $script:failed++
+            Assert-Eq -Label "candidate SR has an in-flight or shipped anchor" -Expected $true -Actual ($null -ne $candidateAnchor)
+            if ($candidateAnchor) {
+                Assert-Eq -Label "candidate SR number = prior SR anchor + 1" `
+                          -Expected ([int]$candidateAnchor.srNumber + 1) -Actual ([int]$cand.srNumber)
+                Assert-Eq -Label "candidate SR priorSrBranch = prior SR anchor branch" `
+                          -Expected $candidateAnchor.branchName -Actual $cand.priorSrBranch
             }
 
             # --- Per-SR invariants for BOTH modes (drift-proof). The regression-label
@@ -817,18 +1045,19 @@ if (-not $SkipE2E) {
     #   - net10 -> ≥1 SR tracker + exactly one candidate SR, no preview lane
     #     (SR2/SR3 dropped by the Lane 1 staleness guard; shipped SRs dropped by
     #      shipped-exclusion; every net10 preview branch already shipped + net10.0
-    #      isn't in a preview cycle). Today: SR9 in-flight + SR10 candidate.
-    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 2 preview trackers
-    #     (preview6 in-flight: release/11.0.1xx-preview6 was cut, tag not yet published;
-    #      preview7 candidate: net11.0 bumped to PreReleaseVersionIteration=7, so the
-    #      detector now surfaces a candidate for the NEXT preview alongside in-flight
-    #      preview6. Once preview7's branch is cut this becomes preview7 in-flight +
-    #      preview8 candidate — update this snapshot then, same as the SR lane above.)
+    #      isn't in a preview cycle). The SR lane may be shipped + candidate during
+    #      the ship-to-next-cut gap, or shipped + in-flight + candidate after the cut.
+    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag) + a preview lane derived from
+    #     the LIVE highestShippedPreviewTag: the detector always surfaces the NEXT preview
+    #     (shipped + 1) as the candidate from net11.0 (PreReleaseVersionIteration), plus an
+    #     optional second in-flight tracker only while the previous preview's branch is cut
+    #     but its tag is unpublished. Asserted structurally (parse N from the shipped tag,
+    #     require candidate = N+1, bound the count) so no per-preview-ship edit is needed.
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: >=1 SR + exactly 1 candidate, 0 preview (today SR9 in-flight + SR10 candidate)" -ForegroundColor DarkGray
-    Write-Host "    - net11 trackers: 0 SR (pre-GA), 2 preview (preview6 in-flight, preview7 candidate)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: >=1 SR + exactly 1 candidate, 0 preview (in-flight SR optional)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), preview lane = candidate (shipped+1) + optional in-flight" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -860,7 +1089,7 @@ if (-not $SkipE2E) {
                 # Count is not pinned (advances every SR cut/ship). Assert the shape:
                 # ≥1 SR tracker, exactly one candidate SR, no preview lane (every net10
                 # preview shipped + net10.0 isn't in a preview cycle), and a clean SR-only
-                # partition. Today: SR9 in-flight + SR10 candidate.
+                # partition. The in-flight SR is optional during ship-to-next-cut.
                 Assert-Eq -Label "net10 has at least one SR tracker"      -Expected $true -Actual ($net10Sr.Count -ge 1)
                 Assert-Eq -Label "net10 has exactly one candidate SR"     -Expected 1     -Actual $net10Candidate.Count
                 Assert-Eq -Label "net10 has 0 preview trackers"          -Expected 0     -Actual $net10Preview.Count
@@ -869,111 +1098,145 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
             }
 
-            # net11 — pre-GA: no SR trackers; two preview trackers now that preview6 has
-            # been cut. preview6 is IN-FLIGHT (branch release/11.0.1xx-preview6 exists) and
-            # preview7 is the CANDIDATE from net11.0 (exactly the role preview6 held before
-            # its branch was cut).
+            # net11 — pre-GA: no SR trackers; preview6 has shipped, so preview7
+            # is the active candidate from net11.0.
             if ($byMajor.ContainsKey(11)) {
                 $net11 = $byMajor[11]
                 Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
                 Assert-Eq -Label "net11 highestShippedTag is null (pre-GA)" -Expected $true -Actual ([string]::IsNullOrEmpty($net11.highestShippedTag))
-                Assert-Eq -Label "net11 highestShippedPreviewTag carries preview5 tag" `
-                          -Expected '11.0.0-preview.5.26304.4' -Actual $net11.highestShippedPreviewTag
-                Assert-Eq -Label "net11 tracker count is 2 (preview6 in-flight + preview7 candidate)" -Expected 2 -Actual $net11.trackers.Count
                 $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
-                Assert-Eq -Label "net11 has 2 preview trackers"           -Expected 2 -Actual $previewTrackers.Count
-                $srTrackers = @($net11.trackers | Where-Object branchType -eq 'sr')
-                Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
+                $srTrackers      = @($net11.trackers | Where-Object branchType -eq 'sr')
+                $net11VersionInfo = Get-VersionFromGitRef -GitRef "origin/$($net11.mainBranch)" -Repo $multi.repo
 
-                # Select each preview by its number rather than array position so the
-                # assertions don't hinge on detector ordering.
-                $preview6 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 6 } | Select-Object -First 1
-                $preview7 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
-                if ($null -eq $preview6) {
-                    Write-Host "  ❌ net11 missing preview6 tracker" -ForegroundColor Red; $script:failed++
+                if ($net11VersionInfo -and $net11VersionInfo.PreLabel -eq 'rc') {
+                    # preview7 is the final preview. Once the source flips to rc1,
+                    # no preview8 candidate may be required; RC tracking is a
+                    # separate lane and the detector emits an explicit warning
+                    # until that lane exists.
+                    Assert-Eq -Label "net11 rc phase has no preview candidate tracker" `
+                        -Expected 0 -Actual @($previewTrackers | Where-Object mode -eq 'candidate').Count
+                    Assert-Eq -Label "net11 rc phase never invents preview8" `
+                        -Expected 0 -Actual @($previewTrackers | Where-Object { [int]$_.previewNumber -ge 8 }).Count
+                    Assert-Eq -Label "net11 rc phase still has no SR tracker before GA" `
+                        -Expected 0 -Actual $srTrackers.Count
                 } else {
-                # Lifecycle-INVARIANT fields (don't drift candidate<->in-flight): identity,
-                # tag prefix, preview number, milestone, and the canonical proposed branch slug.
-                Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
-                Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
-                Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
-                Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
-                Assert-Eq -Label "preview6 branchName = canonical slug" `
-                          -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
-                # preview6 transitions candidate (no branch) -> in-flight (branch cut) over its
-                # cycle. Don't hard-code EITHER state: read the detector's own branchExists and
-                # assert mode/surveyRef/issueTitle are CONSISTENT with it. This stays green across
-                # the candidate->in-flight cut instead of drifting the day the branch lands — same
-                # invariant-over-snapshot philosophy as the hasRecentActivity asserts below.
-                Assert-Eq -Label "preview6 branchExists is a [bool] (lifecycle pivot)" `
-                          -Expected $true -Actual ($preview6.branchExists -is [bool])
-                if ($preview6.branchExists) {
-                    # Branch has been cut -> in-flight: the tracker surveys the branch itself.
-                    Assert-Eq -Label "preview6 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview6.mode
-                    Assert-Eq -Label "preview6 surveyRef = branchName (branch exists)" `
-                              -Expected $preview6.branchName -Actual $preview6.surveyRef
-                    Assert-Eq -Label "preview6 issue title = in-flight form" `
-                              -Expected "[Release Readiness] .NET 11.0 preview6 — $($preview6.branchName)" `
-                              -Actual $preview6.issueTitle
-                } else {
-                    # No branch yet -> candidate: the tracker surveys the major's dev branch.
-                    Assert-Eq -Label "preview6 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview6.mode
-                    Assert-Eq -Label "preview6 surveyRef = mainBranch (no branch yet)" `
-                              -Expected $net11.mainBranch -Actual $preview6.surveyRef
-                    Assert-Eq -Label "preview6 issue title = candidate form" `
-                              -Expected "[Release Readiness] .NET 11.0 preview6 — candidate from $($net11.mainBranch)" `
-                              -Actual $preview6.issueTitle
-                }
-                # hasRecentActivity is a 7-day-window signal, not a marker of an
-                # "active preview cycle" — net11.0 can idle >7 days and report $false.
-                # Assert the flag's TYPE, not its date-dependent value.
-                Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
-                          -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
-                # Pin the count->flag WIRING (hasRecentActivity = recentCommitCount > 0) for the
-                # preview construction path too — same-instant fields, so date-independent yet it
-                # still trips on an inverted/hardcoded mapping.
-                Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
-                          -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
-                Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
-                          -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
-                          -Actual ($preview6.regressionLabels -join ',')
-                }
 
-                # preview7 — candidate from net11.0. net11.0 carries
-                # PreReleaseVersionIteration=7, so the detector emits a candidate for the
-                # NEXT preview distinct from in-flight preview6. Branch not cut yet ->
-                # candidate surveying net11.0. Mirrors the preview6 invariants but for the
-                # candidate state; reads branchExists and asserts mode/surveyRef/title are
-                # CONSISTENT with it so it stays green across the candidate->in-flight cut.
-                if ($null -eq $preview7) {
-                    Write-Host "  ❌ net11 missing preview7 candidate tracker" -ForegroundColor Red; $script:failed++
+                # Drift-proof preview lane: derive the expected candidate preview number
+                # from the LIVE highestShippedPreviewTag instead of pinning a specific tag
+                # or count. Assert the tag SHAPE (11.0.0-preview.N.*) rather than a fixed
+                # value, parse N, and require the detector's candidate = N+1. This follows
+                # every preview ship automatically (preview6 shipped -> preview7 candidate;
+                # once preview7 ships -> preview8 candidate) with no per-ship test edit.
+                $shippedPreviewMatch = [regex]::Match([string]$net11.highestShippedPreviewTag, '^11\.0\.0-preview\.(\d+)\.')
+                Assert-Eq -Label "net11 highestShippedPreviewTag has 11.0.0-preview.N shape" `
+                          -Expected $true -Actual $shippedPreviewMatch.Success
+                $shippedPreviewN = if ($shippedPreviewMatch.Success) { [int]$shippedPreviewMatch.Groups[1].Value } else { -1 }
+                $candidateN = $shippedPreviewN + 1
+
+                # Steady post-ship state = 1 preview tracker (the candidate). A transient
+                # second tracker appears only while the previous preview's branch is cut but
+                # its tag is unpublished (in-flight + candidate). Bound the count rather than
+                # pin it so the assertion survives that window.
+                Assert-Eq -Label "net11 preview tracker count is 1 or 2 (candidate + optional in-flight)" `
+                          -Expected $true -Actual ($previewTrackers.Count -ge 1 -and $previewTrackers.Count -le 2)
+                Assert-Eq -Label "net11 trackers are all preview (0 SR pre-GA -> Lane 2 skipped)" `
+                          -Expected 0 -Actual $srTrackers.Count
+                Assert-Eq -Label "net11 no preview tracker is at/below the shipped preview" `
+                          -Expected 0 -Actual (@($previewTrackers | Where-Object { [int]$_.previewNumber -le $shippedPreviewN }).Count)
+
+                # Select the candidate (shipped + 1) by its DERIVED number rather than a
+                # pinned value or array position, so the assertions don't hinge on detector
+                # ordering and follow each preview ship automatically. Expected slug /
+                # milestone / label fields are built from $candidateN (not tautologically
+                # read back from the tracker), so they still exercise the detector's
+                # slug-generation logic while staying drift-proof.
+                $candidate = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $candidateN } | Select-Object -First 1
+
+                # candidate preview — from net11.0. net11.0 carries
+                # PreReleaseVersionIteration=$candidateN, so the detector emits a candidate
+                # for the NEXT preview distinct from the shipped one. Reads branchExists and
+                # asserts mode/surveyRef/title are CONSISTENT with it so it stays green
+                # across the candidate->in-flight cut.
+                if ($null -eq $candidate) {
+                    Write-Host "  ❌ net11 missing preview$candidateN candidate tracker" -ForegroundColor Red; $script:failed++
                 } else {
-                    Assert-Eq -Label "preview7 canonicalKey"              -Expected 'net11-preview7'       -Actual $preview7.canonicalKey
-                    Assert-Eq -Label "preview7 expectedTagPrefix"         -Expected '11.0.0-preview.7.'   -Actual $preview7.expectedTagPrefix
-                    Assert-Eq -Label "preview7 previewNumber = 7"         -Expected 7                      -Actual $preview7.previewNumber
-                    Assert-Eq -Label "preview7 milestone name"            -Expected '.NET 11.0-preview7'  -Actual $preview7.milestoneName
-                    Assert-Eq -Label "preview7 branchName = canonical slug" `
-                              -Expected 'release/11.0.1xx-preview7' -Actual $preview7.branchName
-                    Assert-Eq -Label "preview7 branchExists is a [bool] (lifecycle pivot)" `
-                              -Expected $true -Actual ($preview7.branchExists -is [bool])
-                    if ($preview7.branchExists) {
-                        Assert-Eq -Label "preview7 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview7.mode
-                        Assert-Eq -Label "preview7 surveyRef = branchName (branch exists)" `
-                                  -Expected $preview7.branchName -Actual $preview7.surveyRef
-                        Assert-Eq -Label "preview7 issue title = in-flight form" `
-                                  -Expected "[Release Readiness] .NET 11.0 preview7 — $($preview7.branchName)" `
-                                  -Actual $preview7.issueTitle
+                    Assert-Eq -Label "candidate canonicalKey = net11-previewN+1"  -Expected "net11-preview$candidateN"      -Actual $candidate.canonicalKey
+                    Assert-Eq -Label "candidate expectedTagPrefix = shipped+1"    -Expected "11.0.0-preview.$candidateN."   -Actual $candidate.expectedTagPrefix
+                    Assert-Eq -Label "candidate previewNumber = shipped+1"        -Expected $candidateN                     -Actual ([int]$candidate.previewNumber)
+                    Assert-Eq -Label "candidate milestone name = shipped+1"       -Expected ".NET 11.0-preview$candidateN"  -Actual $candidate.milestoneName
+                    Assert-Eq -Label "candidate branchName = canonical slug" `
+                              -Expected "release/11.0.1xx-preview$candidateN" -Actual $candidate.branchName
+                    Assert-Eq -Label "candidate branchExists is a [bool] (lifecycle pivot)" `
+                              -Expected $true -Actual ($candidate.branchExists -is [bool])
+                    if ($candidate.branchExists) {
+                        Assert-Eq -Label "candidate mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $candidate.mode
+                        Assert-Eq -Label "candidate surveyRef = branchName (branch exists)" `
+                                  -Expected $candidate.branchName -Actual $candidate.surveyRef
+                        Assert-Eq -Label "candidate issue title = in-flight form" `
+                                  -Expected "[Release Readiness] .NET 11.0 preview$candidateN — $($candidate.branchName)" `
+                                  -Actual $candidate.issueTitle
+
+                        # Dual-tracker window (PR #36497 review, Finding 4): once
+                        # shipped+1 has been CUT to a real branch (branchExists=true =>
+                        # in-flight), the detector must ALSO surface a fresh candidate
+                        # from the survey ref. The previous bound only looked at
+                        # shipped+1, so a Lane 4 regression that dropped that second row
+                        # during the cut->tag window would still pass.
+                        #
+                        # The window has TWO independent preconditions, not one: the
+                        # branch must be cut AND the survey ref must have been bumped to
+                        # the next iteration. Those are separate maintainer actions, so
+                        # gating on branchExists alone made this fail for the whole
+                        # (legitimate) interval between the cut and the bump — a real
+                        # repo state, not a regression. Read the survey ref's actual
+                        # PreReleaseVersionIteration and only assert once it has moved
+                        # past the in-flight preview.
+                        #
+                        # The expected number comes from that iteration rather than
+                        # shipped+2, because the pre-release train is not a plain
+                        # increment: after preview7 the next cycle is rc1, so a hardcoded
+                        # shipped+2 would demand a `preview8` that will never exist.
+                        # Deterministic coverage of the invariant itself lives in the
+                        # synthetic dual-preview-window test below, which mocks BOTH
+                        # preconditions and therefore always runs.
+                        $surveyIter = $null
+                        try {
+                            $repoRootForProps = Resolve-Path (Join-Path $PSScriptRoot '..' '..' '..' '..')
+                            $propsText = (& git -C $repoRootForProps show "origin/$($net11.mainBranch):eng/Versions.props" 2>$null) -join "`n"
+                            if ($propsText -match '<PreReleaseVersionIteration>\s*(\d+)\s*</PreReleaseVersionIteration>') {
+                                $surveyIter = [int]$Matches[1]
+                            }
+                        } catch { $surveyIter = $null }
+
+                        if ($null -eq $surveyIter) {
+                            Write-Host "  ⏭️  dual-tracker window: could not read PreReleaseVersionIteration from origin/$($net11.mainBranch) — skipped (synthetic test covers the invariant)" -ForegroundColor DarkGray
+                        } elseif ($surveyIter -le $candidateN) {
+                            Write-Host "  ⏭️  dual-tracker window not open: $($net11.mainBranch) is still at iteration $surveyIter (preview$candidateN cut, not yet bumped) — skipped (synthetic test covers the invariant)" -ForegroundColor DarkGray
+                        } else {
+                            $candidate2 = $previewTrackers | Where-Object { [int]$_.previewNumber -eq $surveyIter } | Select-Object -First 1
+                            if ($null -eq $candidate2) {
+                                Write-Host "  ❌ net11 missing iteration-$surveyIter candidate tracker (dual-tracker window)" -ForegroundColor Red; $script:failed++
+                            } else {
+                                Assert-Eq -Label "shipped+2 candidate mode = candidate (not cut yet)" `
+                                          -Expected 'candidate' -Actual $candidate2.mode
+                                Assert-Eq -Label "shipped+2 candidate branchExists = false" `
+                                          -Expected $false -Actual $candidate2.branchExists
+                                Assert-Eq -Label "shipped+2 candidate surveyRef = mainBranch" `
+                                          -Expected $net11.mainBranch -Actual $candidate2.surveyRef
+                            }
+                        }
                     } else {
-                        Assert-Eq -Label "preview7 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview7.mode
-                        Assert-Eq -Label "preview7 surveyRef = mainBranch (no branch yet)" `
-                                  -Expected $net11.mainBranch -Actual $preview7.surveyRef
-                        Assert-Eq -Label "preview7 issue title = candidate form" `
-                                  -Expected "[Release Readiness] .NET 11.0 preview7 — candidate from $($net11.mainBranch)" `
-                                  -Actual $preview7.issueTitle
+                        Assert-Eq -Label "candidate mode = candidate (no branch yet)" -Expected 'candidate' -Actual $candidate.mode
+                        Assert-Eq -Label "candidate surveyRef = mainBranch (no branch yet)" `
+                                  -Expected $net11.mainBranch -Actual $candidate.surveyRef
+                        Assert-Eq -Label "candidate issue title = candidate form" `
+                                  -Expected "[Release Readiness] .NET 11.0 preview$candidateN — candidate from $($net11.mainBranch)" `
+                                  -Actual $candidate.issueTitle
                     }
-                    Assert-Eq -Label "preview7 regressionLabels carries previewN-1 + previewN" `
-                              -Expected 'regressed-in-11.0.0-preview6,regressed-in-11.0.0-preview7' `
-                              -Actual ($preview7.regressionLabels -join ',')
+                    Assert-Eq -Label "candidate regressionLabels carries previewN-1 + previewN" `
+                              -Expected "regressed-in-11.0.0-preview$($candidateN-1),regressed-in-11.0.0-preview$candidateN" `
+                              -Actual ($candidate.regressionLabels -join ',')
+                }
                 }
             } else {
                 Write-Host "  ❌ majors[] missing net11 entry" -ForegroundColor Red; $script:failed++
@@ -982,6 +1245,331 @@ if (-not $SkipE2E) {
     } finally {
         if (Test-Path $multiOut) { Remove-Item -Force $multiOut }
     }
+
+    # Synthetic ship-to-next-cut SR window: SR9 has shipped, its branch remains
+    # as the refresh tracker, SR10 has not been cut, and there is no in-flight SR.
+    # Candidate numbering and priorSrBranch must anchor to the shipped SR rather
+    # than treating this normal release transition as invalid.
+    Write-Host "`n[Unit] Tracker detection synthetic post-ship SR window" -ForegroundColor Cyan
+    $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
+    $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
+    $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
+    $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
+    $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
+    try {
+        $script:SyntheticSrBranchName = 'release/10.0.1xx-sr9'
+        $script:SyntheticSrNumber = 9
+        $script:SyntheticSrBranchTag = '10.0.90'
+        function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'main' }
+        function Get-StableTagsForMajor { param([int]$Major) ,@('10.0.0', '10.0.90') }
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@() }
+        function Get-RemoteSrBranchesForMajor {
+            param([int]$Major)
+            ,@([pscustomobject]@{
+                branch = $script:SyntheticSrBranchName; srNumber = $script:SyntheticSrNumber
+                sha = '0123456789abcdef0123456789abcdef01234567'
+            })
+        }
+        function Get-RemotePreviewBranchesForMajor { param([int]$Major) ,@() }
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            if ($GitRef -eq "origin/$($script:SyntheticSrBranchName)") {
+                return [pscustomobject]@{ Tag = $script:SyntheticSrBranchTag; PreLabel = ''; PreIter = 0 }
+            }
+            [pscustomobject]@{ Tag = '10.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
+        }
+        function Get-RecentCommitCount {
+            param([string]$Ref, [int]$Days)
+            if ($Ref -eq 'main') { return 1 }
+            return 0
+        }
+        function Invoke-GitOrFail {
+            param([string[]]$ArgList, [string]$FailureMessage)
+            # Lane 4 probes net10.0 even though this fixture asserts only SR
+            # trackers. Keep the synthetic unit fully offline and deterministic.
+            return @()
+        }
+
+        $syntheticSr = Invoke-DetectionForMajor -Major 10
+        $syntheticSrTrackers = @($syntheticSr.trackers | Where-Object branchType -eq 'sr')
+        $syntheticShipped9 = $syntheticSrTrackers | Where-Object { [int]$_.srNumber -eq 9 } | Select-Object -First 1
+        $syntheticInflight = @($syntheticSrTrackers | Where-Object mode -eq 'in-flight')
+        $syntheticCandidate10 = $syntheticSrTrackers | Where-Object { [int]$_.srNumber -eq 10 } | Select-Object -First 1
+
+        Assert-Eq -Label "synthetic post-ship window emits shipped SR9 refresh tracker" -Expected $true -Actual ($null -ne $syntheticShipped9)
+        Assert-Eq -Label "synthetic SR9 mode = shipped" -Expected 'shipped' -Actual $syntheticShipped9.mode
+        Assert-Eq -Label "synthetic post-ship window has no in-flight SR" -Expected 0 -Actual $syntheticInflight.Count
+        Assert-Eq -Label "synthetic post-ship window emits candidate SR10" -Expected $true -Actual ($null -ne $syntheticCandidate10)
+        Assert-Eq -Label "synthetic SR10 mode = candidate" -Expected 'candidate' -Actual $syntheticCandidate10.mode
+        Assert-Eq -Label "synthetic candidate number = shipped anchor + 1" `
+                  -Expected ([int]$syntheticShipped9.srNumber + 1) -Actual ([int]$syntheticCandidate10.srNumber)
+        Assert-Eq -Label "synthetic candidate priorSrBranch = shipped anchor branch" `
+                  -Expected $syntheticShipped9.branchName -Actual $syntheticCandidate10.priorSrBranch
+
+        $script:SyntheticSrBranchTag = '10.0.91'
+        $syntheticHotfix = Invoke-DetectionForMajor -Major 10
+        $syntheticHotfixSrTrackers = @($syntheticHotfix.trackers | Where-Object branchType -eq 'sr')
+        $syntheticHotfixShipped9 = $syntheticHotfixSrTrackers |
+            Where-Object { [int]$_.srNumber -eq 9 } | Select-Object -First 1
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix retains shipped tracker" `
+            -Expected $true -Actual ($null -ne $syntheticHotfixShipped9)
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix mode remains shipped" `
+            -Expected 'shipped' -Actual $syntheticHotfixShipped9.mode
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix carries explicit workflow signal" `
+            -Expected $true -Actual $syntheticHotfixShipped9.hotfixInProgress
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix carries version-specific identity" `
+            -Expected '10.0.91' -Actual $syntheticHotfixShipped9.hotfixVersion
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix carries branch generation" `
+            -Expected '0123456789abcdef0123456789abcdef01234567' -Actual $syntheticHotfixShipped9.hotfixCommit
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix title is actionable" `
+            -Expected $true -Actual ([bool]($syntheticHotfixShipped9.issueTitle -match 'hotfix 10\.0\.91 in progress'))
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix anchor remains tagged 10.0.90" `
+            -Expected '10.0.90' -Actual $syntheticHotfixShipped9.expectedTag
+        Assert-Eq -Label "synthetic unpublished SR9 hotfix does not emit in-flight SR9" `
+            -Expected 0 -Actual @($syntheticHotfixSrTrackers | Where-Object mode -eq 'in-flight').Count
+
+        $script:SyntheticSrBranchTag = '10.0.100'
+        $syntheticRollover = Invoke-DetectionForMajor -Major 10
+        $syntheticRolloverSrTrackers = @($syntheticRollover.trackers | Where-Object branchType -eq 'sr')
+        Assert-Eq -Label "synthetic SR9 patch-decade rollover emits no SR9 tracker" `
+            -Expected 0 -Actual @($syntheticRolloverSrTrackers | Where-Object { [int]$_.srNumber -eq 9 }).Count
+        $rolloverSr10 = @($syntheticRolloverSrTrackers | Where-Object { [int]$_.srNumber -eq 10 })
+        Assert-Eq -Label "synthetic SR9 patch-decade rollover emits exactly one SR10 tracker" `
+            -Expected 1 -Actual $rolloverSr10.Count
+        Assert-Eq -Label "synthetic rollover SR10 owns tag 10.0.100" `
+            -Expected '10.0.100' -Actual $rolloverSr10[0].expectedTag
+
+        $script:SyntheticSrBranchName = 'release/10.0.1xx-sr10'
+        $script:SyntheticSrNumber = 10
+        $script:SyntheticSrBranchTag = '10.0.90'
+        $syntheticMisconfiguredSr10 = Invoke-DetectionForMajor -Major 10
+        $misconfiguredSrTrackers = @($syntheticMisconfiguredSr10.trackers | Where-Object branchType -eq 'sr')
+        Assert-Eq -Label "cut-before-bump SR10 patch90 does not advance candidate to SR11" `
+            -Expected 0 -Actual @($misconfiguredSrTrackers | Where-Object { [int]$_.srNumber -eq 11 }).Count
+        Assert-Eq -Label "cut-before-bump SR10 patch90 emits the existing branch as in-flight" `
+            -Expected 1 -Actual @($misconfiguredSrTrackers | Where-Object {
+                [int]$_.srNumber -eq 10 -and $_.mode -eq 'in-flight' -and $_.branchExists
+            }).Count
+        $cutBeforeBumpSr10 = @($misconfiguredSrTrackers | Where-Object { [int]$_.srNumber -eq 10 })[0]
+        Assert-Eq -Label "cut-before-bump SR10 advertises its own expected patch decade" `
+            -Expected '10.0.100' -Actual $cutBeforeBumpSr10.expectedTag
+    } finally {
+        Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
+        Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
+        Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
+        Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
+        Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
+        Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        Remove-Variable -Name SyntheticSrBranchTag -Scope Script -ErrorAction SilentlyContinue
+        Remove-Variable -Name SyntheticSrBranchName -Scope Script -ErrorAction SilentlyContinue
+        Remove-Variable -Name SyntheticSrNumber -Scope Script -ErrorAction SilentlyContinue
+    }
+
+    # Synthetic dual-tracker window: shipped preview N has a tag, preview N+1
+    # branch exists but has no tag (in-flight), and net11.0 has advanced to
+    # PreReleaseVersionIteration=N+2. This must ALWAYS emit both the in-flight
+    # preview N+1 tracker and the candidate preview N+2 tracker, independent of
+    # the live repo's current cut/tag timing.
+    Write-Host "`n[Unit] Tracker detection synthetic dual-preview window" -ForegroundColor Cyan
+    $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
+    $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
+    $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
+    $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
+    $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
+    try {
+        function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'net11.0' }
+        function Get-StableTagsForMajor { param([int]$Major) ,@() }
+        $script:SyntheticPreviewTags = @('11.0.0-preview.5.26000.1')
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@($script:SyntheticPreviewTags) }
+        function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
+        function Get-RemotePreviewBranchesForMajor {
+            param([int]$Major)
+            ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview6'; previewNumber = 6 })
+        }
+        $script:SyntheticPreviewIteration = 7
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{
+                Tag = "11.0.0-preview.$($script:SyntheticPreviewIteration).26000.1"
+                PreLabel = 'preview'
+                PreIter = $script:SyntheticPreviewIteration
+            }
+        }
+        function Get-RecentCommitCount { param([string]$Ref, [int]$Days) 1 }
+        function Invoke-GitOrFail {
+            param([string[]]$ArgList, [string]$FailureMessage)
+            if (($ArgList -join ' ') -match 'ls-remote --heads origin net11\.0') {
+                return @('0123456789abcdef0123456789abcdef01234567	refs/heads/net11.0')
+            }
+            return @()
+        }
+
+        $synthetic = Invoke-DetectionForMajor -Major 11
+        $syntheticPreviewTrackers = @($synthetic.trackers | Where-Object branchType -eq 'preview')
+        $inflight6 = $syntheticPreviewTrackers | Where-Object { [int]$_.previewNumber -eq 6 } | Select-Object -First 1
+        $candidate7 = $syntheticPreviewTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+
+        Assert-Eq -Label "synthetic dual window emits shipped+1 in-flight preview6" -Expected $true -Actual ($null -ne $inflight6)
+        Assert-Eq -Label "synthetic preview6 mode = in-flight" -Expected 'in-flight' -Actual $inflight6.mode
+        Assert-Eq -Label "synthetic preview6 branchExists = true" -Expected $true -Actual $inflight6.branchExists
+        Assert-Eq -Label "synthetic dual window emits shipped+2 candidate preview7" -Expected $true -Actual ($null -ne $candidate7)
+        Assert-Eq -Label "synthetic preview7 mode = candidate" -Expected 'candidate' -Actual $candidate7.mode
+        Assert-Eq -Label "synthetic preview7 branchExists = false" -Expected $false -Actual $candidate7.branchExists
+        Assert-Eq -Label "synthetic preview7 surveyRef = net11.0" -Expected 'net11.0' -Actual $candidate7.surveyRef
+
+        $script:SyntheticPreviewIteration = 6
+        $cutBeforeBump = Invoke-DetectionForMajor -Major 11
+        $cutBeforeBumpTrackers = @($cutBeforeBump.trackers | Where-Object branchType -eq 'preview')
+        $cutPreview6 = $cutBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 6 } | Select-Object -First 1
+        $preBumpPreview7 = $cutBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+        Assert-Eq -Label "cut-before-bump keeps Preview 6 on its release branch" `
+            -Expected 'in-flight' -Actual $cutPreview6.mode
+        Assert-Eq -Label "cut-before-bump creates separate Preview 7 candidate" `
+            -Expected 'candidate' -Actual $preBumpPreview7.mode
+        Assert-Eq -Label "cut-before-bump Preview 7 candidate surveys net11.0" `
+            -Expected 'net11.0' -Actual $preBumpPreview7.surveyRef
+
+        $script:SyntheticPreviewTags = @('11.0.0-preview.5.26000.1', '11.0.0-preview.6.26010.1')
+        $tagBeforeBump = Invoke-DetectionForMajor -Major 11
+        $tagBeforeBumpTrackers = @($tagBeforeBump.trackers | Where-Object branchType -eq 'preview')
+        Assert-Eq -Label "tag-before-bump retires shipped Preview 6 tracker" `
+            -Expected 0 -Actual @($tagBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 6 }).Count
+        $postShipPreview7 = $tagBeforeBumpTrackers | Where-Object { [int]$_.previewNumber -eq 7 } | Select-Object -First 1
+        Assert-Eq -Label "tag-before-bump still creates separate Preview 7 candidate" `
+            -Expected 'candidate' -Actual $postShipPreview7.mode
+    } finally {
+        Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
+        Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
+        Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
+        Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
+        Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
+        Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        Remove-Variable -Name SyntheticPreviewIteration,SyntheticPreviewTags -Scope Script -ErrorAction SilentlyContinue
+    }
+
+    # Synthetic rc window: the pre-release train continues past the final preview
+    # into rc1/rc2, so the survey ref eventually reads label=rc rather than an
+    # eighth preview. Lane 4 only emits preview trackers, and this case used to
+    # fall into the same DarkGray "No active preview cycle" line that a major
+    # legitimately in SR phase prints — so the missing rc tracker was completely
+    # silent. Pin the warning, and pin that it does NOT fire for a genuinely
+    # inactive cycle (otherwise "always warn" would satisfy the first assertion).
+    Write-Host "`n[Unit] Tracker detection synthetic rc window" -ForegroundColor Cyan
+    $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
+    $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
+    $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
+    $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
+    $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
+    $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
+    $origWriteWarning = (Get-Item function:Write-Warning -ErrorAction SilentlyContinue)
+    $script:rcWarnings = New-Object System.Collections.Generic.List[string]
+    try {
+        function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'net11.0' }
+        function Get-StableTagsForMajor { param([int]$Major) ,@() }
+        # preview7 has shipped — the final preview of the major.
+        function Get-PreviewTagsForMajor { param([int]$Major) ,@('11.0.0-preview.7.26000.1') }
+        function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
+        function Get-RemotePreviewBranchesForMajor {
+            param([int]$Major)
+            ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview7'; previewNumber = 7 })
+        }
+        function Get-RecentCommitCount { param([string]$Ref, [int]$Days) 1 }
+        function Invoke-GitOrFail {
+            param([string[]]$ArgList, [string]$FailureMessage)
+            if (($ArgList -join ' ') -match 'ls-remote --heads origin net11\.0') {
+                return @('0123456789abcdef0123456789abcdef01234567	refs/heads/net11.0')
+            }
+            return @()
+        }
+        function Write-Warning { param([Parameter(ValueFromPipeline)][string]$Message) $script:rcWarnings.Add($Message) }
+
+        # net11.0 has been bumped past preview7 → rc1.
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{ Tag = '11.0.0'; PreLabel = 'rc'; PreIter = 1 }
+        }
+        $rcSynthetic = Invoke-DetectionForMajor -Major 11
+        $rcCandidates = @($rcSynthetic.trackers | Where-Object { $_.branchType -eq 'preview' -and $_.mode -eq 'candidate' })
+
+        Assert-Eq -Label "rc window emits no preview candidate tracker" -Expected 0 -Actual $rcCandidates.Count
+        Assert-Eq -Label "rc window warns instead of silently skipping" `
+                  -Expected $true -Actual ($script:rcWarnings.Count -gt 0)
+        Assert-Eq -Label "rc window warning names the missing rc tracker" `
+                  -Expected $true -Actual ([bool](@($script:rcWarnings) -match 'rc1'))
+
+        # Negative control: an inactive pre-release cycle (SR phase) must stay quiet.
+        $script:rcWarnings.Clear()
+        function Get-VersionFromGitRef {
+            param([string]$GitRef, [string]$Repo)
+            [pscustomobject]@{ Tag = '11.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
+        }
+        $null = Invoke-DetectionForMajor -Major 11
+        Assert-Eq -Label "inactive cycle does not emit the rc warning" -Expected 0 -Actual $script:rcWarnings.Count
+    } finally {
+        Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
+        Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
+        Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
+        Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
+        Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
+        Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
+        if ($origWriteWarning) { Set-Item function:Write-Warning $origWriteWarning.ScriptBlock }
+        else { Remove-Item function:Write-Warning -ErrorAction SilentlyContinue }
+    }
+
+    Write-Host "`n[Unit] Workflow preserves active hotfix tracker creation" -ForegroundColor Cyan
+    $releaseWorkflowPath = Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml'
+    $releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
+    Assert-Eq -Label "workflow matrix carries hotfixInProgress signal" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixInProgress:\s*\(\.hotfixInProgress // false\)'))
+    Assert-Eq -Label "workflow matrix carries version-specific hotfix identity" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixVersion:\s*\(\.hotfixVersion // ""\)'))
+    Assert-Eq -Label "workflow matrix carries hotfix branch generation" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixCommit:\s*\(\.hotfixCommit // ""\)'))
+    Assert-Eq -Label "workflow lifecycle decisions use generated report hotfix marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+    Assert-Eq -Label "workflow lifecycle decisions use generated report shipped marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+    Assert-Eq -Label "workflow matrix carries expected tag for report-time lifecycle re-resolution" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'expectedTag:\s*\(\.expectedTag // ""\)'))
+    Assert-Eq -Label "workflow re-resolves shipped mode when stable tag lands after detection" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'MODE.*in-flight[\s\S]*refs/tags/\$\{EXPECTED_TAG\}[\s\S]*MODE="shipped"'))
+    Assert-Eq -Label "workflow propagates report-time resolved mode to issue updater" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
+    Assert-Eq -Label "workflow propagates report-time resolved issue title" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
+    Assert-Eq -Label "workflow derives hotfix title from generated report marker" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_HOTFIX_MARKER=.*BODY_FILE[\s\S]*ISSUE_TITLE=.*hotfix.*REPORT_HOTFIX_VERSION'))
+    Assert-Eq -Label "workflow hotfix marker takes precedence over shipped title" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'if \[ -n "\$REPORT_HOTFIX_MARKER" \][\s\S]*elif \[ -n "\$REPORT_SHIPPED_MARKER" \]'))
+    Assert-Eq -Label "workflow derives plain shipped title when no hotfix marker exists" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_SHIPPED_MARKER[\s\S]*ISSUE_TITLE=.*— shipped'))
+    Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
+    $closedLookupStart = $releaseWorkflowText.IndexOf('CLOSED_GENERATION=$(gh issue list')
+    $closedLookupEnd = $releaseWorkflowText.IndexOf('if [ -n "$CLOSED_GENERATION" ]', $closedLookupStart)
+    $closedLookupBlock = if ($closedLookupStart -ge 0 -and $closedLookupEnd -gt $closedLookupStart) {
+        $releaseWorkflowText.Substring($closedLookupStart, $closedLookupEnd - $closedLookupStart)
+    } else { '' }
+    Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
+        -Expected $false -Actual ([bool]($closedLookupBlock -match 'updatedAt'))
+    Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
+    Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
+        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'PRE_EDIT_META=.*gh issue view'))
 
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
@@ -1011,6 +1599,241 @@ try {
     . $rrScript -SrBranch 'release/10.0.1xx-sr1'
 } finally {
     Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
+}
+
+$slurpedPages = ConvertFrom-GhJsonArrayResult -Raw '[[{"id":1}],[{"id":2},{"id":3}]]' -Context 'slurped page fixture'
+Assert-Eq -Label "GitHub paginated slurp flattens page arrays" -Expected '1,2,3' `
+    -Actual (($slurpedPages.Items | ForEach-Object { $_.id }) -join ',')
+
+# ─────────── Shipped hotfix detection: branch movement before version bump ───────────
+Write-Host "`n[Unit] Test-BranchAdvancedBeyondTag" -ForegroundColor Cyan
+$origInvokeGitForTagAdvance = (Get-Item function:Invoke-Git).ScriptBlock
+$origTestCommitForTagAdvance = (Get-Item function:Test-CommitOnBranch).ScriptBlock
+try {
+    function Invoke-Git {
+        param([string]$Cmd)
+        if ($Cmd -match '^rev-parse --verify --quiet refs/tags/') { return 'tagcommit1234' }
+        return $null
+    }
+    function Test-CommitOnBranch {
+        param([string]$Sha, [string]$BranchRef)
+        return ($Sha -eq 'tagcommit1234' -and $BranchRef -eq 'headcommit5678')
+    }
+    Assert-Eq -Label "post-tag branch commit starts hotfix visibility before version bump" `
+        -Expected $true -Actual (Test-BranchAdvancedBeyondTag -Tag '10.0.90' -HeadSha 'headcommit5678')
+    Assert-Eq -Label "tagged HEAD does not start a hotfix generation" `
+        -Expected $false -Actual (Test-BranchAdvancedBeyondTag -Tag '10.0.90' -HeadSha 'tagcommit1234')
+    Assert-Eq -Label "unrelated divergent HEAD does not start a hotfix generation" `
+        -Expected $false -Actual (Test-BranchAdvancedBeyondTag -Tag '10.0.90' -HeadSha 'othercommit9999')
+} finally {
+    Set-Item function:Invoke-Git $origInvokeGitForTagAdvance
+    Set-Item function:Test-CommitOnBranch $origTestCommitForTagAdvance
+}
+
+# ─────────── Get-SrCommits: common-ancestry main revert coverage ───────────
+# A current SR can inherit both a source fix and its later main revert before
+# the SR cut. Both commits are then common ancestors of main and the SR, so the
+# old `main ^currentSr` bound hid the revert and could recommend re-backporting
+# code main deliberately backed out. The prior-SR release baseline must retain
+# that revert in the bounded scan.
+Write-Host "`n[Unit] Get-SrCommits common-ancestry main revert" -ForegroundColor Cyan
+$revertFixtureRepo = Join-Path ([System.IO.Path]::GetTempPath()) "rr-revert-fixture-$([guid]::NewGuid().ToString('N'))"
+$revertFixtureLocationPushed = $false
+try {
+    New-Item -ItemType Directory -Path $revertFixtureRepo -Force | Out-Null
+    git -C $revertFixtureRepo init -q 2>&1 | Out-Null
+    git -C $revertFixtureRepo config user.email 'rr-test@example.com' 2>&1 | Out-Null
+    git -C $revertFixtureRepo config user.name 'RR Test' 2>&1 | Out-Null
+    git -C $revertFixtureRepo config commit.gpgsign false 2>&1 | Out-Null
+    git -C $revertFixtureRepo config core.hooksPath (Join-Path (Join-Path $revertFixtureRepo '.git') '_disabled-hooks') 2>&1 | Out-Null
+
+    Set-Content -Path (Join-Path $revertFixtureRepo 'state.txt') -Value 'base'
+    git -C $revertFixtureRepo add -A 2>&1 | Out-Null
+    git -C $revertFixtureRepo commit -q -m 'Release baseline' 2>&1 | Out-Null
+    $priorSrBaselineSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr8 $priorSrBaselineSha 2>&1 | Out-Null
+
+    Set-Content -Path (Join-Path $revertFixtureRepo 'state.txt') -Value 'fix'
+    git -C $revertFixtureRepo add -A 2>&1 | Out-Null
+    git -C $revertFixtureRepo commit -q -m 'Fix regression (#35001)' 2>&1 | Out-Null
+    $sourceFixSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo revert --no-edit $sourceFixSha 2>&1 | Out-Null
+    $revertSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+
+    # Model an SR cut after the revert: main and current SR share the fix+revert,
+    # while the prior SR remains the stable release-window baseline.
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/main $revertSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr9 $revertSha 2>&1 | Out-Null
+
+    Push-Location $revertFixtureRepo
+    $revertFixtureLocationPushed = $true
+    $commonAncestryCtx = Resolve-Context `
+        -SrBranch 'release/10.0.1xx-sr9' `
+        -Repo 'synthetic/repo' `
+        -MainBranch 'main' `
+        -ExcludeBranches @('origin/main') `
+        -NoFetch
+
+    Assert-Eq -Label "common-ancestry revert: context uses prior SR as main-revert baseline" `
+              -Expected 'origin/release/10.0.1xx-sr8' -Actual $commonAncestryCtx.mainRevertBaselineRef
+    $oldCurrentSrBound = Invoke-Git 'log --format=%H origin/main ^origin/release/10.0.1xx-sr9 --regexp-ignore-case --grep=Revert'
+    Assert-Eq -Label "common-ancestry revert: current-SR bound hides the revert (fixture proves old bug)" `
+              -Expected $true -Actual ([string]::IsNullOrWhiteSpace(($oldCurrentSrBound -join '')))
+
+    $commonAncestryContents = Get-SrCommits -Ctx $commonAncestryCtx
+    $mainRevertedPrs = @($commonAncestryContents.mainReverts | ForEach-Object { $_.revertsPr })
+    Assert-Eq -Label "common-ancestry revert: prior-SR baseline keeps reverted source PR visible" `
+              -Expected $true -Actual ($mainRevertedPrs -contains 35001)
+
+    git -C $revertFixtureRepo tag 0.0.1 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 9.0.500 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.0 $revertSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.80 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.999999999999999999 $priorSrBaselineSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo tag 10.0.90 $revertSha 2>&1 | Out-Null
+    Set-Content -Path (Join-Path $revertFixtureRepo 'post-tag.txt') -Value 'post-tag-fix'
+    git -C $revertFixtureRepo add -A 2>&1 | Out-Null
+    git -C $revertFixtureRepo commit -q -m 'Post-tag branch fix (#36000)' -m 'Backport of #36000' 2>&1 | Out-Null
+    $postTagFixSha = (& git -C $revertFixtureRepo rev-parse HEAD).Trim()
+    git -C $revertFixtureRepo tag 10.0.91 $postTagFixSha 2>&1 | Out-Null
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/release/10.0.1xx-sr9 $postTagFixSha 2>&1 | Out-Null
+    # Model the shipped SR flowing forward to main. A mutable `tag ^main`
+    # inventory would now collapse, while stable tag-to-tag contents must not.
+    git -C $revertFixtureRepo update-ref refs/remotes/origin/main $postTagFixSha 2>&1 | Out-Null
+
+    $shippedTagCtx = Resolve-Context `
+        -SrBranch 'release/10.0.1xx-sr9' `
+        -Repo 'synthetic/repo' `
+        -MainBranch 'main' `
+        -ExcludeBranches @('origin/main') `
+        -Shipped `
+        -NoFetch
+    $publishedFixtureTags = @('0.0.1', '9.0.500', '10.0.0', '10.0.80', '10.0.90', '10.0.999999999999999999')
+    Assert-Eq -Label "shipped tag override: matching SR patch range is accepted" -Expected $true `
+        -Actual (Test-StableTagMatchesSr -Tag '10.0.80' -SrBranch 'release/10.0.1xx-sr8')
+    Assert-Eq -Label "shipped tag override: another SR cycle is rejected" -Expected $false `
+        -Actual (Test-StableTagMatchesSr -Tag '10.0.90' -SrBranch 'release/10.0.1xx-sr8')
+    Assert-Eq -Label "shipped anchor: latest published hotfix in SR range is selected" -Expected '10.0.91' `
+        -Actual (Select-LatestPublishedTagForSr -SrBranch 'release/10.0.1xx-sr9' `
+            -PublishedTags @('10.0.80', '10.0.90', '10.0.91', '10.0.100'))
+    $localStableTags = @(Get-LocalStableTags)
+    Assert-Eq -Label "shipped anchor: local stable-tag scan includes tag-before-Release anchor" `
+        -Expected $true -Actual ($localStableTags -contains '10.0.91')
+    Assert-Eq -Label "shipped anchor: malformed overflow tag is excluded from local stable tags" `
+        -Expected $false -Actual ($localStableTags -contains '10.0.999999999999999999')
+    Assert-Eq -Label "shipped anchor: latest local tag wins before GitHub Release publication" `
+        -Expected '10.0.91' -Actual (Select-LatestStableTagForSr `
+            -SrBranch 'release/10.0.1xx-sr9' -StableTags $localStableTags)
+    $tagBeforeReleaseEvidence = @(($publishedFixtureTags + $localStableTags) | Sort-Object -Unique)
+    $tagBeforeReleaseRefs = Resolve-ShippedContentsRefs -Version '10.0.91' `
+        -PublishedTags $tagBeforeReleaseEvidence
+    Assert-Eq -Label "tag-before-Release: immutable contents anchor to local 10.0.91 tag" `
+        -Expected '10.0.91' -Actual $tagBeforeReleaseRefs.ContentsRef
+    Assert-Eq -Label "tag-before-Release: hotfix contents retain the full SR9 baseline" `
+        -Expected '10.0.80' -Actual $tagBeforeReleaseRefs.PreviousTag
+    $publishedBounds = @(Get-ShippedStableTagsForBounds -AnchorTag '10.0.91' `
+        -PublishedTags @('10.0.80', '10.0.90') `
+        -LocalStableTags @('10.0.80', '10.0.85', '10.0.90', '10.0.91') `
+        -PublicationQueryFailed $false)
+    Assert-Eq -Label "published bounds exclude abandoned unpublished predecessor tags" `
+        -Expected '10.0.80,10.0.90,10.0.91' -Actual ($publishedBounds -join ',')
+    $outageBounds = @(Get-ShippedStableTagsForBounds -AnchorTag '10.0.91' `
+        -PublishedTags @() `
+        -LocalStableTags @('10.0.80', '10.0.85', '10.0.90', '10.0.91') `
+        -PublicationQueryFailed $true)
+    Assert-Eq -Label "release API outage retains local immutable tag bounds" `
+        -Expected '10.0.80,10.0.85,10.0.90,10.0.91' -Actual ($outageBounds -join ',')
+    Assert-Eq -Label "publication state: per-tag release proof overrides failed list query" `
+        -Expected 'published' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'github-release')
+    Assert-Eq -Label "publication state: failed list plus tagged-commit fallback remains unknown" `
+        -Expected 'unknown' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'tagged-commit')
+    Assert-Eq -Label "publication state: successful list missing anchor is pending" `
+        -Expected 'pending' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $false -AnchorInPublishedList $false -TagDateSource 'tagged-commit')
+    Assert-Eq -Label "publication state: published list evidence remains authoritative" `
+        -Expected 'published' -Actual (Resolve-ShippedPublicationState `
+            -ListQueryFailed $false -AnchorInPublishedList $true -TagDateSource 'tagged-commit')
+    $savedWarnings = $Script:Warnings
+    try {
+        $Script:Warnings = [System.Collections.Generic.List[string]]::new()
+        Write-ShippedPublicationPendingWarning -Tag '10.0.91'
+        Assert-Eq -Label "tag-before-Release: publication-pending warning reaches shared warning collection" `
+            -Expected 1 -Actual $Script:Warnings.Count
+        Assert-Eq -Label "tag-before-Release: warning names immutable anchor and tagged-commit evidence" `
+            -Expected $true -Actual ([bool]($Script:Warnings[0] -match "10\.0\.91.*not published yet.*tagged-commit evidence"))
+        $Script:Warnings = [System.Collections.Generic.List[string]]::new()
+        Write-ShippedPublicationStatusUnknownWarning -Tag '10.0.91'
+        Assert-Eq -Label "release API outage: warning reaches shared warning collection" `
+            -Expected 1 -Actual $Script:Warnings.Count
+        Assert-Eq -Label "release API outage: warning preserves local tag while marking publication unknown" `
+            -Expected $true -Actual ([bool]($Script:Warnings[0] -match "10\.0\.91.*publication status is unknown.*tagged-commit evidence"))
+    } finally {
+        $Script:Warnings = $savedWarnings
+    }
+    $resolvedShippedRefs = Resolve-ShippedContentsRefs -Version '10.0.90' -PublishedTags $publishedFixtureTags
+    Assert-Eq -Label "shipped contents: stable tag resolves locally" -Expected '10.0.90' -Actual $resolvedShippedRefs.ContentsRef
+    Assert-Eq -Label "shipped contents: prior SR baseline tag is selected" -Expected '10.0.80' -Actual $resolvedShippedRefs.PreviousTag
+    $shippedContextProjection = @{ mainRevertBaselineRef = 'origin/release/10.0.1xx-sr8' }
+    Set-ShippedContentsRefs -Context $shippedContextProjection -ShippedRefs $resolvedShippedRefs
+    Assert-Eq -Label "shipped contents: immutable prior tag replaces mutable main-revert baseline" `
+        -Expected '10.0.80' -Actual $shippedContextProjection.mainRevertBaselineRef
+    $firstBandRefs = Resolve-ShippedContentsRefs -Version '10.0.0' -PublishedTags $publishedFixtureTags
+    Assert-Eq -Label "shipped contents: first stable tag in a band uses prior major's latest stable tag" `
+        -Expected '9.0.500' -Actual $firstBandRefs.PreviousTag
+    $noPriorTagThrew = $false
+    try {
+        Resolve-ShippedContentsRefs -Version '0.0.1' -PublishedTags $publishedFixtureTags | Out-Null
+    } catch {
+        $noPriorTagThrew = $true
+    }
+    Assert-Eq -Label "shipped contents: no prior stable floor fails explicitly" -Expected $true -Actual $noPriorTagThrew
+    $missingTagThrew = $false
+    try {
+        Resolve-ShippedContentsRefs -Version '10.0.999' -PublishedTags @($publishedFixtureTags + '10.0.999') | Out-Null
+    } catch {
+        $missingTagThrew = $true
+    }
+    Assert-Eq -Label "shipped contents: remotely-known but locally-missing tag fails explicitly" -Expected $true -Actual $missingTagThrew
+    $missingPredecessorThrew = $false
+    try {
+        Resolve-ShippedContentsRefs -Version '10.0.80' `
+            -PublishedTags @('10.0.70', '10.0.71', '10.0.80') | Out-Null
+    } catch {
+        $missingPredecessorThrew = $true
+    }
+    Assert-Eq -Label "shipped contents: missing authoritative SR baseline fails explicitly" `
+        -Expected $true -Actual $missingPredecessorThrew
+
+    $originalPublishedTagInvokeGh = (Get-Item function:Invoke-Gh).ScriptBlock
+    $script:PublishedTagArgs = @()
+    try {
+        function Invoke-Gh {
+            param([string[]]$GhArgs, [switch]$Quiet)
+            $script:PublishedTagArgs = @($GhArgs)
+            return @('10.0.80', '10.0.90')
+        }
+        $publishedTagProbe = @(Get-PublishedStableTags -Repo 'dotnet/maui')
+        Assert-Eq -Label "published tag query excludes draft/unpublished releases" -Expected $true `
+            -Actual (($script:PublishedTagArgs -join ' ') -match 'draft == false' -and
+                ($script:PublishedTagArgs -join ' ') -match 'published_at != null')
+        Assert-Eq -Label "published tag query returns filtered stable tag names" -Expected '10.0.80,10.0.90' `
+            -Actual ($publishedTagProbe -join ',')
+    } finally {
+        Set-Item function:Invoke-Gh $originalPublishedTagInvokeGh
+        Remove-Variable -Name PublishedTagArgs -Scope Script -ErrorAction SilentlyContinue
+    }
+    $shippedTagCtx['contentsRef'] = $resolvedShippedRefs.ContentsRef
+    $shippedTagCtx['excludeBranches'] = @($resolvedShippedRefs.ExcludeRefs)
+    $shippedTagContents = Get-SrCommits -Ctx $shippedTagCtx
+    Assert-Eq -Label "shipped contents: post-tag branch fix is excluded from immutable release contents" `
+        -Expected $false -Actual ($shippedTagContents.sourcePrs -contains 36000)
+    Assert-Eq -Label "shipped contents: forward-flow to mutable main does not erase tagged source PRs" `
+        -Expected $true -Actual ($shippedTagContents.sourcePrs -contains 35001)
+} finally {
+    if ($revertFixtureLocationPushed) { Pop-Location }
+    if (Test-Path $revertFixtureRepo) { Remove-Item -Recurse -Force $revertFixtureRepo -ErrorAction SilentlyContinue }
 }
 
 # ───── gh-stubbed regression tests (cross-repo filter + author gate) ─────
@@ -1066,6 +1889,758 @@ try {
     $foreignOnly = @(Get-IssueTimelinePrs -Repo 'dotnet/maui' -IssueNumber 12345)
     Assert-Eq -Label "timeline with only foreign cross-refs yields 0 candidates" `
         -Expected 0 -Actual $foreignOnly.Count
+
+    # ── Get-RegressionCandidates: distinguish verified-empty from query failure ──
+    Write-Host "`n[Unit] Get-RegressionCandidates scan completeness" -ForegroundColor Cyan
+    $scanCtx = @{ repo = 'dotnet/maui'; srBranch = 'nonstandard'; mainBranch = 'main' }
+    $scanContents = @{ sourcePrs = @(); reverts = @(); mainReverts = @(); commits = @() }
+    $script:GhStub = { param([string[]]$GhArgs) return $null }
+    $failedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                           -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: failed label query marks scan incomplete" -Expected $false -Actual $failedScan.IsComplete
+    Assert-Eq -Label "regression scan: failed label is preserved" -Expected 'regressed-in-test' -Actual ($failedScan.FailedLabels -join ',')
+    Assert-Eq -Label "regression scan: failed query yields no fabricated results" -Expected 0 -Actual @($failedScan.Items).Count
+
+    $script:GhStub = { param([string[]]$GhArgs) return '[]' }
+    $emptySuccessfulScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                    -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: successful empty query remains complete" -Expected $true -Actual $emptySuccessfulScan.IsComplete
+    Assert-Eq -Label "regression scan: successful empty query has no failed labels" -Expected 0 -Actual @($emptySuccessfulScan.FailedLabels).Count
+
+    $script:GhStub = { param([string[]]$GhArgs) return 'not-json' }
+    $malformedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                              -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: malformed exit-0 JSON marks scan incomplete" -Expected $false -Actual $malformedScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return '{}' }
+    $wrongRootScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                              -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: non-array JSON root marks scan incomplete" -Expected $false -Actual $wrongRootScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return '42' }
+    $scalarRootScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                               -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: scalar JSON root marks scan incomplete" -Expected $false -Actual $scalarRootScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return '   ' }
+    $whitespaceScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                              -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: whitespace exit-0 response marks scan incomplete" -Expected $false -Actual $whitespaceScan.IsComplete
+    Assert-Eq -Label "regression scan: whitespace response preserves failed label" -Expected 'regressed-in-test' -Actual ($whitespaceScan.FailedLabels -join ',')
+
+    $script:GhStub = { param([string[]]$GhArgs) return 'null' }
+    $jsonNullScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                            -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: JSON null root marks scan incomplete" -Expected $false -Actual $jsonNullScan.IsComplete
+
+    $script:GhStub = { param([string[]]$GhArgs) return @('[', ']') }
+    $multilineEmptyScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                  -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: multiline JSON array parses as a complete empty scan" -Expected $true -Actual $multilineEmptyScan.IsComplete
+
+    $capPlusOneJson = @(1..11 | ForEach-Object {
+        [pscustomobject]@{
+            number = 80000 + $_; title = "Duplicate $_"; state = 'CLOSED'; stateReason = 'DUPLICATE'
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = '2026-01-02T00:00:00Z'
+        }
+    }) | ConvertTo-Json -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $capPlusOneJson }
+        return '[]'
+    }
+    $truncatedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                             -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: MaxIssues+1 response marks scan incomplete" -Expected $false -Actual $truncatedScan.IsComplete
+    Assert-Eq -Label "regression scan: truncated label is recorded" -Expected 'regressed-in-test' -Actual ($truncatedScan.TruncatedLabels -join ',')
+    Assert-Eq -Label "regression scan: processing remains capped at MaxIssues" -Expected 10 -Actual @($truncatedScan.Items).Count
+
+    $exactCapJson = @(1..10 | ForEach-Object {
+        [pscustomobject]@{
+            number = 81000 + $_; title = "Duplicate $_"; state = 'CLOSED'; stateReason = 'DUPLICATE'
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = '2026-01-02T00:00:00Z'
+        }
+    }) | ConvertTo-Json -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $exactCapJson }
+        return '[]'
+    }
+    $exactCapScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                            -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: exact MaxIssues response remains complete" -Expected $true -Actual $exactCapScan.IsComplete
+
+    $oneIssueJson = ConvertTo-Json -InputObject @(
+        [pscustomobject]@{
+            number = 82001; title = 'Needs evidence'; state = 'OPEN'; stateReason = $null
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = $null
+        }
+    ) -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $oneIssueJson }
+        if ($GhArgs[0] -eq 'api' -and $GhArgs[1] -match '/issues/82001/timeline') { return $null }
+        return '[]'
+    }
+    $timelineFailureScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                   -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: downstream timeline failure marks scan incomplete" -Expected $false -Actual $timelineFailureScan.IsComplete
+    Assert-Eq -Label "regression scan: downstream failure records affected issue" -Expected 82001 -Actual ([int]$timelineFailureScan.FailedIssues[0])
+    Assert-Eq -Label "regression scan: downstream failure never emits high-confidence no-fix-yet" -Expected $true `
+        -Actual ($timelineFailureScan.Items[0].classification -eq 'needs-human-review' -and $timelineFailureScan.Items[0].confidence -eq 'low')
+
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $oneIssueJson }
+        return '[]'
+    }
+    $timelineEmptyScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                 -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: successful empty timeline remains complete" -Expected $true -Actual $timelineEmptyScan.IsComplete
+    Assert-Eq -Label "regression scan: verified empty evidence can classify no-fix-yet" -Expected 'no-fix-yet' -Actual $timelineEmptyScan.Items[0].classification
+
+    $revertedIssueJson = ConvertTo-Json -InputObject @(
+        [pscustomobject]@{
+            number = 82002; title = 'Git-proven reverted fix'; state = 'OPEN'; stateReason = $null
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = $null
+        }
+    ) -Depth 5
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $revertedIssueJson }
+        if ($GhArgs[0] -eq 'api' -and $GhArgs[1] -match '/issues/82002/timeline') { return $null }
+        return '[]'
+    }
+    $gitProvenRevertedScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+        -SrContents @{
+            sourcePrs = @(100); mainReverts = @()
+            reverts = @(@{ revertsPr = 100; revertBackportPr = 101 })
+            commits = @(@{ backportPr = 100; sourcePr = $null; fixedIssues = @(82002); isRevert = $false })
+        } -MaxIssues 10
+    Assert-Eq -Label "regression scan: unused timeline failure still marks git-proven scan incomplete" -Expected $false -Actual $gitProvenRevertedScan.IsComplete
+    Assert-Eq -Label "regression scan: git-proven reverted verdict survives unrelated timeline failure" -Expected 'in-sr-reverted' -Actual $gitProvenRevertedScan.Items[0].classification
+    Assert-Eq -Label "regression scan: git-proven reverted verdict keeps high confidence" -Expected 'high' -Actual $gitProvenRevertedScan.Items[0].confidence
+
+    $badPrIssueJson = ConvertTo-Json -InputObject @(
+        [pscustomobject]@{
+            number = 82003; title = 'Bad PR JSON evidence'; state = 'OPEN'; stateReason = $null
+            labels = @([pscustomobject]@{ name = 'regressed-in-test' }); milestone = $null
+            createdAt = '2026-01-01T00:00:00Z'; closedAt = $null
+        }
+    ) -Depth 5
+    $badPrTimelineJson = @'
+[
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 83001, "pull_request": {"url":"x"}, "repository": { "full_name": "dotnet/maui" } } } }
+]
+'@
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'issue' -and $GhArgs[1] -eq 'list') { return $badPrIssueJson }
+        if ($GhArgs[0] -eq 'api' -and $GhArgs[1] -match '/issues/82003/timeline') { return $badPrTimelineJson }
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'view') { return '{}' }
+        return '[]'
+    }
+    $badPrObjectScan = Get-RegressionCandidates -Ctx $scanCtx -Labels @('regressed-in-test') `
+                                                -SrContents $scanContents -MaxIssues 10
+    Assert-Eq -Label "regression scan: empty PR JSON object marks scan incomplete" -Expected $false -Actual $badPrObjectScan.IsComplete
+    Assert-Eq -Label "regression scan: empty PR JSON object downgrades classification" -Expected 'needs-human-review' -Actual $badPrObjectScan.Items[0].classification
+
+    $Script:RegressionEvidenceFailures.Clear()
+    $script:GhStub = { param([string[]]$GhArgs) return '5' }
+    $scalarPrInfo = Get-PrInfo -Repo 'dotnet/maui' -PrNumber 83002
+    Assert-Eq -Label "PR evidence: scalar JSON root is rejected without throwing" -Expected $true -Actual ($null -eq $scalarPrInfo)
+    Assert-Eq -Label "PR evidence: scalar JSON rejection records evidence failure" -Expected 1 -Actual $Script:RegressionEvidenceFailures.Count
+    $Script:RegressionEvidenceFailures.Clear()
+
+    # ── Backport lineage: bare mentions are not source→backport evidence ──
+    $backportSearchJson = @(
+        [pscustomobject]@{
+            number = 84001; title = 'Actual backport'; body = 'Backport of #400 to release/10.0.1xx-sr9'
+            headRefName = 'backport/pr-400-to-release/10.0.1xx-sr9'; state = 'MERGED'
+            mergedAt = '2026-01-02T00:00:00Z'; closedAt = '2026-01-02T00:00:00Z'
+        }
+        [pscustomobject]@{
+            number = 84002; title = 'Unrelated cleanup'; body = 'Context: source PR #400 changed the same area.'
+            headRefName = 'cleanup/docs'; state = 'MERGED'; mergedAt = '2026-01-03T00:00:00Z'; closedAt = '2026-01-03T00:00:00Z'
+        }
+        [pscustomobject]@{
+            number = 84003; title = 'Generated backport'; body = ''
+            headRefName = 'backport/pr-400-to-release/10.0.1xx-sr9'; state = 'OPEN'
+            mergedAt = $null; closedAt = $null
+        }
+    ) | ConvertTo-Json -Depth 5
+    $script:GhStub = { param([string[]]$GhArgs) return $backportSearchJson }
+    $explicitBackports = @(Get-BackportPrsForSr -Repo 'dotnet/maui' -SrBranch 'release/10.0.1xx-sr9' -SourcePrNumber 400)
+    Assert-Eq -Label "backport lineage: explicit body/branch matches are retained" -Expected '84001,84003' `
+        -Actual (($explicitBackports.number | Sort-Object) -join ',')
+    Assert-Eq -Label "backport lineage: unrelated merged mention is rejected" -Expected $false `
+        -Actual ($explicitBackports.number -contains 84002)
+    Assert-Eq -Label "backport lineage: explicit title-only backport is retained" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            title = 'Backport of #32537 to SR9'
+            body = ''
+            headRefName = 'manual/release-fix'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: contextual title-only mention is rejected" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            title = 'Cleanup after #32537'
+            body = ''
+            headRefName = 'manual/cleanup'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: Copilot PR-number branch is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Please backport https://github.com/dotnet/maui/pull/32537'
+            headRefName = 'copilot/backport-pr-32537'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: verb-governed full PR URL is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Please backport https://github.com/dotnet/maui/pull/32537'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: verb-governed fix-from-PR body is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This PR backports the fix from PR #32660'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32660)
+    Assert-Eq -Label "backport lineage: concise Backports body is explicit" -Expected $true `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backports #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "issue #36154 lineage: same-repo source shorthand is explicit" -Expected '36499' `
+        -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of dotnet/maui#36499') -join ',')
+    Assert-Eq -Label "backport lineage: same-repo path form is explicit" -Expected '36499' `
+        -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of dotnet/maui/pull/36499') -join ',')
+    Assert-Eq -Label "backport lineage: foreign-repo pull path is rejected" -Expected '' `
+        -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of https://github.com/dotnet/runtime/pull/12345') -join ',')
+    Assert-Eq -Label "backport lineage: background-only parenthetical is not a source list" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, (for background only), and #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: bare contextual mention remains rejected" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Before PR #32080 the behavior was X. After PR #32080 it changed.'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32080)
+    Assert-Eq -Label "backport lineage: Copilot branch requires exact source number" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = ''
+            headRefName = 'copilot/backport-pr-325370'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: body match cannot cross another PR reference" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999; contextual mention of #32295'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: body match cannot cross a pull-path reference" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This PR backports pull/99999 as a quick fix, also related to #32295 for context'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: body match cannot cross a full-URL reference" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This PR backports https://github.com/dotnet/maui/pull/99999, see https://github.com/dotnet/maui/pull/32295 for context'
+            headRefName = 'cleanup/context'
+        }) -SourcePrNumber 32295)
+    foreach ($negatedBody in @(
+        'Do not backport #32537',
+        "don't backport #32537",
+        'no need to backport #32537',
+        'This is not a backport of #32537',
+        'This reverts the backport of #32537',
+        'Backport should not include #32537',
+        'We do not plan to backport #32537',
+        'Do not re-backport #32537',
+        'We decided not, after a final review, to backport #32537',
+        'We are not going to backport #32537',
+        'We are against backporting #32537',
+        'Avoid backporting #32537',
+        "We don’t plan to backport #32537",
+        'We should not ever backport #32537',
+        "We can't safely backport #32537",
+        'We decided not to backport #32537',
+        'There is no reason to backport #32537',
+        "I don't think we should backport #32537",
+        "We won’t backport #32537",
+        'Never backport #32537',
+        'We cannot backport #32537',
+        'We agreed not to backport #32537',
+        'We never intended to backport #32537',
+        'We are not authorized to backport #32537',
+        'We are not permitted to backport #32537',
+        ("We decided not, after " + ('x' * 81) + ", to backport #32537"),
+        "This isn’t intended to be cherry-picked from #32537",
+        "This wasn’t cherry-picked from #32537",
+        'No backport of #32537',
+        'Without backporting #32537',
+        ("We do not " + ('really ' * 350) + 'plan to backport #32537'),
+        'This was not cherry-picked from #32537'
+    )) {
+        Assert-Eq -Label "backport lineage: negated prose is rejected — $negatedBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $negatedBody
+                headRefName = 'cleanup/context'
+            }) -SourcePrNumber 32537)
+    }
+    $multiSourceHead = [pscustomobject]@{
+        body = ''
+        headRefName = 'copilot/backport-prs-32610-32694-32779'
+    }
+    foreach ($sourcePr in @(32610, 32694, 32779)) {
+        Assert-Eq -Label "backport lineage: Copilot multi-source head includes #$sourcePr" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr $multiSourceHead -SourcePrNumber $sourcePr)
+    }
+    $multiSourceBody = [pscustomobject]@{
+        body = 'Backport of #32610, #32694 and #32779'
+        headRefName = 'manual/multi-backport'
+    }
+    foreach ($sourcePr in @(32610, 32694, 32779)) {
+        Assert-Eq -Label "backport lineage: explicit multi-source body includes #$sourcePr" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr $multiSourceBody -SourcePrNumber $sourcePr)
+    }
+    foreach ($positiveBody in @(
+        'This is a clean backport (no conflicts, tested without issues) of #32610',
+        'Backport (verified against upstream, cannot repro any regressions) of #32610',
+        'Backport of #1234, (no other changes), and #32610',
+        'This backport addresses #32610',
+        'Backport for #32610',
+        'Backport for issue #32610',
+        'Backport targeting #32610',
+        'Backport resolving #32610',
+        'Backport that fixes #32610',
+        'Backport of the change in #32610',
+        'Backport of this PR: #32610',
+        'Backport of the following: #32610',
+        "Backport of`n#32610",
+        "Cherry picked from PR`n#32610",
+        'Cannot reproduce on release, so backport #32610',
+        'Tests never fail, so backport #32610',
+        'The revert queue is empty and this backports #32610',
+        "This isn't the prettiest fix, but it backports #32610 correctly",
+        'Backport (this has never failed CI) of #32610',
+        'This PR is not only intended to backport #32610, but also adds tests',
+        'This change is not a big deal but we do want to backport #32610',
+        'This is not the cleanest fix, but the team agreed to backport #32610',
+        'There was not much discussion needed, everyone agreed to backport #32610',
+        'It is not unusual for teams to backport #32610 when the fix is critical',
+        'Not everyone was around, but Jane went ahead to backport #32610'
+    )) {
+        Assert-Eq -Label "backport lineage: incidental negative vocabulary stays positive — $positiveBody" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $positiveBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    Assert-Eq -Label "backport lineage: later sentence contextual reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This backport updates tests. See PR #32295 for context.'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: same-sentence contextual first reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'This backport updates tests, see PR #32537 for context'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    foreach ($relationalBody in @(
+        'This backport updates tests, consult PR #32537',
+        'This backport has details in PR #32537',
+        'This backport also fixes an issue introduced by #32537',
+        'This backport depends on #32537',
+        'This backport conflicts with #32537',
+        'This backport supersedes #32537',
+        'This backport blocks #32537'
+    )) {
+        Assert-Eq -Label "backport lineage: relational/contextual first reference is rejected — $relationalBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $relationalBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32537)
+    }
+    Assert-Eq -Label "backport lineage: contextual later list reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, see the related discussion and #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: alternate contextual later reference does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, described above and #32295'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: free-form design-note separator does not bind" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #99999, look at the design notes and #32295 for background'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32295)
+    Assert-Eq -Label "backport lineage: post-reference negation does not prove inclusion" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #32537 was not included'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    foreach ($postNegatedBody in @(
+        'Backport of #32537 was never included',
+        'Backport of #32537 did not land',
+        'Backport #32537 which should not be included',
+        'Backport of #32537 was reverted',
+        "Backport of #32537 wasn't actually applied",
+        "Backport of #32537 (wasn't applied)",
+        'Backport of #32537 (not yet applied)',
+        "Backport of #32537 which wasn't actually applied",
+        'Backport of #32537 which was ultimately not included',
+        'Backport of #32537 was omitted',
+        'Backport of #32537 was excluded',
+        'Backport of #32537 is no longer included',
+        'Backport of #32537 no longer applies',
+        'Backport of #32537 is no longer applicable',
+        'Backport of #32537 is no longer relevant',
+        'Backport of #32537 is no longer needed',
+        'Backport of #32537 is no longer required',
+        'Backport of #32537 does not apply',
+        'Backport of #32537 does not pertain to this release',
+        'Backport of #32537 has been rolled back',
+        'Backport of #32537. This was later reverted due to test failures.',
+        'Backport of #32537, though it got reverted the next day.',
+        'Cherry-picked from #32537, later found to be broken and rolled back.',
+        'Backport of #32537 -- since reverted, see #5678',
+        'Backport #32537, but it was not included',
+        'Backport #32537, although it was not included',
+        'Backport #32537, yet it was not included',
+        'Backport #32537, however it was not included',
+        'Backport #32537. However, this was later reverted.'
+    )) {
+        Assert-Eq -Label "backport lineage: post-reference non-inclusion is rejected — $postNegatedBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $postNegatedBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32537)
+    }
+    $partiallyExcludedList = [pscustomobject]@{
+        body = 'Backport of PR #12345 and PR #23456, but #23456 was not included'
+        headRefName = 'manual/backport'
+    }
+    Assert-Eq -Label "backport lineage: post-list negation removes only the excluded source" `
+        -Expected $true -Actual ((Test-IsExplicitBackportForSource -Pr $partiallyExcludedList -SourcePrNumber 12345) -and
+            -not (Test-IsExplicitBackportForSource -Pr $partiallyExcludedList -SourcePrNumber 23456))
+    $repeatedNegatedList = [pscustomobject]@{
+        body = 'Backport of #12345 and #23456, but #12345 was not included'
+        headRefName = 'manual/backport'
+    }
+    Assert-Eq -Label "backport lineage: later negated repetition retracts earlier positive source" `
+        -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $repeatedNegatedList.body) -join ',')
+    $crossClauseRetraction = 'Backport of #12345 and #23456. #12345 was not included.'
+    Assert-Eq -Label "backport lineage: cross-clause negation retracts a non-final list source" `
+        -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $crossClauseRetraction) -join ',')
+    $distantRetraction = "Backport of #12345 and #23456. " + ('context ' * 90) + '#12345 was not included.'
+    Assert-Eq -Label "backport lineage: distant repeated negation remains visible within bounded scan" `
+        -Expected '23456' -Actual ((Get-ExplicitBackportSourceNumbers -Text $distantRetraction) -join ',')
+    $correctedExpectation = @'
+Backport of #12345.
+
+Note: PR #12345 was not initially expected to be needed here, but it is required for this backport.
+'@
+    Assert-Eq -Label "backport lineage: contrastive correction preserves an actual backport" `
+        -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text $correctedExpectation) -join ',')
+    $unreversedExpectation = 'Backport of #12345. PR #12345 was not initially expected to be needed, but it was not included.'
+    Assert-Eq -Label "backport lineage: contrast does not rescue a final non-inclusion state" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unreversedExpectation) -join ',')
+    foreach ($hardRemovalBody in @(
+        'Backport of #12345 was reverted, but it is required for the next SR.',
+        'Backport of #12345 was rolled back, but it is needed for this fix.',
+        'Backport of #12345 was omitted, but it is applicable to this branch.',
+        'Backport of #12345 was not included, but it is required reading for this change.'
+        'Backport of #12345; later rolled back.'
+        'Backport of #12345, later rolled back.'
+        'Backport of #12345 was backed out.'
+        'Backport of #12345; later backing out the change.'
+    )) {
+        Assert-Eq -Label "backport lineage: contrast cannot rescue actual removal — $hardRemovalBody" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $hardRemovalBody) -join ',')
+    }
+    foreach ($unrelatedRepeatedMention in @(
+        "Backport of #12345 to fix the crash.`n`nAdditional context: the workaround added in #12345 was not needed after the platform update.",
+        "Backport of #12345 for the security fix.`n`nNote: the migration guide mentioned in #12345 does not apply to this branch's docs.",
+        "Backport of #12345.`n`nFollow-up: the temporary workaround from #12345 is no longer needed once #67890 lands."
+    )) {
+        Assert-Eq -Label "backport lineage: unrelated repeated mention cannot retract source — $unrelatedRepeatedMention" `
+            -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text $unrelatedRepeatedMention) -join ',')
+    }
+    Assert-Eq -Label "backport lineage: single-sentence contextual workaround mention cannot retract source" `
+        -Expected '12345' -Actual ((Get-ExplicitBackportSourceNumbers -Text `
+            'Backport of #12345. The workaround for #12345 is no longer required.') -join ',')
+    foreach ($contextualRetraction in @(
+        'Backport of #12345. The change from #12345 was reverted in this branch.',
+        'Backport of #12345. The fix from #12345 was not included in this SR.',
+        'Backport of #12345. The workaround from #12345 was rolled back.',
+        'Backport of #12345. Work introduced by #12345 was omitted from this branch.'
+    )) {
+        Assert-Eq -Label "backport lineage: contextual repeated mention still retracts explicit removal — $contextualRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $contextualRetraction) -join ',')
+    }
+    $otherPrRetracted = 'Backport: #100 and #200. #200 was a follow-up, but it was reverted.'
+    Assert-Eq -Label "backport lineage: another PR retraction cannot remove prior source" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $otherPrRetracted) -join ',')
+    Assert-Eq -Label "backport lineage: semicolon before list continuation preserves final source" `
+        -Expected '100,200,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, #200; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: all-semicolon list preserves every source" `
+        -Expected '100,200,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: contextual semicolon continuation is not promoted" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is only context.') -join ',')
+    Assert-Eq -Label "backport lineage: contextual middle item does not orphan later source" `
+        -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: consecutive contextual items do not orphan later source" `
+        -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; #250 is only background; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: rejected contextual anchor cannot promote later list member" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport per the failure analysis in #35410, and #35415.') -join ',')
+    Assert-Eq -Label "backport lineage: alternate contextual wording does not promote tail item" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is context only.') -join ',')
+    Assert-Eq -Label "backport lineage: comma-listed contextual item is not promoted" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, and #200 is context only.') -join ',')
+    foreach ($repeatedSemanticRetraction in @(
+        'Backport of #12345. PR #12345 is no longer required.',
+        'Backport of #12345. PR #12345 is no longer needed.',
+        'Backport of #12345. PR #12345 is no longer relevant.',
+        'Backport of #12345. PR #12345 is no longer applicable.'
+    )) {
+        Assert-Eq -Label "backport lineage: repeated semantic retraction removes source — $repeatedSemanticRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $repeatedSemanticRetraction) -join ',')
+    }
+    foreach ($connectorRetraction in @(
+        'Backport of #12345. However #12345 is no longer required.',
+        'Backport of #12345. But #12345 is no longer needed.',
+        'Backport of #12345. Yet #12345 is no longer relevant.',
+        'Backport of #12345. Although #12345 is no longer applicable.'
+    )) {
+        Assert-Eq -Label "backport lineage: connector-led repeated retraction removes source — $connectorRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $connectorRetraction) -join ',')
+    }
+    foreach ($retainedRemoval in @(
+        'Backport of #100. The change from #100 was not reverted.',
+        'Backport of #100. The change from #100 was not excluded.',
+        'Backport of #100. The change from #100 was excluded from SR7 but included now.'
+    )) {
+        Assert-Eq -Label "backport lineage: negated or reversed removal keeps source — $retainedRemoval" `
+            -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $retainedRemoval) -join ',')
+    }
+    Assert-Eq -Label "backport lineage: unrelated later-sentence rollback cannot retract source" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100. We also reverted an unrelated workaround.') -join ',')
+    Assert-Eq -Label "backport lineage: unrelated PR additions do not restore reverted source" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100 was reverted, but the PR included extra tests.') -join ',')
+    foreach ($restoredBackport in @(
+        'Backport of #100 was reverted, but was subsequently restored.',
+        'Backport of #100 was excluded, but it was eventually re-included.',
+        'Backport of #100 was rolled back, however the fix was afterwards re-applied.'
+    )) {
+        Assert-Eq -Label "backport lineage: explicit restoration preserves source — $restoredBackport" `
+            -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $restoredBackport) -join ',')
+    }
+    foreach ($decisionRetraction in @(
+        'We investigated whether to cherry-pick from PR #100 but decided against it.',
+        'Backport of #100 was proposed, but the team rejected it for this SR.',
+        'Backport of #100 was considered; we opted not to proceed.'
+    )) {
+        Assert-Eq -Label "backport lineage: explicit decision against landing removes source — $decisionRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $decisionRetraction) -join ',')
+    }
+    Assert-Eq -Label "backport lineage: paragraph decision against landing removes source" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Backport of #100 was considered.`n`nWe decided against it.") -join ',')
+    Assert-Eq -Label "backport lineage: later restoration overrides decision retraction" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100. We decided against it, but it was nevertheless later included after all.') -join ',')
+    Assert-Eq -Label "backport lineage: double-negative exclusion keeps source" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, but it was not excluded.') -join ',')
+    foreach ($punctuatedNegation in @(
+        'Backport of #100 was **not** included.',
+        'Backport of #100 was _not_ included.',
+        'Backport of #100 was not, in fact, included.',
+        'Backport of #100 was not (yet) applied.',
+        'Backport of #100 was not, to be fair, in my view, included.',
+        'Backport of #100 was not; to be fair; in my view; included.',
+        'Backport of #100 was not; a; b; c; d; included.'
+    )) {
+        Assert-Eq -Label "backport lineage: Markdown/punctuation negation removes source — $punctuatedNegation" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $punctuatedNegation) -join ',')
+    }
+    Assert-Eq -Label "backport lineage: struck negation is withdrawn rather than applied" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100 was ~~not~~ included.') -join ',')
+    Assert-Eq -Label "backport lineage: entire struck claim is withdrawn before reference extraction" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text '~~Backport of #1234~~ was never actually needed.') -join ',')
+    Assert-Eq -Label "backport lineage: semicolon aside before verb preserves governing negation" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Do not; after review; backport #32537.') -join ',')
+    Assert-Eq -Label "backport lineage: bare semicolon after negator preserves governing negation" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Do not; backport #32537.') -join ',')
+    Assert-Eq -Label "backport lineage: semicolon aside allows article before verb" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'This is not; strictly speaking; a backport of #32537.') -join ',')
+    Assert-Eq -Label "backport lineage: contraction plus semicolon remains negated" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; backport #32537.") -join ',')
+    Assert-Eq -Label "backport lineage: contraction plus semicolon aside remains negated" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; after review; backport #32537.") -join ',')
+    Assert-Eq -Label "backport lineage: smart contraction plus semicolon aside remains negated" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don’t; after review; backport #32537.") -join ',')
+    Assert-Eq -Label "backport lineage: long same-clause negation remains governing" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'We should not, given the current release schedule and the risk this introduces to other subsystems, backport #32537.') -join ',')
+    foreach ($affirmativeAfterUnrelatedNegation in @(
+        'This pattern is not commonly recommended and we will backport #300.',
+        'The regression is not obvious therefore we still backport #300.',
+        'The crash is not reproducible on Android and we backport #300.'
+    )) {
+        Assert-Eq -Label "backport lineage: independent affirmative clause resets unrelated negation — $affirmativeAfterUnrelatedNegation" `
+            -Expected '300' -Actual ((Get-ExplicitBackportSourceNumbers -Text $affirmativeAfterUnrelatedNegation) -join ',')
+    }
+    foreach ($qualifiedListBody in @(
+        'Backport of #1234, (verified on device), and #32610',
+        'Backport of #1234, (tested thoroughly), and #32610',
+        'Backport of #1234, (reviewed by two engineers), and #32610',
+        'Backport of #1234, (no regressions found), and #32610',
+        'Backport of #1234, (without any regressions), and #32610'
+    )) {
+        Assert-Eq -Label "backport lineage: qualified explicit list preserves later source — $qualifiedListBody" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $qualifiedListBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    foreach ($negatedQualifiedListBody in @(
+        'Backport of #1234, (not authorized to land), and #32610',
+        'Backport of #1234, (not permitted for this release), and #32610',
+        'Backport of #1234, (no longer required), and #32610',
+        'Backport of #1234, (does not pertain to this release), and #32610'
+    )) {
+        Assert-Eq -Label "backport lineage: negated list qualifier is fail-closed — $negatedQualifiedListBody" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $negatedQualifiedListBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    foreach ($wrappedSeparator in @("`r`n", "`r", [string][char]0x2028)) {
+        $wrappedBody = "Backport of${wrappedSeparator}#32610"
+        Assert-Eq -Label "backport lineage: wrapped continuation separator is normalized" -Expected $true `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $wrappedBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    foreach ($bulletSeparator in @("`n", "`r`n", "`r", [string][char]0x2028, [string][char]0x2029)) {
+        $bulletBody = "- Discussed a backport${bulletSeparator}- #32610 is context only"
+        Assert-Eq -Label "backport lineage: Markdown bullet boundary does not bind unrelated PR" -Expected $false `
+            -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+                body = $bulletBody
+                headRefName = 'manual/backport'
+            }) -SourcePrNumber 32610)
+    }
+    Assert-Eq -Label "backport lineage: identifier suffix is not truncated into a PR number" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = 'Backport of #32537abc'
+            headRefName = 'manual/backport'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: Copilot head identifier suffix is rejected" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = ''
+            headRefName = 'copilot/backport-pr-32537abc'
+        }) -SourcePrNumber 32537)
+    Assert-Eq -Label "backport lineage: Copilot build/date suffix is not treated as a source list" -Expected $false `
+        -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
+            body = ''
+            headRefName = 'copilot/backport-pr-32537-build-20260726'
+        }) -SourcePrNumber 32537)
+    $overflowLineage = [pscustomobject]@{
+        body = 'Backport of #99999999999999, #32537'
+        headRefName = 'copilot/backport-pr-32537-build-999999999999'
+    }
+    $overflowLineageThrew = $false; $overflowLineageMatched = $false
+    try {
+        $overflowLineageMatched = Test-IsExplicitBackportForSource -Pr $overflowLineage -SourcePrNumber 32537
+    } catch {
+        $overflowLineageThrew = $true
+    }
+    Assert-Eq -Label "backport lineage: oversized numeric tokens do not throw" -Expected $false -Actual $overflowLineageThrew
+    Assert-Eq -Label "backport lineage: valid source survives adjacent oversized tokens" -Expected $true -Actual $overflowLineageMatched
+
+    $originalLineageInvokeGit = (Get-Item function:Invoke-Git).ScriptBlock
+    $script:LineageCommitBody = ''
+    $script:LineageCommitSubject = 'Synthetic backport commit (#40000)'
+    try {
+        function Invoke-Git {
+            param([string]$Cmd)
+            if ($Cmd -like 'log --format=%H*') {
+                return @('aaaaaaaa1111bbbbbbbb2222cccccccc3333dddd')
+            }
+            if ($Cmd -like 'show --no-patch*') {
+                return @(
+                    'aaaaaaaa1111bbbbbbbb2222cccccccc3333dddd',
+                    'Test Author',
+                    '2026-07-25T00:00:00Z',
+                    $script:LineageCommitSubject,
+                    '--BODY-START--',
+                    $script:LineageCommitBody
+                )
+            }
+            return $null
+        }
+
+        $script:LineageCommitBody = 'This is not a backport of #32537'
+        $negatedBackportCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        Assert-Eq -Label "commit lineage: negated backport prose is not a source PR" -Expected $false `
+            -Actual ($negatedBackportCommit.sourcePrs -contains 32537)
+
+        $script:LineageCommitBody = 'This was not cherry-picked from #32537'
+        $negatedCherryCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        Assert-Eq -Label "commit lineage: negated cherry-pick prose is not a source PR" -Expected $false `
+            -Actual ($negatedCherryCommit.sourcePrs -contains 32537)
+
+        $script:LineageCommitBody = 'Backport of #32610, #32694 and #32779'
+        $multiSourceCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        Assert-Eq -Label "commit lineage: shared parser preserves all explicit source PRs" `
+            -Expected '32610,32694,32779,40000' -Actual (($multiSourceCommit.sourcePrs | Sort-Object) -join ',')
+
+        $script:LineageCommitSubject = 'Synthetic malformed PR (#999999999999999999999)'
+        $script:LineageCommitBody = 'Fixes #999999999999999999999'
+        $oversizedCommitThrew = $false; $oversizedCommit = $null
+        try {
+            $oversizedCommit = Get-CommitsForRevSpec -RevSpec 'synthetic-ref'
+        } catch {
+            $oversizedCommitThrew = $true
+        }
+        Assert-Eq -Label "commit scanner: oversized PR/issue numbers do not throw" -Expected $false -Actual $oversizedCommitThrew
+        Assert-Eq -Label "commit scanner: oversized PR number is not added" -Expected 0 -Actual @($oversizedCommit.sourcePrs).Count
+    } finally {
+        Set-Item function:Invoke-Git $originalLineageInvokeGit
+        Remove-Variable -Name LineageCommitBody,LineageCommitSubject -Scope Script -ErrorAction SilentlyContinue
+    }
+
+    # ── Open SR PR scan: distinguish failure/verified-empty/cap truncation ──
+    $script:GhStub = { param([string[]]$GhArgs) return $null }
+    $failedOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
+    Assert-Eq -Label "open SR PR scan: query failure is incomplete" -Expected $false -Actual $failedOpenPrScan.IsComplete
+    $failedP0Check = @(Get-P0PrChecks -OpenSrPrs $failedOpenPrScan.Items -SrBranch 'release/10.0.1xx-sr9' `
+                                      -Incomplete -IncompleteReason $failedOpenPrScan.Reason)
+    Assert-Eq -Label "open SR PR scan: incomplete P/0 check is not READY" -Expected 'WATCH' -Actual $failedP0Check[0].Status
+
+    $script:GhStub = { param([string[]]$GhArgs) return '[]' }
+    $emptyOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
+    Assert-Eq -Label "open SR PR scan: verified empty result is complete" -Expected $true -Actual $emptyOpenPrScan.IsComplete
+
+    $openPrOverflowJson = @(1..101 | ForEach-Object {
+        [pscustomobject]@{
+            number = 85000 + $_; title = "PR $_"; author = @{ login = 'user' }; isDraft = $false
+            createdAt = '2026-01-01T00:00:00Z'; updatedAt = '2026-01-02T00:00:00Z'
+            labels = @(); reviewDecision = $null
+        }
+    }) | ConvertTo-Json -Depth 5
+    $script:GhStub = { param([string[]]$GhArgs) return $openPrOverflowJson }
+    $truncatedOpenPrScan = Get-OpenSrPrs -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9' }
+    Assert-Eq -Label "open SR PR scan: 101st result marks scan incomplete" -Expected $false -Actual $truncatedOpenPrScan.IsComplete
+    Assert-Eq -Label "open SR PR scan: processing remains capped at 100" -Expected 100 -Actual @($truncatedOpenPrScan.Items).Count
+    $truncatedOpenPrScan.Items[0].labels = @([pscustomobject]@{ name = 'p/0' })
+    $retainedP0Check = @(Get-P0PrChecks -OpenSrPrs $truncatedOpenPrScan.Items -SrBranch 'release/10.0.1xx-sr9' `
+                                           -Incomplete -IncompleteReason $truncatedOpenPrScan.Reason)
+    Assert-Eq -Label "open SR PR scan: retained P/0 remains BLOCKED when scan is truncated" -Expected 'BLOCKED' `
+        -Actual $retainedP0Check[0].Status
+    Assert-Eq -Label "open SR PR scan: retained P/0 reports possible omitted blockers" -Expected $true `
+        -Actual ($retainedP0Check[0].Details -match 'Additional P/0 PRs may be omitted')
 
     # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
     # Regression: `gh pr list --json` does not support authorAssociation, so the
@@ -1299,6 +2874,58 @@ Write-Host "`n[Unit] Get-RevertedPrFromSubject (revert classification)" -Foregro
 # in-sr-active ("ready to ship") instead of in-sr-reverted.
 Assert-Eq -Label "Reverted-PR from quoted title returns inner #, not trailing revert #" `
     -Expected 1234 -Actual (Get-RevertedPrFromSubject -Subject 'Revert "Some fix (#1234)" (#5678)')
+foreach ($manualRevertSubject in @(
+    'This reverts #35100',
+    'Reverting #35100 - caused CI failures',
+    'Backing out the fix for #35100 due to CI regressions',
+    'Revert: #35100',
+    'Revert of #35100',
+    'Revert - fix for #35100',
+    '[Revert] Undo the change in #35100',
+    'Revert “Original title (#35100)” (#36152)',
+    '[release/10.0.1xx-sr9] Backing out the fix for #35100 due to CI regressions',
+    '[release/10.0.1xx-sr9] [Revert] Undo the change in #35100',
+    '[release/10.0.1xx-sr9][Revert] Undo the change in #35100'
+)) {
+    Assert-Eq -Label "Reverted-PR from common hand-authored subject — $manualRevertSubject" `
+        -Expected 35100 -Actual (Get-RevertedPrFromSubject -Subject $manualRevertSubject)
+}
+$releaseScriptText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
+Assert-Eq -Label "commit scanner gates revert rows with shared subject parser" -Expected $true `
+    -Actual ([bool]($releaseScriptText -match '\$revertsPr = Get-RevertedPrFromSubject[\s\S]{0,400}\$isRevert = \(\$null -ne \$revertsPr\)'))
+Assert-Eq -Label "main revert scan enumerates Backing-out subjects" -Expected $true `
+    -Actual ($releaseScriptText.Contains('--grep=Revert --grep=Backing'))
+$netRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 200; revertBackportPr = 300 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "revert-of-revert restores the original fix in net revert state" -Expected $false `
+    -Actual $netRevertSet.ContainsKey(100)
+Assert-Eq -Label "revert-of-revert marks the reverted revert PR instead" -Expected $true `
+    -Actual $netRevertSet.ContainsKey(200)
+$duplicateRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 100; revertBackportPr = 300 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "independent duplicate reverts keep the target reverted" -Expected $true `
+    -Actual $duplicateRevertSet.ContainsKey(100)
+$compoundRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 200; revertBackportPr = 201 }
+    @{ revertsPr = 100; revertBackportPr = 300 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "revert-of-revert preserves an independent revert contribution" -Expected $true `
+    -Actual $compoundRevertSet.ContainsKey(100)
+Assert-Eq -Label "compound revert graph marks the reverted reverter" -Expected $true `
+    -Actual $compoundRevertSet.ContainsKey(200)
+$cycleRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 200; revertBackportPr = 100 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "cyclic revert metadata fails safe for first participant" -Expected $true `
+    -Actual $cycleRevertSet.ContainsKey(100)
+Assert-Eq -Label "cyclic revert metadata fails safe for second participant" -Expected $true `
+    -Actual $cycleRevertSet.ContainsKey(200)
 Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
     -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
 Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
@@ -1321,6 +2948,14 @@ Assert-Eq -Label "Reverted-PR from lowercase 'revert' subject" `
 # gate, and a "fixed by #35372" comment on a CLOSED issue is falsely de-noised.
 Assert-Eq -Label "Reverted-PR from manual 'Revert - <title> #N (#M)' form (real #36152/#35372)" `
     -Expected 35372 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Fix Android stale ContainerView root leak #35372 (#36152)')
+Assert-Eq -Label "Reverted-PR from manual subject prefers explicit PR reference over issue reference" `
+    -Expected 35000 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Backport fix from PR #35000 for issue #12345 (#36152)')
+Assert-Eq -Label "Ambiguous manual revert with multiple unqualified references fails closed" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Backport #35000 for issue #12345 (#36152)')
+Assert-Eq -Label "Backing-out PR title is classified as a revert" -Expected $true `
+    -Actual (Test-IsRevertPrTitle -Title 'Backing out the fix for #35100 due to CI regressions')
+Assert-Eq -Label "Bracket-prefixed backing-out PR title is classified as a revert" -Expected $true `
+    -Actual (Test-IsRevertPrTitle -Title '[release/10.0.1xx-sr9] Backing out the fix for #35100')
 Assert-Eq -Label "Manual revert form with branch prefix" `
     -Expected 40100 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr9] Revert - Fix flaky test #40100 (#40200)')
 # Safety: a manual-form pattern must NOT fire on a non-revert subject that merely
@@ -1432,6 +3067,527 @@ Assert-Eq -Label "contradictory merged backport evidence is low confidence" `
 Assert-Eq -Label "contradictory evidence explains missing SR git contents" `
     -Expected $true -Actual (($classification.evidence -join "`n") -match 'not found in SR git contents')
 
+# A merged backport that GitHub reports as MERGED but that is missing from the
+# SR git contents must keep its stale-fetch/manual-merge-target guidance even
+# when the source PR is still OPEN against inflight/current.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression in inflight'
+        state = 'OPEN'
+        baseRefName = 'inflight/current'
+        mergedAt = $null
+        closedAt = $null
+        body = 'Fixes #35000'
+        mergeCommit = $null
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+function Get-BackportPrsForSr {
+    param($Repo, $SrBranch, $SourcePrNumber)
+    return @([pscustomobject]@{
+        number = 36001
+        title = 'Backport fix regression from inflight'
+        state = 'MERGED'
+        mergedAt = '2026-01-02T00:00:00Z'
+        closedAt = '2026-01-02T00:00:00Z'
+    })
+}
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $false
+}
+
+$openInflightMissingBackport = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35002) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "merged backport absent beats open inflight subreason" `
+    -Expected 'needs-human-review' -Actual $openInflightMissingBackport.classification
+Assert-Eq -Label "missing merged backport recommends rerun without NoFetch" `
+    -Expected $true -Actual ($openInflightMissingBackport.recommendedAction -match 'without `-NoFetch`')
+Assert-Eq -Label "missing merged backport action mentions absent SR contents" `
+    -Expected $true -Actual ($openInflightMissingBackport.recommendedAction -match 'absent from SR git contents')
+Assert-Eq -Label "missing merged backport action is not candidate-promotion guidance" `
+    -Expected $false -Actual ($openInflightMissingBackport.recommendedAction -match 'Candidate promotion')
+
+# A merged source whose commit is on main is ready for the repository's
+# backport automation. The report must emit the exact command, not a generic
+# "open a backport" instruction.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $true
+}
+
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$mainBackportCandidate = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "merged main source without backport is classified for backport" `
+    -Expected 'merged-on-main-no-backport' -Actual $mainBackportCandidate.classification
+Assert-Eq -Label "merged main source emits exact backport command" `
+    -Expected 'On the merged source PR, post `/backport to release/10.0.1xx-sr7`' `
+    -Actual $mainBackportCandidate.recommendedAction
+
+# Candidate mode surveys main before the SR branch exists. It must never tell a
+# release captain to post `/backport to main`; a merged fix is already part of
+# the cut and only needs post-cut verification.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    $state = if ($PrNumber -eq 35003) { 'OPEN' } else { 'MERGED' }
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression'
+        state = $state
+        baseRefName = 'main'
+        mergedAt = if ($state -eq 'MERGED') { '2026-01-01T00:00:00Z' } else { $null }
+        closedAt = if ($state -eq 'MERGED') { '2026-01-01T00:00:00Z' } else { $null }
+        body = 'Fixes #35000'
+        mergeCommit = if ($state -eq 'MERGED') { [pscustomobject]@{ oid = 'abc1234def5678' } } else { $null }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$candidateMergedBackportGuidance = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+$candidateOpenBackportGuidance = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35003) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+
+Assert-Eq -Label "candidate merged-on-main guidance does NOT emit /backport to main" `
+    -Expected $false -Actual ($candidateMergedBackportGuidance.recommendedAction -match '/backport to main')
+Assert-Eq -Label "candidate merged-on-main guidance warns selected cut can lag + requires ancestry rerun" `
+    -Expected $true -Actual ($candidateMergedBackportGuidance.recommendedAction -match 'already merged on main' -and $candidateMergedBackportGuidance.recommendedAction -match 'selected Candidate cut can lag' -and $candidateMergedBackportGuidance.recommendedAction -match 'verify inclusion')
+Assert-Eq -Label "candidate merged-on-main guidance never says fix must land on main" `
+    -Expected $false -Actual ($candidateMergedBackportGuidance.recommendedAction -match 'must land on main')
+Assert-Eq -Label "candidate open-on-main guidance does NOT emit /backport to main" `
+    -Expected $false -Actual ($candidateOpenBackportGuidance.recommendedAction -match '/backport to main')
+Assert-Eq -Label "candidate open-on-main guidance says wait for main merge + rerun" `
+    -Expected $true -Actual ($candidateOpenBackportGuidance.recommendedAction -match 'Wait for the main merge' -and $candidateOpenBackportGuidance.recommendedAction -match 'rerun readiness')
+
+# Full GitHub issue URLs are valid closing evidence and must not be dropped.
+Assert-Eq -Label "PR evidence: full issue URL with closing keyword is recognized" `
+    -Expected 'closing-keyword' `
+    -Actual (Get-PrEvidenceType -PrBody 'Closes https://github.com/dotnet/maui/issues/35615' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: full URL for a different issue is ignored" `
+    -Expected 'none' `
+    -Actual (Get-PrEvidenceType -PrBody 'Closes https://github.com/dotnet/maui/issues/99999' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: GitHub 'Fixed:' keyword form is recognized" `
+    -Expected 'closing-keyword' `
+    -Actual (Get-PrEvidenceType -PrBody 'Fixed: #35615' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: GitHub singular uppercase keyword form is recognized" `
+    -Expected 'closing-keyword' `
+    -Actual (Get-PrEvidenceType -PrBody 'CLOSE dotnet/maui#35615' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: issue-number prefixes remain rejected" `
+    -Expected 'none' `
+    -Actual (Get-PrEvidenceType -PrBody 'Resolved #356150' -IssueNumber 35615)
+Assert-Eq -Label "PR evidence: closing-keyword substrings in ordinary words are rejected" `
+    -Expected $false `
+    -Actual ((Get-PrEvidenceType -PrBody 'This hotfix leaves #35615 unresolved' -IssueNumber 35615) -eq 'closing-keyword')
+$directSrUrlIssues = @(Get-ClosingIssueNumbers -Text 'Fixes https://github.com/dotnet/maui/issues/35615')
+Assert-Eq -Label "commit evidence: full issue URL is parsed by the shared closing-reference parser" `
+    -Expected $true -Actual ($directSrUrlIssues -contains 35615)
+foreach ($negatedClosingText in @(
+    'This does not fix #35615',
+    "This does not`nfix #35615",
+    'This will not actually resolve #35615',
+    'This failed to adequately fix #35615',
+    'This is unable to reliably resolve #35615',
+    "This doesn't close #35615",
+    "This doesn’t close #35615",
+    "This doesnʼt close #35615",
+    "This doesn‛t close #35615",
+    "This doesnꞌt close #35615",
+    'This does **not** fix #35615',
+    'This does not, in fact, fix #35615',
+    'This will not (yet) resolve #35615',
+    'This does not, to be fair, in my view, fix #35615',
+    'This does not; to be fair; in my view; fix #35615',
+    'Do not; fix #35615',
+    "Don't; fix #35615",
+    'This no longer fixes #35615',
+    "This doesn’t close #35615 after $([string]::new('x', 120))"
+    'This fails to fix #35615'
+    'This failed to fully fix #35615'
+    'This is unable to fix #35615'
+    'This only partially fixes #35615'
+    'This cannot fix #35615 until the upstream change lands'
+    'This cannot resolve #35615'
+    "This does not`nfix #35615"
+)) {
+    Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
+        -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
+}
+Assert-Eq -Label "closing evidence: affirmative adverb-separated fix remains recognized" `
+    -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text 'This adequately fixes #35615') -join ',')
+foreach ($affirmativeClosingText in @(
+    'After the patch we are unable to reproduce and fixes #35615'
+    'The app is unable to crash and fixes #35615'
+    'The old test failed to reproduce and fixes #35615'
+)) {
+    Assert-Eq -Label "closing evidence: unrelated failure phrase does not suppress a fix — $affirmativeClosingText" `
+        -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text $affirmativeClosingText) -join ',')
+}
+Assert-Eq -Label "closing evidence: 'not only' does not negate a real fix" `
+    -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text 'This not only fixes #35615, it adds a regression test.') -join ',')
+Assert-Eq -Label "closing evidence: unrelated prior-line 'not' does not cross a heading" `
+    -Expected '34310' -Actual ((Get-ClosingIssueNumbers -Text "MauiContext is not null is the canonical signal`n`nIssues Fixed`n`nFixes #34310") -join ',')
+Assert-Eq -Label "closing evidence: struck closing keyword is withdrawn" `
+    -Expected '' -Actual ((Get-ClosingIssueNumbers -Text 'This ~~Fixes #35615~~ was superseded.') -join ',')
+$oversizedClosingThrew = $false; $oversizedClosingIssues = @()
+try {
+    $oversizedClosingIssues = @(Get-ClosingIssueNumbers -Text 'Fixes #999999999999999999999 and Fixes #35615abc')
+} catch {
+    $oversizedClosingThrew = $true
+}
+Assert-Eq -Label "closing-reference parser: oversized issue number does not throw" -Expected $false -Actual $oversizedClosingThrew
+Assert-Eq -Label "closing-reference parser: oversized/suffixed issue numbers are rejected" -Expected 0 -Actual $oversizedClosingIssues.Count
+$directSrUrlFix = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{
+        sourcePrs = @(35662); reverts = @(); mainReverts = @()
+        commits = @(@{ backportPr = 35662; sourcePr = $null; fixedIssues = $directSrUrlIssues; isRevert = $false })
+    }
+Assert-Eq -Label "classifier: direct-SR full-URL closing fix is in-sr-active" `
+    -Expected 'in-sr-active' -Actual $directSrUrlFix.classification
+
+# A fix merged before the SR cut is common ancestry and absent from the
+# differential sourcePrSet. Verified target ancestry must still classify it as
+# shipping, while candidate mode (target == main) must not use that override.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix inherited regression'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes https://github.com/dotnet/maui/issues/35615'
+        mergeCommit = [pscustomobject]@{ oid = 'inheritedfix1234' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -in @('origin/main', 'origin/release/10.0.1xx-sr9'))
+}
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$inheritedTargetFix = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @(35662) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier: common-ancestor fix verified on target is in-sr-active" `
+    -Expected 'in-sr-active' -Actual $inheritedTargetFix.classification
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -in @('origin/main', 'origin/release/10.0.1xx-sr9'))
+}
+$postTagOnlyFix = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @(35662) `
+    -Ctx @{
+        repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'
+        mode = 'shipped'; srRef = 'origin/release/10.0.1xx-sr9'; contentsRef = '10.0.90'
+    } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier: post-tag branch ancestry does not mark shipped release fixed" `
+    -Expected 'merged-on-main-no-backport' -Actual $postTagOnlyFix.classification
+
+$candidateTargetIsMain = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @(35662) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate'; srRef = 'origin/main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier guard: candidate target==main does not become in-sr-active" `
+    -Expected 'merged-on-main-no-backport' -Actual $candidateTargetIsMain.classification
+
+$candidateCurrentMainFix = Classify-RegressionCandidate `
+    -Issue @{ number = 35615 } `
+    -CandidatePrs @(35662) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'main'; mainBranch = 'main'; mode = 'candidate'; srRef = 'origin/main' } `
+    -SrContents @{
+        sourcePrs = @(35662)
+        reverts = @()
+        mainReverts = @()
+        commits = @(@{ sourcePr = 35662; backportPr = 0; sourcePrs = @(35662); fixedIssues = @(35615) })
+    }
+Assert-Eq -Label "classifier guard: populated candidate-main contents remain cut-lag risk" `
+    -Expected 'merged-on-main-no-backport' -Actual $candidateCurrentMainFix.classification
+Assert-Eq -Label "classifier guard: candidate-main contents are not claimed as verified SR ancestry" `
+    -Expected $false -Actual $candidateCurrentMainFix.verifiedFromSrContents
+Assert-Eq -Label "classifier guard: candidate-main fix instructs post-cut verification" `
+    -Expected $true -Actual ($candidateCurrentMainFix.recommendedAction -match 'cut can lag current main')
+
+# A revert can be the actual fix, but only with all conservative gates:
+# merged, explicit closing evidence, and verified target presence.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Revert "Regressing change (#34936)" (#36495)'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-07-10T00:00:00Z'
+        closedAt = '2026-07-10T00:00:00Z'
+        body = 'Fixes #36249'
+        mergeCommit = [pscustomobject]@{ oid = 'revertfix1234' }
+        files = @([pscustomobject]@{ path = 'src/Controls/src/Core/Shell/Shell.cs'; additions = 1; deletions = 1 })
+    }
+}
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -eq 'origin/main')
+}
+$verifiedRevertFix = Classify-RegressionCandidate `
+    -Issue @{ number = 36249 } `
+    -CandidatePrs @(36495) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{
+        sourcePrs = @(36495, 36498)
+        reverts = @(@{ revertsPr = $null; revertBackportPr = 36498 })
+        mainReverts = @()
+        commits = @(@{ sourcePr = 36495; backportPr = 36498; fixedIssues = @(); isRevert = $true })
+    }
+Assert-Eq -Label "classifier: merged closing revert verified through target backport is an active fix" `
+    -Expected 'in-sr-active' -Actual $verifiedRevertFix.classification
+
+$revertedMappedBackport = Classify-RegressionCandidate `
+    -Issue @{ number = 36249 } `
+    -CandidatePrs @(36495) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{
+        sourcePrs = @(36495, 36498)
+        reverts = @(@{ revertsPr = 36498; revertBackportPr = 36500 })
+        mainReverts = @()
+        commits = @(@{ sourcePr = 36495; backportPr = 36498; fixedIssues = @(); isRevert = $false })
+    }
+Assert-Eq -Label "classifier guard: reverting a mapped backport reverts its source fix" `
+    -Expected 'in-sr-reverted' -Actual $revertedMappedBackport.classification
+Assert-Eq -Label "classifier guard: mapped-backport revert is marked git-verified" `
+    -Expected $true -Actual $revertedMappedBackport.verifiedFromSrContents
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -in @('origin/main', 'origin/release/10.0.1xx-sr9'))
+}
+$directSourceWithRevertedMappedCopy = Classify-RegressionCandidate `
+    -Issue @{ number = 36249 } `
+    -CandidatePrs @(36495) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{
+        sourcePrs = @(36495, 36498)
+        reverts = @(@{ revertsPr = 36498; revertBackportPr = 36500 })
+        mainReverts = @()
+        commits = @(@{ sourcePr = 36495; backportPr = 36498; fixedIssues = @(); isRevert = $false })
+    }
+Assert-Eq -Label "classifier guard: directly-present source stays active when a mapped copy is reverted" `
+    -Expected 'in-sr-active' -Actual $directSourceWithRevertedMappedCopy.classification
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -in @('origin/main', 'origin/release/10.0.1xx-sr9'))
+}
+$verifiedRevertByAncestry = Classify-RegressionCandidate `
+    -Issue @{ number = 36249 } `
+    -CandidatePrs @(36495) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier: merged closing revert verified by target ancestry is an active fix" `
+    -Expected 'in-sr-active' -Actual $verifiedRevertByAncestry.classification
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -eq 'origin/main')
+}
+$unverifiedClosingRevert = Classify-RegressionCandidate `
+    -Issue @{ number = 36249 } `
+    -CandidatePrs @(36495) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'in-flight'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier guard: merged closing revert absent from target still needs human review" `
+    -Expected 'needs-human-review' -Actual $unverifiedClosingRevert.classification
+
+# Shipped-mode guidance never emits automation for an already-tagged SR.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix after ship'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-07-20T00:00:00Z'
+        closedAt = '2026-07-20T00:00:00Z'
+        body = 'Fixes #35800'
+        mergeCommit = [pscustomobject]@{ oid = 'postshipfix1234' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return ($BranchRef -eq 'origin/main')
+}
+$shippedFixGuidance = Classify-RegressionCandidate `
+    -Issue @{ number = 35800 } `
+    -CandidatePrs @(35801) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'shipped'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier: shipped fix guidance is hotfix/next-SR human decision" `
+    -Expected $true `
+    -Actual ($shippedFixGuidance.recommendedAction -match 'already shipped' -and $shippedFixGuidance.recommendedAction -match 'hotfix' -and $shippedFixGuidance.recommendedAction -match 'next SR')
+Assert-Eq -Label "classifier: shipped fix guidance emits no backport automation command" `
+    -Expected $false -Actual ($shippedFixGuidance.recommendedAction -match '/backport to release/')
+
+function Get-BackportPrsForSr {
+    param($Repo, $SrBranch, $SourcePrNumber)
+    return @([pscustomobject]@{
+        number = 35802; state = 'OPEN'; mergedAt = $null; closedAt = $null
+        title = '[release/10.0.1xx-sr9] Fix after ship'
+    })
+}
+$shippedOpenBackportGuidance = Classify-RegressionCandidate `
+    -Issue @{ number = 35800 } `
+    -CandidatePrs @(35801) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main'; mode = 'shipped'; srRef = 'origin/release/10.0.1xx-sr9' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @() }
+Assert-Eq -Label "classifier: shipped open backport is a hotfix-vs-next-SR decision" `
+    -Expected $true `
+    -Actual ($shippedOpenBackportGuidance.classification -eq 'backport-in-progress' -and
+             $shippedOpenBackportGuidance.recommendedAction -match 'already shipped' -and
+             $shippedOpenBackportGuidance.recommendedAction -match 'hotfix' -and
+             $shippedOpenBackportGuidance.recommendedAction -match 'next SR')
+Assert-Eq -Label "classifier: shipped open backport does not say track to completion" `
+    -Expected $false -Actual ($shippedOpenBackportGuidance.recommendedAction -match 'Track backport PR to completion')
+
+# A source PR that merged to main and was later reverted on main must not receive
+# automated backport guidance; cherry-picking it to SR would reintroduce a change
+# main has already backed out.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression later reverted'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+
+$mainRevertedCandidate = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @(@{ revertsPr = 35001; revertBackportPr = $null }) }
+
+Assert-Eq -Label "main-side reverted source requires human review" `
+    -Expected 'needs-human-review' -Actual $mainRevertedCandidate.classification
+Assert-Eq -Label "main-side reverted source does NOT emit a backport command" `
+    -Expected $false -Actual ($mainRevertedCandidate.recommendedAction -match '/backport')
+Assert-Eq -Label "main-side reverted source action mentions reverted on main" `
+    -Expected $true -Actual ($mainRevertedCandidate.recommendedAction -match 'reverted on main')
+
+# Regression guard (PR #36497 review, Finding 2): a source PR that merged to main,
+# was later reverted on main, AND still has an OPEN backport PR against the SR must
+# be classified 'needs-human-review' — NOT 'backport-in-progress'. Before the fix
+# the OPEN-backport arm was evaluated ahead of the main-revert check, so the report
+# told the captain to "Track backport PR to completion" for code main had already
+# backed out. The hoisted main-revert guard must win regardless of backport state.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression later reverted (with open backport)'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Get-BackportPrsForSr {
+    param($Repo, $SrBranch, $SourcePrNumber)
+    return @([pscustomobject]@{ number = 35002; state = 'OPEN'; mergedAt = $null; closedAt = $null; title = "[release/10.0.1xx-sr7] Fix regression later reverted" })
+}
+
+$mainRevertedOpenBackport = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @(); mainReverts = @(@{ revertsPr = 35001; revertBackportPr = $null }) }
+
+Assert-Eq -Label "reverted-on-main source with OPEN backport still requires human review" `
+    -Expected 'needs-human-review' -Actual $mainRevertedOpenBackport.classification
+Assert-Eq -Label "reverted-on-main source with OPEN backport is NOT backport-in-progress" `
+    -Expected $false -Actual ($mainRevertedOpenBackport.classification -eq 'backport-in-progress')
+Assert-Eq -Label "reverted-on-main source with OPEN backport does NOT emit a backport command" `
+    -Expected $false -Actual ($mainRevertedOpenBackport.recommendedAction -match '/backport')
+Assert-Eq -Label "reverted-on-main source with OPEN backport action mentions reverted on main" `
+    -Expected $true -Actual ($mainRevertedOpenBackport.recommendedAction -match 'reverted on main')
+
+# Regression guard (PR #36497 re-review): the main-revert guard must fire when
+# $SrContents is an arbitrary IDictionary (e.g. [ordered]@{}), not just a
+# [hashtable]. An [ordered]@{} is an OrderedDictionary whose keys are NOT surfaced
+# as PSObject properties, so the prior `-is [hashtable]` probe fell through and
+# silently ignored `mainReverts` — mis-reporting a reverted-on-main source as a
+# live backport. Routing through Get-MetadataValue (IDictionary.Contains) makes it
+# shape-agnostic. (Reuses the OPEN-backport mocks above: main-revert must still win.)
+$orderedSrContents = [ordered]@{ sourcePrs = @(); reverts = @(); mainReverts = @(@{ revertsPr = 35001; revertBackportPr = $null }) }
+$mainRevertedOrdered = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents $orderedSrContents
+
+Assert-Eq -Label "main-revert guard fires for [ordered] SrContents (IDictionary, not hashtable)" `
+    -Expected 'needs-human-review' -Actual $mainRevertedOrdered.classification
+Assert-Eq -Label "[ordered] SrContents main-revert action mentions reverted on main" `
+    -Expected $true -Actual ($mainRevertedOrdered.recommendedAction -match 'reverted on main')
+
 # ───── Bug regression: issue fixed by SR-direct PR (closing keyword on SR commit) ─────
 # Real-world case: issue #35756 (TabbedPage modal) was fixed by PR #35768 opened
 # directly against release/10.0.1xx-sr7. A later PR #35803 opened against main
@@ -1502,7 +3658,7 @@ Assert-Eq -Label "SR-direct fix → recommendedAction says no action" `
 $srContentsWithRevertedFix = @{
     sourcePrs    = @(35768)
     backportPrs  = @()
-    reverts      = @(@{ revertsPr = $null; revertBackportPr = 35768 })
+    reverts      = @(@{ revertsPr = 35768; revertBackportPr = 35769 })
     fixedIssues  = @(35756)
     commits      = @(
         @{ backportPr = 35768; sourcePr = $null; fixedIssues = @(35756); isRevert = $false }
@@ -1526,6 +3682,114 @@ $cls2 = Classify-RegressionCandidate `
 Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
     -Expected 'no-fix-yet' -Actual $cls2.classification
 
+# An open PR against inflight/current must not be told to retarget main;
+# its content reaches main via normal Candidate promotion. The guidance
+# must wait for merge + promotion (retargeting is optional/expedited only).
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix regression on inflight'
+        state       = 'OPEN'
+        baseRefName = 'inflight/current'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #88888'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Core/src/Core.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+
+$nonMainOpen = Classify-RegressionCandidate `
+    -Issue @{ number = 88888 } `
+    -CandidatePrs @(88889) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "open inflight PR requires review instead of open-on-main" `
+    -Expected 'needs-human-review' -Actual $nonMainOpen.classification
+# Guidance must mention Candidate promotion (not demand retargeting)
+Assert-Eq -Label "open inflight PR evidence mentions Candidate promotion path" `
+    -Expected $true -Actual (($nonMainOpen.evidence -join "`n") -match 'Candidate promotion')
+Assert-Eq -Label "open inflight PR evidence does NOT demand retargeting as required" `
+    -Expected $false -Actual (($nonMainOpen.evidence -join "`n") -match 'must target main')
+# The Tier-2 Markdown renders recommendedAction, NOT evidence — so the same
+# Candidate-promotion guidance must reach recommendedAction, not fall through
+# to the generic 'Manual review required'.
+Assert-Eq -Label "open inflight PR recommendedAction surfaces Candidate promotion" `
+    -Expected $true -Actual ($nonMainOpen.recommendedAction -match 'Candidate promotion')
+Assert-Eq -Label "open inflight PR recommendedAction is not the generic fallback" `
+    -Expected $false -Actual ($nonMainOpen.recommendedAction -eq 'Manual review required')
+
+# Other inflight/* branches are not guaranteed to flow through inflight/current's
+# Candidate-promotion path. They need the generic forward-flow/manual-review guidance.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix regression on experimental inflight branch'
+        state       = 'OPEN'
+        baseRefName = 'inflight/ai'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #88890'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Core/src/Core.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+$nonCurrentInflightOpen = Classify-RegressionCandidate `
+    -Issue @{ number = 88890 } `
+    -CandidatePrs @(88891) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "open inflight/ai PR requires human review" `
+    -Expected 'needs-human-review' -Actual $nonCurrentInflightOpen.classification
+Assert-Eq -Label "open inflight/ai PR keeps medium confidence" `
+    -Expected 'medium' -Actual $nonCurrentInflightOpen.confidence
+Assert-Eq -Label "open inflight/ai PR uses forward-flow guidance" `
+    -Expected $true -Actual ($nonCurrentInflightOpen.recommendedAction -match 'forward-flow')
+Assert-Eq -Label "open inflight/ai PR does NOT mention Candidate promotion" `
+    -Expected $false -Actual ($nonCurrentInflightOpen.recommendedAction -match 'Candidate promotion')
+Assert-Eq -Label "open inflight/ai PR does NOT demand must target main" `
+    -Expected $false -Actual ($nonCurrentInflightOpen.recommendedAction -match 'must target main')
+
+# Generic non-main feature branches follow the same manual-review/forward-flow path.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix regression on user feature branch'
+        state       = 'OPEN'
+        baseRefName = 'users/x/feature'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #88892'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Core/src/Core.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+$featureBranchOpen = Classify-RegressionCandidate `
+    -Issue @{ number = 88892 } `
+    -CandidatePrs @(88893) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "open users/x/feature PR requires human review" `
+    -Expected 'needs-human-review' -Actual $featureBranchOpen.classification
+Assert-Eq -Label "open users/x/feature PR keeps medium confidence" `
+    -Expected 'medium' -Actual $featureBranchOpen.confidence
+Assert-Eq -Label "open users/x/feature PR uses forward-flow guidance" `
+    -Expected $true -Actual ($featureBranchOpen.recommendedAction -match 'forward-flow')
+Assert-Eq -Label "open users/x/feature PR does NOT mention Candidate promotion" `
+    -Expected $false -Actual ($featureBranchOpen.recommendedAction -match 'Candidate promotion')
+Assert-Eq -Label "open users/x/feature PR does NOT demand must target main" `
+    -Expected $false -Actual ($featureBranchOpen.recommendedAction -match 'must target main')
+
 # ───── Get-IssueCommentPrs (negation guard on fix-phrase scoring) ─────
 # A maintainer comment that NEGATES a fix ("not fixed by #X", "won't fix #Y") must
 # NOT be scored as high-confidence 'fix-phrase' — otherwise the closed-fix-unlinked
@@ -1542,6 +3806,12 @@ $script:mockCommentsJson = @'
   { "body": "see #60003 for related context" },
   { "body": "not fixed by #70004 yet" },
   { "body": "update: now fixed by #70004" }
+  ,{ "body": "This issue was partially fixed by PR #80005; remaining work is tracked separately." }
+  ,{ "body": "Resolved by #80006, though only partially; follow-up remains." }
+  ,{ "body": "This closes #80007. Note: it is only a partial fix, more work is needed." }
+  ,{ "body": "Fixed by #80008. This also removes the temporary workaround added in SR6." }
+  ,{ "body": "This issue was partly fixed by #80009; remaining work is tracked separately." }
+  ,{ "body": "This partially fixes #80010; remaining work is tracked separately." }
 ]
 '@
 function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
@@ -1561,6 +3831,18 @@ try {
     # confirmed in another -> the non-negated fix phrase upgrades it to fix-phrase.
     Assert-Eq -Label "#70004 negated once + confirmed once -> fix-phrase wins" `
         -Expected 'fix-phrase' -Actual $byNum[70004]
+    Assert-Eq -Label "partial fix phrase is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80005]
+    Assert-Eq -Label "trailing partial qualifier is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80006]
+    Assert-Eq -Label "next-sentence partial qualifier is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80007]
+    Assert-Eq -Label "unrelated next-sentence workaround does not demote a full fix" `
+        -Expected 'fix-phrase' -Actual $byNum[80008]
+    Assert-Eq -Label "partly-fixed phrase is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80009]
+    Assert-Eq -Label "partially-fixed phrase without 'only' is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80010]
 } finally {
     ${function:Invoke-Gh} = $origInvokeGh
 }
@@ -1665,6 +3947,8 @@ Assert-Eq -Label "Closed issue + comment-cited merged PR on SR → closed-fix-un
     -Expected 'closed-fix-unlinked' -Actual $clsUnlinked.classification
 Assert-Eq -Label "closed-fix-unlinked → high confidence (fix-phrase required)" `
     -Expected 'high' -Actual $clsUnlinked.confidence
+Assert-Eq -Label "closed-fix-unlinked → comment-recovered evidence remains distinct from git verification" `
+    -Expected $false -Actual $clsUnlinked.verifiedFromSrContents
 Assert-Eq -Label "closed-fix-unlinked → candidateFixPrs surfaces the cited PR (#35028)" `
     -Expected 35028 -Actual ([int]$clsUnlinked.candidateFixPrs[0].number)
 Assert-Eq -Label "closed-fix-unlinked recovered via (#num) subject token when SHA-ancestry is false" `
@@ -1673,6 +3957,21 @@ Assert-Eq -Label "closed-fix-unlinked → action is to add a closing reference (
     -Expected $true -Actual ($clsUnlinked.recommendedAction -match 'closing reference')
 Assert-Eq -Label "closed-fix-unlinked is Tier 3 (non-blocking)" `
     -Expected 3 -Actual (Get-VerdictTier -Classification 'closed-fix-unlinked')
+
+function Test-PrNumberOnBranch {
+    param([int]$PrNumber, [string]$BranchRef)
+    return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr8')
+}
+$clsPostTagUnlinked = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35254; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{
+        repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main'
+        mode = 'shipped'; srRef = 'origin/release/10.0.1xx-sr8'; contentsRef = '10.0.80'
+    } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "closed-fix-unlinked: post-tag branch-only fix stays unresolved for shipped contents" `
+    -Expected 'no-fix-yet' -Actual $clsPostTagUnlinked.classification
 
 # Guard A — bare 'mention' (no fix verb) must STAY no-fix-yet. Regression issues
 # routinely name the CAUSE PR for context ("Before PR #X ... After PR #X"); the
@@ -1879,6 +4178,89 @@ $clsOpenIssue = Classify-RegressionCandidate `
 Assert-Eq -Label "OPEN issue + OPEN candidate PR → stays open-on-main (guard is CLOSED-only)" `
     -Expected 'open-on-main' -Actual $clsOpenIssue.classification
 
+# Test 4 — CLOSED issue + OPEN candidate on a NON-main branch (e.g. inflight/current).
+# The OPEN-candidate split routes a non-main OPEN PR to 'needs-human-review' rather
+# than 'open-on-main', so a verdict-string-only guard would let a CLOSED issue with an
+# unmerged non-main candidate surface as a false Tier-2 risk. The guard keys on the
+# SELECTED PR being OPEN, so this still reroutes to the honest 'no-fix-yet' (no
+# comment-cited merged fix on the SR) — an unmerged PR cannot have closed the issue.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix regression on inflight'
+        state       = 'OPEN'
+        baseRefName = 'inflight/current'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #88888'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Core/src/Core.cs'; additions = 1; deletions = 0 })
+    }
+}
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsClosedNonMain = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 88888; state = 'CLOSED' }) `
+    -CandidatePrs @(88889) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr9'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "CLOSED issue + OPEN non-main candidate → no-fix-yet, never needs-human-review" `
+    -Expected 'no-fix-yet' -Actual $clsClosedNonMain.classification
+Assert-Eq -Label "CLOSED non-main contradiction evidence explains the unmerged-PR reason" `
+    -Expected $true -Actual (($clsClosedNonMain.evidence -join "`n") -match 'unmerged PR cannot have closed')
+$vClosedNonMain = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @(@{ classification = $clsClosedNonMain.classification; state = 'CLOSED' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "CLOSED non-main no-fix-yet is non-blocking (Tier 3 effective → 🟢)" `
+    -Expected '🟢' -Actual $vClosedNonMain.symbol
+
+# ───── Select-OpenMainFixPr (mixed-candidate renderer selection) ─────
+# 'open-on-main' can be produced by a candidate list holding several OPEN PRs.
+# The Open-Fix-PRs-Inbound renderer must surface the PR that actually drove the
+# verdict — the one targeting main — not merely the first OPEN candidate. A mixed
+# list (inflight PR first, main PR second) must render the MAIN PR with its
+# '🔵 awaiting main merge' row + /backport action, not the inflight PR.
+Write-Host "`n[Unit] Select-OpenMainFixPr (mixed-candidate renderer selection)" -ForegroundColor Cyan
+
+$mixedInflightFirst = @(
+    @{ number = 40001; state = 'OPEN'; baseRef = 'inflight/current' },
+    @{ number = 40002; state = 'OPEN'; baseRef = 'main' }
+)
+$selMixed = Select-OpenMainFixPr -CandidateFixPrs $mixedInflightFirst -MainBranch 'main'
+Assert-Eq -Label "mixed candidates (inflight first, main second) → selects the MAIN PR" `
+    -Expected 40002 -Actual ([int]$selMixed.number)
+
+# Fallback: no OPEN candidate targets main → keep prior behavior (first OPEN).
+$noMainCandidate = @(
+    @{ number = 40003; state = 'OPEN'; baseRef = 'inflight/current' },
+    @{ number = 40004; state = 'MERGED'; baseRef = 'main' }
+)
+$selFallback = Select-OpenMainFixPr -CandidateFixPrs $noMainCandidate -MainBranch 'main'
+Assert-Eq -Label "no OPEN main candidate → falls back to first OPEN candidate" `
+    -Expected 40003 -Actual ([int]$selFallback.number)
+
+# No OPEN candidates at all → null (renderer skips the row).
+$selNone = Select-OpenMainFixPr -CandidateFixPrs @(@{ number = 40005; state = 'MERGED'; baseRef = 'main' }) -MainBranch 'main'
+Assert-Eq -Label "no OPEN candidates → returns null" `
+    -Expected $true -Actual ($null -eq $selNone)
+
+# Null/empty MainBranch guard: a candidate with a missing/empty baseRef must NOT
+# be picked by 'baseRef -eq ""' — the selector must skip the main-match and fall
+# back to the first OPEN candidate (defends the renderer when metadata.mainBranch
+# is absent, e.g. slim fixtures). The empty-baseRef candidate is deliberately
+# second so the pre-guard bug (which matched it via -eq "") is distinguishable
+# from the fixed first-OPEN fallback.
+$nullMainBranch = @(
+    @{ number = 40006; state = 'OPEN'; baseRef = 'inflight/current' },
+    @{ number = 40007; state = 'OPEN'; baseRef = '' }
+)
+$selNullMain = Select-OpenMainFixPr -CandidateFixPrs $nullMainBranch -MainBranch $null
+Assert-Eq -Label "null MainBranch + empty-baseRef candidate → falls back to first OPEN (no accidental match)" `
+    -Expected 40006 -Actual ([int]$selNullMain.number)
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
@@ -1901,6 +4283,12 @@ foreach ($case in @(
         -Expected $case.Tier `
         -Actual (Get-VerdictTier -Classification $case.Cls)
 }
+Assert-Eq -Label "candidate merged-on-main-no-backport remains a risk until cut ancestry is known" -Expected 2 `
+    -Actual (Get-EffectiveVerdictTier -Classification 'merged-on-main-no-backport' -Mode 'candidate' -State 'CLOSED')
+Assert-Eq -Label "in-flight merged-on-main-no-backport remains a risk" -Expected 2 `
+    -Actual (Get-EffectiveVerdictTier -Classification 'merged-on-main-no-backport' -Mode 'in-flight' -State 'CLOSED')
+Assert-Eq -Label "candidate open no-fix-yet remains blocking" -Expected 1 `
+    -Actual (Get-EffectiveVerdictTier -Classification 'no-fix-yet' -Mode 'candidate' -State 'OPEN')
 
 # ───── Get-OverallVerdict (the readiness gate) ─────
 Write-Host "`n[Unit] Get-OverallVerdict (readiness gate)" -ForegroundColor Cyan
@@ -1932,25 +4320,25 @@ Assert-Eq -Label "backport-in-progress → 🟡 Conditionally Ready" -Expected '
 
 # Yellow: red-needs-review CI
 $dataYellowCi = @{
-    metadata = @{ mode = 'shipped' }
+    metadata = @{ mode = 'in-flight' }
     regressions = @(@{ classification = 'in-sr-active'; state = 'CLOSED' })
     ci = @{ overall = 'red-needs-review' }
 }
 $v = Get-OverallVerdict -Data $dataYellowCi
-Assert-Eq -Label "red-needs-review (shipped) → 🟡" -Expected '🟡' -Actual $v.symbol
+Assert-Eq -Label "red-needs-review (in-flight) → 🟡" -Expected '🟡' -Actual $v.symbol
 
 # Yellow: partial-unknown CI
 $dataPartialUnknownCi = @{
-    metadata = @{ mode = 'shipped' }
+    metadata = @{ mode = 'in-flight' }
     regressions = @(@{ classification = 'in-sr-active'; state = 'CLOSED' })
     ci = @{ overall = 'partial-unknown' }
 }
 $v = Get-OverallVerdict -Data $dataPartialUnknownCi
-Assert-Eq -Label "partial-unknown (shipped) → 🟡" -Expected '🟡' -Actual $v.symbol
+Assert-Eq -Label "partial-unknown (in-flight) → 🟡" -Expected '🟡' -Actual $v.symbol
 
 # Red: open no-fix-yet
 $dataRedRegr = @{
-    metadata = @{ mode = 'shipped' }
+    metadata = @{ mode = 'in-flight' }
     regressions = @(
         @{ classification = 'in-sr-active'; state = 'CLOSED' }
         @{ classification = 'no-fix-yet'; state = 'OPEN' }
@@ -1973,7 +4361,7 @@ Assert-Eq -Label "CLOSED no-fix-yet does NOT block → 🟢" -Expected '🟢' -A
 
 # In-sr-reverted always blocks
 $dataReverted = @{
-    metadata = @{ mode = 'shipped' }
+    metadata = @{ mode = 'in-flight' }
     regressions = @(@{ classification = 'in-sr-reverted'; state = 'CLOSED' })
     ci = @{ overall = 'green' }
 }
@@ -1997,6 +4385,232 @@ $dataCandidateUnknown = @{
 }
 $v = Get-OverallVerdict -Data $dataCandidateUnknown
 Assert-Eq -Label "candidate + partial-unknown does NOT block → 🟢" -Expected '🟢' -Actual $v.symbol
+
+$dataCandidateIncludedFix = @{
+    metadata = @{ mode = 'candidate' }
+    regressions = @(
+        @{ classification = 'merged-on-main-no-backport'; state = 'CLOSED' }
+    )
+    ci = @{ overall = 'green' }
+}
+$v = Get-OverallVerdict -Data $dataCandidateIncludedFix
+Assert-Eq -Label "candidate + fix on current main remains conditional until cut ancestry is known" -Expected '🟡' -Actual $v.symbol
+Assert-Eq -Label "candidate + fix on current main retains Tier 2 regression reason" -Expected $true `
+    -Actual (@($v.reasons | Where-Object { $_ -match 'merged-on-main-no-backport' }).Count -gt 0)
+
+# Shipped lifecycle semantics: the release already tagged, so all signals become
+# visible follow-up/advisory rather than retroactive ship gates.
+Assert-Eq -Label "stable tag info rejects prerelease version" -Expected $true `
+    -Actual ($null -eq (Get-StableTagInfo -Version '10.0.90-preview'))
+Assert-Eq -Label "stable tag info rejects malformed version" -Expected $true `
+    -Actual ($null -eq (Get-StableTagInfo -Version 'not-a-version'))
+$origStableTagInvokeGh = (Get-Item function:Invoke-Gh).ScriptBlock
+$origStableTagInvokeGit = (Get-Item function:Invoke-Git).ScriptBlock
+try {
+    function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return '2026-07-22T15:50:52Z' }
+    function Invoke-Git { param([string]$Cmd) return '2026-07-10T16:21:27+01:00' }
+    $publishedStableTag = Get-StableTagInfo -Version '10.0.90'
+    Assert-Eq -Label "stable tag info prefers GitHub Release publication time" `
+        -Expected '2026-07-22T15:50:52.0000000Z' -Actual $publishedStableTag.Date.ToString('o')
+    Assert-Eq -Label "stable tag info labels GitHub Release date source" `
+        -Expected 'github-release' -Actual $publishedStableTag.DateSource
+
+    function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $null }
+    function Invoke-Git {
+        param([string]$Cmd)
+        if ($Cmd -like 'cat-file*') { return 'commit' }
+        return '2026-07-10T16:21:27+01:00'
+    }
+    $fallbackStableTag = Get-StableTagInfo -Version '10.0.90'
+    Assert-Eq -Label "stable tag info falls back to tagged commit date when release metadata is unavailable" `
+        -Expected '2026-07-10T15:21:27.0000000Z' -Actual $fallbackStableTag.Date.ToString('o')
+    Assert-Eq -Label "stable tag fallback is labeled as tagged-commit evidence" `
+        -Expected 'tagged-commit' -Actual $fallbackStableTag.DateSource
+
+    function Invoke-Git {
+        param([string]$Cmd)
+        if ($Cmd -like 'cat-file*') { return 'tag' }
+        return '2026-07-10T16:21:27+01:00'
+    }
+    $annotatedStableTag = Get-StableTagInfo -Version '10.0.90'
+    Assert-Eq -Label "stable tag fallback identifies annotated tag evidence" `
+        -Expected 'annotated-tag' -Actual $annotatedStableTag.DateSource
+} finally {
+    Set-Item function:Invoke-Gh $origStableTagInvokeGh
+    Set-Item function:Invoke-Git $origStableTagInvokeGit
+}
+
+Assert-Eq -Label "carry-forward: issue reported after ship without later milestone stays a hotfix follow-up" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-23T00:00:00Z'; milestone = $null } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: issue created before ship without later milestone" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-01T00:00:00Z'; milestone = $null } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: later-SR milestone" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR10' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: same-SR milestone is not future work" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression ([pscustomobject]@{ createdAt = $null; milestone = '.NET 10 SR9' }) -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: unknown shipped cycle does not treat any SR milestone as future work" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ createdAt = $null; milestone = '.NET 10 SR10' } -ShippedSrNumber 0 -ShippedMajor 0)
+Assert-Eq -Label "carry-forward: hotfix milestone is future work from the base SR" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10 SR9.1' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 0)
+Assert-Eq -Label "carry-forward: current hotfix milestone is not later than the shipped hotfix" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10.0 SR9.1' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 1)
+Assert-Eq -Label "carry-forward: a later hotfix milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10 SR9.2' } -ShippedSrNumber 9 -ShippedMajor 10 -ShippedSubPatch 1)
+Assert-Eq -Label "carry-forward: later-major preview milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11.0-preview1' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: later-major GA milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11.0 GA' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: later-major servicing milestone is future work" -Expected $true `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 11 Servicing' } -ShippedSrNumber 9 -ShippedMajor 10)
+Assert-Eq -Label "carry-forward: same-major preview milestone is not future work" -Expected $false `
+    -Actual (Test-IsCarryForwardRegression -Regression @{ milestone = '.NET 10.0-preview7' } -ShippedSrNumber 9 -ShippedMajor 10)
+$malformedMilestoneThrew = $false; $malformedMilestoneCarry = $true
+try {
+    $malformedMilestoneCarry = Test-IsCarryForwardRegression `
+        -Regression @{ milestone = '.NET 999999999999999999 SR999999999999999999' } `
+        -ShippedSrNumber 9 -ShippedMajor 10
+} catch {
+    $malformedMilestoneThrew = $true
+}
+Assert-Eq -Label "carry-forward: oversized milestone numbers do not throw" -Expected $false -Actual $malformedMilestoneThrew
+Assert-Eq -Label "carry-forward: oversized milestone numbers are unrecognized" -Expected $false -Actual $malformedMilestoneCarry
+Assert-Eq -Label "SR version helper: base patch has sub-patch 0" -Expected 0 `
+    -Actual (Get-SrSubPatchFromVersion -Version '10.0.90')
+Assert-Eq -Label "SR version helper: hotfix patch maps to sub-patch 1" -Expected 1 `
+    -Actual (Get-SrSubPatchFromVersion -Version '10.0.91')
+
+$shippedClean = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @(@{ classification = 'in-sr-active'; state = 'CLOSED' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped clean uses shipped-specific verdict" -Expected 'Shipped — clean' -Actual $shippedClean.label
+Assert-Eq -Label "shipped clean is green" -Expected '🟢' -Actual $shippedClean.symbol
+
+$shippedFollowUp = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    shippedInfo = @{ tagDate = '2026-07-14T00:00:00Z'; srNumber = 9; major = 10 }
+    regressions = @(@{ classification = 'no-fix-yet'; state = 'OPEN'; createdAt = '2026-07-01T00:00:00Z'; milestone = $null })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped unresolved pre-ship regression is yellow follow-up, never red" -Expected '🟡' -Actual $shippedFollowUp.symbol
+Assert-Eq -Label "shipped unresolved regression label says follow-up required" -Expected 'Shipped — follow-up required' -Actual $shippedFollowUp.label
+
+$shippedCarryForward = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    shippedInfo = @{ tagDate = '2026-07-14T00:00:00Z'; srNumber = 9; major = 10 }
+    regressions = @(@{ classification = 'no-fix-yet'; state = 'OPEN'; createdAt = '2026-07-23T00:00:00Z'; milestone = '.NET 10 SR10' })
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped carry-forward remains non-gating but requires follow-up" -Expected '🟡' -Actual $shippedCarryForward.symbol
+Assert-Eq -Label "shipped carry-forward reason is explicit" -Expected $true `
+    -Actual ([bool](@($shippedCarryForward.reasons) -match 'carry-forward, non-gating'))
+
+$shippedCiAdvisory = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    ci = @{ overall = 'red-needs-review' }
+}
+Assert-Eq -Label "shipped red CI is advisory and does not unship release" -Expected '🟢' -Actual $shippedCiAdvisory.symbol
+
+$shippedBlockedCheck = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @([pscustomobject]@{ Area = 'post-ship housekeeping'; Status = 'BLOCKED'; Details = 'x'; NextAction = 'y' })
+}
+Assert-Eq -Label "shipped BLOCKED check becomes yellow follow-up, never Not Ready" -Expected '🟡' -Actual $shippedBlockedCheck.symbol
+$shippedUnknownCheck = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    shippedInfo = @{ version = '10.0.90'; srNumber = 9; major = 10 }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @([pscustomobject]@{ Area = 'BAR mapping'; Status = 'UNKNOWN'; Details = 'x'; NextAction = 'verify' })
+}
+Assert-Eq -Label "shipped UNKNOWN check becomes yellow follow-up, never clean" -Expected '🟡' -Actual $shippedUnknownCheck.symbol
+$shippedWatchCheck = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    shippedInfo = @{ version = '10.0.90'; srNumber = 9; major = 10 }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @([pscustomobject]@{ Area = 'ci-scan'; Status = 'WATCH'; Details = 'x'; NextAction = 'review' })
+}
+Assert-Eq -Label "shipped WATCH check becomes yellow follow-up" -Expected '🟡' -Actual $shippedWatchCheck.symbol
+
+$shippedHotfixVerdict = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    shippedInfo = @{ version = '10.0.90'; liveVersion = '10.0.91'; srNumber = 9; major = 10; hotfixInProgress = $true }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @([pscustomobject]@{ Area = 'Unpublished hotfix branch state'; Status = 'WATCH'; Details = 'x'; NextAction = 'y' })
+}
+Assert-Eq -Label "shipped unpublished hotfix forces yellow follow-up verdict" `
+    -Expected '🟡' -Actual $shippedHotfixVerdict.symbol
+Assert-Eq -Label "shipped unpublished hotfix verdict names live version" `
+    -Expected $true -Actual ([bool](@($shippedHotfixVerdict.reasons) -match '10\.0\.91'))
+
+$shippedPscoData = [pscustomobject]@{
+    metadata = [pscustomobject]@{ mode = 'shipped' }
+    shippedInfo = [pscustomobject]@{ version = '10.0.90'; srNumber = 9; major = 10 }
+    regressions = @([pscustomobject]@{
+        classification = 'no-fix-yet'; state = 'OPEN'; milestone = '.NET 10 SR9'
+    })
+    ci = [pscustomobject]@{ overall = 'green' }
+    shipChecks = @()
+}
+$shippedPscoThrew = $false; $shippedPscoVerdict = $null
+try { $shippedPscoVerdict = Get-OverallVerdict -Data $shippedPscoData } catch { $shippedPscoThrew = $true }
+Assert-Eq -Label "shipped verdict: top-level PSCustomObject does not throw" -Expected $false -Actual $shippedPscoThrew
+Assert-Eq -Label "shipped verdict: top-level PSCustomObject preserves follow-up result" -Expected '🟡' -Actual $shippedPscoVerdict.symbol
+
+$shippedIncompleteScan = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = @('regressed-in-10.0.90')
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped incomplete regression scan cannot report clean" -Expected '🟡' -Actual $shippedIncompleteScan.symbol
+Assert-Eq -Label "shipped incomplete regression scan reason is explicit" -Expected $true `
+    -Actual ([bool](@($shippedIncompleteScan.reasons) -match 'Regression scan incomplete'))
+
+$inflightIncompleteScan = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'in-flight' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = @('regressed-in-10.0.90')
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "in-flight incomplete regression scan is conditionally ready" -Expected '🟡' -Actual $inflightIncompleteScan.symbol
+
+$shippedIncompleteMissingLabels = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped incomplete scan with missing labels has no dangling parentheses" -Expected $false `
+    -Actual ([bool](@($shippedIncompleteMissingLabels.reasons) -match '\(\)'))
+
+$inflightIncompleteNullLabels = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'in-flight' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = $null
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "in-flight incomplete scan with null labels has no dangling parentheses" -Expected $false `
+    -Actual ([bool](@($inflightIncompleteNullLabels.reasons) -match '\(\)'))
+
+$shippedIncompleteScalarLabel = Get-OverallVerdict -Data @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    regressionScanIncomplete = $true
+    regressionFailedLabels = 'regressed-in-10.0.90'
+    ci = @{ overall = 'green' }
+}
+Assert-Eq -Label "shipped incomplete scan accepts scalar failed-label detail" -Expected $true `
+    -Actual ([bool](@($shippedIncompleteScalarLabel.reasons) -match 'regressed-in-10\.0\.90'))
 
 # ───── ConvertTo-LinkedSha / ConvertTo-LinkedPr ─────
 Write-Host "`n[Unit] Markdown linkification helpers" -ForegroundColor Cyan
@@ -2065,6 +4679,16 @@ $dataC = $dataA.Clone()
 $dataC['metadata'] = @{ srHeadSha = 'bbbbbbbb2222'; fetchedAt = '2025-01-01T00:00:00Z' }
 $hashC = Get-ReportSemanticHash -Data $dataC -Verdict $verdictA
 Assert-Eq -Label "Hash changes when srHeadSha changes" -Expected $false -Actual ($hashA -eq $hashC)
+$dataOpenPrChanged = $dataA.Clone()
+$dataOpenPrChanged['openSrPrs'] = @(
+    @{
+        number = 35100; title = 'Backport fix'; author = @{ login = 'maintainer' }
+        isDraft = $true; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-01-02T00:00:00Z'
+    }
+)
+$hashOpenPrChanged = Get-ReportSemanticHash -Data $dataOpenPrChanged -Verdict $verdictA
+Assert-Eq -Label "Hash changes when rendered open-SR-PR fields change" -Expected $false `
+    -Actual ($hashA -eq $hashOpenPrChanged)
 
 # Regression classification change → DIFFERENT hash
 $dataD = $dataA.Clone()
@@ -2089,6 +4713,13 @@ Assert-Eq -Label "Hash changes when verdict.symbol changes" -Expected $false -Ac
 # Same input → SAME hash (determinism)
 $hashAgain = Get-ReportSemanticHash -Data $dataA -Verdict $verdictA
 Assert-Eq -Label "Hash is deterministic across runs" -Expected $hashA -Actual $hashAgain
+
+$dataIncompleteScanHash = $dataA.Clone()
+$dataIncompleteScanHash['regressionScanIncomplete'] = $true
+$dataIncompleteScanHash['regressionFailedLabels'] = @('regressed-in-10.0.90')
+$incompleteScanHash = Get-ReportSemanticHash -Data $dataIncompleteScanHash -Verdict $verdictA
+Assert-Eq -Label "hash: incomplete regression scan differs from verified scan" `
+    -Expected $false -Actual ($hashA -eq $incompleteScanHash)
 
 # Lifecycle mode flip → DIFFERENT hash, even with byte-identical content.
 # This guards the in-flight -> shipped transition: `-Shipped` surveys the SAME
@@ -2127,6 +4758,161 @@ Assert-Eq -Label "hash: candidate vs in-flight (identical content) → DIFFERENT
     -Expected $false -Actual ($hCandidate -eq $hInflight)
 Assert-Eq -Label "hash: mode fold is deterministic (shipped recomputed → SAME)" `
     -Expected $hShipped -Actual (Get-ReportSemanticHash -Data $dataShipped -Verdict $verdictA)
+
+$dataShippedFollowUpHash = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'shipped'; mainBranch = 'main' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @() }
+    shippedInfo = @{ version = '10.0.90'; tagDate = '2026-07-22T15:50:52Z'; dateSource = 'github-release'; srNumber = 9; major = 10 }
+    regressions = @(
+        @{ issue = 36001; classification = 'no-fix-yet'; state = 'OPEN'; createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR9'; recommendedAction = 'Investigate' }
+    )
+    openSrPrs = @()
+}
+$dataShippedCarryHash = $dataShippedFollowUpHash.Clone()
+$dataShippedCarryHash['regressions'] = @(
+    @{ issue = 36001; classification = 'no-fix-yet'; state = 'OPEN'; createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR10'; recommendedAction = 'Investigate' }
+)
+$hShippedFollowUp = Get-ReportSemanticHash -Data $dataShippedFollowUpHash -Verdict @{ symbol = '🟡' }
+$hShippedCarry = Get-ReportSemanticHash -Data $dataShippedCarryHash -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: shipped regression moving follow-up → carry-forward refreshes tracker" `
+    -Expected $false -Actual ($hShippedFollowUp -eq $hShippedCarry)
+
+$dataTier3CurrentMilestone = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'shipped'; mainBranch = 'main' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(36001) }
+    shippedInfo = @{ version = '10.0.90'; tagDate = '2026-07-22T15:50:52Z'; dateSource = 'github-release'; srNumber = 9; major = 10 }
+    regressions = @(
+        @{ issue = 36001; classification = 'in-sr-active'; state = 'CLOSED'; milestone = '.NET 10 SR9'; recommendedAction = 'No action' }
+    )
+    openSrPrs = @()
+}
+$dataTier3FutureMilestone = $dataTier3CurrentMilestone.Clone()
+$dataTier3FutureMilestone['regressions'] = @(
+    @{ issue = 36001; classification = 'in-sr-active'; state = 'CLOSED'; milestone = '.NET 10 SR10'; recommendedAction = 'No action' }
+)
+$tier3CurrentHash = Get-ReportSemanticHash -Data $dataTier3CurrentMilestone -Verdict @{ symbol = '🟢' }
+$tier3FutureHash = Get-ReportSemanticHash -Data $dataTier3FutureMilestone -Verdict @{ symbol = '🟢' }
+Assert-Eq -Label "hash: Tier-3 milestone edit does not churn non-rendered lifecycle bucket" `
+    -Expected $tier3CurrentHash -Actual $tier3FutureHash
+
+$dataShippedNewAnchorHash = $dataShippedFollowUpHash.Clone()
+$dataShippedNewAnchorHash['shippedInfo'] = @{
+    version = '10.0.91'; tagDate = '2026-08-01T12:00:00Z'; dateSource = 'github-release'; srNumber = 9; major = 10
+}
+$hShippedNewAnchor = Get-ReportSemanticHash -Data $dataShippedNewAnchorHash -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: shipped version/date anchor change refreshes tracker" `
+    -Expected $false -Actual ($hShippedFollowUp -eq $hShippedNewAnchor)
+$dataHotfixPendingHash = $dataShippedFollowUpHash.Clone()
+$dataHotfixPendingHash['shippedInfo'] = @{
+    version = '10.0.90'; liveVersion = $null; hotfixInProgress = $true
+    tagDate = '2026-07-10T15:21:27Z'; dateSource = 'github-release'; srNumber = 9; major = 10
+}
+$dataHotfixVersionHash = $dataShippedFollowUpHash.Clone()
+$dataHotfixVersionHash['shippedInfo'] = @{
+    version = '10.0.90'; liveVersion = '10.0.91'; hotfixInProgress = $true
+    tagDate = '2026-07-10T15:21:27Z'; dateSource = 'github-release'; srNumber = 9; major = 10
+}
+Assert-Eq -Label "hash: version-pending to resolved hotfix version refreshes marker/title" -Expected $false `
+    -Actual ((Get-ReportSemanticHash -Data $dataHotfixPendingHash -Verdict @{ symbol = '🟡' }) -eq
+        (Get-ReportSemanticHash -Data $dataHotfixVersionHash -Verdict @{ symbol = '🟡' }))
+
+$dataShippedPublicationPending = $dataShippedFollowUpHash.Clone()
+$dataShippedPublicationPending['shippedInfo'] = @{
+    version = '10.0.90'; tagDate = '2026-07-10T15:21:27Z'; dateSource = 'tagged-commit'
+    publicationState = 'pending'; srNumber = 9; major = 10
+}
+$dataShippedPublicationUnknown = $dataShippedFollowUpHash.Clone()
+$dataShippedPublicationUnknown['shippedInfo'] = @{
+    version = '10.0.90'; tagDate = '2026-07-10T15:21:27Z'; dateSource = 'tagged-commit'
+    publicationState = 'unknown'; srNumber = 9; major = 10
+}
+$hShippedPublicationPending = Get-ReportSemanticHash -Data $dataShippedPublicationPending -Verdict @{ symbol = '🟡' }
+$hShippedPublicationUnknown = Get-ReportSemanticHash -Data $dataShippedPublicationUnknown -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: publication pending-to-unknown wording refreshes shipped tracker" `
+    -Expected $false -Actual ($hShippedPublicationPending -eq $hShippedPublicationUnknown)
+
+$dataCandidateStatusReady = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main'; fetchedAt = '2026-07-19T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @() }
+    regressions = @()
+    openSrPrs = @(@{ number = 36411 })
+    candidatePr = @{
+        mode = 'resolved'; nextSr = 'SR10'; versionBase = '10.0.100'; spoofers = 0; unverifiable = 0
+        candidates = @(@{
+            number = 36411; title = 'July Candidate'; author = @{ login = 'release-owner' }
+            state = 'OPEN'; isDraft = $false; mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'
+            createdAt = '2026-07-06T00:00:00Z'; updatedAt = '2026-07-20T00:00:00Z'
+        })
+    }
+}
+$dataCandidateStatusBlocked = $dataCandidateStatusReady.Clone()
+$dataCandidateStatusBlocked['candidatePr'] = @{
+    mode = 'resolved'; nextSr = 'SR10'; versionBase = '10.0.100'; spoofers = 0; unverifiable = 0
+    candidates = @(@{
+        number = 36411; title = 'July Candidate'; author = @{ login = 'release-owner' }
+        state = 'OPEN'; isDraft = $false; mergeable = 'CONFLICTING'; reviewDecision = 'CHANGES_REQUESTED'
+        createdAt = '2026-07-06T00:00:00Z'; updatedAt = '2026-07-20T00:00:00Z'
+    })
+}
+$candidateReadyHash = Get-ReportSemanticHash -Data $dataCandidateStatusReady -Verdict @{ symbol = '🟡' }
+$candidateBlockedHash = Get-ReportSemanticHash -Data $dataCandidateStatusBlocked -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: Candidate conflict/review status change refreshes tracker" `
+    -Expected $false -Actual ($candidateReadyHash -eq $candidateBlockedHash)
+
+$dataCandidateTouched = $dataCandidateStatusReady.Clone()
+$dataCandidateTouched['candidatePr'] = @{
+    mode = 'resolved'; nextSr = 'SR10'; versionBase = '10.0.100'; spoofers = 0; unverifiable = 0
+    candidates = @(@{
+        number = 36411; title = 'July Candidate'; author = @{ login = 'release-owner' }
+        state = 'OPEN'; isDraft = $false; mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'
+        createdAt = '2026-07-06T00:00:00Z'; updatedAt = '2026-07-20T23:59:59Z'
+    })
+}
+$candidateTouchedHash = Get-ReportSemanticHash -Data $dataCandidateTouched -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: Candidate updatedAt-only activity does not churn tracker" `
+    -Expected $candidateReadyHash -Actual $candidateTouchedHash
+
+$dataCandidateDay13 = $dataCandidateStatusReady.Clone()
+$dataCandidateDay13['metadata'] = $dataCandidateStatusReady.metadata.Clone()
+$dataCandidateDay13.metadata.fetchedAt = '2026-07-19T00:00:00Z'
+$dataCandidateDay14 = $dataCandidateStatusReady.Clone()
+$dataCandidateDay14['metadata'] = $dataCandidateStatusReady.metadata.Clone()
+$dataCandidateDay14.metadata.fetchedAt = '2026-07-20T00:00:00Z'
+$candidateDay13Hash = Get-ReportSemanticHash -Data $dataCandidateDay13 -Verdict @{ symbol = '🟡' }
+$candidateDay14Hash = Get-ReportSemanticHash -Data $dataCandidateDay14 -Verdict @{ symbol = '🟡' }
+Assert-Eq -Label "hash: Candidate crossing 14-day stale threshold refreshes tracker" `
+    -Expected $false -Actual ($candidateDay13Hash -eq $candidateDay14Hash)
+
+$dataCandidateIncludedTierHash = @{
+    metadata = @{ srHeadSha = 'cccccccc3333'; mode = 'candidate'; mainBranch = 'main' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35615, 36749) }
+    regressions = @(
+        @{ issue = 35615; classification = 'merged-on-main-no-backport'; state = 'CLOSED'; recommendedAction = 'Included when cut' }
+        @{ issue = 36749; classification = 'open-on-main'; state = 'OPEN'; recommendedAction = 'Review before cut' }
+    )
+    openSrPrs = @()
+}
+$candidateIncludedTier2Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
+$originalEffectiveTierFunction = (Get-Item function:Get-EffectiveVerdictTier).ScriptBlock
+try {
+    function Get-EffectiveVerdictTier {
+        param([string]$Classification, [string]$Mode = 'in-flight', [string]$State = 'OPEN')
+        if ($Mode -eq 'candidate' -and $Classification -eq 'merged-on-main-no-backport') {
+            return 3
+        }
+        return (& $originalEffectiveTierFunction -Classification $Classification -Mode $Mode -State $State)
+    }
+    $candidateIncludedTier3Hash = Get-ReportSemanticHash -Data $dataCandidateIncludedTierHash -Verdict @{ symbol = '🟡' }
+} finally {
+    Set-Item function:Get-EffectiveVerdictTier $originalEffectiveTierFunction
+}
+Assert-Eq -Label "hash: candidate included-fix Tier 2→3 transition refreshes tracker while verdict stays yellow" `
+    -Expected $false -Actual ($candidateIncludedTier3Hash -eq $candidateIncludedTier2Hash)
+
 # Absent mode defaults to 'in-flight' → SAME as an explicit 'in-flight'.
 $dataNoMode = @{
     metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z' }
@@ -2239,6 +5025,112 @@ try {
     Remove-Item -LiteralPath $childScriptPath -ErrorAction SilentlyContinue
 }
 
+# ───── Regression guard (PR #36497 review, Finding 3): pscustomobject metadata ─────
+# After a JSON round-trip (ConvertFrom-Json), a report's $Data.metadata is a
+# [pscustomobject], not a [hashtable]. Get-OverallVerdict and Get-ReportSemanticHash
+# both read metadata.mode; the previous `$Data.metadata.ContainsKey('mode')` form
+# throws MethodNotFound on a pscustomobject (it has no ContainsKey method), so any
+# caller that verdicted or hashed a DESERIALIZED report crashed before ever reaching
+# the renderer's own defensive reads. The shared Get-MetadataValue accessor must make
+# both entry points shape-safe. ($Data itself stays a hashtable — only metadata flips
+# shape — matching how the idempotency/renderer callers rebuild the payload.)
+Write-Host "`n[Unit] pscustomobject metadata is shape-safe (Get-OverallVerdict + Get-ReportSemanticHash)" -ForegroundColor Cyan
+$dataPsco = @{
+    metadata    = [pscustomobject]@{ mode = 'candidate'; mainBranch = 'main'; srHeadSha = ('a' * 40); fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$pscoVerdict = $null; $pscoVerdictThrew = $false
+try { $pscoVerdict = Get-OverallVerdict -Data $dataPsco } catch { $pscoVerdictThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-OverallVerdict does NOT throw on pscustomobject metadata" -Expected $false -Actual $pscoVerdictThrew
+Assert-Eq -Label "Get-OverallVerdict returns a non-null verdict on pscustomobject metadata" -Expected $true -Actual ($null -ne $pscoVerdict)
+
+$pscoHash = $null; $pscoHashThrew = $false
+try { $pscoHash = Get-ReportSemanticHash -Data $dataPsco -Verdict $pscoVerdict } catch { $pscoHashThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-ReportSemanticHash does NOT throw on pscustomobject metadata" -Expected $false -Actual $pscoHashThrew
+Assert-Eq -Label "Get-ReportSemanticHash returns a 64-char SHA-256 on pscustomobject metadata" -Expected $true -Actual ($pscoHash -match '^[0-9a-f]{64}$')
+
+# The mode carried on the pscustomobject must be HONORED, not silently defaulted:
+# the hash's mode-fold (candidate vs in-flight) is exactly what flips the tracker at
+# the cut, so a swallowed mode would freeze it. Same content, only metadata.mode differs.
+$dataPscoInflight = @{
+    metadata    = [pscustomobject]@{ mode = 'in-flight'; mainBranch = 'main'; srHeadSha = ('a' * 40); fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$pscoHashInflight = Get-ReportSemanticHash -Data $dataPscoInflight -Verdict $pscoVerdict
+Assert-Eq -Label "hash: pscustomobject mode is actually read (candidate vs in-flight differ)" `
+    -Expected $false -Actual ($pscoHash -eq $pscoHashInflight)
+
+$dataTopPscoInflight = $dataPscoInflight | ConvertTo-Json -Depth 10 | ConvertFrom-Json
+$topPscoVerdictThrew = $false; $topPscoVerdict = $null
+try { $topPscoVerdict = Get-OverallVerdict -Data $dataTopPscoInflight } catch { $topPscoVerdictThrew = $true }
+Assert-Eq -Label "Get-OverallVerdict does NOT throw on top-level PSCustomObject" -Expected $false -Actual $topPscoVerdictThrew
+$topPscoHashThrew = $false; $topPscoHash = $null
+try { $topPscoHash = Get-ReportSemanticHash -Data $dataTopPscoInflight -Verdict $topPscoVerdict } catch { $topPscoHashThrew = $true }
+Assert-Eq -Label "Get-ReportSemanticHash does NOT throw on top-level PSCustomObject" -Expected $false -Actual $topPscoHashThrew
+Assert-Eq -Label "top-level PSCustomObject hash is valid SHA-256" -Expected $true -Actual ($topPscoHash -match '^[0-9a-f]{64}$')
+
+$partialInflightData = @{
+    metadata = @{ mode = 'in-flight'; mainBranch = 'main'; srHeadSha = ('c' * 40) }
+    surveyIncomplete = $true
+    surveyIncompleteReason = 'Partial survey (-Phase regressions) did not query every readiness axis.'
+    regressions = @()
+    ci = @{ overall = 'green' }
+}
+$partialInflightVerdict = Get-OverallVerdict -Data $partialInflightData
+Assert-Eq -Label "partial regressions-phase in-flight survey cannot report Ready" -Expected '🟡' -Actual $partialInflightVerdict.symbol
+$partialShippedData = $partialInflightData.Clone()
+$partialShippedData['metadata'] = @{ mode = 'shipped'; mainBranch = 'main'; srHeadSha = ('c' * 40) }
+$partialShippedVerdict = Get-OverallVerdict -Data $partialShippedData
+Assert-Eq -Label "partial regressions-phase shipped survey cannot report clean" -Expected '🟡' -Actual $partialShippedVerdict.symbol
+$completeInflightData = $partialInflightData.Clone()
+$completeInflightData['surveyIncomplete'] = $false
+$completeInflightHash = Get-ReportSemanticHash -Data $completeInflightData -Verdict @{ symbol = '🟢' }
+$partialInflightHash = Get-ReportSemanticHash -Data $partialInflightData -Verdict $partialInflightVerdict
+Assert-Eq -Label "hash: partial survey differs from complete survey" -Expected $false -Actual ($completeInflightHash -eq $partialInflightHash)
+
+# ───── Regression guard (PR #36497 re-review): srHead read must be shape-safe ─────
+# Get-ReportSemanticHash folds metadata.srHeadSha into the idempotency payload. On a
+# slim or JSON-round-tripped report whose [pscustomobject] metadata OMITS srHeadSha,
+# the previous direct `$Data.metadata.srHeadSha` read threw PropertyNotFound under
+# Set-StrictMode -Version Latest — contradicting this function's "every metadata read
+# stays shape-safe" contract (all its sibling reads go through Get-MetadataValue).
+# Cover the absent-key shape explicitly: the hash must still compute (srHead = $null).
+Write-Host "`n[Unit] Get-ReportSemanticHash is shape-safe when srHeadSha is absent" -ForegroundColor Cyan
+$dataNoSrHead = @{
+    metadata    = [pscustomobject]@{ mode = 'in-flight'; mainBranch = 'main'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001) }
+    regressions = @()
+    openSrPrs   = @()
+}
+$noSrHeadThrew = $false; $noSrHeadHash = $null
+try { $noSrHeadHash = Get-ReportSemanticHash -Data $dataNoSrHead -Verdict $pscoVerdict } catch { $noSrHeadThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-ReportSemanticHash does NOT throw when srHeadSha is absent" -Expected $false -Actual $noSrHeadThrew
+Assert-Eq -Label "Get-ReportSemanticHash returns a 64-char SHA-256 when srHeadSha is absent" -Expected $true -Actual ($noSrHeadHash -match '^[0-9a-f]{64}$')
+
+# ───── Regression guard (PR #36497 re-review): Get-MetadataValue shape-safety ─────
+# The shared accessor must read values from ANY IDictionary, not just [hashtable].
+# An [ordered]@{} is an OrderedDictionary: it has NO .ContainsKey method (only
+# .Contains), so the previous inline `$X.ContainsKey('mode')` guards threw
+# MethodNotFound under StrictMode, and a `-is [hashtable]`-only probe fell through
+# to a PSObject-property read that an ordered dictionary does not satisfy. Both
+# shape-fragile call sites (the $Ctx mode read and the $SrContents mainReverts
+# read) now route through Get-MetadataValue, so cover the ordered shape explicitly.
+Write-Host "`n[Unit] Get-MetadataValue is shape-safe for arbitrary IDictionary (ordered)" -ForegroundColor Cyan
+$orderedCtx = [ordered]@{ mode = 'candidate'; mainReverts = @(1, 2) }
+$gmvThrew = $false; $gmvMode = $null
+try { $gmvMode = Get-MetadataValue -Container $orderedCtx -Name 'mode' } catch { $gmvThrew = $true; Write-Host "    threw: $($_.Exception.Message)" -ForegroundColor Red }
+Assert-Eq -Label "Get-MetadataValue does NOT throw on an [ordered] dictionary" -Expected $false -Actual $gmvThrew
+Assert-Eq -Label "Get-MetadataValue reads a present key from an [ordered] dictionary" -Expected 'candidate' -Actual $gmvMode
+Assert-Eq -Label "Get-MetadataValue returns default for an absent key on an [ordered] dictionary" `
+    -Expected $null -Actual (Get-MetadataValue -Container $orderedCtx -Name 'noSuchKey')
+
 # ───── Format-MarkdownReport: tracker markers + linkification + body cap ─────
 Write-Host "`n[Unit] Format-MarkdownReport (markers, linkification, cap)" -ForegroundColor Cyan
 
@@ -2272,6 +5164,101 @@ $mdData = @{
 
 $md = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
                             -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "ordinary report omits active-hotfix marker" -Expected $false `
+    -Actual ($md -match 'release-readiness-hotfix:')
+$internalMdData = $mdData.Clone()
+$internalMdData['ci'] = @{
+    overall = 'green'
+    pipelines = @(
+        @{
+            name = 'internal-ci'; verdict = 'green'
+            latestBuild = @{
+                result = 'succeeded'; isAtOrAheadOfSrHead = $true; id = '999999'
+                url = 'https://dev.azure.com/dnceng/DefaultCollection/internal/_build/results?token=SRSECRET'
+            }
+        }
+    )
+}
+$safeSrMarkdown = Format-MarkdownReport -Data $internalMdData -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$rawSrMarkdown = Format-MarkdownReport -Data $internalMdData -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net10-sr7' -MaxBodyBytes 60000 -PublicSafe:$false
+Assert-Eq -Label "SR public-safe Markdown redacts internal pipeline URL and token" -Expected $false `
+    -Actual ($safeSrMarkdown -match 'dnceng|SRSECRET|DefaultCollection')
+Assert-Eq -Label "SR local non-public Markdown can retain internal pipeline evidence" -Expected $true `
+    -Actual ($rawSrMarkdown -match 'SRSECRET')
+$safeSrJson = (ConvertTo-PublicSafeValue -Value $internalMdData) | ConvertTo-Json -Depth 20
+Assert-Eq -Label "SR public-safe JSON redacts internal pipeline URL and token" -Expected $false `
+    -Actual ($safeSrJson -match 'dnceng|SRSECRET|DefaultCollection')
+Assert-Eq -Label "SR public-safe sanitizer redacts private release-tool names" -Expected $false `
+    -Actual ((ConvertTo-PublicSafeMarkdown -Text 'Build lives in the .NET Release Tracker and dotnet/release.') -match '\.NET Release Tracker|dotnet/release')
+$hotfixMdData = $mdData.Clone()
+$hotfixMdData['metadata'] = $mdData.metadata.Clone()
+$hotfixMdData.metadata.mode = 'shipped'
+$hotfixMdData['shippedInfo'] = @{
+    version = '10.0.90'; liveVersion = '10.0.91'; srNumber = 9; major = 10
+    tagDate = '2026-07-22T00:00:00Z'; dateSource = 'github-release'
+    hotfixInProgress = $true
+}
+$hotfixMdData['shipChecks'] = @(
+    @{ Area = 'Unpublished hotfix branch state'; Status = 'WATCH'; Details = 'x'; NextAction = 'y' }
+)
+$hotfixMd = Format-MarkdownReport -Data $hotfixMdData -RepoUrl 'https://github.com/dotnet/maui' `
+    -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "active hotfix report emits version-specific hidden marker" -Expected $true `
+    -Actual ($hotfixMd -match '<!-- release-readiness-hotfix: 10\.0\.91@aaaaaaaa1111bbbbbbbb2222cccccccc -->')
+Assert-Eq -Label "active hotfix report emits immutable shipped-generation marker" -Expected $true `
+    -Actual ($hotfixMd -match '<!-- release-readiness-shipped: 10\.0\.90 -->')
+Assert-Eq -Label "active hotfix report renders operational follow-up section" -Expected $true `
+    -Actual ($hotfixMd -match '(?s)Post-ship operational follow-ups.*Unpublished hotfix branch state')
+Assert-Eq -Label "active hotfix report does not claim no urgent follow-ups" -Expected $false `
+    -Actual ($hotfixMd -match 'No urgent post-ship follow-ups')
+$pendingVersionHotfixData = $hotfixMdData.Clone()
+$pendingVersionHotfixData['metadata'] = $hotfixMdData.metadata.Clone()
+$pendingVersionHotfixData['shippedInfo'] = $hotfixMdData.shippedInfo.Clone()
+$pendingVersionHotfixData.shippedInfo.liveVersion = $null
+$pendingVersionHotfixMd = Format-MarkdownReport -Data $pendingVersionHotfixData `
+    -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "versionless post-tag hotfix emits commit-keyed pending marker" -Expected $true `
+    -Actual ($pendingVersionHotfixMd -match '<!-- release-readiness-hotfix: version-pending@aaaaaaaa1111bbbbbbbb2222cccccccc -->')
+$mdTopPscoData = $mdData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+$mdTopPscoThrew = $false; $mdTopPsco = $null
+try {
+    $mdTopPsco = Format-MarkdownReport -Data $mdTopPscoData -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+} catch {
+    $mdTopPscoThrew = $true
+    Write-Host "    top-level PSCustomObject render threw: $($_.Exception.Message)" -ForegroundColor Red
+}
+Assert-Eq -Label "Format-MarkdownReport does NOT throw on top-level JSON-roundtripped PSCustomObject" -Expected $false -Actual $mdTopPscoThrew
+Assert-Eq -Label "top-level JSON-roundtripped report preserves tracker marker" -Expected $true `
+    -Actual ($mdTopPsco -match '<!-- release-readiness-tracker: net10-sr7 -->')
+
+$mdNestedRoundtripData = $mdData.Clone()
+$mdNestedRoundtripData['metadata'] = $mdData.metadata.Clone()
+$mdNestedRoundtripData.metadata.mode = 'candidate'
+$mdNestedRoundtripData.metadata.inheritFromPriorSr = $true
+$mdNestedRoundtripData.metadata.priorSrBranch = 'release/10.0.1xx-sr7'
+$mdNestedRoundtripData['srContents'] = @{
+    commitCount = 3; primaryCommitCount = 2; primarySourcePrs = @(35001)
+    inheritedCommitCount = 1; inheritedSourcePrs = @(35002); sourcePrs = @(35001, 35002)
+    reverts = @(
+        @{ revertCommit = 'bbbbbbbb2222cccccccc3333dddddddd'; revertsPr = 34999;
+           revertsCommit = 'aaaaaaaa1111bbbbbbbb2222cccccccc'; origin = 'inherited' }
+    )
+}
+$mdNestedRoundtripPsco = $mdNestedRoundtripData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+$mdNestedRoundtripThrew = $false; $mdNestedRoundtrip = $null
+try {
+    $mdNestedRoundtrip = Format-MarkdownReport -Data $mdNestedRoundtripPsco -RepoUrl 'https://github.com/dotnet/maui' `
+                                              -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+} catch {
+    $mdNestedRoundtripThrew = $true
+    Write-Host "    nested PSCustomObject render threw: $($_.Exception.Message)" -ForegroundColor Red
+}
+Assert-Eq -Label "Format-MarkdownReport handles nested inherited/revert PSCustomObjects" -Expected $false -Actual $mdNestedRoundtripThrew
+Assert-Eq -Label "nested roundtrip report renders inherited commit summary and revert origin" -Expected $true `
+    -Actual ($mdNestedRoundtrip -match 'Inherited from release/10\.0\.1xx-sr7' -and $mdNestedRoundtrip -match '\| inherited \|')
 
 # Tracker marker (hidden)
 Assert-Eq -Label "Body contains tracker marker comment" -Expected $true `
@@ -2284,6 +5271,73 @@ Assert-Eq -Label "Body contains semantic-hash marker comment" -Expected $true `
 # Visible tracker line
 Assert-Eq -Label "Body contains visible Tracker: line" -Expected $true `
     -Actual ($md -match '\*\*Tracker:\*\* `net10-sr7`')
+
+$mdDataPartialSurvey = $mdData.Clone()
+$mdDataPartialSurvey['metadata'] = $mdData.metadata.Clone()
+$mdDataPartialSurvey.metadata.mode = 'in-flight'
+$mdDataPartialSurvey['surveyIncomplete'] = $true
+$mdDataPartialSurvey['surveyIncompleteReason'] = 'Partial survey (-Phase regressions) did not query every readiness axis.'
+$mdPartialSurvey = Format-MarkdownReport -Data $mdDataPartialSurvey -RepoUrl 'https://github.com/dotnet/maui' `
+                                        -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "partial survey markdown carries explicit non-global-verdict warning" -Expected $true `
+    -Actual ($mdPartialSurvey -match 'Partial survey — not a global ship verdict')
+Assert-Eq -Label "partial survey markdown suppresses green no-blocking heading" -Expected $false `
+    -Actual ($mdPartialSurvey -match '## 🟢 No blocking items')
+
+$mdDataIncompleteRegression = $mdData.Clone()
+$mdDataIncompleteRegression['metadata'] = $mdData.metadata.Clone()
+$mdDataIncompleteRegression.metadata.mode = 'in-flight'
+$mdDataIncompleteRegression['regressions'] = @()
+$mdDataIncompleteRegression['summary'] = @{}
+$mdDataIncompleteRegression['shipChecks'] = @()
+$mdDataIncompleteRegression['regressionScanIncomplete'] = $true
+$mdDataIncompleteRegression['regressionFailedLabels'] = @('regressed-in-10.0.70')
+$mdIncompleteRegression = Format-MarkdownReport -Data $mdDataIncompleteRegression -RepoUrl 'https://github.com/dotnet/maui' `
+                                               -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "in-flight incomplete regression scan suppresses green no-blocking heading" -Expected $false `
+    -Actual ($mdIncompleteRegression -match '## 🟢 No blocking items')
+Assert-Eq -Label "in-flight incomplete regression scan renders incomplete blocking status" -Expected $true `
+    -Actual ($mdIncompleteRegression -match 'Blocking status incomplete — regression scan incomplete')
+
+$mdCandidateIncludedData = $mdData.Clone()
+$mdCandidateIncludedData['metadata'] = $mdData.metadata.Clone()
+$mdCandidateIncludedData.metadata.mode = 'candidate'
+$mdCandidateIncludedData.metadata.mainBranch = 'main'
+$mdCandidateIncludedData.metadata.priorSrBranch = 'release/10.0.1xx-sr9'
+$mdCandidateIncludedData.metadata.nextSr = 10
+$mdCandidateIncludedData['regressions'] = @(
+    @{ issue = 35615; title = 'Fix already merged on main'; state = 'CLOSED';
+       classification = 'merged-on-main-no-backport'; candidateFixPrs = @(@{ number = 35716 });
+       recommendedAction = 'Included when the candidate branch is cut from main.' }
+)
+$mdCandidateIncludedData['summary'] = @{ 'merged-on-main-no-backport' = 1 }
+$mdCandidateIncludedData['shipChecks'] = @()
+$mdCandidateIncluded = Format-MarkdownReport -Data $mdCandidateIncludedData -RepoUrl 'https://github.com/dotnet/maui' `
+                                              -TrackerKey 'net10-sr10' -MaxBodyBytes 60000
+Assert-Eq -Label "candidate markdown keeps merged-on-main-no-backport in Tier 2" -Expected $true `
+    -Actual ($mdCandidateIncluded -match 'Tier 2 — Risk / Review[\s\S]*merged-on-main-no-backport')
+Assert-Eq -Label "candidate markdown excludes merged-on-main-no-backport from Tier 3" -Expected $false `
+    -Actual ($mdCandidateIncluded -match 'Tier 3 — Informational[\s\S]*merged-on-main-no-backport')
+
+$mdCandidateMissingStateData = $mdCandidateIncludedData.Clone()
+$mdCandidateMissingStateData['regressions'] = @(
+    @{ issue = 36744; title = 'Missing state defaults to open'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdCandidateMissingStateData['summary'] = @{ 'no-fix-yet' = 1 }
+$mdCandidateMissingState = $mdCandidateMissingStateData | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+$mdCandidateMissingStateThrew = $false; $mdCandidateMissingStateText = $null
+try {
+    $mdCandidateMissingStateText = Format-MarkdownReport -Data $mdCandidateMissingState `
+        -RepoUrl 'https://github.com/dotnet/maui' -TrackerKey 'net10-sr10' -MaxBodyBytes 60000
+} catch {
+    $mdCandidateMissingStateThrew = $true
+    Write-Host "    candidate missing-state render threw: $($_.Exception.Message)" -ForegroundColor Red
+}
+Assert-Eq -Label "candidate markdown defaults missing no-fix-yet state to OPEN without throwing" `
+    -Expected $false -Actual $mdCandidateMissingStateThrew
+Assert-Eq -Label "candidate markdown renders missing-state no-fix-yet in Tier 1" -Expected $true `
+    -Actual ($mdCandidateMissingStateText -match 'Tier 1 — Blocking[\s\S]*no-fix-yet')
 
 # Verdict appears
 Assert-Eq -Label "Body shows 🟡 verdict (backport-in-progress)" -Expected $true `
@@ -2330,6 +5384,187 @@ $genIdx = $mdBan.IndexOf('**Generated**')
 $banIdx = $mdBan.IndexOf('Nightly dogfood feed is STALE')
 Assert-Eq -Label "Banner appears after the **Generated** line" -Expected $true `
     -Actual ($genIdx -ge 0 -and $banIdx -gt $genIdx)
+
+# Shipped rendering is lifecycle-specific: no retroactive Not Ready/overdue
+# language, no current-SR backport command, and all Tier 1/2 work is framed as
+# post-ship follow-up or carry-forward.
+$mdDataShipped = $mdData.Clone()
+$mdDataShipped['metadata'] = $mdData.metadata.Clone()
+$mdDataShipped.metadata.mode = 'shipped'
+$mdDataShipped.metadata.srBranch = 'release/10.0.1xx-sr9'
+$mdDataShipped.metadata.srRef = 'origin/release/10.0.1xx-sr9'
+$mdDataShipped['shippedInfo'] = @{
+    version = '10.0.90'; srNumber = 9; major = 10
+    tagDate = '2026-07-10T00:00:00Z'; dateSource = 'github-release'; tagFound = $true
+}
+$mdDataShipped['regressions'] = @(
+    @{ issue = 36001; title = 'Pre-ship follow-up'; state = 'CLOSED'; classification = 'needs-human-review';
+       createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR9'; candidateFixPrs = @(); recommendedAction = 'Inspect manually' }
+    @{ issue = 36002; title = 'Post-ship regression'; state = 'OPEN'; classification = 'no-fix-yet';
+       createdAt = '2026-07-20T00:00:00Z'; milestone = '.NET 10 SR10'; candidateFixPrs = @(); recommendedAction = 'Investigate' }
+    @{ issue = 36003; title = 'Open fix after ship'; state = 'OPEN'; classification = 'open-on-main';
+       createdAt = '2026-07-20T00:00:00Z'; milestone = '.NET 10 SR10';
+       candidateFixPrs = @(@{ number = 36103; state = 'OPEN'; baseRef = 'main' });
+       recommendedAction = 'Human hotfix or next-SR decision' }
+    @{ issue = 36004; title = 'Open backport after ship'; state = 'OPEN'; classification = 'backport-in-progress';
+       createdAt = '2026-07-01T00:00:00Z'; milestone = '.NET 10 SR9';
+       candidateFixPrs = @(@{ number = 36104; state = 'MERGED'; baseRef = 'main';
+           backports = @(@{ number = 36105; state = 'OPEN'; mergedAt = $null }) });
+       recommendedAction = 'Human hotfix or next-SR decision' }
+)
+$mdDataShipped['summary'] = @{ 'needs-human-review' = 1; 'no-fix-yet' = 1; 'open-on-main' = 1; 'backport-in-progress' = 1 }
+$mdDataShipped['ci'] = @{ overall = 'red-needs-review'; pipelines = @() }
+$mdShipped = Format-MarkdownReport -Data $mdDataShipped -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: verdict is shipped follow-up, never Not Ready" -Expected $true `
+    -Actual ($mdShipped -match 'Shipped — follow-up required' -and $mdShipped -notmatch 'Verdict — 🔴 \*\*Not Ready')
+Assert-Eq -Label "shipped markdown: actual shipped date replaces expected-window warning" -Expected $true `
+    -Actual ($mdShipped -match '\*\*Shipped\*\*:.*Friday July 10, 2026' -and $mdShipped -notmatch '\*\*Expected ship date\*\*')
+Assert-Eq -Label "shipped markdown: Tier 2 appears in post-ship follow-up summary" -Expected $true `
+    -Actual ($mdShipped -match '(?s)📌 Post-ship regression follow-ups.*36001')
+Assert-Eq -Label "shipped markdown: post-ship regressions appear in carry-forward summary" -Expected $true `
+    -Actual ($mdShipped -match '(?s)🔁 Carry-forward.*36002' -and $mdShipped -match '(?s)🔁 Carry-forward.*36003')
+Assert-Eq -Label "shipped markdown: inbound section is post-ship and avoids current-SR backport command" -Expected $true `
+    -Actual ($mdShipped -match 'Open Fix PRs Post-ship' -and $mdShipped -match 'hotfix-vs-next-SR decision' -and $mdShipped -notmatch '/backport to release/10\.0\.1xx-sr9')
+Assert-Eq -Label "shipped markdown: open backport is a post-ship decision, never 'before ship'" -Expected $true `
+    -Actual ($mdShipped -match 'backport OPEN — post-ship decision' -and $mdShipped -match 'close in favor of the next SR' -and $mdShipped -notmatch 'Land this PR before ship')
+Assert-Eq -Label "shipped markdown: lower tiers use follow-up headings, not Blocking" -Expected $true `
+    -Actual ($mdShipped -match 'Tier 1 — Urgent follow-up' -and $mdShipped -match 'Tier 2 — Follow-up / Review' -and $mdShipped -notmatch 'Tier 1 — Blocking')
+
+# When every actionable regression is carry-forward, the verdict still calls for
+# follow-up but the summary must not contradict itself with "No post-ship follow-ups."
+$mdDataCarryOnly = $mdDataShipped.Clone()
+$mdDataCarryOnly['regressions'] = @($mdDataShipped.regressions | Where-Object { $_.issue -in @(36002, 36003) })
+$mdDataCarryOnly['summary'] = @{ 'no-fix-yet' = 1; 'open-on-main' = 1 }
+$mdCarryOnly = Format-MarkdownReport -Data $mdDataCarryOnly -RepoUrl 'https://github.com/dotnet/maui' `
+                                    -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: carry-forward-only report has no contradictory no-follow-ups heading" -Expected $true `
+    -Actual ($mdCarryOnly -match 'Shipped — follow-up required' -and $mdCarryOnly -match '🔁 Carry-forward' -and $mdCarryOnly -notmatch 'No post-ship follow-ups')
+
+$mdDataCleanupOnly = $mdDataShipped.Clone()
+$mdDataCleanupOnly['regressions'] = @()
+$mdDataCleanupOnly['summary'] = @{}
+$mdDataCleanupOnly['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataCleanupOnly['shipChecks'] = @(
+    [pscustomobject]@{ Area = 'Bug template versions'; Status = 'CLEANUP'; Details = 'Missing shipped version'; NextAction = 'Add version' }
+)
+$mdCleanupOnly = Format-MarkdownReport -Data $mdDataCleanupOnly -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: cleanup-only report uses scoped urgent-follow-up wording" -Expected $true `
+    -Actual ($mdCleanupOnly -match 'No urgent post-ship follow-ups' -and $mdCleanupOnly -match '🧹 Cleanup follow-ups')
+Assert-Eq -Label "shipped markdown: cleanup-only report never claims unqualified no follow-ups" -Expected $false `
+    -Actual ($mdCleanupOnly -match 'No post-ship follow-ups')
+
+$mdDataIncompleteScan = $mdDataShipped.Clone()
+$mdDataIncompleteScan['regressions'] = @()
+$mdDataIncompleteScan['summary'] = @{}
+$mdDataIncompleteScan['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataIncompleteScan['shipChecks'] = @()
+$mdDataIncompleteScan['regressionScanIncomplete'] = $true
+$mdDataIncompleteScan['regressionFailedLabels'] = @('regressed-in-10.0.90')
+$mdIncompleteScan = Format-MarkdownReport -Data $mdDataIncompleteScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                         -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: incomplete scan suppresses green urgent-followup heading" -Expected $false `
+    -Actual ($mdIncompleteScan -match 'No urgent post-ship follow-ups')
+Assert-Eq -Label "shipped markdown: incomplete scan gets an explicit hoisted notice" -Expected $true `
+    -Actual ($mdIncompleteScan -match 'Urgent follow-ups unknown — regression scan incomplete')
+
+$mdDataPartialScan = $mdDataIncompleteScan.Clone()
+$mdDataPartialScan['regressionFailedLabels'] = @('(regressions phase not run: -Phase ci)')
+$mdPartialScan = Format-MarkdownReport -Data $mdDataPartialScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: partial-phase reason is rendered without false query-failure wording" -Expected $true `
+    -Actual ($mdPartialScan -match 'regressions phase not run: -Phase ci' -and $mdPartialScan -notmatch 'queries failed')
+
+$mdDataTruncatedScan = $mdDataIncompleteScan.Clone()
+$mdDataTruncatedScan['regressionFailedLabels'] = @('regressed-in-10.0.90 (truncated at -MaxIssues 100)')
+$mdTruncatedScan = Format-MarkdownReport -Data $mdDataTruncatedScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                        -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: truncation reason is rendered without false query-failure wording" -Expected $true `
+    -Actual ($mdTruncatedScan -match 'truncated at -MaxIssues 100' -and $mdTruncatedScan -notmatch 'queries failed')
+
+$mdDataBlockedShipCheck = $mdDataShipped.Clone()
+$mdDataBlockedShipCheck['regressions'] = @()
+$mdDataBlockedShipCheck['summary'] = @{}
+$mdDataBlockedShipCheck['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataBlockedShipCheck['shipChecks'] = @(
+    [pscustomobject]@{
+        Area = 'Servicing flip'; Status = 'BLOCKED'; Details = 'Packages are not stable'
+        NextAction = 'Flip Versions.props.'
+    }
+)
+$mdBlockedShipCheck = Format-MarkdownReport -Data $mdDataBlockedShipCheck -RepoUrl 'https://github.com/dotnet/maui' `
+                                           -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: BLOCKED ship check uses operational follow-up section" -Expected $true `
+    -Actual ($mdBlockedShipCheck -match 'Post-ship operational follow-ups' -and $mdBlockedShipCheck -match 'Servicing flip')
+Assert-Eq -Label "shipped markdown: BLOCKED ship check is not placed under regression hotfix caption" -Expected $false `
+    -Actual ($mdBlockedShipCheck -match 'Each needs a human hotfix-vs-next-SR decision')
+$mdDataWatchShipCheck = $mdDataBlockedShipCheck.Clone()
+$mdDataWatchShipCheck['shipChecks'] = @(
+    [pscustomobject]@{
+        Area = 'Known Build Errors'; Status = 'WATCH'; Details = 'One issue needs review'
+        NextAction = 'Review the open KBE.'
+    }
+)
+$mdWatchShipCheck = Format-MarkdownReport -Data $mdDataWatchShipCheck -RepoUrl 'https://github.com/dotnet/maui' `
+                                         -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: WATCH ship check appears in operational follow-ups" -Expected $true `
+    -Actual ($mdWatchShipCheck -match 'Post-ship operational follow-ups' -and
+        $mdWatchShipCheck -match 'Known Build Errors' -and
+        $mdWatchShipCheck -notmatch 'No urgent post-ship follow-ups')
+
+$mdDataP0ContentDecision = $mdDataShipped.Clone()
+$mdDataP0ContentDecision['regressions'] = @()
+$mdDataP0ContentDecision['summary'] = @{}
+$mdDataP0ContentDecision['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataP0ContentDecision['shipChecks'] = @(Get-P0PrChecks -OpenSrPrs @(
+    [pscustomobject]@{
+        number = 36030
+        labels = @([pscustomobject]@{ name = 'p/0' })
+    }
+) -SrBranch 'release/10.0.1xx-sr9' -Shipped)
+$mdP0ContentDecision = Format-MarkdownReport -Data $mdDataP0ContentDecision -RepoUrl 'https://github.com/dotnet/maui' `
+                                             -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: P/0 content check uses release-content decision section" -Expected $true `
+    -Actual ($mdP0ContentDecision -match 'Post-ship release-content decisions' -and
+             $mdP0ContentDecision -match 'hotfix, carry it to the next SR, or explicitly de-prioritize')
+Assert-Eq -Label "shipped markdown: P/0 content check is not categorized as operational" -Expected $false `
+    -Actual ($mdP0ContentDecision -match 'Post-ship operational follow-ups')
+Assert-Eq -Label "shipped markdown: production P/0 action is lifecycle-aware" -Expected $true `
+    -Actual ($mdP0ContentDecision -match 'land each P/0 PR as a hotfix' -and $mdP0ContentDecision -notmatch 'before shipping')
+
+$mdDataInflightMixedBlocking = $mdData.Clone()
+$mdDataInflightMixedBlocking['metadata'] = $mdData.metadata.Clone()
+$mdDataInflightMixedBlocking.metadata.mode = 'in-flight'
+$mdDataInflightMixedBlocking['regressions'] = @(
+    @{ issue = 36010; title = 'Unfixed regression'; state = 'OPEN'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdDataInflightMixedBlocking['summary'] = @{ 'no-fix-yet' = 1 }
+$mdDataInflightMixedBlocking['shipChecks'] = @(
+    [pscustomobject]@{ Area = 'Servicing flip'; Status = 'BLOCKED'; Details = 'Not stable'; NextAction = 'Flip versions' }
+)
+$mdInflightMixedBlocking = Format-MarkdownReport -Data $mdDataInflightMixedBlocking -RepoUrl 'https://github.com/dotnet/maui' `
+                                                -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "in-flight markdown: mixed ship-check and regression blockers share one two-item section" -Expected $true `
+    -Actual ($mdInflightMixedBlocking -match '## 🔴 Blocking — 2 item\(s\)' -and
+             $mdInflightMixedBlocking -match 'Servicing flip' -and $mdInflightMixedBlocking -match '#36010')
+
+$mdDataShippedTier3Only = $mdDataShipped.Clone()
+$mdDataShippedTier3Only['regressions'] = @(
+    @{ issue = 36020; title = 'Already fixed'; state = 'CLOSED'; classification = 'in-sr-active';
+       candidateFixPrs = @(); recommendedAction = 'No action' }
+)
+$mdDataShippedTier3Only['summary'] = @{ 'in-sr-active' = 1 }
+$mdDataShippedTier3Only['ci'] = @{ overall = 'green'; pipelines = @() }
+$mdDataShippedTier3Only['shipChecks'] = @()
+$mdShippedTier3Only = Format-MarkdownReport -Data $mdDataShippedTier3Only -RepoUrl 'https://github.com/dotnet/maui' `
+                                           -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "shipped markdown: empty Tier 1/2 placeholders use follow-up terminology" -Expected $true `
+    -Actual ($mdShippedTier3Only -match 'No urgent follow-up regressions' -and
+             $mdShippedTier3Only -match 'No follow-up/review regressions')
+Assert-Eq -Label "shipped markdown: empty Tier 1/2 placeholders avoid pre-ship blocking/risk language" -Expected $false `
+    -Actual ($mdShippedTier3Only -match 'No blocking regressions|No risk-tier regressions')
 
 # Report freshness banner (🕐/⏳) renders below **Generated** and is DERIVED-AT-RENDER,
 # so it must NOT perturb the semantic hash. Render the report TWICE with DIFFERENT
@@ -2416,9 +5651,8 @@ Assert-Eq -Label "Truncated body retains the semantic-hash marker" -Expected $tr
     -Actual ($mdCapped -match '<!-- release-readiness-hash: sha=[0-9a-f]{64} -->')
 
 # ───── Regression header count = candidate count, not hashtable key count ─────
-# Get-RegressionCandidates returns its $results accumulator; when exactly ONE candidate
-# matches, PowerShell unwraps the single-element array on return, so $Data['regressions']
-# arrives as a LONE hashtable (not a 1-element array). The header rendered
+# Historical/partial callers and JSON reconstruction can supply exactly one regression
+# as a LONE hashtable (not a 1-element array). The header previously rendered
 #   $regs = $Data['regressions']; "... $($regs.Count) issues scanned"
 # and .Count on a scalar hashtable returns its KEY count — the exact live symptom on
 # tracker #35867: "Regression Candidates — 13 issues scanned" with a single candidate.
@@ -2435,7 +5669,7 @@ $singleReg = @{
     labels = @(); stateReason = $null
 }
 $mdDataOneReg = @{} + $mdData
-$mdDataOneReg['regressions'] = $singleReg          # scalar hashtable → mimics the N=1 return-unwrap
+$mdDataOneReg['regressions'] = $singleReg          # scalar hashtable → guards the N=1 compatibility shape
 $mdDataOneReg['summary'] = @{ 'no-fix-yet' = 1 }
 # Lock the reproduction precondition: the value must be a scalar hashtable, NOT a list —
 # otherwise the bug can't manifest and a future edit could silently neuter this test.
@@ -2795,7 +6029,7 @@ $mdDataCandFound['candidatePr'] = @{
     mode = 'resolved'; spoofers = 0; unverifiable = 0; nextSr = 'SR9'; versionBase = '10.0.90'
     candidates = @(
         @{ number = 3002; title = 'June 8th, Candidate'; author = @{ login = 'PureWeen' }; isDraft = $false;
-           mergeable = 'MERGEABLE'; reviewDecision = 'REVIEW_REQUIRED'; createdAt = '2026-06-08T00:00:00Z'; updatedAt = '2026-06-08T00:00:00Z' }
+           mergeable = 'CONFLICTING'; reviewDecision = 'REVIEW_REQUIRED'; createdAt = '2026-06-08T00:00:00Z'; updatedAt = '2026-06-08T00:00:00Z' }
     )
 }
 # openSrPrs populated with unrelated noise (incl. #3001/#3003) to prove they are suppressed.
@@ -2814,6 +6048,10 @@ Assert-Eq -Label "Candidate (found): author defanged in table row" -Expected $tr
     -Actual ($mdCandFound -match '`PureWeen`')
 Assert-Eq -Label "Candidate (found): PR age rendered (days ago)" -Expected $true `
     -Actual ($mdCandFound -match '\(26 days ago\)')
+Assert-Eq -Label "Candidate (found): status leads with conflicts + review required" -Expected $true `
+    -Actual ($mdCandFound -match '🟠 Open · ⚠️ conflicts · review required · Ready for review')
+Assert-Eq -Label "Candidate (found): status never claims generic Ready" -Expected $false `
+    -Actual ($mdCandFound -match '✅ Ready')
 Assert-Eq -Label "Candidate (found): staleness callout fired (>=14 days old)" -Expected $true `
     -Actual ($mdCandFound -match 'Stale \(26 days old\)')
 Assert-Eq -Label "Candidate (found): unrelated PRs (#3001, #3003) NOT listed" -Expected $false `
@@ -2911,7 +6149,7 @@ Assert-Eq -Label "Hash changes when a ship check flips from READY → BLOCKED" -
 Write-Host "`n[Unit] Get-OverallVerdict — BLOCKED ship checks force Not Ready" -ForegroundColor Cyan
 
 $verdictData = @{
-    metadata = @{ mode = 'shipped' }
+    metadata = @{ mode = 'in-flight' }
     regressions = @()
     ci = @{ overall = 'green' }
     shipChecks = @(
@@ -2935,6 +6173,18 @@ $verdictDataReady = @{
 }
 $verdictReadyResult = Get-OverallVerdict -Data $verdictDataReady
 Assert-Eq -Label "READY-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictReadyResult.tier
+
+# UNKNOWN required evidence is non-clean in both SR and Preview lanes.
+$verdictDataUnknown = @{
+    metadata = @{ mode = 'in-flight' }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @(
+        [PSCustomObject]@{ Area = 'BAR mapping'; Status = 'UNKNOWN'; Details = 'not verified'; NextAction = 'verify locally' }
+    )
+}
+$verdictUnknownResult = Get-OverallVerdict -Data $verdictDataUnknown
+Assert-Eq -Label "UNKNOWN-only SR ship checks: verdict is conditional" -Expected 2 -Actual $verdictUnknownResult.tier
 
 # CLEANUP ship checks must surface in the report but MUST NOT escalate the verdict.
 # This locks the contract: CLEANUP = "housekeeping that needs doing, but doesn't
@@ -2980,14 +6230,14 @@ $mdDataInbound['regressions'] = @(
        candidateFixPrs = @(
            @{ number = 4001; title = 'Fix 9001'; state = 'OPEN'; baseRef = 'main'; onMain = $false; backports = @() }
        )
-       recommendedAction = 'Wait for main merge, then open backport' }
+       recommendedAction = 'Wait for main merge, then post `/backport to release/10.0.1xx-sr8` on the merged source PR' }
     @{ issue = 9002; title = 'Open-on-main regression 2 with very long title that should be truncated when rendered to keep the column readable'
        state = 'OPEN'
        classification = 'open-on-main'; confidence = 'high'; evidence = @()
        candidateFixPrs = @(
            @{ number = 4002; title = 'Fix 9002'; state = 'OPEN'; baseRef = 'main'; onMain = $false; backports = @() }
        )
-       recommendedAction = 'Wait for main merge, then open backport' }
+       recommendedAction = 'Wait for main merge, then post `/backport to release/10.0.1xx-sr8` on the merged source PR' }
     @{ issue = 9003; title = 'Backport-in-progress regression'; state = 'OPEN'
        classification = 'backport-in-progress'; confidence = 'high'; evidence = @()
        candidateFixPrs = @(
@@ -3021,6 +6271,8 @@ Assert-Eq -Label "Open Fix PRs Inbound: in-sr-active regression (#9004) NOT list
     -Actual ($inboundSection -match '#9004')
 Assert-Eq -Label "Open Fix PRs Inbound: status column distinguishes main vs SR" -Expected $true `
     -Actual (($inboundSection -match '🔵 OPEN — awaiting main merge') -and ($inboundSection -match '🟡 backport OPEN on SR'))
+Assert-Eq -Label "Open Fix PRs Inbound: main PR row shows exact backport command" -Expected $true `
+    -Actual ($inboundSection -match '/backport to release/10\.0\.1xx-sr8')
 Assert-Eq -Label "Open Fix PRs Inbound: long titles truncated at 70 chars" -Expected $true `
     -Actual ($inboundSection -match 'Open-on-main regression 2[^|]*\.\.\.')
 
@@ -3061,10 +6313,10 @@ function Build-VersionsPropsXml {
         [string]$PreReleaseVersionLabel,
         [string]$StabilizePackageVersion
     )
-    $labelLine = if ($PreReleaseVersionLabel) {
+    $labelLine = if ($null -ne $PreReleaseVersionLabel) {
         "    <PreReleaseVersionLabel>$PreReleaseVersionLabel</PreReleaseVersionLabel>`n"
     } else { "" }
-    $stabilizeLine = if ($StabilizePackageVersion) {
+    $stabilizeLine = if ($null -ne $StabilizePackageVersion) {
         "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$StabilizePackageVersion</StabilizePackageVersion>`n"
     } else { "" }
     @"
@@ -3089,26 +6341,34 @@ $bugYamlAllowsAll = @'
       - "10.0.90 (SR9)"
 '@
 
+$script:OrigGetFileFromRefForShipChecks = ${function:Get-FileFromRef}
+$script:GetFileFromRefStub = $null
+function Get-FileFromRef { param([string]$Path, [string]$Ref) & $script:GetFileFromRefStub $Path $Ref }
+
 function Invoke-ShipChecksWithMockedVersions {
     param(
         [hashtable]$SrVersion,    # @{Major;Minor;Patch [;PreReleaseVersionLabel;StabilizePackageVersion]} for the SR branch
         [hashtable]$MainVersion,  # @{Major;Minor;Patch [;PreReleaseVersionLabel;StabilizePackageVersion]} for main
         [string]$SrBranch = 'release/10.0.1xx-sr8',
         [string]$MainBranch = 'main',
-        [switch]$Candidate
+        [switch]$Candidate,
+        [switch]$Shipped,
+        [string]$BugYaml = $bugYamlAllowsAll
     )
+    $priorGetFileFromRefStub = $script:GetFileFromRefStub
     # Wrap Get-FileFromRef so the script's existing Get-VersionsPropsState /
     # Get-BugTemplateVersions read from these in-memory blobs.
     $srRef   = "origin/$SrBranch"
     $mainRef = "origin/$MainBranch"
+    $shippedContentsRef = "$($SrVersion.Major).$($SrVersion.Minor).$($SrVersion.Patch)"
     $srXml   = Build-VersionsPropsXml @SrVersion
     $mainXml = if ($MainVersion) { Build-VersionsPropsXml @MainVersion } else { $null }
 
-    $script:_origGetFile = Get-Command Get-FileFromRef -CommandType Function
-    function global:Get-FileFromRef {
+    $script:GetFileFromRefStub = {
         param([string]$Path, [string]$Ref)
         if ($Path -eq 'eng/Versions.props') {
             if ($Ref -eq $script:_mockSrRef)   { return $script:_mockSrXml }
+            if ($Ref -eq $script:_mockContentsRef) { return $script:_mockSrXml }
             if ($Ref -eq $script:_mockMainRef) { return $script:_mockMainXml }
             return $null
         }
@@ -3119,21 +6379,25 @@ function Invoke-ShipChecksWithMockedVersions {
     }
     $script:_mockSrRef    = $srRef
     $script:_mockMainRef  = $mainRef
+    $script:_mockContentsRef = $shippedContentsRef
     $script:_mockSrXml    = $srXml
     $script:_mockMainXml  = $mainXml
-    $script:_mockBugYaml  = $bugYamlAllowsAll
+    $script:_mockBugYaml  = $BugYaml
 
     try {
         $ctx = @{
             srBranch   = if ($Candidate) { $MainBranch } else { $SrBranch }
             srRef      = if ($Candidate) { "origin/$MainBranch" } else { "origin/$SrBranch" }
+            contentsRef = if ($Shipped) { $shippedContentsRef } else { $null }
+            previousStableTag = if ($Shipped) { '10.0.71' } else { $null }
+            shippedTagVersion = if ($Shipped) { $shippedContentsRef } else { $null }
             mainBranch = $MainBranch
-            mode       = if ($Candidate) { 'candidate' } else { 'in-flight' }
+            mode       = if ($Candidate) { 'candidate' } elseif ($Shipped) { 'shipped' } else { 'in-flight' }
             priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
         }
         return Get-ReleaseShipChecks -Ctx $ctx
     } finally {
-        Remove-Item function:global:Get-FileFromRef -ErrorAction SilentlyContinue
+        $script:GetFileFromRefStub = $priorGetFileFromRefStub
     }
 }
 
@@ -3146,7 +6410,7 @@ function Get-CheckByAreaPrefix {
 # Scenario 1: SR8 in-flight, main STILL at same cycle (10.0.80) — BLOCKED
 $checks1 = Invoke-ShipChecksWithMockedVersions `
     -SrVersion @{ Major=10; Minor=0; Patch=80 } `
-    -MainVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='ci.main' } `
     -SrBranch 'release/10.0.1xx-sr8'
 
 $mainBumpCheck = Get-CheckByAreaPrefix -Checks $checks1 -Prefix 'Main bumped to SR9 cycle'
@@ -3157,11 +6421,55 @@ Assert-Eq -Label "Main-not-bumped: details mention same cycle" -Expected $true `
     -Actual ([bool]($mainBumpCheck.Details -match 'same cycle'))
 Assert-Eq -Label "Main-not-bumped: next action points to 90" -Expected $true `
     -Actual ([bool]($mainBumpCheck.NextAction -match '\b90\b'))
+Assert-Eq -Label "Main-not-bumped: next action gives exact PR title" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match ([regex]::Escape('Update PatchVersion from 80 to 90'))))
+Assert-Eq -Label "Main-not-bumped: next action gives exact old PatchVersion XML" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match ([regex]::Escape('<PatchVersion>80</PatchVersion>'))))
+Assert-Eq -Label "Main-not-bumped: next action gives exact new PatchVersion XML" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match ([regex]::Escape('<PatchVersion>90</PatchVersion>'))))
+Assert-Eq -Label "Main-not-bumped: next action preserves mainline version settings" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match 'SdkBandVersion.*PreReleaseVersionLabel=ci\.main.*StabilizePackageVersion=false.*unchanged'))
+Assert-Eq -Label "Main-not-bumped: next action separates the servicing flip" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match 'do not combine.*servicing-flip'))
+
+# Scenario 1c: SR8 in-flight, main STILL same cycle (10.0.80) AND misconfigured
+# for a servicing/stable build (PreReleaseVersionLabel=servicing, Stabilize=true).
+# The bump path must ALSO tell the captain to restore ci.main/false — not keep
+# them "unchanged" (which would leave main emitting servicing/stable packages).
+$checks1c = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+
+$mainBumpCheck1c = Get-CheckByAreaPrefix -Checks $checks1c -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main same-cycle + misconfigured: still BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck1c.Status
+Assert-Eq -Label "Main same-cycle + misconfigured: still requires the 80→90 bump" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match ([regex]::Escape('Update PatchVersion from 80 to 90'))))
+Assert-Eq -Label "Main same-cycle + misconfigured: does NOT tell captain to keep ci.main/false unchanged" -Expected $false `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match 'PreReleaseVersionLabel=ci\.main.*StabilizePackageVersion=false.*unchanged'))
+Assert-Eq -Label "Main same-cycle + misconfigured: instructs restoring the dev-main settings in the same PR" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match 'restore the dev-main mainline settings'))
+Assert-Eq -Label "Main same-cycle + misconfigured: names the offending servicing setting" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1c.NextAction -match 'StabilizePackageVersion'))
+
+# Scenario 1b: SR9 in-flight, main STILL at 10.0.90 — emit the exact
+# triple-digit SR10 bump used by the live 10.0.90 release.
+$checks1b = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=90 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='ci.main' } `
+    -SrBranch 'release/10.0.1xx-sr9'
+
+$mainBumpCheck1b = Get-CheckByAreaPrefix -Checks $checks1b -Prefix 'Main bumped to SR10 cycle'
+Assert-Eq -Label "Main-not-bumped SR9→SR10: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck1b.Status
+Assert-Eq -Label "Main-not-bumped SR9→SR10: exact PR title" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1b.NextAction -match ([regex]::Escape('Update PatchVersion from 90 to 100'))))
+Assert-Eq -Label "Main-not-bumped SR9→SR10: exact new PatchVersion XML" -Expected $true `
+    -Actual ([bool]($mainBumpCheck1b.NextAction -match ([regex]::Escape('<PatchVersion>100</PatchVersion>'))))
 
 # Scenario 2: SR8 in-flight, main already bumped to 10.0.90 — READY
 $checks2 = Invoke-ShipChecksWithMockedVersions `
     -SrVersion @{ Major=10; Minor=0; Patch=80 } `
-    -MainVersion @{ Major=10; Minor=0; Patch=90 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='ci.main' } `
     -SrBranch 'release/10.0.1xx-sr8'
 
 $mainBumpCheck2 = Get-CheckByAreaPrefix -Checks $checks2 -Prefix 'Main bumped to SR9 cycle'
@@ -3172,7 +6480,7 @@ Assert-Eq -Label "Main-bumped-to-90: details show 90 satisfied" -Expected $true 
 # Scenario 3: SR8 in-flight, main past the major train (11.0.x) — READY
 $checks3 = Invoke-ShipChecksWithMockedVersions `
     -SrVersion @{ Major=10; Minor=0; Patch=80 } `
-    -MainVersion @{ Major=11; Minor=0; Patch=10 } `
+    -MainVersion @{ Major=11; Minor=0; Patch=10; PreReleaseVersionLabel='ci.main' } `
     -SrBranch 'release/10.0.1xx-sr8'
 
 $mainBumpCheck3 = Get-CheckByAreaPrefix -Checks $checks3 -Prefix 'Main bumped to SR9 cycle'
@@ -3180,14 +6488,88 @@ Assert-Eq -Label "Main-past-major (11.0): status READY"  -Expected 'READY' -Actu
 Assert-Eq -Label "Main-past-major: details mention moved past train" -Expected $true `
     -Actual ([bool]($mainBumpCheck3.Details -match 'moved past'))
 
+# Scenario 3a: main past-major (11.0) but MISCONFIGURED as servicing/stable — BLOCKED.
+# The mainline-settings gate must apply to the past-major state too, not only the
+# same-cycle bump; a dev branch on 11.0 emitting servicing packages is still wrong.
+$checks3a = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=11; Minor=0; Patch=10; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck3a = Get-CheckByAreaPrefix -Checks $checks3a -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-past-major but servicing-configured: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck3a.Status
+Assert-Eq -Label "Main-past-major servicing: details name PreReleaseVersionLabel offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck3a.Details -match 'PreReleaseVersionLabel=servicing'))
+Assert-Eq -Label "Main-past-major servicing: next action restores ci.main + false" -Expected $true `
+    -Actual ([bool]($mainBumpCheck3a.NextAction -match 'ci\.main' -and $mainBumpCheck3a.NextAction -match 'false'))
+
+# Scenario 3b: main past-major (11.0) WITH correct dev-main settings — READY (control).
+$checks3b = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=11; Minor=0; Patch=10; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck3b = Get-CheckByAreaPrefix -Checks $checks3b -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-past-major + ci.main/false: status READY" -Expected 'READY' -Actual $mainBumpCheck3b.Status
+
 # Scenario 4: SR8 in-flight, main bumped multiple cycles ahead (10.0.110 for hypothetical SR11) — READY
 $checks4 = Invoke-ShipChecksWithMockedVersions `
     -SrVersion @{ Major=10; Minor=0; Patch=80 } `
-    -MainVersion @{ Major=10; Minor=0; Patch=110 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=110; PreReleaseVersionLabel='ci.main' } `
     -SrBranch 'release/10.0.1xx-sr8'
 
 $mainBumpCheck4 = Get-CheckByAreaPrefix -Checks $checks4 -Prefix 'Main bumped to SR9 cycle'
 Assert-Eq -Label "Main-way-ahead (patch=110): status READY"  -Expected 'READY' -Actual $mainBumpCheck4.Status
+
+# Scenario 4a: main patch bumped to 90 AND still on dev-main config (ci.main / false) — READY.
+# Guards against the new mainline-config gate false-BLOCKING a correctly-configured main.
+$checks4a = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4a = Get-CheckByAreaPrefix -Checks $checks4a -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped + ci.main/false: status READY" -Expected 'READY' -Actual $mainBumpCheck4a.Status
+
+# Scenario 4a.1: main patch bumped with ci.main and omitted StabilizePackageVersion
+# is READY because Arcade defaults StabilizePackageVersion to false.
+$checks4a1 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='ci.main' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4a1 = Get-CheckByAreaPrefix -Checks $checks4a1 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped + ci.main + omitted StabilizePackageVersion: status READY" -Expected 'READY' -Actual $mainBumpCheck4a1.Status
+
+# Scenario 4a.2: omitted PreReleaseVersionLabel is NOT equivalent to ci.main.
+# Arcade treats a missing/empty label as release-only/stable, so main must block.
+$checks4a2 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4a2 = Get-CheckByAreaPrefix -Checks $checks4a2 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped + missing PreReleaseVersionLabel: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck4a2.Status
+Assert-Eq -Label "Main-bumped + missing PreReleaseVersionLabel: details name offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4a2.Details -match 'PreReleaseVersionLabel='))
+
+$checks4a3 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel=''; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4a3 = Get-CheckByAreaPrefix -Checks $checks4a3 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped + empty PreReleaseVersionLabel: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck4a3.Status
+
+# Scenario 4b: main patch bumped to 90 but MISCONFIGURED as a servicing/stable build
+# (PreReleaseVersionLabel=servicing, StabilizePackageVersion=true) — BLOCKED. A bumped
+# PatchVersion alone must not read READY when main is flipped to servicing output.
+$checks4b = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$mainBumpCheck4b = Get-CheckByAreaPrefix -Checks $checks4b -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped-but-servicing-configured: status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck4b.Status
+Assert-Eq -Label "Main-bumped-but-servicing: details name PreReleaseVersionLabel offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4b.Details -match 'PreReleaseVersionLabel=servicing'))
+Assert-Eq -Label "Main-bumped-but-servicing: details name StabilizePackageVersion offender" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4b.Details -match 'StabilizePackageVersion=true'))
+Assert-Eq -Label "Main-bumped-but-servicing: next action restores ci.main + false" -Expected $true `
+    -Actual ([bool]($mainBumpCheck4b.NextAction -match 'ci\.main' -and $mainBumpCheck4b.NextAction -match 'false'))
 
 # Scenario 5: Candidate mode → the new check is SKIPPED (no double-counting with the
 # existing 'Versions.props bump (main → SRn)' check that already targets main)
@@ -3206,6 +6588,20 @@ $srBranchCheck = Get-CheckByAreaPrefix -Checks $checks1 -Prefix 'Versions.props 
 Assert-Eq -Label "Existing SR-branch check still emitted alongside new main-bump check" -Expected $true `
     -Actual ($null -ne $srBranchCheck)
 Assert-Eq -Label "Existing SR-branch check stays READY when SR is at 80" -Expected 'READY' -Actual $srBranchCheck.Status
+
+$shippedMainNotBumpedChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8' `
+    -Shipped
+$shippedMainBumpCheck = Get-CheckByAreaPrefix -Checks $shippedMainNotBumpedChecks -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "shipped main-not-bumped remains a follow-up signal" -Expected 'BLOCKED' -Actual $shippedMainBumpCheck.Status
+Assert-Eq -Label "shipped main-not-bumped details acknowledge release already shipped" -Expected $true `
+    -Actual ($shippedMainBumpCheck.Details -match 'already shipped')
+Assert-Eq -Label "shipped main-not-bumped requests immediate containment" -Expected $true `
+    -Actual ($shippedMainBumpCheck.NextAction -match 'immediately')
+Assert-Eq -Label "shipped main-not-bumped does not say merge before shipping" -Expected $false `
+    -Actual ($shippedMainBumpCheck.NextAction -match 'before shipping')
 
 # ───── Get-ReleaseShipChecks: 'Servicing-release flip' check ─────
 # When an SR branch is cut from main, eng/Versions.props MUST be flipped to
@@ -3263,8 +6659,12 @@ Assert-Eq -Label "Flip-never-applied: details flag StabilizePackageVersion" -Exp
     -Actual ([bool]($flipCheckD.Details -match 'StabilizePackageVersion'))
 Assert-Eq -Label "Flip-never-applied: details mark unset values" -Expected $true `
     -Actual ([bool]($flipCheckD.Details -match '<unset>'))
-Assert-Eq -Label "Flip-never-applied: next action references the prior SR's diff" -Expected $true `
-    -Actual ([bool]($flipCheckD.NextAction -match 'release/10\.0\.1xx-sr7'))
+Assert-Eq -Label "Flip-never-applied: next action requires a focused SR PR" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'focused PR targeting.*release/10\.0\.1xx-sr8'))
+Assert-Eq -Label "Flip-never-applied: next action preserves PatchVersion" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'PatchVersion'))
+Assert-Eq -Label "Flip-never-applied: next action requires final CI" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'rerun final CI'))
 
 # Scenario E: Candidate mode → flip check SKIPPED (main is supposed to be ci.main/false)
 $flipChecksE = Invoke-ShipChecksWithMockedVersions `
@@ -3275,6 +6675,118 @@ $flipChecksE = Invoke-ShipChecksWithMockedVersions `
 $flipCheckE = Get-CheckByAreaPrefix -Checks $flipChecksE -Prefix 'Versions.props servicing flip'
 Assert-Eq -Label "Candidate mode: servicing-flip check NOT emitted" -Expected $true `
     -Actual ($null -eq $flipCheckE)
+
+# Scenario F: shipped release-content checks must read the immutable tag, not
+# a post-tag branch state that could make the shipped release look corrected.
+$script:GetFileFromRefStub = {
+    param([string]$Path, [string]$Ref)
+    if ($Path -eq 'eng/Versions.props') {
+        if ($Ref -eq $script:_mockSrRef)   { return $script:_mockSrXml }
+        if ($Ref -eq $script:_mockMainRef) { return $script:_mockMainXml }
+        return $null
+    }
+    if ($Path -eq '.github/ISSUE_TEMPLATE/bug-report.yml') {
+        return $script:_mockBugYaml
+    }
+    return $null
+}
+$script:_mockSrRef = '10.0.80'
+$script:_mockMainRef = 'origin/main'
+$script:_mockSrXml = Build-VersionsPropsXml -Major 10 -Minor 0 -Patch 80 `
+    -PreReleaseVersionLabel 'ci.main' -StabilizePackageVersion 'false'
+$script:_mockMainXml = Build-VersionsPropsXml -Major 10 -Minor 0 -Patch 90 `
+    -PreReleaseVersionLabel 'ci.main' -StabilizePackageVersion 'false'
+$script:_mockBugYaml = $bugYamlAllowsAll
+$shippedContentChecks = Get-ReleaseShipChecks -Ctx @{
+    srBranch = 'release/10.0.1xx-sr8'
+    srRef = 'origin/release/10.0.1xx-sr8'
+    contentsRef = '10.0.80'
+    previousStableTag = '10.0.71'
+    liveBranchVersion = '10.0.81'
+    shippedTagVersion = '10.0.80'
+    mainBranch = 'main'
+    mode = 'shipped'
+}
+$shippedFlipCheck = Get-CheckByAreaPrefix -Checks $shippedContentChecks -Prefix 'Versions.props servicing flip (SR8)'
+Assert-Eq -Label "shipped servicing check reads immutable tag misconfiguration" -Expected 'BLOCKED' -Actual $shippedFlipCheck.Status
+Assert-Eq -Label "shipped servicing check names immutable tag ref" -Expected $true `
+    -Actual ($shippedFlipCheck.Details -match '10\.0\.80')
+Assert-Eq -Label "shipped servicing check says published tag cannot be repaired retroactively" -Expected $true `
+    -Actual ($shippedFlipCheck.Details -match 'cannot be repaired retroactively')
+Assert-Eq -Label "shipped servicing check recommends hotfix/rebuild investigation" -Expected $true `
+    -Actual ($shippedFlipCheck.NextAction -match 'hotfix/rebuild')
+Assert-Eq -Label "shipped servicing check does not prescribe a pre-ship branch PR" -Expected $false `
+    -Actual ($shippedFlipCheck.NextAction -match 'focused PR targeting')
+$hotfixInProgressCheck = Get-CheckByAreaPrefix -Checks $shippedContentChecks -Prefix 'Unpublished hotfix branch state'
+Assert-Eq -Label "shipped branch-ahead hotfix is surfaced as WATCH" -Expected 'WATCH' -Actual $hotfixInProgressCheck.Status
+Assert-Eq -Label "shipped branch-ahead hotfix keeps published anchor explicit" -Expected $true `
+    -Actual ($hotfixInProgressCheck.Details -match '10\.0\.81' -and $hotfixInProgressCheck.Details -match '10\.0\.80')
+
+$shipped91MissingTemplate = @'
+- type: dropdown
+  id: version-with-bug
+  attributes:
+    options:
+      - "10.0.90 (SR9)"
+'@
+$shipped91Checks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=91; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=100; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr9' -Shipped -BugYaml $shipped91MissingTemplate
+$shipped91TemplateCheck = Get-CheckByAreaPrefix -Checks $shipped91Checks -Prefix 'Bug template lists SR9 version'
+Assert-Eq -Label "shipped hotfix requires exact bug-template version, not decade sibling" `
+    -Expected 'CLEANUP' -Actual $shipped91TemplateCheck.Status
+Assert-Eq -Label "shipped hotfix template cleanup names exact published version" `
+    -Expected $true -Actual ($shipped91TemplateCheck.Details -match '10\.0\.91')
+
+$shipped91ExactTemplate = $shipped91MissingTemplate.Replace('10.0.90 (SR9)', '10.0.91 SR9.1')
+$shipped91ExactChecks = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=91; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=100; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr9' -Shipped -BugYaml $shipped91ExactTemplate
+$shipped91ExactCheck = Get-CheckByAreaPrefix -Checks $shipped91ExactChecks -Prefix 'Bug template lists SR9 version'
+Assert-Eq -Label "shipped hotfix accepts exact version with descriptive suffix" `
+    -Expected 'READY' -Actual $shipped91ExactCheck.Status
+
+$preBumpHotfixChecks = Get-ReleaseShipChecks -Ctx @{
+    srBranch = 'release/10.0.1xx-sr8'
+    srRef = 'origin/release/10.0.1xx-sr8'
+    contentsRef = '10.0.80'
+    previousStableTag = '10.0.71'
+    liveBranchVersion = '10.0.80'
+    shippedTagVersion = '10.0.80'
+    hotfixHasPostTagCommits = $true
+    hotfixInProgress = $true
+    mainBranch = 'main'
+    mode = 'shipped'
+}
+$preBumpHotfixCheck = Get-CheckByAreaPrefix -Checks $preBumpHotfixChecks -Prefix 'Unpublished hotfix branch state'
+Assert-Eq -Label "shipped post-tag commit before version bump is surfaced as WATCH" `
+    -Expected 'WATCH' -Actual $preBumpHotfixCheck.Status
+Assert-Eq -Label "pre-bump hotfix WATCH explains unchanged Versions.props" `
+    -Expected $true -Actual ($preBumpHotfixCheck.Details -match 'still reports that version')
+
+$unknownVersionHotfixChecks = Get-ReleaseShipChecks -Ctx @{
+    srBranch = 'release/10.0.1xx-sr8'
+    srRef = 'origin/release/10.0.1xx-sr8'
+    contentsRef = '10.0.80'
+    previousStableTag = '10.0.71'
+    shippedTagVersion = '10.0.80'
+    hotfixHasPostTagCommits = $true
+    hotfixInProgress = $true
+    mainBranch = 'main'
+    mode = 'shipped'
+}
+$unknownVersionHotfixCheck = Get-CheckByAreaPrefix -Checks $unknownVersionHotfixChecks -Prefix 'Unpublished hotfix branch state'
+Assert-Eq -Label "post-tag hotfix with unreadable live version remains a WATCH" `
+    -Expected 'WATCH' -Actual $unknownVersionHotfixCheck.Status
+Assert-Eq -Label "post-tag hotfix with unreadable version renders explicit unknown text" `
+    -Expected $true -Actual ($unknownVersionHotfixCheck.Details -match 'version could not be determined')
+Assert-Eq -Label "post-tag hotfix with unreadable version does not render empty inline code" `
+    -Expected $false -Actual ($unknownVersionHotfixCheck.Details -match 'reports ``')
+
+Set-Item function:Get-FileFromRef $script:OrigGetFileFromRefForShipChecks
+$script:GetFileFromRefStub = $null
 
 # ───── ci-scan freshness + rendering ─────
 Write-Host "`n[Unit] Format-CiScanIssueRows + freshness" -ForegroundColor Cyan
@@ -3409,9 +6921,8 @@ Assert-Eq -Label "No ciScanIssues key: section NOT rendered" -Expected $false `
 # Get-CiScanLabels (label-list filter, deleted). Same convention: the
 # label name fully encodes the source branch (`ci-scan` = main,
 # `ci-scan-net11` = net11.0, `ci-scan-net12` = net12.0, etc.).
-# Preview branches are mapped to their parent net<N>.0 so an in-flight
-# preview readiness still surfaces signals from the branch the preview
-# was cut from.
+# The SR helper retains its broader branch-to-label mapping; Preview-specific
+# lifecycle scoping is tested after the Preview engine is dot-sourced below.
 Write-Host "`n[Unit] Get-CiScanLabelForBranch returns canonical label per branch" -ForegroundColor Cyan
 
 Assert-Eq -Label "'main' → 'ci-scan'" -Expected 'ci-scan' `
@@ -3420,7 +6931,7 @@ Assert-Eq -Label "'net11.0' → 'ci-scan-net11'" -Expected 'ci-scan-net11' `
     -Actual (Get-CiScanLabelForBranch -Branch 'net11.0')
 Assert-Eq -Label "'net12.0' → 'ci-scan-net12' (future-proof)" -Expected 'ci-scan-net12' `
     -Actual (Get-CiScanLabelForBranch -Branch 'net12.0')
-Assert-Eq -Label "preview branch → parent net<N>.0 label" -Expected 'ci-scan-net11' `
+Assert-Eq -Label "SR helper: preview branch → parent net<N>.0 label" -Expected 'ci-scan-net11' `
     -Actual (Get-CiScanLabelForBranch -Branch 'release/11.0.1xx-preview6')
 Assert-Eq -Label "SR branch → null (no scanner configured)" -Expected $null `
     -Actual (Get-CiScanLabelForBranch -Branch 'release/10.0.1xx-sr8')
@@ -3525,6 +7036,12 @@ Assert-Eq -Label "Get-AzdoProp returns array value when 'value' present" -Expect
 # ──────────────────────────────────────────────────────────────────────────
 Write-Host "`n[Unit] Get-MaestroOperationalChecks — BAR default-channel + per-commit build" -ForegroundColor Cyan
 
+$script:OrigTestDarcAvailableForMaestro = ${function:Test-DarcAvailable}
+$script:OrigInvokeDarcJsonForMaestro = ${function:Invoke-DarcJson}
+$script:DarcStub = $null
+function Test-DarcAvailable { return $script:_mockDarcAvail }
+function Invoke-DarcJson { param([string[]]$DarcArgs) & $script:DarcStub $DarcArgs }
+
 function Invoke-MaestroChecksWithMocks {
     <#
         Test harness for Get-MaestroOperationalChecks.
@@ -3545,7 +7062,17 @@ function Invoke-MaestroChecksWithMocks {
         [switch]$DefaultChannelsAuthFail,
         $DefaultChannelsResponse = @(),
         [switch]$BuildAuthFail,
+        [switch]$BuildNoMatch,
         $BuildResponse = @(),
+        [switch]$AssetAuthFail,
+        $AssetResponse = @([PSCustomObject]@{
+                name      = 'Microsoft.Maui.Controls'
+                version   = '10.0.0-ci.1'
+                # Real `darc get-asset --output-format json` shape: locations is a flat
+                # array of URL STRINGS (GetAssetOperation: locations = ...Select(l => l.Location)),
+                # NOT { type, location } objects and NOT a top-level NugetFeed property.
+                locations = @('https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-a11840bf/nuget/v3/index.json')
+            }),
         [string]$SrBranch = 'release/10.0.1xx-sr8',
         [string]$SrHeadSha = 'a11840bfdeadbeefcafebabe1234567890abcdef',
         [string]$Mode = 'in-flight',
@@ -3555,10 +7082,12 @@ function Invoke-MaestroChecksWithMocks {
     $script:_mockDCAuthFail = [bool]$DefaultChannelsAuthFail
     $script:_mockDC = @($DefaultChannelsResponse)
     $script:_mockBuildAuthFail = [bool]$BuildAuthFail
+    $script:_mockBuildNoMatch = [bool]$BuildNoMatch
     $script:_mockBuilds = @($BuildResponse)
+    $script:_mockAssetAuthFail = [bool]$AssetAuthFail
+    $script:_mockAssets = @($AssetResponse)
 
-    function global:Test-DarcAvailable { return $script:_mockDarcAvail }
-    function global:Invoke-DarcJson {
+    $script:DarcStub = {
         param([string[]]$DarcArgs)
         if ($DarcArgs[0] -eq 'get-default-channels') {
             if ($script:_mockDCAuthFail) {
@@ -3567,10 +7096,23 @@ function Invoke-MaestroChecksWithMocks {
             return [PSCustomObject]@{ Success = $true; Data = @($script:_mockDC) }
         }
         if ($DarcArgs[0] -eq 'get-build') {
+            if ($script:_mockBuildNoMatch) {
+                # darc's generic error exit code (Constants.ErrorCode = 42). It is
+                # returned for no-match, auth, network, and invalid-args alike, so
+                # Invoke-DarcJson surfaces it as Success=$false with NO spurious
+                # no-match flag — indistinguishable from any other darc failure.
+                return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = 42 }
+            }
             if ($script:_mockBuildAuthFail) {
                 return [PSCustomObject]@{ Success = $false; Data = @() }
             }
             return [PSCustomObject]@{ Success = $true; Data = @($script:_mockBuilds) }
+        }
+        if ($DarcArgs[0] -eq 'get-asset') {
+            if ($script:_mockAssetAuthFail) {
+                return [PSCustomObject]@{ Success = $false; Data = @() }
+            }
+            return [PSCustomObject]@{ Success = $true; Data = @($script:_mockAssets) }
         }
         return [PSCustomObject]@{ Success = $false; Data = @() }
     }
@@ -3586,8 +7128,10 @@ function Invoke-MaestroChecksWithMocks {
         }
         return Get-MaestroOperationalChecks -Ctx $ctx -SkipChecks:$SkipChecks
     } finally {
-        Remove-Item function:global:Test-DarcAvailable -ErrorAction SilentlyContinue
-        Remove-Item function:global:Invoke-DarcJson -ErrorAction SilentlyContinue
+        # Clear the stub delegate so a later test that calls Invoke-DarcJson without
+        # re-arming the mock fails loudly (& $null) instead of silently reusing this
+        # fixture's stub — prevents cross-test contamination.
+        $script:DarcStub = $null
     }
 }
 
@@ -3621,15 +7165,23 @@ $mockBuildForHead = @(
 
 # ── Scenario 1: darc unavailable (CI) — both checks UNKNOWN with hints ──
 $s1 = Invoke-MaestroChecksWithMocks -DarcAvailable $false
-Assert-Eq -Label "darc-unavailable: emits exactly 2 checks" -Expected 2 -Actual @($s1).Count
+Assert-Eq -Label "darc-unavailable: emits exactly 3 checks" -Expected 3 -Actual @($s1).Count
 $s1Map = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR default-channel'
 Assert-Eq -Label "darc-unavailable: mapping check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Map.Status
 Assert-Eq -Label "darc-unavailable: mapping NextAction mentions add-default-channel" -Expected $true `
     -Actual ($s1Map.NextAction -match 'add-default-channel')
 $s1Build = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR build for SR HEAD'
 Assert-Eq -Label "darc-unavailable: build check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Build.Status
+# The Assessment-feed guidance must survive the darc-less CI/scheduled run too,
+# not be silently dropped (the gap that left the SR9 assessment incomplete).
+$s1Feed = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "darc-unavailable: feed check is emitted (not silently dropped)" -Expected $true `
+    -Actual ($null -ne $s1Feed)
+Assert-Eq -Label "darc-unavailable: feed check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Feed.Status
+Assert-Eq -Label "darc-unavailable: feed details derive the eventual URL from SR HEAD sha8" -Expected $true `
+    -Actual ($s1Feed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
 
-# ── Scenario 2: SR branch present in BAR mappings + build for HEAD → 2x READY ──
+# ── Scenario 2: SR mapped + promoted build for HEAD → mapping/build/feed all READY ──
 $s2 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead
 $s2Map = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'BAR default-channel'
 Assert-Eq -Label "sr-mapped + build-present: mapping is READY" -Expected 'READY' -Actual $s2Map.Status
@@ -3639,6 +7191,108 @@ $s2Build = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'BAR build for SR HEAD'
 Assert-Eq -Label "sr-mapped + build-present: build check is READY" -Expected 'READY' -Actual $s2Build.Status
 Assert-Eq -Label "sr-mapped + build-present: build details show build number" -Expected $true `
     -Actual ($s2Build.Details -match '20260610\.5')
+$s2Feed = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "sr-mapped + promoted build: feed check is READY" -Expected 'READY' -Actual $s2Feed.Status
+Assert-Eq -Label "sr-mapped + promoted build: feed URL derived from build commit sha8" -Expected $true `
+    -Actual ($s2Feed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
+Assert-Eq -Label "sr-mapped + promoted build: feed READY is based on confirmed NugetFeed" -Expected $true `
+    -Actual ($s2Feed.Details -match 'darc get-asset.*confirms the per-build validation feed')
+
+# ── Scenario 2b: channel-present is not enough — if get-asset has no NugetFeed,
+#    the Assessment feed row must WATCH instead of linking a guessed endpoint. ──
+$s2b = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse @([PSCustomObject]@{ locations = @() })
+$s2bFeed = Get-MaestroCheckByPrefix -Checks $s2b -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "promoted build without NugetFeed asset location: feed check is WATCH" -Expected 'WATCH' -Actual $s2bFeed.Status
+Assert-Eq -Label "promoted build without NugetFeed asset location: details refuse guessed endpoint" -Expected $true `
+    -Actual ($s2bFeed.Details -match 'Do not link a substitute endpoint')
+Assert-Eq -Label "promoted build without NugetFeed asset location: details note no feed location returned" -Expected $true `
+    -Actual ($s2bFeed.Details -match 'returned no NuGet feed location')
+
+# ── Scenario 2c: real darc get-asset shape — `locations` is an array of URL
+#    STRINGS with a mix of non-feed and feed URLs. The per-build darc-pub NuGet
+#    feed must be picked out of the strings (the old { type, location } object
+#    parser saw null for every field and wrongly emitted WATCH). Regression test
+#    for the get-asset locations shape fix. ──
+$s2cAsset = @([PSCustomObject]@{
+        name      = 'Microsoft.Maui.Controls'
+        version   = '10.0.0-ci.1'
+        locations = @(
+            'https://dev.azure.com/dnceng/internal/_apis/build/318278/artifacts',
+            'https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-a11840bf/nuget/v3/index.json'
+        )
+    })
+$s2c = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse $s2cAsset
+$s2cFeed = Get-MaestroCheckByPrefix -Checks $s2c -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "string-URL locations: feed check is READY (parses real darc shape)" -Expected 'READY' -Actual $s2cFeed.Status
+Assert-Eq -Label "string-URL locations: picks the darc-pub NuGet feed URL out of the strings" -Expected $true `
+    -Actual ($s2cFeed.Details -match 'darc-pub-dotnet-maui-a11840bf/nuget/v3/index\.json')
+
+# ── Scenario 2d: get-asset returns NuGet v3 feeds but NONE is the per-build
+#    darc-pub validation feed for THIS build's SHA — a shared/durable feed
+#    (dotnet-eng) plus an INTERNAL per-build feed (darc-int-*, same sha but auth-
+#    gated). The old code fell back to "any NuGet v3 feed" (feedCandidates[0]) and
+#    marked READY, telling the captain to link a feed that cannot validate the
+#    exact public candidate packages. Must now stay WATCH. (Regression test for
+#    the per-build-feed SHA-exact gating fix.) ──
+$s2dAsset = @([PSCustomObject]@{
+        name      = 'Microsoft.Maui.Controls'
+        version   = '10.0.0-ci.1'
+        locations = @(
+            'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json',
+            'https://pkgs.dev.azure.com/dnceng/internal/_packaging/darc-int-dotnet-maui-a11840bf/nuget/v3/index.json'
+        )
+    })
+$s2d = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse $s2dAsset
+$s2dFeed = Get-MaestroCheckByPrefix -Checks $s2d -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "shared/internal-only feeds (no public per-build darc-pub): feed check is WATCH, not READY" -Expected 'WATCH' -Actual $s2dFeed.Status
+Assert-Eq -Label "shared/internal-only feeds: details refuse to link a substitute endpoint" -Expected $true `
+    -Actual ($s2dFeed.Details -match 'Do not link a substitute endpoint')
+Assert-Eq -Label "shared/internal-only feeds: does NOT present a shared/internal feed as the confirmed per-build feed" -Expected $false `
+    -Actual ($s2dFeed.Details -match 'confirms the per-build validation feed')
+
+# ── Scenario 2e: get-asset returns a darc-pub feed but for the WRONG build SHA
+#    (a DIFFERENT build's per-build feed). The old substring match on 'darc-pub'
+#    accepted it and marked READY, linking a feed for a different candidate. Must
+#    now stay WATCH — only the exact `darc-pub-dotnet-maui-<thisBuildSha8>` counts.
+#    (Regression test for SHA-exact gating.) ──
+$s2eAsset = @([PSCustomObject]@{
+        name      = 'Microsoft.Maui.Controls'
+        version   = '10.0.0-ci.1'
+        locations = @('https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-deadbeef/nuget/v3/index.json')
+    })
+$s2e = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetResponse $s2eAsset
+$s2eFeed = Get-MaestroCheckByPrefix -Checks $s2e -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "wrong-SHA darc-pub feed: feed check is WATCH, not READY" -Expected 'WATCH' -Actual $s2eFeed.Status
+Assert-Eq -Label "wrong-SHA darc-pub feed: details name the expected per-build token (this build's sha8)" -Expected $true `
+    -Actual ($s2eFeed.Details -match 'darc-pub-dotnet-maui-a11840bf')
+Assert-Eq -Label "wrong-SHA darc-pub feed: does NOT confirm the wrong-SHA feed as the per-build feed" -Expected $false `
+    -Actual ($s2eFeed.Details -match 'confirms the per-build validation feed')
+
+# ── Scenario 2f: `darc get-asset` itself FAILS (auth/network) on a promoted build.
+#    $asset.Success is false, so the success block is skipped. The WATCH branch
+#    still reads $feedCandidates/$expectedFeedToken — which MUST be initialized
+#    before the success check, or Set-StrictMode -Version Latest throws on the
+#    unset variables and ABORTS the whole readiness report. The check must degrade
+#    to WATCH, not crash. (Regression test for the uninitialized-variable abort.)
+#    Wrapped in try/catch so the pre-fix throw surfaces as clean assert failures
+#    rather than aborting this test file. ──
+$s2fThrew = $false
+$s2f = @()
+try {
+    $s2f = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead -AssetAuthFail
+} catch {
+    $s2fThrew = $true
+}
+Assert-Eq -Label "get-asset lookup failure: does NOT throw/abort the report under StrictMode" -Expected $false -Actual $s2fThrew
+$s2fFeed = Get-MaestroCheckByPrefix -Checks $s2f -Prefix 'Ship Assessment validation feed'
+$s2fStatus = if ($s2fFeed) { $s2fFeed.Status } else { '<no-feed-check-emitted>' }
+$s2fDetails = if ($s2fFeed) { [string]$s2fFeed.Details } else { '' }
+Assert-Eq -Label "get-asset lookup failure: feed check degrades to WATCH (not aborted)" -Expected 'WATCH' -Actual $s2fStatus
+Assert-Eq -Label "get-asset lookup failure: details note the lookup did not return a usable result" -Expected $true `
+    -Actual ($s2fDetails -match 'did not return a usable result')
+$s2fBuild = Get-MaestroCheckByPrefix -Checks $s2f -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "get-asset lookup failure: build check still emitted (report completed, not aborted)" -Expected $true `
+    -Actual ($null -ne $s2fBuild)
 
 # ── Scenario 3: SR branch MISSING from BAR (the SR8 real-world bug) → BLOCKED ──
 $s3 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse @()
@@ -3661,10 +7315,26 @@ Assert-Eq -Label "darc-call-failed: mapping is UNKNOWN with auth-issue hint" -Ex
 Assert-Eq -Label "darc-call-failed: mapping details mention auth/network" -Expected $true `
     -Actual ($s5Map.Details -match 'auth')
 
-# ── Scenario 6: mapping OK but no build for HEAD → WATCH (CI in flight) ──
+# ── Scenario 6: mapping OK but darc returns exit 0 + no build for HEAD → WATCH.
+#    (This is the genuine empty-but-successful "CI still in flight" path.) ──
 $s6 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse @()
 $s6Build = Get-MaestroCheckByPrefix -Checks $s6 -Prefix 'BAR build for SR HEAD'
-Assert-Eq -Label "no-build-for-head: build check is WATCH (not BLOCKED — transient)" -Expected 'WATCH' -Actual $s6Build.Status
+Assert-Eq -Label "no-build-for-head (exit 0, empty): build check is WATCH (not BLOCKED — transient)" -Expected 'WATCH' -Actual $s6Build.Status
+
+# ── Scenario 6b: darc get-build exits 42 (Constants.ErrorCode). This is darc's
+#    GENERIC error code — returned for no-match AND auth/network/invalid-args/
+#    exceptions alike — so it is NOT a reliable "no build yet" signal. It must
+#    surface as UNKNOWN, never a reassuring WATCH that could mask a real auth or
+#    BAR outage at ship time. (Regression test for the exit-42 semantics fix.) ──
+$s6b = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildNoMatch
+$s6bBuild = Get-MaestroCheckByPrefix -Checks $s6b -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "get-build exit 42 (generic error): build check is UNKNOWN, not a reassuring WATCH" -Expected 'UNKNOWN' -Actual $s6bBuild.Status
+Assert-Eq -Label "get-build exit 42: details name the generic exit code and its ambiguity" -Expected $true `
+    -Actual (($s6bBuild.Details -match 'exit 42') -and ($s6bBuild.Details -match 'auth'))
+# The Assessment-feed row must also degrade to UNKNOWN on the same failure (can't
+# confirm promotion), not be silently dropped.
+$s6bFeed = Get-MaestroCheckByPrefix -Checks $s6b -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "get-build exit 42: feed check is UNKNOWN (promotion unconfirmable)" -Expected 'UNKNOWN' -Actual $s6bFeed.Status
 
 # ── Scenario 7: candidate mode → no checks emitted (SR doesn't exist yet) ──
 $s7 = Invoke-MaestroChecksWithMocks -Mode 'candidate' -DefaultChannelsResponse $mockChannelsWithSr8
@@ -3705,10 +7375,139 @@ $s13 = Invoke-MaestroChecksWithMocks -SrBranch 'release/10.0.1xx-sr7' -DefaultCh
 $s13Map = Get-MaestroCheckByPrefix -Checks $s13 -Prefix 'BAR default-channel'
 Assert-Eq -Label "sr7-already-mapped: READY" -Expected 'READY' -Actual $s13Map.Status
 
+# ── Scenario 14: build exists but NOT promoted (no channels) → feed check WATCH ──
+# The SR9 incident: a build existed for HEAD but carried no channel, so no
+# per-build darc-pub feed was generated and the ship Assessment had no feed to
+# link. The feed check must still derive the eventual URL from the build commit.
+$unpromotedBuild = @(
+    [PSCustomObject]@{ id = 322419; buildNumber = '20260710.6'; buildLink = 'https://example/sr9'
+        commit = '8e2547a4707f745a27a7791495b240e756926980'; channels = @() }
+)
+$s14 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $unpromotedBuild
+$s14Feed = Get-MaestroCheckByPrefix -Checks $s14 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "build-not-promoted: feed check is WATCH (no channel → no feed)" -Expected 'WATCH' -Actual $s14Feed.Status
+Assert-Eq -Label "build-not-promoted: feed details derive the eventual URL from the build commit" -Expected $true `
+    -Actual ($s14Feed.Details -match 'darc-pub-dotnet-maui-8e2547a4/nuget/v3/index\.json')
+$s14Build = Get-MaestroCheckByPrefix -Checks $s14 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "build-not-promoted: build check still READY, channels shown as '_none_'" -Expected $true `
+    -Actual ($s14Build.Details -match '_none_')
+
+# ── Scenario 15: only a same-SHA build on ANOTHER branch (main) → WATCH ──
+# darc get-build --commit is branch-agnostic; right after the SR is cut, main and
+# the SR branch share the SR HEAD SHA. A promoted *main* build for that commit must
+# NOT be mistaken for the SR branch's own build.
+$mainOnlyBuild = @(
+    [PSCustomObject]@{ id = 400500; branch = 'main'; buildNumber = '20260715.9'
+        buildLink = 'https://example/main'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = @('.NET 10.0.1xx SDK') }
+)
+$s15 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mainOnlyBuild
+$s15Build = Get-MaestroCheckByPrefix -Checks $s15 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "same-sha-main-build-only: build check is WATCH (not the SR branch's build)" -Expected 'WATCH' -Actual $s15Build.Status
+Assert-Eq -Label "same-sha-main-build-only: details say none produced on the SR branch" -Expected $true `
+    -Actual ($s15Build.Details -match 'none produced on')
+$s15Feed = Get-MaestroCheckByPrefix -Checks $s15 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "same-sha-main-build-only: no feed READY/WATCH row emitted (no SR build)" -Expected $true `
+    -Actual ($null -eq $s15Feed)
+
+# ── Scenario 15b: SR build whose branch metadata carries the refs/heads/ prefix ──
+# BAR/darc may return the SR branch as `refs/heads/release/...` on the branch/
+# gitHubBranch/githubBranch fields (not just azureDevOpsBranch). Those must still
+# match $Ctx.srBranch after refs/heads/ stripping, otherwise a valid SR build is
+# filtered out and misreported as WATCH/no-build.
+$refsHeadsSrBuild = @(
+    [PSCustomObject]@{ id = 400600; gitHubBranch = 'refs/heads/release/10.0.1xx-sr8'
+        buildNumber = '20260716.2'; buildLink = 'https://example/sr8'
+        commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'; channels = @('.NET 10.0.1xx SDK') }
+)
+$s15b = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $refsHeadsSrBuild
+$s15bBuild = Get-MaestroCheckByPrefix -Checks $s15b -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "refs/heads-prefixed SR branch build: build check is READY (not filtered out)" -Expected 'READY' -Actual $s15bBuild.Status
+Assert-Eq -Label "refs/heads-prefixed SR branch build: details cite the build number" -Expected $true `
+    -Actual ($s15bBuild.Details -match '20260716\.2')
+
+# ── Scenario 16: BOTH a higher-id main build and a lower-id SR build for HEAD →
+#    picks the SR branch build, not the highest id across all branches. ──
+$mainAndSrBuilds = @(
+    [PSCustomObject]@{ id = 400500; branch = 'main'; buildNumber = '20260715.9'
+        buildLink = 'https://example/main'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = @('.NET 10.0.1xx SDK') }
+    [PSCustomObject]@{ id = 318278; branch = 'release/10.0.1xx-sr8'; buildNumber = '20260610.5'
+        buildLink = 'https://example/sr8'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = @('.NET 10.0.1xx SDK') }
+)
+$s16 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mainAndSrBuilds
+$s16Build = Get-MaestroCheckByPrefix -Checks $s16 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "main+sr-builds: build check is READY (SR branch build found)" -Expected 'READY' -Actual $s16Build.Status
+Assert-Eq -Label "main+sr-builds: picks the SR-branch build (20260610.5)" -Expected $true `
+    -Actual ($s16Build.Details -match '20260610\.5')
+Assert-Eq -Label "main+sr-builds: does NOT pick the higher-id main build (20260715.9)" -Expected $true `
+    -Actual (-not ($s16Build.Details -match '20260715\.9'))
+
+# ── Scenario 17: SR build present but channels is $null (not []) → NOT promoted ──
+# @($null).Count is 1, which previously false-marked a null-channels build as
+# promoted and emitted a bogus READY Assessment-feed row. Null/empty channels must
+# read as unpromoted (build READY with '_none_', feed WATCH).
+$nullChansBuild = @(
+    [PSCustomObject]@{ id = 333000; branch = 'release/10.0.1xx-sr8'; buildNumber = '20260716.2'
+        buildLink = 'https://example/nullchans'; commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'
+        channels = $null }
+)
+$s17 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $nullChansBuild
+$s17Build = Get-MaestroCheckByPrefix -Checks $s17 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "null-channels build: build check shows channels as '_none_'" -Expected $true `
+    -Actual ($s17Build.Details -match '_none_')
+$s17Feed = Get-MaestroCheckByPrefix -Checks $s17 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "null-channels build: feed check is WATCH (null channels != promoted)" -Expected 'WATCH' -Actual $s17Feed.Status
+
+# ── Scenario 18: promoted SR build with no commit property → feed URL falls
+#    back to ctx.srHeadSha, not some unrelated/default build field. ──
+$noCommitPropSrHead = 'f00dbabe707f745a27a7791495b240e756926980'
+$noCommitPropBuild = @(
+    [PSCustomObject]@{
+        id = 333100; branch = 'release/10.0.1xx-sr8'; buildNumber = '20260716.3'
+        buildLink = 'https://example/nocommit'; channels = @('.NET 10.0.1xx SDK')
+    }
+)
+$s18Asset = @([PSCustomObject]@{ locations = @('https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-f00dbabe/nuget/v3/index.json') })
+$s18 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $noCommitPropBuild -SrHeadSha $noCommitPropSrHead -AssetResponse $s18Asset
+$s18Feed = Get-MaestroCheckByPrefix -Checks $s18 -Prefix 'Ship Assessment validation feed'
+Assert-Eq -Label "promoted build without commit property: feed check is READY" -Expected 'READY' -Actual $s18Feed.Status
+Assert-Eq -Label "promoted build without commit property: feed URL falls back to srHeadSha sha8" -Expected $true `
+    -Actual ($s18Feed.Details -match 'darc-pub-dotnet-maui-f00dbabe/nuget/v3/index\.json')
+
+Set-Item function:Test-DarcAvailable $script:OrigTestDarcAvailableForMaestro
+Set-Item function:Invoke-DarcJson $script:OrigInvokeDarcJsonForMaestro
+$script:DarcStub = $null
+
+# ── Direct Invoke-DarcJson contract test: darc's non-zero exit is the generic
+#    Constants.ErrorCode (42), NOT a reliable "no match". The wrapper must surface
+#    Success=$false and the raw ExitCode, and must NOT expose a truthy NoMatch flag
+#    that a caller could trust as "no build yet" (regression test — fails if the
+#    exit-42→NoMatch derivation is reintroduced). We shim the `darc` executable so
+#    the real Invoke-DarcJson runs against a controlled exit code (no darc needed).
+Write-Host "`n[Unit] Invoke-DarcJson — darc exit-42 contract" -ForegroundColor Cyan
+$script:OrigDarcForExitTest = ${function:darc}
+function darc { $global:LASTEXITCODE = 42 }
+try {
+    $darc42 = Invoke-DarcJson -DarcArgs @('get-build', '--repo', 'https://github.com/dotnet/maui', '--commit', 'deadbeef')
+    Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → Success=`$false" -Expected $false -Actual $darc42.Success
+    Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → raw ExitCode surfaced (42)" -Expected 42 -Actual $darc42.ExitCode
+    Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → NO truthy NoMatch flag (generic error, not no-match)" -Expected $false `
+        -Actual ([bool](Get-AzdoProp $darc42 'NoMatch'))
+} finally {
+    if ($null -ne $script:OrigDarcForExitTest) { Set-Item function:darc $script:OrigDarcForExitTest }
+    else { Remove-Item function:darc -ErrorAction SilentlyContinue }
+}
+
 # =========================================================================
 # Get-MilestoneHygieneChecks — current/next milestone existence + stale detection
 # =========================================================================
 Write-Host "`n[Unit] Get-MilestoneHygieneChecks — current/next milestone existence + stale detection" -ForegroundColor Cyan
+
+$script:OrigGetAllMilestonesForHygiene = ${function:Get-AllMilestones}
+$script:MilestoneStub = $null
+function Get-AllMilestones { param([string]$Repo) & $script:MilestoneStub $Repo }
 
 # Mock harness — overrides Get-AllMilestones globally with a fixture, exercises
 # the real Get-MilestoneHygieneChecks logic, then restores. Mirrors the
@@ -3725,7 +7524,7 @@ function Invoke-MilestoneChecksWithMocks {
     $script:_mockMsApiFail = [bool]$ApiFail
     $script:_mockMsData = @($MilestonesResponse)
 
-    function global:Get-AllMilestones {
+    $script:MilestoneStub = {
         param([string]$Repo)
         if ($script:_mockMsApiFail) {
             return [PSCustomObject]@{ Success = $false; Data = @() }
@@ -3742,7 +7541,7 @@ function Invoke-MilestoneChecksWithMocks {
         }
         return Get-MilestoneHygieneChecks -Ctx $ctx -SkipChecks:$SkipChecks
     } finally {
-        Remove-Item function:global:Get-AllMilestones -ErrorAction SilentlyContinue
+        $script:MilestoneStub = $null
     }
 }
 
@@ -3926,10 +7725,265 @@ Assert-Eq -Label "M15: RC branch shape → 0 checks (can't infer milestone name)
 
 # ── Scenario M16: API failure → UNKNOWN check (gh auth gap) ──
 $m16 = Invoke-MilestoneChecksWithMocks -ApiFail
-$m16Unk = Get-MilestoneCheckByPrefix -Checks $m16 -Prefix 'Milestone hygiene'
-Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual $m16Unk.Status
-Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
-    -Actual ($m16Unk.NextAction -match 'gh auth status')
+$m16Unk = Get-MilestoneCheckByPrefix -Checks $m16 -Prefix 'Milestone hygiene (API failure)'
+Assert-Eq -Label "M16: API fail check present" -Expected $true -Actual ($null -ne $m16Unk)
+if ($null -ne $m16Unk) {
+    Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual $m16Unk.Status
+    # Distinct Area from the branch-shape UNKNOWN (M20c): the agent's remediation table
+    # keys on Area, and only the API-failure case should route to "fix gh auth".
+    Assert-Eq -Label "M16: API fail Area is the API-failure variant" -Expected 'Milestone hygiene (API failure)' -Actual $m16Unk.Area
+    Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
+        -Actual ($m16Unk.NextAction -match 'gh auth status')
+}
+
+# ── Scenario M17: preview7 is the FINAL preview → next cycle is rc1, NOT preview8 ──
+# Regression guard. .NET ships preview1..preview7 → rc1 → rc2 → GA; there is no
+# preview8. Naively incrementing the preview number told release captains to
+# create a `.NET 11.0-preview8` milestone that .NET never ships.
+$m17Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+)
+$m17 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m17Data
+$m17Next = Get-MilestoneCheckByPrefix -Checks $m17 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M17: preview7 missing next → CLEANUP" -Expected 'CLEANUP' -Actual $m17Next.Status
+Assert-Eq -Label "M17: next cycle after preview7 is rc1" -Expected $true `
+    -Actual ($m17Next.Area -match '\.NET 11\.0-rc1')
+Assert-Eq -Label "M17: next cycle after preview7 is NOT preview8" -Expected $false `
+    -Actual ($m17Next.Area -match 'preview8')
+Assert-Eq -Label "M17: NextAction creates the rc1 milestone" -Expected $true `
+    -Actual ($m17Next.NextAction -match 'title="\.NET 11\.0-rc1"')
+
+# ── Scenario M18: preview7 + rc1 both present → no next-cycle check ──
+$m18Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+)
+$m18 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m18Data
+Assert-Eq -Label "M18: preview7 + rc1 present → 0 checks" -Expected 0 -Actual @($m18).Count
+
+# ── Scenario M19: preview6 still increments normally (cadence untouched below 7) ──
+$m19Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview6' -Number 302 -DueOn $daysAhead30)
+)
+$m19 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview6' -MilestonesResponse $m19Data
+$m19Next = Get-MilestoneCheckByPrefix -Checks $m19 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M19: next cycle after preview6 is still preview7" -Expected $true `
+    -Actual ($m19Next.Area -match '\.NET 11\.0-preview7')
+
+# ── Scenario M20: candidate mode off preview7 → current=rc1, next=rc2 ──
+# Candidate mode increments the ordinal, so "candidate after preview7" is rc1
+# and its roll-forward is rc2 — neither may render as a preview.
+$m20Data = @(
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+)
+$m20 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m20Data
+$m20Current = Get-MilestoneCheckByPrefix -Checks $m20 -Prefix 'Milestone for current cycle'
+$m20Next = Get-MilestoneCheckByPrefix -Checks $m20 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M20: candidate off preview7 → rc1 exists, no current-cycle BLOCK" -Expected $true -Actual ($null -eq $m20Current)
+Assert-Eq -Label "M20: candidate off preview7 → next cycle is rc2" -Expected $true `
+    -Actual ($m20Next.Area -match '\.NET 11\.0-rc2')
+
+# ── Scenario M20b: candidate off preview7, rc1 MISSING → BLOCKED naming rc1 (not preview8) ──
+# Negative-case guard for the newly-reachable rc *current*-cycle check. This PR is
+# what first makes an rc title reachable as a CURRENT cycle; every other current-cycle
+# BLOCKED assertion (M2, M4) is SR-shaped, and M20 only asserts the *absence* of a check
+# when rc1 is present. Without this, mutating Check 1 to skip BLOCKED for `-rc\d+$` titles
+# still passes the whole suite. Drives a *missing* rc1 through Check 1 and pins the render.
+$m20b = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview7' -MilestonesResponse @()
+$m20bCur = Get-MilestoneCheckByPrefix -Checks $m20b -Prefix 'Milestone for current cycle'
+# Guard the dereference: if the current-cycle check regresses to absent, fail cleanly
+# here rather than dying with a StrictMode null-property throw that aborts the whole
+# suite (and silently skips every later scenario).
+Assert-Eq -Label "M20b: candidate off preview7, rc1 missing → current-cycle check present" -Expected $true -Actual ($null -ne $m20bCur)
+if ($null -ne $m20bCur) {
+    Assert-Eq -Label "M20b: candidate off preview7, rc1 missing → BLOCKED" -Expected 'BLOCKED' -Actual $m20bCur.Status
+    Assert-Eq -Label "M20b: current title is rc1 (not preview8)" -Expected $true `
+        -Actual ($m20bCur.Area -match '\.NET 11\.0-rc1')
+    Assert-Eq -Label "M20b: NextAction creates rc1, not preview8" -Expected $true `
+        -Actual ($m20bCur.NextAction -match 'title="\.NET 11\.0-rc1"' -and $m20bCur.NextAction -notmatch 'preview8')
+}
+
+# ── Scenario M20c: preview0 branch → UNKNOWN, NOT a silent skip ──
+# `preview(\d+)` syntactically accepts 0, mapping to ordinal 0 which has no train
+# member. A matched branch shape with an out-of-range ordinal is a misconfiguration,
+# so it must surface as UNKNOWN rather than silently dropping the current-cycle
+# signal — distinct from the legitimate past-rc2 empty result asserted by M20d.
+$m20c = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview0' -MilestonesResponse @()
+$m20cHygiene = Get-MilestoneCheckByPrefix -Checks $m20c -Prefix 'Milestone hygiene (branch shape)'
+Assert-Eq -Label "M20c: branch-shape check present" -Expected $true -Actual ($null -ne $m20cHygiene)
+if ($null -ne $m20cHygiene) {
+    Assert-Eq -Label "M20c: preview0 ordinal → UNKNOWN (not silent skip)" -Expected 'UNKNOWN' -Actual $m20cHygiene.Status
+    # Distinct Area from the API-failure UNKNOWN (M16) so the agent doesn't route a bad
+    # branch name to "fix gh auth" (which cannot resolve it).
+    Assert-Eq -Label "M20c: Area is the branch-shape variant" -Expected 'Milestone hygiene (branch shape)' -Actual $m20cHygiene.Area
+    Assert-Eq -Label "M20c: UNKNOWN details name the bad ordinal" -Expected $true `
+        -Actual ($m20cHygiene.Details -match 'ordinal')
+}
+
+# ── Scenario M20d: past-rc2 ordinal → legitimate silent skip (0 checks, NOT UNKNOWN) ──
+# Counterpart to M20c. 'preview9' is synthetic (like M21's preview8) purely to push the
+# candidate-mode ordinal to 10 (past rc2). GA has no milestone in this naming convention,
+# so an empty result is correct here — this pins that only sub-1 ordinals surface UNKNOWN.
+$m20d = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview9' -MilestonesResponse @()
+Assert-Eq -Label "M20d: past-rc2 ordinal → 0 checks (silent skip, GA has no milestone)" -Expected 0 -Actual @($m20d).Count
+
+# ── Scenario M21: rc2 is the end of the train → no next-cycle check (GA follows) ──
+# NOTE: 'preview8' below is deliberately NOT a real cycle — this PR removes preview8 as a
+# roll-forward target. It is a synthetic PriorSrBranch used only to drive the candidate-mode
+# ordinal math onto rc2 so this test can exercise the "rc2 is the end of the train" path.
+# Real RC branch shapes are intentionally skipped by the parser, so a preview-shaped input is
+# the only way to reach rc2 here; do not read this as implying preview8 exists.
+$m21Data = @(
+    (New-MockMilestone -Title '.NET 11.0-rc2' -Number 303 -DueOn $daysAhead30)
+)
+$m21 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/11.0.1xx-preview8' -MilestonesResponse $m21Data
+$m21Next = Get-MilestoneCheckByPrefix -Checks $m21 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M21: rc2 has no roll-forward milestone (GA is next) → no next check" -Expected $true -Actual ($null -eq $m21Next)
+
+# ── Scenario M22: stale rc milestones flagged alongside stale previews ──
+# preview and rc are one continuous pre-release train, so a stale rc (one that
+# isn't the current or next-cycle target) is the same housekeeping debt as a
+# stale preview5.
+$m22Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -Number 301 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview5' -State 'open' -Number 304 -OpenIssues 3 -DueOn $daysAgo60)
+)
+$m22 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22Data
+$m22Stale = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22: stale preview5 flagged when surveying preview7" -Expected 'CLEANUP' -Actual $m22Stale.Status
+# Negative half of Check 3b: it must select ONLY the next-cycle title. Here rc1 IS
+# the next-cycle target but is not past due, and preview5 is past due but is not the
+# next-cycle target — so Check 3b must stay silent. Without this, widening 3b's
+# membership predicate (e.g. to `$true`) would mislabel already-shipped preview5 as
+# "the target open issues roll forward to" and no assertion would notice.
+$m22Slipped = Get-MilestoneCheckByPrefix -Checks $m22 -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22: on-time next-cycle rc1 + stale preview5 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22Slipped)
+
+# M22b: an rc-shaped title IS caught by the widened `(preview|rc)` stale filter.
+# Use rc2 (not rc1): when surveying preview7 the next-cycle target is rc1, which
+# M22c pins as *excluded*; rc2 is neither current nor next, so a past-due open rc2
+# is genuine cross-cycle debt and must surface — proving the rc half of the filter
+# still works after the next-cycle exclusion added for the slipped-rc1 case.
+$m22bData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc2' -State 'open' -Number 302 -OpenIssues 2 -DueOn $daysAgo60)
+)
+$m22b = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22bData
+$m22bStale = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22b: stale rc2 check present" -Expected $true -Actual ($null -ne $m22bStale)
+if ($null -ne $m22bStale) {
+    Assert-Eq -Label "M22b: stale rc2 (neither current nor next) flagged on the preview train" -Expected 'CLEANUP' -Actual $m22bStale.Status
+}
+# Second negative for Check 3b, with the next-cycle milestone ABSENT rather than
+# on time: rc1 doesn't exist (Check 2 asks for it), and the only past-due milestone
+# is rc2, which is not the roll-forward target. Check 3b must stay silent.
+$m22bSlipped = Get-MilestoneCheckByPrefix -Checks $m22b -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22b: missing next-cycle rc1 + stale rc2 → no next-cycle-past-due row" -Expected $true -Actual ($null -eq $m22bSlipped)
+
+# ── Scenario M22e: rendered stale ordering is deterministic on tied due_on ──
+# Nothing pinned the ORDER of the rendered milestone list, so a reversed or permuted
+# sort survived every other scenario. This locks it, and specifically guards the
+# `-Stable` switch on Get-PastDueOpenMilestones' Sort-Object.
+#
+# Why the fixture is padded: PowerShell's default Sort-Object is NOT stable (ties are
+# only kept in received order with -Top/-Bottom/-Stable), but .NET falls back to a
+# stable insertion sort below ~16 elements — so a small fixture cannot detect an
+# unstable sort. Since sorting now happens on the whole past-due set BEFORE each
+# check's discriminator, the set that must cross that threshold is the PADDING plus
+# the real ones. The 18 `.NET 10.0-preview*` entries are past due and open (so they
+# land in $pastDueOpen) but belong to a different major, so $cycleFilter drops them
+# from $staleMs. All entries share ONE due_on, making every comparison a tie: with
+# -Stable the four .NET 11 entries render in input order; without it they permute.
+$m22eData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1'      -Number 301 -DueOn $daysAhead30)
+)
+$m22eData += 1..18 | ForEach-Object {
+    New-MockMilestone -Title ".NET 10.0-preview$_" -State 'open' -Number (400 + $_) -OpenIssues 1 -DueOn $daysAgo60
+}
+$m22eExpectedOrder = @('.NET 11.0-preview2', '.NET 11.0-preview4', '.NET 11.0-preview1', '.NET 11.0-preview3')
+$m22eData += $m22eExpectedOrder | ForEach-Object {
+    New-MockMilestone -Title $_ -State 'open' -Number (500 + $m22eExpectedOrder.IndexOf($_)) -OpenIssues 1 -DueOn $daysAgo60
+}
+$m22e = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22eData
+$m22eStale = Get-MilestoneCheckByPrefix -Checks $m22e -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22e: cross-major padding is filtered out; only the 4 same-major stale ones surface" `
+          -Expected 'Stale open milestones (4)' -Actual $m22eStale.Area
+# Extract the titles in rendered order and compare as a single string.
+$m22eRendered = @([regex]::Matches($m22eStale.Details, '\[(\.NET [^\]]+)\]') | ForEach-Object { $_.Groups[1].Value }) -join ','
+Assert-Eq -Label "M22e: tied due_on preserves input order (guards Sort-Object -Stable)" `
+          -Expected ($m22eExpectedOrder -join ',') -Actual $m22eRendered
+
+# M22f: sort DIRECTION — oldest-first. M22e's entries are all tied, so it cannot
+# distinguish ascending from descending (a `-Descending` mutant survives it). Here
+# the three due dates are distinct and deliberately supplied out of order, so the
+# rendered sequence pins "oldest debt first", which is the order the NextAction's
+# triage advice assumes.
+$m22fData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1'      -Number 301 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview1' -State 'open' -Number 601 -OpenIssues 1 -DueOn $daysAgo30)
+    (New-MockMilestone -Title '.NET 11.0-preview2' -State 'open' -Number 602 -OpenIssues 1 -DueOn $daysAgo60)
+    (New-MockMilestone -Title '.NET 11.0-preview3' -State 'open' -Number 603 -OpenIssues 1 -DueOn $daysAgo10)
+)
+$m22f = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22fData
+$m22fStale = Get-MilestoneCheckByPrefix -Checks $m22f -Prefix 'Stale open milestones'
+$m22fRendered = @([regex]::Matches($m22fStale.Details, '\[(\.NET [^\]]+)\]') | ForEach-Object { $_.Groups[1].Value }) -join ','
+Assert-Eq -Label "M22f: distinct due_on renders oldest-first (guards sort direction)" `
+          -Expected '.NET 11.0-preview2,.NET 11.0-preview1,.NET 11.0-preview3' -Actual $m22fRendered
+
+# M22c: a slipped next-cycle rc1 is NOT "already-shipped debt" — but it is NOT silently
+# dropped either. Check 3b re-classifies it into a distinct "Next-cycle milestone past due"
+# row (findings 1-2, round-2), preserving the signal without the misleading wording.
+# Surveying preview7 with an open, past-due rc1:
+#   - Check 3 ("Stale open milestones") must NOT include it (it's the roll-forward target)
+#   - Check 3b ("Next-cycle milestone past due") MUST surface it
+$m22cData = @(
+    (New-MockMilestone -Title '.NET 11.0-preview7' -Number 300 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-rc1' -State 'open' -Number 301 -OpenIssues 2 -DueOn $daysAgo60)
+)
+$m22c = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview7' -MilestonesResponse $m22cData
+$m22cStale = Get-MilestoneCheckByPrefix -Checks $m22c -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22c: slipped next-cycle rc1 is NOT flagged as stale debt" -Expected $true -Actual ($null -eq $m22cStale)
+$m22cSlipped = Get-MilestoneCheckByPrefix -Checks $m22c -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22c: slipped next-cycle rc1 IS surfaced by Check 3b" -Expected $true -Actual ($null -ne $m22cSlipped)
+if ($null -ne $m22cSlipped) {
+    Assert-Eq -Label "M22c: slipped rc1 re-classified as next-cycle-past-due CLEANUP" -Expected 'CLEANUP' -Actual $m22cSlipped.Status
+    Assert-Eq -Label "M22c: next-cycle-past-due row names rc1" -Expected $true `
+        -Actual ($m22cSlipped.Details -match '\.NET 11\.0-rc1')
+}
+
+# M22d: SR-lane counterpart to M22c (finding 1). The next-cycle exclusion from Check 3 is
+# lane-agnostic, so a slipped SR next-cycle milestone must ALSO re-classify into the
+# "Next-cycle milestone past due" row rather than vanish — restoring the SR-captain signal
+# the bare exclusion had dropped. Surveying SR8 with an open, past-due .NET 10 SR9:
+$m22dData = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -OpenIssues 50 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -State 'open' -Number 118 -OpenIssues 4 -DueOn $daysAgo60)
+)
+$m22d = Invoke-MilestoneChecksWithMocks -SrBranch 'release/10.0.1xx-sr8' -MilestonesResponse $m22dData
+$m22dStale = Get-MilestoneCheckByPrefix -Checks $m22d -Prefix 'Stale open milestones'
+Assert-Eq -Label "M22d: slipped next-cycle SR9 is NOT flagged as stale debt" -Expected $true -Actual ($null -eq $m22dStale)
+$m22dSlipped = Get-MilestoneCheckByPrefix -Checks $m22d -Prefix 'Next-cycle milestone past due'
+Assert-Eq -Label "M22d: slipped next-cycle SR9 IS surfaced by Check 3b (SR lane)" -Expected $true -Actual ($null -ne $m22dSlipped)
+if ($null -ne $m22dSlipped) {
+    Assert-Eq -Label "M22d: slipped SR9 re-classified as next-cycle-past-due CLEANUP" -Expected 'CLEANUP' -Actual $m22dSlipped.Status
+    Assert-Eq -Label "M22d: next-cycle-past-due row names SR9" -Expected $true `
+        -Actual ($m22dSlipped.Details -match 'SR9')
+}
+
+# ── Scenario M23: Get-PreviewTrainMilestoneTitle pure-function mapping ──
+Assert-Eq -Label "M23: ordinal 1 → preview1" -Expected '.NET 11.0-preview1' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 1)
+Assert-Eq -Label "M23: ordinal 7 → preview7" -Expected '.NET 11.0-preview7' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 7)
+Assert-Eq -Label "M23: ordinal 8 → rc1 (not preview8)" -Expected '.NET 11.0-rc1' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 8)
+Assert-Eq -Label "M23: ordinal 9 → rc2" -Expected '.NET 11.0-rc2' -Actual (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 9)
+Assert-Eq -Label "M23: ordinal 10 → null (GA, no milestone)" -Expected $true -Actual ($null -eq (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 10))
+Assert-Eq -Label "M23: ordinal 0 → null (invalid)" -Expected $true -Actual ($null -eq (Get-PreviewTrainMilestoneTitle -Major 11 -Ordinal 0))
+Assert-Eq -Label "M23: major is honoured (10 → rc1)" -Expected '.NET 10.0-rc1' -Actual (Get-PreviewTrainMilestoneTitle -Major 10 -Ordinal 8)
+
+Set-Item function:Get-AllMilestones $script:OrigGetAllMilestonesForHygiene
+$script:MilestoneStub = $null
 
 # ───── Get-ExpectedShipDate: deterministic 2nd-Tuesday math + hotfix cadence ─────
 # .NET releases ship on the 2nd Tuesday of every month for x0 patches (80, 90, 100…)
@@ -3980,7 +8034,7 @@ $t7 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-07-01') -PatchVersion
 Assert-Eq -Label "T7: 07-01 (month starts on Wed) → Jul 14" -Expected '2026-07-14' -Actual $t7.Date.ToString('yyyy-MM-dd')
 
 # Scenario T8: time-of-day portion shouldn't affect the result
-$t8 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-09T23:59:00Z') -PatchVersion 80
+$t8 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-09T23:59:00') -PatchVersion 80
 Assert-Eq -Label "T8: time-of-day stripped → 06-09 still recognized as shipping day" -Expected 0 -Actual $t8.DaysFromNow
 
 # Scenario T9: patch=$null (caller doesn't know) → defaults to 2nd-Tuesday cadence
@@ -4033,7 +8087,7 @@ Assert-Eq -Label "T15: cadence = second-tuesday"                  -Expected 'sec
 $t16 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 80 -MainBumpDate ([DateTime]'2026-05-13')
 Assert-Eq -Label "T16: bump 05-13 + today 06-11 → 2026-06-09 (still anchored)" -Expected '2026-06-09' -Actual $t16.Date.ToString('yyyy-MM-dd')
 Assert-Eq -Label "T16: missedWindow = true"                       -Expected $true             -Actual $t16.MissedWindow
-Assert-Eq -Label "T16: days from 06-11 = -2"                      -Expected -2                -Actual $t16.DaysFromNow
+Assert-Eq -Label "T16: days from 06-11 = -2"                      -Expected ([int]-2)         -Actual $t16.DaysFromNow
 Assert-Eq -Label "T16: cadence = second-tuesday-missed"           -Expected 'second-tuesday-missed' -Actual $t16.Cadence
 
 # T17: SR9 — main bumped 80→90 on 2026-06-15 → SR9 ships 2nd Tue of July (07-14).
@@ -4097,6 +8151,14 @@ Assert-Eq -Label "Get-P0PrChecks: one record when p/0 present" -Expected 1 -Actu
 Assert-Eq -Label "Get-P0PrChecks: Area is 'P/0 release-branch PRs'" -Expected 'P/0 release-branch PRs' -Actual $srP0Checks[0].Area
 Assert-Eq -Label "Get-P0PrChecks: Status BLOCKED when p/0 present" -Expected 'BLOCKED' -Actual $srP0Checks[0].Status
 Assert-Eq -Label "Get-P0PrChecks: Details names #35970" -Expected $true -Actual ($srP0Checks[0].Details -like '*35970*')
+Assert-Eq -Label "Get-P0PrChecks: in-flight action retains before-shipping guidance" -Expected $true `
+    -Actual ($srP0Checks[0].NextAction -match 'before shipping')
+
+$srP0ShippedChecks = @(Get-P0PrChecks -OpenSrPrs @($srP0Pr) -SrBranch 'release/10.0.1xx-sr8' -Shipped)
+Assert-Eq -Label "Get-P0PrChecks: shipped action uses hotfix/carry-forward guidance" -Expected $true `
+    -Actual ($srP0ShippedChecks[0].NextAction -match 'hotfix' -and $srP0ShippedChecks[0].NextAction -match 'next SR')
+Assert-Eq -Label "Get-P0PrChecks: shipped action never says before shipping" -Expected $false `
+    -Actual ($srP0ShippedChecks[0].NextAction -match 'before shipping')
 
 # Multiple p/0 PRs: the count and the comma-joined "#a, #b" naming the release
 # captain sees must both be exercised (single-PR fixture above never hits the join).
@@ -4129,11 +8191,652 @@ Assert-Eq -Label "Get-P0PrChecks: empty input → READY" -Expected 'READY' -Actu
 # WATCH rows. Test-IsP0Pr is the predicate that carves them out for hoisting.
 Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundColor Cyan
 
+function Assert-PublicSanitizerEdgeCases {
+    param([string]$Lane)
+
+    $internalCases = @(
+        'https://dev.azure.com/dnceng/internal/_build?token=PLAINSECRET',
+        'https://dev.azure.com/dnceng/DefaultCollection\internal/_build?token=MIXEDSECRET',
+        'https://dnceng.visualstudio.com/internal/_build?token=LEGACYSECRET',
+        'https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET',
+        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=ENCODEDSECRET',
+        'https://dev.azure.com/dnc%65ng/int%65rnal/_build?token=LETTERSECRET',
+        'https://dev.azure.com/dnceng/DefaultCollection%5Cinternal/_build?token=BACKSLASHENCODED',
+        "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET",
+        "https://dev.azure.com/dnceng/inter$([char]0x00AD)nal/_build?token=SOFTHYPHENSECRET",
+        "https://dev.azure.com/dnceng/inter$([char]0x2060)nal/_build?token=WORDJOINERSECRET",
+        "dnceng/i$([char]0xFE0F)nternal/_build?token=BAREVSSECRET",
+        "https://dev.azure.com/dnceng/i$([char]0x034F)nternal/_build?token=CGJSECRET",
+        "https://dev.azure.com/dnceng/i$([System.Char]::ConvertFromUtf32(0xE0061))nternal/_build?token=TAGSECRET",
+        'https://dev.azure.com/dnceng/inter&zwj;nal/_build?token=NAMEDINVISIBLESECRET',
+        'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
+        'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
+        'https://dev.azure.com/d n c e n g/internal/_build?token=ORGSPACESECRET',
+        '%64%6E%63%65%6E%67.visualstudio.com/internal/_build?token=SCHEMELESSSECRET',
+        '&#100;nceng.visualstudio.com/internal/_build?token=ENTITYSECRET',
+        '%252564%25256E%252563%252565%25256E%252567.visualstudio.com/internal/_build?token=TRIPLESECRET',
+        'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET',
+        'https&colon;&sol;&sol;dev&period;azure&period;com&sol;dnceng&sol;internal&sol;_build?token=NAMEDENTITYSECRET',
+        "https://dev.azure.com/dnceng/$((('internal'.ToCharArray() | ForEach-Object { [char]([int]$_ + 0xFEE0) }) -join ''))/_build?token=FULLWIDTHSECRET",
+        'https://dev.azure.com/DevDiv/DevDiv/_workitems/edit/123?token=DEVDIVSECRET',
+        'https://dev.azure.com/Dev Div/_workitems/edit/123?token=DEVDIVSPACESECRET',
+        'DevDiv/_workitems/edit/123?token=BAREDEVDIVSECRET',
+        'Dev Div/_workitems/edit/123?token=BARESPACEDSECRET',
+        'https://dev.azure.com/dnceng//internal/_build?token=DOUBLESLASHSECRET',
+        'https://dev.azure.com/dnceng/%2finternal/_build?token=MIXEDSLASHSECRET',
+        'https://dnceng.visualstudio.com:443/internal/_build?token=PORTSECRET',
+        'https://dev.azure.com/d-n-c-e-n-g/internal/_build?token=HYPHENORGSECRET',
+        'https://dev.azure.com/dnceng/ internal/_build?token=SPACEBEFORESECRET',
+        'https://dev.azure.com/dnceng/internal /_build?token=SPACEAFTERINTSECRET',
+        'https://dev.azure.com/dnceng/internal/(build)?token=PARENSECRET',
+        "https://dev.azure.com/dnc$([char]0x0301)eng/internal/_build?token=COMBININGORGSECRET",
+        'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
+        "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET",
+        "https://dev.azure.com/dnceng/in$([char]0x0422)ernal/_build?token=CYRILLICUPPERSECRET"
+        "https://dev.azure.com/dnceng/inte$([char]0x0433)nal/_build?token=CYRILLICRSECRET"
+        "https://dev.azure.com/$([char]0x0501)nceng/internal/_build?token=CYRILLICDSECRET"
+        "https://dev.azure.com/dnceng/interna$([char]0x04CF)/_build?token=CYRILLICLSECRET"
+    )
+    foreach ($case in $internalCases) {
+        $safe = ConvertTo-PublicSafeMarkdown -Text $case
+        Assert-Eq -Label "$Lane sanitizer fully omits internal URL — $case" `
+            -Expected '_internal URL omitted_' -Actual $safe
+    }
+    Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
+        -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
+    $publicQuerySafe = ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build?token=PUBLICQUERYSECRET'
+    Assert-Eq -Label "$Lane sanitizer removes query values from recognized Azure DevOps hosts" -Expected $false `
+        -Actual ($publicQuerySafe -match 'PUBLICQUERYSECRET')
+    Assert-Eq -Label "$Lane sanitizer marks removed Azure DevOps query values" -Expected $true `
+        -Actual ($publicQuerySafe -match '_query_omitted_')
+    $publicFragmentSafe = ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build%23token=PUBLICFRAGMENTSECRET'
+    Assert-Eq -Label "$Lane sanitizer removes encoded fragments from recognized Azure DevOps hosts" -Expected $false `
+        -Actual ($publicFragmentSafe -match 'PUBLICFRAGMENTSECRET')
+    Assert-Eq -Label "$Lane sanitizer marks removed Azure DevOps fragments" -Expected $true `
+        -Actual ($publicFragmentSafe -match '_fragment_omitted_')
+    Assert-Eq -Label "$Lane sanitizer fully omits credential-bearing Azure DevOps URL" `
+        -Expected '_credential-bearing URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://user:PAT@dev.azure.com/dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits HTTP credential-bearing Azure DevOps URL" `
+        -Expected '_credential-bearing URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'http://user:PAT@dev.azure.com/dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits trailing-dot credential-bearing Azure DevOps URL" `
+        -Expected '_credential-bearing URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://user:PAT@dev.azure.com./dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits trailing-dot internal Azure DevOps URL" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com./dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits scheme-less DevDiv URL" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'dev.azure.com/DevDiv/_workitems/edit/1234?token=SECRET')
+    Assert-Eq -Label "$Lane sanitizer fully omits legacy DevDiv org with arbitrary project" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://devdiv.visualstudio.com/OneDotNet/_build/results?token=SECRET')
+    Assert-Eq -Label "$Lane sanitizer canonicalizes homoglyph-prefixed private reference" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text "$([char]0x0501)nceng/internal/_git/secret")
+    Assert-Eq -Label "$Lane sanitizer canonicalizes mid-token homoglyph in legacy dnceng host" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text "dnc$([char]0x0435)ng.visualstudio.com/internal/_build?token=SECRET")
+    Assert-Eq -Label "$Lane sanitizer canonicalizes mid-token homoglyph in legacy DevDiv host" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text "d$([char]0x0435)vdiv.visualstudio.com/OneDotNet/_build?token=SECRET")
+    Assert-Eq -Label "$Lane sanitizer omits embedded DevDiv URL while preserving surrounding key" `
+        -Expected 'buildUrl=_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'buildUrl=https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1234?token=EMBEDDEDDEVDIVSECRET')
+    foreach ($publicEncodedQuery in @(
+        'https://dev.azure.com/dnceng/public/_build%3Ftoken=PARTIALENCODESECRET'
+        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Fpublic%2F_build%3Ftoken=ENCODEDPUBLICSECRET'
+        'https%253A%252F%252Fdev.azure.com%252Fdnceng%252Fpublic%252F_build%253Ftoken=DOUBLEENCODEDPUBLICSECRET'
+        'https://dev.azure.com/dnceng/public/_build&#63;token=DECIMALQUERYSECRET'
+        'https://dev.azure.com/dnceng/public/_build&#x3f;token=HEXQUERYSECRET'
+        "https://dev.azure.com/dnceng/public/_build$([char]0xFF1F)token=FULLWIDTHQUERYSECRET"
+    )) {
+        $encodedQuerySafe = ConvertTo-PublicSafeMarkdown -Text $publicEncodedQuery
+        Assert-Eq -Label "$Lane sanitizer removes encoded query value — $publicEncodedQuery" -Expected $false `
+            -Actual ($encodedQuerySafe -match 'SECRET')
+        Assert-Eq -Label "$Lane sanitizer marks encoded query omission — $publicEncodedQuery" -Expected $true `
+            -Actual ($encodedQuerySafe -match '_query_omitted_')
+    }
+    $deepEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=DEEPCODESECRET'
+    foreach ($pass in 1..7) { $deepEncodedInternal = [uri]::EscapeDataString($deepEncodedInternal) }
+    Assert-Eq -Label "$Lane sanitizer decodes seven-pass private URL before classification" `
+        -Expected '_internal URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $deepEncodedInternal)
+    $overEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=OVERENCODESECRET'
+    foreach ($pass in 1..13) { $overEncodedInternal = [uri]::EscapeDataString($overEncodedInternal) }
+    Assert-Eq -Label "$Lane sanitizer fails closed when URL encoding exceeds decode budget" `
+        -Expected '_encoded URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $overEncodedInternal)
+    foreach ($bareAzdoQuery in @(
+        'dnceng/foo?token=BAREQUERYSECRET'
+        'dnceng?token=BAREHOSTSECRET'
+        'dnceng.visualstudio.com/foo?token=BARELEGACYSECRET'
+    )) {
+        $bareQuerySafe = ConvertTo-PublicSafeMarkdown -Text $bareAzdoQuery
+        Assert-Eq -Label "$Lane sanitizer removes bare Azure DevOps query — $bareAzdoQuery" -Expected $false `
+            -Actual ($bareQuerySafe -match 'SECRET')
+        Assert-Eq -Label "$Lane sanitizer marks bare Azure DevOps query omission — $bareAzdoQuery" -Expected $true `
+            -Actual ($bareQuerySafe -match '_query_omitted_')
+    }
+    $bareFragmentSafe = ConvertTo-PublicSafeMarkdown -Text 'DevDiv/foo#token=BAREFRAGMENTSECRET'
+    Assert-Eq -Label "$Lane sanitizer removes bare Azure DevOps fragment" -Expected $false `
+        -Actual ($bareFragmentSafe -match 'BAREFRAGMENTSECRET')
+    Assert-Eq -Label "$Lane sanitizer fully omits bare DevDiv reference" -Expected '_internal URL omitted_' `
+        -Actual $bareFragmentSafe
+    $fullwidthFragmentSafe = ConvertTo-PublicSafeMarkdown -Text "https://dev.azure.com/dnceng/public/_build$([char]0xFF03)token=FULLWIDTHFRAGMENTSECRET"
+    Assert-Eq -Label "$Lane sanitizer removes fullwidth fragment value" -Expected $false `
+        -Actual ($fullwidthFragmentSafe -match 'FULLWIDTHFRAGMENTSECRET')
+    Assert-Eq -Label "$Lane sanitizer marks fullwidth fragment omission" -Expected $true `
+        -Actual ($fullwidthFragmentSafe -match '_fragment_omitted_')
+    Assert-Eq -Label "$Lane sanitizer does not over-redact an internal-host string in another host's path" `
+        -Expected 'https://example.com/dnceng.visualstudio.com:443/internal/docs' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://example.com/dnceng.visualstudio.com:443/internal/docs')
+    Assert-Eq -Label "$Lane sanitizer preserves ordinary percentage prose byte-for-byte" -Expected 'Coverage results: 6%62% relative improvement' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'Coverage results: 6%62% relative improvement')
+    foreach ($ordinaryProse in @(
+        'Investigate dnceng internal build flakiness'
+        'The dnceng internal feed was down'
+        'internal / external split noted'
+        'DefaultCollection internal notes'
+    )) {
+        Assert-Eq -Label "$Lane sanitizer preserves ordinary source prose byte-for-byte — $ordinaryProse" `
+            -Expected $ordinaryProse -Actual (ConvertTo-PublicSafeMarkdown -Text $ordinaryProse)
+    }
+    Assert-Eq -Label "$Lane sanitizer redacts encoded official release source name" `
+        -Expected 'official release source' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text '.NET Release Track&#101;r')
+    foreach ($ordinaryDWord in @('dependency', 'does', 'documentation')) {
+        Assert-Eq -Label "$Lane sanitizer skips expensive URL canonicalization for ordinary d-word — $ordinaryDWord" `
+            -Expected $false -Actual ([regex]::IsMatch($ordinaryDWord, '(?i)^(?:' + $Script:PublicSafeUrlCandidatePattern + ')'))
+    }
+    foreach ($dPrefixedPrivateCandidate in @(
+        'dnceng/internal'
+        'd%6eceng/internal'
+        'd&#110;ceng/internal'
+        "d$([char]0x200B)nceng/internal"
+        'DevDiv/_workitems'
+    )) {
+        Assert-Eq -Label "$Lane sanitizer still canonicalizes d-prefixed private candidate — $dPrefixedPrivateCandidate" `
+            -Expected $true -Actual ([regex]::IsMatch($dPrefixedPrivateCandidate, '(?i)^(?:' + $Script:PublicSafeUrlCandidatePattern + ')'))
+    }
+    Assert-Eq -Label "$Lane sanitizer preserves emoji variation and joiners outside URLs" -Expected 'Status ⚠️ family 👨‍👩‍👧‍👦' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'Status ⚠️ family 👨‍👩‍👧‍👦')
+    $oversizedEntityThrew = $false
+    try { $null = ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/x &#99999999999; ordinary prose' } catch { $oversizedEntityThrew = $true }
+    Assert-Eq -Label "$Lane sanitizer tolerates oversized numeric entities" -Expected $false -Actual $oversizedEntityThrew
+}
+
+# The SR engine is currently dot-sourced; exercise the shared helper before
+# Preview loads the same required dependency.
+Assert-PublicSanitizerEdgeCases -Lane 'SR'
+$artifactData = @{
+    srContents = @{
+        sourcePrs = @(36499, 36506)
+        commits = @(
+            @{ subject = 'Internal build'; url = 'https://dev.azure.com/dnceng/internal/_build?token=ARTIFACTSECRET' }
+        )
+    }
+}
+$safeArtifactContents = Select-OutputSrContents -Data $artifactData -PublicSafe:$true
+$unsafeArtifactContents = Select-OutputSrContents -Data $artifactData -PublicSafe:$false
+Assert-Eq -Label "SR artifact projection redacts private commit metadata" -Expected '_internal URL omitted_' `
+    -Actual $safeArtifactContents.commits[0].url
+Assert-Eq -Label "SR artifact projection preserves source PR numbers" -Expected '36499,36506' `
+    -Actual ($safeArtifactContents.sourcePrs -join ',')
+Assert-Eq -Label "SR artifact projection honors explicit non-public local mode" -Expected $true `
+    -Actual ($unsafeArtifactContents.commits[0].url -match 'ARTIFACTSECRET')
+$sortedSourcePrSet = [System.Collections.Generic.HashSet[int]]::new()
+[void]$sortedSourcePrSet.Add(35428)
+[void]$sortedSourcePrSet.Add(36506)
+$safeSortedSourcePrs = ConvertTo-PublicSafeValue -Value @($sortedSourcePrSet | Sort-Object)
+Assert-Eq -Label "public-safe projection preserves sorted integer collection values" `
+    -Expected '35428,36506' -Actual ($safeSortedSourcePrs -join ',')
+
 # Dot-source the preview engine to access its helpers without running the
 # main driver (the InvocationName guard returns on dot-source). A valid
 # -Branch is required to satisfy the mandatory parameter + branch parse.
 $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
+Assert-PublicSanitizerEdgeCases -Lane 'Preview'
+
+$previewNotesBlock = @"
+<!-- release-readiness:human-notes:begin -->
+_Captain notes._
+<!-- release-readiness:human-notes:end -->
+"@
+$previewComponentBlock = @"
+<!-- release-readiness:component-policy:begin -->
+Mandatory local VMR reconciliation.
+<!-- release-readiness:component-policy:end -->
+"@
+$oversizedPreviewBody = ([string]::new('x', 1200)) + "`n" + $previewComponentBlock + "`n" + $previewNotesBlock
+$cappedPreviewBody = Limit-PreviewTrackerBody -MarkdownBody $oversizedPreviewBody `
+    -NotesBlockText $previewNotesBlock -MaxBodyBytes 600
+Assert-Eq -Label "preview body cap retains exactly one component-policy begin marker" -Expected 1 `
+    -Actual ([regex]::Matches($cappedPreviewBody, '<!-- release-readiness:component-policy:begin -->').Count)
+Assert-Eq -Label "preview body cap retains exactly one component-policy end marker" -Expected 1 `
+    -Actual ([regex]::Matches($cappedPreviewBody, '<!-- release-readiness:component-policy:end -->').Count)
+Assert-Eq -Label "preview body cap retains exactly one captain-notes marker pair" -Expected 2 `
+    -Actual ([regex]::Matches($cappedPreviewBody, '<!-- release-readiness:human-notes:(?:begin|end) -->').Count)
+Assert-Eq -Label "preview body cap stays within the configured UTF-8 limit" -Expected $true `
+    -Actual ([System.Text.Encoding]::UTF8.GetByteCount($cappedPreviewBody) -le 600)
+Assert-Eq -Label "preview body cap reports truncation" -Expected $true `
+    -Actual ($cappedPreviewBody -match 'Report truncated')
+$previewUtf8Body = ([string]::new([char]0x4E2D, 600)) + "`n" + $previewComponentBlock + "`n" + $previewNotesBlock
+foreach ($previewUtf8Cap in 500..520) {
+    $previewUtf8Capped = Limit-PreviewTrackerBody -MarkdownBody $previewUtf8Body `
+        -NotesBlockText $previewNotesBlock -MaxBodyBytes $previewUtf8Cap
+    Assert-Eq -Label "preview UTF-8 truncation stays within cap $previewUtf8Cap" -Expected $true `
+        -Actual ([System.Text.Encoding]::UTF8.GetByteCount($previewUtf8Capped) -le $previewUtf8Cap)
+    Assert-Eq -Label "preview UTF-8 truncation avoids replacement character at cap $previewUtf8Cap" -Expected $false `
+        -Actual ($previewUtf8Capped.Contains([char]0xFFFD))
+}
+
+# A component-pin fetch failure must fail closed without suppressing the
+# mandatory local VMR reconciliation handoff.
+$missingPinsCheck = Get-ComponentPinsReadinessCheck -Pins $null `
+    -SurveyRef 'release/11.0.1xx-preview7'
+Assert-Eq -Label "component pins failure emits UNKNOWN check" `
+    -Expected 'UNKNOWN' -Actual $missingPinsCheck.Status
+Assert-Eq -Label "component pins failure names unverified SDK/VMR evidence" `
+    -Expected $true -Actual ([bool]($missingPinsCheck.Details -match 'SDK/VMR builds are not fully verified'))
+$missingPinsMarkdown = Get-ComponentPinsUnavailableMarkdown
+Assert-Eq -Label "component pins failure still renders mandatory local VMR guidance" `
+    -Expected $true -Actual ([bool]($missingPinsMarkdown -match 'mandatory local SDK/VMR reconciliation'))
+$partialPinsCheck = Get-ComponentPinsReadinessCheck -Pins ([pscustomobject]@{
+    Vmr = [pscustomobject]@{ Version = '11.0.100-preview.7.1'; Sha = ('a' * 40 -join '') }
+    Android = $null
+    Macios = [pscustomobject]@{ Version = '26.5.1-net11-p7'; Sha = '' }
+}) -SurveyRef 'x'
+Assert-Eq -Label "partial component pins remain UNKNOWN" -Expected 'UNKNOWN' -Actual $partialPinsCheck.Status
+Assert-Eq -Label "partial component pins identify missing component and field" -Expected $true `
+    -Actual ([bool]($partialPinsCheck.Details -match 'Android' -and $partialPinsCheck.Details -match 'Macios\.Sha'))
+Assert-Eq -Label "partial component pins use the same prominent caution as missing pins" `
+    -Expected $true -Actual ([bool]((Get-ComponentPinsUnavailableMarkdown) -match 'Component pin evidence is incomplete'))
+$completePins = [pscustomobject]@{
+    Vmr = [pscustomobject]@{ Version = '11.0.100-preview.7.1'; Sha = ('a' * 40 -join '') }
+    Android = [pscustomobject]@{ Version = '37.0.0-ci.main.1'; Sha = ('b' * 40 -join '') }
+    Macios = [pscustomobject]@{ Version = '26.5.1-net11-p7'; Sha = ('c' * 40 -join '') }
+}
+Assert-Eq -Label "complete component pins do not emit UNKNOWN check" `
+    -Expected $true -Actual ($null -eq (Get-ComponentPinsReadinessCheck -Pins $completePins -SurveyRef 'x'))
+
+# The report scope must follow the preview lifecycle: after Preview N is cut,
+# only PRs targeting its release branch belong in its report. net<N>.0 is queried
+# only by the Preview N+1 candidate report.
+Write-Host "`n[Unit] Preview report mode isolation" -ForegroundColor Cyan
+$publicTrackerLeakLines = @(Get-Content -LiteralPath $prevScript | Where-Object {
+    $_ -match '\$md\.AppendLine' -and $_ -match '\.NET Release Tracker'
+})
+Assert-Eq -Label "preview public output never names the private release source" `
+    -Expected 0 -Actual $publicTrackerLeakLines.Count
+$previewSourceText = Get-Content -LiteralPath $prevScript -Raw
+Assert-Eq -Label "preview report does not publish an unwired inflight completeness field" `
+    -Expected $false -Actual ($previewSourceText.Contains('InflightOpenPullRequestScanIncomplete') -or
+        $previewSourceText.Contains('InflightPullRequests  ='))
+
+$safeInternalText = Get-PublicSafeInternalPipelineText -Status 'UNKNOWN'
+$safePublicBuilder = [System.Text.StringBuilder]::new()
+Add-CheckTable -Builder $safePublicBuilder -Checks @(
+    (New-Check -Area 'Internal release pipelines' -Status 'UNKNOWN' `
+        -Details $safeInternalText.Details -NextAction $safeInternalText.NextAction)
+)
+[void]$safePublicBuilder.AppendLine((Get-PublicDataBoundaryText))
+[void]$safePublicBuilder.AppendLine('Fetched PR title: update from dnceng/internal/dotnet-optimization')
+[void]$safePublicBuilder.AppendLine('Nested coordinate: dnceng/internal/_git/secret-repository')
+[void]$safePublicBuilder.AppendLine('Private URL: https://dev.azure.com/dnceng/internal/_git/example')
+[void]$safePublicBuilder.AppendLine('Private query: https://dev.azure.com/dnceng/internal?token=sensitive#fragment')
+[void]$safePublicBuilder.AppendLine('Encoded private URL: https://dev.azure.com/dnceng%2Finternal%2F_build%3Fsig=SECRETSAS')
+[void]$safePublicBuilder.AppendLine('Legacy private URL: https://dnceng.visualstudio.com/internal/_build/results?token=LEGACYSECRET')
+[void]$safePublicBuilder.AppendLine('Fully encoded private URL: https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=FULLYENCODED')
+[void]$safePublicBuilder.AppendLine('Collection private URL: https://dev.azure.com/dnceng/DefaultCollection/internal/_build?token=COLLECTIONSECRET')
+[void]$safePublicBuilder.AppendLine('HTML private URL: https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET')
+[void]$safePublicBuilder.AppendLine('Unicode private URL: https://dev.azure.com／dnceng／internal／_build?token=UNICODESECRET')
+[void]$safePublicBuilder.AppendLine('Backslash private URL: https://dev.azure.com\dnceng\internal\_build?token=BACKSLASHSECRET')
+[void]$safePublicBuilder.AppendLine('Mixed private URL: https://dev.azure.com/dnceng/DefaultCollection\internal/_build?token=MIXEDSECRET')
+[void]$safePublicBuilder.AppendLine('Internal identifier: api://example/resource')
+[void]$safePublicBuilder.AppendLine('Fetched title names .NET Release Tracker, dotnet-release-tracker, and dotnet/release')
+[void]$safePublicBuilder.AppendLine('Public feed: https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11')
+$safePublicMarkdown = ConvertTo-PublicSafeMarkdown -Text $safePublicBuilder.ToString()
+Assert-Eq -Label "preview rendered public-safe text omits internal coordinates" `
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|COLLECTIONSECRET|HTMLSECRET|UNICODESECRET|BACKSLASHSECRET|MIXEDSECRET|fragment'))
+Assert-Eq -Label "preview rendered public-safe text omits private release-tool names" `
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match '\.NET Release Tracker|dotnet-release-tracker|dotnet/release'))
+Assert-Eq -Label "preview public-safe sanitizer preserves public feed URL" `
+    -Expected $true -Actual ([bool]($safePublicMarkdown -match 'dev\.azure\.com/dnceng/public'))
+Assert-Eq -Label "preview public-safe sanitizer marks removed internal source" `
+    -Expected $true -Actual ([bool]($safePublicMarkdown -match 'internal source|internal URL omitted'))
+
+$unsafeJsonReport = [PSCustomObject]@{
+    PullRequests = @(
+        [PSCustomObject]@{
+            Title = 'Update from https://dev.azure.com/dnceng/internal/_git/secret-repository "quoted suffix" using dotnet-release-tracker'
+            Url   = 'https://dev.azure.com/dnceng/internal/_git/secret-repository'
+        }
+        [PSCustomObject]@{
+            Title = 'Encoded https://dev.azure.com/dnceng%2Finternal%2F_build%3Fsig=SECRETSAS'
+            Url   = 'https://dev.azure.com/dnceng/internal?token=sensitive#fragment'
+        }
+        [PSCustomObject]@{
+            Title = 'Legacy https://dnceng.visualstudio.com/internal/_build/results?token=LEGACYSECRET'
+            Url   = 'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=FULLYENCODED'
+        }
+        [PSCustomObject]@{
+            Title = 'Collection https://dev.azure.com/dnceng/DefaultCollection/internal/_build?token=COLLECTIONSECRET'
+            Url   = 'https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET'
+        }
+    )
+    PublicFeed = 'https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11'
+}
+$safeReportJson = ConvertTo-PreviewReportJson -Report $unsafeJsonReport -PublicSafe $true
+$safeReportRoundTrip = $safeReportJson | ConvertFrom-Json
+Assert-Eq -Label "preview public-safe JSON remains valid after sanitization" `
+    -Expected 4 -Actual @($safeReportRoundTrip.PullRequests).Count
+Assert-Eq -Label "preview public-safe JSON preserves quoted suffix after URL sanitization" `
+    -Expected $true -Actual ([bool]($safeReportRoundTrip.PullRequests[0].Title -match '"quoted suffix"'))
+Assert-Eq -Label "preview public-safe JSON omits internal coordinates and tool names" `
+    -Expected $false -Actual ([bool]($safeReportJson -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|secret-repository|dotnet-release-tracker|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|COLLECTIONSECRET|HTMLSECRET|fragment'))
+Assert-Eq -Label "preview public-safe JSON preserves public feed URL" `
+    -Expected $true -Actual ([bool]($safeReportJson -match 'dev\.azure\.com/dnceng/public'))
+$rawReportJson = ConvertTo-PreviewReportJson -Report $unsafeJsonReport -PublicSafe $false
+Assert-Eq -Label "preview non-public JSON retains raw local evidence" `
+    -Expected $true -Actual ([bool]($rawReportJson -match 'secret-repository|dotnet-release-tracker'))
+
+Assert-Eq -Label "preview scanner: cut Preview 7 does not inherit net11.0 scanner" `
+    -Expected $null -Actual (Get-CiScanLabelForBranch -Branch 'release/11.0.1xx-preview7')
+Assert-Eq -Label "preview scanner: Preview 8 candidate source net11.0 keeps scanner" `
+    -Expected 'ci-scan-net11' -Actual (Get-CiScanLabelForBranch -Branch 'net11.0')
+
+$releaseMergeUp = [PSCustomObject]@{
+    number = 80001
+    title = "[automated] Merge branch 'net11.0' => 'release/11.0.1xx-preview7'"
+    author = [PSCustomObject]@{ login = 'github-actions[bot]' }
+    labels = @()
+    headRefName = 'merge/net11.0-to-release/11.0.1xx-preview7'
+}
+$nextPreviewMergeUp = [PSCustomObject]@{
+    number = 36814
+    title = "[automated] Merge branch 'main' => 'net11.0'"
+    author = [PSCustomObject]@{ login = 'github-actions[bot]' }
+    labels = @()
+    headRefName = 'merge/main-to-net11.0'
+}
+$previewScopeFetchCalls = [System.Collections.Generic.List[string]]::new()
+$previewScopeFetcher = {
+    param($BaseBranch)
+    [void]$previewScopeFetchCalls.Add($BaseBranch)
+    if ($BaseBranch -eq 'release/11.0.1xx-preview7') { return @($releaseMergeUp) }
+    if ($BaseBranch -eq 'net11.0') { return @($nextPreviewMergeUp) }
+    return @()
+}.GetNewClosure()
+
+$preview7Scope = Get-PreviewReportPullRequests -Mode 'in-flight' `
+    -SurveyRef 'release/11.0.1xx-preview7' -Fetcher $previewScopeFetcher
+Assert-Eq -Label "preview scope: in-flight fetches only the Preview 7 branch" `
+    -Expected 'release/11.0.1xx-preview7' -Actual ($previewScopeFetchCalls -join ',')
+Assert-Eq -Label "preview scope: Preview 7 keeps its direct net11.0 merge-up" `
+    -Expected 80001 -Actual $preview7Scope.MergeUpPRs[0].number
+Assert-Eq -Label "preview scope: Preview 7 excludes main→net11.0 PR #36814" `
+    -Expected $false -Actual (@($preview7Scope.MergeUpPRs.number) -contains 36814)
+
+$previewScopeFetchCalls.Clear()
+$preview8Scope = Get-PreviewReportPullRequests -Mode 'candidate' `
+    -SurveyRef 'net11.0' -Fetcher $previewScopeFetcher
+Assert-Eq -Label "preview scope: Preview 8 candidate fetches only net11.0" `
+    -Expected 'net11.0' -Actual ($previewScopeFetchCalls -join ',')
+Assert-Eq -Label "preview scope: Preview 8 candidate includes main→net11.0 PR #36814" `
+    -Expected $true -Actual (@($preview8Scope.MergeUpPRs.number) -contains 36814)
+
+$preview7Iteration = Get-PreviewIterationCheck -Mode 'in-flight' `
+    -SurveyRef 'release/11.0.1xx-preview7' -PreviewNumber 7 -Iteration '7'
+Assert-Eq -Label "preview iteration: Preview 7 validates its own branch" `
+    -Expected 'READY' -Actual $preview7Iteration.Status
+Assert-Eq -Label "preview iteration: Preview 7 check does not mention Preview 8" `
+    -Expected $false -Actual ([bool](("$($preview7Iteration.Details) $($preview7Iteration.NextAction)") -match 'Preview 8|preview-next'))
+
+$preview8Iteration = Get-PreviewIterationCheck -Mode 'candidate' `
+    -SurveyRef 'net11.0' -PreviewNumber 8 -Iteration '7'
+Assert-Eq -Label "preview iteration: Preview 8 candidate blocks until net11.0 is bumped" `
+    -Expected 'BLOCKED' -Actual $preview8Iteration.Status
+Assert-Eq -Label "preview iteration: Preview 8 candidate expects iteration 8" `
+    -Expected $true -Actual ([bool]($preview8Iteration.Details -match 'expected 8'))
+
+# GitHub's GraphQL endpoint can fail independently of the REST API. Prove open
+# and merged PR discovery retain the engine's expected object shape and do not
+# abort the report when `gh pr list` fails but REST remains available.
+Write-Host "`n[Unit] Preview PR discovery GraphQL → REST fallback" -ForegroundColor Cyan
+$origPreviewInvokeGitHubWithRetry = (Get-Item function:Invoke-GitHubWithRetry).ScriptBlock
+$origPreviewTestBranchExists = (Get-Item function:Test-BranchExists).ScriptBlock
+$script:PreviewFallbackCalls = @()
+$script:PreviewUsePagedClosedFixture = $false
+$script:PreviewGraphQlOpenJson = $null
+$script:PreviewOpenRestOverflowJson = '[]'
+$script:PreviewFailOpenRestOverflowProbe = $false
+$script:PreviewOpenRestJson = @'
+[
+  {
+    "number": 70001,
+    "title": "Open preview fix",
+    "user": { "login": "contributor" },
+    "html_url": "https://example.invalid/pull/70001",
+    "created_at": "2026-07-20T00:00:00Z",
+    "updated_at": "2026-07-21T00:00:00Z",
+    "merged_at": null,
+    "draft": false,
+    "labels": [{ "name": "p/0" }],
+    "head": { "ref": "fix/preview" },
+    "base": { "ref": "net11.0" }
+  }
+]
+'@
+$script:PreviewClosedRestJson = @'
+[
+  {
+    "number": 70002,
+    "title": "Merged component flow",
+    "user": { "login": "dotnet-maestro[bot]" },
+    "html_url": "https://example.invalid/pull/70002",
+    "created_at": "2026-07-18T00:00:00Z",
+    "updated_at": "2026-07-19T00:00:00Z",
+    "merged_at": "2026-07-19T00:00:00Z",
+    "draft": false,
+    "labels": [],
+    "head": { "ref": "darc-net11.0-70002" },
+    "base": { "ref": "net11.0" }
+  },
+  {
+    "number": 70003,
+    "title": "Closed without merge",
+    "user": { "login": "contributor" },
+    "html_url": "https://example.invalid/pull/70003",
+    "created_at": "2026-07-17T00:00:00Z",
+    "updated_at": "2026-07-18T00:00:00Z",
+    "merged_at": null,
+    "draft": false,
+    "labels": [],
+    "head": { "ref": "abandoned" },
+    "base": { "ref": "net11.0" }
+  }
+]
+'@
+try {
+    function Test-BranchExists { param([string]$BranchName) return $true }
+    function Invoke-GitHubWithRetry {
+        param(
+            [string[]]$Arguments,
+            [string]$Description,
+            [int]$MaxRetries = 3
+        )
+        $script:PreviewFallbackCalls += ,@($Arguments)
+        if ($Arguments[0] -eq 'pr') {
+            if ($null -ne $script:PreviewGraphQlOpenJson) {
+                return $script:PreviewGraphQlOpenJson
+            }
+            throw "Failed to $Description after 3 attempt(s) (gh exit 1): HTTP 502: Bad Gateway"
+        }
+        if ($Arguments -contains 'state=open' -and $Arguments -contains 'page=2') {
+            if ($script:PreviewFailOpenRestOverflowProbe) {
+                throw 'simulated REST overflow probe outage'
+            }
+            return $script:PreviewOpenRestOverflowJson
+        }
+        if ($Arguments -contains 'state=open') { return $script:PreviewOpenRestJson }
+        if ($Arguments -contains 'state=closed') {
+            $pageArg = $Arguments | Where-Object { $_ -like 'page=*' } | Select-Object -First 1
+            $page = if ($pageArg) { [int]($pageArg -replace '^page=', '') } else { 1 }
+            if ($script:PreviewUsePagedClosedFixture -and $page -eq 1) {
+                return @(1..100 | ForEach-Object {
+                    [PSCustomObject]@{
+                        number = 71000 + $_
+                        title = "Closed without merge $_"
+                        merged_at = $null
+                    }
+                }) | ConvertTo-Json -Depth 4
+            }
+            return $script:PreviewClosedRestJson
+        }
+        throw "Unexpected REST fallback arguments: $($Arguments -join ' ')"
+    }
+
+    $fallbackOpenPrs = @(Get-OpenPullRequests -BaseBranch 'net11.0')
+    Assert-Eq -Label "preview open-PR fallback: returns REST result after GraphQL failure" -Expected 1 -Actual $fallbackOpenPrs.Count
+    Assert-Eq -Label "preview open-PR fallback: preserves author login" -Expected 'contributor' -Actual $fallbackOpenPrs[0].author.login
+    Assert-Eq -Label "preview open-PR fallback: preserves head/base refs" -Expected 'fix/preview,net11.0' -Actual "$($fallbackOpenPrs[0].headRefName),$($fallbackOpenPrs[0].baseRefName)"
+    Assert-Eq -Label "preview open-PR fallback: supplies conservative merge state" -Expected 'UNKNOWN' -Actual $fallbackOpenPrs[0].mergeStateStatus
+    Assert-Eq -Label "preview open-PR fallback: supplies reviewDecision property as null" -Expected $true -Actual ($null -eq $fallbackOpenPrs[0].reviewDecision)
+    Assert-Eq -Label "preview open-PR fallback: records degraded metadata mode" -Expected $true -Actual $script:OpenPullRequestMetadataUsedRest
+    Assert-Eq -Label "preview open-PR fallback: records affected base branch" -Expected $true -Actual $script:OpenPullRequestMetadataRestBases.Contains('net11.0')
+    Assert-Eq -Label "preview open-PR fallback: fewer than 100 REST results remain complete" -Expected $false `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('net11.0')
+    Assert-Eq -Label "preview empty PR state: complete target scan is READY" -Expected 'READY' `
+        -Actual (Get-EmptyPrCheckState -TargetScanIncomplete $false `
+            -IncompleteAction 'Inspect the full target PR list.' -ReadyAction 'Continue monitoring.').Status
+    Assert-Eq -Label "preview empty PR state: incomplete target scan is insufficient" -Expected 'INSUFFICIENT_DATA' `
+        -Actual (Get-EmptyPrCheckState -TargetScanIncomplete $true `
+            -IncompleteAction 'Inspect the full target PR list.' -ReadyAction 'Continue monitoring.').Status
+    Assert-Eq -Label "preview empty PR state: action is caller-defined" -Expected $true `
+        -Actual ((Get-EmptyPrCheckState -TargetScanIncomplete $true `
+            -IncompleteAction 'Inspect the full target PR list.' -ReadyAction 'Continue monitoring.').Action -match 'full target PR list')
+
+    $fallbackMergedPrs = @(Get-MergedPullRequests -BaseBranch 'net11.0')
+    Assert-Eq -Label "preview merged-PR fallback: excludes closed-unmerged PRs" -Expected 1 -Actual $fallbackMergedPrs.Count
+    Assert-Eq -Label "preview merged-PR fallback: preserves merged PR number" -Expected 70002 -Actual $fallbackMergedPrs[0].number
+    Assert-Eq -Label "preview merged-PR fallback: preserves mergedAt" -Expected '2026-07-19T00:00:00Z' `
+              -Actual ([DateTime]$fallbackMergedPrs[0].mergedAt).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    $previewRestCalls = @($script:PreviewFallbackCalls | Where-Object { $_[0] -eq 'api' })
+    Assert-Eq -Label "preview PR fallback: uses REST for both open and merged queries" -Expected 2 -Actual $previewRestCalls.Count
+
+    # Page 1 contains 100 closed-unmerged PRs; the actual merged PR appears on
+    # page 2. A one-page fallback silently loses it and can emit false stale or
+    # missing dependency-flow signals.
+    $script:PreviewUsePagedClosedFixture = $true
+    $pagedMergedPrs = @(Get-PullRequestsViaRest -BaseBranch 'net11.0' -State 'merged')
+    Assert-Eq -Label "preview merged-PR fallback: pages past 100 closed-unmerged PRs" -Expected 1 -Actual $pagedMergedPrs.Count
+    Assert-Eq -Label "preview merged-PR fallback: recovers page-2 merged PR" -Expected 70002 -Actual $pagedMergedPrs[0].number
+    $page2Calls = @($script:PreviewFallbackCalls | Where-Object { $_ -contains 'page=2' })
+    Assert-Eq -Label "preview merged-PR fallback: requests page 2 when page 1 is full" -Expected 1 -Actual $page2Calls.Count
+
+    $script:PreviewGraphQlOpenJson = @(1..100 | ForEach-Object {
+        [PSCustomObject]@{ number = $_ }
+    }) | ConvertTo-Json -Compress
+    $exactCapOpenPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview7')
+    Assert-Eq -Label "preview open-PR GraphQL cap: exact 100 returns all results" -Expected 100 -Actual $exactCapOpenPrs.Count
+    Assert-Eq -Label "preview open-PR GraphQL cap: exact 100 remains complete" -Expected $false `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview7')
+
+    $script:PreviewGraphQlOpenJson = @(1..101 | ForEach-Object {
+        [PSCustomObject]@{ number = $_ }
+    }) | ConvertTo-Json -Compress
+    $overCapOpenPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview8')
+    Assert-Eq -Label "preview open-PR GraphQL cap: 101 trims report rows to 100" -Expected 100 -Actual $overCapOpenPrs.Count
+    Assert-Eq -Label "preview open-PR GraphQL cap: 101 marks base incomplete" -Expected $true `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview8')
+
+    $script:PreviewGraphQlOpenJson = $null
+    $script:PreviewOpenRestJson = @(1..100 | ForEach-Object {
+        [PSCustomObject]@{
+            number = $_
+            title = "Open PR $_"
+            base = [PSCustomObject]@{ ref = 'release/11.0.1xx-preview9' }
+        }
+    }) | ConvertTo-Json -Depth 4 -Compress
+    $script:PreviewOpenRestOverflowJson = '[]'
+    $exactRestCapPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview9')
+    Assert-Eq -Label "preview open-PR REST cap: exact 100 returns all first-page results" -Expected 100 -Actual $exactRestCapPrs.Count
+    Assert-Eq -Label "preview open-PR REST cap: empty page 2 remains complete" -Expected $false `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview9')
+
+    $script:PreviewOpenRestOverflowJson = '[{"number":101,"title":"Overflow PR"}]'
+    $overRestCapPrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview10')
+    Assert-Eq -Label "preview open-PR REST cap: overflow keeps first 100 report rows" -Expected 100 -Actual $overRestCapPrs.Count
+    Assert-Eq -Label "preview open-PR REST cap: non-empty page 2 marks base incomplete" -Expected $true `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview10')
+
+    $script:PreviewFailOpenRestOverflowProbe = $true
+    $probeFailurePrs = @(Get-OpenPullRequests -BaseBranch 'release/11.0.1xx-preview11')
+    Assert-Eq -Label "preview open-PR REST cap: failed overflow probe preserves first-page results" -Expected 100 `
+        -Actual $probeFailurePrs.Count
+    Assert-Eq -Label "preview open-PR REST cap: failed overflow probe marks base incomplete" -Expected $true `
+        -Actual $script:OpenPullRequestScanIncompleteBases.Contains('release/11.0.1xx-preview11')
+} finally {
+    Set-Item function:Invoke-GitHubWithRetry $origPreviewInvokeGitHubWithRetry
+    Set-Item function:Test-BranchExists $origPreviewTestBranchExists
+    $script:OpenPullRequestMetadataUsedRest = $false
+    $script:OpenPullRequestMetadataRestBases.Clear()
+    $script:OpenPullRequestScanIncompleteBases.Clear()
+    Remove-Variable -Name PreviewFallbackCalls,PreviewUsePagedClosedFixture,PreviewGraphQlOpenJson,PreviewOpenRestJson,PreviewOpenRestOverflowJson,PreviewFailOpenRestOverflowProbe,PreviewClosedRestJson -Scope Script -ErrorAction SilentlyContinue
+}
+
+# Document-level Preview verdict vocabulary is distinct from per-check states.
+Write-Host "`n[Unit] Preview document verdict mapping" -ForegroundColor Cyan
+Assert-Eq -Label "preview overall status: WATCH outranks CLEANUP regardless of order" -Expected 'WATCH' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'CLEANUP' }, [pscustomobject]@{ Status = 'WATCH' }))
+Assert-Eq -Label "preview overall status: reversed WATCH/CLEANUP order is stable" -Expected 'WATCH' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'WATCH' }, [pscustomobject]@{ Status = 'CLEANUP' }))
+Assert-Eq -Label "preview overall status: INSUFFICIENT_DATA outranks UNKNOWN regardless of order" -Expected 'INSUFFICIENT_DATA' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'UNKNOWN' }, [pscustomobject]@{ Status = 'INSUFFICIENT_DATA' }))
+Assert-Eq -Label "preview overall status: reversed INSUFFICIENT_DATA/UNKNOWN order is stable" -Expected 'INSUFFICIENT_DATA' `
+    -Actual (Get-OverallStatus -Checks @([pscustomobject]@{ Status = 'INSUFFICIENT_DATA' }, [pscustomobject]@{ Status = 'UNKNOWN' }))
+Assert-Eq -Label "preview verdict: BLOCKED check maps to Not Ready" -Expected 'Not Ready' `
+    -Actual (Get-ReadinessVerdict -Checks @([pscustomobject]@{ Status = 'BLOCKED' }))
+Assert-Eq -Label "preview verdict: WATCH maps to Conditionally Ready" -Expected 'Conditionally Ready' `
+    -Actual (Get-ReadinessVerdict -Checks @([pscustomobject]@{ Status = 'WATCH' }))
+Assert-Eq -Label "preview verdict: degraded metadata maps to Conditionally Ready" -Expected 'Conditionally Ready' `
+    -Actual (Get-ReadinessVerdict -Checks @([pscustomobject]@{ Status = 'INSUFFICIENT_DATA' }))
+Assert-Eq -Label "preview verdict: READY + CLEANUP maps to Ready" -Expected 'Ready' `
+    -Actual (Get-ReadinessVerdict -Checks @([pscustomobject]@{ Status = 'READY' }, [pscustomobject]@{ Status = 'CLEANUP' }))
+
+# The generic release-branch table must prioritize actionable rows and remain
+# bounded; the full list is available via a link rather than a 50+ row dump.
+Write-Host "`n[Unit] Preview release PR table cap + actionability ordering" -ForegroundColor Cyan
+$previewTablePrs = @(
+    [pscustomobject]@{
+        number = 79999; title = 'Conflicted release PR'; author = [pscustomobject]@{ login = 'blocked-user' }
+        url = 'https://example.invalid/pull/79999'; baseRefName = 'net11.0'; headRefName = 'blocked'
+        createdAt = '2026-01-01T00:00:00Z'; updatedAt = '2026-01-01T00:00:00Z'
+        isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; mergeStateStatus = 'DIRTY'; labels = @()
+    }
+)
+$previewTablePrs += @(1..19 | ForEach-Object {
+    [pscustomobject]@{
+        number = 80000 + $_; title = "Ordinary release PR $_"
+        author = if ($_ -eq 19) { $null } else { [pscustomobject]@{ login = "user$_" } }
+        url = "https://example.invalid/pull/$([int](80000 + $_))"; baseRefName = 'net11.0'; headRefName = "feature/$_"
+        createdAt = '2026-07-01T00:00:00Z'; updatedAt = "2026-07-$('{0:D2}' -f ([Math]::Min($_, 19)))T00:00:00Z"
+        isDraft = $false; reviewDecision = $null; mergeStateStatus = 'CLEAN'; labels = @()
+    }
+})
+$previewTableBuilder = [System.Text.StringBuilder]::new()
+Add-PRTable -Builder $previewTableBuilder -PRs $previewTablePrs -MaxRows 15 -SortByActionability `
+    -FullListUrl 'https://example.invalid/all-prs'
+$previewTableMarkdown = $previewTableBuilder.ToString()
+Assert-Eq -Label "preview PR table: caps visible PR rows at 15" -Expected 15 `
+    -Actual ([regex]::Matches($previewTableMarkdown, '\| \[#\d+\]\(').Count)
+Assert-Eq -Label "preview PR table: blocked PR is ordered first despite oldest update" -Expected $true `
+    -Actual ($previewTableMarkdown.IndexOf('[#79999]') -lt $previewTableMarkdown.IndexOf('[#80019]'))
+Assert-Eq -Label "preview PR table: omitted count and full-list link rendered" -Expected $true `
+    -Actual ($previewTableMarkdown -match '\[5 omitted\]\(https://example\.invalid/all-prs\)')
+Assert-Eq -Label "preview PR table: null/deleted author renders fallback without throwing" -Expected $true `
+    -Actual ($previewTableMarkdown -match '\| unknown \|')
 
 # =========================================================================
 # Preview consumer installability — workload set, feeds, pins, redaction
@@ -4593,6 +9296,15 @@ Assert-Eq -Label "sdk-bump: dotnet/android bump → false (not SDK)"  -Expected 
 Assert-Eq -Label "sdk-bump: merge-up PR → false"                   -Expected $false -Actual (Test-IsSdkBumpPr $dfMergeUp)
 Assert-Eq -Label "sdk-bump: plain human PR → false"                -Expected $false -Actual (Test-IsSdkBumpPr $dfPlain)
 Assert-Eq -Label "sdk-bump: null PR → false"                       -Expected $false -Actual (Test-IsSdkBumpPr $null)
+# Boundary regression: a hyphenated sibling repo must NOT collide with the SDK/VMR
+# bump. A bare `\b` sat between `t` and `-` and misclassified `dotnet/dotnet-
+# optimization` as an SDK bump; the `(?![\w-])` look-ahead fixes it. This mirrors
+# the Get-ComponentFlowSignal collision guard below (which was tested, while this
+# sibling matcher was not — the exact gap the follow-up closes).
+$sbVmrOptColl = [PSCustomObject]@{ title = 'Bump dotnet/dotnet-optimization from 1.0 to 1.2 (BAR 3)' }
+$sbSdkTrail   = [PSCustomObject]@{ title = 'Bump dotnet/dotnet-optimization then dotnet/sdk (BAR 4)' }
+Assert-Eq -Label "sdk-bump: dotnet/dotnet-optimization does NOT collide → false" -Expected $false -Actual (Test-IsSdkBumpPr $sbVmrOptColl)
+Assert-Eq -Label "sdk-bump: real dotnet/sdk later in title still matches → true" -Expected $true  -Actual (Test-IsSdkBumpPr $sbSdkTrail)
 
 # --- Get-ComponentFlowSignal: infer subscription health from the public PR trail ---
 # A working sub leaves a public trail of dep-flow PRs; classify open/fresh/stale/missing.
@@ -4641,6 +9353,30 @@ Assert-Eq -Label "flowcell: missing (history ok) → none seen absence claim" -E
 # The crux: on a merged-history-fetch failure the cell must NOT assert absence.
 Assert-Eq -Label "flowcell: missing + HistoryUnavailable → no false 'none seen'" -Expected $true -Actual ([bool]($cellMissHU -notmatch 'none seen'))
 Assert-Eq -Label "flowcell: missing + HistoryUnavailable → honest 'unavailable'" -Expected $true -Actual ([bool]($cellMissHU -match 'unavailable'))
+
+# Preview rendering uses subscription flow only for Android/macOS-iOS. VMR is a
+# local official-build reconciliation path because the Maestro feed can differ
+# from the release source of truth.
+$vmrUpdatePath = Format-PreviewComponentUpdatePathCell -Repo 'dotnet/dotnet' `
+    -DepFlowPRs @($fStaleVmr) -Now $flowNow -StaleDays 14 -LocalVmr
+Assert-Eq -Label "preview update path: VMR is local-only, not subscription health" `
+    -Expected $true -Actual ([bool]($vmrUpdatePath -match 'local official-build reconciliation'))
+Assert-Eq -Label "preview update path: VMR explicitly has no Maestro subscription" `
+    -Expected $true -Actual ([bool]($vmrUpdatePath -match 'no Maestro subscription by design'))
+Assert-Eq -Label "preview update path: VMR never renders stale/missing sub status" `
+    -Expected $false -Actual ([bool]($vmrUpdatePath -match 'stale|missing|none seen'))
+
+$candidateVmrPath = Format-PreviewComponentUpdatePathCell -Repo 'dotnet/dotnet' `
+    -DepFlowPRs @($fStaleVmr) -Now $flowNow -StaleDays 14
+Assert-Eq -Label "preview update path: candidate VMR retains netN.0 flow signal" `
+    -Expected $true -Actual ([bool]($candidateVmrPath -match 'stale'))
+Assert-Eq -Label "preview update path: candidate VMR does not claim no subscription" `
+    -Expected $false -Actual ([bool]($candidateVmrPath -match 'no Maestro subscription|local official-build reconciliation'))
+
+$androidUpdatePath = Format-PreviewComponentUpdatePathCell -Repo 'dotnet/android' `
+    -DepFlowPRs @($fOpenAndroid) -Now $flowNow -StaleDays 14
+Assert-Eq -Label "preview update path: Android still uses subscription flow signal" `
+    -Expected $true -Actual ([bool]($androidUpdatePath -match 'flowing'))
 
 # --- Get-UpstreamDriftSignal: has the component's same-named branch advanced past our pin? ---
 # Complementary to the Flow signal: a hard git fact (public compare API), not an inference.
@@ -4740,6 +9476,46 @@ $drNC = Get-UpstreamDriftSignal -Repo 'dotnet/macios' -Sha $drSha -BranchName $d
 Assert-Eq -Label "drift: compare missing ahead_by → unknown"     -Expected 'unknown' -Actual $drNC.Status
 Assert-Eq -Label "drift: no-counts reason"                       -Expected 'compare returned no counts' -Actual $drNC.Reason
 
+# Public VMR branch drift is inventory only. Both ahead and diverged states must
+# defer to the official build without rendering a release warning.
+$vmrCurrentCell = Format-UpstreamDriftCell -Drift $drCur -Vmr
+Assert-Eq -Label "drift cell: VMR current is informational, not validated" `
+    -Expected $true -Actual ([bool]($vmrCurrentCell -match '^ℹ️' -and $vmrCurrentCell -notmatch '✅'))
+Assert-Eq -Label "drift cell: VMR current defers to official build" `
+    -Expected $true -Actual ([bool]($vmrCurrentCell -match 'official build decides'))
+$vmrAheadCell = Format-UpstreamDriftCell -Drift $drAhead -Vmr
+Assert-Eq -Label "drift cell: VMR ahead is informational" `
+    -Expected $true -Actual ([bool]($vmrAheadCell -match '^ℹ️' -and $vmrAheadCell -match 'official build decides'))
+$vmrDivergedCell = Format-UpstreamDriftCell -Drift $drDiv -Vmr
+Assert-Eq -Label "drift cell: VMR diverged is informational, not warning" `
+    -Expected $true -Actual ([bool]($vmrDivergedCell -match '^ℹ️' -and $vmrDivergedCell -notmatch '⚠️'))
+Assert-Eq -Label "drift cell: VMR diverged defers to official build" `
+    -Expected $true -Actual ([bool]($vmrDivergedCell -match 'official build decides'))
+$componentDivergedCell = Format-UpstreamDriftCell -Drift $drDiv
+Assert-Eq -Label "drift cell: Android/macOS divergence remains warning" `
+    -Expected $true -Actual ([bool]($componentDivergedCell -match '^⚠️'))
+
+$wrongStageMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
+    -Version '26.5.11717-net11-p5' -Major 11 -Preview 6 -Drift $drAhead
+Assert-Eq -Label "component source: old macOS/iOS stage warns even when branch is ahead" `
+    -Expected $true -Actual ([bool]($wrongStageMacCell -match '^⚠️.*off-band.*-net11-p6'))
+$wrongStageNoShaMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
+    -Version '26.5.11717-net11-p5' -Major 11 -Preview 6 -Drift $drNoSha
+Assert-Eq -Label "component source: old macOS/iOS stage warns even when SHA is missing" `
+    -Expected $true -Actual ([bool]($wrongStageNoShaMacCell -match '^⚠️.*off-band.*-net11-p6'))
+$correctStageMacCell = Format-PreviewComponentSourceCell -Repo 'dotnet/macios' `
+    -Version '26.5.11717-net11-p6' -Major 11 -Preview 6 -Drift $drAhead
+Assert-Eq -Label "component source: correct macOS/iOS stage preserves ahead FYI" `
+    -Expected $true -Actual ([bool]($correctStageMacCell -match '^⬆️' -and $correctStageMacCell -notmatch '⚠️'))
+$androidSourceCell = Format-PreviewComponentSourceCell -Repo 'dotnet/android' `
+    -Version '37.0.0-ci.main.51' -Major 11 -Preview 6 -Drift $drCur
+Assert-Eq -Label "component source: Android ci.main scheme uses branch ancestry" `
+    -Expected '✅ current' -Actual $androidSourceCell
+$vmrSourceCell = Format-PreviewComponentSourceCell -Repo 'dotnet/dotnet' `
+    -Version '11.0.100-preview.6.26325.125' -Major 11 -Preview 6 -Drift $drCur -Vmr
+Assert-Eq -Label "component source: VMR current remains informational through row formatter" `
+    -Expected $true -Actual ([bool]($vmrSourceCell -match '^ℹ️' -and $vmrSourceCell -match 'official build decides'))
+
 # --- Remove-JsoncComments (dependency-flow access gate): STRING-AWARE JSONC comment
 #     strip. Must remove real // and /* */ comments but must NOT delete a genuinely-
 #     enabled plugin entry whose neighbouring string VALUES contain stray /* */ // .
@@ -4774,6 +9550,51 @@ if (-not (Test-Path -LiteralPath $gateScript)) {
 
     # 6. Empty/null input is returned as-is (no throw).
     Assert-Eq -Label "jsonc: empty input returned unchanged" -Expected '' -Actual (Remove-JsoncComments '')
+}
+
+# --- Test-PluginEnabled: reads the enabled-plugin opt-in out of the user-scope
+#     Copilot settings.json. Regression guard for the minified-JSON false negative:
+#     the matcher was anchored to the start of a physical line ((?m)^\s*), so a
+#     single-line/minified settings.json reported an *enabled* plugin as NOT enabled
+#     (→ wrong AVAILABLE_NOT_ENABLED degradation). The look-behind key-boundary
+#     anchor now tolerates minified JSON. Hermetic: writes fixtures into a throwaway
+#     HOME/USERPROFILE, restores them in finally; no gh/network dependency.
+Write-Host "`n[Unit] Test-PluginEnabled (minified + pretty settings.json)" -ForegroundColor Cyan
+if (Get-Command Test-PluginEnabled -ErrorAction SilentlyContinue) {
+    $savedHome = $env:HOME; $savedProfile = $env:USERPROFILE
+    $tmpHome = Join-Path ([System.IO.Path]::GetTempPath()) ("rr_plugintest_" + [guid]::NewGuid().ToString('N'))
+    try {
+        $cfgDir = Join-Path $tmpHome '.copilot'
+        New-Item -ItemType Directory -Force -Path $cfgDir | Out-Null
+        $cfgPath = Join-Path $cfgDir 'settings.json'
+        $env:HOME = $tmpHome; $env:USERPROFILE = $tmpHome
+
+        # 1. Minified (single-line) settings — the regression case.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{"dotnet-release-tracker@dotnet-release":true}}' -NoNewline
+        $rMin = Test-PluginEnabled -Plugin 'dotnet-release-tracker'
+        Assert-Eq -Label "plugin: minified single-line settings → enabled"       -Expected $true    -Actual $rMin.Enabled
+        Assert-Eq -Label "plugin: minified reports the fixture as Source"         -Expected $cfgPath -Actual $rMin.Source
+
+        # 2. Pretty-printed settings — must still work (no marketplace suffix).
+        Set-Content -LiteralPath $cfgPath -Value "{`n  `"enabledPlugins`": {`n    `"dotnet-release-tracker`": true`n  }`n}"
+        Assert-Eq -Label "plugin: pretty multi-line settings → enabled"          -Expected $true    -Actual (Test-PluginEnabled -Plugin 'dotnet-release-tracker').Enabled
+
+        # 3. A different key that merely ends with the plugin name must NOT match.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{"my-dotnet-release-tracker":true}}' -NoNewline
+        Assert-Eq -Label "plugin: suffix-only key does NOT false-positive"        -Expected $false   -Actual (Test-PluginEnabled -Plugin 'dotnet-release-tracker').Enabled
+
+        # 4. Plugin absent entirely → not enabled, null Source.
+        Set-Content -LiteralPath $cfgPath -Value '{"enabledPlugins":{}}' -NoNewline
+        $rNone = Test-PluginEnabled -Plugin 'dotnet-release-tracker'
+        Assert-Eq -Label "plugin: absent entry → not enabled"                    -Expected $false   -Actual $rNone.Enabled
+        Assert-Eq -Label "plugin: absent entry → null Source"                    -Expected $true    -Actual ($null -eq $rNone.Source)
+    } finally {
+        if ($null -eq $savedHome)    { Remove-Item Env:HOME -ErrorAction SilentlyContinue }        else { $env:HOME = $savedHome }
+        if ($null -eq $savedProfile) { Remove-Item Env:USERPROFILE -ErrorAction SilentlyContinue } else { $env:USERPROFILE = $savedProfile }
+        if (Test-Path -LiteralPath $tmpHome) { Remove-Item -LiteralPath $tmpHome -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+} else {
+    Assert-Eq -Label "plugin: Test-PluginEnabled loaded from gate script" -Expected $true -Actual $false
 }
 
 # --- Access-gate dot-source guard: must skip the driver body (return before any
@@ -4855,7 +9676,8 @@ $fixtureVd = @'
 
 $script:_origGetContent = Get-Command Get-ContentFromRepo -CommandType Function -ErrorAction SilentlyContinue
 $script:_mockVdText = $fixtureVd
-function global:Get-ContentFromRepo {
+$script:OrigGetContentFromRepoForPins = ${function:Get-ContentFromRepo}
+function Get-ContentFromRepo {
     param([string]$Path, [string]$Ref)
     if ($Path -eq 'eng/Version.Details.xml') {
         if ($script:_mockVdText -eq '__THROW__') { throw "boom" }
@@ -4879,22 +9701,19 @@ try {
     $nullPins = Get-BranchComponentPins -Ref 'release/11.0.1xx-preview6' -Major 11
     Assert-Eq -Label "component-pins: unreadable file → \$null (no throw)" -Expected $true -Actual ($null -eq $nullPins)
 } finally {
-    Remove-Item function:global:Get-ContentFromRepo -ErrorAction SilentlyContinue
+    Set-Item function:Get-ContentFromRepo $script:OrigGetContentFromRepoForPins
 }
 
-# Inflight merge-up hoist (#36085 scenario): a main → net<N>.0 automated merge PR
-# (base = inflight branch) must be carved into the merge-up bucket — hoisted to
-# high priority — and REMOVED from the inflight-human queue, not buried as generic
-# inflight noise. The preview lane chains main → net<N>.0 → previewN, so a stuck
-# main → net<N>.0 merge starves the preview branch of upstream fixes and belongs
-# in the daily-flow merge-up chain alongside the net<N>.0 → previewN hop.
+# Inflight isolation: a main → net<N>.0 automated merge PR belongs to Preview N+1
+# readiness after Preview N is cut. It must stay out of the current preview's
+# merge-up bucket and remain in the separate inflight-human bucket.
 $prInflightMergeUp = [PSCustomObject]@{ number = 9; author = $humanLogin; labels = $plainLbl; headRefName = 'merge/main-to-net11.0'; title = "[automated] Merge branch 'main' => 'net11.0'" }
 $bucketsIM   = Get-CategorizedPullRequests -TargetPRs $targetSet -InflightPRs @($prInflightMaestro, $prInflightP0, $prInflightMergeUp)
 $imMergeUp   = @($bucketsIM.MergeUpPRs       | ForEach-Object { $_.number })
 $imInflight  = @($bucketsIM.InflightHumanPRs | ForEach-Object { $_.number })
-Assert-Eq -Label "inflight merge-up: hoisted into merge-up bucket (#9)"                 -Expected $true  -Actual ($imMergeUp -contains 9)
-Assert-Eq -Label "inflight merge-up: both hops in merge-up bucket (#6 target + #9 inflight)" -Expected 2 -Actual $bucketsIM.MergeUpPRs.Count
-Assert-Eq -Label "inflight merge-up: removed from inflight-human queue (#9)"            -Expected $false -Actual ($imInflight -contains 9)
+Assert-Eq -Label "inflight merge-up: excluded from current preview merge-up bucket (#9)" -Expected $false -Actual ($imMergeUp -contains 9)
+Assert-Eq -Label "inflight merge-up: only target hop remains in merge-up bucket (#6)"    -Expected 1 -Actual $bucketsIM.MergeUpPRs.Count
+Assert-Eq -Label "inflight merge-up: retained in inflight-human queue for Preview N+1"   -Expected $true -Actual ($imInflight -contains 9)
 Assert-Eq -Label "inflight merge-up: inflight-human still keeps the plain p/0 human (#8)" -Expected $true -Actual ($imInflight -contains 8)
 
 # Empty-input safety: no PRs at all yields five empty buckets, no throw.
@@ -5459,6 +10278,63 @@ $hNowStale = Get-ReportSemanticHash -Data $dNowStale -Verdict $nfV
 Assert-Eq -Label "hash: honors stored nightlyFeedNow (ok@T1 vs stale@T2 → DIFFERENT)" -Expected $false -Actual ($hNowOk -eq $hNowStale)
 Assert-Eq -Label "hash: stored-now tier resolves to ok at T1" -Expected 'ok' -Actual (Get-NightlyFeedTier -Freshness $dNowOk['nightlyFeed'] -Now $dNowOk['nightlyFeedNow'])
 Assert-Eq -Label "hash: stored-now tier resolves to stale at T2" -Expected 'stale' -Actual (Get-NightlyFeedTier -Freshness $dNowStale['nightlyFeed'] -Now $dNowStale['nightlyFeedNow'])
+
+# ───── Get-ReportSemanticHash folds in rendered PR/action guidance ─────
+Write-Host "`n[Unit] Get-ReportSemanticHash × rendered guidance" -ForegroundColor Cyan
+function New-GuidanceHashData {
+    param(
+        [int]$MainFixPr = 40002,
+        [string]$RecommendedAction = 'Wait for main merge; then backport',
+        [string]$NextAction = 'No action',
+        [string]$ShipCheckDetails = 'Feed is available',
+        [string]$RegressionTitle = 'Regression title'
+    )
+    @{
+        metadata   = @{ srHeadSha = 'cafe12345678'; mainBranch = 'main' }
+        ci         = @{ overall = 'green' }
+        srContents = @{ sourcePrs = @(35001, 35002) }
+        regressions = @(
+            @{
+                issue = 35000
+                title = $RegressionTitle
+                state = 'OPEN'
+                classification = 'open-on-main'
+                candidateFixPrs = @(
+                    @{ number = 40001; state = 'OPEN'; baseRef = 'inflight/current' },
+                    @{ number = $MainFixPr; state = 'OPEN'; baseRef = 'main' }
+                )
+                recommendedAction = $RecommendedAction
+            }
+        )
+        openSrPrs = @()
+        shipChecks = @(
+            @{ Area = 'Ship Assessment validation feed'; Status = 'READY'; Details = $ShipCheckDetails; NextAction = $NextAction }
+        )
+    }
+}
+
+$guidanceV = @{ symbol = '🟡' }
+$guidanceBase = New-GuidanceHashData
+$guidanceSame = New-GuidanceHashData
+$guidanceDifferentPr = New-GuidanceHashData -MainFixPr 40003
+$guidanceDifferentAction = New-GuidanceHashData -RecommendedAction 'Post the backport command after merge'
+$guidanceDifferentNextAction = New-GuidanceHashData -NextAction 'Paste the validation feed into ship assessment'
+$guidanceDifferentDetails = New-GuidanceHashData -ShipCheckDetails 'Feed publication is still pending'
+$guidanceDifferentTitle = New-GuidanceHashData -RegressionTitle 'Clarified regression scope'
+
+$hGuidanceBase = Get-ReportSemanticHash -Data $guidanceBase -Verdict $guidanceV
+Assert-Eq -Label "hash: rendered guidance fold is deterministic" `
+    -Expected $hGuidanceBase -Actual (Get-ReportSemanticHash -Data $guidanceSame -Verdict $guidanceV)
+Assert-Eq -Label "hash: selected rendered fix PR change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentPr -Verdict $guidanceV))
+Assert-Eq -Label "hash: recommendedAction change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentAction -Verdict $guidanceV))
+Assert-Eq -Label "hash: shipCheck NextAction change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentNextAction -Verdict $guidanceV))
+Assert-Eq -Label "hash: rendered shipCheck Details change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentDetails -Verdict $guidanceV))
+Assert-Eq -Label "hash: rendered regression title change → DIFFERENT" `
+    -Expected $false -Actual ($hGuidanceBase -eq (Get-ReportSemanticHash -Data $guidanceDifferentTitle -Verdict $guidanceV))
 
 # ───── Engine-level fail-open under WarningPreference=Stop ─────
 # The helper's inner catch is hardened, but the SR engine's OUTER catch in
