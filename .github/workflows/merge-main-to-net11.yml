@@ -44,10 +44,12 @@ jobs:
           pr_number="$(gh pr list \
             --repo "$REPOSITORY" \
             --state open \
+            --app 'github-actions' \
             --head 'merge/main-to-net11.0' \
             --base 'net11.0' \
-            --json number \
-            --jq '.[0].number // empty')"
+            --limit 100 \
+            --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository == false)][0].number // empty')"
 
           if [[ -n "$pr_number" ]]; then
             echo "Merge PR #$pr_number is still open; leaving its branch unchanged while CI runs."

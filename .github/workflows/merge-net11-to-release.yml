@@ -4,7 +4,7 @@
 # This workflow must be triggered FROM the net11.0 branch because the arcade merge
 # script uses GITHUB_REF_NAME as the config lookup key. When triggered via
 # workflow_dispatch from the GitHub UI, select 'net11.0' from the branch dropdown.
-# The schedule trigger only works when this file exists on net11.0.
+# The default-branch schedule dispatches a second run from net11.0.
 
 name: Merge net11.0 to next release
 
@@ -25,23 +25,68 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  DispatchScheduledRun:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch the scheduled run from net11.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: gh workflow run merge-net11-to-release.yml --repo "$REPOSITORY" --ref net11.0
+
   CheckForOpenMergePullRequest:
-    if: github.ref_name == 'net11.0'
+    if: github.event_name != 'schedule' && github.ref_name == 'net11.0'
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
+      - name: Resolve the current release target
+        id: target
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $configText = gh api `
+            -H "Accept: application/vnd.github.raw+json" `
+            "repos/$env:REPOSITORY/contents/github-merge-flow-release-11.jsonc?ref=net11.0" |
+            Out-String
+
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to read the net11.0 merge-flow configuration."
+          }
+
+          $config = $configText | ConvertFrom-Json
+          $mergeToBranch = $config.'merge-flow-configurations'.'net11.0'.MergeToBranch
+
+          if ($mergeToBranch -notmatch '^release/[A-Za-z0-9._/-]+$')
+          {
+            throw "Invalid MergeToBranch value '$mergeToBranch'."
+          }
+
+          "merge_to_branch=$mergeToBranch" >> $env:GITHUB_OUTPUT
+
       - name: Check for an open net11.0 to release merge PR
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_TO_BRANCH: ${{ steps.target.outputs.merge_to_branch }}
           REPOSITORY: ${{ github.repository }}
         run: |
           pr_number="$(gh pr list \
             --repo "$REPOSITORY" \
             --state open \
-            --json number,headRefName \
-            --jq '[.[] | select(.headRefName | startswith("merge/net11.0-to-release/"))][0].number // empty')"
+            --app github-actions \
+            --head "merge/net11.0-to-$MERGE_TO_BRANCH" \
+            --base "$MERGE_TO_BRANCH" \
+            --limit 100 \
+            --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository == false)][0].number // empty')"
 
           if [[ -n "$pr_number" ]]; then
             echo "Merge PR #$pr_number is still open; leaving its branch unchanged while CI runs."
