@@ -1843,14 +1843,17 @@ function ConvertTo-PublicSafeMarkdown {
         }
         $canonical = [regex]::Replace($canonical, '(?i)&#(?:(?:x(?<hex>[0-9a-f]+))|(?<dec>\d+));', {
             param($entity)
-            $value = if ($entity.Groups['hex'].Success) {
-                [Convert]::ToInt32($entity.Groups['hex'].Value, 16)
-            } else {
-                [Convert]::ToInt32($entity.Groups['dec'].Value, 10)
-            }
+            try {
+                $value = if ($entity.Groups['hex'].Success) {
+                    [Convert]::ToInt32($entity.Groups['hex'].Value, 16)
+                } else {
+                    [Convert]::ToInt32($entity.Groups['dec'].Value, 10)
+                }
+            } catch { return $entity.Value }
             if ($value -le 0xffff) { return [char]$value }
             return $entity.Value
         })
+        $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
         $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')

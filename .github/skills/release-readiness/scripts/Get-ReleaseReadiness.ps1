@@ -293,14 +293,17 @@ function ConvertTo-PublicSafeMarkdown {
         }
         $canonical = [regex]::Replace($canonical, '(?i)&#(?:(?:x(?<hex>[0-9a-f]+))|(?<dec>\d+));', {
             param($entity)
-            $value = if ($entity.Groups['hex'].Success) {
-                [Convert]::ToInt32($entity.Groups['hex'].Value, 16)
-            } else {
-                [Convert]::ToInt32($entity.Groups['dec'].Value, 10)
-            }
+            try {
+                $value = if ($entity.Groups['hex'].Success) {
+                    [Convert]::ToInt32($entity.Groups['hex'].Value, 16)
+                } else {
+                    [Convert]::ToInt32($entity.Groups['dec'].Value, 10)
+                }
+            } catch { return $entity.Value }
             if ($value -le 0xffff) { return [char]$value }
             return $entity.Value
         })
+        $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
         $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
@@ -2395,6 +2398,7 @@ function Get-RevertedPrFromSubject {
     #>
     param([string]$Subject)
     if (-not $Subject) { return $null }
+    $Subject = $Subject -replace '[\u201C\u201D]', '"'
     # Common hand-authored forms without GitHub's quoted-title convention.
     $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ing)?\s+(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
@@ -2490,7 +2494,7 @@ function Get-ClosingIssueNumbers {
         $Text,
         '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s*:?\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)(?![\p{L}\p{N}_])')
     return @($matches | ForEach-Object {
-        $prefixStart = [Math]::Max(0, $_.Index - 80)
+        $prefixStart = [Math]::Max(0, $_.Index - 512)
         $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
         $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$)"
         if (-not $negated) {
@@ -2593,6 +2597,7 @@ function Get-ExplicitBackportSourceNumbers {
     # Remove withdrawn Markdown spans before calculating reference offsets; doing
     # this only on split prefix/suffix fragments leaves unmatched `~~` sentinels.
     $Text = [regex]::Replace($Text, '(?s)~~.*?~~', '')
+    $Text = $Text -replace '[\u2018\u2019]', "'"
     $Text = $Text -replace "`r`n", "`n"
     $Text = $Text -replace "`r", "`n"
     $Text = $Text -replace '\u2028', "`n"
@@ -2655,12 +2660,19 @@ function Get-ExplicitBackportSourceNumbers {
             $references = @([regex]::Matches($window,
                 '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
             if ($references.Count -eq 0) { continue }
+            $acceptedReferenceIndexes = [System.Collections.Generic.HashSet[int]]::new()
 
             for ($i = 0; $i -lt $references.Count; $i++) {
                 $reference = $references[$i]
                 $number = ConvertTo-PrNumber -Value $reference.Groups['number'].Value
-                if ($null -eq $number) { continue }
                 $between = $window.Substring(0, $reference.Index)
+                if ($null -eq $number) {
+                    if ($i -eq 0) {
+                        $firstShapeOk = $between -match '(?i)^\s*[:\-]?\s*(?:\([^)]{0,200}\)\s*)?(?:(?:(?:of|from|for(?:\s+issue)?|targeting|resolving|addresses)|(?:the\s+)?(?:fix|changes?)\s+from|that\s+fixes|of\s+(?:the\s+change\s+in|the\s+following|this)|(?:the\s+following|this))\s*:?\s+)?(?:PRs?\s*)?:?\s*$'
+                        if ($firstShapeOk) { [void]$acceptedReferenceIndexes.Add(0) }
+                    }
+                    continue
+                }
                 if (Test-IsLineageVerbNegated -Prefix $prefix -Between $between) {
                     continue
                 }
@@ -2714,9 +2726,11 @@ function Get-ExplicitBackportSourceNumbers {
                     $firstShapeOk = $between -match '(?i)^\s*[:\-]?\s*(?:\([^)]{0,200}\)\s*)?(?:(?:(?:of|from|for(?:\s+issue)?|targeting|resolving|addresses)|(?:the\s+)?(?:fix|changes?)\s+from|that\s+fixes|of\s+(?:the\s+change\s+in|the\s+following|this)|(?:the\s+following|this))\s*:?\s+)?(?:PRs?\s*)?:?\s*$'
                     if (-not $firstShapeOk) { continue }
                     [void]$result.Add($number)
+                    [void]$acceptedReferenceIndexes.Add(0)
                     continue
                 }
 
+                if (-not $acceptedReferenceIndexes.Contains($i - 1)) { continue }
                 $isExplicitList = $true
                 for ($j = 1; $j -le $i; $j++) {
                     $previous = $references[$j - 1]
@@ -2735,7 +2749,10 @@ function Get-ExplicitBackportSourceNumbers {
                         break
                     }
                 }
-                if ($isExplicitList) { [void]$result.Add($number) }
+                if ($isExplicitList) {
+                    [void]$result.Add($number)
+                    [void]$acceptedReferenceIndexes.Add($i)
+                }
             }
         }
         if ($processedVerbs -gt 200) { break }

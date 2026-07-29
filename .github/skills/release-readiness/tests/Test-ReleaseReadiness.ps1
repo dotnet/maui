@@ -2227,6 +2227,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; and #300.') -join ',')
     Assert-Eq -Label "backport lineage: consecutive contextual items do not orphan later source" `
         -Expected '100,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200 is only context; #250 is only background; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: rejected contextual anchor cannot promote later list member" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport per the failure analysis in #35410, and #35415.') -join ',')
     Assert-Eq -Label "backport lineage: alternate contextual wording does not promote tail item" `
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is context only.') -join ',')
     foreach ($repeatedSemanticRetraction in @(
@@ -2307,6 +2309,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; backport #32537.") -join ',')
     Assert-Eq -Label "backport lineage: contraction plus semicolon aside remains negated" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don't; after review; backport #32537.") -join ',')
+    Assert-Eq -Label "backport lineage: smart contraction plus semicolon aside remains negated" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text "Don’t; after review; backport #32537.") -join ',')
     Assert-Eq -Label "backport lineage: long same-clause negation remains governing" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'We should not, given the current release schedule and the risk this introduces to other subsystems, backport #32537.') -join ',')
     foreach ($affirmativeAfterUnrelatedNegation in @(
@@ -2708,7 +2712,8 @@ foreach ($manualRevertSubject in @(
     'Revert: #35100',
     'Revert of #35100',
     'Revert - fix for #35100',
-    '[Revert] Undo the change in #35100'
+    '[Revert] Undo the change in #35100',
+    'Revert “Original title (#35100)” (#36152)'
 )) {
     Assert-Eq -Label "Reverted-PR from common hand-authored subject — $manualRevertSubject" `
         -Expected 35100 -Actual (Get-RevertedPrFromSubject -Subject $manualRevertSubject)
@@ -3045,7 +3050,8 @@ foreach ($negatedClosingText in @(
     'This does not; to be fair; in my view; fix #35615',
     'Do not; fix #35615',
     "Don't; fix #35615",
-    'This no longer fixes #35615'
+    'This no longer fixes #35615',
+    "This doesn’t close #35615 after $([string]::new('x', 120))"
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
@@ -7935,17 +7941,21 @@ function Assert-PublicSanitizerEdgeCases {
         '&#100;nceng.visualstudio.com/internal/_build?token=ENTITYSECRET',
         '%252564%25256E%252563%252565%25256E%252567.visualstudio.com/internal/_build?token=TRIPLESECRET',
         'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET',
-        'https&colon;&sol;&sol;dev&period;azure&period;com&sol;dnceng&sol;internal&sol;_build?token=NAMEDENTITYSECRET'
+        'https&colon;&sol;&sol;dev&period;azure&period;com&sol;dnceng&sol;internal&sol;_build?token=NAMEDENTITYSECRET',
+        "https://dev.azure.com/dnceng/$((('internal'.ToCharArray() | ForEach-Object { [char]([int]$_ + 0xFEE0) }) -join ''))/_build?token=FULLWIDTHSECRET"
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SPACESECRET|LEGACYSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
     Assert-Eq -Label "$Lane sanitizer preserves ordinary percentage prose byte-for-byte" -Expected 'Coverage results: 6%62% relative improvement' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'Coverage results: 6%62% relative improvement')
+    $oversizedEntityThrew = $false
+    try { $null = ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/x &#99999999999; ordinary prose' } catch { $oversizedEntityThrew = $true }
+    Assert-Eq -Label "$Lane sanitizer tolerates oversized numeric entities" -Expected $false -Actual $oversizedEntityThrew
 }
 
 # The SR engine is currently dot-sourced; exercise its copy before Preview
