@@ -60,6 +60,11 @@ namespace Microsoft.Maui.Controls
         {
             handler._tabBarController?.SetNeedsStatusBarAppearanceUpdate();
         }
+
+        static void MapPreferredStatusBarUpdateAnimation(ShellItemHandler handler, ShellItem item)
+        {
+            handler._tabBarController?.SetNeedsStatusBarAppearanceUpdate();
+        }
     }
 }
 

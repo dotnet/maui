@@ -732,12 +732,20 @@ namespace Microsoft.Maui.Controls.Handlers
 
             Task<bool> task;
             if (_rootViewController is not null)
+            {
+                // PopToRootViewController(...) below already calls
+                // _navigationController.PopToRootViewController(animated) internally — don't
+                // call it again here, or the native nav controller receives a duplicate
+                // pop-to-root request for the same operation.
                 task = PopToRootViewController(_rootViewController, animated);
+            }
             else
+            {
+                _navigationController.PopToRootViewController(animated);
                 task = Task.FromResult(true);
+            }
 
             e.Task = task;
-            _navigationController.PopToRootViewController(animated);
 
             await e.Task;
 
@@ -1440,6 +1448,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void DisposeNavigationResources()
         {
+            // Break the retain cycle: _navigationController (native) -> Delegate/gesture
+            // Delegate (managed closures capturing `this`) -> ShellSectionHandler. Neither
+            // was ever cleared before, so the native nav controller kept the handler alive
+            // past disconnect.
+            _navigationController.Delegate = null!;
+            if (_navigationController.InteractivePopGestureRecognizer is not null)
+                _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
+
             foreach (var kvp in _completionTasks)
                 kvp.Value.TrySetCanceled();
             _completionTasks.Clear();
