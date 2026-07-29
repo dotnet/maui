@@ -1621,8 +1621,91 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
         It 'refuses an edit that carries a sibling flag from another edit-shaped kind' {
             # The veto-strip shape: an additive `label` call that quietly removes one.
             { Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'a', '--remove-label', 's/needs-info') } |
-                Should -Throw -ExpectedMessage '*must not carry --remove-label*'
+                Should -Throw -ExpectedMessage '*carries --remove-label, which is not a flag this kind may use*'
             $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses <Flag>, which no hand-typed sibling list ever named' -ForEach @(
+            @{ Kind = 'label'; Flag = '--remove-assignee';  Tail = @('--remove-assignee', 'someone') }
+            @{ Kind = 'label'; Flag = '--remove-milestone'; Tail = @('--remove-milestone') }
+            @{ Kind = 'label'; Flag = '--milestone';        Tail = @('--milestone', '9.0') }
+            @{ Kind = 'label'; Flag = '--title';            Tail = @('--title', 'replaced') }
+            @{ Kind = 'label'; Flag = '--body-file';        Tail = @('--body-file', '/etc/passwd') }
+            @{ Kind = 'label'; Flag = '--add-assignee';     Tail = @('--add-assignee', 'someone') }
+            @{ Kind = 'label'; Flag = '--remove-project';   Tail = @('--remove-project', 'p') }
+        ) {
+            <#
+                `gh issue edit` ships ELEVEN flags; the deny list this replaced named three.
+                Measured against the pre-fix head in comment mode, the one enumerated sibling
+                (--remove-label) was correctly BLOCKED while all seven of these EXECUTED — so
+                the check worked and was merely short, which is why every tier test stayed
+                green.
+
+                --remove-assignee and --remove-milestone are the ones that matter. Core's
+                `Test-CiScanHumanTouched` vetoes on `assignee` and `milestone`, so either one
+                strips a human-touch veto at COMMENT tier and lets a later ENFORCE run close
+                an issue that now looks untouched. --body-file is separately an arbitrary
+                file read into an issue body that slipped the --body check purely because it
+                is not spelled --body.
+
+                The expectation names the flag rather than matching the generic refusal, so a
+                rule that refused the wrong token would fail here instead of passing.
+            #>
+            $ghArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'x') + $Tail
+            { Invoke-GhWrite -Kind $Kind -IssueNumber 5 -GhArgs $ghArgs } |
+                Should -Throw -ExpectedMessage "*carries $Flag, which is not a flag this kind may use*"
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses <Flag> on a comment, where the hazard is replacement rather than removal' -ForEach @(
+            @{ Flag = '--edit-last'; Tail = @('--edit-last') }
+            @{ Flag = '--body-file'; Tail = @('--body-file=/etc/passwd') }
+        ) {
+            # `gh issue comment --edit-last` REPLACES a previous comment instead of adding
+            # one, so the comment tier could rewrite history rather than append to it. The
+            # second case is spelled `--flag=value` to pin that the allow list splits on `=`
+            # rather than comparing the whole token.
+            $ghArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'text') + $Tail
+            { Invoke-GhWrite -Kind comment -IssueNumber 5 -GhArgs $ghArgs } |
+                Should -Throw -ExpectedMessage "*carries $Flag, which is not a flag this kind may use*"
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'still runs a <Kind> whose notice text is exactly <Text>, because a value is not a flag' -ForEach @(
+            @{ Kind = 'body';    Text = '--remove-label' }
+            @{ Kind = 'body';    Text = '--add-label' }
+            @{ Kind = 'body';    Text = '--title' }
+            @{ Kind = 'comment'; Text = '--milestone' }
+        ) {
+            <#
+                Load-bearing, not decoration. The deny list this replaced was a flat
+                `-in $GhArgs` membership test, and the first two cases were MEASURED as
+                REFUSED at the pre-fix head — a false refusal of the product. Widening a flat
+                list from three names to eleven would have widened that with it, and --title
+                or --milestone are far likelier to stand alone in a notice than
+                --remove-label is.
+
+                So the allow list is checked inside the positional walk, where a token has
+                already been established to be in flag position. A flat implementation passes
+                every negative case above and fails all four of these.
+            #>
+            $verb = if ($Kind -eq 'comment') { 'comment' } else { 'edit' }
+            Invoke-GhWrite -Kind $Kind -IssueNumber 5 -GhArgs @('issue', $verb, '5', '--repo', 'dotnet/maui', '--body', $Text) |
+                Should -BeTrue
+            @($global:ghCalls).Count | Should -Be 1
+        }
+
+        It 'still runs the real <Kind> call site, which legitimately carries more than one flag' -ForEach @(
+            @{ Kind = 'close';  CmdArgs = @('issue', 'close', '5', '--repo', 'dotnet/maui', '--reason', 'completed', '--comment', 'closing notice') }
+            @{ Kind = 'reopen'; CmdArgs = @('issue', 'reopen', '5', '--repo', 'dotnet/maui', '--comment', 'reopen notice') }
+        ) {
+            # These two are why the allow list is per-kind rather than "--repo plus the one
+            # flag": close carries --reason AND --comment, reopen carries --comment, and
+            # neither has a $shape.Flag to derive from. A list that over-constrained them
+            # would take the reconciler's only closure path offline while every negative
+            # case above still passed.
+            Invoke-GhWrite -Kind $Kind -IssueNumber 5 -GhArgs $CmdArgs | Should -BeTrue
+            @($global:ghCalls).Count | Should -Be 1
         }
 
         It 'refuses an edit-shaped kind that carries no distinguishing flag at all' {

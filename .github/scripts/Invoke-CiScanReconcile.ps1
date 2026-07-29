@@ -370,12 +370,12 @@ function Invoke-GhWrite {
         declaring itself the additive kind.
     #>
     $shape = @{
-        label   = @{ Verb = 'edit'; Flag = '--add-label' }
-        unlabel = @{ Verb = 'edit'; Flag = '--remove-label' }
-        body    = @{ Verb = 'edit'; Flag = '--body' }
-        comment = @{ Verb = 'comment'; Flag = '--body' }
-        close   = @{ Verb = 'close'; Flag = $null }
-        reopen  = @{ Verb = 'reopen'; Flag = $null }
+        label   = @{ Verb = 'edit'; Flag = '--add-label';    Allowed = @('--repo', '--add-label') }
+        unlabel = @{ Verb = 'edit'; Flag = '--remove-label'; Allowed = @('--repo', '--remove-label') }
+        body    = @{ Verb = 'edit'; Flag = '--body';         Allowed = @('--repo', '--body') }
+        comment = @{ Verb = 'comment'; Flag = '--body';      Allowed = @('--repo', '--body') }
+        close   = @{ Verb = 'close'; Flag = $null;           Allowed = @('--repo', '--reason', '--comment') }
+        reopen  = @{ Verb = 'reopen'; Flag = $null;          Allowed = @('--repo', '--comment') }
     }[$Kind]
 
     if ($GhArgs.Count -lt 3 -or $GhArgs[0] -ne 'issue' -or $GhArgs[1] -ne $shape.Verb) {
@@ -386,13 +386,6 @@ function Invoke-GhWrite {
     }
     if ($shape.Flag -and $shape.Flag -notin $GhArgs) {
         throw "BUG: '$Kind' must carry $($shape.Flag); got '$($GhArgs -join ' ')'."
-    }
-    if ($shape.Verb -eq 'edit') {
-        foreach ($sibling in @('--add-label', '--remove-label', '--body')) {
-            if ($sibling -ne $shape.Flag -and $sibling -in $GhArgs) {
-                throw "BUG: '$Kind' must not carry $sibling on issue #$IssueNumber."
-            }
-        }
     }
 
     <#
@@ -463,10 +456,69 @@ function Invoke-GhWrite {
         if ($token -eq '--') {
             throw "BUG: '$Kind' must not carry a '--' terminator on issue #$IssueNumber; gh still collects positional targets after it. Got '$($GhArgs -join ' ')'."
         }
-        if ($token -clike '--*=*') { continue }   # --flag=value consumes nothing
-        if ($token -clike '--*') { $i++; continue }   # --flag consumes exactly its value
+        if ($token -clike '--*') {
+            <#
+                The sibling-flag check this replaces was a hand-typed DENY list of three
+                names -- --add-label, --remove-label, --body -- while `gh issue edit` ships
+                eleven flags. Measured against the pre-fix head with -Kind label in comment
+                mode, the enumerated --remove-label was correctly BLOCKED (so the check
+                worked and was merely short) while all seven unenumerated ones EXECUTED:
+
+                    --remove-assignee  --remove-milestone  --milestone
+                    --title  --body-file  --add-assignee  --remove-project
+
+                The first two are the veto strip, unmitigated. `Test-CiScanHumanTouched`
+                vetoes on `assignee` and `milestone`; `gh issue edit` ships a --remove-* for
+                each. So a `label` call at COMMENT tier could strip the exact signal that
+                protects an issue, and a later ENFORCE run would close something that now
+                looks untouched. --remove-label was gated; the two that matter more were not.
+                --body-file is separately an arbitrary file read into an issue body, and it
+                slipped the --body check purely because it is not spelled --body. `gh issue
+                comment` has its own in --edit-last, which replaces a previous comment
+                instead of adding one.
+
+                Inverted rather than extended. A hand-typed deny list is the defect, not its
+                length -- adding eight names leaves the next `gh` release short again. The
+                allow list derives from the same $shape table the verb check uses, so a new
+                flag is refused by default and the two lists cannot drift apart.
+
+                Position-aware, and that is load-bearing rather than tidy. The deny list was
+                a flat `-in $GhArgs` membership test, so it could not tell a FLAG from a
+                VALUE that happens to spell one. Measured at the pre-fix head: `-Kind body`
+                whose notice text is exactly '--remove-label' was REFUSED, and so was
+                '--add-label'. Narrow -- `-in` compares whole elements, so a body merely
+                CONTAINING the text was fine -- but inverting the polarity would have widened
+                that latent false refusal from three names to eleven, and `--title` or
+                `--milestone` are far likelier to appear alone in a notice than
+                `--remove-label` is. Refusing the product rather than the attack. Checking
+                inside this walk means a token is judged only where the walk has already
+                established it is in flag position, so both spellings execute.
+
+                Residual, deliberately not fixed here: the `--repo` occurrence counter below
+                is still a flat scan, so a notice body that is exactly '--repo' is refused as
+                a duplicate. Measured, still present, and left alone because that check is
+                load-bearing against a different attack and rewriting it is not this change.
+
+                Case-INsensitive on purpose, which is the one place this check deliberately
+                gives ground. Comparing case-sensitively refused '--REPO' here and preempted
+                the downstream provenance diagnosis, which is the more specific one: a case
+                variant means the token came from somewhere other than the call sites, and
+                that check says so by name. Nothing is gained by owning it -- a case variant
+                of a DISALLOWED flag is still refused here, since it is absent from the list
+                in every casing -- so the vocabulary check yields to the binding check rather
+                than shadowing it. The sibling's own case-variant test is what pins that
+                ordering; it fails if this comparison is tightened back to `-cnotin`.
+            #>
+            $name = ($token -split '=', 2)[0]
+            if ($name -notin $shape.Allowed) {
+                throw "BUG: '$Kind' on issue #$IssueNumber carries $name, which is not a flag this kind may use. Allowed: $($shape.Allowed -join ', '). Got '$($GhArgs -join ' ')'."
+            }
+            if ($token -clike '--*=*') { continue }   # --flag=value consumes nothing
+            $i++; continue                            # --flag consumes exactly its value
+        }
         throw "BUG: '$Kind' on issue #$IssueNumber carries the bare argument '$token'; gh would read it as a SECOND target. Got '$($GhArgs -join ' ')'."
     }
+
 
     if (-not $script:TargetRepo) {
         throw "BUG: '$Kind' on issue #$IssueNumber cannot be checked against the run's own repository."
