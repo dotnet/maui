@@ -196,8 +196,17 @@ namespace Microsoft.Maui.ApplicationModel
 
 				lock (defaultImplementationLock)
 				{
-					return defaultImplementation ??=
-						new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
+					if (defaultImplementation is null)
+					{
+						var createdImplementation =
+							new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
+						Volatile.Write(
+							ref defaultImplementation,
+							createdImplementation);
+						return createdImplementation;
+					}
+
+					return defaultImplementation;
 				}
 			}
 		}
@@ -208,7 +217,7 @@ namespace Microsoft.Maui.ApplicationModel
 		internal static void SetDefault(IVersionTracking? implementation)
 		{
 			lock (defaultImplementationLock)
-				defaultImplementation = implementation;
+				Volatile.Write(ref defaultImplementation, implementation);
 		}
 
 		internal static void InitVersionTracking() =>
