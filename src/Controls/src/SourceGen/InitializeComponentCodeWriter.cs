@@ -97,7 +97,7 @@ static class InitializeComponentCodeWriter
 			{
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
 				{
-					codeWriter.WriteLine("#pragma warning disable CS0414 // __version is read by UpdateComponent (generated on XAML edit)");
+					codeWriter.WriteLine("#pragma warning disable CS0414 // __version is a write-only content-identity marker (stamped by IC/UC, read by diagnostics/tooling)");
 					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 					codeWriter.WriteLine("private int __version = 0;");
 					codeWriter.WriteLine("#pragma warning restore CS0414");
@@ -166,7 +166,7 @@ $$"""
 						codeWriter.WriteLine();
 					}
 
-					// Emit Register calls and __version bump for incremental hot reload
+					// Emit Register calls and the content-identity stamp for incremental hot reload
 					if (nodeIds != null)
 					{
 						codeWriter.WriteLine();
@@ -216,11 +216,15 @@ $$"""
 							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
 						}
 
-						// Set __version to the latest version from state (so fresh instances skip all UC patches)
-						var assemblyName = compilation.AssemblyName ?? string.Empty;
-						var tfm = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
-						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, tfm, xamlItem.ProjectItem.HotReloadStateKey);
-						codeWriter.WriteLine($"__version = {latestVersion};");
+						// Stamp fresh instances with the deterministic content hash of the current XAML.
+						// UpdateComponent() stamps the SAME hash after it runs, so a freshly-created
+						// instance and a live (hot-reloaded) one converge on the same __version for
+						// identical content. This is a pure function of the current content —
+						// deterministic and revert-stable — unlike the old monotonic version counter,
+						// which depended on edit history held in mutable static state. The value is a
+						// write-only content-identity marker (not read for dispatch); it lets diagnostics
+						// and tooling recognize which XAML content an instance currently reflects.
+						codeWriter.WriteLine($"__version = {GeneratorHelpers.StableContentHash(xamlItem.Xaml)};");
 						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
 				}
@@ -276,8 +280,9 @@ $$"""
 	}
 
 	/// <summary>
-	/// Generates a single patch body (the code for an <c>if (__version == fromVersion) { ... }</c> block)
-	/// from two XAML versions. Returns <see langword="null"/> when the diff is structural, empty, or on parse error.
+	/// Generates a single previous→current patch body (the statements that bring a live instance to
+	/// the current XAML) from two XAML versions. Returns <see langword="null"/> when the diff is
+	/// structural, empty, or on parse error.
 	/// </summary>
 	/// <param name="cachedOldRoot">The cached parsed tree from the previous generation (may be null on first diff).</param>
 	/// <summary>
@@ -297,10 +302,9 @@ $$"""
 	/// </param>
 	/// <param name="emptyDiff">
 	/// Set to <see langword="true"/> when the new XAML parsed cleanly but produced no semantic
-	/// diff (e.g., a formatting / comment-only edit). Callers must NOT reset the version chain
-	/// or clear accumulated patches in this case — doing so would strand live instances at the
-	/// previous version when the next real edit emits <c>if (__version == 0)</c>. Refresh the
-	/// cached XAML text and parsed tree only.
+	/// diff (e.g., a formatting / comment-only edit, or a revert to the previous state). The caller
+	/// refreshes the cached XAML text and parsed tree only, and emits a present-but-empty
+	/// UpdateComponent() so the method never disappears between generations.
 	/// </param>
 	public static string? TryGeneratePatchBody(
 		SGRootNode? cachedOldRoot,
