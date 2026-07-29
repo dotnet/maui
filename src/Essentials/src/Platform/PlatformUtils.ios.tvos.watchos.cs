@@ -12,12 +12,12 @@ namespace Microsoft.Maui.ApplicationModel
 #else
 		[DllImport(Constants.libSystemLibrary, EntryPoint = "sysctlbyname")]
 #endif
-		internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, uint newlen);
+		internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, IntPtr newlen);
 
 		internal static string GetSystemLibraryProperty(string property)
 		{
 			var lengthPtr = Marshal.AllocHGlobal(sizeof(int));
-			SysctlByName(property, IntPtr.Zero, lengthPtr, IntPtr.Zero, 0);
+			SysctlByName(property, IntPtr.Zero, lengthPtr, IntPtr.Zero, IntPtr.Zero);
 
 			var propertyLength = Marshal.ReadInt32(lengthPtr);
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 
 			var valuePtr = Marshal.AllocHGlobal(propertyLength);
-			SysctlByName(property, valuePtr, lengthPtr, IntPtr.Zero, 0);
+			SysctlByName(property, valuePtr, lengthPtr, IntPtr.Zero, IntPtr.Zero);
 
 			var returnValue = Marshal.PtrToStringAnsi(valuePtr);
 
