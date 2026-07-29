@@ -332,7 +332,52 @@ function Get-CiScanFieldValue {
     param([object]$Object, [Parameter(Mandatory)][string]$Name, [object]$Default = $null)
 
     if (-not (Test-CiScanHasField -Object $Object -Name $Name)) { return $Default }
+    # NOTE: this reader UNROLLS a single-element array, so it can hand back a value of a
+    # different type than the JSON held: `[false]` arrives as [bool], `["2026-01-01"]` as
+    # [datetime], `[7]` as [int]. That is deliberate here -- fifteen call sites wrap this
+    # in `@(...)`, and `return ,$value` does NOT compose with `@()`: the wrapper survives
+    # it (`@(C $o 'labels')` is a ONE-element array holding the real array) while it does
+    # unroll under plain assignment, so the idiom looks correct wherever you probe it and
+    # breaks wherever it is used. Measured: 64 tests.
+    #
+    # Consequence: a caller that inspects the SHAPE of a field must not use this reader.
+    # Use Get-CiScanFieldShape below, which is the same bounded read without the unroll.
     return $Object.PSObject.Properties[$Name].Value
+}
+
+function Get-CiScanFieldShape {
+    <#
+    .SYNOPSIS
+        Reads a named property WITHOUT unrolling a single-element array.
+
+    .DESCRIPTION
+        Get-CiScanFieldValue is the reader for callers that want a VALUE. This is the
+        reader for callers that want to judge a SHAPE, and the two cannot be the same
+        function: the unrolling that is harmless when you are about to `[int]::TryParse`
+        the result is fatal when the result is the evidence you are judging.
+
+        The defect this exists to close: every shape guard in Get-CiScanStateMarker
+        inspects a type that Get-CiScanFieldValue may already have rewritten. The
+        `clock_start_at` guard was written specifically to reject arrays, and its test
+        uses a TWO-element array -- which does not unroll -- so the guard reads as
+        covered while `["2026-01-01T00:00:00Z"]` walks straight through it as a
+        [datetime]. Multi-element arrays are unaffected, which is precisely why the gap
+        is invisible from the guard's own code and from a test that samples one arity.
+
+        Returns a WRAPPER, not the value: @{ Present = [bool]; Value = [object] }.
+
+        The wrapper is not ceremony, it is the only thing that works. PowerShell's output
+        stream ENUMERATES any array written to it, however the array was constructed, so
+        no return-value shape survives both call contexts: `return ,$v` keeps the array
+        under `@(...)` but unrolls under assignment, and `return [object[]]$v` unrolls
+        under both. A hashtable is never enumerated, so `$s.Value` is the value the JSON
+        held, in every context, with no idiom required at the call site.
+    #>
+    [CmdletBinding()]
+    param([object]$Object, [Parameter(Mandatory)][string]$Name)
+
+    if (-not (Test-CiScanHasField -Object $Object -Name $Name)) { return @{ Present = $false; Value = $null } }
+    return @{ Present = $true; Value = $Object.PSObject.Properties[$Name].Value }
 }
 
 function Test-CiScanFingerprint {
@@ -516,7 +561,8 @@ function Get-CiScanStateMarker {
     # output. Only a present, non-null value that fails to parse is corruption.
     $stamps = @{ clock_start_at = $null; last_present_at = $null; updated_at = $null }
     foreach ($field in @($stamps.Keys)) {
-        $rawStamp = Get-CiScanFieldValue -Object $obj -Name $field
+        $stampShape = Get-CiScanFieldShape -Object $obj -Name $field
+        $rawStamp = $stampShape.Value
         if ($null -eq $rawStamp) { continue }
         # Constrain the SHAPE before parsing, because .NET's date parsing is more
         # permissive than the value space here. `[string]@(1,2)` is '1 2', which parses
@@ -533,6 +579,34 @@ function Get-CiScanStateMarker {
         $stamps[$field] = $normalized
     }
 
+    # `[bool]` on a parsed value INVERTS rather than fails, so it cannot be used as a
+    # guard the way the parses above are. Measured through `ConvertFrom-Json`:
+    #
+    #     false -> False     "false" -> TRUE     "False" -> TRUE
+    #     0     -> False     "0"     -> TRUE     "no"    -> TRUE
+    #     []    -> False     [false] -> False    {"a":1} -> TRUE
+    #
+    # Every string spelling of false reads as true, and so does an object. That is the
+    # laundering the `runs` comment above forbids, in its worst form: the corrupt value
+    # is not merely defaulted, it is REVERSED, and then re-emitted by the writer below
+    # as a well-formed JSON boolean. The next reader sees a clean marker.
+    #
+    # The writer only ever emits a real boolean here -- unlike the timestamps it never
+    # emits null -- so a present non-boolean is corruption and nothing legitimate is
+    # quarantined. Absent stays legitimate and defaults to $false, because a marker
+    # written before this field existed has genuinely not notified anyone.
+    $notified = $false
+    if (Test-CiScanHasField -Object $obj -Name 'candidate_notified') {
+        # Read through the SHAPE reader, not the value reader. `[candidate_notified: [false]]`
+        # unrolls to a plain $false through Get-CiScanFieldValue, so the array is accepted
+        # -- and it is accepted with the CORRECT value, which is the shape a test asserting
+        # only the resulting flag cannot see. The other array arities are already rejected;
+        # this makes the rejection independent of arity.
+        $rawNotified = (Get-CiScanFieldShape -Object $obj -Name 'candidate_notified').Value
+        if ($rawNotified -isnot [bool]) { return $bad }
+        $notified = $rawNotified
+    }
+
     $state = @{
         v                  = $script:CiScanDefaults.StateMarkerVersion
         label              = [string]$obj.label
@@ -542,7 +616,7 @@ function Get-CiScanStateMarker {
         present_builds     = $buckets['present_builds']
         clock_start_at     = $stamps['clock_start_at']
         last_present_at    = $stamps['last_present_at']
-        candidate_notified = if (Test-CiScanHasField -Object $obj -Name 'candidate_notified') { [bool]$obj.candidate_notified } else { $false }
+        candidate_notified = $notified
         updated_at         = $stamps['updated_at']
         runs               = $runs
     }

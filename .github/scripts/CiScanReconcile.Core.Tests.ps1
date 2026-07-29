@@ -243,6 +243,61 @@ Describe 'Get-CiScanStateMarker' {
         $r.Status | Should -Be 'ok'
         $r.State.runs | Should -Be 7
     }
+    It 'quarantines a non-boolean candidate_notified, which [bool] would REVERSE rather than reject' {
+        # The other parses here fail closed because a bad value cannot be parsed. `[bool]`
+        # has no such failure mode -- it succeeds on everything and it succeeds WRONG.
+        # Measured through ConvertFrom-Json:
+        #
+        #     "false" -> True    "False" -> True    "0" -> True    "no" -> True
+        #     {"a":1} -> True    [false] -> False   []  -> False
+        #
+        # So the single most likely corruption -- a boolean written as a JSON string --
+        # inverted the flag, kept Status='ok', and was re-emitted by the writer as a
+        # well-formed `true`. That is the `runs` laundering rule in its worst form: not a
+        # value defaulted, a value REVERSED, and then normalized into a clean marker.
+        #
+        # `[false]` is the case worth naming: it coerces to the CORRECT value by accident,
+        # so any test that only asserts the resulting flag passes while the guard is
+        # missing. It is rejected on shape, like the array-shaped timestamp above.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        $shapes = @{
+            'lowercase string false' = "$base,`"candidate_notified`":`"false`"}"
+            'capitalized string'     = "$base,`"candidate_notified`":`"False`"}"
+            'string zero'            = "$base,`"candidate_notified`":`"0`"}"
+            'string true'            = "$base,`"candidate_notified`":`"true`"}"
+            'number'                 = "$base,`"candidate_notified`":0}"
+            'object'                 = "$base,`"candidate_notified`":{`"a`":1}}"
+            'empty array'            = "$base,`"candidate_notified`":[]}"
+            'array of false'         = "$base,`"candidate_notified`":[false]}"
+            'explicit null'          = "$base,`"candidate_notified`":null}"
+        }
+        # The key names deliberately describe the shapes rather than quoting them: PowerShell
+        # hashtable keys are CASE-INSENSITIVE, so 'string false' and 'string False' are one
+        # key. The literal form above throws at parse time, but the runtime form
+        # (`$h['a']=1; $h['A']=2`) silently keeps the last -- which would have left this
+        # table testing eight shapes while its own count claimed nine.
+        $shapes.Count | Should -Be 9 -Because 'a case-insensitive container must not have silently merged two cases'
+        foreach ($shape in $shapes.GetEnumerator()) {
+            $call = { Get-CiScanStateMarker -Body "<!-- ci-scan-state: $($shape.Value) -->" -Config $script:Net11 }
+            $call | Should -Not -Throw -Because "a corrupt '$($shape.Key)' marker must not abort the survey"
+            (& $call).Status | Should -Be 'malformed' -Because "'$($shape.Key)' is corruption, not a boolean"
+        }
+    }
+    It 'still reads both real booleans, and still treats the field as absent when it is' {
+        # The anti-vacuity half: a guard that rejected everything would satisfy every case
+        # above. Both values are asserted, not just the truthy one, because the defect
+        # being pinned is an INVERSION -- a rule that read every boolean as $true would
+        # pass a $true-only control.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        foreach ($case in @(@{ Json = 'true'; Expect = $true }, @{ Json = 'false'; Expect = $false })) {
+            $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $base,`"candidate_notified`":$($case.Json)} -->" -Config $script:Net11
+            $r.Status | Should -Be 'ok' -Because "a real JSON $($case.Json) is legitimate"
+            $r.State.candidate_notified | Should -Be $case.Expect
+        }
+        $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $base} -->" -Config $script:Net11
+        $r.Status | Should -Be 'ok' -Because 'a marker written before the field existed is not corrupt'
+        $r.State.candidate_notified | Should -BeFalse
+    }
     It 'quarantines a present-but-unparseable timestamp instead of silently dropping it' {
         # `ConvertTo-CiScanTimestamp` answers $null for BOTH "no value" and "unparseable",
         # so normalizing straight into the state rewrote corruption as absence: Status
@@ -275,6 +330,38 @@ Describe 'Get-CiScanStateMarker' {
         $json = "$base,`"last_present_at`":[1,2]}"
         (Get-CiScanStateMarker -Body "<!-- ci-scan-state: $json -->" -Config $script:Net11).Status |
             Should -Be 'malformed' -Because 'an array must not be coerced into 2 January'
+    }
+    It 'rejects a ONE-element array timestamp, which the two-element sample above cannot reach' {
+        # The test above samples a single arity, and arity is exactly what decides whether
+        # the guard is consulted at all. Get-CiScanFieldValue UNROLLS a one-element array,
+        # so `["2026-01-01T00:00:00Z"]` reaches the type check already converted to a real
+        # [datetime] -- it satisfies `-is [datetime]` and is accepted, while `[1,2]` is
+        # refused. The guard's own code cannot show this: it is a property of the reader
+        # feeding it. Both arities are asserted here so a future reader change that
+        # reintroduces unrolling fails on the arity it silently permits.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        foreach ($case in @(
+            @{ Name = 'one-element string array'; Json = "`"last_present_at`":[`"2026-01-01T00:00:00Z`"]" }
+            @{ Name = 'one-element number array'; Json = "`"last_present_at`":[1]" }
+            @{ Name = 'one-element null array';   Json = "`"last_present_at`":[null]" }
+        )) {
+            (Get-CiScanStateMarker -Body "<!-- ci-scan-state: $base,$($case.Json)} -->" -Config $script:Net11).Status |
+                Should -Be 'malformed' -Because "$($case.Name) is an array, and arity must not decide whether the type guard applies"
+        }
+    }
+    It 'still accepts the plain string timestamp the writer actually emits' {
+        # Anti-vacuity for the two array tests: a guard that refused every shape would
+        # satisfy both of them and quarantine every marker this reconciler has ever
+        # written. The 'o' round-trip format is what Set-CiScanStateMarker emits.
+        $base = '{"v":1,"label":"ci-scan-net11","branch":"net11.0","pipeline":"maui-pr-uitests","absent_builds":[],"present_builds":[]'
+        $r = Get-CiScanStateMarker -Body "<!-- ci-scan-state: $base,`"last_present_at`":`"2026-01-01T00:00:00.0000000Z`"} -->" -Config $script:Net11
+        $r.Status | Should -Be 'ok' -Because 'the reconciler must still read its own output'
+        # Asserted as an INSTANT, not a type: the marker stores the normalized timestamp,
+        # and pinning its CLR type would pin a storage detail rather than the property that
+        # matters. The cast-then-ToUniversalTime form is correct under any TZ and for both
+        # a [string] and a [datetime], which is exactly the ambiguity the guard above allows.
+        ([datetime]$r.State.last_present_at).ToUniversalTime() |
+            Should -Be ([datetime]::new(2026, 1, 1, 0, 0, 0, [datetimekind]::Utc)) -Because 'a legitimate timestamp must survive unchanged'
     }
     It 'accepts an absent or explicitly null timestamp, which is what this function writes' {
         # Set-CiScanStateMarker emits JSON `null` for a state with no clock, so treating
