@@ -41,7 +41,7 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 			MauiLogger<BindablePropertyConverter>.Log(LogLevel.Warning, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 			return null;
 		}
-		Type type = GetControlType(parts[0]);
+		Type? type = GetControlType(parts[0]);
 		if (type == null)
 		{
 			MauiLogger<BindablePropertyConverter>.Log(LogLevel.Warning, $"Can't resolve {parts[0]}.");
@@ -94,8 +94,10 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 	[UnconditionalSuppressMessage("TrimAnalysis", "IL2057:TypeGetType",
 		Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
 			"saying that parsing XAML at runtime may not work as expected when trimming.")]
-	static Type GetControlType(string typeName)
+#nullable enable
+	static Type? GetControlType(string typeName)
 		=> Type.GetType("Microsoft.Maui.Controls." + typeName);
+#nullable disable
 
 	[UnconditionalSuppressMessage("TrimAnalysis", "IL2070:UnrecognizedReflectionPattern",
 		Justification = "The converter is only used when parsing XAML at runtime. The developer will receive a warning " +
@@ -110,7 +112,7 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 		// Skip 0; we would not be making this check if TargetObject were not a Setter
 		// Skip 1; we would not be making this check if the immediate parent were not a VisualState
 
-		if (parents.Count <= 3)
+		if (parents.Count <= 2)
 		{
 			throw new XamlParseException($"Unable to find a TargetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
 		}
@@ -119,6 +121,11 @@ public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConv
 		if (parents[2] is not VisualStateGroup)
 		{
 			throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parents[2]}.", lineInfo);
+		}
+
+		if (parents.Count <= 3)
+		{
+			throw new XamlParseException($"Unable to find a TargetType for the Bindable Property. Try prefixing it with the TargetType.", lineInfo);
 		}
 
 		// Are these Visual States directly on a VisualElement?
