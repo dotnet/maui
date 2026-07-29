@@ -845,7 +845,17 @@ function Get-ShippedStableTagsForBounds {
     )
 
     if ($PublicationQueryFailed) {
-        return @(Get-NonEmptyStringValues -Value $LocalStableTags | Sort-Object -Unique)
+        [version]$anchorVersion = $null
+        if (-not [version]::TryParse($AnchorTag, [ref]$anchorVersion)) { return @($AnchorTag) }
+        return @(Get-NonEmptyStringValues -Value $LocalStableTags | Where-Object {
+            [version]$candidate = $null
+            if (-not [version]::TryParse([string]$_, [ref]$candidate)) { return $false }
+            $_ -eq $AnchorTag -or
+                $candidate.Major -lt $anchorVersion.Major -or
+                ($candidate.Major -eq $anchorVersion.Major -and
+                    $candidate.Minor -eq $anchorVersion.Minor -and
+                    ($candidate.Build % 10) -eq 0)
+        } | Sort-Object -Unique)
     }
     return @(Get-NonEmptyStringValues -Value @($PublishedTags + $AnchorTag) | Sort-Object -Unique)
 }
@@ -2402,6 +2412,14 @@ function Get-RevertedPrFromSubject {
     return $null
 }
 
+function Test-IsRevertPrTitle {
+    param([AllowNull()][AllowEmptyString()][string]$Title)
+
+    if ([string]::IsNullOrWhiteSpace($Title)) { return $false }
+    return ($Title -match '(?i)^(?:\[[^\]]+\]\s+)?(?:Revert\b|Backing\s+out\b)') -or
+        ($Title -match '(?i)\[Revert\]')
+}
+
 function ConvertTo-NegationNormalizedText {
     param([AllowNull()][AllowEmptyString()][string]$Text)
 
@@ -2506,7 +2524,7 @@ function Test-IsLineageReferenceNegated {
     $rollback = "(?i)^$prefix$passiveRemovalLead" + 'revert(?:s|ed|ing)?\b'
     $omitted = "(?i)^$prefix$passiveRemovalLead" + '(?:omit(?:ted)?|exclude(?:d)?)\b'
     $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
-    $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:(?:\w+\s+){0,8}?and\s+)?)|(?:(?:since|subsequently|ultimately)\s+))?rolled\s+back\b"
+    $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:(?:\w+\s+){0,8}?and\s+)?)|(?:(?:since|subsequently|ultimately)\s+))?(?:rolled\s+back|back(?:ed|ing)\s+out)\b"
     $laterPresenceRemoval = "(?i)\b(?:but|however|although|yet|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:(?:was|is|were|are)\s+(?:not|never)\s+(?:\w+\s+){0,3}?(?:be\s+)?$presenceEffect\b|(?:was|is)\s+(?:revert(?:ed)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b)"
     $negatedHardRemoval = "(?i)^$prefix(?:\w+\s+){0,6}?(?:not|never)\s+(?:\w+\s+){0,2}?(?:revert(?:s|ed|ing)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b"
     if ($suffix -match $negatedHardRemoval) { return $false }
@@ -3728,7 +3746,7 @@ function Classify-RegressionCandidate {
         # ancestor of the target. The source-PR set covers normal backports, whose
         # target merge SHA differs from the source merge SHA (real-world: #36495 →
         # SR9 backport #36498). Anything short of all three stays a rollback.
-        $isRevertPr = ($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')
+        $isRevertPr = Test-IsRevertPrTitle -Title $info.title
         if ($isRevertPr) {
             $sourcePrInTargetContents = $sourcePrSet.ContainsKey([int]$prNum)
             $revertCountsAsFix = ($ev -eq 'closing-keyword') -and ($info.state -eq 'MERGED') -and

@@ -329,6 +329,20 @@ function Test-IsPatchInSrCycle {
     return $Patch -ge $patchFloor -and $Patch -lt ($patchFloor + 10)
 }
 
+function Test-IsSrCutBeforeBump {
+    param(
+        [Parameter(Mandatory)][int]$SrNumber,
+        [Parameter(Mandatory)][int]$BranchPatch,
+        [Parameter(Mandatory)][int]$HighestShippedPatch
+    )
+
+    if ($HighestShippedPatch -lt 0) { return $false }
+    $highestShippedSr = [int][math]::Floor($HighestShippedPatch / 10)
+    return $SrNumber -eq ($highestShippedSr + 1) -and
+        $BranchPatch -ge (($SrNumber - 1) * 10) -and
+        $BranchPatch -lt ($SrNumber * 10)
+}
+
 function Test-IsStaleSrBranch {
     <#
     .SYNOPSIS
@@ -767,7 +781,8 @@ function Invoke-DetectionForMajor {
         $expectedTag = $versionInfo.Tag
         if (-not (Test-IsPatchInSrCycle -SrNumber $sr -Patch $branchPatch)) {
             $expectedPatchFloor = $sr * 10
-            $isCutBeforeBump = $branchPatch -ge (($sr - 1) * 10) -and $branchPatch -lt $expectedPatchFloor
+            $isCutBeforeBump = Test-IsSrCutBeforeBump -SrNumber $sr `
+                -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
             if ($isCutBeforeBump) {
                 $validSrBranches.Add($entry)
                 $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays

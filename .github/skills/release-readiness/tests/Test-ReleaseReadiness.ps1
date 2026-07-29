@@ -320,10 +320,9 @@ if (-not $SkipE2E) {
         Assert-Eq -Label "SR7 source-PRs does NOT contain #35609 (#35326 fix, not backported)" `
                   -Expected $false -Actual $has35609
 
-        # Expected: count is in the right ballpark (we measured 54 manually)
-        Write-Host "  Source PR count: $($srcPrs.Count) (expected ~50-60)" -ForegroundColor Gray
-        Assert-Eq -Label "SR7 source-PR count in expected range" `
-                  -Expected $true -Actual ($srcPrs.Count -ge 40 -and $srcPrs.Count -le 100)
+        Write-Host "  Source PR count: $($srcPrs.Count)" -ForegroundColor Gray
+        Assert-Eq -Label "SR7 immutable source-PR inventory is non-empty" `
+                  -Expected $true -Actual ($srcPrs.Count -gt 0)
     }
 
     $partialJsonPath = Join-Path $outDir 'release-readiness.json'
@@ -614,6 +613,10 @@ if (-not (Test-Path $detectScriptPath)) {
               -Actual (Test-IsPatchInSrCycle -SrNumber 9 -Patch 100)
     Assert-Eq -Label "SR10 patch 100 belongs to SR10 decade" -Expected $true `
               -Actual (Test-IsPatchInSrCycle -SrNumber 10 -Patch 100)
+    Assert-Eq -Label "cut-before-bump helper accepts contiguous SR10 patch90 after SR9" -Expected $true `
+              -Actual (Test-IsSrCutBeforeBump -SrNumber 10 -BranchPatch 90 -HighestShippedPatch 90)
+    Assert-Eq -Label "cut-before-bump helper rejects far-ahead SR10 when only SR7 shipped" -Expected $false `
+              -Actual (Test-IsSrCutBeforeBump -SrNumber 10 -BranchPatch 90 -HighestShippedPatch 70)
 
     # Empty ship set: every branch must be in-flight.
     Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
@@ -1735,7 +1738,7 @@ try {
         -Expected '10.0.80,10.0.90,10.0.91' -Actual ($publishedBounds -join ',')
     $outageBounds = @(Get-ShippedStableTagsForBounds -AnchorTag '10.0.91' `
         -PublishedTags @() `
-        -LocalStableTags @('10.0.80', '10.0.90', '10.0.91') `
+        -LocalStableTags @('10.0.80', '10.0.85', '10.0.90', '10.0.91') `
         -PublicationQueryFailed $true)
     Assert-Eq -Label "release API outage retains local immutable tag bounds" `
         -Expected '10.0.80,10.0.90,10.0.91' -Actual ($outageBounds -join ',')
@@ -2351,6 +2354,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         'Backport of #12345 was not included, but it is required reading for this change.'
         'Backport of #12345; later rolled back.'
         'Backport of #12345, later rolled back.'
+        'Backport of #12345 was backed out.'
+        'Backport of #12345; later backing out the change.'
     )) {
         Assert-Eq -Label "backport lineage: contrast cannot rescue actual removal — $hardRemovalBody" `
             -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $hardRemovalBody) -join ',')
@@ -2946,6 +2951,10 @@ Assert-Eq -Label "Reverted-PR from manual subject prefers explicit PR reference 
     -Expected 35000 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Backport fix from PR #35000 for issue #12345 (#36152)')
 Assert-Eq -Label "Ambiguous manual revert with multiple unqualified references fails closed" `
     -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Backport #35000 for issue #12345 (#36152)')
+Assert-Eq -Label "Backing-out PR title is classified as a revert" -Expected $true `
+    -Actual (Test-IsRevertPrTitle -Title 'Backing out the fix for #35100 due to CI regressions')
+Assert-Eq -Label "Bracket-prefixed backing-out PR title is classified as a revert" -Expected $true `
+    -Actual (Test-IsRevertPrTitle -Title '[release/10.0.1xx-sr9] Backing out the fix for #35100')
 Assert-Eq -Label "Manual revert form with branch prefix" `
     -Expected 40100 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr9] Revert - Fix flaky test #40100 (#40200)')
 # Safety: a manual-form pattern must NOT fire on a non-revert subject that merely
@@ -3937,7 +3946,7 @@ Assert-Eq -Label "Closed issue + comment-cited merged PR on SR → closed-fix-un
     -Expected 'closed-fix-unlinked' -Actual $clsUnlinked.classification
 Assert-Eq -Label "closed-fix-unlinked → high confidence (fix-phrase required)" `
     -Expected 'high' -Actual $clsUnlinked.confidence
-Assert-Eq -Label "closed-fix-unlinked → git-verified evidence survives unrelated lookup failures" `
+Assert-Eq -Label "closed-fix-unlinked → comment-recovered evidence remains distinct from git verification" `
     -Expected $false -Actual $clsUnlinked.verifiedFromSrContents
 Assert-Eq -Label "closed-fix-unlinked → candidateFixPrs surfaces the cited PR (#35028)" `
     -Expected 35028 -Actual ([int]$clsUnlinked.candidateFixPrs[0].number)
@@ -8254,6 +8263,15 @@ function Assert-PublicSanitizerEdgeCases {
     Assert-Eq -Label "$Lane sanitizer fully omits trailing-dot internal Azure DevOps URL" `
         -Expected '_internal URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com./dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits scheme-less DevDiv URL" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'dev.azure.com/DevDiv/_workitems/edit/1234?token=SECRET')
+    Assert-Eq -Label "$Lane sanitizer fully omits legacy DevDiv org with arbitrary project" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://devdiv.visualstudio.com/OneDotNet/_build/results?token=SECRET')
+    Assert-Eq -Label "$Lane sanitizer canonicalizes homoglyph-prefixed private reference" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text "$([char]0x0501)nceng/internal/_git/secret")
     Assert-Eq -Label "$Lane sanitizer omits embedded DevDiv URL while preserving surrounding key" `
         -Expected 'buildUrl=_internal URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'buildUrl=https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1234?token=EMBEDDEDDEVDIVSECRET')

@@ -44,6 +44,7 @@ $Script:PublicSafeUrlCandidatePattern = @(
     Get-PublicSafeCanonicalLiteralPattern -Literal 'dnceng' -InterCharacterPattern $candidateNoise
     Get-PublicSafeCanonicalLiteralPattern -Literal 'DevDiv' -InterCharacterPattern $candidateNoise
     '[\uFF01-\uFF5E]'
+    '[\u0080-\uFFFF]'
     '%(?:25)?[0-9a-f]{2}'
     '&#(?:x[0-9a-f]+|\d+);'
 ) -join '|'
@@ -79,7 +80,7 @@ function ConvertTo-PublicSafeMarkdown {
             $collection = if ($match.Groups['collection'].Success) { 'DefaultCollection/' } else { '' }
             "$($match.Groups['prefix'].Value)${collection}internal"
         })
-    $safe = [regex]::Replace($safe, '(?i)(?:' + $Script:PublicSafeUrlCandidatePattern + ')[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?<![A-Za-z0-9])(?:' + $Script:PublicSafeUrlCandidatePattern + ')[^\s<>"''`|)]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
@@ -139,7 +140,7 @@ function ConvertTo-PublicSafeMarkdown {
         if ($hasAzdoUserInfo) {
             return '_credential-bearing URL omitted_'
         }
-        $isInternal = $detection -match "(?i)(?:https?://(?:dev\.azure\.com\.?(?::\d+)?/dnceng|dnceng\.visualstudio\.com\.?(?::\d+)?)/(?:DefaultCollection/)?internal|https?://(?:dev\.azure\.com\.?(?::\d+)?/DevDiv|devdiv\.visualstudio\.com\.?(?::\d+)?/DevDiv)|^(?:dnceng(?:\.visualstudio\.com)?/(?:DefaultCollection/)?internal|DevDiv))(?:[/?:#]|$)"
+        $isInternal = $detection -match "(?i)^(?:(?:https?://)?(?:dev\.azure\.com\.?(?::\d+)?/dnceng|dnceng\.visualstudio\.com\.?(?::\d+)?)/(?:DefaultCollection/)?internal|(?:https?://)?(?:dev\.azure\.com\.?(?::\d+)?/DevDiv|devdiv\.visualstudio\.com\.?(?::\d+)?)|(?:dnceng(?:\.visualstudio\.com)?/(?:DefaultCollection/)?internal|DevDiv))(?:[/?:#]|$)"
         if ($isInternal) {
             return '_internal URL omitted_'
         }

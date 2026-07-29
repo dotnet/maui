@@ -486,8 +486,8 @@ through the access-tier workflow above.
 Three prerequisites must **all** hold for the preview to receive dependency flow:
 
 1. **Branch exists:** `git ls-remote origin refs/heads/release/11.0.1xx-previewN` returns a sha.
-2. **Default-channel mapping exists:** MCP `maestro_default_channels(repository="https://github.com/dotnet/maui")` (or `darc get-default-channels --source-repo https://github.com/dotnet/maui`) has a row `release/11.0.1xx-previewN → .NET 11.0.1xx SDK Preview N`.
-3. **Subscriptions exist:** MCP `maestro_subscriptions(targetRepository="https://github.com/dotnet/maui", targetBranch="release/11.0.1xx-previewN")` returns the baseline **two** rows — android + macios (`everyDay`, batchable), both on channel `.NET 11.0.1xx SDK Preview N` (see the baseline table above). A dotnet/VMR row is a configuration error, not a missing prerequisite.
+2. **Default-channel mapping exists and is enabled:** MCP `maestro_default_channels(repository="https://github.com/dotnet/maui")` (or `darc get-default-channels --source-repo https://github.com/dotnet/maui`) has an enabled row `release/11.0.1xx-previewN → .NET 11.0.1xx SDK Preview N`.
+3. **Subscriptions exist and are enabled:** MCP `maestro_subscriptions(targetRepository="https://github.com/dotnet/maui", targetBranch="release/11.0.1xx-previewN")` returns the baseline **two enabled** rows — android + macios (`everyDay`, batchable), both on channel `.NET 11.0.1xx SDK Preview N` (see the baseline table above). A dotnet/VMR row is a configuration error, not a missing prerequisite.
 
 Interpretation:
 
