@@ -381,7 +381,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.XamlGenerator");
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"), nonEmpty: true);
-			
+
 			var sg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"));
 			var xsg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"));
 			if (configuration == "Debug")
@@ -390,10 +390,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				Assert.Contains("InitializeComponentRuntime", xsg, StringComparison.Ordinal);
 			}
 			else
-            {
+			{
 				Assert.DoesNotContain("InitializeComponentRuntime", sg, StringComparison.Ordinal);
 				Assert.DoesNotContain("InitializeComponentRuntime", xsg, StringComparison.Ordinal);
-            }
+			}
 
 		}
 
@@ -920,11 +920,11 @@ public static class AppleXMarker
 		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
 		// or netstandard TFM) must keep removing platform folders that declare a
 		// non-empty TargetPlatformIdentifiers. An unconditioned shared folder with
-		// empty TargetPlatformIdentifiers and an ActivationValue that is empty or
-		// normalizes to empty must still participate — locks in the "empty TPI +
-		// empty normalized ActivationValue = always include" branch of
-		// _MauiCollectPlatformSpecificCompileItems. (Genuine item-Condition gating —
-		// where the mapping carries its own Condition — is covered separately by
+		// empty TargetPlatformIdentifiers and no authored ActivationValue must still
+		// participate — locks in the legacy "empty TPI + empty ActivationValue =
+		// always include" branch of _MauiCollectPlatformSpecificCompileItems.
+		// (Genuine item-Condition gating — where the mapping carries its own Condition —
+		// is covered separately by
 		// SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue.)
 		[Fact]
 		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsSharedFolder()
@@ -944,9 +944,6 @@ public static class AppleXMarker
 				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
 			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
 				.WithAttribute("Include", "Platforms\\Shared\\"));
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\Whitespace\\")
-				.WithAttribute("ActivationValue", "   "));
 			project.Add(customMappings);
 
 			WriteFile("Entry.cs", @"
@@ -973,14 +970,6 @@ public static class SharedMarker
 	public static string Value => ""Shared"";
 }");
 
-			WriteFile("Platforms\\Whitespace\\WhitespaceMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class WhitespaceMarker
-{
-	public static string Value => ""Whitespace"";
-}");
-
 			AddSingleProjectTargetsImport(project);
 
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
@@ -994,7 +983,60 @@ public static class WhitespaceMarker
 			AssertExists(testDll, nonEmpty: true);
 			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
 			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
-			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WhitespaceMarker");
+		}
+
+		// Authored activation metadata that normalizes to empty is invalid backend
+		// configuration, not a legacy shared folder. Fail closed on neutral and
+		// recognized TFMs so backend-only sources cannot leak into every inner build.
+		[Theory]
+		[InlineData("")]
+		[InlineData("ios")]
+		public void SingleProject_WhitespaceActivationValueIsExcluded(string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Whitespace\\")
+				.WithAttribute("ActivationValue", "   "));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Whitespace\\WhitespaceMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class WhitespaceMarker
+{
+	public static string Value => ""Whitespace"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(targetPlatformIdentifier)
+				? ""
+				: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WhitespaceMarker");
 		}
 
 		// Genuine item-Condition gating: a MauiPlatformSpecificFolder mapping may
