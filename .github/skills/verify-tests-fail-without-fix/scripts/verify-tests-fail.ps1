@@ -1692,26 +1692,36 @@ function Format-GateLogExcerpt {
     param(
         [string]$LogContent,
         [int]$MaxChars = 4000,
-        [int]$RawTailChars = 1200
+        [int]$RawTailChars = 1200,
+        [int]$MaxLines = 40
     )
     if ([string]::IsNullOrWhiteSpace($LogContent)) { return @() }
     $out = @()
-    $logLines = $LogContent -split "`r?`n"
+    # Strip ANSI/VT color escape codes up front — device-test runtime logs are full of them
+    # (e.g. `^[[40m^[[37mdbug^[[39m`), which otherwise render as garbage in the PR comment.
+    $ansiRx = "$([char]27)\[[0-9;]*[A-Za-z]"
+    $logLines = ($LogContent -split "`r?`n") | ForEach-Object { $_ -replace $ansiRx, '' }
     # Lines that actually explain a failure.
     $errRx = '(:\s*error\s|error\s(CS|MSB|MT|NETSDK|XA|NU|CA|APT|AMM|IL)\d|MSBUILD\s*:\s*error|Build FAILED|##\[error\]|Unhandled exception|^\s*at\s+\S+\(|\.Exception:|Exception has been thrown)'
-    # Noise to drop even when a line otherwise matches.
-    $noiseRx = '(^\s*\d+ Warning\(s\)|->\s+\S+\.dll\s*$|##vso\[|:\s*warning\s)'
+    # Noise to drop even when a line otherwise matches $errRx. Besides build warnings and
+    # ##vso/dll-output lines, this drops iOS/mac simulator *runtime* teardown spam: benign
+    # `dbug:`/`trce:` logging and Apple NSError descriptions ("... process: Error Domain=..."
+    # / "Client not entitled" / "No such process found") that merely CONTAIN the word "Error"
+    # and used to flood the summary with hundreds of identical lines (75 KB on PR #36109),
+    # burying the real failure. None of these are ever a real compiler/test failure.
+    $noiseRx = '(^\s*\d+ Warning\(s\)|->\s+\S+\.dll\s*$|##vso\[|:\s*warning\s|^\s*(dbug|trce):|Error Domain=|Failed to terminate process|Client not entitled|RBS(Service|Request)ErrorDomain|No such process found|NSUnderlyingError|runningboard)'
     $errLines = @($logLines | Where-Object { $_ -match $errRx -and $_ -notmatch $noiseRx })
     if ($errLines.Count -gt 0) {
         # De-dup (MSBuild repeats each error once per target framework).
         $seen = [System.Collections.Generic.HashSet[string]]::new()
         $uniq = @()
         foreach ($l in $errLines) { $k = $l.Trim(); if ($k -and $seen.Add($k)) { $uniq += $l } }
-        # Keep the LAST lines within budget (failures surface at the end of a build).
+        # Keep the LAST lines within both a char AND a line budget (failures surface at the
+        # end of a build); the line cap stops a single pathological run from ballooning.
         $buf = @(); $len = 0
         for ($i = $uniq.Count - 1; $i -ge 0; $i--) {
             $l = $uniq[$i]
-            if ($len + $l.Length + 1 -gt $MaxChars) { break }
+            if ($len + $l.Length + 1 -gt $MaxChars -or $buf.Count -ge $MaxLines) { break }
             $buf = , $l + $buf; $len += $l.Length + 1
         }
         $out += "**Error-relevant lines** (filtered from the build log):"
@@ -1721,16 +1731,19 @@ function Format-GateLogExcerpt {
         $out += '```'
         return $out
     }
-    # No coded error matched — show a short raw tail as a fallback.
-    if ($LogContent.Length -gt $RawTailChars) {
+    # No coded error matched — show a short raw tail as a fallback, from the ANSI-stripped and
+    # noise-filtered content (so the tail is not just simulator teardown spam).
+    $cleanTail = ($logLines | Where-Object { $_ -notmatch $noiseRx -and -not [string]::IsNullOrWhiteSpace($_) }) -join [Environment]::NewLine
+    if ([string]::IsNullOrWhiteSpace($cleanTail)) { return @() }
+    if ($cleanTail.Length -gt $RawTailChars) {
         $out += "*(no coded error found; showing last $RawTailChars chars)*"
         $out += ""
         $out += '```'
-        $out += $LogContent.Substring($LogContent.Length - $RawTailChars)
+        $out += $cleanTail.Substring($cleanTail.Length - $RawTailChars)
         $out += '```'
     } else {
         $out += '```'
-        $out += $LogContent
+        $out += $cleanTail
         $out += '```'
     }
     return $out

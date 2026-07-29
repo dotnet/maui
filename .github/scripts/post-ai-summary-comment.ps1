@@ -894,21 +894,15 @@ $review = $null
 $postedEvent = $reviewEvent
 
 if ($reviewEvent -eq 'COMMENT') {
-    # Most recent existing AI-Summary issue comment (if any) — update it in place.
-    $reuseComment = $null
-    if ($existingObjs -and $existingObjs.Count -gt 0) {
-        $reuseComment = $existingObjs | Sort-Object { $_.created_at } | Select-Object -Last 1
-    }
-
-    # Minimize stale AI-Summary issue comments (and other stale notices) EXCEPT the one we
-    # will update in place, so the fresh summary is never collapsed.
+    # "Mark the previous one as outdated, then post a new summary." MauiBot's token CAN
+    # minimizeComment (collapse as outdated) but CANNOT unminimizeComment (FORBIDDEN — proven
+    # in-pipeline: "MauiBot does not have the correct permissions to execute UnminimizeComment").
+    # So we must NOT reuse+PATCH a comment that a prior sweep may have collapsed (we could never
+    # un-hide it → the fresh summary would stay invisible). Instead: collapse EVERY prior
+    # AI-Summary issue comment (and stale notices) as outdated, then post a brand-new comment.
+    # This only uses the permission MauiBot has, and gives one visible summary above a stack of
+    # collapsed "outdated" ones — the behavior maintainers expect.
     if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
-        $preserveCommentIds = @()
-        $preserveCommentNodeIds = @()
-        if ($reuseComment) {
-            $preserveCommentIds = @([string]$reuseComment.id)
-            if ($reuseComment.node_id) { $preserveCommentNodeIds = @([string]$reuseComment.node_id) }
-        }
         Hide-StaleMauiBotIssueComments `
             -PRNumber $PRNumber `
             -IncludeAISummary `
@@ -916,44 +910,25 @@ if ($reviewEvent -eq 'COMMENT') {
             -IncludeMergeConflict `
             -IncludeTryFix `
             -IncludeReviewIncomplete `
-            -PreserveIds $preserveCommentIds `
-            -PreserveNodeIds $preserveCommentNodeIds `
-            -Reason "stale generated PR review artifact"
+            -Reason "superseded by a newer AI Summary"
     }
-    # Best-effort collapse of any stale AI-Summary REVIEWS left from before this change
-    # (no-op for the token in-pipeline, but harmless and correct with a full-perm token).
+    # Best-effort collapse of any stale AI-Summary REVIEWS (from before the issue-comment design).
     if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
-        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -IncludeAISummary -IncludeTryFix -Reason "stale generated PR review" -DismissFormalReviews
+        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -IncludeAISummary -IncludeTryFix -Reason "superseded by a newer AI Summary" -DismissFormalReviews
     }
 
     try {
         $bodyTmp = New-TemporaryFile
         @{ body = $commentBody } | ConvertTo-Json -Depth 6 | Set-Content $bodyTmp.FullName -Encoding UTF8
-        if ($reuseComment) {
-            Write-Host "Updating existing AI Summary issue comment $($reuseComment.id) in place (no stacking)..." -ForegroundColor Yellow
-            $cRaw = gh api --method PATCH "repos/dotnet/maui/issues/comments/$($reuseComment.id)" --input $bodyTmp.FullName 2>&1
-        } else {
-            Write-Host "Creating AI Summary issue comment..." -ForegroundColor Yellow
-            $cRaw = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $bodyTmp.FullName 2>&1
-        }
+        Write-Host "Posting a new AI Summary issue comment (previous ones collapsed as outdated)..." -ForegroundColor Yellow
+        $cRaw = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $bodyTmp.FullName 2>&1
         Remove-Item $bodyTmp.FullName -ErrorAction SilentlyContinue
         if ($LASTEXITCODE -eq 0) {
             $review = $cRaw | ConvertFrom-Json
             $postedEvent = 'COMMENT'
-            Write-Host "✅ AI Summary issue comment posted/updated in place (ID: $($review.id))" -ForegroundColor Green
-            # If we reused (PATCHed) an existing comment, it may have been minimized by an
-            # earlier stale-artifact sweep — a REST PATCH updates the body but does NOT un-hide
-            # a collapsed comment, so the fresh summary would stay invisible (observed on #35110:
-            # summary updated in place but the comment was still collapsed as 'outdated'). Un-hide
-            # it so the current summary is always shown.
-            if ($reuseComment -and (Get-Command Invoke-GitHubUnminimizeComment -ErrorAction SilentlyContinue)) {
-                $reuseNodeId = if ($review.node_id) { [string]$review.node_id } elseif ($reuseComment.node_id) { [string]$reuseComment.node_id } else { $null }
-                if ($reuseNodeId) {
-                    Invoke-GitHubUnminimizeComment -SubjectNodeId $reuseNodeId -Reason "reused AI Summary issue comment" | Out-Null
-                }
-            }
+            Write-Host "✅ New AI Summary issue comment posted (ID: $($review.id))" -ForegroundColor Green
         } else {
-            Write-Host "⚠️ Issue-comment post/update failed; falling back to a review. $cRaw" -ForegroundColor Yellow
+            Write-Host "⚠️ Issue-comment post failed; falling back to a review. $cRaw" -ForegroundColor Yellow
         }
     } catch {
         Write-Host "⚠️ Issue-comment path threw; falling back to a review: $_" -ForegroundColor Yellow
