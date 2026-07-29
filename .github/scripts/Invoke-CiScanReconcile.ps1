@@ -1115,6 +1115,21 @@ function Get-CiScanBuildsAfter {
         build the marker accounts for? It is the only call in the reconciler whose result
         is not derived from the issue body.
 
+        THE HORIZON IS A UNION, AND IT HAS TO BE. `AfterBuildId` alone is not a
+        "newer than" test: AzDO build IDs are assigned at QUEUE time, so a build queued
+        before the marker's newest build but finishing after it carries a LOWER id and
+        was silently dropped — which is precisely the recurrence the caller is looking
+        for. A build therefore qualifies when its id is above the id horizon OR its
+        `finishTime` is above the time horizon, and a caller that supplies both is
+        protected by whichever one is wider.
+
+        `MinFinishTime` is applied on both sides of the wire for the usual reason: it is
+        sent as `minTime` so the server can narrow the page, and re-checked here because
+        the request is a parameter and this is the response. A build at or below the id
+        horizon whose `finishTime` cannot be read is the one case that cannot be
+        classified either way, so the whole listing fails closed rather than dropping it
+        — dropping is how the queue-order hole behaved, and it is the unsafe direction.
+
         `Truncated` carries the same meaning as in `Get-CiScanOpenIssues`: "this listing
         is NOT proven exhaustive". `$top` is requested one HIGHER than the cap precisely
         so the two cases stay distinguishable — a page that comes back at or under the cap
@@ -1170,7 +1185,17 @@ function Get-CiScanBuildsAfter {
         if (-not [int]::TryParse([string](Get-CiScanJsonField -Object $b -Name 'id'), [ref]$id)) {
             return @{ Builds = @(); Ok = $false; Truncated = $false }
         }
-        if ($id -gt $AfterBuildId) { $newer += $id }
+        if ($id -gt $AfterBuildId) { $newer += $id; continue }
+
+        # Below the id horizon, so the only remaining question is when it FINISHED. A
+        # caller with no time horizon (the recurrence probe passes `AfterBuildId = 0`
+        # and never reaches here) keeps the id-only behaviour exactly.
+        if ($MinFinishTime -le [datetime]::MinValue) { continue }
+        $finished = ConvertFrom-CiScanTimestamp (Get-CiScanJsonField -Object $b -Name 'finishTime')
+        if ($null -eq $finished) {
+            return @{ Builds = @(); Ok = $false; Truncated = $false }
+        }
+        if ($finished -gt $MinFinishTime.ToUniversalTime()) { $newer += $id }
     }
 
     $newer = @($newer | Sort-Object -Unique -Descending)
@@ -1218,7 +1243,8 @@ function Get-CiScanBuildCoverage {
         [Parameter(Mandatory)][string]$Pipeline,
         [Parameter(Mandatory)][string[]]$Legs,
         [int[]]$ClaimedBuildIds = @(),
-        [int[]]$KnownBuildIds = @()
+        [int[]]$KnownBuildIds = @(),
+        [datetime]$MarkerUpdatedAt = [datetime]::MinValue
     )
 
     $result = @{ VerifiedAbsentBuilds = @(); Unverifiable = $false; Reason = '' }
@@ -1321,7 +1347,18 @@ function Get-CiScanBuildCoverage {
         are willing to probe — which is the grossly-stale scanner the reported failure
         describes. Both are `Unverifiable`, which the core converts to zero counted
         absences.
+
+        `MarkerUpdatedAt` supplies the TIME half of that horizon and is required, not
+        optional. Build IDs are assigned at queue time, so an id-only horizon drops a
+        build that was queued earlier but finished later — exactly the recurrence this
+        probe exists to catch. A marker with no readable write timestamp cannot supply
+        it, and probing with half a horizon would restore the hole, so that case is
+        `Unverifiable` like every other unknown here.
     #>
+    if ($MarkerUpdatedAt -le [datetime]::MinValue) {
+        $result.Unverifiable = $true; $result.Reason = 'no-marker-timestamp'; return $result
+    }
+
     $horizon = 0
     foreach ($k in (@($ClaimedBuildIds) + @($KnownBuildIds))) {
         if ($null -eq $k) { continue }
@@ -1334,7 +1371,7 @@ function Get-CiScanBuildCoverage {
     }
 
     $newer = Get-CiScanBuildsAfter -DefinitionId $definitionId -Branch $Config.Branch `
-        -AfterBuildId $horizon -Max $script:CiScanMaxNewerBuildsProbed
+        -AfterBuildId $horizon -MinFinishTime $MarkerUpdatedAt -Max $script:CiScanMaxNewerBuildsProbed
     if (-not $newer.Ok) {
         $result.Unverifiable = $true; $result.Reason = "newer-build-listing-failed:$horizon"; return $result
     }
@@ -1479,7 +1516,18 @@ function Test-CiScanRecurrenceSince {
         }
     }
 
-    if ($listing.Truncated) { $result.Reason = 'no-recurrence-in-probed-builds-listing-truncated' }
+    if ($listing.Truncated) {
+        # Not an observation, and not a clean bill of health either. The listing is
+        # finishTimeDescending, so an overflow drops the OLDEST builds since the closure
+        # — and drops them permanently, since the probe re-runs from the same `closed_at`
+        # horizon every time and never revisits them. Reporting that as "no recurrence"
+        # would be the same absence-of-evidence error the coverage path exists to avoid,
+        # so `Ok = $false` says "we could not check", which the summary renders as
+        # not-verified instead of as silence. A recurrence found INSIDE the truncated
+        # page is unaffected: the loop above returns before ever reaching here.
+        $result.Ok = $false
+        $result.Reason = 'no-recurrence-in-probed-builds-listing-truncated'
+    }
     return $result
 }
 
@@ -1863,10 +1911,17 @@ function Invoke-CiScanReconcile {
         $fp = Get-CiScanFingerprintMarker -Body $body -Config $config
         $stateResult = Get-CiScanStateMarker -Body $body -Config $config
         if ($null -ne $fp -and $stateResult.Status -eq 'ok') {
+            # The marker's write time is the TIME half of the coverage horizon. Stored as
+            # a normalised string (or `$null` when the marker predates the field), and a
+            # `[datetime]` parameter cannot bind `$null`, so the absent case is converted
+            # explicitly — coverage reads MinValue as "no horizon" and fails closed.
+            $markerUpdatedAt = ConvertFrom-CiScanTimestamp $stateResult.State.updated_at
+            if ($null -eq $markerUpdatedAt) { $markerUpdatedAt = [datetime]::MinValue }
             $coverage = Get-CiScanBuildCoverage -Config $config -Pipeline $fp.Pipeline `
                 -Legs (Get-CiScanAffectedLegs -Body $body) `
                 -ClaimedBuildIds @($stateResult.State.absent_builds) `
-                -KnownBuildIds @($stateResult.State.present_builds)
+                -KnownBuildIds @($stateResult.State.present_builds) `
+                -MarkerUpdatedAt $markerUpdatedAt
         }
 
         $verdict = Get-CiScanIssueVerdict -Issue $issue -Config $config -Now $now `
@@ -1900,7 +1955,12 @@ function Invoke-CiScanReconcile {
         would have reopened, which is the same contract the closure path offers.
     #>
     $reopenVerdicts = @()
-    $closedIndex = Get-CiScanClosedReconcilerIssues -Owner $Owner -Repo $Repo -Label $Label -Max $defaults.MaxCloses
+    # Bounded by `MaxReopenSurvey`, NOT by `MaxCloses`. This is a read bound and
+    # `MaxCloses` is a write budget; reusing the write budget capped the newest-first
+    # listing at five closures while `ReopenWindowDays` is sixty, so a handful of busy
+    # enforce runs pushed older still-eligible closures off the end of the page, where
+    # nothing would ever probe them for recurrence again.
+    $closedIndex = Get-CiScanClosedReconcilerIssues -Owner $Owner -Repo $Repo -Label $Label -Max $defaults.MaxReopenSurvey
     Write-Host "Fetched $(@($closedIndex.Issues).Count) auto-closed issue(s) for reopen review; truncated=$($closedIndex.Truncated)."
 
     foreach ($issue in @($closedIndex.Issues)) {
@@ -1924,7 +1984,15 @@ function Invoke-CiScanReconcile {
         $closedAt = ConvertFrom-CiScanTimestamp (Get-CiScanJsonField -Object $issue -Name 'closed_at')
         $recurrence = @{ Observed = $false; BuildId = 0; Ok = $true; Reason = 'not-probed' }
         $rpipeline = 'unknown'
-        if ($null -ne $closedAt -and ($now - $closedAt).TotalDays -le $defaults.ReopenWindowDays) {
+        # `auto-closed-stale` is never removed — the open path reads it as the
+        # `reopened-after-auto-close` needs-human gate — so it proves a PAST closure was
+        # ours, not this one. An issue auto-closed, reopened, then closed again by a
+        # person still carries it. `closed_by` is the only field that names the CURRENT
+        # closer, and it is a free payload read, so it is checked here for the same
+        # reason the window is: an issue that can never be reopened must not cost real
+        # AzDO calls. The verdict re-checks it independently.
+        $rclosedByUs = $script:CiScanAllowedCreators -ccontains (Get-CiScanClosureActor -Issue $issue)
+        if ($rclosedByUs -and $null -ne $closedAt -and ($now - $closedAt).TotalDays -le $defaults.ReopenWindowDays) {
             $rbody = [string](Get-CiScanJsonField -Object $issue -Name 'body')
             $rfp = Get-CiScanFingerprintMarker -Body $rbody -Config $config
             if ($null -ne $rfp) {
@@ -1953,7 +2021,24 @@ function Invoke-CiScanReconcile {
     $failReason = ''
     if (-not $prIndex.Complete) { $failClosed = $true; $failReason = 'pull-request-index-incomplete' }
     elseif ($script:Counters.ReadErrors -gt 0) { $failClosed = $true; $failReason = "read-errors:$($script:Counters.ReadErrors)" }
-    elseif ((Get-CiScanCount $issues) -eq 0) { $failClosed = $true; $failReason = 'no-issues-fetched' }
+    elseif ((Get-CiScanCount $issues) -eq 0 -and ($issueIndex.Truncated -or $MaxIssues -le 0)) {
+        # An empty backlog has two meanings and only one of them is a failure.
+        #
+        # This used to fail closed on emptiness alone, which conflated "the listing could
+        # not be read" with "every tracker is closed" — the HEALTHY steady state this
+        # tool is designed to reach. It cost nothing on the close path (there is nothing
+        # open to close), but it sits in front of the same gate as the REOPEN loop, so
+        # the false-close safety net switched itself off on exactly the day it became the
+        # only thing left running, and a wrongly-closed tracker stayed unreopenable for
+        # as long as the backlog stayed empty.
+        #
+        # `Truncated` is the real signal: it is set when a page read failed or the page
+        # ceiling was hit, i.e. when the backlog was genuinely not seen. `MaxIssues -le 0`
+        # is checked separately because a zero budget never enters the paging loop and so
+        # reports `Truncated = $false` while having surveyed nothing.
+        $failClosed = $true
+        $failReason = if ($MaxIssues -le 0) { 'no-issue-budget' } else { 'issue-listing-unproven' }
+    }
     elseif ($script:MutationsAllowed) {
         # Every label this reconciler owns must already exist before it is allowed to
         # mutate anything. None of the three exist in dotnet/maui today, so without this

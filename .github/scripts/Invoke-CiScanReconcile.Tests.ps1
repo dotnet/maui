@@ -35,12 +35,17 @@ BeforeAll {
             [int[]]$Absent = @(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
             [string]$ClockStart = '2026-06-01T00:00:00Z',
             [int[]]$Present = @(),
-            [string]$LastPresent
+            [string]$LastPresent,
+            # The scanner's last write. Real markers carry it, and the coverage probe now
+            # uses it as its finish-time horizon, so omitting it here would make the
+            # fixture describe a marker shape production no longer accepts.
+            [string]$UpdatedAt = '2026-07-01T00:00:00Z'
         )
         $o = [ordered]@{
             v = 1; label = 'ci-scan-net11'; branch = 'net11.0'; pipeline = 'maui-pr-uitests'
             absent_builds = @($Absent); present_builds = @($Present)
             clock_start_at = $ClockStart; candidate_notified = $false; runs = 12
+            updated_at = $UpdatedAt
         }
         if ($PSBoundParameters.ContainsKey('LastPresent')) { $o['last_present_at'] = $LastPresent }
         return ($o | ConvertTo-Json -Compress)
@@ -99,20 +104,26 @@ boom
     }
 
     <#
-        An issue this reconciler previously auto-closed. `closed_at` and the
-        `auto-closed-stale` label are what make it eligible for reopen review; both are
-        parameterized because every reopen guard turns on one of them.
+        An issue this reconciler previously auto-closed. `closed_at`, `closed_by` and the
+        `auto-closed-stale` label are what make it eligible for reopen review; all three
+        are parameterized because every reopen guard turns on one of them.
+
+        `closed_by` defaults to the automation account because that is what the real
+        listing returns for an issue this reconciler closed. A human login here is the
+        "reopened, then closed again by a person" shape, which the actor gate must refuse.
     #>
     function New-AutoClosedIssue {
         param(
             [int]$Number = 300,
             [string[]]$Labels = @('ci-scan-net11', 'auto-closed-stale'),
             [string]$ClosedAt = '2026-07-01T00:00:00Z',
-            [string]$Body = (New-CanonicalBody)
+            [string]$Body = (New-CanonicalBody),
+            [object]$ClosedBy = ([pscustomobject]@{ login = 'github-actions[bot]' })
         )
         $issue = New-ApiIssue -Number $Number -Labels $Labels -Body $Body
         $issue.state = 'closed'
         $issue | Add-Member -NotePropertyName closed_at -NotePropertyValue $ClosedAt -Force
+        $issue | Add-Member -NotePropertyName closed_by -NotePropertyValue $ClosedBy -Force
         return $issue
     }
 
@@ -125,10 +136,27 @@ Old markerless issue filed before canonical metadata existed.
 '@
     }
 
+    # The marker horizon every coverage test shares. Fixture builds are dated relative to
+    # it so "finished before the scanner last wrote" and "finished after" are expressible.
+    $script:FixtureMarkerUpdatedAt = [datetime]::Parse('2026-07-01T00:00:00Z').ToUniversalTime()
+
     # Coverage probe for the single canonical fixture leg, used by the leg-result tests.
     function Invoke-CoverageForFixtureLeg {
         return Get-CiScanBuildCoverage -Config (Get-CiScanTwinConfig -Label 'ci-scan-net11') `
-            -Pipeline 'maui-pr-uitests' -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42)
+            -Pipeline 'maui-pr-uitests' -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42) `
+            -MarkerUpdatedAt $script:FixtureMarkerUpdatedAt
+    }
+
+    <#
+        A build listing entry. `finishTime` is not decoration: the probe's horizon is a
+        union of the id bound and the marker's write time, so an entry without one cannot
+        be classified when its id sits at or below the horizon. Defaults to a day BEFORE
+        the marker horizon, which is the neutral position — such a build is admitted only
+        when its id already qualifies.
+    #>
+    function New-ListedBuild {
+        param([int]$Id, [string]$FinishTime = '2026-06-30T00:00:00Z')
+        return [pscustomobject]@{ id = $Id; finishTime = $FinishTime }
     }
 
     <#
@@ -393,14 +421,73 @@ Describe 'CI scan reconciler' {
             Should -Invoke Invoke-GhWrite -Times 0 -Exactly
         }
 
-        It 'suppresses everything when the issue listing returns nothing' {
+        <#
+            Zero issues has two meanings and only one of them is a failure. This pins the
+            failure half: `Truncated` is set when a page read failed, so the backlog was
+            never seen and nothing may act.
+        #>
+        It 'suppresses everything when the issue listing could not be read' {
             Initialize-ReconcileMocks -Issues @()
+            Mock Invoke-GhRead {
+                $joined = ($GhArgs -join ' ')
+                if ($joined -like 'label list*') { return , @($script:RepoLabels) }
+                if ($joined -like '*issues?state=open*') { return $null }   # the read fails
+                if ($joined -like '*issues?state=closed*') { return , @($script:ClosedIssues) }
+                if ($joined -like '*/comments*') { return , @() }
+                if ($joined -like 'pr list*') { return , @($script:PullRequests) }
+                return $null
+            }
 
             $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
                 -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
 
             $r.FailClosed | Should -BeTrue
-            $r.FailClosedReason | Should -BeExactly 'no-issues-fetched'
+            $r.FailClosedReason | Should -BeExactly 'issue-listing-unproven'
+            Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+        }
+
+        <#
+            The other half, and the reason the two had to be separated.
+
+            An exhausted listing that found nothing is the HEALTHY end state — every
+            tracker is closed. Treating it as `no-issues-fetched` cost nothing on the
+            close path (there is nothing open to close) but it sat in front of the same
+            `-not $failClosed` gate as the REOPEN loop, so the safety net switched itself
+            off on exactly the day it became the only thing left running. A wrongly-closed
+            tracker was then unreopenable for as long as the backlog stayed empty, which
+            is the steady state this tool is designed to reach.
+
+            Asserted through a real reopen rather than through `FailClosed` alone: the
+            flag is the mechanism, the reopen is the property.
+        #>
+        It 'still reopens when the listing is exhausted and legitimately empty' {
+            Initialize-ReconcileMocks -Issues @() -ClosedIssues @(
+                New-AutoClosedIssue -Number 300 `
+                    -ClosedAt ((Get-Date).ToUniversalTime().AddDays(-1).ToString('o')))
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            $r.FailClosed | Should -BeFalse
+            $r.Counters.Reopens | Should -Be 1
+            Should -Invoke Invoke-GhWrite -ParameterFilter {
+                $Kind -eq 'reopen' -and $IssueNumber -eq 300
+            } -Times 1 -Exactly
+        }
+
+        # A zero budget surveys nothing while reporting no truncation, so it would slip
+        # through the `Truncated` test above as a clean empty run.
+        It 'suppresses everything when the issue budget is non-positive' {
+            Initialize-ReconcileMocks -Issues @()
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 0 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            $r.FailClosed | Should -BeTrue
+            $r.FailClosedReason | Should -BeExactly 'no-issue-budget'
             Should -Invoke Invoke-GhWrite -Times 0 -Exactly
         }
 
@@ -412,6 +499,25 @@ Describe 'CI scan reconciler' {
                     -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report' } |
                 Should -Throw -ExpectedMessage '*Unknown ci-scan twin label*'
             Should -Invoke Invoke-GhWrite -Times 0 -Exactly
+        }
+    }
+
+    <#
+        The orchestrator has to actually hand the marker's timestamp to the coverage
+        probe. Without it the time half of the horizon is a parameter nobody supplies:
+        coverage takes its default MinValue, fails closed on every issue, and the run
+        goes quietly all-`needs-human` — green-looking and completely wrong.
+    #>
+    Describe 'Coverage is given the marker write time, not just the build horizon' {
+        It 'passes the parsed updated_at through to the coverage probe' {
+            Initialize-ReconcileMocks -Issues @(New-CandidateIssue -Number 100)
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            Should -Invoke Get-CiScanBuildCoverage -ParameterFilter {
+                $MarkerUpdatedAt -eq $script:FixtureMarkerUpdatedAt
+            } -Times 1 -Exactly
         }
     }
 
@@ -2494,7 +2600,8 @@ Describe 'AzDO coverage re-derivation' {
 
         $config = Get-CiScanTwinConfig -Label 'ci-scan-net11'
         $pipeline = @($config.Pipelines | Where-Object { $_.DefinitionId -eq 314 })[0].Name
-        $c = Get-CiScanBuildCoverage -Config $config -Pipeline $pipeline -Legs $legs -ClaimedBuildIds @(42)
+        $c = Get-CiScanBuildCoverage -Config $config -Pipeline $pipeline -Legs $legs -ClaimedBuildIds @(42) `
+            -MarkerUpdatedAt $script:FixtureMarkerUpdatedAt
 
         $c.Unverifiable | Should -BeFalse
         $c.VerifiedAbsentBuilds | Should -Contain 42
@@ -2686,7 +2793,7 @@ Describe 'AzDO coverage re-derivation' {
 
         # The reported failure: a recurrence in a build the marker never recorded.
         It 'fails closed when the affected leg went red in a build after the horizon' {
-            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @(New-ListedBuild -Id 77) }
             $script:NewerTimelines['77'] = @(
                 [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
 
@@ -2699,7 +2806,7 @@ Describe 'AzDO coverage re-derivation' {
         # against scanner-recorded observations, and silently adding unvetted ones would
         # lower the bar to close rather than raise confidence.
         It 'accepts a clean newer build without counting it as an absence' {
-            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @(New-ListedBuild -Id 77) }
 
             $c = Invoke-CoverageForFixtureLeg
             $c.Unverifiable | Should -BeFalse
@@ -2713,7 +2820,7 @@ Describe 'AzDO coverage re-derivation' {
             @{ Label = 'leg skipped'; Records = @([pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'skipped' }) }
             @{ Label = 'leg absent from timeline'; Records = @([pscustomobject]@{ name = 'Some Other Leg'; result = 'succeeded' }) }
         ) {
-            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @(New-ListedBuild -Id 77) }
             $script:NewerTimelines['77'] = $Records
 
             (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeFalse -Because $Label
@@ -2749,7 +2856,7 @@ Describe 'AzDO coverage re-derivation' {
         # An unreadable build id cannot be compared against the horizon; dropping it
         # would let the one build we could not parse be the one that recurred.
         It 'fails closed when a listed build has an unreadable id' {
-            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 'not-a-number' }) }
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 'not-a-number'; finishTime = '2026-06-30T00:00:00Z' }) }
             (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeTrue
         }
 
@@ -2763,7 +2870,7 @@ Describe 'AzDO coverage re-derivation' {
         It 'fails closed when more builds than the probe cap have run since the horizon' {
             $script:MockNewerBuilds = [pscustomobject]@{
                 value = @(1..($script:CiScanMaxNewerBuildsProbed + 1) | ForEach-Object {
-                        [pscustomobject]@{ id = 100 + $_ } })
+                        New-ListedBuild -Id (100 + $_) })
             }
             $c = Invoke-CoverageForFixtureLeg
             $c.Unverifiable | Should -BeTrue
@@ -2773,7 +2880,7 @@ Describe 'AzDO coverage re-derivation' {
         It 'still probes normally when the listing exactly fills the probe cap' {
             $script:MockNewerBuilds = [pscustomobject]@{
                 value = @(1..$script:CiScanMaxNewerBuildsProbed | ForEach-Object {
-                        [pscustomobject]@{ id = 100 + $_ } })
+                        New-ListedBuild -Id (100 + $_) })
             }
             (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeFalse
         }
@@ -2786,23 +2893,118 @@ Describe 'AzDO coverage re-derivation' {
             a recorded presence with a red leg; it must not be treated as news.
         #>
         It 'draws the horizon from recorded presences as well as absences' {
-            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 90 }) }
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @(New-ListedBuild -Id 90) }
             $script:NewerTimelines['90'] = @(
                 [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
 
             $config = Get-CiScanTwinConfig -Label 'ci-scan-net11'
             $withPresence = Get-CiScanBuildCoverage -Config $config -Pipeline 'maui-pr-uitests' `
-                -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42) -KnownBuildIds @(90)
+                -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42) -KnownBuildIds @(90) `
+                -MarkerUpdatedAt $script:FixtureMarkerUpdatedAt
             $withPresence.Unverifiable | Should -BeFalse
 
             # Same build, same red leg, but no longer inside the marker's horizon.
             $withoutPresence = Get-CiScanBuildCoverage -Config $config -Pipeline 'maui-pr-uitests' `
-                -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42)
+                -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42) `
+                -MarkerUpdatedAt $script:FixtureMarkerUpdatedAt
             $withoutPresence.Unverifiable | Should -BeTrue
         }
 
         <#
-            The overflow signal only exists if we ASK for one more than we are willing to
+            THE QUEUE-ORDER HOLE. Build IDs are assigned when a build is QUEUED, not when
+            it finishes, so "id above the horizon" and "ran after the marker was written"
+            are different questions. A long build queued before the marker's newest build
+            but finishing after it carries a LOWER id, and the id-only filter dropped it
+            silently — so the single build in which the affected leg went red could be
+            invisible to the probe whose entire job is to find it, and the tracker still
+            counted as closable.
+
+            Build 30 is that shape: below the horizon of 42, red leg, finished a day after
+            the marker's last write. Nothing else in this file can see it — every other
+            newer-build test uses an id ABOVE the horizon, where the old filter already
+            worked, which is why the hole survived a round of review.
+        #>
+        It 'vetoes a build below the id horizon that finished after the marker was written' {
+            $script:MockNewerBuilds = [pscustomobject]@{
+                value = @(New-ListedBuild -Id 30 -FinishTime '2026-07-02T00:00:00Z')
+            }
+            $script:NewerTimelines['30'] = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeTrue
+            $c.Reason | Should -BeExactly 'recurrence-after-horizon:30'
+        }
+
+        # The other side of the same bound: a low-id build that also FINISHED before the
+        # marker was written is genuinely old news, and admitting it would re-litigate
+        # history the scanner already weighed.
+        It 'ignores a build below the id horizon that also finished before the marker' {
+            $script:MockNewerBuilds = [pscustomobject]@{
+                value = @(New-ListedBuild -Id 30 -FinishTime '2026-06-29T00:00:00Z')
+            }
+            $script:NewerTimelines['30'] = @(
+                [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
+
+            (Invoke-CoverageForFixtureLeg).Unverifiable | Should -BeFalse
+        }
+
+        <#
+            The time horizon is sent to AzDO as well as applied here. Asserting the
+            request is the only way to see it: the mock answers whatever it is handed
+            regardless of `minTime`, so a probe that dropped the server-side narrowing
+            would still pass every behavioural test above while fetching a far wider page
+            and hitting the truncation cap on a healthy branch.
+        #>
+        It 'sends the marker write time to AzDO as the listing minTime' {
+            $script:RequestedUrls = [System.Collections.Generic.List[string]]::new()
+            Mock Invoke-HttpGetJson {
+                $script:RequestedUrls.Add($Url)
+                if ($Url -like '*/builds?definitions=*') { return [pscustomobject]@{ value = @() } }
+                if ($Url -like '*/timeline*') {
+                    return [pscustomobject]@{ records = @(
+                            [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' }) }
+                }
+                return [pscustomobject]@{
+                    definition   = [pscustomobject]@{ id = 313 }
+                    sourceBranch = 'refs/heads/net11.0'
+                    status       = 'completed'
+                    result       = 'failed'
+                }
+            }
+
+            $null = Invoke-CoverageForFixtureLeg
+            $listing = @($script:RequestedUrls | Where-Object { $_ -like '*/builds?definitions=*' })
+            $listing.Count | Should -Be 1
+            $listing[0] | Should -BeLike '*minTime=2026-07-01T00%3A00%3A00*'
+        }
+
+        <#
+            A marker with no readable `updated_at` cannot supply the time horizon at all.
+            Probing with half a window would put the queue-order hole straight back, so
+            the honest answer is that this marker cannot be verified — the same
+            fail-closed rule every other unknown in this function follows.
+        #>
+        It 'fails closed when the marker carries no write timestamp' {
+            $c = Get-CiScanBuildCoverage -Config (Get-CiScanTwinConfig -Label 'ci-scan-net11') `
+                -Pipeline 'maui-pr-uitests' -Legs @('Controls (v18.5) CollectionView') -ClaimedBuildIds @(42)
+
+            $c.Unverifiable | Should -BeTrue
+            $c.Reason | Should -BeExactly 'no-marker-timestamp'
+        }
+
+        # A build at or below the id horizon whose finish time cannot be read is the one
+        # entry that cannot be classified either way. Dropping it is how the hole above
+        # behaved, so the listing fails closed instead.
+        It 'fails closed when a build below the horizon has no readable finish time' {
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 30 }) }
+
+            $c = Invoke-CoverageForFixtureLeg
+            $c.Unverifiable | Should -BeTrue
+            $c.Reason | Should -BeLike 'newer-build-listing-failed:*'
+        }
+
+        <#
             probe: `Truncated` is `count -gt Max`, so a request capped at exactly `Max`
             can never return `Max + 1` and the grossly-stale marker would come back
             looking exhaustive. No behavioural test can see this — the mock returns
@@ -2835,7 +3037,7 @@ Describe 'AzDO coverage re-derivation' {
 
         # A newer build on a different branch says nothing about this twin.
         It 'ignores a newer build whose sourceBranch does not match the twin' {
-            $script:MockNewerBuilds = [pscustomobject]@{ value = @([pscustomobject]@{ id = 77 }) }
+            $script:MockNewerBuilds = [pscustomobject]@{ value = @(New-ListedBuild -Id 77) }
             $script:NewerTimelines['77'] = @(
                 [pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'failed' })
             Mock Invoke-HttpGetJson {
@@ -4579,6 +4781,77 @@ Describe 'Reopen safety net is wired to the orchestrator' {
             $rv.Reason | Should -BeExactly 'not-auto-closed-by-reconciler'
         }
 
+        <#
+            THE LABEL PROVES A PAST CLOSURE WAS OURS, NOT THIS ONE.
+
+            `auto-closed-stale` is never removed, and it cannot be: the open path reads it
+            as the `reopened-after-auto-close` needs-human gate, so stripping it on reopen
+            would hand the issue straight back to the automation. That permanence is the
+            problem here. An issue that was auto-closed, reopened, and then closed AGAIN
+            by a person still carries the label and still matches the server-side listing
+            — so the reopen path would have overridden a human's deliberate decision,
+            which is the one action it exists to never take.
+
+            `closed_by` is GitHub-controlled metadata and is already present in the
+            listing payload, so the actor is checked rather than inferred.
+        #>
+        It 'refuses to reopen a closure performed by a human' -ForEach @(
+            @{ Label = 'a human login'; ClosedBy = [pscustomobject]@{ login = 'rmarinho' } }
+            @{ Label = 'another bot'; ClosedBy = [pscustomobject]@{ login = 'dependabot[bot]' } }
+            @{ Label = 'an unattributable closure'; ClosedBy = $null }
+        ) {
+            Initialize-ReconcileMocks -ClosedIssues @(
+                New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose -ClosedBy $ClosedBy)
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $r = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'enforce'
+
+            $rv = @($r.ReopenVerdicts)[0]
+            $rv.Decision | Should -BeExactly 'leave-closed' -Because $Label
+            $rv.Reason | Should -BeExactly 'closure-not-automation-owned' -Because $Label
+            $r.Counters.Reopens | Should -Be 0 -Because $Label
+        }
+
+        # The actor is a cheap payload read, so it is applied BEFORE the AzDO probe for
+        # the same reason the reopen window is: an issue we could never reopen must not
+        # cost real API calls. Asserted as zero invocations, because a verdict-only
+        # assertion passes on an implementation that probes first and discards the answer.
+        It 'never probes AzDO for a closure this automation did not perform' {
+            Initialize-ReconcileMocks -ClosedIssues @(
+                New-AutoClosedIssue -Number 300 -ClosedAt $script:RecentClose `
+                    -ClosedBy ([pscustomobject]@{ login = 'rmarinho' }))
+            Mock Test-CiScanRecurrenceSince {
+                return @{ Observed = $true; BuildId = 991; Ok = $true; Reason = 'affected-leg-failed-in-build:991' }
+            }
+
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            Should -Invoke Test-CiScanRecurrenceSince -Times 0 -Exactly
+        }
+
+        <#
+            The reopen SURVEY is a read and the reopen CAP is a write budget, and they
+            were the same number. `MaxCloses` is 5, so the newest-first listing could only
+            ever see five closures — while `ReopenWindowDays` is 60. A handful of busy
+            enforce runs pushes older still-eligible closures off the end of a five-item
+            page, where nothing will ever probe them for recurrence again.
+        #>
+        It 'surveys more closures than it is allowed to reopen' {
+            $null = Invoke-CiScanReconcile -Label 'ci-scan-net11' -Owner 'dotnet' -Repo 'maui' `
+                -MaxIssues 50 -MaxPullRequests 50 -RequestedMode 'report'
+
+            $d = Get-CiScanDefaults
+            $d.MaxReopenSurvey | Should -BeGreaterThan $d.MaxCloses
+            Should -Invoke Invoke-GhRead -ParameterFilter {
+                $j = ($GhArgs -join ' ')
+                $j -like '*state=closed*' -and $j -like "*per_page=$($d.MaxReopenSurvey)*"
+            } -Times 1 -Exactly
+        }
+
         # An unverified issue must not render as a clean one; the summary has to say we
         # could not look, which is a different claim from "we looked and it is fine".
         It 'marks the evidence as not-verified when the probe could not run' {
@@ -4739,6 +5012,43 @@ Describe 'Recurrence probe reads AzDO, not the issue body' {
     It 'ignores a build that finished before the closure even if the listing returned it' {
         $script:ProbeFinish = '2026-06-15T00:00:00Z'
         (Invoke-ProbeForFixture).Observed | Should -BeFalse
+    }
+
+    <#
+        Truncation destroys the NEGATIVE result only. The listing is
+        finishTimeDescending, so an overflow drops the OLDEST builds since the closure,
+        and it drops them permanently — the probe re-runs from the same `closed_at`
+        horizon on every pass, so a recurrence that fell off the end is never revisited.
+        Returning `Ok = $true` there reported "no recurrence since closure" on a window
+        the probe had not actually finished reading, and the reopen path treats that as
+        a clean bill of health: the very absence-of-evidence error the coverage path
+        exists to prevent, one function over.
+
+        The positive result is unaffected and asserted alongside it, because flipping the
+        flag unconditionally would trade a false negative for a suppressed true positive.
+    #>
+    It 'refuses to certify a clean window it could not finish reading' {
+        $script:ProbeBuilds = [pscustomobject]@{
+            value = @(1..($script:CiScanMaxNewerBuildsProbed + 1) | ForEach-Object {
+                    [pscustomobject]@{ id = 900 + $_ } })
+        }
+        $script:ProbeLeg = @([pscustomobject]@{ name = 'Controls (v18.5) CollectionView'; result = 'succeeded' })
+
+        $p = Invoke-ProbeForFixture
+        $p.Observed | Should -BeFalse
+        $p.Ok | Should -BeFalse
+        $p.Reason | Should -BeExactly 'no-recurrence-in-probed-builds-listing-truncated'
+    }
+
+    It 'still trusts a recurrence found inside a truncated window' {
+        $script:ProbeBuilds = [pscustomobject]@{
+            value = @(1..($script:CiScanMaxNewerBuildsProbed + 1) | ForEach-Object {
+                    [pscustomobject]@{ id = 900 + $_ } })
+        }
+
+        $p = Invoke-ProbeForFixture
+        $p.Observed | Should -BeTrue
+        $p.Ok | Should -BeTrue
     }
 
     # Failing closed here means Observed = $false: an unknown must not be allowed to

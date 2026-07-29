@@ -1364,21 +1364,86 @@ Describe 'Decision vocabulary matches its documented meaning' {
 }
 
 Describe 'Get-CiScanReopenVerdict' {
+    BeforeAll {
+        function New-ClosedTestIssue {
+            param(
+                [string[]]$Labels = @('auto-closed-stale'),
+                [int]$ClosedDaysAgo = 1,
+                [object]$ClosedBy = ([pscustomobject]@{ login = 'github-actions[bot]' })
+            )
+            return [pscustomobject]@{
+                number    = 1
+                labels    = @($Labels | ForEach-Object { [pscustomobject]@{ name = $_ } })
+                closed_at = $script:Now.AddDays(-$ClosedDaysAgo).ToString('o')
+                closed_by = $ClosedBy
+            }
+        }
+    }
+
     It 'refuses to reopen an issue this automation did not close' {
-        $i = [pscustomobject]@{ number = 1; labels = @([pscustomobject]@{ name = 'ci-scan-net11' }); closed_at = $script:Now.AddDays(-1).ToString('o') }
+        $i = New-ClosedTestIssue -Labels @('ci-scan-net11')
         (Get-CiScanReopenVerdict -Issue $i -Config $script:Net11 -Now $script:Now -RecurrenceObserved).Decision | Should -Be 'leave-closed'
     }
     It 'refuses to reopen without recurrence evidence' {
-        $i = [pscustomobject]@{ number = 1; labels = @([pscustomobject]@{ name = 'auto-closed-stale' }); closed_at = $script:Now.AddDays(-1).ToString('o') }
-        (Get-CiScanReopenVerdict -Issue $i -Config $script:Net11 -Now $script:Now).Decision | Should -Be 'leave-closed'
+        (Get-CiScanReopenVerdict -Issue (New-ClosedTestIssue) -Config $script:Net11 -Now $script:Now).Decision | Should -Be 'leave-closed'
     }
     It 'refuses to reopen outside the window' {
-        $i = [pscustomobject]@{ number = 1; labels = @([pscustomobject]@{ name = 'auto-closed-stale' }); closed_at = $script:Now.AddDays(-400).ToString('o') }
+        $i = New-ClosedTestIssue -ClosedDaysAgo 400
         (Get-CiScanReopenVerdict -Issue $i -Config $script:Net11 -Now $script:Now -RecurrenceObserved).Decision | Should -Be 'leave-closed'
     }
-    It 'reopens only when all three conditions hold' {
-        $i = [pscustomobject]@{ number = 1; labels = @([pscustomobject]@{ name = 'auto-closed-stale' }); closed_at = $script:Now.AddDays(-2).ToString('o') }
-        (Get-CiScanReopenVerdict -Issue $i -Config $script:Net11 -Now $script:Now -RecurrenceObserved).Decision | Should -Be 'reopen'
+
+    <#
+        THE LABEL IS PERMANENT, SO IT CANNOT IDENTIFY THE MOST RECENT CLOSER.
+
+        `auto-closed-stale` is never removed — the open path reads it as the
+        `reopened-after-auto-close` needs-human gate, so stripping it on reopen would
+        hand the issue straight back to the automation. An issue that was auto-closed,
+        reopened, and then closed AGAIN by a maintainer therefore still carries the
+        label, still sits inside the window, and would still be reopened over that
+        person's decision. `closed_by` is GitHub-controlled and reflects the LAST
+        closure, so it is the only field that answers "did we close it this time".
+    #>
+    It 'refuses to reopen a closure performed by someone other than this automation' -ForEach @(
+        @{ Label = 'a maintainer'; ClosedBy = [pscustomobject]@{ login = 'rmarinho' } }
+        @{ Label = 'an unrelated bot'; ClosedBy = [pscustomobject]@{ login = 'dependabot[bot]' } }
+        @{ Label = 'a case-shifted impostor'; ClosedBy = [pscustomobject]@{ login = 'GitHub-Actions[bot]' } }
+        @{ Label = 'a missing actor'; ClosedBy = $null }
+        @{ Label = 'an actor with no login'; ClosedBy = [pscustomobject]@{ id = 7 } }
+    ) {
+        $v = Get-CiScanReopenVerdict -Issue (New-ClosedTestIssue -ClosedBy $ClosedBy) `
+            -Config $script:Net11 -Now $script:Now -RecurrenceObserved
+        $v.Decision | Should -Be 'leave-closed' -Because $Label
+        $v.Reason | Should -BeExactly 'closure-not-automation-owned' -Because $Label
+    }
+
+    # The refusal must not echo the login: the reason string is rendered into a job
+    # summary, and a display name is attacker-influenced text.
+    It 'does not echo the closing login in the refusal' {
+        $v = Get-CiScanReopenVerdict -Issue (New-ClosedTestIssue -ClosedBy ([pscustomobject]@{ login = 'rmarinho' })) `
+            -Config $script:Net11 -Now $script:Now -RecurrenceObserved
+        $v.Reason | Should -Not -Match 'rmarinho'
+    }
+
+    It 'reopens only when every condition holds' {
+        $v = Get-CiScanReopenVerdict -Issue (New-ClosedTestIssue) -Config $script:Net11 `
+            -Now $script:Now -RecurrenceObserved
+        $v.Decision | Should -Be 'reopen'
+        $v.Reason | Should -BeExactly 'affected-leg-recurred-within-window'
+    }
+
+    <#
+        The reason names the evidence the caller actually gathers.
+        `Test-CiScanRecurrenceSince` classifies TIMELINE LEG RESULTS since the closure —
+        it does not recompute the issue's fingerprint, so it cannot prove the identical
+        signature returned. Naming it `fingerprint-recurred` overstated the probe in the
+        one string a human reads before deciding whether to trust the reopen.
+    #>
+    It 'names the evidence the probe can actually produce' {
+        $doc = (Get-Command Get-CiScanReopenVerdict).Definition
+        # The requirement list must describe the leg-level probe, not fingerprint equality.
+        $doc | Should -Match 'went red after the closure'
+        $doc | Should -Match 'DELIBERATELY WEAKER THAN THE FINGERPRINT'
+        $doc | Should -Match 'closed_by'
     }
 }
 

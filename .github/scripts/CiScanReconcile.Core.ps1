@@ -110,6 +110,15 @@ $script:CiScanDefaults = @{
     StateMarkerMaxBytes      = 2048
     # An auto-closed issue is re-openable only inside this window.
     ReopenWindowDays         = 60
+    # How many auto-closed issues the reopen SURVEY reads. Deliberately its own key
+    # rather than a reuse of `MaxCloses`: that is a blast-radius cap on WRITES, and
+    # borrowing it as the survey bound made the read window as narrow as the write
+    # budget. With a 60-day reopen window and 5 closures allowed per run, a handful of
+    # busy runs is enough to push older still-eligible closures past a 5-item
+    # newest-first listing, where they can never be probed for recurrence again. The
+    # survey is read-only, so it is bounded for API cost; the write cap stays at
+    # `MaxCloses` and is applied separately in the apply loop.
+    MaxReopenSurvey          = 50
     # AzDO build results that represent a completed observation opportunity.
     AcceptedBuildResults     = @('succeeded', 'failed', 'partiallySucceeded')
     # Timeline record results that mean the leg did NOT actually run.
@@ -1557,6 +1566,30 @@ function Get-CiScanIssueLabelNames {
     return @($names)
 }
 
+function Get-CiScanClosureActor {
+    <#
+    .SYNOPSIS
+        Returns the login that closed an issue, or '' when it cannot be attributed.
+    .DESCRIPTION
+        Read through the total accessors for the same reason every other payload field
+        is: under `Set-StrictMode -Version Latest` a missing `closed_by` is a TERMINATING
+        error, and the reopen survey's loop has no try/catch. An absent, null or
+        unreadable actor comes back as '', which no allow-listed login can equal, so the
+        unknown fails closed at the caller rather than being defaulted into ownership.
+
+        Shared by the verdict (which decides) and the orchestrator (which uses it to skip
+        the AzDO probe for a closure it could never act on). One reader, so the two cannot
+        disagree about who closed an issue.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)]$Issue)
+
+    if (-not (Test-CiScanHasField -Object $Issue -Name 'closed_by')) { return '' }
+    $closedBy = Get-CiScanFieldValue -Object $Issue -Name 'closed_by'
+    if ($null -eq $closedBy) { return '' }
+    return [string](Get-CiScanFieldValue -Object $closedBy -Name 'login')
+}
+
 function Get-CiScanReopenVerdict {
     <#
     .SYNOPSIS
@@ -1565,8 +1598,21 @@ function Get-CiScanReopenVerdict {
         Reopen is the false-close safety net. It requires ALL of:
           * the issue carries the 'auto-closed-stale' label (so we only ever reopen what
             this automation itself closed),
+          * the CURRENT closure was performed by an allow-listed automation account (the
+            label proves a PAST closure was ours; it cannot prove this one was),
           * closure was within ReopenWindowDays,
-          * the caller supplies fresh evidence that the exact fingerprint recurred.
+          * the caller supplies fresh evidence that an affected leg of the issue's
+            pipeline went red after the closure.
+
+        THAT LAST CLAUSE IS DELIBERATELY WEAKER THAN THE FINGERPRINT. It used to read
+        "the exact fingerprint recurred", which overstated what any caller can supply:
+        `Test-CiScanRecurrenceSince` classifies a build's TIMELINE, so it can prove the
+        affected leg ran and failed, and it cannot compare the marker's `Signature` or
+        `Error` — that lives in the log, which this reconciler never reads. The gap errs
+        toward reopening (a different failure in the same leg counts), which is the
+        conservative direction for a safety net and is caught by the open path's
+        `reopened-after-auto-close` needs-human gate. Describing it as fingerprint
+        equality would have invited a future caller to skip a check that was never there.
 
         `RecurrenceObserved` must come from trusted validated scanner output, never from
         free text. As with closure, this function never performs the mutation.
@@ -1590,6 +1636,31 @@ function Get-CiScanReopenVerdict {
         $verdict.Reason = 'not-auto-closed-by-reconciler'
         return $verdict
     }
+
+    <#
+        The label alone does not prove the CURRENT closure was ours, and the gap is
+        reachable rather than theoretical. `auto-closed-stale` is never removed — it
+        cannot be, because the open path reads it as the `reopened-after-auto-close`
+        needs-human gate and stripping it would hand a previously-reopened issue back to
+        the automation. So an issue that was auto-closed, reopened, and then closed AGAIN
+        BY A HUMAN still carries the label, still matches the server-side listing filter,
+        and would be reopened against that human's deliberate decision. That is the one
+        thing this path must never do.
+
+        `closed_by` is GitHub-controlled timeline metadata attached to the issue payload,
+        so the actor is checked instead of inferred: the closure is ours only if it was
+        performed by an account in the same allow-list that gates issue AUTHORSHIP. An
+        absent, null or unreadable `closed_by` is an unknown, and an unknown here must
+        block the mutation exactly as it does everywhere else in this reconciler — a
+        reopen is a write, and no write is worth guessing an actor for.
+    #>
+    if ($script:CiScanAllowedCreators -cnotcontains (Get-CiScanClosureActor -Issue $Issue)) {
+        # The login is NOT echoed. It is attacker-influenceable text and this reason is
+        # rendered into the run summary; the fixed string says everything a reader needs.
+        $verdict.Reason = 'closure-not-automation-owned'
+        return $verdict
+    }
+
     if (-not $RecurrenceObserved) { return $verdict }
 
     $closedAt = ConvertFrom-CiScanTimestamp (Get-CiScanFieldValue -Object $Issue -Name 'closed_at')
@@ -1603,7 +1674,7 @@ function Get-CiScanReopenVerdict {
     }
 
     $verdict.Decision = 'reopen'
-    $verdict.Reason = 'fingerprint-recurred-within-window'
+    $verdict.Reason = 'affected-leg-recurred-within-window'
     return $verdict
 }
 
