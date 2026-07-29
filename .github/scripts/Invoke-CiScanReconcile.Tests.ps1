@@ -1596,6 +1596,54 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:ghCalls | Should -BeNullOrEmpty
         }
 
+        <#
+            The repo checks above resolve --repo by its FIRST occurrence. `gh` resolves by
+            its LAST, and takes `--flag=value` as well as `--flag value`. Measured
+            read-only against live repositories, whose newest issues were 36877 in
+            dotnet/maui and 131512 in dotnet/runtime:
+
+                --repo dotnet/maui  --repo  dotnet/runtime  -> 131512
+                --repo dotnet/maui  --repo=dotnet/runtime   -> 131512
+                --repo=dotnet/runtime  --repo dotnet/maui   ->  36877
+
+            So a trailing --repo was read by nothing and honoured by gh. Both shapes
+            EXECUTED against the repo binding: it saw 'dotnet/maui' at the first position
+            and approved, while the write went wherever the last value pointed.
+
+            A validator that resolves by first occurrence is unsound against a consumer
+            that resolves by last, and the unsoundness is invisible from either side --
+            each is a self-consistent reading of the same array. So the fix refuses the
+            ambiguity instead of mimicking gh's precedence, which would re-diverge the day
+            gh changes it.
+
+            The equals form alone already failed closed, and that case is kept below as the
+            control that separates "rejects the form" from "rejects the duplication".
+        #>
+        It 'refuses <name>' -ForEach @(
+            @{ name = 'a second --repo, which gh would honour over the validated one'
+                CmdArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--repo', 'attacker/evil', '--add-label', 'ci-scan-active')
+                expected = '*exactly one --repo*' }
+            @{ name = 'a trailing --repo= that the first-occurrence read cannot see'
+                CmdArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--repo=attacker/evil', '--add-label', 'ci-scan-active')
+                expected = '*exactly one --repo*' }
+            @{ name = 'a duplicated kind flag, which gh accumulates rather than replaces'
+                CmdArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-active', '--add-label', 'area-controls')
+                expected = '*exactly one --add-label*' }
+            @{ name = 'a --repo= form on its own, which never reaches the duplication check'
+                CmdArgs = @('issue', 'edit', '5', '--repo=dotnet/maui', '--add-label', 'ci-scan-active')
+                expected = '*must carry --repo dotnet/maui*' }
+        ) {
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs $CmdArgs } |
+                Should -Throw -ExpectedMessage $expected
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'still runs the single-occurrence shape, so the rule is not just refusing repeats' {
+            Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @(
+                'issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-active')
+            @($global:ghCalls).Count | Should -Be 1 -Because 'the honest single-flag call must still reach gh'
+        }
+
         It 'refuses a repository that differs from the run only by case' {
             # GitHub routes repository names case-insensitively, so this one does reach the
             # intended repo and a relaxed `-ne` would accept it. It is refused anyway, and

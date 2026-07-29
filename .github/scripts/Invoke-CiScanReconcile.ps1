@@ -426,6 +426,33 @@ function Invoke-GhWrite {
         throw "BUG: '$Kind' validated #$IssueNumber in $expectedRepo but the command targets '$($GhArgs[$repoIndex + 1])'."
     }
 
+    <#
+        The checks above resolve a flag by its FIRST occurrence. `gh` resolves by its
+        LAST, and accepts `--flag=value` as well as `--flag value`. Measured read-only
+        against live repositories -- newest issue was 36877 in dotnet/maui, 131512 in
+        dotnet/runtime:
+
+            --repo dotnet/maui  --repo  dotnet/runtime  -> 131512
+            --repo dotnet/maui  --repo=dotnet/runtime   -> 131512
+            --repo=dotnet/runtime  --repo dotnet/maui   ->  36877
+
+        So a second --repo was validated by nothing and honoured by gh. Both forms
+        executed against the repo-binding check: it read 'dotnet/maui' at index 4 and
+        approved, while the write landed wherever the trailing value pointed.
+
+        Ambiguity is refused rather than resolved. Teaching this to mimic gh's precedence
+        would re-diverge the day gh changes it -- and the divergence would again be
+        invisible, because the validator and the consumer would still be two independent
+        readings of the same array. No honest call site emits a flag twice.
+    #>
+    foreach ($flag in @('--repo', $shape.Flag)) {
+        if (-not $flag) { continue }
+        $occurrences = @($GhArgs | Where-Object { $_ -ceq $flag -or $_ -clike "$flag=*" })
+        if ($occurrences.Count -ne 1) {
+            throw "BUG: '$Kind' must carry exactly one $flag on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
+        }
+    }
+
     $script:Counters.Writes++
     $out = & gh @GhArgs 2>&1
     if ($LASTEXITCODE -ne 0) {
