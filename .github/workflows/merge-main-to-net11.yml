@@ -32,6 +32,9 @@ concurrency:
 jobs:
   CheckForOpenMergePullRequest:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:

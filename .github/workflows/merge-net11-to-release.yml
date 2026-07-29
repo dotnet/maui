@@ -32,7 +32,64 @@ jobs:
       actions: write
       contents: read
     steps:
+      - name: Check that net11.0 has the immutable-snapshot gate
+        id: current
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          main_workflow="$RUNNER_TEMP/merge-net11-to-release-main.yml"
+          net11_workflow="$RUNNER_TEMP/merge-net11-to-release-net11.yml"
+
+          if ! gh api \
+            -H "Accept: application/vnd.github.raw+json" \
+            "repos/$REPOSITORY/contents/.github/workflows/merge-net11-to-release.yml?ref=main" \
+            > "$main_workflow"; then
+            echo "::error::Failed to read the workflow on main."
+            exit 1
+          fi
+
+          if ! gh api \
+            -H "Accept: application/vnd.github.raw+json" \
+            "repos/$REPOSITORY/contents/.github/workflows/merge-net11-to-release.yml?ref=net11.0" \
+            > "$net11_workflow"; then
+            echo "::error::Failed to read the workflow on net11.0."
+            exit 1
+          fi
+
+          if ruby - "$main_workflow" "$net11_workflow" <<'RUBY'
+          require 'yaml'
+
+          main = YAML.safe_load_file(ARGV[0], aliases: true)
+          net11 = YAML.safe_load_file(ARGV[1], aliases: true)
+
+          safety_sections = [
+            ['concurrency'],
+            ['jobs', 'CheckForOpenMergePullRequest'],
+            ['jobs', 'Merge']
+          ]
+
+          def section(workflow, path)
+            path.reduce(workflow) { |value, key| value&.fetch(key, nil) }
+          end
+
+          exit(safety_sections.all? { |path| section(main, path) == section(net11, path) } ? 0 : 2)
+          RUBY
+          then
+            echo "should_dispatch=true" >> "$GITHUB_OUTPUT"
+          else
+            validation_exit="$?"
+            if [[ "$validation_exit" -eq 2 ]]; then
+              echo "::notice::net11.0 does not have the current immutable-snapshot gate yet; skipping the scheduled dispatch."
+              echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::Failed to validate the workflow on net11.0."
+              exit 1
+            fi
+          fi
+
       - name: Dispatch the scheduled run from net11.0
+        if: steps.current.outputs.should_dispatch == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
@@ -41,6 +98,9 @@ jobs:
   CheckForOpenMergePullRequest:
     if: github.event_name != 'schedule' && github.ref_name == 'net11.0'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
@@ -102,4 +162,5 @@ jobs:
     if: github.ref_name == 'net11.0' && needs.CheckForOpenMergePullRequest.outputs.should_run == 'true'
     uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@main
     with:
+      configuration_file_branch: 'net11.0'
       configuration_file_path: 'github-merge-flow-release-11.jsonc'
