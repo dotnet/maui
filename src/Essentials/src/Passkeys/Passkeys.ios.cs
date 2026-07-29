@@ -39,6 +39,8 @@ partial class PasskeysImplementation : IPasskeys
 			NSData.FromArray(challenge),
 			userName,
 			NSData.FromArray(userId));
+		// Apple's native-app registration request has no excludeCredentials property; Apple only
+		// exposes that option on the separate web-browser registration request protocol.
 
 		var userVerification = MapUserVerification(creation.AuthenticatorSelection?.UserVerification ?? creation.UserVerification);
 		if (userVerification is not null)
