@@ -789,6 +789,9 @@ namespace Microsoft.Maui.Controls
 			if (Handler is NavigationViewHandler && !_setForMaui)
 			{
 				UseHandlerNavigation();
+				// The legacy NavigationImpl may have set CurrentNavigationTask (e.g. PushAsync
+				// in a subclass constructor). Clear it so SendHandlerUpdateAsync can take over.
+				CurrentNavigationTask = null;
 			}
 #endif
 

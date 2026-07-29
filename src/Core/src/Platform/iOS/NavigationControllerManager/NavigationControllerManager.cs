@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Platform
             var completionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _pendingViewControllers = null;
             _completionTasks[viewController] = completionSource;
+            (_navigationController as MauiNavigationController)?.UpdateCurrentTopVC(viewController);
             _navigationController.PushViewController(viewController, animated);
             return completionSource;
         }
@@ -198,11 +199,28 @@ namespace Microsoft.Maui.Platform
         sealed class MauiNavigationController : UINavigationController
         {
             readonly WeakReference<NavigationControllerManager> _managerRef;
+            WeakReference<UIViewController>? _currentTopVC;
 
             public MauiNavigationController(Type navigationBarType, NavigationControllerManager manager)
                 : base(navigationBarType, null!)
             {
                 _managerRef = new WeakReference<NavigationControllerManager>(manager);
+            }
+
+            internal void UpdateCurrentTopVC(UIViewController vc)
+            {
+                _currentTopVC = new WeakReference<UIViewController>(vc);
+            }
+
+            // UINavigationController's default does NOT delegate status bar queries to topViewController.
+            // We must override to route through the ParentingVC which reads from the child page's VC.
+            public override UIViewController ChildViewControllerForStatusBarHidden()
+            {
+                if (_currentTopVC?.TryGetTarget(out var vc) == true)
+                {
+                    return vc;
+                }
+                return base.ChildViewControllerForStatusBarHidden()!;
             }
 
             [Export("navigationBar:shouldPopItem:")]
@@ -215,22 +233,6 @@ namespace Microsoft.Maui.Platform
 
                 return true;
             }
-
-            public override UIViewController ChildViewControllerForStatusBarHidden()
-            {
-                // Delegate status bar queries to the child page's VC (PageViewController),
-                // matching the renderer's pattern. Without this, UIKit reads from the
-                // ParentingVC which doesn't have the page-specific status bar preferences.
-                if (TopViewController?.ChildViewControllers is { Length: > 0 } children)
-                {
-                    return children[0];
-                }
-
-                return TopViewController ?? this;
-            }
-
-            public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
-                ChildViewControllerForStatusBarHidden();
 
             public override void ViewDidAppear(bool animated)
             {
@@ -374,6 +376,9 @@ namespace Microsoft.Maui.Platform
                 {
                     manager._firstLayoutCompleted = true;
                 }
+
+                // Update cached top VC for status bar delegation after pop.
+                (navigationController as MauiNavigationController)?.UpdateCurrentTopVC(viewController);
 
                 // Notify consumer
                 manager._delegate.OnNavigationComplete(navigationController, viewController);

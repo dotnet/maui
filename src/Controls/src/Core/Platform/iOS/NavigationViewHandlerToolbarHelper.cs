@@ -113,6 +113,27 @@ namespace Microsoft.Maui.Controls
         public override UIViewController ChildViewControllerForStatusBarHidden() =>
             (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
 
+        public override bool PrefersStatusBarHidden()
+        {
+            if ((Child?.Handler as IPlatformViewHandler)?.ViewController is UIViewController childVC)
+            {
+                return childVC.PrefersStatusBarHidden();
+            }
+            return base.PrefersStatusBarHidden();
+        }
+
+        public override bool PrefersHomeIndicatorAutoHidden
+        {
+            get
+            {
+                if ((Child?.Handler as IPlatformViewHandler)?.ViewController is UIViewController childVC)
+                {
+                    return childVC.PrefersHomeIndicatorAutoHidden;
+                }
+                return base.PrefersHomeIndicatorAutoHidden;
+            }
+        }
+
         public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation =>
             (Child?.Handler as IPlatformViewHandler)?.ViewController?.PreferredStatusBarUpdateAnimation
             ?? base.PreferredStatusBarUpdateAnimation;
