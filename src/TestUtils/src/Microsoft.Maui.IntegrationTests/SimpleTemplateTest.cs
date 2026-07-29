@@ -18,6 +18,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	//Debug not ready yet
 	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "--with-avalonia", "")]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--with-avalonia", "TrimMode=partial")]
 	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
@@ -376,9 +378,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 		AssertContains($"Condition=\"'$(TargetFramework)' == '{DotNetCurrent}'\"", csproj);
 
 		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
-		AssertContains("CreateMauiApp(bool useSingleAppLifetime = false)", mauiProgram);
+		AssertContains("CreateMauiApp(bool useSingleViewLifetime = false)", mauiProgram);
 		// Desktop renders with the Avalonia app lifetime; the platform heads embed Avalonia.
-		AssertContains(".UseAvaloniaApp(useSingleAppLifetime)", mauiProgram);
+		AssertContains(".UseAvaloniaApp(useSingleViewLifetime)", mauiProgram);
 		AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
 	}
 
