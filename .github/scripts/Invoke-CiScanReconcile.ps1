@@ -453,6 +453,53 @@ function Invoke-GhWrite {
         }
     }
 
+    <#
+        Every check above reads ONE position for the target: `$GhArgs[2]`. `gh issue edit`
+        reads ALL of them -- its grammar is `{<numbers> | <urls>}`, plural, while `close`,
+        `reopen` and `comment` are singular. Measured read-only, arity errors only:
+
+            gh issue edit    999999998 999999999  -> "field to edit flag required"  (accepted)
+            gh issue close   999999998 999999999  -> "accepts 1 arg(s), received 2"
+            gh issue comment 999999998 999999999  -> "accepts 1 arg(s), received 2"
+
+        So cobra's arity check has been doing this validation for three of the four verbs,
+        for free and invisibly -- and `edit` is the verb behind `label`, `unlabel` AND `body`.
+        Positionals are also collected interspersed among flags and after a `--` terminator,
+        so a second target can sit anywhere in the array:
+
+            gh issue close 999999998 --repo dotnet/maui    999999999 -> received 2
+            gh issue close 999999998 --repo dotnet/maui -- 999999999 -> received 2
+
+        All six shapes executed against the checks above: verb correct, $GhArgs[2] correct,
+        exactly one --repo, exactly one kind flag, no sibling flags. Nothing looked at the
+        extra token.
+
+        The worst shape is a URL, because a `gh` issue URL CARRIES ITS OWN REPOSITORY. It
+        does not have to beat the --repo binding -- it goes around it, never touching --repo
+        at all. That is why this is not an extension of the --repo work: it bypasses it.
+
+        Same class as the repeated-flag defect one level down -- there, the validator read
+        the first occurrence and the consumer read the last; here the validator reads one
+        position and the consumer reads every one. A positional has no name, so there is no
+        occurrence to count, and the shape must be constrained instead.
+
+        Constrained rather than enumerated: the array must be `issue <verb> <number>`
+        followed only by `--flag value` pairs or `--flag=value` singles. No bare tokens, no
+        `--`. Enumerating the attacks would leave the next spelling open; this leaves only
+        the shape every honest call site already emits. A future boolean flag makes this
+        refuse loudly rather than mispair silently, which is the same fail-closed trade as
+        the case-sensitive --repo comparison.
+    #>
+    for ($i = 3; $i -lt $GhArgs.Count; $i++) {
+        $token = [string]$GhArgs[$i]
+        if ($token -eq '--') {
+            throw "BUG: '$Kind' must not carry a '--' terminator on issue #$IssueNumber; gh still collects positional targets after it. Got '$($GhArgs -join ' ')'."
+        }
+        if ($token -clike '--*=*') { continue }   # --flag=value consumes nothing
+        if ($token -clike '--*') { $i++; continue }   # --flag consumes exactly its value
+        throw "BUG: '$Kind' on issue #$IssueNumber carries the bare argument '$token'; gh would read it as a SECOND target. Got '$($GhArgs -join ' ')'."
+    }
+
     $script:Counters.Writes++
     $out = & gh @GhArgs 2>&1
     if ($LASTEXITCODE -ne 0) {

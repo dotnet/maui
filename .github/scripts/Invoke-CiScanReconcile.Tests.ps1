@@ -1559,6 +1559,65 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:ghCalls | Should -BeNullOrEmpty
         }
 
+        <#
+            The check above reads ONE position. `gh issue edit` reads ALL of them: its
+            grammar is `{<numbers> | <urls>}`, plural, while close/reopen/comment are
+            singular and cobra's arity check rejects a second arg for free. `edit` is the
+            verb behind label, unlabel AND body, so it is the one that needs this.
+
+            Measured read-only against gh 2.60.1, arity errors only, nothing writable:
+
+                gh issue edit    999999998 999999999 -> "field to edit flag required"
+                gh issue close   999999998 999999999 -> "accepts 1 arg(s), received 2"
+                gh issue close 999999998 --repo R    999999999 -> received 2
+                gh issue close 999999998 --repo R -- 999999999 -> received 2
+
+            so a second target may sit anywhere, including after a `--` terminator. All of
+            the shapes below EXECUTED before the fix, with every other check satisfied.
+        #>
+        It 'refuses a second positional target placed <Placement>' -ForEach @(
+            @{ Placement = 'adjacent to the first';  CmdArgs = @('issue', 'edit', '5', '7', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-stale-candidate') }
+            @{ Placement = 'between the flags';      CmdArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '7', '--add-label', 'ci-scan-stale-candidate') }
+            @{ Placement = 'after every flag';       CmdArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'ci-scan-stale-candidate', '7') }
+        ) {
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs $CmdArgs } |
+                Should -Throw -ExpectedMessage '*carries the bare argument*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a second target given as a URL, which carries its own repository' {
+            # The worst shape, and the reason this is not an extension of the --repo work:
+            # a gh issue URL does not have to BEAT the --repo binding, it goes around it --
+            # the argument never touches --repo at all, so every repo check still passes.
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @(
+                    'issue', 'edit', '5', '--repo', 'dotnet/maui',
+                    '--add-label', 'ci-scan-stale-candidate',
+                    'https://github.com/dotnet/runtime/issues/7') } |
+                Should -Throw -ExpectedMessage '*carries the bare argument*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a -- terminator, which does not stop gh collecting targets' {
+            { Invoke-GhWrite -Kind label -IssueNumber 5 -GhArgs @(
+                    'issue', 'edit', '5', '--repo', 'dotnet/maui',
+                    '--add-label', 'ci-scan-stale-candidate', '--', '7') } |
+                Should -Throw -ExpectedMessage "*must not carry a '--' terminator*"
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'still runs a flag whose VALUE looks like <Looks>, so the rule consumes values rather than hunting for targets' -ForEach @(
+            @{ Looks = 'a bare issue number'; CmdArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', '7') }
+            @{ Looks = 'an issue URL';        CmdArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'see https://github.com/dotnet/runtime/issues/7') }
+            @{ Looks = 'a -- terminator';     CmdArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', '--') }
+        ) {
+            # The negative controls above are satisfiable by refusing everything, and a rule
+            # that pattern-matched for digits or URLs would pass them while breaking every
+            # real notice body. These pin the boundary: a flag's value is never a target,
+            # whatever it happens to look like.
+            Invoke-GhWrite -Kind comment -IssueNumber 5 -GhArgs $CmdArgs | Should -BeTrue
+            @($global:ghCalls).Count | Should -Be 1
+        }
+
         It 'refuses an edit that carries a sibling flag from another edit-shaped kind' {
             # The veto-strip shape: an additive `label` call that quietly removes one.
             { Invoke-GhWrite -Kind label -IssueNumber 1 -GhArgs @('issue', 'edit', '1', '--add-label', 'a', '--remove-label', 's/needs-info') } |
