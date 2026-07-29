@@ -314,12 +314,11 @@ function ConvertTo-PublicSafeMarkdown {
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
-        if ($canonical -match '(?i)(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal(?:[/?:#]|$)') {
+        if ($canonical -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal)(?:[/?:#]|$)') {
             return '_internal URL omitted_'
         }
         return $original
     })
-    $safe = $safe -replace '[\p{Cf}\u00AD\u180E]', ''
     $safe = [regex]::Replace($safe, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
     $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'

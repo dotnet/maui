@@ -24,8 +24,17 @@ $script:failed = 0
 
 function Assert-Eq {
     param([string]$Label, $Expected, $Actual)
-    if ($Expected -ceq $Actual -or
-        ((@($Expected) -join ',') -eq (@($Actual) -join ','))) {
+    $equal = if ($Expected -is [string] -and $Actual -is [string]) {
+        [string]::Equals($Expected, $Actual, [System.StringComparison]::Ordinal)
+    } elseif ($Expected -ceq $Actual) {
+        $true
+    } else {
+        [string]::Equals(
+            (@($Expected) -join ','),
+            (@($Actual) -join ','),
+            [System.StringComparison]::Ordinal)
+    }
+    if ($equal) {
         Write-Host "  ✅ $Label" -ForegroundColor Green
         $script:passed++
     } else {
@@ -7955,6 +7964,7 @@ function Assert-PublicSanitizerEdgeCases {
         "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET",
         "https://dev.azure.com/dnceng/inter$([char]0x00AD)nal/_build?token=SOFTHYPHENSECRET",
         "https://dev.azure.com/dnceng/inter$([char]0x2060)nal/_build?token=WORDJOINERSECRET",
+        "dnceng/i$([char]0xFE0F)nternal/_build?token=BAREVSSECRET",
         'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
         'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
         'https://dev.azure.com/d n c e n g/internal/_build?token=ORGSPACESECRET',
@@ -7968,12 +7978,14 @@ function Assert-PublicSanitizerEdgeCases {
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
     Assert-Eq -Label "$Lane sanitizer preserves ordinary percentage prose byte-for-byte" -Expected 'Coverage results: 6%62% relative improvement' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'Coverage results: 6%62% relative improvement')
+    Assert-Eq -Label "$Lane sanitizer preserves emoji variation and joiners outside URLs" -Expected 'Status ⚠️ family 👨‍👩‍👧‍👦' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'Status ⚠️ family 👨‍👩‍👧‍👦')
     $oversizedEntityThrew = $false
     try { $null = ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/x &#99999999999; ordinary prose' } catch { $oversizedEntityThrew = $true }
     Assert-Eq -Label "$Lane sanitizer tolerates oversized numeric entities" -Expected $false -Actual $oversizedEntityThrew
