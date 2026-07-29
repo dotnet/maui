@@ -19,7 +19,7 @@ public class Issue13323 : _IssuesUITest
 
 		App.Tap("GoToItem2");
 		App.WaitForTextToBePresentInElement("PositionLabel", "Position:2");
-		App.WaitForElement("CenterEntry_2", timeout: TimeSpan.FromSeconds(10));
+		App.WaitForElement("CenterEntry_2");
 
 		App.Tap("CenterEntry_2");
 
@@ -40,7 +40,7 @@ public class Issue13323 : _IssuesUITest
 
 		App.Tap("LoopGoToItem2");
 		App.WaitForTextToBePresentInElement("LoopPositionLabel", "LoopPosition:2");
-		App.WaitForElement("LoopCenterEntry_2", timeout: TimeSpan.FromSeconds(10));
+		App.WaitForElement("LoopCenterEntry_2");
 
 		App.Tap("LoopCenterEntry_2");
 
