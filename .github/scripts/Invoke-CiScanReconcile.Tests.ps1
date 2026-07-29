@@ -459,6 +459,19 @@ Describe 'CI scan reconciler' {
 
             Asserted through a real reopen rather than through `FailClosed` alone: the
             flag is the mechanism, the reopen is the property.
+
+            NOTE ON THIS MOCK. `Initialize-ReconcileMocks -Issues @()` reaches the
+            orchestrator through the `Mock Invoke-GhRead` above, which hands back
+            `, @($script:Issues)` — an empty ARRAY. The real `Invoke-GhRead` could not
+            produce that shape: `[]` collapsed to `$null` on the way out of the function,
+            so this test went green against production code in which a zero-open backlog
+            still reported `Truncated = $true` and still switched the reopen loop off.
+            The mock was the bug's camouflage, not its coverage.
+
+            That seam is now pinned separately, against real JSON text through the real
+            parse, in `Invoke-GhRead separates an empty listing from a failed read` and
+            `A healthy empty GitHub listing is read as empty, not as unreadable`. This
+            test keeps the end-to-end property; those keep it honest.
         #>
         It 'still reopens when the listing is exhausted and legitimately empty' {
             Initialize-ReconcileMocks -Issues @() -ClosedIssues @(
@@ -1450,6 +1463,136 @@ Describe 'Invoke-GhRead — read-only by construction' {
         @{ Argument = '-x' }
     ) {
         Test-CiScanRequestShapingArg -Argument $Argument | Should -BeFalse
+    }
+}
+
+<#
+    The `[]`-to-`$null` seam, tested through the REAL conversion.
+
+    Every other GitHub test in this file mocks `Invoke-GhRead` and hands back
+    `, @(...)`, which preserves an empty array across the function boundary. The real
+    function did not: it returned `$text | ConvertFrom-Json` directly, and a JSON array
+    is written to the pipeline one element at a time, so `[]` wrote nothing and arrived
+    as `$null` — the value every caller reads as "the read FAILED".
+
+    The comma in those mocks is therefore the bug's own camouflage: it hand-built the
+    shape production could not produce, so the zero-open reopen test below passed
+    against an orchestrator that, in production, failed the run closed and switched the
+    reopen safety net off on exactly the day the last tracker closed.
+
+    These tests mock `gh` instead and let real JSON text flow through the real parse, so
+    the seam that was mocked away is the seam under test. They are the reason the fix is
+    verifiable rather than asserted.
+#>
+Describe 'Invoke-GhRead separates an empty listing from a failed read' {
+
+    BeforeEach { Reset-CiScanCounters }
+
+    It 'returns an empty ARRAY for an empty JSON listing, not $null' {
+        Mock gh { $global:LASTEXITCODE = 0; return '[]' }
+
+        $r = Invoke-GhRead -GhArgs @('api', 'repos/dotnet/maui/issues?state=open')
+
+        $null -eq $r | Should -BeFalse -Because 'an empty listing is a successful read of nothing'
+        @($r).Count | Should -Be 0
+        $script:Counters.ReadErrors | Should -Be 0
+    }
+
+    # The other side of the contract: $null must still mean "failed", or the callers'
+    # null tests would stop failing closed on a genuinely unreadable page.
+    It 'returns $null and counts a read error when gh fails' {
+        Mock gh { $global:LASTEXITCODE = 1; return 'boom' }
+
+        $r = Invoke-GhRead -GhArgs @('api', 'repos/dotnet/maui/issues?state=open')
+
+        $null -eq $r | Should -BeTrue
+        $script:Counters.ReadErrors | Should -Be 1
+    }
+
+    It 'returns $null and counts a read error when the payload is not JSON' {
+        Mock gh { $global:LASTEXITCODE = 0; return '<html>502</html>' }
+
+        $r = Invoke-GhRead -GhArgs @('api', 'repos/dotnet/maui/issues?state=open')
+
+        $null -eq $r | Should -BeTrue
+        $script:Counters.ReadErrors | Should -Be 1
+    }
+
+    # A populated listing must survive unchanged; the fix must not smuggle in a wrapper.
+    It 'preserves a populated listing element for element' {
+        Mock gh { $global:LASTEXITCODE = 0; return '[{"number":11},{"number":22}]' }
+
+        $r = Invoke-GhRead -GhArgs @('api', 'repos/dotnet/maui/issues?state=open')
+
+        @($r).Count | Should -Be 2
+        @($r)[0].number | Should -Be 11
+        @($r)[1].number | Should -Be 22
+    }
+}
+
+<#
+    The three production consequences of that seam, each driven through the real
+    `Invoke-GhRead`. Every one of them reads its `$null` as a failure and resolves it in
+    the fail-closed direction, so before the fix all three misreported the HEALTHY state
+    as an unreadable one.
+#>
+Describe 'A healthy empty GitHub listing is read as empty, not as unreadable' {
+
+    BeforeEach { Reset-CiScanCounters }
+
+    <#
+        The one that matters most. `Truncated` feeds the run-level fail-closed gate, and
+        that gate sits in front of the REOPEN loop, so a zero-open backlog reporting
+        itself as truncated takes the false-close safety net down with it.
+    #>
+    It 'reports a zero-open backlog as exhausted rather than truncated' {
+        Mock gh { $global:LASTEXITCODE = 0; return '[]' }
+
+        $listing = Get-CiScanOpenIssues -Owner 'dotnet' -Repo 'maui' -Label 'ci-scan-net11' -Max 50
+
+        @($listing.Issues).Count | Should -Be 0
+        $listing.Truncated | Should -BeFalse -Because 'nothing open is a proven-exhaustive listing'
+        $script:Counters.ReadErrors | Should -Be 0
+    }
+
+    It 'still reports a genuinely failed page as truncated' {
+        Mock gh { $global:LASTEXITCODE = 1; return '' }
+
+        $listing = Get-CiScanOpenIssues -Owner 'dotnet' -Repo 'maui' -Label 'ci-scan-net11' -Max 50
+
+        $listing.Truncated | Should -BeTrue
+        $script:Counters.ReadErrors | Should -Be 1
+    }
+
+    # An issue with no comments is the commonest tracking-issue shape there is, and it
+    # PROVES the absence of human commenters rather than leaving it unproven.
+    It 'reads an issue with no comments as a complete, empty history' {
+        Mock gh { $global:LASTEXITCODE = 0; return '[]' }
+
+        $h = Get-CiScanHumanCommenters -Owner 'dotnet' -Repo 'maui' -Number 100
+
+        $h.Ok | Should -BeTrue
+        @($h.Logins).Count | Should -Be 0
+        $script:Counters.ReadErrors | Should -Be 0
+    }
+
+    # `Complete = $false` here fails the WHOLE run closed with
+    # `pull-request-index-incomplete`, so an empty PR listing must not produce it.
+    It 'reads an empty pull-request listing as a complete, empty index' {
+        Mock gh { $global:LASTEXITCODE = 0; return '[]' }
+
+        $idx = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 50
+
+        $idx.Complete | Should -BeTrue
+        @($idx.PullRequests).Count | Should -Be 0
+    }
+
+    It 'still reports an unreadable pull-request listing as incomplete' {
+        Mock gh { $global:LASTEXITCODE = 1; return '' }
+
+        $idx = Get-CiScanPullRequestIndex -Owner 'dotnet' -Repo 'maui' -Max 50
+
+        $idx.Complete | Should -BeFalse
     }
 }
 

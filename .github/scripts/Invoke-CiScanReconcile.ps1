@@ -229,11 +229,44 @@ function Test-CiScanRequestShapingArg {
 function Invoke-GhRead {
     <#
     .SYNOPSIS
-        Executes a read-only `gh` invocation and returns parsed JSON (or $null).
+        Executes a read-only `gh` invocation and returns the parsed JSON payload as an
+        ARRAY, or $null if — and only if — the read did not succeed.
     .DESCRIPTION
         Only ever used for GET-shaped calls. Failures return $null and increment
         ReadErrors; the caller must treat $null as "unknown", which always resolves in
         the conservative direction.
+
+        THE RETURN IS ALWAYS AN ARRAY ON SUCCESS, and that is load-bearing rather than
+        stylistic. `$text | ConvertFrom-Json` writes each element of a JSON array to the
+        pipeline separately, so an EMPTY listing (`[]`) writes nothing at all and arrives
+        at the caller as `$null` — indistinguishable from the failure returns above.
+        Every caller here tests `$null -eq $result` to mean "the read failed", so the
+        healthy empty listing was being read as a failed read:
+
+          * `Get-CiScanOpenIssues` marked a zero-open backlog `Truncated`, which fails
+            the whole run closed and takes the REOPEN safety net down with it — on
+            exactly the day the last tracker closes, which is the steady state this tool
+            exists to reach.
+          * `Get-CiScanPullRequestIndex` reported `Complete = $false` for a repo with no
+            matching pull requests.
+          * `Get-CiScanHumanCommenters` reported an issue with zero comments as an
+            unreadable comment history.
+
+        `,@( <pipeline> )` fixes all of them at the source. The array subexpression
+        collects the pipeline's OUTPUT, so no output stays an empty array rather than
+        collapsing to `$null`, and the leading comma wraps it so `return` unrolls the
+        wrapper instead of the payload. It must stay in the direct-pipeline form: `@($x)`
+        applied to an already-assigned `$x` that holds `$null` yields a one-element array
+        containing `$null`, which is a different bug.
+
+        This is the same `[]`-to-`$null` gotcha already documented and handled on the
+        AzDO side of the reconciler in `Get-CiScanBuildsAfter`; it is handled here, at
+        the single seam every `gh` read passes through, rather than re-derived at each
+        of the six call sites.
+
+        A JSON OBJECT response therefore arrives as a one-element array. Every current
+        caller reads a list, so nothing needs the scalar shape; a future object-shaped
+        read must index the result rather than assume the object.
     #>
     [CmdletBinding()]
     param([Parameter(Mandatory)][string[]]$GhArgs, [switch]$Raw)
@@ -269,7 +302,9 @@ function Invoke-GhRead {
     $text = ($out | Out-String)
     if ($Raw) { return $text }
     if ([string]::IsNullOrWhiteSpace($text)) { return $null }
-    try { return $text | ConvertFrom-Json -ErrorAction Stop }
+    # See .DESCRIPTION: the `,@( ... )` form is what keeps an empty listing an empty
+    # array instead of collapsing it into the $null that means "the read failed".
+    try { return ,@($text | ConvertFrom-Json -ErrorAction Stop) }
     catch { $script:Counters.ReadErrors++; return $null }
 }
 
@@ -735,6 +770,12 @@ function Get-CiScanOpenIssues {
         # A failed read is an unknown, not an exhausted list: the pages we never saw may
         # hold tracking issues. Reporting this exit as exhaustion would let a partial
         # survey claim completeness, which is the one thing `Truncated` exists to prevent.
+        #
+        # This test is only sound because `Invoke-GhRead` returns an empty listing as an
+        # empty ARRAY: while it collapsed `[]` to `$null`, a healthy zero-open backlog
+        # took this branch and reported itself as truncated, which failed the run closed
+        # and disabled the reopen safety net at precisely the moment it became the only
+        # thing left to run. The healthy-empty exit is the `Count -eq 0` break below.
         if ($null -eq $batch) { $truncated = $true; break }
         $batch = @($batch)
         if ($batch.Count -eq 0) { break }
@@ -830,6 +871,9 @@ function Get-CiScanPullRequestIndex {
     $fixes = Invoke-GhRead -GhArgs @('pr', 'list', '--repo', "$Owner/$Repo", '--state', 'all',
         '--search', 'in:title ci-fix', '--limit', "$probe", '--json', $fields)
 
+    # `$null` means the listing could not be read. An empty listing — a repo with no open
+    # pull requests, or no `ci-fix` titles ever — arrives as an empty array and is a
+    # COMPLETE index with nothing in it, so it must not be conflated with a failed read.
     $complete = ($null -ne $open -and $null -ne $fixes)
     if ($complete -and ((Get-CiScanCount $open) -gt $Max -or (Get-CiScanCount $fixes) -gt $Max)) {
         Write-Warning "Pull-request listing hit the -MaxPullRequests bound of $Max; the blocker index is NOT exhaustive."
@@ -941,6 +985,9 @@ function Get-CiScanHumanCommenters {
     for ($page = 1; $page -le $maxPages; $page++) {
         $batch = Invoke-GhRead -GhArgs @('api',
             "repos/$Owner/$Repo/issues/$Number/comments?per_page=$perPage&page=$page")
+        # `$null` is a failed page. An issue with no comments at all returns an empty
+        # array, which is the commonest shape a tracking issue has and is a COMPLETE
+        # history proving zero human commenters — not an unreadable one.
         if ($null -eq $batch) { return $incomplete }
         $batch = @($batch)
         $comments += $batch
@@ -1115,13 +1162,23 @@ function Get-CiScanBuildsAfter {
         build the marker accounts for? It is the only call in the reconciler whose result
         is not derived from the issue body.
 
-        THE HORIZON IS A UNION, AND IT HAS TO BE. `AfterBuildId` alone is not a
-        "newer than" test: AzDO build IDs are assigned at QUEUE time, so a build queued
-        before the marker's newest build but finishing after it carries a LOWER id and
-        was silently dropped — which is precisely the recurrence the caller is looking
+        THE HORIZON IS A UNION ON THE CLIENT, AND IT HAS TO BE. `AfterBuildId` alone is
+        not a "newer than" test: AzDO build IDs are assigned at QUEUE time, so a build
+        queued before the marker's newest build but finishing after it carries a LOWER id
+        and was silently dropped — which is precisely the recurrence the caller is looking
         for. A build therefore qualifies when its id is above the id horizon OR its
-        `finishTime` is above the time horizon, and a caller that supplies both is
-        protected by whichever one is wider.
+        `finishTime` is above the time horizon.
+
+        The union is ASYMMETRIC once the wire is accounted for, and the asymmetry is
+        deliberate. `minTime` narrows server-side on `finishTime` (see the request
+        comment below), so the time horizon can only ever WIDEN the id horizon, never the
+        reverse: a build whose id is above the id horizon but whose `finishTime` is below
+        the time horizon is dropped upstream and never reaches the client's id branch.
+        That build finished before the marker was last written, so the scanner's own next
+        pass re-reads it and the following reconcile sees it above a moved watermark; the
+        recurrence probe is additionally gated by `MinQuietDays`, so nothing closes in the
+        interval. Widening `minTime` to cover it would refetch weeks of builds on every
+        run to re-derive an answer that arrives on its own.
 
         `MinFinishTime` is applied on both sides of the wire for the usual reason: it is
         sent as `minTime` so the server can narrow the page, and re-checked here because
