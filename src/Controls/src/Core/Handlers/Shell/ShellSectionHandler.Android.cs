@@ -507,6 +507,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (visibleItems is not null && currentItem is not null)
             {
+                {
+                    handler._adapter?.SafeNotifyDataSetChanged();
+                }
+
                 var targetIndex = visibleItems.IndexOf(currentItem);
                 if (targetIndex >= 0 && handler._viewPager.CurrentItem != targetIndex)
                 {
@@ -525,6 +529,60 @@ namespace Microsoft.Maui.Controls.Handlers
             if (e.PropertyName == ShellContent.ContentProperty.PropertyName)
             {
                 _adapter.InvalidateShellContent(shellContent);
+
+                // Keep toolbar state in sync when the active tab's content page is replaced.
+                if (VirtualView?.CurrentItem == shellContent)
+                {
+                    var page = ((IShellContentController)shellContent).GetOrCreateContent();
+                    if (page is not null)
+                    {
+                        var toolbarTracker = ToolbarTracker;
+                        toolbarTracker?.Page = page;
+                    }
+                }
+            }
+        }
+
+        void UpdateContentPropertyChangedSubscriptions(NotifyCollectionChangedEventArgs e)
+        {
+            if (_subscribedItems is null)
+            {
+                return;
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                foreach (var item in _subscribedItems)
+                {
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+                }
+                _subscribedItems.Clear();
+
+                foreach (var item in SectionController.GetItems())
+                {
+                    item.PropertyChanged += OnShellContentPropertyChanged;
+                    _subscribedItems.Add(item);
+                }
+
+                return;
+            }
+
+            if (e.OldItems is not null)
+            {
+                foreach (ShellContent item in e.OldItems)
+                {
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+                    _subscribedItems.Remove(item);
+                }
+            }
+
+            if (e.NewItems is not null)
+            {
+                foreach (ShellContent item in e.NewItems)
+                {
+                    item.PropertyChanged += OnShellContentPropertyChanged;
+                    _subscribedItems.Add(item);
+                }
             }
         }
 
@@ -534,6 +592,8 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 return;
             }
+
+            UpdateContentPropertyChangedSubscriptions(e);
 
             // When items go from 0 → N, we must create a fresh adapter because
             // FragmentStateAdapter saves internal fragment state when items are removed.
