@@ -159,6 +159,10 @@
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
+        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Graphics.Win2D"
         Version="$(MicrosoftGraphicsWin2DPackageVersion)"
     />
