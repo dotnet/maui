@@ -159,6 +159,9 @@ Assert-Eq -Label "workflow reconciles stale opens before honoring exact closure"
 Assert-Eq -Label "workflow compensates a generation edit proven to land after closure" -Expected $true `
     -Actual ($workflowContractText.Contains('POST_EDIT_META=') -and
         $workflowContractText.Contains('removed the raced marker'))
+Assert-Eq -Label "workflow rechecks body revision before overwriting captain notes" -Expected $true `
+    -Actual ($workflowContractText.Contains('PRE_EDIT_BODY_B64') -and
+        $workflowContractText.Contains('changed while this refresh was preparing'))
 Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
     -Actual $workflowContractText.Contains('hotfix version pending')
 $previewContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1') -Raw
@@ -2271,13 +2274,16 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         'Backport of #100 was _not_ included.',
         'Backport of #100 was not, in fact, included.',
         'Backport of #100 was not (yet) applied.',
-        'Backport of #100 was not, to be fair, in my view, included.'
+        'Backport of #100 was not, to be fair, in my view, included.',
+        'Backport of #100 was not; to be fair; in my view; included.'
     )) {
         Assert-Eq -Label "backport lineage: Markdown/punctuation negation removes source — $punctuatedNegation" `
             -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $punctuatedNegation) -join ',')
     }
     Assert-Eq -Label "backport lineage: struck negation is withdrawn rather than applied" `
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100 was ~~not~~ included.') -join ',')
+    Assert-Eq -Label "backport lineage: entire struck claim is withdrawn before reference extraction" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text '~~Backport of #1234~~ was never actually needed.') -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2665,7 +2671,11 @@ Assert-Eq -Label "Reverted-PR from quoted title returns inner #, not trailing re
 foreach ($manualRevertSubject in @(
     'This reverts #35100',
     'Reverting #35100 - caused CI failures',
-    'Backing out the fix for #35100 due to CI regressions'
+    'Backing out the fix for #35100 due to CI regressions',
+    'Revert: #35100',
+    'Revert of #35100',
+    'Revert - fix for #35100',
+    '[Revert] Undo the change in #35100'
 )) {
     Assert-Eq -Label "Reverted-PR from common hand-authored subject — $manualRevertSubject" `
         -Expected 35100 -Actual (Get-RevertedPrFromSubject -Subject $manualRevertSubject)
@@ -2673,6 +2683,14 @@ foreach ($manualRevertSubject in @(
 $releaseScriptText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
 Assert-Eq -Label "commit scanner gates revert rows with shared subject parser" -Expected $true `
     -Actual ([bool]($releaseScriptText -match '\$revertsPr = Get-RevertedPrFromSubject[\s\S]{0,400}\$isRevert = \(\$null -ne \$revertsPr\)'))
+$netRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 200; revertBackportPr = 300 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "revert-of-revert restores the original fix in net revert state" -Expected $false `
+    -Actual $netRevertSet.ContainsKey(100)
+Assert-Eq -Label "revert-of-revert marks the reverted revert PR instead" -Expected $true `
+    -Actual $netRevertSet.ContainsKey(200)
 Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
     -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
 Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
@@ -2964,7 +2982,8 @@ foreach ($negatedClosingText in @(
     'This does **not** fix #35615',
     'This does not, in fact, fix #35615',
     'This will not (yet) resolve #35615',
-    'This does not, to be fair, in my view, fix #35615'
+    'This does not, to be fair, in my view, fix #35615',
+    'This does not; to be fair; in my view; fix #35615'
 )) {
     Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
         -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
@@ -7852,6 +7871,9 @@ $publicTrackerLeakLines = @(Get-Content -LiteralPath $prevScript | Where-Object 
 })
 Assert-Eq -Label "preview public output never names the private release source" `
     -Expected 0 -Actual $publicTrackerLeakLines.Count
+$previewSourceText = Get-Content -LiteralPath $prevScript -Raw
+Assert-Eq -Label "preview report does not publish an unwired inflight completeness field" `
+    -Expected $false -Actual $previewSourceText.Contains('InflightOpenPullRequestScanIncomplete')
 
 $safeInternalText = Get-PublicSafeInternalPipelineText -Status 'UNKNOWN'
 $safePublicBuilder = [System.Text.StringBuilder]::new()
@@ -7871,12 +7893,13 @@ Add-CheckTable -Builder $safePublicBuilder -Checks @(
 [void]$safePublicBuilder.AppendLine('HTML private URL: https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET')
 [void]$safePublicBuilder.AppendLine('Unicode private URL: https://dev.azure.com／dnceng／internal／_build?token=UNICODESECRET')
 [void]$safePublicBuilder.AppendLine('Backslash private URL: https://dev.azure.com\dnceng\internal\_build?token=BACKSLASHSECRET')
+[void]$safePublicBuilder.AppendLine('Mixed private URL: https://dev.azure.com/dnceng/DefaultCollection\internal/_build?token=MIXEDSECRET')
 [void]$safePublicBuilder.AppendLine('Internal identifier: api://example/resource')
 [void]$safePublicBuilder.AppendLine('Fetched title names .NET Release Tracker, dotnet-release-tracker, and dotnet/release')
 [void]$safePublicBuilder.AppendLine('Public feed: https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11')
 $safePublicMarkdown = ConvertTo-PublicSafeMarkdown -Text $safePublicBuilder.ToString()
 Assert-Eq -Label "preview rendered public-safe text omits internal coordinates" `
-    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|COLLECTIONSECRET|HTMLSECRET|UNICODESECRET|BACKSLASHSECRET|fragment'))
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|COLLECTIONSECRET|HTMLSECRET|UNICODESECRET|BACKSLASHSECRET|MIXEDSECRET|fragment'))
 Assert-Eq -Label "preview rendered public-safe text omits private release-tool names" `
     -Expected $false -Actual ([bool]($safePublicMarkdown -match '\.NET Release Tracker|dotnet-release-tracker|dotnet/release'))
 Assert-Eq -Label "preview public-safe sanitizer preserves public feed URL" `

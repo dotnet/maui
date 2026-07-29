@@ -275,7 +275,7 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)\\[^\s<>"''`|)]*',
+        '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)[^\s<>"''`|)]*',
         { param($match) $match.Value -replace '\\', '/' })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
@@ -2356,6 +2356,20 @@ function Get-RevertedPrFromSubject {
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     $m = [regex]::Match($Subject, '(?i)^Backing\s+out\s+(?:the\s+)?fix\s+(?:for\s+)?#(\d+)(?![\p{L}\p{N}_])')
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ed|ing)?\b[\s:–—-]*(?:(?:of|for)\s+)?(?:the\s+)?(?:(?:broken\s+)?(?:change|fix)\s+(?:for\s+)?)?(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    if ($Subject -match '(?i)^\[Revert\]') {
+        $bareRefs = [regex]::Matches($Subject, '(?<!\()#(\d+)(?![\p{L}\p{N}_]|\))')
+        if ($bareRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $bareRefs[0].Groups[1].Value)
+        }
+    }
+    if ($Subject -match '(?i)^Backing\s+out\b') {
+        $bareRefs = [regex]::Matches($Subject, '(?<!\()#(\d+)(?![\p{L}\p{N}_]|\))')
+        if ($bareRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $bareRefs[0].Groups[1].Value)
+        }
+    }
     # Explicit "Revert PR #NNNN" form.
     $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)(?![\p{L}\p{N}_])')
     if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
@@ -2394,7 +2408,7 @@ function ConvertTo-NegationNormalizedText {
     $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')
     $normalized = $normalized -replace '\*\*|__', ''
     $normalized = $normalized -replace '(?<!\w)[*_](?=\w)|(?<=\w)[*_](?!\w)', ''
-    $asidePattern = '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-])\s*'
+    $asidePattern = '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-]|(?:;\s*[^;\r\n]{0,80}){1,3};)\s*'
     do {
         $previous = $normalized
         $normalized = [regex]::Replace($normalized, $asidePattern, '$1 ')
@@ -2522,6 +2536,9 @@ function Get-ExplicitBackportSourceNumbers {
     param([string]$Text)
 
     if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
+    # Remove withdrawn Markdown spans before calculating reference offsets; doing
+    # this only on split prefix/suffix fragments leaves unmatched `~~` sentinels.
+    $Text = [regex]::Replace($Text, '(?s)~~.*?~~', '')
     $Text = $Text -replace "`r`n", "`n"
     $Text = $Text -replace "`r", "`n"
     $Text = $Text -replace '\u2028', "`n"
@@ -2794,6 +2811,7 @@ function Get-CommitsForRevSpec {
                 revertsCommit = $revertsCommit
                 revertsPr = $revertsPr
                 revertBackportPr = $backportPr
+                date = $authorDate
                 origin = $OriginTag
             }
         }
@@ -3399,18 +3417,44 @@ function Resolve-ClosedFixUnlinked {
     return $null
 }
 
+function Get-NetRevertedPrSet {
+    param($Reverts)
+
+    $rows = @($Reverts)
+    $net = @{}
+    if ($rows.Count -eq 0) { return $net }
+
+    $revertTargets = @{}
+    foreach ($row in $rows) {
+        $revertPr = [int](Get-MetadataValue -Container $row -Name 'revertBackportPr' -Default 0)
+        $targetPr = [int](Get-MetadataValue -Container $row -Name 'revertsPr' -Default 0)
+        if ($revertPr -and $targetPr) { $revertTargets[$revertPr] = $targetPr }
+    }
+
+    # git log is newest-first; apply revert effects oldest-first. Reverting a
+    # revert toggles both that revert PR and the effect it previously applied.
+    [array]::Reverse($rows)
+    foreach ($row in $rows) {
+        $targetPr = [int](Get-MetadataValue -Container $row -Name 'revertsPr' -Default 0)
+        if (-not $targetPr) { continue }
+        $visited = @{}
+        $current = $targetPr
+        while ($current -and -not $visited.ContainsKey($current)) {
+            $visited[$current] = $true
+            if ($net.ContainsKey($current)) { [void]$net.Remove($current) }
+            else { $net[$current] = $true }
+            $current = if ($revertTargets.ContainsKey($current)) { [int]$revertTargets[$current] } else { 0 }
+        }
+    }
+    return $net
+}
+
 function Classify-RegressionCandidate {
     param($Issue, $CandidatePrs, $Ctx, $SrContents)
 
     $sourcePrSet = @{}
     foreach ($n in $SrContents.sourcePrs) { $sourcePrSet[$n] = $true }
-    $revertedPrSet = @{}
-    foreach ($r in $SrContents.reverts) {
-        # `revertsPr` is the PR whose content this commit backs out.
-        # `revertBackportPr` is the PR number of the revert commit itself; adding it
-        # here would incorrectly mark a revert-as-fix (e.g. #36498) as reverted.
-        if ($r.revertsPr) { $revertedPrSet[$r.revertsPr] = $true }
-    }
+    $revertedPrSet = Get-NetRevertedPrSet -Reverts $SrContents.reverts
     # sourcePrSet intentionally contains both a backport PR number and the source
     # PR named by "Backport of #N". Preserve that mapping so a later revert of the
     # backport cannot leave the source number looking active (e.g. source #36495,
@@ -3445,11 +3489,7 @@ function Classify-RegressionCandidate {
     # was silently ignored and the guard no-op'd. Route through Get-MetadataValue
     # (IDictionary.Contains) so it fires for every dictionary shape (#36497 review).
     $mainReverts = Get-MetadataValue -Container $SrContents -Name 'mainReverts'
-    if ($mainReverts) {
-        foreach ($r in @($mainReverts)) {
-            if ($r.revertsPr) { $mainRevertedPrSet[[int]$r.revertsPr] = $true }
-        }
-    }
+    if ($mainReverts) { $mainRevertedPrSet = Get-NetRevertedPrSet -Reverts $mainReverts }
 
     # Target-branch on-ancestry context. A fix merged BEFORE the SR was cut (or a
     # catch-up merge) is common ancestry of BOTH main and the SR, so the differential

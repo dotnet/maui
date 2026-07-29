@@ -1825,7 +1825,7 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)\\[^\s<>"''`|)]*',
+        '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)[^\s<>"''`|)]*',
         { param($match) $match.Value -replace '\\', '/' })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
@@ -2576,7 +2576,6 @@ $report = [PSCustomObject]@{
     OpenPullRequestMetadataRestBases = $openPrMetadataRestBases
     OpenPullRequestScanIncompleteBases = $openPrScanIncompleteBases
     TargetOpenPullRequestScanIncomplete = $targetOpenPrScanIncomplete
-    InflightOpenPullRequestScanIncomplete = $false
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
