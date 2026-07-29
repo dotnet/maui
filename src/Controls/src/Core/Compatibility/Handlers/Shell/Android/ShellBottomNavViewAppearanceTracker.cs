@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AColor newColor;
 
 			if (color == null)
-				newColor = ShellRenderer.GetBottomNavigationViewBackgroundColor(bottomView.Context).ToPlatform();
+				newColor = ShellRenderer.GetBottomNavigationViewBackgroundColor(_shellContext.AndroidContext).ToPlatform();
 			else
 				newColor = color.ToPlatform();
 

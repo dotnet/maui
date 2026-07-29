@@ -2,11 +2,11 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.ApplicationModel;
@@ -126,8 +126,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ReadThemeColor(context, Resource.Attribute.colorOnSurface, DefaultTitleColor);
 		internal static Color GetM3UnselectedColor(Context context) =>
 			ReadThemeColor(context, Resource.Attribute.colorOnSurfaceVariant, DefaultUnselectedColor);
+		// M3 bottom nav sits on a slightly-elevated surface (colorSurfaceContainer), not colorSurface.
 		internal static Color GetM3BottomNavBackgroundColor(Context context) =>
-			ReadThemeColor(context, Resource.Attribute.colorSurface, DefaultBottomNavigationViewBackgroundColor);
+			ReadThemeColor(context, Resource.Attribute.colorSurfaceContainer, DefaultBottomNavigationViewBackgroundColor);
 
 		// Material 2 — MAUI's Maui.MainTheme.Base already declares colorPrimary/colorPrimaryDark/
 		// actionMenuTextColor with the same values previously hardcoded here. Reading them through
@@ -139,6 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ReadThemeColor(context,
 				IsDarkTheme ? Resource.Attribute.colorPrimaryDark : Resource.Attribute.colorPrimary,
 				DefaultBackgroundColor);
+
 		internal static Color GetM2ForegroundColor(Context context) =>
 			ReadThemeColor(context, global::Android.Resource.Attribute.TextColorPrimary, DefaultForegroundColor);
 		internal static Color GetM2TitleColor(Context context) =>
@@ -153,8 +155,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		// Reads a color from a theme attribute. Returns the supplied fallback when the attribute
 		// is not declared on the current theme — GetThemeAttrColor returns 0 (transparent) in that
 		// case, which would otherwise paint Shell chrome invisible on non-MAUI base themes.
+		// Also returns the fallback when Android's Context.Configuration.UiMode doesn't match
+		// MAUI's authoritative IsDarkTheme (runtime AppTheme flip on an Activity that keeps
+		// itself across uiMode config changes) — the theme attribute would resolve to a stale
+		// value and Context.CreateConfigurationContext can't force fresh theme resolution.
 		static Color ReadThemeColor(Context context, int attr, Color fallback)
 		{
+			var configuration = context.Resources?.Configuration;
+			if (configuration is not null)
+			{
+				var contextIsDark = (configuration.UiMode & UiMode.NightMask) == UiMode.NightYes;
+				if (contextIsDark != IsDarkTheme)
+					return fallback;
+			}
+
 			int raw = context.GetThemeAttrColor(attr);
 			return raw == 0 ? fallback : new AColor(raw).ToColor();
 		}
