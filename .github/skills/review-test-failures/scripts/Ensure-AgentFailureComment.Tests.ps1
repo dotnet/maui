@@ -128,14 +128,14 @@ Describe 'Workflow integration' {
         $workflow | Should -Match 'unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN'
     }
 
-    It 'uses short-lived organization-billed Copilot authentication' {
+    It 'uses the GitHub environment PAT pool for Copilot inference' {
         $workflowPath = Join-Path $PSScriptRoot '../../../workflows/copilot-review-tests.md'
         $workflow = Get-Content -LiteralPath $workflowPath -Raw -Encoding UTF8
 
-        $workflow | Should -Match '(?m)^\s+copilot-requests: write$'
-        $workflow | Should -Not -Match 'COPILOT_PAT_'
-        $workflow | Should -Not -Match 'shared/pat_pool\.md'
-        $workflow | Should -Not -Match '(?m)^\s*COPILOT_GITHUB_TOKEN:'
+        $workflow | Should -Match 'shared/pat_pool\.md'
+        $workflow | Should -Match '(?m)^environment: copilot-pat-pool$'
+        $workflow | Should -Match 'COPILOT_GITHUB_TOKEN:.*secrets\.COPILOT_PAT_0'
+        $workflow | Should -Not -Match '(?m)^\s+copilot-requests: write$'
     }
 
     It 'runs the compiled fallback after placeholder creation and before artifact upload' {
@@ -151,14 +151,13 @@ Describe 'Workflow integration' {
         $uploadIndex | Should -BeGreaterThan $fallbackIndex
     }
 
-    It 'compiles organization billing into the agent and detection jobs' {
+    It 'compiles the PAT selector into the inference jobs' {
         $lockPath = Join-Path $PSScriptRoot '../../../workflows/copilot-review-tests.lock.yml'
         $lock = Get-Content -LiteralPath $lockPath -Raw -Encoding UTF8
 
-        ([regex]::Matches($lock, '(?m)^\s+copilot-requests: write$')).Count | Should -Be 2
-        ([regex]::Matches($lock, '(?m)^\s+COPILOT_GITHUB_TOKEN: \$\{\{ github\.token \}\}$')).Count |
-            Should -Be 2
-        $lock | Should -Not -Match '(?m)^\s+pat_pool:$'
-        $lock | Should -Not -Match 'COPILOT_PAT_'
+        $lock | Should -Match '(?m)^\s+pat_pool:$'
+        ([regex]::Matches($lock, 'COPILOT_GITHUB_TOKEN: \$\{\{ case\(needs\.pat_pool\.outputs\.pat_number')).Count |
+            Should -BeGreaterOrEqual 2
+        $lock | Should -Not -Match '(?m)^\s+copilot-requests: write$'
     }
 }
