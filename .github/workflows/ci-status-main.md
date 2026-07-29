@@ -53,7 +53,7 @@ checkout:
   fetch-depth: 1
 
 safe-outputs:
-  # gh-aw v0.82.14 does not propagate staged mode into custom safe-output jobs.
+  # Custom safe-output jobs duplicate staged mode through their environment.
   # Keep this expression identical to GH_AW_SAFE_OUTPUTS_STAGED below; tests enforce it.
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
   report-failure-as-issue: false
@@ -118,6 +118,7 @@ safe-outputs:
             github-token: ${{ secrets.GITHUB_TOKEN }}
             script: |
               const fs = require('fs');
+              const crypto = require('crypto');
               const planPath = process.env.CI_SCAN_PLAN_PATH;
               const resultsPath = process.env.CI_SCAN_RESULTS_PATH;
               const dryRun = process.env.GH_AW_SAFE_OUTPUTS_STAGED === 'true';
@@ -148,6 +149,63 @@ safe-outputs:
               const scannerBranch = process.env.CI_SCAN_BRANCH;
               const markerPrefix = '<!-- ci-scan-fingerprint:';
               const matchCountPrefix = '<!-- ci-scan-match-count:';
+              const evidenceKeyPrefix = '<!-- ci-scan-evidence-key:';
+              const sha256 = value =>
+                crypto.createHash('sha256').update(value, 'utf8').digest('hex');
+              const normalizeEvidenceLine = value =>
+                String(value ?? '')
+                  .replace(/\u200B/g, '')
+                  .normalize('NFKC')
+                  .trim()
+                  .replace(/\s+/g, ' ')
+                  .toLowerCase();
+              const isTrustedStateLine = line => {
+                const trimmed = String(line ?? '').trimStart();
+                return /^<!-- ci-scan-(?:fingerprint|match-count|evidence-key):/.test(trimmed) ||
+                  /^- \*\*(?:Pipeline|Build ID|Branch)\*\*:/.test(trimmed);
+              };
+              const getEvidenceProof = issue => {
+                const evidenceKey = String(issue.EvidenceKey ?? issue.evidence_key ?? '');
+                const evidenceLineHashes =
+                  issue.EvidenceLineHashes ?? issue.evidence_line_hashes;
+                if (!Array.isArray(evidenceLineHashes) ||
+                    evidenceLineHashes.length < 1 ||
+                    evidenceLineHashes.length > 200 ||
+                    evidenceLineHashes.some(hash => !/^[0-9a-f]{64}$/.test(String(hash)))) {
+                  throw new Error('The validated plan contains an invalid trusted evidence-line proof.');
+                }
+                const hashes = [...new Set(evidenceLineHashes.map(String))].sort();
+                if (hashes.length !== evidenceLineHashes.length) {
+                  throw new Error('The validated plan contains duplicate trusted evidence-line hashes.');
+                }
+                const computedKey =
+                  `sha256:${sha256(`ci-scan-evidence-v1\n${hashes.join('\n')}`)}`;
+                if (evidenceKey !== computedKey) {
+                  throw new Error('The validated plan trusted evidence key does not match its line hashes.');
+                }
+                return { evidenceKey, hashes };
+              };
+              const hasTrustedEvidenceLine = (body, hashes) => {
+                const expected = new Set(hashes);
+                return String(body ?? '').split(/\r?\n/).some(line => {
+                  const restored = line.replace(/\u200B/g, '');
+                  if (isTrustedStateLine(restored)) {
+                    return false;
+                  }
+                  const normalized = normalizeEvidenceLine(restored);
+                  return normalized && expected.has(sha256(normalized));
+                });
+              };
+              const hasPipelineLine = (body, pipeline) =>
+                String(body ?? '').split(/\r?\n/).some(line => {
+                  const trimmed = line.trim();
+                  if (!trimmed.startsWith('- **Pipeline**:')) {
+                    return false;
+                  }
+                  return trimmed.slice('- **Pipeline**:'.length)
+                    .replace(/\(ID\s+\d+\)\s*$/i, '')
+                    .trim() === pipeline;
+                });
 
               // The plan is produced by the trusted validator checked out at the frozen
               // publisher SHA, and this job's identity comes from the compiled workflow.
@@ -175,6 +233,7 @@ safe-outputs:
                 }
                 const text = String(body ?? '');
                 const lines = text.split(/\r?\n/);
+                const evidenceProof = getEvidenceProof(issue);
                 const fingerprintMarker = `${markerPrefix} ${fingerprint} -->`;
                 if (text.split(markerPrefix).length - 1 !== 1 ||
                     lines.filter(line => line === fingerprintMarker).length !== 1) {
@@ -188,6 +247,14 @@ safe-outputs:
                 if (countMarkers[0] !== `${matchCountPrefix} ${issue.MatchCount} hits in failure.log -->`) {
                   throw new Error(`${source} for ${fingerprint} does not carry the trusted match count.`);
                 }
+                const evidenceKeyMarker = `${evidenceKeyPrefix} ${evidenceProof.evidenceKey} -->`;
+                if (text.split(evidenceKeyPrefix).length - 1 !== 1 ||
+                    lines.filter(line => line === evidenceKeyMarker).length !== 1) {
+                  throw new Error(`${source} for ${fingerprint} does not carry exactly one trusted evidence key.`);
+                }
+                if (!hasTrustedEvidenceLine(text, evidenceProof.hashes)) {
+                  throw new Error(`${source} for ${fingerprint} does not carry a full trusted evidence line.`);
+                }
               };
 
               if (plan.issues.length > plan.issue_cap) {
@@ -197,46 +264,15 @@ safe-outputs:
                 assertCanonicalPayload(issue, issue.Body, 'Validated plan');
               }
 
-              // Legacy scanner issues predate reliable marker preservation, so the
-              // 59-issue backlog carries no fingerprint. Both the `existing` proof and
-              // the `filed` create path use this same deterministic identity test so a
-              // legacy tracking issue cannot be silently duplicated.
-              const legacyIdentityMatcher = (fingerprint, pipeline) => {
-                const parts = String(fingerprint).split('|');
-                const identity = String(parts[3] || '').toLowerCase().replace(/\s+/g, ' ');
-                const primaryError = String(parts[4] || '').toLowerCase().replace(/\s+/g, ' ');
-                if (identity.length < 5 || primaryError.length < 3) {
-                  return null;
-                }
-                // Legacy bodies write either "- **Pipeline**: maui-pr" or
-                // "- **Pipeline**: maui-pr-uitests (ID 313)". Compare the parsed value
-                // so the device/UI backlog is reachable, while still refusing to let
-                // maui-pr match maui-pr-uitests.
-                const hasPipelineLine = body => body.split(/\r?\n/).some(line => {
-                  const trimmed = line.trim();
-                  if (!trimmed.startsWith('- **Pipeline**:')) {
-                    return false;
-                  }
-                  const value = trimmed.slice('- **Pipeline**:'.length)
-                    .replace(/\(ID\s+\d+\)\s*$/i, '')
-                    .trim();
-                  return value === pipeline;
-                });
-                const containsEvidence = (searchable, value) => {
-                  if (value.length >= 5) {
-                    return searchable.includes(value);
-                  }
-                  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`).test(searchable);
-                };
+              // Legacy issues have no publisher marker. Adoption is therefore bound to
+              // a trusted full raw-evidence line plus the configured pipeline, never to
+              // agent-selected fingerprint identity/error fields or publisher state.
+              const legacyEvidenceMatcher = (entry, pipeline) => {
+                const evidenceProof = getEvidenceProof(entry);
                 return candidate => {
                   const body = String(candidate.body || '');
-                  const searchable = `${candidate.title || ''}\n${body}`
-                    .toLowerCase()
-                    .replace(/\s+/g, ' ');
-                  return searchable.includes(identity) &&
-                    containsEvidence(searchable, primaryError) &&
-                    hasPipelineLine(body);
+                  return hasPipelineLine(body, pipeline) &&
+                    hasTrustedEvidenceLine(body, evidenceProof.hashes);
                 };
               };
 
@@ -264,25 +300,29 @@ safe-outputs:
                 }
 
                 const body = response.data.body || '';
-                const publishedEvidence = body.replace(/\u200B/g, '');
-                if (!publishedEvidence.includes(entry.match_pattern)) {
-                  throw new Error(`Existing issue #${entry.issue_number} does not contain the current trusted match pattern.`);
+                const evidenceProof = getEvidenceProof(entry);
+                if (!hasTrustedEvidenceLine(body, evidenceProof.hashes)) {
+                  throw new Error(`Existing issue #${entry.issue_number} does not contain a full current trusted evidence line.`);
                 }
                 const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
+                const exactEvidenceKey =
+                  `${evidenceKeyPrefix} ${evidenceProof.evidenceKey} -->`;
                 const markerCount = body.split(markerPrefix).length - 1;
                 if (markerCount > 0) {
-                  if (markerCount !== 1 || !body.split(/\r?\n/).includes(exactMarker)) {
-                    throw new Error(`Existing issue #${entry.issue_number} has a different or malformed fingerprint marker.`);
+                  const lines = body.split(/\r?\n/);
+                  if (markerCount !== 1 ||
+                      !lines.includes(exactMarker) ||
+                      body.split(evidenceKeyPrefix).length - 1 !== 1 ||
+                      !lines.includes(exactEvidenceKey)) {
+                    throw new Error(`Existing issue #${entry.issue_number} has different or malformed trusted markers.`);
                   }
-                  entry.coverage_proof = 'canonical-fingerprint';
+                  entry.coverage_proof = 'canonical-fingerprint-and-evidence-key';
                 } else {
-                  // Require identity, pipeline, and primary-error evidence so an
-                  // unrelated labeled issue cannot claim coverage.
-                  const matches = legacyIdentityMatcher(entry.fingerprint, entry.pipeline);
-                  if (!matches || !matches(response.data)) {
-                    throw new Error(`Legacy issue #${entry.issue_number} does not contain deterministic identity evidence for ${entry.fingerprint}.`);
+                  const matches = legacyEvidenceMatcher(entry, entry.pipeline);
+                  if (!matches(response.data)) {
+                    throw new Error(`Legacy issue #${entry.issue_number} does not contain trusted raw-evidence recurrence for ${entry.fingerprint}.`);
                   }
-                  entry.coverage_proof = 'legacy-identity-pipeline-and-primary-error';
+                  entry.coverage_proof = 'legacy-pipeline-and-trusted-evidence-line';
                 }
               });
 
@@ -327,31 +367,28 @@ safe-outputs:
                   continue;
                 }
 
-                // No canonical marker matched. The legacy backlog carries no markers at
-                // all, so fall back to the same deterministic identity proof used for
-                // `existing` rather than blindly creating a duplicate.
-                const matchesLegacy = legacyIdentityMatcher(issue.Fingerprint, issue.Pipeline);
-                if (matchesLegacy) {
-                  const legacyMatches = openTrackingIssues.filter(candidate =>
-                    !candidate.pull_request &&
-                    !String(candidate.body || '').includes(markerPrefix) &&
-                    matchesLegacy(candidate));
-                  if (legacyMatches.length > 1) {
-                    throw new Error(`Fingerprint ${issue.Fingerprint} ambiguously matches legacy issues ${legacyMatches.map(c => `#${c.number}`).join(', ')}.`);
-                  }
-                  if (legacyMatches.length === 1) {
-                    results.issues.push({
-                      pipeline: issue.Pipeline,
-                      fingerprint: issue.Fingerprint,
-                      disposition: 'existing',
-                      issue_number: legacyMatches[0].number,
-                      issue_url: legacyMatches[0].html_url,
-                      coverage_proof: 'legacy-identity-pipeline-and-primary-error',
-                      legacy_dedup: true,
-                    });
-                    persistResults();
-                    continue;
-                  }
+                // Markerless legacy adoption requires the same publisher-verified raw
+                // evidence recurrence as an explicit `existing` disposition.
+                const matchesLegacy = legacyEvidenceMatcher(issue, issue.Pipeline);
+                const legacyMatches = openTrackingIssues.filter(candidate =>
+                  !candidate.pull_request &&
+                  !String(candidate.body || '').includes(markerPrefix) &&
+                  matchesLegacy(candidate));
+                if (legacyMatches.length > 1) {
+                  throw new Error(`Fingerprint ${issue.Fingerprint} ambiguously matches legacy issues ${legacyMatches.map(c => `#${c.number}`).join(', ')}.`);
+                }
+                if (legacyMatches.length === 1) {
+                  results.issues.push({
+                    pipeline: issue.Pipeline,
+                    fingerprint: issue.Fingerprint,
+                    disposition: 'existing',
+                    issue_number: legacyMatches[0].number,
+                    issue_url: legacyMatches[0].html_url,
+                    coverage_proof: 'legacy-pipeline-and-trusted-evidence-line',
+                    legacy_dedup: true,
+                  });
+                  persistResults();
+                  continue;
                 }
                 issuesToCreate.push(issue);
               }
@@ -593,6 +630,11 @@ steps:
               `https://dev.azure.com/dnceng-public/public/_apis/build/builds/${buildId}/logs/${logId}?api-version=7.1`,
               `AzDO log ${buildId}/${logId}`);
             const evidence = [`===== AzDO log ${buildId}/${logId} =====`, azdoLog];
+            const rawSegments = [{
+              kind: 'azdo-log',
+              source: `${buildId}/${logId}`,
+              content: azdoLog,
+            }];
 
             if (definition.definition_id === 314) {
               const jobIds = [...new Set(
@@ -702,6 +744,11 @@ steps:
                       `===== Helix deadletter ${jobId}/${String(workItem.Name || 'unknown')} =====`,
                       `Work item was deadlettered (State=${String(workItem.State || 'unknown')}, ExitCode=${String(workItem.ExitCode)}); it never ran.`,
                       deadletterUrl.toString());
+                    rawSegments.push({
+                      kind: 'helix-deadletter-uri',
+                      source: `${jobId}/${String(workItem.Name || 'unknown')}`,
+                      content: deadletterUrl.toString(),
+                    });
                     failedLeafLogIds.add(logId);
                     continue;
                   }
@@ -716,6 +763,11 @@ steps:
                   evidence.push(
                     `===== Helix console ${jobId}/${String(workItem.Name || 'unknown')} =====`,
                     consoleLog);
+                  rawSegments.push({
+                    kind: 'helix-console',
+                    source: `${jobId}/${String(workItem.Name || 'unknown')}`,
+                    content: consoleLog,
+                  });
                   // A DeviceTests submission task can be green in the AzDO timeline
                   // while its Helix work items failed, so the first loop cannot see
                   // this failure. Fold it in here — before the set is emitted below —
@@ -727,9 +779,25 @@ steps:
               }
             }
 
+            if (rawSegments.length > 200) {
+              throw new Error(`Raw evidence for ${definition.name} ${buildId}/${logId} exceeds the 200-segment safety limit.`);
+            }
+            const structuredEvidence = JSON.stringify({
+              schema_version: 1,
+              pipeline: definition.name,
+              build_id: buildId,
+              log_id: logId,
+              segments: rawSegments,
+            });
+            if (structuredEvidence.length > 25_000_000) {
+              throw new Error(`Raw evidence for ${definition.name} ${buildId}/${logId} exceeds the 25 MB safety limit.`);
+            }
             writeEvidence(
               `evidence/${definition.name}/${buildId}-${logId}.log`,
               evidence.join('\n'));
+            writeEvidence(
+              `evidence/${definition.name}/${buildId}-${logId}.evidence.json`,
+              structuredEvidence);
           }
           pipelines.push({
             ...definition,

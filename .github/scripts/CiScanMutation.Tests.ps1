@@ -27,7 +27,8 @@ BeforeAll {
         'no-injection'             = @{
             Find    = '$publishedBody = (New-CanonicalMarkerBlock `
             -Fingerprint $Fingerprint `
-            -MatchCount $trustedMatchCount) + "`n`n" + $body'
+            -MatchCount $trustedEvidenceProof.MatchCount `
+            -EvidenceKey $trustedEvidenceProof.EvidenceKey) + "`n`n" + $body'
             Replace = '$publishedBody = $body'
         }
         # The fingerprint marker is sourced from agent-controlled body text
@@ -35,15 +36,19 @@ BeforeAll {
         'fingerprint-from-body'    = @{
             Find    = '$publishedBody = (New-CanonicalMarkerBlock `
             -Fingerprint $Fingerprint `
-            -MatchCount $trustedMatchCount) + "`n`n" + $body'
+            -MatchCount $trustedEvidenceProof.MatchCount `
+            -EvidenceKey $trustedEvidenceProof.EvidenceKey) + "`n`n" + $body'
             Replace = '$publishedBody = (New-CanonicalMarkerBlock `
             -Fingerprint ([regex]::Match($rawBody, ''(?m)^claimed-fingerprint: (.+)$'').Groups[1].Value) `
-            -MatchCount $trustedMatchCount) + "`n`n" + $body'
+            -MatchCount $trustedEvidenceProof.MatchCount `
+            -EvidenceKey $trustedEvidenceProof.EvidenceKey) + "`n`n" + $body'
         }
         # The count marker is no longer the frozen-evidence recount.
         'untrusted-count'          = @{
-            Find    = '-MatchCount $trustedMatchCount) + "`n`n" + $body'
-            Replace = '-MatchCount ($trustedMatchCount + 7)) + "`n`n" + $body'
+            Find    = '-MatchCount $trustedEvidenceProof.MatchCount `
+            -EvidenceKey $trustedEvidenceProof.EvidenceKey) + "`n`n" + $body'
+            Replace = '-MatchCount ($trustedEvidenceProof.MatchCount + 7) `
+            -EvidenceKey $trustedEvidenceProof.EvidenceKey) + "`n`n" + $body'
         }
         # Validation happens only before injection: the post-injection assertion
         # over the exact published payload is removed.
@@ -57,6 +62,19 @@ BeforeAll {
         'no-duplicate-rejection'   = @{
             Find    = '    if (Test-MarkerLikeContent -Value $rawBody) {'
             Replace = '    if ($false) {'
+        }
+        # Marker-like match patterns can replay trusted publisher state.
+        'no-marker-pattern-rejection' = @{
+            Find    = '    if (Test-MarkerLikeContent -Value $matchPattern) {'
+            Replace = '    if ($false) {'
+        }
+        # Synthetic framing is put back into the countable raw segment set.
+        'synthetic-framing-counted' = @{
+            Find    = '                -TrustedEvidencePath $TrustedEvidencePath)
+        foreach ($segment in $segments) {'
+            Replace = '                -TrustedEvidencePath $TrustedEvidencePath)
+        $segments += [pscustomobject]@{ content = "===== AzDO log $BuildId/$sourceLogId =====" }
+        foreach ($segment in $segments) {'
         }
     }
 
@@ -82,14 +100,18 @@ BeforeAll {
         # instead of dying on a missing command.
         $source = $source.Replace(
             'function Assert-CanonicalPublishedBody {',
-            "function Assert-NoOpPublishedBody { param(`$Body, `$Fingerprint, `$MatchCount, `$MatchPattern, `$PipelineName, `$BuildId) }`n`nfunction Assert-CanonicalPublishedBody {")
+            "function Assert-NoOpPublishedBody { param(`$Body, `$Fingerprint, `$MatchCount, `$EvidenceKey, `$EvidenceLineHashes, `$MatchPattern, `$PipelineName, `$BuildId) }`n`nfunction Assert-CanonicalPublishedBody {")
 
         Set-Content -LiteralPath $Path -Value $source -Encoding utf8
         return $Path
     }
 
     function New-ProbeManifest {
-        param([string]$Path, [string]$Body)
+        param(
+            [string]$Path,
+            [string]$Body,
+            [string]$MatchPattern = 'Assertion failed'
+        )
 
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         $manifest = [pscustomobject]@{
@@ -105,7 +127,7 @@ BeforeAll {
                             disposition    = 'filed'
                             source_log_ids = @(1001)
                             title          = 'Sample test fails on Windows'
-                            match_pattern  = 'Assertion failed'
+                            match_pattern  = $MatchPattern
                             body           = $Body
                         }
                     )
@@ -120,20 +142,39 @@ BeforeAll {
     }
 
     function New-ProbeEvidence {
-        param([string]$Root)
+        param(
+            [string]$Root,
+            [string[]]$Lines = @('Assertion failed', 'Assertion failed')
+        )
 
         $directory = Join-Path $Root 'maui-pr'
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
         Set-Content `
             -LiteralPath (Join-Path $directory '123456-1001.log') `
-            -Value @('Assertion failed once', 'Assertion failed twice')
+            -Value $Lines
+        [pscustomobject]@{
+            schema_version = 1
+            pipeline       = 'maui-pr'
+            build_id       = 123456
+            log_id         = 1001
+            segments       = @(
+                [pscustomobject]@{
+                    kind    = 'azdo-log'
+                    source  = '123456/1001'
+                    content = $Lines -join "`n"
+                }
+            )
+        } | ConvertTo-Json -Depth 6 | Set-Content `
+            -LiteralPath (Join-Path $directory '123456-1001.evidence.json')
         return $Root
     }
 
     function Invoke-ValidatorProbe {
         param(
             [string[]]$Mutation = @(),
-            [string]$Body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed"
+            [string]$Body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed",
+            [string]$MatchPattern = 'Assertion failed',
+            [string[]]$EvidenceLines = @('Assertion failed', 'Assertion failed')
         )
 
         $work = Join-Path $TestDrive ('mutation-' + [guid]::NewGuid().ToString('n'))
@@ -147,8 +188,13 @@ BeforeAll {
             New-MutatedValidator -Mutation $Mutation -Path (Join-Path $work 'Validate-CiScanManifest.ps1')
         }
 
-        $manifestPath = New-ProbeManifest -Path (Join-Path $work 'manifest.json') -Body $Body
-        $evidencePath = New-ProbeEvidence -Root (Join-Path $work 'evidence')
+        $manifestPath = New-ProbeManifest `
+            -Path (Join-Path $work 'manifest.json') `
+            -Body $Body `
+            -MatchPattern $MatchPattern
+        $evidencePath = New-ProbeEvidence `
+            -Root (Join-Path $work 'evidence') `
+            -Lines $EvidenceLines
         $probePath = Join-Path $work 'probe.ps1'
 
         Set-Content -LiteralPath $probePath -Value @'
@@ -180,12 +226,13 @@ try {
 }
 
 Describe 'CI scanner marker mutation coverage' {
-    It 'baseline: the real validator injects exactly one canonical marker pair' {
+    It 'baseline: the real validator injects exactly one canonical marker block' {
         $result = Invoke-ValidatorProbe
 
         $result.ok | Should -BeTrue
         ([regex]::Matches($result.body, '<!-- ci-scan-fingerprint:')).Count | Should -Be 1
         ([regex]::Matches($result.body, '<!-- ci-scan-match-count:')).Count | Should -Be 1
+        ([regex]::Matches($result.body, '<!-- ci-scan-evidence-key:')).Count | Should -Be 1
         $result.body.StartsWith($script:CanonicalMarker) | Should -BeTrue
         $result.body | Should -Match '(?m)^<!-- ci-scan-match-count: 2 hits in failure\.log -->$'
     }
@@ -265,6 +312,51 @@ Describe 'CI scanner marker mutation coverage' {
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*must not contain scanner marker content*'
+    }
+
+    It 'mutation "synthetic-framing-counted": a header-only pattern becomes false evidence' {
+        $header = '===== AzDO log 123456/1001 ====='
+        $result = Invoke-ValidatorProbe `
+            -Mutation @('synthetic-framing-counted') `
+            -MatchPattern '===== AzDO log' `
+            -EvidenceLines @('Different raw failure') `
+            -Body "## Summary`nHeader replay.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n$header"
+
+        $result.ok | Should -BeTrue
+    }
+
+    It 'baseline: header-only evidence fails closed when synthetic framing is not countable' {
+        $header = '===== AzDO log 123456/1001 ====='
+        $result = Invoke-ValidatorProbe `
+            -MatchPattern '===== AzDO log' `
+            -EvidenceLines @('Different raw failure') `
+            -Body "## Summary`nHeader replay.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n$header"
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*must occur in trusted source log 1001*'
+    }
+
+    It 'mutation "no-marker-pattern-rejection": marker state can become evidence when both marker gates are removed' {
+        $pattern = 'ci-scan-fingerprint'
+        $body = "## Summary`nMarker replay.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n$pattern"
+        $result = Invoke-ValidatorProbe `
+            -Mutation @('no-marker-pattern-rejection', 'no-duplicate-rejection') `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern) `
+            -Body $body
+
+        $result.ok | Should -BeTrue
+    }
+
+    It 'baseline: marker-like match patterns are rejected before evidence can replay them' {
+        $pattern = 'ci-scan-fingerprint'
+        $result = Invoke-ValidatorProbe `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern) `
+            -Body "## Summary`nMarker replay.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n$pattern"
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*scanner marker content*'
     }
 }
 

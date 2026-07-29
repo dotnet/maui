@@ -27,18 +27,43 @@ BeforeDiscovery {
 BeforeAll {
     $script:LockPath = Join-Path $PSScriptRoot '../workflows/ci-status-net11.lock.yml'
 
+    function New-EvidenceProof {
+        param([Parameter(Mandatory = $true)][string]$Line)
+
+        $normalized = ([regex]::Replace(
+                $Line.Replace([string][char]0x200B, '').
+                    Normalize([System.Text.NormalizationForm]::FormKC).Trim(),
+                '\s+',
+                ' '
+            )).ToLowerInvariant()
+        $lineHashBytes = [System.Security.Cryptography.SHA256]::HashData(
+            [System.Text.Encoding]::UTF8.GetBytes($normalized)
+        )
+        $lineHash = [Convert]::ToHexString($lineHashBytes).ToLowerInvariant()
+        $keyBytes = [System.Security.Cryptography.SHA256]::HashData(
+            [System.Text.Encoding]::UTF8.GetBytes("ci-scan-evidence-v1`n$lineHash")
+        )
+        [pscustomobject]@{
+            EvidenceKey        = 'sha256:' + [Convert]::ToHexString($keyBytes).ToLowerInvariant()
+            EvidenceLineHashes = @($lineHash)
+        }
+    }
+
     function Get-LegacyMatcherSource {
         $lock = Get-Content -LiteralPath $script:LockPath -Raw
-        $start = $lock.IndexOf('const legacyIdentityMatcher')
+        $start = $lock.IndexOf('const evidenceKeyPrefix')
         if ($start -lt 0) {
-            throw 'The compiled lock no longer contains legacyIdentityMatcher.'
+            throw 'The compiled lock no longer contains trusted evidence matching.'
         }
-        $end = $lock.IndexOf('const existingEntries', $start)
-        if ($end -lt 0) {
+        $helperEnd = $lock.IndexOf('// The plan is produced', $start)
+        $matcherStart = $lock.IndexOf('const legacyEvidenceMatcher', $helperEnd)
+        $end = $lock.IndexOf('const existingEntries', $matcherStart)
+        if ($helperEnd -lt 0 -or $matcherStart -lt 0 -or $end -lt 0) {
             throw 'Could not find the end of the legacyIdentityMatcher block.'
         }
 
-        $segment = $lock.Substring($start, $end - $start)
+        $segment = $lock.Substring($start, $helperEnd - $start) + "`n" +
+            $lock.Substring($matcherStart, $end - $matcherStart)
         # $start lands on the 'const' keyword, so the first line has no leading
         # whitespace; take the dedent width from the raw line in the lock instead.
         $lineStart = $lock.LastIndexOf("`n", $start) + 1
@@ -57,24 +82,44 @@ BeforeAll {
 
     function Invoke-LegacyMatcher {
         param(
-            [Parameter(Mandatory = $true)][string]$Fingerprint,
+            [Parameter(Mandatory = $true)][string]$EvidenceLine,
             [Parameter(Mandatory = $true)][string]$Pipeline,
-            [Parameter(Mandatory = $true)][object[]]$Candidates
+            [Parameter(Mandatory = $true)][object[]]$Candidates,
+            [switch]$CountTrustedStateLines,
+            [switch]$IgnoreEvidenceIdentity
         )
 
         $harness = Join-Path $TestDrive 'matcher.js'
         $data = Join-Path $TestDrive 'candidates.json'
         Set-Content -LiteralPath $data -Value ($Candidates | ConvertTo-Json -Depth 6 -AsArray)
+        $proof = New-EvidenceProof -Line $EvidenceLine
+        $entry = [pscustomobject]@{
+            evidence_key         = $proof.EvidenceKey
+            evidence_line_hashes = $proof.EvidenceLineHashes
+        }
+
+        $matcherSource = Get-LegacyMatcherSource
+        if ($CountTrustedStateLines) {
+            $needle = 'if (isTrustedStateLine(restored)) {'
+            $matcherSource.Contains($needle) | Should -BeTrue
+            $matcherSource = $matcherSource.Replace($needle, 'if (false && isTrustedStateLine(restored)) {')
+        }
+        if ($IgnoreEvidenceIdentity) {
+            $pattern = 'return hasPipelineLine\(body, pipeline\) &&\s+' +
+                'hasTrustedEvidenceLine\(body, evidenceProof\.hashes\);'
+            [regex]::Matches($matcherSource, $pattern).Count | Should -Be 1
+            $matcherSource = [regex]::Replace(
+                $matcherSource,
+                $pattern,
+                'return hasPipelineLine(body, pipeline);')
+        }
 
         $script = @"
-$(Get-LegacyMatcherSource)
+const crypto = require('crypto');
+$matcherSource
 const candidates = require($($data | ConvertTo-Json));
-const matches = legacyIdentityMatcher($($Fingerprint | ConvertTo-Json), $($Pipeline | ConvertTo-Json));
-if (!matches) {
-  console.log('NULL');
-} else {
-  console.log(candidates.filter(matches).map(c => c.number).join(',') || 'NONE');
-}
+const matches = legacyEvidenceMatcher($($entry | ConvertTo-Json -Compress), $($Pipeline | ConvertTo-Json));
+console.log(candidates.filter(matches).map(c => c.number).join(',') || 'NONE');
 "@
         Set-Content -LiteralPath $harness -Value $script
         $output = & node $harness 2>&1
@@ -174,7 +219,7 @@ const results = { issues: [] };
 const persistResults = () => {};
 const markerPrefix = '<!-- ci-scan-fingerprint:';
 $(Get-NormalizeBodySource)
-const legacyIdentityMatcher = () => null;
+const legacyEvidenceMatcher = () => () => false;
 try {
 $(Get-AdoptPathSource)
   console.log('OK ' + JSON.stringify({
@@ -213,22 +258,45 @@ $(Get-AdoptPathSource)
             html_url = "https://github.com/dotnet/maui/issues/$Number"
         }
     }
+
+    function New-AdoptPlannedIssue {
+        param(
+            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows',
+            [string]$Title = 'Sample failure'
+        )
+
+        $evidenceLine = 'Assertion failed for sample test'
+        $proof = New-EvidenceProof -Line $evidenceLine
+        [pscustomobject]@{
+            Fingerprint        = $Fingerprint
+            Pipeline           = 'maui-pr'
+            Title              = $Title
+            Body               = "<!-- ci-scan-fingerprint: $Fingerprint -->`n" +
+                "<!-- ci-scan-match-count: 1 hits in failure.log -->`n" +
+                "<!-- ci-scan-evidence-key: $($proof.EvidenceKey) -->`n`n$evidenceLine"
+            MatchCount         = 1
+            EvidenceKey        = $proof.EvidenceKey
+            EvidenceLineHashes = $proof.EvidenceLineHashes
+        }
+    }
 }
 
-Describe 'ci-status-net11 legacy dedup matcher' {
+Describe 'ci-status-net11 trusted evidence recurrence matcher' {
     It 'is present in the compiled lock' {
-        Get-LegacyMatcherSource | Should -Match 'hasPipelineLine'
+        Get-LegacyMatcherSource | Should -Match 'legacyEvidenceMatcher'
+        Get-LegacyMatcherSource | Should -Match 'hasTrustedEvidenceLine'
     }
 
-    It 'matches a marker-less legacy issue for the same pipeline' -Skip:(-not $script:NodeAvailable) {
+    It 'matches a marker-less legacy issue for the same pipeline and raw evidence line' -Skip:(-not $script:NodeAvailable) {
         $candidates = @(
             (New-LegacyIssue -Number 36827 `
                     -Title 'Maui.Controls.Sample build fails' `
-                    -PipelineLine '- **Pipeline**: maui-pr')
+                    -PipelineLine '- **Pipeline**: maui-pr' `
+                    -Error 'MAUIG2045 binding failure')
         )
 
         Invoke-LegacyMatcher `
-            -Fingerprint 'ci-scan-net11|net11.0|maui-pr|maui.controls.sample|mauig2045|macos' `
+            -EvidenceLine 'MAUIG2045 binding failure' `
             -Pipeline 'maui-pr' `
             -Candidates $candidates |
             Should -Be '36827'
@@ -245,7 +313,7 @@ Describe 'ci-status-net11 legacy dedup matcher' {
         )
 
         Invoke-LegacyMatcher `
-            -Fingerprint 'ci-scan-net11|net11.0|maui-pr-uitests|downsizeimageappearproperly|visual snapshot|ios' `
+            -EvidenceLine 'visual snapshot mismatch' `
             -Pipeline 'maui-pr-uitests' `
             -Candidates $candidates |
             Should -Be '36207'
@@ -260,13 +328,13 @@ Describe 'ci-status-net11 legacy dedup matcher' {
         )
 
         Invoke-LegacyMatcher `
-            -Fingerprint 'ci-scan-net11|net11.0|maui-pr|downsizeimageappearproperly|visual snapshot|ios' `
+            -EvidenceLine 'visual snapshot mismatch' `
             -Pipeline 'maui-pr' `
             -Candidates $candidates |
             Should -Be 'NONE'
     }
 
-    It 'requires primary-error evidence, not just the identity' -Skip:(-not $script:NodeAvailable) {
+    It 'requires the trusted full evidence line, not agent-selected identity fields' -Skip:(-not $script:NodeAvailable) {
         $candidates = @(
             (New-LegacyIssue -Number 36827 `
                     -Title 'Maui.Controls.Sample build fails' `
@@ -275,33 +343,68 @@ Describe 'ci-status-net11 legacy dedup matcher' {
         )
 
         Invoke-LegacyMatcher `
-            -Fingerprint 'ci-scan-net11|net11.0|maui-pr|maui.controls.sample|mauig2045|macos' `
+            -EvidenceLine 'MAUIG2045 binding failure' `
             -Pipeline 'maui-pr' `
             -Candidates $candidates |
             Should -Be 'NONE'
     }
 
-    It 'refuses to match on a too-generic identity' -Skip:(-not $script:NodeAvailable) {
+    It 'ignores trusted marker and state lines during recurrence matching' -Skip:(-not $script:NodeAvailable) {
         $candidates = @(
-            (New-LegacyIssue -Number 36827 `
-                    -Title 'Maui.Controls.Sample build fails' `
-                    -PipelineLine '- **Pipeline**: maui-pr')
+            [pscustomobject]@{
+                number = 36827
+                title  = 'Unrelated failure'
+                body   = "<!-- ci-scan-fingerprint: copied -->`n- **Pipeline**: maui-pr`n- **Build ID**: 123456"
+            }
         )
 
         Invoke-LegacyMatcher `
-            -Fingerprint 'ci-scan-net11|net11.0|maui-pr|ui|mauig2045|macos' `
+            -EvidenceLine '<!-- ci-scan-fingerprint: copied -->' `
             -Pipeline 'maui-pr' `
             -Candidates $candidates |
-            Should -Be 'NULL'
+            Should -Be 'NONE'
+    }
+
+    It 'mutation "trusted-state-lines-counted": a marker line replays an unrelated issue' -Skip:(-not $script:NodeAvailable) {
+        $candidates = @(
+            [pscustomobject]@{
+                number = 36827
+                title  = 'Unrelated failure'
+                body   = "<!-- ci-scan-fingerprint: copied -->`n- **Pipeline**: maui-pr"
+            }
+        )
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine '<!-- ci-scan-fingerprint: copied -->' `
+            -Pipeline 'maui-pr' `
+            -Candidates $candidates `
+            -CountTrustedStateLines |
+            Should -Be '36827'
+    }
+
+    It 'mutation "no-evidence-identity-binding": pipeline alone suppresses a distinct failure' -Skip:(-not $script:NodeAvailable) {
+        $candidates = @(
+            (New-LegacyIssue -Number 36827 `
+                    -Title 'Unrelated failure' `
+                    -PipelineLine '- **Pipeline**: maui-pr' `
+                    -Error 'Different unrelated raw failure line')
+        )
+
+        Invoke-LegacyMatcher `
+            -EvidenceLine 'Unique current raw failure line' `
+            -Pipeline 'maui-pr' `
+            -Candidates $candidates `
+            -IgnoreEvidenceIdentity |
+            Should -Be '36827'
     }
 }
 
 Describe 'ci-status-net11 publisher create path' {
-    It 'consults the legacy matcher before creating an issue' {
+    It 'consults trusted evidence recurrence before creating an issue' {
         $lock = Get-Content -LiteralPath $script:LockPath -Raw
         $createPath = $lock.Substring($lock.IndexOf('const issuesToCreate = []'))
 
-        $createPath | Should -Match 'legacyIdentityMatcher\(issue\.Fingerprint, issue\.Pipeline\)'
+        $createPath | Should -Match 'legacyEvidenceMatcher\(issue, issue\.Pipeline\)'
         $createPath | Should -Match 'ambiguously matches legacy issues'
     }
 
@@ -317,41 +420,26 @@ Describe 'ci-status-net11 publisher create path' {
 
     It 'adopts a single canonical-marker match' -Skip:(-not $script:NodeAvailable) {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $planned = [pscustomobject]@{
-            Fingerprint = $fingerprint
-            Pipeline    = 'maui-pr'
-            Title       = 'Sample failure'
-            Body        = "<!-- ci-scan-fingerprint: $fingerprint -->`nRecurring sample failure."
-        }
+        $planned = New-AdoptPlannedIssue -Fingerprint $fingerprint
 
         Invoke-AdoptPath -PlannedIssue $planned -OpenIssues @(
-            (New-MarkedIssue -Number 40001 -Fingerprint $fingerprint)
+            (New-MarkedIssue -Number 40001 -Fingerprint $fingerprint -Body $planned.Body)
         ) | Should -Be 'OK {"adopted":[40001],"created":[]}'
     }
 
     It 'throws instead of adopting the first of two identical markers' -Skip:(-not $script:NodeAvailable) {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $planned = [pscustomobject]@{
-            Fingerprint = $fingerprint
-            Pipeline    = 'maui-pr'
-            Title       = 'Sample failure'
-            Body        = "<!-- ci-scan-fingerprint: $fingerprint -->`nRecurring sample failure."
-        }
+        $planned = New-AdoptPlannedIssue -Fingerprint $fingerprint
 
         Invoke-AdoptPath -PlannedIssue $planned -OpenIssues @(
-            (New-MarkedIssue -Number 40001 -Fingerprint $fingerprint)
-            (New-MarkedIssue -Number 40002 -Fingerprint $fingerprint)
+            (New-MarkedIssue -Number 40001 -Fingerprint $fingerprint -Body $planned.Body)
+            (New-MarkedIssue -Number 40002 -Fingerprint $fingerprint -Body $planned.Body)
         ) | Should -BeLike 'THROW *ambiguously matches open issues #40001, #40002.'
     }
 
     It 'creates when no open issue carries the marker' -Skip:(-not $script:NodeAvailable) {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $planned = [pscustomobject]@{
-            Fingerprint = $fingerprint
-            Pipeline    = 'maui-pr'
-            Title       = 'Sample failure'
-            Body        = "<!-- ci-scan-fingerprint: $fingerprint -->`nRecurring sample failure."
-        }
+        $planned = New-AdoptPlannedIssue -Fingerprint $fingerprint
 
         Invoke-AdoptPath -PlannedIssue $planned -OpenIssues @(
             (New-MarkedIssue -Number 40001 -Fingerprint 'ci-scan-net11|net11.0|maui-pr|other test|other error|linux')
@@ -401,6 +489,9 @@ Describe 'CI scanner twin inventory' {
             Replace('ci-status-fix.md', '{FIXER}').
             Replace('ci-scan-fingerprint', '{FINGERPRINT_MARKER}').
             Replace('ci-scan-match-count', '{COUNT_MARKER}').
+            Replace('ci-scan-evidence-key', '{EVIDENCE_MARKER}').
+            Replace('ci-scan-(?:fingerprint|match-count|evidence-key)', '{TRUSTED_MARKER_PATTERN}').
+            Replace('ci-scan-evidence-v1', '{EVIDENCE_KEY_DOMAIN}').
             Replace('ci-scan-lock-issues', '{LOCK_WORKFLOW}').
             Replace('submit-ci-scan', '{TOOL}').
             Replace('submit_ci_scan', '{TOOL_ID}').
@@ -458,6 +549,8 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
         $script:TwinLock | Should -Match 'does not carry exactly one canonical fingerprint marker'
         $script:TwinLock | Should -Match 'does not carry exactly one canonical match-count marker'
         $script:TwinLock | Should -Match 'does not carry the trusted match count'
+        $script:TwinLock | Should -Match 'does not carry exactly one trusted evidence key'
+        $script:TwinLock | Should -Match 'does not carry a full trusted evidence line'
         $script:TwinLock | Should -Match "ci-scan-match-count: \[1-9\]"
     }
 
@@ -480,7 +573,8 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
     It 'keeps the fail-closed dedup, cap, and provenance guards' {
         $script:TwinLock | Should -Match 'ambiguously matches open issues'
         $script:TwinLock | Should -Match 'ambiguously matches legacy issues'
-        $script:TwinLock | Should -Match 'legacyIdentityMatcher\(issue\.Fingerprint, issue\.Pipeline\)'
+        $script:TwinLock | Should -Match 'legacyEvidenceMatcher\(issue, issue\.Pipeline\)'
+        $script:TwinLock | Should -Match 'hasTrustedEvidenceLine'
         $script:TwinLock | Should -Match 'exceeds the issue cap'
         $script:TwinLock | Should -Match 'is not an open \$\{expectedLabel\} tracking issue'
         $script:TwinLock | Should -Match 'retry_reused: true'
@@ -604,19 +698,26 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
             )
 
             $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|$Pipeline|$Identity|assertion failed|windows"
+            $evidenceLine = "Assertion failed for $Identity"
+            $proof = New-EvidenceProof -Line $evidenceLine
             $body = if ($PSBoundParameters.ContainsKey('BodyOverride')) {
                 $BodyOverride
             } else {
-                "<!-- ci-scan-fingerprint: $fingerprint -->`n<!-- ci-scan-match-count: $MatchCount hits in failure.log -->`n`n## Summary`nRecurring $Identity."
+                "<!-- ci-scan-fingerprint: $fingerprint -->`n" +
+                    "<!-- ci-scan-match-count: $MatchCount hits in failure.log -->`n" +
+                    "<!-- ci-scan-evidence-key: $($proof.EvidenceKey) -->`n`n" +
+                    "## Summary`nRecurring $Identity.`n`n## Error Message`n$evidenceLine"
             }
 
             [pscustomobject]@{
-                Pipeline    = $Pipeline
-                BuildId     = 123456
-                Fingerprint = $fingerprint
-                Title       = "[$($script:TwinScannerId)] $Identity fails on Windows"
-                Body        = $body
-                MatchCount  = $MatchCount
+                Pipeline           = $Pipeline
+                BuildId            = 123456
+                Fingerprint        = $fingerprint
+                Title              = "[$($script:TwinScannerId)] $Identity fails on Windows"
+                Body               = $body
+                MatchCount         = $MatchCount
+                EvidenceKey        = $proof.EvidenceKey
+                EvidenceLineHashes = $proof.EvidenceLineHashes
             }
         }
 
@@ -640,9 +741,48 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
                 issues         = @($Issues)
             }
         }
+
+        function New-ExistingPlan {
+            param(
+                [int]$IssueNumber = 40001,
+                [string]$EvidenceLine = 'Unique current raw failure line',
+                [string]$FingerprintIdentity = 'sample test'
+            )
+
+            $proof = New-EvidenceProof -Line $EvidenceLine
+            $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|maui-pr|$FingerprintIdentity|assertion failed|windows"
+            $plan = New-Plan
+            $plan.pipelines[0].signatures = @(
+                [pscustomobject]@{
+                    fingerprint          = $fingerprint
+                    disposition          = 'existing'
+                    issue_number         = $IssueNumber
+                    match_pattern        = 'Unique current'
+                    evidence_key         = $proof.EvidenceKey
+                    evidence_line_hashes = $proof.EvidenceLineHashes
+                }
+            )
+            return $plan
+        }
+
+        function New-ExistingIssueStub {
+            param(
+                [int]$Number = 40001,
+                [string]$Body
+            )
+
+            [pscustomobject]@{
+                number   = $Number
+                state    = 'open'
+                title    = 'Existing scanner failure'
+                body     = $Body
+                labels   = @([pscustomobject]@{ name = $script:TwinLabel })
+                html_url = "https://github.com/dotnet/maui/issues/$Number"
+            }
+        }
     }
 
-    It 'creates an issue carrying exactly one canonical marker pair' {
+    It 'creates an issue carrying exactly one canonical marker block' {
         $issue = New-PlannedIssue
         $result = Invoke-Publisher -Plan (New-Plan -Issues @($issue))
 
@@ -652,8 +792,10 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
         $body = $result.created[0].body
         ([regex]::Matches($body, '<!-- ci-scan-fingerprint:')).Count | Should -Be 1
         ([regex]::Matches($body, '<!-- ci-scan-match-count:')).Count | Should -Be 1
+        ([regex]::Matches($body, '<!-- ci-scan-evidence-key:')).Count | Should -Be 1
         $body | Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($issue.Fingerprint)) -->$"
         $body | Should -Match '(?m)^<!-- ci-scan-match-count: 2 hits in failure\.log -->$'
+        $body | Should -Match '(?m)^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
     }
 
     It 'refuses to write anything when one record in a multi-record plan is unmarked' {
@@ -700,6 +842,24 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*does not carry the trusted match count*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'refuses the whole batch when one payload has an untrusted evidence key' {
+        $bad = New-PlannedIssue -Identity 'third failure'
+        $bad.EvidenceKey = 'sha256:' + ('0' * 64)
+        $bad.Body = $bad.Body -replace 'ci-scan-evidence-key: sha256:[0-9a-f]{64}',
+            "ci-scan-evidence-key: $($bad.EvidenceKey)"
+        $plan = New-Plan -Issues @(
+            (New-PlannedIssue -Identity 'first failure'),
+            (New-PlannedIssue -Identity 'second failure'),
+            $bad
+        )
+
+        $result = Invoke-Publisher -Plan $plan
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*evidence key does not match its line hashes*'
         @($result.created).Count | Should -Be 0
     }
 
@@ -761,6 +921,58 @@ $(Get-CiScanPublisherScript -LockPath $script:TwinLockPath)
         $result = Invoke-Publisher -Plan (New-Plan -Issues @((New-PlannedIssue))) -DryRun
 
         $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'accepts markerless legacy recurrence only on a trusted full raw-evidence line' {
+        $plan = New-ExistingPlan
+        $existing = New-ExistingIssueStub `
+            -Body "## Build Information`n- **Pipeline**: maui-pr`n`n## Error Message`nUnique current raw failure line"
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects unrelated issue replay through trusted marker and state lines with no writes' {
+        $plan = New-ExistingPlan
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+- **Build ID**: 123456
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*does not contain a full current trusted evidence line*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects a copied canonical fingerprint whose trusted evidence key is unrelated' {
+        $plan = New-ExistingPlan
+        $entry = $plan.pipelines[0].signatures[0]
+        $wrongProof = New-EvidenceProof -Line 'Different unrelated raw failure line'
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-evidence-key: $($wrongProof.EvidenceKey) -->
+- **Pipeline**: maui-pr
+Unique current raw failure line
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*different or malformed trusted markers*'
         @($result.created).Count | Should -Be 0
     }
 }

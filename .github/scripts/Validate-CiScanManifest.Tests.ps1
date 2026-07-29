@@ -160,7 +160,7 @@ Assertion failed
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
             [Int64]$LogId = 1001,
-            [string[]]$Lines = @('Assertion failed once', 'Assertion failed twice')
+            [string[]]$Lines = @('Assertion failed', 'Assertion failed')
         )
 
         $directory = Join-Path $Root $Pipeline
@@ -168,6 +168,20 @@ Assertion failed
         Set-Content `
             -LiteralPath (Join-Path $directory "$BuildId-$LogId.log") `
             -Value $Lines
+        [pscustomobject]@{
+            schema_version = 1
+            pipeline       = $Pipeline
+            build_id       = $BuildId
+            log_id         = $LogId
+            segments       = @(
+                [pscustomobject]@{
+                    kind    = 'azdo-log'
+                    source  = "$BuildId/$LogId"
+                    content = $Lines -join "`n"
+                }
+            )
+        } | ConvertTo-Json -Depth 6 | Set-Content `
+            -LiteralPath (Join-Path $directory "$BuildId-$LogId.evidence.json")
     }
 
     # A filed payload's match count is recomputed from frozen evidence and injected by
@@ -180,7 +194,7 @@ Assertion failed
         )
 
         $root = Join-Path $TestDrive ('evidence-' + [guid]::NewGuid().ToString('n'))
-        $lines = @('Assertion failed once', 'Assertion failed twice') + $ExtraLines
+        $lines = @('Assertion failed', 'Assertion failed') + $ExtraLines
         foreach ($logId in $MainLogIds) {
             New-TestEvidence -Root $root -Pipeline 'maui-pr' -BuildId 123456 -LogId $logId -Lines $lines
         }
@@ -532,9 +546,11 @@ Describe 'CI scanner issue payload gate' {
         $lines = $published -split "`r?`n"
         $lines[0] | Should -BeExactly "<!-- ci-scan-fingerprint: $fingerprint -->"
         $lines[1] | Should -BeExactly '<!-- ci-scan-match-count: 2 hits in failure.log -->'
-        $lines[2] | Should -BeExactly ''
+        $lines[2] | Should -Match '^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
+        $lines[3] | Should -BeExactly ''
         [regex]::Matches($published, '<!-- ci-scan-fingerprint:').Count | Should -Be 1
         [regex]::Matches($published, '<!-- ci-scan-match-count:').Count | Should -Be 1
+        [regex]::Matches($published, '<!-- ci-scan-evidence-key:').Count | Should -Be 1
         # The agent body is preserved verbatim underneath the injected block.
         $published | Should -Match '(?m)^## Summary$'
     }
@@ -742,13 +758,87 @@ Describe 'CI scanner issue payload gate' {
 
         $plan.issues[0].MatchCount | Should -Be 2
         $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Assertion failed'
+        $plan.issues[0].EvidenceKey | Should -Match '^sha256:[0-9a-f]{64}$'
+        @($plan.issues[0].EvidenceLineHashes).Count | Should -Be 1
+    }
+
+    It 'rejects a match found only in synthetic AzDO provenance framing' {
+        $evidenceRoot = Join-Path $TestDrive 'header-only-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different raw failure')
+        Set-Content `
+            -LiteralPath (Join-Path $evidenceRoot 'maui-pr/123456-1001.log') `
+            -Value @('===== AzDO log 123456/1001 =====', 'Different raw failure')
+        $header = '===== AzDO log 123456/1001 ====='
+        $body = "$(New-TestBody)`n$header"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern '===== AzDO log' -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*must occur in trusted source log 1001*'
+    }
+
+    It 'accepts a real raw evidence line and binds it to a trusted evidence key' {
+        $evidenceRoot = Join-Path $TestDrive 'raw-line-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Unique raw failure line')
+        $body = "$(New-TestBody)`nUnique raw failure line"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Unique raw failure' -Body $body)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].MatchCount | Should -Be 1
+        $plan.issues[0].Body | Should -Match '(?m)^Unique raw failure line$'
+        $plan.issues[0].Body | Should -Match '(?m)^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
+    }
+
+    It 'rejects more than 200 distinct matching evidence lines before publication' {
+        $evidenceRoot = Join-Path $TestDrive 'excess-evidence-lines'
+        $lines = 1..201 | ForEach-Object { "Unique failure line $_" }
+        New-TestEvidence -Root $evidenceRoot -Lines $lines
+        $body = "$(New-TestBody)`nUnique failure line 1"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Unique failure line' -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*exceeds the 200 distinct evidence-line safety limit*'
+    }
+
+    It 'rejects marker-like match patterns before evidence lookup' -ForEach @(
+        @{ Case = 'exact'; Pattern = 'ci-scan-fingerprint' }
+        @{ Case = 'spacing'; Pattern = 'ci scan fingerprint' }
+        @{ Case = 'case'; Pattern = 'CI-SCAN-FINGERPRINT' }
+        @{ Case = 'zero width'; Pattern = "ci-scan-finger$([char]0x200B)print" }
+        @{ Case = 'Unicode homoglyph'; Pattern = "c$([char]0x0456)-scan-finger$([char]0x0440)rint" }
+        @{ Case = 'uppercase Unicode homoglyph'; Pattern = "$([char]0x0421)$([char]0x0406)-SCAN-FINGER$([char]0x0420)RINT" }
+        @{ Case = 'evidence marker'; Pattern = 'ci-scan-evidence-key' }
+    ) {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern $Pattern)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*match_pattern*'
     }
 
     It 'injects the frozen evidence count, ignoring any count the agent implies' {
         # The agent cannot supply a count at all any more; whatever the body says in
         # prose, the injected marker must equal the trusted recount.
         $evidenceRoot = Join-Path $TestDrive 'single-hit-evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @('Assertion failed once')
+        New-TestEvidence -Root $evidenceRoot -Lines @('Assertion failed')
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`
 Observed 99 times according to the agent."
@@ -841,7 +931,7 @@ Observed 99 times according to the agent."
         $pattern = '#0 0x00007fff9c3d1abc in maui_crash'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`n$pattern"
         $evidenceRoot = Join-Path $TestDrive 'zwsp-evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @("$pattern (a)", "$pattern (b)")
+        New-TestEvidence -Root $evidenceRoot -Lines @($pattern, $pattern)
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body -MatchPattern $pattern)
         )

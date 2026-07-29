@@ -235,6 +235,41 @@ Describe 'trusted build-evidence collector: <_.Name>' -ForEach $script:Collector
         $emit | Should -BeGreaterThan $fold
     }
 
+    It 'emits structured raw segments separately from synthetic provenance framing' -Skip:(-not $script:NodeAvailable) {
+        Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
+                -TaskResult 'succeeded' `
+                -WorkItemState 'Failed' `
+                -WorkItemExitCode 1) | Out-Null
+
+        $rendered = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.log'
+        $raw = Get-CollectorEvidence `
+            -Pipeline 'maui-pr-devicetests' `
+            -LogFileName '5000-1001.evidence.json' |
+            ConvertFrom-Json
+
+        $rendered | Should -Match '===== AzDO log 5000/1001 ====='
+        $rendered | Should -Match '===== Helix console '
+        $raw.schema_version | Should -Be 1
+        $raw.pipeline | Should -Be 'maui-pr-devicetests'
+        @($raw.segments.kind) | Should -Be @('azdo-log', 'helix-console')
+        ($raw.segments.content -join "`n") | Should -Not -Match '===== (?:AzDO log|Helix console) '
+    }
+
+    It 'enforces structured evidence caps before writing either representation' {
+        $source = Get-CollectorSource
+        $segmentCap = $source.IndexOf('rawSegments.length > 200')
+        $sizeCap = $source.IndexOf('structuredEvidence.length > 25_000_000')
+        $renderedWrite = $source.IndexOf('evidence.join')
+        $structuredWrite = $source.IndexOf('.evidence.json')
+
+        $segmentCap | Should -BeGreaterThan 0
+        $sizeCap | Should -BeGreaterThan $segmentCap
+        $renderedWrite | Should -BeGreaterThan $sizeCap
+        $structuredWrite | Should -BeGreaterThan $renderedWrite
+    }
+
     It 'marks a green DeviceTests submission log as failed-leaf when its Helix work items failed' -Skip:(-not $script:NodeAvailable) {
         $inventory = Invoke-Collector -Fixtures (New-DeviceTestsFixtures `
                 -TaskResult 'succeeded' `

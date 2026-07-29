@@ -230,23 +230,64 @@ function Test-MarkerLikeContent {
     # HTML-entity evasion that would re-emerge as a real marker once GitHub
     # renders the body. Folding to alphanumerics collapses every one of those
     # spellings onto the same token, so the gate cannot be spelled around.
-    $folded = ($Value -replace '[^A-Za-z0-9]', '').ToLowerInvariant()
+    $normalized = $Value.Normalize([System.Text.NormalizationForm]::FormKC)
+    $builder = [System.Text.StringBuilder]::new()
+    foreach ($character in $normalized.ToCharArray()) {
+        $mapped = switch ([int]$character) {
+            0x0391 { 'a' } # Greek alpha
+            0x0399 { 'i' } # Greek iota
+            0x039A { 'k' } # Greek kappa
+            0x039F { 'o' } # Greek omicron
+            0x03A1 { 'p' } # Greek rho
+            0x03A4 { 't' } # Greek tau
+            0x03B1 { 'a' } # Greek alpha
+            0x03B9 { 'i' } # Greek iota
+            0x03BA { 'k' } # Greek kappa
+            0x03BF { 'o' } # Greek omicron
+            0x03C1 { 'p' } # Greek rho
+            0x03C4 { 't' } # Greek tau
+            0x0406 { 'i' } # Cyrillic I
+            0x0410 { 'a' } # Cyrillic A
+            0x0415 { 'e' } # Cyrillic Ie
+            0x041E { 'o' } # Cyrillic O
+            0x0420 { 'p' } # Cyrillic Er
+            0x0421 { 'c' } # Cyrillic Es
+            0x0425 { 'x' } # Cyrillic Ha
+            0x0430 { 'a' } # Cyrillic a
+            0x0435 { 'e' } # Cyrillic ie
+            0x043E { 'o' } # Cyrillic o
+            0x0440 { 'p' } # Cyrillic er
+            0x0441 { 'c' } # Cyrillic es
+            0x0445 { 'x' } # Cyrillic ha
+            0x0456 { 'i' } # Cyrillic i
+            default { [string]$character }
+        }
+        [void]$builder.Append($mapped)
+    }
+    $folded = ($builder.ToString() -replace '[^A-Za-z0-9]', '').ToLowerInvariant()
 
-    return $folded.Contains('ciscanfingerprint') -or $folded.Contains('ciscanmatchcount')
+    return $folded.Contains('ciscanfingerprint') -or
+        $folded.Contains('ciscanmatchcount') -or
+        $folded.Contains('ciscanevidencekey')
 }
 
 function New-CanonicalMarkerBlock {
     param(
         [Parameter(Mandatory = $true)][string]$Fingerprint,
-        [Parameter(Mandatory = $true)][Int64]$MatchCount
+        [Parameter(Mandatory = $true)][Int64]$MatchCount,
+        [Parameter(Mandatory = $true)][string]$EvidenceKey
     )
 
     if ($MatchCount -lt 1) {
         throw "Trusted match count for '$Fingerprint' must be positive."
     }
+    if ($EvidenceKey -cnotmatch '^sha256:[0-9a-f]{64}$') {
+        throw "Trusted evidence key for '$Fingerprint' is invalid."
+    }
 
     return "<!-- ci-scan-fingerprint: $Fingerprint -->`n" +
-        "<!-- ci-scan-match-count: $MatchCount hits in failure.log -->"
+        "<!-- ci-scan-match-count: $MatchCount hits in failure.log -->`n" +
+        "<!-- ci-scan-evidence-key: $EvidenceKey -->"
 }
 
 function Assert-CanonicalPublishedBody {
@@ -254,6 +295,8 @@ function Assert-CanonicalPublishedBody {
         [Parameter(Mandatory = $true)][string]$Body,
         [Parameter(Mandatory = $true)][string]$Fingerprint,
         [Parameter(Mandatory = $true)][Int64]$MatchCount,
+        [Parameter(Mandatory = $true)][string]$EvidenceKey,
+        [Parameter(Mandatory = $true)][string[]]$EvidenceLineHashes,
         [Parameter(Mandatory = $true)][string]$MatchPattern,
         [Parameter(Mandatory = $true)][string]$PipelineName,
         [Parameter(Mandatory = $true)][Int64]$BuildId
@@ -267,7 +310,10 @@ function Assert-CanonicalPublishedBody {
         throw "Published body for '$Fingerprint' must be 20-60000 characters."
     }
 
-    $expectedPrefix = (New-CanonicalMarkerBlock -Fingerprint $Fingerprint -MatchCount $MatchCount) + "`n`n"
+    $expectedPrefix = (New-CanonicalMarkerBlock `
+            -Fingerprint $Fingerprint `
+            -MatchCount $MatchCount `
+            -EvidenceKey $EvidenceKey) + "`n`n"
     if (-not $Body.StartsWith($expectedPrefix, [System.StringComparison]::Ordinal)) {
         throw "Published body for '$Fingerprint' does not begin with the canonical marker block."
     }
@@ -294,6 +340,16 @@ function Assert-CanonicalPublishedBody {
         throw "Published match count for '$Fingerprint' must equal the trusted evidence count ($MatchCount)."
     }
 
+    $evidencePrefixCount = [regex]::Matches($Body, '<!-- ci-scan-evidence-key:').Count
+    $canonicalEvidenceKey = "<!-- ci-scan-evidence-key: $EvidenceKey -->"
+    $canonicalEvidenceKeyCount = [regex]::Matches(
+        $Body,
+        "(?m)^$([regex]::Escape($canonicalEvidenceKey))\r?$"
+    ).Count
+    if ($evidencePrefixCount -ne 1 -or $canonicalEvidenceKeyCount -ne 1) {
+        throw "Published body for '$Fingerprint' must contain exactly one canonical trusted evidence key."
+    }
+
     # Assert the invariant against the body that is actually PUBLISHED, not the
     # agent-supplied body. ConvertTo-SafeIssueBody rewrites the body it returns -
     # a crash-backtrace evidence line like "#0 0x00007fff..." trips the #ref rule and a
@@ -304,6 +360,25 @@ function Assert-CanonicalPublishedBody {
     $publishedEvidence = $Body.Replace([string][char]0x200B, '')
     if (-not $publishedEvidence.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
         throw "Published body for '$Fingerprint' must contain match_pattern exactly."
+    }
+    $publishedEvidenceLineHashes = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal
+    )
+    foreach ($line in ($publishedEvidence -split '\r?\n')) {
+        $trimmedLine = $line.TrimStart()
+        if ($trimmedLine -match '^<!-- ci-scan-(?:fingerprint|match-count|evidence-key):' -or
+            $trimmedLine -match '^- \*\*(?:Pipeline|Build ID|Branch)\*\*:') {
+            continue
+        }
+        $identityLine = ConvertTo-EvidenceIdentityLine -Value $line
+        if ($identityLine) {
+            [void]$publishedEvidenceLineHashes.Add((Get-Sha256Hex -Value $identityLine))
+        }
+    }
+    if (-not @($EvidenceLineHashes | Where-Object {
+                $publishedEvidenceLineHashes.Contains($_)
+            }).Count) {
+        throw "Published body for '$Fingerprint' must contain a full trusted evidence line."
     }
 
     $pipelineLine = "- **Pipeline**: $PipelineName"
@@ -373,11 +448,94 @@ function Get-ValidatedMatchPattern {
     if ($matchPattern.IndexOf([char]0x200B) -ge 0) {
         throw "match_pattern for '$Fingerprint' must not contain zero-width spaces."
     }
+    if (Test-MarkerLikeContent -Value $matchPattern) {
+        throw "match_pattern for '$Fingerprint' must not contain scanner marker content."
+    }
 
     return $matchPattern
 }
 
-function Get-TrustedEvidenceMatchCount {
+function Get-Sha256Hex {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
+    $hash = [System.Security.Cryptography.SHA256]::HashData($bytes)
+    return [Convert]::ToHexString($hash).ToLowerInvariant()
+}
+
+function ConvertTo-EvidenceIdentityLine {
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value)
+
+    $normalized = $Value.Replace([string][char]0x200B, '').
+        Normalize([System.Text.NormalizationForm]::FormKC).Trim()
+    return ([regex]::Replace($normalized, '\s+', ' ')).ToLowerInvariant()
+}
+
+function Get-TrustedEvidenceSegments {
+    param(
+        [Parameter(Mandatory = $true)][string]$PipelineName,
+        [Parameter(Mandatory = $true)][Int64]$BuildId,
+        [Parameter(Mandatory = $true)][Int64]$SourceLogId,
+        [Parameter(Mandatory = $true)][string]$Fingerprint,
+        [Parameter(Mandatory = $true)][string]$TrustedEvidencePath
+    )
+
+    $evidenceFile = Join-Path `
+        $TrustedEvidencePath `
+        "$PipelineName/$BuildId-$SourceLogId.evidence.json"
+    if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
+        throw "Trusted evidence file is missing for '$Fingerprint' source log $SourceLogId."
+    }
+    $rawEvidence = Get-Content -LiteralPath $evidenceFile -Raw
+    if ([string]::IsNullOrWhiteSpace($rawEvidence) -or $rawEvidence.Length -gt 25000000) {
+        throw "Trusted raw evidence for '$Fingerprint' source log $SourceLogId is empty or exceeds 25 MB."
+    }
+    try {
+        $evidence = $rawEvidence | ConvertFrom-Json
+    } catch {
+        throw "Trusted raw evidence for '$Fingerprint' source log $SourceLogId is malformed JSON."
+    }
+    if ((ConvertTo-PositiveInteger `
+                -Value (Get-RequiredProperty -Object $evidence -Name 'schema_version' -Context 'trusted raw evidence') `
+                -Context 'trusted raw evidence schema_version') -ne 1 -or
+        (ConvertTo-TrimmedString (
+                Get-RequiredProperty -Object $evidence -Name 'pipeline' -Context 'trusted raw evidence'
+            )) -cne $PipelineName -or
+        (ConvertTo-PositiveInteger `
+                -Value (Get-RequiredProperty -Object $evidence -Name 'build_id' -Context 'trusted raw evidence') `
+                -Context 'trusted raw evidence build_id') -ne $BuildId -or
+        (ConvertTo-PositiveInteger `
+                -Value (Get-RequiredProperty -Object $evidence -Name 'log_id' -Context 'trusted raw evidence') `
+                -Context 'trusted raw evidence log_id') -ne $SourceLogId) {
+        throw "Trusted raw evidence provenance does not match '$Fingerprint' source log $SourceLogId."
+    }
+
+    $segments = @(Get-RequiredProperty -Object $evidence -Name 'segments' -Context 'trusted raw evidence')
+    if ($segments.Count -lt 1 -or $segments.Count -gt 200) {
+        throw "Trusted raw evidence for '$Fingerprint' source log $SourceLogId must contain 1-200 segments."
+    }
+    $allowedKinds = @('azdo-log', 'helix-console', 'helix-deadletter-uri')
+    foreach ($segment in $segments) {
+        $kind = ConvertTo-TrimmedString (
+            Get-RequiredProperty -Object $segment -Name 'kind' -Context 'trusted raw evidence segment'
+        )
+        $source = Get-RequiredProperty -Object $segment -Name 'source' -Context 'trusted raw evidence segment'
+        $content = Get-RequiredProperty -Object $segment -Name 'content' -Context 'trusted raw evidence segment'
+        if ($kind -cnotin $allowedKinds -or
+            $source -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($source) -or
+            $source.Length -gt 1000 -or
+            $content -isnot [string] -or
+            [string]::IsNullOrWhiteSpace($content) -or
+            $content.Length -gt 20000000) {
+            throw "Trusted raw evidence segment for '$Fingerprint' source log $SourceLogId is invalid."
+        }
+    }
+
+    return $segments
+}
+
+function Get-TrustedEvidenceMatchProof {
     param(
         [Parameter(Mandatory = $true)][string]$MatchPattern,
         [Parameter(Mandatory = $true)][string]$PipelineName,
@@ -388,18 +546,31 @@ function Get-TrustedEvidenceMatchCount {
     )
 
     $trustedMatchCount = [Int64]0
+    $matchingLineHashes = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal
+    )
     foreach ($sourceLogId in $SourceLogIds) {
         $sourceMatchCount = [Int64]0
-        $evidenceFile = Join-Path `
-            $TrustedEvidencePath `
-            "$PipelineName/$BuildId-$sourceLogId.log"
-        if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
-            throw "Trusted evidence file is missing for '$Fingerprint' source log $sourceLogId."
-        }
-        foreach ($line in [System.IO.File]::ReadLines($evidenceFile)) {
-            if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
-                $sourceMatchCount++
-                $trustedMatchCount++
+        $segments = @(Get-TrustedEvidenceSegments `
+                -PipelineName $PipelineName `
+                -BuildId $BuildId `
+                -SourceLogId $sourceLogId `
+                -Fingerprint $Fingerprint `
+                -TrustedEvidencePath $TrustedEvidencePath)
+        foreach ($segment in $segments) {
+            foreach ($line in ($segment.content -split '\r?\n')) {
+                if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+                    $identityLine = ConvertTo-EvidenceIdentityLine -Value $line
+                    if (-not $identityLine) {
+                        throw "match_pattern for '$Fingerprint' matched an empty trusted evidence line."
+                    }
+                    [void]$matchingLineHashes.Add((Get-Sha256Hex -Value $identityLine))
+                    if ($matchingLineHashes.Count -gt 200) {
+                        throw "match_pattern for '$Fingerprint' exceeds the 200 distinct evidence-line safety limit."
+                    }
+                    $sourceMatchCount++
+                    $trustedMatchCount++
+                }
             }
         }
         if ($sourceMatchCount -lt 1) {
@@ -407,7 +578,16 @@ function Get-TrustedEvidenceMatchCount {
         }
     }
 
-    return $trustedMatchCount
+    $sortedLineHashes = @($matchingLineHashes | Sort-Object)
+    if ($sortedLineHashes.Count -lt 1) {
+        throw "match_pattern for '$Fingerprint' produced no trusted evidence identity."
+    }
+    $evidenceKeyMaterial = "ci-scan-evidence-v1`n" + ($sortedLineHashes -join "`n")
+    return [pscustomobject]@{
+        MatchCount         = $trustedMatchCount
+        EvidenceKey        = 'sha256:' + (Get-Sha256Hex -Value $evidenceKeyMaterial)
+        EvidenceLineHashes = $sortedLineHashes
+    }
 }
 
 function Assert-TrustedEvidenceAbsent {
@@ -421,15 +601,17 @@ function Assert-TrustedEvidenceAbsent {
     )
 
     foreach ($sourceLogId in $SourceLogIds) {
-        $evidenceFile = Join-Path `
-            $TrustedEvidencePath `
-            "$PipelineName/$BuildId-$sourceLogId.log"
-        if (-not (Test-Path -LiteralPath $evidenceFile -PathType Leaf)) {
-            throw "Trusted evidence file is missing for '$Fingerprint' source log $sourceLogId."
-        }
-        foreach ($line in [System.IO.File]::ReadLines($evidenceFile)) {
-            if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
-                throw "signature-not-in-fetched-log for '$Fingerprint' is contradicted by trusted source log $sourceLogId."
+        $segments = @(Get-TrustedEvidenceSegments `
+                -PipelineName $PipelineName `
+                -BuildId $BuildId `
+                -SourceLogId $sourceLogId `
+                -Fingerprint $Fingerprint `
+                -TrustedEvidencePath $TrustedEvidencePath)
+        foreach ($segment in $segments) {
+            foreach ($line in ($segment.content -split '\r?\n')) {
+                if ($line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+                    throw "signature-not-in-fetched-log for '$Fingerprint' is contradicted by trusted source log $sourceLogId."
+                }
             }
         }
     }
@@ -512,7 +694,7 @@ function Assert-ValidIssuePayload {
     if (-not $TrustedEvidencePath) {
         throw "Filed signature '$Fingerprint' requires frozen trusted evidence to publish."
     }
-    $trustedMatchCount = Get-TrustedEvidenceMatchCount `
+    $trustedEvidenceProof = Get-TrustedEvidenceMatchProof `
         -MatchPattern $matchPattern `
         -PipelineName $PipelineName `
         -BuildId $BuildId `
@@ -526,12 +708,15 @@ function Assert-ValidIssuePayload {
     # of the agent body.
     $publishedBody = (New-CanonicalMarkerBlock `
             -Fingerprint $Fingerprint `
-            -MatchCount $trustedMatchCount) + "`n`n" + $body
+            -MatchCount $trustedEvidenceProof.MatchCount `
+            -EvidenceKey $trustedEvidenceProof.EvidenceKey) + "`n`n" + $body
 
     Assert-CanonicalPublishedBody `
         -Body $publishedBody `
         -Fingerprint $Fingerprint `
-        -MatchCount $trustedMatchCount `
+        -MatchCount $trustedEvidenceProof.MatchCount `
+        -EvidenceKey $trustedEvidenceProof.EvidenceKey `
+        -EvidenceLineHashes $trustedEvidenceProof.EvidenceLineHashes `
         -MatchPattern $matchPattern `
         -PipelineName $PipelineName `
         -BuildId $BuildId
@@ -540,8 +725,10 @@ function Assert-ValidIssuePayload {
         Title        = $title
         FinalTitle   = "$($ScannerConfig.TitlePrefix)$title"
         Body         = $publishedBody
-        MatchCount   = $trustedMatchCount
+        MatchCount   = $trustedEvidenceProof.MatchCount
         MatchPattern = $matchPattern
+        EvidenceKey  = $trustedEvidenceProof.EvidenceKey
+        EvidenceLineHashes = $trustedEvidenceProof.EvidenceLineHashes
     }
 }
 
@@ -742,13 +929,17 @@ function Test-CiScanManifest {
                     $normalized.body = $payload.Body
                     $normalized.match_count = $payload.MatchCount
                     $normalized.match_pattern = $payload.MatchPattern
+                    $normalized.evidence_key = $payload.EvidenceKey
+                    $normalized.evidence_line_hashes = $payload.EvidenceLineHashes
                     $issues.Add([pscustomobject]@{
-                            Pipeline    = $name
-                            BuildId     = $buildId
-                            Fingerprint = $fingerprint
-                            Title       = $payload.FinalTitle
-                            Body        = $payload.Body
-                            MatchCount  = $payload.MatchCount
+                            Pipeline          = $name
+                            BuildId           = $buildId
+                            Fingerprint       = $fingerprint
+                            Title             = $payload.FinalTitle
+                            Body              = $payload.Body
+                            MatchCount        = $payload.MatchCount
+                            EvidenceKey       = $payload.EvidenceKey
+                            EvidenceLineHashes = $payload.EvidenceLineHashes
                         })
                 }
                 'existing' {
@@ -756,14 +947,16 @@ function Test-CiScanManifest {
                         -Signature $signature `
                         -Fingerprint $fingerprint
                     if ($TrustedEvidencePath) {
-                        $trustedMatchCount = Get-TrustedEvidenceMatchCount `
+                        $trustedEvidenceProof = Get-TrustedEvidenceMatchProof `
                             -MatchPattern $matchPattern `
                             -PipelineName $name `
                             -BuildId $buildId `
                             -Fingerprint $fingerprint `
                             -SourceLogIds $sourceLogIds `
                             -TrustedEvidencePath $TrustedEvidencePath
-                        $normalized.match_count = $trustedMatchCount
+                        $normalized.match_count = $trustedEvidenceProof.MatchCount
+                        $normalized.evidence_key = $trustedEvidenceProof.EvidenceKey
+                        $normalized.evidence_line_hashes = $trustedEvidenceProof.EvidenceLineHashes
                     }
                     $issueNumber = ConvertTo-PositiveInteger `
                         -Value (Get-RequiredProperty -Object $signature -Name 'issue_number' -Context $signatureContext) `
@@ -815,13 +1008,14 @@ function Test-CiScanManifest {
                                 -TrustedEvidencePath $TrustedEvidencePath
                             $normalized.match_count = 0
                         } else {
-                            $normalized.match_count = Get-TrustedEvidenceMatchCount `
+                            $trustedEvidenceProof = Get-TrustedEvidenceMatchProof `
                                 -MatchPattern $matchPattern `
                                 -PipelineName $name `
                                 -BuildId $buildId `
                                 -Fingerprint $fingerprint `
                                 -SourceLogIds $sourceLogIds `
                                 -TrustedEvidencePath $TrustedEvidencePath
+                            $normalized.match_count = $trustedEvidenceProof.MatchCount
                         }
                     }
                     $normalized.match_pattern = $matchPattern
