@@ -162,7 +162,7 @@ public class ResizetizerTests : BaseBuildTest
 		// rerun image processing, and restore the processed-image contract.
 		var resizetizerOutputsFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauiimage.outputs");
 		Assert.True(File.Exists(resizetizerOutputsFile), $"Resizetizer output list does not exist: {resizetizerOutputsFile}");
-		var invalidationSentinel = DateTime.UtcNow.AddMinutes(1);
+		var invalidationSentinel = DateTime.UtcNow.AddHours(1);
 		File.SetLastWriteTimeUtc(resizetizerStampFile, invalidationSentinel);
 		File.Delete(resizetizerOutputsFile);
 		File.Delete(outputsFile);
@@ -299,7 +299,7 @@ public class ResizetizerTests : BaseBuildTest
 
 		var fontStampFile = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent, "mauifont.stamp");
 		Assert.True(File.Exists(fontStampFile), $"Font stamp file does not exist: {fontStampFile}");
-		File.SetLastWriteTimeUtc(fontStampFile, DateTime.UtcNow.AddMinutes(1));
+		File.SetLastWriteTimeUtc(fontStampFile, DateTime.UtcNow.AddHours(1));
 		var noOpFontStampWriteTime = File.GetLastWriteTimeUtc(fontStampFile);
 		File.Delete(fontsFile);
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: BuildProps, output: _output),
@@ -332,7 +332,7 @@ public class ResizetizerTests : BaseBuildTest
 		var fontPlistFile = Path.Combine(Path.GetDirectoryName(processedFontPath)!, "MauiInfo.plist");
 		Assert.True(File.Exists(fontPlistFile), $"iOS font partial manifest was not created: {fontPlistFile}");
 
-		var plistRecoverySentinel = DateTime.UtcNow.AddMinutes(1);
+		var plistRecoverySentinel = DateTime.UtcNow.AddHours(1);
 		File.SetLastWriteTimeUtc(fontStampFile, plistRecoverySentinel);
 		File.Delete(fontPlistFile);
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "VerifyCustomBackendResources", properties: iosFontBuildProps, output: _output),
