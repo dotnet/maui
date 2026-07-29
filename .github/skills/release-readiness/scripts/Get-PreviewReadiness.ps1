@@ -1828,6 +1828,7 @@ function ConvertTo-PublicSafeMarkdown {
     $safe = $safe -replace '(?i)&bsol;|&setminus;', '\'
     $safe = $safe -replace '(?i)&Tab;|&NewLine;', ' '
     $safe = [regex]::Replace($safe, '(?i)d\s*n\s*c\s*e\s*n\s*g(?=[./\\])', 'dnceng')
+    $safe = [regex]::Replace($safe, '(?i)(?<prefix>(?:https?://dev\.azure\.com/|https?://devdiv\.visualstudio\.com/))D\s*e\s*v\s*D\s*i\s*v', '${prefix}DevDiv')
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?<prefix>(?:https?://|dev\.azure\.com/|dnceng(?:\.visualstudio\.com)?/)[^<>"''`|)]{0,512}?)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l',
@@ -1856,16 +1857,28 @@ function ConvertTo-PublicSafeMarkdown {
             return $entity.Value
         })
         $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
+        $canonical = [regex]::Replace($canonical, '&[A-Za-z][A-Za-z0-9]+;', '')
         $canonical = $canonical -replace '[\p{Cf}\u00AD\u180E\uFE00-\uFE0F]', ''
         $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
         $canonical = [regex]::Replace($canonical, '(?i)dnceng\s*\.\s*visualstudio\s*\.\s*com', 'dnceng.visualstudio.com')
         $canonical = [regex]::Replace($canonical, '(?i)i\s*n\s*t\s*e\s*r\s*n\s*a\s*l', 'internal')
+        $canonical = $canonical.ToLowerInvariant()
+        $confusables = @{
+            'а'='a'; 'е'='e'; 'і'='i'; 'о'='o'; 'р'='p'; 'с'='c'; 'х'='x'; 'у'='y'
+            'α'='a'; 'ε'='e'; 'ι'='i'; 'ο'='o'; 'ρ'='p'; 'χ'='x'; 'υ'='y'
+        }
+        foreach ($key in $confusables.Keys) { $canonical = $canonical.Replace($key, $confusables[$key]) }
+        do {
+            $beforeDots = $canonical
+            $canonical = [regex]::Replace($canonical, '/\.(?=/)', '')
+            $canonical = [regex]::Replace($canonical, '/(?!\.\.?/)[^/?#]+/\.\.(?=/)', '')
+        } while ($canonical -ne $beforeDots)
         $canonical = [regex]::Replace(
             $canonical,
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
         $detection = [regex]::Replace($canonical, '[^A-Za-z0-9:/?._#&=%-]', '')
-        if ($detection -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com/DevDiv|devdiv\.visualstudio\.com/DevDiv))(?:[/?:#]|$)') {
+        if ($detection -match '(?i)(?:(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal|^dnceng/(?:DefaultCollection/)?internal|(?:dev\.azure\.com/DevDiv|devdiv\.visualstudio\.com/DevDiv|^DevDiv))(?:[/?:#]|$)') {
             return '_internal URL omitted_'
         }
         return $original

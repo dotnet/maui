@@ -52,7 +52,7 @@ If the live SR branch has commits after the latest stable tag or has already bum
 
 ## Quick Start
 
-### One-shot daily report (matches what the workflow runs)
+### One-shot portfolio report (matches a full scheduled fan-out)
 
 ```bash
 # Detect every active in-flight + candidate tracker across all active majors
@@ -69,7 +69,7 @@ pwsh .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 
 #   hotfixVersion/hotfixCommit: mutable hotfix generation used for close/recreate idempotency
 #   surveyRef:     ref to actually survey (branch itself, or net<major>.0 for candidates)
 #   canonicalKey:  stable join key (e.g. net10-sr8, net11-preview6)
-#   issueTitle:    title for the daily tracker issue
+#   issueTitle:    title for the maintained tracker issue
 #   regressionLabels: list of regressed-in-* labels relevant to this branch
 ```
 
@@ -465,5 +465,5 @@ The harness covers:
 - **Tracker emission** for SR2/SR3 (inactive), SR8 (active in-flight), SR9 (active candidate), and net11 preview6 (active candidate)
 - **`-AllActiveMajors`** end-to-end across net10 + net11 with the expected tracker counts
 - **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
-- **Idempotent body hash** stability across re-runs — **SR trackers only** (the daily workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker). Preview trackers carry no hash marker and are refreshed on every scheduled run.
+- **Idempotent body hash** stability across re-runs — **SR trackers only** (the scheduled/event-driven workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker). Preview trackers carry no hash marker and are refreshed on every scheduled run.
 - **Nightly dogfood feed banner** (`NightlyFeed.ps1`) — offline unit coverage for the lane-label honest-labeling rule (`Format-NightlyFeedLaneLabel`), the `ci.inflight`-first / `ci.main`-false-green resolver, age→tier bucketing, the fail-open feed query (mocked `-Fetcher`), and the banner's fold into `Get-ReportSemanticHash` (tier change refreshes, same-tier day tick does not). All network-free via injected fixtures and explicit `-Now`.

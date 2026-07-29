@@ -24,30 +24,31 @@ $script:failed = 0
 
 function Test-AssertionEqual {
     param($Expected, $Actual)
-    return $(if ($Expected -is [string] -and $Actual -is [string]) {
-        [string]::Equals($Expected, $Actual, [System.StringComparison]::Ordinal)
-    } elseif ($Expected -ceq $Actual) {
-        $true
-    } else {
-        $expectedCollection = $Expected -is [System.Collections.IEnumerable] -and $Expected -isnot [string]
-        $actualCollection = $Actual -is [System.Collections.IEnumerable] -and $Actual -isnot [string]
-        if ($expectedCollection -ne $actualCollection) {
-            $false
-        } elseif ($expectedCollection) {
-            $expectedItems = @($Expected)
-            $actualItems = @($Actual)
-            if ($expectedItems.Count -ne $actualItems.Count) { $false }
-            else {
-                $same = $true
-                for ($i = 0; $i -lt $expectedItems.Count; $i++) {
-                    if ($expectedItems[$i] -is [string] -and $actualItems[$i] -is [string]) {
-                        if (-not [string]::Equals($expectedItems[$i], $actualItems[$i], [System.StringComparison]::Ordinal)) { $same = $false; break }
-                    } elseif ($expectedItems[$i] -cne $actualItems[$i]) { $same = $false; break }
-                }
-                $same
-            }
-        } else { $false }
-    })
+    $expectedCollection = $Expected -is [System.Collections.IEnumerable] -and $Expected -isnot [string]
+    $actualCollection = $Actual -is [System.Collections.IEnumerable] -and $Actual -isnot [string]
+    if ($expectedCollection -ne $actualCollection) { return $false }
+    if ($expectedCollection) {
+        $expectedItems = @($Expected)
+        $actualItems = @($Actual)
+        if ($expectedItems.Count -ne $actualItems.Count) { return $false }
+        for ($i = 0; $i -lt $expectedItems.Count; $i++) {
+            if ($expectedItems[$i] -is [string] -and $actualItems[$i] -is [string]) {
+                if (-not [string]::Equals($expectedItems[$i], $actualItems[$i], [System.StringComparison]::Ordinal)) { return $false }
+            } elseif ($expectedItems[$i] -ne $actualItems[$i]) { return $false }
+        }
+        return $true
+    }
+    if ($Expected -is [string] -and $Actual -is [string]) {
+        return [string]::Equals($Expected, $Actual, [System.StringComparison]::Ordinal)
+    }
+    if (($Expected -is [string]) -ne ($Actual -is [string]) -or
+        ($Expected -is [bool]) -ne ($Actual -is [bool])) {
+        return $false
+    }
+    if ($null -eq $Expected -or $null -eq $Actual) {
+        return $null -eq $Expected -and $null -eq $Actual
+    }
+    return [bool]($Expected -eq $Actual)
 }
 
 function Assert-Eq {
@@ -67,6 +68,8 @@ function Assert-Eq {
 
 Assert-Eq -Label "assertion helper distinguishes array shape from joined scalar" -Expected $false `
     -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a,b')
+Assert-Eq -Label "assertion helper distinguishes collection from matching member scalar" -Expected $false `
+    -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a')
 
 # ─────────── Parser/regex unit tests (no network) ───────────
 
@@ -3642,6 +3645,7 @@ $script:mockCommentsJson = @'
   { "body": "not fixed by #70004 yet" },
   { "body": "update: now fixed by #70004" }
   ,{ "body": "This issue was partially fixed by PR #80005; remaining work is tracked separately." }
+  ,{ "body": "Resolved by #80006, though only partially; follow-up remains." }
 ]
 '@
 function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
@@ -3663,6 +3667,8 @@ try {
         -Expected 'fix-phrase' -Actual $byNum[70004]
     Assert-Eq -Label "partial fix phrase is demoted to mention" `
         -Expected 'mention' -Actual $byNum[80005]
+    Assert-Eq -Label "trailing partial qualifier is demoted to mention" `
+        -Expected 'mention' -Actual $byNum[80006]
 } finally {
     ${function:Invoke-Gh} = $origInvokeGh
 }
@@ -7885,7 +7891,7 @@ Assert-Eq -Label "T15: cadence = second-tuesday"                  -Expected 'sec
 $t16 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 80 -MainBumpDate ([DateTime]'2026-05-13')
 Assert-Eq -Label "T16: bump 05-13 + today 06-11 → 2026-06-09 (still anchored)" -Expected '2026-06-09' -Actual $t16.Date.ToString('yyyy-MM-dd')
 Assert-Eq -Label "T16: missedWindow = true"                       -Expected $true             -Actual $t16.MissedWindow
-Assert-Eq -Label "T16: days from 06-11 = -2"                      -Expected -2                -Actual $t16.DaysFromNow
+Assert-Eq -Label "T16: days from 06-11 = -2"                      -Expected ([int]-2)         -Actual $t16.DaysFromNow
 Assert-Eq -Label "T16: cadence = second-tuesday-missed"           -Expected 'second-tuesday-missed' -Actual $t16.Cadence
 
 # T17: SR9 — main bumped 80→90 on 2026-06-15 → SR9 ships 2nd Tue of July (07-14).
@@ -8006,6 +8012,7 @@ function Assert-PublicSanitizerEdgeCases {
         "dnceng/i$([char]0xFE0F)nternal/_build?token=BAREVSSECRET",
         "https://dev.azure.com/dnceng/i$([char]0x034F)nternal/_build?token=CGJSECRET",
         "https://dev.azure.com/dnceng/i$([System.Char]::ConvertFromUtf32(0xE0061))nternal/_build?token=TAGSECRET",
+        'https://dev.azure.com/dnceng/inter&zwj;nal/_build?token=NAMEDINVISIBLESECRET',
         'https://dev.azure.com/dnceng /internal/_build?token=SPACESECRET',
         'https://dnceng .visualstudio.com/internal/_build?token=LEGACYSPACESECRET',
         'https://dev.azure.com/d n c e n g/internal/_build?token=ORGSPACESECRET',
@@ -8015,12 +8022,16 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnceng/int ernal/_build?token=INTERNALSPACESECRET',
         'https&colon;&sol;&sol;dev&period;azure&period;com&sol;dnceng&sol;internal&sol;_build?token=NAMEDENTITYSECRET',
         "https://dev.azure.com/dnceng/$((('internal'.ToCharArray() | ForEach-Object { [char]([int]$_ + 0xFEE0) }) -join ''))/_build?token=FULLWIDTHSECRET",
-        'https://dev.azure.com/DevDiv/DevDiv/_workitems/edit/123?token=DEVDIVSECRET'
+        'https://dev.azure.com/DevDiv/DevDiv/_workitems/edit/123?token=DEVDIVSECRET',
+        'https://dev.azure.com/Dev Div/_workitems/edit/123?token=DEVDIVSPACESECRET',
+        'DevDiv/_workitems/edit/123?token=BAREDEVDIVSECRET',
+        'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
+        "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET"
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET|SOFTHYPHENSECRET|WORDJOINERSECRET|BAREVSSECRET|CGJSECRET|TAGSECRET|NAMEDINVISIBLESECRET|SPACESECRET|LEGACYSPACESECRET|ORGSPACESECRET|SCHEMELESSSECRET|ENTITYSECRET|TRIPLESECRET|INTERNALSPACESECRET|NAMEDENTITYSECRET|FULLWIDTHSECRET|DEVDIVSECRET|DEVDIVSPACESECRET|BAREDEVDIVSECRET|DOTSEGMENTSECRET|CYRILLICSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')
