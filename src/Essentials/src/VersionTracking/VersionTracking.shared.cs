@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -181,18 +182,34 @@ namespace Microsoft.Maui.ApplicationModel
 			=> Default.IsFirstLaunchForBuild(build);
 
 		static IVersionTracking? defaultImplementation;
+		static readonly object defaultImplementationLock = new();
 
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
-		public static IVersionTracking Default =>
-			defaultImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
+		public static IVersionTracking Default
+		{
+			get
+			{
+				if (Volatile.Read(ref defaultImplementation) is { } implementation)
+					return implementation;
+
+				lock (defaultImplementationLock)
+				{
+					return defaultImplementation ??=
+						new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
+				}
+			}
+		}
 
 		internal static IVersionTracking? GetDefault() =>
-			defaultImplementation;
+			Volatile.Read(ref defaultImplementation);
 
-		internal static void SetDefault(IVersionTracking? implementation) =>
-			defaultImplementation = implementation;
+		internal static void SetDefault(IVersionTracking? implementation)
+		{
+			lock (defaultImplementationLock)
+				defaultImplementation = implementation;
+		}
 
 		internal static void InitVersionTracking() =>
 			(Default as VersionTrackingImplementation)?.InitVersionTracking();

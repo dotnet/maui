@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -983,6 +984,32 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(
 				externalVersionTracking,
 				GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+		}
+
+		[Fact]
+		public async Task ConcurrentVersionTrackingDefaultReadsShareOneImplementation()
+		{
+			Preferences.SetDefault(new StubPreferences());
+			AppInfo.SetCurrent(new StubAppInfo());
+			VersionTracking.SetDefault(null);
+			const int readerCount = 12;
+			using var start = new Barrier(readerCount);
+
+			var readers = Enumerable.Range(0, readerCount)
+				.Select(_ => Task.Factory.StartNew(
+					() =>
+					{
+						Assert.True(start.SignalAndWait(TimeSpan.FromSeconds(30)));
+						return VersionTracking.Default;
+					},
+					CancellationToken.None,
+					TaskCreationOptions.LongRunning,
+					TaskScheduler.Default))
+				.ToArray();
+
+			var implementations = await Task.WhenAll(readers).WaitAsync(TimeSpan.FromSeconds(30));
+			Assert.All(implementations, implementation => Assert.Same(implementations[0], implementation));
+			Assert.Same(implementations[0], VersionTracking.GetDefault());
 		}
 
 		[Fact]
