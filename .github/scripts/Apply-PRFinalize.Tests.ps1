@@ -37,7 +37,8 @@ BeforeAll {
         'Test-FinalizeIsNoOp',
         'Get-FinalizeRecommendation',
         'Merge-PreservedTitlePrefix',
-        'Merge-PreservedBodyPreamble'
+        'Merge-PreservedBodyPreamble',
+        'New-ExclusiveTempFile'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -315,5 +316,86 @@ Describe 'Security regressions — AzDO logging-command injection' {
         $tag = "[wi{0}p][iOS] old" -f [char]13
         Merge-PreservedTitlePrefix -CurrentTitle $tag -RecommendedTitle '[iOS] new' |
             Should -Be '[iOS] new'
+    }
+}
+
+Describe 'New-ExclusiveTempFile' {
+    BeforeAll {
+        $script:SandboxDir = Join-Path ([System.IO.Path]::GetTempPath()) "apply-prfinalize-tests-$([System.IO.Path]::GetRandomFileName())"
+        New-Item -ItemType Directory -Path $script:SandboxDir -Force | Out-Null
+        $script:OriginalAgentTemp = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
+    }
+
+    AfterAll {
+        $env:AGENT_TEMPDIRECTORY = $script:OriginalAgentTemp
+        Remove-Item -LiteralPath $script:SandboxDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'creates the file inside AGENT_TEMPDIRECTORY when it is set' {
+        $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        try {
+            Test-Path -LiteralPath $path | Should -BeTrue
+            (Split-Path -Parent $path) | Should -Be $script:SandboxDir
+        } finally {
+            Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'produces a unique path on each call, so the name is not predictable' {
+        $a = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        $b = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        try {
+            $a | Should -Not -Be $b
+        } finally {
+            Remove-Item -LiteralPath $a -Force -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath $b -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'writes to the new file rather than through a pre-planted symlink' {
+        # Regression for the round-2 hardening note: Set-Content follows an existing symlink
+        # and writes through to its target. A fresh randomly-named file cannot be pre-planted.
+        $secret = Join-Path $script:SandboxDir 'secret.txt'
+        Set-Content -LiteralPath $secret -Value 'ORIGINAL' -Encoding UTF8
+
+        $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+        try {
+            'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
+            (Get-Content -Raw -LiteralPath $secret).Trim() | Should -Be 'ORIGINAL'
+            (Get-Content -Raw -LiteralPath $path).Trim() | Should -Be 'REPLACEMENT BODY'
+        } finally {
+            Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'falls back to the system temp directory when AGENT_TEMPDIRECTORY is unset' {
+        $saved = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = $null
+        try {
+            $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+            try {
+                Test-Path -LiteralPath $path | Should -BeTrue
+            } finally {
+                Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            }
+        } finally {
+            $env:AGENT_TEMPDIRECTORY = $saved
+        }
+    }
+
+    It 'ignores AGENT_TEMPDIRECTORY when it points at a missing directory' {
+        $saved = $env:AGENT_TEMPDIRECTORY
+        $env:AGENT_TEMPDIRECTORY = Join-Path $script:SandboxDir 'does-not-exist'
+        try {
+            $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123'
+            try {
+                Test-Path -LiteralPath $path | Should -BeTrue
+            } finally {
+                Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+            }
+        } finally {
+            $env:AGENT_TEMPDIRECTORY = $saved
+        }
     }
 }

@@ -254,6 +254,48 @@ function Merge-PreservedBodyPreamble {
     return "$preamble`n`n$RecommendedBody"
 }
 
+function New-ExclusiveTempFile {
+    <#
+    .SYNOPSIS
+        Creates a new, uniquely-named temp file, failing if the path already exists.
+    .DESCRIPTION
+        `Set-Content` follows a pre-existing symlink and writes through to its target, so a
+        predictable temp path (pr-finalize-body-<PR>.md) is a write-through primitive if
+        anything can pre-create it. Reaching that requires arbitrary filesystem write as the
+        agent user, which already grants strictly more capability — but the fix is cheap, so
+        close it anyway rather than relying on that argument holding.
+
+        Prefers the AzDO agent temp directory over the shared system temp when available.
+        Creating with New-Item (no -Force) fails when the path exists, including when it is a
+        dangling or pre-planted symlink, so the write cannot be redirected.
+    .OUTPUTS
+        Full path to the newly created file.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Prefix
+    )
+
+    $baseDir = if ($env:AGENT_TEMPDIRECTORY -and (Test-Path -LiteralPath $env:AGENT_TEMPDIRECTORY)) {
+        $env:AGENT_TEMPDIRECTORY
+    } else {
+        [System.IO.Path]::GetTempPath()
+    }
+
+    # Retry only guards against an astronomically unlikely name collision.
+    for ($attempt = 0; $attempt -lt 5; $attempt++) {
+        $candidate = Join-Path $baseDir "$Prefix-$([System.IO.Path]::GetRandomFileName()).md"
+        try {
+            $file = New-Item -ItemType File -Path $candidate -ErrorAction Stop
+            return $file.FullName
+        } catch {
+            continue
+        }
+    }
+
+    throw "Could not create a temp file under '$baseDir' after 5 attempts."
+}
+
 # ─── Main ───────────────────────────────────────────────────────────────────────
 # Dot-sourced by the Pester suite to test the helpers above without executing the flow.
 if ($MyInvocation.InvocationName -eq '.') { return }
@@ -340,8 +382,9 @@ if ($DryRun) {
     exit 0
 }
 
-$bodyFile = Join-Path ([System.IO.Path]::GetTempPath()) "pr-finalize-body-$PRNumber.md"
+$bodyFile = $null
 try {
+    $bodyFile = New-ExclusiveTempFile -Prefix "pr-finalize-body-$PRNumber"
     $newBody | Set-Content -LiteralPath $bodyFile -Encoding UTF8
 
     $ghArgs = @('pr', 'edit', "$PRNumber", '--repo', $Repo)
@@ -359,7 +402,7 @@ try {
 } catch {
     Write-Host "     ⚠️  Failed to apply the PR finalize recommendation (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
 } finally {
-    Remove-Item -LiteralPath $bodyFile -Force -ErrorAction SilentlyContinue
+    if ($bodyFile) { Remove-Item -LiteralPath $bodyFile -Force -ErrorAction SilentlyContinue }
 }
 
 exit 0

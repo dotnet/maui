@@ -2413,7 +2413,9 @@ if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
             if ($DryRun) { $applyArgs.DryRun = $true }
             & $applyFinalizeScript @applyArgs
         } catch {
-            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $_" -ForegroundColor Yellow
+            # The exception can carry agent-authored text from content.md, so it goes through
+            # the sanitizer like every other PR-derived console value in this script.
+            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
         }
     } else {
         Write-Host "  ⚠️ apply-pr-finalize.ps1 not found — skipping" -ForegroundColor Yellow
