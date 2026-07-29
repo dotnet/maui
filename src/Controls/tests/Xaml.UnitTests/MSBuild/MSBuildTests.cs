@@ -1039,6 +1039,61 @@ public static class WhitespaceMarker
 			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WhitespaceMarker");
 		}
 
+		// An authored activation property whose value expands to empty is malformed
+		// backend metadata, not a legacy shared-folder mapping. Fail closed on both
+		// neutral and recognized TFMs instead of leaking its sources into every build.
+		[Theory]
+		[InlineData("")]
+		[InlineData("ios")]
+		public void SingleProject_UnresolvedActivationValueWithBackendMetadataIsExcluded(string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Unresolved\\")
+				.WithAttribute("ActivationProperty", "MyBackendSwitch")
+				.WithAttribute("ActivationValue", "$(SomeUnsetProperty)"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Unresolved\\UnresolvedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class UnresolvedMarker
+{
+	public static string Value => ""Unresolved"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(targetPlatformIdentifier)
+				? ""
+				: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.UnresolvedMarker");
+		}
+
 		// Genuine item-Condition gating: a MauiPlatformSpecificFolder mapping may
 		// carry its own MSBuild item Condition that decides participation at
 		// evaluation time. When the Condition is true the item materializes and —
