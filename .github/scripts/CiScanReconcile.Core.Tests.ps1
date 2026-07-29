@@ -906,6 +906,37 @@ Describe 'Test-CiScanIssueProvenance' {
     It 'requires the exact title prefix' {
         (Test-CiScanIssueProvenance -Issue (New-TestIssue -Title 'Random issue') -Config $script:Net11).Ok | Should -BeFalse
     }
+    It 'still applies the prefix rule to a genuine string title' {
+        # Anti-vacuity control. Without it, a fix that routed EVERY title to
+        # 'title-not-a-string' would satisfy both cases below while deleting the
+        # prefix check entirely. This pins that the `elseif` is still reachable.
+        (Test-CiScanIssueProvenance -Issue (New-TestIssue -Title 'Random issue') -Config $script:Net11).Failures |
+            Should -Contain 'title-prefix-mismatch'
+    }
+    It 'refuses an array title, which [string] would space-join into the very prefix required' {
+        $issue = New-TestIssue
+        $issue.title = @('[ci-scan-net11]', 'x')
+
+        # The vector, proved rather than asserted: the join CLEARS the prefix while no
+        # element clears it. Element 0 is one character short of '[ci-scan-net11] ' and
+        # element 1 is unrelated -- the separator the prefix needs is manufactured by
+        # `[string]` itself. These two lines fail if TitlePrefix ever stops ending in a
+        # space, which is the condition the whole vector depends on.
+        ([string]$issue.title).StartsWith($script:Net11.TitlePrefix, [System.StringComparison]::Ordinal) |
+            Should -BeTrue -Because 'the space-join is what manufactures the prefix'
+        @($issue.title | Where-Object { $_.StartsWith($script:Net11.TitlePrefix, [System.StringComparison]::Ordinal) }).Count |
+            Should -Be 0 -Because 'no single element satisfies the prefix on its own'
+
+        (Test-CiScanIssueProvenance -Issue $issue -Config $script:Net11).Failures | Should -Contain 'title-not-a-string'
+    }
+    It 'refuses a single-element array title, the arity that silently unrolls' {
+        # Get-CiScanFieldValue would unroll this to a valid, correctly-prefixed string
+        # and admit the issue. Multi-element arrays never had that problem, which is
+        # exactly why sampling one arity hides the gap.
+        $issue = New-TestIssue
+        $issue.title = @('[ci-scan-net11] UI test times out')
+        (Test-CiScanIssueProvenance -Issue $issue -Config $script:Net11).Failures | Should -Contain 'title-not-a-string'
+    }
     It 'rejects a net11 issue when reconciling the main twin' {
         (Test-CiScanIssueProvenance -Issue (New-TestIssue) -Config $script:Main).Ok | Should -BeFalse
     }

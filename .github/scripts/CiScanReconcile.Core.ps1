@@ -916,8 +916,21 @@ function Test-CiScanIssueProvenance {
     $labelNames = @(Get-CiScanIssueLabelNames -Issue $Issue)
     if ($labelNames -cnotcontains $Config.Label) { $failures += 'missing-exact-label' }
 
-    $title = [string](Get-CiScanFieldValue -Object $Issue -Name 'title')
-    if (-not $title.StartsWith($Config.TitlePrefix, [System.StringComparison]::Ordinal)) {
+    # Judged with the SHAPE reader, not the value reader, because this line is evidence.
+    #
+    # `[string]` on an array space-JOINS it, and TitlePrefix ends with a space --
+    # '[ci-scan] '. So `["[ci-scan]", "anything"]` renders as '[ci-scan] anything' and
+    # satisfies a prefix that NEITHER element satisfies: element 1 is one character too
+    # short, element 2 is unrelated. The join manufactures the separator the prefix needs.
+    #
+    # That is only reachable through a prefix/substring comparison -- the exact-membership
+    # checks either side of this one (`-cnotcontains` on labels and creators) cannot be
+    # laundered this way, because a space-joined string is not equal to any allowed entry.
+    # This is why "the value stays correct under `[string]`" is true for TryParse/-cne
+    # consumers and false here, and must not be inherited as a blanket property.
+    $titleShape = Get-CiScanFieldShape -Object $Issue -Name 'title'
+    if ($titleShape.Value -isnot [string]) { $failures += 'title-not-a-string' }
+    elseif (-not $titleShape.Value.StartsWith($Config.TitlePrefix, [System.StringComparison]::Ordinal)) {
         $failures += 'title-prefix-mismatch'
     }
 
