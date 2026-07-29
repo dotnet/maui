@@ -8786,6 +8786,13 @@ Assert-Eq -Label "internal public-safe: red still blocks" -Expected 'BLOCKED' -A
 Assert-Eq -Label "internal public-safe: build ID/number/SHA/URL redacted" -Expected $false -Actual ([bool]($publicSafeText -match '999999|secret-build-number|secret-source-sha|private-build'))
 Assert-Eq -Label "internal public-safe: local table omitted" -Expected '' -Actual (Format-InternalOfficialBuildTable -Health $publicSafeHealth -PublicSafe:$true)
 
+$latestSelectionFixture = Select-LatestInternalOfficialBuild -Builds @(
+    [PSCustomObject]@{ id = 100; queueTime = '2026-07-29T11:00:00Z' },
+    [PSCustomObject]@{ id = 99; queueTime = '2026-07-29T12:00:00Z' },
+    [PSCustomObject]@{ id = 101; queueTime = '2026-07-29T12:00:00Z' }
+)
+Assert-Eq -Label "internal build selection: newest queue time wins with ID tie-breaker" -Expected 101 -Actual $latestSelectionFixture.id
+
 $candidateRefs = @(Get-InternalOfficialBuildBranches `
     -MajorVersion 11 `
     -ReleaseBranch 'release/11.0.1xx-preview7' `
