@@ -272,15 +272,30 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
-    for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
-        $safe = [regex]::Replace($safe, '(?i)%(?:25)?(?<hex>[0-9a-f]{2})', {
-            param($match)
-            $char = [char][Convert]::ToInt32($match.Groups['hex'].Value, 16)
-            if ($char -match '[A-Za-z]' -or $char -eq '\') { return [string]$char }
-            return $match.Value
-        })
-    }
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc)[^\s<>"''`|)]*', {
+        param($match)
+        $original = $match.Value
+        $canonical = $original
+        for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
+            try {
+                $decoded = [System.Uri]::UnescapeDataString($canonical)
+                if ($decoded -eq $canonical) { break }
+                $canonical = $decoded
+            } catch { break }
+        }
+        $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
+        $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
+        $canonical = [regex]::Replace(
+            $canonical,
+            '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
+            '$1')
+        if ($canonical -match '(?i)(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal(?:[/?:#]|$)') {
+            return '_internal URL omitted_'
+        }
+        return $original
+    })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
@@ -2423,6 +2438,10 @@ function ConvertTo-NegationNormalizedText {
     } while ($normalized -ne $previous)
     $normalized = [regex]::Replace(
         $normalized,
+        '(?i)\b(?<neg>not|never)\s*;\s*(?=(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|(?:re-?)?backport(?:ed)?|cherry[-\s]pick(?:ed)?|require(?:d)?|need(?:ed)?|relevant|applicable)\b)',
+        '${neg} ')
+    $normalized = [regex]::Replace(
+        $normalized,
         "(?i)\b(?<neg>not|never)\b(?<gap>[^.!?;`r`n]{0,100}?)(?=\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?|require(?:d)?|need(?:ed)?|relevant|applicable)\b)",
         {
             param($match)
@@ -2556,8 +2575,13 @@ function Get-ExplicitBackportSourceNumbers {
     # boundaries such as `re-backport`.
     $Text = [regex]::Replace(
         $Text,
-        '(?i)\b(?<neg>not|never)(?:;\s*[^;\r\n]{0,80})+;\s*(?=(?:re-?)?backport|cherry[-\s]pick)',
+        '(?i)\b(?<neg>not|never)(?:;\s*[^;\r\n]{0,80})*;\s*(?=(?:a\s+)?(?:re-?)?backport|cherry[-\s]pick)',
         '${neg} ')
+    # Drop a contextual middle item without orphaning later explicit list items.
+    $Text = [regex]::Replace(
+        $Text,
+        '(?i);\s*(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])\s+(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\s*;\s*(?=(?:and|plus)\s+(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))',
+        ', ')
     # A semicolon can be list punctuation rather than a clause boundary:
     # `#A, #B; and #C`. Normalize only this structured continuation.
     $Text = [regex]::Replace(
@@ -4785,14 +4809,19 @@ function Get-ShippedVerdict {
         $reasons.Add("[Advisory] Post-ship CI on the SR branch is ``$shippedCiOverall`` — informational; it does not affect the already-shipped release.") | Out-Null
     }
 
-    # BLOCKED ship checks post-ship are follow-ups (they should already be satisfied),
-    # not retroactive ship blockers.
+    # BLOCKED/WATCH/UNKNOWN ship checks post-ship are follow-ups, never
+    # retroactive blockers. Missing required evidence must not render "clean".
     $shippedChecks = Get-MetadataValue -Container $Data -Name 'shipChecks'
     if ($shippedChecks) {
         $blockedShipChecks = @($shippedChecks | Where-Object { $_.Status -eq 'BLOCKED' })
         foreach ($sc in $blockedShipChecks) {
             $followUp = $true
             $reasons.Add("[Follow-up] Ship check needs post-ship attention: $($sc.Area)") | Out-Null
+        }
+        $uncertainShipChecks = @($shippedChecks | Where-Object { $_.Status -in @('WATCH', 'UNKNOWN') })
+        foreach ($sc in $uncertainShipChecks) {
+            $followUp = $true
+            $reasons.Add("[Follow-up] Ship check $($sc.Status): $($sc.Area)") | Out-Null
         }
     }
 

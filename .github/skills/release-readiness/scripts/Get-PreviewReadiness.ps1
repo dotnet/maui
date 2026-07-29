@@ -1822,15 +1822,30 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
-    for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
-        $safe = [regex]::Replace($safe, '(?i)%(?:25)?(?<hex>[0-9a-f]{2})', {
-            param($match)
-            $char = [char][Convert]::ToInt32($match.Groups['hex'].Value, 16)
-            if ($char -match '[A-Za-z]' -or $char -eq '\') { return [string]$char }
-            return $match.Value
-        })
-    }
+    $safe = [regex]::Replace($safe, '(?i)(?:https|dev\.azure\.com|dnc)[^\s<>"''`|)]*', {
+        param($match)
+        $original = $match.Value
+        $canonical = $original
+        for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
+            try {
+                $decoded = [System.Uri]::UnescapeDataString($canonical)
+                if ($decoded -eq $canonical) { break }
+                $canonical = $decoded
+            } catch { break }
+        }
+        $canonical = $canonical -replace '[\u200B-\u200D\uFEFF]', ''
+        $canonical = $canonical -replace '[\u2044\u2215\uFF0F\\]', '/'
+        $canonical = [regex]::Replace(
+            $canonical,
+            '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
+            '$1')
+        if ($canonical -match '(?i)(?:dev\.azure\.com/dnceng|dnceng\.visualstudio\.com)/(?:DefaultCollection/)?internal(?:[/?:#]|$)') {
+            return '_internal URL omitted_'
+        }
+        return $original
+    })
     $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
+    $safe = [regex]::Replace($safe, '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)', '$1')
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
