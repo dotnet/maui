@@ -982,6 +982,31 @@ Describe 'Test-CiScanHumanTouched' {
     It 'detects a human comment' {
         (Test-CiScanHumanTouched -Issue (New-TestIssue) -HumanCommenters @('maintainer')).Touched | Should -BeTrue
     }
+    It 'does not invent a commenter from a null commenter list' {
+        # `[string[]]$HumanCommenters` binds `$null` as `$null`, and `@($null).Count` is 1,
+        # so the count-based gate raised `human-comment:` with an empty login list for an
+        # issue nobody had commented on. Same shape as the `assignees: null` defect, and
+        # reachable from any caller that forwards an unset commenter list rather than `@()`.
+        $r = Test-CiScanHumanTouched -Issue (New-TestIssue) -HumanCommenters $null
+
+        $r.Touched | Should -BeFalse -Because 'no commenters were supplied, so nobody commented'
+        ($r.Signals | Where-Object { $_ -like 'human-comment:*' }) |
+            Should -BeNullOrEmpty -Because 'a veto that names no commenter cannot be checked against anything'
+
+        # Anti-vacuity: a real commenter must still veto and must still be named, so this
+        # cannot be satisfied by disabling human-comment detection outright.
+        (Test-CiScanHumanTouched -Issue (New-TestIssue) -HumanCommenters @('maintainer')).Signals |
+            Should -Contain 'human-comment:maintainer'
+    }
+    It 'drops a blank commenter entry without losing the real ones' {
+        # A blank entry is not the unattributable-commenter case: that one arrives as a
+        # non-empty sentinel login from Get-CiScanHumanCommenters and keeps its veto. A
+        # blank would otherwise render as `human-comment:,maintainer`.
+        $r = Test-CiScanHumanTouched -Issue (New-TestIssue) -HumanCommenters @('', '   ', 'maintainer')
+
+        $r.Touched | Should -BeTrue
+        $r.Signals | Should -Contain 'human-comment:maintainer' -Because 'only the attributable commenter belongs in the signal'
+    }
     It 'reports untouched for a pristine bot-filed issue' {
         (Test-CiScanHumanTouched -Issue (New-TestIssue)).Touched | Should -BeFalse
     }

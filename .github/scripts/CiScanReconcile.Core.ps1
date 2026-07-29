@@ -982,7 +982,20 @@ function Test-CiScanHumanTouched {
         }
     }
 
-    if (@($HumanCommenters).Count -gt 0) { $signals += "human-comment:$(@($HumanCommenters) -join ',')" }
+    # The same `@($null).Count -eq 1` trap the `assignees` line defuses, one gate lower.
+    # `[string[]]$HumanCommenters` binds a `$null` ARGUMENT as `$null`, not as an empty
+    # array, so the naive count reported one commenter and raised `human-comment:` with
+    # nothing after the colon. That is worse than the assignee case rather than the same:
+    # the assignee signal at least named a field an operator could go and read, whereas a
+    # `human-comment:` naming nobody is unfalsifiable from the report on its face.
+    #
+    # This screens the ENTRIES where the `assignees` gate screens the FIELD, and that is
+    # not a reversal of the rule stated above. A commenter who exists but cannot be
+    # attributed never reaches here as an empty entry: `Get-CiScanHumanCommenters` maps a
+    # null `user` onto a non-empty sentinel login precisely so that veto survives. So an
+    # empty entry is not "unattributable data" -- by construction it is no data at all.
+    $commenters = @(@($HumanCommenters) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ((Get-CiScanCount $commenters) -gt 0) { $signals += "human-comment:$($commenters -join ',')" }
 
     return @{ Touched = ((Get-CiScanCount $signals) -gt 0); Signals = @($signals | Select-Object -Unique) }
 }
