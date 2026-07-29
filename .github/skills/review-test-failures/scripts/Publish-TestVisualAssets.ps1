@@ -565,6 +565,11 @@ function Get-ValidatedAssetBranchState {
             # the workflow-scope 403 this guard defends against; a submodule gitlink (type
             # 'commit') or a malformed/$null entry must also be refused rather than slipping
             # through, so a non-blob top-level entry can never re-introduce the 403.
+            #
+            # The .review-tests-assets marker is deliberately NOT required: the asset branch is a
+            # fixed constant no caller overrides, so the ref name -- not a marker blob -- establishes
+            # identity, and a marker's absence cannot conjure the nested path the 403 needs. Requiring
+            # it would only turn a deleted marker into a lockout this script has no path to repair.
             $isBlob = [string]$_.type -eq 'blob'
             $isAssetDirectory = [string]$_.type -eq 'tree' -and
                 [string]$_.path -match '^pr-[1-9][0-9]*$'
