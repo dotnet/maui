@@ -42,11 +42,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
-			// If ItemsView is explicitly disabled, defer to the base implementation so it can
-			// intercept all touch events and block interaction. Returning false here (for either
-			// the swipe-disabled or off-axis delegation paths) would bypass that guard and allow
-			// a disabled CarouselView to delegate gestures to a nested child.
-			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
+			// If ItemsView is disabled, defer to the base implementation to intercept all touch events and prevent interactions
+			if (ItemsView?.IsEnabled == false)
 			{
 				return base.OnInterceptTouchEvent(ev);
 			}
