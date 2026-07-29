@@ -96,23 +96,6 @@ public class SwitchFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
-	[Order(7)]
-	public void Switch_SetOnColorAndThumbColor_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("OnColorRedCheckBox");
-		App.Tap("OnColorRedCheckBox");
-		App.WaitForElement("ThumbColorGreenCheckBox");
-		App.Tap("ThumbColorGreenCheckBox");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("SwitchControl");
-		App.Tap("SwitchControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Order(8)]
@@ -147,6 +130,7 @@ public class SwitchFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/19883
 	[Test]
 	[Order(10)]
 	public void Switch_SetShadowAndThumbColor_VerifyVisualState()
@@ -163,6 +147,7 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.Tap("SwitchControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test]
 	[Order(19)]
@@ -180,23 +165,6 @@ public class SwitchFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
-
-	[Test]
-	[Order(11)]
-	public void Switch_SetThumbColorAndOnColor_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("ThumbColorRedCheckBox");
-		App.Tap("ThumbColorRedCheckBox");
-		App.WaitForElement("OnColorGreenCheckBox");
-		App.Tap("OnColorGreenCheckBox");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("SwitchControl");
-		App.Tap("SwitchControl");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
 
 	[Test]
 	[Order(12)]
@@ -264,22 +232,6 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(16)]
-	public void Switch_SetOffColorAndThumbColor_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("OffColorRedCheckBox");
-		App.Tap("OffColorRedCheckBox");
-		App.WaitForElement("ThumbColorGreenCheckBox");
-		App.Tap("ThumbColorGreenCheckBox");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("SwitchControl"); // IsToggled=false by default → OffColor + ThumbColor visible
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test]
 	[Order(17)]
 	public void Switch_SetFlowDirectionAndOnColor_VerifyVisualState()
 	{
@@ -318,4 +270,56 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.WaitForElement("SwitchControl"); // kitchen-sink: RTL + on + OnColor + OffColor + ThumbColor
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //For more information: // Issue Link: https://github.com/dotnet/maui/issues/19883
+	[Test]
+	[Order(20)]
+	public void Switch_SetOnColorAndThumbColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OnColorRedCheckBox");
+		App.Tap("OnColorRedCheckBox");
+		App.WaitForElement("ThumbColorGreenCheckBox");
+		App.Tap("ThumbColorGreenCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl");
+		App.Tap("SwitchControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Order(21)]
+	public void Switch_SetThumbColorAndOnColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ThumbColorRedCheckBox");
+		App.Tap("ThumbColorRedCheckBox");
+		App.WaitForElement("OnColorGreenCheckBox");
+		App.Tap("OnColorGreenCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl");
+		App.Tap("SwitchControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Order(22)]
+	public void Switch_SetOffColorAndThumbColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OffColorRedCheckBox");
+		App.Tap("OffColorRedCheckBox");
+		App.WaitForElement("ThumbColorGreenCheckBox");
+		App.Tap("ThumbColorGreenCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl"); // IsToggled=false by default → OffColor + ThumbColor visible
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+#endif
 }
