@@ -13,9 +13,11 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AAnimation = Android.Views.Animations.Animation;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers
         TabbedViewManager? _tabbedViewManager;
         ShellSectionTabbedViewAdapter? _shellSectionAdapter;
         ViewPagerPageChangeCallback? _pageChangedCallback;
+        List<ShellContent>? _subscribedItems; // Tracks exactly which ShellContents currently have OnShellContentPropertyChanged wired up
 
         /// <summary>
         /// Internal accessor for the ViewPager2 instance. Used by ViewPagerPageChangeCallback
@@ -199,9 +202,12 @@ namespace Microsoft.Maui.Controls.Handlers
             // Subscribe to visible items collection changes (fires on add/remove AND visibility changes)
             SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 
+            _subscribedItems ??= new List<ShellContent>();
+            _subscribedItems.Clear();
             foreach (var item in SectionController.GetItems())
             {
                 item.PropertyChanged += OnShellContentPropertyChanged;
+                _subscribedItems.Add(item);
             }
             // Wait for the view to be attached before setting up the adapter
             // This ensures the parent fragment is set
@@ -430,9 +436,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 
-            foreach (var item in SectionController.GetItems())
+            if (_subscribedItems is not null)
             {
-                item.PropertyChanged -= OnShellContentPropertyChanged;
+                foreach (var item in _subscribedItems)
+                {
+                    item.PropertyChanged -= OnShellContentPropertyChanged;
+                }
+                _subscribedItems.Clear();
             }
             // Only remove top tabs from the shared container if this is the active section.
             // When inactive sections are disconnected (e.g., VP2 adapter updates recreate
@@ -550,7 +560,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             else
             {
-                _adapter.NotifyDataSetChanged();
+                _adapter.SafeNotifyDataSetChanged();
             }
 
             // Update OffscreenPageLimit for new visible count
@@ -764,7 +774,32 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             _contentIds.Remove(shellContent);
-            NotifyDataSetChanged();
+            SafeNotifyDataSetChanged();
+        }
+
+        public void SafeNotifyDataSetChanged(int iteration = 0)
+        {
+            var viewPager = Handler?.ViewPager;
+            if (viewPager is null || !viewPager.IsAlive())
+            {
+                return;
+            }
+
+            if (iteration >= 10)
+            {
+                _mauiContext.CreateLogger<ShellContentFragmentAdapter>()?
+                    .LogWarning("ViewPager2 stuck in layout, unable to NotifyDataSetChanged;");
+                return;
+            }
+
+            if (!viewPager.IsInLayout)
+            {
+                NotifyDataSetChanged();
+            }
+            else
+            {
+                viewPager.Post(() => SafeNotifyDataSetChanged(++iteration));
+            }
         }
 
         public override Fragment CreateFragment(int position)
