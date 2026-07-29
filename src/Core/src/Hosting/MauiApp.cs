@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Hosting
 					return false;
 				}
 
-				if (_initializeScope.Value?.Depth > 0)
+				if (IsInitializeAppServicesActive())
 					throw new InvalidOperationException("MauiApp cannot be disposed from app-service initialization.");
 
 				if (_disposeCompletion is not null)
@@ -186,10 +186,9 @@ namespace Microsoft.Maui.Hosting
 					throw new ObjectDisposedException(nameof(MauiApp), "Cannot initialize app services after MauiApp disposal has begun.");
 
 				_initializeInFlight++;
-				var scope = _initializeScope.Value;
-				if (scope is null)
-					_initializeScope.Value = scope = new InitializationScope();
-				scope.Depth++;
+				// ExecutionContext copies AsyncLocal references into child tasks. Use one frame per
+				// entry so a child flow cannot mutate the parent's active-scope state.
+				_initializeScope.Value = new InitializationScope(_initializeScope.Value);
 			}
 		}
 
@@ -197,12 +196,26 @@ namespace Microsoft.Maui.Hosting
 		{
 			lock (_disposeGate)
 			{
-				if (_initializeScope.Value is { } scope && --scope.Depth == 0)
-					_initializeScope.Value = null;
+				if (_initializeScope.Value is { } scope)
+				{
+					scope.IsActive = false;
+					_initializeScope.Value = scope.Parent;
+				}
 
 				if (--_initializeInFlight == 0)
 					Monitor.PulseAll(_disposeGate);
 			}
+		}
+
+		private bool IsInitializeAppServicesActive()
+		{
+			for (var scope = _initializeScope.Value; scope is not null; scope = scope.Parent)
+			{
+				if (scope.IsActive)
+					return true;
+			}
+
+			return false;
 		}
 
 		private void RunSharedCleanup(List<Exception> exceptions)
@@ -301,7 +314,14 @@ namespace Microsoft.Maui.Hosting
 
 		private sealed class InitializationScope
 		{
-			public int Depth { get; set; }
+			public InitializationScope(InitializationScope? parent)
+			{
+				Parent = parent;
+			}
+
+			public InitializationScope? Parent { get; }
+
+			public bool IsActive { get; set; } = true;
 		}
 	}
 

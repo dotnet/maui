@@ -315,6 +315,110 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task DisposeWaitsForChildFlowInitializationAfterParentScopeExits()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var childEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseChild = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			using var app = MauiApp.CreateBuilder(useDefaults: false).Build();
+
+			app.EnterInitializeAppServices();
+			Task childInitialization;
+			try
+			{
+				childInitialization = Task.Run(async () =>
+				{
+					app.EnterInitializeAppServices();
+					childEntered.TrySetResult(true);
+					try
+					{
+						await releaseChild.Task.WaitAsync(timeout);
+					}
+					finally
+					{
+						app.ExitInitializeAppServices();
+					}
+				});
+
+				await childEntered.Task.WaitAsync(timeout);
+			}
+			finally
+			{
+				app.ExitInitializeAppServices();
+			}
+
+			var disposal = Task.Run(app.Dispose);
+			Assert.True(
+				SpinWait.SpinUntil(
+					() => GetDisposeCompletion(app) is not null || disposal.IsCompleted,
+					timeout),
+				"Disposal did not begin while child-flow initialization was in flight.");
+
+			var disposeCompletion = GetDisposeCompletion(app);
+			var disposalCompletedBeforeRelease = disposal.IsCompleted;
+
+			releaseChild.TrySetResult(true);
+			await childInitialization.WaitAsync(timeout);
+			var disposeException = await Record.ExceptionAsync(() => disposal.WaitAsync(timeout));
+
+			Assert.NotNull(disposeCompletion);
+			Assert.False(
+				disposalCompletedBeforeRelease,
+				"Disposal should wait for initialization still running in the inherited child flow.");
+			Assert.Null(disposeException);
+		}
+
+		[Fact]
+		public async Task DisposeFromChildFlowThrowsWhileInheritedParentScopeRemainsActive()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var runChildDispose = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			using var app = MauiApp.CreateBuilder(useDefaults: false).Build();
+
+			app.EnterInitializeAppServices();
+			Task<Exception> childDisposal;
+			bool observedDisposeAttempt;
+			bool completedWhileParentScopeActive;
+			object disposeCompletion;
+			try
+			{
+				app.EnterInitializeAppServices();
+				try
+				{
+					childDisposal = Task.Run(async () =>
+					{
+						await runChildDispose.Task.WaitAsync(timeout);
+						return Record.Exception(app.Dispose);
+					});
+				}
+				finally
+				{
+					app.ExitInitializeAppServices();
+				}
+
+				runChildDispose.TrySetResult(true);
+				observedDisposeAttempt = SpinWait.SpinUntil(
+					() => childDisposal.IsCompleted || GetDisposeCompletion(app) is not null,
+					timeout);
+				completedWhileParentScopeActive = childDisposal.IsCompleted;
+				disposeCompletion = GetDisposeCompletion(app);
+			}
+			finally
+			{
+				app.ExitInitializeAppServices();
+			}
+
+			var exception = await childDisposal.WaitAsync(timeout);
+
+			Assert.True(observedDisposeAttempt, "Child-flow disposal did not start.");
+			Assert.True(
+				completedWhileParentScopeActive,
+				"Child-flow disposal should be rejected while an inherited parent scope remains active.");
+			Assert.Null(disposeCompletion);
+			Assert.IsType<InvalidOperationException>(exception);
+		}
+
+		[Fact]
 		public async Task InitializeAppServicesDuringDisposeThrowsObjectDisposedException()
 		{
 			var timeout = TimeSpan.FromSeconds(30);
