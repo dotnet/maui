@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("oblique", FontAttributes.Italic)]
 		[InlineData("oblique, bold", FontAttributes.Italic | FontAttributes.Bold)]
 		[InlineData("bold italic", FontAttributes.Italic | FontAttributes.Bold)]
+		[InlineData("   ", FontAttributes.None)]
 		public void TestFontAttributeConverter(string input, FontAttributes expected)
 		{
 			var conv = new FontAttributesConverter();
