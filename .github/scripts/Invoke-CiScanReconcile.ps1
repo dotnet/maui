@@ -486,6 +486,7 @@ function Invoke-GhWrite {
         refuse loudly rather than mispair silently, which is the same fail-closed trade as
         the case-sensitive --repo comparison.
     #>
+    $seenFlagNames = [System.Collections.Generic.List[string]]::new()
     for ($i = 3; $i -lt $GhArgs.Count; $i++) {
         $token = [string]$GhArgs[$i]
         if ($token -eq '--') {
@@ -529,10 +530,10 @@ function Invoke-GhWrite {
                 inside this walk means a token is judged only where the walk has already
                 established it is in flag position, so both spellings execute.
 
-                Residual, deliberately not fixed here: the `--repo` occurrence counter below
-                is still a flat scan, so a notice body that is exactly '--repo' is refused as
-                a duplicate. Measured, still present, and left alone because that check is
-                load-bearing against a different attack and rewriting it is not this change.
+                Residual that used to live here, now closed: the `--repo` occurrence
+                counter below was also a flat scan, so a notice body that was exactly
+                '--repo' was refused as a duplicate. It now reads the flag names this
+                walk collects, so both checks share one answer to "is this token a flag".
 
                 Case-INsensitive on purpose, which is the one place this check deliberately
                 gives ground. Comparing case-sensitively refused '--REPO' here and preempted
@@ -548,6 +549,10 @@ function Invoke-GhWrite {
             if ($name -notin $shape.Allowed) {
                 throw "BUG: '$Kind' on issue #$IssueNumber carries $name, which is not a flag this kind may use. Allowed: $($shape.Allowed -join ', '). Got '$($GhArgs -join ' ')'."
             }
+            # Recorded HERE, at the one place in this function that has established the
+            # token is in flag position. The duplication check below reads this list
+            # instead of re-scanning the raw vector; see its docblock for why.
+            $seenFlagNames.Add($name)
             if ($token -clike '--*=*') { continue }   # --flag=value consumes nothing
             $i++; continue                            # --flag consumes exactly its value
         }
@@ -582,8 +587,20 @@ function Invoke-GhWrite {
         This does not subsume the duplication check below, and is not subsumed by it:
         a correct prefix followed by a LATER second --repo passes here and is honoured
         by `gh`. Both are load-bearing.
+
+        Deliberately the two-token form only. `--repo=dotnet/maui` at index 3 is REFUSED
+        here even though the walk above accepts `--flag=value` generally, and that is a
+        narrowing of permitted SHAPE, not a second opinion about what the token is. The
+        walk answers "is this a flag, and may this kind carry it"; this answers "does the
+        prefix look exactly like what the call sites emit". All five emit the two-token
+        form, so pinning it costs nothing and keeps the value at a known index instead of
+        requiring this check to re-split the token -- a small re-parse, but re-parsing is
+        how the readings drift apart. Stated because it was previously an accident of two
+        checks written independently, and an unstated narrowing is one a later edit
+        relaxes while "fixing an inconsistency". The test named for this pins it.
     #>
     $expectedRepo = $script:TargetRepo
+
     if ($GhArgs.Count -lt 5 -or $GhArgs[3] -cne '--repo') {
         throw "BUG: '$Kind' must carry --repo $expectedRepo as its first flag on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
     }
@@ -609,10 +626,40 @@ function Invoke-GhWrite {
         would re-diverge the day gh changes it -- and the divergence would again be
         invisible, because the validator and the consumer would still be two independent
         readings of the same array. No honest call site emits a flag twice.
+
+        This counts what the WALK ABOVE identified as flags, not tokens matching a flag's
+        spelling anywhere in the vector. It used to do the latter, which made it the last
+        flat reader in this function and gave it the same blind spot the allow list had
+        before it moved into the walk: a flat scan cannot tell a FLAG from a VALUE that
+        happens to spell one. Measured against the search form:
+
+            -Kind comment --body '--repo'        -> BLOCKED as a duplicate --repo
+            -Kind comment --body '--body'        -> BLOCKED as a duplicate --body
+            -Kind label   --add-label '--add-label' -> BLOCKED as a duplicate
+
+        while a body merely CONTAINING the text was fine, since these compare whole
+        elements. Every one of those is a FALSE REFUSAL of an honest call: fail-closed,
+        no write reaches the wrong place, and no notice this reconciler composes is
+        exactly a flag name -- so this fixed no reachable bug and is not claimed to.
+
+        What it removes is the second reading. The walk had already decided which
+        positions are flags and threw that knowledge away; this re-derived it by a
+        different rule, and two rules over one array is the shape of every argument
+        defect on this branch -- first-vs-last occurrence, one-position-vs-all,
+        deny-list-vs-value. Consolidating is the general fix rather than a third rule
+        that happens to agree today.
+
+        Compared case-insensitively BECAUSE the walk accepted them that way. If the walk
+        admitted '--REPO' as the --repo flag, this must count it as one; the two cannot
+        hold different opinions about what a token IS without reopening exactly the gap
+        being closed. That also tightens a real edge the flat form missed: a LATER case
+        variant was counted by neither, so it reached `gh` to fail there as an unknown
+        flag. The index-3 provenance check still owns the case-variant diagnosis, because
+        it runs before this and refuses on the position.
     #>
     foreach ($flag in @('--repo', $shape.Flag)) {
         if (-not $flag) { continue }
-        $occurrences = @($GhArgs | Where-Object { $_ -ceq $flag -or $_ -clike "$flag=*" })
+        $occurrences = @($seenFlagNames | Where-Object { $_ -eq $flag })
         if ($occurrences.Count -ne 1) {
             throw "BUG: '$Kind' must carry exactly one $flag on issue #$IssueNumber; got '$($GhArgs -join ' ')'."
         }

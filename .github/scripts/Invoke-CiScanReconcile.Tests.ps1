@@ -2059,6 +2059,77 @@ The apply loop may write '$name' in comment mode, and Test-CiScanHumanTouched re
             $global:ghCalls | Should -BeNullOrEmpty
         }
 
+        It 'lets a value that spells a flag through, since only the walk decides what is a flag' -ForEach @(
+            @{ label = 'a comment body that IS --repo'; kind = 'comment'
+                ghArgs  = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', '--repo') }
+            @{ label = 'a comment body that IS --body'; kind = 'comment'
+                ghArgs  = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', '--body') }
+            @{ label = 'a label value that IS --add-label'; kind = 'label'
+                ghArgs  = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', '--add-label') }
+        ) {
+            <#
+                THESE ARE THE LOAD-BEARING CASES IN THIS BLOCK. Every negative below is
+                satisfied by an implementation that refuses everything, and the success
+                state of a security check IS refusal, so a broken build wears the costume
+                of a perfect one. Only a positive can tell them apart.
+
+                The duplication check used to re-scan the raw argument vector for tokens
+                spelling a flag, which cannot distinguish a FLAG from a VALUE. All three
+                rows below were refused as duplicates. None is reachable -- no notice this
+                reconciler composes is exactly a flag name -- so this pins the absence of
+                a false refusal, not the absence of a bug. It now reads the names the
+                walk collected, so there is exactly one answer to "is this a flag".
+            #>
+            $null = Invoke-GhWrite -Kind $kind -IssueNumber 5 -GhArgs $ghArgs
+            $global:ghCalls.Count | Should -Be 1 -Because "$label is an honest call and must still run"
+        }
+
+        It 'still refuses a real duplicate of <flag>, in <form> form' -ForEach @(
+            @{ flag = '--repo'; form = 'two-token'; kind = 'comment'
+                ghArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'x', '--repo', 'attacker/evil') }
+            @{ flag = '--repo'; form = 'equals'; kind = 'comment'
+                ghArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'x', '--repo=attacker/evil') }
+            @{ flag = '--body'; form = 'two-token'; kind = 'comment'
+                ghArgs = @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'x', '--body', 'y') }
+            @{ flag = '--add-label'; form = 'two-token'; kind = 'label'
+                ghArgs = @('issue', 'edit', '5', '--repo', 'dotnet/maui', '--add-label', 'x', '--add-label', 'y') }
+        ) {
+            # The counter moving into the walk must not cost it the attack it exists for:
+            # gh honours the LAST occurrence, so a second flag is a redirect.
+            { Invoke-GhWrite -Kind $kind -IssueNumber 5 -GhArgs $ghArgs } |
+                Should -Throw -ExpectedMessage "*exactly one $flag*"
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses a later --repo that differs from the first only by case' {
+            # Tightened by reading the walk's answer. The flat scan compared case-sensitively
+            # and matched neither '--REPO' nor the real flag to each other, so this counted
+            # as one --repo and reached `gh`, which failed it as an unknown flag -- loud, but
+            # only by accident of cobra. The walk admits it as the --repo flag (deliberately
+            # case-insensitive, so the index-3 check keeps the provenance diagnosis), and the
+            # counter must therefore agree that it IS one.
+            { Invoke-GhWrite -Kind comment -IssueNumber 5 -GhArgs @('issue', 'comment', '5', '--repo', 'dotnet/maui', '--body', 'x', '--REPO', 'attacker/evil') } |
+                Should -Throw -ExpectedMessage '*exactly one --repo*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
+        It 'refuses --repo=value at the pinned prefix position, deliberately' {
+            <#
+                The walk accepts `--flag=value` generally; this position does not. That is
+                a narrowing of permitted SHAPE rather than a disagreement about what the
+                token is, and it is pinned here because it was previously an accident of
+                two checks written independently -- exactly the kind of unstated narrowing
+                a later edit relaxes while "fixing an inconsistency".
+
+                Keeping it costs nothing: all five call sites emit the two-token form, and
+                the value staying at a known index is what lets the check compare it
+                without re-splitting the token. Re-parsing is how two readings drift.
+            #>
+            { Invoke-GhWrite -Kind comment -IssueNumber 5 -GhArgs @('issue', 'comment', '5', '--repo=dotnet/maui', '--body', 'x') } |
+                Should -Throw -ExpectedMessage '*must carry --repo dotnet/maui as its first flag*'
+            $global:ghCalls | Should -BeNullOrEmpty
+        }
+
         It 'fails closed when the run cannot resolve its own repository' {
             # The check is only worth anything if an unresolvable repo refuses rather than
             # skips; a guard that falls through when its input is missing is not a guard.
