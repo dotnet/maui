@@ -20,10 +20,41 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: merge-net11-to-release
+  cancel-in-progress: false
+
 jobs:
-  Merge:
-    # Only run if triggered from net11.0 (push trigger or correct workflow_dispatch)
+  CheckForOpenMergePullRequest:
     if: github.ref_name == 'net11.0'
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check for an open net11.0 to release merge PR
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          pr_number="$(gh pr list \
+            --repo "$REPOSITORY" \
+            --state open \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("merge/net11.0-to-release/"))][0].number // empty')"
+
+          if [[ -n "$pr_number" ]]; then
+            echo "Merge PR #$pr_number is still open; leaving its branch unchanged while CI runs."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No open net11.0 to release merge PR exists."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  Merge:
+    needs: CheckForOpenMergePullRequest
+    # Only run if triggered from net11.0 (push trigger or correct workflow_dispatch)
+    if: github.ref_name == 'net11.0' && needs.CheckForOpenMergePullRequest.outputs.should_run == 'true'
     uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@main
     with:
       configuration_file_path: 'github-merge-flow-release-11.jsonc'

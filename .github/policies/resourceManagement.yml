@@ -726,11 +726,8 @@ configuration:
           issueAuthor: False
       - isActivitySender:
           issueAuthor: True
-      - or:
-        - isAction:
-            action: Opened
-        - isAction:
-            action: Synchronize
+      - isAction:
+          action: Opened
       - or:
         - and:
           - targetsBranch:
