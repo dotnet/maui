@@ -133,6 +133,14 @@ param(
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
     [switch]$Candidate,
+    # Display-only: mark the survey as a SHIPPED SR (its stable tag already
+    # exists). Behaves exactly like in-flight for all survey/verdict logic
+    # (surveys the SR branch directly) — it ONLY relabels the rendered report
+    # header `mode=shipped` so a post-ship tracker doesn't misreport as
+    # in-flight. Set by the workflow for the most-recently-shipped SR, whose
+    # tracker keeps refreshing until a human closes it. Mutually exclusive with
+    # -Candidate.
+    [switch]$Shipped,
     # When set in -Candidate mode, model the dotnet/maui workflow where, after
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
     # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
@@ -679,7 +687,7 @@ function Get-ReleaseShipChecks {
                 } else {
                     "inherited from ``$prevSrBranch``"
                 }
-                $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages, but the values were $provenance, not from an SR-direct flip PR (no commit on ``$($Ctx.srBranch)`` alone has set ``PreReleaseVersionLabel=servicing``). Functionally fine; surfaced so the release captain knows the workflow deviated from the previous SR's pattern (e.g., SR$($targetSr-1)'s explicit flip PR)."
+                $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages. The values were $provenance, rather than from an SR-direct flip PR; this is the valid cut-then-merge pattern used by .NET 10 SR8."
             }
 
             $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
@@ -691,7 +699,7 @@ function Get-ReleaseShipChecks {
             if (-not $stabilizeOk) { $missing += "``StabilizePackageVersion=$actualStabilize`` (expected ``true``)" }
             $checks += New-ReadinessCheck -Area $flipArea -Status 'BLOCKED' `
                 -Details "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it." `
-                -NextAction "Edit eng/Versions.props on ``$($Ctx.srBranch)``: set ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>`` and ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. See ``release/$major.$minor.1xx-sr$($targetSr - 1)`` for the canonical diff."
+                -NextAction "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
         }
     }
 
@@ -726,7 +734,32 @@ function Get-ReleaseShipChecks {
             $mainBumpedThisCycle = ($vpMain.Major -eq $major -and $vpMain.Minor -eq $minor `
                                     -and $vpMain.Patch -ge $expectedNextPatchPrefix)
 
-            if ($mainPastMajor) {
+            # A bumped PatchVersion alone is not enough: main must also still be on
+            # the dev-main config (PreReleaseVersionLabel=ci.main,
+            # StabilizePackageVersion=false). If main is misconfigured as a
+            # servicing/stable build while its patch is bumped, PRs merging to main
+            # would emit packages that misrepresent their ship vehicle — so that is
+            # BLOCKED, not READY. An empty/missing PreReleaseVersionLabel is
+            # release-only/stable in Arcade, so only ci.main is acceptable here.
+            # StabilizePackageVersion defaults false when omitted; only explicit
+            # true/non-false is bad.
+            $mainLabelOk     = ($vpMain.PreReleaseVersionLabel -eq 'ci.main')
+            $mainStabilizeOk = [string]::IsNullOrEmpty($vpMain.StabilizePackageVersion) -or ($vpMain.StabilizePackageVersion -eq 'false')
+            $mainMainlineOk  = $mainLabelOk -and $mainStabilizeOk
+
+            if (($mainPastMajor -or $mainBumpedThisCycle) -and (-not $mainMainlineOk)) {
+                # The version state (past-major OR patch bumped to the next cycle)
+                # says "no bump needed", but main is misconfigured as a servicing/
+                # stable build. Gate BOTH READY states on the mainline settings: a
+                # dev branch emitting servicing/stable packages misrepresents its
+                # ship vehicle regardless of its version number.
+                $mainOffenders = @()
+                if (-not $mainLabelOk)     { $mainOffenders += "``PreReleaseVersionLabel=$($vpMain.PreReleaseVersionLabel)`` (expected ``ci.main``)" }
+                if (-not $mainStabilizeOk) { $mainOffenders += "``StabilizePackageVersion=$($vpMain.StabilizePackageVersion)`` (expected ``false``)" }
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` with $($mainOffenders -join ' and ') — main's version is already clear of the SR$targetSr cycle (no PatchVersion bump needed), but its mainline settings are configured for a stable/servicing build, not dev main. PRs merging to ``$($Ctx.mainBranch)`` would emit packages that misrepresent their ship vehicle." `
+                    -NextAction "On ``$($Ctx.mainBranch)`` restore the dev-main settings in ``eng/Versions.props``: set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false``. Only the SR branch flips to ``servicing``/``true``; main must stay on ci.main/false throughout SR$targetSr stabilization."
+            } elseif ($mainPastMajor) {
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
                     -NextAction "No bump needed."
@@ -735,9 +768,23 @@ function Get-ReleaseShipChecks {
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
                     -NextAction "No bump needed."
             } else {
+                $mainBumpTitle = "Update PatchVersion from $($vpMain.Patch) to $expectedNextPatchPrefix"
+                # Same cycle → a PatchVersion bump is required. But if main is
+                # ALSO misconfigured for a servicing/stable build (rare: same
+                # cycle AND mainline settings flipped), the bump PR must ADDITIONALLY
+                # restore the dev-main settings — telling the captain to keep them
+                # "unchanged" would leave main emitting servicing/stable packages.
+                if ($mainMainlineOk) {
+                    $mainlineKeepClause = "Keep ``SdkBandVersion``, ``PreReleaseVersionLabel=ci.main``, and ``StabilizePackageVersion=false`` unchanged"
+                } else {
+                    $mainFixNeeded = @()
+                    if (-not $mainLabelOk)     { $mainFixNeeded += "``PreReleaseVersionLabel`` (currently ``$($vpMain.PreReleaseVersionLabel)``)" }
+                    if (-not $mainStabilizeOk) { $mainFixNeeded += "``StabilizePackageVersion`` (currently ``$($vpMain.StabilizePackageVersion)``)" }
+                    $mainlineKeepClause = "Keep ``SdkBandVersion`` unchanged, and in the SAME PR restore the dev-main mainline settings that are currently misconfigured for a stable/servicing build ($($mainFixNeeded -join ' and ')): set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false`` — leaving them as-is would keep ``$($Ctx.mainBranch)`` emitting servicing/stable packages"
+                }
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
                     -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr." `
-                    -NextAction "Bump eng/Versions.props on main: set <PatchVersion> from $($vpMain.Patch) to $expectedNextPatchPrefix (SR$nextSr cycle) before shipping SR$targetSr."
+                    -NextAction "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. $mainlineKeepClause; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
             }
         }
     }
@@ -827,20 +874,28 @@ function Invoke-DarcJson {
     param([string[]]$DarcArgs)
     try {
         $jsonOutput = & darc @DarcArgs --output-format json 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            return [PSCustomObject]@{ Success = $false; Data = @() }
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) {
+            # darc's non-zero exit is Constants.ErrorCode (42) in almost every case —
+            # GetBuildOperation/GetAssetOperation return it for no matches, invalid
+            # arguments, auth failures, and unhandled exceptions alike. It is therefore
+            # NOT a reliable "no match" signal, so we deliberately do not derive a
+            # NoMatch flag from it; the caller surfaces any failure as UNKNOWN rather
+            # than a reassuring "no build yet". A genuine empty-but-successful response
+            # is exit 0 with empty output (handled below).
+            return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $exitCode }
         }
         $joined = ($jsonOutput | Out-String)
         if ([string]::IsNullOrWhiteSpace($joined)) {
-            return [PSCustomObject]@{ Success = $true; Data = @() }
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0 }
         }
         $parsed = $joined | ConvertFrom-Json -ErrorAction Stop
         if ($null -eq $parsed) {
-            return [PSCustomObject]@{ Success = $true; Data = @() }
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0 }
         }
-        return [PSCustomObject]@{ Success = $true; Data = @($parsed) }
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed); ExitCode = 0 }
     } catch {
-        return [PSCustomObject]@{ Success = $false; Data = @() }
+        return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $null }
     }
 }
 
@@ -922,24 +977,151 @@ function Get-MaestroOperationalChecks {
         $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
             -Details "``darc`` CLI not available — cannot verify BAR has a build for SR HEAD." `
             -NextAction "Locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+        # darc is also required to tell whether the build is promoted (and thus
+        # whether its per-build validation feed exists for the ship Assessment).
+        # Emit the feed row here too so the scheduled/CI run — where darc is not
+        # installed — still surfaces the Assessment-feed guidance instead of
+        # silently dropping it.
+        $feedSha8Unknown = $Ctx.srHeadSha.Substring(0, [Math]::Min(8, $Ctx.srHeadSha.Length))
+        $feedUrlUnknown = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$feedSha8Unknown/nuget/v3/index.json"
+        $checks += New-ReadinessCheck -Area 'Ship Assessment validation feed' -Status 'UNKNOWN' `
+            -Details "``darc`` CLI not available — cannot confirm whether SR HEAD's build is promoted or whether its per-build validation feed exists to link in the ship Assessment. If promoted, the feed will be ``$feedUrlUnknown``." `
+            -NextAction "Locally, once the build is confirmed: ``darc get-asset --name Microsoft.Maui.Controls --build <id>`` to get the NugetFeed URL, then link it in the ship Assessment."
     } else {
         $builds = Invoke-DarcJson -DarcArgs @('get-build', '--repo', $repoUrl, '--commit', $Ctx.srHeadSha)
         if (-not $builds.Success) {
+            # darc failed. Its exit code is the generic Constants.ErrorCode (42) for
+            # no-match, auth, network, and BAR outages alike, so we cannot safely
+            # downgrade this to a reassuring "no build yet" WATCH — report UNKNOWN and
+            # tell the reader it may be transient. A genuine empty-but-successful darc
+            # response (exit 0, no builds) is the WATCH case handled further below.
+            $buildExit = Get-AzdoProp $builds 'ExitCode'
+            $exitInfo = if ($null -ne $buildExit) { " (darc exit $buildExit)" } else { "" }
             $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
-                -Details "``darc get-build`` failed for SR HEAD ``$headShort``." `
-                -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+                -Details "``darc get-build`` did not return a usable result for SR HEAD ``$headShort``$exitInfo. darc exit 42 is a generic error code (no build yet, auth failure, or a network/BAR outage), so this is UNKNOWN rather than a definitive no-build; it may be transient while CI/BAR publishing is still running." `
+                -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``. If CI is still in-flight, re-run the readiness report shortly; if it persists after CI is green, check darc auth and BAR publishing for the SR build."
+            $feedSha8Fail = $Ctx.srHeadSha.Substring(0, [Math]::Min(8, $Ctx.srHeadSha.Length))
+            $feedUrlFail = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$feedSha8Fail/nuget/v3/index.json"
+            $checks += New-ReadinessCheck -Area 'Ship Assessment validation feed' -Status 'UNKNOWN' `
+                -Details "``darc get-build`` failed for SR HEAD ``$headShort`` — cannot confirm promotion or whether the per-build validation feed exists for the ship Assessment. If promoted, the feed will be ``$feedUrlFail``." `
+                -NextAction "Re-run ``darc get-build`` locally; once the build is confirmed, ``darc get-asset --name Microsoft.Maui.Controls --build <id>`` gives the NugetFeed URL to link in the ship Assessment."
         } elseif ($builds.Data.Count -eq 0) {
             $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
                 -Details "No BAR build found for SR HEAD ``$headShort``. May be normal if CI is still running, OR a symptom of the default-channel mapping being absent (see prior check)." `
                 -NextAction "Wait for CI to complete on SR HEAD; re-run readiness report. If mapping is also missing (above), fix that first."
         } else {
+            # darc get-build --commit is branch-agnostic: right after the SR is
+            # cut from main both branches share the SR HEAD SHA, so a promoted
+            # *main* build for the same commit can otherwise be picked and make
+            # the SR look ready. Keep only builds actually produced on the SR
+            # branch (matched across the darc/BAR branch field names). A build
+            # carrying no branch metadata at all is left in rather than dropped.
+            $srBranchBuilds = @($builds.Data | Where-Object {
+                $branchNames = @()
+                foreach ($prop in 'branch', 'gitHubBranch', 'githubBranch', 'azureDevOpsBranch') {
+                    $bv = Get-AzdoProp $_ $prop
+                    if ($bv) { $branchNames += (([string]$bv) -replace '^refs/heads/', '') }
+                }
+                ($branchNames.Count -eq 0) -or ($branchNames -contains $Ctx.srBranch)
+            })
+            if ($srBranchBuilds.Count -eq 0) {
+                $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
+                    -Details "BAR has build(s) for SR HEAD ``$headShort`` but none produced on ``$($Ctx.srBranch)`` — a same-commit build on another branch (e.g. ``$($Ctx.mainBranch)`` right after the branch cut) does not count as the SR's own build." `
+                    -NextAction "Wait for CI to complete on ``$($Ctx.srBranch)`` at SR HEAD, then re-run the readiness report."
+                return $checks
+            }
             # Sort by BAR build id (monotonic, locale-independent) to pick the latest.
-            $latest = @($builds.Data | Sort-Object id -Descending)[0]
-            $chans = if ($latest.channels) { ($latest.channels -join ', ') } else { '_none_' }
+            $latest = @($srBranchBuilds | Sort-Object id -Descending)[0]
+            # Filter null/empty channel entries: @($null).Count is 1, which would
+            # otherwise false-mark a build with a missing/null `channels` property as
+            # promoted and emit a bogus READY Assessment-feed row. Reuse the filtered
+            # list for the join so display and promotion state stay consistent.
+            $realChans = @((Get-AzdoProp $latest 'channels') | Where-Object { $_ })
+            $hasChans = $realChans.Count -gt 0
+            $chans = if ($hasChans) { ($realChans -join ', ') } else { '_none_' }
             $buildLink = if ($latest.buildLink) { " ([build $($latest.id)]($($latest.buildLink)))" } else { " (build $($latest.id))" }
             $checks += New-ReadinessCheck -Area $buildArea -Status 'READY' `
                 -Details "Build **$($latest.buildNumber)**$buildLink for SR HEAD ``$headShort`` is in BAR; channels: $chans." `
                 -NextAction "No action needed."
+
+            # === Check 3: per-build validation feed for the ship Assessment ===
+            # The DevDiv ship "Assessment" work item MUST link the per-build
+            # darc-pub NuGet feed so CSI/customers can validate the exact
+            # candidate packages. That feed is generated ONLY when the build is
+            # promoted to a channel (which requires the default-channel mapping
+            # in Check 1). No promotion => no feed => the Assessment gets created
+            # without a validation feed (the exact gap that shipped an incomplete
+            # SR9 assessment). Feed name is darc-pub-dotnet-maui-<sha8>, sha8 =
+            # the build's commit short SHA (falls back to SR HEAD).
+            $feedArea = "Ship Assessment validation feed"
+            $commitProp = $latest.PSObject.Properties['commit']
+            $buildCommit = if ($commitProp -and $commitProp.Value) { [string]$commitProp.Value } else { [string]$Ctx.srHeadSha }
+            $buildSha8 = $buildCommit.Substring(0, [Math]::Min(8, $buildCommit.Length))
+            $feedUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-maui-$buildSha8/nuget/v3/index.json"
+            if ($hasChans) {
+                $asset = Invoke-DarcJson -DarcArgs @('get-asset', '--name', 'Microsoft.Maui.Controls', '--build', "$($latest.id)")
+                $nugetFeed = $null
+                # Initialize BEFORE the success check so the WATCH branch below can
+                # ALWAYS read them. A failed `darc get-asset` (auth/network/no asset)
+                # leaves $asset.Success false and skips the success block; under
+                # Set-StrictMode -Version Latest an unset $feedCandidates or
+                # $expectedFeedToken in that branch would THROW and abort the ENTIRE
+                # readiness report instead of degrading this one feed check.
+                $feedCandidates = @()
+                $expectedFeedToken = "darc-pub-dotnet-maui-$buildSha8"
+                $assetLookupOk = [bool]$asset.Success
+                if ($assetLookupOk) {
+                    # `darc get-asset --output-format json` projects each asset's
+                    # locations to a flat array of URL STRINGS
+                    # (GetAssetOperation: `locations = ...Select(l => l.Location)`).
+                    # It does NOT emit `{ type, location }` objects or a top-level
+                    # `NugetFeed` property, so collect the NuGet v3 feed URLs directly.
+                    foreach ($a in @($asset.Data)) {
+                        foreach ($loc in @((Get-AzdoProp $a 'locations'))) {
+                            $locStr = [string]$loc
+                            if ($locStr -match '/nuget/v\d+/index\.json') {
+                                $feedCandidates += $locStr
+                            }
+                        }
+                    }
+                    # ONLY the exact per-build darc-pub validation feed for THIS
+                    # build's SHA proves CSI/customers can validate the precise
+                    # candidate packages. BAR asset locations routinely ALSO carry
+                    # shared/durable/internal feeds (transport, dotnet-eng,
+                    # darc-int-*, etc.) and darc-pub feeds for OTHER builds' SHAs —
+                    # none of those prove per-build validation (they may mix builds
+                    # or require auth). A loose "any NuGet v3 feed" or substring
+                    # "darc-pub" match would mark READY and tell the captain to link
+                    # a feed that can't validate the exact packages. Gate strictly on
+                    # the already-computed expected feed name
+                    # `darc-pub-dotnet-maui-<buildSha8>` (SHA-exact; -match is
+                    # case-insensitive). Guard indexing for Set-StrictMode -Version Latest.
+                    $confirmedFeeds = @($feedCandidates | Where-Object { $_ -match [regex]::Escape($expectedFeedToken) })
+                    if ($confirmedFeeds.Count -gt 0) {
+                        $nugetFeed = $confirmedFeeds[0]
+                    }
+                }
+                if ($nugetFeed) {
+                    $checks += New-ReadinessCheck -Area $feedArea -Status 'READY' `
+                        -Details "Build **$($latest.buildNumber)** is promoted ($chans) and ``darc get-asset`` confirms the per-build validation feed ``$nugetFeed`` (matches the expected ``$expectedFeedToken``). Link this feed in the ship Assessment (DevDiv 'Assessment' work item) so CSI/customers can validate the exact candidate packages." `
+                        -NextAction "Add the confirmed per-build NugetFeed URL to the Assessment."
+                } else {
+                    if (-not $assetLookupOk) {
+                        $otherFeedNote = " ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` did not return a usable result (darc auth/network failure, or the asset is not published yet), so the per-build feed could not be confirmed."
+                    } elseif ($feedCandidates.Count -gt 0) {
+                        $otherFeedNote = " ``darc get-asset`` returned $($feedCandidates.Count) other NuGet feed location(s) (e.g. ``$($feedCandidates[0])``) — shared/durable or wrong-SHA feeds that may mix builds or require auth, so they do NOT prove validation of this exact candidate and are not linked."
+                    } else {
+                        $otherFeedNote = " ``darc get-asset`` returned no NuGet feed location for this build."
+                    }
+                    $checks += New-ReadinessCheck -Area $feedArea -Status 'WATCH' `
+                        -Details "Build **$($latest.buildNumber)** is promoted ($chans), but the expected per-build validation feed ``$expectedFeedToken`` was not confirmed among ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` locations.$otherFeedNote Do not link a substitute endpoint until BAR shows the exact per-build feed. Expected feed, once published, is ``$feedUrl``." `
+                        -NextAction "Re-run ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` and add the returned per-build ``$expectedFeedToken`` NugetFeed URL to the Assessment once it appears."
+                }
+            } else {
+                $checks += New-ReadinessCheck -Area $feedArea -Status 'WATCH' `
+                    -Details "Build **$($latest.buildNumber)** for SR HEAD is NOT promoted to any channel → its per-build darc-pub feed is not generated, so the ship Assessment has no validation feed to link (this is what left the SR9 assessment incomplete). Once promoted, the feed will be ``$feedUrl``." `
+                    -NextAction "Ensure the default-channel mapping (Check 1) exists, then promote the build to ``$expectedChannel`` (release-eng). Verify with ``darc get-asset --name Microsoft.Maui.Controls --build $($latest.id)`` and add the resulting NugetFeed URL to the Assessment."
+            }
         }
     }
 
@@ -986,6 +1168,99 @@ function Get-AllMilestones {
     } catch {
         return [PSCustomObject]@{ Success = $false; Data = @() }
     }
+}
+
+# .NET ships preview1..preview7, then rc1, rc2, then GA. There is NO preview8 —
+# preview7 is the FINAL preview of a major, and the milestone that follows it is
+# `.NET <major>.0-rc1`. Verified against dotnet/maui's own history:
+#   .NET 9  → 9.0.0-preview.7.24407.4  → 9.0.0-rc.1.24453.9  → 9.0.0-rc.2.24503.2
+#   .NET 10 → 10.0.0-preview.7.25406.3 → 10.0.0-rc.1.25424.2 → 10.0.0-rc.2.25504.7
+# and the matching milestones `.NET 10.0-preview7` → `.NET 10.0-rc1` → `.NET 10.0-rc2`.
+# (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since
+# .NET 6. If that ever changes, this constant is the single place to update.)
+$script:FinalPreviewNumber = 7
+$script:RcCountPerMajor    = 2
+
+function Get-PreviewTrainMilestoneTitle {
+    <#
+    .SYNOPSIS
+        PURE. Maps a 1-based preview-train ordinal to its GitHub milestone title,
+        honouring the preview→rc transition.
+    .DESCRIPTION
+        The pre-release train for a major is a single ordered sequence, so
+        "the cycle after preview7" is rc1 — not the non-existent preview8.
+        Naively incrementing the preview number is the bug this replaces: it
+        told release captains to create a `.NET <major>.0-preview8` milestone
+        that .NET never ships.
+
+            ordinal 1..7  → ".NET <major>.0-preview<ordinal>"
+            ordinal 8     → ".NET <major>.0-rc1"
+            ordinal 9     → ".NET <major>.0-rc2"
+            ordinal 10+   → $null   (GA — no further pre-release milestone)
+
+        Returning $null for post-rc2 ordinals lets callers skip the roll-forward
+        check rather than inventing an "rc3" that will never exist.
+    .OUTPUTS
+        [string] milestone title, or $null when the ordinal runs past rc2.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$Major,
+        [Parameter(Mandatory)][int]$Ordinal
+    )
+
+    if ($Ordinal -lt 1) { return $null }
+    if ($Ordinal -le $script:FinalPreviewNumber) {
+        return ".NET $Major.0-preview$Ordinal"
+    }
+
+    $rcNumber = $Ordinal - $script:FinalPreviewNumber
+    if ($rcNumber -le $script:RcCountPerMajor) {
+        return ".NET $Major.0-rc$rcNumber"
+    }
+    return $null
+}
+
+function Get-PastDueOpenMilestones {
+    <#
+    .SYNOPSIS
+        Open milestones whose `due_on` lapsed before $Cutoff, oldest first.
+    .DESCRIPTION
+        The single definition of "past due" shared by Check 3 (already-shipped
+        debt) and Check 3b (slipped next-cycle target). Those two checks partition
+        the same milestone set on the next-cycle title — one excludes it, the other
+        selects it — so they MUST agree on what "past due" means. If the state /
+        due_on / cutoff test drifted between them, a milestone could either
+        double-report or fall through both checks unreported, which is exactly the
+        bug class Check 3b was added to fix. Keeping the test here makes that
+        agreement structural rather than a copy-paste invariant nothing enforces.
+
+        `-Stable` is required, not cosmetic. PowerShell's default `Sort-Object` is
+        NOT stable — per the cmdlet docs, equal-key inputs are only delivered in
+        received order when `-Top`, `-Bottom`, or `-Stable` is used. In practice the
+        default stays ordered below .NET's ~16-element insertion-sort threshold and
+        starts permuting ties above it, so a bug here would stay invisible in small
+        fixtures and only appear on a repo with many past-due milestones. Because
+        sorting now happens BEFORE each caller's discriminator instead of after,
+        a stable sort is what makes the two orderings equivalent: filtering a stably
+        sorted list preserves relative order, so each caller sees the same sequence
+        it would have produced by filtering first. It also makes tie order
+        deterministic, which the previous filter-then-sort code did not guarantee
+        either.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [array] $Milestones,
+
+        [Parameter(Mandatory)]
+        [datetime] $Cutoff
+    )
+
+    return @($Milestones | Where-Object {
+        $_.state -eq 'open' -and
+        $_.due_on -and
+        ([datetime]$_.due_on).ToUniversalTime() -lt $Cutoff
+    } | Sort-Object -Stable { [datetime]$_.due_on })
 }
 
 function Get-MilestoneHygieneChecks {
@@ -1038,9 +1313,37 @@ function Get-MilestoneHygieneChecks {
         $major = [int]$previewMatch.Groups[1].Value
         $cycleNum = [int]$previewMatch.Groups[2].Value
         if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
-        $expectedTitlesCurrent = @(".NET $major.0-preview$cycleNum")
-        $expectedTitlesNext    = @(".NET $major.0-preview$($cycleNum + 1)")
-        $cycleLabel = "preview$cycleNum"
+        # Walk the preview train (preview1..preview7 → rc1 → rc2), NOT a naive
+        # preview number increment — .NET has no preview8, so the cycle after
+        # preview7 is rc1.
+        $currentTrainTitle = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal $cycleNum
+        $nextTrainTitle    = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal ($cycleNum + 1)
+        if (-not $currentTrainTitle) {
+            if ($cycleNum -lt 1) {
+                # Nonsensical ordinal (e.g. a `release/<major>.0.1xx-preview0`
+                # branch — the `\d+` capture syntactically accepts 0). The
+                # pre-release train has no member below 1. This is a MATCHED
+                # branch shape with an out-of-range ordinal — a misconfiguration,
+                # not the legitimate end of the train — so surface UNKNOWN rather
+                # than silently dropping the current-cycle signal, which would let
+                # a bad branch name masquerade as "all clear". Distinct from the
+                # past-rc2 case just below, where no milestone exists by design and
+                # an empty result is correct.
+                return @(New-ReadinessCheck -Area "Milestone hygiene (branch shape)" -Status 'UNKNOWN' `
+                    -Details "Unrecognized pre-release ordinal ``$cycleNum`` derived from branch ``$branchToParse`` — cannot map it to a preview/rc milestone title." `
+                    -NextAction "Verify the branch follows the ``release/<major>.0.<feature>xx-preview<n>`` convention with ``n >= 1``.")
+            }
+            # Past rc2 — the pre-release train is over and GA milestones don't
+            # follow this naming convention. Skip silently rather than guess.
+            return @()
+        }
+        $expectedTitlesCurrent = @($currentTrainTitle)
+        # NOTE: assign via a statement, not `= if (...) { @($x) } else { @() }` —
+        # an if-expression unrolls a single-element array back to a scalar, which
+        # then blows up on `.Count` under `Set-StrictMode -Version Latest`.
+        $expectedTitlesNext = @()
+        if ($nextTrainTitle) { $expectedTitlesNext = @($nextTrainTitle) }
+        $cycleLabel = $currentTrainTitle -replace "^\.NET $major\.0-", ''
     } else {
         # Unknown branch shape — can't derive milestone names. Skip silently.
         return @()
@@ -1048,7 +1351,7 @@ function Get-MilestoneHygieneChecks {
 
     $milestonesResult = Get-AllMilestones -Repo $Ctx.repo
     if (-not $milestonesResult.Success) {
-        return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+        return @(New-ReadinessCheck -Area "Milestone hygiene (API failure)" -Status 'UNKNOWN' `
             -Details "Failed to query milestones from GitHub API for ``$($Ctx.repo)``." `
             -NextAction "Re-run with valid 'gh' auth: ``gh auth status`` and ``gh api repos/$($Ctx.repo)/milestones``")
     }
@@ -1072,12 +1375,17 @@ function Get-MilestoneHygieneChecks {
     # create it any time before the next cycle starts. In candidate mode this
     # is especially conservative: SR9 candidate would otherwise BLOCK on
     # missing SR10, even though we're not yet ready to cut SR9.
-    $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
-    $nextTitle = $expectedTitlesNext[0]
-    if ($nextMs.Count -eq 0) {
-        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
-            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
-            -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+    #
+    # $expectedTitlesNext is empty when the pre-release train has no successor
+    # (i.e. we're on rc2, after which comes GA) — skip rather than invent one.
+    if ($expectedTitlesNext.Count -gt 0) {
+        $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
+        $nextTitle = $expectedTitlesNext[0]
+        if ($nextMs.Count -eq 0) {
+            $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
+                -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
+                -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+        }
     }
 
     # === Check 3: Stale open milestones with past due_on ===
@@ -1088,6 +1396,12 @@ function Get-MilestoneHygieneChecks {
     # triggering BLOCKED.
     # Also excluded:
     #   - the current cycle (still being prepped)
+    #   - the next cycle (the roll-forward target Check 2 may have just told the
+    #     captain to create; a slipped next-cycle milestone whose due_on passed is
+    #     NOT "already-shipped debt" — flagging it here would contradict Check 2's
+    #     "create it" advice. It is instead re-classified by Check 3b below, so the
+    #     signal is preserved rather than dropped. Lane-agnostic: this holds for an
+    #     SR next-cycle milestone as much as a preview/rc one.)
     #   - "Backlog" (intentional long-running)
     #   - ".NET N Planning" (intentional long-running planning ms)
     #   - milestones without due_on (caller has no schedule, no signal)
@@ -1097,16 +1411,19 @@ function Get-MilestoneHygieneChecks {
         # Match ".NET <major> SR<n>" and ".NET <major>.0 SR<n>" (and SR<n>.<patch>)
         "^\.NET\s+$major(\.0)?\s+SR\d+(\.\d+)?$"
     } else {
-        # Match ".NET <major>.0-preview<n>"
-        "^\.NET\s+$major\.0-preview\d+$"
+        # Match ".NET <major>.0-preview<n>" AND ".NET <major>.0-rc<n>" — preview
+        # and rc are one continuous pre-release train, so a stale rc1 milestone
+        # is the same class of housekeeping debt as a stale preview6 one.
+        "^\.NET\s+$major\.0-(preview|rc)\d+$"
     }
-    $staleMs = @($allMs | Where-Object {
-        $_.state -eq 'open' -and
-        $_.due_on -and
-        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
+    # Shared "past due" set — Check 3 and Check 3b select disjoint halves of it.
+    $pastDueOpen = Get-PastDueOpenMilestones -Milestones $allMs -Cutoff $graceCutoff
+
+    $staleMs = @($pastDueOpen | Where-Object {
         ($expectedTitlesCurrent -notcontains $_.title) -and
+        ($expectedTitlesNext -notcontains $_.title) -and
         ($_.title -match $cycleFilter)
-    } | Sort-Object { [datetime]$_.due_on })
+    })
 
     if ($staleMs.Count -gt 0) {
         $list = ($staleMs | ForEach-Object {
@@ -1122,7 +1439,116 @@ function Get-MilestoneHygieneChecks {
             -NextAction "For each: triage the open issues (close-as-fixed, move to current cycle, or move to Backlog), then close the milestone: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
     }
 
+    # === Check 3b: Next-cycle milestone exists but has slipped past its due date ===
+    # Check 3 deliberately excludes the next-cycle (roll-forward target) milestone
+    # from the "already-shipped debt" bucket — calling it that would contradict
+    # Check 2's advice to create it. But an EXISTING next-cycle milestone that is
+    # well past due must not become invisible: an unbounded slip usually means the
+    # schedule moved, or the cycle was skipped and the milestone abandoned. Re-classify
+    # it into its own row with accurate wording so the signal is preserved without the
+    # misleading "already shipped" framing. Lane-agnostic — fires for an SR next-cycle
+    # milestone (e.g. a long-overdue SR9 while surveying SR8) exactly as for a slipped
+    # preview/rc one, which is the SR-lane signal the bare Check-3 exclusion had dropped.
+    $slippedNext = @($pastDueOpen | Where-Object {
+        $expectedTitlesNext -contains $_.title
+    })
+
+    if ($slippedNext.Count -gt 0) {
+        $slippedList = ($slippedNext | ForEach-Object {
+            $dueDate = ([datetime]$_.due_on).ToUniversalTime().ToString('yyyy-MM-dd')
+            "[$($_.title)](https://github.com/$($Ctx.repo)/milestone/$($_.number)) (due $dueDate, $($_.open_issues) open)"
+        }) -join '; '
+        # CLEANUP, not BLOCKED — like stale debt, a slipped roll-forward target is
+        # housekeeping, not a blocker on THIS cycle shipping.
+        $checks += New-ReadinessCheck -Area "Next-cycle milestone past due ($($slippedNext.Count))" -Status 'CLEANUP' `
+            -Details "The next-cycle roll-forward milestone(s) exist but are past due (>7 days) and still open: $slippedList. This is NOT already-shipped debt — it's the target open issues roll forward to after ``$cycleLabel`` ships. A slip usually means the schedule moved, or the cycle was skipped and the milestone was abandoned." `
+            -NextAction "If the schedule slipped, update the milestone's ``due_on``; if the cycle was skipped, triage its open issues and close it: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
+    }
+
     return $checks
+}
+
+function Get-CandidatePrResolution {
+    <#
+    .SYNOPSIS
+        Discovers the open "Candidate" PR(s) on main — the PR(s) that promote a
+        specific main commit as the basis for cutting the next SR — and returns a
+        structured resolution consumed by BOTH the ship-readiness check
+        (Get-CandidatePrChecks) AND the prominent "Candidate PR" report section.
+        Runs the gh query + maintainer spoof-gate exactly ONCE per report so the
+        two consumers don't each pay for the network round-trips.
+    .DESCRIPTION
+        Convention: the Candidate PR has "Candidate" in the title (word boundary,
+        case-insensitive) AND is opened by a maintainer (OWNER/MEMBER/COLLABORATOR).
+        `gh pr list --json` does NOT expose authorAssociation, so the maintainer
+        spoof-gate fetches author_association per title-matched candidate via the
+        REST API. Fail closed: an unreadable association excludes the PR (tracked
+        separately as `unverifiable`, distinct from a confirmed non-maintainer
+        `spoofer`, so a transient blip during a real cut isn't mislabeled).
+
+        The `gh pr list` projection requests the richer fields (createdAt, isDraft,
+        mergeable, reviewDecision, state) the prominent section renders — all are
+        valid `gh pr list --json` fields. Consumers must treat every field as
+        possibly-absent (older stubs / partial data) and degrade gracefully.
+    .OUTPUTS
+        Hashtable:
+          mode         — 'skip' (not candidate mode) | 'query-failed' | 'resolved'
+          candidates   — @() of accepted (maintainer-gated) enriched PR objects
+          spoofers     — [int] confirmed non-maintainer 'Candidate'-titled PRs excluded
+          unverifiable — [int] 'Candidate'-titled PRs whose author-assoc lookup failed
+          nextSr       — 'SR9' | $null
+          versionBase  — '10.0.90' | $null  (Major.Minor.(targetSr*10))
+    #>
+    param($Ctx)
+
+    $res = [ordered]@{
+        mode = 'skip'; candidates = @(); spoofers = 0; unverifiable = 0
+        nextSr = $null; versionBase = $null
+    }
+    if ($Ctx.mode -ne 'candidate') { return $res }
+
+    # Next-SR label + version base from priorSrBranch (release/MAJOR.MINOR.1xx-srN).
+    # Full parse gives the version base (e.g. SR9 → 10.0.90) for the section header;
+    # fall back to the loose 'srN$' match (nextSr only) if the branch is oddly shaped.
+    if ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$') {
+        $mj = [int]$Matches[1]; $mn = [int]$Matches[2]; $target = [int]$Matches[3] + 1
+        $res.nextSr = "SR$target"
+        $res.versionBase = "$mj.$mn.$($target * 10)"
+    } elseif ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
+        $res.nextSr = "SR$([int]$Matches[1] + 1)"
+    }
+
+    # One gh call: up to 100 open PRs on main. The Candidate PR is opened on main
+    # (not the SR branch, which may not exist yet in candidate mode).
+    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
+                       '--base', $Ctx.mainBranch, '--limit', '100',
+                       '--json', 'number,title,author,createdAt,updatedAt,isDraft,mergeable,reviewDecision,state,url')
+    if ($null -eq $raw) { $res.mode = 'query-failed'; return $res }
+
+    $mainPrs = @()
+    $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if ($parsed) { $mainPrs = @($parsed) }
+
+    # Word-boundary match so "CandidateView" doesn't spoof.
+    $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
+
+    # Author gating (see .DESCRIPTION). -Quiet so a transient lookup miss doesn't
+    # embed a raw `gh ... exited` warning in the tracker body.
+    $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
+    foreach ($pr in $titleMatches) {
+        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
+                                '--jq', '.author_association') -Quiet
+        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
+        if (-not $assoc) {
+            $res.unverifiable++
+        } elseif ($maintainerAssociations -contains $assoc) {
+            $res.candidates += $pr
+        } else {
+            $res.spoofers++
+        }
+    }
+    $res.mode = 'resolved'
+    return $res
 }
 
 function Get-CandidatePrChecks {
@@ -1153,79 +1579,38 @@ function Get-CandidatePrChecks {
     .OUTPUTS
         Array of New-ReadinessCheck records (merged into shipChecks downstream).
     #>
-    param($Ctx, [switch]$SkipChecks)
+    param($Ctx, $Resolution, [switch]$SkipChecks)
 
     if ($SkipChecks) { return ,@() }
     if ($Ctx.mode -ne 'candidate') { return ,@() }
 
+    # Discover the candidate PR(s) once. Callers that also render the prominent
+    # "Candidate PR" report section pass the shared -Resolution so the gh query
+    # + maintainer spoof-gate runs a SINGLE time per report; direct callers
+    # (e.g. unit tests) omit it and this recomputes on demand.
+    if (-not $Resolution) { $Resolution = Get-CandidatePrResolution -Ctx $Ctx }
+
     $repoUrl = "https://github.com/$($Ctx.repo)"
 
-    # Compute next SR label from priorSrBranch (set by Resolve-Context in
-    # candidate mode). priorSrBranch = e.g. 'release/10.0.1xx-sr8' → next is SR9.
-    $nextSr = $null
-    if ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
-        $nextSr = "SR$([int]$Matches[1] + 1)"
-    }
-
+    $nextSr = $Resolution.nextSr
     $area = if ($nextSr) {
         "Candidate PR for next SR cut ($nextSr)"
     } else {
         "Candidate PR for next SR cut"
     }
 
-    # Scan open PRs targeting main (the Candidate PR is opened on main, not
-    # on the SR branch, since the SR branch may not exist yet in candidate
-    # mode). Cheap: one gh call returning up to 100 open PRs on main.
-    # `gh pr list --json` does NOT expose authorAssociation (it's not a valid
-    # list projection field). The maintainer spoof-gate below fetches
-    # author_association per title-matched candidate via the REST API instead.
-    # Keep this projection limited to valid `gh pr list` fields.
-    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
-                       '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,updatedAt,url')
-    if ($null -eq $raw) {
-        # gh failed — distinguish from "no Candidate PR found" so the
-        # verdict doesn't silently READY on tool failure.
+    # gh query failed → surface as WATCH (a missing signal, not a silent READY).
+    if ($Resolution.mode -eq 'query-failed') {
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
             -Details "Could not query open PRs on ``$($Ctx.mainBranch)`` (``gh pr list`` exited non-zero). Cut readiness cannot be evaluated until the query succeeds." `
             -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable in this environment, check the Candidate PR manually.")
     }
-    $mainPrs = @()
-    $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if ($parsed) { $mainPrs = @($parsed) }
 
-    # Word-boundary match so "CandidateView" doesn't spoof.
-    $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
-
-    # Author gating: only PRs from a maintainer count. Outside contributors
-    # never open SR-cut PRs by convention. `gh pr list` can't return the
-    # association, so fetch it per title-matched candidate from the REST API
-    # (cheap: titleMatches is almost always 0-1, usually 0 in candidate mode).
-    # The REST field is 'author_association' (snake_case) — enum
-    # OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR|... Fail closed: an unreadable
-    # association excludes the PR, so a missing signal can't let a
-    # 'Candidate'-titled PR slip through the spoof gate. Distinguish a
-    # *confirmed* non-maintainer (a real spoofer) from an *unverifiable* one
-    # (transient gh/REST failure) so a legitimate maintainer Candidate PR isn't
-    # mislabeled as a spoofer during an actual cut. Use -Quiet so a transient
-    # lookup miss doesn't embed a raw `gh ... exited` warning in the tracker
-    # body — the structured WATCH note below carries that signal instead.
-    $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
-    $candidates = @()
-    $spoofers = 0
-    $unverifiable = 0
-    foreach ($pr in $titleMatches) {
-        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
-                                '--jq', '.author_association') -Quiet
-        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
-        if (-not $assoc) {
-            $unverifiable++
-        } elseif ($maintainerAssociations -contains $assoc) {
-            $candidates += $pr
-        } else {
-            $spoofers++
-        }
-    }
+    # Accepted (maintainer-gated) candidates + exclusion counts, from the shared
+    # resolution computed by Get-CandidatePrResolution (query + spoof-gate).
+    $candidates = @($Resolution.candidates)
+    $spoofers = $Resolution.spoofers
+    $unverifiable = $Resolution.unverifiable
 
     if ($candidates.Count -eq 0) {
         $excludeNotes = @()
@@ -1280,10 +1665,14 @@ function Get-CandidatePrChecks {
 function Resolve-Context {
     param([string]$SrBranch, [string]$Repo, [string]$MainBranch,
           [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate,
-          [switch]$InheritFromPriorSr)
+          [switch]$InheritFromPriorSr, [switch]$Shipped)
 
     if ($InheritFromPriorSr -and -not $Candidate) {
         throw "-InheritFromPriorSr is only valid with -Candidate (it models the SR cut-then-merge workflow)."
+    }
+
+    if ($Shipped -and $Candidate) {
+        throw "-Shipped and -Candidate are mutually exclusive: -Shipped surveys an existing (already-tagged) SR branch; -Candidate pre-flights main as the next SR."
     }
 
     # HARD VALIDATION — refuse inflight/staging refs as SR sources.
@@ -1320,6 +1709,7 @@ function Resolve-Context {
     $mode = 'in-flight'
     $effectiveSrRef = "origin/$SrBranch"
     $effectiveExcludes = $ExcludeBranches
+    $priorSrRef = $null
 
     if ($Candidate) {
         $mode = 'candidate'
@@ -1332,6 +1722,41 @@ function Resolve-Context {
         # Exclude prior SR from main, so we see only "new since last SR" commits
         $effectiveExcludes = @($priorSrRef)
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
+    }
+    elseif ($Shipped) {
+        # Display-only relabel. The survey is identical to in-flight (the SR
+        # branch surveyed directly); only the rendered header reads 'shipped'
+        # so the post-ship tracker doesn't misreport as in-flight.
+        $mode = 'shipped'
+        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef (display-only relabel)" -ForegroundColor Cyan
+    }
+
+    # Main-side revert detection needs a bounded release-window baseline, but the
+    # CURRENT SR tip is not a safe bound: candidate/inflight catch-up history can
+    # make a fix and its later main revert common ancestors of both refs, hiding
+    # the revert from `main ^srRef`. Use the prior SR (or GA for SR1) so reverts
+    # introduced during this release cycle remain visible even after the current
+    # SR inherits them. Candidate mode already names the prior SR explicitly.
+    $mainRevertBaselineRef = $null
+    if ($Candidate) {
+        $mainRevertBaselineRef = $priorSrRef
+    } elseif ($SrBranch -match '^release/(\d+)\.(\d+)\.(\d+)xx-sr(\d+)$') {
+        $baselineMajor = [int]$Matches[1]
+        $baselineMinor = [int]$Matches[2]
+        $baselineBand = [string]$Matches[3]
+        $currentSrNumber = [int]$Matches[4]
+        $baselineCandidate = if ($currentSrNumber -gt 1) {
+            "origin/release/$baselineMajor.$baselineMinor.${baselineBand}xx-sr$($currentSrNumber - 1)"
+        } else {
+            "$baselineMajor.$baselineMinor.0"
+        }
+        if (Invoke-Git "rev-parse $baselineCandidate") {
+            $mainRevertBaselineRef = $baselineCandidate
+        } else {
+            Write-Warn "Main-revert release baseline '$baselineCandidate' was not found; falling back to an unbounded correctness-first revert scan."
+        }
+    } else {
+        Write-Warn "Could not derive a main-revert release baseline from '$SrBranch'; falling back to an unbounded correctness-first revert scan."
     }
 
     if ($Candidate -and $InheritFromPriorSr) {
@@ -1370,6 +1795,7 @@ function Resolve-Context {
         mode = $mode
         priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
         priorSrRef = if ($Candidate) { "origin/$SrBranch" } else { $null }
+        mainRevertBaselineRef = $mainRevertBaselineRef
         inheritFromPriorSr = [bool]($Candidate -and $InheritFromPriorSr)
         fetchedAt = (Get-Date).ToUniversalTime().ToString('o')
     }
@@ -1405,6 +1831,21 @@ function Get-RevertedPrFromSubject {
     # because the trailing revert PR is NOT followed by a quote, never reaches it.
     # Case-insensitive to also match hand-typed lowercase 'revert "..."' subjects.
     $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)\)"')
+    if ($m.Success) { return [int]$m.Groups[1].Value }
+    # Manual/hand-authored revert form (no GitHub quotes, and the body carries no
+    # "This reverts commit <sha>" line, so the SHA-override in the caller can't
+    # recover it either): "Revert - <original title> #<reverted> (#<revertPR>)".
+    # Real example: `Revert - Fix Android stale ContainerView root leak #35372 (#36152)`
+    # → 35372 is the reverted fix, (#36152) is the revert's OWN squash PR. Without
+    # this, revertedPrSet records only 36152, the reverted fix's original commit
+    # still satisfies Test-PrNumberOnBranch, and a "fixed by #35372" comment on a
+    # CLOSED issue is falsely de-noised to closed-fix-unlinked ("No ship risk").
+    # Anchored to a Revert subject AND to the bare `#N` immediately before the
+    # trailing `(#M)` so (a) non-revert subjects never match, (b) the trailing
+    # (#M) is never returned, and (c) incidental #refs earlier in the title are
+    # ignored. A rare misfire only ever marks a PR as reverted (safe direction —
+    # never a false "shipped").
+    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)\s+\(#\d+\)\s*$')
     if ($m.Success) { return [int]$m.Groups[1].Value }
     return $null
 }
@@ -1573,6 +2014,25 @@ function Get-SrCommits {
         foreach ($n in $inherited.fixedIssues) { $fixedIssueSet.Add([int]$n) | Out-Null }
     }
 
+    # Main-side reverts matter for backport guidance: a source PR can remain an
+    # ancestor of main after a later revert, so ancestry alone is not enough to
+    # safely recommend `/backport`. Keep this separate from SR-side reverts so
+    # existing SR-content classifications stay unchanged.
+    $mainReverts = @()
+    if ($Ctx.mainBranch) {
+        # Bound the scan by the PRIOR release baseline, not the current SR tip.
+        # Current SR catch-up history can contain both a source fix and its later
+        # main revert; `main ^srRef` would then exclude the common-ancestor revert
+        # and could recommend re-backporting code main deliberately backed out.
+        # If context resolution could not find a baseline, prefer the slower
+        # unbounded scan over a false-safe backport recommendation.
+        $mainRevertBaselineRef = Get-MetadataValue -Container $Ctx -Name 'mainRevertBaselineRef'
+        $mainRevertBounds = if ($mainRevertBaselineRef) { @("^$mainRevertBaselineRef") } else { @() }
+        $mainRevertRevSpec = "origin/$($Ctx.mainBranch) $(($mainRevertBounds -join ' ')) --regexp-ignore-case --grep=Revert"
+        $mainRevertScan = Get-CommitsForRevSpec -RevSpec $mainRevertRevSpec -OriginTag 'main'
+        $mainReverts = @($mainRevertScan.reverts)
+    }
+
     $srcPrsSorted = @($sourcePrSet | Sort-Object)
     $result = @{
         commitCount = $mergedCommits.Count
@@ -1586,6 +2046,7 @@ function Get-SrCommits {
         backportPrs = @($backportPrSet | Sort-Object)
         fixedIssues = @($fixedIssueSet | Sort-Object)
         reverts = $mergedReverts
+        mainReverts = $mainReverts
     }
     return $result
 }
@@ -1794,6 +2255,76 @@ function Get-IssueTimelinePrs {
     return @($prs | Sort-Object -Unique)
 }
 
+function Get-IssueCommentPrs {
+    <#
+    .SYNOPSIS
+        Extract PR numbers referenced in an issue's COMMENT BODIES (as opposed
+        to the structured timeline). Recovers fix linkage that lives ONLY in
+        human prose.
+
+    .DESCRIPTION
+        Common QA close pattern in this repo: a maintainer closes a regression
+        with a comment like "This issue was fixed by PR #35028" but the fix PR
+        never used a closing keyword (`Fixes #NNNNN`) and GitHub therefore
+        recorded NO `cross-referenced` event on the ISSUE timeline. `Get-IssueTimelinePrs`
+        sees nothing, the classifier finds zero candidates, and the issue is
+        mislabelled `no-fix-yet` even though the fix shipped. This helper reads
+        the comment bodies so that linkage can be recovered.
+
+        Returns @( @{ number = <int>; evidence = 'fix-phrase' | 'mention' } ).
+        `evidence` is 'fix-phrase' when the comment pairs the PR reference with
+        fix/resolve/close language (higher confidence), else 'mention'.
+
+        IMPORTANT: this only surfaces CANDIDATES. Callers MUST still verify each
+        PR actually MERGED and that its commit is on the target branch
+        (`Test-CommitOnBranch`) before trusting it as a real fix — a bare prose
+        mention ("duplicate of #X", "see #Y") is not proof of anything.
+    #>
+    param($Repo, $IssueNumber)
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate')
+    if (-not $raw) { return @() }
+    $comments = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if (-not $comments) { return @() }
+
+    # strongest evidence seen per PR number ('fix-phrase' beats 'mention')
+    $byNum = @{}
+    foreach ($c in $comments) {
+        $body = Get-AzdoProp $c 'body'
+        if (-not $body) { continue }
+        # Extract PR references, rejecting CROSS-REPO ones. A maui regression is
+        # only de-noised by a fix that lives in THIS repo, so a cross-repo
+        # shorthand (`dotnet/runtime#123`), a github.com/<other>/<repo>/pull/123
+        # URL, or a scheme-less <other>/<repo>/pull/123 path must NOT be mistaken
+        # for maui#123. Same-repo shorthand (`dotnet/maui#123`), same-repo pull
+        # URLs/paths, bare `#123` and `PR#123` are all accepted. The
+        # `qual`/`urlrepo`/`pathrepo` groups capture any owner/repo qualifier so a
+        # foreign one can be skipped.
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
+        foreach ($m in $refs) {
+            $qual     = $m.Groups['qual'].Value
+            $urlRepo  = $m.Groups['urlrepo'].Value
+            $pathRepo = $m.Groups['pathrepo'].Value
+            if ($qual     -and $qual     -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
+            if ($urlRepo  -and $urlRepo  -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
+            if ($pathRepo -and $pathRepo -ne $Repo) { continue }   # cross-repo scheme-less owner/repo/pull/N
+            $num = [int]$m.Groups[1].Value
+            # Does THIS comment pair the reference with fix/resolve/close language
+            # within a short window (tolerates the long ".../pull/" URL prefix)?
+            # The negative lookbehind drops ADJACENTLY-negated fix phrases ("not
+            # fixed by #X", "won't fix #Y", "isn't resolved by #Z") so they score as
+            # a bare 'mention', not high-confidence 'fix-phrase'. Because -match
+            # backtracks, a separate non-negated fix phrase for the same PR still
+            # matches; only a SOLELY-(adjacently-)negated reference is demoted. A
+            # non-adjacent negation ("won't be fixed by #X") is not caught here, but
+            # the caller's merged-AND-on-branch gates still bound the blast radius.
+            $isFix = $body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
+            if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
+        }
+    }
+    return @($byNum.GetEnumerator() | ForEach-Object { @{ number = [int]$_.Key; evidence = $_.Value } })
+}
+
 function Get-PrEvidenceType {
     param($PrBody, $IssueNumber)
     if (-not $PrBody) { return 'none' }
@@ -1853,6 +2384,29 @@ function Test-CommitOnBranch {
     return ($LASTEXITCODE -eq 0)
 }
 
+function Test-PrNumberOnBranch {
+    <#
+    .SYNOPSIS
+        Returns $true when $BranchRef has a commit whose message contains the
+        literal `(#<PrNumber>)` token GitHub stamps onto squash/merge subjects.
+
+    .DESCRIPTION
+        Robust companion to Test-CommitOnBranch for the cross-branch flow.
+        A PR's own `mergeCommit.oid` is the SHA on the branch it merged INTO
+        (e.g. inflight/candidate). When that change later reaches the SR branch
+        via a branch-merge or cherry-pick it gets a DIFFERENT SHA, so a bare
+        `merge-base --is-ancestor <prMergeSha> <srBranch>` returns false even
+        though the fix IS present. The `(#<num>)` subject token survives all
+        three flows (squash, branch-merge, cherry-pick -x), so matching on it
+        recovers presence that SHA-ancestry misses. `--fixed-strings` keeps the
+        closing paren literal, preventing `(#3502)` from matching `(#35028)`.
+    #>
+    param([int]$PrNumber, [string]$BranchRef)
+    if (-not $PrNumber) { return $false }
+    $hit = Invoke-Git "log $BranchRef --fixed-strings --grep=(#$PrNumber) --format=%H -1"
+    return [bool]$hit
+}
+
 function Get-BackportPrsForSr {
     param($Repo, $SrBranch, $SourcePrNumber)
     # Look for any PR targeting the SR branch that mentions the source PR
@@ -1864,6 +2418,93 @@ function Get-BackportPrsForSr {
     return @($list)
 }
 
+function Resolve-ClosedFixUnlinked {
+    <#
+    .SYNOPSIS
+        Recover 'closed-fix-unlinked' for a CLOSED regression issue whose fix
+        lives ONLY in comment prose (no closing keyword, no timeline link).
+
+    .DESCRIPTION
+        Maintainers routinely close a regression with a plain-text comment
+        ("fixed by PR #35028") that GitHub never turns into a structured link.
+        Recover the cited PR and — ONLY when it actually MERGED and its commit
+        is verifiably on THIS SR branch — classify 'closed-fix-unlinked': the
+        fix is present (no ship risk), but the issue<->PR link is missing and
+        should be added for traceability.
+
+        Two gates make prose evidence safe, and BOTH are required:
+          1. fix-phrase ONLY — the comment must pair the PR with fix/resolve/
+             close language ("was fixed by PR #X"). A BARE mention is rejected
+             because regression issues routinely name the CAUSE PR for context
+             ("Before PR #32080 ... After PR #32080 the behavior changed"), and
+             the cause naturally lives on the branch — it is not a fix.
+          2. merged AND on the SR branch — a cited PR that never merged, or
+             merged elsewhere, is not proof the fix shipped here.
+
+        Reverted fixes are dropped (a rolled-back fix is not a fix), mirroring
+        the $revertedPrSet / Revert-title handling on the SR-contents and
+        candidate paths.
+
+        Returns the 'closed-fix-unlinked' result hashtable, or $null when the
+        issue is not CLOSED or no cited PR survives both gates (caller falls
+        back to its own no-fix-yet handling).
+    #>
+    param($Ctx, $Issue, $RevertedPrSet)
+
+    $issueState = Get-AzdoProp $Issue 'state'
+    if ($issueState -ne 'CLOSED') { return $null }
+
+    $commentPrs = Get-IssueCommentPrs -Repo $Ctx.repo -IssueNumber $Issue.number
+    $verifiedFixes = @()
+    foreach ($cp in $commentPrs) {
+        # Gate 1: require explicit fix language. Bare mentions (the cause-PR
+        # blame pattern) are NOT fixes and must not reclassify the issue.
+        if ($cp.evidence -ne 'fix-phrase') { continue }
+        if ($cp.number -eq $Issue.number) { continue }   # self-reference
+        $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $cp.number
+        if (-not $info) { continue }
+        if ($info.state -ne 'MERGED') { continue }
+        # A reverted fix is NOT a fix. Mirror the main SR-contents/candidate
+        # paths: drop PRs the SR later reverted, and drop PRs that are themselves
+        # rollbacks ("Revert ..." titles). Without this, the `(#<num>)` on-branch
+        # token checked below matches the reverted fix's number inside the revert
+        # commit's own subject `Revert "... (#num)" (#N)`, so a rolled-back fix
+        # would pass the on-branch gate and be reported as "No ship risk".
+        if ($RevertedPrSet.ContainsKey([int]$info.number)) { continue }
+        if (($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')) { continue }
+        # Skip agent/skill/workflow PRs that only mention the issue for context.
+        if (Test-PrIsToolingOnly -Files $info.files) { continue }
+        $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
+        # Gate 2: presence on the SR branch via EITHER signal — direct SHA
+        # ancestry (fix merged straight to SR) OR the `(#<num>)` subject token
+        # (fix flowed in from inflight/main under a different SHA — the common
+        # case).
+        $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
+                -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
+        if (-not $onSr) { continue }
+        $verifiedFixes += @{
+            number = [int]$info.number
+            title = $info.title
+            state = $info.state
+            mergeSha = $mergeSha
+            evidenceType = "comment-$($cp.evidence)"
+        }
+    }
+    if ($verifiedFixes.Count -gt 0) {
+        $prList = (@($verifiedFixes | ForEach-Object { "#$($_.number)" }) | Sort-Object -Unique) -join ', '
+        return @{
+            classification = 'closed-fix-unlinked'
+            confidence = 'high'
+            evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
+            candidateFixPrs = @($verifiedFixes | ForEach-Object {
+                @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
+            })
+            recommendedAction = "No ship risk — fix is already in the SR. Add a closing reference for traceability (e.g. ``Fixes #$($Issue.number)`` in $prList, or link via the issue's Development panel) so future runs classify it automatically."
+        }
+    }
+    return $null
+}
+
 function Classify-RegressionCandidate {
     param($Issue, $CandidatePrs, $Ctx, $SrContents)
 
@@ -1873,6 +2514,20 @@ function Classify-RegressionCandidate {
     foreach ($r in $SrContents.reverts) {
         if ($r.revertsPr) { $revertedPrSet[$r.revertsPr] = $true }
         if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
+    }
+    $mainRevertedPrSet = @{}
+    # Shape-safe read: $SrContents is a [hashtable] during a live survey but can be
+    # an arbitrary IDictionary (e.g. [ordered]@{}) or a [pscustomobject] after a
+    # JSON round-trip. The old `-is [hashtable]` probe fell through to a PSObject
+    # property read that an ordered dictionary does not satisfy, so `mainReverts`
+    # was silently ignored and the guard no-op'd. Route through Get-MetadataValue
+    # (IDictionary.Contains) so it fires for every dictionary shape (#36497 review).
+    $mainReverts = Get-MetadataValue -Container $SrContents -Name 'mainReverts'
+    if ($mainReverts) {
+        foreach ($r in @($mainReverts)) {
+            if ($r.revertsPr) { $mainRevertedPrSet[[int]$r.revertsPr] = $true }
+            if ($r.revertBackportPr) { $mainRevertedPrSet[[int]$r.revertBackportPr] = $true }
+        }
     }
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
@@ -1999,6 +2654,14 @@ function Classify-RegressionCandidate {
                 recommendedAction = "Inspect the revert chain manually: original fix → revert → (possible) revert-of-revert. Look for the actual fix PR in `gh pr list --search 'fixes #$($Issue.number)'` excluding revert titles."
             }
         }
+
+        # ── FALLBACK: closed issue whose fix lives ONLY in comment prose ──
+        # No timeline-cross-referenced candidate survived the evidence filter,
+        # but the issue is CLOSED. Recover a fix cited only in a closing comment
+        # (see Resolve-ClosedFixUnlinked for the fix-phrase + merged-on-SR gates).
+        $rec = Resolve-ClosedFixUnlinked -Ctx $Ctx -Issue $Issue -RevertedPrSet $revertedPrSet
+        if ($rec) { return $rec }
+
         return @{
             classification = 'no-fix-yet'
             confidence = 'high'
@@ -2012,6 +2675,8 @@ function Classify-RegressionCandidate {
     $perPrVerdicts = @()
     foreach ($pr in $strongPrs) {
         $verdict = $null
+        $subreason = $null
+        $subreasonPr = $null
         $confidence = 'high'
         $evidence = @()
 
@@ -2031,7 +2696,20 @@ function Classify-RegressionCandidate {
             $closedUnmergedBackport = $pr.backports | Where-Object { $_.state -eq 'CLOSED' -and -not $_.mergedAt } | Select-Object -First 1
             $mergedBackport = $pr.backports | Where-Object { $_.state -eq 'MERGED' } | Select-Object -First 1
 
-            if ($mergedBackport) {
+            # A source PR reverted on main must never be presented as safe to track
+            # or land, regardless of backport state. Check this AHEAD of the
+            # backport-state branches: otherwise an OPEN backport (or any other
+            # backport state) masks the revert and the report emits
+            # 'backport-in-progress' ("Track backport PR to completion") for code
+            # that main has already backed out (PR #36497 review).
+            if ($mainRevertedPrSet.ContainsKey([int]$pr.number)) {
+                $verdict = 'needs-human-review'
+                $subreason = 'reverted-on-main'
+                $subreasonPr = [int]$pr.number
+                $confidence = 'medium'
+                $evidence += "PR #$($pr.number) merged to main but was later reverted on main — do not backport until a human verifies the current fix/revert chain"
+            }
+            elseif ($mergedBackport) {
                 # backport landed but PR # is different from what we tracked → check sourcePrSet for backport #
                 if ($sourcePrSet.ContainsKey([int]$mergedBackport.number)) {
                     if ($revertedPrSet.ContainsKey([int]$mergedBackport.number)) {
@@ -2043,6 +2721,8 @@ function Classify-RegressionCandidate {
                     }
                 } else {
                     $verdict = 'needs-human-review'
+                    $subreason = 'merged-backport-missing'
+                    $subreasonPr = [int]$mergedBackport.number
                     $confidence = 'low'
                     $evidence += "Backport PR #$($mergedBackport.number) is MERGED in GitHub but not found in SR git contents — re-run without -NoFetch or verify the merge target manually"
                 }
@@ -2056,6 +2736,8 @@ function Classify-RegressionCandidate {
                 $evidence += "Backport PR #$($closedUnmergedBackport.number) CLOSED unmerged — needs WorkIQ for context"
             }
             elseif ($pr.state -eq 'MERGED') {
+                # reverted-on-main is handled by the hoisted guard above, so a PR
+                # reaching here is known NOT to have been reverted on main.
                 if ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
                     $confidence = 'medium'
@@ -2067,8 +2749,24 @@ function Classify-RegressionCandidate {
                 }
             }
             elseif ($pr.state -eq 'OPEN') {
-                $verdict = 'open-on-main'
-                $evidence += "PR #$($pr.number) is OPEN, base=$($pr.baseRef)"
+                if ($pr.baseRef -eq $Ctx.mainBranch) {
+                    $verdict = 'open-on-main'
+                    $evidence += "PR #$($pr.number) is OPEN against main"
+                } else {
+                    $verdict = 'needs-human-review'
+                    $confidence = 'medium'
+                    if ($pr.baseRef -eq 'inflight/current') {
+                        $subreason = 'open-non-main-inflight'
+                        $subreasonPr = [int]$pr.number
+                        # inflight/current PRs reach main via normal Candidate promotion — do
+                        # NOT instruct a captain to retarget. Wait for the merge + promotion flow.
+                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef) — wait for it to merge and flow to main via Candidate promotion, then rerun readiness. (Retargeting to main directly is an optional expedited path, not required.)"
+                    } else {
+                        $subreason = 'open-non-main-other'
+                        $subreasonPr = [int]$pr.number
+                        $evidence += "PR #$($pr.number) is OPEN against $($pr.baseRef), not main — wait for its content to reach main (via merge + forward-flow), then rerun readiness"
+                    }
+                }
             }
             else {
                 $verdict = 'needs-human-review'
@@ -2077,7 +2775,7 @@ function Classify-RegressionCandidate {
             }
         }
 
-        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; confidence = $confidence; evidence = $evidence }
+        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; subreason = $subreason; subreasonPr = $subreasonPr; confidence = $confidence; evidence = $evidence }
     }
 
     # Pick the highest-priority verdict (in-sr-active > backport-in-progress > ... > no-fix-yet)
@@ -2094,14 +2792,76 @@ function Classify-RegressionCandidate {
     }
     $best = $perPrVerdicts | Sort-Object { $priority[$_.verdict] } | Select-Object -First 1
 
+    # ── CLOSED-issue guard against a contradictory 'open-on-main' ──
+    # 'open-on-main' means "the fix PR is still OPEN on main; wait for it to
+    # merge, then backport" — an ACTIVE (Tier-2) regression. That is impossible
+    # for a CLOSED issue: an unmerged PR cannot have closed it. This happens
+    # when a giant still-open 'Candidate' changelog PR `Fixes`-lists dozens of
+    # issues, so its OPEN state gets attributed to an already-completed issue
+    # (real-world: #35615 shown as open-on-main under SR9 while candidate #35716
+    # was still open). Never emit open-on-main for a CLOSED issue:
+    #   a. First try the same comment-prose recovery path 1 uses — a merged fix
+    #      verifiably on the SR wins → 'closed-fix-unlinked' (Tier 3).
+    #   b. Otherwise fall to the honest 'no-fix-yet' (Tier 3 for a CLOSED issue):
+    #      the automation can't pin a verified fix on this SR and the open
+    #      candidate hasn't merged. NOT an active SR regression.
+    # Scope: the contradiction is "issue CLOSED but the SELECTED fix PR is still
+    # OPEN/unmerged" — an unmerged PR cannot have closed the issue. Gate on the
+    # selected PR being OPEN, not just the verdict string: the OPEN-candidate
+    # split routes an OPEN PR targeting a non-`main` branch (e.g. inflight/current)
+    # to 'needs-human-review' rather than 'open-on-main', and that path is equally
+    # contradictory for a CLOSED issue. Every other verdict (merged-*,
+    # backport-in-progress, rejected-from-sr, in-sr-*) stays as-is even for CLOSED
+    # issues — those are still actionable (the SR may still need the backport).
+    # The merged-backport 'needs-human-review' (~L2399) is excluded because its
+    # selected PR is not OPEN; and on any rare overlap, the Resolve-ClosedFixUnlinked
+    # recovery below reclassifies to closed-fix-unlinked before we fall to no-fix-yet.
+    $selectedPrOpenUnmerged = $best.pr -and $best.pr.state -eq 'OPEN'
+    $closedWithOpenCandidate =
+        $best.verdict -eq 'open-on-main' -or
+        ($best.verdict -eq 'needs-human-review' -and $selectedPrOpenUnmerged -and $best.pr.baseRef -ne $Ctx.mainBranch)
+    if ($closedWithOpenCandidate -and (Get-AzdoProp $Issue 'state') -eq 'CLOSED') {
+        $rec = Resolve-ClosedFixUnlinked -Ctx $Ctx -Issue $Issue -RevertedPrSet $revertedPrSet
+        if ($rec) { return $rec }
+        return @{
+            classification = 'no-fix-yet'
+            confidence = 'medium'
+            evidence = @("Issue is CLOSED but the candidate fix PR (#$($best.pr.number)) is OPEN/unmerged on $($best.pr.baseRef) — an unmerged PR cannot have closed this issue; the real fix likely shipped elsewhere or the candidate is stale. Not an active SR regression.")
+            candidateFixPrs = @($strongPrs | ForEach-Object { @{
+                number = $_.number; title = $_.title; state = $_.state
+                baseRef = $_.baseRef; evidenceType = $_.evidenceType
+                onMain = $_.onMain; backports = $_.backports
+            } })
+            recommendedAction = 'Verify the fix is present on this SR (or add a closing reference); the open candidate PR has not merged.'
+        }
+    }
+
+    # Shape-safe read: IDictionary does not guarantee ContainsKey — an [ordered]
+    # dictionary (OrderedDictionary) exposes only .Contains, so `$Ctx.ContainsKey`
+    # throws MethodNotFound under StrictMode. Get-MetadataValue uses
+    # IDictionary.Contains and also handles the [pscustomobject] round-trip shape.
+    $ctxMode = Get-MetadataValue -Container $Ctx -Name 'mode'
+    $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
+    $backportCommand = "/backport to $($Ctx.srBranch)"
+    $candidateMergedGuidance = 'Fix must land on main before the SR is cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
     $recAction = switch ($best.verdict) {
         'in-sr-active' { 'No action — fix is shipping' }
         'in-sr-reverted' { 'Investigate: backport landed and was reverted on SR' }
         'rejected-from-sr' { 'Check rejection rationale (WorkIQ) — was this intentional or stale?' }
         'backport-in-progress' { 'Track backport PR to completion' }
-        'merged-on-main-no-backport' { 'Open a backport PR to SR' }
-        'merged-non-main-only' { 'Flow fix to main first, then backport to SR' }
-        'open-on-main' { 'Wait for main merge, then open backport' }
+        'merged-on-main-no-backport' { if ($isCandidateMode) { $candidateMergedGuidance } else { "On the merged source PR, post ``$backportCommand``" } }
+        'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
+        'open-on-main' { if ($isCandidateMode) { $candidateOpenGuidance } else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" } }
+        'needs-human-review' {
+            switch ($best.subreason) {
+                'merged-backport-missing' { "Re-run readiness without ``-NoFetch`` (or verify the backport's merge target manually) — backport #$($best.subreasonPr) is MERGED on GitHub but absent from SR git contents" }
+                'open-non-main-inflight'  { "Wait for #$($best.subreasonPr) to merge and reach main via Candidate promotion, then rerun readiness (retargeting to main directly is an optional expedited path, not required)" }
+                'open-non-main-other'     { "Wait for #$($best.subreasonPr)'s content to reach main (merge + forward-flow), then rerun readiness" }
+                'reverted-on-main'        { "Manual review required: source PR #$($best.subreasonPr) was reverted on main; verify the revert chain or find a replacement fix before requesting any SR backport" }
+                default { 'Manual review required' }
+            }
+        }
         'no-fix-yet' { 'No fix exists — investigate priority' }
         default { 'Manual review required' }
     }
@@ -2662,9 +3422,32 @@ function Get-VerdictTier {
         'needs-human-review'          { 2; break }
         'in-sr-active'                { 3; break }
         'closed-as-duplicate'         { 3; break }
+        'closed-fix-unlinked'         { 3; break }
         'out-of-scope-future-sr'      { 3; break }
         default                       { 2 }   # unknown → treat as risk
     }
+}
+
+# Shape-safe accessor for report metadata (and any maybe-hashtable /
+# maybe-pscustomobject payload). Report data is a live [hashtable] during a
+# survey but a [pscustomobject] once round-tripped through JSON (renderer /
+# idempotency callers). Under Set-StrictMode -Version Latest, `.ContainsKey()`
+# throws MethodNotFound on a pscustomobject and a bare property read throws on a
+# hashtable missing the key — so probe the shape before reading and return
+# $Default when the key/property is absent. Reused by Get-OverallVerdict,
+# Get-ReportSemanticHash and Format-MarkdownReport so every metadata read stays
+# shape-safe from one place.
+function Get-MetadataValue {
+    param($Container, [string]$Name, $Default = $null)
+    if ($null -eq $Container) { return $Default }
+    if ($Container -is [System.Collections.IDictionary]) {
+        if ($Container.Contains($Name)) { return $Container[$Name] }
+        return $Default
+    }
+    if ($Container.PSObject -and $Container.PSObject.Properties[$Name]) {
+        return $Container.$Name
+    }
+    return $Default
 }
 
 function Get-OverallVerdict {
@@ -2698,10 +3481,7 @@ function Get-OverallVerdict {
     #>
     param($Data)
 
-    $isCandidate = $false
-    if ($Data.metadata.ContainsKey('mode') -and $Data.metadata['mode'] -eq 'candidate') {
-        $isCandidate = $true
-    }
+    $isCandidate = ((Get-MetadataValue -Container $Data.metadata -Name 'mode') -eq 'candidate')
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $tier1 = $false
@@ -2991,15 +3771,55 @@ function Get-ReportSemanticHash {
     # run, producing a DIFFERENT hash for identical content — silently defeating
     # the workflow's idempotent no-op (which compares a hash written by an earlier
     # process against one computed now). Insertion order keeps the hash stable.
+    $mainBranchName = Get-MetadataValue -Container $Data.metadata -Name 'mainBranch'
+    $modeForHash = Get-MetadataValue -Container $Data.metadata -Name 'mode' -Default 'in-flight'
+    if (-not $modeForHash) { $modeForHash = 'in-flight' }
+
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
-        srHead = $Data.metadata.srHeadSha
+        # Tracker lifecycle mode (candidate / in-flight / shipped). Folded in so a
+        # lifecycle TRANSITION always flips the hash and refreshes the tracker —
+        # even when every other hashed field is byte-for-byte identical across the
+        # flip. This matters most at in-flight -> shipped: `-Shipped` is a pure
+        # display relabel that surveys the SAME SR branch as in-flight, so srHead,
+        # ci, srPrs, regressions, shipChecks and nightlyFeed can all be unchanged
+        # at the moment the stable tag publishes. Without `mode` here, hash(shipped)
+        # == hash(in-flight), the workflow's idempotent no-op skips `gh issue edit`,
+        # and the tracker never visually flips to "shipped" (the whole point of the
+        # shipped lifecycle). `mode` is constant within a mode, so it adds NO daily
+        # churn — only the one-time transition refreshes. Default 'in-flight' when
+        # absent, matching Format-MarkdownReport's $mode default.
+        mode = $modeForHash
+        srHead = Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha'
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
                     @($Data['srContents'].sourcePrs | Sort-Object) -join ','
                 } else { '' }
         regressions = if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
                           @($Data['regressions'] | Sort-Object issue | ForEach-Object {
+                              $cfp = $null
+                              if ($_ -is [System.Collections.IDictionary]) {
+                                  if ($_.Contains('candidateFixPrs')) { $cfp = $_['candidateFixPrs'] }
+                              } elseif ($_.PSObject.Properties['candidateFixPrs']) {
+                                  $cfp = $_.candidateFixPrs
+                              }
+                              $selPrNum = ''
+                              if ($cfp) {
+                                  $sel = Select-OpenMainFixPr -CandidateFixPrs $cfp -MainBranch $mainBranchName
+                                  if ($sel) {
+                                      if ($sel -is [System.Collections.IDictionary]) {
+                                          if ($sel.Contains('number')) { $selPrNum = $sel['number'] }
+                                      } elseif ($sel.PSObject.Properties['number']) {
+                                          $selPrNum = $sel.number
+                                      }
+                                  }
+                              }
+                              $recAct = ''
+                              if ($_ -is [System.Collections.IDictionary]) {
+                                  if ($_.Contains('recommendedAction')) { $recAct = [string]$_['recommendedAction'] }
+                              } elseif ($_.PSObject.Properties['recommendedAction']) {
+                                  $recAct = [string]$_.recommendedAction
+                              }
                               # `no-fix-yet` is the ONLY classification whose rendered tier
                               # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
                               # Format-MarkdownReport's $emitTier). Fold the state-derived tier
@@ -3012,9 +3832,9 @@ function Get-ReportSemanticHash {
                               # spam issue watchers — preserving the conservative design above.
                               if ($_.classification -eq 'no-fix-yet') {
                                   $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
-                                  "$($_.issue):$($_.classification):$nfyTier"
+                                  "$($_.issue):$($_.classification):$($nfyTier):$($selPrNum):$recAct"
                               } else {
-                                  "$($_.issue):$($_.classification)"
+                                  "$($_.issue):$($_.classification):$($selPrNum):$recAct"
                               }
                           }) -join '|'
                       } else { '' }
@@ -3023,7 +3843,13 @@ function Get-ReportSemanticHash {
                     } else { '' }
         shipChecks = if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
                          @($Data['shipChecks'] | Sort-Object Area | ForEach-Object {
-                             "$($_.Area):$($_.Status)"
+                             $na = ''
+                             if ($_ -is [System.Collections.IDictionary]) {
+                                 if ($_.Contains('NextAction')) { $na = [string]$_['NextAction'] }
+                             } elseif ($_.PSObject.Properties['NextAction']) {
+                                 $na = [string]$_.NextAction
+                             }
+                             "$($_.Area):$($_.Status):$na"
                          }) -join '|'
                      } else { '' }
         # Nightly dogfood feed banner state. Folded in so a feed going stale (or a
@@ -3060,11 +3886,64 @@ function Get-ReportSemanticHash {
     }
 }
 
+function Select-OpenMainFixPr {
+    <#
+    .SYNOPSIS
+        From a regression record's candidate fix PRs, pick the OPEN PR that
+        actually drove the 'open-on-main' verdict: the one targeting main.
+
+    .DESCRIPTION
+        The classifier reports 'open-on-main' when ANY candidate is an OPEN PR
+        against main, but candidateFixPrs can hold several OPEN PRs in arbitrary
+        order (e.g. an inflight/current PR first, the main PR second). The
+        Open-Fix-PRs-Inbound renderer must surface the main-targeting PR — the
+        one that owns the '🔵 awaiting main merge' status and the /backport
+        action — not merely the first OPEN candidate, which would attach that
+        row to the wrong PR and hide the PR that drove the verdict. Falls back
+        to the first OPEN candidate when none targets main (defensive; preserves
+        the prior single-candidate behavior).
+    #>
+    param($CandidateFixPrs, [string]$MainBranch)
+    $open = @($CandidateFixPrs | Where-Object {
+        $state = $null
+        if ($_ -is [System.Collections.IDictionary]) {
+            if ($_.Contains('state')) { $state = $_['state'] }
+        } elseif ($_.PSObject.Properties['state']) {
+            $state = $_.state
+        }
+        $state -eq 'OPEN'
+    })
+    if ($open.Count -eq 0) { return $null }
+    # Only attempt the main-targeting match when we actually know the main branch.
+    # $MainBranch is typed [string], so a $null caller argument arrives as ''.
+    # Without this guard 'baseRef -eq ""' would match a candidate whose own
+    # baseRef is empty/missing, wrongly selecting it and defeating the intended
+    # first-OPEN fallback below.
+    if (-not [string]::IsNullOrEmpty($MainBranch)) {
+        $onMain = $open | Where-Object {
+            $baseRef = $null
+            if ($_ -is [System.Collections.IDictionary]) {
+                if ($_.Contains('baseRef')) { $baseRef = $_['baseRef'] }
+            } elseif ($_.PSObject.Properties['baseRef']) {
+                $baseRef = $_.baseRef
+            }
+            $baseRef -eq $MainBranch
+        } | Select-Object -First 1
+        if ($onMain) { return $onMain }
+    }
+    return $open | Select-Object -First 1
+}
+
 function Format-MarkdownReport {
     param($Data, [string]$RepoUrl, [string]$TrackerKey, [int]$MaxBodyBytes = 60000)
 
     $ctx = $Data.metadata
     $srBranch = $ctx.srBranch
+    # Main branch, read shape-safe via the shared accessor: real reports carry it
+    # in metadata, but some renderer fixtures/callers omit it, and metadata may be
+    # a hashtable (live survey) OR a pscustomobject (JSON round-trip). A null value
+    # makes Select-OpenMainFixPr fall back to the first OPEN candidate.
+    $mainBranchName = Get-MetadataValue -Container $ctx -Name 'mainBranch'
     $shortHead = if ($ctx.srHeadSha) { $ctx.srHeadSha.Substring(0, 8) } else { '?' }
 
     # Compute verdict + semantic hash (deterministic, used in markers)
@@ -3081,8 +3960,13 @@ function Format-MarkdownReport {
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
 
-    $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'in-flight' }
-    $inherits = ($ctx.ContainsKey('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
+    # $mode / $inherits, read shape-safe via the shared accessor for the SAME
+    # reason as $mainBranchName above (metadata may be a hashtable during a survey
+    # or a pscustomobject after a JSON round-trip; key/property absent -> the
+    # documented 'in-flight' / $false defaults).
+    $mode = Get-MetadataValue -Container $ctx -Name 'mode' -Default 'in-flight'
+    if (-not $mode) { $mode = 'in-flight' }
+    $inherits = [bool](Get-MetadataValue -Container $ctx -Name 'inheritFromPriorSr' -Default $false)
     if ($mode -eq 'candidate') {
         if ($inherits) {
             [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")
@@ -3113,6 +3997,19 @@ function Format-MarkdownReport {
     $shaLinked = ConvertTo-LinkedSha -Sha $ctx.srHeadSha -RepoUrl $RepoUrl
     [void]$sb.AppendLine("**HEAD**: $shaLinked — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
+    # Report freshness banner — a DERIVED-AT-RENDER note of how long ago this report was
+    # generated, with a ⏳ "may be stale" flag past the threshold. Computed here from the
+    # generation timestamp against a render-time clock; it is a pure presentation concern and
+    # is DELIBERATELY NOT folded into Get-ReportSemanticHash (hashing a render-time age would
+    # differ every run and break the idempotent no-op). Fail-open: skip if the helper isn't
+    # loaded or the timestamp is unreadable.
+    if ($ctx.fetchedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction SilentlyContinue)) {
+        $freshnessBanner = Format-ReportFreshnessBanner -GeneratedAt $ctx.fetchedAt -Now ([DateTime]::UtcNow)
+        if ($freshnessBanner) {
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine($freshnessBanner)
+        }
+    }
     # Nightly dogfood feed freshness — surfaces when the feed testers point at has gone
     # stale (no new build), so a captain sees at a glance whether dogfood feedback is being
     # collected against current bits. The banner string is rendered upstream in Invoke-Main
@@ -3225,6 +4122,103 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
+    # === CANDIDATE PR — SR cut point (hoisted directly under the Blocking summary) ===
+    # In candidate mode the single most important PR in the cycle is the one that
+    # promotes a specific `main` commit as the SR cut point: the SR branch cannot
+    # be cut until it merges. Surface it prominently — with live status and age —
+    # right under the blocking summary instead of leaving it buried as a lone WATCH
+    # row in the ship-readiness table at the bottom.
+    if ($mode -eq 'candidate' -and $Data.ContainsKey('candidatePr') -and $Data['candidatePr']) {
+        $cpr = $Data['candidatePr']
+        $srLabel = if ($cpr.nextSr) { $cpr.nextSr } else { 'next SR' }
+        $verLabel = if ($cpr.versionBase) { " ($($cpr.versionBase))" } else { '' }
+        # Report generation instant — used as the "now" reference for PR age so the
+        # rendered "N days" is deterministic (driven by the report, not wall-clock).
+        $nowRef = ConvertTo-Utc -Value $ctx.fetchedAt
+
+        [void]$sb.AppendLine("## 🚩 Candidate PR — $srLabel cut point$verLabel")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("_The Candidate PR promotes a specific ``$($ctx.mainBranch)`` commit as the base for cutting **$srLabel$verLabel**. The SR branch can't be cut until it merges, so its status gates the whole cycle._")
+        [void]$sb.AppendLine()
+
+        if ($cpr.mode -eq 'query-failed') {
+            [void]$sb.AppendLine("> ⚠️ Could not query open PRs on ``$($ctx.mainBranch)`` (``gh pr list`` failed). Candidate-PR status is unavailable — verify ``gh auth status`` and rerun.")
+            [void]$sb.AppendLine()
+        }
+        elseif (@($cpr.candidates).Count -eq 0) {
+            $exNotes = @()
+            if ($cpr.spoofers -gt 0)     { $exNotes += "$($cpr.spoofers) non-maintainer ``*Candidate*``-titled PR(s) were excluded as not real cut PRs" }
+            if ($cpr.unverifiable -gt 0) { $exNotes += "$($cpr.unverifiable) ``*Candidate*``-titled PR(s) could not be author-verified and were excluded fail-closed — rerun to re-check" }
+            $exSuffix = if ($exNotes.Count -gt 0) { ' ' + ($exNotes -join '; ') + '.' } else { '' }
+            [void]$sb.AppendLine("**No open Candidate PR yet.** When ready to cut $srLabel, open a PR titled ``*Candidate*`` against ``$($ctx.mainBranch)`` selecting the target commit — the SR is cut from its merge commit.$exSuffix")
+            [void]$sb.AppendLine()
+        }
+        else {
+            [void]$sb.AppendLine('| PR | Status | Opened | Last update | Review |')
+            [void]$sb.AppendLine('|---|---|---|---|---|')
+            foreach ($cp in @($cpr.candidates)) {
+                $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
+                $cpTitleRaw = if ($cp.title.Length -gt 60) { $cp.title.Substring(0, 60) + '...' } else { $cp.title }
+                $cpTitle = Format-MarkdownTableCell $cpTitleRaw
+                $author = if ($cp.author -and $cp.author.login) { Format-GitHubHandle $cp.author.login } else { 'unknown' }
+
+                # Status: OPEN + draft/ready + mergeable (all fields optional).
+                $draftBit = if ($cp.PSObject.Properties['isDraft'] -and $cp.isDraft) { '📝 Draft' } else { '✅ Ready' }
+                $mergeBit = switch ("$($cp.mergeable)".ToUpperInvariant()) {
+                    'MERGEABLE'   { ' · mergeable' }
+                    'CONFLICTING' { ' · ⚠️ conflicts' }
+                    default       { '' }
+                }
+                $statusCell = "🟢 Open · $draftBit$mergeBit"
+
+                # Age of the PR (created) and last activity (updated), relative to $nowRef.
+                $openedCell = '—'
+                $createdUtc = ConvertTo-Utc -Value $cp.createdAt
+                if ($createdUtc) {
+                    if ($nowRef) {
+                        $a = [int][Math]::Floor(($nowRef - $createdUtc).TotalDays)
+                        $openedCell = "$($createdUtc.ToString('yyyy-MM-dd')) ($a day$(if ($a -eq 1){''}else{'s'}) ago)"
+                    } else {
+                        $openedCell = $createdUtc.ToString('yyyy-MM-dd')
+                    }
+                }
+                $updatedCell = '—'
+                $updatedUtc = ConvertTo-Utc -Value $cp.updatedAt
+                if ($updatedUtc) {
+                    if ($nowRef) {
+                        $u = [int][Math]::Floor(($nowRef - $updatedUtc).TotalDays)
+                        $updatedCell = "$u day$(if ($u -eq 1){''}else{'s'}) ago"
+                    } else {
+                        $updatedCell = $updatedUtc.ToString('yyyy-MM-dd')
+                    }
+                }
+                $reviewCell = if ($cp.reviewDecision) { $cp.reviewDecision } else { '—' }
+
+                [void]$sb.AppendLine("| $cpLink — $cpTitle (by $author) | $statusCell | $openedCell | $updatedCell | $reviewCell |")
+            }
+            [void]$sb.AppendLine()
+
+            # Relevance / staleness callout for the primary candidate, tied to the SR
+            # version base and the ship window. A cut PR that has sat open a long time
+            # likely points at a now-stale `main` commit and should be re-confirmed.
+            $primary = @($cpr.candidates)[0]
+            $pCreated = ConvertTo-Utc -Value $primary.createdAt
+            $pAge = if ($pCreated -and $nowRef) { [int][Math]::Floor(($nowRef - $pCreated).TotalDays) } else { $null }
+            $shipBit = if ($shipDate -and $shipDate.FormattedLong) {
+                if ($shipDate.DaysFromNow -ge 0) { " Ship target: **$($shipDate.FormattedLong)** (in $($shipDate.DaysFromNow) day(s))." }
+                else { " Ship target **$($shipDate.FormattedLong)** has passed." }
+            } else { '' }
+            if ($null -ne $pAge -and $pAge -ge 14) {
+                [void]$sb.AppendLine("> ⚠️ **Stale ($pAge days old).** ``$($ctx.mainBranch)`` has advanced since this PR was opened — confirm the target cut commit is still the intended $srLabel base, or refresh/re-point the PR before cutting.$shipBit")
+            } else {
+                [void]$sb.AppendLine("> Merge this PR to lock the $srLabel$verLabel cut point, then cut the SR branch from its merge commit.$shipBit")
+            }
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Other open PRs on ``$($ctx.mainBranch)`` are omitted here to reduce noise; see [the full PR list]($RepoUrl/pulls?q=is%3Apr+is%3Aopen+base%3A$($ctx.mainBranch))._")
+            [void]$sb.AppendLine()
+        }
+    }
+
     # === CLEANUP FOLLOW-UPS (hoisted under the blocking summary) ===
     # CLEANUP-status ship checks are real follow-ups (stale milestones, missing
     # bug-template entries) that should get done but don't prevent shipping.
@@ -3330,8 +4324,12 @@ function Format-MarkdownReport {
                 }
             } else {
                 # open-on-main: fix PR is OPEN against main (or another non-SR base).
-                # Pick the first candidate PR whose state is OPEN.
-                $openMain = $r.candidateFixPrs | Where-Object { $_.state -eq 'OPEN' } | Select-Object -First 1
+                # Surface the OPEN PR that actually drove the verdict — the one
+                # targeting main — not merely the first OPEN candidate. A mixed
+                # candidate list (inflight PR first, main PR second) would
+                # otherwise render the inflight PR with the wrong '🔵 awaiting
+                # main merge' row + /backport action, hiding the main PR.
+                $openMain = Select-OpenMainFixPr -CandidateFixPrs $r.candidateFixPrs -MainBranch $mainBranchName
                 if ($openMain) {
                     $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
                     $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { '`main`' }
@@ -3340,7 +4338,11 @@ function Format-MarkdownReport {
                         baseCell = $base
                         issCell = $issCell
                         statusCell = '🔵 OPEN — awaiting main merge'
-                        actionCell = 'Watch for merge, then open backport to SR'
+                        actionCell = if ($mode -eq 'candidate') {
+                            'Watch for merge to main before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command'
+                        } else {
+                            "Watch for merge, then post ``/backport to $srBranch`` on the merged source PR"
+                        }
                     })
                 }
             }
@@ -3463,33 +4465,13 @@ function Format-MarkdownReport {
     #     exists (e.g. "June 8th, Candidate" — the PR that promotes a specific
     #     main commit as the basis for cutting the next SR).
     if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs'] -and $Data['openSrPrs'].Count -gt 0) {
-        if ($mode -eq 'candidate') {
-            # Find a PR whose title looks like a candidate-promotion PR.
-            # Be conservative — require a word boundary so "CandidateView" doesn't match.
-            $candidatePrs = @($Data['openSrPrs'] | Where-Object {
-                $_.title -match '(?i)\bcandidate\b'
-            })
-            [void]$sb.AppendLine("## Candidate PR for next SR cut")
-            [void]$sb.AppendLine()
-            if ($candidatePrs.Count -eq 0) {
-                [void]$sb.AppendLine("_No open PR titled `*Candidate*` found targeting ``$srBranch``. Open one when ready to promote a main commit as the SR cut point._")
-            } else {
-                foreach ($cp in $candidatePrs) {
-                    $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
-                    $cpTitle = if ($cp.title.Length -gt 80) { $cp.title.Substring(0, 80) + '...' } else { $cp.title }
-                    # Collapse newlines (and escape pipes) even though this is a list, not a
-                    # table: an upstream title with an embedded newline could otherwise push
-                    # injected content (e.g. a forged `<!-- release-readiness:human-notes -->`
-                    # marker) onto its own physical line. Markdown renders `\|` as `|` in a
-                    # list, so escaping is harmless here.
-                    $cpTitle = Format-MarkdownTableCell $cpTitle
-                    [void]$sb.AppendLine("- $cpLink — $cpTitle (by $(Format-GitHubHandle $cp.author.login), updated $($cp.updatedAt))")
-                }
-                [void]$sb.AppendLine()
-                [void]$sb.AppendLine("_Full list of $($Data['openSrPrs'].Count) open PRs targeting ``$srBranch`` omitted to reduce noise; see [the PR list]($RepoUrl/pulls?q=is%3Apr+is%3Aopen+base%3A$srBranch)._")
-            }
-            [void]$sb.AppendLine()
-        } else {
+        # Candidate mode (srBranch == main) would dump 100+ open main PRs here —
+        # far too noisy for a tracker issue. The single relevant PR (the SR cut
+        # "Candidate" PR) is surfaced, maintainer-gated and with live status/age, in
+        # the hoisted "🚩 Candidate PR" section near the top. So this full table is
+        # emitted only in live-SR mode, where openSrPrs is the small, useful set of
+        # backport PRs targeting the SR branch.
+        if ($mode -ne 'candidate') {
             [void]$sb.AppendLine("## Open PRs Targeting $srBranch — $($Data['openSrPrs'].Count)")
             [void]$sb.AppendLine()
             [void]$sb.AppendLine('| PR | Title | Author | Draft? | Review | Updated |')
@@ -3529,7 +4511,7 @@ function Format-MarkdownReport {
         $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
         $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
                           'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
 
         $emitTier = {
             param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)
@@ -3725,7 +4707,7 @@ function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
                            -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate `
-                           -InheritFromPriorSr:$InheritFromPriorSr
+                           -InheritFromPriorSr:$InheritFromPriorSr -Shipped:$Shipped
 
     # Resolve regression labels
     $labelMode = 'explicit'
@@ -3845,10 +4827,13 @@ function Invoke-Main {
 
     # Candidate-PR check (candidate mode only) — surface the open PR that
     # promotes a specific main commit as the SR cut point. Most important
-    # PR in the cycle: SR can't be cut until it merges. Renders as a WATCH
-    # check in the ship-readiness table.
+    # PR in the cycle: SR can't be cut until it merges. Resolved ONCE here so
+    # both the WATCH ship-check AND the prominent "🚩 Candidate PR" section
+    # (hoisted under the Blocking summary) share a single gh query + spoof-gate.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
-        $candidateChecks = Get-CandidatePrChecks -Ctx $ctx
+        $candidateResolution = Get-CandidatePrResolution -Ctx $ctx
+        $data['candidatePr'] = $candidateResolution
+        $candidateChecks = Get-CandidatePrChecks -Ctx $ctx -Resolution $candidateResolution
         if ($candidateChecks -and $candidateChecks.Count -gt 0) {
             if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
                 $data['shipChecks'] = @()

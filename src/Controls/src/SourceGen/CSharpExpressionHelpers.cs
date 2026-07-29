@@ -187,7 +187,7 @@ static class CSharpExpressionHelpers
 		}
 
 		// Check known extensions first (fast path)
-		if (IsKnownMarkupExtension(identifier))
+		if (IsKnownMarkupExtensionName(identifier))
 			return true;
 
 		// Check if the type can be resolved as a markup extension via semantic lookup
@@ -348,7 +348,7 @@ static class CSharpExpressionHelpers
 		"FontImage",
 	};
 
-	static bool IsKnownMarkupExtension(string name)
+	internal static bool IsKnownMarkupExtensionName(string name)
 	{
 		return KnownMarkupExtensions.Contains(name)
 			|| KnownMarkupExtensions.Contains(name + "Extension");

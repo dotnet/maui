@@ -81,6 +81,12 @@ if ($Platform -eq "maccatalyst") {
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
 
+# Derive the .NET TFM version from the checked-out repo (Directory.Build.props) so the
+# HostApp + test assemblies build for the branch's framework (e.g. net11.0-android on the
+# net11.0 branch) instead of a hardcoded net10.0.
+$DotNetTfm = Get-MauiTfmVersion -RepoRoot $RepoRoot
+Write-Info "Using .NET TFM version: net$DotNetTfm (from Directory.Build.props)"
+
 # Banner
 Write-Host @"
 
@@ -126,17 +132,17 @@ Write-Success "Prerequisites validated"
 
 # Set target framework and app identifiers
 if ($Platform -eq "android") {
-    $TargetFramework = "net10.0-android"
+    $TargetFramework = "net$DotNetTfm-android"
     $AppPackage = "com.microsoft.maui.uitests"
     $AppActivity = "com.microsoft.maui.uitests.MainActivity"
 } elseif ($Platform -eq "ios") {
-    $TargetFramework = "net10.0-ios"
+    $TargetFramework = "net$DotNetTfm-ios"
     $AppBundleId = "com.microsoft.maui.uitests"
 } elseif ($Platform -eq "catalyst") {
-    $TargetFramework = "net10.0-maccatalyst"
+    $TargetFramework = "net$DotNetTfm-maccatalyst"
     $AppBundleId = "com.microsoft.maui.uitests"
 } elseif ($Platform -eq "windows") {
-    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $TargetFramework = "net$DotNetTfm-windows10.0.19041.0"
     $AppPackage = "com.microsoft.maui.uitests"
 }
 
@@ -257,13 +263,55 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
-    # Do NOT force-stop or restart the app here. Appium's UiAutomator2
-    # driver handles app lifecycle via appPackage/appActivity capabilities.
-    # Manual restart causes double-stop issues and the app ends up in a
-    # bad state. Just dismiss any system dialogs and let Appium handle it.
+    # Warm up the emulator / SystemUI right before launching the app for tests.
+    # On the deep-UI-test (platform-pool) stage the emulator may have sat idle
+    # for ~15-20 min during workload install + the app build, after which SystemUI
+    # can ANR — the app then launches but its first page never renders, so Appium's
+    # OneTimeSetUp times out ("Timed out waiting for Go To Test button"). This
+    # mirrors the gate's "Warm Up Android Emulator" step but runs at the precise
+    # moment (right before dotnet test), independent of how long the build took.
+    # We only touch SystemUI / the launcher here — never the HostApp itself
+    # (Appium's UiAutomator2 driver owns the HostApp lifecycle).
+    Write-Info "Warming up emulator/SystemUI before test..."
+    $bootChk = & adb -s $DeviceUdid shell getprop sys.boot_completed 2>$null
+    if ("$bootChk".Trim() -ne "1") {
+        Write-Warn "Device not responding before test — restarting adb server..."
+        & adb kill-server 2>$null; Start-Sleep -Seconds 2
+        & adb start-server 2>$null; Start-Sleep -Seconds 2
+        # Bound `adb wait-for-device` to 90s portably — the external `timeout` binary differs on
+        # Windows (interactive countdown) and may be absent, so use the .NET process timeout.
+        $waitProc = Start-Process -FilePath 'adb' -ArgumentList @('-s', $DeviceUdid, 'wait-for-device') -PassThru -NoNewWindow
+        if (-not $waitProc.WaitForExit(90000)) {
+            Write-Warn "adb wait-for-device timed out after 90s — killing"
+            try { $waitProc.Kill() } catch { <# best effort #> }
+        }
+    }
+    # Wake + dismiss any system dialogs (run twice for reliability).
+    foreach ($pass in 1..2) {
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+        Start-Sleep -Seconds 1
+    }
+    # If a SystemUI ANR ("isn't responding") dialog is up, force it away. HOME only
+    # backgrounds the launcher (the HostApp isn't running yet), so this is safe.
+    $winState = & adb -s $DeviceUdid shell dumpsys window 2>$null
+    if ("$winState" -match "Application Not Responding|ANR ") {
+        Write-Warn "ANR dialog detected before test — dismissing (HOME + close dialogs)"
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+        Start-Sleep -Seconds 2
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+    }
+    # Exercise the system briefly to confirm SystemUI is responsive, then clean up
+    # (force-stop targets the Settings app, never the HostApp).
+    & adb -s $DeviceUdid shell am start -a android.settings.SETTINGS 2>$null
+    Start-Sleep -Seconds 2
+    & adb -s $DeviceUdid shell am force-stop com.android.settings 2>$null
     & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
-    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
-    Start-Sleep -Seconds 1
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+    & adb -s $DeviceUdid logcat -c 2>$null
+    Write-Success "Emulator warmed up and responsive"
 }
 
 # Capture test start time for iOS logs
@@ -302,6 +350,27 @@ if ($Platform -eq "catalyst") {
     
     # Set log file path directly - app will write ILogger output here
     $env:MAUI_LOG_FILE = $deviceLogFile
+}
+
+# For Windows, point the test at the actual built HostApp .exe. UITest.cs
+# (TestDevice.Windows) otherwise computes the app path RELATIVE to the test
+# assembly ("../../../Controls.TestCases.HostApp/..."), which does NOT resolve to
+# the repo's `artifacts/bin` output layout — so WinAppDriver fails OneTimeSetUp
+# with "The system cannot find the file specified" and 0 tests run. Setting
+# WINDOWS_APP_PATH (honored first by UITest.cs) to the known build output fixes it.
+if ($Platform -eq "windows") {
+    $hostAppBin = Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework"
+    $winAppExe = $null
+    if (Test-Path $hostAppBin) {
+        $winAppExe = Get-ChildItem -Path $hostAppBin -Filter "Controls.TestCases.HostApp.exe" -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
+    if ($winAppExe) {
+        $env:WINDOWS_APP_PATH = $winAppExe
+        Write-Success "Set WINDOWS_APP_PATH=$winAppExe"
+    } else {
+        Write-Warn "Windows HostApp .exe not found under $hostAppBin — test will fall back to relative-path resolution (may fail to launch)"
+    }
 }
 
 $filterDisplay = if ($effectiveFilter) { "--filter `"$effectiveFilter`"" } else { "(no filter — all tests)" }
@@ -529,10 +598,10 @@ Write-Step "Collecting test artifacts (screenshots, page source)..."
 # Collect any screenshots/page source from the test assembly output directory
 # UITestBase saves these via TestContext.AddTestAttachment to the assembly dir
 $testAssemblyDirs = @(
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net10.0-windows10.0.19041.0")
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net$DotNetTfm-windows10.0.19041.0")
 )
 
 $copiedCount = 0
