@@ -2333,7 +2333,12 @@ function Get-ClosingIssueNumbers {
         $Text,
         '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s*:?\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)(?![\p{L}\p{N}_])')
     return @($matches | ForEach-Object {
-        ConvertTo-PrNumber -Value $_.Groups[1].Value
+        $prefixStart = [Math]::Max(0, $_.Index - 80)
+        $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,3}\s+$|\b(?:doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,3}$|\bnever(?:\s+\w+){0,3}\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,3}$)"
+        if (-not $negated) {
+            ConvertTo-PrNumber -Value $_.Groups[1].Value
+        }
     } | Where-Object { $null -ne $_ } | Sort-Object -Unique)
 }
 
@@ -2381,10 +2386,12 @@ function Test-IsLineageReferenceNegated {
     $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
     $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:\w+\s+){0,8}?and\s+)|(?:(?:since|subsequently|ultimately)\s+))?rolled\s+back\b"
     $laterPresenceRemoval = "(?i)\b(?:but|however|although|yet|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:(?:was|is|were|are)\s+(?:not|never)\s+(?:\w+\s+){0,3}?(?:be\s+)?$presenceEffect\b|(?:was|is)\s+(?:revert(?:ed)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b)"
-    if ($suffix -match $laterPresenceRemoval) { return $true }
     $negatedHardRemoval = "(?i)^$prefix(?:\w+\s+){0,6}?(?:not|never)\s+(?:\w+\s+){0,2}?(?:revert(?:s|ed|ing)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b"
     if ($suffix -match $negatedHardRemoval) { return $false }
-    $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:(?:(?:it|this\s+(?:change|fix|PR)|the\s+(?:change|fix))\s+(?:(?:was|is|has\s+been)\s+)?)|(?:(?:now|later|then|subsequently|ultimately)\s+))?(?:included|applied|landed|shipped|backported|retained|restored)\b'
+    if ($suffix -match $laterPresenceRemoval) { return $true }
+    $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:(?:(?:it|this\s+(?:change|fix|PR)|the\s+(?:change|fix))\s+)?(?:(?:was|is|has\s+been)\s+)?(?:(?:now|later|then|subsequently|ultimately|eventually|afterwards?)\s+)?)?(?:re-?)?(?:included|applied|landed|shipped|backported|retained|restored)\b'
+    $decisionRetraction = '(?i)^.{0,240}?\b(?:(?:we|the\s+team|maintainers?)\s+)?(?:(?:decided|opted|chose|elected)\s+(?:against\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport|(?:including|applying|landing|shipping|backporting|cherry-picking)\s+it)|not\s+to\s+(?:proceed|include|apply|land|ship|backport|cherry-pick))|(?:rejected|declined|abandoned)\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport))\b'
+    if ($suffix -match $decisionRetraction) { return $true }
     $isHardRemoval = ($suffix -match $rollback) -or ($suffix -match $omitted) -or
         ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
     if ($isHardRemoval) { return -not ($suffix -match $restoredPresence) }
@@ -3294,6 +3301,7 @@ function Resolve-ClosedFixUnlinked {
         return @{
             classification = 'closed-fix-unlinked'
             confidence = 'high'
+            verifiedFromSrContents = $true
             evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
             candidateFixPrs = @($verifiedFixes | ForEach-Object {
                 @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }

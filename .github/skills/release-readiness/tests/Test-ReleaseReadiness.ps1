@@ -150,9 +150,12 @@ Assert-Eq -Label "workflow resolves exact current-generation opens before exact 
 Assert-Eq -Label "workflow prefers exact current generation before generic canonical fallback" -Expected $true `
     -Actual ($workflowContractText.Contains('GENERATION_CANONICAL=$(echo "$EXACT_OPEN" | head -n 1)') -and
         $workflowContractText.Contains('EXISTING="$REORDERED_EXISTING"'))
-Assert-Eq -Label "workflow creates a new exact generation before retiring stale trackers" -Expected $true `
-    -Actual ($workflowContractText.IndexOf('NEW_TRACKER_URL=$(gh issue create') -lt
-        $workflowContractText.IndexOf('Closing superseded tracker issue'))
+Assert-Eq -Label "workflow refreshes an open generic tracker across generation commits" -Expected $true `
+    -Actual $workflowContractText.Contains('[ -z "$EXISTING" ] && CREATE_GENERATION=true')
+Assert-Eq -Label "workflow reconciles stale opens before honoring exact closure" -Expected $true `
+    -Actual ($workflowContractText.Contains('Closing stale tracker issue') -and
+        $workflowContractText.IndexOf('Closing stale tracker issue') -lt
+        $workflowContractText.IndexOf('not recreating.'))
 Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
     -Actual $workflowContractText.Contains('hotfix version pending')
 $previewContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1') -Raw
@@ -2233,6 +2236,24 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100. We also reverted an unrelated workaround.') -join ',')
     Assert-Eq -Label "backport lineage: unrelated PR additions do not restore reverted source" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100 was reverted, but the PR included extra tests.') -join ',')
+    foreach ($restoredBackport in @(
+        'Backport of #100 was reverted, but was subsequently restored.',
+        'Backport of #100 was excluded, but it was eventually re-included.',
+        'Backport of #100 was rolled back, however the fix was afterwards re-applied.'
+    )) {
+        Assert-Eq -Label "backport lineage: explicit restoration preserves source — $restoredBackport" `
+            -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $restoredBackport) -join ',')
+    }
+    foreach ($decisionRetraction in @(
+        'We investigated whether to cherry-pick from PR #100 but decided against it.',
+        'Backport of #100 was proposed, but the team rejected it for this SR.',
+        'Backport of #100 was considered; we opted not to proceed.'
+    )) {
+        Assert-Eq -Label "backport lineage: explicit decision against landing removes source — $decisionRetraction" `
+            -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $decisionRetraction) -join ',')
+    }
+    Assert-Eq -Label "backport lineage: double-negative exclusion keeps source" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, but it was not excluded.') -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2901,6 +2922,16 @@ Assert-Eq -Label "PR evidence: closing-keyword substrings in ordinary words are 
 $directSrUrlIssues = @(Get-ClosingIssueNumbers -Text 'Fixes https://github.com/dotnet/maui/issues/35615')
 Assert-Eq -Label "commit evidence: full issue URL is parsed by the shared closing-reference parser" `
     -Expected $true -Actual ($directSrUrlIssues -contains 35615)
+foreach ($negatedClosingText in @(
+    'This does not fix #35615',
+    'This will not actually resolve #35615',
+    "This doesn't close #35615"
+)) {
+    Assert-Eq -Label "closing evidence: negated keyword is rejected — $negatedClosingText" `
+        -Expected '' -Actual ((Get-ClosingIssueNumbers -Text $negatedClosingText) -join ',')
+}
+Assert-Eq -Label "closing evidence: 'not only' does not negate a real fix" `
+    -Expected '35615' -Actual ((Get-ClosingIssueNumbers -Text 'This not only fixes #35615, it adds a regression test.') -join ',')
 $oversizedClosingThrew = $false; $oversizedClosingIssues = @()
 try {
     $oversizedClosingIssues = @(Get-ClosingIssueNumbers -Text 'Fixes #999999999999999999999 and Fixes #35615abc')
@@ -3565,6 +3596,8 @@ Assert-Eq -Label "Closed issue + comment-cited merged PR on SR → closed-fix-un
     -Expected 'closed-fix-unlinked' -Actual $clsUnlinked.classification
 Assert-Eq -Label "closed-fix-unlinked → high confidence (fix-phrase required)" `
     -Expected 'high' -Actual $clsUnlinked.confidence
+Assert-Eq -Label "closed-fix-unlinked → git-verified evidence survives unrelated lookup failures" `
+    -Expected $true -Actual $clsUnlinked.verifiedFromSrContents
 Assert-Eq -Label "closed-fix-unlinked → candidateFixPrs surfaces the cited PR (#35028)" `
     -Expected 35028 -Actual ([int]$clsUnlinked.candidateFixPrs[0].number)
 Assert-Eq -Label "closed-fix-unlinked recovered via (#num) subject token when SHA-ancestry is false" `
@@ -7765,12 +7798,14 @@ Add-CheckTable -Builder $safePublicBuilder -Checks @(
 [void]$safePublicBuilder.AppendLine('Private URL: https://dev.azure.com/dnceng/internal/_git/example')
 [void]$safePublicBuilder.AppendLine('Private query: https://dev.azure.com/dnceng/internal?token=sensitive#fragment')
 [void]$safePublicBuilder.AppendLine('Encoded private URL: https://dev.azure.com/dnceng%2Finternal%2F_build%3Fsig=SECRETSAS')
+[void]$safePublicBuilder.AppendLine('Legacy private URL: https://dnceng.visualstudio.com/internal/_build/results?token=LEGACYSECRET')
+[void]$safePublicBuilder.AppendLine('Fully encoded private URL: https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=FULLYENCODED')
 [void]$safePublicBuilder.AppendLine('Internal identifier: api://example/resource')
 [void]$safePublicBuilder.AppendLine('Fetched title names .NET Release Tracker, dotnet-release-tracker, and dotnet/release')
 [void]$safePublicBuilder.AppendLine('Public feed: https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11')
 $safePublicMarkdown = ConvertTo-PublicSafeMarkdown -Text $safePublicBuilder.ToString()
 Assert-Eq -Label "preview rendered public-safe text omits internal coordinates" `
-    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|fragment'))
+    -Expected $false -Actual ([bool]($safePublicMarkdown -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|dev\.azure\.com/dnceng(?:/|%2f)internal|api://|secret-repository|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|fragment'))
 Assert-Eq -Label "preview rendered public-safe text omits private release-tool names" `
     -Expected $false -Actual ([bool]($safePublicMarkdown -match '\.NET Release Tracker|dotnet-release-tracker|dotnet/release'))
 Assert-Eq -Label "preview public-safe sanitizer preserves public feed URL" `
@@ -7788,17 +7823,21 @@ $unsafeJsonReport = [PSCustomObject]@{
             Title = 'Encoded https://dev.azure.com/dnceng%2Finternal%2F_build%3Fsig=SECRETSAS'
             Url   = 'https://dev.azure.com/dnceng/internal?token=sensitive#fragment'
         }
+        [PSCustomObject]@{
+            Title = 'Legacy https://dnceng.visualstudio.com/internal/_build/results?token=LEGACYSECRET'
+            Url   = 'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=FULLYENCODED'
+        }
     )
     PublicFeed = 'https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet11'
 }
 $safeReportJson = ConvertTo-PreviewReportJson -Report $unsafeJsonReport -PublicSafe $true
 $safeReportRoundTrip = $safeReportJson | ConvertFrom-Json
 Assert-Eq -Label "preview public-safe JSON remains valid after sanitization" `
-    -Expected 2 -Actual @($safeReportRoundTrip.PullRequests).Count
+    -Expected 3 -Actual @($safeReportRoundTrip.PullRequests).Count
 Assert-Eq -Label "preview public-safe JSON preserves quoted suffix after URL sanitization" `
     -Expected $true -Actual ([bool]($safeReportRoundTrip.PullRequests[0].Title -match '"quoted suffix"'))
 Assert-Eq -Label "preview public-safe JSON omits internal coordinates and tool names" `
-    -Expected $false -Actual ([bool]($safeReportJson -match 'dnceng(?:/|%2f)internal|secret-repository|dotnet-release-tracker|sensitive|SECRETSAS|fragment'))
+    -Expected $false -Actual ([bool]($safeReportJson -match 'dnceng(?:/|%2f)internal|dnceng\.visualstudio\.com|secret-repository|dotnet-release-tracker|sensitive|SECRETSAS|LEGACYSECRET|FULLYENCODED|fragment'))
 Assert-Eq -Label "preview public-safe JSON preserves public feed URL" `
     -Expected $true -Actual ([bool]($safeReportJson -match 'dev\.azure\.com/dnceng/public'))
 $rawReportJson = ConvertTo-PreviewReportJson -Report $unsafeJsonReport -PublicSafe $false

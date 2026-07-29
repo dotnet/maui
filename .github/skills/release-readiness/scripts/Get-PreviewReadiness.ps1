@@ -1828,7 +1828,22 @@ function ConvertTo-PublicSafeMarkdown {
     )
     $safe = [regex]::Replace(
         $safe,
+        '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
+        '_internal URL omitted_'
+    )
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)https(?:%3a|%253a)(?:%2f|%252f){2}(?:(?:dev\.azure\.com(?:%2f|%252f)dnceng)|dnceng\.visualstudio\.com)(?:%2f|%252f)internal[^\s<>"''`|)]*',
+        '_internal URL omitted_'
+    )
+    $safe = [regex]::Replace(
+        $safe,
         '(?i)\b(?:dev\.azure\.com(?:/|%2f|%252f))?dnceng(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
+        'internal source'
+    )
+    $safe = [regex]::Replace(
+        $safe,
+        '(?i)\bdnceng\.visualstudio\.com(?:/|%2f|%252f)internal[^\s<>"''`|)]*',
         'internal source'
     )
     $safe = [regex]::Replace(
