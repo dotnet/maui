@@ -169,13 +169,18 @@ public static class XamlIncrementalHotReloadHandler
 	// always part of a XAML-change delta (it is what applies Hot Reload), so its body is reliably current.
 	const int EmptyUpdateComponentMaxIL = 8;
 
+	// GetMethodBody() is [RequiresUnreferencedCode] (IL2026). The trimmer/ILC honors
+	// UnconditionalSuppressMessage (a #pragma only silences the Roslyn analyzer, not the publish-time
+	// trim/AOT warning). This is safe: XIHR is a dev-time (Hot Reload) feature gated by
+	// RuntimeFeature.IsIncrementalHotReloadEnabled, which is off for Release/publish, so this method is
+	// never reached under trimming/AOT — the "trimming may change method bodies" caveat cannot apply.
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+		Justification = "XIHR is a dev-time feature disabled under trimming/AOT (Release); IsEmptyUpdateComponent is never reached there.")]
 	static bool IsEmptyUpdateComponent(MethodInfo ucMethod)
 	{
 		try
 		{
-#pragma warning disable IL2026 // GetMethodBody: XIHR is a dev-time (Hot Reload) feature, never trimmed/AOT.
 			var body = ucMethod.GetMethodBody();
-#pragma warning restore IL2026
 			var il = body?.GetILAsByteArray();
 			return il is null || il.Length <= EmptyUpdateComponentMaxIL;
 		}
