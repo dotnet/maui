@@ -406,12 +406,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void RemoveAllPushedPages(ShellSection shellSection, bool keepCurrent)
 		{
-			var t = ChildFragmentManager.BeginTransactionEx();
-			bool hasChanges = false;
+			FragmentTransaction t = null;
 
 			foreach (var kvp in _fragmentMap.ToList())
 			{
-				if (kvp.Key is not Page || kvp.Key.Parent != shellSection)
+				if (kvp.Key.Parent != shellSection)
 				{
 					continue;
 				}
@@ -423,14 +422,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					continue;
 				}
 
+				t ??= ChildFragmentManager.BeginTransactionEx();
 				t.RemoveEx(kvp.Value.Fragment);
-				hasChanges = true;
 			}
 
-			if (hasChanges)
-			{
-				t.CommitAllowingStateLossEx();
-			}
+			t?.CommitAllowingStateLossEx();
 		}
 
 		void RemoveFragment(Fragment fragment)
