@@ -91,7 +91,7 @@ function ConvertTo-PublicSafeMarkdown {
             $collection = if ($match.Groups['collection'].Success) { 'DefaultCollection/' } else { '' }
             "$($match.Groups['prefix'].Value)${collection}internal"
         })
-    $safe = [regex]::Replace($safe, '(?i)(?<![A-Za-z0-9])(?:' + $Script:PublicSafeUrlCandidatePattern + ')[^\s<>"''`|)]*', {
+    $safe = [regex]::Replace($safe, '(?i)(?<![A-Za-z0-9])(?:' + $Script:PublicSafeUrlCandidatePattern + ')[^\s<>"''`|]*', {
         param($match)
         $original = $match.Value
         $canonical = $original
@@ -121,6 +121,8 @@ function ConvertTo-PublicSafeMarkdown {
             if ($value -le 0xffff) { return [char]$value }
             return $entity.Value
         })
+        $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormD)
+        $canonical = $canonical -replace '\p{Mn}', ''
         $canonical = $canonical.Normalize([System.Text.NormalizationForm]::FormKC)
         $canonical = [regex]::Replace($canonical, '&[A-Za-z][A-Za-z0-9]+;', '')
         $canonical = $canonical -replace '[\p{Cf}\u00AD\u180E\uFE00-\uFE0F]', ''

@@ -248,7 +248,12 @@ function ConvertFrom-GhJsonArrayResult {
         if ([string]::IsNullOrWhiteSpace($rawJson)) { throw 'empty response' }
         $items = ConvertFrom-Json -InputObject $rawJson -NoEnumerate -ErrorAction Stop
         if ($null -eq $items -or $items -isnot [System.Array]) { throw 'expected a JSON array' }
-        return [PSCustomObject]@{ Success = $true; Items = @($items) }
+        $flattened = if ($items.Count -gt 0 -and @($items | Where-Object { $_ -isnot [System.Array] }).Count -eq 0) {
+            @($items | ForEach-Object { @($_) })
+        } else {
+            @($items)
+        }
+        return [PSCustomObject]@{ Success = $true; Items = $flattened }
     } catch {
         if (-not $SuppressRegressionFailure) { Add-RegressionEvidenceFailure "$Context ($($_.Exception.Message))" }
         return [PSCustomObject]@{ Success = $false; Items = @() }
@@ -845,17 +850,7 @@ function Get-ShippedStableTagsForBounds {
     )
 
     if ($PublicationQueryFailed) {
-        [version]$anchorVersion = $null
-        if (-not [version]::TryParse($AnchorTag, [ref]$anchorVersion)) { return @($AnchorTag) }
-        return @(Get-NonEmptyStringValues -Value $LocalStableTags | Where-Object {
-            [version]$candidate = $null
-            if (-not [version]::TryParse([string]$_, [ref]$candidate)) { return $false }
-            $_ -eq $AnchorTag -or
-                $candidate.Major -lt $anchorVersion.Major -or
-                ($candidate.Major -eq $anchorVersion.Major -and
-                    $candidate.Minor -eq $anchorVersion.Minor -and
-                    ($candidate.Build % 10) -eq 0)
-        } | Sort-Object -Unique)
+        return @(Get-NonEmptyStringValues -Value $LocalStableTags | Sort-Object -Unique)
     }
     return @(Get-NonEmptyStringValues -Value @($PublishedTags + $AnchorTag) | Sort-Object -Unique)
 }
@@ -3158,7 +3153,7 @@ function Get-RegressionLabelsAuto {
 
 function Get-IssueTimelinePrs {
     param($Repo, $IssueNumber)
-    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/timeline", '--paginate')
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/timeline", '--paginate', '--slurp')
     $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "issue #$IssueNumber timeline lookup failed"
     if (-not $parsed.Success) { return @() }
     $events = @($parsed.Items)
@@ -3222,7 +3217,7 @@ function Get-IssueCommentPrs {
         mention ("duplicate of #X", "see #Y") is not proof of anything.
     #>
     param($Repo, $IssueNumber)
-    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate')
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate', '--slurp')
     $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "issue #$IssueNumber comments lookup failed"
     if (-not $parsed.Success) { return @() }
     $comments = @($parsed.Items)

@@ -88,7 +88,6 @@ Assert-Eq -Label "assertion helper distinguishes collection from matching member
     -Actual (Test-AssertionEqual -Expected @('a', 'b') -Actual 'a')
 Assert-Eq -Label "assertion helper accepts bare negative numeric parameter literals" -Expected $true `
     -Actual (Test-AssertionEqual -Expected -2 -Actual ([int]-2))
-
 # ─────────── Parser/regex unit tests (no network) ───────────
 
 Write-Host "`n[Unit] Commit message parsing" -ForegroundColor Cyan
@@ -1602,6 +1601,10 @@ try {
     Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
 }
 
+$slurpedPages = ConvertFrom-GhJsonArrayResult -Raw '[[{"id":1}],[{"id":2},{"id":3}]]' -Context 'slurped page fixture'
+Assert-Eq -Label "GitHub paginated slurp flattens page arrays" -Expected '1,2,3' `
+    -Actual (($slurpedPages.Items | ForEach-Object { $_.id }) -join ',')
+
 # ─────────── Shipped hotfix detection: branch movement before version bump ───────────
 Write-Host "`n[Unit] Test-BranchAdvancedBeyondTag" -ForegroundColor Cyan
 $origInvokeGitForTagAdvance = (Get-Item function:Invoke-Git).ScriptBlock
@@ -1739,7 +1742,7 @@ try {
         -LocalStableTags @('10.0.80', '10.0.85', '10.0.90', '10.0.91') `
         -PublicationQueryFailed $true)
     Assert-Eq -Label "release API outage retains local immutable tag bounds" `
-        -Expected '10.0.80,10.0.90,10.0.91' -Actual ($outageBounds -join ',')
+        -Expected '10.0.80,10.0.85,10.0.90,10.0.91' -Actual ($outageBounds -join ',')
     Assert-Eq -Label "publication state: per-tag release proof overrides failed list query" `
         -Expected 'published' -Actual (Resolve-ShippedPublicationState `
             -ListQueryFailed $true -AnchorInPublishedList $false -TagDateSource 'github-release')
@@ -8225,6 +8228,8 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/d-n-c-e-n-g/internal/_build?token=HYPHENORGSECRET',
         'https://dev.azure.com/dnceng/ internal/_build?token=SPACEBEFORESECRET',
         'https://dev.azure.com/dnceng/internal /_build?token=SPACEAFTERINTSECRET',
+        'https://dev.azure.com/dnceng/internal/(build)?token=PARENSECRET',
+        "https://dev.azure.com/dnc$([char]0x0301)eng/internal/_build?token=COMBININGORGSECRET",
         'https://dev.azure.com/dnceng/public/../internal/_build?token=DOTSEGMENTSECRET',
         "https://dev.azure.com/dnceng/$([char]0x0456)nternal/_build?token=CYRILLICSECRET",
         "https://dev.azure.com/dnceng/in$([char]0x0422)ernal/_build?token=CYRILLICUPPERSECRET"
