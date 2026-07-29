@@ -2219,6 +2219,10 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text $otherPrRetracted) -join ',')
     Assert-Eq -Label "backport lineage: semicolon before list continuation preserves final source" `
         -Expected '100,200,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100, #200; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: all-semicolon list preserves every source" `
+        -Expected '100,200,300' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; #200; and #300.') -join ',')
+    Assert-Eq -Label "backport lineage: contextual semicolon continuation is not promoted" `
+        -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100; and #200 is only context.') -join ',')
     foreach ($repeatedSemanticRetraction in @(
         'Backport of #12345. PR #12345 is no longer required.',
         'Backport of #12345. PR #12345 is no longer needed.',
@@ -2277,7 +2281,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         'Backport of #100 was not, in fact, included.',
         'Backport of #100 was not (yet) applied.',
         'Backport of #100 was not, to be fair, in my view, included.',
-        'Backport of #100 was not; to be fair; in my view; included.'
+        'Backport of #100 was not; to be fair; in my view; included.',
+        'Backport of #100 was not; a; b; c; d; included.'
     )) {
         Assert-Eq -Label "backport lineage: Markdown/punctuation negation removes source — $punctuatedNegation" `
             -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $punctuatedNegation) -join ',')
@@ -2286,6 +2291,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         -Expected '100' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of #100 was ~~not~~ included.') -join ',')
     Assert-Eq -Label "backport lineage: entire struck claim is withdrawn before reference extraction" `
         -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text '~~Backport of #1234~~ was never actually needed.') -join ',')
+    Assert-Eq -Label "backport lineage: semicolon aside before verb preserves governing negation" `
+        -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Do not; after review; backport #32537.') -join ',')
     foreach ($qualifiedListBody in @(
         'Backport of #1234, (verified on device), and #32610',
         'Backport of #1234, (tested thoroughly), and #32610',
@@ -2699,6 +2706,15 @@ $duplicateRevertSet = Get-NetRevertedPrSet -Reverts @(
 )
 Assert-Eq -Label "independent duplicate reverts keep the target reverted" -Expected $true `
     -Actual $duplicateRevertSet.ContainsKey(100)
+$compoundRevertSet = Get-NetRevertedPrSet -Reverts @(
+    @{ revertsPr = 200; revertBackportPr = 201 }
+    @{ revertsPr = 100; revertBackportPr = 300 }
+    @{ revertsPr = 100; revertBackportPr = 200 }
+)
+Assert-Eq -Label "revert-of-revert preserves an independent revert contribution" -Expected $true `
+    -Actual $compoundRevertSet.ContainsKey(100)
+Assert-Eq -Label "compound revert graph marks the reverted reverter" -Expected $true `
+    -Actual $compoundRevertSet.ContainsKey(200)
 Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
     -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
 Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
@@ -5830,6 +5846,18 @@ $verdictDataReady = @{
 $verdictReadyResult = Get-OverallVerdict -Data $verdictDataReady
 Assert-Eq -Label "READY-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictReadyResult.tier
 
+# UNKNOWN required evidence is non-clean in both SR and Preview lanes.
+$verdictDataUnknown = @{
+    metadata = @{ mode = 'in-flight' }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @(
+        [PSCustomObject]@{ Area = 'BAR mapping'; Status = 'UNKNOWN'; Details = 'not verified'; NextAction = 'verify locally' }
+    )
+}
+$verdictUnknownResult = Get-OverallVerdict -Data $verdictDataUnknown
+Assert-Eq -Label "UNKNOWN-only SR ship checks: verdict is conditional" -Expected 2 -Actual $verdictUnknownResult.tier
+
 # CLEANUP ship checks must surface in the report but MUST NOT escalate the verdict.
 # This locks the contract: CLEANUP = "housekeeping that needs doing, but doesn't
 # prevent shipping". Used for stale-milestone backlog, missing bug-template entry, etc.
@@ -7843,12 +7871,15 @@ function Assert-PublicSanitizerEdgeCases {
         'https://dev.azure.com/dnceng/DefaultCollection\internal/_build?token=MIXEDSECRET',
         'https://dnceng.visualstudio.com/internal/_build?token=LEGACYSECRET',
         'https://dev.azure.com&#47;dnceng&#47;internal&#47;_build?token=HTMLSECRET',
-        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=ENCODEDSECRET'
+        'https%3A%2F%2Fdev.azure.com%2Fdnceng%2Finternal%2F_build%3Ftoken=ENCODEDSECRET',
+        'https://dev.azure.com/dnc%65ng/int%65rnal/_build?token=LETTERSECRET',
+        'https://dev.azure.com/dnceng/DefaultCollection%5Cinternal/_build?token=BACKSLASHENCODED',
+        "https://dev.azu$([char]0x200B)re.com\d$([char]0x200B)nceng\internal\_build?token=ZEROWIDTHSECRET"
     )
     foreach ($case in $cases) {
         $safe = ConvertTo-PublicSafeMarkdown -Text $case
         Assert-Eq -Label "$Lane sanitizer removes private token — $case" -Expected $false `
-            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET')
+            -Actual ($safe -match 'PLAINSECRET|MIXEDSECRET|LEGACYSECRET|HTMLSECRET|ENCODEDSECRET|LETTERSECRET|BACKSLASHENCODED|ZEROWIDTHSECRET')
     }
     Assert-Eq -Label "$Lane sanitizer preserves public Azure DevOps URL" -Expected $true `
         -Actual ((ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com/dnceng/public/_build') -match 'dnceng/public')

@@ -272,12 +272,20 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
+    for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
+        $safe = [regex]::Replace($safe, '(?i)%(?:25)?(?<hex>[0-9a-f]{2})', {
+            param($match)
+            $char = [char][Convert]::ToInt32($match.Groups['hex'].Value, 16)
+            if ($char -match '[A-Za-z]' -or $char -eq '\') { return [string]$char }
+            return $match.Value
+        })
+    }
+    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)[^\s<>"''`|)]*',
         { param($match) $match.Value -replace '\\', '/' })
-    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
     $safe = [regex]::Replace($safe, '(?i)https?://dev\.azure\.com/dnceng(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
     $safe = [regex]::Replace($safe, '(?i)https?://dnceng\.visualstudio\.com(?:/|%2f|%252f)(?:DefaultCollection(?:/|%2f|%252f))?internal[^\s<>"''`|)]*', '_internal URL omitted_')
@@ -2408,7 +2416,7 @@ function ConvertTo-NegationNormalizedText {
     $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')
     $normalized = $normalized -replace '\*\*|__', ''
     $normalized = $normalized -replace '(?<!\w)[*_](?=\w)|(?<=\w)[*_](?!\w)', ''
-    $asidePattern = '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-]|(?:;\s*[^;\r\n]{0,80}){1,3};)\s*'
+    $asidePattern = '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-]|(?:;\s*[^;\r\n]{0,80})+;)\s*'
     do {
         $previous = $normalized
         $normalized = [regex]::Replace($normalized, $asidePattern, '$1 ')
@@ -2543,11 +2551,18 @@ function Get-ExplicitBackportSourceNumbers {
     $Text = $Text -replace "`r", "`n"
     $Text = $Text -replace '\u2028', "`n"
     $Text = $Text -replace '\u2029', "`n`n"
+    # Bridge only semicolon-delimited asides that sit between a governing
+    # negator and the lineage verb; full-text normalization would alter verb
+    # boundaries such as `re-backport`.
+    $Text = [regex]::Replace(
+        $Text,
+        '(?i)\b(?<neg>not|never)(?:;\s*[^;\r\n]{0,80})+;\s*(?=(?:re-?)?backport|cherry[-\s]pick)',
+        '${neg} ')
     # A semicolon can be list punctuation rather than a clause boundary:
     # `#A, #B; and #C`. Normalize only this structured continuation.
     $Text = [regex]::Replace(
         $Text,
-        '(?i)(?<ref>(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+)\s*;\s*(?=(?:and|plus)\s+(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+)',
+        '(?i)(?<ref>(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))\s*;\s*(?=(?:(?:and|plus)\s+)?(?:(?:https://github\.com/dotnet/maui/)?pull/|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])(?!(?:\s+)(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\b))',
         '${ref}, ')
     # Preserve paragraphs and Markdown block/list boundaries, but fold genuine
     # wrapped continuation lines so `Backport of` + newline + `#N` remains one
@@ -3430,37 +3445,54 @@ function Get-NetRevertedPrSet {
     $net = @{}
     if ($rows.Count -eq 0) { return $net }
 
-    $revertTargets = @{}
+    $targetToReverters = @{}
+    $syntheticReverter = -1
     foreach ($row in $rows) {
         $revertPr = [int](Get-MetadataValue -Container $row -Name 'revertBackportPr' -Default 0)
         $targetPr = [int](Get-MetadataValue -Container $row -Name 'revertsPr' -Default 0)
-        if ($revertPr -and $targetPr) { $revertTargets[$revertPr] = $targetPr }
+        if (-not $targetPr) { continue }
+        if (-not $revertPr) {
+            $revertPr = $syntheticReverter
+            $syntheticReverter--
+        }
+        if (-not $targetToReverters.ContainsKey($targetPr)) {
+            $targetToReverters[$targetPr] = [System.Collections.Generic.List[int]]::new()
+        }
+        if (-not $targetToReverters[$targetPr].Contains($revertPr)) {
+            [void]$targetToReverters[$targetPr].Add($revertPr)
+        }
     }
 
-    # git log is newest-first; apply revert effects oldest-first. Reverting a
-    # revert toggles both that revert PR and the effect it previously applied.
-    [array]::Reverse($rows)
-    foreach ($row in $rows) {
-        $targetPr = [int](Get-MetadataValue -Container $row -Name 'revertsPr' -Default 0)
-        if (-not $targetPr) { continue }
-        $visited = @{}
-        $current = $targetPr
-        $isDirectTarget = $true
-        while ($current -and -not $visited.ContainsKey($current)) {
-            $visited[$current] = $true
-            if ($isDirectTarget) {
-                # Multiple independent revert commits for the same PR are
-                # idempotent: the fix remains reverted. Only traversing through
-                # a reverted revert PR toggles the earlier effect.
-                $net[$current] = $true
-            } elseif ($net.ContainsKey($current)) {
-                [void]$net.Remove($current)
-            } else {
-                $net[$current] = $true
-            }
-            $current = if ($revertTargets.ContainsKey($current)) { [int]$revertTargets[$current] } else { 0 }
-            $isDirectTarget = $false
+    # A PR is net-reverted when at least one currently-active revert PR targets
+    # it. This graph model preserves independent revert contributions while a
+    # revert-of-a-revert disables only the specific reverter it targets.
+    $memo = @{}
+    $visiting = @{}
+    $resolve = $null
+    $resolve = {
+        param([int]$PrNumber)
+        if ($memo.ContainsKey($PrNumber)) { return [bool]$memo[$PrNumber] }
+        if ($visiting.ContainsKey($PrNumber)) {
+            # Cyclic metadata is ambiguous; fail safe rather than claiming active.
+            return $true
         }
+        $visiting[$PrNumber] = $true
+        $isReverted = $false
+        if ($targetToReverters.ContainsKey($PrNumber)) {
+            foreach ($reverter in $targetToReverters[$PrNumber]) {
+                if (-not (& $resolve ([int]$reverter))) {
+                    $isReverted = $true
+                    break
+                }
+            }
+        }
+        [void]$visiting.Remove($PrNumber)
+        $memo[$PrNumber] = $isReverted
+        return $isReverted
+    }
+
+    foreach ($targetPr in $targetToReverters.Keys) {
+        if (& $resolve ([int]$targetPr)) { $net[[int]$targetPr] = $true }
     }
     return $net
 }
@@ -4897,8 +4929,8 @@ function Get-OverallVerdict {
     #   - BLOCKED → Tier 1 (Not Ready). Must be resolved before ship.
     #   - WATCH   → Tier 2 (Conditionally Ready). Worth eyeballing; doesn't
     #              block but the verdict acknowledges the soft signal.
-    # CLEANUP and UNKNOWN do NOT escalate the verdict — they're follow-ups
-    # or missing data, not ship signals.
+    # CLEANUP does not escalate. UNKNOWN means required evidence is incomplete,
+    # so align with Preview and surface a conditional verdict.
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         $blockedShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'BLOCKED' })
         foreach ($sc in $blockedShipChecks) {
@@ -4909,6 +4941,11 @@ function Get-OverallVerdict {
         foreach ($sc in $watchShipChecks) {
             $tier2 = $true
             $reasons.Add("[Tier 2] Ship check WATCH: $($sc.Area)") | Out-Null
+        }
+        $unknownShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'UNKNOWN' })
+        foreach ($sc in $unknownShipChecks) {
+            $tier2 = $true
+            $reasons.Add("[Tier 2] Ship check UNKNOWN: $($sc.Area)") | Out-Null
         }
     }
 

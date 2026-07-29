@@ -1822,12 +1822,20 @@ function ConvertTo-PublicSafeMarkdown {
     if ([string]::IsNullOrEmpty($Text)) { return $Text }
 
     $safe = $Text -replace '(?i)&#(?:x0*2f|0*47);', '/'
+    for ($decodePass = 0; $decodePass -lt 2; $decodePass++) {
+        $safe = [regex]::Replace($safe, '(?i)%(?:25)?(?<hex>[0-9a-f]{2})', {
+            param($match)
+            $char = [char][Convert]::ToInt32($match.Groups['hex'].Value, 16)
+            if ($char -match '[A-Za-z]' -or $char -eq '\') { return [string]$char }
+            return $match.Value
+        })
+    }
+    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '[\u2044\u2215\uFF0F]', '/'
     $safe = [regex]::Replace(
         $safe,
         '(?i)(?:https?://)?(?:dev\.azure\.com|dnceng\.visualstudio\.com|dnceng)[^\s<>"''`|)]*',
         { param($match) $match.Value -replace '\\', '/' })
-    $safe = $safe -replace '[\u200B-\u200D\uFEFF]', ''
     $safe = $safe -replace '(?i)(internal)[\t ]+(?=[/?#])', '$1'
     $safe = [regex]::Replace(
         $safe,
