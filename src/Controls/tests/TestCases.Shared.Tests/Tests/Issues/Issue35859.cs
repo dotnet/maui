@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_ANDROID // This test is specific to iOS/macOS CollectionView handler behavior.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test is specific to iOS/macOS CollectionView handler behavior.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
