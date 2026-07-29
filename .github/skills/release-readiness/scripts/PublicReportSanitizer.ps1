@@ -83,12 +83,19 @@ function ConvertTo-PublicSafeMarkdown {
         param($match)
         $original = $match.Value
         $canonical = $original
-        for ($decodePass = 0; $decodePass -lt 6; $decodePass++) {
+        $decodeStabilized = $false
+        for ($decodePass = 0; $decodePass -lt 12; $decodePass++) {
             try {
                 $decoded = [System.Uri]::UnescapeDataString($canonical)
-                if ($decoded -eq $canonical) { break }
+                if ($decoded -eq $canonical) {
+                    $decodeStabilized = $true
+                    break
+                }
                 $canonical = $decoded
             } catch { break }
+        }
+        if (-not $decodeStabilized -and $canonical -match '(?i)%(?:25)*[0-9a-f]{2}') {
+            return '_encoded URL omitted_'
         }
         $canonical = [regex]::Replace($canonical, '(?i)&#(?:(?:x(?<hex>[0-9a-f]+))|(?<dec>\d+));', {
             param($entity)
@@ -127,12 +134,12 @@ function ConvertTo-PublicSafeMarkdown {
             '(?i)\b(dnceng|DefaultCollection)\s+(?=/|internal\b)',
             '$1')
         $detection = [regex]::Replace($canonical, '[^A-Za-z0-9@:/?._#&=%-]', '')
-        $azdoAuthority = '(?:(?:dev\.azure\.com(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com(?::\d+)?))'
+        $azdoAuthority = '(?:(?:dev\.azure\.com\.?(?::\d+)?/(?:dnceng|DevDiv))|(?:(?:dnceng|devdiv)\.visualstudio\.com\.?(?::\d+)?))'
         $hasAzdoUserInfo = $detection -match "(?i)https?://[^/@]+@$azdoAuthority(?:[/?:#]|$)"
         if ($hasAzdoUserInfo) {
             return '_credential-bearing URL omitted_'
         }
-        $isInternal = $detection -match "(?i)(?:https?://(?:dev\.azure\.com(?::\d+)?/dnceng|dnceng\.visualstudio\.com(?::\d+)?)/(?:DefaultCollection/)?internal|https?://(?:dev\.azure\.com(?::\d+)?/DevDiv|devdiv\.visualstudio\.com(?::\d+)?/DevDiv)|^(?:dnceng(?:\.visualstudio\.com)?/(?:DefaultCollection/)?internal|DevDiv))(?:[/?:#]|$)"
+        $isInternal = $detection -match "(?i)(?:https?://(?:dev\.azure\.com\.?(?::\d+)?/dnceng|dnceng\.visualstudio\.com\.?(?::\d+)?)/(?:DefaultCollection/)?internal|https?://(?:dev\.azure\.com\.?(?::\d+)?/DevDiv|devdiv\.visualstudio\.com\.?(?::\d+)?/DevDiv)|^(?:dnceng(?:\.visualstudio\.com)?/(?:DefaultCollection/)?internal|DevDiv))(?:[/?:#]|$)"
         if ($isInternal) {
             return '_internal URL omitted_'
         }

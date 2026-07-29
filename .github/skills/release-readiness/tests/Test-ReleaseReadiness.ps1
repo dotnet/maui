@@ -36,6 +36,14 @@ function Test-AssertionEqual {
                 if (-not [string]::Equals($expectedItems[$i], $actualItems[$i], [System.StringComparison]::Ordinal)) { return $false }
             } elseif ($expectedItems[$i] -ne $actualItems[$i]) { return $false }
         }
+        $deepEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=DEEPCODESECRET'
+        foreach ($pass in 1..7) { $deepEncodedInternal = [uri]::EscapeDataString($deepEncodedInternal) }
+        Assert-Eq -Label "$Lane sanitizer decodes seven-pass private URL before classification" `
+            -Expected '_internal URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $deepEncodedInternal)
+        $overEncodedInternal = 'https://dev.azure.com/dnceng/internal/_build?token=OVERENCODESECRET'
+        foreach ($pass in 1..13) { $overEncodedInternal = [uri]::EscapeDataString($overEncodedInternal) }
+        Assert-Eq -Label "$Lane sanitizer fails closed when URL encoding exceeds decode budget" `
+            -Expected '_encoded URL omitted_' -Actual (ConvertTo-PublicSafeMarkdown -Text $overEncodedInternal)
         return $true
     }
     if ($Expected -is [string] -and $Actual -is [string]) {
@@ -2102,6 +2110,10 @@ try {
         }) -SourcePrNumber 32295)
     Assert-Eq -Label "issue #36154 lineage: same-repo source shorthand is explicit" -Expected '36499' `
         -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of dotnet/maui#36499') -join ',')
+    Assert-Eq -Label "backport lineage: same-repo path form is explicit" -Expected '36499' `
+        -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of dotnet/maui/pull/36499') -join ',')
+    Assert-Eq -Label "backport lineage: foreign-repo pull path is rejected" -Expected '' `
+        -Actual ((Get-ExplicitBackportSourceNumbers -Text 'Backport of https://github.com/dotnet/runtime/pull/12345') -join ',')
     Assert-Eq -Label "backport lineage: background-only parenthetical is not a source list" -Expected $false `
         -Actual (Test-IsExplicitBackportForSource -Pr ([pscustomobject]@{
             body = 'Backport of #99999, (for background only), and #32295'
@@ -2337,6 +2349,8 @@ Note: PR #12345 was not initially expected to be needed here, but it is required
         'Backport of #12345 was rolled back, but it is needed for this fix.',
         'Backport of #12345 was omitted, but it is applicable to this branch.',
         'Backport of #12345 was not included, but it is required reading for this change.'
+        'Backport of #12345; later rolled back.'
+        'Backport of #12345, later rolled back.'
     )) {
         Assert-Eq -Label "backport lineage: contrast cannot rescue actual removal — $hardRemovalBody" `
             -Expected '' -Actual ((Get-ExplicitBackportSourceNumbers -Text $hardRemovalBody) -join ',')
@@ -2928,6 +2942,10 @@ Assert-Eq -Label "Reverted-PR from lowercase 'revert' subject" `
 # gate, and a "fixed by #35372" comment on a CLOSED issue is falsely de-noised.
 Assert-Eq -Label "Reverted-PR from manual 'Revert - <title> #N (#M)' form (real #36152/#35372)" `
     -Expected 35372 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Fix Android stale ContainerView root leak #35372 (#36152)')
+Assert-Eq -Label "Reverted-PR from manual subject prefers explicit PR reference over issue reference" `
+    -Expected 35000 -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Backport fix from PR #35000 for issue #12345 (#36152)')
+Assert-Eq -Label "Ambiguous manual revert with multiple unqualified references fails closed" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert - Backport #35000 for issue #12345 (#36152)')
 Assert-Eq -Label "Manual revert form with branch prefix" `
     -Expected 40100 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr9] Revert - Fix flaky test #40100 (#40200)')
 # Safety: a manual-form pattern must NOT fire on a non-revert subject that merely
@@ -8230,6 +8248,12 @@ function Assert-PublicSanitizerEdgeCases {
     Assert-Eq -Label "$Lane sanitizer fully omits HTTP credential-bearing Azure DevOps URL" `
         -Expected '_credential-bearing URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'http://user:PAT@dev.azure.com/dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits trailing-dot credential-bearing Azure DevOps URL" `
+        -Expected '_credential-bearing URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://user:PAT@dev.azure.com./dnceng/internal/_build')
+    Assert-Eq -Label "$Lane sanitizer fully omits trailing-dot internal Azure DevOps URL" `
+        -Expected '_internal URL omitted_' `
+        -Actual (ConvertTo-PublicSafeMarkdown -Text 'https://dev.azure.com./dnceng/internal/_build')
     Assert-Eq -Label "$Lane sanitizer omits embedded DevDiv URL while preserving surrounding key" `
         -Expected 'buildUrl=_internal URL omitted_' `
         -Actual (ConvertTo-PublicSafeMarkdown -Text 'buildUrl=https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1234?token=EMBEDDEDDEVDIVSECRET')

@@ -2385,13 +2385,20 @@ function Get-RevertedPrFromSubject {
     # this, revertedPrSet records only 36152, the reverted fix's original commit
     # still satisfies Test-PrNumberOnBranch, and a "fixed by #35372" comment on a
     # CLOSED issue is falsely de-noised to closed-fix-unlinked ("No ship risk").
-    # Anchored to a Revert subject AND to the bare `#N` immediately before the
-    # trailing `(#M)` so (a) non-revert subjects never match, (b) the trailing
-    # (#M) is never returned, and (c) incidental #refs earlier in the title are
-    # ignored. A rare misfire only ever marks a PR as reverted (safe direction —
-    # never a false "shipped").
-    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)(?![\p{L}\p{N}_])\s+\(#\d+\)\s*$')
-    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    # Manual subjects are only deterministic when they name one bare reference,
+    # or explicitly identify exactly one of several references as "PR #N".
+    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b(?<title>.*?)\s+\(#\d+\)\s*$')
+    if ($m.Success) {
+        $title = $m.Groups['title'].Value
+        $prRefs = @([regex]::Matches($title, '(?i)\bPR\s*#(\d+)(?![\p{L}\p{N}_])'))
+        if ($prRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $prRefs[0].Groups[1].Value)
+        }
+        $bareRefs = @([regex]::Matches($title, '#(\d+)(?![\p{L}\p{N}_])'))
+        if ($bareRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $bareRefs[0].Groups[1].Value)
+        }
+    }
     return $null
 }
 
@@ -2499,7 +2506,7 @@ function Test-IsLineageReferenceNegated {
     $rollback = "(?i)^$prefix$passiveRemovalLead" + 'revert(?:s|ed|ing)?\b'
     $omitted = "(?i)^$prefix$passiveRemovalLead" + '(?:omit(?:ted)?|exclude(?:d)?)\b'
     $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
-    $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:\w+\s+){0,8}?and\s+)|(?:(?:since|subsequently|ultimately)\s+))?rolled\s+back\b"
+    $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:(?:\w+\s+){0,8}?and\s+)?)|(?:(?:since|subsequently|ultimately)\s+))?rolled\s+back\b"
     $laterPresenceRemoval = "(?i)\b(?:but|however|although|yet|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:(?:was|is|were|are)\s+(?:not|never)\s+(?:\w+\s+){0,3}?(?:be\s+)?$presenceEffect\b|(?:was|is)\s+(?:revert(?:ed)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b)"
     $negatedHardRemoval = "(?i)^$prefix(?:\w+\s+){0,6}?(?:not|never)\s+(?:\w+\s+){0,2}?(?:revert(?:s|ed|ing)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b"
     if ($suffix -match $negatedHardRemoval) { return $false }
@@ -2575,7 +2582,7 @@ function Get-ExplicitBackportSourceNumbers {
     # `#A, #B; and #C`. Normalize only this structured continuation.
     $Text = [regex]::Replace(
         $Text,
-        '(?i)(?<ref>(?:(?:https://github\.com/dotnet/maui/)?pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))\s*;\s*(?=(?:(?:and|plus)\s+)?(?:(?:https://github\.com/dotnet/maui/)?pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])(?!(?:\s+)(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\b))',
+        '(?i)(?<ref>(?:https://github\.com/dotnet/maui/pull/|dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))\s*;\s*(?=(?:(?:and|plus)\s+)?(?:https://github\.com/dotnet/maui/pull/|dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])(?!(?:\s+)(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\b))',
         '${ref}, ')
     # Preserve paragraphs and Markdown block/list boundaries, but fold genuine
     # wrapped continuation lines so `Backport of` + newline + `#N` remains one
@@ -2611,7 +2618,7 @@ function Get-ExplicitBackportSourceNumbers {
             $windowLength = [Math]::Min(2048, $clause.Length - $clauseStart)
             $window = $clause.Substring($clauseStart, $windowLength)
             $references = @([regex]::Matches($window,
-                '(?i)(?:(?:https://github\.com/dotnet/maui/)?pull/|dotnet/maui#|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
+                '(?i)(?:https://github\.com/dotnet/maui/pull/|dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
             if ($references.Count -eq 0) { continue }
             $acceptedReferenceIndexes = [System.Collections.Generic.HashSet[int]]::new()
 
@@ -2637,7 +2644,7 @@ function Get-ExplicitBackportSourceNumbers {
                 # Negation after a later PR reference belongs to that later
                 # list item, not the current one.
                 while ($true) {
-                    $nextReference = [regex]::Match($suffix, '(?i)(?:pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+                    $nextReference = [regex]::Match($suffix, '(?i)(?:dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
                     if (-not $nextReference.Success) { break }
                     $nextNumber = ConvertTo-PrNumber -Value $nextReference.Groups['number'].Value
                     if ($nextNumber -eq $number) {
@@ -2720,7 +2727,7 @@ function Get-ExplicitBackportSourceNumbers {
     # for any repeated negated occurrence across the bounded full text so list
     # order and sentence boundaries cannot preserve false-positive lineage.
     foreach ($acceptedNumber in @($result)) {
-        $acceptedPattern = "(?i)(?:pull/|dotnet/maui#|#)$acceptedNumber(?![\p{L}\p{N}_])"
+        $acceptedPattern = "(?i)(?:dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|#)$acceptedNumber(?![\p{L}\p{N}_])"
         foreach ($occurrence in [regex]::Matches($Text, $acceptedPattern)) {
             $prefixStart = [Math]::Max(0, $occurrence.Index - 160)
             $occurrencePrefix = $Text.Substring($prefixStart, $occurrence.Index - $prefixStart)
@@ -2738,7 +2745,7 @@ function Get-ExplicitBackportSourceNumbers {
             # repeated occurrence of the same number is evaluated separately.
             $nextReference = [regex]::Match(
                 $occurrenceSuffix,
-                '(?i)(?:pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+                '(?i)(?:dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
             if ($nextReference.Success) {
                 $occurrenceSuffix = $occurrenceSuffix.Substring(0, $nextReference.Index)
             }
