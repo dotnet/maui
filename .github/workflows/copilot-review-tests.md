@@ -283,30 +283,55 @@ steps:
     with:
       name: review-tests-context-${{ github.run_id }}
       path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
-  - name: Seal trusted visual merger inputs
-    # Supplementary visual-merge setup. If sealing the trusted inputs fails (e.g. a sudo/install
-    # filesystem error) do NOT fail the whole review — the ordinary analysis comment must still
-    # post. This stays fail-closed: the downstream merge step reads ONLY the root-owned trusted
-    # dir and no-ops when "${trusted}/context.json" is absent, so a failed seal can never merge
-    # untrusted PR-controlled inputs.
+  - name: Seal trusted review post-processing inputs
+    # The PR branch is checked out after this step, so all post-agent scripts must be copied into
+    # this root-owned directory first. A sealing failure must not hide a successful ordinary
+    # analysis, and every downstream step fails closed when its trusted script/input is absent.
     continue-on-error: true
     env:
       PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
       CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json
     run: |
       set -euo pipefail
-      if [ ! -f "${CONTEXT_PATH}" ]; then
+      trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
+      sudo install -d -o root -g root -m 0555 "${trusted}"
+      sudo install -o root -g root -m 0555 \
+        .github/skills/review-test-failures/scripts/Ensure-AgentFailureComment.ps1 \
+        "${trusted}/Ensure-AgentFailureComment.ps1"
+      if [ -f "${CONTEXT_PATH}" ]; then
+        sudo install -o root -g root -m 0444 "${CONTEXT_PATH}" "${trusted}/context.json"
+        sudo install -o root -g root -m 0555 \
+          .github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1 \
+          "${trusted}/Merge-TestVisualsIntoComment.ps1"
+      else
         echo "No test-failure context artifact was available; continuing without trusted visual merge inputs."
+      fi
+
+post-steps:
+  - name: Add fallback comment when the analysis agent fails
+    if: failure()
+    continue-on-error: true
+    env:
+      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+      SUPPRESS_OUTPUT: ${{ inputs.suppress_output }}
+    run: |
+      set -euo pipefail
+      if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && [ "${SUPPRESS_OUTPUT:-false}" = "true" ]; then
+        echo "Dry-run mode is active; not adding an agent-failure comment."
         exit 0
       fi
       trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
-      sudo install -d -o root -g root -m 0555 "${trusted}"
-      sudo install -o root -g root -m 0444 "${CONTEXT_PATH}" "${trusted}/context.json"
-      sudo install -o root -g root -m 0555 \
-        .github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1 \
-        "${trusted}/Merge-TestVisualsIntoComment.ps1"
-
-post-steps:
+      fallback="${trusted}/Ensure-AgentFailureComment.ps1"
+      if [ ! -f "${fallback}" ]; then
+        echo "::warning::Trusted agent-failure fallback script was unavailable."
+        exit 0
+      fi
+      unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN GH_AW_GITHUB_TOKEN GH_AW_GITHUB_MCP_SERVER_TOKEN GITHUB_MCP_SERVER_TOKEN
+      pwsh "${fallback}" \
+        -PrNumber "${PR_NUMBER}" \
+        -Repository "${GITHUB_REPOSITORY}" \
+        -RunId "${GITHUB_RUN_ID}" \
+        -AgentOutputPath "/tmp/gh-aw/agent_output.json"
   - name: Merge trusted visuals into the analysis comment
     if: always()
     continue-on-error: true
@@ -316,12 +341,13 @@ post-steps:
       set -euo pipefail
       trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
       agent_output="/tmp/gh-aw/agent_output.json"
-      if [ ! -f "${agent_output}" ] || [ ! -f "${trusted}/context.json" ]; then
+      merger="${trusted}/Merge-TestVisualsIntoComment.ps1"
+      if [ ! -f "${agent_output}" ] || [ ! -f "${trusted}/context.json" ] || [ ! -f "${merger}" ]; then
         echo "No agent comment payload or trusted visual context was available; leaving the ordinary analysis unchanged."
         exit 0
       fi
       unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN GH_AW_GITHUB_TOKEN GH_AW_GITHUB_MCP_SERVER_TOKEN GITHUB_MCP_SERVER_TOKEN
-      pwsh "${trusted}/Merge-TestVisualsIntoComment.ps1" \
+      pwsh "${merger}" \
         -PrNumber "${PR_NUMBER}" \
         -Repository "${GITHUB_REPOSITORY}" \
         -ContextJsonPath "${trusted}/context.json" \
