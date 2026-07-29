@@ -1,7 +1,8 @@
 #!/usr/bin/env pwsh
 #Requires -Modules Pester
 
-# Regression coverage for the ci-status-net11 trusted build-evidence collector.
+# Regression coverage for the trusted build-evidence collector, for BOTH scanner
+# twins (ci-status-main and ci-status-net11).
 #
 # The collector emits `failed_leaf_log_ids`, the set the manifest validator uses
 # to forbid `signature-not-in-fetched-log` (an absence proof, satisfiable by any
@@ -18,10 +19,12 @@
 
 BeforeDiscovery {
     $script:NodeAvailable = $null -ne (Get-Command node -ErrorAction SilentlyContinue)
+
+    . (Join-Path $PSScriptRoot 'CiScanTwins.Helpers.ps1')
+    $script:CollectorTwins = @(Get-CiScanTwin)
 }
 
 BeforeAll {
-    $script:LockPath = Join-Path $PSScriptRoot '../workflows/ci-status-net11.lock.yml'
     $script:HelixJobId = '0f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0'
 
     function Get-CollectorSource {
@@ -98,7 +101,7 @@ $body
             Remove-Item Env:CI_SCAN_TEST_AGENT_ROOT -ErrorAction SilentlyContinue
         }
 
-        return (Get-Content -LiteralPath (Join-Path $runnerTemp 'ci-scan-net11/expected-builds.json') -Raw |
+        return (Get-Content -LiteralPath (Join-Path $runnerTemp "$($script:ScannerId)/expected-builds.json") -Raw |
                 ConvertFrom-Json)
     }
 
@@ -112,7 +115,7 @@ $body
             [Parameter(Mandatory = $true)][string]$LogFileName
         )
 
-        $evidencePath = Join-Path $TestDrive "runner-temp/ci-scan-net11/evidence/$Pipeline/$LogFileName"
+        $evidencePath = Join-Path $TestDrive "runner-temp/$($script:ScannerId)/evidence/$Pipeline/$LogFileName"
         if (-not (Test-Path -LiteralPath $evidencePath)) {
             throw "The collector wrote no evidence at $evidencePath."
         }
@@ -148,7 +151,7 @@ $body
                             finishTime   = (Get-Date).ToUniversalTime().ToString('o')
                             status       = 'completed'
                             result       = 'succeeded'
-                            sourceBranch = 'refs/heads/net11.0'
+                            sourceBranch = "refs/heads/$($script:ScannerBranch)"
                             definition   = [pscustomobject]@{ id = 314 }
                         }
                     )
@@ -202,7 +205,15 @@ $body
     }
 }
 
-Describe 'ci-status-net11 trusted build-evidence collector' {
+Describe 'trusted build-evidence collector: <_.Name>' -ForEach $script:CollectorTwins {
+    BeforeAll {
+        # Per-twin bindings; the file-level BeforeAll above only defines helpers,
+        # because -ForEach data is not in scope there.
+        $script:LockPath = $LockPath
+        $script:ScannerId = $ScannerId
+        $script:ScannerBranch = $Branch
+    }
+
     It 'folds Helix-discovered failures into failed_leaf_log_ids in the compiled lock' {
         # Source-level guard so the contract is still enforced where node is
         # unavailable: the fold must live inside the Helix work-item loop, after
