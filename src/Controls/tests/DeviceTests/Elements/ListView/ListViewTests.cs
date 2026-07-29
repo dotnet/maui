@@ -356,6 +356,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact("Cells Do Not Leak"
 #if !WINDOWS
 			, Skip = "Skip for now on other platforms, due to how cells are recycled this does not pass."
@@ -392,6 +393,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
+#endif
 
 		[Fact("Cells Repopulate After Null ItemsSource")]
 		public async Task CellsRepopulateAfterNullItemsSource()

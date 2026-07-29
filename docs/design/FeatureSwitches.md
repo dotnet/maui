@@ -14,7 +14,6 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
-| MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
@@ -100,9 +99,7 @@ This feature is a counterpart of [XAML Compiled bindings](https://learn.microsof
 
 It is necessary to use this feature instead of the string-based bindings in NativeAOT apps and in apps with full trimming enabled.
 
-## MauiHybridWebViewSupported
-
-When this feature is disabled, `HybridWebView` will not be available. This is the default for projects using `TrimMode=full` or `PublishAot=true`.
+## MauiEnableXamlCBindingWithSourceCompilation
 
 ### Example use-case
 
@@ -123,8 +120,6 @@ Compiled binding in XAML:
 ```xml
 <Label Text="{Binding Customer.Name}" x:DataType="local:PageViewModel" />
 ```
-
-## MauiEnableXamlCBindingWithSourceCompilation
 
 XamlC skipped compilation of bindings with the `Source` property set to any value in previous releases. Some bindings might start producing build errors or start failing at runtime after this feature is enabled. After enabling this feature, make sure all bindings have the right `x:DataType` so they are compiled correctly. For bindings which should not be compiled, clear the data type like this:
 ```

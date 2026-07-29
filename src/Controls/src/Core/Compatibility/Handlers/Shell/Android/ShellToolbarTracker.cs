@@ -31,6 +31,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 
+#pragma warning disable IDE0031 // Use null propagation
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellToolbarTracker : Java.Lang.Object, AView.IOnClickListener, IShellToolbarTracker, IFlyoutBehaviorObserver
@@ -102,7 +103,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			get
 			{
-				if (_page?.Navigation?.NavigationStack?.Count > 1)
+				var navStackCount = _page?.Navigation?.NavigationStack?.Count ?? 0;
+				var canNavFromStack = navStackCount > 1;
+
+				if (canNavFromStack)
 					return true;
 
 				return _canNavigateBack;
@@ -462,6 +466,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (customIcon != null)
 				{
+					// Mutate() clones the drawable's ConstantState into a private copy so that
+					// SetTint() calls in Draw() don't bleed into the shared drawable cache and
+					// corrupt the tint across navigation cycles.
+					customIcon = customIcon.Mutate();
+
 					if (fid == null)
 					{
 						fid = new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, customIcon, text);
@@ -469,7 +478,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						fid.TintColor = tintColor;
+						var previousIcon = fid.IconBitmap;
 						fid.IconBitmap = customIcon;
+						// Dispose the previous mutated drawable to release its native handle.
+						// The new customIcon is a fresh Mutate() clone so previousIcon != customIcon.
+						if (!ReferenceEquals(previousIcon, customIcon))
+						{
+							previousIcon?.Dispose();
+						}
+
 						fid.Text = text;
 					}
 
@@ -484,23 +501,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				icon = _flyoutIconDrawerDrawable;
 			}
 
-			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || (CanNavigateBack && backButtonVisible)))
+			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
 			{
 				_drawerArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
 				icon = _drawerArrowDrawable;
 				defaultDrawerArrowDrawable = true;
 			}
 
-			icon?.Progress = (CanNavigateBack && backButtonVisible) ? 1 : 0;
+			var canNav = CanNavigateBack;
+			var progress = canNav ? 1 : 0;
+			icon?.Progress = progress;
 
-			if (command != null || (CanNavigateBack && backButtonVisible))
+			if (command != null || CanNavigateBack)
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
 				if (backButtonVisibleFromBehavior && (backButtonVisible || !defaultDrawerArrowDrawable))
 					toolbar.NavigationIcon = icon;
 			}
-			else if (_flyoutBehavior == FlyoutBehavior.Flyout || (!defaultDrawerArrowDrawable && backButtonVisible))
+			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
 			{
 				bool drawerEnabled = isEnabled && icon != null;
 				_drawerToggle.DrawerIndicatorEnabled = drawerEnabled;
@@ -516,11 +535,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
-				toolbar.NavigationIcon = null;
 			}
 
 			_drawerToggle.SyncState();
 
+			// Re-apply icon Progress AFTER SyncState since SyncState resets it to 0
+			if (icon is not null)
+			{
+				icon.Progress = progress;
+			}
 
 			//this needs to be set after SyncState
 			UpdateToolbarIconAccessibilityText(toolbar, _shell);
@@ -575,7 +598,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				if (CanNavigateBack && _toolbar?.BackButtonVisible == true)
+				if (CanNavigateBack)
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 				else
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
@@ -684,6 +707,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (SearchHandler is not null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
 			{
 				var context = ShellContext.AndroidContext;
+
+				// If the SearchHandler changed (e.g., navigating between pages with different SearchHandlers),
+				// dispose the old search view so it gets recreated with the new handler's icons/settings.
+				if (_searchView is not null && _searchView.SearchHandler != SearchHandler)
+				{
+					_searchView.View.RemoveFromParent();
+					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
+					_searchView.SearchConfirmed -= OnSearchConfirmed;
+					_searchView.Dispose();
+					_searchView = null;
+				}
+
 				if (_searchView is null)
 				{
 					_searchView = GetSearchView(context);
@@ -744,6 +779,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
+
+				// BUG FIX: Remove the collapsible search menu item when navigating to a page without SearchHandler
+				// Previously, only _searchView was cleaned up, but the menu item remained visible
+				if (menu.FindItem(_placeholderMenuItemId) is not null)
+				{
+					menu.RemoveItem(_placeholderMenuItemId);
+				}
+
 				if (_searchView is not null)
 				{
 					_searchView.View.RemoveFromParent();

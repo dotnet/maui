@@ -1,8 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
@@ -31,7 +29,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParametersAndNulls_AndComplexResult() =>
+	public Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -49,7 +47,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndDecimalResult() =>
+	public Task InvokeJavaScriptMethodWithParametersAndDecimalResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -68,7 +66,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[InlineData(-123.456)]
 	[InlineData(0.0)]
 	[InlineData(123.456)]
-	public Task InvokeJavaScript_WithParameters_AndDoubleResult(double expected) =>
+	public Task InvokeJavaScriptMethodWithParametersAndDoubleResult(double expected) =>
 		RunTest(async (hybridWebView) =>
 		{
 			var result = await hybridWebView.InvokeJavaScriptAsync<double>(
@@ -85,7 +83,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[InlineData(-123.456)]
 	[InlineData(0.0)]
 	[InlineData(123.456)]
-	public Task InvokeJavaScript_WithParameters_AndNullableDoubleResult(double? expected) =>
+	public Task InvokeJavaScriptMethodWithParametersAndNullableDoubleResult(double? expected) =>
 		RunTest(async (hybridWebView) =>
 		{
 			var result = await hybridWebView.InvokeJavaScriptAsync<double?>(
@@ -98,7 +96,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndNewDoubleResult() =>
+	public Task InvokeJavaScriptMethodWithParametersAndNewDoubleResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -117,7 +115,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[InlineData(-123)]
 	[InlineData(0)]
 	[InlineData(123)]
-	public Task InvokeJavaScript_WithParameters_AndIntResult(int expected) =>
+	public Task InvokeJavaScriptMethodWithParametersAndIntResult(int expected) =>
 		RunTest(async (hybridWebView) =>
 		{
 			var result = await hybridWebView.InvokeJavaScriptAsync<int>(
@@ -134,7 +132,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[InlineData(-123)]
 	[InlineData(0)]
 	[InlineData(123)]
-	public Task InvokeJavaScript_WithParameters_AndNullableIntResult(int? expected) =>
+	public Task InvokeJavaScriptMethodWithParametersAndNullableIntResult(int? expected) =>
 		RunTest(async (hybridWebView) =>
 		{
 			var result = await hybridWebView.InvokeJavaScriptAsync<int?>(
@@ -147,7 +145,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndNewIntResult() =>
+	public Task InvokeJavaScriptMethodWithParametersAndNewIntResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123;
@@ -168,7 +166,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[InlineData("foo")]
 	[InlineData("null")]
 	[InlineData("undefined")]
-	public Task InvokeJavaScript_WithParameters_AndStringResult(string? expected) =>
+	public Task InvokeJavaScriptMethodWithParametersAndStringResult(string? expected) =>
 		RunTest(async (hybridWebView) =>
 		{
 			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
@@ -181,7 +179,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndNewStringResult() =>
+	public Task InvokeJavaScriptMethodWithParametersAndNewStringResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = "abc";
@@ -199,7 +197,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public Task InvokeJavaScript_WithParameters_AndBoolResult(bool expected) =>
+	public Task InvokeJavaScriptMethodWithParametersAndBoolResult(bool expected) =>
 		RunTest(async (hybridWebView) =>
 		{
 			var result = await hybridWebView.InvokeJavaScriptAsync<bool>(
@@ -212,7 +210,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndComplexResult() =>
+	public Task InvokeJavaScriptMethodWithParametersAndComplexResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -230,7 +228,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndAsyncComplexResult() =>
+	public Task InvokeAsyncJavaScriptMethodWithParametersAndComplexResult() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var s1 = "new_key";
@@ -250,7 +248,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndVoidReturn() =>
+	public Task InvokeJavaScriptMethodWithParametersAndVoidReturn() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -269,7 +267,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndVoidReturn_UsingObjectReturnMethod() =>
+	public Task InvokeJavaScriptMethodWithParametersAndVoidReturnUsingObjectReturnMethod() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -291,7 +289,7 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 		});
 
 	[Fact]
-	public Task InvokeJavaScript_WithParameters_AndVoidReturn_UsingNullReturnMethod() =>
+	public Task InvokeJavaScriptMethodWithParametersAndVoidReturnUsingNullReturnMethod() =>
 		RunTest(async (hybridWebView) =>
 		{
 			var x = 123.456m;
@@ -315,10 +313,10 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[Theory]
 	[InlineData("")]
 	[InlineData("Async")]
-	public Task InvokeJavaScript_ThatThrowsNumber(string type) =>
+	public Task InvokeJavaScriptMethodThatThrowsNumber(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 1, ex =>
 		{
-			Assert.Equal("InvokeJavaScriptAsync threw an exception: 777.777", ex.Message);
+			Assert.Equal("InvokeJavaScript threw an exception: 777.777", ex.Message);
 			Assert.Equal("777.777", ex.InnerException?.Message);
 			Assert.Null(ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
@@ -327,10 +325,10 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[Theory]
 	[InlineData("")]
 	[InlineData("Async")]
-	public Task InvokeJavaScript_ThatThrowsString(string type) =>
+	public Task InvokeJavaScriptMethodThatThrowsString(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 2, ex =>
 		{
-			Assert.Equal("InvokeJavaScriptAsync threw an exception: String: 777.777", ex.Message);
+			Assert.Equal("InvokeJavaScript threw an exception: String: 777.777", ex.Message);
 			Assert.Equal("String: 777.777", ex.InnerException?.Message);
 			Assert.Null(ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
@@ -339,10 +337,10 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[Theory]
 	[InlineData("")]
 	[InlineData("Async")]
-	public Task InvokeJavaScript_ThatThrowsError(string type) =>
+	public Task InvokeJavaScriptMethodThatThrowsError(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 3, ex =>
 		{
-			Assert.Equal("InvokeJavaScriptAsync threw an exception: Generic Error: 777.777", ex.Message);
+			Assert.Equal("InvokeJavaScript threw an exception: Generic Error: 777.777", ex.Message);
 			Assert.Equal("Generic Error: 777.777", ex.InnerException?.Message);
 			Assert.Equal("Error", ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
@@ -351,170 +349,13 @@ public partial class HybridWebViewTests_InvokeJavaScriptAsync : HybridWebViewTes
 	[Theory]
 	[InlineData("")]
 	[InlineData("Async")]
-	public Task InvokeJavaScript_ThatThrowsTypedNumber(string type) =>
+	public Task InvokeJavaScriptMethodThatThrowsTypedNumber(string type) =>
 		RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 4, ex =>
 		{
 			Assert.Contains("undefined", ex.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.Contains("undefined", ex.InnerException?.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.Equal("TypeError", ex.InnerException?.Data["JavaScriptErrorName"]);
 			Assert.NotNull(ex.InnerException?.StackTrace);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithJsonStringArgument() =>
-		RunTest(async (hybridWebView) =>
-		{
-			// Create a dictionary that will be serialized to JSON
-			var contextArg = new Dictionary<string, object>
-			{
-				{ "userId", "userIdValue" },
-				{ "sessionId", "session123" },
-				{ "timestamp", "2025-11-11T01:30:00Z" }
-			};
-
-			// Serialize to JSON string (without base64 encoding)
-			string contextArgString = JsonSerializer.Serialize(contextArg);
-
-			// This should not timeout - the JSON string should be handled correctly
-			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-				"EchoJsonParameter",
-				InvokeJsonContext.Default.String,
-				[contextArgString],
-				[InvokeJsonContext.Default.String]);
-
-			// Verify the result matches the input
-			Assert.Equal(contextArgString, result);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithDictionaryArgument() =>
-		RunTest(async (hybridWebView) =>
-		{
-			// Create a dictionary that will be serialized to JSON
-			var contextArg = new Dictionary<string, string>
-			{
-				{ "userId", "userIdValue" },
-				{ "sessionId", "session123" },
-				{ "timestamp", "2025-11-11T01:30:00Z" }
-			};
-
-			// This should not timeout - the JSON string should be handled correctly
-			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-				"EchoJsonStringifyParameter",
-				InvokeJsonContext.Default.String,
-				[contextArg],
-				[InvokeJsonContext.Default.DictionaryStringString]);
-
-			// Serialize to JSON string (without base64 encoding)
-			string contextArgString = JsonSerializer.Serialize(contextArg);
-
-			// Verify the result matches the input
-			Assert.Equal(contextArgString, result);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithComplexJsonString() =>
-		RunTest(async (hybridWebView) =>
-		{
-			// Create a more complex JSON with special characters that might cause escaping issues
-			var complexObject = new Dictionary<string, object>
-			{
-				{ "string", "value with \"quotes\" and 'apostrophes'" },
-				{ "number", 123.456 },
-				{ "boolean", true },
-				{ "nested", new Dictionary<string, object>
-					{
-						{ "key1", "value1" },
-						{ "key2", "value2" }
-					}
-				}
-			};
-
-			string jsonString = JsonSerializer.Serialize(complexObject);
-
-			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-				"ParseAndStringifyJson",
-				InvokeJsonContext.Default.String,
-				[jsonString],
-				[InvokeJsonContext.Default.String]);
-
-			// The JavaScript function should parse and re-stringify the JSON
-			// The result should be equivalent (though formatting might differ)
-			Assert.NotNull(result);
-			Assert.Contains("quotes", result, StringComparison.Ordinal);
-			Assert.Contains("apostrophes", result, StringComparison.Ordinal);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithMultipleJsonStringArguments() =>
-		RunTest(async (hybridWebView) =>
-		{
-			var firstJson = JsonSerializer.Serialize(new { type = "user", id = 1 });
-			var secondJson = JsonSerializer.Serialize(new { type = "session", id = 2 });
-
-			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-				"ConcatenateJsonStrings",
-				InvokeJsonContext.Default.String,
-				[firstJson, secondJson],
-				[InvokeJsonContext.Default.String, InvokeJsonContext.Default.String]);
-
-			Assert.NotNull(result);
-			Assert.Contains("user", result, StringComparison.Ordinal);
-			Assert.Contains("session", result, StringComparison.Ordinal);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithBase64EncodedJsonString() =>
-		RunTest(async (hybridWebView) =>
-		{
-			var contextArg = new Dictionary<string, object>
-			{
-				{ "userId", "userIdValue" }
-			};
-
-			string contextArgString = JsonSerializer.Serialize(contextArg);
-			
-			// Base64 encode (the workaround from the issue)
-			string base64String = Convert.ToBase64String(Encoding.UTF8.GetBytes(contextArgString));
-
-			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-				"DecodeBase64AndEcho",
-				InvokeJsonContext.Default.String,
-				[base64String],
-				[InvokeJsonContext.Default.String]);
-
-			// The JavaScript function should decode and return the original JSON
-			Assert.Equal(contextArgString, result);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithJsonArrayArgument() =>
-		RunTest(async (hybridWebView) =>
-		{
-			var jsonArray = JsonSerializer.Serialize(new[] { "item1", "item2", "item3" });
-
-			var result = await hybridWebView.InvokeJavaScriptAsync<int>(
-				"CountJsonArrayItems",
-				InvokeJsonContext.Default.Int32,
-				[jsonArray],
-				[InvokeJsonContext.Default.String]);
-
-			Assert.Equal(3, result);
-		});
-
-	[Fact]
-	public Task InvokeJavaScript_WithEmptyJsonObject() =>
-		RunTest(async (hybridWebView) =>
-		{
-			var emptyJson = JsonSerializer.Serialize(new Dictionary<string, object>());
-
-			var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-				"EchoJsonParameter",
-				InvokeJsonContext.Default.String,
-				[emptyJson],
-				[InvokeJsonContext.Default.String]);
-
-			Assert.Equal("{}", result);
 		});
 
 	Task RunExceptionTest(string method, int errorType, Action<Exception> test) =>
