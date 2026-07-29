@@ -73,9 +73,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // Set up appearance tracker
             _appearanceTracker = _shellContext?.CreateTabBarAppearanceTracker();
 
-            // Subscribe to property changes
-            VirtualView!.PropertyChanged += OnElementPropertyChanged;
-
             // Register as appearance observer
             if (_shellContext?.Shell is IShellController shellController)
             {
@@ -127,6 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers
             ((IDisconnectable)this).Disconnect();
 
             _tabBarController.ViewControllerSelected -= OnNativeViewControllerSelected;
+            _tabBarController.ShouldSelectViewController = null;
 
             foreach (var kvp in _sectionRenderers.ToList())
             {
@@ -166,8 +164,6 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 ((IShellSectionController)_currentSection).RemoveDisplayedPageObserver(this);
             }
-
-            VirtualView.PropertyChanged -= OnElementPropertyChanged;
 
             if (_shellContext?.Shell is IShellController shellController)
             {
@@ -325,14 +321,6 @@ namespace Microsoft.Maui.Controls.Handlers
         #endregion
 
         #region Property Changes
-
-        void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
-            {
-                GoTo(VirtualView.CurrentItem);
-            }
-        }
 
         void OnShellSectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
