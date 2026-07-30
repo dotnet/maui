@@ -52,12 +52,23 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.OnInvoked();
 		}
 
+		// Per-handler monotonic counter; captured before an async load and re-checked on completion so
+		// a stale untinted load cannot overwrite a newer tinted icon (or vice versa) on THIS SwipeItem.
+		int _iconLoadGeneration;
+
 		internal static async Task LoadFileIconAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem item)
 		{
 			if (handler.PlatformView is not WSwipeItem swipeItem || handler.MauiContext is null)
 			{
 				return;
 			}
+
+			// Use the concrete handler for per-instance state; the Windows mapper is always paired
+			// with the concrete SwipeItemMenuItemHandler, so this cast is safe.
+			var concreteHandler = handler as SwipeItemMenuItemHandler;
+			int generation = concreteHandler is not null
+				? System.Threading.Interlocked.Increment(ref concreteHandler._iconLoadGeneration)
+				: 0;
 
 			if (item.Source is null)
 			{
@@ -90,6 +101,14 @@ namespace Microsoft.Maui.Handlers
 				var service = imageSourceServiceProvider.GetRequiredImageSourceService(source);
 				// Do not use ConfigureAwait(false): WinUI DependencyProperty writes require the UI thread.
 				var result = await service.GetImageSourceAsync(source, scale);
+
+				// Only apply the result if no newer load has started on THIS handler while this one was
+				// in flight. Checking item.Source == source alone is not enough: the source can be
+				// identical while IconColor changed, so a stale untinted result would overwrite a tinted one.
+				if (concreteHandler is not null &&
+					generation != System.Threading.Volatile.Read(ref concreteHandler._iconLoadGeneration))
+					return;
+
 				if (item.Source == source)
 				{
 					swipeItem.IconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;

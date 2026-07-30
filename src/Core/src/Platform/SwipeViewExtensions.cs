@@ -9,6 +9,10 @@ namespace Microsoft.Maui.Platform
 
 		public static Color? GetTextColor(this ISwipeItemMenuItem swipeItemMenuItem)
 		{
+			// Explicit TextColor always wins.
+			if (swipeItemMenuItem.TextColor is Color explicitTextColor)
+				return explicitTextColor;
+
 			Color? backgroundColor = swipeItemMenuItem.Background?.ToColor();
 
 			if (backgroundColor == null || (swipeItemMenuItem.Source is IFontImageSource fontImageSource && fontImageSource.Color != null))

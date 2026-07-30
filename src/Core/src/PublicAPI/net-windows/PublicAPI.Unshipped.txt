@@ -31,4 +31,5 @@ static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(str
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 Microsoft.Maui.ISwipeItemMenuItem.IconColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ISwipeItemMenuItem.TextColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void

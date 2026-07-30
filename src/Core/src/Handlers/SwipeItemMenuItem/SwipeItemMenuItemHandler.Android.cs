@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
@@ -31,7 +32,18 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
-			(handler.PlatformView as TextView)?.UpdateTextColor(view);
+			if (handler.PlatformView is not TextView textView)
+				return;
+
+			// The mapper is PropertyMapper<ISwipeItemMenuItem, ...> so view is always an
+			// ISwipeItemMenuItem at runtime; route through GetTextColor() so an explicit
+			// ISwipeItemMenuItem.TextColor wins over the luminosity-contrast fallback
+			// (base ITextStyle.TextColor is always null on MenuItem via explicit interface impl).
+			Color? resolved = view is ISwipeItemMenuItem swipeItem ? swipeItem.GetTextColor() : view!.TextColor;
+			var textColor = resolved?.ToPlatform();
+
+			if (textColor != null)
+				textView.SetTextColor(textColor.Value);
 		}
 
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)

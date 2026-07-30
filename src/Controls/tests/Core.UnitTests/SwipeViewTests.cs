@@ -754,6 +754,78 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetIconTintColor());
 		}
 
+		[Fact]
+		public void SwipeItemTextColorDefaultsToNull()
+		{
+			Assert.Null(new SwipeItem().TextColor);
+		}
+
+		[Fact]
+		public void TextColorFallsBackToNullWhenBackgroundIsUnset()
+		{
+			var swipeItem = new SwipeItem
+			{
+				Text = "Delete"
+			};
+
+			Assert.Null(((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Fact]
+		public void ExplicitTextColorIsRespected()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				Text = "Delete",
+				TextColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Fact]
+		public void TextColorIsNullWhenFontImageSourceHasItsOwnColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				Text = "Delete",
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
+			};
+
+			Assert.Null(((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Theory]
+		// A dark background needs light text, a light background needs dark text.
+		[InlineData(false, "#000000")]
+		[InlineData(true, "#FFFFFF")]
+		public void TextColorContrastsWithTheBackground(bool darkBackground, string expected)
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = darkBackground ? Colors.Black : Colors.White,
+				Text = "Delete"
+			};
+
+			Assert.Equal(Color.FromArgb(expected), ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		[Fact]
+		public void ExplicitTextColorOverridesFontImageSourceColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.White,
+				Text = "Delete",
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green },
+				TextColor = Colors.Red
+			};
+
+			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
 		static void ForceFullGC()
 		{
 			for (int i = 0; i < 5; i++)

@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IconColor"/>.</summary>
 		public static readonly BindableProperty IconColorProperty = BindableProperty.Create(nameof(IconColor), typeof(Color), typeof(SwipeItem), null, propertyChanged: OnIconColorChanged);
 
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
+		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(SwipeItem), null, propertyChanged: OnTextColorChanged);
+
 		/// <summary>
 		/// Gets or sets the background color of the swipe item. This is a bindable property.
 		/// </summary>
@@ -45,8 +48,10 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// When unset, a <see cref="FontImageSource"/> uses its own <see cref="FontImageSource.Color"/> and falls
 		/// back to a color contrasting <see cref="BackgroundColor"/>, while image icons such as PNG and SVG render
-		/// with their original colors. Setting this property tints every icon type, and it can be bound with
-		/// <see cref="AppThemeBinding"/> to follow the current theme.
+		/// with their original colors. When set, this property tints font, file-based, and URI-based image icons on
+		/// Android, iOS, MacCatalyst, and Windows, and can be bound with <see cref="AppThemeBinding"/> to follow the
+		/// current theme. Stream-based image icons on Windows and all icons on Tizen currently render with their
+		/// original colors regardless of this property.
 		/// </remarks>
 		public Color IconColor
 		{
@@ -54,9 +59,25 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IconColorProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the color used for the swipe item's label text. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// When unset, the label falls back to a color contrasting <see cref="BackgroundColor"/>.
+		/// When set, that color is used as the label color, and it can be bound with
+		/// <see cref="AppThemeBinding"/> to follow the current theme.
+		/// </remarks>
+		public Color TextColor
+		{
+			get { return (Color)GetValue(TextColorProperty); }
+			set { SetValue(TextColorProperty, value); }
+		}
+
 		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
 
 		Color ISwipeItemMenuItem.IconColor => IconColor;
+
+		Color ISwipeItemMenuItem.TextColor => TextColor;
 
 		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 
@@ -64,6 +85,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var swipeItem = (SwipeItem)bindable;
 			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
+		static void OnTextColorChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var swipeItem = (SwipeItem)bindable;
+			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.TextColor));
 		}
 
 		static void OnIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)

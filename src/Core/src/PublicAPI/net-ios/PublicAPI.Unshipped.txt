@@ -34,4 +34,5 @@ override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.get -> string?
 override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.set -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 Microsoft.Maui.ISwipeItemMenuItem.IconColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ISwipeItemMenuItem.TextColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void

@@ -20,12 +20,27 @@ namespace Microsoft.Maui
 		/// <remarks>
 		/// When <see langword="null"/>, a font icon is tinted with its own color (falling back to a
 		/// color contrasting the item background), and image icons render with their original colors.
-		/// When set, the color is applied to every icon type.
+		/// When set, the color is applied to font, file-based, and URI-based image icons on Android,
+		/// iOS, MacCatalyst, and Windows. Stream-based image icons on Windows and all icons on Tizen
+		/// currently render with their original colors regardless of this property.
 		/// </remarks>
 #if NETSTANDARD2_0
 		Color? IconColor { get; }
 #else
 		Color? IconColor => null;
+#endif
+
+		/// <summary>
+		/// Gets the color used for the item's label text.
+		/// </summary>
+		/// <remarks>
+		/// When <see langword="null"/>, the label falls back to a color contrasting the item background.
+		/// When set, that color is used as the label color.
+		/// </remarks>
+#if NETSTANDARD2_0
+		new Color? TextColor { get; }
+#else
+		new Color? TextColor => null;
 #endif
 	}
 }

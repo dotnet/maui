@@ -65,8 +65,10 @@ namespace Microsoft.Maui.Handlers
 		// The tint is resolved while the icon is being applied to the platform view, so reloading the
 		// source is what re-evaluates it. This also guarantees a previously applied tint is cleared
 		// rather than left stale when IconColor changes (for example on an app theme switch).
+		// Route through UpdateValue so user mapper customizations for Source (AppendToMapping /
+		// PrependToMapping) are preserved instead of bypassed by a direct MapSource call.
 		public static void MapIconColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
-			MapSource(handler, view);
+			handler.UpdateValue(nameof(IMenuElement.Source));
 
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{

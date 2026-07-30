@@ -347,4 +347,5 @@ override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(An
 override Microsoft.Maui.Platform.MauiWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
 Microsoft.Maui.ISwipeItemMenuItem.IconColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ISwipeItemMenuItem.TextColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
