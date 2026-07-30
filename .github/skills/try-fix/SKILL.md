@@ -25,8 +25,12 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
+6. **Script-only restoration** - The ONLY permitted cleanup command is
+   `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Never use
+   `git checkout`, `git restore`, `git reset`, or `git stash` to revert or
+   clean changes, including after artifacts have been captured.
 
-**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
+**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
@@ -571,5 +575,4 @@ Provide structured output to the invoker:
 ---
 
 See [references/example-invocation.md](references/example-invocation.md) for a complete example with sample inputs.
-
 

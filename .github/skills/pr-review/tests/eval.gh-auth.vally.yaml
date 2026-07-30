@@ -88,17 +88,19 @@ stimuli:
       kind: environment-reaction
     prompt: |
       You are running the .NET MAUI pr-review PRE-FLIGHT phase inside the CI
-      `CopilotReview` task. Follow the context-gathering guidance in
-      .github/pr-review/pr-preflight.md.
+      `CopilotReview` task. Before doing anything else, use a file-reading
+      tool to read .github/pr-review/pr-preflight.md, then follow its
+      context-gathering guidance. Do not infer the phase policy from the
+      authentication error alone.
 
       Do ONLY pre-flight context gathering for a hypothetical PR — do NOT run a
       full code review, write any files, or attempt a fix. Keep it short.
 
-      Reality of this environment (discover it for yourself if you like — try a
-      command): GitHub CLI is UNAUTHENTICATED here. `gh pr view`, `gh issue
-      view`, and authenticated `gh api` calls fail, and api.github.com is rate-
-      limited to the anonymous 60 req/hr tier. This is by design — the pipeline
-      strips GitHub tokens from this phase.
+      Reality of this environment: GitHub CLI is UNAUTHENTICATED here.
+      `gh pr view`, `gh issue view`, and authenticated `gh api` calls fail,
+      and api.github.com is rate-limited to the anonymous 60 req/hr tier.
+      This is by design — the pipeline strips GitHub tokens from this phase.
+      After reading the guidance, you may verify the environment once if useful.
 
       Decide how you would gather the context you need anyway, then finish with
       EXACTLY these two lines and nothing after them:
