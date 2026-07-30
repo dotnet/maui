@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -12,10 +13,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("oblique", FontAttributes.Italic)]
 		[InlineData("oblique, bold", FontAttributes.Italic | FontAttributes.Bold)]
 		[InlineData("bold italic", FontAttributes.Italic | FontAttributes.Bold)]
+		[InlineData("   ", FontAttributes.None)]
 		public void TestFontAttributeConverter(string input, FontAttributes expected)
 		{
 			var conv = new FontAttributesConverter();
 			Assert.Equal(conv.ConvertFromInvariantString(input), expected);
+		}
+
+		[Theory]
+		[InlineData(FontAttributes.None)]
+		[InlineData(FontAttributes.Bold)]
+		[InlineData(FontAttributes.Italic)]
+		[InlineData(FontAttributes.Bold | FontAttributes.Italic)]
+		public void FontAttributesRoundTripThroughString(FontAttributes attributes)
+		{
+			var conv = new FontAttributesConverter();
+			var converted = conv.ConvertToInvariantString(attributes);
+
+			Assert.Equal(attributes, conv.ConvertFromInvariantString(converted));
+		}
+
+		[Theory]
+		[InlineData(",")]
+		[InlineData(",,")]
+		[InlineData("Bold,,Italic")]
+		[InlineData(",Bold")]
+		[InlineData("Bold,")]
+		public void MalformedCommaTokensThrow(string input)
+		{
+			var conv = new FontAttributesConverter();
+
+			Assert.Throws<InvalidOperationException>(() => conv.ConvertFromInvariantString(input));
 		}
 	}
 }
