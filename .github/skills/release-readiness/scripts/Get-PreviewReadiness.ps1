@@ -3,7 +3,7 @@
 <#
 .SYNOPSIS
     Generates a .NET MAUI preview release-readiness report for a specific
-    net<major>.0-previewN branch.
+    release/<major>.0.1xx-preview<N> branch.
 
 .DESCRIPTION
     This is the "preview lane" companion to Get-ReleaseReadiness.ps1 (SR lane).
@@ -19,8 +19,10 @@
         - CI truth (placeholder — not wired to #35052 yet)
         - Local net11 official-build health when authorized access is available
 
-    GitHub Actions and public-safe runs do not query the internal pipeline and
-    retain only generic public-safe guidance.
+    GitHub Actions never query the internal pipeline. Public-safe runs retain
+    only generic guidance unless a local caller explicitly requests the
+    internal query; any such local evidence is still redacted from public-safe
+    output.
 
     Deterministic by design — does NOT approve, merge, rerun, promote, or
     mutate GitHub / Maestro / darc state.
