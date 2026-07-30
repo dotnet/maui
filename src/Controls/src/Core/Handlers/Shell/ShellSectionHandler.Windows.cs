@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		StackNavigationManager? _navigationManager;
 		WeakReference? _lastShell;
+		List<ShellContent>? _subscribedItems;
 
 		public ShellSectionHandler() : base(Mapper, CommandMapper)
 		{
@@ -57,6 +58,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				((IShellSectionController)_shellSection).ItemsCollectionChanged -= OnItemsCollectionChanged;
 
+				if (_subscribedItems != null)
+				{
+					foreach (var item in _subscribedItems)
+					{
+						item.PropertyChanged -= OnShellContentPropertyChanged;
+					}
+					_subscribedItems.Clear();
+				}
+
 				if (_lastShell?.Target is IShellController shell)
 				{
 					shell.RemoveAppearanceObserver(this);
@@ -83,9 +93,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			_shellSection = (ShellSection)view;
 			if (_shellSection != null)
 			{
-				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
+				_subscribedItems ??= new List<ShellContent>();
+				_subscribedItems.Clear();
 
+				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
 				((IShellSectionController)_shellSection).ItemsCollectionChanged += OnItemsCollectionChanged;
+
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+					_subscribedItems.Add(item);
+				}
 
 				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
 				if (shell != null)
@@ -96,6 +114,49 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
+		// Called when ShellContent.Content changes on a specific tab — forces Windows to
+		// rebuild the navigation stack so the new page becomes visible.
+		// Using PropertyChanged on each ShellContent (rather than AddDisplayedPageObserver)
+		// avoids false triggers during tab switches: OnCurrentItemChanged (the BindableProperty
+		// propertyChanged callback) fires BEFORE the handler's MapCurrentItem (which fires via
+		// the PropertyChanged event), so PendingNavigationTask is not yet set when
+		// DisplayedPage changes during a tab switch.
+		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (VirtualView is null)
+			{
+				return;
+			}
+
+			if (e.PropertyName != ShellContent.ContentProperty.PropertyName)
+			{
+				return;
+			}
+
+			if (sender is not ShellContent shellContent)
+			{
+				return;
+			}
+
+			// Only sync when the changed content belongs to the active tab at root level.
+			if (shellContent != VirtualView.CurrentItem)
+			{
+				return;
+			}
+
+			if (VirtualView.Stack.Count > 1)
+			{
+				return;
+			}
+
+			if (VirtualView.PendingNavigationTask != null)
+			{
+				return;
+			}
+
+			SyncNavigationStack(false, null);
+		}
+
 		void OnNavigationRequested(object? sender, NavigationRequestedEventArgs e)
 		{
 			SyncNavigationStack(e.Animated, e);
@@ -103,8 +164,50 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (_shellSection is null)
+			if (_shellSection is null || _subscribedItems is null)
+			{
 				return;
+			}
+
+			// Handle Reset action - collection has been completely cleared and refilled
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				// Unsubscribe from all previously subscribed items
+				foreach (var item in _subscribedItems)
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+				_subscribedItems.Clear();
+
+				// Subscribe to all items currently in the section
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+					_subscribedItems.Add(item);
+				}
+			}
+			else
+			{
+				// Handle Remove action
+				if (e.OldItems != null)
+				{
+					foreach (ShellContent item in e.OldItems)
+					{
+						item.PropertyChanged -= OnShellContentPropertyChanged;
+						_subscribedItems.Remove(item);
+					}
+				}
+
+				// Handle Add action
+				if (e.NewItems != null)
+				{
+					foreach (ShellContent item in e.NewItems)
+					{
+						item.PropertyChanged += OnShellContentPropertyChanged;
+						_subscribedItems.Add(item);
+					}
+				}
+			}
 
 			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
@@ -159,6 +262,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void DisconnectHandler(WFrame platformView)
 		{
+			if (_shellSection != null)
+			{
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+				_subscribedItems?.Clear();
+			}
+				
 			_navigationManager?.Disconnect(VirtualView, platformView);
 			base.DisconnectHandler(platformView);
 		}

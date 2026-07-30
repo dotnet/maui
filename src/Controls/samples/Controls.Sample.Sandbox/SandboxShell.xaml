@@ -4,19 +4,18 @@
     x:Class="Maui.Controls.Sample.SandboxShell"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Name="shell">
-    <TabBar Shell.TabBarForegroundColor="Green"
-        Shell.TabBarUnselectedColor="Red">
-        <Tab Title="MainPage1" Icon="groceries.png">
-            <ShellContent Icon="groceries.png"
-            Title="Home"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" />
+    <TabBar>
+        <Tab Title="Products" Icon="groceries.png">
+            <ShellContent
+                Title="Products"
+                ContentTemplate="{DataTemplate local:MainPage}"
+                Route="products" />
         </Tab>
-        <Tab Title="MainPage2" Icon="dotnet_bot.png">
-            <ShellContent Icon="dotnet_bot.png"
-            Title="Home"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage2" />
+        <Tab Title="Orders" Icon="dotnet_bot.png">
+            <ShellContent
+                Title="Orders"
+                ContentTemplate="{DataTemplate local:OrdersPage}"
+                Route="orders" />
         </Tab>
     </TabBar>
 </Shell>

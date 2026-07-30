@@ -1,10 +1,14 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls.SourceGen;
 using Microsoft.Maui.Controls.SourceGen.UnitTests.HotReload;
+using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
@@ -109,8 +113,7 @@ public class XamlIncrementalHotReloadE2ETests
 		var generation = harness.Generate(xamlV1, xamlV2);
 		var updateComponentSource = generation[1].UpdateComponentSource;
 		Assert.NotNull(updateComponentSource);
-		Assert.Contains("__version == 0", updateComponentSource!, StringComparison.Ordinal);
-		Assert.Contains("__version = 1", updateComponentSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("if (__version ==", updateComponentSource!, StringComparison.Ordinal);
 		Assert.Contains("\"World\"", updateComponentSource!, StringComparison.Ordinal);
 		Assert.Contains("\"V2\"", updateComponentSource!, StringComparison.Ordinal);
 	}
@@ -142,12 +145,10 @@ public class XamlIncrementalHotReloadE2ETests
 			    <Label Text="Third" />
 			</ContentPage>
 			""";
-
 		using var harness = CreateHarness();
 		var generation = harness.Generate(xamlV1, xamlV2, xamlV3);
-		Assert.Contains("__version == 0", generation[2].UpdateComponentSource!, StringComparison.Ordinal);
-		Assert.Contains("__version == 1", generation[2].UpdateComponentSource!, StringComparison.Ordinal);
-		Assert.Contains("__version = 2", generation[2].UpdateComponentSource!, StringComparison.Ordinal);
+		Assert.All(generation.Versions, version => Assert.NotNull(version.UpdateComponentSource));
+		Assert.DoesNotContain("if (__version ==", generation[2].UpdateComponentSource!, StringComparison.Ordinal);
 
 		harness.RunLive(generation, live =>
 		{
@@ -165,8 +166,291 @@ public class XamlIncrementalHotReloadE2ETests
 		});
 	}
 
+	/// <summary>
+	/// Regression for the XIHR versioning determinism bug (Tomas Matousek). Editing a property to an
+	/// INVALID value and then reverting it must leave the generator in a state where the generated
+	/// output for the (now identical to baseline) XAML compiles cleanly and does not retain the
+	/// invalid intermediate value. Today's monotonic __version chain accumulates every patch, so the
+	/// invalid "Level22" block lingers in UpdateComponent() and the output fails to compile.
+	/// </summary>
 	[Fact]
-	public void IdenticalXaml_NoUCGenerated()
+	public void RevertToOriginal_ProducesCompilableOutput_WithoutStalePatch()
+	{
+		string Page(string headingLevel) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label Text="Hi" SemanticProperties.HeadingLevel="{{headingLevel}}" />
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(Page("Level2"), Page("Level22"), Page("Level2"));
+		var reverted = generation[2];
+
+		Assert.DoesNotContain("Level22", reverted.InitializeComponentSource!, StringComparison.Ordinal);
+		Assert.NotNull(reverted.UpdateComponentSource);
+		Assert.DoesNotContain("Level22", reverted.UpdateComponentSource!, StringComparison.Ordinal);
+
+		var compilation = harness.Compile(reverted);
+		Assert.True(compilation.PeImage.Length > 0, "Compiled assembly should not be empty");
+	}
+
+	/// <summary>
+	/// Determinism + reverse-transition (Tomas Matousek's determinism principle + Kirill's revert
+	/// requirement). The generated content identity (<c>__version</c>) is a pure function of the
+	/// current XAML content — so a revert to identical content restores the identical identity, not
+	/// an ever-growing counter. And the reverse edit's <c>UpdateComponent()</c> carries an absolute
+	/// patch that restores the baseline value on live instances.
+	/// </summary>
+	[Fact]
+	public void ContentHash_IsDeterministic_And_RevertRestoresIdentity()
+	{
+		string Page(string text) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label Text="{{text}}" />
+			</ContentPage>
+			""";
+
+		var v1 = Page("Hello");
+		var v2 = Page("World");
+		int h1 = GeneratorHelpers.StableContentHash(v1);
+		int h2 = GeneratorHelpers.StableContentHash(v2);
+		Assert.NotEqual(h1, h2); // different content => different identity
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(v1, v2, v1);
+		var icV1 = generation[0].InitializeComponentSource!;
+		var icV2 = generation[1].InitializeComponentSource!;
+		var ucV2 = generation[1].UpdateComponentSource;
+		var icV3 = generation[2].InitializeComponentSource!;
+		var ucV3 = generation[2].UpdateComponentSource;
+
+		// Fresh instances stamp the content hash of their own generation.
+		Assert.Contains($"__version = {h1};", icV1, StringComparison.Ordinal);
+		Assert.Contains($"__version = {h2};", icV2, StringComparison.Ordinal);
+		// Determinism: the reverted generation (byte-identical to V1) reproduces V1's identity exactly —
+		// NOT h2+1 or any history-dependent value. This is the property the old monotonic counter broke.
+		Assert.Contains($"__version = {h1};", icV3, StringComparison.Ordinal);
+
+		// Forward edit's UC applies the new value (its non-empty body is also the XAML-change signal)...
+		Assert.NotNull(ucV2);
+		Assert.Contains("\"World\"", ucV2!, StringComparison.Ordinal);
+
+		// ...and the reverse edit's UC brings it back to the V1 value (reverse transition), without
+		// retaining the intermediate "World".
+		Assert.NotNull(ucV3);
+		Assert.Contains("\"Hello\"", ucV3!, StringComparison.Ordinal);
+		Assert.DoesNotContain("\"World\"", ucV3!, StringComparison.Ordinal);
+	}
+
+	/// <summary>
+	/// The strongest determinism guarantee (Tomas Matousek's purity principle): the generated
+	/// <c>InitializeComponent</c> for a given XAML must be BYTE-IDENTICAL regardless of how that
+	/// content was reached. Both sources here come from the SAME generator driver/options, so edit
+	/// history is the only variable: phase 1 (<c>icV1</c>) generates V1 from a clean state; phase 3
+	/// (<c>icV3</c>) reaches byte-identical V1 content by reverting an edit (V1→V2→V1). If any embedded
+	/// value (registry node IDs, the <c>__version</c> content hash, etc.) depended on edit history, the
+	/// two would differ; they must not. Covers a property-only edit AND a structural edit (added child).
+	/// </summary>
+	[Theory]
+	[InlineData("<Label Text=\"Hi\" />", "<Label Text=\"Bye\" />")]          // property-only edit
+	[InlineData("<Label Text=\"Hi\" />", "<Label Text=\"Hi\" /><Button Text=\"New\" />")] // structural edit (added child)
+	public void RevertedGeneration_InitializeComponent_IsByteIdentical_ToInitialGeneration(string bodyV1, string bodyV2)
+	{
+		string Page(string body) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Anchor" />
+			        {{body}}
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var v1 = Page(bodyV1);
+		var v2 = Page(bodyV2);
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(v1, v2, v1);
+
+		// InitializeComponent for identical content must be identical regardless of edit history —
+		// every value it embeds is a pure function of the current content, not of the path taken.
+		Assert.Equal(generation[0].InitializeComponentSource, generation[2].InitializeComponentSource);
+	}
+
+	/// <summary>
+	/// Regression for the inherited-XAML build break introduced by always-emitting UpdateComponent():
+	/// a XAML class that derives from another class exposing an <c>internal UpdateComponent()</c> emits
+	/// its own <c>UpdateComponent()</c>, which hides the base's (CS0108). Since UpdateComponent() is now
+	/// emitted on every generation — not just on edit — this must compile cleanly. The generated UC file
+	/// suppresses CS0108 (the hiding is intentional: each level patches its own XAML tree).
+	/// </summary>
+	[Fact]
+	public void UpdateComponent_OnInheritedXamlClass_CompilesWithoutHidingWarning()
+	{
+		const string xaml = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <Label Text="Hi" />
+			</ContentPage>
+			""";
+
+		// Code-behind: MainPage derives from a base that ALSO declares an internal UpdateComponent().
+		const string stub = """
+			namespace TestE2EApp;
+
+			public partial class BaseXamlPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				internal void UpdateComponent() { }
+			}
+
+			public partial class MainPage : BaseXamlPage
+			{
+				private partial void InitializeComponent();
+				public void InitializeComponentRuntime() { }
+				public MainPage() { InitializeComponent(); }
+			}
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(UpdateComponent_OnInheritedXamlClass_CompilesWithoutHidingWarning),
+			PageClass,
+			stub);
+		var generation = harness.Generate(xaml);
+		Assert.NotNull(generation[0].UpdateComponentSource);
+		var compilation = harness.Compile(generation[0]).Compilation;
+
+		// CS0108 (member hides inherited member) must NOT appear at ANY severity — the pragma in the
+		// generated UC file must suppress it. (Checked independently of general errors so the test
+		// would fail if the pragma were missing, regardless of warnings-as-errors configuration.)
+		var cs0108 = compilation.GetDiagnostics().Where(d => d.Id == "CS0108").ToArray();
+		Assert.Empty(cs0108);
+	}
+
+	/// <summary>
+	/// Diagnostics classification (Kirill Ovchinnikov's requirement), the "empty UpdateComponent" design.
+	/// <c>UpdateComponent()</c> is always present (member stability / no EnC churn), but its BODY is empty
+	/// when a generation carries no XAML change and non-empty (a patch) when the XAML changed. The runtime
+	/// classifies a delta as a XAML change — SYNCHRONOUSLY, pre-dispatch, on
+	/// <c>HotReloadRequestedEventArgs.HandledTypes</c>, exactly where XamlTools reads it today — by
+	/// inspecting whether <c>UpdateComponent()</c>'s body is non-empty. An empty UC (a page whose XAML did
+	/// not change, e.g. a pure C#/code-behind edit) is correctly NOT reported as a XAML change. No live
+	/// instance or main-thread dispatcher is needed: classification is a property of the type's UC body.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void UpdateRequested_ReportsXamlChange_WhenUpdateComponentBodyIsNonEmpty()
+	{
+		const string switchName = "Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled";
+		AppContext.TryGetSwitch(switchName, out var previousSwitch);
+		AppContext.SetSwitch(switchName, true);
+
+		string Page(string text) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="{{text}}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var xamlV1 = Page("Hello");
+		var xamlV2 = Page("World");
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV1, xamlV2);
+		Assert.NotNull(generation[0].UpdateComponentSource);
+		Assert.NotNull(generation[1].UpdateComponentSource);
+
+		IReadOnlyList<Type>? lastHandled = null;
+		EventHandler<HotReloadRequestedEventArgs> capture = (_, e) => lastHandled = e.HandledTypes;
+		HotReloadDiagnostics.UpdateRequested += capture;
+		try
+		{
+			harness.RunLive(generation, live =>
+			{
+				var page = live.GetInstance<ContentPage>();
+				var pageType = page.GetType();
+				XamlComponentRegistry.Unregister(page);
+
+				// The loaded type's UpdateComponent() is EMPTY → the update is NOT a XAML change.
+				XamlIncrementalHotReloadHandler.UpdateApplication([pageType]);
+				Assert.NotNull(lastHandled);
+				Assert.DoesNotContain(pageType, lastHandled!);
+
+				// Apply the V1→V2 delta: UpdateComponent()'s body becomes non-empty. The same notification
+				// now classifies the type as a XAML change.
+				live.ApplyUpdate<ContentPage>(1);
+				XamlIncrementalHotReloadHandler.UpdateApplication([pageType]);
+				Assert.NotNull(lastHandled);
+				Assert.Contains(pageType, lastHandled!);
+			});
+		}
+		finally
+		{
+			HotReloadDiagnostics.UpdateRequested -= capture;
+			AppContext.SetSwitch(switchName, previousSwitch);
+		}
+	}
+
+	/// <summary>
+	/// The crown-jewel runtime proof of reverse version transitions (Kirill's requirement): a live
+	/// instance created at V1 (Text="Hello"), hot-reloaded forward to V2 (Text="World"), then
+	/// hot-reloaded BACKWARD to V1 (Text="Hello") — the live object's property must return to the
+	/// baseline value. Because UpdateComponent() exists from the first generation, every transition is
+	/// a method-body UPDATE (no member churn), and because patches are absolute the reverse patch
+	/// deterministically restores the earlier value.
+	/// </summary>
+	[MetadataUpdateFact]
+	public void PropertyRevert_AppliedViaHotReload_ReturnsToBaseline()
+	{
+		string Page(string text) => $$"""
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestE2EApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="{{text}}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var xamlV1 = Page("Hello");
+		var xamlV2 = Page("World");
+		var xamlV3 = Page("Hello"); // revert — byte-identical to V1
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV1, xamlV2, xamlV3);
+		Assert.All(generation.Versions, version => Assert.NotNull(version.UpdateComponentSource));
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var label = ((Layout)page.Content!).Children.OfType<Label>().First();
+			Assert.Equal("Hello", label.Text);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Same(label, ((Layout)page.Content!).Children.OfType<Label>().First());
+			Assert.Equal("World", label.Text);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(2));
+			Assert.Same(label, ((Layout)page.Content!).Children.OfType<Label>().First());
+			Assert.Equal("Hello", label.Text);
+		});
+	}
+
+	[Fact]
+	public void IdenticalXaml_EmitsEmptyUC()
 	{
 		const string xaml = """
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -179,7 +463,10 @@ public class XamlIncrementalHotReloadE2ETests
 
 		using var harness = CreateHarness();
 		var generation = harness.Generate(xaml, xaml);
-		Assert.Null(generation[1].UpdateComponentSource);
+		var updateComponentSource = generation[1].UpdateComponentSource;
+		Assert.NotNull(updateComponentSource);
+		Assert.Contains("internal void UpdateComponent()", updateComponentSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry", updateComponentSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]

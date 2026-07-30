@@ -111,9 +111,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var context =
-					nativeToolbar.Context?.GetThemedContext() ??
-					nativeToolbar.Context ??
-					toolbar.Handler?.MauiContext?.Context;
+				nativeToolbar.Context?.GetThemedContext() ??
+				nativeToolbar.Context ??
+				toolbar.Handler?.MauiContext?.Context;
 
 			if (toolbar.BackButtonVisible)
 			{

@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Media
 				pitch = ProsodyPitch(options.Pitch);
 
 			if (options?.Rate.HasValue ?? false)
-				rate = (options.Rate.Value * 100f).ToString(CultureInfo.InvariantCulture) + "%";
+				rate = ProsodyRate(options.Rate.Value);
 
 			// SSML generation
 			var ssml = new StringBuilder();

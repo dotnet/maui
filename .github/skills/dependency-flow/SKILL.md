@@ -182,7 +182,7 @@ This section covers how MAUI's Maestro subscriptions are authored, modified, and
 | Default channel mappings | `configuration/default-channels/dotnet-maui.yml` and `configuration/default-channels/11.0.1xx-previewN.yml` |
 | Active config branch | `production` — Maestro/BAR only ingests config from `production`. Subscriptions are **inert** until the config PR merges. |
 
-### MAUI subscription baseline (as of 2026-06-02)
+### MAUI subscription baseline (as of 2026-07-27)
 
 | Target branch | Source repos | Channel | Frequency |
 |---------------|--------------|---------|-----------|
@@ -192,34 +192,36 @@ This section covers how MAUI's Maestro subscriptions are authored, modified, and
 | `net11.0` | dotnet-optimization | `.NET 11` | everyWeek |
 | `main` | xharness | `.NET Eng - Latest` | everyWeek |
 | `release/11.0.1xx-previewN` (when active) | android, macios | `.NET 11.0.1xx SDK Preview N` | everyDay, batchable |
-| `release/11.0.1xx-previewN` (when active) | dotnet | `.NET 11.0.1xx SDK Preview N` | none, batchable |
 
 Always verify the current state with `darc get-subscriptions --target-repo https://github.com/dotnet/maui` before making changes — the baseline above ages out.
 
-### The combined-PR pattern for start-of-preview (3 subs in 1 PR)
+> **Preview VMR policy:** do **not** add a `dotnet/dotnet` subscription to a
+> `release/11.0.1xx-previewN` branch. The Maestro preview feed can differ from
+> the official SDK/runtime build selected by the release source of truth. Resolve
+> that official build locally, update MAUI's SDK/VMR pin in a focused PR, and
+> validate the resulting pin directly.
 
-`darc add-subscription` defaults to opening **one PR per call**. The cleaner pattern is to share a single topic branch across all three calls, **review the staged diff**, and open ONE PR at the end. Note the explicit review step — without it, an agent can silently create a PR with the wrong channel, target branch, or source repo (the exact failure class this section is trying to prevent).
+### The combined-PR pattern for start-of-preview (2 subs in 1 PR)
+
+`darc add-subscription` defaults to opening **one PR per call**. The cleaner pattern is to share a single topic branch across both calls, **review the staged diff**, and open ONE PR at the end. Note the explicit review step — without it, an agent can silently create a PR with the wrong channel, target branch, or source repo (the exact failure class this section is trying to prevent).
 
 ```bash
 # Pick a topic branch name once. Quote the assignment so the angle-bracket
 # placeholders aren't parsed as shell redirection if literally pasted.
 BRANCH="users/<alias>/maui-preview5-subs"
 
-# 1. Stage all 3 subs on the same branch with --no-pr (each call appends one entry).
+# 1. Stage both subs on the same branch with --no-pr (each call appends one entry).
 #    Do NOT pass -q here — leave the per-call confirmation prompts in so you eyeball
 #    each set of inputs (channel, source, target branch) before darc commits.
 #
-#    Frequency choice is NOT uniform across the 3 source repos. Always verify
+#    Always verify
 #    against the prior preview's production config (`darc get-subscriptions
 #    --target-repo https://github.com/dotnet/maui --target-branch release/<prev>`)
-#    before staging. The pattern actually shipped for Preview 5 (per merged
-#    maestro-configuration PR #61723) was:
+#    before staging. The current preview policy is:
 #      dotnet/android  → everyDay  (small daily deltas, batched)
 #      dotnet/macios   → everyDay  (small daily deltas, batched)
-#      dotnet/dotnet   → none      (VMR is large; manual trigger only via
-#                                   `darc trigger-subscriptions --id <guid>`)
-#    Copying this loop verbatim with `everyDay` for the VMR will produce noisy
-#    daily PRs against the preview branch.
+#      dotnet/dotnet   → NO SUBSCRIPTION. Reconcile the SDK/VMR pin locally
+#                        against the official release build instead.
 for SRC in android macios; do
   darc add-subscription \
     --no-pr \
@@ -231,17 +233,6 @@ for SRC in android macios; do
     --update-frequency everyDay \
     --batchable
 done
-
-# dotnet/dotnet (VMR) — manual frequency on preview branches.
-darc add-subscription \
-  --no-pr \
-  --configuration-branch "$BRANCH" \
-  --channel ".NET 11.0.1xx SDK Preview 5" \
-  --source-repo https://github.com/dotnet/dotnet \
-  --target-repo https://github.com/dotnet/maui \
-  --target-branch release/11.0.1xx-preview5 \
-  --update-frequency none \
-  --batchable
 ```
 
 ```bash
@@ -260,7 +251,7 @@ PR_ID=$(az repos pr create \
   --source-branch "$BRANCH" \
   --target-branch production \
   --draft true \
-  --title "Add subscriptions for .NET 11.0.1xx SDK Preview 5 => dotnet/maui (android, macios, dotnet)" \
+  --title "Add subscriptions for .NET 11.0.1xx SDK Preview 5 => dotnet/maui (android, macios)" \
   --description "..." \
   --query pullRequestId -o tsv)
 
@@ -270,7 +261,7 @@ echo "Draft PR: https://dev.azure.com/dnceng/internal/_git/maestro-configuration
 ```bash
 # 3. REQUIRED gate: open the draft PR's "Files changed" view in AzDO and confirm
 #    in the diff:
-#   - Exactly 3 new subscription blocks were added to
+#   - Exactly 2 new subscription blocks were added to
 #     configuration/subscriptions/dotnet-maui.yml
 #   - Channel string matches the EXACT band+stage for this preview, modulo
 #     casing of the "Preview"/"preview" token only (see "Channel-name casing
@@ -285,11 +276,13 @@ echo "Draft PR: https://dev.azure.com/dnceng/internal/_git/maestro-configuration
 #     Pattern: ".NET <band> SDK <Preview|preview> <N>" where <band> matches
 #     the target branch's band (10.0.1xx, 11.0.1xx, ...) and <N> matches the
 #     preview number in the target branch name.
-#   - Source Repository URL is one of dotnet/android, dotnet/dotnet, dotnet/macios
+#   - Source Repository URL is one of dotnet/android or dotnet/macios
 #   - Target Repository URL is https://github.com/dotnet/maui
 #   - Target Branch is release/11.0.1xx-preview5
-#   - Update Frequency: everyDay for android/macios; none for dotnet (VMR)
+#   - Update Frequency: everyDay for android/macios
 #   - Batchable: true
+#   - No dotnet/dotnet subscription block is present. SDK/VMR reconciliation is
+#     local and must use the official release build as its source of truth.
 # If any of these are wrong, abandon the draft PR AND start over with a NEW
 # $BRANCH name (e.g., append "-v2") before restaging from step 1. Re-running
 # step 1 with the same --configuration-branch APPENDS to the existing branch
@@ -310,7 +303,9 @@ az repos pr update --organization https://dev.azure.com/dnceng --id "$PR_ID" --d
 - [PR 60474](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/60474) — Preview 4. Manual-combine of 3 separate PRs (older pattern).
 - [PR 61723](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61723) — Preview 5. Single shared `--configuration-branch` (cleaner pattern).
 
-Either pattern produces the same end state: 3 commits, each adding 8 lines to `dotnet-maui.yml`, totaling 24 lines.
+These historical PRs included a VMR subscription. Use them only for the shared-branch
+mechanics; do **not** copy their `dotnet/dotnet` block. The current end state is two
+subscription blocks (Android + macOS/iOS), normally 16 YAML lines.
 
 ### Failure mode: channel ↔ branch mismatch ([PR #35364](https://github.com/dotnet/maui/pull/35364) trap)
 
@@ -381,13 +376,229 @@ Exemplar: [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configur
 
 When standing up a new preview, **confirm the new preview's subs are in place before removing the old preview's** to avoid a flow gap.
 
+## Preview release readiness (authoritative source + access tiers)
+
+Use this when asked things like *"is .NET MAUI Preview N release-ready?"*, *"which
+build is the official Preview N?"*, or *"are we good to ship Preview N?"* **while
+assessing a preview** (not GA or servicing).
+
+**Why a special source:** the build that releases.dot.net has *blessed* as the
+official preview is designated in an internal **.NET Release Tracker** plugin.
+Public BAR/Maestro data can enumerate candidate builds but **cannot, on its own,
+tell you which staged build is the blessed one**. This is exactly the trap from
+[PR #35364](https://github.com/dotnet/maui/pull/35364) / the Preview 6 cycle: two
+same-band VMR builds (e.g. `…26325.125` vs `…26326.122`) look interchangeable
+until you know which BAR id the release designates.
+
+The plugin lives in a **private** marketplace repo and is **double-gated** — you
+need (1) GitHub read access to that repo to load it, and (2) an authorized Azure
+AD identity for it to return data. So referencing it from this public repo is
+safe: a user without access simply can't load it or pull embargoed data.
+
+### Step 1 — classify access (deterministic)
+
+```bash
+pwsh ./.github/skills/dependency-flow/scripts/Get-PreviewReleaseReadiness.ps1
+# -> RELEASE_TRACKER_STATUS=NO_ACCESS | ACCESS_ON_INACTIVE_ACCOUNT | AVAILABLE_NOT_ENABLED | AVAILABLE_ENABLED
+```
+
+The script only *classifies* the environment (GitHub read access + whether the
+plugin is locally enabled). It fetches **no** release data and always exits 0.
+
+### Step 2 — branch on the status token
+
+| `RELEASE_TRACKER_STATUS` | What it means | What to do |
+|--------------------------|---------------|------------|
+| `AVAILABLE_ENABLED` | Caller has access **and** the `dotnet-release-tracker` plugin is enabled | **Invoke the `dotnet-release-tracker` skill** — it is a Copilot **skill/plugin, NOT an MCP server tool**, so do **not** search the MCP tool list for a `release-tracker` tool and conclude it's unavailable. Run it the normal skill way (it self-documents a PowerShell script — e.g. `pwsh scripts/Get-DotNetReleaseStatus.ps1`) for the authoritative SDK/runtime + BAR id, then cross-reference with BAR/Maestro for asset/feed details. If the gate says `AVAILABLE_ENABLED` but the skill isn't loaded in this session yet, **reload extensions / restart the session and retry** — enabled-but-not-yet-loaded is **not** a `NO_ACCESS` condition. |
+| `AVAILABLE_NOT_ENABLED` | Caller has access but the plugin is **not** enabled locally | Tell the user they have access and offer the **user-scope opt-in** below. After they opt in and reload, re-run Step 1 → `AVAILABLE_ENABLED`. |
+| `ACCESS_ON_INACTIVE_ACCOUNT` | The **active** `gh` identity can't read the repo, but a logged-in but **inactive** `gh` account (named in `reason`/`inactiveAccount`) can — the plugin loads under the *active* identity, so it still can't be used as-is | Tell the user access exists under `<account>` and to run `gh auth switch --user <account>`, then re-run Step 1. **Do not** invoke the plugin or claim availability under the current identity. (Only appears when access is confirmed on some account, so it never leaks to a true no-access user.) |
+| `NO_ACCESS` | Access can't be confirmed on **any** logged-in account (no access, or `gh` missing/unauthenticated) | Fall back to PUBLIC data only. For the official-build line, report the **latest build promoted to the public `.NET 11.0.1xx SDK Preview N` channel** (public BAR/Maestro) as a *display-only candidate*, and **label it**: "source: public preview feed — may not be the final official build." VMR validation remains **UNKNOWN**: do not compare/update MAUI's VMR pin or render ✅ from this candidate. **Do not** name or hint at the private plugin/tracker tool, and don't imply the user is missing a tool — see privacy guardrail. |
+
+> **Source labels (avoid the per-component over-claim):** the authoritative
+> release source is **SDK/runtime-level only**. When access permits, label
+> **SDK/runtime version + VMR pin authority → official release source**.
+> Label **per-component Android/macOS-iOS builds → BAR/Maestro**; there is no
+> official-source Android/macOS-iOS build field. Never classify a public-feed
+> SDK/runtime candidate or VMR branch-tip match as authoritative.
+
+### User-scope opt-in (Tier B) — do NOT commit this
+
+Add to the user's **personal** `~/.copilot/settings.json` (merge with existing
+keys; this is intentionally *not* committed to the repo so forks and no-access
+users are unaffected):
+
+```jsonc
+{
+  "extraKnownMarketplaces": {
+    "dotnet-release": { "source": { "source": "github", "repo": "dotnet/release" } }
+  },
+  "enabledPlugins": {
+    "dotnet-release-tracker@dotnet-release": true
+  }
+}
+```
+
+Then reload extensions (or restart the session) so the plugin loads.
+
+### 🛡️ Guardrails
+
+- **Privacy default:** when the status is `NO_ACCESS`, never reveal, hint at, or
+  apologize for the private plugin/tracker **tool**, and never surface embargoed
+  data (unreleased blessed BAR ids, internal coordinates). This guardrail protects
+  the *tool and its private data* — it does **not** forbid the honest, publicly-true
+  statement that the public feed's newest build may not be the final official
+  build (see *Honest limitation* below). So: answer from public data, label your
+  source, and caveat its limits — but don't say "there's a gated tracker I can't
+  reach." The gate script enforces the tier by treating *any* unconfirmed-access
+  case as `NO_ACCESS`.
+- **Never** copy internal coordinates (Azure AD resource IDs / `api://…`
+  audiences, backend service hostnames, internal endpoint paths) from the plugin
+  into this public repo. The only sanctioned reference is the *marketplace
+  pointer* (repo name + plugin name) used above.
+- **No fetch-and-exec.** Do not download and run remote scripts to obtain release
+  data; use the installed plugin through normal skill invocation.
+- **Comment-only on GitHub.** As everywhere in this skill, never approve, merge, or
+  request changes on PRs — only post comments.
+- **Honest limitation (public-feed fallback):** on the public fallback path,
+  report the **latest build promoted to the public `.NET 11.0.1xx SDK Preview N`
+  channel** as the best-available *display-only candidate* — but present it
+  **explicitly labeled** as feed-sourced, e.g. "🔎 Candidate from the **public
+  Preview N feed** (BAR #NNNNNN @ `<sha>`) — this is the newest build promoted to
+  the public channel, **not** a confirmed official (blessed) build; the final
+  official build is designated at release time and may differ." Give the concrete
+  candidate + caveat rather than either silently omitting the line or guessing a
+  single official build. Set VMR validation to **UNKNOWN** and do not recommend a
+  pin update until the official SDK/runtime build is known.
+
+### Wiring checks: is Preview N actually plumbed? (subscriptions + feed drift + component pins)
+
+The blessed-build lookup above answers *"which build is official?"*. These three
+mechanical checks answer *"is the preview branch actually receiving flow, is its
+promoted feed current, and are the component builds it bundles coherent?"* — a preview
+can have a blessed build yet still be mis-plumbed (branch cut, build exists, but nothing
+flows in; the feed lags the branch; or its android/macios pins diverged from the inflight
+branch). Checks A/B and the Android/macOS-iOS half of Check C use **public**
+BAR/Maestro + git. Check C's VMR half uses the official SDK/runtime source selected
+through the access-tier workflow above.
+
+#### Check A — are the subscriptions wired for `release/11.0.1xx-previewN`?
+
+Three prerequisites must **all** hold for the preview to receive dependency flow:
+
+1. **Branch exists:** `git ls-remote origin refs/heads/release/11.0.1xx-previewN` returns a sha.
+2. **Default-channel mapping exists and is enabled:** MCP `maestro_default_channels(repository="https://github.com/dotnet/maui")` (or `darc get-default-channels --source-repo https://github.com/dotnet/maui`) has an enabled row `release/11.0.1xx-previewN → .NET 11.0.1xx SDK Preview N`.
+3. **Subscriptions exist and are enabled:** MCP `maestro_subscriptions(targetRepository="https://github.com/dotnet/maui", targetBranch="release/11.0.1xx-previewN")` returns the baseline **two enabled** rows — android + macios (`everyDay`, batchable), both on channel `.NET 11.0.1xx SDK Preview N` (see the baseline table above). A dotnet/VMR row is a configuration error, not a missing prerequisite.
+
+Interpretation:
+
+| Observed | Meaning | Report |
+|----------|---------|--------|
+| Branch + default-channel + 2 subs | Fully wired | ✅ OK |
+| Branch + default-channel present, **0 subs** (or missing android/macios) | Start-of-preview gap: branch cut (possibly with a promoted build already) but the prior preview's subs were never rolled forward — no upstream Android/macOS-iOS flow into the branch | ℹ️ **FYI note** (not a ship blocker) — name the missing source repos |
+| A dotnet/dotnet subscription is present | VMR flow is incorrectly using the Maestro preview feed instead of the official release source of truth | ⚠️ Remove it; reconcile the SDK/VMR pin locally |
+| Sub on wrong channel/band/stage/frequency | The [PR #35364](https://github.com/dotnet/maui/pull/35364) mis-wire class (see "Channel-name casing gotcha") | ⚠️ Flag the specific sub |
+
+**Remediation (only when the user asks to fix it):** stand the missing subs up with **the combined-PR pattern** above — copy it verbatim, swapping `preview5`→`previewN` and `Preview 5`→`Preview N` throughout; do **not** invent new commands, and honor its explicit-confirmation + draft-PR review gate. If the default-channel mapping is also missing, add it first (lifecycle table, row 1). Subs are **inert until the `maestro-configuration` config PR merges to `production`**.
+
+**VMR handoff:** after Android/macOS-iOS wiring is active, resolve the official
+Preview N SDK/runtime build through the release source of truth. Compare it with
+MAUI's `Microsoft.NET.Sdk` / `Microsoft.NETCore.App.Ref` version and SHA pins,
+perform the dependency update locally, and open a focused PR targeting the
+Preview N branch. Do not infer the official VMR from the newest Maestro feed build.
+
+#### Check B — does the promoted feed match the branch? (feed-vs-branch drift)
+
+"Latest version on the Preview N feed" = the newest MAUI build promoted to the
+`.NET 11.0.1xx SDK Preview N` channel; "what's in .NET MAUI" = the current HEAD of
+`release/11.0.1xx-previewN`.
+
+```bash
+# feed side (BAR) — the latest build promoted to the preview channel:
+#   MCP maestro_latest_build(repository="https://github.com/dotnet/maui",
+#                            channelName=".NET 11.0.1xx SDK Preview N")  -> .commit
+# branch side (git):
+git rev-parse origin/release/11.0.1xx-previewN
+```
+
+Compare the feed build's commit to the branch HEAD:
+
+| Comparison | Meaning | Report |
+|------------|---------|--------|
+| Equal | The promoted build **is** the branch HEAD — feed current | ✅ OK |
+| Feed commit is an ancestor of the branch HEAD (`git merge-base --is-ancestor <feedCommit> origin/release/11.0.1xx-previewN` → exit 0, and they differ) | Branch has moved **ahead** of the last promoted build — feed stale | ⚠️ Flag; report how many commits ahead (`git rev-list --count <feedCommit>..origin/release/11.0.1xx-previewN`) |
+| Feed commit not on the branch | Build promoted from a different ref — investigate, don't guess | ⚠️ Flag |
+
+**Version cross-check (optional, human-readable):** the branch produces
+`11.0.0-preview.N.<date>.<rev>` (from `eng/Versions.props`: `MajorVersion.MinorVersion.PatchVersion` + `preview` + `PreReleaseVersionIteration=N`); the feed's latest build should carry the same `preview.N` stamp. A band/stage mismatch (feed shows `preview.5` on a `-preview6` branch) is the same mis-wire signal as Check A.
+
+**Worked example (net11 Preview 6, live 2026-07-07):** `maestro_latest_build(".NET 11.0.1xx SDK Preview 6")` → build #321033 @ `6e35dc58d0…`; `git rev-parse origin/release/11.0.1xx-preview6` → `6e35dc58d0…` — **equal, feed current** (produced version `11.0.0-preview.6.*`).
+
+#### Check C — are the component pins coherent? (Android/macOS-iOS source + official VMR)
+
+MAUI bundles specific **dotnet/android**, **dotnet/macios**, and **dotnet/dotnet** (VMR runtime/SDK) builds, pinned in `eng/Version.Details.xml`. A natural question for a preview is *"which android/macios builds is MAUI shipping — are they the right ones?"*
+
+> **Authority boundary:** the `dotnet-release-tracker` plugin exposes
+> **SDK/runtime-level** release data (`RuntimeVersion`, `SdkVersion`, `Stage`, …)
+> but no per-component Android/macOS-iOS build fields. Therefore Android/macOS-iOS
+> cut coherence uses public git + BAR/Maestro, while VMR selection uses the official
+> SDK/runtime build from the release source of truth.
+
+> **Two authorities, intentionally split.** Android/macOS-iOS flow through
+> Preview N subscriptions and can legitimately advance after the MAUI branch is
+> cut. Verify those pins against each component's same-named
+> `release/11.0.1xx-previewN` branch plus the expected Preview N stage/band; do
+> not compare them with mutable `netN.0` or require equality with component tip.
+> VMR is different: compare MAUI's SDK/runtime version + SHA with the
+> **official SDK/runtime build** from the release source of truth. Do not use
+> `netN.0`, component branch tip, or the Maestro preview feed to select or
+> validate VMR.
+
+Read the anchor dependencies from the MAUI preview branch. Verify Android/macOS-iOS
+against their Preview N source branches, then separately compare VMR with the
+official release build:
+
+```bash
+# dotnet/android -> Microsoft.Android.Sdk.Windows (android's own scheme, e.g. 37.0.0-ci.main.NN on net11)
+# dotnet/macios  -> Microsoft.iOS.Sdk.net11.0_26.5 (+ MacCatalyst/macOS/tvOS; 26.5.<build>-net11-pN)
+# dotnet/dotnet SDK                -> Microsoft.NET.Sdk
+# dotnet/dotnet runtime            -> Microsoft.NETCore.App.Ref
+git show origin/release/11.0.1xx-previewN:eng/Version.Details.xml
+
+# For Android/macOS-iOS, verify the pinned SHA belongs to the same-named
+# component release branch. Ahead commits are informational; divergence warns.
+# The generated tracker performs this through the GitHub compare API.
+#
+# Resolve the official SDK/runtime build locally, then compare MAUI's
+# Microsoft.NET.Sdk / Microsoft.NETCore.App.Ref version+SHA to that build.
+```
+
+Interpretation:
+
+| Observed | Meaning | Report |
+|----------|---------|--------|
+| Android/macOS-iOS pin is on the component's same-named Preview N branch and has the expected stage/band | Correct component source | ✅ OK |
+| Component Preview N branch is ahead of the Android/macOS-iOS pin | Newer component work exists; MAUI need not chase tip unless selected for release | ℹ️ FYI with commit count |
+| Android/macOS-iOS pin diverges from the same-named component Preview N branch or has the wrong stage/band | Wrong-source or off-band pin | ⚠️ Flag the component + pin evidence |
+| MAUI SDK/runtime pin **==** the official Preview N build | Correct VMR selected | ✅ OK |
+| MAUI SDK/runtime pin differs from the official Preview N build | Local VMR reconciliation is still required, regardless of branch-tip or Maestro state | ⚠️ Flag both version/SHA pairs and update locally |
+| macOS-iOS pin missing the `-net11-pN` stamp | Off-band pin (e.g. a `-net11-p5` build on a Preview 6 branch) | ⚠️ Flag |
+| android on `-ci.main.NN` | **Normal** for the net11 Android train; validate branch ancestry/source, not the moniker itself | ✅ when sourced from the Preview N component branch |
+
+> **Anchor note:** the automated 🏷️ pins table in the generated tracker issue anchors the VMR on **`Microsoft.NET.Sdk`** (SDK band, e.g. `11.0.100-preview.6.*`), whereas this manual check reads **`Microsoft.NETCore.App.Ref`** (runtime band, e.g. `11.0.0-preview.6.*`). Same repo, same commit — different package, so the version *strings* differ by design. Compare coherence by **SHA**, not by the version string, when reconciling the two views.
+
 ## Quick reference: lifecycle commands by phase
 
 | Phase | Action | Command sketch |
 |-------|--------|----------------|
 | Branch-for-preview (release branch just created) | Add default-channel mapping | `darc add-default-channel --channel ".NET 11.0.1xx SDK Preview N" --branch release/11.0.1xx-previewN --repo https://github.com/dotnet/maui` |
-| Same phase | Add 3 maui subs in one PR | Combined-PR pattern (see above) |
+| Same phase | Add 2 MAUI subs in one PR | Combined-PR pattern (Android + macOS/iOS; see above) |
 | Same phase | Optional: enable standard automerge | **Hand off to release engineering** — do not run `set-repository-policies` from this skill. See "Optional merge policies for batchable subs" above. |
+| After the config PR merges to `production` | Reconcile MAUI's SDK/VMR pin with the official Preview N build | Resolve the official build locally, update the pin in a focused MAUI PR, and verify it before building MAUI; no VMR subscription |
 | Mid-cycle | Verify a sub exists | `darc get-subscriptions --ids "<guid>"` or MCP `maestro_subscription(subscriptionId=...)` |
 | Mid-cycle | Trigger a single sub | `darc trigger-subscriptions --id "<guid>"` (config PR must be merged first) |
-| Preview-ship | Cleanup prior preview | One PR removing per-preview subscription file, per-preview default-channel file, and the 24 lines for that preview in `dotnet-maui.yml`. Reference [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033). |
+| Preview-ship | Cleanup prior preview | One PR removing the per-preview subscription/default-channel files and the active preview's Android/macOS-iOS blocks from `dotnet-maui.yml`. Historical PR [61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033) also removed legacy VMR blocks. |
+
+For release-readiness summaries, preserve that dependency order exactly:
+**default-channel mapping → Android/macOS-iOS subscriptions → local official
+SDK/VMR pin reconciliation**. Do not add a VMR subscription, and do not include
+next-preview branch work in the current preview's readiness report.

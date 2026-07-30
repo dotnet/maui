@@ -89,14 +89,6 @@
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.Extensions.AI"
-        Version="$(MicrosoftExtensionsAIVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Extensions.AI.Abstractions"
-        Version="$(MicrosoftExtensionsAIAbstractionsVersion)"
-    />
-    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationVersion)"
     />
@@ -165,6 +157,10 @@
     <PackageReference
         Update="Microsoft.Windows.SDK.BuildTools"
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
+        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"

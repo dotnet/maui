@@ -128,7 +128,6 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				.WithUpdatedAnalyzerConfigOptions(SourceGeneratorDriver.CreateAnalyzerConfigOptionsProvider(
 					[.. files.Values.Select(static file => file.File)]))
 				.RunGenerators(compilation);
-			var stateVersion = XamlHotReloadState.GetVersion(AssemblyName, "net11.0", XamlPath);
 
 			var result = driver.GetRunResult();
 			var generatedRoots = FindGeneratedRoots(result);
@@ -146,7 +145,6 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				generatedRoots
 					.FirstOrDefault(root => string.Equals(root.TypeName, PageClass, StringComparison.Ordinal))
 					?.UpdateComponentSource,
-				stateVersion,
 				result,
 				generatedRoots,
 				files.ToImmutableDictionary(
@@ -425,7 +423,6 @@ internal sealed record XamlHotReloadGeneratedVersion(
 	string Xaml,
 	string? InitializeComponentSource,
 	string? UpdateComponentSource,
-	int StateVersion,
 	GeneratorDriverRunResult GeneratorResult,
 	ImmutableArray<XamlHotReloadGeneratedRoot> GeneratedRoots,
 	ImmutableDictionary<string, XamlHotReloadDocument> Documents);
