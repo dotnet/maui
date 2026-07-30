@@ -652,6 +652,8 @@ function Get-PreviewRepresentativePackRequests {
         @{ Category = 'android-sdk'; Pattern = "^Microsoft\.Android\.Sdk\.net$Major$" },
         @{ Category = 'ios-sdk'; Pattern = "^Microsoft\.iOS\.Sdk\.net$Major\.0_" },
         @{ Category = 'maccatalyst-sdk'; Pattern = "^Microsoft\.MacCatalyst\.Sdk\.net$Major\.0_" },
+        @{ Category = 'tvos-sdk'; Pattern = "^Microsoft\.tvOS\.Sdk\.net$Major\.0_" },
+        @{ Category = 'emscripten-sdk'; Pattern = '^Microsoft\.NET\.Runtime\.Emscripten\..+\.Sdk\.(?:linux|osx|win)-' },
         @{ Category = 'android-runtime'; Pattern = "^Microsoft\.NETCore\.App\.Runtime\.Mono\.net$Major\.android-arm64$" },
         @{ Category = 'ios-runtime'; Pattern = "^Microsoft\.NETCore\.App\.Runtime\.Mono\.net$Major\.ios-arm64$" },
         @{ Category = 'maccatalyst-runtime'; Pattern = "^Microsoft\.NETCore\.App\.Runtime\.Mono\.net$Major\.maccatalyst-arm64$" },
@@ -744,6 +746,8 @@ function ConvertTo-PublicInstallabilityResult {
             [void]$sensitiveSourceNames.Add([string](Get-InstallabilityProperty $source 'Name'))
         }
     }
+    $versionSourceIsSensitive = [bool](Get-InstallabilityProperty $Result 'VersionSourceIsSensitive')
+    $withholdVersions = [bool]$Result.VersionConfirmed -or $versionSourceIsSensitive
 
     $sanitizeLocation = {
         param($Location)
@@ -765,7 +769,12 @@ function ConvertTo-PublicInstallabilityResult {
             Category       = Get-InstallabilityProperty $Location 'Category'
             WorkloadId     = Get-InstallabilityProperty $Location 'WorkloadId'
             PackageId      = Get-InstallabilityProperty $Location 'PackageId'
-            Version        = Get-InstallabilityProperty $Location 'Version'
+            Version        = if ($withholdVersions -and
+                -not [string]::IsNullOrWhiteSpace([string](Get-InstallabilityProperty $Location 'Version'))) {
+                'withheld'
+            } else {
+                Get-InstallabilityProperty $Location 'Version'
+            }
             Status         = Get-InstallabilityProperty $Location 'Status'
             ContentStatus  = Get-InstallabilityProperty $Location 'ContentStatus'
             Reason         = Get-InstallabilityProperty $Location 'Reason'
@@ -781,15 +790,10 @@ function ConvertTo-PublicInstallabilityResult {
     }
 
     $copy.NuGetConfig = $null
-    # A release-owner-confirmed workload-set build is embargoed (withheld from the public
-    # issue), consistent with this skill's existing "blessed build" handling elsewhere
-    # (see SKILL.md's Preview tracker gotchas). Withhold the exact CLI/NuGet version, the
-    # install command that names it, and each component's resolved build number here so a
-    # public-safe report never leaks the confirmed build ahead of its official
-    # announcement; the match/mismatch/missing Status alone still conveys pin coherence
-    # without revealing the build itself. An unconfirmed discovered candidate is not
-    # embargoed (it's just the newest public coherent package), so it is left intact.
-    if ($Result.VersionConfirmed) {
+    # A release-owner-confirmed build or a candidate learned from an authenticated/internal
+    # source is sensitive. Keep public candidates visible, but withhold sensitive top-level
+    # and nested versions while retaining match/mismatch/missing status as coherence evidence.
+    if ($withholdVersions) {
         $publicSummary = [string]$Result.Summary
         foreach ($version in @($Result.CliVersion, $Result.NuGetVersion)) {
             if (-not [string]::IsNullOrWhiteSpace([string]$version)) {
@@ -801,8 +805,16 @@ function ConvertTo-PublicInstallabilityResult {
             }
         }
         $copy.Summary = $publicSummary
-        $copy.CliVersion = 'withheld'
-        $copy.NuGetVersion = 'withheld'
+        $copy.CliVersion = if ([string]::IsNullOrWhiteSpace([string]$Result.CliVersion)) {
+            $Result.CliVersion
+        } else {
+            'withheld'
+        }
+        $copy.NuGetVersion = if ([string]::IsNullOrWhiteSpace([string]$Result.NuGetVersion)) {
+            $Result.NuGetVersion
+        } else {
+            'withheld'
+        }
         $copy.InstallCommand = if ($Result.CliVersion) {
             'dotnet workload install maui --version <withheld> --configfile <local-nuget-config>'
         } else { $null }
@@ -870,7 +882,9 @@ function ConvertTo-PreviewInstallabilityCheck {
         'missing' { 'Publish or add the missing workload assets, then rerun this check with an isolated package-source configuration.' }
         'mismatched' { 'Align the workload set with the branch SDK, Android, Apple, and runtime pins and the target MAUI Preview train before shipping.' }
         default {
-            if (-not $Result.VersionConfirmed) {
+            if ((Get-InstallabilityProperty $Result 'FailureKind') -eq 'sdk-pin-unresolved') {
+                'Restore access to the branch SDK pin, then rerun without changing the supplied workload-set version.'
+            } elseif (-not $Result.VersionConfirmed) {
                 'Supply the confirmed workload-set CLI version and any required authenticated package source, then rerun locally.'
             } else {
                 'Authenticate the required package sources and rerun; do not treat an inaccessible source as proof that a package is missing.'
@@ -904,7 +918,9 @@ function Get-PreviewConsumerInstallability {
         $result = [PSCustomObject]@{
             Status = 'unknown'; Summary = 'The branch SDK pin could not be resolved.'
             SdkVersion = $null; SdkFeatureBand = $null; PackageId = $null
-            CliVersion = $null; NuGetVersion = $null; VersionConfirmed = $false
+            CliVersion = $WorkloadSetCliVersion; NuGetVersion = $null
+            VersionConfirmed = -not [string]::IsNullOrWhiteSpace($WorkloadSetCliVersion)
+            FailureKind = 'sdk-pin-unresolved'
             PinComparisons = @(); ManifestPackages = @(); PackProbes = @()
             RequiredSources = @(); PlatformRequirements = $null
             NuGetConfig = $null; InstallCommand = $null
@@ -991,6 +1007,9 @@ function Get-PreviewConsumerInstallability {
         }
     }
 
+    $packageSource = Get-InstallabilityProperty $package.Source 'Source'
+    $versionSourceIsSensitive = [bool](Get-InstallabilityProperty $packageSource 'IsAdditional') -or
+        [bool](Get-InstallabilityProperty $packageSource 'IsInternal')
     $versions = @(Sort-PreviewNuGetVersions -Version $package.Versions)
     $candidateVersions = if ($requestedNuGetVersion) { @($requestedNuGetVersion) } else { @($versions | Select-Object -First 20) }
     $selectedVersion = $null
@@ -1049,6 +1068,7 @@ function Get-PreviewConsumerInstallability {
             }
             SdkVersion = $sdkVersion; SdkFeatureBand = $featureBand; PackageId = $package.Id
             CliVersion = $WorkloadSetCliVersion; NuGetVersion = $requestedNuGetVersion; VersionConfirmed = [bool]$WorkloadSetCliVersion
+            VersionSourceIsSensitive = $versionSourceIsSensitive
             PinComparisons = $lastComparisons; ManifestPackages = @(); PackProbes = @()
             RequiredSources = @($package.Source.Source); PlatformRequirements = $null
             NuGetConfig = $null; InstallCommand = $null
@@ -1171,7 +1191,11 @@ function Get-PreviewConsumerInstallability {
         'missing' { "$($missing.Count) required manifest or representative pack asset(s) were not found in the supplied sources." }
         'unknown' {
             if (-not $WorkloadSetCliVersion) {
-                'A coherent public workload-set candidate was found, but its official CLI version was not supplied and full source availability could not be confirmed.'
+                if ($versionSourceIsSensitive) {
+                    'A coherent workload-set candidate was found on an authenticated source, but its official CLI version was not supplied and full source availability could not be confirmed.'
+                } else {
+                    'A coherent public workload-set candidate was found, but its official CLI version was not supplied and full source availability could not be confirmed.'
+                }
             } else {
                 "$($unknown.Count + $unreadableManifests.Count) required asset location or manifest content check(s) could not be confirmed."
             }
@@ -1187,6 +1211,7 @@ function Get-PreviewConsumerInstallability {
         CliVersion           = $selectedCliVersion
         NuGetVersion         = $selectedVersion
         VersionConfirmed     = [bool]$WorkloadSetCliVersion
+        VersionSourceIsSensitive = $versionSourceIsSensitive
         PinComparisons       = $selectedComparisons
         ManifestPackages     = @($manifestLocations)
         PackProbes           = @($packLocations)
@@ -1217,7 +1242,14 @@ function Format-PreviewInstallabilityMarkdown {
         [void]$builder.AppendLine("| Workload-set package | ``$(Format-InstallabilityMarkdownCell ([string]$Result.PackageId))`` |")
         [void]$builder.AppendLine("| CLI version | ``$(Format-InstallabilityMarkdownCell ([string]$Result.CliVersion))`` |")
         [void]$builder.AppendLine("| NuGet package version | ``$(Format-InstallabilityMarkdownCell ([string]$Result.NuGetVersion))`` |")
-        [void]$builder.AppendLine("| Version source | $(if ($Result.VersionConfirmed) { 'release evidence supplied to the script' } else { 'latest coherent public candidate; official confirmation still required' }) |")
+        $versionSource = if ($Result.VersionConfirmed) {
+            'release evidence supplied to the script'
+        } elseif ([bool](Get-InstallabilityProperty $Result 'VersionSourceIsSensitive')) {
+            'authenticated candidate; exact version withheld and official confirmation still required'
+        } else {
+            'latest coherent public candidate; official confirmation still required'
+        }
+        [void]$builder.AppendLine("| Version source | $versionSource |")
         [void]$builder.AppendLine('')
     }
 

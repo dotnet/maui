@@ -8937,6 +8937,41 @@ $iiPins = [PSCustomObject]@{
     Android = [PSCustomObject]@{ Version = '37.0.0-preview.6.59' }
     Macios  = [PSCustomObject]@{ Version = '26.5.11720-net11-p6' }
 }
+$iiMissingSdkPins = [PSCustomObject]@{ Vmr = [PSCustomObject]@{ Version = $null } }
+$iiMissingSdkPrivate = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiMissingSdkPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false
+Assert-Eq -Label "installability: missing SDK pin preserves supplied workload-set confirmation state" `
+    -Expected $true -Actual $iiMissingSdkPrivate.VersionConfirmed
+Assert-Eq -Label "installability: missing SDK pin preserves supplied workload-set version privately" `
+    -Expected '11.0.100-preview.6.26363.2' -Actual $iiMissingSdkPrivate.CliVersion
+$iiMissingSdkPublic = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiMissingSdkPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $true
+Assert-Eq -Label "installability: missing SDK pin redacts supplied workload-set version publicly" `
+    -Expected 'withheld' -Actual $iiMissingSdkPublic.CliVersion
+$iiMissingSdkCheck = ConvertTo-PreviewInstallabilityCheck -Result $iiMissingSdkPublic
+Assert-Eq -Label "installability: missing SDK pin remediation does not ask for an already supplied version" `
+    -Expected 'Restore access to the branch SDK pin, then rerun without changing the supplied workload-set version.' `
+    -Actual $iiMissingSdkCheck.NextAction
+$iiFallbackVersion = '11.0.100-preview.6.26363.2'
+$iiPrivateFallback = New-PreviewInstallabilityFallback `
+    -Summary "Installability failed while evaluating $iiFallbackVersion." `
+    -CliVersion $iiFallbackVersion -PublicSafe $false
+$iiPublicFallback = New-PreviewInstallabilityFallback `
+    -Summary "Installability failed while evaluating $iiFallbackVersion." `
+    -CliVersion $iiFallbackVersion -PublicSafe $true
+Assert-Eq -Label "installability: private fallback preserves confirmed workload-set version" `
+    -Expected $iiFallbackVersion -Actual $iiPrivateFallback.CliVersion
+Assert-Eq -Label "installability: public fallback preserves confirmation state" `
+    -Expected $true -Actual $iiPublicFallback.VersionConfirmed
+Assert-Eq -Label "installability: public fallback withholds confirmed workload-set version" `
+    -Expected 'withheld' -Actual $iiPublicFallback.CliVersion
+Assert-Eq -Label "installability: public fallback summary withholds confirmed workload-set version" `
+    -Expected $false -Actual ([string]$iiPublicFallback.Summary).Contains($iiFallbackVersion)
+$iiPublicFallbackJson = ConvertTo-PreviewReportJson `
+    -Report ([PSCustomObject]@{ ConsumerInstallability = $iiPublicFallback }) `
+    -PublicSafe $true
+Assert-Eq -Label "installability: public fallback JSON does not disclose confirmed workload-set version" `
+    -Expected $false -Actual $iiPublicFallbackJson.Contains($iiFallbackVersion)
 $iiWorkloadSetManifest = [ordered]@{
     'Microsoft.NET.Sdk.Android'                    = '37.0.0-preview.6.59/11.0.100-preview.6'
     'Microsoft.NET.Sdk.iOS'                        = '26.5.11720-net11-p6/11.0.100-preview.6'
@@ -8970,6 +9005,8 @@ $iiComponentManifest = [ordered]@{
         'Microsoft.Android.Sdk.net11'                                  = @{ version = '37.0.0-preview.6.59' }
         'Microsoft.iOS.Sdk.net11.0_26.5'                               = @{ version = '26.5.11720-net11-p6' }
         'Microsoft.MacCatalyst.Sdk.net11.0_26.5'                       = @{ version = '26.5.11720-net11-p6' }
+        'Microsoft.tvOS.Sdk.net11.0_26.5'                              = @{ version = '26.5.11720-net11-p6' }
+        'Microsoft.NET.Runtime.Emscripten.4.0.10.Sdk.linux-x64'        = @{ version = '11.0.0-preview.6.26359.118' }
         'Microsoft.NETCore.App.Runtime.Mono.net11.android-arm64'       = @{ version = '11.0.0-preview.6.26359.118' }
         'Microsoft.NETCore.App.Runtime.Mono.net11.ios-arm64'           = @{ version = '11.0.0-preview.6.26359.118' }
         'Microsoft.NETCore.App.Runtime.Mono.net11.maccatalyst-arm64'   = @{ version = '11.0.0-preview.6.26359.118' }
@@ -9005,6 +9042,8 @@ $iiSourcePackages = @{
         'microsoft.net.workload.emscripten.current.manifest-11.0.100-preview.6',
         'microsoft.ios.sdk.net11.0_26.5',
         'microsoft.maccatalyst.sdk.net11.0_26.5',
+        'microsoft.tvos.sdk.net11.0_26.5',
+        'microsoft.net.runtime.emscripten.4.0.10.sdk.linux-x64',
         'microsoft.maui.controls'
     )
     'dotnet11-transport' = @(
@@ -9024,7 +9063,7 @@ $iiFetcher = {
             )
         }
     }
-    if ($Url -match '/query2/') {
+    if ($Url -match '/query2\?') {
         if ($Source.Name -ne 'dotnet-workloads') { return @{ data = @() } }
         return @{
             data = @(
@@ -9074,7 +9113,12 @@ Assert-Eq -Label "installability: transport feed is discovered from representati
 Assert-Eq -Label "installability: Apple SDK representative packs are probed" `
     -Expected $true -Actual (
         @($iiResult.PackProbes.Category) -contains 'ios-sdk' -and
-        @($iiResult.PackProbes.Category) -contains 'maccatalyst-sdk'
+        @($iiResult.PackProbes.Category) -contains 'maccatalyst-sdk' -and
+        @($iiResult.PackProbes.Category) -contains 'tvos-sdk'
+    )
+Assert-Eq -Label "installability: Emscripten SDK representative pack is probed" `
+    -Expected $true -Actual (
+        @($iiResult.PackProbes.Category) -contains 'emscripten-sdk'
     )
 Assert-Eq -Label "installability: every pin-validated tvOS/Emscripten manifest is probed" `
     -Expected $true -Actual (
@@ -9108,6 +9152,25 @@ Assert-Eq -Label "installability: missing tvOS manifest is retained as explicit 
             Where-Object WorkloadId -eq 'Microsoft.NET.Sdk.tvOS')[0].Status
     )
 
+$iiMissingPlatformPackFetcher = {
+    param($Url, $Source)
+    if ($Url -match '/flat2/microsoft\.tvos\.sdk\.net11\.0_26\.5/index\.json$' -or
+        $Url -match '/flat2/microsoft\.net\.runtime\.emscripten\.[^/]+\.sdk\.[^/]+/index\.json$') {
+        return @{ versions = @() }
+    }
+    return & $iiFetcher $Url $Source
+}.GetNewClosure()
+$iiMissingPlatformPacks = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiMissingPlatformPackFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: missing tvOS/Emscripten representative packs block a confirmed workload set" `
+    -Expected 'missing' -Actual $iiMissingPlatformPacks.Status
+Assert-Eq -Label "installability: missing tvOS/Emscripten packs are retained as explicit evidence" `
+    -Expected 2 -Actual @(
+        $iiMissingPlatformPacks.PackProbes |
+            Where-Object { $_.Category -in @('tvos-sdk', 'emscripten-sdk') -and $_.Status -eq 'missing' }
+    ).Count
+
 $iiInternalExactFetcher = {
     param($Url, $Source)
     if ($Url -eq $Source.Uri) {
@@ -9133,6 +9196,52 @@ Assert-Eq -Label "installability: confirmed version is resolved from an addition
     -Expected 'installable' -Actual $iiInternalExact.Status
 Assert-Eq -Label "installability: additional source carrying the confirmed workload set is retained" `
     -Expected $true -Actual (@($iiInternalExact.RequiredSources.Name) -contains 'internal_preview6')
+
+$iiInternalDiscoveryFetcher = {
+    param($Url, $Source)
+    if ($Url -eq $Source.Uri) {
+        return @{
+            resources = @(
+                @{ '@id' = "https://fake/$($Source.Name)/query2/"; '@type' = 'SearchQueryService/3.5.0' }
+                @{ '@id' = "https://fake/$($Source.Name)/flat2"; '@type' = 'PackageBaseAddress/3.0.0' }
+            )
+        }
+    }
+    if ($Url -match '/query2\?') {
+        if ($Source.Name -ne 'internal_preview6') { return @{ data = @() } }
+        return @{
+            data = @(@{
+                id = 'Microsoft.NET.Workloads.11.0.100-preview.6'
+                version = '11.100.0-preview.6.26363.2'
+                versions = @(@{ version = '11.100.0-preview.6.26363.2' })
+            })
+        }
+    }
+    if ($Url -match '/flat2/microsoft\.net\.workloads\.11\.0\.100-preview\.6/index\.json$') {
+        return @{ versions = if ($Source.Name -eq 'internal_preview6') {
+            @('11.100.0-preview.6.26363.2')
+        } else { @() } }
+    }
+    return & $iiFetcher $Url $Source
+}.GetNewClosure()
+$iiInternalDiscovery = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -AdditionalPackageSource 'internal_preview6=https://pkgs.dev.azure.com/dnceng/internal/_packaging/example-shipping/nuget/v3/index.json' `
+    -PublicSafe $true -Fetcher $iiInternalDiscoveryFetcher -PackageReader $iiPackageReader
+$iiInternalDiscoveryMarkdown = Format-PreviewInstallabilityMarkdown -Result $iiInternalDiscovery
+Assert-Eq -Label "installability: unconfirmed authenticated-source discovery remains unconfirmed" `
+    -Expected $false -Actual $iiInternalDiscovery.VersionConfirmed
+Assert-Eq -Label "installability: workload-set discovery records authenticated source sensitivity" `
+    -Expected $true -Actual $iiInternalDiscovery.VersionSourceIsSensitive
+Assert-Eq -Label "installability: authenticated-source candidate version is withheld publicly" `
+    -Expected 'withheld' -Actual $iiInternalDiscovery.CliVersion
+Assert-Eq -Label "installability: authenticated-source nested manifest versions are withheld publicly" `
+    -Expected $true -Actual (@($iiInternalDiscovery.ManifestPackages.Version | Where-Object { $_ -eq 'withheld' }).Count -gt 0)
+Assert-Eq -Label "installability: authenticated-source nested pack versions are withheld publicly" `
+    -Expected $true -Actual (@($iiInternalDiscovery.PackProbes.Version | Where-Object { $_ -eq 'withheld' }).Count -gt 0)
+Assert-Eq -Label "installability: authenticated-source public Markdown does not disclose candidate version" `
+    -Expected $false -Actual $iiInternalDiscoveryMarkdown.Contains('11.0.100-preview.6.26363.2')
+Assert-Eq -Label "installability: authenticated-source public Markdown explains version withholding" `
+    -Expected $true -Actual $iiInternalDiscoveryMarkdown.Contains('authenticated candidate; exact version withheld')
 
 $iiUnreadablePackageReader = {
     param($ResolvedSource, $PackageId, $Version, $EntryNames)
@@ -9383,7 +9492,17 @@ $iiConfirmedLeakResult = [PSCustomObject]@{
         WorkloadId = 'Microsoft.NET.Sdk.Android'; Expected = '37.0.0-preview.6.59'
         Actual = '37.0.0-preview.6.SECRETBUILD'; Status = 'match'
     })
-    ManifestPackages = @(); PackProbes = @(); RequiredSources = @(); PlatformRequirements = $null
+    ManifestPackages = @([PSCustomObject]@{
+        WorkloadId = 'Microsoft.NET.Sdk.Android'; PackageId = 'Microsoft.NET.Sdk.Android.Manifest'
+        Version = '37.0.0-preview.6.SECRETBUILD'; Status = 'found'; ContentStatus = 'read'
+        ResolvedSource = $null; UnknownSources = @()
+    })
+    PackProbes = @([PSCustomObject]@{
+        Category = 'android-sdk'; PackageId = 'Microsoft.Android.Sdk.net11'
+        Version = '37.0.0-preview.6.SECRETBUILD'; Status = 'found'; Reason = $null
+        ResolvedSource = $null; UnknownSources = @()
+    })
+    RequiredSources = @(); PlatformRequirements = $null
     NuGetConfig = $null
     InstallCommand = 'dotnet workload install maui --version 11.0.100-preview.6.SECRETBUILD --configfile ./preview-nuget.config'
 }
@@ -9398,6 +9517,10 @@ Assert-Eq -Label "installability: confirmed Summary does not leak the embargoed 
     -Expected $false -Actual ($iiConfirmedLeakPublic.Summary.Contains('SECRETBUILD'))
 Assert-Eq -Label "installability: confirmed pin comparison Actual value is withheld" `
     -Expected 'withheld' -Actual $iiConfirmedLeakPublic.PinComparisons[0].Actual
+Assert-Eq -Label "installability: confirmed nested manifest version is withheld" `
+    -Expected 'withheld' -Actual $iiConfirmedLeakPublic.ManifestPackages[0].Version
+Assert-Eq -Label "installability: confirmed nested representative-pack version is withheld" `
+    -Expected 'withheld' -Actual $iiConfirmedLeakPublic.PackProbes[0].Version
 Assert-Eq -Label "installability: confirmed pin comparison WorkloadId/Expected/Status survive redaction (coherence signal preserved)" `
     -Expected $true -Actual (
         $iiConfirmedLeakPublic.PinComparisons[0].WorkloadId -eq 'Microsoft.NET.Sdk.Android' -and

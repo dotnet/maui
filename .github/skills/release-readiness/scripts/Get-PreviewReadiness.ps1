@@ -1798,18 +1798,30 @@ function New-Check {
 function New-PreviewInstallabilityFallback {
     param(
         [Parameter(Mandatory)][string]$Summary,
-        [string]$CliVersion
+        [string]$CliVersion,
+        [bool]$PublicSafe = $true
     )
 
+    $versionConfirmed = -not [string]::IsNullOrWhiteSpace($CliVersion)
+    $publicSummary = if ($PublicSafe -and $versionConfirmed) {
+        [regex]::Replace(
+            $Summary,
+            [regex]::Escape($CliVersion),
+            'withheld',
+            [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    }
+    else {
+        $Summary
+    }
     return [PSCustomObject]@{
         Status               = 'unknown'
-        Summary              = $Summary
+        Summary              = $publicSummary
         SdkVersion           = $null
         SdkFeatureBand       = $null
         PackageId            = $null
-        CliVersion           = $CliVersion
+        CliVersion           = if ($PublicSafe -and $versionConfirmed) { 'withheld' } else { $CliVersion }
         NuGetVersion         = $null
-        VersionConfirmed     = -not [string]::IsNullOrWhiteSpace($CliVersion)
+        VersionConfirmed     = $versionConfirmed
         PinComparisons       = @()
         ManifestPackages     = @()
         PackProbes           = @()
@@ -2523,7 +2535,8 @@ $componentPins = if ($surveyExists) {
 }
 $consumerInstallability = New-PreviewInstallabilityFallback `
     -Summary 'Consumer installability could not be evaluated.' `
-    -CliVersion $ConfirmedWorkloadSetVersion
+    -CliVersion $ConfirmedWorkloadSetVersion `
+    -PublicSafe $PublicSafe
 if ($Script:PreviewInstallabilityHelperLoaded) {
     try {
         $consumerInstallability = Get-PreviewConsumerInstallability `
@@ -2538,7 +2551,8 @@ if ($Script:PreviewInstallabilityHelperLoaded) {
         Write-Warning "Consumer installability check failed (non-fatal)$warningDetail" -WarningAction Continue
         $consumerInstallability = New-PreviewInstallabilityFallback `
             -Summary 'Consumer installability evaluation failed; no readiness claim can be made.' `
-            -CliVersion $ConfirmedWorkloadSetVersion
+            -CliVersion $ConfirmedWorkloadSetVersion `
+            -PublicSafe $PublicSafe
     }
 }
 

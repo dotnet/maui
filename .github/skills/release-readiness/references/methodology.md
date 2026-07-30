@@ -462,7 +462,8 @@ to work accidentally.
    branch pins, and verify that its MAUI manifest targets the expected Preview
    train.
 5. Probe every required manifest package.
-6. Probe representative Android, Apple, MAUI, and runtime transport packs.
+6. Probe representative Android, Apple (including tvOS), Emscripten, MAUI, and
+   runtime transport packs.
 7. Extract the JDK, Android SDK, Xcode, Apple SDK, and Windows App SDK
    prerequisites when present.
 8. Emit an isolated local NuGet configuration and exact install command only
@@ -498,10 +499,12 @@ serialization recursively removes:
 - generated NuGet configuration paths and content
 - authentication state and credential details
 - local installation commands that reference private sources
+- release-owner-confirmed versions and candidate versions learned from an
+  authenticated/internal source, including nested manifest and pack versions
 
-The public report retains the state, safe package identities and versions, pin
-comparison, prerequisite summary, and remediation category needed to explain
-the readiness result.
+The public report retains the state, safe package identities and public-feed
+candidate versions, pin-comparison status, prerequisite summary, and remediation
+category needed to explain the readiness result.
 
 ## CI Freshness
 

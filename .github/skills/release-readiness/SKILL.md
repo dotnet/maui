@@ -148,7 +148,8 @@ The full tier table, the user-scope opt-in snippet, and the privacy guardrails l
 
 The branch being green is insufficient: a customer must be able to acquire the
 exact SDK workload set, its component manifests, and representative Android,
-Apple, MAUI, and runtime packs from a clean source configuration.
+Apple (including tvOS), Emscripten, MAUI, and runtime packs from a clean source
+configuration.
 
 Use the exact workload-set **CLI version** confirmed by the release owner. Do not
 substitute the branch SDK version, and do not assume the newest coherent package
@@ -204,9 +205,12 @@ If an authenticated shipping feed is required:
 
 `-PublicSafe $false` intentionally includes exact source URLs and installation
 instructions, so keep that output local. The default public-safe report removes
-the release-owner-confirmed workload-set version, additional source names,
+the release-owner-confirmed workload-set version and any candidate version
+learned from an authenticated/internal source, including versions repeated in
+nested manifest and pack evidence. It also removes additional source names,
 URLs, nested source metadata, credentials, and the generated NuGet
-configuration.
+configuration. Unconfirmed candidates discovered entirely from public feeds
+remain visible as diagnostic evidence.
 
 The gate classifies evidence as follows:
 
@@ -561,4 +565,4 @@ The harness covers:
 - **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
 - **Idempotent body hash** stability across re-runs — **SR trackers only** (the scheduled/event-driven workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker). Preview trackers carry no hash marker and are refreshed on every scheduled run.
 - **Nightly dogfood feed banner** (`NightlyFeed.ps1`) — offline unit coverage for the lane-label honest-labeling rule (`Format-NightlyFeedLaneLabel`), the `ci.inflight`-first / `ci.main`-false-green resolver, age→tier bucketing, the fail-open feed query (mocked `-Fetcher`), and the banner's fold into `Get-ReportSemanticHash` (tier change refreshes, same-tier day tick does not). All network-free via injected fixtures and explicit `-Now`.
-- **Preview consumer installability** (`PreviewInstallability.ps1`) — offline fixtures cover CLI/NuGet version conversion, workload-set discovery with MSI exclusion, branch-pin coherence, source-role resolution, required manifest and representative pack probes, platform prerequisites, isolated `<clear />` configuration, 401/403=`UNKNOWN` semantics, verdict mapping, and public-output redaction.
+- **Preview consumer installability** (`PreviewInstallability.ps1`) — offline fixtures cover CLI/NuGet version conversion, workload-set discovery with MSI exclusion, branch-pin coherence, source-role resolution, required manifest and Android/Apple/tvOS/Emscripten/MAUI/runtime representative pack probes, platform prerequisites, isolated `<clear />` configuration, 401/403=`UNKNOWN` semantics, verdict mapping, and public-output redaction.
