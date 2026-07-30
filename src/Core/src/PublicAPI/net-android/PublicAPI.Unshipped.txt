@@ -133,7 +133,6 @@ override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> 
 override Microsoft.Maui.Platform.MaterialActivityIndicator.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
-override Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnSelectionChanged(int selStart, int selEnd) -> void

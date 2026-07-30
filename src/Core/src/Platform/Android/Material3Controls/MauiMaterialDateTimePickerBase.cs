@@ -18,6 +18,8 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     MauiMaterialEditText? _inputEditText;
     PickerClickListener? _clickListener;
 
+    // The context is expected to already be theme-wrapped by the handler's CreatePlatformView;
+    // the wrapped context then propagates to the inner edit text created below.
     protected MauiMaterialDateTimePickerBase(Context context, int endIconResource) : base(context)
     {
         // Outlined box is the Material 3 resting-state appearance for date/time fields.
@@ -34,12 +36,11 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         _inputEditText.KeyListener = null;
         _inputEditText.SetCursorVisible(false);
 
-        _clickListener = new PickerClickListener(this);
-
-        // Only the trailing (calendar/clock) end icon opens the picker dialog.
+        // Only the trailing (calendar/clock) end icon opens the picker dialog. The click listener that
+        // wires the tap is attached by the handler in ConnectHandler so it can be torn down
+        // deterministically in DisconnectHandler (the view itself is reused across reconnects).
         EndIconMode = EndIconCustom;
         SetEndIconDrawable(endIconResource);
-        SetEndIconOnClickListener(_clickListener);
     }
 
     protected MauiMaterialDateTimePickerBase(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -58,6 +59,21 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     /// <summary>Invoked to dismiss the picker dialog.</summary>
     public Action? HidePicker { get; set; }
 
+    /// <summary>Attaches the end-icon tap listener. Called from the handler's ConnectHandler.</summary>
+    internal void ConnectClickListener()
+    {
+        _clickListener ??= new PickerClickListener(this);
+        SetEndIconOnClickListener(_clickListener);
+    }
+
+    /// <summary>Removes and disposes the end-icon tap listener. Called from the handler's DisconnectHandler.</summary>
+    internal void DisconnectClickListener()
+    {
+        SetEndIconOnClickListener(null);
+        _clickListener?.Dispose();
+        _clickListener = null;
+    }
+
     protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
         if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
@@ -71,21 +87,6 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         }
 
         base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            SetEndIconOnClickListener(null);
-
-            _clickListener?.Dispose();
-            _clickListener = null;
-
-            _inputEditText = null;
-        }
-
-        base.Dispose(disposing);
     }
 
     sealed class PickerClickListener : Java.Lang.Object, IOnClickListener

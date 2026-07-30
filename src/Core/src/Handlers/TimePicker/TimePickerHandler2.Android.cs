@@ -43,6 +43,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
+        platformView.ConnectClickListener();
     }
 
     protected override void DisconnectHandler(MauiMaterialTimePicker platformView)
@@ -63,9 +64,9 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         _positiveButtonClickListener = null;
         _dismissListener?.Dispose();
         _dismissListener = null;
-        platformView.Dispose();
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
+        platformView.DisconnectClickListener();
 
         base.DisconnectHandler(platformView);
     }
@@ -224,7 +225,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
     protected override MauiMaterialTimePicker CreatePlatformView()
     {
-        return new MauiMaterialTimePicker(Context);
+        return new MauiMaterialTimePicker(MauiMaterialContextThemeWrapper.Create(Context));
     }
 
     internal void UpdateIsOpenState(bool isOpen)
