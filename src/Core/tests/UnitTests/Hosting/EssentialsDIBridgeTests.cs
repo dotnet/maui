@@ -1226,6 +1226,46 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingMauiAppsUseVersionTrackingStorageForTheirOwnPackage()
+		{
+			var preferences = new RecordingStubPreferences();
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IPreferences>(preferences);
+				firstBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "first.package"));
+				firstApp = firstBuilder.Build();
+
+				_ = VersionTracking.CurrentVersion;
+				Assert.Equal(
+					new[] { "first.package.microsoft.maui.essentials.versiontracking" },
+					preferences.SharedNames);
+
+				preferences.SharedNames.Clear();
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IPreferences>(preferences);
+				secondBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "second.package"));
+				secondApp = secondBuilder.Build();
+
+				_ = VersionTracking.CurrentVersion;
+				Assert.Equal(
+					new[] { "second.package.microsoft.maui.essentials.versiontracking" },
+					preferences.SharedNames);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public async Task OverlappingMauiAppsRefreshLazyVersionTrackingFallbackOwner()
 		{
 			var originalAppInfo = AppInfo.Current;
@@ -1631,6 +1671,35 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public T Get<T>(string key, T defaultValue, string? sharedName = null) => defaultValue;
 		}
 
+		sealed class RecordingStubPreferences : IPreferences
+		{
+			public HashSet<string> SharedNames { get; } = new(StringComparer.Ordinal);
+
+			public bool ContainsKey(string key, string? sharedName = null)
+			{
+				Record(sharedName);
+				return false;
+			}
+
+			public void Remove(string key, string? sharedName = null) =>
+				Record(sharedName);
+
+			public void Clear(string? sharedName = null) =>
+				Record(sharedName);
+
+			public void Set<T>(string key, T value, string? sharedName = null) =>
+				Record(sharedName);
+
+			public T Get<T>(string key, T defaultValue, string? sharedName = null)
+			{
+				Record(sharedName);
+				return defaultValue;
+			}
+
+			void Record(string? sharedName) =>
+				SharedNames.Add(Assert.IsType<string>(sharedName));
+		}
+
 		sealed class DisposableStubPreferences : StubPreferences, IDisposable
 		{
 			public bool FacadeWasCurrentDuringDispose { get; private set; }
@@ -1795,16 +1864,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		class StubAppInfo : IAppInfo
 		{
+			readonly string _packageName;
 			readonly string _versionString;
 			readonly string _buildString;
 
-			public StubAppInfo(string versionString = "1.0.0", string buildString = "1")
+			public StubAppInfo(
+				string versionString = "1.0.0",
+				string buildString = "1",
+				string packageName = "test.package")
 			{
 				_versionString = versionString;
 				_buildString = buildString;
+				_packageName = packageName;
 			}
 
-			public string PackageName => "test.package";
+			public string PackageName => _packageName;
 			public string Name => "Test";
 			public virtual string VersionString => _versionString;
 			public Version Version => System.Version.Parse(VersionString);

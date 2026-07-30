@@ -257,7 +257,10 @@ namespace Microsoft.Maui.Storage
 		static IPreferences Current => Storage.Preferences.Default;
 
 		internal static string GetPrivatePreferencesSharedName(string feature) =>
-			$"{ApplicationModel.AppInfo.Current.PackageName}.microsoft.maui.essentials.{feature}";
+			GetPrivatePreferencesSharedName(ApplicationModel.AppInfo.Current.PackageName, feature);
+
+		internal static string GetPrivatePreferencesSharedName(string packageName, string feature) =>
+			$"{packageName}.microsoft.maui.essentials.{feature}";
 
 		static IPreferences? defaultImplementation;
 

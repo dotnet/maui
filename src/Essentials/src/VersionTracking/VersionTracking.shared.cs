@@ -206,10 +206,9 @@ namespace Microsoft.Maui.ApplicationModel
 		const string versionsKey = "VersionTracking.Versions";
 		const string buildsKey = "VersionTracking.Builds";
 
-		static readonly string sharedName = Preferences.GetPrivatePreferencesSharedName("versiontracking");
-
 		readonly IPreferences preferences;
 		readonly IAppInfo appInfo;
+		readonly string sharedName;
 
 		Dictionary<string, List<string>> versionTrail = null!;
 
@@ -221,6 +220,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			this.preferences = preferences;
 			this.appInfo = appInfo;
+			sharedName = Preferences.GetPrivatePreferencesSharedName(appInfo.PackageName, "versiontracking");
 
 			Track();
 		}
