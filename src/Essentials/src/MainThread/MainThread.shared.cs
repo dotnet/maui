@@ -43,7 +43,7 @@ namespace Microsoft.Maui.ApplicationModel
 			Volatile.Read(ref s_mainThreadImplementation);
 
 		internal static void SetCustomImplementation(MainThreadImplementation? implementation) =>
-			Volatile.Write(ref s_mainThreadImplementation, implementation);
+			EssentialsImplementation.Set(ref s_mainThreadImplementation, implementation);
 
 		internal static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread) =>
 			SetCustomImplementation(CreateCustomImplementation(isMainThread, beginInvokeOnMainThread));

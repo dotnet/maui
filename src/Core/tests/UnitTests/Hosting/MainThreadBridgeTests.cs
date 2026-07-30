@@ -128,6 +128,34 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task SetCustomImpl_UsesFacadeSynchronization()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var setterStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var implementation = MainThread.CreateCustomImplementation(() => true, _ => { });
+			Task setter;
+
+			lock (EssentialsImplementation.GetSyncRoot<MainThread.MainThreadImplementation>())
+			{
+				setter = Task.Run(() =>
+				{
+					setterStarted.TrySetResult(true);
+					MainThread.SetCustomImplementation(implementation);
+				});
+
+				Assert.True(
+					setterStarted.Task.Wait(timeout),
+					"Timed out waiting for the MainThread setter to start.");
+				Assert.False(
+					setter.Wait(TimeSpan.FromMilliseconds(250)),
+					"The MainThread setter bypassed facade synchronization.");
+			}
+
+			await setter.WaitAsync(timeout);
+			Assert.Same(implementation, MainThread.GetCustomImplementation());
+		}
+
+		[Fact]
 		public void MauiAppBuild_BridgesDispatcherToMainThread()
 		{
 			// Set up a dispatcher provider that returns a real dispatcher stub
