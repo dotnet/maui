@@ -14,21 +14,28 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// Generates a single <c>UpdateComponent()</c> partial method containing accumulated
-/// <c>if (__version == N)</c> patch blocks from successive XAML Hot Reload edits.
+/// Generates a single <c>UpdateComponent()</c> partial method that applies one absolute
+/// previous→current patch for XAML Incremental Hot Reload.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Per the spec, the generated method chains sequential <c>if</c> blocks (not <c>else if</c>):
+/// The method is emitted UNCONDITIONALLY (no <c>if (__version == N)</c> version-chain guard) and is
+/// present on EVERY generation — even the first compile and no-op edits — so a XIHR type never gains
+/// or loses the method across generations (that member churn is what crashes Roslyn's EnC delta
+/// tracking). Its body applies the current patch and then stamps <c>__version</c> with a deterministic
+/// content hash of the current XAML:
 /// <code>
 /// internal void UpdateComponent()
 /// {
-///     if (__version == 0) { /* v0→v1 patch */ __version = 1; }
-///     if (__version == 1) { /* v1→v2 patch */ __version = 2; }
+///     /* absolute previous→current patch (property sets assign target values) */
+///     __version = 123456789; // stable content hash of the current XAML
+///     return;
 /// }
 /// </code>
-/// A v0 instance chains through ALL patches; a fresh instance (whose <c>InitializeComponent</c>
-/// sets <c>__version</c> to the latest) skips them all.
+/// Because patch property-sets are absolute, a single patch brings any live instance to the current
+/// state regardless of which edit it was last updated to, and a revert to earlier content collapses
+/// to the earlier patch/identity — deterministic, revert-stable output for identical XAML (no
+/// accumulated chain, no stale intermediate values). See the XIHR versioning determinism fix.
 /// </para>
 /// <para>
 /// Property value encoding strategy (in priority order):
@@ -48,9 +55,14 @@ static class UpdateComponentCodeWriter
 	const string NewLine = "\n";
 
 	/// <summary>
-	/// Generates the code for a single <c>if (__version == fromVersion) { ... __version = toVersion; }</c> block.
-	/// Returns <see langword="null"/> when <paramref name="diff"/> contains no changes.
+	/// Generates the statements that apply a single previous→current patch (property sets, child-list
+	/// changes, etc.), WITHOUT any <c>if (__version == N)</c> guard or <c>__version</c> assignment — the
+	/// caller (<see cref="GenerateUpdateComponent(INamedTypeSymbol, string, string?, int)"/>) wraps this
+	/// body and stamps the content-hash identity. Returns <see langword="null"/> when
+	/// <paramref name="diff"/> contains no changes.
 	/// </summary>
+	/// <param name="fromVersion">Vestigial: the monotonic version no longer drives dispatch (kept for the state/bookkeeping call chain and test signatures).</param>
+	/// <param name="toVersion">Vestigial: see <paramref name="fromVersion"/>.</param>
 	/// <param name="newIds">ID dictionary for added nodes (from the new tree). May be null for tests.</param>
 	public static string? GeneratePatchBody(
 		XamlTreeDiff diff,
@@ -130,11 +142,6 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine();
 		}
 
-		// Always bump __version, even when individual TryGet probes missed. Skipping the bump
-		// would strand the instance at fromVersion and force the same (already-failed) patch
-		// to re-run on every subsequent UpdateComponent() invocation, never making progress.
-		codeWriter.WriteLine($"__version = {toVersion};");
-
 		codeWriter.Flush();
 		return codeWriter.InnerWriter.ToString();
 	}
@@ -143,20 +150,31 @@ static class UpdateComponentCodeWriter
 	/// Assembles a complete <c>UpdateComponent()</c> source file from accumulated patch bodies.
 	/// Each patch body becomes an <c>if (__version == N) { ... }</c> block inside the single method.
 	/// </summary>
-	public static string? GenerateUpdateComponent(
+	/// <summary>
+	/// Generates the <c>UpdateComponent()</c> method body from a single baseline→current patch.
+	/// The patch is <em>always</em> emitted (even when <paramref name="patchBody"/> is null/empty), so the
+	/// method never appears→disappears across generations — that member churn is what crashes Roslyn's
+	/// EnC delta tracking (dotnet/maui XIHR versioning fix). Because patch property-sets are absolute
+	/// (they assign target values, not relative deltas), a single baseline→current patch correctly brings
+	/// any live instance to the current state regardless of which edit it was last updated to, and a revert
+	/// to the baseline collapses to an empty patch — no accumulated version chain, no stale intermediate
+	/// values, deterministic output for identical XAML.
+	/// </summary>
+	public static string GenerateUpdateComponent(
 		INamedTypeSymbol rootType,
 		string accessModifier,
-		List<string> allPatchBodies,
-		int startVersion = 0)
+		string? patchBody)
 	{
-		if (allPatchBodies.Count == 0)
-			return null;
-
 		using var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") { NewLine = NewLine };
 
 		codeWriter.WriteLine(GeneratorHelpers.AutoGeneratedHeaderText);
 		codeWriter.WriteLine("#nullable enable");
 		codeWriter.WriteLine("#pragma warning disable CS0219 // Variable is assigned but its value is never used");
+		// A XAML class that derives from another XAML class emits its own UpdateComponent(), which
+		// intentionally hides the base's (each level patches its own XAML tree). Because UpdateComponent
+		// is now emitted on EVERY generation — not just on edit — this hiding surfaces at build time for
+		// inherited XAML; suppress the member-hiding warning in this generated file.
+		codeWriter.WriteLine("#pragma warning disable CS0108 // Member hides inherited member; missing new keyword");
 		codeWriter.WriteLine();
 		codeWriter.WriteLine($"namespace {rootType.ContainingNamespace};");
 		codeWriter.WriteLine();
@@ -167,21 +185,17 @@ static class UpdateComponentCodeWriter
 			codeWriter.WriteLine($"[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 			codeWriter.WriteLine($"internal void UpdateComponent()");
 
+			// The method is ALWAYS emitted (member stability / no EnC churn), but its BODY is empty when
+			// this generation carries no XAML change (first compile, empty/reverted diff, structural
+			// reset). A non-empty body means the XAML actually changed. The SDK's MetadataUpdateHandler
+			// classifies a delta as a XAML change by inspecting whether this method's body is non-empty
+			// (its compiled IL is more than a trivial return) — an empty UpdateComponent() therefore reads
+			// as "not a XAML change", which is what keeps pure C#/code-behind edits out of the XAML-change
+			// signal while still guaranteeing the method never appears/disappears across generations.
 			using (PrePost.NewBlock(codeWriter))
 			{
-				// Emit each patch as a sequential if (__version == N) block
-				for (int i = 0; i < allPatchBodies.Count; i++)
-				{
-					var body = allPatchBodies[i];
-					var version = startVersion + i;
-					codeWriter.WriteLine($"if (__version == {version})");
-					using (PrePost.NewBlock(codeWriter))
-					{
-						WriteIndentedBody(codeWriter, body);
-					}
-				}
-
-				codeWriter.WriteLine("return;");
+				if (!string.IsNullOrWhiteSpace(patchBody))
+					WriteIndentedBody(codeWriter, patchBody!);
 			}
 		}
 
@@ -207,7 +221,7 @@ static class UpdateComponentCodeWriter
 		if (patchBody == null)
 			return null;
 
-		return GenerateUpdateComponent(rootType, accessModifier, new List<string> { patchBody }, startVersion: fromVersion);
+		return GenerateUpdateComponent(rootType, accessModifier, patchBody);
 	}
 
 	static void WriteIndentedBody(IndentedTextWriter codeWriter, string body)
@@ -312,7 +326,8 @@ static class UpdateComponentCodeWriter
 				bool hasAdded = false;
 				for (int i = 0; i < change.NewChildren.Count; i++)
 				{
-					if (change.NewChildren[i].Kind == ChildChangeKind.Added) { hasAdded = true; break; }
+					if (change.NewChildren[i].Kind == ChildChangeKind.Added)
+					{ hasAdded = true; break; }
 				}
 				bool pureReorder = !hasAdded && change.RemovedNodeIds.Count == 0;
 
@@ -1163,7 +1178,8 @@ static class UpdateComponentCodeWriter
 					break;
 				}
 			}
-			if (getter != null) break;
+			if (getter != null)
+				break;
 			current = current.BaseType!;
 		}
 
