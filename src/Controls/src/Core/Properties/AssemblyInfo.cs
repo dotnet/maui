@@ -28,6 +28,7 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITest.Validator")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Build.Tasks")]
 [assembly: InternalsVisibleTo("Microsoft.Maui")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Pages.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.CarouselView")]
