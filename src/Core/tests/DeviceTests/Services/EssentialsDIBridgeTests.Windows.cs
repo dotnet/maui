@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,28 @@ public class EssentialsDIBridgeTests
 			field.SetValue(null, null);
 
 			var builder = MauiApp.CreateBuilder();
+			using var app = builder.Build();
+
+			Assert.Null(field.GetValue(null));
+		}
+		finally
+		{
+			field.SetValue(null, original);
+		}
+	}
+
+	[Fact]
+	public void NullMapServiceTokenBehavesAsUnconfigured()
+	{
+		var field = GetGeocodingBackingField();
+		var original = field.GetValue(null);
+
+		try
+		{
+			field.SetValue(null, null);
+
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(null!));
 			using var app = builder.Build();
 
 			Assert.Null(field.GetValue(null));
@@ -192,6 +215,63 @@ public class EssentialsDIBridgeTests
 		finally
 		{
 			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
+	public async Task ConcurrentBuildAppliesMapServiceTokenToOwningGeocoder()
+	{
+		const string token = "first-token";
+		var timeout = TimeSpan.FromSeconds(30);
+		var field = GetGeocodingBackingField();
+		var original = field.GetValue(null);
+		var cleanupResolutionEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var releaseCleanupResolution = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var first = new StubPlatformGeocoding();
+		var second = new StubPlatformGeocoding();
+		Task<MauiApp>? firstBuild = null;
+		MauiApp? firstApp = null;
+		MauiApp? secondApp = null;
+
+		try
+		{
+			field.SetValue(null, null);
+
+			var firstBuilder = MauiApp.CreateBuilder(useDefaults: false);
+			firstBuilder.Services.AddSingleton<IGeocoding>(first);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(token));
+			BlockEssentialsCleanupResolution(
+				firstBuilder,
+				cleanupResolutionEntered,
+				releaseCleanupResolution,
+				timeout);
+
+			firstBuild = Task.Run(firstBuilder.Build);
+			await cleanupResolutionEntered.Task.WaitAsync(timeout);
+			Assert.Same(first, Geocoding.Default);
+
+			var secondBuilder = MauiApp.CreateBuilder(useDefaults: false);
+			secondBuilder.Services.AddSingleton<IGeocoding>(second);
+			secondBuilder.ConfigureEssentials();
+			secondApp = secondBuilder.Build();
+			Assert.Same(second, Geocoding.Default);
+
+			releaseCleanupResolution.TrySetResult(true);
+			firstApp = await firstBuild.WaitAsync(timeout);
+
+			Assert.Equal(token, first.MapServiceToken);
+			Assert.Null(second.MapServiceToken);
+			Assert.Same(second, Geocoding.Default);
+		}
+		finally
+		{
+			releaseCleanupResolution.TrySetResult(true);
+			if (firstBuild is not null && firstApp is null)
+				firstApp = await firstBuild.WaitAsync(timeout);
+
+			secondApp?.Dispose();
+			firstApp?.Dispose();
+			field.SetValue(null, original);
 		}
 	}
 
@@ -730,6 +810,28 @@ public class EssentialsDIBridgeTests
 		var builder = MauiApp.CreateBuilder();
 		builder.Services.AddSingleton(service);
 		return builder.Build();
+	}
+
+	static void BlockEssentialsCleanupResolution(
+		MauiAppBuilder builder,
+		TaskCompletionSource<bool> entered,
+		TaskCompletionSource<bool> release,
+		TimeSpan timeout)
+	{
+		var descriptor = Assert.Single(
+			builder.Services.Where(service => service.ServiceType.Name == "EssentialsCleanup"));
+		Assert.True(builder.Services.Remove(descriptor));
+		builder.Services.Add(
+			ServiceDescriptor.Singleton(
+				descriptor.ServiceType,
+				_ =>
+				{
+					entered.TrySetResult(true);
+					Assert.True(
+						release.Task.Wait(timeout),
+						"Timed out waiting to release Essentials cleanup resolution.");
+					return Activator.CreateInstance(descriptor.ServiceType, nonPublic: true)!;
+				}));
 	}
 
 	class StubWebAuthenticator : IWebAuthenticator

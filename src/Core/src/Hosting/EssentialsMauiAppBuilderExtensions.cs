@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Hosting
 #if WINDOWS || TIZEN
 		static readonly List<MapTokenAssignment> s_mapTokenAssignments = new();
 		static readonly List<MapTokenImplementationState> s_mapTokenImplementationStates = new();
+		static int s_mapTokenEpoch;
 #endif
 #if WINDOWS
 		internal static Func<string?> WindowsMapServiceTokenGetter { get; set; } =
@@ -242,12 +243,32 @@ namespace Microsoft.Maui.Hosting
 					}
 
 #if WINDOWS || TIZEN
-					var mapServiceToken = _essentialsBuilder.MapServiceToken;
-					if (mapServiceToken is null && GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation") is IPlatformGeocoding existingPlatformGeocoding)
-						mapServiceToken = existingPlatformGeocoding.MapServiceToken;
+					var hasExplicitMapServiceToken = _essentialsBuilder.HasMapServiceToken;
+					var explicitMapServiceToken = _essentialsBuilder.MapServiceToken;
+					var preResolvedGeocoding = services.GetService<IGeocoding>();
+					IGeocoding? fallbackGeocodingForMapToken = null;
+					if (hasExplicitMapServiceToken ? preResolvedGeocoding is null : preResolvedGeocoding is not null)
+					{
+						fallbackGeocodingForMapToken =
+							CaptureGeocodingDefaultForMapServiceToken(createIfMissing: hasExplicitMapServiceToken);
+					}
+
+					string? inheritedMapServiceToken = null;
+					if (!hasExplicitMapServiceToken &&
+						preResolvedGeocoding is not null &&
+						fallbackGeocodingForMapToken is IPlatformGeocoding existingPlatformGeocoding)
+					{
+						inheritedMapServiceToken = CaptureDirectUnownedMapServiceToken(existingPlatformGeocoding);
+					}
 #endif
 
-					var versionTrackingDependencies = BridgeEssentialsFromDI(services, facadeCleanups);
+					var versionTrackingDependencies = BridgeEssentialsFromDI(
+						services,
+						facadeCleanups
+#if WINDOWS || TIZEN
+						, preResolvedGeocoding
+#endif
+					);
 					var versionTrackingOwnedByApp =
 						versionTrackingDependencies.Preferences is not null ||
 						versionTrackingDependencies.AppInfo is not null ||
@@ -259,16 +280,15 @@ namespace Microsoft.Maui.Hosting
 					cleanup = services.GetRequiredService<EssentialsCleanup>();
 
 #if WINDOWS || TIZEN
-					// A ConfigureEssentials token takes precedence; otherwise preserve a token set
-					// directly through ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
-					if (mapServiceToken is not null)
+					if (hasExplicitMapServiceToken)
 					{
-						var geocoding = Geocoding.Default;
-						if (geocoding is IPlatformGeocoding platformGeocoding)
+						var geocoding = versionTrackingDependencies.Geocoding ?? fallbackGeocodingForMapToken;
+						if (explicitMapServiceToken is not null &&
+							geocoding is IPlatformGeocoding platformGeocoding)
 						{
-							TrackAndSetMapServiceToken(platformGeocoding, mapServiceToken, facadeCleanups);
+							TrackAndSetMapServiceToken(platformGeocoding, explicitMapServiceToken, facadeCleanups);
 						}
-						else
+						else if (geocoding is not null)
 						{
 							services.GetService<ILoggerFactory>()?
 								.CreateLogger<EssentialsInitializer>()
@@ -277,6 +297,13 @@ namespace Microsoft.Maui.Hosting
 									geocoding.GetType().FullName,
 									nameof(IPlatformGeocoding));
 						}
+					}
+					else if (inheritedMapServiceToken is not null &&
+						versionTrackingDependencies.Geocoding is IPlatformGeocoding platformGeocoding)
+					{
+						// Preserve a direct pre-existing platform token only when this app replaces
+						// the fallback geocoder with a DI implementation.
+						TrackAndSetMapServiceToken(platformGeocoding, inheritedMapServiceToken, facadeCleanups);
 					}
 #endif
 
@@ -367,13 +394,15 @@ namespace Microsoft.Maui.Hosting
 			/// the corresponding static API. If not registered, the existing lazy platform
 			/// default behavior is preserved.
 			/// </summary>
-			static (IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking) BridgeEssentialsFromDI(
+			static (IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking, IGeocoding? Geocoding) BridgeEssentialsFromDI(
 				IServiceProvider services,
-				List<Action> facadeCleanups)
+				List<Action> facadeCleanups,
+				IGeocoding? preResolvedGeocoding = null)
 			{
 				IPreferences? preferences = null;
 				IAppInfo? appInfo = null;
 				IVersionTracking? versionTracking = null;
+				IGeocoding? geocoding = null;
 
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, () => GetFacadeBackingField<IAccelerometer>(typeof(Accelerometer), "defaultImplementation"), Accelerometer.SetDefault, facadeCleanups);
@@ -457,14 +486,16 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceInfo>(services, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IFileSystem>(services, () => GetFacadeBackingField<IFileSystem>(typeof(FileSystem), "currentImplementation"), FileSystem.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IGeocoding>(services, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
+				geocoding = preResolvedGeocoding ?? services.GetService<IGeocoding>();
+				if (geocoding is not null)
+					TrackAndSet(geocoding, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IPermissions>(services, () => GetFacadeBackingField<IPermissions>(typeof(Permissions), "currentImplementation"), Permissions.SetCurrent, facadeCleanups);
 
-				return (preferences, appInfo, versionTracking);
+				return (preferences, appInfo, versionTracking, geocoding);
 			}
 
 			static void BridgeLazyVersionTrackingFromDI(
-				(IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking) dependencies,
+				(IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking, IGeocoding? Geocoding) dependencies,
 				List<Action> facadeCleanups)
 			{
 				if (dependencies.VersionTracking is not null)
@@ -563,6 +594,83 @@ namespace Microsoft.Maui.Hosting
 			}
 
 #if WINDOWS || TIZEN
+			static IGeocoding? CaptureGeocodingDefaultForMapServiceToken(bool createIfMissing)
+			{
+				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<IGeocoding>();
+				lock (FacadeBridgeState<IGeocoding>.SyncRoot)
+				{
+					lock (facadeSyncRoot)
+					{
+						return createIfMissing
+							? Geocoding.Default
+							: GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation");
+					}
+				}
+			}
+
+			static string? CaptureDirectUnownedMapServiceToken(IPlatformGeocoding implementation)
+			{
+				var spinWait = new SpinWait();
+				while (true)
+				{
+					if (IsFacadeBridgeOwnedGeocoding(implementation))
+						return null;
+
+					int epoch;
+					bool baseTokenCapturePending;
+					lock (s_mapTokenLock)
+					{
+						var state = FindMapTokenImplementationState(implementation);
+						if (state is not null)
+						{
+							if (state.BaseTokenInitialized)
+								return IsFacadeBridgeOwnedGeocoding(implementation) ? null : state.BaseToken;
+
+							baseTokenCapturePending = true;
+							epoch = s_mapTokenEpoch;
+						}
+						else
+						{
+							baseTokenCapturePending = false;
+							epoch = s_mapTokenEpoch;
+						}
+					}
+
+					if (baseTokenCapturePending)
+					{
+						spinWait.SpinOnce();
+						continue;
+					}
+
+					var token = implementation.MapServiceToken;
+
+					lock (s_mapTokenLock)
+					{
+						var state = FindMapTokenImplementationState(implementation);
+						if (state is not null)
+						{
+							if (state.BaseTokenInitialized)
+								return IsFacadeBridgeOwnedGeocoding(implementation) ? null : state.BaseToken;
+
+							spinWait.SpinOnce();
+							continue;
+						}
+
+						if (epoch == s_mapTokenEpoch && !IsFacadeBridgeOwnedGeocoding(implementation))
+							return token;
+					}
+				}
+			}
+
+			static bool IsFacadeBridgeOwnedGeocoding(IPlatformGeocoding implementation)
+			{
+				if (implementation is not IGeocoding geocoding)
+					return false;
+
+				lock (FacadeBridgeState<IGeocoding>.SyncRoot)
+					return FacadeBridgeState<IGeocoding>.FindOwner(geocoding) is not null;
+			}
+
 			static void TrackAndSetMapServiceToken(
 				IPlatformGeocoding implementation,
 				string mapServiceToken,
@@ -604,6 +712,7 @@ namespace Microsoft.Maui.Hosting
 
 						s_mapTokenAssignments.Add(assignment);
 						implementationState.Version++;
+						s_mapTokenEpoch++;
 					}
 				}
 				finally
@@ -875,6 +984,7 @@ namespace Microsoft.Maui.Hosting
 
 				s_mapTokenAssignments.RemoveAt(index);
 				assignment.ImplementationState.Version++;
+				s_mapTokenEpoch++;
 				return true;
 			}
 #endif
@@ -1384,11 +1494,13 @@ namespace Microsoft.Maui.Hosting
 			internal List<AppAction>? AppActions => _appActions;
 
 #pragma warning disable CS0414 // Remove unread private members
+			internal bool HasMapServiceToken;
 			internal string? MapServiceToken;
 #pragma warning restore CS0414 // Remove unread private members
 
 			public IEssentialsBuilder UseMapServiceToken(string token)
 			{
+				HasMapServiceToken = token is not null;
 				MapServiceToken = token;
 				return this;
 			}
