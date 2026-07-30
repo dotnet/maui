@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-#pragma warning disable CS0618 
+#pragma warning disable CS0618 // BackgroundColor — legacy property change bridge for template bindings/backward compatibility
 				if (e.PropertyName == BackgroundColorProperty.PropertyName)
 				{
 					base.OnPropertyChanged(nameof(BackgroundColorBridge));
