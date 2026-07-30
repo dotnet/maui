@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.AppType.get -> System.Type?
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.AppType.set -> void
+Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView.AppType.get -> System.Type?
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.MapAppType(Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler! handler, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebView! webView) -> void

@@ -1,0 +1,21 @@
+@* A full-document host that exercises dynamic head: it declares <HeadOutlet> and a component that
+   sets <PageTitle>. BlazorWebView attaches HeadOutlet at head::after, so the PageTitle updates the
+   live document title even though the document itself is rendered statically. *@
+<!DOCTYPE html>
+<html>
+
+<head testhtmlloaded="true">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Initial Title</title>
+    <base href="/" />
+    <HeadOutlet @rendermode="RenderMode.InteractiveAuto" />
+</head>
+
+<body>
+    <TestHeadComponent @rendermode="RenderMode.InteractiveAuto" />
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+
+</html>

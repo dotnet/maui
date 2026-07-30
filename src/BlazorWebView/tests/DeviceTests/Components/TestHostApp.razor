@@ -1,0 +1,27 @@
+@* A full-document host component used to test BlazorWebView.AppType. It is the hybrid equivalent
+   of a Blazor Web App's App.razor: it renders the entire HTML document and declares the interactive
+   app with a render mode, which BlazorWebView converts into a mount element plus an attach. *@
+<!DOCTYPE html>
+<html>
+
+<head testhtmlloaded="true">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Blazor app</title>
+    <base href="/" />
+</head>
+
+<body>
+    This test HTML is coming from AppType!
+
+    <TestComponent1 @rendermode="RenderMode.InteractiveAuto" />
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+
+</html>

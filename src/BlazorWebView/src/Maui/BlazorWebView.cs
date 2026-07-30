@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -49,6 +51,43 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <para>This is an app relative path to the file such as <c>wwwroot\index.html</c></para>
 		/// </summary>
 		public string? HostPage { get; set; }
+
+		/// <summary>
+		/// The synthetic host page path used when <see cref="AppType"/> renders the host document.
+		/// </summary>
+		internal const string AppTypeHostPage = "wwwroot/index.html";
+
+		private Type? _appType;
+		private bool _appTypeRendered;
+		private string? _renderedHostPageHtml;
+
+		/// <summary>
+		/// Gets or sets the type of a root component that renders the entire host HTML document (the
+		/// hybrid equivalent of a Blazor Web App's <c>App.razor</c>).
+		/// <para>
+		/// When set, the component is statically rendered to produce the host page, so a physical
+		/// <see cref="HostPage"/> file (such as <c>wwwroot/index.html</c>) is not required. Interactive
+		/// components declared inside it with a render mode (for example
+		/// <c>&lt;Routes @rendermode="InteractiveAuto" /&gt;</c> or
+		/// <c>&lt;HeadOutlet @rendermode="InteractiveAuto" /&gt;</c>) are automatically attached to the
+		/// live document, so an explicit <see cref="RootComponents"/> entry is not required either.
+		/// </para>
+		/// </summary>
+		public Type? AppType
+		{
+			get => _appType;
+			set
+			{
+				_appType = value;
+
+				// Provide a synthetic host page so the existing startup and relative-path logic flows
+				// unchanged; the rendered document is overlaid onto the file provider at this path.
+				if (value is not null && string.IsNullOrEmpty(HostPage))
+				{
+					HostPage = AppTypeHostPage;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Bindable property for <see cref="StartPath"/>.
@@ -106,7 +145,58 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
-			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+			var platformFileProvider = ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+
+			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
+			// and fingerprinted-route serving work. Absent (or on platforms without a readable file
+			// provider), fingerprinting simply stays off and behaviour is unchanged.
+			var manifest = StaticWebAssetsManifest.TryLoad(platformFileProvider);
+
+			string? hostPageRelativePath = null;
+			if (AppType is not null)
+			{
+				// When AppType is set, render the host document once. This also collects any interactive
+				// components declared with a render mode and registers them so they attach to the live
+				// document, and resolves @Assets using the manifest.
+				EnsureAppTypeRendered(manifest?.Assets);
+				hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+			}
+
+			// If there is nothing to add (no AppType document and no manifest), return the platform
+			// provider unchanged to preserve existing behaviour exactly.
+			if (hostPageRelativePath is null && manifest is null)
+			{
+				return platformFileProvider;
+			}
+
+			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, manifest);
+		}
+
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
+			Justification = "Blazor components referenced by AppType are preserved by the Razor SDK trimming roots, consistent with RootComponent.ComponentType.")]
+		private void EnsureAppTypeRendered(ResourceAssetCollection? assets)
+		{
+			if (_appTypeRendered || AppType is null)
+			{
+				return;
+			}
+
+			_appTypeRendered = true;
+
+			var services = Handler?.MauiContext?.Services
+				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
+
+			var result = HybridHostPageRenderer.Render(services, AppType, assets);
+			_renderedHostPageHtml = result.Html;
+
+			foreach (var registration in result.Registrations)
+			{
+				RootComponents.Add(new RootComponent
+				{
+					Selector = registration.Selector,
+					ComponentType = registration.ComponentType,
+				});
+			}
 		}
 
 		/// <summary>

@@ -69,6 +69,23 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Bundle the static web assets endpoints manifest so that fingerprinted assets (@Assets, @ImportMap)
+    can be resolved at runtime. Blazor Web Apps get this from MapStaticAssets endpoint metadata; hybrid
+    apps have no server, so BlazorWebView loads this bundled manifest instead. It is served to the app
+    under wwwroot but hidden from the web view by BlazorWebViewFileProvider.
+  -->
+  <Target Name="_BundleMauiBlazorAssetManifest"
+          AfterTargets="ConvertStaticWebAssetsToMauiAssets"
+          Condition="'$(StaticWebAssetEndpointsBuildManifestPath)' != '' and Exists('$(StaticWebAssetEndpointsBuildManifestPath)')">
+    <ItemGroup>
+      <MauiAsset Include="$(StaticWebAssetEndpointsBuildManifestPath)">
+        <Link>wwwroot/_maui/asset-manifest.json</Link>
+        <TargetPath>wwwroot/_maui/asset-manifest.json</TargetPath>
+      </MauiAsset>
+    </ItemGroup>
+  </Target>
+
   <!-- Targets temporarily remove Content items in various folders so that they don't conflict with iOS/MacCatalyst SDK tasks -->
   <Target Name="HideContentFromiOSBundleResources" BeforeTargets="_CollectBundleResources">
     <ItemGroup>
