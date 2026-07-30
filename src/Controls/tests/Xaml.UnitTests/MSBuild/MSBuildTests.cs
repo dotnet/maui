@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			// Pin XIHR off: this test covers the legacy ResourceProvider2 hot-reload fallback
 			// (InitializeComponentRuntime), which XAML Incremental Hot Reload intentionally supersedes
-			// when enabled (on by default in Debug). See dotnet/maui#36682.
+			// when enabled. XIHR is off by default (opt-in), but pin it explicitly here. See dotnet/maui#36682.
 			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EnableMauiIncrementalHotReload=false -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
 
 			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.XamlGenerator");
