@@ -985,6 +985,62 @@ public static class SharedMarker
 			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
 		}
 
+		// A bare ActivationValue that expands to empty during project evaluation is
+		// indistinguishable from a legacy shared-folder mapping by the time the
+		// normalization target runs. Preserve that compatibility behavior on neutral
+		// and recognized TFMs; conditional backends must also declare an
+		// ActivationProperty or BackendIdentity so malformed metadata fails closed.
+		[Theory]
+		[InlineData("")]
+		[InlineData("ios")]
+		public void SingleProject_BareUnresolvedActivationValueUsesLegacySharedFolderBehavior(string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\BareUnresolved\\")
+				.WithAttribute("ActivationValue", "$(SomeUnsetProperty)"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\BareUnresolved\\BareUnresolvedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class BareUnresolvedMarker
+{
+	public static string Value => ""BareUnresolved"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(targetPlatformIdentifier)
+				? ""
+				: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.BareUnresolvedMarker");
+		}
+
 		// Authored activation metadata that normalizes to empty is invalid backend
 		// configuration, not a legacy shared folder. Fail closed on neutral and
 		// recognized TFMs so backend-only sources cannot leak into every inner build.

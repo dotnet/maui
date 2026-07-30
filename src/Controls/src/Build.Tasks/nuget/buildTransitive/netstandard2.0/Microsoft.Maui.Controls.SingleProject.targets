@@ -51,8 +51,11 @@
           identity/activation metadata. This is the legacy "always include" /
           condition-gated folder (its MauiPlatformSpecificFolder item Condition
           already decided participation at evaluation time). Malformed backend
-          metadata that resolves to an empty ActivationValue fails closed instead
-          of leaking backend files into every target framework.
+          metadata that still carries ActivationProperty or BackendIdentity fails
+          closed instead of leaking backend files into every target framework.
+          A bare ActivationValue="$(UnsetProperty)" expands to empty during project
+          evaluation and is therefore indistinguishable from a legacy shared folder;
+          conditional backends must also declare ActivationProperty or BackendIdentity.
       (B) TargetPlatformIdentifiers is a non-empty ';'-delimited list that
           contains the current recognized $(TargetPlatformIdentifier). Comparison
           is case-insensitive and tolerates any whitespace (ASCII space, tab, CR,
