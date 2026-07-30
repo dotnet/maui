@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -14,6 +15,28 @@ namespace Microsoft.Maui.DeviceTests.Services;
 [Collection(EssentialsStaticStateCollection.Name)]
 public class EssentialsDIBridgeTests
 {
+	[Fact]
+	public void WebAuthenticatorBridgeRequiresWindowsLifecycleContract()
+	{
+		var original = WebAuthenticator.Default;
+
+		try
+		{
+			using (var app = BuildApp<IWebAuthenticator>(new StubWebAuthenticator()))
+				Assert.Same(original, WebAuthenticator.Default);
+
+			var replacement = new StubPlatformWebAuthenticator();
+			using (var app = BuildApp<IWebAuthenticator>(replacement))
+				Assert.Same(replacement, WebAuthenticator.Default);
+		}
+		finally
+		{
+			using var app = BuildApp<IWebAuthenticator>(original);
+		}
+
+		Assert.Same(original, WebAuthenticator.Default);
+	}
+
 	[Fact]
 	public void MauiAppBuildWithoutMapTokenDoesNotInitializeGeocoding()
 	{
@@ -700,6 +723,30 @@ public class EssentialsDIBridgeTests
 			"defaultImplementation",
 			System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
 		?? throw new InvalidOperationException("Geocoding backing field was not found.");
+
+	static MauiApp BuildApp<TService>(TService service)
+		where TService : class
+	{
+		var builder = MauiApp.CreateBuilder();
+		builder.Services.AddSingleton(service);
+		return builder.Build();
+	}
+
+	class StubWebAuthenticator : IWebAuthenticator
+	{
+		public Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions) =>
+			Task.FromException<WebAuthenticatorResult>(new NotSupportedException());
+
+		public Task<WebAuthenticatorResult> AuthenticateAsync(
+			WebAuthenticatorOptions webAuthenticatorOptions,
+			CancellationToken cancellationToken) =>
+			Task.FromException<WebAuthenticatorResult>(new NotSupportedException());
+	}
+
+	sealed class StubPlatformWebAuthenticator : StubWebAuthenticator, IPlatformWebAuthenticatorCallback
+	{
+		public bool OnAppInstanceActivatedCallback(Microsoft.Windows.AppLifecycle.AppActivationArguments args) => true;
+	}
 
 	class StubGeocoding : IGeocoding
 	{

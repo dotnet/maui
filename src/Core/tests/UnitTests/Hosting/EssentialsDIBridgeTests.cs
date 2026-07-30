@@ -434,7 +434,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			using var app = builder.Build();
 
-#if ANDROID || __IOS__ || __MACCATALYST__
+#if ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS
 			Assert.Null(GetStaticField(typeof(WebAuthenticator), "defaultImplementation"));
 #else
 			Assert.Same(mock, WebAuthenticator.Default);

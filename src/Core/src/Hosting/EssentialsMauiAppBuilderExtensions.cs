@@ -410,16 +410,17 @@ namespace Microsoft.Maui.Hosting
 				if (versionTracking is not null)
 					TrackAndSet(versionTracking, VersionTracking.GetDefault, VersionTracking.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IVibration>(services, () => GetFacadeBackingField<IVibration>(typeof(Vibration), "defaultImplementation"), Vibration.SetDefault, facadeCleanups);
-				// IWebAuthenticator: on Android/iOS/MacCatalyst the platform callback activities
-				// and lifecycle hooks (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
-				// ContinueUserActivity) cast WebAuthenticator.Default to IPlatformWebAuthenticatorCallback
-				// via AsPlatformCallback(). Only bridge a DI implementation that supports that contract
+				// IWebAuthenticator: native callback activities and lifecycle hooks
+				// (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
+				// ContinueUserActivity, Platform.OnAppInstanceActivated) cast
+				// WebAuthenticator.Default to IPlatformWebAuthenticatorCallback via
+				// AsPlatformCallback(). Only bridge a DI implementation that supports that contract
 				// on those platforms, mirroring the IAppActions guard below, to avoid a
 				// PlatformNotSupportedException at runtime.
 				var webAuthenticator = services.GetService<IWebAuthenticator>();
 				if (webAuthenticator is not null)
 				{
-#if ANDROID || __IOS__ || __MACCATALYST__
+#if ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS
 					if (webAuthenticator is IPlatformWebAuthenticatorCallback)
 						TrackAndSet(webAuthenticator, () => GetFacadeBackingField<IWebAuthenticator>(typeof(WebAuthenticator), "defaultImplementation"), WebAuthenticator.SetDefault, facadeCleanups);
 					else
