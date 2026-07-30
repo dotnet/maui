@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Platform;
 
 /// <summary>
 /// Material 3 DatePicker field on Android: an outlined text field with a trailing calendar icon.
-/// Tapping the field or the icon opens the platform <c>MaterialDatePicker</c> dialog.
+/// Tapping the calendar icon opens the platform <c>MaterialDatePicker</c> dialog.
 /// </summary>
 public class MauiMaterialDatePicker : MauiMaterialDateTimePickerBase
 {

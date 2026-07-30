@@ -29,6 +29,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	public void Material3TimePicker_InitialState_VerifyVisualState()
 	{
 		OpenTimePickerDialog();
+		App.WaitForElement("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 

@@ -37,7 +37,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     protected override MauiMaterialDatePicker CreatePlatformView()
     {
-        return new MauiMaterialDatePicker(Context);
+        return new MauiMaterialDatePicker(MauiMaterialContextThemeWrapper.Create(Context));
     }
 
     protected override void ConnectHandler(MauiMaterialDatePicker platformView)
@@ -49,6 +49,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
+        platformView.ConnectClickListener();
     }
 
     protected override void DisconnectHandler(MauiMaterialDatePicker platformView)
@@ -70,9 +71,9 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         _dismissListener?.Dispose();
         _dismissListener = null;
 
-        platformView.Dispose();
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
+        platformView.DisconnectClickListener();
 
         base.DisconnectHandler(platformView);
     }
