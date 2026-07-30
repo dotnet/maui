@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.OrderDetailPage"
+             Title="Order Detail">
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <Label Text="📋 Order Detail"
+               FontSize="24"
+               FontAttributes="Bold" />
+        <Label x:Name="OrderIdLabel"
+               Text="Order ID: (from {orderId:int} path parameter)"
+               FontSize="18" />
+        <Label Text="The orderId parameter uses {:int} constraint — only numeric values are accepted."
+               FontSize="14"
+               TextColor="Gray" />
+    </VerticalStackLayout>
+</ContentPage>
