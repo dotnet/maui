@@ -154,19 +154,27 @@
         part of the current build configuration AND has not been explicitly
         kept by _MauiCollectPlatformSpecificCompileItems above.
 
-        The Condition references %(Compile.ExcludeFromCurrentConfiguration)
-        from inside an Include of a *different* item type — this is MSBuild
-        cross-item-type batching: the filesystem glob is evaluated once per
-        unique value of Compile.ExcludeFromCurrentConfiguration. The blanket
-        <Compile Update> initially marks every $(PlatformsProjectFolder)/**
-        file true, then active-platform updates flip matching items back to
-        false. Keep the Condition so only the true batch is removed; otherwise
-        active-platform files may be removed or inactive files may leak in.
+        Copy the Compile items marked true to a separate item type, then intersect
+        those identities with the platform filesystem candidates. This ensures the
+        removal set contains only Compile items explicitly excluded from the current
+        configuration. Using temporary item types preserves downstream false metadata
+        buckets without removing and re-adding active Compile items, which would
+        perturb ordering and other metadata.
       -->
+      <_MauiCompileItemsMarkedForRemoval
+          Include="@(Compile->WithMetadataValue('ExcludeFromCurrentConfiguration', 'true'))" />
       <_MauiPlatformCompileToRemove
-          Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
           Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)"
           Exclude="@(_MauiPlatformSpecificCompileItems)" />
+      <_MauiPlatformCompileNotMarkedForRemoval Include="@(_MauiPlatformCompileToRemove)" />
+      <_MauiPlatformCompileNotMarkedForRemoval
+          Remove="@(_MauiCompileItemsMarkedForRemoval)"
+          MatchOnMetadata="FullPath"
+          MatchOnMetadataOptions="PathLike" />
+      <_MauiPlatformCompileToRemove
+          Remove="@(_MauiPlatformCompileNotMarkedForRemoval)"
+          MatchOnMetadata="FullPath"
+          MatchOnMetadataOptions="PathLike" />
       <Compile Remove="@(_MauiPlatformCompileToRemove)" />
 
       <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
