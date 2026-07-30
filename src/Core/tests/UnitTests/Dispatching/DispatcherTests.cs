@@ -80,6 +80,8 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 					{
 						DispatcherProviderStubOptions.SkipDispatcherCreation = false;
 					}
+
+					Assert.NotNull(Dispatcher.GetForCurrentThread());
 				});
 			});
 
@@ -210,16 +212,19 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 		{
 			readonly ConditionalWeakTable<Thread, DispatcherHolder> _dispatchers = new();
 
-			public IDispatcher? GetForCurrentThread() =>
-				_dispatchers.GetValue(
+			public IDispatcher? GetForCurrentThread()
+			{
+				if (DispatcherProviderStubOptions.SkipDispatcherCreation)
+					return null;
+
+				return _dispatchers.GetValue(
 					Thread.CurrentThread,
 					_ => new DispatcherHolder(
-						DispatcherProviderStubOptions.SkipDispatcherCreation
-							? null
-							: new DispatcherStub(
-								DispatcherProviderStubOptions.IsInvokeRequired,
-								DispatcherProviderStubOptions.InvokeOnMainThread)))
-				.Dispatcher;
+						new DispatcherStub(
+							DispatcherProviderStubOptions.IsInvokeRequired,
+							DispatcherProviderStubOptions.InvokeOnMainThread)))
+					.Dispatcher;
+			}
 
 			sealed class DispatcherHolder
 			{
