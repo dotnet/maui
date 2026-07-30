@@ -1834,6 +1834,14 @@ function Write-MarkdownReport {
     $snapshotBaselineMissing = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.SnapshotBaselineMissing }).Count -gt 0
     $snapshotEnvResidual = (@($WithFixResultsList) | Where-Object { $_.SnapshotEnvResidual }).Count -gt 0
     $snapshotBaselineUnresolved = (@($WithFixResultsList) | Where-Object { $_.SnapshotBaselineUnresolved }).Count -gt 0
+    # Whether ANY env error is a "real" infra error (app crash / Appium flake / empty result)
+    # rather than a snapshot-class one that already has its own dedicated $snapshotNote below.
+    # A pure new-snapshot-no-baseline / snapshot-residual run must NOT also print the generic
+    # "environment/infrastructure error … comment /review to retry" message: retrying never
+    # creates the missing baseline, so that advice is wrong and makes an expected, non-failing
+    # result look like an infra failure (PR #35491: new Shell.SetBackground API + a brand-new
+    # VerifyScreenshot with no committed baseline → INCONCLUSIVE, correctly, but double-messaged).
+    $nonSnapshotEnvError = @($WithoutFixResultsList + $WithFixResultsList | Where-Object { $_.EnvError -and -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) }).Count -gt 0
     $snapshotNote = if ($snapshotBaselineMissing) {
         "📷 **New snapshot test — no baseline yet** — the test calls ``VerifyScreenshot`` but its baseline image is not committed (brand-new snapshot tests get their baseline added separately). The gate cannot validate a snapshot with nothing to compare against, so this is **inconclusive, not a fix failure**. Download the ``snapshots-diff`` artifact, confirm the rendering, and commit the baseline PNG."
     } elseif ($snapshotEnvResidual) {
@@ -1933,14 +1941,16 @@ function Write-MarkdownReport {
         }
         # else: leave $failureClassification unset; the per-test table + Failure Details below tell the story.
     }
-    elseif ($hasEnvError -and -not $VerificationPassed) {
+    elseif ($hasEnvError -and -not $VerificationPassed -and $nonSnapshotEnvError) {
         # The classification chain above is skipped when $hasEnvError is set, which
         # previously left the INCONCLUSIVE report with no explanation — only bare
         # "⚠️ ENV ERROR" cells (e.g. #36209: the Windows device-test app crashed
         # before writing its result XML). Surface a clear, honest cause so the reader
         # knows it is infrastructure, not a test/PR failure, and what to do next.
+        # Guarded by $nonSnapshotEnvError: a pure snapshot-baseline case is explained by
+        # $snapshotNote instead (retrying won't create the baseline), so don't double-message.
         $envExcerpt = @($WithoutFixResultsList + $WithFixResultsList |
-            Where-Object { $_.EnvError -and $_.Error } | ForEach-Object { $_.Error } | Select-Object -First 1)
+            Where-Object { $_.EnvError -and $_.Error -and -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) } | ForEach-Object { $_.Error } | Select-Object -First 1)
         $envExcerptLine = if ($envExcerpt) { "`n> ``$envExcerpt``" } else { "" }
         $failureClassification = "🩺 **Could not verify — environment/infrastructure error.** The gate ran the tests but hit an environment error (the test app crashed or exited before writing its results, an emulator/simulator/Appium/XHarness flake, or an empty/invalid result file), so it could not record a real pass/fail. The ⚠️ ENV ERROR marks below are **infrastructure**, not test failures — this is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent.$envExcerptLine"
     }

@@ -368,3 +368,29 @@ Describe 'Write-MarkdownReport — compile-coupled new-API verification' {
         $report | Should -Not -Match 'Verified \(new API / feature\)'
     }
 }
+
+Describe 'Write-MarkdownReport — new-snapshot-no-baseline does not double-message as infra error' {
+    It 'shows the snapshot note but NOT the generic env-error/retry message (PR #35491 pattern)' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        # Without-fix: compile-coupled build error in the PR's own test (new API).
+        $wo = @(@{ TestName = 'Issue10445'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false;
+                  FailureMessage = "Issue10445.cs(20,9): error CS0117: 'Shell' does not contain a definition for 'SetBackground'"; Error = 'Issue10445' })
+        # With-fix: brand-new snapshot test, no committed baseline (EnvError + SnapshotBaselineMissing).
+        $w  = @(@{ TestName = 'Issue10445'; Passed = $false; BuildError = $false; EnvError = $true; SnapshotBaselineMissing = $true; FilterMismatch = $false;
+                  FailureMessage = 'New snapshot test — baseline image not yet created'; Error = 'New snapshot test — baseline image not yet created' })
+        $tests = @([pscustomobject]@{ TestName = 'Issue10445' })
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $false -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'ios' `
+            -ReportBaseBranch 'net11.0' -ReportRevertableFiles @('src/Controls/src/Core/Shell/Shell.cs') -ReportNewFiles @()
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match 'New snapshot test — no baseline yet'
+        $report | Should -Not -Match 'Could not verify — environment/infrastructure error'
+    }
+}
