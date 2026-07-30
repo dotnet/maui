@@ -13,7 +13,6 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
@@ -507,9 +506,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (visibleItems is not null && currentItem is not null)
             {
-                {
-                    handler.SafeNotifyDataSetChanged();
-                }
+                handler.SafeNotifyDataSetChanged();
 
                 var targetIndex = visibleItems.IndexOf(currentItem);
                 if (targetIndex >= 0 && handler._viewPager.CurrentItem != targetIndex)
@@ -617,12 +614,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            UpdateContentPropertyChangedSubscriptions(e);
+
             if (_adapter is null || _viewPager is null || _parentFragment is null || VirtualView is null || MauiContext is null)
             {
                 return;
             }
-
-            UpdateContentPropertyChangedSubscriptions(e);
 
             // When items go from 0 → N, we must create a fresh adapter because
             // FragmentStateAdapter saves internal fragment state when items are removed.
