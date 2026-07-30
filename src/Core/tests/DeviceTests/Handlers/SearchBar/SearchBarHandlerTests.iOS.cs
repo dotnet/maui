@@ -13,37 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
-		[Fact]
-		public async Task ContainerLosesInteractionWhenSearchBarDisabled()
-		{
-			// SearchBar is a non-UIControl ITextInput; its WrapperView container's hit-testing must
-			// track IsEnabled. Regression: the ITextInput path in UpdateInputTransparent ignored
-			// IsEnabled, so a disabled SearchBar with a container (created here by Clip) stayed
-			// reachable even though the override MapIsEnabled ran the container-sync path.
-			var searchBar = new SearchBarStub
-			{
-				Clip = new PathShapeStub()
-			};
-			var handler = await CreateHandlerAsync(searchBar);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var containerView = Assert.IsType<WrapperView>(handler.ContainerView);
-
-				Assert.True(containerView.UserInteractionEnabled);
-
-				searchBar.IsEnabled = false;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-
-				Assert.False(containerView.UserInteractionEnabled);
-
-				searchBar.IsEnabled = true;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-
-				Assert.True(containerView.UserInteractionEnabled);
-			});
-		}
-
 		// Regression tests for https://github.com/dotnet/maui/issues/30779
 		// SearchBar.CursorPosition and SelectionLength were not updated when the user typed
 

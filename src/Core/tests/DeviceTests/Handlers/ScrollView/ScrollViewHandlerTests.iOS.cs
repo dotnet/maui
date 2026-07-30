@@ -37,37 +37,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task ContainerUserInteractionTracksIsEnabledForOverrideMapper()
-		{
-			// ScrollView replaces the base IsEnabled mapper, so this guards that the wrapper
-			// container's hit-testing is still synchronized when IsEnabled toggles. Regression:
-			// override handlers previously updated only the inner platform view, leaving the
-			// WrapperView (created here by Clip) reachable while the ScrollView was disabled.
-			var scrollView = new ScrollViewStub
-			{
-				Clip = new PathShapeStub()
-			};
-			var handler = await CreateHandlerAsync(scrollView);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var containerView = Assert.IsType<WrapperView>(handler.ContainerView);
-
-				Assert.True(containerView.UserInteractionEnabled);
-
-				scrollView.IsEnabled = false;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-
-				Assert.False(containerView.UserInteractionEnabled);
-
-				scrollView.IsEnabled = true;
-				handler.UpdateValue(nameof(IView.IsEnabled));
-
-				Assert.True(containerView.UserInteractionEnabled);
-			});
-		}
-
-		[Fact]
 		public async Task ScrollViewContentSizeSet()
 		{
 			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });

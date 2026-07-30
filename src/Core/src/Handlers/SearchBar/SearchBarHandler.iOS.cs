@@ -71,7 +71,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsEnabled(searchBar);
-			ViewHandler.MapInputTransparentToContainer(handler, searchBar);
 		}
 
 		public static void MapText(ISearchBarHandler handler, ISearchBar searchBar)

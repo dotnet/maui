@@ -214,11 +214,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
-		public static void MapIsEnabled(IEditorHandler handler, IEditor editor)
-		{
+		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateIsEnabled(editor);
-			ViewHandler.MapInputTransparentToContainer(handler, editor);
-		}
 
 		class MauiTextViewEventProxy
 		{

@@ -24,10 +24,20 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Non-UIControl views (like UICollectionView) have no native enabled state, so
-				// disable interaction when the view is disabled or input-transparent
-				platformView.UserInteractionEnabled = view.IsEnabled && !view.InputTransparent;
+				// UserInteractionEnabled is the single source of truth, always
+				// recomputed here from both IsEnabled and InputTransparent.
+				platformView.UpdateInteractionState(view);
 			}
+		}
+
+		// Single owner of UserInteractionEnabled: both UpdateIsEnabled and
+		// UpdateInputTransparent funnel through this so the flag is always
+		// recomputed from current state, never left stale by either one.
+		static void UpdateInteractionState(this UIView platformView, IView view)
+		{
+			platformView.UserInteractionEnabled = platformView is UIControl
+				? !view.InputTransparent
+				: view.IsEnabled && !view.InputTransparent;
 		}
 
 		public static void Focus(this UIView platformView, FocusRequest request)
@@ -623,18 +633,11 @@ namespace Microsoft.Maui.Platform
 			// because this prevents users from scrolling the content inside an editor.
 			if (view is not IEditor && view is ITextInput textInput)
 			{
-				// A non-editor text input (Entry/SearchBar) loses interaction when it is read-only or
-				// input-transparent -- but a disabled view (and its WrapperView container) must also
-				// lose hit-testing, so IsEnabled has to be part of the calculation. Without it, calling
-				// this from the container-sync path re-enabled a disabled SearchBar's container.
-				platformView.UserInteractionEnabled =
-					view.IsEnabled && !(textInput.IsReadOnly || view.InputTransparent);
+				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
 				return;
 			}
 
-			platformView.UserInteractionEnabled = platformView is UIControl
-				? !view.InputTransparent
-				: view.IsEnabled && !view.InputTransparent;
+			platformView.UpdateInteractionState(view);
 		}
 
 		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)

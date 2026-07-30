@@ -628,11 +628,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if IOS || MACCATALYST
-		// Internal so handlers that replace the IsEnabled mapper (and therefore don't call the base
-		// MapIsEnabled) can still synchronize their wrapper container's hit-testing. Without this the
-		// container of an override handler (ScrollView/SearchBar/Editor/RefreshView) stays reachable
-		// after IsEnabled toggles when the view has a WrapperView (Clip/Shadow/Border).
-		internal static void MapInputTransparentToContainer(IViewHandler handler, IView view)
+		static void MapInputTransparentToContainer(IViewHandler handler, IView view)
 		{
 			if (handler.ContainerView is WrapperView wrapper)
 				wrapper.UpdateInputTransparent(handler, view);
