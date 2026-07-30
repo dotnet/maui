@@ -97,7 +97,7 @@ function Get-InternalOfficialBuildClassification {
 }
 
 function Get-InternalOfficialBuildOverallClassification {
-    param([Parameter(Mandatory = $true)][array]$Branches)
+    param([Parameter(Mandatory = $true)][AllowEmptyCollection()][array]$Branches)
 
     if ($Branches.Count -eq 0) { return 'skipped' }
 
@@ -116,6 +116,19 @@ function Get-InternalOfficialBuildOverallClassification {
         if ($rank[$classification] -gt $rank[$worst]) { $worst = $classification }
     }
     return $worst
+}
+
+function ConvertTo-SafeInternalBuildNumber {
+    param([AllowNull()]$BuildNumber)
+
+    if ($null -eq $BuildNumber) { return $null }
+
+    $value = [string]$BuildNumber
+    if ($value -match '^\d{8}\.\d{1,10}$') {
+        return $value
+    }
+
+    return 'invalid-build-number'
 }
 
 function Select-LatestInternalOfficialBuild {
@@ -274,6 +287,7 @@ function Get-InternalOfficialBuildHealth {
     }
 
     $results = [System.Collections.Generic.List[object]]::new()
+    $successfulQueryCount = 0
     foreach ($branchRef in $branchRefs) {
         try {
             $fetchResult = & $BuildFetcher $branchRef
@@ -288,11 +302,24 @@ function Get-InternalOfficialBuildHealth {
         $success = [bool](Get-InternalBuildProperty $fetchResult 'Success')
         $failureKind = [string](Get-InternalBuildProperty $fetchResult 'FailureKind')
         if (-not $success -and $failureKind -eq 'access') {
-            return [PSCustomObject]@{
-                overall = 'skipped'
-                skipReason = 'internal-auth-unavailable'
-                branches = @()
+            if ($successfulQueryCount -eq 0) {
+                return [PSCustomObject]@{
+                    overall = 'skipped'
+                    skipReason = 'internal-auth-unavailable'
+                    branches = @()
+                }
             }
+
+            $branchName = $branchRef -replace '^refs/heads/', ''
+            [void]$results.Add([PSCustomObject]@{
+                branch = $branchName
+                branchRef = $branchRef
+                classification = 'unknown'
+                reason = 'internal-auth-unavailable'
+                headSha = $null
+                build = $null
+            })
+            continue
         }
 
         $branchName = $branchRef -replace '^refs/heads/', ''
@@ -308,6 +335,7 @@ function Get-InternalOfficialBuildHealth {
             continue
         }
 
+        $successfulQueryCount++
         $build = Get-InternalBuildProperty $fetchResult 'Build'
         $headSha = try { [string](& $HeadFetcher $branchRef) } catch { $null }
         $classification = Get-InternalOfficialBuildClassification `
@@ -333,7 +361,7 @@ function Get-InternalOfficialBuildHealth {
             } else {
                 [PSCustomObject]@{
                     id = $buildId
-                    buildNumber = Get-InternalBuildProperty $build 'buildNumber'
+                    buildNumber = ConvertTo-SafeInternalBuildNumber (Get-InternalBuildProperty $build 'buildNumber')
                     status = Get-InternalBuildProperty $build 'status'
                     result = Get-InternalBuildProperty $build 'result'
                     sourceSha = Get-InternalBuildProperty $build 'sourceVersion'
@@ -397,18 +425,18 @@ function Convert-InternalOfficialBuildHealthToChecks {
             default { 'UNKNOWN' }
         }
         $branchName = [string](Get-InternalBuildProperty $branch 'branch')
-        $buildId = Get-InternalBuildProperty $build 'id'
-        $buildNumber = Get-InternalBuildProperty $build 'buildNumber'
-        $sourceSha = [string](Get-InternalBuildProperty $build 'sourceSha')
-        $url = [string](Get-InternalBuildProperty $build 'url')
-        $identity = if ($buildId) { "build $buildId / $buildNumber" } else { 'no build found' }
-        $source = if ($sourceSha) { ", source $sourceSha" } else { '' }
-        $link = if ($url) { " ([open build]($url))" } else { '' }
+        $summary = switch ($classification) {
+            'green' { 'The latest official build succeeded at current branch HEAD.' }
+            'red' { 'The latest official build did not succeed at current branch HEAD.' }
+            'stale' { 'The latest official build does not match current branch HEAD.' }
+            'in-progress' { 'The latest official build has not completed.' }
+            default { 'Official-build evidence could not be determined for this branch.' }
+        }
 
         [void]$checks.Add([PSCustomObject]@{
             Area = "Internal official build ($branchName)"
             Status = $status
-            Details = "$($classification.ToUpperInvariant()): $identity$source$link."
+            Details = "$($classification.ToUpperInvariant()): $summary"
             NextAction = switch ($classification) {
                 'green' { 'No action needed.' }
                 'red' { 'Investigate and repair the failed official build before release.' }
