@@ -819,7 +819,8 @@ public class EssentialsDIBridgeTests
 		TimeSpan timeout)
 	{
 		var descriptor = Assert.Single(
-			builder.Services.Where(service => service.ServiceType.Name == "EssentialsCleanup"));
+			builder.Services,
+			service => service.ServiceType.Name == "EssentialsCleanup");
 		Assert.True(builder.Services.Remove(descriptor));
 		builder.Services.Add(
 			ServiceDescriptor.Singleton(
