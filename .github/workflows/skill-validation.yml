@@ -1211,6 +1211,8 @@ jobs:
                   const score = suiteProp(block, 'overallScore');
                   const threshold = suiteProp(block, 'threshold');
                   const passed = suiteProp(block, 'passed') === 'true';
+                  const suiteFailures = Number(tagAttr(openTag, 'failures') || 0);
+                  const suiteErrors = Number(tagAttr(openTag, 'errors') || 0);
                   if (!passed) evalPassed = false;
                   // Failing/erroring stimuli, deduped by testcase name (runs>1
                   // flattens each stimulus into one testcase per trial).
@@ -1228,7 +1230,16 @@ jobs:
                       if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
                     }
                   }
-                  suites.push({ scope, label, score, threshold, passed, failures: [...failures.entries()] });
+                  suites.push({
+                    scope,
+                    label,
+                    score,
+                    threshold,
+                    passed,
+                    suiteFailures,
+                    suiteErrors,
+                    failures: [...failures.entries()],
+                  });
                 }
               }
             }
@@ -1251,7 +1262,7 @@ jobs:
                 lines.push('### ❌ LLM Evaluation Failed');
               }
               const passedCount = suites.filter(s => s.passed).length;
-              lines.push(`${passedCount}/${suites.length} eval suite(s) met threshold`);
+              lines.push(`${passedCount}/${suites.length} eval suite(s) passed`);
               lines.push('');
 
               // ── Per-suite results table ─────────────────────────
@@ -1287,7 +1298,16 @@ jobs:
               for (const s of suites) {
                 const sc = s.score != null && s.score !== '' ? Number(s.score).toFixed(2) : '—';
                 const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
-                const v = s.passed ? '✅' : '❌';
+                let v = '❌';
+                if (s.passed) {
+                  v = '✅';
+                } else if (s.suiteErrors > 0) {
+                  // Vally hard-fails a suite on any execution error even when
+                  // its numeric aggregate still meets the score threshold.
+                  v = `❌ ${s.suiteErrors} execution error${s.suiteErrors === 1 ? '' : 's'}`;
+                } else if (s.suiteFailures > 0) {
+                  v = `❌ ${s.suiteFailures} failed trial${s.suiteFailures === 1 ? '' : 's'}`;
+                }
                 const label = (s.label || '').replace(/\|/g, '\\|');
                 if (hasBaseline) {
                   const b = baselineScores.get(suiteKey(s.scope, s.label));

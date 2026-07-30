@@ -5,10 +5,12 @@
 # skill proposes ONE alternative fix approach, tests it, records the
 # result with failure analysis, then reverts.
 #
-# These are LIVE behaviorial-protocol tests, not regression-detection — no
-# frozen git fixtures. They probe how the agent BEHAVES (does it repeat a
-# failed approach? does it claim PASS without a device? does it use the
-# prescribed restore script?), which has no documented answer to recite.
+# These are LIVE behavioral-protocol tests, not regression-detection. They
+# probe how the agent BEHAVES (does it repeat a failed approach? does it claim
+# PASS without a device? does it use the prescribed restore script?), which
+# has no documented answer to recite. A frozen worktree supplies the MAUI
+# files and scripts those workflows require; without it Vally starts Copilot
+# in an empty temporary directory and the protocol cannot run deterministically.
 #
 # Brittleness reduction vs the legacy spec:
 #   Legacy banned exact phrasings via output_not_contains — e.g.
@@ -22,9 +24,10 @@
 #
 # Scoring (see scoring block): this suite deliberately omits scoring.weights,
 # so Vally 0.10 uses the unweighted mean of grader [0,1] scores; skill passes
-# when the mean >= scoring.threshold (0.6). Several
-# scenarios are judge-only — a single prompt grader means the trial score
-# IS the judge's normalized rubric score, which is the cleanest possible
+# when the mean >= scoring.threshold (0.6), unless any trial has an execution
+# error (a separate hard failure regardless of the numeric aggregate). Several
+# scenarios are judge-only — a single prompt grader means the trial score IS
+# the judge's normalized rubric score, which is the cleanest possible
 # de-brittled signal.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -40,10 +43,24 @@ type: capability
 
 defaults:
   runs: 3
-  timeout: 10m
+  # The legacy suite allowed 15 minutes for operational try-fix scenarios.
+  # Keep that budget: these cases inspect MAUI source and may run repository
+  # scripts even though device-unavailable outcomes are expected in CI.
+  timeout: 15m
   model: gpt-5.6-sol
   judge_model: claude-opus-5
   executor: copilot-sdk
+
+environment:
+  # Isolate the unit under test instead of exposing every repository skill.
+  skills:
+    - ..
+  # Vally otherwise creates an empty /tmp workspace. Pin a real MAUI checkout
+  # so target files and the prescribed baseline/restore script are available.
+  git:
+    type: worktree
+    ref: 8935253083b24930f9a6f153f72b5ac196d1ae59
+    source: .
 
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
@@ -90,7 +107,7 @@ stimuli:
         testing, using the prescribed restore script rather than ad-hoc
         git commands.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -145,7 +162,7 @@ stimuli:
       - The existing fix adds a gesture recognizer passthrough in ScrollViewHandler
       - Please try a different approach
       - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
-      - Target: src/Controls/src/Core/Handlers/Compatibility/ScrollViewRenderer.iOS.cs
+      - Target: src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
       - Platform: ios
     graders:
       # Crisp failure-mode floor: claiming PASS when the test never ran.
@@ -190,7 +207,7 @@ stimuli:
       so resetting it there has no effect on the crash.
 
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
-      Files: src/Controls/src/Core/Handlers/Shell/ShellItemHandler.Android.cs
+      Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
       Hint: The fix needs to happen before layout measurement, not after navigation completes.
     graders:
       - type: prompt
@@ -210,7 +227,7 @@ stimuli:
         The agent's approach documentation explains why this attempt is
         different from attempt #1 at the mechanism level.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -231,7 +248,7 @@ stimuli:
       Try a completely different mechanism for persisting the text across orientation changes.
 
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
-      Target file: src/Core/src/Platform/Android/EntryHandler.Android.cs
+      Target file: src/Core/src/Handlers/Entry/EntryHandler.Android.cs
     graders:
       # Crisp floor: the most destructive raw-git revert must not be the
       # agent's reset mechanism. `git reset --hard` is unambiguous —
@@ -239,6 +256,16 @@ stimuli:
       - type: output-not-matches
         config:
           pattern: 'git reset --hard'
+      # Deterministic protocol signal: verify the agent actually invokes the
+      # restore script, rather than relying only on its prose summary.
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'EstablishBrokenBaseline\.ps1\s+-Restore'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\bgit\s+(?:checkout|restore|reset|stash)\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -255,7 +282,7 @@ stimuli:
         The agent documents a fix approach that differs from the
         OnSaveInstanceState mechanism that already failed.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -275,7 +302,7 @@ stimuli:
       you should stop and report the result.
 
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
-      Target: src/Controls/src/Core/Handlers/Items/Android/ItemsViewRenderer.cs
+      Target: src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
     graders:
       - type: output-not-matches
         config:
@@ -297,7 +324,7 @@ stimuli:
         The agent does not continue proposing fixes indefinitely — it
         stops at the iteration limit.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -319,7 +346,7 @@ stimuli:
 
       Problem: Android RecyclerView inside ScrollView reports infinite height, causing items to overlap.
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
-      Target files: src/Controls/src/Core/Handlers/Items/Android/RecyclerViewAdapter.cs
+      Target files: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
       Platform: Android
     graders:
       - type: prompt
@@ -338,7 +365,7 @@ stimuli:
         The agent explains WHY the new approach avoids the root cause,
         not merely that it is different code.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -355,7 +382,9 @@ stimuli:
 
       Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
-      Target files: src/Controls/src/Core/Handlers/NavigationPage/
+      Target files:
+      - src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs
+      - src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
       Platform: iOS
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
@@ -376,7 +405,7 @@ stimuli:
         The agent's fix addresses the disconnection-during-animation
         scenario specifically, not a generic null guard.
     constraints:
-      max_duration: 10m
+      max_duration: 15m
       expect_skills:
         - try-fix
 
@@ -384,6 +413,8 @@ scoring:
   # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
   # unweighted mean of grader [0,1] scores; skill passes when the mean across runs >=
   # threshold. Judge-only scenarios reduce to "judge normalized score >=
-  # 0.6" (raw >= 3.4/5); two-grader scenarios average a crisp floor with
-  # the judge. Threshold DEFAULTS to 1.0 when omitted, so it is set here.
+  # 0.6" (raw >= 3.4/5); multi-grader scenarios average crisp protocol signals
+  # with the judge. The restore-script case has three equally weighted graders
+  # after adding a deterministic tool-call check. Threshold DEFAULTS to 1.0
+  # when omitted, so it is set here.
   threshold: 0.6
