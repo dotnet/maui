@@ -315,6 +315,51 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task DisposeAsyncWaitsAsynchronouslyForInFlightInitializeAppServices()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var returnTimeout = TimeSpan.FromSeconds(5);
+			var initializer = new BlockingRepeatedInitializeService(timeout);
+			var cleanupRan = false;
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiInitializeService>(initializer);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					Assert.True(initializer.SecondCallExited);
+					cleanupRan = true;
+				}));
+			var app = builder.Build();
+
+			var initialization = Task.Run(app.InitializeAppServices);
+			await initializer.SecondCallEntered.Task.WaitAsync(timeout);
+
+			var disposeCall = Task.Factory.StartNew(
+				() => app.DisposeAsync().AsTask(),
+				CancellationToken.None,
+				TaskCreationOptions.None,
+				TaskScheduler.Default);
+			var returnedBeforeRelease = await Task.WhenAny(disposeCall, Task.Delay(returnTimeout)) == disposeCall;
+			if (!returnedBeforeRelease)
+			{
+				initializer.ReleaseSecondCall.TrySetResult(true);
+				await Task.WhenAll(initialization, disposeCall).WaitAsync(timeout);
+			}
+
+			Assert.True(
+				returnedBeforeRelease,
+				"DisposeAsync blocked synchronously while app-service initialization was in flight.");
+
+			var disposal = await disposeCall;
+			Assert.False(disposal.IsCompleted);
+
+			initializer.ReleaseSecondCall.TrySetResult(true);
+			await Task.WhenAll(initialization, disposal).WaitAsync(timeout);
+
+			Assert.True(cleanupRan);
+		}
+
+		[Fact]
 		public async Task DisposeWaitsForChildFlowInitializationAfterParentScopeExits()
 		{
 			var timeout = TimeSpan.FromSeconds(30);
@@ -445,6 +490,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		public void DisposeFromInitializeAppServicesThrowsInsteadOfDeadlocking()
 		{
 			var initializer = new ReentrantDisposeInitializeService();
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiInitializeService>(initializer);
+			var app = builder.Build();
+			initializer.Target = app;
+
+			app.InitializeAppServices();
+
+			Assert.IsType<InvalidOperationException>(initializer.CapturedException);
+			app.Dispose();
+		}
+
+		[Fact]
+		public void DisposeAsyncFromInitializeAppServicesThrowsInsteadOfDeadlocking()
+		{
+			var initializer = new ReentrantDisposeAsyncInitializeService();
 			var builder = MauiApp.CreateBuilder(useDefaults: false);
 			builder.Services.AddSingleton<IMauiInitializeService>(initializer);
 			var app = builder.Build();
@@ -697,6 +757,23 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					return;
 
 				CapturedException = Record.Exception(() => Target?.Dispose());
+			}
+		}
+
+		sealed class ReentrantDisposeAsyncInitializeService : IMauiInitializeService
+		{
+			int _callCount;
+
+			public MauiApp Target { get; set; }
+
+			public Exception CapturedException { get; private set; }
+
+			public void Initialize(IServiceProvider services)
+			{
+				if (Interlocked.Increment(ref _callCount) == 1)
+					return;
+
+				CapturedException = Record.Exception(() => Target.DisposeAsync().AsTask().GetAwaiter().GetResult());
 			}
 		}
 

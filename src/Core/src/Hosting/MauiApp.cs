@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Hosting
 		/// </remarks>
 		public void Dispose()
 		{
-			if (!TryBeginDispose(out var completion))
+			if (!TryBeginDispose(waitForInFlightInitialization: true, out var completion))
 			{
 				WaitForDisposal(completion);
 				return;
@@ -110,10 +110,14 @@ namespace Microsoft.Maui.Hosting
 		/// immediately without awaiting to avoid deadlocking on itself, and therefore does not
 		/// observe completion or exceptions. After teardown completes, subsequent non-reentrant calls
 		/// return immediately on success or rethrow the recorded teardown exception.
+		/// <para>
+		/// When app-service initialization is already in flight, this method returns an incomplete
+		/// operation and waits asynchronously for initialization to finish before teardown begins.
+		/// </para>
 		/// </remarks>
 		public async ValueTask DisposeAsync()
 		{
-			if (!TryBeginDispose(out var completion))
+			if (!TryBeginDispose(waitForInFlightInitialization: false, out var completion))
 			{
 				await WaitForDisposalAsync(completion).ConfigureAwait(false);
 				return;
@@ -122,6 +126,7 @@ namespace Microsoft.Maui.Hosting
 			var exceptions = new List<Exception>();
 			try
 			{
+				await WaitForInitializeAppServicesAsync().ConfigureAwait(false);
 				RunSharedCleanup(exceptions);
 
 				try
@@ -149,7 +154,9 @@ namespace Microsoft.Maui.Hosting
 		// Returns true and hands back a fresh completion when the caller wins the one-shot race and
 		// must perform the teardown. Returns false otherwise: 'completion' is the shared completion to
 		// wait on, or null when the current logical flow is re-entering teardown.
-		private bool TryBeginDispose([NotNullWhen(true)] out TaskCompletionSource<ExceptionDispatchInfo?>? completion)
+		private bool TryBeginDispose(
+			bool waitForInFlightInitialization,
+			[NotNullWhen(true)] out TaskCompletionSource<ExceptionDispatchInfo?>? completion)
 		{
 			lock (_disposeGate)
 			{
@@ -171,8 +178,8 @@ namespace Microsoft.Maui.Hosting
 				completion = _disposeCompletion = new TaskCompletionSource<ExceptionDispatchInfo?>(
 					TaskCreationOptions.RunContinuationsAsynchronously);
 				_disposeScope.Value = true;
-				while (_initializeInFlight > 0)
-					Monitor.Wait(_disposeGate);
+				if (waitForInFlightInitialization)
+					WaitForInitializeAppServices();
 
 				return true;
 			}
@@ -216,6 +223,26 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			return false;
+		}
+
+		private async ValueTask WaitForInitializeAppServicesAsync()
+		{
+			lock (_disposeGate)
+			{
+				if (_initializeInFlight == 0)
+					return;
+			}
+
+			await Task.Run(WaitForInitializeAppServices).ConfigureAwait(false);
+		}
+
+		private void WaitForInitializeAppServices()
+		{
+			lock (_disposeGate)
+			{
+				while (_initializeInFlight > 0)
+					Monitor.Wait(_disposeGate);
+			}
 		}
 
 		private void RunSharedCleanup(List<Exception> exceptions)
