@@ -257,7 +257,7 @@ function Merge-PreservedBodyPreamble {
 function New-ExclusiveTempFile {
     <#
     .SYNOPSIS
-        Creates a new, uniquely-named temp file, failing if the path already exists.
+        Creates a temp file at a fresh, unpredictable path, never writing to one that exists.
     .DESCRIPTION
         `Set-Content` follows a pre-existing symlink and writes through to its target, so a
         predictable temp path (pr-finalize-body-<PR>.md) is a write-through primitive if
@@ -266,34 +266,52 @@ function New-ExclusiveTempFile {
         close it anyway rather than relying on that argument holding.
 
         Prefers the AzDO agent temp directory over the shared system temp when available.
-        Creating with New-Item (no -Force) fails when the path exists, including when it is a
-        dangling or pre-planted symlink, so the write cannot be redirected.
+        Creating with New-Item (no -Force) refuses any path that already exists, including a
+        pre-planted or dangling symlink, so the write cannot be redirected. An occupied path
+        is skipped for a fresh random name; after $MaxAttempts the helper throws rather than
+        falling back to a predictable path, so exhaustion can never reopen the vector.
+    .PARAMETER NameGenerator
+        Test seam only. Lets a test force known candidate names so it can pre-plant a symlink
+        at the exact path the helper will try. Production uses random names.
     .OUTPUTS
         Full path to the newly created file.
     #>
     param(
         [Parameter(Mandatory = $true)]
-        [string]$Prefix
+        [string]$Prefix,
+
+        [scriptblock]$NameGenerator = { [System.IO.Path]::GetRandomFileName() },
+
+        [int]$MaxAttempts = 5
     )
 
-    $baseDir = if ($env:AGENT_TEMPDIRECTORY -and (Test-Path -LiteralPath $env:AGENT_TEMPDIRECTORY)) {
+    # -PathType Container so a stale AGENT_TEMPDIRECTORY pointing at a *file* falls back
+    # cleanly instead of failing later inside New-Item.
+    $baseDir = if ($env:AGENT_TEMPDIRECTORY -and (Test-Path -LiteralPath $env:AGENT_TEMPDIRECTORY -PathType Container)) {
         $env:AGENT_TEMPDIRECTORY
     } else {
         [System.IO.Path]::GetTempPath()
     }
 
-    # Retry only guards against an astronomically unlikely name collision.
-    for ($attempt = 0; $attempt -lt 5; $attempt++) {
-        $candidate = Join-Path $baseDir "$Prefix-$([System.IO.Path]::GetRandomFileName()).md"
+    for ($attempt = 0; $attempt -lt $MaxAttempts; $attempt++) {
+        $candidate = Join-Path $baseDir "$Prefix-$(& $NameGenerator).md"
         try {
             $file = New-Item -ItemType File -Path $candidate -ErrorAction Stop
             return $file.FullName
-        } catch {
+        } catch [System.IO.DirectoryNotFoundException] {
+            # Derives from IOException, so it must be caught ahead of the collision case —
+            # a missing base directory will never resolve by picking another name.
+            throw
+        } catch [System.IO.IOException] {
+            # The path is occupied (regular file, or a pre-planted/dangling symlink). Skip it
+            # rather than write through, and try a different name.
             continue
         }
+        # Anything else (access denied, invalid path) is a real fault: let it surface
+        # unwrapped instead of being retried into a generic "after N attempts" message.
     }
 
-    throw "Could not create a temp file under '$baseDir' after 5 attempts."
+    throw "Could not create a temp file under '$baseDir' after $MaxAttempts attempts."
 }
 
 # ─── Main ───────────────────────────────────────────────────────────────────────
