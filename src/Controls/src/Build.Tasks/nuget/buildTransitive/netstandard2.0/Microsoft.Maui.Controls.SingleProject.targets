@@ -167,7 +167,9 @@
           Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
           Include="@(Compile)" />
       <_MauiCompileItemsOutsidePlatformFolder Include="@(_MauiPlatformCompileToRemove)" />
-      <_MauiPlatformCompileCandidates Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+      <_MauiPlatformCompileCandidates
+          Condition=" '@(_MauiPlatformCompileToRemove)' != '' "
+          Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
       <_MauiCompileItemsOutsidePlatformFolder
           Remove="@(_MauiPlatformCompileCandidates)"
           MatchOnMetadata="FullPath"
