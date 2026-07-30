@@ -128,13 +128,13 @@ Describe 'Workflow integration' {
         $workflow | Should -Match 'unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN'
     }
 
-    It 'uses the GitHub environment PAT pool for Copilot inference' {
+    It 'uses the protected direct Copilot credential for inference' {
         $workflowPath = Join-Path $PSScriptRoot '../../../workflows/copilot-review-tests.md'
         $workflow = Get-Content -LiteralPath $workflowPath -Raw -Encoding UTF8
 
-        $workflow | Should -Match 'shared/pat_pool\.md'
-        $workflow | Should -Match '(?m)^environment: copilot-pat-pool$'
-        $workflow | Should -Match 'COPILOT_GITHUB_TOKEN:.*secrets\.COPILOT_PAT_0'
+        $workflow | Should -Match '(?m)^environment: gh-aw-agents$'
+        $workflow | Should -Not -Match 'shared/pat_pool\.md'
+        $workflow | Should -Not -Match 'COPILOT_PAT_[0-9]'
         $workflow | Should -Not -Match '(?m)^\s+copilot-requests: write$'
     }
 
@@ -151,13 +151,14 @@ Describe 'Workflow integration' {
         $uploadIndex | Should -BeGreaterThan $fallbackIndex
     }
 
-    It 'compiles the PAT selector into the inference jobs' {
+    It 'compiles the direct Copilot credential into the inference jobs' {
         $lockPath = Join-Path $PSScriptRoot '../../../workflows/copilot-review-tests.lock.yml'
         $lock = Get-Content -LiteralPath $lockPath -Raw -Encoding UTF8
 
-        $lock | Should -Match '(?m)^\s+pat_pool:$'
-        ([regex]::Matches($lock, 'COPILOT_GITHUB_TOKEN: \$\{\{ case\(needs\.pat_pool\.outputs\.pat_number')).Count |
+        $lock | Should -Not -Match '(?m)^\s+pat_pool:$'
+        ([regex]::Matches($lock, 'COPILOT_GITHUB_TOKEN: \$\{\{ secrets\.COPILOT_GITHUB_TOKEN \}\}')).Count |
             Should -BeGreaterOrEqual 2
+        $lock | Should -Not -Match 'COPILOT_PAT_[0-9]'
         $lock | Should -Not -Match '(?m)^\s+copilot-requests: write$'
     }
 }
