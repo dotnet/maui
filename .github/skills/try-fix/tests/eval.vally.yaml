@@ -185,7 +185,11 @@ stimuli:
         The agent does NOT substitute code review, "code compiles", or
         "logic looks correct" for actual test execution.
     constraints:
-      max_duration: 5m
+      # This still exercises the full try-fix protocol (investigation, one
+      # alternative, attempted test, artifacts, self-review, and cleanup).
+      # Device unavailability changes the expected verdict, not the amount of
+      # agent work required, so retain the legacy operational budget.
+      max_duration: 15m
       expect_skills:
         - try-fix
 
