@@ -330,15 +330,23 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				"EssentialsCleanup",
 				System.Reflection.BindingFlags.NonPublic)
 				?? throw new InvalidOperationException("EssentialsCleanup type not found.");
-			var registrationCount = 0;
+			var preProviderRegistrationCount = 0;
+			var postProviderRegistrationCount = 0;
 
 			foreach (var cleanupService in app.Services.GetServices<IMauiAppCleanupService>())
 			{
 				if (cleanupService.GetType() == cleanupType)
-					registrationCount++;
+					preProviderRegistrationCount++;
 			}
 
-			Assert.Equal(1, registrationCount);
+			foreach (var cleanupService in app.Services.GetServices<IMauiAppPostProviderCleanupService>())
+			{
+				if (cleanupService.GetType() == cleanupType)
+					postProviderRegistrationCount++;
+			}
+
+			Assert.Equal(1, preProviderRegistrationCount);
+			Assert.Equal(1, postProviderRegistrationCount);
 		}
 
 		[Fact]
@@ -585,7 +593,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void ContainerOwnedStaticFacadeIsRestoredBeforeServiceIsDisposed()
+		public void ContainerOwnedStaticFacadeRemainsCurrentUntilServiceIsDisposed()
 		{
 			var original = Preferences.Default;
 			var builder = MauiApp.CreateBuilder();
@@ -600,12 +608,12 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			app.Dispose();
 
 			Assert.True(implementation.IsDisposed);
-			Assert.True(implementation.FacadeWasRestoredBeforeDispose);
+			Assert.True(implementation.FacadeWasCurrentDuringDispose);
 			Assert.Same(original, Preferences.Default);
 		}
 
 		[Fact]
-		public void RepeatedInitializeAppServicesRestoresAllFacadeAssignments()
+		public void RepeatedInitializeAppServicesRestoresAllFacadeAssignmentsAfterProviderDisposal()
 		{
 			var original = Preferences.Default;
 			var builder = MauiApp.CreateBuilder();
@@ -621,7 +629,55 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			app.Dispose();
 
 			Assert.True(implementation.IsDisposed);
-			Assert.True(implementation.FacadeWasRestoredBeforeDispose);
+			Assert.True(implementation.FacadeWasCurrentDuringDispose);
+			Assert.Same(original, Preferences.Default);
+		}
+
+		[Fact]
+		public void FailedRepeatedInitializeAppServicesCanBeRetriedWithoutLeakingFacade()
+		{
+			var original = Preferences.Default;
+			var versionTracking = new FailOnSecondTrackVersionTracking();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+			builder.Services.AddSingleton<IVersionTracking>(versionTracking);
+			builder.ConfigureEssentials(essentials => essentials.UseVersionTracking());
+			var app = builder.Build();
+			var preferences = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+
+			var exception = Assert.Throws<InvalidOperationException>(app.InitializeAppServices);
+
+			Assert.Equal("second track failed", exception.Message);
+			Assert.Same(preferences, Preferences.Default);
+
+			app.InitializeAppServices();
+			Assert.Same(preferences, Preferences.Default);
+			Assert.Equal(3, versionTracking.TrackCount);
+
+			app.Dispose();
+
+			Assert.True(preferences.IsDisposed);
+			Assert.True(preferences.FacadeWasCurrentDuringDispose);
+			Assert.Same(original, Preferences.Default);
+		}
+
+		[Fact]
+		public async Task AsyncDisposableServiceCanUseFacadeDuringProviderDisposal()
+		{
+			var original = Preferences.Default;
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+			builder.Services.AddSingleton<AsyncFacadeReadingDisposable>();
+			var app = builder.Build();
+			var preferences = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+			var observer = app.Services.GetRequiredService<AsyncFacadeReadingDisposable>();
+
+			await app.DisposeAsync();
+
+			Assert.Same(preferences, observer.FacadeDuringDispose);
+			Assert.True(preferences.FacadeWasCurrentDuringDispose);
 			Assert.Same(original, Preferences.Default);
 		}
 
@@ -906,7 +962,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void ConfiguredVersionTrackingIsRestoredBeforeBridgedServicesAreDisposed()
+		public void ConfiguredVersionTrackingIsRestoredAfterBridgedServicesAreDisposed()
 		{
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
 
@@ -923,7 +979,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			app.Dispose();
 
 			Assert.True(preferences.IsDisposed);
-			Assert.True(preferences.FacadeWasRestoredBeforeDispose);
+			Assert.True(preferences.FacadeWasCurrentDuringDispose);
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
 		}
 
@@ -1110,7 +1166,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void LazyVersionTrackingIsRestoredBeforeBridgedServicesAreDisposed()
+		public void LazyVersionTrackingIsRestoredAfterBridgedServicesAreDisposed()
 		{
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
 
@@ -1127,7 +1183,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			app.Dispose();
 
 			Assert.True(preferences.IsDisposed);
-			Assert.True(preferences.FacadeWasRestoredBeforeDispose);
+			Assert.True(preferences.FacadeWasCurrentDuringDispose);
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
 		}
 
@@ -1577,14 +1633,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		sealed class DisposableStubPreferences : StubPreferences, IDisposable
 		{
-			public bool FacadeWasRestoredBeforeDispose { get; private set; }
+			public bool FacadeWasCurrentDuringDispose { get; private set; }
 
 			public bool IsDisposed { get; private set; }
 
 			public void Dispose()
 			{
-				FacadeWasRestoredBeforeDispose = !ReferenceEquals(this, Preferences.Default);
+				FacadeWasCurrentDuringDispose = ReferenceEquals(this, Preferences.Default);
 				IsDisposed = true;
+			}
+		}
+
+		sealed class AsyncFacadeReadingDisposable : IAsyncDisposable
+		{
+			public IPreferences? FacadeDuringDispose { get; private set; }
+
+			public ValueTask DisposeAsync()
+			{
+				FacadeDuringDispose = Preferences.Default;
+				return ValueTask.CompletedTask;
 			}
 		}
 
@@ -2009,6 +2076,44 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public void Track()
 			{
 				throw new InvalidOperationException("version tracking failed");
+			}
+
+			public bool IsFirstLaunchForVersion(string version) => false;
+
+			public bool IsFirstLaunchForBuild(string build) => false;
+		}
+
+		sealed class FailOnSecondTrackVersionTracking : IVersionTracking
+		{
+			public int TrackCount { get; private set; }
+
+			public bool IsFirstLaunchEver => false;
+
+			public bool IsFirstLaunchForCurrentVersion => false;
+
+			public bool IsFirstLaunchForCurrentBuild => false;
+
+			public string CurrentVersion => "1.0";
+
+			public string CurrentBuild => "1";
+
+			public string? PreviousVersion => null;
+
+			public string? PreviousBuild => null;
+
+			public string? FirstInstalledVersion => null;
+
+			public string? FirstInstalledBuild => null;
+
+			public IReadOnlyList<string> VersionHistory => Array.Empty<string>();
+
+			public IReadOnlyList<string> BuildHistory => Array.Empty<string>();
+
+			public void Track()
+			{
+				TrackCount++;
+				if (TrackCount == 2)
+					throw new InvalidOperationException("second track failed");
 			}
 
 			public bool IsFirstLaunchForVersion(string version) => false;

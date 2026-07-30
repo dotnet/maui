@@ -65,6 +65,38 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void PostProviderCleanupRunsAfterProviderDisposal()
+		{
+			var probe = new ProviderDisposalProbe();
+			var postCleanup = new CallbackPostProviderCleanup(() => Assert.True(probe.IsDisposed));
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton(_ => probe);
+			builder.Services.AddSingleton<IMauiAppPostProviderCleanupService>(postCleanup);
+			var app = builder.Build();
+			_ = app.Services.GetRequiredService<ProviderDisposalProbe>();
+
+			app.Dispose();
+
+			Assert.True(postCleanup.WasCalled);
+		}
+
+		[Fact]
+		public async Task PostProviderCleanupRunsAfterProviderDisposalAsync()
+		{
+			var probe = new ProviderDisposalProbe();
+			var postCleanup = new CallbackPostProviderCleanup(() => Assert.True(probe.IsDisposed));
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton(_ => probe);
+			builder.Services.AddSingleton<IMauiAppPostProviderCleanupService>(postCleanup);
+			var app = builder.Build();
+			_ = app.Services.GetRequiredService<ProviderDisposalProbe>();
+
+			await app.DisposeAsync();
+
+			Assert.True(postCleanup.WasCalled);
+		}
+
+		[Fact]
 		public void AppCleanupRunsAllServicesAndAggregatesFailures()
 		{
 			var executionOrder = new List<int>();
@@ -592,6 +624,49 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.True(factory.Provider.IsDisposed);
 		}
 
+		[Fact]
+		public async Task BuildFailureDoesNotBlockUIThreadForAsyncOnlyServiceProvider()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var returnTimeout = TimeSpan.FromSeconds(1);
+			var context = new QueuedSynchronizationContext();
+			var factory = new UIThreadAsyncOnlyServiceProviderFactory(context);
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.ConfigureContainer(factory);
+			builder.Services.AddSingleton<IMauiInitializeService, ThrowingInitializeService>();
+			var buildReturned = new TaskCompletionSource<Exception>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+
+			var build = Task.Run(() =>
+			{
+				var originalContext = SynchronizationContext.Current;
+				try
+				{
+					SynchronizationContext.SetSynchronizationContext(context);
+					buildReturned.TrySetResult(Record.Exception(builder.Build));
+				}
+				finally
+				{
+					SynchronizationContext.SetSynchronizationContext(originalContext);
+				}
+			});
+
+			await factory.DisposeStarted.Task.WaitAsync(timeout);
+			var returnedBeforePump =
+				await Task.WhenAny(buildReturned.Task, Task.Delay(returnTimeout)) == buildReturned.Task;
+
+			context.RunAll();
+			var exception = await buildReturned.Task.WaitAsync(timeout);
+			await Task.WhenAll(build, factory.DisposeCompleted.Task).WaitAsync(timeout);
+
+			Assert.True(
+				returnedBeforePump,
+				"Build blocked the UI thread while the async-only provider awaited dispatched work.");
+			Assert.IsType<InvalidOperationException>(exception);
+			Assert.Equal("initialization failed", exception.Message);
+			Assert.True(factory.Provider.IsDisposed);
+		}
+
 		static (MauiApp App, DisposableConfigurationProvider Configuration, ConfigurationReadingCleanup Cleanup)
 			BuildAppWithTrackedConfiguration()
 		{
@@ -706,6 +781,69 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		sealed class UIThreadAsyncOnlyServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
+		{
+			readonly QueuedSynchronizationContext _context;
+
+			public UIThreadAsyncOnlyServiceProviderFactory(QueuedSynchronizationContext context)
+			{
+				_context = context;
+			}
+
+			public TaskCompletionSource<bool> DisposeStarted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public TaskCompletionSource<bool> DisposeCompleted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public UIThreadAsyncOnlyServiceProvider Provider { get; private set; } = null!;
+
+			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
+
+			public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
+			{
+				Provider = new UIThreadAsyncOnlyServiceProvider(
+					containerBuilder.BuildServiceProvider(),
+					_context,
+					DisposeStarted,
+					DisposeCompleted);
+				return Provider;
+			}
+		}
+
+		sealed class UIThreadAsyncOnlyServiceProvider : AsyncOnlyServiceProvider
+		{
+			readonly QueuedSynchronizationContext _context;
+			readonly TaskCompletionSource<bool> _disposeStarted;
+			readonly TaskCompletionSource<bool> _disposeCompleted;
+
+			public UIThreadAsyncOnlyServiceProvider(
+				ServiceProvider innerProvider,
+				QueuedSynchronizationContext context,
+				TaskCompletionSource<bool> disposeStarted,
+				TaskCompletionSource<bool> disposeCompleted)
+				: base(innerProvider)
+			{
+				_context = context;
+				_disposeStarted = disposeStarted;
+				_disposeCompleted = disposeCompleted;
+			}
+
+			public override async ValueTask DisposeAsync()
+			{
+				_disposeStarted.TrySetResult(true);
+				try
+				{
+					await _context.InvokeAsync();
+					await base.DisposeAsync();
+				}
+				finally
+				{
+					_disposeCompleted.TrySetResult(true);
+				}
+			}
+		}
+
 		sealed class ThrowingInitializeService : IMauiInitializeService
 		{
 			public void Initialize(IServiceProvider services)
@@ -807,6 +945,71 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 
 			public void Cleanup() => _cleanup();
+		}
+
+		sealed class CallbackPostProviderCleanup : IMauiAppPostProviderCleanupService
+		{
+			readonly Action _cleanup;
+
+			public CallbackPostProviderCleanup(Action cleanup)
+			{
+				_cleanup = cleanup;
+			}
+
+			public bool WasCalled { get; private set; }
+
+			public void Cleanup()
+			{
+				_cleanup();
+				WasCalled = true;
+			}
+		}
+
+		sealed class ProviderDisposalProbe : IDisposable
+		{
+			public bool IsDisposed { get; private set; }
+
+			public void Dispose()
+			{
+				IsDisposed = true;
+			}
+		}
+
+		sealed class QueuedSynchronizationContext : SynchronizationContext
+		{
+			readonly object _sync = new();
+			readonly Queue<(SendOrPostCallback Callback, object State)> _callbacks = new();
+
+			public override void Post(SendOrPostCallback d, object state)
+			{
+				lock (_sync)
+					_callbacks.Enqueue((d, state));
+			}
+
+			public Task InvokeAsync()
+			{
+				var completion = new TaskCompletionSource<bool>(
+					TaskCreationOptions.RunContinuationsAsynchronously);
+				Post(_ => completion.TrySetResult(true), null);
+				return completion.Task;
+			}
+
+			public void RunAll()
+			{
+				while (true)
+				{
+					(SendOrPostCallback Callback, object State) callback;
+					lock (_sync)
+					{
+						if (_callbacks.Count == 0)
+							return;
+
+						callback = _callbacks.Dequeue();
+					}
+
+					callback.Callback(callback.State);
+				}
+			}
 		}
 
 		sealed class DisposableConfigurationSource : IConfigurationSource

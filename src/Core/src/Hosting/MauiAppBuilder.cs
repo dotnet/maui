@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -181,6 +183,13 @@ namespace Microsoft.Maui.Hosting
 		/// Builds the <see cref="MauiApp"/>.
 		/// </summary>
 		/// <returns>A configured <see cref="MauiApp"/>.</returns>
+		/// <remarks>
+		/// If initialization fails and a custom service provider supports only asynchronous
+		/// disposal that cannot complete synchronously, cleanup continues asynchronously while
+		/// the initialization exception is rethrown. This avoids blocking a UI thread that the
+		/// provider may need during disposal. Any later disposal failure is written to
+		/// <see cref="Trace"/>.
+		/// </remarks>
 		public MauiApp Build()
 		{
 			ConfigureDefaultLogging();
@@ -203,7 +212,22 @@ namespace Microsoft.Maui.Hosting
 			{
 				try
 				{
-					builtApplication.Dispose();
+					if (serviceProvider is IAsyncDisposable && serviceProvider is not IDisposable)
+					{
+						var disposal = builtApplication.DisposeAsync();
+						if (disposal.IsCompleted)
+						{
+							disposal.GetAwaiter().GetResult();
+						}
+						else
+						{
+							_ = ObserveFailedBuildDisposalAsync(disposal);
+						}
+					}
+					else
+					{
+						builtApplication.Dispose();
+					}
 				}
 				catch (Exception disposalException)
 				{
@@ -217,6 +241,18 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			return builtApplication;
+		}
+
+		private static async Task ObserveFailedBuildDisposalAsync(ValueTask disposal)
+		{
+			try
+			{
+				await disposal.ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError($"MauiApp cleanup after an initialization failure also failed: {ex}");
+			}
 		}
 
 		private sealed class LoggingBuilder : ILoggingBuilder

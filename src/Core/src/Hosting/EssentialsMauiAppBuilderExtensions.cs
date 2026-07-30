@@ -182,6 +182,9 @@ namespace Microsoft.Maui.Hosting
 			builder.Services.TryAddEnumerable(
 				ServiceDescriptor.Singleton<IMauiAppCleanupService, EssentialsCleanup>(
 					services => services.GetRequiredService<EssentialsCleanup>()));
+			builder.Services.TryAddEnumerable(
+				ServiceDescriptor.Singleton<IMauiAppPostProviderCleanupService, EssentialsCleanup>(
+					services => services.GetRequiredService<EssentialsCleanup>()));
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 		}
 
@@ -225,6 +228,7 @@ namespace Microsoft.Maui.Hosting
 
 			void InitializeCore(IServiceProvider services)
 			{
+				var preProviderCleanups = new List<Action>();
 				var facadeCleanups = new List<Action>();
 				EssentialsCleanup? cleanup = null;
 				try
@@ -286,7 +290,7 @@ namespace Microsoft.Maui.Hosting
 						if (explicitMapServiceToken is not null &&
 							geocoding is IPlatformGeocoding platformGeocoding)
 						{
-							TrackAndSetMapServiceToken(platformGeocoding, explicitMapServiceToken, facadeCleanups);
+							TrackAndSetMapServiceToken(platformGeocoding, explicitMapServiceToken, preProviderCleanups);
 						}
 						else if (geocoding is not null)
 						{
@@ -303,7 +307,7 @@ namespace Microsoft.Maui.Hosting
 					{
 						// Preserve a direct pre-existing platform token only when this app replaces
 						// the fallback geocoder with a DI implementation.
-						TrackAndSetMapServiceToken(platformGeocoding, inheritedMapServiceToken, facadeCleanups);
+						TrackAndSetMapServiceToken(platformGeocoding, inheritedMapServiceToken, preProviderCleanups);
 					}
 #endif
 
@@ -318,7 +322,7 @@ namespace Microsoft.Maui.Hosting
 						var appActions = AppActions.Current;
 
 						if (_essentialsBuilder.AppActionHandlers is not null)
-							cleanup.Subscribe(appActions, HandleOnAppAction);
+							Subscribe(appActions, HandleOnAppAction, preProviderCleanups);
 
 						if (_essentialsBuilder.AppActions is not null)
 						{
@@ -343,19 +347,13 @@ namespace Microsoft.Maui.Hosting
 						}
 					}
 
-					cleanup.SetFacadeCleanups(facadeCleanups);
+					cleanup.SetCleanups(preProviderCleanups, facadeCleanups);
 				}
 				catch (Exception initializationException)
 				{
 					try
 					{
-						if (cleanup is not null)
-						{
-							cleanup.SetFacadeCleanups(facadeCleanups);
-							cleanup.Cleanup();
-						}
-						else
-							RestoreFacadeCleanups(facadeCleanups);
+						RollbackInitialization(preProviderCleanups, facadeCleanups);
 					}
 					catch (Exception cleanupException)
 					{
@@ -367,6 +365,38 @@ namespace Microsoft.Maui.Hosting
 
 					throw;
 				}
+			}
+
+			static void RollbackInitialization(
+				List<Action> preProviderCleanups,
+				List<Action> facadeCleanups)
+			{
+				List<Exception>? exceptions = null;
+				try
+				{
+					RestoreFacadeCleanups(preProviderCleanups);
+				}
+				catch (Exception ex)
+				{
+					(exceptions ??= new()).Add(ex);
+				}
+
+				try
+				{
+					RestoreFacadeCleanups(facadeCleanups);
+				}
+				catch (Exception ex)
+				{
+					(exceptions ??= new()).Add(ex);
+				}
+
+				if (exceptions is null)
+					return;
+
+				if (exceptions.Count == 1)
+					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+
+				throw new AggregateException("Essentials initialization rollback failed.", exceptions);
 			}
 
 #if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
@@ -1361,6 +1391,15 @@ namespace Microsoft.Maui.Hosting
 				}
 			}
 
+			static void Subscribe(
+				IAppActions appActions,
+				EventHandler<AppActionEventArgs> handler,
+				List<Action> preProviderCleanups)
+			{
+				appActions.AppActionActivated += handler;
+				preProviderCleanups.Add(() => appActions.AppActionActivated -= handler);
+			}
+
 			void HandleOnAppAction(object? sender, AppActionEventArgs e)
 			{
 				_essentialsBuilder?.AppActionHandlers?.Invoke(e.AppAction);
@@ -1419,92 +1458,60 @@ namespace Microsoft.Maui.Hosting
 		}
 #endif
 
-		sealed class EssentialsCleanup : IMauiAppCleanupService
+		sealed class EssentialsCleanup : IMauiAppCleanupService, IMauiAppPostProviderCleanupService
 		{
 			// Per-instance lock: each MauiApp owns its own EssentialsCleanup singleton, so cleanup
-			// state is guarded per app rather than by a process-global lock. Facade restoration inside
-			// DisposeCore still serializes per type via FacadeBridgeState<T>.SyncRoot.
+			// state is guarded per app rather than by a process-global lock.
 			readonly object _sync = new();
+			List<Action> _preProviderCleanups = new();
 			List<Action> _facadeCleanups = new();
-			bool _cleanedUp;
-#if !TIZEN
-			readonly List<(IAppActions AppActions, EventHandler<AppActionEventArgs> Handler)> _appActionSubscriptions = new();
-#endif
+			bool _preProviderCleanedUp;
+			bool _postProviderCleanedUp;
 
-			public void SetFacadeCleanups(List<Action> cleanups)
+			public void SetCleanups(
+				List<Action> preProviderCleanups,
+				List<Action> facadeCleanups)
 			{
 				lock (_sync)
 				{
-					if (_cleanedUp)
+					if (_preProviderCleanedUp || _postProviderCleanedUp)
 						throw new ObjectDisposedException(nameof(EssentialsCleanup));
-					_facadeCleanups.AddRange(cleanups);
+
+					_preProviderCleanups.AddRange(preProviderCleanups);
+					_facadeCleanups.AddRange(facadeCleanups);
 				}
 			}
 
-#if !TIZEN
-			public void Subscribe(IAppActions appActions, EventHandler<AppActionEventArgs> handler)
+			void IMauiAppCleanupService.Cleanup()
 			{
+				List<Action> cleanups;
 				lock (_sync)
 				{
-					if (_cleanedUp)
-						throw new ObjectDisposedException(nameof(EssentialsCleanup));
-					appActions.AppActionActivated += handler;
-					_appActionSubscriptions.Add((appActions, handler));
-				}
-			}
-#endif
-
-			public void Cleanup()
-			{
-				lock (_sync)
-				{
-					if (_cleanedUp)
+					if (_preProviderCleanedUp)
 						return;
 
-					_cleanedUp = true;
-					DisposeCore();
+					_preProviderCleanedUp = true;
+					cleanups = _preProviderCleanups;
+					_preProviderCleanups = new();
 				}
+
+				RestoreFacadeCleanups(cleanups);
 			}
 
-			void DisposeCore()
+			void IMauiAppPostProviderCleanupService.Cleanup()
 			{
-#if !TIZEN
-				List<Exception>? exceptions = null;
-				for (int i = _appActionSubscriptions.Count - 1; i >= 0; i--)
+				List<Action> cleanups;
+				lock (_sync)
 				{
-					var subscription = _appActionSubscriptions[i];
-					try
-					{
-						subscription.AppActions.AppActionActivated -= subscription.Handler;
-					}
-					catch (Exception ex)
-					{
-						(exceptions ??= new()).Add(ex);
-					}
-				}
-				_appActionSubscriptions.Clear();
+					if (_postProviderCleanedUp)
+						return;
 
-				try
-				{
-					RestoreFacadeCleanups(_facadeCleanups);
-				}
-				catch (Exception facadeException)
-				{
-					(exceptions ??= new()).Add(facadeException);
+					_postProviderCleanedUp = true;
+					cleanups = _facadeCleanups;
+					_facadeCleanups = new();
 				}
 
-				if (exceptions is null)
-					return;
-
-				if (exceptions.Count == 1)
-					ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
-
-				throw new AggregateException(
-					"AppActions unsubscription and facade restoration failed.",
-					exceptions);
-#else
-				RestoreFacadeCleanups(_facadeCleanups);
-#endif
+				RestoreFacadeCleanups(cleanups);
 			}
 		}
 

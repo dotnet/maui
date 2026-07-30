@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			var exceptions = new List<Exception>();
+			var postProviderCleanupServices = CapturePostProviderCleanupServices(exceptions);
 			try
 			{
 				RunSharedCleanup(exceptions);
@@ -94,6 +95,8 @@ namespace Microsoft.Maui.Hosting
 				{
 					exceptions.Add(ex);
 				}
+
+				CleanupPostProviderServices(postProviderCleanupServices, exceptions);
 			}
 			finally
 			{
@@ -124,6 +127,7 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			var exceptions = new List<Exception>();
+			var postProviderCleanupServices = CapturePostProviderCleanupServices(exceptions);
 			try
 			{
 				await WaitForInitializeAppServicesAsync().ConfigureAwait(false);
@@ -144,6 +148,8 @@ namespace Microsoft.Maui.Hosting
 				{
 					exceptions.Add(ex);
 				}
+
+				CleanupPostProviderServices(postProviderCleanupServices, exceptions);
 			}
 			finally
 			{
@@ -266,6 +272,37 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
+		private List<IMauiAppPostProviderCleanupService> CapturePostProviderCleanupServices(List<Exception> exceptions)
+		{
+			try
+			{
+				return new List<IMauiAppPostProviderCleanupService>(
+					_services.GetServices<IMauiAppPostProviderCleanupService>());
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
+				return new();
+			}
+		}
+
+		private static void CleanupPostProviderServices(
+			List<IMauiAppPostProviderCleanupService> cleanupServices,
+			List<Exception> exceptions)
+		{
+			foreach (var cleanupService in cleanupServices)
+			{
+				try
+				{
+					cleanupService.Cleanup();
+				}
+				catch (Exception ex)
+				{
+					exceptions.Add(ex);
+				}
+			}
+		}
+
 		private void FinishDisposal(TaskCompletionSource<ExceptionDispatchInfo?> completion, List<Exception> exceptions)
 		{
 			try
@@ -353,6 +390,11 @@ namespace Microsoft.Maui.Hosting
 	}
 
 	internal interface IMauiAppCleanupService
+	{
+		void Cleanup();
+	}
+
+	internal interface IMauiAppPostProviderCleanupService
 	{
 		void Cleanup();
 	}
