@@ -157,12 +157,11 @@
         The Condition references %(Compile.ExcludeFromCurrentConfiguration)
         from inside an Include of a *different* item type — this is MSBuild
         cross-item-type batching: the filesystem glob is evaluated once per
-        unique value of Compile.ExcludeFromCurrentConfiguration. In practice
-        the blanket <Compile Update> at the top of this file always marks
-        every $(PlatformsProjectFolder)/** file as ExcludeFromCurrentConfiguration=true,
-        so this batches into a single iteration; do NOT "simplify" away the
-        Condition without first re-verifying that contract still holds, or
-        files outside the active TPI may leak into the build.
+        unique value of Compile.ExcludeFromCurrentConfiguration. The blanket
+        <Compile Update> initially marks every $(PlatformsProjectFolder)/**
+        file true, then active-platform updates flip matching items back to
+        false. Keep the Condition so only the true batch is removed; otherwise
+        active-platform files may be removed or inactive files may leak in.
       -->
       <_MauiPlatformCompileToRemove
           Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
