@@ -229,11 +229,18 @@ jobs:
                   branchExists: .branchExists,
                   surveyRef:    .surveyRef,
                   mode:         .mode,
+                  # Detection-time diagnostics only. Never use these fields for
+                  # lifecycle gating: the generated BODY_FILE markers are the
+                  # authoritative report-time state after refs/tags may move.
+                  hotfixInProgress: (.hotfixInProgress // false),
+                  hotfixVersion: (.hotfixVersion // ""),
+                  hotfixCommit: (.hotfixCommit // ""),
                   majorVersion: .majorVersion,
                   issueTitle:   .issueTitle,
                   milestoneName: .milestoneName,
                   recentCommitCount: .recentCommitCount,
                   hasRecentActivity: .hasRecentActivity,
+                  expectedTag: (.expectedTag // ""),
                   # SR-only fields (null for preview trackers)
                   priorSrBranch:    (.priorSrBranch // ""),
                   regressionLabels: (.regressionLabels // []),
@@ -309,12 +316,29 @@ jobs:
           SURVEY_REF:    ${{ matrix.surveyRef }}
           MODE:          ${{ matrix.mode }}
           TRACKER_KEY:   ${{ matrix.canonicalKey }}
+          ISSUE_TITLE:   ${{ matrix.issueTitle }}
           PRIOR_SR:      ${{ matrix.priorSrBranch }}
           REG_LABELS:    ${{ join(matrix.regressionLabels, ',') }}
+          EXPECTED_TAG:  ${{ matrix.expectedTag }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p readiness-out
+
+          # Detection and report generation are separate jobs. If an in-flight
+          # SR's stable tag lands in that gap, regenerate it as shipped now so
+          # the report body emits authoritative shipped-generation markers.
+          if [ "$BRANCH_TYPE" = "sr" ] \
+             && [ "$MODE" = "in-flight" ] \
+             && [ -n "$EXPECTED_TAG" ] \
+             && git rev-parse --verify --quiet "refs/tags/${EXPECTED_TAG}^{commit}" >/dev/null; then
+            echo "Stable tag ${EXPECTED_TAG} appeared after detection; generating this SR as shipped."
+            MODE="shipped"
+            TRACKER_MAJOR="${TRACKER_KEY#net}"
+            TRACKER_MAJOR="${TRACKER_MAJOR%%-*}"
+            TRACKER_SR="${TRACKER_KEY##*-sr}"
+            ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — shipped (${BRANCH_NAME})"
+          fi
 
           if [ "$BRANCH_TYPE" = "sr" ]; then
             # SR readiness:
@@ -378,6 +402,34 @@ jobs:
             exit 1
           fi
 
+          # Reconcile the user-visible title from the generated lifecycle markers
+          # too. A hotfix commit or tag can land between detector and report jobs;
+          # body markers are already authoritative for gating, so the title must
+          # describe the same report-time generation.
+          if [ "$BRANCH_TYPE" = "sr" ]; then
+            REPORT_HOTFIX_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-hotfix: [^>]+ -->$' "$BODY_FILE" || true)
+            REPORT_SHIPPED_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-shipped: [^>]+ -->$' "$BODY_FILE" || true)
+            TRACKER_MAJOR="${TRACKER_KEY#net}"
+            TRACKER_MAJOR="${TRACKER_MAJOR%%-*}"
+            TRACKER_SR="${TRACKER_KEY##*-sr}"
+            if [ -n "$REPORT_HOTFIX_MARKER" ]; then
+              REPORT_HOTFIX_ID="${REPORT_HOTFIX_MARKER#<!-- release-readiness-hotfix: }"
+              REPORT_HOTFIX_ID="${REPORT_HOTFIX_ID% -->}"
+              REPORT_HOTFIX_VERSION="${REPORT_HOTFIX_ID%%@*}"
+              if [ "$REPORT_HOTFIX_VERSION" = "version-pending" ]; then
+                ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix version pending (${BRANCH_NAME})"
+              else
+                ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix ${REPORT_HOTFIX_VERSION} in progress (${BRANCH_NAME})"
+              fi
+              MODE="shipped"
+            elif [ -n "$REPORT_SHIPPED_MARKER" ]; then
+              ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — shipped (${BRANCH_NAME})"
+              MODE="shipped"
+            fi
+          fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "issue_title=$ISSUE_TITLE" >> "$GITHUB_OUTPUT"
+
           echo "body-file=$BODY_FILE" >> "$GITHUB_OUTPUT"
           {
             echo "## ${TRACKER_KEY} (${BRANCH_TYPE})"
@@ -402,41 +454,149 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TRACKER_KEY:        ${{ matrix.canonicalKey }}
-          ISSUE_TITLE:        ${{ matrix.issueTitle }}
+          ISSUE_TITLE:        ${{ steps.report.outputs.issue_title }}
           MILESTONE_NAME:     ${{ matrix.milestoneName }}
           BODY_FILE:          ${{ steps.report.outputs.body-file }}
           RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
-          MODE:               ${{ matrix.mode }}
+          MODE:               ${{ steps.report.outputs.mode }}
         shell: bash
         run: |
           set -euo pipefail
+          source .github/skills/release-readiness/scripts/TrackerIssueLifecycle.sh
 
           # Find any open issue whose body carries the canonical marker for this tracker.
           # This is the idempotent join key — Get-ReleaseReadiness / Get-PreviewReadiness
           # both embed `<!-- release-readiness-tracker: $TRACKER_KEY -->`.
           MARKER="<!-- release-readiness-tracker: ${TRACKER_KEY} -->"
+          # The generated report is authoritative for lifecycle state. Detector
+          # matrix values can become stale if a tag or branch commit lands between
+          # detection and report generation; the body markers reflect the exact
+          # refs the report actually surveyed.
+          HOTFIX_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-hotfix: [^>]+ -->$' "$BODY_FILE" || true)
+          SHIPPED_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-shipped: [^>]+ -->$' "$BODY_FILE" || true)
+          REPORT_HOTFIX_IN_PROGRESS=false
+          [ -n "$HOTFIX_MARKER" ] && REPORT_HOTFIX_IN_PROGRESS=true
+          CREATE_GENERATION=false
+          GENERATION_MARKER=""
+          if [ "$MODE" = "shipped" ]; then
+            GENERATION_MARKER="$SHIPPED_MARKER"
+            [ "$REPORT_HOTFIX_IN_PROGRESS" = "true" ] && GENERATION_MARKER="$HOTFIX_MARKER"
+            if [ -z "$GENERATION_MARKER" ]; then
+              echo "::warning::Shipped report for ${TRACKER_KEY} has no lifecycle generation marker; refusing to create or infer closure state."
+              exit 0
+            fi
+          fi
+
           EXISTING=$(gh issue list \
             --repo "${{ github.repository }}" \
             --state open \
+            --label area-infrastructure \
             --search "in:body \"${MARKER}\"" \
-            --json number,title,createdAt \
-            --limit 50 \
-            --jq '. // [] | sort_by(.createdAt) | .[].number')
+            --json number,title,createdAt,body,labels \
+            --limit 100 | jq -r \
+              --arg tracker "$MARKER" '
+                [.[] | select(
+                  ([.labels[].name] | index("area-infrastructure") != null) and
+                  (((.body // "") | gsub("\r"; "") | split("\n") | index($tracker)) != null)
+                )] | sort_by(.createdAt) | .[].number
+              ')
 
-          # Shipped trackers are REFRESH-ONLY. The most-recently-shipped SR keeps
-          # surfacing post-ship follow-up (adding the build to the GitHub issue
-          # version dropdown, release notes, milestone close-out) while its tracker
-          # issue stays OPEN, but we never (re)create it. Once a human closes the
-          # tracker, it stays closed — "update until closed manually" without
-          # resurrecting a closed issue on the next scheduled run.
-          if [ "$MODE" = "shipped" ] && [ -z "$EXISTING" ]; then
-            echo "Shipped tracker ${TRACKER_KEY}: no open issue (closed or never created) — refresh-only, nothing to do."
-            exit 0
+          # Do not silently orphan or duplicate a tracker whose ownership label
+          # was removed. Exact marker text proves a candidate exists, but without
+          # the durable label the workflow must not edit or adopt it automatically.
+          if [ -z "$EXISTING" ]; then
+            UNOWNED_EXISTING=$(gh issue list \
+              --repo "${{ github.repository }}" \
+              --state open \
+              --search "in:body \"${MARKER}\"" \
+              --json number,createdAt,body,labels \
+              --limit 100 | jq -r \
+                --arg tracker "$MARKER" '
+                  [.[] | select(
+                    ([.labels[].name] | index("area-infrastructure") == null) and
+                    (((.body // "") | gsub("\r"; "") | split("\n") | index($tracker)) != null)
+                  )] | sort_by(.createdAt) | .[].number
+                ')
+            if [ -n "$UNOWNED_EXISTING" ]; then
+              echo "::warning::Open tracker marker ${MARKER} exists on unlabeled issue(s): $(echo "$UNOWNED_EXISTING" | tr '\n' ' '). Restore the area-infrastructure label before automation resumes; refusing to create a duplicate."
+              exit 0
+            fi
+          fi
+
+          # Each exact shipped-tag or hotfix-tip generation is create-once. A
+          # later hotfix commit intentionally has a new version@commit marker.
+          # This distinguishes an intentionally closed generation from one that was
+          # never tracked (for example, a hotfix tag published before the first
+          # scheduled updater run). Search the exact generated marker directly so
+          # the result is not diluted by a generic-marker --limit window.
+          if [ "$MODE" = "shipped" ]; then
+            EXACT_OPEN=$(gh issue list \
+              --repo "${{ github.repository }}" \
+              --state open \
+              --label area-infrastructure \
+              --search "in:body \"${GENERATION_MARKER}\"" \
+              --json number,createdAt,body,labels \
+              --limit 100 | jq -r \
+                --arg tracker "$MARKER" \
+                --arg generation "$GENERATION_MARKER" '
+                  [.[] | select(
+                    ([.labels[].name] | index("area-infrastructure") != null) and
+                    (((.body // "") | gsub("\r"; "") | split("\n")) as $lines |
+                      ($lines | index($tracker) != null) and
+                      ($lines | index($generation) != null))
+                  )] | sort_by(.createdAt) | .[].number
+                ')
+
+            if [ -n "$EXACT_OPEN" ]; then
+              # The exact open proves this generation was tracked, but the oldest
+              # generic tracker remains canonical. It may carry Release Captain
+              # Notes that must not be discarded when duplicate cleanup runs.
+              echo "Current generation is already open as issue(s): $(echo "$EXACT_OPEN" | tr '\n' ' '); preserving oldest tracker #$(rr_select_oldest_tracker "$EXISTING") as canonical."
+            else
+            # Narrow server-side to tracker-labeled issues, then enforce exact
+            # marker lines locally. Legacy/current trackers may be human-created
+            # and later adopted by this workflow, so author identity is not a
+            # durable ownership signal.
+            CLOSED_GENERATION=$(gh issue list \
+              --repo "${{ github.repository }}" \
+              --state closed \
+              --label area-infrastructure \
+              --search "in:body \"${GENERATION_MARKER}\"" \
+              --json number,closedAt,body,labels \
+              --limit 100 | jq -r \
+                --arg tracker "$MARKER" \
+                --arg generation "$GENERATION_MARKER" '
+                  [.[] | select(
+                    ([.labels[].name] | index("area-infrastructure") != null) and
+                    (((.body // "") | gsub("\r"; "") | split("\n")) as $lines |
+                      ($lines | index($tracker) != null) and
+                      ($lines | index($generation) != null))
+                  )] | sort_by(.closedAt) | last | .number // empty
+                ')
+            if [ -n "$CLOSED_GENERATION" ]; then
+              # A prior best-effort duplicate close may have failed. Reconcile
+              # stale generic opens before honoring the exact closed generation.
+              for stale in $EXISTING; do
+                echo "Closing stale tracker issue #$stale because exact generation ${GENERATION_MARKER} is already closed as #${CLOSED_GENERATION}"
+                gh issue close "$stale" \
+                  --repo "${{ github.repository }}" \
+                  --reason "completed" \
+                  --comment "Closing stale tracker: exact release-readiness generation was intentionally closed as #${CLOSED_GENERATION}." || true
+              done
+              echo "Tracker generation ${GENERATION_MARKER} was intentionally closed as #${CLOSED_GENERATION} — not recreating."
+              exit 0
+            fi
+              # Keep one open tracker stable across commits so Release Captain
+              # Notes and subscriptions survive. A new issue is needed only when
+              # there is no open tracker and this exact generation was never closed.
+              [ -z "$EXISTING" ] && CREATE_GENERATION=true
+            fi
           fi
 
           # Activity gate: when there is no recent activity AND no open tracker issue,
-          # skip new-issue creation. (If an existing issue is open, we still refresh it.)
-          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ -z "$EXISTING" ]; then
+          # skip new-issue creation. A newly observed shipped/hotfix generation
+          # is exempt even when its commits fall outside the activity window.
+          if [ "$RECENT_COMMIT_COUNT" -eq 0 ] && [ "$CREATE_GENERATION" != "true" ] && [ -z "$EXISTING" ]; then
             echo "Skipping ${TRACKER_KEY}: no recent commits and no open tracker issue."
             exit 0
           fi
@@ -444,7 +604,7 @@ jobs:
           if [ -n "$EXISTING" ]; then
             # Reuse the OLDEST open tracker issue (first in chronological order).
             # Close any duplicates created by past misfires before refreshing the canonical one.
-            CANONICAL=$(echo "$EXISTING" | head -n 1)
+            CANONICAL=$(rr_select_oldest_tracker "$EXISTING")
             DUPLICATES=$(echo "$EXISTING" | tail -n +2 || true)
 
             for dup in $DUPLICATES; do
@@ -478,9 +638,14 @@ jobs:
             # skip the whole refresh instead (a missing refresh self-heals next run;
             # lost notes do not).
             CUR_FETCH_OK=1
-            gh issue view "$CANONICAL" \
+            CUR_META=$(gh issue view "$CANONICAL" \
               --repo "${{ github.repository }}" \
-              --json body --jq '.body // ""' > "$CUR_BODY_FILE" || CUR_FETCH_OK=0
+              --json body,updatedAt \
+              --jq '[.updatedAt, ((.body // "") | @base64)] | @tsv' 2>/dev/null) || CUR_FETCH_OK=0
+            if [ "$CUR_FETCH_OK" -eq 1 ]; then
+              IFS=$'\t' read -r CUR_UPDATED_AT CUR_BODY_B64 <<< "$CUR_META"
+              printf '%s' "$CUR_BODY_B64" | base64 -d > "$CUR_BODY_FILE" || CUR_FETCH_OK=0
+            fi
 
             if [ "$CUR_FETCH_OK" -ne 1 ]; then
               echo "::warning::Could not read live body of issue #${CANONICAL}; skipping refresh to protect Release Captain Notes."
@@ -598,10 +763,85 @@ jobs:
                 if [ -n "$NEW_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
                   echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
                 else
-                  gh issue edit "$CANONICAL" \
+                  # A human can close the issue while this run is preparing the
+                  # notes splice. Re-read state immediately before the write to
+                  # minimize the close/edit race, then compensate below when
+                  # GitHub timestamps prove the edit landed after the closure.
+                  GENERATION_TRANSITION=false
+                  if [ -n "$GENERATION_MARKER" ] && ! rr_has_exact_marker_line "$CUR_BODY_FILE" "$GENERATION_MARKER"; then
+                    GENERATION_TRANSITION=true
+                  fi
+                  PRE_EDIT_META=$(gh issue view "$CANONICAL" \
                     --repo "${{ github.repository }}" \
-                    --title "$ISSUE_TITLE" \
-                    --body-file "$BODY_FILE"
+                    --json state,body,updatedAt \
+                    --jq '[.state, .updatedAt, ((.body // "") | @base64)] | @tsv' 2>/dev/null || true)
+                  IFS=$'\t' read -r PRE_EDIT_STATE PRE_EDIT_UPDATED_AT PRE_EDIT_BODY_B64 <<< "$PRE_EDIT_META"
+                  if [ "$PRE_EDIT_STATE" != "OPEN" ]; then
+                    echo "::warning::Issue #${CANONICAL} is no longer open; skipping refresh to preserve the human closure."
+                  elif [ "$PRE_EDIT_UPDATED_AT" != "$CUR_UPDATED_AT" ] || [ "$PRE_EDIT_BODY_B64" != "$CUR_BODY_B64" ]; then
+                    echo "::warning::Issue #${CANONICAL} changed while this refresh was preparing; skipping edit to preserve concurrent Release Captain Notes. The next run will merge the latest body."
+                  else
+                    if [ "$GENERATION_TRANSITION" = "true" ]; then
+                      # Capture the timestamp and body from this exact mutation.
+                      # A later issue event can advance the aggregate updatedAt,
+                      # so a post-read timestamp cannot prove edit/close order.
+                      EDIT_RESULT=$(gh api --method PATCH \
+                        "repos/${{ github.repository }}/issues/${CANONICAL}" \
+                        -F title="$ISSUE_TITLE" \
+                        -F body=@"$BODY_FILE" \
+                        --jq '[.updated_at, ((.body // "") | @base64)] | @tsv')
+                      IFS=$'\t' read -r EDIT_UPDATED_AT EDIT_BODY_B64 <<< "$EDIT_RESULT"
+                      POST_EDIT_META=''
+                      if ! POST_EDIT_META=$(gh issue view "$CANONICAL" \
+                       --repo "${{ github.repository }}" \
+                       --json state,closedAt,updatedAt,body \
+                       --jq '[.state, (.closedAt // ""), (.updatedAt // ""), ((.body // "") | @base64)] | @tsv' 2>/dev/null); then
+                       echo "::warning::Could not re-read issue #${CANONICAL} after the generation-transition edit; race compensation could not be evaluated."
+                      elif [ -z "$POST_EDIT_META" ]; then
+                       echo "::warning::Issue #${CANONICAL} returned no post-edit metadata; race compensation could not be evaluated."
+                      else
+                       IFS=$'\t' read -r POST_EDIT_STATE POST_CLOSED_AT POST_UPDATED_AT POST_BODY_B64 <<< "$POST_EDIT_META"
+                      if [ "$POST_EDIT_STATE" = "CLOSED" ] &&
+                        [ -n "$EDIT_BODY_B64" ] &&
+                        [ -n "$POST_BODY_B64" ] &&
+                        [ "$POST_BODY_B64" = "$EDIT_BODY_B64" ] &&
+                        rr_edit_landed_after_close "$POST_CLOSED_AT" "$EDIT_UPDATED_AT"; then
+                       # The mutation response proves this exact edit happened
+                       # after the human closure and remains the live body.
+                       # Start from the live closed body, then recheck its revision
+                       # immediately before removing only the raced marker.
+                       RACE_CURRENT_BODY_FILE="$(mktemp)"
+                        RACE_BODY_FILE="$(mktemp)"
+                       echo "$POST_BODY_B64" | base64 --decode > "$RACE_CURRENT_BODY_FILE"
+                       rr_remove_exact_marker_line "$RACE_CURRENT_BODY_FILE" "$RACE_BODY_FILE" "$GENERATION_MARKER"
+                       PRE_RACE_META=$(gh issue view "$CANONICAL" \
+                         --repo "${{ github.repository }}" \
+                         --json state,updatedAt,body \
+                         --jq '[.state, .updatedAt, ((.body // "") | @base64)] | @tsv' 2>/dev/null || true)
+                       IFS=$'\t' read -r PRE_RACE_STATE PRE_RACE_UPDATED_AT PRE_RACE_BODY_B64 <<< "$PRE_RACE_META"
+                       if [ "$PRE_RACE_STATE" != "CLOSED" ] ||
+                          [ "$PRE_RACE_UPDATED_AT" != "$POST_UPDATED_AT" ] ||
+                          [ "$PRE_RACE_BODY_B64" != "$POST_BODY_B64" ]; then
+                         echo "::warning::Issue #${CANONICAL} changed during generation-race compensation; preserving the latest human body and leaving reconciliation to the next run."
+                       else
+                         if gh issue edit "$CANONICAL" \
+                           --repo "${{ github.repository }}" \
+                           --body-file "$RACE_BODY_FILE"; then
+                           echo "::warning::Issue #${CANONICAL} closed before the generation-transition edit completed; removed the raced marker from the live closed body so the next run can recreate the new generation."
+                         else
+                           echo "::warning::Could not remove the raced generation marker from closed issue #${CANONICAL}; manual reconciliation may be required."
+                         fi
+                       fi
+                       rm -f "$RACE_CURRENT_BODY_FILE" "$RACE_BODY_FILE"
+                      fi
+                      fi
+                    else
+                      gh issue edit "$CANONICAL" \
+                       --repo "${{ github.repository }}" \
+                       --title "$ISSUE_TITLE" \
+                       --body-file "$BODY_FILE"
+                    fi
+                  fi
                 fi
               fi
             fi
@@ -612,12 +852,17 @@ jobs:
               --title "$ISSUE_TITLE"
               --body-file "$BODY_FILE"
             )
-            # Best-effort label attach — never fail the job for a label that does
-            # not exist in this repo. `gh issue create` hard-fails (422) on an
-            # unknown label, so attaching one that was renamed/removed would abort
-            # every auto-create. Probe each label and skip (with a warning) any
-            # that is missing, exactly like the milestone handling below.
-            for lbl in "report" "s/triaged" "area-infrastructure"; do
+            # area-infrastructure is the durable ownership boundary used by the
+            # closed-generation lookup. Refuse to create an issue that the
+            # lifecycle code could not recognize later.
+            if gh api "repos/${{ github.repository }}/labels/area-infrastructure" --jq '.name' >/dev/null 2>&1; then
+              CREATE_ARGS+=(--label "area-infrastructure")
+            else
+              echo "::error::Required label 'area-infrastructure' not found; refusing to create an untrackable release-readiness issue."
+              exit 1
+            fi
+            # The remaining organizational labels are best-effort.
+            for lbl in "report" "s/triaged"; do
               if gh api "repos/${{ github.repository }}/labels/${lbl//\//%2F}" --jq '.name' >/dev/null 2>&1; then
                 CREATE_ARGS+=(--label "$lbl")
               else

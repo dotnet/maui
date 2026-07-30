@@ -64,7 +64,22 @@ Before a fresh attempt:
 ## Bound autonomous work
 
 Advance only the existing CI-fix PR and respect the caller's effective attempt
-counter. When the cap is reached, defer rather than opening a replacement.
+counter. When the cap is reached, return `Decision: Skip` and defer rather than
+advancing the existing PR or opening a replacement.
 Never claim the target test is fixed from a category-level result or an unrelated
 green leg; require evidence for the specific test on the CI-fix PR's current
 head.
+
+## Fail closed at the write boundary
+
+Before any code-push safe output, apply the caller's transport gate to the saved
+base and head. Reject transport unless the saved base is an ancestor, all new
+commits are append-only and merge-free, and the complete diff stays within the
+caller's allowed paths, commit count, file count, and patch-byte bounds. Never
+trim, conceal, or retry an unrelated or oversized diff merely to make it pass.
+
+If a supported safe-output call returns a backend, connection, or validation
+error, do not retry that mutation, continue the remaining mutation set, emit a
+noop, or use a direct write path. Request one bounded `report_incomplete` safe
+output and stop. A missing expected safe output is a failed/incomplete run, not
+a successful no-write result.
