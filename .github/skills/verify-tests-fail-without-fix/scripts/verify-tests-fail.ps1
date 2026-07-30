@@ -1752,6 +1752,7 @@ function Format-GateLogExcerpt {
 function Write-MarkdownReport {
     param(
         [bool]$VerificationPassed,
+        [bool]$CompileCoupledVerified,
         [bool]$FailedWithoutFix,
         [bool]$PassedWithFix,
         [hashtable]$WithoutFixResult,
@@ -1805,7 +1806,7 @@ function Write-MarkdownReport {
     $fixFilesForPlatform = @($ReportRevertableFiles) + @($ReportNewFiles)
     $fixPlatformMismatch = (-not $reportWithFixGenuineFail) -and (Test-FixIrrelevantToPlatform -FixFiles $fixFilesForPlatform -Platform $ReportPlatform)
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or ($baselineBuildError -and -not $reportWithFixGenuineFail) -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail) -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($CompileCoupledVerified) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or ($baselineBuildError -and -not $reportWithFixGenuineFail) -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail) -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
@@ -1869,7 +1870,7 @@ function Write-MarkdownReport {
     #   (was misclassified as ENV ERROR or as a generic FAIL because zero
     #   tests ran but exit code was non-zero).
     $failureClassification = $null
-    if (-not $hasEnvError -and -not $VerificationPassed -and -not $fixPlatformMismatch -and $WithoutFixResultsList -and $WithFixResultsList) {
+    if (-not $hasEnvError -and -not $VerificationPassed -and -not $CompileCoupledVerified -and -not $fixPlatformMismatch -and $WithoutFixResultsList -and $WithFixResultsList) {
         # Build error in the with-fix run trumps every other classification — if
         # the fix doesn't compile, no per-test outcome is meaningful.
         $wBuildError    = @($WithFixResultsList    | Where-Object { $_.BuildError })
@@ -1949,6 +1950,10 @@ function Write-MarkdownReport {
     $lines += ""
     $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
     $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
+    if ($CompileCoupledVerified) {
+        $lines += ""
+        $lines += "✅ **Verified (new API / feature)** — this PR adds new API **and** a test that references it in the same project, so reverting the fix un-compiles the test: there is no valid ""fails without the fix"" baseline to establish (a *compile-coupled* baseline). The gate instead verified the fix by a clean **build + pass with the fix**, so this is a real PASS rather than a non-committal INCONCLUSIVE."
+    }
     if ($mixedPassNote) {
         $lines += ""
         $lines += $mixedPassNote
@@ -3058,6 +3063,22 @@ $anyFilterMismatch  = (@($withoutFixResults) + @($withFixResults) | Where-Object
 # BindableObjectUnitTests referenced SetInheritedBindingContextForBinding, added by the fix ->
 # CS0117/CS1061 WITHOUT the fix but PASSED 94/94 WITH it; was wrongly reported FAILED.)
 $prTestBuildError   = $baselineBuildError -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests) -and (Test-BuildErrorIsInDetectedTest -Results $withFixResults -Tests $AllDetectedTests)
+# Compile-coupled "new API / feature" PASS: the without-fix baseline build error is in the PR's
+# OWN detected test (the test references API the fix introduces), the fix itself COMPILES (no
+# with-fix build error), and every test runs and PASSES cleanly WITH the fix — no env/build/
+# filter error and no genuine with-fix failure. The classic "fails without the fix" baseline is
+# impossible for such a PR (reverting the fix un-compiles the test through no fault of its own),
+# but a clean build+pass WITH the fix positively verifies the new functionality, so report a real
+# PASS (exit 0) instead of a non-committal INCONCLUSIVE. Requires a genuinely clean with-fix run:
+# a with-fix crash/env error (e.g. #36572's SIGABRT) keeps it INCONCLUSIVE. (PR #36572: MediaPicker
+# ProcessImage — new API + test in the same project.)
+$compileCoupledVerified = $baselineBuildError `
+    -and (Test-BuildErrorIsInDetectedTest -Results $withoutFixResults -Tests $AllDetectedTests) `
+    -and (-not $withFixBuildError) `
+    -and (-not $anyEnvError) `
+    -and (-not $anyFilterMismatch) `
+    -and ($withFixGenuineFailCount -eq 0) `
+    -and $passedWithFix
 # A PLATFORM MISMATCH false-FAILED: every changed *code* file (fix files; test files excluded)
 # is platform-specific for a DIFFERENT platform than this gate, so the fix is a no-op here and
 # the repro test necessarily passes without it. Treat as INCONCLUSIVE (exit 3), like a filter
@@ -3067,7 +3088,7 @@ $fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevant
 # it is the ONLY thing preventing a clean PASS (no genuine with-fix failure remains), the gate
 # verified nothing → INCONCLUSIVE (exit 3), never a false FAILED. (PR #36653: a PR whose only
 # detected test is an image/rasterization class that can't load libSkiaSharp on the gate agent.)
-$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError -and $withFixGenuineFailCount -eq 0) -or ($bothNativeLibCount -gt 0 -and $withFixGenuineFailCount -eq 0) -or $fixPlatformMismatch
+$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError -and -not $compileCoupledVerified -and $withFixGenuineFailCount -eq 0) -or ($bothNativeLibCount -gt 0 -and $withFixGenuineFailCount -eq 0) -or $fixPlatformMismatch
 
 Write-Log ""
 Write-Log "Summary:"
@@ -3077,6 +3098,7 @@ Write-Log "  - Tests WITH fix: $(if ($passedWithFix) { 'ALL PASS ✅ (expected)'
 # Generate markdown report
 Write-MarkdownReport `
     -VerificationPassed $verificationPassed `
+    -CompileCoupledVerified $compileCoupledVerified `
     -FailedWithoutFix $failedWithoutFix `
     -PassedWithFix $passedWithFix `
     -WithoutFixResult $withoutFixResult `
@@ -3097,6 +3119,19 @@ if ($verificationPassed) {
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
     Write-Host "║  Tests correctly detect the issue:                        ║" -ForegroundColor Green
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    exit 0
+} elseif ($compileCoupledVerified) {
+    # New-API / new-feature PR: the test references API the fix adds, so reverting the fix
+    # un-compiles the baseline (no valid "fails without fix" state). The fix compiles and every
+    # test PASSES cleanly WITH it, which positively verifies the new functionality → real PASS.
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+    Write-Host "║          VERIFICATION PASSED ✅ (new API / feature)       ║" -ForegroundColor Green
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+    Write-Host "║  Without-fix baseline was compile-coupled (test needs     ║" -ForegroundColor Green
+    Write-Host "║  the fix's new API to compile); the fix builds and all    ║" -ForegroundColor Green
+    Write-Host "║  tests PASS with it — new functionality verified.         ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
 } elseif ($gateInfraError) {

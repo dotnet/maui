@@ -23,7 +23,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual')) {
+    foreach ($fnName in @('Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -327,5 +327,44 @@ Describe 'Test-SnapshotEnvironmentalResidual — FAIL->FAIL environmental downgr
         $wo = @{ FailCount = 1; SnapshotDiffMap = @{ 'direct.png' = 0.70 } }
         $w  = @{ FailCount = 0; SnapshotDiffMap = @{} }
         Test-SnapshotEnvironmentalResidual -WithoutFixResult $wo -WithFixResult $w | Should -BeFalse
+    }
+}
+
+Describe 'Write-MarkdownReport — compile-coupled new-API verification' {
+    BeforeAll {
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        function New-Report {
+            param([bool]$CompileCoupledVerified)
+            $script:MarkdownReport = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+            # Without-fix: build error in the PR's OWN detected test (compile-coupling).
+            $wo = @(@{ TestName = 'MediaPicker_Tests'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false;
+                      FailureMessage = "MediaPicker_Tests.cs(43,54): error CS0117: 'MediaPickerImplementation' does not contain a definition for 'ProcessImage'"; Error = 'MediaPicker_Tests' })
+            # With-fix: compiles and passes cleanly.
+            $w  = @(@{ TestName = 'MediaPicker_Tests'; Passed = $true; BuildError = $false; EnvError = $false; FilterMismatch = $false; FailureMessage = ''; Error = '' })
+            $tests = @([pscustomobject]@{ TestName = 'MediaPicker_Tests' })
+            Write-MarkdownReport `
+                -VerificationPassed $false `
+                -CompileCoupledVerified:$CompileCoupledVerified `
+                -FailedWithoutFix $false -PassedWithFix $true `
+                -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+                -WithoutFixResultsList $wo -WithFixResultsList $w `
+                -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+                -ReportBaseBranch 'net11.0' -ReportRevertableFiles @('src/Essentials/src/MediaPicker/MediaPicker.android.cs') -ReportNewFiles @()
+            return (Get-Content -LiteralPath $script:MarkdownReport -Raw)
+        }
+    }
+
+    It 'reports PASSED with a new-API/feature note when compile-coupled and with-fix passes' {
+        $report = New-Report -CompileCoupledVerified $true
+        $report | Should -Match '### Gate Result: ✅ PASSED'
+        $report | Should -Match 'Verified \(new API / feature\)'
+        # Must NOT emit the misleading baseline-build-failure classification on a PASS.
+        $report | Should -Not -Match 'Base branch does not compile'
+    }
+
+    It 'stays INCONCLUSIVE for the same inputs when compile-coupling is NOT credited' {
+        $report = New-Report -CompileCoupledVerified $false
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Not -Match 'Verified \(new API / feature\)'
     }
 }
