@@ -509,6 +509,52 @@ public partial class TwoWayNoWarningPage : ContentPage
 	}
 
 	[Fact]
+	public void GetOnlyStructIntermediate_OnTwoWayProperty_ReportsMAUIX2018AndOmitsSetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.ReadOnlyStructIntermediatePage"
+             x:DataType="local:ReadOnlyStructViewModel">
+    <Entry Text="{ReadOnlyMargin.Top}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class ReadOnlyStructViewModel
+{
+	public Microsoft.Maui.Thickness ReadOnlyMargin { get; } = new Microsoft.Maui.Thickness(1, 2, 3, 4);
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class ReadOnlyStructIntermediatePage : ContentPage
+{
+	public ReadOnlyStructIntermediatePage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		var diagnostic = Assert.Single(result.Diagnostics.Where(d => d.Id == "MAUIX2018"));
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+		Assert.Contains("ReadOnlyMargin.Top", diagnostic.GetMessage(), StringComparison.Ordinal);
+
+		Assert.NotNull(output);
+		Assert.Contains("TypedBinding<global::TestApp.ReadOnlyStructViewModel, double>", output, StringComparison.Ordinal);
+		Assert.Matches(@"__source\s*=>\s*\(__source\.ReadOnlyMargin\.Top,\s*true\),\s*null,", output);
+		Assert.DoesNotContain("__source.ReadOnlyMargin.Top = __value", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void NullConditionalAccess_OnTwoWayProperty_IsSettable()
 	{
 		// Null-conditional access (?.) IS settable in C# 14+ (guaranteed on .NET 10+)
@@ -808,6 +854,240 @@ public partial class OperatorAliasPage : ContentPage
 		Assert.Contains(" > ", output, StringComparison.Ordinal);
 		Assert.Contains(" <= ", output, StringComparison.Ordinal);
 		Assert.Contains(" >= ", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XmlnsPrefix_TypeReference_UsesFullyQualifiedDisplayString()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:TestApp.Helpers"
+             x:Class="TestApp.XmlnsPrefixPage">
+    <Label Text="{helpers:ExpressionHelper.Value}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Helpers
+{
+	public static class ExpressionHelper
+	{
+		public static string Value => "Resolved";
+	}
+}
+
+namespace TestApp
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class XmlnsPrefixPage : ContentPage
+	{
+		public XmlnsPrefixPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.Contains("global::TestApp.Helpers.ExpressionHelper.Value", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("global::.", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("<global namespace>", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedBindableProperty_WithNamedTarget_RewritesToGetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.NamedAttachedPropertyPage">
+    <VerticalStackLayout>
+        <Button x:Name="MyButton" />
+        <Label Text="{MyButton.(Grid.Row)}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class NamedAttachedPropertyPage : ContentPage
+{
+	public NamedAttachedPropertyPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.Contains("Grid.GetRow(MyButton)", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("__source", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedBindableProperty_WithXmlnsPrefix_RewritesToFullyQualifiedGetter()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="TestApp.PrefixedAttachedPropertyPage">
+    <Label IsVisible="{this.(ios:Page.UseSafeArea)}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class PrefixedAttachedPropertyPage : ContentPage
+{
+	public PrefixedAttachedPropertyPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.Contains("global::Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetUseSafeArea(this)", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedBindableProperty_RewritesSkipStringAndInterpolatedLiteralSegments()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:helpers="clr-namespace:TestApp.Helpers"
+             x:Class="TestApp.LiteralAttachedPropertyPage">
+    <VerticalStackLayout>
+        <Label Text="{= 'helpers:ExpressionHelper (Grid.Row)'}" />
+        <Label Text="{$'helpers:ExpressionHelper (Grid.Row) {this.(Grid.Row)}'}" />
+    </VerticalStackLayout>
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp.Helpers
+{
+	public static class ExpressionHelper
+	{
+		public static string Value => "Resolved";
+	}
+}
+
+namespace TestApp
+{
+	[XamlProcessing(XamlInflator.SourceGen)]
+	public partial class LiteralAttachedPropertyPage : ContentPage
+	{
+		public LiteralAttachedPropertyPage() => InitializeComponent();
+	}
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.Contains("\"helpers:ExpressionHelper (Grid.Row)\"", output, StringComparison.Ordinal);
+		Assert.Contains("$\"helpers:ExpressionHelper (Grid.Row) {Grid.GetRow(this)}\"", output, StringComparison.Ordinal);
+		Assert.DoesNotContain("ExpressionHelper.Get", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedBindableProperty_StandaloneTarget_IsRejectedWithoutSourceRewrite()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.StandaloneAttachedPropertyPage">
+    <Label Text="{(Grid.Row)}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class StandaloneAttachedPropertyPage : ContentPage
+{
+	public StandaloneAttachedPropertyPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
+
+		Assert.Contains(result.Diagnostics, d =>
+			d.Id == "MAUIX2002"
+			&& d.GetMessage().Contains("Standalone attached property expression", StringComparison.Ordinal));
+		if (output is not null)
+			Assert.DoesNotContain("__source", output, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ParenthesizedStaticMemberExpression_IsNotRejectedAsAttachedProperty()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.ParenthesizedStaticMemberPage">
+    <Label Text="{(Math.PI).ToString()}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class ParenthesizedStaticMemberPage : ContentPage
+{
+	public ParenthesizedStaticMemberPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+		Assert.Contains("(Math.PI).ToString()", output, StringComparison.Ordinal);
 	}
 
 	[Fact]

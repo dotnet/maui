@@ -260,6 +260,22 @@ Each candidate fix PR is classified with confidence + evidence:
 | `closed-fix-unlinked` | Issue is CLOSED and a closing comment **explicitly names** a fix PR (fix/resolve/close language) that is MERGED and present on the release branch, but the PR↔issue link was never recorded (no closing keyword / cross-reference). A bare mention of a PR (e.g. naming the *cause* PR for context) does **not** qualify. Non-blocking; action is to add a closing reference for traceability |
 | `needs-human-review` | Evidence is contradictory or weak |
 
+## SR backport handoff
+
+This skill remains report-only: it MUST NOT post a comment, create a branch, or open a backport PR. When reporting a backport candidate:
+
+1. For `merged-on-main-no-backport`, include this exact command in the recommendation for the **merged source PR**:
+
+   ```text
+   /backport to release/<major>.0.1xx-sr<N>
+   ```
+
+2. For `open-on-main`, wait for the source PR to merge, then recommend the same command. For `backport-in-progress`, do not trigger a duplicate backport.
+3. For `merged-non-main-only`, do **not** recommend the command yet. Require a fix PR to merge into `main` first, then rerun readiness; only recommend the command after the merged source PR's ancestry is verified on `main`.
+4. If the automation reports a conflict, recommend manually cherry-picking the source PR's **merge commit** onto the SR branch with `git cherry-pick -x`, resolving and testing the conflict, then opening a PR targeting the SR branch.
+
+Read [Gotcha #4](references/methodology.md#gotcha-4-source-to-sr-backport-workflow) for the generated PR shape and manual fallback commands.
+
 ## CI Status Categories
 
 | CI verdict | Meaning |
@@ -277,16 +293,43 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | Check | When | Status meanings |
 |-------|------|-----------------|
 | **`Versions.props bump`** | All SR runs | `BLOCKED` if `eng/Versions.props` on `main` hasn't been bumped past the current SR cycle (next SR has nowhere to flow). |
-| **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). Without it the branch builds prerelease packages and never ships as stable — CI stays green so nothing else catches it. |
+| **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). After the last backport, create a focused SR PR that preserves `PatchVersion`, replaces `ci.main` and its inflight conditional with `servicing`, and enables stable versions; rerun final CI after it merges. |
 | **`Bug template lists SR version`** | All SR runs | `CLEANUP` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version) — post-release housekeeping, not a ship blocker. |
-| **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. |
+| **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. The next action emits the exact one-line `PatchVersion` edit and PR title while preserving the mainline SDK-band and prerelease settings. |
 | **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
-| **`BAR build for SR HEAD`** | When darc is available + SR HEAD SHA known | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. |
+| **`BAR build for SR HEAD`** | SR branches with the SR HEAD SHA resolved | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. `UNKNOWN` if `darc` isn't on PATH or the build lookup fails (report includes the exact verification command). |
+| **`Ship Assessment validation feed`** | SR branches with the SR HEAD SHA resolved | `READY` surfaces the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed URL to paste into the DevDiv ship **Assessment**, once `darc get-asset` confirms the build's published `NugetFeed` location. `WATCH` if the build isn't promoted to a channel yet (no channel → no feed → the Assessment has no validation feed to link — the SR9 miss), or if a promoted build's `NugetFeed` location isn't confirmed by `darc get-asset` yet (don't link the guessed per-build endpoint before BAR publishes it — `--skip-assets-publishing` can leave it missing). `UNKNOWN` when `darc` is unavailable or the build lookup fails, so the feed can't be resolved. |
 | **`Milestone for current cycle`** | SR + preview branches | `BLOCKED` if the current cycle's milestone (e.g. `.NET 10 SR8` or `.NET 11.0-preview6`) doesn't exist in the GitHub milestone list — fixed issues have nowhere to land. |
-| **`Milestone for next cycle`** | SR + preview branches | `CLEANUP` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships, but it doesn't block the current release. |
-| **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
+| **`Milestone for next cycle`** | SR + preview branches | `CLEANUP` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships, but it doesn't block the current release. **The preview train is `preview1…preview7 → rc1 → rc2 → GA` — there is no `preview8`**, so the cycle after `preview7` is `.NET <major>.0-rc1` (see [Pre-release train cadence](#pre-release-train-cadence-no-preview8)). After `rc2` the check is skipped entirely (GA doesn't use this naming). |
+| **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR, or the preview/rc train) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). The **current** and **next** cycle milestones are excluded here — the next-cycle (roll-forward) target is handled by `Next-cycle milestone past due` below so it isn't mislabeled as shipped debt. |
+| **`Next-cycle milestone past due`** | SR + preview branches | `CLEANUP` if the next-cycle (roll-forward) milestone *exists* but is >7 days past its `due_on`. This is **not** already-shipped debt — it's the target open issues roll forward to after the current cycle ships — so it's surfaced distinctly rather than dropped. Lane-agnostic (an overdue `SR<n+1>` while surveying `SR<n>` triggers it exactly as a slipped `rc1` does). A slip usually means the schedule moved (bump `due_on`) or the cycle was skipped and the milestone abandoned (triage + close). |
 | **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
 | **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
+
+### Next-cycle main bump workflow
+
+After `release/<major>.0.1xx-sr<N>` is cut, `main` must move to the next SR
+cycle before SR<N> ships. Use a focused PR targeting `main`:
+
+1. Change only `PatchVersion` in `eng/Versions.props` from the current SR
+   patch to `(N+1)*10`.
+2. Title the PR `Update PatchVersion from <old> to <new>`.
+3. Keep `SdkBandVersion`, `PreReleaseVersionLabel=ci.main`, and
+   `StabilizePackageVersion=false` unchanged.
+4. Keep this PR separate from the release branch's servicing-flip PR.
+
+For SR9 → SR10, the complete source change is:
+
+```diff
+-    <PatchVersion>90</PatchVersion>
++    <PatchVersion>100</PatchVersion>
+```
+
+This is the same one-file, one-line pattern used for SR8 in
+[#35433](https://github.com/dotnet/maui/pull/35433) (`70` → `80`) and SR9 in
+[#35879](https://github.com/dotnet/maui/pull/35879) (`80` → `90`). The skill
+remains report-only: it must explain this PR precisely, never edit or push
+`main` itself.
 
 ### Expected ship date
 
@@ -299,19 +342,49 @@ The header line **`Expected ship date`** is rendered from `Get-ExpectedShipDate`
 
 Surfaced in JSON as `expectedShipDate.{cadence, date, daysFromNow, formattedLong, note, patchVersion}` so downstream automation doesn't redo the math.
 
+### Pre-release train cadence (no `preview8`)
+
+.NET ships a **single ordered pre-release train per major**:
+
+```
+preview1 → preview2 → … → preview7 → rc1 → rc2 → GA
+```
+
+**`preview7` is the FINAL preview. There is no `preview8`.** Verified against dotnet/maui's own tags and milestones:
+
+| Major | Last preview | Then | Milestones |
+|-------|--------------|------|------------|
+| .NET 9 | `9.0.0-preview.7.24407.4` | `9.0.0-rc.1.24453.9` → `9.0.0-rc.2.24503.2` | — |
+| .NET 10 | `10.0.0-preview.7.25406.3` | `10.0.0-rc.1.25424.2` → `10.0.0-rc.2.25504.7` | `.NET 10.0-preview7` → `.NET 10.0-rc1` → `.NET 10.0-rc2` |
+
+Two consequences the report must get right:
+
+1. **Roll-forward milestone.** The cycle after `preview7` is `.NET <major>.0-rc1`, *not* `.NET <major>.0-preview8`. `Get-PreviewTrainMilestoneTitle` in [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) owns this mapping (ordinals `1..7` → previews, `8` → rc1, `9` → rc2, `10+` → `$null`); `$script:FinalPreviewNumber` is the single constant to change if the cadence ever moves. (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since .NET 6.)
+2. **`preview7` is the feature/API-lock gate.** Because no eighth preview exists, work that misses the `preview7` cut does **not** roll into "the next preview" — RC is normally API-locked and go-live-licensed, so in practice it slips to the **next major**. When reporting on a `preview7` branch or candidate, say so explicitly: public-API PRs still open at the `preview7` cut are a *decide-now* item, not a defer-later one.
+
+> **Where the `rc` mapping actually fires (and where it doesn't).** `Get-MilestoneHygieneChecks` lives only in the **SR lane** (`Get-ReleaseReadiness.ps1`); the automated preview lane (`Get-PreviewReadiness.ps1` → `Test-PreviewMilestoneExists`) validates only the *current* preview's own milestone and never derives a next-cycle title. So an `rc`-shaped milestone title is produced **only** when the SR-lane hygiene check is driven with a preview-shaped branch — an ad-hoc `Get-ReleaseReadiness.ps1 -SrBranch release/<major>.0.1xx-preview7` run, or candidate mode off `preview7`. An **in-flight survey of an actual `release/*-rc1` branch produces no milestone checks at all**: rc-shaped branches match neither the SR nor the preview shape, so the parser skips them (scenario M15). Treat the `preview→rc` mapping as defensive normalization for preview-lane inputs, **not** a live milestone gate on cut `rc` branches.
+
 ### Maestro / BAR check gating
 
 The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When darc isn't installed (most CI environments), both checks emit `UNKNOWN` with the exact local-verification command embedded in the row's `Next action` — so the report **never silently skips** them. The release-readiness agent runs the same checks via the `maestro_*` MCP tools when the script reports `UNKNOWN`.
 
 ## Methodology
 
-Three critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Seven critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
 2. **Timeline cross-references**: `closedByPullRequestsReferences` returns empty for most MAUI issues. The skill walks `gh api repos/.../issues/N/timeline` filtering on `cross-referenced` events.
 
 3. **Forward-flow / non-main merges**: A fix can merge into `inflight/current` only, not `main` (real example: PR #35609). The skill checks `git merge-base --is-ancestor $mergeCommit origin/main` before claiming a fix is "on main, just needs backport".
+
+4. **Source-to-SR backport workflow**: Only a merged fix whose merge commit is on `main` is ready for the `/backport to release/<branch>` automation. Non-main fixes must flow to `main` first; an automated conflict requires a manual `git cherry-pick -x` of the source merge commit.
+
+5. **Servicing flip workflow**: The release branch must produce stable packages before ship. All .NET 10 SRs set `PreReleaseVersionLabel=servicing` and `StabilizePackageVersion=true`; a focused flip PR is the normal pattern, while SR8 validly inherited those values during its catch-up merge.
+
+6. **Next-cycle main bump workflow**: After an SR branch is cut, `main` advances through a separate one-line `PatchVersion` PR. The report emits the exact old/new XML and title while preserving `SdkBandVersion` and CI prerelease settings.
+
+7. **Default-channel → per-build feed → ship Assessment**: An SR branch needs a BAR default-channel mapping so its build is promoted and generates the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed. The DevDiv ship **Assessment** must link that feed so CSI/customers can validate the exact candidate packages; without the mapping + promotion the feed never exists and the Assessment ships incomplete (the SR9 miss). The report derives and surfaces the exact feed URL once a promoted build exists.
 
 ## Shared module
 

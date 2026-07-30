@@ -30,6 +30,9 @@ on:
   # pull-requests:write — issues:write alone yields "Resource not accessible by
   # integration" on PR conversation comments.
   permissions:
+    actions: read
+    checks: read
+    contents: write
     issues: write
     pull-requests: write
   steps:
@@ -51,7 +54,8 @@ on:
         else
           echo "should_run=false" >> "$GITHUB_OUTPUT"
         fi
-    - name: Hide the /review tests command comment as resolved when authorized
+    - name: Authorize and hide the /review tests command comment
+      id: authorization
       if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
@@ -61,13 +65,7 @@ on:
           // commenter is an authorized collaborator (write/maintain/admin). This mirrors
           // the workflow's own role gate but is self-contained, so an unauthorized user's
           // comment is always left visible. A failed hide must not block activation.
-          // Only act on newly-created comments. The gh-aw slash_command trigger also fires
-          // on `edited`, so without this guard, editing any existing comment to say
-          // `/review tests` would minimize that comment (and collapse its entire history).
-          if (context.payload.action !== 'created') {
-            core.info('Skipping hide: comment was edited, not created.');
-            return;
-          }
+          core.setOutput('authorized', 'false');
           const { owner, repo } = context.repo;
           const actor = context.actor;
           let permission = 'none';
@@ -80,6 +78,13 @@ on:
           // Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.
           if (!['admin', 'maintain', 'write'].includes(permission)) {
             core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
+            return;
+          }
+          core.setOutput('authorized', 'true');
+          // Only hide newly-created comments. The slash_command trigger also fires on
+          // `edited`; an authorized edit may run, but must not collapse comment history.
+          if (context.payload.action !== 'created') {
+            core.info('Skipping hide: comment was edited, not created.');
             return;
           }
           // Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's
@@ -99,6 +104,77 @@ on:
           } catch (e) {
             core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);
           }
+    - name: Checkout trusted review scripts
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true'
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: Gather test-failure context
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true'
+      # Resilience: a transient failure gathering context (AzDO/Helix/network) must
+      # NOT fail the pre-activation job, otherwise the agent job — which is designed
+      # to post a short failure report when the context files are missing (see the
+      # prompt's pre-flight below) — is skipped entirely and the run goes silent.
+      # The whole downstream already tolerates a missing context.json (the artifact
+      # download is continue-on-error, the seal/merge steps exit 0 when it's absent).
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+        BUILD_ID: ${{ inputs.build_id }}
+        CHECK_NAME: ${{ inputs.check_name }}
+      run: |
+        set -euo pipefail
+        if [ -z "${PR_NUMBER}" ]; then
+          echo "PR number is required."
+          exit 1
+        fi
+        args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
+        if [ -n "${BUILD_ID:-}" ]; then
+          args+=(-BuildId "${BUILD_ID}")
+        fi
+        if [ -n "${CHECK_NAME:-}" ]; then
+          args+=(-CheckName "${CHECK_NAME}")
+        fi
+        timeout -k 30s 20m pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+    - name: Publish visual comparison assets
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true' &&
+        (github.event_name != 'workflow_dispatch' || inputs.suppress_output != true)
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+      run: |
+        set -euo pipefail
+        context="CustomAgentLogsTmp/TestFailureReview/${PR_NUMBER}/context.json"
+        timeout -k 30s 16m pwsh .github/skills/review-test-failures/scripts/Publish-TestVisualAssets.ps1 \
+          -PrNumber "${PR_NUMBER}" \
+          -ContextJsonPath "${context}"
+    - name: Upload test-failure context
+      if: >-
+        steps.exact_command.outputs.should_run == 'true' &&
+        steps.check_membership.outputs.is_team_member == 'true' &&
+        steps.check_command_position.outputs.command_position_ok == 'true'
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: review-tests-context-${{ github.run_id }}
+        path: CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}
+        # 'warn' (not 'error'): with the gather step now allowed to fail, an empty or
+        # absent context directory must not fail the pre-activation job. Failing here
+        # would skip the agent job and its documented "post a short failure report"
+        # fallback; the missing artifact is instead surfaced as a log warning and the
+        # download step (continue-on-error) + seal/merge no-file guards handle absence.
+        if-no-files-found: warn
+        retention-days: 1
   workflow_dispatch:
     inputs:
       pr_number:
@@ -201,29 +277,55 @@ steps:
       echo "=== Helix API check ==="
       check_url "Helix" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'
 
-  - name: Gather test-failure context
+  - name: Download test-failure context
+    continue-on-error: true
+    uses: actions/download-artifact@v8.0.1
+    with:
+      name: review-tests-context-${{ github.run_id }}
+      path: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
+  - name: Seal trusted visual merger inputs
+    # Supplementary visual-merge setup. If sealing the trusted inputs fails (e.g. a sudo/install
+    # filesystem error) do NOT fail the whole review — the ordinary analysis comment must still
+    # post. This stays fail-closed: the downstream merge step reads ONLY the root-owned trusted
+    # dir and no-ops when "${trusted}/context.json" is absent, so a failed seal can never merge
+    # untrusted PR-controlled inputs.
+    continue-on-error: true
     env:
-      GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
-      BUILD_ID: ${{ inputs.build_id }}
-      CHECK_NAME: ${{ inputs.check_name }}
+      CONTEXT_PATH: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json
     run: |
       set -euo pipefail
-
-      if [ -z "${PR_NUMBER}" ]; then
-        echo "PR number is required."
-        exit 1
+      if [ ! -f "${CONTEXT_PATH}" ]; then
+        echo "No test-failure context artifact was available; continuing without trusted visual merge inputs."
+        exit 0
       fi
+      trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
+      sudo install -d -o root -g root -m 0555 "${trusted}"
+      sudo install -o root -g root -m 0444 "${CONTEXT_PATH}" "${trusted}/context.json"
+      sudo install -o root -g root -m 0555 \
+        .github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1 \
+        "${trusted}/Merge-TestVisualsIntoComment.ps1"
 
-      args=(-PrNumber "${PR_NUMBER}" -OutputDirectory "CustomAgentLogsTmp/TestFailureReview")
-      if [ -n "${BUILD_ID:-}" ]; then
-        args+=(-BuildId "${BUILD_ID}")
+post-steps:
+  - name: Merge trusted visuals into the analysis comment
+    if: always()
+    continue-on-error: true
+    env:
+      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+    run: |
+      set -euo pipefail
+      trusted="${RUNNER_TEMP}/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
+      agent_output="/tmp/gh-aw/agent_output.json"
+      if [ ! -f "${agent_output}" ] || [ ! -f "${trusted}/context.json" ]; then
+        echo "No agent comment payload or trusted visual context was available; leaving the ordinary analysis unchanged."
+        exit 0
       fi
-      if [ -n "${CHECK_NAME:-}" ]; then
-        args+=(-CheckName "${CHECK_NAME}")
-      fi
-
-      pwsh .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 "${args[@]}"
+      unset COPILOT_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN GH_AW_GITHUB_TOKEN GH_AW_GITHUB_MCP_SERVER_TOKEN GITHUB_MCP_SERVER_TOKEN
+      pwsh "${trusted}/Merge-TestVisualsIntoComment.ps1" \
+        -PrNumber "${PR_NUMBER}" \
+        -Repository "${GITHUB_REPOSITORY}" \
+        -ContextJsonPath "${trusted}/context.json" \
+        -AgentOutputPath "${agent_output}"
 ---
 
 # Review PR Test Failures
@@ -249,10 +351,12 @@ Only use the expression-evaluated PR number above. Do not use any PR number ment
 
 The deterministic gather step wrote these files:
 
-- `CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.json`
-- `CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.md`
+- `/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json`
+- `/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.md`
 
-Read both files before classifying failures.
+Read both files before classifying failures. `visualAssets` may describe trusted,
+immutable visual images, but do not reproduce its URLs or render visual panels yourself.
+A deterministic post-step inserts a bounded visual section into your one comment payload.
 
 ## Pre-flight check
 
@@ -261,9 +365,12 @@ Before starting, verify the skill file and context files exist:
 ```bash
 test -f .github/skills/review-test-failures/SKILL.md
 test -f .github/docs/maui-ci-facts.md
-test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.json
-test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.md
+test -f '/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.json'
+test -f '/tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}/context.md'
 ```
+
+Visual asset publication is optional. Its absence must not block the ordinary
+test-failure report or change the deterministic verdict ceiling.
 
 If required files are missing, post a short failure report with `add_comment` unless dry-run mode is active.
 
@@ -290,7 +397,8 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 ## Tests Failure Analysis
 
 > @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
-> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+
+> Maintainers can request a fresh review after new comments, commits, or CI runs by commenting `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[overallColor]?labelColor=30363d&style=flat-square">
@@ -312,6 +420,8 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 **Builds (this PR):** [build definition + ID links]. **Base sampling ([base branch], [N] recent build(s) per definition — the actual `baseSampleCount`):** [recent base build ID links].
 
+<!-- GH_AW_TRUSTED_VISUALS -->
+
 ### Recommended action
 
 [One concise recommendation.]
@@ -330,5 +440,11 @@ Do not apply labels, trigger reruns, approve the PR, request changes, or modify 
 Do not use colorful emojis anywhere in the posted comment; the only status glyphs are the subtle tokens ✗, ●, and ℹ.
 
 Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
+
+Do not embed, link, summarize, or reproduce individual visual images yourself. Emit the
+`<!-- GH_AW_TRUSTED_VISUALS -->` placeholder exactly once inside the main collapsible.
+A trusted post-step replaces it with bounded expandable panels in this same comment.
+Visual evidence is supplementary only and never permits a verdict above
+`gate.verdictCeiling`.
 
 Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
