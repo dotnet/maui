@@ -44,6 +44,7 @@ Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs
 Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Controls.Maps.UserLocationChangedEventArgs.UserLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
 const Microsoft.Maui.Controls.Maps.Pin.DefaultClusteringIdentifier = "maui_default_cluster" -> string!
+override Microsoft.Maui.Controls.Maps.Map.OnBindingContextChanged() -> void
 static readonly Microsoft.Maui.Controls.Maps.Map.ClusterImageSourceProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.IsClusteringEnabledProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Maps.Map.MapStyleProperty -> Microsoft.Maui.Controls.BindableProperty!

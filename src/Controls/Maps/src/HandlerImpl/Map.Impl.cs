@@ -8,13 +8,15 @@ using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public partial class Map : IMap, IEnumerable<IMapPin>
+	public partial class Map : IMap, IMapClusterImageProvider, IEnumerable<IMapPin>
 	{
 		IList<IMapElement> IMap.Elements => _mapElements.Cast<IMapElement>().ToList();
 
 		IList<IMapPin> IMap.Pins => _pins.Cast<IMapPin>().ToList();
 
 		Location? IMap.LastUserLocation => _lastUserLocation;
+
+		int IMapClusterImageProvider.ClusterImageVersion => _clusterImageVersion;
 
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.Controls.Maps
 			return args.Handled;
 		}
 
-		Microsoft.Maui.IImageSource? IMap.GetClusterImage(IReadOnlyList<IMapPin> pins, int count, Location location)
+		Microsoft.Maui.IImageSource? IMapClusterImageProvider.GetClusterImage(IReadOnlyList<IMapPin> pins, int count, Location location)
 		{
 			var provider = ClusterImageProvider;
 			if (provider is not null)

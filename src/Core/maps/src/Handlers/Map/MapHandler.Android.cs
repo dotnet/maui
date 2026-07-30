@@ -20,14 +20,14 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
 using Microsoft.Maui.Platform;
 using ABitmap = Android.Graphics.Bitmap;
+using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using ACanvas = Android.Graphics.Canvas;
-using APaint = Android.Graphics.Paint;
-using ARect = Android.Graphics.Rect;
 using ACircle = Android.Gms.Maps.Model.Circle;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using APaint = Android.Graphics.Paint;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
-using ADrawable = Android.Graphics.Drawables.Drawable;
-using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
+using ARect = Android.Graphics.Rect;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -47,10 +47,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
-		Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>? _clusterIconCache;
-		Queue<string>? _clusterIconCacheOrder;
-		// Bounds icon memory when a provider derives a distinct image per cluster (e.g. count-based glyphs); FIFO evict-oldest when full.
 		const int MaxClusterIconCacheSize = 64;
+		readonly ClusterIconCache<BitmapDescriptor> _clusterIconCache = new(MaxClusterIconCacheSize);
+		WeakReference<IMap>? _clusterImageOwner;
+		int _clusterImageVersion = int.MinValue;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -126,8 +126,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			_circles = null;
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
-			_clusterIconCache?.Clear();
-			_clusterIconCacheOrder?.Clear();
+			_clusterIconCache.Clear();
+			_clusterImageOwner = null;
+			_clusterImageVersion = int.MinValue;
 			_init = true;
 
 			platformView.OnPause();
@@ -369,11 +370,8 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
+				mapHandler.UpdateClusterImageVersion(map);
 				mapHandler.DisconnectPins();
-				// A pins rebuild is also how ClusterImageSource/ClusterImageProvider changes reach the
-				// handler, so icons keyed to the previous source must not survive.
-				mapHandler._clusterIconCache?.Clear();
-				mapHandler._clusterIconCacheOrder?.Clear();
 
 				if (mapHandler._markers != null)
 				{
@@ -395,6 +393,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
 		}
 
+		void UpdateClusterImageVersion(IMap map)
+		{
+			var version = map is IMapClusterImageProvider imageProvider
+				? imageProvider.ClusterImageVersion
+				: int.MinValue;
+			var sameOwner = _clusterImageOwner?.TryGetTarget(out var owner) == true && ReferenceEquals(owner, map);
+
+			if (sameOwner && _clusterImageVersion == version)
+				return;
+
+			_clusterImageOwner = new WeakReference<IMap>(map);
+			_clusterImageVersion = version;
+			_clusterIconCache.Clear();
+		}
+
 		/// <summary>
 		/// Clusters pins based on their proximity using a simple grid-based algorithm.
 		/// </summary>
@@ -408,7 +421,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			// At zoom 0 (world view), cluster radius is large
 			// At zoom 21 (street level), cluster radius is tiny
 			// The divisor controls how aggressively pins cluster - smaller = less clustering
-						// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
 			// Base cluster radius in approximate screen pixels at zoom 0.
 			// Pins whose projected positions fall within this radius are clustered.
 			const double clusterRadiusBasePixels = 50.0;
@@ -737,7 +750,7 @@ namespace Microsoft.Maui.Maps.Handlers
 					else
 					{
 						// Multiple pins - create a cluster marker (custom image if provided, else default bubble).
-						AddClusterMarkerAsync(cluster, ct).FireAndForget();
+						AddClusterMarkerAsync(cluster, ct).FireAndForget(this);
 					}
 				}
 
@@ -958,7 +971,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		async Task AddClusterMarkerAsync(MapCluster cluster, CancellationToken ct)
 		{
-			if (Map == null || MauiContext == null || VirtualView == null)
+			var map = Map;
+			var mauiContext = MauiContext;
+			var virtualView = VirtualView;
+			if (map == null || mauiContext == null || virtualView == null)
 				return;
 
 			var center = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
@@ -969,59 +985,38 @@ namespace Microsoft.Maui.Maps.Handlers
 			options.Anchor(0.5f, 0.5f);
 
 			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
-			var image = VirtualView.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
-			BitmapDescriptor? icon = null;
-			if (image != null)
+			IImageSource? image = null;
+			if (virtualView is IMapClusterImageProvider imageProvider)
 			{
-				// Cache by a stable key (file/URI/glyph) so a provider that returns a fresh ImageSource
-				// per recluster still reuses the decoded bitmap instead of re-decoding and leaking one
-				// entry per call. Unkeyable sources (key == null) are loaded fresh, never cached.
-				var cacheKey = GetClusterIconCacheKey(image);
-				var cacheHit = false;
-				if (cacheKey != null && _clusterIconCache != null && _clusterIconCache.TryGetValue(cacheKey, out var cached))
+				try
 				{
-					if (DateTime.UtcNow < cached.ExpiresAtUtc)
-					{
-						icon = cached.Icon;
-						cacheHit = true;
-					}
-					else
-					{
-						// CacheValidity window elapsed (URI source) - evict and reload as a miss.
-						_clusterIconCache.Remove(cacheKey);
-					}
+					image = imageProvider.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
 				}
-
-				if (!cacheHit)
+				catch (System.Exception ex)
 				{
-					icon = await LoadPinIconAsync(image, MauiContext, ct);
-					if (ct.IsCancellationRequested || MauiContext == null)
-						return;
-					if (icon != null && cacheKey != null)
-					{
-						_clusterIconCache ??= new Dictionary<string, (BitmapDescriptor Icon, DateTime ExpiresAtUtc)>();
-						_clusterIconCacheOrder ??= new Queue<string>();
-						// Evict oldest-first until there is room. Skip keys already gone (e.g. expired and removed on
-						// lookup) so a stale order entry just falls through instead of dropping a live one.
-						while (_clusterIconCache.Count >= MaxClusterIconCacheSize && _clusterIconCacheOrder.Count > 0)
-						{
-							var oldest = _clusterIconCacheOrder.Dequeue();
-							_clusterIconCache.Remove(oldest);
-						}
-						_clusterIconCache[cacheKey] = (icon, GetClusterIconCacheExpiry(image));
-						_clusterIconCacheOrder.Enqueue(cacheKey);
-					}
+					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Cluster image provider threw");
 				}
 			}
 
-			if (ct.IsCancellationRequested || Map == null)
+			BitmapDescriptor? icon = null;
+			if (image != null)
+			{
+				var cacheKey = GetClusterIconCacheKey(image);
+				var loadToken = cacheKey is null ? ct : CancellationToken.None;
+				icon = await _clusterIconCache.GetOrCreateAsync(
+					cacheKey,
+					() => LoadPinIconAsync(image, mauiContext, loadToken),
+					() => GetClusterIconCacheExpiry(image));
+			}
+
+			if (ct.IsCancellationRequested || !ReferenceEquals(Map, map))
 				return;
 
 			icon ??= CreateClusterIcon(cluster.Pins.Count);
 			if (icon != null)
 				options.SetIcon(icon);
 
-			var marker = Map.AddMarker(options);
+			var marker = map.AddMarker(options);
 			if (marker != null)
 			{
 				_markers ??= new List<Marker>();

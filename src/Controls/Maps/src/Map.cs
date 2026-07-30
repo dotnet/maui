@@ -36,7 +36,8 @@ namespace Microsoft.Maui.Controls.Maps
 
 		/// <summary>Bindable property for <see cref="ClusterImageSource"/>.</summary>
 		public static readonly BindableProperty ClusterImageSourceProperty = BindableProperty.Create(nameof(ClusterImageSource), typeof(ImageSource), typeof(Map), default(ImageSource),
-			propertyChanged: (b, o, n) => ((Map)b).OnClusterImageChanged());
+			propertyChanging: (b, o, n) => ((Map)b).OnClusterImageSourceChanging((ImageSource?)o),
+			propertyChanged: (b, o, n) => ((Map)b).OnClusterImageSourceChanged((ImageSource?)n));
 
 		/// <summary>Bindable property for <see cref="MapStyle"/>.</summary>
 		public static readonly BindableProperty MapStyleProperty = BindableProperty.Create(nameof(MapStyle), typeof(string), typeof(Map), default(string));
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls.Maps
 		MapSpan? _lastMoveToRegion;
 		Location? _lastUserLocation;
 		Func<ClusterInfo, ImageSource?>? _clusterImageProvider;
+		int _clusterImageVersion;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Map"/> class with a region.
@@ -85,6 +87,14 @@ namespace Microsoft.Maui.Controls.Maps
 		// <remarks>The selected region will default to Maui, Hawaii.</remarks>
 		public Map() : this(new MapSpan(new Devices.Sensors.Location(20.793062527, -156.336394697), 0.5, 0.5))
 		{
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			if (ClusterImageSource is not null)
+				SetInheritedBindingContext(ClusterImageSource, BindingContext);
+
+			base.OnBindingContextChanged();
 		}
 
 		/// <summary>
@@ -381,10 +391,51 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
+		void OnClusterImageSourceChanging(ImageSource? oldSource)
+		{
+			if (oldSource is null)
+				return;
+
+			CancelOldClusterImageSource(oldSource);
+			oldSource.SourceChanged -= OnClusterImageSourceSourceChanged;
+			oldSource.Parent = null;
+			SetInheritedBindingContext(oldSource, null);
+		}
+
+		void OnClusterImageSourceChanged(ImageSource? newSource)
+		{
+			if (newSource is not null)
+			{
+				newSource.SourceChanged += OnClusterImageSourceSourceChanged;
+				newSource.Parent = this;
+				SetInheritedBindingContext(newSource, BindingContext);
+			}
+
+			OnClusterImageChanged();
+		}
+
+		void OnClusterImageSourceSourceChanged(object? sender, EventArgs e) => OnClusterImageChanged();
+
+		async void CancelOldClusterImageSource(ImageSource oldSource)
+		{
+			try
+			{
+				await oldSource.Cancel();
+			}
+			catch (ObjectDisposedException)
+			{
+			}
+		}
+
 		// Rebuild pins/clusters so a changed ClusterImageSource/ClusterImageProvider is reflected
 		// immediately, instead of waiting for the next unrelated recluster (e.g. a zoom).
 		void OnClusterImageChanged()
 		{
+			unchecked
+			{
+				_clusterImageVersion++;
+			}
+
 			// Cluster images are only consumed while clustering is on; enabling clustering later
 			// re-runs the pins mapper anyway (MapIsClusteringEnabled calls MapPins on both
 			// platforms), so nothing is lost by skipping the rebuild here.

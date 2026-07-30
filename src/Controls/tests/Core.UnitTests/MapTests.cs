@@ -932,10 +932,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void MapLongClickedDoesNotFireWithoutHandler()
 		{
 			var map = new Map();
-			
+
 			// Should not throw when no handler is attached
 			var exception = Record.Exception(() => ((IMap)map).LongClicked(new Location(37.7749, -122.4194)));
-			
+
 			Assert.Null(exception);
 		}
 
@@ -964,7 +964,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			int fireCount = 0;
 			EventHandler<MapClickedEventArgs> handler = (s, e) => fireCount++;
-			
+
 			map.MapLongClicked += handler;
 			((IMap)map).LongClicked(location);
 			Assert.Equal(1, fireCount);
@@ -1185,6 +1185,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 #nullable restore
 			map.ClusterImageProvider = provider;
 			Assert.Same(provider, map.ClusterImageProvider);
+			Assert.IsAssignableFrom<IMapClusterImageProvider>(map);
+			Assert.True(((IMapClusterImageProvider)map).ClusterImageVersion > 0);
 		}
 
 		[Fact]
@@ -1197,7 +1199,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = _ => providerImage;
 
 			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
-			var result = ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+			var result = ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
 
 			Assert.Same(providerImage, result);
 		}
@@ -1210,11 +1212,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageSource = staticImage;
 			// no provider
 			var pins = new List<IMapPin> { new Pin { Label = "A" } };
-			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+			Assert.Same(staticImage, ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 
 			// provider that returns null also falls back
 			map.ClusterImageProvider = _ => null;
-			Assert.Same(staticImage, ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+			Assert.Same(staticImage, ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 		}
 
 		[Fact]
@@ -1222,7 +1224,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var map = new Map();
 			var pins = new List<IMapPin> { new Pin { Label = "A" } };
-			Assert.Null(((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+			Assert.Null(((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 		}
 
 		[Fact]
@@ -1239,7 +1241,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new Pin { Label = "A", ClusteringIdentifier = "cafes" },
 				new Pin { Label = "B", ClusteringIdentifier = "cafes" }
 			};
-			((IMap)map).GetClusterImage(pins, pins.Count, new Location(10, 20));
+			((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(10, 20));
 
 			Assert.NotNull(captured);
 			Assert.Equal(2, captured!.Count);
@@ -1260,7 +1262,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = info => { captured = info; return null; };
 #nullable restore
 
-			var result = ((IMap)map).GetClusterImage(new List<IMapPin>(), 0, new Location(1, 2));
+			var result = ((IMapClusterImageProvider)map).GetClusterImage(new List<IMapPin>(), 0, new Location(1, 2));
 
 			Assert.NotNull(captured);
 			Assert.Equal(0, captured!.Count);
@@ -1282,7 +1284,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 #nullable restore
 
 			var pins = new List<IMapPin> { new Pin { Label = "A" } };
-			((IMap)map).GetClusterImage(pins, 5, new Location(1, 2));
+			((IMapClusterImageProvider)map).GetClusterImage(pins, 5, new Location(1, 2));
 
 			Assert.NotNull(captured);
 			Assert.Equal(5, captured!.Count);
@@ -1313,6 +1315,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			map.ClusterImageProvider = _ => null;
 
 			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void ChangingClusterImageSourceContentsRebuildsPins()
+		{
+			var map = new Map { IsClusteringEnabled = true };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			var source = new FileImageSource { File = "first.png" };
+			map.ClusterImageSource = source;
+			handler.UpdatedProperties.Clear();
+
+			source.File = "second.png";
+
+			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void ClusterImageSourceInheritsBindingContext()
+		{
+			var map = new Map();
+			var source = new FileImageSource();
+			map.ClusterImageSource = source;
+
+			var bindingContext = new object();
+			map.BindingContext = bindingContext;
+
+			Assert.Same(bindingContext, source.BindingContext);
+			Assert.Same(map, source.Parent);
 		}
 
 		[Fact]
@@ -1358,10 +1389,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
 
-			var exception = Record.Exception(() => ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+			var exception = Record.Exception(() => ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 
 			Assert.Null(exception);
-			var result = ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+			var result = ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
 			Assert.Same(staticImage, result);
 		}
 
@@ -1374,7 +1405,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
 
 			IImageSource result = null;
-			var exception = Record.Exception(() => result = ((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+			var exception = Record.Exception(() => result = ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
 
 			Assert.Null(exception);
 			Assert.Null(result);
@@ -1393,7 +1424,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			pin.ClusteringIdentifier = null;
 
 			var pins = new List<IMapPin> { pin };
-			((IMap)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+			((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
 
 			Assert.NotNull(captured);
 			Assert.Equal(Pin.DefaultClusteringIdentifier, captured!.ClusteringIdentifier);
@@ -1441,6 +1472,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void GetClusterIconCacheKeyForUriImageSourceRequiresPositiveValidity()
+		{
+			var source = new UriImageSource
+			{
+				Uri = new Uri("https://example.com/icon.png"),
+				CachingEnabled = true,
+				CacheValidity = TimeSpan.Zero
+			};
+
+			Assert.Null(MapHandler.GetClusterIconCacheKey(source));
+		}
+
+		[Fact]
 		public void GetClusterIconCacheKeyForFontImageSourceContainsGlyph()
 		{
 			var font = new FontImageSource { Glyph = "A", FontFamily = "F", Size = 24, Color = Colors.White };
@@ -1476,12 +1520,79 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void GetClusterIconCacheKeyForFontImageSourceDistinguishesAutoScaling()
+		{
+			var scalingEnabled = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24, enableScaling: true)
+			};
+			var scalingDisabled = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24, enableScaling: false)
+			};
+
+			var enabledKey = MapHandler.GetClusterIconCacheKey(scalingEnabled);
+			var disabledKey = MapHandler.GetClusterIconCacheKey(scalingDisabled);
+
+			Assert.NotNull(enabledKey);
+			Assert.NotNull(disabledKey);
+			Assert.NotEqual(enabledKey, disabledKey);
+		}
+
+		[Fact]
 		public void GetClusterIconCacheKeyIsNullForStreamOrMissingSource()
 		{
 			var stream = new StreamImageSource();
 
 			Assert.Null(MapHandler.GetClusterIconCacheKey(stream));
 			Assert.Null(MapHandler.GetClusterIconCacheKey(null));
+		}
+
+		[Fact]
+		public async Task ClusterIconCacheCoalescesConcurrentLoads()
+		{
+			var cache = new ClusterIconCache<object>(2);
+			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var loadCount = 0;
+
+			Task<object> Load()
+			{
+				loadCount++;
+				return release.Task.ContinueWith(_ => new object(), TaskScheduler.Default);
+			}
+
+			var first = cache.GetOrCreateAsync("shared", Load, () => DateTime.MaxValue);
+			var second = cache.GetOrCreateAsync("shared", Load, () => DateTime.MaxValue);
+			release.SetResult(true);
+
+			var results = await Task.WhenAll(first, second);
+
+			Assert.Equal(1, loadCount);
+			Assert.Same(results[0], results[1]);
+		}
+
+		[Fact]
+		public async Task ClusterIconCacheEvictsLeastRecentlyUsedEntry()
+		{
+			var cache = new ClusterIconCache<object>(2);
+			var first = new object();
+			var second = new object();
+			var third = new object();
+
+			await cache.GetOrCreateAsync("first", () => Task.FromResult(first), () => DateTime.MaxValue);
+			await cache.GetOrCreateAsync("second", () => Task.FromResult(second), () => DateTime.MaxValue);
+			Assert.True(cache.TryGet("first", out _));
+			await cache.GetOrCreateAsync("third", () => Task.FromResult(third), () => DateTime.MaxValue);
+
+			Assert.True(cache.TryGet("first", out var cachedFirst));
+			Assert.False(cache.TryGet("second", out _));
+			Assert.True(cache.TryGet("third", out var cachedThird));
+			Assert.Same(first, cachedFirst);
+			Assert.Same(third, cachedThird);
 		}
 
 		class FakeFontImageSource : IFontImageSource
