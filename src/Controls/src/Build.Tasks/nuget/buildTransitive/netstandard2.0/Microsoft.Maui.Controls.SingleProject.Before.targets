@@ -38,10 +38,9 @@
 
     BackendIdentity records the stable, MAUI-owned key for each built-in backend so
     the built-in platforms describe themselves through exactly the same registration
-    metadata that an external backend NuGet contributes. For recognized platform TFMs
-    activation still flows through TargetPlatformIdentifier(s); BackendIdentity here is
-    purely descriptive (built-ins do not declare an ActivationValue, so the neutral-TFM
-    activation branch never fires for them).
+    metadata that an external backend NuGet contributes. A registration can therefore
+    activate through TargetPlatformIdentifier(s) on a recognized platform TFM or through
+    MauiActiveBackend on a neutral TFM without repeating its backend identity.
   -->
   <ItemGroup>
     <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" BackendIdentity="android" />
@@ -59,10 +58,9 @@
       - ActivationValue is back-filled from BackendIdentity so a backend that
         only declares a stable identity key (BackendIdentity="gtk") can be
         activated for a neutral TFM via <MauiActiveBackend>gtk</MauiActiveBackend>
-        without having to repeat the value. Built-in platforms declare a
-        BackendIdentity but no ActivationValue is derived for them here because
-        they are TPI-recognized (see the guard below), so they never take the
-        neutral-activation branch.
+        without having to repeat the value. This also applies when the same
+        registration declares TargetPlatformIdentifier(s), giving it both recognized
+        TPI and neutral-TFM activation paths.
       - ActivationProperty defaults to the well-known MauiActiveBackend selector
         whenever an ActivationValue is present but no explicit property was named.
       - _MauiResolvedActivationValue captures the *current value* of the property
@@ -91,17 +89,10 @@
         <TargetPlatformIdentifiers>%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)</TargetPlatformIdentifiers>
       </MauiPlatformSpecificFolder>
 
-      <!--
-        Back-fill ActivationValue from BackendIdentity ONLY for folders that are not
-        already TPI-recognized. Built-in platforms carry both a TargetPlatformIdentifier
-        and a BackendIdentity; deriving an ActivationValue for them would let a stray
-        MauiActiveBackend value pull an unrelated built-in folder into a neutral build.
-        Gating on empty TargetPlatformIdentifier(s) keeps the neutral-activation branch
-        exclusive to backends that actually rely on it.
-      -->
+      <!-- Preserve an explicitly authored ActivationValue; otherwise use the stable backend key. -->
       <MauiPlatformSpecificFolder
           Update="@(MauiPlatformSpecificFolder)"
-          Condition=" '%(MauiPlatformSpecificFolder.ActivationValue)' == '' and '%(MauiPlatformSpecificFolder.BackendIdentity)' != '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)' == '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' ">
+          Condition=" '%(MauiPlatformSpecificFolder.ActivationValue)' == '' and '%(MauiPlatformSpecificFolder.BackendIdentity)' != '' ">
         <ActivationValue>%(MauiPlatformSpecificFolder.BackendIdentity)</ActivationValue>
       </MauiPlatformSpecificFolder>
 

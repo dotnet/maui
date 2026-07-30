@@ -1410,6 +1410,112 @@ public static class After
 				StringComparison.OrdinalIgnoreCase);
 		}
 
+		// Regression for cross-item-type batching in _MauiRemovePlatformCompileItems.
+		// The true metadata batch must contain only the matching Compile identities;
+		// a fresh filesystem glob would also capture KeepMarker.cs from the false
+		// bucket and remove it because this test intentionally has no folder allow-list.
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_RemovesOnlyCompileItemsMarkedTrue()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Before.cs"));
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\Mixed\\KeepMarker.cs"));
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\Mixed\\RemoveMarker.cs"));
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "After.cs"));
+			project.Add(compileItems);
+
+			WriteFile("Before.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Before
+{
+	public static string Value => ""Before"";
+}");
+
+			WriteFile("Platforms\\Mixed\\KeepMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class KeepMarker
+{
+	public static string Value => ""Keep"";
+}");
+
+			WriteFile("Platforms\\Mixed\\RemoveMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class RemoveMarker
+{
+	public static string Value => ""Remove"";
+}");
+
+			WriteFile("After.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class After
+{
+	public static string Value => ""After"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// Apply the explicit metadata after the shipping targets import so the
+			// blanket Platforms/** update has already run.
+			var compileMetadata = NewElement("ItemGroup");
+			var keptCompile = NewElement("Compile").WithAttribute("Update", "Platforms\\Mixed\\KeepMarker.cs");
+			keptCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			keptCompile.Add(NewElement("TestMetadata").WithValue("preserved"));
+			compileMetadata.Add(keptCompile);
+			var removedCompile = NewElement("Compile").WithAttribute("Update", "Platforms\\Mixed\\RemoveMarker.cs");
+			removedCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("true"));
+			compileMetadata.Add(removedCompile);
+			project.Add(compileMetadata);
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpCompileItemsAfterRemoval")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			var dumpItems = NewElement("ItemGroup");
+			dumpItems.Add(NewElement("_TestKeptCompile")
+				.WithAttribute("Include", "@(Compile)")
+				.WithAttribute("Condition", " '%(Compile.Filename)' == 'KeepMarker' "));
+			dumpTarget.Add(dumpItems);
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_ORDER: @(Compile->'%(Filename)', '|')"));
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Condition", " '%(Compile.Filename)' == 'KeepMarker' ")
+				.WithAttribute("Text", "KEEP_META: %(Compile.ExcludeFromCurrentConfiguration)|%(Compile.TestMetadata)"));
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "KEEP_COUNT: @(_TestKeptCompile->Count())"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.Before");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.KeepMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.RemoveMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.After");
+			Assert.Contains("COMPILE_ORDER: Before|KeepMarker|After", log, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("KEEP_META: false|preserved", log, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("KEEP_COUNT: 1", log, StringComparison.OrdinalIgnoreCase);
+		}
+
 		// Backward compatibility: a folder that declares only the legacy singular
 		// TargetPlatformIdentifier metadata must continue to match exactly that TPI.
 		[Theory]
@@ -1463,6 +1569,73 @@ public static class LegacyIosMarker
 				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
 			else
 				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
+		}
+
+		// One backend registration may serve both a recognized TPI and a neutral TFM.
+		// BackendIdentity defaults the neutral ActivationValue even when TPI metadata
+		// is present, while the neutral selector remains ignored on another recognized TPI.
+		[Theory]
+		[InlineData("macos", "", true)]
+		[InlineData("", "macos", true)]
+		[InlineData("android", "macos", false)]
+		[InlineData("android", "", false)]
+		[InlineData("", "gtk", false)]
+		public void SingleProject_BackendRegistrationSupportsRecognizedAndNeutralActivation(
+			string targetPlatformIdentifier,
+			string activeBackend,
+			bool shouldIncludeMacOsFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\MacOS\\")
+				.WithAttribute("TargetPlatformIdentifiers", "macos")
+				.WithAttribute("BackendIdentity", "macos"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\MacOS\\MacOsMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class MacOsMarker
+{
+	public static string Value => ""MacOS"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = "";
+			if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+				args += $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			if (!string.IsNullOrEmpty(activeBackend))
+				args += $" -p:MauiActiveBackend={activeBackend}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeMacOsFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacOsMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacOsMarker");
 		}
 
 		// Neutral-TFM activation (the GTK scenario from #35021/#36650). On a plain
@@ -1659,6 +1832,7 @@ public static class GtkMarker
 			var customMappings = NewElement("ItemGroup");
 			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
 				.WithAttribute("Include", "Platforms\\Foo\\")
+				.WithAttribute("TargetPlatformIdentifiers", "foo")
 				.WithAttribute("BackendIdentity", "foo")
 				.WithAttribute("ActivationProperty", "MyBackendSwitch")
 				.WithAttribute("ActivationValue", "on"));
