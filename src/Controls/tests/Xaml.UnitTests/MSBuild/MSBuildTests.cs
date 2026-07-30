@@ -779,8 +779,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				"Default Entitlements.plist should be used when no custom CodesignEntitlements is set");
 		}
 
-		// --- SingleProject platform-folder registration & activation ---------------
-		//
 		// These tests exercise the data-driven MauiPlatformSpecificFolder compile
 		// selection contract: recognized TargetPlatformIdentifier(s) matching, shared
 		// folders, backward-compatible singular metadata, condition-gated folders, and
