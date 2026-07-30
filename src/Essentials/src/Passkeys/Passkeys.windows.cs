@@ -2,6 +2,7 @@
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
@@ -12,19 +13,9 @@ namespace Microsoft.Maui.Authentication;
 
 partial class PasskeysImplementation : IPasskeys
 {
-	// webauthn.dll ships in-box on Windows 10 1903+, but full passkey (platform authenticator /
-	// discoverable credential) support requires Windows 11. Gate on both the API being present and the
-	// OS being Windows 11 (build 22000+).
-	public bool IsSupported
-	{
-		get
-		{
-			if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
-				return false;
-
-			return WindowsWebAuthn.IsAvailable;
-		}
-	}
+	// webauthn.dll ships in-box on Windows 10 1903+. Detect the native capability directly and
+	// gate newer WebAuthn fields by the API version reported by Windows.
+	public bool IsSupported => WindowsWebAuthn.IsAvailable;
 
 	public async Task<PasskeyCreationResponse> CreateAsync(PasskeyCreationOptions options, CancellationToken cancellationToken = default)
 	{
@@ -51,7 +42,7 @@ partial class PasskeysImplementation : IPasskeys
 	void EnsureSupported()
 	{
 		if (!IsSupported)
-			throw new FeatureNotSupportedException("Passkeys require the Windows WebAuthn API (Windows 11 for platform passkeys).");
+			throw new FeatureNotSupportedException("Passkeys require the Windows WebAuthn API (available in Windows 10 version 1903 and later).");
 	}
 
 	static IntPtr GetHwnd()
@@ -75,6 +66,7 @@ partial class PasskeysImplementation : IPasskeys
 
 		var challenge = WebAuthn.DecodeRequired(creation.Challenge, "challenge");
 		var clientDataJson = BuildClientDataJson("webauthn.create", challenge, rpId);
+		var residentKey = MapResidentKey(creation.AuthenticatorSelection);
 
 		var result = WindowsWebAuthn.MakeCredential(
 			new WindowsWebAuthn.MakeCredentialRequest
@@ -91,17 +83,19 @@ partial class PasskeysImplementation : IPasskeys
 				UserVerification = MapUserVerification(creation.AuthenticatorSelection?.UserVerification ?? creation.UserVerification),
 				AuthenticatorAttachment = MapAuthenticatorAttachment(creation.AuthenticatorSelection?.AuthenticatorAttachment),
 				Attestation = MapAttestation(creation.Attestation),
-				RequireResidentKey = WebAuthn.RequiresResidentKey(creation.AuthenticatorSelection),
+				ResidentKey = residentKey,
 				ExcludeCredentials = MapCredentialIds(creation.ExcludeCredentials),
-				ExtensionsJson = WebAuthn.GetExtensionsJson(creation.Extensions),
+				OptionsJson = Encoding.UTF8.GetBytes(options.ToString()),
 			},
 			cancellationToken);
+
+		if (result.ResponseJson.Length > 0)
+			return new PasskeyCreationResponse(Encoding.UTF8.GetString(result.ResponseJson));
 
 		var json = BuildRegistrationResponseJson(
 			result.CredentialId,
 			result.AttestationObject,
-			clientDataJson,
-			result.ExtensionOutputsJson);
+			clientDataJson);
 		return new PasskeyCreationResponse(json);
 	}
 
@@ -123,17 +117,19 @@ partial class PasskeysImplementation : IPasskeys
 				Timeout = WebAuthn.GetTimeout(request.Timeout),
 				UserVerification = MapUserVerification(request.UserVerification),
 				AllowCredentials = MapCredentialIds(request.AllowCredentials),
-				ExtensionsJson = WebAuthn.GetExtensionsJson(request.Extensions),
+				OptionsJson = Encoding.UTF8.GetBytes(options.ToString()),
 			},
 			cancellationToken);
+
+		if (result.ResponseJson.Length > 0)
+			return new PasskeyAssertionResponse(Encoding.UTF8.GetString(result.ResponseJson));
 
 		var json = BuildAssertionResponseJson(
 			result.CredentialId,
 			result.AuthenticatorData,
 			result.Signature,
 			clientDataJson,
-			result.UserHandle,
-			result.ExtensionOutputsJson);
+			result.UserHandle);
 		return new PasskeyAssertionResponse(json);
 	}
 
@@ -179,7 +175,7 @@ partial class PasskeysImplementation : IPasskeys
 		return JsonSerializer.SerializeToUtf8Bytes(clientData, WebAuthn.JsonContext.Default.ClientData);
 	}
 
-	static string BuildRegistrationResponseJson(byte[] credentialId, byte[] attestationObject, byte[] clientDataJson, byte[] extensionOutputs)
+	static string BuildRegistrationResponseJson(byte[] credentialId, byte[] attestationObject, byte[] clientDataJson)
 	{
 		var response = new WebAuthn.RegistrationResponse
 		{
@@ -190,13 +186,12 @@ partial class PasskeysImplementation : IPasskeys
 				ClientDataJson = Base64Url.EncodeToString(clientDataJson),
 				AttestationObject = Base64Url.EncodeToString(attestationObject),
 			},
-			ClientExtensionResults = WebAuthn.ReadExtensionOutputs(extensionOutputs),
 		};
 
 		return JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.RegistrationResponse);
 	}
 
-	static string BuildAssertionResponseJson(byte[] credentialId, byte[] authenticatorData, byte[] signature, byte[] clientDataJson, byte[] userHandle, byte[] extensionOutputs)
+	static string BuildAssertionResponseJson(byte[] credentialId, byte[] authenticatorData, byte[] signature, byte[] clientDataJson, byte[] userHandle)
 	{
 		var response = new WebAuthn.AssertionResponse
 		{
@@ -209,7 +204,6 @@ partial class PasskeysImplementation : IPasskeys
 				Signature = Base64Url.EncodeToString(signature),
 				UserHandle = userHandle.Length > 0 ? Base64Url.EncodeToString(userHandle) : null,
 			},
-			ClientExtensionResults = WebAuthn.ReadExtensionOutputs(extensionOutputs),
 		};
 
 		return JsonSerializer.Serialize(response, WebAuthn.JsonContext.Default.AssertionResponse);
@@ -256,4 +250,13 @@ partial class PasskeysImplementation : IPasskeys
 		"none" => WindowsWebAuthn.AttestationConveyancePreference.None,
 		_ => WindowsWebAuthn.AttestationConveyancePreference.Any,
 	};
+
+	internal static WindowsWebAuthn.ResidentKeyOptions MapResidentKey(WebAuthn.AuthenticatorSelection? selection) =>
+		selection?.ResidentKey switch
+		{
+			"required" => new(Require: true, Prefer: false),
+			"preferred" => new(Require: false, Prefer: true),
+			"discouraged" => new(Require: false, Prefer: false),
+			_ => new(Require: selection?.RequireResidentKey == true, Prefer: false),
+		};
 }

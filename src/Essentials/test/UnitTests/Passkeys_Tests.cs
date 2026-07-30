@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using Microsoft.Maui.Authentication;
 using Xunit;
 
@@ -55,24 +54,6 @@ public class Passkeys_Tests
 		Assert.Equal(json, new PasskeyRequestOptions(json).ToString());
 	}
 
-	[Theory]
-	[InlineData("required", null, true)]
-	[InlineData("", true, true)]
-	[InlineData("preferred", true, false)]
-	[InlineData("preferred", false, false)]
-	[InlineData("discouraged", true, false)]
-	[InlineData("required", false, true)]
-	public void RequiresResidentKey_Uses_Modern_And_Legacy_Options(string residentKey, bool? requireResidentKey, bool expected)
-	{
-		var selection = new WebAuthn.AuthenticatorSelection
-		{
-			ResidentKey = string.IsNullOrEmpty(residentKey) ? null : residentKey,
-			RequireResidentKey = requireResidentKey,
-		};
-
-		Assert.Equal(expected, WebAuthn.RequiresResidentKey(selection));
-	}
-
 	[Fact]
 	public void GetTimeout_Rejects_Negative_Values()
 	{
@@ -87,17 +68,4 @@ public class Passkeys_Tests
 		Assert.IsType<FormatException>(exception.InnerException);
 	}
 
-	[Fact]
-	public void Extensions_RoundTrip_As_Json()
-	{
-		using var extensions = JsonDocument.Parse("""{"credProps":true}""");
-		using var empty = JsonDocument.Parse("{}");
-
-		Assert.Equal("""{"credProps":true}""", System.Text.Encoding.UTF8.GetString(WebAuthn.GetExtensionsJson(extensions.RootElement)));
-		Assert.Empty(WebAuthn.GetExtensionsJson(empty.RootElement));
-		Assert.Empty(WebAuthn.GetExtensionsJson(null));
-
-		var outputs = WebAuthn.ReadExtensionOutputs("""{"credProps":{"rk":true}}"""u8.ToArray());
-		Assert.True(outputs.Values!["credProps"].GetProperty("rk").GetBoolean());
-	}
 }

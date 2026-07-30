@@ -675,9 +675,15 @@ target (the `macos` compile group in `Essentials.csproj` is commented out), so t
   challenge from the options and an origin of `https://<rpId>`. The OS returns `pbAttestationObject` /
   `pbCredentialId` (make) and `pbAuthenticatorData` / `pbSignature` / `pbUserId` (get), which we
   base64url-encode into the response JSON.
-- **Version gating**: `WebAuthNGetApiVersionNumber()` for capability, and
-  `WebAuthNIsUserVerifyingPlatformAuthenticatorAvailable` for Hello availability. Passkeys need
-  **Windows 11**; older `webauthn.dll` (Win10 1903+) supports FIDO2 security keys but not full passkeys.
+- **Version gating**: `WebAuthNGetApiVersionNumber()` detects support and selects the newest supported
+  option fields. The native API is available in **Windows 10 version 1903+**. Newer features degrade by
+  API version; for example, `residentKey: "preferred"` uses
+  `bPreferResidentKey` on WebAuthn API 3+ and degrades to no preference on API 1–2.
+- **Full JSON on API 9+**: the original creation/request JSON is supplied through the version 9 option
+  fields, and Windows' UTF-8 registration/authentication response JSON is returned directly. API 1–8
+  use the structured compatibility path. There is no API 7 JSON-extension path because its unsigned
+  extension output buffer is not documented as UTF-8 JSON; extension inputs are therefore ignored on
+  Windows API 1–8 rather than returning an incorrectly decoded result.
 - **Highest implementation cost** of the three (memory ownership/free and version branching), even with
   generated bindings.
 
@@ -705,7 +711,7 @@ inside the WebAuthn options JSON** and needs no cross-platform API knob. A small
 | `timeout` | Ceremony timeout | via `requestJson` | — (OS-managed) | `dwTimeoutMilliseconds` |
 | `excludeCredentials` / `allowCredentials` | Prevent re-reg / scope sign-in | via `requestJson` | — / `AllowedCredentials` (native app registration API has no exclude-list property) | exclude / allow list |
 | `attestation` | Attestation conveyance | via `requestJson` | `AttestationPreference` | `dwAttestationConveyancePreference` |
-| `extensions` (e.g. `credProps`, `prf`, `largeBlob`) | WebAuthn extensions | via `requestJson` | per-extension API | JSON extension fields (WebAuthn API v7+) |
+| `extensions` (e.g. `credProps`, `prf`, `largeBlob`) | WebAuthn extensions | via `requestJson` | — (not mapped in v1) | — (not mapped in v1) |
 | `hints` | UI hint (security-key/hybrid/client-device) | via `requestJson` | — | — |
 
 Because all of the above flow through the JSON, we do **not** add typed knobs for them — that's the whole
@@ -928,7 +934,7 @@ cancel must come from a different thread than the blocking call, using the pre-a
 | Android provider | **`Xamarin.AndroidX.Credentials` only — no Google Play Services** (§7.1, §9). |
 | Android minimum | **API 34 (Android 14)** for the OS-native path; API 28–33 is the app's own opt-in (§7.1). |
 | Apple scope | **iOS / iPadOS / Mac Catalyst** (iOS 16+); standalone macOS deferred until Essentials enables a `net-macos` target (§7.2). |
-| Windows minimum | **Windows 11** for passkeys, via CsWin32-generated `webauthn.dll` bindings (§7.3). |
+| Windows minimum | Any Windows installation exposing `webauthn.dll` / API version 1+ (officially Windows 10 version 1903+) via CsWin32-generated bindings; newer fields are runtime-gated (§7.3). |
 | Runtime knobs | v1 exposes **`PreferImmediatelyAvailable`** and **`CancellationToken`**; presentation anchor is internal; origin override and conditional UI are deferred (§7.5). |
 
 ## 13. Planned follow-ups

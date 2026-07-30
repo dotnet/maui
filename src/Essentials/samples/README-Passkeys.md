@@ -185,13 +185,19 @@ intent-filters are only for App Links, a different feature). You do need the rig
 If registration fails with a "no create options" / provider error, re-check the three emulator
 prerequisites above — that's the usual cause.
 
-## 4. Windows (Windows 11)
+## 4. Windows (Windows 10 version 1903+)
 
 Nothing extra: the Windows platform trusts the `https` origin directly (no domain-association file).
-Passkeys require **Windows 11 with Windows Hello** configured. With the server running (section 1),
+Use a Windows installation with the WebAuthn API (officially **Windows 10 version 1903+**) and Windows
+Hello or a compatible FIDO2 authenticator. With the server running (section 1),
 deploy the Windows head from your IDE (or `dotnet run --project Samples/Essentials.Sample.csproj -f
 net11.0-windows10.0.<version>` matching the project's Windows TFM), then follow
 [**Using the app**](#using-the-app).
+
+For local capability testing, edit this constant and rebuild:
+
+- `WindowsWebAuthn.TestApiVersionOverride`: set `2` to emulate the Windows 10-era WebAuthn API;
+  `0` uses the actual OS version. The override can only lower capabilities.
 
 ## Local-only smoke test
 

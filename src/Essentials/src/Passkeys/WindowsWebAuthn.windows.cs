@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Authentication;
 
 internal static unsafe class WindowsWebAuthn
 {
+	// Local testing only: set to an older API version to exercise downlevel behavior, then rebuild.
+	// Zero uses the version reported by Windows. The override can never raise the native version.
+	const uint TestApiVersionOverride = 0;
+
 	internal enum AuthenticatorAttachment : uint
 	{
 		Any = 0,
@@ -36,6 +40,8 @@ internal static unsafe class WindowsWebAuthn
 		Direct = 3,
 	}
 
+	internal readonly record struct ResidentKeyOptions(bool Require, bool Prefer);
+
 	internal sealed class MakeCredentialRequest
 	{
 		public required IntPtr WindowHandle { get; init; }
@@ -48,11 +54,11 @@ internal static unsafe class WindowsWebAuthn
 		public required byte[] ClientDataJson { get; init; }
 		public required uint Timeout { get; init; }
 		public required AuthenticatorAttachment AuthenticatorAttachment { get; init; }
-		public required bool RequireResidentKey { get; init; }
+		public required ResidentKeyOptions ResidentKey { get; init; }
 		public required UserVerificationRequirement UserVerification { get; init; }
 		public required AttestationConveyancePreference Attestation { get; init; }
 		public required byte[][] ExcludeCredentials { get; init; }
-		public required byte[] ExtensionsJson { get; init; }
+		public required byte[] OptionsJson { get; init; }
 	}
 
 	internal sealed class GetAssertionRequest
@@ -63,43 +69,47 @@ internal static unsafe class WindowsWebAuthn
 		public required uint Timeout { get; init; }
 		public required UserVerificationRequirement UserVerification { get; init; }
 		public required byte[][] AllowCredentials { get; init; }
-		public required byte[] ExtensionsJson { get; init; }
+		public required byte[] OptionsJson { get; init; }
 	}
 
 	internal readonly record struct CredentialAttestation(
 		byte[] CredentialId,
 		byte[] AttestationObject,
-		byte[] ExtensionOutputsJson);
+		byte[] ResponseJson);
 
 	internal readonly record struct Assertion(
 		byte[] CredentialId,
 		byte[] AuthenticatorData,
 		byte[] Signature,
 		byte[] UserHandle,
-		byte[] ExtensionOutputsJson);
+		byte[] ResponseJson);
 
-	internal static bool IsAvailable
+	internal static uint ApiVersion
 	{
 		get
 		{
 			try
 			{
-				return PInvoke.WebAuthNGetApiVersionNumber() > 0;
+				return ApplyApiVersionOverride(
+					PInvoke.WebAuthNGetApiVersionNumber(),
+					TestApiVersionOverride);
 			}
 			catch (DllNotFoundException)
 			{
-				return false;
+				return 0;
 			}
 			catch (EntryPointNotFoundException)
 			{
-				return false;
+				return 0;
 			}
 		}
 	}
 
+	internal static bool IsAvailable => ApiVersion > 0;
+
 	internal static CredentialAttestation MakeCredential(MakeCredentialRequest request, CancellationToken cancellationToken)
 	{
-		EnsureExtensionsSupported(request.ExtensionsJson);
+		var apiVersion = ApiVersion;
 
 		using var native = new NativeBuffers();
 		var cancellationId = GetCancellationId();
@@ -133,21 +143,24 @@ internal static unsafe class WindowsWebAuthn
 		var coseParameters = native.PinCoseParameters(request.Algorithms);
 		var options = new WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS
 		{
-			dwVersion = request.ExtensionsJson.Length > 0
-				? Constants.MAKE_CREDENTIAL_JSON_OPTIONS_VERSION
-				: Constants.MAKE_CREDENTIAL_OPTIONS_VERSION,
+			dwVersion = GetMakeCredentialOptionsVersion(apiVersion, request.ResidentKey.Prefer),
 			dwTimeoutMilliseconds = request.Timeout,
 			CredentialList = default,
 			Extensions = default,
 			dwAuthenticatorAttachment = (uint)request.AuthenticatorAttachment,
-			bRequireResidentKey = request.RequireResidentKey,
+			bRequireResidentKey = request.ResidentKey.Require,
 			dwUserVerificationRequirement = (uint)request.UserVerification,
 			dwAttestationConveyancePreference = (uint)request.Attestation,
 			dwFlags = 0,
 			pCancellationId = native.PinCancellationId(cancellationId),
 			pExcludeCredentialList = native.PinCredentialList(request.ExcludeCredentials),
-			cbJsonExt = (uint)request.ExtensionsJson.Length,
-			pbJsonExt = native.Pin(request.ExtensionsJson),
+			bPreferResidentKey = apiVersion >= Constants.RESIDENT_KEY_PREFERENCE_API_VERSION && request.ResidentKey.Prefer,
+			cbPublicKeyCredentialCreationOptionsJSON = apiVersion >= Constants.FULL_JSON_API_VERSION
+				? (uint)request.OptionsJson.Length
+				: 0,
+			pbPublicKeyCredentialCreationOptionsJSON = apiVersion >= Constants.FULL_JSON_API_VERSION
+				? native.Pin(request.OptionsJson)
+				: null,
 		};
 
 		cancellationToken.ThrowIfCancellationRequested();
@@ -169,14 +182,14 @@ internal static unsafe class WindowsWebAuthn
 
 		try
 		{
-			var extensionOutputs = attestation->dwVersion >= Constants.ATTESTATION_JSON_OUTPUT_VERSION
-				? ReadBytes(attestation->pbUnsignedExtensionOutputs, attestation->cbUnsignedExtensionOutputs)
+			var responseJson = attestation->dwVersion >= Constants.ATTESTATION_FULL_JSON_OUTPUT_VERSION
+				? ReadBytes(attestation->pbRegistrationResponseJSON, attestation->cbRegistrationResponseJSON)
 				: Array.Empty<byte>();
 
 			return new(
 				ReadBytes(attestation->pbCredentialId, attestation->cbCredentialId),
 				ReadBytes(attestation->pbAttestationObject, attestation->cbAttestationObject),
-				extensionOutputs);
+				responseJson);
 		}
 		finally
 		{
@@ -186,8 +199,7 @@ internal static unsafe class WindowsWebAuthn
 
 	internal static Assertion GetAssertion(GetAssertionRequest request, CancellationToken cancellationToken)
 	{
-		EnsureExtensionsSupported(request.ExtensionsJson);
-
+		var apiVersion = ApiVersion;
 		using var native = new NativeBuffers();
 		var cancellationId = GetCancellationId();
 
@@ -201,8 +213,8 @@ internal static unsafe class WindowsWebAuthn
 
 		var options = new WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS
 		{
-			dwVersion = request.ExtensionsJson.Length > 0
-				? Constants.GET_ASSERTION_JSON_OPTIONS_VERSION
+			dwVersion = apiVersion >= Constants.FULL_JSON_API_VERSION
+				? Constants.GET_ASSERTION_FULL_JSON_OPTIONS_VERSION
 				: Constants.GET_ASSERTION_OPTIONS_VERSION,
 			dwTimeoutMilliseconds = request.Timeout,
 			CredentialList = default,
@@ -214,8 +226,12 @@ internal static unsafe class WindowsWebAuthn
 			pbU2fAppId = null,
 			pCancellationId = native.PinCancellationId(cancellationId),
 			pAllowCredentialList = native.PinCredentialList(request.AllowCredentials),
-			cbJsonExt = (uint)request.ExtensionsJson.Length,
-			pbJsonExt = native.Pin(request.ExtensionsJson),
+			cbPublicKeyCredentialRequestOptionsJSON = apiVersion >= Constants.FULL_JSON_API_VERSION
+				? (uint)request.OptionsJson.Length
+				: 0,
+			pbPublicKeyCredentialRequestOptionsJSON = apiVersion >= Constants.FULL_JSON_API_VERSION
+				? native.Pin(request.OptionsJson)
+				: null,
 		};
 
 		cancellationToken.ThrowIfCancellationRequested();
@@ -235,8 +251,8 @@ internal static unsafe class WindowsWebAuthn
 
 		try
 		{
-			var extensionOutputs = assertion->dwVersion >= Constants.ASSERTION_JSON_OUTPUT_VERSION
-				? ReadBytes(assertion->pbUnsignedExtensionOutputs, assertion->cbUnsignedExtensionOutputs)
+			var responseJson = assertion->dwVersion >= Constants.ASSERTION_FULL_JSON_OUTPUT_VERSION
+				? ReadBytes(assertion->pbAuthenticationResponseJSON, assertion->cbAuthenticationResponseJSON)
 				: Array.Empty<byte>();
 
 			return new(
@@ -244,7 +260,7 @@ internal static unsafe class WindowsWebAuthn
 				ReadBytes(assertion->pbAuthenticatorData, assertion->cbAuthenticatorData),
 				ReadBytes(assertion->pbSignature, assertion->cbSignature),
 				ReadBytes(assertion->pbUserId, assertion->cbUserId),
-				extensionOutputs);
+				responseJson);
 		}
 		finally
 		{
@@ -252,13 +268,18 @@ internal static unsafe class WindowsWebAuthn
 		}
 	}
 
-	static void EnsureExtensionsSupported(byte[] extensionsJson)
+	internal static uint ApplyApiVersionOverride(uint nativeVersion, uint overrideVersion) =>
+		overrideVersion == 0 ? nativeVersion : Math.Min(nativeVersion, overrideVersion);
+
+	internal static uint GetMakeCredentialOptionsVersion(uint apiVersion, bool preferResidentKey)
 	{
-		if (extensionsJson.Length > 0 &&
-			PInvoke.WebAuthNGetApiVersionNumber() < Constants.JSON_EXTENSION_API_VERSION)
-		{
-			throw new FeatureNotSupportedException("WebAuthn JSON extensions require Windows WebAuthn API version 7 or later.");
-		}
+		if (apiVersion >= Constants.FULL_JSON_API_VERSION)
+			return Constants.MAKE_CREDENTIAL_FULL_JSON_OPTIONS_VERSION;
+
+		if (preferResidentKey && apiVersion >= Constants.RESIDENT_KEY_PREFERENCE_API_VERSION)
+			return Constants.MAKE_CREDENTIAL_RESIDENT_KEY_OPTIONS_VERSION;
+
+		return Constants.MAKE_CREDENTIAL_OPTIONS_VERSION;
 	}
 
 	static Guid GetCancellationId() =>
@@ -314,12 +335,14 @@ internal static unsafe class WindowsWebAuthn
 		public const uint COSE_CREDENTIAL_PARAMETER_VERSION = 1;
 		public const uint CREDENTIAL_EX_VERSION = 1;
 		public const uint MAKE_CREDENTIAL_OPTIONS_VERSION = 3;
+		public const uint MAKE_CREDENTIAL_RESIDENT_KEY_OPTIONS_VERSION = 4;
+		public const uint RESIDENT_KEY_PREFERENCE_API_VERSION = 3;
 		public const uint GET_ASSERTION_OPTIONS_VERSION = 4;
-		public const uint JSON_EXTENSION_API_VERSION = 7;
-		public const uint MAKE_CREDENTIAL_JSON_OPTIONS_VERSION = 7;
-		public const uint GET_ASSERTION_JSON_OPTIONS_VERSION = 7;
-		public const uint ATTESTATION_JSON_OUTPUT_VERSION = 6;
-		public const uint ASSERTION_JSON_OUTPUT_VERSION = 5;
+		public const uint FULL_JSON_API_VERSION = 9;
+		public const uint MAKE_CREDENTIAL_FULL_JSON_OPTIONS_VERSION = 9;
+		public const uint GET_ASSERTION_FULL_JSON_OPTIONS_VERSION = 9;
+		public const uint ATTESTATION_FULL_JSON_OUTPUT_VERSION = 8;
+		public const uint ASSERTION_FULL_JSON_OUTPUT_VERSION = 6;
 	}
 
 	sealed class NativeBuffers : IDisposable

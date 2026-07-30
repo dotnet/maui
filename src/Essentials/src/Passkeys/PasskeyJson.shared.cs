@@ -35,8 +35,6 @@ static partial class WebAuthn
 
 		public int? Timeout { get; set; }
 
-		public JsonElement? Extensions { get; set; }
-
 		// Not part of the spec here (userVerification lives under authenticatorSelection for creation),
 		// but tolerated as a top-level fallback for servers that place it here.
 		public string? UserVerification { get; set; }
@@ -55,7 +53,6 @@ static partial class WebAuthn
 
 		public int? Timeout { get; set; }
 
-		public JsonElement? Extensions { get; set; }
 	}
 
 	internal sealed class RelyingParty
@@ -87,18 +84,12 @@ static partial class WebAuthn
 
 	internal sealed class CredentialParameter
 	{
-		public string? Type { get; set; }
-
 		public int? Alg { get; set; }
 	}
 
 	internal sealed class CredentialDescriptor
 	{
 		public string? Id { get; set; }
-
-		public string? Type { get; set; }
-
-		public List<string>? Transports { get; set; }
 	}
 
 	// The client data hashed and signed by the authenticator (Windows builds this itself; on Apple the
@@ -164,20 +155,10 @@ static partial class WebAuthn
 		public string? UserHandle { get; set; }
 	}
 
-	// Always serialized as an empty object ("clientExtensionResults": {}).
+	// Serialized as an empty object ("clientExtensionResults": {}) on platforms that do not map extensions.
 	internal sealed class ClientExtensionOutputs
 	{
-		[JsonExtensionData]
-		public Dictionary<string, JsonElement>? Values { get; set; }
 	}
-
-	internal static bool RequiresResidentKey(AuthenticatorSelection? selection) =>
-		selection?.ResidentKey switch
-		{
-			"required" => true,
-			"preferred" or "discouraged" => false,
-			_ => selection?.RequireResidentKey == true,
-		};
 
 	internal static byte[] DecodeRequired(string? value, string name)
 	{
@@ -206,43 +187,6 @@ static partial class WebAuthn
 			throw new ArgumentOutOfRangeException("options", "The WebAuthn timeout cannot be negative.");
 
 		return (uint)value;
-	}
-
-	internal static byte[] GetExtensionsJson(JsonElement? extensions)
-	{
-		if (extensions is not JsonElement value ||
-			value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
-		{
-			return Array.Empty<byte>();
-		}
-
-		if (value.ValueKind == JsonValueKind.Object)
-		{
-			var properties = value.EnumerateObject();
-			if (!properties.MoveNext())
-				return Array.Empty<byte>();
-		}
-		else
-		{
-			throw new ArgumentException("The WebAuthn 'extensions' value must be a JSON object.", "options");
-		}
-
-		return JsonSerializer.SerializeToUtf8Bytes(value, JsonContext.Default.JsonElement);
-	}
-
-	internal static ClientExtensionOutputs ReadExtensionOutputs(byte[] json)
-	{
-		if (json.Length == 0)
-			return new();
-
-		try
-		{
-			return JsonSerializer.Deserialize(json, JsonContext.Default.ClientExtensionOutputs) ?? new();
-		}
-		catch (JsonException ex)
-		{
-			throw new InvalidOperationException("The native WebAuthn extension output JSON could not be parsed.", ex);
-		}
 	}
 
 	[JsonSourceGenerationOptions(
