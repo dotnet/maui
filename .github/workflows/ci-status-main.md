@@ -63,7 +63,7 @@ safe-outputs:
     report-as-issue: false
   jobs:
     submit-ci-scan:
-      description: "Validate and publish one complete CI scan manifest. Call exactly once, including all three configured pipelines."
+      description: "Authorize validation and publication of the complete CI scan manifest at the fixed same-run artifact path. Call exactly once after writing all three configured pipelines."
       runs-on: ubuntu-latest
       output: "CI scan manifest validated and processed."
       permissions:
@@ -74,15 +74,11 @@ safe-outputs:
         CI_SCAN_SCANNER_ID: ci-scan
         CI_SCAN_BRANCH: main
         CI_SCAN_LABEL: ci-scan
+        CI_SCAN_MANIFEST_PATH: ${{ runner.temp }}/gh-aw/safe-jobs/agent/manifest_final.json
         CI_SCAN_PLAN_PATH: ${{ runner.temp }}/ci-scan/plan.json
         CI_SCAN_RESULTS_PATH: ${{ runner.temp }}/ci-scan/results.json
         CI_SCAN_EXPECTED_BUILDS_PATH: ${{ runner.temp }}/ci-scan/expected-builds.json
         CI_SCAN_TRUSTED_EVIDENCE_PATH: ${{ runner.temp }}/ci-scan/evidence
-      inputs:
-        manifest:
-          description: "JSON object with a pipelines array in configured order. Each pipeline records status and every discovered signature disposition."
-          required: true
-          type: string
       steps:
         - name: Require successful agent submission gate
           if: needs.agent.result != 'success'
@@ -464,8 +460,9 @@ post-steps:
       output='/tmp/gh-aw/agent_output.json'
       submit_count=$(jq '[.items[]? | select(.type == "submit_ci_scan")] | length' "$output")
       other_count=$(jq '[.items[]? | select(.type != "submit_ci_scan")] | length' "$output")
-      if [ "$submit_count" -ne 1 ] || [ "$other_count" -ne 0 ]; then
-        echo "::error::Expected exactly one submit_ci_scan output and no alternate outputs."
+      unexpected_input_count=$(jq '[.items[]? | select(((keys - ["type"]) | length) != 0)] | length' "$output")
+      if [ "$submit_count" -ne 1 ] || [ "$other_count" -ne 0 ] || [ "$unexpected_input_count" -ne 0 ]; then
+        echo "::error::Expected exactly one argument-free submit_ci_scan output and no alternate outputs."
         exit 1
       fi
 
@@ -1155,9 +1152,14 @@ be referenced as `existing`.
 
 ## Submit exactly once
 
-Call the `submit_ci_scan` safe-output tool exactly once for the entire run. Pass
-one `manifest` argument containing the JSON object described above. Example
-shape:
+Write the complete JSON object described above to exactly
+`/tmp/gh-aw/agent/manifest_final.json`. This fixed path is uploaded in gh-aw's
+same-run `agent` artifact and read as untrusted data by the trusted publisher.
+Do not choose another path, and do not pass or encode the manifest through the
+safe-output tool. Validate the final file with `jq -e .` before submission.
+
+Then call the argument-free `submit_ci_scan` safe-output tool exactly once for
+the entire run to authorize publication. Example manifest file shape:
 
 ```json
 {

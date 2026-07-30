@@ -443,7 +443,41 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*non-normalized or unsafe characters*'
+            Should -Throw '*unsafe characters*'
+    }
+
+    It 'canonicalizes the exact production uppercase fingerprint before publication' {
+        $productionFingerprint = 'ci-scan|main|maui-pr|runoniOS_MauiReleaseTrimFull|ios-simulator-boot-timeout|ios-simulator-64'
+        $canonicalFingerprint = 'ci-scan|main|maui-pr|runonios_mauireleasetrimfull|ios-simulator-boot-timeout|ios-simulator-64'
+        $body = (New-TestBody).Replace('- **Branch**: net11.0', '- **Branch**: main')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $productionFingerprint -Body $body)
+        )
+        $evidenceRoot = New-DefaultEvidenceRoot
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot `
+            -ScannerId 'ci-scan'
+
+        $plan.pipelines[0].signatures[0].fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Body |
+            Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($canonicalFingerprint)) -->$"
+        $plan.issues[0].Body.Contains('runoniOS_MauiReleaseTrimFull') | Should -BeFalse
+    }
+
+    It 'rejects fingerprints that collide after trusted case canonicalization' {
+        $productionFingerprint = 'ci-scan|main|maui-pr|runoniOS_MauiReleaseTrimFull|ios-simulator-boot-timeout|ios-simulator-64'
+        $canonicalFingerprint = $productionFingerprint.ToLowerInvariant()
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $productionFingerprint -Disposition 'existing' -IssueNumber 36827),
+            (New-TestSignature -Fingerprint $canonicalFingerprint -Disposition 'existing' -IssueNumber 36828)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest -ScannerId 'ci-scan' } |
+            Should -Throw "*Duplicate fingerprint '$canonicalFingerprint'*"
     }
 
     <#
@@ -1237,51 +1271,80 @@ Describe 'CI scanner agent output gate' {
         $path = Join-Path $TestDrive 'agent-output.json'
         @{
             items = @(
-                @{ type = 'submit_ci_scan'; manifest = '{}' },
+                @{ type = 'submit_ci_scan' },
                 @{ type = 'noop'; body = 'alternate output' }
             )
         } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
 
-        { Get-ScannerManifestFromAgentOutput -Path $path } |
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
             Should -Throw '*exactly one item of type submit_ci_scan and no alternate outputs*'
     }
 
-    It 'rejects a manifest that is not a JSON string' {
-        # agent_output.json is agent-controlled. An already-decoded object used to be
-        # returned verbatim, so it reached validation without passing the emptiness or
-        # 500000-character limits that guard the string form.
-        $path = Join-Path $TestDrive 'object-manifest.json'
-        @{
-            items = @(
-                @{ type = 'submit_ci_scan'; manifest = @{ pipelines = @() } }
-            )
-        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
-
-        { Get-ScannerManifestFromAgentOutput -Path $path } |
-            Should -Throw '*manifest must be a JSON string*'
-    }
-
-    It 'rejects a manifest string over the size limit' {
-        $path = Join-Path $TestDrive 'oversized-manifest.json'
-        @{
-            items = @(
-                @{ type = 'submit_ci_scan'; manifest = ('x' * 500001) }
-            )
-        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
-
-        { Get-ScannerManifestFromAgentOutput -Path $path } |
-            Should -Throw '*exceeds the 500000 character limit*'
-    }
-
-    It 'accepts a well-formed manifest string' {
-        $path = Join-Path $TestDrive 'good-manifest.json'
+    It 'rejects the production nested-string transport even when its JSON is valid' {
+        $path = Join-Path $TestDrive 'nested-manifest.json'
         @{
             items = @(
                 @{ type = 'submit_ci_scan'; manifest = '{"pipelines":[]}' }
             )
         } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
 
-        $result = Get-ScannerManifestFromAgentOutput -Path $path
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
+            Should -Throw '*authorization-only and must not contain manifest data or a path*'
+    }
+
+    It 'rejects agent selection of an arbitrary manifest path' {
+        $path = Join-Path $TestDrive 'manifest-path.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan'; manifest_path = '/tmp/gh-aw/agent/other.json' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
+            Should -Throw '*authorization-only and must not contain manifest data or a path*'
+    }
+
+    It 'accepts exactly one argument-free submission authorization' {
+        $path = Join-Path $TestDrive 'authorization.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } | Should -Not -Throw
+    }
+
+    It 'reads multiline issue bodies from the fixed manifest file without nested JSON transport' {
+        $path = Join-Path $TestDrive 'manifest_final.json'
+        $body = "## Summary`nFirst line.`n`n## Error Message`nLiteral `"quoted`" line."
+        @{
+            pipelines = @(
+                @{
+                    name       = 'maui-pr'
+                    signatures = @(@{ body = $body })
+                }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        $result = Get-ScannerManifestFromFile -Path $path
+
+        $result.pipelines[0].signatures[0].body | Should -BeExactly $body
+    }
+
+    It 'rejects a fixed manifest file over the byte limit' {
+        $path = Join-Path $TestDrive 'oversized-manifest.json'
+        Set-Content -LiteralPath $path -Value ('x' * 500001) -NoNewline
+
+        { Get-ScannerManifestFromFile -Path $path } |
+            Should -Throw '*exceeds the 500000 byte limit*'
+    }
+
+    It 'accepts a well-formed fixed manifest file' {
+        $path = Join-Path $TestDrive 'good-manifest.json'
+        Set-Content -LiteralPath $path -Value '{"pipelines":[]}'
+
+        $result = Get-ScannerManifestFromFile -Path $path
         @($result.pipelines).Count | Should -Be 0
     }
 }
@@ -1315,7 +1378,17 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
 
     It 'requires exactly one complete submission and forbids alternate outputs' {
         $workflowSource | Should -Match 'select\(\.type == "submit_ci_scan"\)'
-        $workflowSource | Should -Match 'Expected exactly one submit_ci_scan output and no alternate outputs'
+        $workflowSource | Should -Match 'Expected exactly one argument-free submit_ci_scan output and no alternate outputs'
+    }
+
+    It 'uses one bounded fixed same-run artifact file and no tool-selected transport' {
+        $workflowSource |
+            Should -Match 'CI_SCAN_MANIFEST_PATH: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/agent/manifest_final\.json'
+        $workflowSource | Should -Match '/tmp/gh-aw/agent/manifest_final\.json'
+        $workflowSource | Should -Match 'same-run `agent` artifact'
+        $workflowSource | Should -Match 'argument-free `submit_ci_scan`'
+        $workflowSource | Should -Not -Match '(?ms)^\s{6}inputs:\s*\r?\n\s{8}(?:manifest|manifest_path):'
+        $workflowSource | Should -Not -Match 'one `manifest` argument'
     }
 
     It 'keeps custom publisher staging identical to framework staging' {

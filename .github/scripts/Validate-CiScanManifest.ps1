@@ -5,10 +5,11 @@
 
 .DESCRIPTION
     This script is the fail-closed boundary between a scanner agent and GitHub
-    issue writes. It does not call GitHub. It validates the single batched
-    safe-output payload against a trusted build inventory, recomputes filed-issue
-    match counts from frozen CI evidence, injects the canonical scanner markers
-    itself, and writes a normalized plan for the downstream GitHub API step.
+    issue writes. It does not call GitHub. It validates the single fixed-path
+    manifest from the same-run agent artifact against a trusted build inventory,
+    recomputes filed-issue match counts from frozen CI evidence, injects the
+    canonical scanner markers itself, and writes a normalized plan for the
+    downstream GitHub API step.
 
     The agent never supplies the markers. gh-aw strips literal HTML comments out
     of the compiled prompt, so any design that asks the agent to emit
@@ -173,34 +174,49 @@ function ConvertTo-PositiveIntegerArray {
     return $normalized.ToArray()
 }
 
-function Get-ScannerManifestFromAgentOutput {
+function Assert-ScannerSubmissionFromAgentOutput {
     param([Parameter(Mandatory = $true)][string]$Path)
 
-    if (-not (Test-Path -LiteralPath $Path)) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         throw "Agent output '$Path' does not exist."
     }
 
-    $payload = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $rawOutput = Get-Content -Raw -LiteralPath $Path
+    if ([string]::IsNullOrWhiteSpace($rawOutput) -or $rawOutput.Length -gt 100000) {
+        throw 'Agent output is empty or exceeds the 100000 character limit.'
+    }
+
+    $payload = $rawOutput | ConvertFrom-Json
     $items = @($payload.items | Where-Object { $null -ne $_ })
     if ($items.Count -ne 1 -or $items[0].type -ne 'submit_ci_scan') {
         throw "Agent output must contain exactly one item of type submit_ci_scan and no alternate outputs."
     }
 
-    $rawManifest = Get-RequiredProperty -Object $items[0] -Name 'manifest' -Context 'submit_ci_scan item'
-    # The safe-output tool declares `manifest` as a string, but agent_output.json is
-    # agent-controlled and this is the fail-closed boundary, so the contract is enforced
-    # rather than assumed. Accepting an already-decoded object would hand back a payload
-    # that never passed the emptiness and size limits below.
-    if ($rawManifest -isnot [string]) {
-        throw 'submit_ci_scan manifest must be a JSON string.'
+    $itemProperties = @($items[0].PSObject.Properties.Name)
+    if ($itemProperties.Count -ne 1 -or $itemProperties[0] -cne 'type') {
+        throw 'submit_ci_scan is authorization-only and must not contain manifest data or a path.'
     }
-    if ([string]::IsNullOrWhiteSpace($rawManifest)) {
-        throw 'submit_ci_scan manifest is empty.'
-    }
-    if ($rawManifest.Length -gt 500000) {
-        throw 'submit_ci_scan manifest exceeds the 500000 character limit.'
+}
+
+function Get-ScannerManifestFromFile {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Fixed scanner manifest '$Path' does not exist."
     }
 
+    $manifestFile = Get-Item -LiteralPath $Path
+    if (($manifestFile.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw 'Fixed scanner manifest must not be a symbolic link.'
+    }
+    if ($manifestFile.Length -eq 0 -or $manifestFile.Length -gt 500000) {
+        throw 'Fixed scanner manifest is empty or exceeds the 500000 byte limit.'
+    }
+
+    $rawManifest = Get-Content -Raw -LiteralPath $manifestFile.FullName
+    if ([string]::IsNullOrWhiteSpace($rawManifest)) {
+        throw 'Fixed scanner manifest is empty.'
+    }
     return $rawManifest | ConvertFrom-Json
 }
 
@@ -406,11 +422,14 @@ function Assert-ValidFingerprint {
     if ($Fingerprint.Length -gt 512) {
         throw 'Fingerprint exceeds 512 characters.'
     }
-    if ($Fingerprint -cnotmatch '^[a-z0-9][a-z0-9 ._:/+()\-|]*$') {
-        throw "Fingerprint contains non-normalized or unsafe characters."
+    if ($Fingerprint -cnotmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()\-|]*$') {
+        throw "Fingerprint contains unsafe characters."
     }
 
-    $parts = @($Fingerprint.Split('|'))
+    # Casing is not a trust decision. Canonicalize the accepted ASCII alphabet at
+    # the trusted boundary so prompt compliance cannot determine marker identity.
+    $canonicalFingerprint = $Fingerprint.ToLowerInvariant()
+    $parts = @($canonicalFingerprint.Split('|'))
     if ($parts.Count -ne 6 -or @($parts | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
         throw 'Fingerprint must contain exactly six non-empty pipe-delimited fields.'
     }
@@ -421,7 +440,7 @@ function Assert-ValidFingerprint {
             "and pipeline '$PipelineName'.")
     }
 
-    # The fingerprint is injected verbatim into the canonical
+    # The canonical fingerprint is injected verbatim into the
     # `<!-- ci-scan-fingerprint: ... -->` marker. Downstream consumers (the fixer, the
     # lock sweep, and this publisher's own dedup path) match that marker against issue
     # bodies that have been through `ConvertTo-SafeIssueBody`, so a fingerprint that
@@ -429,12 +448,14 @@ function Assert-ValidFingerprint {
     # reachable (`@` and `#` are already outside the allowed charset), but asserting the
     # round-trip rather than enumerating URL shapes keeps this check correct for free if
     # a neutralization rule is ever added or widened.
-    if (-not [string]::Equals((ConvertTo-SafeIssueBody -Body $Fingerprint), $Fingerprint,
+    if (-not [string]::Equals((ConvertTo-SafeIssueBody -Body $canonicalFingerprint), $canonicalFingerprint,
             [System.StringComparison]::Ordinal)) {
         throw ('Fingerprint would be rewritten by notification neutralization ' +
             '(it contains a GitHub issue/PR URL, @mention, or #reference). ' +
             'Normalize it in the scanner before filing.')
     }
+
+    return $canonicalFingerprint
 }
 
 function Get-ValidatedMatchPattern {
@@ -898,11 +919,11 @@ function Test-CiScanManifest {
 
             $signature = $signatures[$signatureIndex]
             $signatureContext = "$context signature[$signatureIndex]"
-            $fingerprint = ConvertTo-TrimmedString (
+            $rawFingerprint = ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $signature -Name 'fingerprint' -Context $signatureContext
             )
-            Assert-ValidFingerprint `
-                -Fingerprint $fingerprint `
+            $fingerprint = Assert-ValidFingerprint `
+                -Fingerprint $rawFingerprint `
                 -PipelineName $name `
                 -ScannerConfig $scannerConfig
             if (-not $fingerprints.Add($fingerprint)) {
@@ -1119,6 +1140,9 @@ if ($MyInvocation.InvocationName -eq '.') {
 if (-not $env:GH_AW_AGENT_OUTPUT) {
     throw 'GH_AW_AGENT_OUTPUT is required.'
 }
+if (-not $env:CI_SCAN_MANIFEST_PATH) {
+    throw 'CI_SCAN_MANIFEST_PATH is required.'
+}
 if (-not $env:CI_SCAN_SCANNER_ID) {
     throw 'CI_SCAN_SCANNER_ID is required.'
 }
@@ -1133,7 +1157,8 @@ if (-not $env:CI_SCAN_TRUSTED_EVIDENCE_PATH) {
 }
 
 try {
-    $manifest = Get-ScannerManifestFromAgentOutput -Path $env:GH_AW_AGENT_OUTPUT
+    Assert-ScannerSubmissionFromAgentOutput -Path $env:GH_AW_AGENT_OUTPUT
+    $manifest = Get-ScannerManifestFromFile -Path $env:CI_SCAN_MANIFEST_PATH
     $expectedBuilds = Get-CiScanExpectedBuilds -Path $env:CI_SCAN_EXPECTED_BUILDS_PATH
     $plan = Test-CiScanManifest `
         -Manifest $manifest `

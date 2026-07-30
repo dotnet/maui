@@ -120,6 +120,15 @@ BeforeAll {
         return $Path
     }
 
+    function Test-FixedManifestHandoff {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match 'CI_SCAN_MANIFEST_PATH: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/agent/manifest_final\.json' -and
+            $Source -match 'argument-free `submit_ci_scan`' -and
+            $Source -notmatch '(?ms)^\s{6}inputs:\s*\r?\n\s{8}(?:manifest|manifest_path):' -and
+            $Source -notmatch 'one `manifest` argument'
+    }
+
     function New-ProbeManifest {
         param(
             [string]$Path,
@@ -401,6 +410,45 @@ Describe 'CI scanner marker mutation coverage' {
 Describe 'CI scanner twin discovery mutation coverage' {
     It 'baseline: discovery finds both compiled twins' {
         @(Get-CiScanTwin).Count | Should -Be 2
+    }
+
+    Describe 'CI scanner fixed manifest handoff mutation coverage' {
+        BeforeAll {
+            $script:WorkflowSources = @(
+                Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-main.md') -Raw
+                Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-net11.md') -Raw
+            )
+            $script:SafeJobStepsNeedle = "      steps:`n        - name: Require successful agent submission gate"
+        }
+
+        It 'baseline: both twins use the fixed argument-free artifact handoff' {
+            @($script:WorkflowSources | Where-Object { Test-FixedManifestHandoff -Source $_ }).Count |
+                Should -Be 2
+        }
+
+        It 'mutation "nested-string-transport": a manifest tool input fails the handoff invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $source.Contains($script:SafeJobStepsNeedle) | Should -BeTrue
+                $mutated = $source.Replace(
+                    $script:SafeJobStepsNeedle,
+                    "      inputs:`n        manifest:`n          required: true`n          type: string`n$($script:SafeJobStepsNeedle)")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-FixedManifestHandoff -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "agent-selected-path": a manifest_path tool input fails the handoff invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $source.Contains($script:SafeJobStepsNeedle) | Should -BeTrue
+                $mutated = $source.Replace(
+                    $script:SafeJobStepsNeedle,
+                    "      inputs:`n        manifest_path:`n          required: true`n          type: string`n$($script:SafeJobStepsNeedle)")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-FixedManifestHandoff -Source $mutated) | Should -BeFalse
+            }
+        }
     }
 
     It 'mutation "one-twin-omitted": discovery reports a single twin' {
