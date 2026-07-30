@@ -398,8 +398,24 @@ jobs:
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
           PLATFORM: ${{ steps.infer.outputs.platform }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
+
+          # Guard against a common mistake: a `--branch` that does not exist (an old/renamed
+          # branch, e.g. `feature/enhanced-reviewer` after it became `improved-reviewer`).
+          # AzDO otherwise returns an opaque error and the /review fails SILENTLY on the PR —
+          # the commenter gets no feedback. Validate the branch exists first and record a
+          # specific reason so the failure-feedback step can tell them exactly what to fix.
+          BRANCH_HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GH_REPO}/branches/${PIPELINE_REF}")
+          if [ "${BRANCH_HTTP}" != "200" ]; then
+            echo "fail_reason=branch-missing" >> "$GITHUB_OUTPUT"
+            echo "::error::Pipeline branch '${PIPELINE_REF}' does not exist in ${GH_REPO} (HTTP ${BRANCH_HTTP})."
+            exit 1
+          fi
 
           # Platform is always resolved at this point (inferred or explicit)
           # Build JSON payload safely with jq to avoid injection.
@@ -428,10 +444,32 @@ jobs:
             echo "Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
             echo "View: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
           else
+            echo "fail_reason=api-error" >> "$GITHUB_OUTPUT"
             echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
           fi
+
+      # Never let a /review fail silently: when the trigger step failed (bad branch or a
+      # transient AzDO error), tell the commenter on the PR exactly what happened and how to
+      # fix it. issue_comment-only (a user typed /review); skipped on the automatic paths.
+      - name: Report /review trigger failure to the PR
+        if: always() && github.event_name == 'issue_comment' && steps.review_lock.outputs.locked != 'true' && steps.trigger_azdo.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
+          FAIL_REASON: ${{ steps.trigger_azdo.outputs.fail_reason }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "${FAIL_REASON}" = "branch-missing" ]; then
+            BODY="> [!WARNING]
+          > Your \`/review\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Use \`--branch improved-reviewer\` (the current reviewer branch), or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`/review android --branch improved-reviewer\`)."
+          else
+            BODY="> [!WARNING]
+          > Your \`/review\` couldn't start due to a transient error triggering the pipeline. Please comment \`/review\` again in a minute."
+          fi
+          gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"
 
       - name: Clear review lock on trigger failure
         if: always() && steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome != 'success'
