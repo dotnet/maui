@@ -946,6 +946,25 @@ function Get-TestResultFromOutput {
         }
     }
 
+    # A build failure caused by the in-repo MSBuild BuildTasks up-to-date check misfiring is a
+    # GATE INFRASTRUCTURE flake, NOT a code error, so it must be checked BEFORE the generic
+    # build-error branch below. It happens when the MSBuild build-server daemon is unavailable
+    # (the build falls back to an in-process build) or when the gate's own git revert/restore/
+    # merge changes file timestamps, so Maui.InTree.targets wrongly reports "required MSBuild
+    # tasks are not yet built or they are out of date" even though the Build MSBuild Tasks step
+    # succeeded. The PR's code was never actually compiled — on a healthy agent it builds fine.
+    # Classify as ENV ERROR (INCONCLUSIVE, retryable), never a code BUILD ERROR / FAILED.
+    # (build 14821162, PR #36572: "MSBuild server unavailable ... Falling back to an in-process
+    # build" → InTree.targets "required MSBuild tasks are not yet built or they are out of date".)
+    if ($content -match '(?i)required MSBuild tasks are not yet built or they are out of date' -or
+        $content -match '(?i)MSBuild server unavailable') {
+        return @{
+            Passed = $false; EnvError = $true
+            Error = "Gate infrastructure: the MSBuild build server was unavailable / the in-repo BuildTasks up-to-date check (Maui.InTree.targets) misfired, so the PR's code was never actually compiled. This is NOT a code build error — retry on a fresh agent."
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+        }
+    }
+
     # Check for build failures (before any test results)
     # Mark these explicitly with BuildError = $true so Write-MarkdownReport can
     # surface them as "Fix does not compile" instead of "Fix does not pass the tests".

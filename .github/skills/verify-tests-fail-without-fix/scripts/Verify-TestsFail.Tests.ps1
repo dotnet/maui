@@ -394,3 +394,17 @@ Describe 'Write-MarkdownReport — new-snapshot-no-baseline does not double-mess
         $report | Should -Not -Match 'Could not verify — environment/infrastructure error'
     }
 }
+
+Describe 'Get-TestResultFromOutput — MSBuild-server/BuildTasks infra flake is ENV, not BUILD error' {
+    It 'classifies "required MSBuild tasks are not yet built or out of date" as EnvError' {
+        $log = New-LogFile -Content @"
+❌ Build failed with exit code 1
+MSBuild server unavailable: could not connect to the server within the timeout window; the server may have failed to start. Falling back to an in-process build.
+/home/vsts/work/1/s/src/Maui.InTree.targets(34,5): error : We have detected that the required MSBuild tasks are not yet built or they are out of date. [/home/vsts/work/1/s/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj::TargetFramework=net11.0-android]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.BuildError | Should -Not -BeTrue
+        $r.Error | Should -Match 'Gate infrastructure'
+    }
+}
