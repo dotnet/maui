@@ -65,10 +65,12 @@ environment:
   # Isolate the unit under test instead of exposing every repository skill.
   skills:
     - ..
-  # Vally starts Copilot in an empty temporary directory. Materialize the
-  # external pre-flight instructions that this regression guard evaluates.
+  # Vally starts Copilot in an empty temporary directory. Materialize a focused
+  # fixture of the pre-flight authentication guidance. Keeping the source under
+  # the skill also lets pull_request_target static validation lint the spec
+  # using its trusted, skills-only sparse checkout.
   files:
-    - src: ../../../pr-review/pr-preflight.md
+    - src: fixtures/pr-preflight-auth.md
       dest: .github/pr-review/pr-preflight.md
 
 stimuli:
@@ -79,7 +81,7 @@ stimuli:
   #
   # The eval step is tokenless, so the agent's own `gh`/`curl` are anonymous —
   # the exact CI condition under test. The environment above only supplies the
-  # checked-in guidance file; it does not supply credentials or live PR data.
+  # checked-in guidance fixture; it does not supply credentials or live PR data.
   # ───────────────────────────────────────────────────────────────────────
   - name: regression-gh-unauth-is-not-a-blocker
     tags:

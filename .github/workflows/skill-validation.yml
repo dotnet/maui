@@ -240,7 +240,6 @@ jobs:
           sparse-checkout: |
             .github/skills
             .github/agents
-            .github/pr-review
             .github/plugin.json
           persist-credentials: false
 
