@@ -106,7 +106,7 @@ static class InitializeComponentCodeWriter
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
-				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
+				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, sourceProductionContext.ReportDiagnostic);
 
 				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
 				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.

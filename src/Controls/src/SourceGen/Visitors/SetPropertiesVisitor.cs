@@ -278,7 +278,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					Writer.WriteLine($"object {methodName}()");
 					using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
 					{
-						var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
+						var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
 						{
 							ParentContext = context,
 						};
@@ -298,7 +298,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
 				{
 					ParentContext = context,
 				};
