@@ -1410,6 +1410,87 @@ public static class After
 				StringComparison.OrdinalIgnoreCase);
 		}
 
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_RemovesOnlyCompileItemsMarkedExcluded()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs"));
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\ExternalTrue\\ExcludedMarker.cs"));
+			project.Add(compileItems);
+
+			WriteFile("Platforms\\ExternalFalse\\ExplicitFalseMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExplicitFalseMarker
+{
+	public static string Value => ""False"";
+}");
+
+			WriteFile("Platforms\\ExternalTrue\\ExcludedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExcludedMarker
+{
+	public static string Value => ""True"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// Model a downstream SDK target that explicitly keeps one physical
+			// Platforms/** Compile item without registering a folder allow-list.
+			var downstreamCompileTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestMarkCompileIncluded")
+				.WithAttribute("BeforeTargets", "_MauiRemovePlatformCompileItems");
+			var downstreamCompileMetadata = NewElement("ItemGroup");
+			downstreamCompileMetadata.Add(NewElement("Compile")
+				.WithAttribute("Remove", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs"));
+			var explicitlyIncludedCompile = NewElement("Compile")
+				.WithAttribute("Include", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs");
+			explicitlyIncludedCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			downstreamCompileMetadata.Add(explicitlyIncludedCompile);
+			downstreamCompileTarget.Add(downstreamCompileMetadata);
+			downstreamCompileTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_META_BEFORE_REMOVE: @(Compile->'%(Filename)=%(ExcludeFromCurrentConfiguration)', '|')"));
+			project.Add(downstreamCompileTarget);
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpCompileItems")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_ITEMS: @(Compile->'%(Filename)', '|')"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExplicitFalseMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExcludedMarker");
+			Assert.Contains(
+				"COMPILE_META_BEFORE_REMOVE: ExcludedMarker=true|ExplicitFalseMarker=false",
+				log,
+				StringComparison.OrdinalIgnoreCase);
+			Assert.Contains(
+				"COMPILE_ITEMS: ExplicitFalseMarker",
+				log,
+				StringComparison.OrdinalIgnoreCase);
+		}
+
 		// Backward compatibility: a folder that declares only the legacy singular
 		// TargetPlatformIdentifier metadata must continue to match exactly that TPI.
 		[Theory]
@@ -1463,6 +1544,69 @@ public static class LegacyIosMarker
 				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
 			else
 				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
+		}
+
+		[Theory]
+		[InlineData("macos", "", true)]
+		[InlineData("", "macos", true)]
+		[InlineData("android", "macos", false)]
+		[InlineData("", "cocoa", false)]
+		public void SingleProject_BackendIdentitySupportsRecognizedAndNeutralActivation(
+			string targetPlatformIdentifier,
+			string activeBackend,
+			bool shouldIncludeMacosFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\MacOS\\")
+				.WithAttribute("TargetPlatformIdentifiers", "macos")
+				.WithAttribute("BackendIdentity", "macos"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\MacOS\\MacosMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class MacosMarker
+{
+	public static string Value => ""MacOS"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var additionalArgs = "";
+			if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+				additionalArgs += $" -p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			if (!string.IsNullOrEmpty(activeBackend))
+				additionalArgs += $" -p:MauiActiveBackend={activeBackend}";
+			Build(projectFile, additionalArgs: additionalArgs);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeMacosFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
 		}
 
 		// Neutral-TFM activation (the GTK scenario from #35021/#36650). On a plain
