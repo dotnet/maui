@@ -128,6 +128,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.CreateSpacingDecoration(Microsoft.Maui.Controls.IItemsLayout itemsLayout) -> AndroidX.RecyclerView.Widget.RecyclerView.ItemDecoration
 ~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.SelectLayoutManager(Microsoft.Maui.Controls.IItemsLayout layoutSpecification) -> AndroidX.RecyclerView.Widget.RecyclerView.LayoutManager
+~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.TearDownOldElement(Microsoft.Maui.Controls.CarouselView oldElement) -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler2 handler, Microsoft.Maui.Controls.Editor editor) -> void
 ~static Microsoft.Maui.Controls.Entry.MapImeOptions(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void
