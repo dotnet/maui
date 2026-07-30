@@ -1,5 +1,4 @@
 #nullable enable
-using System.Threading.Tasks;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
