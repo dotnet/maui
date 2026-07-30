@@ -54,9 +54,10 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <summary>
 		/// Requests that the page busy indicator be shown or hidden.
 		/// Page busy notifications have no replacement. Callers should remove usage,
-		/// and interface implementers may provide an empty body.
+		/// and interface implementers may omit this member on target frameworks that support default
+		/// interface methods or provide an empty implementation otherwise.
 		/// </summary>
-		[Obsolete("Page busy notifications are obsolete and have no replacement. Remove usage or leave an empty implementation. This method will be removed in a future release.")]
+		[Obsolete("Page busy notifications are obsolete and have no replacement. Remove usage. Implementers may omit this member on target frameworks that support default interface methods or provide an empty implementation otherwise. This method will be removed in a future release.")]
 #if !NETSTANDARD2_0
 		void RequestPageBusy(Page page, bool isBusy) { }
 #else
