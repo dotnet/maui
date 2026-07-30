@@ -570,7 +570,7 @@ Describe 'Set-CiScanStateMarker' {
         # calls it. The READ side is live -- `Get-CiScanStateMarker` runs at
         # Invoke-CiScanReconcile.ps1:1428 -- so the state marker is consumed but never
         # produced. Consequence, measured below in 'never becomes a close candidate
-        # without observation state': an issue with no marker stops at
+        # without observation state': an issue with no state marker stops at
         # `awaiting-canonical-data`, so `candidate` is unreachable in production today
         # regardless of mode. That is a second safety property independent of report-only,
         # and reviewers should know the N-consecutive-absence criterion has never executed
@@ -2204,17 +2204,11 @@ true -- the static invariants they power are the strongest tests in this file.
     }
 }
 
-Describe 'The fingerprint marker never survives compilation into the agent prompt' {
-    # WHY THIS EXISTS: the reconciler's entire eligibility model assumes issues can be
-    # keyed by a canonical fingerprint marker. Today none can be, and the reason is not
-    # the one previously recorded. The marker template IS in each scanner's source `.md`
-    # and is ABSENT from every compiled `.lock.yml`, so the agent is never shown it and
-    # cannot emit it. Output-side sanitization is not needed to explain the absence.
-    #
-    # If this test fails, gh-aw has changed and the template now reaches the prompt.
-    # That is good news and a REQUIRED REVIEW: markers will start appearing, issues
-    # become keyable, and `candidate` stops being unreachable. Re-read Gate 3 in
-    # CiScanReconcile.Core.ps1 and the enforcement rollout before updating this test.
+Describe 'Fingerprint marker ownership stays in the trusted publisher' {
+    # gh-aw strips literal HTML comments from prompt text, so correctness must not depend
+    # on the agent seeing or emitting a marker template. Both scanner twins instead run
+    # the trusted validator before their publisher, then the compiled publisher requires
+    # the exact marker derived from each validated manifest fingerprint.
     BeforeAll {
         $script:WfDir = Join-Path (Split-Path -Parent $PSScriptRoot) 'workflows'
         $script:Tmpl = 'ci-scan-fingerprint: {FINGERPRINT}'
@@ -2232,26 +2226,28 @@ Describe 'The fingerprint marker never survives compilation into the agent promp
         }
     }
 
-    It 'finds at least one scanner source/lock pair to judge' {
-        # Anti-vacuity floor: without this, a renamed workflow or a partial checkout
-        # would make every assertion below iterate an empty set and pass green.
+    It 'finds both scanner source/lock pairs to judge' {
+        # Exact anti-vacuity guard: a renamed or omitted twin must fail rather than
+        # silently reducing this invariant to the workflow that remains.
         @($script:Pairs).Count |
-            Should -BeGreaterThan 0 -Because 'the assertions below are vacuous with no pair to read'
+            Should -Be 2 -Because 'publisher ownership must be pinned for both scanner twins'
     }
 
-    It 'still carries the marker template in the scanner source' {
-        # Control for the assertion that follows: proves the needle is findable at all,
-        # so a zero count in the lock means "stripped", not "wrong search string".
+    It 'does not ask the agent to emit the literal marker template' {
         foreach ($p in $script:Pairs) {
             ([regex]::Matches($p.Md, [regex]::Escape($script:Tmpl))).Count |
-                Should -BeGreaterThan 0 -Because "$($p.Stem).md must still instruct the agent to emit a marker"
+                Should -Be 0 -Because "$($p.Stem).md must keep marker ownership out of the prompt"
+            ([regex]::Matches($p.Lock, [regex]::Escape($script:Tmpl))).Count |
+                Should -Be 0 -Because "$($p.Stem).lock.yml must not depend on a stripped prompt template"
         }
     }
 
-    It 'loses that template in the compiled lock, which is why no issue can be keyed' {
+    It 'compiles trusted validation before publisher-side exact-marker checks' {
         foreach ($p in $script:Pairs) {
-            ([regex]::Matches($p.Lock, [regex]::Escape($script:Tmpl))).Count |
-                Should -Be 0 -Because "$($p.Stem).lock.yml reaching the agent with the template would make issues keyable and change Gate 3's premise"
+            $validator = $p.Lock.IndexOf('run: .github/scripts/Validate-CiScanManifest.ps1')
+            $publisherMarker = $p.Lock.IndexOf('const exactMarker = `<!-- ci-scan-fingerprint: ${issue.Fingerprint} -->`;')
+            $validator | Should -BeGreaterThan 0 -Because "$($p.Stem).lock.yml must invoke the trusted validator"
+            $publisherMarker | Should -BeGreaterThan $validator -Because "$($p.Stem).lock.yml must check the trusted marker after validation"
         }
     }
 }

@@ -847,8 +847,9 @@ function Set-CiScanStateMarker {
         NOTE: there is no such caller yet. This function has no production invocation --
         only the read side (`Get-CiScanStateMarker`, live at Invoke-CiScanReconcile.ps1)
         currently runs, so the ci-scan-state marker is consumed but never produced. The
-        practical effect is that no open issue carries a marker, and a markerless issue
-        stops at `awaiting-canonical-data` / `no-observation-state-recorded`, so the
+        practical effect is that no open issue carries a state marker. Even an issue with
+        the publisher-owned fingerprint marker stops at `awaiting-canonical-data` /
+        `no-observation-state-recorded`, so the
         N-consecutive-absence criterion has never executed end to end and `candidate` is
         unreachable in production regardless of mode. That is a safety property
         independent of report-only, and it is deliberate for now: wiring a writer is what
@@ -1285,16 +1286,12 @@ function Get-CiScanIssueVerdict {
     }
 
     # --- Gate 3: canonical data required -------------------------------------
-    # The entire current backlog stops here, and will keep stopping here. The marker
-    # template lives in the scanner's source `.md` (twice) but survives into NO compiled
-    # `.lock.yml` -- both twins, before and after #36848. Reproduce:
-    #   git show <ref>:.github/workflows/ci-status-net11.md      | grep -c 'ci-scan-fingerprint: {FINGERPRINT}'  -> 2
-    #   git show <ref>:.github/workflows/ci-status-net11.lock.yml | grep -c 'ci-scan-fingerprint: {FINGERPRINT}'  -> 0
-    # So the agent is never SHOWN the template and cannot emit it. That alone explains
-    # every markerless issue; output-side sanitization is not needed to explain the data
-    # and is untested here -- unobservable while nothing is emitted to sanitize. Do not
-    # "fix" this by bypassing safe outputs: the loss is upstream of them.
-    # Closing an issue we cannot key is exactly the failure mode this design prevents.
+    # The legacy backlog stops here and remains ineligible. New scanner payloads are
+    # marker-free while agent-authored, then the trusted validator derives and injects
+    # the canonical fingerprint marker from the validated manifest before the publisher
+    # re-validates the exact body. That makes new issues keyable without trusting prompt
+    # emission, but it deliberately does not retrofit old markerless issues. Closing an
+    # issue we cannot key is exactly the failure mode this gate prevents.
     if ($null -eq $fp) {
         $verdict.Decision = 'awaiting-canonical-data'
         $verdict.Reason = 'no-canonical-fingerprint-marker'
