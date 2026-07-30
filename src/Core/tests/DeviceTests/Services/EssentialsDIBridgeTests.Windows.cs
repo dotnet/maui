@@ -219,6 +219,76 @@ public class EssentialsDIBridgeTests
 	}
 
 	[Fact]
+	public async Task FailedMapServiceTokenApplyRestoresPlatformTokenAfterPredecessorDisposes()
+	{
+		const string originalInstanceToken = "original-instance-token";
+		const string originalPlatformToken = "original-platform-token";
+		const string firstToken = "first-token";
+		const string secondToken = "second-token";
+		var timeout = TimeSpan.FromSeconds(30);
+		var original = Geocoding.Default;
+		var originalToken = (original as IPlatformGeocoding)?.MapServiceToken;
+		var initialAssignmentCount = GetMapTokenAssignmentCount();
+		var initialStateCount = GetMapTokenImplementationStateCount();
+		using var platformToken = new WindowsMapServiceTokenScope(originalPlatformToken);
+		var secondSetterEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var releaseSecondSetter = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var first = new StubPlatformGeocoding { MapServiceToken = originalInstanceToken };
+		var second = new CallbackPlatformGeocoding(value =>
+		{
+			if (!string.Equals(value, secondToken, StringComparison.Ordinal))
+				return;
+
+			platformToken.Value = secondToken;
+			secondSetterEntered.TrySetResult(true);
+			Assert.True(
+				releaseSecondSetter.Task.Wait(timeout),
+				"Timed out waiting to release the failing map-token setter.");
+			throw new InvalidOperationException("map token failed");
+		});
+		MauiApp? firstApp = null;
+		Task<MauiApp>? secondBuild = null;
+
+		try
+		{
+			var firstBuilder = MauiApp.CreateBuilder(useDefaults: false);
+			firstBuilder.Services.AddSingleton<IGeocoding>(first);
+			firstBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(firstToken));
+			firstApp = firstBuilder.Build();
+			platformToken.Value = firstToken;
+
+			var secondBuilder = MauiApp.CreateBuilder(useDefaults: false);
+			secondBuilder.Services.AddSingleton<IGeocoding>(second);
+			secondBuilder.ConfigureEssentials(essentials => essentials.UseMapServiceToken(secondToken));
+			secondBuild = Task.Run(secondBuilder.Build);
+
+			await secondSetterEntered.Task.WaitAsync(timeout);
+
+			firstApp.Dispose();
+			firstApp = null;
+
+			releaseSecondSetter.TrySetResult(true);
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+				() => secondBuild.WaitAsync(timeout));
+
+			Assert.Equal("map token failed", exception.Message);
+			Assert.Equal(originalPlatformToken, platformToken.Value);
+			Assert.Equal(initialAssignmentCount, GetMapTokenAssignmentCount());
+			Assert.Equal(initialStateCount, GetMapTokenImplementationStateCount());
+			Assert.Same(original, Geocoding.Default);
+		}
+		finally
+		{
+			releaseSecondSetter.TrySetResult(true);
+			if (secondBuild is not null)
+				await Record.ExceptionAsync(() => secondBuild.WaitAsync(timeout));
+
+			firstApp?.Dispose();
+			RestoreGeocoding(original, originalToken);
+		}
+	}
+
+	[Fact]
 	public async Task ConcurrentBuildAppliesMapServiceTokenToOwningGeocoder()
 	{
 		const string token = "first-token";

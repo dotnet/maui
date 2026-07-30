@@ -716,38 +716,53 @@ namespace Microsoft.Maui.Hosting
 				}
 				catch (Exception applyException)
 				{
-					Exception? rollbackException = null;
+					List<Exception>? rollbackExceptions = null;
+#if WINDOWS
+					Exception? platformRollbackException = null;
+#endif
 					lock (s_mapTokenLock)
 					{
 						implementationState.ActiveOperations++;
-						RemoveMapTokenAssignmentLocked(
-							assignment
 #if WINDOWS
-							, out _,
-							out _
+						var assignmentRemoved = RemoveMapTokenAssignmentLocked(
+							assignment,
+							out var platformSuccessorToken,
+							out var platformPredecessorToken);
+						if (assignmentRemoved)
+						{
+							platformRollbackException = RestoreWindowsMapServiceTokenLocked(
+								assignment,
+								platformSuccessorToken,
+								platformPredecessorToken);
+						}
+#else
+						RemoveMapTokenAssignmentLocked(assignment);
 #endif
-						);
 					}
 
+#if WINDOWS
+					if (platformRollbackException is not null)
+						(rollbackExceptions ??= new()).Add(platformRollbackException);
+#endif
 					try
 					{
 						ReconcileMapServiceToken(implementationState);
 					}
 					catch (Exception ex)
 					{
-						rollbackException = ex;
+						(rollbackExceptions ??= new()).Add(ex);
 					}
 					finally
 					{
 						ReleaseMapTokenImplementationState(implementationState);
 					}
 
-					if (rollbackException is not null)
+					if (rollbackExceptions is not null)
 					{
+						rollbackExceptions.Insert(0, applyException);
 						throw new AggregateException(
 							"Map service token assignment and rollback both failed.",
-							applyException,
-							rollbackException);
+							rollbackExceptions);
 					}
 
 					throw;
@@ -850,6 +865,33 @@ namespace Microsoft.Maui.Hosting
 
 				return null;
 			}
+
+			// Caller must hold s_mapTokenLock so the Windows token and owner graph
+			// cannot diverge while an assignment is removed or rebased.
+			static Exception? RestoreWindowsMapServiceTokenLocked(
+				MapTokenAssignment assignment,
+				string? platformSuccessorToken,
+				string? platformPredecessorToken)
+			{
+				Debug.Assert(Monitor.IsEntered(s_mapTokenLock));
+
+				try
+				{
+					if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
+					{
+						WindowsMapServiceTokenSetter(
+							platformSuccessorToken ??
+							platformPredecessorToken ??
+							assignment.PreviousPlatformToken);
+					}
+				}
+				catch (Exception ex)
+				{
+					return ex;
+				}
+
+				return null;
+			}
 #endif
 
 			static void CleanupMapServiceToken(MapTokenAssignment assignment)
@@ -879,20 +921,10 @@ namespace Microsoft.Maui.Hosting
 					// The Windows token and its assignment-owner graph are both process-global.
 					// Remove/rebase the graph and restore the platform token atomically before
 					// a concurrent app can capture a stale token with no previous owner.
-					try
-					{
-						if (string.Equals(WindowsMapServiceTokenGetter(), assignment.AppliedToken, StringComparison.Ordinal))
-						{
-							WindowsMapServiceTokenSetter(
-								platformSuccessorToken ??
-								platformPredecessorToken ??
-								assignment.PreviousPlatformToken);
-						}
-					}
-					catch (Exception ex)
-					{
-						platformException = ex;
-					}
+					platformException = RestoreWindowsMapServiceTokenLocked(
+						assignment,
+						platformSuccessorToken,
+						platformPredecessorToken);
 #endif
 				}
 
