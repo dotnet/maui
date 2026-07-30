@@ -152,6 +152,14 @@ namespace Microsoft.Maui.Platform
         public void ClearPendingViewControllers() => _pendingViewControllers = null;
 
         /// <summary>
+        /// Updates the cached top VC for status bar delegation after SetViewControllers.
+        /// </summary>
+        public void UpdateTopVCCache(UIViewController vc)
+        {
+            (_navigationController as MauiNavigationController)?.UpdateCurrentTopVC(vc);
+        }
+
+        /// <summary>
         /// Completes a push completion task for a view controller that was
         /// not in the visible tab (no DidShowViewController callback).
         /// </summary>

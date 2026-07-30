@@ -123,14 +123,22 @@ namespace Microsoft.Maui.Controls
 			{
 				_setForMaui = true;
 
-				// Preserve the old proxy's Inner — it was wired by OnParentSet
-				// when the Window connected. Without this, the new proxy starts
-				// with Inner=null and modal navigation silently fails.
 				var oldInner = NavigationProxy?.Inner;
 				Navigation = new MauiNavigationImpl(this);
 				if (oldInner is not null)
 				{
 					NavigationProxy.Inner = oldInner;
+				}
+
+				// Child pages' NavigationProxy.Inner still references the old proxy.
+				// Re-wire them to the new one so PushModalAsync etc. route correctly.
+				var newProxy = NavigationProxy;
+				foreach (var child in InternalChildren)
+				{
+					if (child is NavigableElement nav)
+					{
+						nav.NavigationProxy.Inner = newProxy;
+					}
 				}
 			}
 		}

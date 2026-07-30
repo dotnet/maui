@@ -89,6 +89,14 @@ namespace Microsoft.Maui.Controls
 					{
 						parentingVC.NotifyStackChanged();
 					}
+				},
+				OnBackButtonPressed = (navigationView) =>
+				{
+					if (navigationView is NavigationPage navPage)
+					{
+						return navPage.CurrentPage?.SendBackButtonPressed() == true;
+					}
+					return false;
 				}
 			};
 #endif
