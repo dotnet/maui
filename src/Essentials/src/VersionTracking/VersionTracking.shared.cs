@@ -182,43 +182,20 @@ namespace Microsoft.Maui.ApplicationModel
 			=> Default.IsFirstLaunchForBuild(build);
 
 		static IVersionTracking? defaultImplementation;
-		static readonly object defaultImplementationLock = new();
 
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
-		public static IVersionTracking Default
-		{
-			get
-			{
-				if (Volatile.Read(ref defaultImplementation) is { } implementation)
-					return implementation;
-
-				lock (defaultImplementationLock)
-				{
-					if (defaultImplementation is null)
-					{
-						var createdImplementation =
-							new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
-						Volatile.Write(
-							ref defaultImplementation,
-							createdImplementation);
-						return createdImplementation;
-					}
-
-					return defaultImplementation;
-				}
-			}
-		}
+		public static IVersionTracking Default =>
+			EssentialsImplementation.GetOrCreate(
+				ref defaultImplementation,
+				static () => new VersionTrackingImplementation(Preferences.Default, AppInfo.Current));
 
 		internal static IVersionTracking? GetDefault() =>
 			Volatile.Read(ref defaultImplementation);
 
-		internal static void SetDefault(IVersionTracking? implementation)
-		{
-			lock (defaultImplementationLock)
-				Volatile.Write(ref defaultImplementation, implementation);
-		}
+		internal static void SetDefault(IVersionTracking? implementation) =>
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 
 		internal static void InitVersionTracking() =>
 			(Default as VersionTrackingImplementation)?.InitVersionTracking();

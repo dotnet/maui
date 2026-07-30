@@ -138,10 +138,10 @@ namespace Microsoft.Maui.Media
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IMediaPicker Default =>
-			defaultImplementation ??= new MediaPickerImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new MediaPickerImplementation());
 
 		internal static void SetDefault(IMediaPicker? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 	/// <summary>
 	/// Pick options for picking media from the device.

@@ -516,30 +516,31 @@ namespace Microsoft.Maui.Hosting
 				where T : class
 			{
 				FacadeAssignment<T> assignment;
+				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<T>();
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
-					var previous = currentGetter();
-					var previousOwner = FacadeBridgeState<T>.FindOwner(previous);
-					assignment = new FacadeAssignment<T>(
-						impl,
-						previous,
-						previousOwner,
-						allowsSharedOwnership);
-					FacadeBridgeState<T>.Assignments.Add(assignment);
-					SetFacade(setter, impl);
+					lock (facadeSyncRoot)
+					{
+						var previous = currentGetter();
+						var previousOwner = FacadeBridgeState<T>.FindOwner(previous);
+						assignment = new FacadeAssignment<T>(
+							impl,
+							previous,
+							previousOwner,
+							allowsSharedOwnership);
+						FacadeBridgeState<T>.Assignments.Add(assignment);
+						SetFacade(setter, impl);
+					}
 				}
 
-				AddFacadeCleanup(assignment, currentGetter, setter, facadeCleanups);
+				AddFacadeCleanup(assignment, currentGetter, setter, facadeCleanups, facadeSyncRoot);
 			}
 
-			// Invariant: every write to a bridged static facade (SetDefault/SetCurrent) MUST hold
-			// FacadeBridgeState<T>.SyncRoot. The facade setters are plain unlocked field writes, so the
-			// per-type SyncRoot is the only lock serializing the get-current-owner -> set critical
-			// sections in TrackAndSet and AddFacadeCleanup. A writer that skips the lock reopens a
-			// TOCTOU window that can clobber a concurrent replacement with a stale predecessor. Route
-			// all bridged facade writes through here so the invariant is enforced (in Debug) and
-			// documented for future callers.
+			// Invariant: every bridge-owned get-current-owner -> set/restore sequence MUST hold
+			// FacadeBridgeState<T>.SyncRoot. Facade setters are independently atomic so lazy fallback
+			// initialization cannot overwrite a concurrent DI assignment, while this lock serializes
+			// the ownership graph and predecessor restoration across overlapping MauiApp instances.
 			static void SetFacade<T>(Action<T?> setter, T? value)
 				where T : class
 			{
@@ -706,6 +707,7 @@ namespace Microsoft.Maui.Hosting
 
 						lock (s_mapTokenLock)
 						{
+							// A concurrent mutation increments Version, so retries converge once the latest token is stable.
 							if (implementationState.Version == version)
 								return;
 						}
@@ -885,43 +887,47 @@ namespace Microsoft.Maui.Hosting
 				where T : class
 			{
 				FacadeAssignment<T> assignment;
+				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<T>();
 
 				lock (FacadeBridgeState<T>.SyncRoot)
 				{
-					if (!ReferenceEquals(getter(), impl))
-						return;
-
-					var currentOwner = FacadeBridgeState<T>.FindOwner(impl);
-					T? previous;
-					FacadeAssignment<T>? previousOwner;
-					if (currentOwner is null)
+					lock (facadeSyncRoot)
 					{
-						if (original is not null)
+						if (!ReferenceEquals(getter(), impl))
 							return;
 
-						previous = original;
-						previousOwner = null;
-					}
-					else
-					{
-						// Direct DI implementations belong to the app that resolved them.
-						// Only framework-owned defaults and owner-aware wrappers can be shared.
-						if (!currentOwner.AllowsSharedOwnership)
-							return;
+						var currentOwner = FacadeBridgeState<T>.FindOwner(impl);
+						T? previous;
+						FacadeAssignment<T>? previousOwner;
+						if (currentOwner is null)
+						{
+							if (original is not null)
+								return;
 
-						previous = impl;
-						previousOwner = currentOwner;
-					}
+							previous = original;
+							previousOwner = null;
+						}
+						else
+						{
+							// Direct DI implementations belong to the app that resolved them.
+							// Only framework-owned defaults and owner-aware wrappers can be shared.
+							if (!currentOwner.AllowsSharedOwnership)
+								return;
 
-					assignment = new FacadeAssignment<T>(
-						impl,
-						previous,
-						previousOwner,
-						allowsSharedOwnership: true);
-					FacadeBridgeState<T>.Assignments.Add(assignment);
+							previous = impl;
+							previousOwner = currentOwner;
+						}
+
+						assignment = new FacadeAssignment<T>(
+							impl,
+							previous,
+							previousOwner,
+							allowsSharedOwnership: true);
+						FacadeBridgeState<T>.Assignments.Add(assignment);
+					}
 				}
 
-				AddFacadeCleanup(assignment, getter, setter, facadeCleanups);
+				AddFacadeCleanup(assignment, getter, setter, facadeCleanups, facadeSyncRoot);
 			}
 
 			static Func<VersionTrackingDependency<T>> CreateOwnedVersionTrackingDependency<T>(
@@ -960,37 +966,39 @@ namespace Microsoft.Maui.Hosting
 				FacadeAssignment<T> assignment,
 				Func<T?> getter,
 				Action<T?> setter,
-				List<Action> facadeCleanups)
+				List<Action> facadeCleanups,
+				object facadeSyncRoot)
 				where T : class
 			{
 				facadeCleanups.Add(() =>
 				{
 					lock (FacadeBridgeState<T>.SyncRoot)
 					{
-						// Invariant: every bridged-facade mutation (SetDefault/SetCurrent, via
-						// TrackAndSet) must run under FacadeBridgeState<T>.SyncRoot. The get->check->set
-						// restoration below (read current, verify this assignment still owns it, restore
-						// Previous) is only atomic against those mutations while that invariant holds.
-						// Bridging a facade through a setter without taking this lock would reopen a
-						// TOCTOU window that could clobber a concurrent replacement with the predecessor.
-						var index = FacadeBridgeState<T>.Assignments.IndexOf(assignment);
-						if (index < 0)
-							return;
-
-						var current = getter();
-						var ownsCurrent = ReferenceEquals(
-							FacadeBridgeState<T>.FindOwner(current),
-							assignment);
-
-						foreach (var dependent in FacadeBridgeState<T>.Assignments)
+						lock (facadeSyncRoot)
 						{
-							if (ReferenceEquals(dependent.PreviousOwner, assignment))
-								dependent.RebasePreviousOwner(assignment);
-						}
+							// TrackAndSet holds the facade's lazy/setter lock across predecessor
+							// capture and installation. Hold it again across current-owner verification
+							// and restoration so neither a lazy fallback nor an external setter can be
+							// overwritten by a stale predecessor.
+							var index = FacadeBridgeState<T>.Assignments.IndexOf(assignment);
+							if (index < 0)
+								return;
 
-						FacadeBridgeState<T>.Assignments.RemoveAt(index);
-						if (ownsCurrent)
-							SetFacade(setter, assignment.Previous);
+							var current = getter();
+							var ownsCurrent = ReferenceEquals(
+								FacadeBridgeState<T>.FindOwner(current),
+								assignment);
+
+							foreach (var dependent in FacadeBridgeState<T>.Assignments)
+							{
+								if (ReferenceEquals(dependent.PreviousOwner, assignment))
+									dependent.RebasePreviousOwner(assignment);
+							}
+
+							FacadeBridgeState<T>.Assignments.RemoveAt(index);
+							if (ownsCurrent)
+								SetFacade(setter, assignment.Previous);
+						}
 					}
 
 					if (typeof(T) == typeof(IPreferences) ||
@@ -1050,11 +1058,10 @@ namespace Microsoft.Maui.Hosting
 
 			static class FacadeBridgeState<T> where T : class
 			{
-				// SyncRoot serializes both the ownership bookkeeping (Assignments) and the bridged
-				// facade field itself. INVARIANT: all bridged facade writes (SetDefault/SetCurrent for
-				// this T) must be performed while holding SyncRoot (see SetFacade). The facade setters
-				// are plain unlocked field writes, so this lock is the sole guard against a TOCTOU
-				// clobber between reading the current owner and writing the replacement.
+				// SyncRoot serializes the ownership bookkeeping and every bridge-owned facade
+				// replacement/restoration. Facade lazy initialization and setters are independently
+				// atomic, so external/internal writers cannot clobber a DI assignment with a stale
+				// fallback while this lock preserves the overlapping-app predecessor graph.
 				internal static readonly object SyncRoot = new();
 				internal static readonly List<FacadeAssignment<T>> Assignments = new();
 

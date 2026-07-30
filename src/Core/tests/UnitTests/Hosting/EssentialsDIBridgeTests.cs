@@ -127,6 +127,103 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task ConcurrentPreferencesSetterWinsOverFallbackFactory()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var factoryEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var setterStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var fallback = new StubPreferences();
+			var registered = new StubPreferences();
+			Preferences.SetDefault(null);
+
+			var fallbackRead = Task.Run(() =>
+				Preferences.GetDefault(() =>
+				{
+					factoryEntered.TrySetResult(true);
+					Assert.True(
+						setterStarted.Task.Wait(timeout),
+						"Timed out waiting for the concurrent Preferences setter.");
+					return fallback;
+				}));
+
+			await factoryEntered.Task.WaitAsync(timeout);
+
+			var setter = Task.Run(() =>
+			{
+				setterStarted.TrySetResult(true);
+				Preferences.SetDefault(registered);
+			});
+
+			Assert.Same(fallback, await fallbackRead.WaitAsync(timeout));
+			await setter.WaitAsync(timeout);
+			Assert.Same(registered, Preferences.Default);
+		}
+
+		[Fact]
+		public async Task ConcurrentPreferencesFallbackDoesNotOverwriteDIRegisteredFacade()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var factoryEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseFactory = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var preferencesResolved = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var fallback = new StubPreferences();
+			var registered = new StubPreferences();
+			MauiApp? app = null;
+			Task<MauiApp>? build = null;
+			Task<IPreferences>? fallbackRead = null;
+
+			try
+			{
+				Preferences.SetDefault(null);
+				fallbackRead = Task.Run(() =>
+					Preferences.GetDefault(() =>
+					{
+						factoryEntered.TrySetResult(true);
+						Assert.True(
+							releaseFactory.Task.Wait(timeout),
+							"Timed out waiting to release the Preferences fallback factory.");
+						return fallback;
+					}));
+
+				await factoryEntered.Task.WaitAsync(timeout);
+
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IPreferences>(_ =>
+				{
+					preferencesResolved.TrySetResult(true);
+					return registered;
+				});
+				build = Task.Run(builder.Build);
+
+				await preferencesResolved.Task.WaitAsync(timeout);
+				Assert.NotSame(build, await Task.WhenAny(build, Task.Delay(TimeSpan.FromMilliseconds(250))));
+
+				releaseFactory.TrySetResult(true);
+
+				Assert.Same(fallback, await fallbackRead.WaitAsync(timeout));
+				app = await build.WaitAsync(timeout);
+				Assert.Same(registered, Preferences.Default);
+
+				app.Dispose();
+				app = null;
+
+				Assert.Same(fallback, Preferences.Default);
+			}
+			finally
+			{
+				releaseFactory.TrySetResult(true);
+
+				if (fallbackRead is not null)
+					await Record.ExceptionAsync(() => fallbackRead.WaitAsync(timeout));
+
+				if (build is not null)
+					await Record.ExceptionAsync(() => build.WaitAsync(timeout));
+
+				app?.Dispose();
+			}
+		}
+
+		[Fact]
 		public void DIRegisteredBattery_BridgedToStaticFacade()
 		{
 			var mock = new StubBattery();
@@ -178,7 +275,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		public void NoDIRegistration_StaticFacadeUnchanged()
 		{
 			// When nothing is registered in DI, the backing field should remain null
-			// (the lazy ??= will create the platform default on first access).
+			// (the lazy getter will create the platform default on first access).
 			var builder = MauiApp.CreateBuilder();
 			using var app = builder.Build();
 

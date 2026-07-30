@@ -139,12 +139,10 @@ namespace Microsoft.Maui.Storage
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static ISecureStorage Default =>
-			defaultImplementation ??= new SecureStorageImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new SecureStorageImplementation());
 
-		internal static void SetDefault(ISecureStorage? implementation)
-		{
-			defaultImplementation = implementation;
-		}
+		internal static void SetDefault(ISecureStorage? implementation) =>
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

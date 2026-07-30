@@ -66,10 +66,10 @@ namespace Microsoft.Maui.Media
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static ITextToSpeech Default =>
-			defaultImplementation ??= new TextToSpeechImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new TextToSpeechImplementation());
 
 		internal static void SetDefault(ITextToSpeech? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 
 		internal static List<string> SplitSpeak(string text, int max)
 		{

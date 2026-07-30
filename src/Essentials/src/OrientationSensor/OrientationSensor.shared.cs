@@ -87,10 +87,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IOrientationSensor Default =>
-			defaultImplementation ??= new OrientationSensorImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new OrientationSensorImplementation());
 
 		internal static void SetDefault(IOrientationSensor? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

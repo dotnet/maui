@@ -132,10 +132,10 @@ namespace Microsoft.Maui.Authentication
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IWebAuthenticator Default =>
-			defaultImplementation ??= new WebAuthenticatorImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new WebAuthenticatorImplementation());
 
 		internal static void SetDefault(IWebAuthenticator? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

@@ -52,10 +52,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static ISms Default =>
-			defaultImplementation ??= new SmsImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new SmsImplementation());
 
 		internal static void SetDefault(ISms? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	partial class SmsImplementation : ISms

@@ -265,10 +265,13 @@ namespace Microsoft.Maui.Storage
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IPreferences Default =>
-			defaultImplementation ??= new PreferencesImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new PreferencesImplementation());
 
 		internal static void SetDefault(IPreferences? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+
+		internal static IPreferences GetDefault(Func<IPreferences> implementationFactory) =>
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, implementationFactory);
 
 		internal static Type[] SupportedTypes = new Type[]
 		{

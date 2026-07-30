@@ -117,10 +117,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IPermissions Current =>
-			currentImplementation ??= new PermissionsImplementation();
+			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new PermissionsImplementation());
 
 		internal static void SetCurrent(IPermissions? implementation) =>
-			currentImplementation = implementation;
+			EssentialsImplementation.Set(ref currentImplementation, implementation);
 #nullable restore
 
 		/// <summary>
