@@ -398,10 +398,14 @@ may find several coherent candidates, but "newest coherent" does not mean
 Additional sources are accepted only for dnceng Azure Artifacts HTTPS
 endpoints. NuGet.org is already part of the fixed public source set and cannot
 be supplied under an arbitrary credential-bearing name. User information
-embedded in a URL is rejected. Credentials come from NuGet's
+embedded in a URL, query parameters, and fragments are rejected. Credentials come from NuGet's
 `NuGetPackageSourceCredentials_<name>` environment variable, where `<name>`
 exactly matches the source name. The value must contain non-empty `Username`
-and `Password` fields and `ValidAuthenticationTypes=Basic`.
+and `Password` fields and exactly `ValidAuthenticationTypes=Basic`; any other
+authentication contract is rejected before an Authorization header is created.
+Credentials are attached only to HTTPS `pkgs.dev.azure.com/dnceng/...`
+requests, including service-index-derived search, flat-container, and package
+URLs.
 
 ### Workload-Set Version Normalization
 

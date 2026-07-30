@@ -204,8 +204,9 @@ If an authenticated shipping feed is required:
 
 `-PublicSafe $false` intentionally includes exact source URLs and installation
 instructions, so keep that output local. The default public-safe report removes
-additional source names, URLs, nested source metadata, credentials, and the
-generated NuGet configuration.
+the release-owner-confirmed workload-set version, additional source names,
+URLs, nested source metadata, credentials, and the generated NuGet
+configuration.
 
 The gate classifies evidence as follows:
 
@@ -326,7 +327,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-IncludeInternal`, `-InternalBuildId` | No | — | Release-captain only — augments report with internal pipeline status when AzDO auth is available. |
 | `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON. |
 | `-ConfirmedWorkloadSetVersion` | No | — | Exact release-owner-confirmed workload-set CLI version. Required before Consumer installability can become `READY`. |
-| `-AdditionalPackageSource` | No | — | Repeatable `name=https://...` authenticated source. Credentials come from `NuGetPackageSourceCredentials_<name>`, never from the argument. |
+| `-AdditionalPackageSource` | No | — | Repeatable `name=https://...` authenticated dnceng Azure Artifacts source without user information, query parameters, or fragments. Credentials come from `NuGetPackageSourceCredentials_<name>`, never from the argument, and must explicitly select `ValidAuthenticationTypes=Basic`. |
 
 ## Outputs
 

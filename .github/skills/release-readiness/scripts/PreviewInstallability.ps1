@@ -112,8 +112,10 @@ function ConvertFrom-PreviewPackageSourceSpec {
         $uri = [Uri]$uriText
         if ($uri.Scheme -ne 'https' -or
             $uri.Host -ne 'pkgs.dev.azure.com' -or
-            -not [string]::IsNullOrEmpty($uri.UserInfo)) {
-            throw "Additional package source '$name' must be an HTTPS dnceng Azure Artifacts service index without embedded credentials."
+            -not [string]::IsNullOrEmpty($uri.UserInfo) -or
+            -not [string]::IsNullOrEmpty($uri.Query) -or
+            -not [string]::IsNullOrEmpty($uri.Fragment)) {
+            throw "Additional package source '$name' must be an HTTPS dnceng Azure Artifacts service index without user information, query parameters, or fragments."
         }
         if (-not $uri.AbsolutePath.StartsWith('/dnceng/', [StringComparison]::OrdinalIgnoreCase)) {
             throw "Additional Azure Artifacts source '$name' must belong to the dnceng organization."
@@ -128,23 +130,56 @@ function ConvertFrom-PreviewPackageSourceSpec {
     return @($sources)
 }
 
+function Test-IsTrustedDncengPackageUri {
+    param([AllowNull()][string]$Uri)
+
+    [Uri]$parsed = $null
+    if (-not [Uri]::TryCreate($Uri, [UriKind]::Absolute, [ref]$parsed)) {
+        return $false
+    }
+
+    return $parsed.Scheme -eq 'https' -and
+        $parsed.Host -eq 'pkgs.dev.azure.com' -and
+        [string]::IsNullOrEmpty($parsed.UserInfo) -and
+        $parsed.AbsolutePath.StartsWith('/dnceng/', [StringComparison]::OrdinalIgnoreCase)
+}
+
 function Get-PackageSourceHeaders {
-    param([Parameter(Mandatory)]$Source)
+    param(
+        [Parameter(Mandatory)]$Source,
+        [Parameter(Mandatory)][string]$RequestUrl
+    )
 
     $variableName = "NuGetPackageSourceCredentials_$($Source.Name)"
     $credential = [Environment]::GetEnvironmentVariable($variableName)
     if ([string]::IsNullOrWhiteSpace($credential)) { return @{} }
 
-    $username = 'unused'
+    if (-not (Test-IsTrustedDncengPackageUri -Uri ([string]$Source.Uri)) -or
+        -not (Test-IsTrustedDncengPackageUri -Uri $RequestUrl)) {
+        throw "Credentials from '$variableName' can only be sent to HTTPS dnceng Azure Artifacts endpoints."
+    }
+
+    $username = $null
     $password = $null
+    $authenticationTypes = $null
+    foreach ($part in ($credential -split ';')) {
+        if ($part -match '^\s*ValidAuthenticationTypes=(.*)$') {
+            $authenticationTypes = $Matches[1].Trim()
+        }
+    }
     foreach ($part in ($credential -split ';')) {
         if ($part -match '^\s*Username=(.*)$') {
-            $username = $Matches[1]
+            $username = $Matches[1].Trim()
         } elseif ($part -match '^\s*Password=(.*)$') {
             $password = $Matches[1]
         }
     }
-    if ([string]::IsNullOrEmpty($password)) { return @{} }
+    if ([string]::IsNullOrWhiteSpace($username) -or [string]::IsNullOrEmpty($password)) {
+        throw "Credential variable '$variableName' must contain non-empty Username and Password fields."
+    }
+    if (-not [string]::Equals($authenticationTypes, 'Basic', [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Credential variable '$variableName' must set ValidAuthenticationTypes=Basic."
+    }
 
     $bytes = [Text.Encoding]::UTF8.GetBytes("${username}:$password")
     return @{ Authorization = "Basic $([Convert]::ToBase64String($bytes))" }
@@ -178,7 +213,7 @@ function Invoke-InstallabilityJson {
         return & $Fetcher $Url $Source
     }
 
-    $headers = Get-PackageSourceHeaders -Source $Source
+    $headers = Get-PackageSourceHeaders -Source $Source -RequestUrl $Url
     return Invoke-RestMethod -Uri $Url -Headers $headers -TimeoutSec $TimeoutSec -ErrorAction Stop
 }
 
@@ -265,7 +300,7 @@ function Find-PreviewWorkloadSetPackage {
     foreach ($resolved in @($ResolvedSources | Where-Object { $_.Available -and $_.SearchUrl })) {
         try {
             $separator = if ($resolved.SearchUrl.Contains('?')) { '&' } else { '?' }
-            $url = "$($resolved.SearchUrl.TrimEnd('/'))/$separator" +
+            $url = "$($resolved.SearchUrl.TrimEnd('/'))$separator" +
                 "q=$([Uri]::EscapeDataString($query))&prerelease=true&semVerLevel=2.0.0&take=100"
             $search = Invoke-InstallabilityJson -Url $url -Source $resolved.Source -Fetcher $Fetcher
             foreach ($package in @(Get-InstallabilityProperty $search 'data')) {
@@ -324,7 +359,7 @@ function Read-PreviewNuGetPackageEntries {
         if ($Downloader) {
             & $Downloader $url $tempFile $ResolvedSource.Source
         } else {
-            $headers = Get-PackageSourceHeaders -Source $ResolvedSource.Source
+            $headers = Get-PackageSourceHeaders -Source $ResolvedSource.Source -RequestUrl $url
             Invoke-WebRequest -Uri $url -Headers $headers -OutFile $tempFile -TimeoutSec 60 -ErrorAction Stop
         }
 
@@ -433,8 +468,10 @@ function Get-PreviewManifestPackageRequests {
         'Microsoft.NET.Sdk.iOS',
         'Microsoft.NET.Sdk.MacCatalyst',
         'Microsoft.NET.Sdk.macOS',
+        'Microsoft.NET.Sdk.tvOS',
         'Microsoft.NET.Sdk.Maui',
-        'Microsoft.NET.Workload.Mono.ToolChain.Current'
+        'Microsoft.NET.Workload.Mono.ToolChain.Current',
+        'Microsoft.NET.Workload.Emscripten.Current'
     )
 
     $requests = [System.Collections.Generic.List[object]]::new()
@@ -498,17 +535,17 @@ function Find-PreviewPackageLocation {
     )
 
     $unknownSources = [System.Collections.Generic.List[string]]::new()
+    $queriedSourceCount = 0
     foreach ($resolved in @(Get-PreviewSourceOrder -ResolvedSources $ResolvedSources -PackageId $PackageId)) {
         if (-not $resolved.Available -or [string]::IsNullOrWhiteSpace($resolved.FlatUrl)) {
-            if ($resolved.AuthenticationLost -or $resolved.Source.IsAdditional) {
-                [void]$unknownSources.Add($resolved.Source.Name)
-            }
+            [void]$unknownSources.Add($resolved.Source.Name)
             continue
         }
 
         $id = $PackageId.ToLowerInvariant()
         try {
             $index = Invoke-InstallabilityJson -Url "$($resolved.FlatUrl)/$id/index.json" -Source $resolved.Source -Fetcher $Fetcher
+            $queriedSourceCount++
             $versions = @(Get-InstallabilityProperty $index 'versions')
             if (@($versions | Where-Object { [string]$_ -ieq $Version }).Count -gt 0) {
                 return [PSCustomObject]@{
@@ -521,16 +558,18 @@ function Find-PreviewPackageLocation {
             }
         } catch {
             $status = Get-InstallabilityHttpStatus $_.Exception
-            if ($status -in @(401, 403) -or $resolved.Source.IsAdditional) {
-                [void]$unknownSources.Add($resolved.Source.Name)
-            } elseif ($status -ne 404) {
+            if ($status -eq 404) {
+                # A package-index 404 conclusively establishes that this package ID is
+                # absent from an otherwise reachable flat-container source.
+                $queriedSourceCount++
+            } else {
                 [void]$unknownSources.Add($resolved.Source.Name)
             }
         }
     }
 
     return [PSCustomObject]@{
-        Status         = if ($unknownSources.Count -gt 0) { 'unknown' } else { 'missing' }
+        Status         = if ($unknownSources.Count -gt 0 -or $queriedSourceCount -eq 0) { 'unknown' } else { 'missing' }
         PackageId      = $PackageId
         Version        = $Version
         ResolvedSource = $null
@@ -751,6 +790,17 @@ function ConvertTo-PublicInstallabilityResult {
     # without revealing the build itself. An unconfirmed discovered candidate is not
     # embargoed (it's just the newest public coherent package), so it is left intact.
     if ($Result.VersionConfirmed) {
+        $publicSummary = [string]$Result.Summary
+        foreach ($version in @($Result.CliVersion, $Result.NuGetVersion)) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$version)) {
+                $publicSummary = [regex]::Replace(
+                    $publicSummary,
+                    [regex]::Escape([string]$version),
+                    'withheld',
+                    [Text.RegularExpressions.RegexOptions]::IgnoreCase)
+            }
+        }
+        $copy.Summary = $publicSummary
         $copy.CliVersion = 'withheld'
         $copy.NuGetVersion = 'withheld'
         $copy.InstallCommand = if ($Result.CliVersion) {
@@ -1158,15 +1208,15 @@ function Format-PreviewInstallabilityMarkdown {
     $builder = [Text.StringBuilder]::new()
     [void]$builder.AppendLine('## Consumer installability')
     [void]$builder.AppendLine('')
-    [void]$builder.AppendLine("**Status:** **$($Result.Status)** - $($Result.Summary)")
+    [void]$builder.AppendLine("**Status:** **$(Format-InstallabilityMarkdownCell ([string]$Result.Status))** - $(Format-InstallabilityMarkdownCell ([string]$Result.Summary))")
     [void]$builder.AppendLine('')
     if ($Result.PackageId) {
         [void]$builder.AppendLine("| Evidence | Value |")
         [void]$builder.AppendLine("|----------|-------|")
-        [void]$builder.AppendLine("| SDK | ``$($Result.SdkVersion)`` |")
-        [void]$builder.AppendLine("| Workload-set package | ``$($Result.PackageId)`` |")
-        [void]$builder.AppendLine("| CLI version | ``$($Result.CliVersion)`` |")
-        [void]$builder.AppendLine("| NuGet package version | ``$($Result.NuGetVersion)`` |")
+        [void]$builder.AppendLine("| SDK | ``$(Format-InstallabilityMarkdownCell ([string]$Result.SdkVersion))`` |")
+        [void]$builder.AppendLine("| Workload-set package | ``$(Format-InstallabilityMarkdownCell ([string]$Result.PackageId))`` |")
+        [void]$builder.AppendLine("| CLI version | ``$(Format-InstallabilityMarkdownCell ([string]$Result.CliVersion))`` |")
+        [void]$builder.AppendLine("| NuGet package version | ``$(Format-InstallabilityMarkdownCell ([string]$Result.NuGetVersion))`` |")
         [void]$builder.AppendLine("| Version source | $(if ($Result.VersionConfirmed) { 'release evidence supplied to the script' } else { 'latest coherent public candidate; official confirmation still required' }) |")
         [void]$builder.AppendLine('')
     }
@@ -1175,7 +1225,7 @@ function Format-PreviewInstallabilityMarkdown {
         [void]$builder.AppendLine("| Component | Expected | Workload set | Result |")
         [void]$builder.AppendLine("|-----------|----------|--------------|--------|")
         foreach ($comparison in $Result.PinComparisons) {
-            [void]$builder.AppendLine("| ``$($comparison.WorkloadId)`` | ``$($comparison.Expected)`` | ``$($comparison.Actual)`` | **$($comparison.Status)** |")
+            [void]$builder.AppendLine("| ``$(Format-InstallabilityMarkdownCell ([string]$comparison.WorkloadId))`` | ``$(Format-InstallabilityMarkdownCell ([string]$comparison.Expected))`` | ``$(Format-InstallabilityMarkdownCell ([string]$comparison.Actual))`` | **$(Format-InstallabilityMarkdownCell ([string]$comparison.Status))** |")
         }
         [void]$builder.AppendLine('')
     }
@@ -1192,7 +1242,7 @@ function Format-PreviewInstallabilityMarkdown {
             if ([string]::IsNullOrWhiteSpace([string]$sourceName)) { $sourceName = '—' }
             $contentStatus = Get-InstallabilityProperty $manifestPackage 'ContentStatus'
             if ([string]::IsNullOrWhiteSpace([string]$contentStatus)) { $contentStatus = '—' }
-            [void]$builder.AppendLine("| ``$($manifestPackage.PackageId)`` | ``$($manifestPackage.Version)`` | **$($manifestPackage.Status)** | **$contentStatus** | ``$(Format-InstallabilityMarkdownCell $sourceName)`` |")
+            [void]$builder.AppendLine("| ``$(Format-InstallabilityMarkdownCell ([string]$manifestPackage.PackageId))`` | ``$(Format-InstallabilityMarkdownCell ([string]$manifestPackage.Version))`` | **$(Format-InstallabilityMarkdownCell ([string]$manifestPackage.Status))** | **$(Format-InstallabilityMarkdownCell ([string]$contentStatus))** | ``$(Format-InstallabilityMarkdownCell $sourceName)`` |")
         }
         [void]$builder.AppendLine('')
     }
@@ -1207,9 +1257,9 @@ function Format-PreviewInstallabilityMarkdown {
                 $sourceName = Get-InstallabilityProperty (Get-InstallabilityProperty $resolved 'Source') 'Name'
             }
             if ([string]::IsNullOrWhiteSpace([string]$sourceName)) { $sourceName = '—' }
-            $packageId = if ([string]::IsNullOrWhiteSpace([string]$packProbe.PackageId)) { 'not derived' } else { "``$($packProbe.PackageId)``" }
-            $version = if ([string]::IsNullOrWhiteSpace([string]$packProbe.Version)) { '—' } else { "``$($packProbe.Version)``" }
-            [void]$builder.AppendLine("| $($packProbe.Category) | $packageId | $version | **$($packProbe.Status)** | ``$(Format-InstallabilityMarkdownCell $sourceName)`` |")
+            $packageId = if ([string]::IsNullOrWhiteSpace([string]$packProbe.PackageId)) { 'not derived' } else { "``$(Format-InstallabilityMarkdownCell ([string]$packProbe.PackageId))``" }
+            $version = if ([string]::IsNullOrWhiteSpace([string]$packProbe.Version)) { '—' } else { "``$(Format-InstallabilityMarkdownCell ([string]$packProbe.Version))``" }
+            [void]$builder.AppendLine("| $(Format-InstallabilityMarkdownCell ([string]$packProbe.Category)) | $packageId | $version | **$(Format-InstallabilityMarkdownCell ([string]$packProbe.Status))** | ``$(Format-InstallabilityMarkdownCell $sourceName)`` |")
         }
         [void]$builder.AppendLine('')
     }

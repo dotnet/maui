@@ -8863,6 +8863,75 @@ try {
 Assert-Eq -Label "installability: credential-bearing additional sources cannot target NuGet.org" `
     -Expected $true -Actual $iiExternalCredentialSourceRejected
 
+$iiAdditionalSourceUrlComponentRejections = @(
+    'query=https://pkgs.dev.azure.com/dnceng/internal/_packaging/example/nuget/v3/index.json?token=do-not-copy',
+    'fragment=https://pkgs.dev.azure.com/dnceng/internal/_packaging/example/nuget/v3/index.json#credential'
+)
+foreach ($sourceSpec in $iiAdditionalSourceUrlComponentRejections) {
+    $rejected = $false
+    try {
+        $null = ConvertFrom-PreviewPackageSourceSpec -Major 11 -AdditionalPackageSource $sourceSpec
+    } catch {
+        $rejected = $true
+    }
+    Assert-Eq -Label "installability: additional source rejects query/fragment URL component ($sourceSpec)" `
+        -Expected $true -Actual $rejected
+}
+
+$iiCredentialContractSource = [PSCustomObject]@{
+    Name = 'credential_contract'
+    Uri  = 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/example/nuget/v3/index.json'
+    Role = 'additional'; IsAdditional = $true; IsInternal = $true
+}
+$iiCredentialVariable = "NuGetPackageSourceCredentials_$($iiCredentialContractSource.Name)"
+try {
+    [Environment]::SetEnvironmentVariable(
+        $iiCredentialVariable,
+        'Username=release-readiness;Password=test-token;ValidAuthenticationTypes=Basic')
+    $iiBasicHeaders = Get-PackageSourceHeaders -Source $iiCredentialContractSource `
+        -RequestUrl 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/example/nuget/v3/flat2'
+    Assert-Eq -Label "installability: explicit Basic credential creates an Authorization header for dnceng" `
+        -Expected $true -Actual ([string]$iiBasicHeaders.Authorization).StartsWith('Basic ')
+
+    $iiOffBoundaryCredentialRejected = $false
+    try {
+        $null = Get-PackageSourceHeaders -Source $iiCredentialContractSource `
+            -RequestUrl 'https://attacker.example/flat2'
+    } catch {
+        $iiOffBoundaryCredentialRejected = $true
+    }
+    Assert-Eq -Label "installability: service-index-derived URL outside dnceng cannot receive source credentials" `
+        -Expected $true -Actual $iiOffBoundaryCredentialRejected
+
+    [Environment]::SetEnvironmentVariable(
+        $iiCredentialVariable,
+        'Username=release-readiness;Password=test-token;ValidAuthenticationTypes=Negotiate')
+    $iiNonBasicCredentialRejected = $false
+    try {
+        $null = Get-PackageSourceHeaders -Source $iiCredentialContractSource `
+            -RequestUrl 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/example/nuget/v3/flat2'
+    } catch {
+        $iiNonBasicCredentialRejected = $true
+    }
+    Assert-Eq -Label "installability: non-Basic credential contract is rejected before header creation" `
+        -Expected $true -Actual $iiNonBasicCredentialRejected
+
+    [Environment]::SetEnvironmentVariable(
+        $iiCredentialVariable,
+        'Username=release-readiness;Password=test-token')
+    $iiImplicitBasicCredentialRejected = $false
+    try {
+        $null = Get-PackageSourceHeaders -Source $iiCredentialContractSource `
+            -RequestUrl 'https://pkgs.dev.azure.com/dnceng/internal/_packaging/example/nuget/v3/flat2'
+    } catch {
+        $iiImplicitBasicCredentialRejected = $true
+    }
+    Assert-Eq -Label "installability: missing ValidAuthenticationTypes=Basic is rejected" `
+        -Expected $true -Actual $iiImplicitBasicCredentialRejected
+} finally {
+    [Environment]::SetEnvironmentVariable($iiCredentialVariable, $null)
+}
+
 $iiPins = [PSCustomObject]@{
     Vmr     = [PSCustomObject]@{ Version = '11.0.100-preview.6.26359.118' }
     Android = [PSCustomObject]@{ Version = '37.0.0-preview.6.59' }
@@ -8930,8 +8999,10 @@ $iiSourcePackages = @{
         'microsoft.net.sdk.ios.manifest-11.0.100-preview.6',
         'microsoft.net.sdk.maccatalyst.manifest-11.0.100-preview.6',
         'microsoft.net.sdk.macos.manifest-11.0.100-preview.6',
+        'microsoft.net.sdk.tvos.manifest-11.0.100-preview.6',
         'microsoft.net.sdk.maui.manifest-11.0.100-preview.6',
         'microsoft.net.workload.mono.toolchain.current.manifest-11.0.100-preview.6',
+        'microsoft.net.workload.emscripten.current.manifest-11.0.100-preview.6',
         'microsoft.ios.sdk.net11.0_26.5',
         'microsoft.maccatalyst.sdk.net11.0_26.5',
         'microsoft.maui.controls'
@@ -9005,6 +9076,11 @@ Assert-Eq -Label "installability: Apple SDK representative packs are probed" `
         @($iiResult.PackProbes.Category) -contains 'ios-sdk' -and
         @($iiResult.PackProbes.Category) -contains 'maccatalyst-sdk'
     )
+Assert-Eq -Label "installability: every pin-validated tvOS/Emscripten manifest is probed" `
+    -Expected $true -Actual (
+        @($iiResult.ManifestPackages.WorkloadId) -contains 'Microsoft.NET.Sdk.tvOS' -and
+        @($iiResult.ManifestPackages.WorkloadId) -contains 'Microsoft.NET.Workload.Emscripten.Current'
+    )
 Assert-Eq -Label "installability: generated NuGet config clears inherited sources" `
     -Expected $true -Actual ($iiResult.NuGetConfig -match '<clear\s*/>')
 Assert-Eq -Label "installability: JDK requirement comes from component manifest" `
@@ -9013,6 +9089,24 @@ Assert-Eq -Label "installability: Xcode requirement comes from component manifes
     -Expected '26.6' -Actual $iiResult.PlatformRequirements.Xcode.RecommendedVersion
 Assert-Eq -Label "installability: Windows App SDK requirement comes from MAUI manifest" `
     -Expected '1.8.251106002' -Actual $iiResult.PlatformRequirements.WindowsAppSdk
+
+$iiMissingTvosManifestFetcher = {
+    param($Url, $Source)
+    if ($Url -match '/flat2/microsoft\.net\.sdk\.tvos\.manifest-[^/]+/index\.json$') {
+        return @{ versions = @() }
+    }
+    return & $iiFetcher $Url $Source
+}.GetNewClosure()
+$iiMissingTvosManifest = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
+    -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
+    -Fetcher $iiMissingTvosManifestFetcher -PackageReader $iiPackageReader
+Assert-Eq -Label "installability: missing tvOS manifest evidence blocks a confirmed workload set" `
+    -Expected 'missing' -Actual $iiMissingTvosManifest.Status
+Assert-Eq -Label "installability: missing tvOS manifest is retained as explicit evidence" `
+    -Expected 'missing' -Actual (
+        @($iiMissingTvosManifest.ManifestPackages |
+            Where-Object WorkloadId -eq 'Microsoft.NET.Sdk.tvOS')[0].Status
+    )
 
 $iiInternalExactFetcher = {
     param($Url, $Source)
@@ -9082,6 +9176,20 @@ $iiNoCandidate = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $i
 Assert-Eq -Label "installability: no unconfirmed candidate remains unknown rather than blocked" `
     -Expected 'unknown' -Actual $iiNoCandidate.Status
 
+$iiObservedSearch = [PSCustomObject]@{ Url = $null }
+$iiSearchUrlFetcher = {
+    param($Url, $Source)
+    $iiObservedSearch.Url = $Url
+    return @{ data = @() }
+}.GetNewClosure()
+$null = Find-PreviewWorkloadSetPackage -ResolvedSources @([PSCustomObject]@{
+        Source = [PSCustomObject]@{ Name = 'search'; Role = 'workload-set' }
+        Available = $true
+        SearchUrl = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/example/nuget/v3/query2/'
+    }) -SdkFeatureBand '11.0.100' -Preview 6 -Fetcher $iiSearchUrlFetcher
+Assert-Eq -Label "installability: search query delimiter has no stray slash" `
+    -Expected $true -Actual ($iiObservedSearch.Url -match '/query2\?q=')
+
 $iiResolvedRoles = @(
     [PSCustomObject]@{
         Source = [PSCustomObject]@{ Name = 'workloads'; Role = 'workload-set' }
@@ -9132,6 +9240,55 @@ $iiMissing = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
     -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiMissingFetcher
 Assert-Eq -Label "installability: confirmed absence on accessible sources is missing" `
     -Expected 'missing' -Actual $iiMissing.Status
+
+$iiUnavailablePublicSource = [PSCustomObject]@{
+    Source = $iiMissingSource.Source
+    Available = $false; AuthenticationLost = $false
+    SearchUrl = $null; FlatUrl = $null; Reason = 'source query failed'
+}
+$iiUnavailablePublic = Find-PreviewPackageLocation -ResolvedSources @($iiUnavailablePublicSource) `
+    -PackageId 'Example.Package' -Version '1.0.0'
+Assert-Eq -Label "installability: unavailable unauthenticated source with zero probes is unknown" `
+    -Expected 'unknown' -Actual $iiUnavailablePublic.Status
+
+$iiNetworkFailureFetcher = {
+    param($Url, $Source)
+    throw [Net.Http.HttpRequestException]::new('network unavailable')
+}
+$iiNetworkFailure = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
+    -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiNetworkFailureFetcher
+Assert-Eq -Label "installability: unauthenticated package-index failure with zero successful probes is unknown" `
+    -Expected 'unknown' -Actual $iiNetworkFailure.Status
+
+$iiUnauthorizedFetcher = {
+    param($Url, $Source)
+    throw [Net.Http.HttpRequestException]::new(
+        'unauthorized',
+        $null,
+        [Net.HttpStatusCode]::Unauthorized)
+}
+$iiUnauthorizedPublic = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
+    -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiUnauthorizedFetcher
+Assert-Eq -Label "installability: unauthenticated 401 package-index response is unknown" `
+    -Expected 'unknown' -Actual $iiUnauthorizedPublic.Status
+
+$iiNotFoundFetcher = {
+    param($Url, $Source)
+    throw [Net.Http.HttpRequestException]::new(
+        'not found',
+        $null,
+        [Net.HttpStatusCode]::NotFound)
+}
+$iiPackageIndexNotFound = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
+    -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiNotFoundFetcher
+Assert-Eq -Label "installability: package-index 404 is conclusive absence on a reachable source" `
+    -Expected 'missing' -Actual $iiPackageIndexNotFound.Status
+
+$iiServiceIndexNotFound = Resolve-PreviewPackageSource -Source $iiMissingSource.Source -Fetcher $iiNotFoundFetcher
+$iiUnavailableAfterServiceIndex404 = Find-PreviewPackageLocation -ResolvedSources @($iiServiceIndexNotFound) `
+    -PackageId 'Example.Package' -Version '1.0.0'
+Assert-Eq -Label "installability: service-index 404 means no source was queried and remains unknown" `
+    -Expected 'unknown' -Actual $iiUnavailableAfterServiceIndex404.Status
 
 $iiPrivateResult = [PSCustomObject]@{
     Status = 'unknown'; Summary = 'Authentication is required.'; SdkVersion = '11.0.100-preview.6.1'
@@ -9216,7 +9373,9 @@ Assert-Eq -Label "installability: without -Sources, a source outside RequiredSou
 # even though they are only referenced by the install command string, not just
 # the top-level CliVersion/NuGetVersion fields.
 $iiConfirmedLeakResult = [PSCustomObject]@{
-    Status = 'installable'; Summary = 'ok'; SdkVersion = '11.0.100-preview.6.1'
+    Status = 'unknown'
+    Summary = 'Availability of the confirmed workload-set version 11.0.100-preview.6.SECRETBUILD (NuGet 11.100.0-preview.6.SECRETBUILD) could not be established.'
+    SdkVersion = '11.0.100-preview.6.1'
     SdkFeatureBand = '11.0.100'; PackageId = 'Microsoft.NET.Workloads.11.0.100-preview.6'
     CliVersion = '11.0.100-preview.6.SECRETBUILD'; NuGetVersion = '11.100.0-preview.6.SECRETBUILD'
     VersionConfirmed = $true
@@ -9224,7 +9383,7 @@ $iiConfirmedLeakResult = [PSCustomObject]@{
         WorkloadId = 'Microsoft.NET.Sdk.Android'; Expected = '37.0.0-preview.6.59'
         Actual = '37.0.0-preview.6.SECRETBUILD'; Status = 'match'
     })
-    ManifestPackages = @(); PackProbes = @(); RequiredSources = @()
+    ManifestPackages = @(); PackProbes = @(); RequiredSources = @(); PlatformRequirements = $null
     NuGetConfig = $null
     InstallCommand = 'dotnet workload install maui --version 11.0.100-preview.6.SECRETBUILD --configfile ./preview-nuget.config'
 }
@@ -9235,6 +9394,8 @@ Assert-Eq -Label "installability: confirmed NuGetVersion is withheld in public-s
     -Expected 'withheld' -Actual $iiConfirmedLeakPublic.NuGetVersion
 Assert-Eq -Label "installability: confirmed InstallCommand does not leak the embargoed build number" `
     -Expected $false -Actual ($iiConfirmedLeakPublic.InstallCommand.Contains('SECRETBUILD'))
+Assert-Eq -Label "installability: confirmed Summary does not leak the embargoed build number" `
+    -Expected $false -Actual ($iiConfirmedLeakPublic.Summary.Contains('SECRETBUILD'))
 Assert-Eq -Label "installability: confirmed pin comparison Actual value is withheld" `
     -Expected 'withheld' -Actual $iiConfirmedLeakPublic.PinComparisons[0].Actual
 Assert-Eq -Label "installability: confirmed pin comparison WorkloadId/Expected/Status survive redaction (coherence signal preserved)" `
@@ -9243,6 +9404,9 @@ Assert-Eq -Label "installability: confirmed pin comparison WorkloadId/Expected/S
         $iiConfirmedLeakPublic.PinComparisons[0].Expected -eq '37.0.0-preview.6.59' -and
         $iiConfirmedLeakPublic.PinComparisons[0].Status -eq 'match'
     )
+$iiConfirmedLeakMarkdown = Format-PreviewInstallabilityMarkdown -Result $iiConfirmedLeakPublic
+Assert-Eq -Label "installability: public Markdown status line does not leak confirmed version through Summary" `
+    -Expected $false -Actual ($iiConfirmedLeakMarkdown.Contains('SECRETBUILD'))
 
 $iiUnconfirmedResult = [PSCustomObject]@{
     Status = 'installable'; Summary = 'ok'; SdkVersion = '11.0.100-preview.6.1'
@@ -9327,16 +9491,24 @@ Assert-Eq -Label "installability markdown: null value renders as empty string, n
     -Expected '' -Actual (Format-InstallabilityMarkdownCell $null)
 
 $iiMarkdownInjectionResult = [PSCustomObject]@{
-    Status = 'unknown'; Summary = 'evidence gathering'; SdkVersion = '11.0.100-preview.6.1'
-    SdkFeatureBand = '11.0.100'; PackageId = 'Example.Package'; CliVersion = $null; NuGetVersion = $null
-    VersionConfirmed = $false; PinComparisons = @()
+    Status = 'unknown'; Summary = 'evidence | <summary>'; SdkVersion = '11.0.100-preview.6.1'
+    SdkFeatureBand = '11.0.100'; PackageId = 'Example|<Package>'; CliVersion = $null; NuGetVersion = $null
+    VersionConfirmed = $false
+    PinComparisons = @([PSCustomObject]@{
+        WorkloadId = 'Component|<id>'; Expected = 'expected|<build>'
+        Actual = 'actual|<build>'; Status = 'match'
+    })
     ManifestPackages = @([PSCustomObject]@{
-        WorkloadId = 'Example.Workload'; PackageId = 'Example.Manifest'; Version = '1.0.0'; Status = 'unknown'
+        WorkloadId = 'Example.Workload'; PackageId = 'Example|<Manifest>'; Version = '1.0|<version>'; Status = 'unknown'
         ContentStatus = 'unknown'
         ResolvedSource = [PSCustomObject]@{ Source = [PSCustomObject]@{ Name = 'weird | source <b>'; Role = 'shared' } }
         UnknownSources = @()
     })
-    PackProbes = @(); RequiredSources = @(); PlatformRequirements = $null
+    PackProbes = @([PSCustomObject]@{
+        Category = 'category|<name>'; PackageId = 'Example|<Pack>'; Version = '2.0|<version>'; Status = 'unknown'
+        ResolvedSource = $null; UnknownSources = @()
+    })
+    RequiredSources = @(); PlatformRequirements = $null
     NuGetConfig = $null; InstallCommand = $null
 }
 $iiInjectionMarkdown = Format-PreviewInstallabilityMarkdown -Result $iiMarkdownInjectionResult -PublicSafe $false
@@ -9344,6 +9516,14 @@ Assert-Eq -Label "installability markdown: a source name with a raw pipe cannot 
     -Expected $false -Actual ($iiInjectionMarkdown -match '\| weird \| source')
 Assert-Eq -Label "installability markdown: a source name with angle brackets cannot be read as an HTML tag" `
     -Expected $false -Actual ($iiInjectionMarkdown.Contains('<b>'))
+Assert-Eq -Label "installability markdown: feed-derived package/version/comparison fields cannot inject raw table cells or HTML" `
+    -Expected $false -Actual (
+        $iiInjectionMarkdown.Contains('Example|<Package>') -or
+        $iiInjectionMarkdown.Contains('expected|<build>') -or
+        $iiInjectionMarkdown.Contains('Example|<Manifest>') -or
+        $iiInjectionMarkdown.Contains('category|<name>') -or
+        $iiInjectionMarkdown.Contains('<summary>')
+    )
 
 $p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
 $nonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'area-xaml' }, [PSCustomObject]@{ name = 'p/1' }) }
