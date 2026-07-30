@@ -5,18 +5,21 @@ BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Validate-CiScanManifest.ps1'
     . $scriptPath
 
+    $script:Net11Config = Get-CiScanScannerConfig -ScannerId 'ci-scan-net11'
+    $script:MainConfig = Get-CiScanScannerConfig -ScannerId 'ci-scan'
+
+    # The agent never supplies markers: gh-aw strips literal HTML comments out of the
+    # compiled prompt, so a marker instruction in the prompt never reaches the model.
+    # Every test body here is therefore marker-free, and the canonical markers are
+    # asserted on the PUBLISHED body the validator returns.
     function New-TestBody {
         param(
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
-            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows',
-            [int]$MatchCount = 2
+            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         )
 
         @"
-<!-- ci-scan-fingerprint: $Fingerprint -->
-<!-- ci-scan-match-count: $MatchCount hits in failure.log -->
-
 ## Summary
 Recurring sample failure.
 
@@ -157,14 +160,53 @@ Assertion failed
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
             [Int64]$LogId = 1001,
-            [string[]]$Lines = @('Assertion failed once', 'Assertion failed twice')
+            [string[]]$Lines = @('Assertion failed', 'Assertion failed'),
+            [string]$SegmentKind = 'azdo-log',
+            [string]$SegmentSource = ''
         )
 
+        if (-not $SegmentSource) {
+            $SegmentSource = "$BuildId/$LogId"
+        }
         $directory = Join-Path $Root $Pipeline
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
         Set-Content `
             -LiteralPath (Join-Path $directory "$BuildId-$LogId.log") `
             -Value $Lines
+        [pscustomobject]@{
+            schema_version = 1
+            pipeline       = $Pipeline
+            build_id       = $BuildId
+            log_id         = $LogId
+            segments       = @(
+                [pscustomobject]@{
+                    kind    = $SegmentKind
+                    source  = $SegmentSource
+                    content = $Lines -join "`n"
+                }
+            )
+        } | ConvertTo-Json -Depth 6 | Set-Content `
+            -LiteralPath (Join-Path $directory "$BuildId-$LogId.evidence.json")
+    }
+
+    # A filed payload's match count is recomputed from frozen evidence and injected by
+    # the publisher, so a filed manifest can no longer be validated without evidence.
+    # This builds the default evidence set that the default helpers above line up with.
+    function New-DefaultEvidenceRoot {
+        param(
+            [Int64[]]$MainLogIds = @(1001),
+            [string[]]$ExtraLines = @()
+        )
+
+        $root = Join-Path $TestDrive ('evidence-' + [guid]::NewGuid().ToString('n'))
+        $lines = @('Assertion failed', 'Assertion failed') + $ExtraLines
+        foreach ($logId in $MainLogIds) {
+            New-TestEvidence -Root $root -Pipeline 'maui-pr' -BuildId 123456 -LogId $logId -Lines $lines
+        }
+        New-TestEvidence -Root $root -Pipeline 'maui-pr-devicetests' -BuildId 123457 -LogId 1001 -Lines $lines
+        New-TestEvidence -Root $root -Pipeline 'maui-pr-uitests' -BuildId 123458 -LogId 1001 -Lines $lines
+
+        return $root
     }
 }
 
@@ -187,7 +229,9 @@ Describe 'CI scanner pipeline coverage gate' {
             (New-TestSignature)
         )
 
-        $plan = Test-CiScanManifest -Manifest $manifest
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
 
         $plan.pipelines.Count | Should -Be 3
         $plan.filed_count | Should -Be 1
@@ -316,7 +360,9 @@ Describe 'CI scanner pipeline coverage gate' {
             )
         }
 
-        $plan = Test-CiScanManifest -Manifest $manifest
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
 
         $plan.filed_count | Should -Be 5
         $plan.has_cap_skip | Should -BeTrue
@@ -339,7 +385,9 @@ Describe 'CI scanner pipeline coverage gate' {
             )
         }
 
-        { Test-CiScanManifest -Manifest $manifest } |
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
             Should -Throw '*exactly 5 issues are filed*'
     }
 
@@ -424,13 +472,19 @@ Describe 'CI scanner issue payload gate' {
         # Asserts the round-trip invariant itself, so a future neutralization rule is
         # covered without editing Assert-ValidFingerprint.
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|see https://github.com/dotnet/maui/pull/999|assertion failed|windows'
-        { Assert-ValidFingerprint -Fingerprint $fingerprint -PipelineName 'maui-pr' } |
+        { Assert-ValidFingerprint `
+                -Fingerprint $fingerprint `
+                -PipelineName 'maui-pr' `
+                -ScannerConfig $script:Net11Config } |
             Should -Throw '*rewritten by notification neutralization*'
     }
 
     It 'accepts a fingerprint that neutralization leaves untouched' {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|see github.com/dotnet/maui issue 12345|assertion failed|windows'
-        { Assert-ValidFingerprint -Fingerprint $fingerprint -PipelineName 'maui-pr' } |
+        { Assert-ValidFingerprint `
+                -Fingerprint $fingerprint `
+                -PipelineName 'maui-pr' `
+                -ScannerConfig $script:Net11Config } |
             Should -Not -Throw
     }
 
@@ -441,7 +495,7 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*does not match the net11 scanner*'
+            Should -Throw '*does not match the ci-scan-net11 scanner*'
     }
 
     It 'rejects a fingerprint for another pipeline' {
@@ -451,7 +505,7 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*does not match the net11 scanner*'
+            Should -Throw '*does not match the ci-scan-net11 scanner*'
     }
 
     It 'rejects a fingerprint with the wrong field count' {
@@ -473,48 +527,201 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*forbidden truncation placeholder*'
     }
 
-    It 'rejects a missing fingerprint marker' {
+    <#
+        Marker ownership.
+
+        gh-aw strips literal HTML comments out of the compiled prompt, so a workflow that
+        asks the agent to emit `<!-- ci-scan-fingerprint: ... -->` is telling the model
+        something the model never receives. Production run 30413273824 filed five issues
+        with neither marker for exactly that reason. The publisher therefore injects both
+        markers itself, and refuses any agent body that carries marker-like content, in
+        any spelling, so an injected marker is always the only marker.
+    #>
+    It 'injects exactly one canonical marker pair into a marker-free body' {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $body = (New-TestBody -Fingerprint $fingerprint) -replace '(?m)^<!-- ci-scan-fingerprint:.*\r?\n', ''
         $manifest = New-CompleteManifest -MainSignatures @(
-            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+            (New-TestSignature -Fingerprint $fingerprint)
         )
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*exactly one canonical fingerprint marker*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $published = $plan.issues[0].Body
+        $lines = $published -split "`r?`n"
+        $lines[0] | Should -BeExactly "<!-- ci-scan-fingerprint: $fingerprint -->"
+        $lines[1] | Should -BeExactly '<!-- ci-scan-match-count: 2 hits in failure.log -->'
+        $lines[2] | Should -Match '^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
+        $lines[3] | Should -BeExactly ''
+        [regex]::Matches($published, '<!-- ci-scan-fingerprint:').Count | Should -Be 1
+        [regex]::Matches($published, '<!-- ci-scan-match-count:').Count | Should -Be 1
+        [regex]::Matches($published, '<!-- ci-scan-evidence-key:').Count | Should -Be 1
+        # The agent body is preserved verbatim underneath the injected block.
+        $published | Should -Match '(?m)^## Summary$'
     }
 
-    It 'rejects duplicate fingerprint markers' {
-        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $body = "$(New-TestBody -Fingerprint $fingerprint)`n<!-- ci-scan-fingerprint: $fingerprint -->"
-        $manifest = New-CompleteManifest -MainSignatures @(
-            (New-TestSignature -Fingerprint $fingerprint -Body $body)
-        )
+    It 'injects a distinct canonical marker for every filed manifest item' {
+        $signatures = for ($i = 1; $i -le 3; $i++) {
+            $fingerprint = "ci-scan-net11|net11.0|maui-pr|sample test $i|assertion failed|windows"
+            New-TestSignature `
+                -Fingerprint $fingerprint `
+                -Title "Sample test $i fails on Windows" `
+                -Body (New-TestBody -Fingerprint $fingerprint)
+        }
+        $manifest = New-CompleteManifest -MainSignatures @($signatures)
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*exactly one canonical fingerprint marker*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.issues.Count | Should -Be 3
+        foreach ($issue in $plan.issues) {
+            $issue.Body | Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($issue.Fingerprint)) -->$"
+        }
+        @($plan.issues.Body | Select-Object -Unique).Count | Should -Be 3
     }
 
-    It 'rejects a missing match-count marker' {
+    It 'derives the injected fingerprint from the manifest, not from body content' {
+        # A body that names a different fingerprint in plain text (no marker syntax) must
+        # not influence what gets injected.
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $body = (New-TestBody -Fingerprint $fingerprint) -replace '(?m)^<!-- ci-scan-match-count:.*\r?\n', ''
+        $decoy = 'ci-scan-net11|net11.0|maui-pr|attacker chosen|attacker error|linux'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nfingerprint claimed by log text: $decoy"
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*exactly one canonical positive match-count marker*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.issues[0].Body | Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($fingerprint)) -->$"
+        $plan.issues[0].Body | Should -Not -Match "<!-- ci-scan-fingerprint: $([regex]::Escape($decoy)) -->"
     }
 
-    It 'rejects duplicate match-count markers' {
+    It 'rejects a body that already carries the canonical fingerprint marker' {
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
-        $body = "$(New-TestBody -Fingerprint $fingerprint)`n<!-- ci-scan-match-count: 3 hits in failure.log -->"
+        $body = "<!-- ci-scan-fingerprint: $fingerprint -->`n$(New-TestBody -Fingerprint $fingerprint)"
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*exactly one canonical positive match-count marker*'
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain scanner marker content*'
+    }
+
+    It 'rejects a body that carries a wrong fingerprint marker' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "<!-- ci-scan-fingerprint: ci-scan-net11|net11.0|maui-pr|other|other|linux -->`n$(New-TestBody -Fingerprint $fingerprint)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain scanner marker content*'
+    }
+
+    It 'rejects a body that carries duplicate fingerprint markers' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "<!-- ci-scan-fingerprint: $fingerprint -->`n<!-- ci-scan-fingerprint: $fingerprint -->`n$(New-TestBody -Fingerprint $fingerprint)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain scanner marker content*'
+    }
+
+    It 'rejects a body that carries a match-count marker' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "<!-- ci-scan-match-count: 9 hits in failure.log -->`n$(New-TestBody -Fingerprint $fingerprint)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain scanner marker content*'
+    }
+
+    It 'rejects every evasive spelling of a scanner marker' -ForEach @(
+        @{ Case = 'no space after the comment open'; Marker = '<!--ci-scan-fingerprint: x -->' }
+        @{ Case = 'uppercase token'; Marker = '<!-- CI-SCAN-FINGERPRINT: x -->' }
+        @{ Case = 'mixed case count token'; Marker = '<!-- Ci-Scan-Match-Count: 4 hits in failure.log -->' }
+        @{ Case = 'extra internal spacing'; Marker = '<!--   ci-scan-fingerprint  : x -->' }
+        @{ Case = 'tab separated'; Marker = "<!--`tci-scan-fingerprint:`tx -->" }
+        @{ Case = 'underscore separators'; Marker = '<!-- ci_scan_fingerprint: x -->' }
+        @{ Case = 'space separators'; Marker = '<!-- ci scan fingerprint: x -->' }
+        @{ Case = 'html entity encoded comment open'; Marker = '&lt;!-- ci-scan-fingerprint: x --&gt;' }
+        @{ Case = 'soft hyphen inside the token'; Marker = "<!-- ci-scan-finger$([char]0x00AD)print: x -->" }
+        @{ Case = 'bare token with no comment syntax'; Marker = 'ci-scan-match-count: 12 hits in failure.log' }
+    ) {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$Marker"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain scanner marker content*'
+    }
+
+    It 'rejects a null body' {
+        $signature = New-TestSignature
+        $signature.body = $null
+        $manifest = New-CompleteManifest -MainSignatures @($signature)
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw "*missing required property 'body'*"
+    }
+
+    It 'rejects an empty body' {
+        $signature = New-TestSignature
+        $signature.body = '   '
+        $manifest = New-CompleteManifest -MainSignatures @($signature)
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not be empty*'
+    }
+
+    It 'rejects a non-string body' -ForEach @(
+        @{ Case = 'number'; Value = 12345 }
+        @{ Case = 'boolean'; Value = $true }
+        @{ Case = 'object'; Value = [pscustomobject]@{ text = 'Assertion failed' } }
+        @{ Case = 'array'; Value = @('Assertion failed', 'second line') }
+    ) {
+        $signature = New-TestSignature
+        $signature.body = $Value
+        $manifest = New-CompleteManifest -MainSignatures @($signature)
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*Body*must be a JSON string*'
+    }
+
+    It 'rejects a non-string title' {
+        $signature = New-TestSignature
+        $signature.title = [pscustomobject]@{ text = 'Sample test fails on Windows' }
+        $manifest = New-CompleteManifest -MainSignatures @($signature)
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*Title*must be a JSON string*'
     }
 
     It 'accepts a valid canonical issue payload' {
@@ -522,11 +729,24 @@ Describe 'CI scanner issue payload gate' {
             (New-TestSignature)
         )
 
-        $plan = Test-CiScanManifest -Manifest $manifest
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
 
         $plan.issues.Count | Should -Be 1
         $plan.issues[0].Title | Should -Be '[ci-scan-net11] Sample test fails on Windows'
         $plan.issues[0].MatchCount | Should -Be 2
+    }
+
+    It 'refuses to publish a filed payload without frozen evidence' {
+        # The injected count has exactly one trusted source. With no frozen evidence
+        # there is no count to inject, so the run must fail rather than invent one.
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*requires frozen trusted evidence to publish*'
     }
 
     It 'accepts a match count recomputed from frozen trusted evidence' {
@@ -543,20 +763,218 @@ Describe 'CI scanner issue payload gate' {
 
         $plan.issues[0].MatchCount | Should -Be 2
         $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Assertion failed'
+        $plan.issues[0].EvidenceKey | Should -Match '^sha256:[0-9a-f]{64}$'
+        @($plan.issues[0].EvidenceLineHashes).Count | Should -Be 1
     }
 
-    It 'rejects an agent match count that differs from frozen trusted evidence' {
-        $evidenceRoot = Join-Path $TestDrive 'evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @('Assertion failed once')
+    It 'rejects a match found only in synthetic AzDO provenance framing' {
+        $evidenceRoot = Join-Path $TestDrive 'header-only-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different raw failure')
+        Set-Content `
+            -LiteralPath (Join-Path $evidenceRoot 'maui-pr/123456-1001.log') `
+            -Value @('===== AzDO log 123456/1001 =====', 'Different raw failure')
+        $header = '===== AzDO log 123456/1001 ====='
+        $body = "$(New-TestBody)`n$header"
         $manifest = New-CompleteManifest -MainSignatures @(
-            (New-TestSignature)
+            (New-TestSignature -MatchPattern '===== AzDO log' -Body $body)
         )
 
         { Test-CiScanManifest `
                 -Manifest $manifest `
                 -ExpectedBuilds (New-ExpectedBuilds) `
                 -TrustedEvidencePath $evidenceRoot } |
-            Should -Throw '*must equal the trusted evidence count (1)*'
+            Should -Throw '*must occur in trusted source log 1001*'
+    }
+
+    It 'accepts a real raw evidence line and binds it to a trusted evidence key' {
+        $evidenceRoot = Join-Path $TestDrive 'raw-line-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Unique raw failure line')
+        $body = "$(New-TestBody)`nUnique raw failure line"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Unique raw failure' -Body $body)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].MatchCount | Should -Be 1
+        $plan.issues[0].Body | Should -Match '(?m)^Unique raw failure line$'
+        $plan.issues[0].Body | Should -Match '(?m)^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
+    }
+
+    It 'gives unrelated deadletter work items distinct trusted evidence proofs' {
+        $url = 'https://dotnet.github.io/core-eng/helix-workitem-deadletter.txt'
+        $androidLine = "Helix work item android-emulator-boot was deadlettered: $url"
+        $iosLine = "Helix work item ios-device-lost was deadlettered: $url"
+        $androidRoot = Join-Path $TestDrive 'android-deadletter'
+        $iosRoot = Join-Path $TestDrive 'ios-deadletter'
+        New-TestEvidence `
+            -Root $androidRoot `
+            -Lines @($androidLine) `
+            -SegmentKind 'helix-deadletter-uri' `
+            -SegmentSource 'job-android/android-emulator-boot'
+        New-TestEvidence `
+            -Root $iosRoot `
+            -Lines @($iosLine) `
+            -SegmentKind 'helix-deadletter-uri' `
+            -SegmentSource 'job-ios/ios-device-lost'
+
+        $androidProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'helix-workitem-deadletter.txt' `
+            -PipelineName 'maui-pr' `
+            -BuildId 123456 `
+            -Fingerprint 'android-deadletter' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $androidRoot
+        $iosProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'helix-workitem-deadletter.txt' `
+            -PipelineName 'maui-pr' `
+            -BuildId 123456 `
+            -Fingerprint 'ios-deadletter' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $iosRoot
+
+        $androidProof.EvidenceKey | Should -Not -BeExactly $iosProof.EvidenceKey
+        $androidProof.EvidenceLineHashes[0] | Should -Not -BeExactly $iosProof.EvidenceLineHashes[0]
+    }
+
+    It 'keeps real failure identity stable across builds' {
+        $line = 'System.NullReferenceException in Microsoft.Maui.DeviceTests.ButtonTests'
+        $firstRoot = Join-Path $TestDrive 'real-failure-first'
+        $secondRoot = Join-Path $TestDrive 'real-failure-second'
+        New-TestEvidence -Root $firstRoot -BuildId 900001 -Lines @($line)
+        New-TestEvidence -Root $secondRoot -BuildId 900002 -Lines @($line)
+
+        $firstProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'NullReferenceException' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900001 `
+            -Fingerprint 'first-real-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $firstRoot
+        $secondProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'NullReferenceException' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900002 `
+            -Fingerprint 'second-real-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $secondRoot
+
+        $firstProof.EvidenceKey | Should -BeExactly $secondProof.EvidenceKey
+        $firstProof.EvidenceLineHashes | Should -BeExactly $secondProof.EvidenceLineHashes
+    }
+
+    It 'keeps AzDO task-command identity stable across transport timestamps' {
+        $firstLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $secondLine = '2026-07-29T03:04:05.1234567Z ##[error]Path does not exist: artifacts/bin'
+        $firstRoot = Join-Path $TestDrive 'timestamped-failure-first'
+        $secondRoot = Join-Path $TestDrive 'timestamped-failure-second'
+        New-TestEvidence -Root $firstRoot -BuildId 900001 -Lines @($firstLine)
+        New-TestEvidence -Root $secondRoot -BuildId 900002 -Lines @($secondLine)
+
+        $firstProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'Path does not exist' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900001 `
+            -Fingerprint 'first-timestamped-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $firstRoot
+        $secondProof = Get-TrustedEvidenceMatchProof `
+            -MatchPattern 'Path does not exist' `
+            -PipelineName 'maui-pr' `
+            -BuildId 900002 `
+            -Fingerprint 'second-timestamped-failure' `
+            -SourceLogIds @(1001) `
+            -TrustedEvidencePath $secondRoot
+
+        $firstProof.EvidenceKey | Should -BeExactly $secondProof.EvidenceKey
+        $firstProof.EvidenceLineHashes | Should -BeExactly $secondProof.EvidenceLineHashes
+    }
+
+    It 'binds a timestamped AzDO log to the timestamp-free issue excerpt' {
+        $evidenceRoot = Join-Path $TestDrive 'timestamped-body-binding'
+        $trustedLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
+        $bodyLine = '##[error]Path does not exist: artifacts/bin'
+        New-TestEvidence -Root $evidenceRoot -Lines @($trustedLine)
+        $body = (New-TestBody).Replace('Assertion failed', $bodyLine)
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Path does not exist' -Body $body)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].MatchCount | Should -Be 1
+        $plan.issues[0].Body | Should -Match "(?m)^$([regex]::Escape($bodyLine))$"
+    }
+
+    It 'preserves timestamps that are part of the failure message' {
+        $message = '2026-07-20T18:34:13.9100750Z server clock skew exceeded threshold'
+
+        ConvertTo-EvidenceIdentityLine -Value $message |
+            Should -BeExactly $message.ToLowerInvariant()
+        ConvertTo-EvidenceIdentityLine -Value $message -StripAzdoTransportTimestamp |
+            Should -BeExactly 'server clock skew exceeded threshold'
+    }
+
+    It 'rejects more than 200 distinct matching evidence lines before publication' {
+        $evidenceRoot = Join-Path $TestDrive 'excess-evidence-lines'
+        $lines = 1..201 | ForEach-Object { "Unique failure line $_" }
+        New-TestEvidence -Root $evidenceRoot -Lines $lines
+        $body = "$(New-TestBody)`nUnique failure line 1"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern 'Unique failure line' -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -ExpectedBuilds (New-ExpectedBuilds) `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*exceeds the 200 distinct evidence-line safety limit*'
+    }
+
+    It 'rejects marker-like match patterns before evidence lookup' -ForEach @(
+        @{ Case = 'exact'; Pattern = 'ci-scan-fingerprint' }
+        @{ Case = 'spacing'; Pattern = 'ci scan fingerprint' }
+        @{ Case = 'case'; Pattern = 'CI-SCAN-FINGERPRINT' }
+        @{ Case = 'zero width'; Pattern = "ci-scan-finger$([char]0x200B)print" }
+        @{ Case = 'Unicode homoglyph'; Pattern = "c$([char]0x0456)-scan-finger$([char]0x0440)rint" }
+        @{ Case = 'uppercase Unicode homoglyph'; Pattern = "$([char]0x0421)$([char]0x0406)-SCAN-FINGER$([char]0x0420)RINT" }
+        @{ Case = 'evidence marker'; Pattern = 'ci-scan-evidence-key' }
+    ) {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern $Pattern)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*match_pattern*'
+    }
+
+    It 'injects the frozen evidence count, ignoring any count the agent implies' {
+        # The agent cannot supply a count at all any more; whatever the body says in
+        # prose, the injected marker must equal the trusted recount.
+        $evidenceRoot = Join-Path $TestDrive 'single-hit-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Assertion failed')
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`
+Observed 99 times according to the agent."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].MatchCount | Should -Be 1
+        $plan.issues[0].Body | Should -Match '(?m)^<!-- ci-scan-match-count: 1 hits in failure\.log -->$'
     }
 
     It 'rejects a source log that does not contain the filed match pattern' {
@@ -618,7 +1036,9 @@ Describe 'CI scanner issue payload gate' {
             (New-TestSignature -Fingerprint $fingerprint -MatchPattern $pattern -Body $body)
         )
 
-        $plan = Test-CiScanManifest -Manifest $manifest
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot -ExtraLines @($pattern))
 
         $plan.issues[0].Body | Should -Not -Match 'user@example'
         $plan.issues[0].Body | Should -Match "user@$([char]0x200B)example"
@@ -633,7 +1053,7 @@ Describe 'CI scanner issue payload gate' {
         $pattern = '#0 0x00007fff9c3d1abc in maui_crash'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`n$pattern"
         $evidenceRoot = Join-Path $TestDrive 'zwsp-evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @("$pattern (a)", "$pattern (b)")
+        New-TestEvidence -Root $evidenceRoot -Lines @($pattern, $pattern)
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body -MatchPattern $pattern)
         )
@@ -683,7 +1103,9 @@ Describe 'CI scanner issue payload gate' {
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
 
-        $plan = Test-CiScanManifest -Manifest $manifest
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
 
         $plan.issues[0].Body | Should -Not -Match '@octocat|@dotnet/maui'
         $plan.issues[0].Body | Should -Match "@$([char]0x200B)octocat"
@@ -697,7 +1119,9 @@ Describe 'CI scanner issue payload gate' {
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
 
-        $plan = Test-CiScanManifest -Manifest $manifest
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
 
         $plan.issues[0].Body | Should -Not -Match '(?<![\w/])#\d|dotnet/maui#\d|github\.com/dotnet/maui/(?:issues|pull)/\d'
     }
@@ -711,7 +1135,7 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*must be 20-60000 characters*'
+            Should -Throw '*must be 20-59000 characters*'
     }
 
     It 'rejects a Build ID marker that differs from the pipeline build' {
@@ -722,7 +1146,9 @@ Describe 'CI scanner issue payload gate' {
                     -Body (New-TestBody -Fingerprint $fingerprint -BuildId 999999))
         )
 
-        { Test-CiScanManifest -Manifest $manifest } |
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
             Should -Throw '*Build ID line matching 123456*'
     }
 }
@@ -860,10 +1286,36 @@ Describe 'CI scanner agent output gate' {
     }
 }
 
-Describe 'CI scanner workflow source invariants' {
+Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main', 'ci-status-net11') {
     BeforeAll {
-        $workflowPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'workflows/ci-status-net11.md'
+        # Both twins are held to the same source invariants; the main scanner used
+        # to rely on the permissive built-in create-issue output and had none of
+        # these guarantees.
+        $workflowName = $_
+        $workflowPath = Join-Path (Split-Path $PSScriptRoot -Parent) "workflows/$workflowName.md"
         $workflowSource = Get-Content -LiteralPath $workflowPath -Raw
+    }
+
+    It 'routes every issue write through the validating custom publisher' {
+        $workflowSource | Should -Match '(?m)^\s+submit-ci-scan:$'
+        $workflowSource | Should -Match 'Validate-CiScanManifest\.ps1'
+        $workflowSource | Should -Match '(?m)^\s+CI_SCAN_SCANNER_ID: '
+        # The permissive built-in create-issue safe output must not come back.
+        $workflowSource | Should -Not -Match '(?m)^  create-issue:$'
+    }
+
+    It 'tells the agent the markers are publisher-owned and body content is not' {
+        $workflowSource | Should -Match 'Hidden tracking markers are publisher-owned'
+        $workflowSource | Should -Match 'must therefore contain \*\*no\*\* marker content'
+        # A literal HTML comment here would never reach the agent, so the prompt
+        # must not contain one at all.
+        $promptBody = $workflowSource.Substring($workflowSource.IndexOf("`n---`n", 4))
+        $promptBody | Should -Not -Match '<!--'
+    }
+
+    It 'requires exactly one complete submission and forbids alternate outputs' {
+        $workflowSource | Should -Match 'select\(\.type == "submit_ci_scan"\)'
+        $workflowSource | Should -Match 'Expected exactly one submit_ci_scan output and no alternate outputs'
     }
 
     It 'keeps custom publisher staging identical to framework staging' {
@@ -896,7 +1348,10 @@ Describe 'CI scanner workflow source invariants' {
     It 'fails closed on incomplete Helix work-item evidence' {
         $workflowSource | Should -Match 'attempt <= 6'
         $workflowSource | Should -Match 'items\.length >= finishedCount'
-        $workflowSource | Should -Match 'pendingCounts\.every\(count => count === 0\)'
+        $workflowSource | Should -Match 'const terminalItems = items\.every'
+        $workflowSource | Should -Match 'waitingCount === 0'
+        $workflowSource | Should -Match 'runningCount === 0'
+        $workflowSource | Should -Not -Match 'unscheduledCount === 0'
         $workflowSource | Should -Match 'did not provide complete terminal work-item evidence'
         $workflowSource | Should -Match "state !== 'finished' && state !== 'failed'"
         $workflowSource | Should -Match 'workItem\.ExitCode !== null'
@@ -1079,7 +1534,9 @@ Describe 'CI scanner issue cap limits filing, not scanning' {
             )
         }
 
-        { Test-CiScanManifest -Manifest $manifest } |
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
             Should -Throw "*has invalid status 'skipped-cap-reached'*"
     }
 
@@ -1161,5 +1618,120 @@ Describe 'CI scanner issue cap limits filing, not scanning' {
 
         $plan.filed_count | Should -Be 5
         $plan.has_cap_skip | Should -BeTrue
+    }
+}
+
+Describe 'CI scanner twin configuration' {
+    BeforeAll {
+        function New-ScannerManifest {
+            param(
+                [Parameter(Mandatory = $true)][string]$Fingerprint,
+                [string]$Title = 'Sample test fails on Windows'
+            )
+
+            New-CompleteManifest -MainSignatures @(
+                (New-TestSignature `
+                        -Fingerprint $Fingerprint `
+                        -Title $Title `
+                        -Body (New-TestBody -Fingerprint $Fingerprint))
+            )
+        }
+    }
+
+    It 'resolves the trusted configuration for each scanner twin' -ForEach @(
+        @{ ScannerId = 'ci-scan'; Branch = 'main'; Label = 'ci-scan'; TitlePrefix = '[ci-scan] ' }
+        @{ ScannerId = 'ci-scan-net11'; Branch = 'net11.0'; Label = 'ci-scan-net11'; TitlePrefix = '[ci-scan-net11] ' }
+    ) {
+        $config = Get-CiScanScannerConfig -ScannerId $ScannerId
+
+        $config.ScannerId | Should -BeExactly $ScannerId
+        $config.Branch | Should -BeExactly $Branch
+        $config.Label | Should -BeExactly $Label
+        $config.TitlePrefix | Should -BeExactly $TitlePrefix
+    }
+
+    It 'rejects an unknown scanner id' -ForEach @(
+        @{ ScannerId = 'ci-scan-net12' }
+        @{ ScannerId = 'CI-SCAN' }
+        @{ ScannerId = '' }
+    ) {
+        { Get-CiScanScannerConfig -ScannerId $ScannerId } | Should -Throw '*Unknown CI scanner id*'
+    }
+
+    It 'publishes main-scanner payloads with the main identity' {
+        $fingerprint = 'ci-scan|main|maui-pr|sample test|assertion failed|windows'
+        $plan = Test-CiScanManifest `
+            -Manifest (New-ScannerManifest -Fingerprint $fingerprint) `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot) `
+            -ScannerId 'ci-scan'
+
+        $plan.scanner_id | Should -BeExactly 'ci-scan'
+        $plan.branch | Should -BeExactly 'main'
+        $plan.label | Should -BeExactly 'ci-scan'
+        $plan.title_prefix | Should -BeExactly '[ci-scan] '
+        $plan.issues[0].Title | Should -BeExactly '[ci-scan] Sample test fails on Windows'
+        $plan.issues[0].Body | Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($fingerprint)) -->$"
+        $plan.issues[0].Body | Should -Match '(?m)^<!-- ci-scan-match-count: 2 hits in failure\.log -->$'
+    }
+
+    It 'publishes net11-scanner payloads with the net11 identity' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $plan = Test-CiScanManifest `
+            -Manifest (New-ScannerManifest -Fingerprint $fingerprint) `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot) `
+            -ScannerId 'ci-scan-net11'
+
+        $plan.scanner_id | Should -BeExactly 'ci-scan-net11'
+        $plan.branch | Should -BeExactly 'net11.0'
+        $plan.label | Should -BeExactly 'ci-scan-net11'
+        $plan.issues[0].Title | Should -BeExactly '[ci-scan-net11] Sample test fails on Windows'
+        $plan.issues[0].Body | Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($fingerprint)) -->$"
+    }
+
+    It 'refuses a fingerprint minted for the other twin' -ForEach @(
+        @{ ScannerId = 'ci-scan'; Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows' }
+        @{ ScannerId = 'ci-scan-net11'; Fingerprint = 'ci-scan|main|maui-pr|sample test|assertion failed|windows' }
+    ) {
+        { Test-CiScanManifest `
+                -Manifest (New-ScannerManifest -Fingerprint $Fingerprint) `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) `
+                -ScannerId $ScannerId } |
+            Should -Throw "*does not match the $ScannerId scanner*"
+    }
+
+    It 'refuses a fingerprint whose branch field does not match the twin' {
+        # Same scanner id, wrong branch: the marker must never claim coverage on a
+        # branch the scanner does not own.
+        { Test-CiScanManifest `
+                -Manifest (New-ScannerManifest -Fingerprint 'ci-scan|net11.0|maui-pr|sample test|assertion failed|windows') `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) `
+                -ScannerId 'ci-scan' } |
+            Should -Throw '*does not match the ci-scan scanner*'
+    }
+
+    It 'refuses a title that already carries the twin prefix' {
+        { Test-CiScanManifest `
+                -Manifest (New-ScannerManifest `
+                    -Fingerprint 'ci-scan|main|maui-pr|sample test|assertion failed|windows' `
+                    -Title '[ci-scan] Sample test fails on Windows') `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) `
+                -ScannerId 'ci-scan' } |
+            Should -Throw '*must omit the prefix added by the publisher*'
+    }
+
+    It 'still enforces the five-issue cap on the main twin' {
+        $signatures = for ($i = 1; $i -le 6; $i++) {
+            $fingerprint = "ci-scan|main|maui-pr|sample test $i|assertion failed|windows"
+            New-TestSignature `
+                -Fingerprint $fingerprint `
+                -Title "Sample test $i fails on Windows" `
+                -Body (New-TestBody -Fingerprint $fingerprint)
+        }
+
+        { Test-CiScanManifest `
+                -Manifest (New-CompleteManifest -MainSignatures @($signatures)) `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) `
+                -ScannerId 'ci-scan' } |
+            Should -Throw '*must be skipped with cap-reached because the issue cap was already reached*'
     }
 }
