@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Dark = 2 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme
+static Microsoft.Maui.Handlers.WindowHandler.MapStatusBarTheme(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.HybridWebViewInvoker
 Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void

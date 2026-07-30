@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.Maui.Controls.Window.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.Controls.Window.StatusBarTheme.set -> void
+static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
 ~Microsoft.Maui.Controls.MultiBinding.ConverterCulture.get -> System.Globalization.CultureInfo
