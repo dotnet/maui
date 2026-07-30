@@ -610,14 +610,12 @@ namespace Microsoft.Maui.Hosting
 
 			static string? CaptureDirectUnownedMapServiceToken(IPlatformGeocoding implementation)
 			{
-				var spinWait = new SpinWait();
 				while (true)
 				{
 					if (IsFacadeBridgeOwnedGeocoding(implementation))
 						return null;
 
 					int epoch;
-					bool baseTokenCapturePending;
 					lock (s_mapTokenLock)
 					{
 						var state = FindMapTokenImplementationState(implementation);
@@ -626,20 +624,11 @@ namespace Microsoft.Maui.Hosting
 							if (state.BaseTokenInitialized)
 								return IsFacadeBridgeOwnedGeocoding(implementation) ? null : state.BaseToken;
 
-							baseTokenCapturePending = true;
-							epoch = s_mapTokenEpoch;
+							Monitor.Wait(s_mapTokenLock);
+							continue;
 						}
-						else
-						{
-							baseTokenCapturePending = false;
-							epoch = s_mapTokenEpoch;
-						}
-					}
 
-					if (baseTokenCapturePending)
-					{
-						spinWait.SpinOnce();
-						continue;
+						epoch = s_mapTokenEpoch;
 					}
 
 					var token = implementation.MapServiceToken;
@@ -652,7 +641,7 @@ namespace Microsoft.Maui.Hosting
 							if (state.BaseTokenInitialized)
 								return IsFacadeBridgeOwnedGeocoding(implementation) ? null : state.BaseToken;
 
-							spinWait.SpinOnce();
+							Monitor.Wait(s_mapTokenLock);
 							continue;
 						}
 
@@ -696,6 +685,7 @@ namespace Microsoft.Maui.Hosting
 						{
 							implementationState.BaseToken = previousToken;
 							implementationState.BaseTokenInitialized = true;
+							Monitor.PulseAll(s_mapTokenLock);
 						}
 #if WINDOWS
 						var previousPlatformToken = WindowsMapServiceTokenGetter();
@@ -844,6 +834,7 @@ namespace Microsoft.Maui.Hosting
 					}
 
 					s_mapTokenImplementationStates.Remove(implementationState);
+					Monitor.PulseAll(s_mapTokenLock);
 				}
 			}
 
