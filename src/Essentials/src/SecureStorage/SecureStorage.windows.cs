@@ -15,12 +15,12 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
-		readonly ISecureStorageImplementation _secureStorage;
+		ISecureStorageImplementation _secureStorage = null!;
 
-		public SecureStorageImplementation()
+		partial void InitializePlatform()
 		{
 			_secureStorage = AppInfoUtils.IsPackagedApp
-				? new PackagedSecureStorageImplementation()
+				? new PackagedSecureStorageImplementation(Alias)
 				: new UnpackagedSecureStorageImplementation();
 		}
 
@@ -72,29 +72,36 @@ namespace Microsoft.Maui.Storage
 
 	class PackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
+		readonly string _alias;
+
+		public PackagedSecureStorageImplementation(string alias)
+		{
+			_alias = alias;
+		}
+
 		public Task<byte[]> GetAsync(string key)
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			var encBytes = settings.Values[key] as byte[];
 			return Task.FromResult(encBytes);
 		}
 
 		public Task SetAsync(string key, byte[] data)
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			settings.Values[key] = data;
 			return Task.CompletedTask;
 		}
 
 		public bool Remove(string key)
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			return settings.Values.Remove(key);
 		}
 
 		public void RemoveAll()
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			settings.Values.Clear();
 		}
 

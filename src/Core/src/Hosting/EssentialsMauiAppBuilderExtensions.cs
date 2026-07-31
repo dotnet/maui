@@ -433,6 +433,7 @@ namespace Microsoft.Maui.Hosting
 				IAppInfo? appInfo = null;
 				IVersionTracking? versionTracking = null;
 				IGeocoding? geocoding = null;
+				ISecureStorage? secureStorage = null;
 
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, () => GetFacadeBackingField<IAccelerometer>(typeof(Accelerometer), "defaultImplementation"), Accelerometer.SetDefault, facadeCleanups);
@@ -460,7 +461,9 @@ namespace Microsoft.Maui.Hosting
 				if (preferences is not null)
 					TrackAndSet(preferences, () => GetFacadeBackingField<IPreferences>(typeof(Preferences), "defaultImplementation"), Preferences.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IScreenshot>(services, () => GetFacadeBackingField<IScreenshot>(typeof(Screenshot), "defaultImplementation"), Screenshot.SetDefault, facadeCleanups);
-				BridgeIfRegistered<ISecureStorage>(services, () => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"), SecureStorage.SetDefault, facadeCleanups);
+				secureStorage = services.GetService<ISecureStorage>();
+				if (secureStorage is not null)
+					TrackAndSet(secureStorage, () => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"), SecureStorage.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ISemanticScreenReader>(services, () => GetFacadeBackingField<ISemanticScreenReader>(typeof(SemanticScreenReader), "defaultImplementation"), SemanticScreenReader.SetDefault, facadeCleanups);
 				BridgeIfRegistered<IShare>(services, () => GetFacadeBackingField<IShare>(typeof(Share), "defaultImplementation"), Share.SetDefault, facadeCleanups);
 				BridgeIfRegistered<ISms>(services, () => GetFacadeBackingField<ISms>(typeof(Sms), "defaultImplementation"), Sms.SetDefault, facadeCleanups);
@@ -511,7 +514,17 @@ namespace Microsoft.Maui.Hosting
 				}
 				appInfo = services.GetService<IAppInfo>();
 				if (appInfo is not null)
+				{
 					TrackAndSet(appInfo, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
+					if (secureStorage is null)
+					{
+						TrackAndSet(
+							new AppInfoSecureStorage(appInfo.PackageName),
+							() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
+							SecureStorage.SetDefault,
+							facadeCleanups);
+					}
+				}
 				BridgeIfRegistered<IConnectivity>(services, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceInfo>(services, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);

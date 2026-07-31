@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	{
 		const string ActiveOperationPreferenceKey = "active_operation";
 		const string RecoveredResultsPreferenceKey = "recovered_results";
-		static readonly string RecoveryPreferencesSharedName = Preferences.GetPrivatePreferencesSharedName("media_picker");
+		static string RecoveryPreferencesSharedName => Preferences.GetPrivatePreferencesSharedName("media_picker");
 
 		// These tests drive the recovery manager and AndroidX callback wrappers directly.
 		// They avoid launching real camera/picker apps while still preserving the important
@@ -55,6 +55,29 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Equal(1, captureVideoRegistrations);
 			Assert.Equal(1, pickVisualMediaRegistrations);
 			Assert.Equal(1, pickMultipleVisualMediaRegistrations);
+		}
+
+		[Fact]
+		public void Recovery_Preferences_Namespace_Tracks_Current_AppInfo()
+		{
+			var originalAppInfo = AppInfo.Current;
+
+			try
+			{
+				AppInfo.SetCurrent(new StubAppInfo("first.package"));
+				Assert.Equal(
+					"first.package.microsoft.maui.essentials.media_picker",
+					MediaPickerRecoveryStore.PreferencesSharedName);
+
+				AppInfo.SetCurrent(new StubAppInfo("second.package"));
+				Assert.Equal(
+					"second.package.microsoft.maui.essentials.media_picker",
+					MediaPickerRecoveryStore.PreferencesSharedName);
+			}
+			finally
+			{
+				AppInfo.SetCurrent(originalAppInfo);
+			}
 		}
 
 		[Fact]
@@ -1968,6 +1991,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 			public void Dispose()
 				=> MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
+		}
+
+		sealed class StubAppInfo : IAppInfo
+		{
+			readonly string _packageName;
+
+			public StubAppInfo(string packageName)
+			{
+				_packageName = packageName;
+			}
+
+			public string PackageName => _packageName;
+			public string Name => "Test";
+			public string VersionString => "1.0.0";
+			public Version Version => new(1, 0);
+			public string BuildString => "1";
+			public AppTheme RequestedTheme => AppTheme.Light;
+			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
+			public void ShowSettingsUI() { }
 		}
 
 		static string CreateCacheFilePath(string extension)

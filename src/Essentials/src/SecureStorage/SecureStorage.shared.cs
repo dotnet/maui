@@ -1,6 +1,8 @@
 #nullable enable
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Storage
 {
@@ -200,10 +202,20 @@ namespace Microsoft.Maui.Storage
 
 	partial class SecureStorageImplementation
 	{
-#if !NETSTANDARD && PLATFORM
-		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
-		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
-#endif
+		internal SecureStorageImplementation()
+			: this(GetDefaultPackageName())
+		{
+		}
+
+		internal SecureStorageImplementation(string packageName)
+		{
+			Alias = Preferences.GetPrivatePreferencesSharedName(packageName, "preferences");
+			InitializePlatform();
+		}
+
+		internal string Alias { get; }
+
+		partial void InitializePlatform();
 
 		public Task<string?> GetAsync(string key)
 		{
@@ -229,5 +241,59 @@ namespace Microsoft.Maui.Storage
 
 		public void RemoveAll()
 			=> PlatformRemoveAll();
+
+		static string GetDefaultPackageName()
+		{
+#if !NETSTANDARD && PLATFORM
+			return AppInfo.Current.PackageName;
+#else
+			return string.Empty;
+#endif
+		}
+	}
+
+	internal sealed class AppInfoSecureStorage : ISecureStorage
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+		, IPlatformSecureStorage
+#endif
+	{
+		readonly Lazy<SecureStorageImplementation> _implementation;
+
+		internal AppInfoSecureStorage(string packageName)
+		{
+			Alias = Preferences.GetPrivatePreferencesSharedName(packageName, "preferences");
+			_implementation = new(
+				() => new SecureStorageImplementation(packageName),
+				LazyThreadSafetyMode.ExecutionAndPublication);
+		}
+
+		internal string Alias { get; }
+
+		internal bool IsValueCreated => _implementation.IsValueCreated;
+
+		SecureStorageImplementation Implementation => _implementation.Value;
+
+		public Task<string?> GetAsync(string key) =>
+			Implementation.GetAsync(key);
+
+		public Task SetAsync(string key, string value) =>
+			Implementation.SetAsync(key, value);
+
+		public bool Remove(string key) =>
+			Implementation.Remove(key);
+
+		public void RemoveAll() =>
+			Implementation.RemoveAll();
+
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+		public Security.SecAccessible DefaultAccessible
+		{
+			get => Implementation.DefaultAccessible;
+			set => Implementation.DefaultAccessible = value;
+		}
+
+		public Task SetAsync(string key, string value, Security.SecAccessible accessible) =>
+			Implementation.SetAsync(key, value, accessible);
+#endif
 	}
 }

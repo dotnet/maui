@@ -1226,6 +1226,56 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void OverlappingMauiAppsOwnIndependentSecureStorageNamespaces()
+		{
+			var originalAppInfo = AppInfo.Current;
+			AppInfo.SetCurrent(new StubAppInfo(packageName: "platform.package"));
+			var originalSecureStorage = SecureStorage.Default;
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "first.package"));
+				firstApp = firstBuilder.Build();
+				var firstSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+				Assert.Equal(
+					"first.package.microsoft.maui.essentials.preferences",
+					firstSecureStorage.Alias);
+				Assert.False(firstSecureStorage.IsValueCreated);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "second.package"));
+				secondApp = secondBuilder.Build();
+				var secondSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+				Assert.NotSame(firstSecureStorage, secondSecureStorage);
+				Assert.Equal(
+					"second.package.microsoft.maui.essentials.preferences",
+					secondSecureStorage.Alias);
+				Assert.False(secondSecureStorage.IsValueCreated);
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Same(secondSecureStorage, SecureStorage.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+				Assert.Same(originalSecureStorage, SecureStorage.Default);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
+		[Fact]
 		public void OverlappingMauiAppsUseVersionTrackingStorageForTheirOwnPackage()
 		{
 			var preferences = new RecordingStubPreferences();
