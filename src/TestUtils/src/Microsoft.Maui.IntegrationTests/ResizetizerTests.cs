@@ -102,6 +102,73 @@ public class ResizetizerTests : BaseBuildTest
 	}
 
 	[Fact]
+	public void ChangingExternalBackendPlatformTypeInvalidatesImages()
+	{
+		SetTestIdentifier("external-backend-platform-invalidation");
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, "ExternalBackend.csproj");
+		var imageFile = Path.Combine(projectDir, "image.svg");
+
+		File.WriteAllText(imageFile, BlankSvgContents);
+		File.WriteAllText(projectFile,
+			$$"""
+			<Project Sdk="Microsoft.NET.Sdk">
+			  <PropertyGroup>
+			    <TargetFramework>{{DotNetCurrent}}</TargetFramework>
+			    <ResizetizerPlatformType>generic</ResizetizerPlatformType>
+			  </PropertyGroup>
+			  <ItemGroup>
+			    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="{{MauiPackageVersion}}" />
+			    <MauiImage Include="image.svg" />
+			  </ItemGroup>
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
+			"External backend project failed to process generic images. Check test output for errors.");
+
+		var intermediateDir = Path.Combine(projectDir, "obj", "Debug", DotNetCurrent);
+		var outputsFile = Path.Combine(intermediateDir, "mauiimage.outputs");
+		var stampFile = Path.Combine(intermediateDir, "mauiimage.stamp");
+		Assert.True(File.Exists(outputsFile), $"Resizetizer output list does not exist: {outputsFile}");
+		Assert.True(File.Exists(stampFile), $"Resizetizer stamp does not exist: {stampFile}");
+
+		var genericImages = File.ReadAllLines(outputsFile);
+		Assert.Equal(2, genericImages.Length);
+		Assert.Contains(genericImages, path => path.EndsWith("image.png", StringComparison.OrdinalIgnoreCase));
+		Assert.Contains(genericImages, path => path.EndsWith("image@2x.png", StringComparison.OrdinalIgnoreCase));
+
+		File.WriteAllText(
+			projectFile,
+			File.ReadAllText(projectFile).Replace(
+				"<ResizetizerPlatformType>generic</ResizetizerPlatformType>",
+				"<ResizetizerPlatformType>android</ResizetizerPlatformType>",
+				StringComparison.Ordinal));
+		File.SetLastWriteTimeUtc(stampFile, DateTime.UtcNow.AddMinutes(1));
+		var invalidationSentinel = File.GetLastWriteTimeUtc(stampFile);
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
+			"External backend project failed after changing its platform type to android.");
+		Assert.True(File.GetLastWriteTimeUtc(stampFile) < invalidationSentinel,
+			"ResizetizeImages should rerun when only ResizetizerPlatformType changes.");
+
+		var androidImages = File.ReadAllLines(outputsFile);
+		Assert.Equal(5, androidImages.Length);
+		Assert.All(androidImages, path =>
+		{
+			Assert.StartsWith("drawable-", Path.GetFileName(Path.GetDirectoryName(path)), StringComparison.OrdinalIgnoreCase);
+			Assert.True(File.Exists(path), $"Processed Android image does not exist: {path}");
+		});
+		Assert.All(genericImages, path => Assert.False(File.Exists(path), $"Stale generic image still exists: {path}"));
+
+		File.SetLastWriteTimeUtc(stampFile, DateTime.UtcNow.AddMinutes(1));
+		var noOpSentinel = File.GetLastWriteTimeUtc(stampFile);
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
+			"External backend project failed on an unchanged rebuild.");
+		Assert.Equal(noOpSentinel, File.GetLastWriteTimeUtc(stampFile));
+	}
+
+	[Fact]
 	public void CustomBackendProcessesImagesWithoutBuiltInOutputInjection()
 	{
 		SetTestIdentifier("custom-backend");

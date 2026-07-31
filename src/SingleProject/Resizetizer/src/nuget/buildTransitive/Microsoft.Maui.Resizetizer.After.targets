@@ -341,7 +341,7 @@
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
             File="$(_ResizetizerInputsFile)"
-            Lines="@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile);MonochromeFile=%(MonochromeFile)')"
+            Lines="PlatformType=$(ResizetizerPlatformType);@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile);MonochromeFile=%(MonochromeFile)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
