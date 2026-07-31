@@ -121,13 +121,15 @@ stimuli:
         config:
           pattern: 'GH_AUTH_BLOCKER:\s*no\b'
       # Prove the fixture loaded the source of truth instead of accepting a
-      # lucky answer based only on the giveaway token in the prompt.
+      # lucky answer based only on the giveaway token in the prompt. Tool names
+      # vary by executor, so match the exact guidance path across supported
+      # file-reading/search tools instead of requiring one specific tool.
       - type: tool-calls
         name: preflight-guidance-read
         config:
           required:
-            - name: '^view$'
-              path: '\.github/pr-review/pr-preflight\.md$'
+            - name: '^(bash|powershell|view|grep|rg)$'
+              pattern: '\.github/pr-review/pr-preflight\.md'
       # ── LLM judge for the reasoning quality ──────────────────────────────
       - type: prompt
         name: gh-auth-judge
