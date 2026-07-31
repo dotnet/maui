@@ -22,6 +22,10 @@ defaults:
   executor: copilot-sdk
 
 environment:
+  # Isolate and load the unit under test. `expect_skills` documents the
+  # expected route but does not itself force Copilot to invoke the skill.
+  skills:
+    - ..
   files:
     - src: fixtures/trim-aot/shared/src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.cs
       dest: review-input/src/Core/src/Handlers/HybridWebView/HybridWebViewHandler.cs
@@ -41,7 +45,8 @@ stimuli:
       source_pr: "34868"
       kind: trim-aot
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
+      Before analyzing the patch, invoke the `code-review` skill and follow its
+      independence-first workflow. The review input is
       materialized under `review-input`: inspect `review-input/change.diff`
       first, then read the supporting source snapshots under
       `review-input/src`.
@@ -128,7 +133,8 @@ stimuli:
       source_pr: "34958"
       kind: trim-aot
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
+      Before analyzing the patch, invoke the `code-review` skill and follow its
+      independence-first workflow. The review input is
       materialized under `review-input`: inspect `review-input/change.diff`
       first, then read the supporting source snapshots under
       `review-input/src`.
@@ -202,7 +208,8 @@ stimuli:
     tags:
       kind: trim-aot
     prompt: >-
-      You are reviewing a candidate patch before merge. The review input is
+      Before analyzing the patch, invoke the `code-review` skill and follow its
+      independence-first workflow. The review input is
       materialized under `review-input`: inspect `review-input/change.diff`
       first, then read the supporting source snapshots under
       `review-input/src`.

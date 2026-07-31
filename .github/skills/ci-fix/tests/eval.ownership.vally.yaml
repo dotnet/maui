@@ -21,13 +21,19 @@ defaults:
   judge_model: claude-opus-5
   executor: copilot-sdk
 
+environment:
+  # Isolate and load the unit under test. `expect_skills` documents the
+  # expected route but does not itself force Copilot to invoke the skill.
+  skills:
+    - ..
+
 stimuli:
   # Source: live CI-fixer run 30118934440, issue #36051, PR #36657.
   - name: comment-only-reference-does-not-stop-triage
     tags: { source_issue: "36051", source_pr: "36657", kind: false-dedup }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
-      main-branch snapshot.
+      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
+      to this frozen main-branch snapshot.
 
       Tracking issue #36051 is open, has the ci-scan label, and has no open or
       merged [ci-fix] PR. A search for #36051 found open human PR #36657.
@@ -54,8 +60,8 @@ stimuli:
   - name: incidental-body-reference-does-not-stop-triage
     tags: { kind: false-dedup }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
-      main-branch snapshot.
+      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
+      to this frozen main-branch snapshot.
 
       Tracking issue #48101 is open, in scope, and has no [ci-fix] PR. The
       title-and-body search found open human PR #48116:
@@ -82,8 +88,8 @@ stimuli:
   - name: explicit-human-reference-stops-competing-fix
     tags: { kind: human-ownership }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
-      main-branch snapshot.
+      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
+      to this frozen main-branch snapshot.
 
       Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
       human PR #48115 has this body:
@@ -105,8 +111,8 @@ stimuli:
   - name: explicit-human-url-reference-stops-competing-fix
     tags: { kind: human-ownership }
     prompt: |
-      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
-      main-branch snapshot.
+      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
+      to this frozen main-branch snapshot.
 
       Tracking issue #48103 is open, in scope, and has no [ci-fix] PR. Open
       human PR #48117 has this body:
