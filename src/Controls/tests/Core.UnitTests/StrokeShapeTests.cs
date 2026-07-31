@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
@@ -139,6 +140,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotEqual(0, roundRectangle.CornerRadius.TopRight);
 			Assert.NotEqual(0, roundRectangle.CornerRadius.BottomLeft);
 			Assert.NotEqual(0, roundRectangle.CornerRadius.BottomRight);
+		}
+
+		[Theory]
+		[InlineData("1e2", 100.0)]
+		[InlineData("2.5e1", 25.0)]
+		[InlineData("1E2", 100.0)]
+		public void TestRoundRectangleExponentNotation(string value, double expectedRadius)
+		{
+			var roundRectangle = Assert.IsType<RoundRectangle>(_strokeShapeTypeConverter.ConvertFromInvariantString(value));
+
+			Assert.Equal(expectedRadius, roundRectangle.CornerRadius.TopLeft);
+		}
+
+		[Fact]
+		public void TestRoundRectangleUsesProvidedCulture()
+		{
+			var roundRectangle = Assert.IsType<RoundRectangle>(
+				_strokeShapeTypeConverter.ConvertFrom(null, CultureInfo.GetCultureInfo("fr-FR"), "1,5"));
+
+			Assert.Equal(1.5, roundRectangle.CornerRadius.TopLeft);
 		}
 	}
 }

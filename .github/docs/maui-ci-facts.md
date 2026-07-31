@@ -271,10 +271,13 @@ modifies that visual test or the affected snapshot/platform.
 The automated `/review tests` lane gathers failed UI result IDs from the public
 `vstmr.dev.azure.com/.../testresults/resultsbybuild` endpoint, then reads the public
 result-detail and attachment APIs. It publishes validated baseline/actual/diff PNGs to
-the repository's `review-tests-assets` branch. A trusted post-step inserts as many
-complete expandable comparison panels as fit inside the single test-failure analysis
-comment while enforcing gh-aw's URL, mention, and character limits; excess panels are
-reported as omitted rather than creating another comment. Visual publishing is
+the repository's orphan, asset-only `review-tests-assets-v2` branch. The legacy
+`review-tests-assets` branch remains intact so existing commit-pinned image URLs stay
+reachable; it is not used for new publications because its inherited repository tree
+contains workflow files that `GITHUB_TOKEN` cannot update. A trusted post-step inserts
+as many complete expandable comparison panels as fit inside the single test-failure
+analysis comment while enforcing gh-aw's URL, mention, and character limits; excess
+panels are reported as omitted rather than creating another comment. Visual publishing is
 supplementary evidence only: missing images never raise or lower the deterministic
 verdict ceiling. Each panel also shows a conservative relationship label derived from
 the exact test-and-platform `deterministicAttribution` plus exact changed snapshot/test
