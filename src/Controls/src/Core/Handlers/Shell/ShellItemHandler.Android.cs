@@ -1197,7 +1197,8 @@ namespace Microsoft.Maui.Controls.Handlers
             // Disconnect the handler to unsubscribe from events and clean up resources.
             ((IElementHandler)_handler).DisconnectHandler();
 
-            _wrapperFragment?.Dispose();
+            // FragmentManager owns the lifecycle of an added fragment. Disposing its managed
+            // peer here leaves later lifecycle callbacks targeting an already-disposed peer.
             _wrapperFragment = null;
         }
     }
