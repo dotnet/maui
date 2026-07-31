@@ -120,7 +120,7 @@ When changed code classifies external tool output with a regex or string literal
 
 1. Locate and read the producer, even when it is outside the diff.
 2. State the exact condition under which the producer emits each matched token. Confirming that the text exists is not enough: compare the producer's emission condition with the consumer's semantic assumption.
-3. Construct an ordinary negative case that must not trip the classifier, then trace it through every downstream guard, cap, veto, or early return.
+3. Construct an ordinary negative case that must not trip the classifier, then trace it through every downstream guard, cap, veto, or early return. For an incompleteness classifier, the required negative case is a run that **completed with ordinary test failures**, not merely a successful run. A generic nonzero exit proves failure, not incompleteness. If the producer prints a completion token for every exit and the consumer treats its nonzero form as killed, hung, crashed, or incomplete, report the false positive unless an authoritative producer contract proves nonzero exits are exclusive to incomplete runs.
 4. If the ordinary case reaches the restrictive path, report a correctness finding and do not return `LGTM` unless the over-restriction is explicitly intended and documented. Fail-closed direction does not make the behavior correct.
 
 Before the verdict, include an **External Output Contract** table with these columns:
