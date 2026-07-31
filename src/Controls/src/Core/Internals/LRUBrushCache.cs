@@ -50,8 +50,10 @@ sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 		_cache = new Dictionary<Color, LinkedListNode<ImmutableBrush>>(capacity);
 		_lru = [];
 
-		foreach (var (color, brush) in brushes)
+		foreach (var pair in brushes)
 		{
+			var color = pair.Key;
+			var brush = pair.Value;
 			var node = _lru.AddFirst(brush);
 			_cache.Add(color, node);
 		}
