@@ -109,10 +109,10 @@ namespace Microsoft.Maui.Platform
 			context.RequestedOrientation = ScreenOrientation.Landscape;
 
 			// Handle system UI visibility based on Android version
+			// Note: SetDecorFitsSystemWindows is not called here because edge-to-edge is always
+			// enabled via WindowCompat.EnableEdgeToEdge in MauiAppCompatActivity.
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				WindowCompat.SetDecorFitsSystemWindows(context.Window, false);
-
 				var controller = context.Window.InsetsController;
 				if (controller != null)
 				{
@@ -142,9 +142,6 @@ namespace Microsoft.Maui.Platform
 				// Hide system bars
 				windowInsetsController.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
 				windowInsetsController.Hide(WindowInsetsCompat.Type.SystemBars());
-
-				// Make content appear behind system bars
-				WindowCompat.SetDecorFitsSystemWindows(context.Window, false);
 			}
 
 			// Add the CustomView
@@ -176,10 +173,10 @@ namespace Microsoft.Maui.Platform
 			context.RequestedOrientation = _originalOrientation;
 
 			// Restore system UI visibility based on Android version
+			// Note: SetDecorFitsSystemWindows(true) is intentionally not called here — edge-to-edge
+			// is always enabled and must not be reverted when exiting fullscreen video.
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-				WindowCompat.SetDecorFitsSystemWindows(context.Window, true);
-
 				var controller = context.Window.InsetsController;
 				if (controller != null && _isSystemBarVisible)
 				{
@@ -192,12 +189,6 @@ namespace Microsoft.Maui.Platform
 				if (_windowInsetsController != null && _isSystemBarVisible)
 				{
 					_windowInsetsController.Show(WindowInsetsCompat.Type.SystemBars());
-				}
-
-				// Restore content layout
-				if (context.Window != null)
-				{
-					WindowCompat.SetDecorFitsSystemWindows(context.Window, true);
 				}
 			}
 

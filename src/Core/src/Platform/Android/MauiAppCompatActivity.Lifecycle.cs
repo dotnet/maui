@@ -34,6 +34,14 @@ namespace Microsoft.Maui
 		{
 			base.OnConfigurationChanged(newConfig);
 
+			// Re-apply system bar icon colors on a theme (light/dark) change. The activity declares
+			// ConfigChanges.UiMode, so it is not recreated and OnCreate's EnableEdgeToEdge does not
+			// re-run. EnableEdgeToEdge does not manage icon appearance, so re-apply it explicitly here.
+			if (Window is not null)
+			{
+				Window.ConfigureTranslucentSystemBars(this);
+			}
+
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
 		}
 
