@@ -68,12 +68,15 @@ namespace Microsoft.Maui
 			}
 
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
-			windowInsetsController?.AppearanceLightStatusBars = statusBarTheme switch
+			if (windowInsetsController is not null)
+			{
+				windowInsetsController.AppearanceLightStatusBars = statusBarTheme switch
 				{
 					StatusBarTheme.Light => true,
 					StatusBarTheme.Dark => false,
 					_ => IsLightTheme(activity),
 				};
+			}
 		}
 
 		static bool IsLightTheme(Activity activity)

@@ -87,7 +87,8 @@ namespace Microsoft.Maui.Handlers
 
 			DisconnectHandler(_rootManager);
 
-			_rootManager?.RootViewChanged -= OnRootViewChanged;
+			if (_rootManager is not null)
+				_rootManager.RootViewChanged -= OnRootViewChanged;
 
 			// The MauiCoordinatorLayout will automatically unregister from the static registry
 			// when it's detached from the window, but we can ensure cleanup here as well
