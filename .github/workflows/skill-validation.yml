@@ -779,9 +779,10 @@ jobs:
           echo "vally exit code: $EVAL_RC (advisory)"
           echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
 
-          # JUnit records individual failing trials even when their suite's
-          # aggregate score meets its threshold. Keep those counts as useful
-          # diagnostics, but use Vally's run-summary for the gate verdict.
+          # The aggregate comment job consumes the uploaded artifacts and owns
+          # the gate verdict. Print per-matrix JUnit counts here only as an
+          # immediate diagnostic; individual trials may fail while Vally's
+          # aggregate suite verdict still passes.
           JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -n "$JUNIT" ]; then
             ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
@@ -789,50 +790,11 @@ jobs:
               FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
               ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
               echo "JUnit trial diagnostics: failures=$FAILS errors=$ERRS"
+            else
+              echo "::warning::JUnit file contains no <testsuites> root"
             fi
-          fi
-
-          SUMMARY=$(find "$RESULTS_PATH" -name 'results.jsonl' -type f 2>/dev/null | head -1 || true)
-          if [ -z "$SUMMARY" ]; then
-            echo "::warning::No Vally results.jsonl under $RESULTS_PATH"
-            echo "eval_passed=false" >> "$GITHUB_OUTPUT"
           else
-            SUMMARY_FILE="$SUMMARY" EVAL_RC="$EVAL_RC" node <<'NODE'
-          const fs = require('fs');
-          let summaries = [];
-          let passed = false;
-          try {
-            summaries = fs.readFileSync(process.env.SUMMARY_FILE, 'utf8')
-              .split(/\r?\n/)
-              .filter(Boolean)
-              .map(line => JSON.parse(line))
-              .filter(record => record.type === 'run-summary');
-
-            if (summaries.length !== 1) {
-              console.log(`::warning::Expected exactly one Vally run-summary, found ${summaries.length}`);
-            } else {
-              const summary = summaries[0];
-              console.log(
-                `Vally run summary: passed=${summary.passed} ` +
-                `hadExecutionErrors=${summary.hadExecutionErrors} evals=${summary.evals?.length ?? 0}`
-              );
-              passed =
-                summary.passed === true &&
-                summary.hadExecutionErrors === false &&
-                process.env.EVAL_RC === '0';
-              if (summary.passed === true && process.env.EVAL_RC !== '0') {
-                console.log(
-                  `::warning::Vally run-summary passed but the CLI exited ${process.env.EVAL_RC}; ` +
-                  'treating as failure (possible partial output)'
-                );
-              }
-            }
-          } catch (error) {
-            console.log(`::warning::Could not parse Vally run-summary: ${error.message}`);
-          }
-
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `eval_passed=${passed}\n`);
-          NODE
+            echo "::warning::No JUnit report under $RESULTS_PATH"
           fi
 
       - name: Upload results
@@ -1325,7 +1287,9 @@ jobs:
                 const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
                 let v = '❌';
                 if (s.passed) {
-                  v = '✅';
+                  v = s.suiteFailures > 0
+                    ? `✅ aggregate; ${s.suiteFailures} trial failure${s.suiteFailures === 1 ? '' : 's'}`
+                    : '✅';
                 } else if (s.suiteErrors > 0) {
                   // Vally hard-fails a suite on any execution error even when
                   // its numeric aggregate still meets the score threshold.
@@ -1358,7 +1322,10 @@ jobs:
               for (const s of suites.filter(x => x.failures.length > 0)) {
                 const label = (s.label || '').replace(/\|/g, '\\|');
                 lines.push('<details>');
-                lines.push(`<summary>❌ ${label} — ${s.failures.length} failing stimulus(es)</summary>`);
+                lines.push(
+                  `<summary>${s.passed ? '⚠️' : '❌'} ${label} — ` +
+                  `${s.failures.length} stimulus(es) with failed trials</summary>`
+                );
                 lines.push('');
                 for (const [name, info] of s.failures) {
                   const tag = info.kind === 'error' ? '🛑 error' : '❌ fail';
@@ -1371,7 +1338,8 @@ jobs:
                 lines.push('');
               }
             } else if (evalResult === 'success') {
-              lines.push('### ✅ LLM Evaluation Passed');
+              lines.push('### ⚠️ LLM Evaluation Incomplete');
+              lines.push('_Evaluation jobs completed, but no valid JUnit suite results were found._');
               lines.push('');
             } else if (evalResult === 'failure') {
               lines.push('### ❌ LLM Evaluation Failed');

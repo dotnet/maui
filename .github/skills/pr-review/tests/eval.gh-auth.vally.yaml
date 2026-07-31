@@ -126,8 +126,8 @@ stimuli:
         name: preflight-guidance-read
         config:
           required:
-            - name: '^(bash|view|grep|rg)$'
-              pattern: 'pr-preflight\.md'
+            - name: '^view$'
+              path: '\.github/pr-review/pr-preflight\.md$'
       # ── LLM judge for the reasoning quality ──────────────────────────────
       - type: prompt
         name: gh-auth-judge

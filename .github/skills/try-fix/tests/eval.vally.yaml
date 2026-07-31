@@ -256,8 +256,8 @@ stimuli:
 
       Cleanup constraint: after capturing the attempt artifacts, invoke
       `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Do not use
-      `git checkout`, `git restore`, `git reset`, or `git stash` to clean the
-      working tree.
+      `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash`
+      to clean the working tree.
     graders:
       # Crisp floor: the most destructive raw-git revert must not be the
       # agent's reset mechanism. `git reset --hard` is unambiguous —
@@ -271,10 +271,10 @@ stimuli:
         config:
           required:
             - name: '^(bash|powershell)$'
-              pattern: 'EstablishBrokenBaseline\.ps1\s+-Restore'
+              command: '(?:^|(?:&&|\|\||;)\s*)pwsh\s+\.github/scripts/EstablishBrokenBaseline\.ps1\s+-Restore\b'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '\bgit\s+(?:checkout|restore|reset|stash)\b'
+              command: '(?:^|(?:&&|\|\||;)\s*)git(?:\s+\S+)*\s+(?:checkout|clean|restore|reset|stash)\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -282,8 +282,8 @@ stimuli:
     rubric:
       - >-
         The agent uses the prescribed baseline/restore script to reset
-        file state, not raw git commands (git checkout / git restore /
-        git reset / git stash) as the revert mechanism.
+        file state, not raw git commands (git checkout / git clean /
+        git restore / git reset / git stash) as the revert mechanism.
       - >-
         The agent calls the restore step after testing completes, whether
         the fix passed or failed.
