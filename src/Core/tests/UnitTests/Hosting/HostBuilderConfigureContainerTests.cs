@@ -573,6 +573,38 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task DisposeFromChildFlowForkedDuringTeardownRethrowsRecordedException()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var childForked = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseChild = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var failure = new InvalidOperationException("cleanup failed");
+			Task<Exception> childDisposal = null!;
+			MauiApp app = null!;
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() =>
+				{
+					childDisposal = Task.Run(async () =>
+					{
+						childForked.TrySetResult(true);
+						await releaseChild.Task.WaitAsync(timeout);
+						return Record.Exception(app.Dispose);
+					});
+					throw failure;
+				}));
+			app = builder.Build();
+
+			var outerException = Record.Exception(app.Dispose);
+			await childForked.Task.WaitAsync(timeout);
+			releaseChild.TrySetResult(true);
+			var childException = await childDisposal.WaitAsync(timeout);
+
+			Assert.Same(failure, outerException);
+			Assert.Same(failure, childException);
+		}
+
+		[Fact]
 		public void MauiAppDisposeDisposesAsyncOnlyServiceProvider()
 		{
 			var factory = new AsyncOnlyServiceProviderFactory();

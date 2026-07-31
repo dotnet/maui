@@ -277,6 +277,9 @@ namespace Microsoft.Maui.Storage
 				LazyThreadSafetyMode.ExecutionAndPublication);
 
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+			// This wrapper is created while the SecureStorage facade assignment locks are held.
+			// Only read framework-owned predecessors here; invoking a custom platform getter would
+			// execute app code under those locks. A DI-registered ISecureStorage bypasses this wrapper.
 			_defaultAccessible = previous switch
 			{
 				AppInfoSecureStorage wrapper => wrapper.DefaultAccessible,

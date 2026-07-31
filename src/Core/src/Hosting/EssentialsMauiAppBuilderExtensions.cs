@@ -42,6 +42,10 @@ namespace Microsoft.Maui.Hosting
 
 	public static class EssentialsExtensions
 	{
+		static readonly object s_appActionsSetLock = new();
+		static readonly List<AppActionsSetAssignment> s_appActionsSetAssignments = new();
+		static Task s_appActionsSetTail = Task.CompletedTask;
+
 		// Serializes the shared map-token assignment graph and per-implementation state.
 		// It is intentionally NOT held across user code, facade reads, or user-implementable
 		// IPlatformGeocoding token accessors. Facade ownership bookkeeping is serialized per
@@ -327,7 +331,7 @@ namespace Microsoft.Maui.Hosting
 						if (_essentialsBuilder.AppActions is not null)
 						{
 							var logger = services.GetService<ILoggerFactory>()?.CreateLogger<IEssentialsBuilder>();
-							SetAppActions(appActions, logger, _essentialsBuilder.AppActions);
+							SetAppActions(appActions, logger, _essentialsBuilder.AppActions, preProviderCleanups);
 						}
 					}
 #endif
@@ -1396,11 +1400,22 @@ namespace Microsoft.Maui.Hosting
 						typeof(T).Name,
 						requiredInterface);
 
-			static void SetAppActions(IAppActions appActions, ILogger? logger, List<AppAction> actions)
+			static void SetAppActions(
+				IAppActions appActions,
+				ILogger? logger,
+				List<AppAction> actions,
+				List<Action> preProviderCleanups)
 			{
 				// Build is synchronous and normally runs on the UI thread. Do not block here:
 				// a custom implementation may need the native dispatcher to complete SetAsync.
-				_ = SetAppActionsAsync(appActions, logger, actions);
+				var assignment = new AppActionsSetAssignment(appActions, logger, new List<AppAction>(actions));
+				lock (s_appActionsSetLock)
+				{
+					s_appActionsSetAssignments.Add(assignment);
+					QueueAppActionsSetUnderLock(assignment);
+				}
+
+				preProviderCleanups.Add(() => RemoveAppActionsSetAssignment(assignment));
 			}
 
 			internal static async Task SetAppActionsAsync(IAppActions appActions, ILogger? logger, List<AppAction> actions)
@@ -1419,6 +1434,45 @@ namespace Microsoft.Maui.Hosting
 				}
 			}
 
+			static void RemoveAppActionsSetAssignment(AppActionsSetAssignment assignment)
+			{
+				lock (s_appActionsSetLock)
+				{
+					var index = s_appActionsSetAssignments.IndexOf(assignment);
+					if (index < 0)
+						return;
+
+					var wasCurrent = index == s_appActionsSetAssignments.Count - 1;
+					s_appActionsSetAssignments.RemoveAt(index);
+					if (wasCurrent && s_appActionsSetAssignments.Count > 0)
+						QueueAppActionsSetUnderLock(s_appActionsSetAssignments[^1]);
+				}
+			}
+
+			static void QueueAppActionsSetUnderLock(AppActionsSetAssignment assignment)
+			{
+				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
+				s_appActionsSetTail = ApplyAppActionsSetAsync(s_appActionsSetTail, assignment);
+			}
+
+			static async Task ApplyAppActionsSetAsync(Task predecessor, AppActionsSetAssignment assignment)
+			{
+				await predecessor;
+				// Never invoke an app-provided implementation while holding the assignment lock.
+				await Task.Yield();
+
+				lock (s_appActionsSetLock)
+				{
+					if (s_appActionsSetAssignments.Count == 0 ||
+						!ReferenceEquals(s_appActionsSetAssignments[^1], assignment))
+					{
+						return;
+					}
+				}
+
+				await SetAppActionsAsync(assignment.Implementation, assignment.Logger, assignment.Actions).ConfigureAwait(false);
+			}
+
 			static void Subscribe(
 				IAppActions appActions,
 				EventHandler<AppActionEventArgs> handler,
@@ -1432,6 +1486,25 @@ namespace Microsoft.Maui.Hosting
 			{
 				_essentialsBuilder?.AppActionHandlers?.Invoke(e.AppAction);
 			}
+		}
+
+		sealed class AppActionsSetAssignment
+		{
+			public AppActionsSetAssignment(
+				IAppActions implementation,
+				ILogger? logger,
+				List<AppAction> actions)
+			{
+				Implementation = implementation;
+				Logger = logger;
+				Actions = actions;
+			}
+
+			public IAppActions Implementation { get; }
+
+			public ILogger? Logger { get; }
+
+			public List<AppAction> Actions { get; }
 		}
 
 #if WINDOWS || TIZEN

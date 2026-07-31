@@ -962,17 +962,17 @@ internal static class MediaPickerRecoveryStore
 	}
 
 	internal static PendingMediaPickerOperation? ReadActiveOperation()
-		=> DeserializePendingOperation(Preferences.Get(ActiveOperationKey, null, PreferencesSharedName));
+		=> DeserializePendingOperation(GetString(ActiveOperationKey));
 
 	internal static void WriteActiveOperation(PendingMediaPickerOperation operation)
-		=> Preferences.Set(ActiveOperationKey, SerializePendingOperation(operation), PreferencesSharedName);
+		=> SetString(ActiveOperationKey, SerializePendingOperation(operation));
 
 	internal static void RemoveActiveOperation()
-		=> Preferences.Remove(ActiveOperationKey, PreferencesSharedName);
+		=> Remove(ActiveOperationKey);
 
 	internal static List<RecoveredMediaPickerRecord> ReadRecoveredResults()
 	{
-		var value = Preferences.Get(RecoveredResultsKey, null, PreferencesSharedName);
+		var value = GetString(RecoveredResultsKey);
 
 		if (string.IsNullOrWhiteSpace(value))
 		{
@@ -1001,12 +1001,38 @@ internal static class MediaPickerRecoveryStore
 	{
 		if (results.Count == 0)
 		{
-			Preferences.Remove(RecoveredResultsKey, PreferencesSharedName);
+			Remove(RecoveredResultsKey);
 			return;
 		}
 
 		var records = results.Select(ToPreferenceRecord).ToArray();
-		Preferences.Set(RecoveredResultsKey, JsonSerializer.Serialize(records, MediaPickerRecoveryJsonContext.Default.RecoveredResults), PreferencesSharedName);
+		SetString(
+			RecoveredResultsKey,
+			JsonSerializer.Serialize(records, MediaPickerRecoveryJsonContext.Default.RecoveredResults));
+	}
+
+	static string? GetString(string key)
+	{
+		using var preferences = PreferencesImplementation.GetSharedPreferences(PreferencesSharedName);
+		return preferences.GetString(key, null);
+	}
+
+	static void SetString(string key, string value)
+	{
+		using var preferences = PreferencesImplementation.GetSharedPreferences(PreferencesSharedName);
+		using var editor = preferences.Edit() ??
+			throw new InvalidOperationException("Unable to edit MediaPicker recovery preferences.");
+		editor.PutString(key, value);
+		editor.Apply();
+	}
+
+	static void Remove(string key)
+	{
+		using var preferences = PreferencesImplementation.GetSharedPreferences(PreferencesSharedName);
+		using var editor = preferences.Edit() ??
+			throw new InvalidOperationException("Unable to edit MediaPicker recovery preferences.");
+		editor.Remove(key);
+		editor.Apply();
 	}
 
 	static string SerializePendingOperation(PendingMediaPickerOperation operation)

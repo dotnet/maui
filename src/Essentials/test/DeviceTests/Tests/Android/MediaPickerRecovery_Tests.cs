@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	{
 		const string ActiveOperationPreferenceKey = "active_operation";
 		const string RecoveredResultsPreferenceKey = "recovered_results";
-		static string RecoveryPreferencesSharedName => Preferences.GetPrivatePreferencesSharedName("media_picker");
+		static string RecoveryPreferencesSharedName => MediaPickerRecoveryStore.PreferencesSharedName;
 
 		// These tests drive the recovery manager and AndroidX callback wrappers directly.
 		// They avoid launching real camera/picker apps while still preserving the important
@@ -78,6 +78,33 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			finally
 			{
 				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
+		[Fact]
+		public void Recovery_Preferences_Bypass_Bridged_Preferences_Facade()
+		{
+			var originalPreferences = Preferences.Default;
+			var bridgedPreferences = new RecordingPreferences();
+
+			try
+			{
+				Preferences.SetDefault(bridgedPreferences);
+				MediaPickerRecoveryStore.WriteRecoveredResults([
+					new RecoveredMediaPickerRecord(
+						"durable",
+						RecoveredMediaPickerResultKind.CapturePhoto,
+						["durable.jpg"])
+				]);
+
+				var record = Assert.Single(MediaPickerRecoveryStore.ReadRecoveredResults());
+
+				Assert.Equal("durable", record.Id);
+				Assert.Equal(0, bridgedPreferences.AccessCount);
+			}
+			finally
+			{
+				Preferences.SetDefault(originalPreferences);
 			}
 		}
 
@@ -1903,8 +1930,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
 			MediaPickerRecoveryManager.SetBeginOperationWithRecoveryCheckpointForTests(null);
 			SetRecoveryReconciliationGeneration(0);
-			Preferences.Remove(ActiveOperationPreferenceKey, RecoveryPreferencesSharedName);
-			Preferences.Remove(RecoveredResultsPreferenceKey, RecoveryPreferencesSharedName);
+			using var preferences = PreferencesImplementation.GetSharedPreferences(RecoveryPreferencesSharedName);
+			using var editor = preferences.Edit() ??
+				throw new InvalidOperationException("Unable to edit MediaPicker recovery preferences.");
+			editor.Remove(ActiveOperationPreferenceKey);
+			editor.Remove(RecoveredResultsPreferenceKey);
+			editor.Apply();
 		}
 
 		static PendingMediaPickerOperation GetActiveOperation()
@@ -1914,7 +1945,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			=> GetRecoveryWaiters().Count;
 
 		static string GetSerializedActiveOperation()
-			=> Preferences.Get(ActiveOperationPreferenceKey, null, RecoveryPreferencesSharedName);
+		{
+			using var preferences = PreferencesImplementation.GetSharedPreferences(RecoveryPreferencesSharedName);
+			return preferences.GetString(ActiveOperationPreferenceKey, null);
+		}
 
 		static void ClearInProcessOperationIds()
 		{
@@ -2012,6 +2046,46 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
 			public void ShowSettingsUI() { }
+		}
+
+		sealed class RecordingPreferences : IPreferences
+		{
+			readonly Dictionary<(string Key, string SharedName), object> _values = [];
+
+			public int AccessCount { get; private set; }
+
+			public bool ContainsKey(string key, string sharedName = null)
+			{
+				AccessCount++;
+				return _values.ContainsKey((key, sharedName));
+			}
+
+			public void Remove(string key, string sharedName = null)
+			{
+				AccessCount++;
+				_values.Remove((key, sharedName));
+			}
+
+			public void Clear(string sharedName = null)
+			{
+				AccessCount++;
+				foreach (var key in _values.Keys.Where(key => key.SharedName == sharedName).ToArray())
+					_values.Remove(key);
+			}
+
+			public void Set<T>(string key, T value, string sharedName = null)
+			{
+				AccessCount++;
+				_values[(key, sharedName)] = value;
+			}
+
+			public T Get<T>(string key, T defaultValue, string sharedName = null)
+			{
+				AccessCount++;
+				return _values.TryGetValue((key, sharedName), out var value)
+					? (T)value!
+					: defaultValue;
+			}
 		}
 
 		static string CreateCacheFilePath(string extension)

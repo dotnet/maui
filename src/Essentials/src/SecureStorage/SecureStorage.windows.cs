@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Storage
 
 		async Task PlatformSetAsync(string key, string data)
 		{
+			var writePath = _secureStorage.CaptureWritePath();
 			var bytes = Encoding.UTF8.GetBytes(data);
 
 			// LOCAL=user and LOCAL=machine do not require enterprise auth capability
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Storage
 
 			var encBytes = buffer.ToArray();
 
-			await _secureStorage.SetAsync(key, encBytes);
+			await _secureStorage.SetAsync(key, encBytes, writePath);
 		}
 
 		bool PlatformRemove(string key) =>
@@ -61,9 +62,11 @@ namespace Microsoft.Maui.Storage
 
 	interface ISecureStorageImplementation
 	{
+		string CaptureWritePath();
+
 		Task<byte[]> GetAsync(string key);
 
-		Task SetAsync(string key, byte[] value);
+		Task SetAsync(string key, byte[] value, string writePath);
 
 		bool Remove(string key);
 
@@ -79,6 +82,8 @@ namespace Microsoft.Maui.Storage
 			_alias = alias;
 		}
 
+		public string CaptureWritePath() => null;
+
 		public Task<byte[]> GetAsync(string key)
 		{
 			var settings = GetSettings(_alias);
@@ -86,7 +91,7 @@ namespace Microsoft.Maui.Storage
 			return Task.FromResult(encBytes);
 		}
 
-		public Task SetAsync(string key, byte[] data)
+		public Task SetAsync(string key, byte[] data, string writePath)
 		{
 			var settings = GetSettings(_alias);
 			settings.Values[key] = data;
@@ -123,10 +128,19 @@ namespace Microsoft.Maui.Storage
 		static string AppSecureStoragePath =>
 			Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
 
+		public string CaptureWritePath() => AppSecureStoragePath;
+
 		// Caller must hold Sync. A failed Load leaves the fields unchanged so a later call can retry.
 		static SecureStorageDictionary GetSecureStorage(out string path)
 		{
 			path = AppSecureStoragePath;
+			return GetSecureStorage(path);
+		}
+
+		// Caller must hold Sync. Unpackaged FileSystem paths already include publisher/package
+		// identity, so the captured path is also the storage namespace for this operation.
+		static SecureStorageDictionary GetSecureStorage(string path)
+		{
 			if (_secureStorage is null ||
 				!string.Equals(_secureStoragePath, path, StringComparison.OrdinalIgnoreCase))
 			{
@@ -183,16 +197,22 @@ namespace Microsoft.Maui.Storage
 			}
 		}
 
-		public Task SetAsync(string key, byte[] value)
+		public Task SetAsync(string key, byte[] value) =>
+			SetAsync(key, value, CaptureWritePath());
+
+		public Task SetAsync(string key, byte[] value, string writePath)
 		{
+			if (writePath is null)
+				throw new ArgumentNullException(nameof(writePath));
+
 			lock (Sync)
 			{
-				var secureStorage = GetSecureStorage(out var path);
+				var secureStorage = GetSecureStorage(writePath);
 				if (value is null)
 					secureStorage.TryRemove(key, out _);
 				else
 					secureStorage[key] = value;
-				Save(path, secureStorage);
+				Save(writePath, secureStorage);
 				return Task.CompletedTask;
 			}
 		}

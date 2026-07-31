@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Hosting
 		// completes _disposeCompletion; any other concurrent caller ("loser") awaits/blocks on the
 		// same completion so it observes when teardown finishes and rethrows the winner's error.
 		private readonly object _disposeGate = new();
-		private readonly AsyncLocal<bool> _disposeScope = new();
+		private readonly AsyncLocal<DisposalScope?> _disposeScope = new();
 		private readonly AsyncLocal<InitializationScope?> _initializeScope = new();
 		private TaskCompletionSource<ExceptionDispatchInfo?>? _disposeCompletion;
 		private int _initializeInFlight;
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			lock (_disposeGate)
 			{
-				if (_disposeScope.Value)
+				if (_disposeScope.Value is { IsActive: true })
 				{
 					completion = null;
 					return false;
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Hosting
 
 				completion = _disposeCompletion = new TaskCompletionSource<ExceptionDispatchInfo?>(
 					TaskCreationOptions.RunContinuationsAsynchronously);
-				_disposeScope.Value = true;
+				_disposeScope.Value = new DisposalScope();
 				if (waitForInFlightInitialization)
 					WaitForInitializeAppServices();
 
@@ -305,14 +305,13 @@ namespace Microsoft.Maui.Hosting
 
 		private void FinishDisposal(TaskCompletionSource<ExceptionDispatchInfo?> completion, List<Exception> exceptions)
 		{
-			try
+			if (_disposeScope.Value is { } scope)
 			{
-				CompleteDisposal(completion, exceptions);
+				scope.IsActive = false;
+				_disposeScope.Value = null;
 			}
-			finally
-			{
-				_disposeScope.Value = false;
-			}
+
+			CompleteDisposal(completion, exceptions);
 		}
 
 		// Publishes the teardown outcome to every concurrent caller before the winner rethrows it.
@@ -385,6 +384,11 @@ namespace Microsoft.Maui.Hosting
 
 			public InitializationScope? Parent { get; }
 
+			public bool IsActive { get; set; } = true;
+		}
+
+		private sealed class DisposalScope
+		{
 			public bool IsActive { get; set; } = true;
 		}
 	}

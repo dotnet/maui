@@ -195,6 +195,37 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 		}
 
+		[Fact]
+		public async Task Unpackaged_Write_Uses_Captured_AppDataDirectory()
+		{
+			var originalFileSystem = FileSystem.Current;
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var firstAppData = Path.Combine(root, "first", "AppData");
+			var secondAppData = Path.Combine(root, "second", "AppData");
+			var key = $"test-{Guid.NewGuid():N}";
+			byte[] value = [1, 2, 3];
+
+			try
+			{
+				FileSystem.SetCurrent(new StubFileSystem(firstAppData));
+				var storage = new UnpackagedSecureStorageImplementation();
+				var writePath = storage.CaptureWritePath();
+
+				FileSystem.SetCurrent(new StubFileSystem(secondAppData));
+				await storage.SetAsync(key, value, writePath);
+				Assert.Null(await new UnpackagedSecureStorageImplementation().GetAsync(key));
+
+				FileSystem.SetCurrent(new StubFileSystem(firstAppData));
+				Assert.Equal(value, await new UnpackagedSecureStorageImplementation().GetAsync(key));
+			}
+			finally
+			{
+				FileSystem.SetCurrent(originalFileSystem);
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
 		sealed class StubFileSystem : IFileSystem
 		{
 			public StubFileSystem(string appDataDirectory)
