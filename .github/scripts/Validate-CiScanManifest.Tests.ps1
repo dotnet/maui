@@ -1387,7 +1387,7 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
         $workflowSource | Should -Match '/tmp/gh-aw/agent/manifest_final\.json'
         $workflowSource | Should -Match 'same-run `agent` artifact'
         $workflowSource | Should -Match 'argument-free `submit_ci_scan`'
-        $workflowSource | Should -Match 'jq -e \. /tmp/gh-aw/agent/manifest_final\.json'
+        $workflowSource | Should -Match 'jq -e \. /tmp/gh-aw/agent/manifest_final\.json >/dev/null'
         $workflowSource | Should -Not -Match '(?ms)^\s{6}inputs:\s*\r?\n\s{8}(?:manifest|manifest_path):'
         $workflowSource | Should -Not -Match 'one `manifest` argument'
     }
