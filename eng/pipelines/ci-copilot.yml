@@ -4378,6 +4378,13 @@ stages:
               $ErrorActionPreference = 'Stop'
               $inputRoot = "$(Pipeline.Workspace)/CopilotLogs"
               $outputDir = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              # Always create the output dir up front so the Publish task below never fails with
+              # "Path does not exist" on a run that produced no token-usage data (e.g. a SKIPPED
+              # gate where the Copilot agent consumed no tokens). This telemetry stage must never
+              # red-fail an otherwise-green review. (build 14834473, PR #36984: gate SKIPPED ->
+              # no token-usage artifact -> PublishPipelineArtifact failed -> build marked failed
+              # even though the review posted its summary fine.)
+              New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
               $script = ".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"
               if (-not (Test-Path $script)) { throw "$script missing" }
 
@@ -4392,6 +4399,7 @@ stages:
                   'AnalyzeCopilotTokenUsage'
                 )
             displayName: 'Aggregate Copilot token usage'
+            continueOnError: true
 
           - task: PublishPipelineArtifact@1
             displayName: 'Publish CopilotTokenUsage'
@@ -4400,6 +4408,9 @@ stages:
               artifact: 'CopilotTokenUsage'
               publishLocation: 'pipeline'
             condition: always()
+            # Pure telemetry — a missing/empty artifact or a transient publish error must never
+            # fail the build (the review already completed in the earlier stages).
+            continueOnError: true
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
