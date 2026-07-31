@@ -709,6 +709,48 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*must not contain scanner marker content*'
     }
 
+    It 'rejects a body carrying hidden or control content invisible to a reviewer' -ForEach @(
+        @{ Case = 'ANSI/ESC escape'; Suffix = "$([char]0x1B)[31mred text"; Expect = 'C0 control character' }
+        @{ Case = 'bare C0 control'; Suffix = "col$([char]0x07)umn"; Expect = 'C0 control character' }
+        @{ Case = 'DEL character'; Suffix = "trailing$([char]0x7F)"; Expect = 'DEL control character' }
+        @{ Case = 'C1 control (NEL)'; Suffix = "line$([char]0x0085)break"; Expect = 'C1 control character' }
+        @{ Case = 'right-to-left override'; Suffix = "$([char]0x202E)dettimbus"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'zero-width non-joiner'; Suffix = "hid$([char]0x200C)den"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'byte order mark'; Suffix = "$([char]0xFEFF)prefixed"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'benign HTML comment open'; Suffix = '<!-- reviewer will not see this -->'; Expect = 'HTML comment sequence' }
+        @{ Case = 'stray HTML comment close'; Suffix = 'looks fine --> but is not'; Expect = 'HTML comment sequence' }
+    ) {
+        # The manifest body no longer passes through gh-aw's sanitizeContent step,
+        # so the trusted boundary must reject content that a human reviewer cannot
+        # see rendered -- terminal escapes, invisible/bidirectional format chars,
+        # and HTML comments -- rather than publish it verbatim into an issue.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$Suffix"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw "*must not contain*$Expect*"
+    }
+
+    It 'still accepts a body whose only non-ASCII content is a legitimate tab or newline' {
+        # Guardrail against over-rejection: real CI evidence routinely contains tabs
+        # and newlines, and those must survive the hidden-content boundary.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n`tIndented follow-up line."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
     It 'rejects a null body' {
         $signature = New-TestSignature
         $signature.body = $null
@@ -1315,6 +1357,38 @@ Describe 'CI scanner agent output gate' {
         { Assert-ScannerSubmissionFromAgentOutput -Path $path } | Should -Not -Throw
     }
 
+    It 'rejects a lone valid submission when the collector also recorded a rejected attempt' {
+        # gh-aw's collector diverts a duplicate or argument-carrying submit_ci_scan
+        # into a sibling `.errors` array while leaving one clean item in `.items`.
+        # Inspecting only `.items` would let the run look successful, so a non-empty
+        # `.errors` must fail the gate on its own.
+        $path = Join-Path $TestDrive 'collector-errors.json'
+        @{
+            items  = @(
+                @{ type = 'submit_ci_scan' }
+            )
+            errors = @(
+                @{ type = 'submit_ci_scan'; message = 'rejected: exceeds max of 1' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
+            Should -Throw '*collector reported 1 rejected submission attempt*'
+    }
+
+    It 'accepts a submission when the collector errors array is present but empty' {
+        # An empty `.errors` array is the normal shape and must not trip the gate.
+        $path = Join-Path $TestDrive 'empty-errors.json'
+        @{
+            items  = @(
+                @{ type = 'submit_ci_scan' }
+            )
+            errors = @()
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } | Should -Not -Throw
+    }
+
     It 'reads multiline issue bodies from the fixed manifest file without nested JSON transport' {
         $path = Join-Path $TestDrive 'manifest_final.json'
         $body = "## Summary`nFirst line.`n`n## Error Message`nLiteral `"quoted`" line."
@@ -1379,6 +1453,29 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
     It 'requires exactly one complete submission and forbids alternate outputs' {
         $workflowSource | Should -Match 'select\(\.type == "submit_ci_scan"\)'
         $workflowSource | Should -Match 'Expected exactly one argument-free submit_ci_scan output and no alternate outputs'
+    }
+
+    It 'fails the exact-once gate when the collector diverts an attempt into .errors' {
+        # A second or argument-carrying submission lands in agent_output.json's
+        # `.errors`, not `.items`; the post-steps gate must count and reject it.
+        $workflowSource | Should -Match 'error_count=\$\(jq ''\(\.errors // \[\]\) \| length'' "\$output"\)'
+        $workflowSource | Should -Match '\[ "\$error_count" -ne 0 \]'
+        $workflowSource | Should -Match 'no alternate outputs or collector errors'
+    }
+
+    It 'caps the submission safe-job at a single invocation' {
+        $workflowSource | Should -Match '(?ms)submit-ci-scan:.*?^      max: 1$'
+    }
+
+    It 'stages the untrusted manifest into threat detection and fails closed when it is missing' {
+        $workflowSource | Should -Match '(?m)^  threat-detection:$'
+        $workflowSource | Should -Match 'Stage scanner manifest for threat detection'
+        $workflowSource | Should -Match 'cp "\$manifest" /tmp/gh-aw/threat-detection/manifest_final\.json'
+        $workflowSource | Should -Match 'submit_ci_scan was authorized but manifest_final\.json is missing'
+        # The detection prompt must name the staged file so the AI engine scans it.
+        $workflowSource | Should -Match '/tmp/gh-aw/threat-detection/manifest_final\.json'
+        # AI detection must stay enabled (no `engine: false` under threat-detection).
+        $workflowSource | Should -Not -Match '(?ms)^  threat-detection:.*?^\s+engine: false'
     }
 
     It 'uses one bounded fixed same-run artifact file and no tool-selected transport' {

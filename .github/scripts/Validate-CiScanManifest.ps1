@@ -187,6 +187,18 @@ function Assert-ScannerSubmissionFromAgentOutput {
     }
 
     $payload = $rawOutput | ConvertFrom-Json
+
+    # gh-aw's safe-output collector diverts every rejected, malformed, or
+    # over-max submission attempt into a sibling `.errors` array rather than
+    # `.items`. A duplicate or argument-carrying `submit_ci_scan` therefore
+    # disappears from `.items` while the run still looks successful. Any
+    # collector error means the agent tried to submit more (or differently)
+    # than the exact-once contract allows, so fail closed on a non-empty set.
+    $collectorErrors = @($payload.errors | Where-Object { $null -ne $_ })
+    if ($collectorErrors.Count -ne 0) {
+        throw "Agent output collector reported $($collectorErrors.Count) rejected submission attempt(s); the exact-once contract forbids any collector errors."
+    }
+
     $items = @($payload.items | Where-Object { $null -ne $_ })
     if ($items.Count -ne 1 -or $items[0].type -ne 'submit_ci_scan') {
         throw "Agent output must contain exactly one item of type submit_ci_scan and no alternate outputs."
@@ -285,6 +297,49 @@ function Test-MarkerLikeContent {
     return $folded.Contains('ciscanfingerprint') -or
         $folded.Contains('ciscanmatchcount') -or
         $folded.Contains('ciscanevidencekey')
+}
+
+function Test-HiddenOrControlContent {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    # The manifest body is derived from untrusted CI logs and, since it moved to a
+    # file artifact, no longer flows through gh-aw's sanitizeContent pass. It is
+    # published verbatim into an issue body, so this trusted boundary fails closed
+    # on the classes of content that never appear in a real CI evidence line yet
+    # let an attacker smuggle hidden, spoofed, or terminal-escape payloads:
+    #   * C0 control characters other than tab/newline/carriage-return, and DEL.
+    #   * The C1 control range (0x80-0x9F).
+    #   * Bidirectional and invisible Unicode format characters, which can reorder
+    #     or hide rendered text (Trojan-Source-style attacks).
+    #   * HTML comment sequences, which are how the trusted publisher's own markers
+    #     are spelled -- the agent body must never carry one.
+    # It rejects rather than strips: evidence lines are hash-verified against frozen
+    # CI evidence, so silently mutating the body would corrupt a legitimate match.
+    foreach ($character in $Value.ToCharArray()) {
+        $code = [int]$character
+        if ($code -le 0x1F -and $code -ne 0x09 -and $code -ne 0x0A -and $code -ne 0x0D) {
+            return "a C0 control character (U+$($code.ToString('X4')))"
+        }
+        if ($code -eq 0x7F) {
+            return 'a DEL control character (U+007F)'
+        }
+        if ($code -ge 0x80 -and $code -le 0x9F) {
+            return "a C1 control character (U+$($code.ToString('X4')))"
+        }
+        if ($code -eq 0x00AD -or
+            ($code -ge 0x200C -and $code -le 0x200F) -or
+            ($code -ge 0x202A -and $code -le 0x202E) -or
+            ($code -ge 0x2060 -and $code -le 0x206F) -or
+            $code -eq 0xFEFF) {
+            return "a bidirectional or invisible format character (U+$($code.ToString('X4')))"
+        }
+    }
+
+    if ($Value.Contains('<!--') -or $Value.Contains('-->')) {
+        return 'an HTML comment sequence'
+    }
+
+    return ''
 }
 
 function New-CanonicalMarkerBlock {
@@ -710,6 +765,13 @@ function Assert-ValidIssuePayload {
     if (Test-MarkerLikeContent -Value $rawBody) {
         throw ("Body for '$Fingerprint' must not contain scanner marker content; " +
             'the trusted publisher injects the canonical markers.')
+    }
+    # The manifest body no longer passes through gh-aw's sanitizeContent step, so
+    # reject hidden control, bidirectional/invisible, or HTML-comment content that
+    # untrusted CI log text should never carry before it is published verbatim.
+    $hiddenReason = Test-HiddenOrControlContent -Value $rawBody
+    if ($hiddenReason) {
+        throw "Body for '$Fingerprint' must not contain $hiddenReason."
     }
 
     $body = ConvertTo-SafeIssueBody -Body $rawBody

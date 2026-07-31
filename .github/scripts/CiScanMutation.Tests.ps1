@@ -63,6 +63,14 @@ BeforeAll {
             Find    = '    if (Test-MarkerLikeContent -Value $rawBody) {'
             Replace = '    if ($false) {'
         }
+        # The hidden/control-content rejection is a distinct trusted-boundary
+        # layer from the marker check. Disabling it lets a body carrying an HTML
+        # comment (which the canonical marker also is) or invisible content flow
+        # to the deeper post-injection backstop instead of stopping at the edge.
+        'no-hidden-content-rejection' = @{
+            Find    = '    if ($hiddenReason) {'
+            Replace = '    if ($false) {'
+        }
         # Marker-like match patterns can replay trusted publisher state.
         'no-marker-pattern-rejection' = @{
             Find    = '    if (Test-MarkerLikeContent -Value $matchPattern) {'
@@ -315,7 +323,10 @@ Describe 'CI scanner marker mutation coverage' {
 
     It 'mutation "no-duplicate-rejection": a pre-marked body is rejected downstream' {
         $body = "$script:CanonicalMarker`n## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed"
-        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection') -Body $body
+        # Both edge-layer rejections (marker-like content and hidden/HTML-comment
+        # content) are disabled so this proves the *post-injection* backstop is
+        # independently load-bearing against duplicate markers.
+        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection', 'no-hidden-content-rejection') -Body $body
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*exactly one canonical fingerprint marker*'
@@ -323,10 +334,27 @@ Describe 'CI scanner marker mutation coverage' {
 
     It 'mutation "no-duplicate-rejection + no-post-injection-check": duplicate markers would ship' {
         $body = "$script:CanonicalMarker`n## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed"
-        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection', 'no-post-injection-check') -Body $body
+        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection', 'no-hidden-content-rejection', 'no-post-injection-check') -Body $body
 
         $result.ok | Should -BeTrue
         ([regex]::Matches($result.body, '<!-- ci-scan-fingerprint:')).Count | Should -Be 2
+    }
+
+    It 'baseline: the real validator rejects a body carrying hidden control content' {
+        $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed$([char]0x1B)[31m"
+        $result = Invoke-ValidatorProbe -Body $body
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*must not contain*C0 control character*'
+    }
+
+    It 'mutation "no-hidden-content-rejection": a hidden-content body slips past the boundary' {
+        # A benign HTML comment carries no marker tokens, so only the new
+        # hidden/control-content layer stands between it and publication.
+        $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed`n<!-- reviewer will not see this -->"
+        $result = Invoke-ValidatorProbe -Mutation @('no-hidden-content-rejection') -Body $body
+
+        $result.error | Should -Not -BeLike '*HTML comment sequence*'
     }
 
     It 'baseline: the real validator rejects that same pre-marked body outright' {
