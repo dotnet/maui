@@ -1188,6 +1188,28 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void AppInfoPackageNameReentrancyUsesOwnedVersionTrackingFacade()
+		{
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+			var appInfo = new VersionTrackingReadingAppInfo();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPreferences, DisposableStubPreferences>();
+			builder.Services.AddSingleton<IAppInfo>(appInfo);
+			var app = builder.Build();
+			var preferences = Assert.IsType<DisposableStubPreferences>(
+				app.Services.GetRequiredService<IPreferences>());
+
+			var versionTrackingDuringPackageName = Assert.IsAssignableFrom<IVersionTracking>(
+				appInfo.VersionTrackingDuringPackageName);
+			Assert.Same(versionTrackingDuringPackageName, VersionTracking.Default);
+
+			app.Dispose();
+
+			Assert.True(preferences.IsDisposed);
+			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void OverlappingMauiAppsOwnIndependentLazyVersionTrackingFacades()
 		{
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
@@ -2036,7 +2058,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				_packageName = packageName;
 			}
 
-			public string PackageName => _packageName;
+			public virtual string PackageName => _packageName;
 			public string Name => "Test";
 			public virtual string VersionString => _versionString;
 			public Version Version => System.Version.Parse(VersionString);
@@ -2045,6 +2067,34 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
 			public void ShowSettingsUI() { }
+		}
+
+		sealed class VersionTrackingReadingAppInfo : StubAppInfo
+		{
+			bool _readingPackageName;
+
+			public IVersionTracking? VersionTrackingDuringPackageName { get; private set; }
+
+			public override string PackageName
+			{
+				get
+				{
+					if (!_readingPackageName)
+					{
+						_readingPackageName = true;
+						try
+						{
+							VersionTrackingDuringPackageName ??= VersionTracking.Default;
+						}
+						finally
+						{
+							_readingPackageName = false;
+						}
+					}
+
+					return base.PackageName;
+				}
+			}
 		}
 
 		sealed class DisposableStubAppInfo : StubAppInfo, IDisposable

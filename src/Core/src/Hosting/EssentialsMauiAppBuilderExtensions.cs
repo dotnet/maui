@@ -282,6 +282,10 @@ namespace Microsoft.Maui.Hosting
 						versionTrackingDependencies.AppInfo is not null ||
 						versionTrackingDependencies.VersionTracking is not null;
 					BridgeLazyVersionTrackingFromDI(versionTrackingDependencies, facadeCleanups);
+					BridgeAppInfoSecureStorageFromDI(
+						versionTrackingDependencies.AppInfo,
+						versionTrackingDependencies.SecureStorage,
+						facadeCleanups);
 
 					// Resolve app-owned cleanup before registering AppActions handlers. Facade
 					// actions are appended after initialization has accumulated the complete batch.
@@ -428,7 +432,12 @@ namespace Microsoft.Maui.Hosting
 			/// the corresponding static API. If not registered, the existing lazy platform
 			/// default behavior is preserved.
 			/// </summary>
-			static (IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking, IGeocoding? Geocoding) BridgeEssentialsFromDI(
+			static (
+				IPreferences? Preferences,
+				IAppInfo? AppInfo,
+				IVersionTracking? VersionTracking,
+				IGeocoding? Geocoding,
+				ISecureStorage? SecureStorage) BridgeEssentialsFromDI(
 				IServiceProvider services,
 				List<Action> facadeCleanups,
 				IGeocoding? preResolvedGeocoding = null)
@@ -518,20 +527,7 @@ namespace Microsoft.Maui.Hosting
 				}
 				appInfo = services.GetService<IAppInfo>();
 				if (appInfo is not null)
-				{
 					TrackAndSet(appInfo, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
-					if (secureStorage is null)
-					{
-						// SecureStorage namespaces follow the bridged package name. Apps that
-						// change PackageName must migrate existing secrets or register ISecureStorage.
-						var secureStoragePackageName = appInfo.PackageName;
-						TrackAndSet<ISecureStorage>(
-							previous => new AppInfoSecureStorage(secureStoragePackageName, previous),
-							() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
-							SecureStorage.SetDefault,
-							facadeCleanups);
-					}
-				}
 				BridgeIfRegistered<IConnectivity>(services, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceInfo>(services, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);
@@ -541,11 +537,16 @@ namespace Microsoft.Maui.Hosting
 					TrackAndSet(geocoding, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IPermissions>(services, () => GetFacadeBackingField<IPermissions>(typeof(Permissions), "currentImplementation"), Permissions.SetCurrent, facadeCleanups);
 
-				return (preferences, appInfo, versionTracking, geocoding);
+				return (preferences, appInfo, versionTracking, geocoding, secureStorage);
 			}
 
 			static void BridgeLazyVersionTrackingFromDI(
-				(IPreferences? Preferences, IAppInfo? AppInfo, IVersionTracking? VersionTracking, IGeocoding? Geocoding) dependencies,
+				(
+					IPreferences? Preferences,
+					IAppInfo? AppInfo,
+					IVersionTracking? VersionTracking,
+					IGeocoding? Geocoding,
+					ISecureStorage? SecureStorage) dependencies,
 				List<Action> facadeCleanups)
 			{
 				if (dependencies.VersionTracking is not null)
@@ -570,6 +571,26 @@ namespace Microsoft.Maui.Hosting
 					VersionTracking.SetDefault,
 					facadeCleanups,
 					allowsSharedOwnership: true);
+			}
+
+			static void BridgeAppInfoSecureStorageFromDI(
+				IAppInfo? appInfo,
+				ISecureStorage? secureStorage,
+				List<Action> facadeCleanups)
+			{
+				if (appInfo is null || secureStorage is not null)
+					return;
+
+				// Install VersionTracking ownership before invoking the app-provided PackageName
+				// getter, which may reentrantly access other static Essentials facades.
+				// SecureStorage namespaces follow the bridged package name. Apps that change
+				// PackageName must migrate existing secrets or register ISecureStorage.
+				var secureStoragePackageName = appInfo.PackageName;
+				TrackAndSet<ISecureStorage>(
+					previous => new AppInfoSecureStorage(secureStoragePackageName, previous),
+					() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
+					SecureStorage.SetDefault,
+					facadeCleanups);
 			}
 
 			/// <summary>
