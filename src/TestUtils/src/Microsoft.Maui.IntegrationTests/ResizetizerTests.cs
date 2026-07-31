@@ -144,7 +144,7 @@ public class ResizetizerTests : BaseBuildTest
 				"<ResizetizerPlatformType>generic</ResizetizerPlatformType>",
 				"<ResizetizerPlatformType>android</ResizetizerPlatformType>",
 				StringComparison.Ordinal));
-		File.SetLastWriteTimeUtc(stampFile, DateTime.UtcNow.AddMinutes(1));
+		File.SetLastWriteTimeUtc(stampFile, DateTime.UtcNow.AddHours(1));
 		var invalidationSentinel = File.GetLastWriteTimeUtc(stampFile);
 
 		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "ResizetizeImages", properties: BuildProps, output: _output),
