@@ -408,3 +408,29 @@ MSBuild server unavailable: could not connect to the server within the timeout w
         $r.Error | Should -Match 'Gate infrastructure'
     }
 }
+
+Describe 'Get-TestResultFromOutput — NETSDK1147 missing-workload infra flake is ENV, not BUILD error' {
+    It 'classifies "the following workloads must be installed: android" as EnvError' {
+        $log = New-LogFile -Content @"
+Running: dotnet build src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj -c Debug -f net11.0-android
+❌ Build failed with exit code 1
+/home/vsts/work/1/s/.dotnet/sdk/11.0.100-rc.1.26379.102/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.ImportWorkloads.targets(38,5): error NETSDK1147: To build this project, the following workloads must be installed: android [/home/vsts/work/1/s/src/Core/src/Core.csproj::TargetFramework=net11.0-android37.0]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.BuildError | Should -Not -BeTrue
+        $r.Error | Should -Match 'workload was not installed'
+        $r.Error | Should -Match 'android'
+    }
+
+    It 'does NOT mask a genuine CS compile error that co-occurs with NETSDK1147' {
+        $log = New-LogFile -Content @"
+❌ Build failed with exit code 1
+error NETSDK1147: the following workloads must be installed: android
+/s/src/Foo.cs(10,5): error CS0117: 'Bar' does not contain a definition for 'Baz'
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.BuildError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+    }
+}

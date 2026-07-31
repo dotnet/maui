@@ -965,6 +965,33 @@ function Get-TestResultFromOutput {
         }
     }
 
+    # A build failure from a MISSING .NET WORKLOAD on the gate agent (NETSDK1147 "the following
+    # workloads must be installed: android/ios/maccatalyst ... run dotnet workload restore") is a
+    # GATE INFRASTRUCTURE flake, never the PR author's code: the agent's workload restore did not
+    # complete or did not persist into the gate's build, so the project can't build regardless of
+    # the PR. Like the MSBuild-server flake above, it must be checked BEFORE the generic
+    # build-error branch and classified as ENV ERROR (INCONCLUSIVE, retryable), never a code
+    # BUILD ERROR / FAILED. (build 14824785, PR #36572: both without-fix AND with-fix legs failed
+    # with 16× NETSDK1147 each and zero CS-errors — the android workload was simply absent.)
+    if ($content -match '(?i)\bNETSDK1147\b' -or
+        $content -match '(?i)the following workloads must be installed') {
+        # Guard: if a GENUINE source compile error (C# CS#### or MAUI XAML MAUIX####) is ALSO
+        # present, that is a real code problem and must not be masked by the workload-infra
+        # classification — fall through to the generic build-error branch below.
+        $hasRealCompileError = $content -match '(?im)\berror\s+(CS|MAUIX)\d+\b'
+        if (-not $hasRealCompileError) {
+            $missingWl = $null
+            $wlMatch = [regex]::Match($content, '(?i)workloads must be installed:\s*([a-z0-9 ,\-]+)')
+            if ($wlMatch.Success) { $missingWl = $wlMatch.Groups[1].Value.Trim() }
+            $wlSuffix = if ($missingWl) { " (missing: $missingWl)" } else { "" }
+            return @{
+                Passed = $false; EnvError = $true
+                Error = "Gate infrastructure: a required .NET workload was not installed on the gate agent$wlSuffix, so the project could not be built (NETSDK1147). The agent's ``dotnet workload restore`` did not take effect — this is NOT a code build error. Retry on a fresh agent."
+                FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+            }
+        }
+    }
+
     # Check for build failures (before any test results)
     # Mark these explicitly with BuildError = $true so Write-MarkdownReport can
     # surface them as "Fix does not compile" instead of "Fix does not pass the tests".
