@@ -235,6 +235,30 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          # Shallow, fast checkout — this job only needs .github/scripts. A full clone of the
+          # large dotnet/maui repo occasionally stalls on the network and, with only the job's
+          # 10-min timeout to stop it, the WHOLE trigger-review job gets CANCELLED — silently,
+          # since a cancellation skips the downstream steps (no pipeline queued, no notice). A
+          # shallow clone completes in seconds; the per-step timeout below turns a rare stall
+          # into a proper step FAILURE (which runs the cleanup/notice steps) instead of a
+          # job-level cancellation. (Recurring hang: #35640, and #36828 trigger 30647459829.)
+          fetch-depth: 1
+        timeout-minutes: 4
+
+      # Never let a trigger checkout/setup hang fail SILENTLY: if the job was cancelled (e.g. the
+      # checkout hit its timeout) or an early step failed before the pipeline could be queued,
+      # tell the commenter to retry. Uses gh + the event payload directly (no repo scripts, which
+      # may be exactly what failed to check out). Skipped once the pipeline actually queued
+      # (trigger_azdo succeeded) and on the normal lock-skip path.
+      - name: Report trigger infra failure so it is never silent
+        if: (cancelled() || failure()) && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' && steps.trigger_azdo.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "> [!WARNING]
+          > Your \`/review\` couldn't start due to a transient CI infrastructure issue (the trigger job's repository checkout did not complete in time). This is **not** a problem with your PR. Please comment \`/review\` again to retry." || echo "notice post best-effort failed"
 
       - name: Set review in-progress lock
         id: review_lock
