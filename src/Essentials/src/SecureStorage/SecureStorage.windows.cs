@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Storage
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
 		static readonly object Sync = new();
-		static SecureStorageDictionary? _secureStorage;
+		static SecureStorageDictionary _secureStorage;
 
 		static string AppSecureStoragePath =>
 			Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
