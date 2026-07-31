@@ -51,7 +51,7 @@ internal static class Lru64Constants
 
 	public static byte ValidateCapacity(int capacity)
 	{
-		if (capacity <= 0 || capacity > MaxCapacity)
+		if ((uint)(capacity - 1) >= (uint)MaxCapacity)
 		{
 			throw new ArgumentOutOfRangeException(nameof(capacity), "capacity must be between 1 and 64");
 		}

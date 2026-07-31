@@ -17,8 +17,8 @@ public class FortyColorBrushCacheBenchmarks
 		=> BrushCacheBenchmarkData.Run(new LRUBrushCache(BrushCacheBenchmarkData.CacheCapacity), Colors);
 
 	[Benchmark(OperationsPerInvoke = ColorCount * BrushCacheBenchmarkData.LoopCount)]
-	public object SwitchCache()
-		=> BrushCacheBenchmarkData.Run(new CacheWithSwitch(BrushCacheBenchmarkData.CacheCapacity), Colors);
+	public object InlineLruCache()
+		=> BrushCacheBenchmarkData.Run(new Lru64ColorVectorInlineBrushCache(BrushCacheBenchmarkData.CacheCapacity), Colors);
 
 	[Benchmark(OperationsPerInvoke = ColorCount * BrushCacheBenchmarkData.LoopCount)]
 	public object NullCache()
@@ -36,8 +36,8 @@ public class SixtyColorBrushCacheBenchmarks
 		=> BrushCacheBenchmarkData.Run(new LRUBrushCache(BrushCacheBenchmarkData.CacheCapacity), Colors);
 
 	[Benchmark(OperationsPerInvoke = ColorCount * BrushCacheBenchmarkData.LoopCount)]
-	public object SwitchCache()
-		=> BrushCacheBenchmarkData.Run(new CacheWithSwitch(BrushCacheBenchmarkData.CacheCapacity), Colors);
+	public object InlineLruCache()
+		=> BrushCacheBenchmarkData.Run(new Lru64ColorVectorInlineBrushCache(BrushCacheBenchmarkData.CacheCapacity), Colors);
 
 	[Benchmark(OperationsPerInvoke = ColorCount * BrushCacheBenchmarkData.LoopCount)]
 	public object NullCache()
@@ -60,8 +60,8 @@ public class WeightedColorBrushCacheBenchmarks
 		=> BrushCacheBenchmarkData.Run(new LRUBrushCache(BrushCacheBenchmarkData.CacheCapacity), Colors);
 
 	[Benchmark(OperationsPerInvoke = AccessCount * BrushCacheBenchmarkData.LoopCount)]
-	public object SwitchCache()
-		=> BrushCacheBenchmarkData.Run(new CacheWithSwitch(BrushCacheBenchmarkData.CacheCapacity), Colors);
+	public object InlineLruCache()
+		=> BrushCacheBenchmarkData.Run(new Lru64ColorVectorInlineBrushCache(BrushCacheBenchmarkData.CacheCapacity), Colors);
 
 	[Benchmark(OperationsPerInvoke = AccessCount * BrushCacheBenchmarkData.LoopCount)]
 	public object NullCache()
