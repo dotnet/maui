@@ -1273,7 +1273,15 @@ public class TabbedPageManager
 			}
 
 			if (IsBottomTabPlacement)
-				_bottomNavigationView.SelectedItemId = position;
+			{
+				using var menu = _bottomNavigationView.Menu;
+				var visiblePosition = Math.Min(position, menu.Size() - 1);
+				if (visiblePosition >= 0)
+				{
+					using var menuItem = menu.GetItem(visiblePosition);
+					menuItem.SetChecked(true);
+				}
+			}
 		}
 
 		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)
