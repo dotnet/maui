@@ -151,14 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var context = MauiContext?.Context
                 ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
 
-            // Resolve ?attr/actionBarSize to match the old XML layout height.
-            // The old shellsectionlayout.axml used android:layout_height="?attr/actionBarSize"
-            // for the TabLayout. Using wrap_content would make tabs ~48dp instead of 56dp,
-            // shifting all content below and causing visual regressions.
-            var actionBarSizeAttribute = new int[] { global::Android.Resource.Attribute.ActionBarSize };
-            var typedArray = context.ObtainStyledAttributes(actionBarSizeAttribute);
-            int actionBarHeight = typedArray.GetDimensionPixelSize(0, LP.WrapContent);
-            typedArray.Recycle();
+            int actionBarHeight = context.GetActionBarHeight();
 
             _contentTabLayout = new TabLayout(context)
             {
