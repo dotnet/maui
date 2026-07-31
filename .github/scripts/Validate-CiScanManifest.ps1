@@ -258,7 +258,16 @@ function Test-MarkerLikeContent {
     # HTML-entity evasion that would re-emerge as a real marker once GitHub
     # renders the body. Folding to alphanumerics collapses every one of those
     # spellings onto the same token, so the gate cannot be spelled around.
-    $normalized = $Value.Normalize([System.Text.NormalizationForm]::FormKC)
+    # NFKC normalization throws on invalid Unicode (e.g. an unpaired surrogate);
+    # such input can never fold into a valid marker, and the downstream
+    # Test-HiddenOrControlContent gate rejects it with a precise reason, so fall
+    # back to the raw value here rather than surfacing an opaque exception.
+    try {
+        $normalized = $Value.Normalize([System.Text.NormalizationForm]::FormKC)
+    }
+    catch {
+        $normalized = $Value
+    }
     $builder = [System.Text.StringBuilder]::new()
     foreach ($character in $normalized.ToCharArray()) {
         $mapped = switch ([int]$character) {
@@ -309,14 +318,38 @@ function Test-HiddenOrControlContent {
     # let an attacker smuggle hidden, spoofed, or terminal-escape payloads:
     #   * C0 control characters other than tab/newline/carriage-return, and DEL.
     #   * The C1 control range (0x80-0x9F).
-    #   * Bidirectional and invisible Unicode format characters, which can reorder
-    #     or hide rendered text (Trojan-Source-style attacks).
+    #   * Bidirectional, invisible, and steganographic format/mark characters --
+    #     soft hyphen, Arabic letter mark, Mongolian vowel separator, the
+    #     zero-width/joiner/bidi ranges, line/paragraph separators, the variation
+    #     selectors, the Unicode tag block, and the variation selector supplement --
+    #     which can reorder or hide rendered text, or smuggle data invisibly
+    #     (Trojan-Source / ASCII-smuggling attacks). Several of these live in the
+    #     supplementary plane, so the body is walked by Unicode scalar value
+    #     (decoding surrogate pairs) rather than by UTF-16 code unit; an unpaired
+    #     surrogate is itself rejected.
     #   * HTML comment sequences, which are how the trusted publisher's own markers
     #     are spelled -- the agent body must never carry one.
     # It rejects rather than strips: evidence lines are hash-verified against frozen
     # CI evidence, so silently mutating the body would corrupt a legitimate match.
-    foreach ($character in $Value.ToCharArray()) {
-        $code = [int]$character
+    $length = $Value.Length
+    for ($index = 0; $index -lt $length; $index++) {
+        $unit = $Value[$index]
+        if ([char]::IsHighSurrogate($unit)) {
+            if ($index + 1 -lt $length -and [char]::IsLowSurrogate($Value[$index + 1])) {
+                $code = [char]::ConvertToUtf32($unit, $Value[$index + 1])
+                $index++
+            }
+            else {
+                return "an unpaired high surrogate (U+$(([int]$unit).ToString('X4')))"
+            }
+        }
+        elseif ([char]::IsLowSurrogate($unit)) {
+            return "an unpaired low surrogate (U+$(([int]$unit).ToString('X4')))"
+        }
+        else {
+            $code = [int]$unit
+        }
+
         if ($code -le 0x1F -and $code -ne 0x09 -and $code -ne 0x0A -and $code -ne 0x0D) {
             return "a C0 control character (U+$($code.ToString('X4')))"
         }
@@ -327,10 +360,15 @@ function Test-HiddenOrControlContent {
             return "a C1 control character (U+$($code.ToString('X4')))"
         }
         if ($code -eq 0x00AD -or
-            ($code -ge 0x200C -and $code -le 0x200F) -or
-            ($code -ge 0x202A -and $code -le 0x202E) -or
+            $code -eq 0x061C -or
+            $code -eq 0x180E -or
+            ($code -ge 0x200B -and $code -le 0x200F) -or
+            ($code -ge 0x2028 -and $code -le 0x202E) -or
             ($code -ge 0x2060 -and $code -le 0x206F) -or
-            $code -eq 0xFEFF) {
+            ($code -ge 0xFE00 -and $code -le 0xFE0F) -or
+            $code -eq 0xFEFF -or
+            ($code -ge 0xE0000 -and $code -le 0xE007F) -or
+            ($code -ge 0xE0100 -and $code -le 0xE01EF)) {
             return "a bidirectional or invisible format character (U+$($code.ToString('X4')))"
         }
     }

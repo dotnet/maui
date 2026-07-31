@@ -354,7 +354,12 @@ Describe 'CI scanner marker mutation coverage' {
         $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed`n<!-- reviewer will not see this -->"
         $result = Invoke-ValidatorProbe -Mutation @('no-hidden-content-rejection') -Body $body
 
+        # Prove the layer is load-bearing by asserting the concrete bypass: with the
+        # guard disabled the body is fully published with the hidden comment intact,
+        # not merely that some other error message differs.
+        $result.ok | Should -BeTrue
         $result.error | Should -Not -BeLike '*HTML comment sequence*'
+        $result.body | Should -BeLike '*<!-- reviewer will not see this -->*'
     }
 
     It 'baseline: the real validator rejects that same pre-marked body outright' {

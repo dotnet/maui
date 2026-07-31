@@ -717,6 +717,13 @@ Describe 'CI scanner issue payload gate' {
         @{ Case = 'right-to-left override'; Suffix = "$([char]0x202E)dettimbus"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'zero-width non-joiner'; Suffix = "hid$([char]0x200C)den"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'byte order mark'; Suffix = "$([char]0xFEFF)prefixed"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Arabic letter mark (bidi)'; Suffix = "sig$([char]0x061C)nal"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Mongolian vowel separator'; Suffix = "gap$([char]0x180E)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'paragraph separator'; Suffix = "line$([char]0x2029)break"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'variation selector-16'; Suffix = "glyph$([char]0xFE0F)"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'astral tag character'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE007F))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'astral variation selector supplement'; Suffix = "mark$([char]::ConvertFromUtf32(0xE0100))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'unpaired high surrogate'; Suffix = "dangling$([char]0xD800)"; Expect = 'unpaired high surrogate' }
         @{ Case = 'benign HTML comment open'; Suffix = '<!-- reviewer will not see this -->'; Expect = 'HTML comment sequence' }
         @{ Case = 'stray HTML comment close'; Suffix = 'looks fine --> but is not'; Expect = 'HTML comment sequence' }
     ) {
@@ -741,6 +748,23 @@ Describe 'CI scanner issue payload gate' {
         # and newlines, and those must survive the hidden-content boundary.
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`n`tIndented follow-up line."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing a legitimate astral-plane emoji' {
+        # Guardrail against surrogate-pair over-rejection: an ordinary supplementary
+        # -plane emoji (U+1F600) is encoded as a surrogate pair, and the scalar walk
+        # must decode it to a harmless code point rather than mistaking either half
+        # for an unpaired surrogate or a hidden format character.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild smiled $([char]::ConvertFromUtf32(0x1F600)) at us."
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
@@ -1472,6 +1496,12 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
         $workflowSource | Should -Match 'Stage scanner manifest for threat detection'
         $workflowSource | Should -Match 'cp "\$manifest" /tmp/gh-aw/threat-detection/manifest_final\.json'
         $workflowSource | Should -Match 'submit_ci_scan was authorized but manifest_final\.json is missing'
+        # The fail-closed decision must key off the download-independent output_types
+        # job output, not the continue-on-error agent_output.json download, so a
+        # transient artifact-download failure cannot silently skip manifest scanning.
+        $workflowSource | Should -Match 'OUTPUT_TYPES: \$\{\{ needs\.agent\.outputs\.output_types \}\}'
+        $workflowSource | Should -Match '\$OUTPUT_TYPES.*==.*\*submit_ci_scan\*'
+        $workflowSource | Should -Not -Match 'output=./tmp/gh-aw/agent_output\.json.\s*\r?\n\s*mkdir'
         # The detection prompt must name the staged file so the AI engine scans it.
         $workflowSource | Should -Match '/tmp/gh-aw/threat-detection/manifest_final\.json'
         # AI detection must stay enabled (no `engine: false` under threat-detection).
