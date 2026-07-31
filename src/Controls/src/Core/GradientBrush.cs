@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -9,10 +10,28 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
+		// Weak subscriptions so a shared/long-lived GradientStopCollection (or its stops) does not
+		// keep this brush rooted in memory via the CollectionChanged / PropertyChanged events. See issue #36363.
+		readonly NotifyCollectionChangedEventHandler _gradientStopsCollectionChangedHandler;
+		readonly PropertyChangedEventHandler _gradientStopPropertyChangedHandler;
+		WeakNotifyCollectionChangedProxy _gradientStopsProxy;
+		readonly Dictionary<GradientStop, WeakNotifyPropertyChangedProxy> _gradientStopProxies = new();
+
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
+			_gradientStopsCollectionChangedHandler = OnGradientStopCollectionChanged;
+			_gradientStopPropertyChangedHandler = OnGradientStopPropertyChanged;
+
 			GradientStops = new GradientStopCollection();
+		}
+
+		~GradientBrush()
+		{
+			_gradientStopsProxy?.Unsubscribe();
+
+			foreach (var proxy in _gradientStopProxies.Values)
+				proxy.Unsubscribe();
 		}
 
 		public event EventHandler InvalidateGradientBrushRequested;
@@ -49,26 +68,27 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnGradientStopCollectionChanged;
+				_gradientStopsProxy?.Unsubscribe();
 
 				foreach (var oldStop in oldCollection)
 				{
 					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
+					UnsubscribeGradientStop(oldStop);
 				}
 			}
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnGradientStopCollectionChanged;
+			_gradientStopsProxy ??= new WeakNotifyCollectionChangedProxy();
+			_gradientStopsProxy.Subscribe(newCollection, _gradientStopsCollectionChangedHandler);
 
 			foreach (var newStop in newCollection)
 			{
 				if (newStop is not null)
 				{
 					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
+					SubscribeGradientStop(newStop);
 				}
 			}
 		}
@@ -83,7 +103,7 @@ namespace Microsoft.Maui.Controls
 						continue;
 
 					oldStop.Parent = null;
-					oldStop.PropertyChanged -= OnGradientStopPropertyChanged;
+					UnsubscribeGradientStop(oldStop);
 				}
 			}
 
@@ -95,11 +115,32 @@ namespace Microsoft.Maui.Controls
 						continue;
 
 					newStop.Parent = this;
-					newStop.PropertyChanged += OnGradientStopPropertyChanged;
+					SubscribeGradientStop(newStop);
 				}
 			}
 
 			Invalidate();
+		}
+
+		void SubscribeGradientStop(GradientStop stop)
+		{
+			if (_gradientStopProxies.TryGetValue(stop, out var proxy))
+			{
+				proxy.Subscribe(stop, _gradientStopPropertyChangedHandler);
+			}
+			else
+			{
+				_gradientStopProxies[stop] = new WeakNotifyPropertyChangedProxy(stop, _gradientStopPropertyChangedHandler);
+			}
+		}
+
+		void UnsubscribeGradientStop(GradientStop stop)
+		{
+			if (_gradientStopProxies.TryGetValue(stop, out var proxy))
+			{
+				proxy.Unsubscribe();
+				_gradientStopProxies.Remove(stop);
+			}
 		}
 
 		void OnGradientStopPropertyChanged(object sender, PropertyChangedEventArgs e)
