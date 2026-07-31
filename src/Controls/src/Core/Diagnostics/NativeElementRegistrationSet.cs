@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Controls.Diagnostics
 
 		public long LifecycleEpoch => Interlocked.Read(ref _lifecycleEpoch);
 
+		public bool HasRegistrations => _registrations.Count > 0;
+
 		public bool IsCurrent(long lifecycleEpoch) => LifecycleEpoch == lifecycleEpoch;
 
 		public long AdvanceLifecycle() => Interlocked.Increment(ref _lifecycleEpoch);
@@ -24,23 +26,45 @@ namespace Microsoft.Maui.Controls.Diagnostics
 			string role,
 			string? discriminator = null)
 		{
+			NativeElementDiagnostics.ValidateRegistrationArguments(owner, nativeElement, role);
+
 			if (_registrations.TryGetValue(nativeElement, out var existing))
 			{
 				if (ReferenceEquals(existing.Owner, owner) &&
 					string.Equals(existing.Role, role, StringComparison.Ordinal) &&
 					string.Equals(existing.Discriminator, discriminator, StringComparison.Ordinal))
 				{
+					var registrationEnabled = NativeElementDiagnostics.IsRegistrationEnabled;
+					if (existing.IsActive == registrationEnabled)
+						return;
+
+					existing.Dispose();
+					existing.Token = NativeElementDiagnostics.TryRegister(
+						owner,
+						nativeElement,
+						role,
+						discriminator,
+						out var token)
+							? token
+							: null;
 					return;
 				}
 
-				existing.Token.Dispose();
+				existing.Dispose();
 			}
 
 			_registrations[nativeElement] = new Registration(
 				owner,
 				role,
 				discriminator,
-				NativeElementDiagnostics.Register(owner, nativeElement, role, discriminator));
+				NativeElementDiagnostics.TryRegister(
+					owner,
+					nativeElement,
+					role,
+					discriminator,
+					out var registration)
+						? registration
+						: null);
 		}
 
 		public void RegisterExclusive(
@@ -49,6 +73,8 @@ namespace Microsoft.Maui.Controls.Diagnostics
 			string role,
 			string? discriminator = null)
 		{
+			NativeElementDiagnostics.ValidateRegistrationArguments(owner, nativeElement, role);
+
 			List<object>? replacedElements = null;
 			foreach (var registration in _registrations)
 			{
@@ -75,7 +101,7 @@ namespace Microsoft.Maui.Controls.Diagnostics
 				return;
 
 			_registrations.Remove(nativeElement);
-			registration.Token.Dispose();
+			registration.Dispose();
 		}
 
 		public void UnregisterOwner(object? owner)
@@ -132,7 +158,7 @@ namespace Microsoft.Maui.Controls.Diagnostics
 		{
 			AdvanceLifecycle();
 			foreach (var registration in _registrations.Values)
-				registration.Token.Dispose();
+				registration.Dispose();
 
 			_registrations.Clear();
 		}
@@ -148,7 +174,7 @@ namespace Microsoft.Maui.Controls.Diagnostics
 				object owner,
 				string role,
 				string? discriminator,
-				IDisposable token)
+				IDisposable? token)
 			{
 				Owner = owner;
 				Role = role;
@@ -159,7 +185,14 @@ namespace Microsoft.Maui.Controls.Diagnostics
 			public object Owner { get; }
 			public string Role { get; }
 			public string? Discriminator { get; }
-			public IDisposable Token { get; }
+			public bool IsActive => Token is not null;
+			public IDisposable? Token { get; set; }
+
+			public void Dispose()
+			{
+				Token?.Dispose();
+				Token = null;
+			}
 		}
 
 		sealed class ReferenceComparer : IEqualityComparer<object>
