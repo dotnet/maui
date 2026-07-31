@@ -74,6 +74,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_navigationManager?.NavigationView != null &&
 				_navigationManager.NavigationView != view)
 			{
+				// If the old section is no longer attached to the Shell (e.g., Shell.Items.Clear()),
+				// recursively disconnect handlers on its pages to prevent memory leaks.
+				if (_shellSection?.FindParentOfType<Shell>() is null)
+				{
+					foreach (var page in _navigationManager.NavigationStack)
+					{
+						page?.DisconnectHandlers();
+					}
+				}
+				
 				_navigationManager.Disconnect(_navigationManager.NavigationView, PlatformView);
 
 				if (view is IStackNavigation stackNavigation)
