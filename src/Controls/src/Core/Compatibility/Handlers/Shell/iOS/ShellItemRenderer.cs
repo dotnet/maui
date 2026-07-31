@@ -8,6 +8,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -557,6 +558,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void RegisterVisibleTabViews()
 		{
+			if (!NativeElementDiagnostics.IsRegistrationEnabled)
+			{
+				if (_nativeVisibleTabRegistrations.HasRegistrations)
+					_nativeVisibleTabRegistrations.Clear();
+				return;
+			}
+
 			if (ShellItem is null)
 				return;
 

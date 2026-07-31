@@ -10,6 +10,7 @@ using Foundation;
 using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
@@ -650,6 +651,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void RegisterVisibleTabViews()
 		{
+			if (!NativeElementDiagnostics.IsRegistrationEnabled)
+			{
+				if (_nativeVisibleTabRegistrations.HasRegistrations)
+					_nativeVisibleTabRegistrations.Clear();
+				return;
+			}
+
 			if (Tabbed is not TabbedPage tabbed)
 				return;
 
@@ -693,6 +701,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void RegisterMoreRows()
 		{
+			if (!NativeElementDiagnostics.IsRegistrationEnabled)
+			{
+				if (_nativeMoreRegistrations.HasRegistrations)
+					_nativeMoreRegistrations.Clear();
+				DetachMoreTableView();
+				return;
+			}
+
 			if (_disposed ||
 				Tabbed is not TabbedPage tabbed ||
 				MoreNavigationController.TopViewController.View is not UITableView tableView)
