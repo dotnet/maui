@@ -1445,7 +1445,7 @@ namespace Microsoft.Maui.Hosting
 					var wasCurrent = index == s_appActionsSetAssignments.Count - 1;
 					s_appActionsSetAssignments.RemoveAt(index);
 					if (wasCurrent && s_appActionsSetAssignments.Count > 0)
-						QueueAppActionsSetUnderLock(s_appActionsSetAssignments[^1]);
+						QueueAppActionsSetUnderLock(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
 				}
 			}
 
@@ -1464,7 +1464,7 @@ namespace Microsoft.Maui.Hosting
 				lock (s_appActionsSetLock)
 				{
 					if (s_appActionsSetAssignments.Count == 0 ||
-						!ReferenceEquals(s_appActionsSetAssignments[^1], assignment))
+						!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
 					{
 						return;
 					}
