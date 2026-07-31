@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Controls.Internals;
 
 sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 {
+
+	readonly Dictionary<Color, LinkedListNode<ImmutableBrush>> _cache;
+	readonly LinkedList<ImmutableBrush> _lru;
+	readonly int _capacity;
 	/// <summary>
 	/// Creates a new instance of <see cref="LRUBrushCache"/>
 	/// </summary>
@@ -29,6 +33,8 @@ sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 		}
 
 		_capacity = capacity;
+		_cache = new Dictionary<Color, LinkedListNode<ImmutableBrush>>(capacity);
+		_lru = [];
 	}
 
 	public LRUBrushCache(int capacity, Dictionary<Color, ImmutableBrush> brushes)
@@ -58,10 +64,6 @@ sealed class LRUBrushCache : ICache<Color, ImmutableBrush>
 			_cache.Add(color, node);
 		}
 	}
-
-	readonly Dictionary<Color, LinkedListNode<ImmutableBrush>> _cache = [];
-	readonly LinkedList<ImmutableBrush> _lru = [];
-	readonly int _capacity;
 
 	public ImmutableBrush Get(Color key)
 	{

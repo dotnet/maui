@@ -1,5 +1,4 @@
 ﻿#nullable disable
-using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
@@ -20,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			if (paint is SolidPaint solidPaint)
 			{
 				var color = solidPaint.Color;
-				return color is null ? Default : _cache.Get(solidPaint.Color);
+				return color is null ? Default : _cache.Get(color);
 			}
 
 
