@@ -92,9 +92,28 @@ safe-outputs:
         run: |
           set -euo pipefail
           manifest='/tmp/gh-aw/agent/manifest_final.json'
+          staged='/tmp/gh-aw/threat-detection/manifest_final.json'
           mkdir -p /tmp/gh-aw/threat-detection
-          if [ -f "$manifest" ]; then
-            cp "$manifest" /tmp/gh-aw/threat-detection/manifest_final.json
+          if [ -e "$manifest" ] || [ -L "$manifest" ]; then
+            if [ -L "$manifest" ] || [ ! -f "$manifest" ]; then
+              echo "::error::manifest_final.json must be a regular non-symbolic-link file; refusing threat-detection staging."
+              exit 1
+            fi
+            manifest_size=$(stat -c '%s' -- "$manifest")
+            if [ "$manifest_size" -eq 0 ] || [ "$manifest_size" -gt 500000 ]; then
+              echo "::error::manifest_final.json is empty or exceeds the 500000 byte limit; refusing threat-detection staging."
+              exit 1
+            fi
+            cp --no-dereference -- "$manifest" "$staged"
+            if [ -L "$staged" ] || [ ! -f "$staged" ]; then
+              echo "::error::staged manifest_final.json is not a regular non-symbolic-link file."
+              exit 1
+            fi
+            staged_size=$(stat -c '%s' -- "$staged")
+            if [ "$staged_size" -ne "$manifest_size" ]; then
+              echo "::error::manifest_final.json changed during threat-detection staging."
+              exit 1
+            fi
             echo "Staged scanner manifest for threat detection."
           elif [[ "$OUTPUT_TYPES" == *submit_ci_scan* ]]; then
             echo "::error::submit_ci_scan was authorized but manifest_final.json is missing; refusing to skip manifest threat detection."

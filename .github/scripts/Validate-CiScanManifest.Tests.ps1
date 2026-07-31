@@ -725,8 +725,14 @@ Describe 'CI scanner issue payload gate' {
         @{ Case = 'combining grapheme joiner'; Suffix = "seam$([char]0x034F)less"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'Khmer inherent vowel'; Suffix = "gap$([char]0x17B4)here"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'Hangul filler'; Suffix = "blank$([char]0x3164)space"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Hangul Choseong filler'; Suffix = "col$([char]0x115F)umn"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Hangul Jungseong filler'; Suffix = "col$([char]0x1160)umn"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'halfwidth Hangul filler'; Suffix = "blank$([char]0xFFA0)word"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'astral tag character'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE007F))"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'astral variation selector supplement'; Suffix = "mark$([char]::ConvertFromUtf32(0xE0100))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'reserved default-ignorable Specials'; Suffix = "slot$([char]0xFFF0)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'unassigned default-ignorable tag-plane low'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE0080))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'unassigned default-ignorable tag-plane high'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE0FFF))"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'musical format control'; Suffix = "beat$([char]::ConvertFromUtf32(0x1D173))here"; Expect = 'Unicode format character' }
         @{ Case = 'interlinear annotation anchor'; Suffix = "gloss$([char]0xFFF9)here"; Expect = 'Unicode format character' }
         @{ Case = 'shorthand format control'; Suffix = "steno$([char]::ConvertFromUtf32(0x1BCA0))here"; Expect = 'Unicode format character' }
@@ -801,6 +807,23 @@ Describe 'CI scanner issue payload gate' {
             Should -Not -Throw
     }
 
+    It 'still accepts a body containing a visible U+FFFD replacement character' {
+        # Guardrail against Specials over-rejection: the reserved default-ignorable
+        # Specials reject (U+FFF0-FFF8) must stop short of U+FFFD, the replacement
+        # character, which is visibly rendered and legitimately appears when CI logs
+        # carry undecodable bytes. Rejecting it would refuse real evidence.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nGarbled byte $([char]0xFFFD) in log."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
     It 'rejects a marker smuggled past NFKC folding with a noncharacter' {
         # A fullwidth-spelled marker embedded with a noncharacter (U+FFFE) makes
         # Test-MarkerLikeContent's NFKC normalization throw, so its raw-value fallback
@@ -820,6 +843,7 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*must not contain*Unicode noncharacter*'
     }
 
+    It 'rejects a null body' {
         $signature = New-TestSignature
         $signature.body = $null
         $manifest = New-CompleteManifest -MainSignatures @($signature)
@@ -1538,7 +1562,12 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
     It 'stages the untrusted manifest into threat detection and fails closed when it is missing' {
         $workflowSource | Should -Match '(?m)^  threat-detection:$'
         $workflowSource | Should -Match 'Stage scanner manifest for threat detection'
-        $workflowSource | Should -Match 'cp "\$manifest" /tmp/gh-aw/threat-detection/manifest_final\.json'
+        $workflowSource | Should -Match '\[ -L "\$manifest" \] \|\| \[ ! -f "\$manifest" \]'
+        $workflowSource | Should -Match 'manifest_size=\$\(stat -c ''%s'' -- "\$manifest"\)'
+        $workflowSource | Should -Match '\[ "\$manifest_size" -eq 0 \] \|\| \[ "\$manifest_size" -gt 500000 \]'
+        $workflowSource | Should -Match 'cp --no-dereference -- "\$manifest" "\$staged"'
+        $workflowSource | Should -Match '\[ -L "\$staged" \] \|\| \[ ! -f "\$staged" \]'
+        $workflowSource | Should -Match '\[ "\$staged_size" -ne "\$manifest_size" \]'
         $workflowSource | Should -Match 'submit_ci_scan was authorized but manifest_final\.json is missing'
         # The fail-closed decision must key off the download-independent output_types
         # job output, not the continue-on-error agent_output.json download, so a

@@ -325,18 +325,21 @@ function Test-HiddenOrControlContent {
     #     soft hyphen, Arabic letter mark, Mongolian vowel/free variation selectors,
     #     the zero-width/joiner/bidi ranges, line/paragraph separators, the variation
     #     selectors and their supplement, the combining grapheme joiner, the Khmer
-    #     inherent vowels, the Hangul fillers, the Unicode tag block, and -- via a
-    #     whole-category match on Unicode Format (Cf) -- the musical, interlinear
-    #     annotation, and shorthand format controls. These reorder or hide rendered
-    #     text, or smuggle data invisibly (Trojan-Source / ASCII-smuggling attacks).
-    #     Enumerated ranges cover the invisible Mn/Lo code points (so a blanket
-    #     category reject cannot swallow legitimate accents or CJK); the category
-    #     match closes the rest of the Format class in one shot. Several of these live
-    #     in the supplementary plane, so the body is walked by Unicode scalar value
-    #     (decoding surrogate pairs) rather than by UTF-16 code unit; an unpaired
+    #     inherent vowels, the Hangul fillers, the reserved default-ignorable Specials
+    #     (U+FFF0-FFF8), the entire default-ignorable tag/variation-supplement plane
+    #     (U+E0000-E0FFF, including its unassigned-but-invisible reserved slots), and
+    #     -- via a whole-category match on Unicode Format (Cf) -- the musical,
+    #     interlinear annotation, and shorthand format controls. These reorder or hide
+    #     rendered text, or smuggle data invisibly (Trojan-Source / ASCII-smuggling
+    #     attacks). Enumerated ranges cover the invisible Mn/Lo/reserved code points
+    #     (so a blanket category reject cannot swallow legitimate accents or CJK); the
+    #     category match closes the rest of the Format class in one shot. Several of
+    #     these live in the supplementary plane, so the body is walked by Unicode scalar
+    #     value (decoding surrogate pairs) rather than by UTF-16 code unit; an unpaired
     #     surrogate is itself rejected.
     #   * Unicode noncharacters (U+xFFFE/U+xFFFF per plane and U+FDD0-FDEF), which are
-    #     reserved, never appear in real evidence, and make NFKC normalization throw.
+    #     reserved and never appear in real evidence; the U+xFFFE/xFFFF pair also makes
+    #     NFKC normalization throw.
     #   * HTML comment sequences, which are how the trusted publisher's own markers
     #     are spelled -- the agent body must never carry one.
     # It rejects rather than strips: evidence lines are hash-verified against frozen
@@ -382,16 +385,18 @@ function Test-HiddenOrControlContent {
             ($code -ge 0xFE00 -and $code -le 0xFE0F) -or
             $code -eq 0xFEFF -or
             $code -eq 0xFFA0 -or
-            ($code -ge 0xE0000 -and $code -le 0xE007F) -or
-            ($code -ge 0xE0100 -and $code -le 0xE01EF)) {
+            ($code -ge 0xFFF0 -and $code -le 0xFFF8) -or
+            ($code -ge 0xE0000 -and $code -le 0xE0FFF)) {
             return "a bidirectional or invisible format character (U+$($code.ToString('X4')))"
         }
         # Unicode noncharacters (the U+xFFFE/U+xFFFF pair in every plane and the
-        # U+FDD0-FDEF block) are permanently reserved, never appear in real CI
-        # evidence, and are a normalization hazard: NormalizationForm.FormKC throws on
-        # them, which is how a marker spelled with compatibility characters could slip
-        # past Test-MarkerLikeContent's folding via its raw-value fallback. Rejecting
-        # them here keeps this gate the sound backstop for that fallback.
+        # U+FDD0-FDEF block) are permanently reserved and never appear in real CI
+        # evidence. The U+xFFFE/xFFFF pair is also a normalization hazard --
+        # NormalizationForm.FormKC throws on it (the U+FDD0-FDEF block normalizes
+        # without throwing but is rejected here all the same) -- which is how a marker
+        # spelled with compatibility characters could slip past Test-MarkerLikeContent's
+        # folding via its raw-value fallback. Rejecting every noncharacter here keeps
+        # this gate the sound backstop for that fallback.
         if (($code -band 0xFFFE) -eq 0xFFFE -or ($code -ge 0xFDD0 -and $code -le 0xFDEF)) {
             return "a Unicode noncharacter (U+$($code.ToString('X4')))"
         }

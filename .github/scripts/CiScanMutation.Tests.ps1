@@ -137,6 +137,16 @@ BeforeAll {
             $Source -notmatch 'one `manifest` argument'
     }
 
+    function Test-BoundedThreatDetectionStaging {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match '\[ -L "\$manifest" \] \|\| \[ ! -f "\$manifest" \]' -and
+            $Source -match '\[ "\$manifest_size" -eq 0 \] \|\| \[ "\$manifest_size" -gt 500000 \]' -and
+            $Source -match 'cp --no-dereference -- "\$manifest" "\$staged"' -and
+            $Source -match '\[ -L "\$staged" \] \|\| \[ ! -f "\$staged" \]' -and
+            $Source -match '\[ "\$staged_size" -ne "\$manifest_size" \]'
+    }
+
     function New-ProbeManifest {
         param(
             [string]$Path,
@@ -459,6 +469,11 @@ Describe 'CI scanner twin discovery mutation coverage' {
                 Should -Be 2
         }
 
+        It 'baseline: both twins bound regular-file threat-detection staging' {
+            @($script:WorkflowSources | Where-Object { Test-BoundedThreatDetectionStaging -Source $_ }).Count |
+                Should -Be 2
+        }
+
         It 'mutation "nested-string-transport": a manifest tool input fails the handoff invariant' {
             foreach ($source in $script:WorkflowSources) {
                 $source.Contains($script:SafeJobStepsNeedle) | Should -BeTrue
@@ -480,6 +495,28 @@ Describe 'CI scanner twin discovery mutation coverage' {
 
                 $mutated | Should -Not -BeExactly $source
                 (Test-FixedManifestHandoff -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "symlink-staging": removing the source symlink guard fails the staging invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'if [ -L "$manifest" ] || [ ! -f "$manifest" ]; then',
+                    'if [ ! -f "$manifest" ]; then')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-BoundedThreatDetectionStaging -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "unbounded-staging": removing the byte cap fails the staging invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'if [ "$manifest_size" -eq 0 ] || [ "$manifest_size" -gt 500000 ]; then',
+                    'if [ "$manifest_size" -eq 0 ]; then')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-BoundedThreatDetectionStaging -Source $mutated) | Should -BeFalse
             }
         }
     }
