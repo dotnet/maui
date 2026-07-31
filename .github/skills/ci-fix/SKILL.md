@@ -24,6 +24,10 @@ For each candidate, state one terminal decision before taking an action:
 Explain the concrete evidence for the decision. A search result is evidence to
 inspect, not a decision by itself.
 
+Reason through all ownership evidence before emitting the decision. Return
+exactly one terminal decision; never emit a provisional decision and then
+correct it later in the response.
+
 ## Deduplicate without false ownership
 
 1. An open CI-fix PR with the workflow's title prefix and exact `Refs:
@@ -44,7 +48,8 @@ inspect, not a decision by itself.
 GitHub search normally includes comments and incidental status text. Do not
 treat a raw issue number in a comment, check summary, commit message, diff, or
 unrelated list as human ownership. Inspect the PR title and body before stopping.
-If every result is incidental, continue triage.
+If every result is incidental, return `Decision: Continue`; an unrelated search
+hit is not independently a reason to Stop or Skip.
 
 ## Require current, specific evidence
 
