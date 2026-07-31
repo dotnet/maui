@@ -518,8 +518,10 @@ namespace Microsoft.Maui.Hosting
 					TrackAndSet(appInfo, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
 					if (secureStorage is null)
 					{
-						TrackAndSet(
-							new AppInfoSecureStorage(appInfo.PackageName),
+						// SecureStorage namespaces follow the bridged package name. Apps that
+						// change PackageName must migrate existing secrets or register ISecureStorage.
+						TrackAndSet<ISecureStorage>(
+							previous => new AppInfoSecureStorage(appInfo.PackageName, previous),
 							() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
 							SecureStorage.SetDefault,
 							facadeCleanups);
@@ -590,6 +592,17 @@ namespace Microsoft.Maui.Hosting
 				bool allowsSharedOwnership = false)
 				where T : class
 			{
+				TrackAndSet(_ => impl, currentGetter, setter, facadeCleanups, allowsSharedOwnership);
+			}
+
+			static void TrackAndSet<T>(
+				Func<T?, T> implementationFactory,
+				Func<T?> currentGetter,
+				Action<T?> setter,
+				List<Action> facadeCleanups,
+				bool allowsSharedOwnership = false)
+				where T : class
+			{
 				FacadeAssignment<T> assignment;
 				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<T>();
 
@@ -599,6 +612,7 @@ namespace Microsoft.Maui.Hosting
 					{
 						var previous = currentGetter();
 						var previousOwner = FacadeBridgeState<T>.FindOwner(previous);
+						var impl = implementationFactory(previous);
 						assignment = new FacadeAssignment<T>(
 							impl,
 							previous,

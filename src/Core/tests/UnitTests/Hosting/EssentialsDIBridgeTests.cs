@@ -1242,10 +1242,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				firstApp = firstBuilder.Build();
 				var firstSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 
+				Assert.False(firstSecureStorage.IsValueCreated);
 				Assert.Equal(
 					"first.package.microsoft.maui.essentials.preferences",
 					firstSecureStorage.Alias);
-				Assert.False(firstSecureStorage.IsValueCreated);
+				Assert.True(firstSecureStorage.IsValueCreated);
 
 				var secondBuilder = MauiApp.CreateBuilder();
 				secondBuilder.Services.AddSingleton<IAppInfo>(
@@ -1254,10 +1255,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				var secondSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 
 				Assert.NotSame(firstSecureStorage, secondSecureStorage);
+				Assert.False(secondSecureStorage.IsValueCreated);
 				Assert.Equal(
 					"second.package.microsoft.maui.essentials.preferences",
 					secondSecureStorage.Alias);
-				Assert.False(secondSecureStorage.IsValueCreated);
+				Assert.True(secondSecureStorage.IsValueCreated);
 
 				firstApp.Dispose();
 				firstApp = null;
@@ -1273,6 +1275,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				firstApp?.Dispose();
 				AppInfo.SetCurrent(originalAppInfo);
 			}
+		}
+
+		[Fact]
+		public void RegisteredSecureStorageWinsOverAppInfoOwnedFallback()
+		{
+			var registeredSecureStorage = new StubSecureStorage();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppInfo>(
+				new StubAppInfo(packageName: "registered.package"));
+			builder.Services.AddSingleton<ISecureStorage>(registeredSecureStorage);
+
+			using (builder.Build())
+				Assert.Same(registeredSecureStorage, SecureStorage.Default);
+
+			Assert.Null(GetStaticField(typeof(SecureStorage), "defaultImplementation"));
 		}
 
 		[Fact]
@@ -1748,6 +1765,22 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			void Record(string? sharedName) =>
 				SharedNames.Add(Assert.IsType<string>(sharedName));
+		}
+
+		sealed class StubSecureStorage : ISecureStorage
+		{
+			public Task<string?> GetAsync(string key) =>
+				Task.FromResult<string?>(null);
+
+			public Task SetAsync(string key, string value) =>
+				Task.CompletedTask;
+
+			public bool Remove(string key) =>
+				false;
+
+			public void RemoveAll()
+			{
+			}
 		}
 
 		sealed class DisposableStubPreferences : StubPreferences, IDisposable

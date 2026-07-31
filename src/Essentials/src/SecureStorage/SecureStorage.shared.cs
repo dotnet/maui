@@ -258,20 +258,40 @@ namespace Microsoft.Maui.Storage
 #endif
 	{
 		readonly Lazy<SecureStorageImplementation> _implementation;
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+		readonly object _sync = new();
+		Security.SecAccessible _defaultAccessible;
+#endif
 
-		internal AppInfoSecureStorage(string packageName)
+		internal AppInfoSecureStorage(string packageName, ISecureStorage? previous)
 		{
-			Alias = Preferences.GetPrivatePreferencesSharedName(packageName, "preferences");
 			_implementation = new(
-				() => new SecureStorageImplementation(packageName),
+				() =>
+				{
+					var implementation = new SecureStorageImplementation(packageName);
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+					lock (_sync)
+						implementation.DefaultAccessible = _defaultAccessible;
+#endif
+					return implementation;
+				},
 				LazyThreadSafetyMode.ExecutionAndPublication);
-		}
 
-		internal string Alias { get; }
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+			_defaultAccessible = previous switch
+			{
+				AppInfoSecureStorage wrapper => wrapper.DefaultAccessible,
+				SecureStorageImplementation implementation => implementation.DefaultAccessible,
+				_ => Security.SecAccessible.AfterFirstUnlock,
+			};
+#endif
+		}
 
 		internal bool IsValueCreated => _implementation.IsValueCreated;
 
 		SecureStorageImplementation Implementation => _implementation.Value;
+
+		internal string Alias => Implementation.Alias;
 
 		public Task<string?> GetAsync(string key) =>
 			Implementation.GetAsync(key);
@@ -288,8 +308,20 @@ namespace Microsoft.Maui.Storage
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 		public Security.SecAccessible DefaultAccessible
 		{
-			get => Implementation.DefaultAccessible;
-			set => Implementation.DefaultAccessible = value;
+			get
+			{
+				lock (_sync)
+					return _defaultAccessible;
+			}
+			set
+			{
+				lock (_sync)
+				{
+					_defaultAccessible = value;
+					if (_implementation.IsValueCreated)
+						_implementation.Value.DefaultAccessible = value;
+				}
+			}
 		}
 
 		public Task SetAsync(string key, string value, Security.SecAccessible accessible) =>

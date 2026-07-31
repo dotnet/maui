@@ -117,18 +117,14 @@ namespace Microsoft.Maui.Storage
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
 		static readonly string AppSecureStoragePath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
+		static readonly object Sync = new();
+		static readonly SecureStorageDictionary SecureStorage = Load();
 
-		readonly SecureStorageDictionary _secureStorage = new();
-
-		public UnpackagedSecureStorageImplementation()
+		static SecureStorageDictionary Load()
 		{
-			Load();
-		}
-
-		void Load()
-		{
+			var secureStorage = new SecureStorageDictionary();
 			if (!File.Exists(AppSecureStoragePath))
-				return;
+				return secureStorage;
 
 			try
 			{
@@ -138,53 +134,66 @@ namespace Microsoft.Maui.Storage
 
 				if (readPreferences != null)
 				{
-					_secureStorage.Clear();
 					foreach (var pair in readPreferences)
-						_secureStorage.TryAdd(pair.Key, pair.Value);
+						secureStorage.TryAdd(pair.Key, pair.Value);
 				}
 			}
 			catch (JsonException)
 			{
 				// if deserialization fails proceed with empty settings
 			}
+
+			return secureStorage;
 		}
 
-		void Save()
+		static void Save()
 		{
 			var dir = Path.GetDirectoryName(AppSecureStoragePath);
 			Directory.CreateDirectory(dir);
 
 			using var stream = File.Create(AppSecureStoragePath);
-			JsonSerializer.Serialize(stream, _secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+			JsonSerializer.Serialize(stream, SecureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 		}
 
 		public Task<byte[]> GetAsync(string key)
 		{
-			_secureStorage.TryGetValue(key, out var value);
-			return Task.FromResult(value);
+			lock (Sync)
+			{
+				SecureStorage.TryGetValue(key, out var value);
+				return Task.FromResult(value);
+			}
 		}
 
 		public Task SetAsync(string key, byte[] value)
 		{
-			if (value is null)
-				_secureStorage.TryRemove(key, out _);
-			else
-				_secureStorage[key] = value;
-			Save();
-			return Task.CompletedTask;
+			lock (Sync)
+			{
+				if (value is null)
+					SecureStorage.TryRemove(key, out _);
+				else
+					SecureStorage[key] = value;
+				Save();
+				return Task.CompletedTask;
+			}
 		}
 
 		public bool Remove(string key)
 		{
-			var result = _secureStorage.TryRemove(key, out _);
-			Save();
-			return result;
+			lock (Sync)
+			{
+				var result = SecureStorage.TryRemove(key, out _);
+				Save();
+				return result;
+			}
 		}
 
 		public void RemoveAll()
 		{
-			_secureStorage.Clear();
-			Save();
+			lock (Sync)
+			{
+				SecureStorage.Clear();
+				Save();
+			}
 		}
 	}
 }

@@ -20,6 +20,7 @@ using JavaList = Android.Runtime.JavaList;
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
 	[Category("MediaPicker")]
+	[Collection(Microsoft.Maui.Essentials.DeviceTests.EssentialsStaticStateCollection.Name)]
 	public class MediaPickerRecovery_Tests : IDisposable
 	{
 		const string ActiveOperationPreferenceKey = "active_operation";
