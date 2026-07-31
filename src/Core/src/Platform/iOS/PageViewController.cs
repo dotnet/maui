@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+#if !MACCATALYST
 		public override UIStatusBarStyle PreferredStatusBarStyle()
 		{
 			var window = CurrentView?.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow();
@@ -68,6 +69,7 @@ namespace Microsoft.Maui.Platform
 				_ => base.PreferredStatusBarStyle()
 			};
 		}
+#endif
 
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 		{
@@ -102,4 +104,3 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 }
-

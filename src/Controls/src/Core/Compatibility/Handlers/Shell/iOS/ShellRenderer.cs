@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override bool PrefersStatusBarHidden()
 			=> Shell?.CurrentPage?.OnThisPlatform()?.PrefersStatusBarHidden() == StatusBarHiddenMode.True;
 
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> _currentShellItemRenderer?.ViewController;
+#endif
+
 		public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
 		{
 			get

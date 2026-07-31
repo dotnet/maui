@@ -15,6 +15,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, IDisconnectable
 	{
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> TopViewController;
+#endif
+
 		#region IShellContentRenderer
 
 		public bool IsInMoreTab { get; set; }

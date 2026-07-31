@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 		}
 
 		//TODO : Make it public in NET 11.
-		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity, StatusBarTheme statusBarTheme = StatusBarTheme.Default)
+		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
 			if (window is null)
 			{
@@ -54,25 +54,33 @@ namespace Microsoft.Maui
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{
-				bool isLightStatusBar;
-				switch (statusBarTheme)
-				{
-					case StatusBarTheme.Light:
-						isLightStatusBar = true;
-						break;
-					case StatusBarTheme.Dark:
-						isLightStatusBar = false;
-						break;
-					default:
-						var configuration = activity.Resources?.Configuration;
-						isLightStatusBar = configuration is null ||
-							(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
-						break;
-				}
-
-				windowInsetsController.AppearanceLightStatusBars = isLightStatusBar;
-				windowInsetsController.AppearanceLightNavigationBars = isLightStatusBar;
+				var isLightTheme = IsLightTheme(activity);
+				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
+		}
+
+		internal static void UpdateStatusBarTheme(this Window? window, Activity activity, StatusBarTheme statusBarTheme)
+		{
+			if (window is null)
+			{
+				return;
+			}
+
+			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
+			windowInsetsController?.AppearanceLightStatusBars = statusBarTheme switch
+				{
+					StatusBarTheme.Light => true,
+					StatusBarTheme.Dark => false,
+					_ => IsLightTheme(activity),
+				};
+		}
+
+		static bool IsLightTheme(Activity activity)
+		{
+			var configuration = activity.Resources?.Configuration;
+			return configuration is null ||
+				(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 		}
 	}
 }

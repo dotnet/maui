@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				//Edge to Edge enabled for Android API 30+
-				PlatformView.Window.ConfigureTranslucentSystemBars(PlatformView, VirtualView.StatusBarTheme);
+				PlatformView.Window.ConfigureTranslucentSystemBars(PlatformView);
+				PlatformView.Window.UpdateStatusBarTheme(PlatformView, VirtualView.StatusBarTheme);
 			}
 			UpdateVirtualViewFrame(platformView);
 		}
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(23))
 			{
-				handler.PlatformView.Window?.ConfigureTranslucentSystemBars(
+				handler.PlatformView.Window?.UpdateStatusBarTheme(
 					handler.PlatformView,
 					window.StatusBarTheme);
 			}
