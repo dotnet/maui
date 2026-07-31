@@ -118,23 +118,35 @@ namespace Microsoft.Maui.Storage
 	{
 		static readonly object Sync = new();
 		static SecureStorageDictionary _secureStorage;
+		static string _secureStoragePath;
 
 		static string AppSecureStoragePath =>
 			Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
 
-		// Caller must hold Sync. A failed Load leaves the field null so a later call can retry.
-		static SecureStorageDictionary SecureStorage =>
-			_secureStorage ??= Load();
+		// Caller must hold Sync. A failed Load leaves the fields unchanged so a later call can retry.
+		static SecureStorageDictionary GetSecureStorage(out string path)
+		{
+			path = AppSecureStoragePath;
+			if (_secureStorage is null ||
+				!string.Equals(_secureStoragePath, path, StringComparison.OrdinalIgnoreCase))
+			{
+				var secureStorage = Load(path);
+				_secureStorage = secureStorage;
+				_secureStoragePath = path;
+			}
 
-		static SecureStorageDictionary Load()
+			return _secureStorage;
+		}
+
+		static SecureStorageDictionary Load(string path)
 		{
 			var secureStorage = new SecureStorageDictionary();
-			if (!File.Exists(AppSecureStoragePath))
+			if (!File.Exists(path))
 				return secureStorage;
 
 			try
 			{
-				using var stream = File.OpenRead(AppSecureStoragePath);
+				using var stream = File.OpenRead(path);
 
 				SecureStorageDictionary readPreferences = JsonSerializer.Deserialize(stream, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 
@@ -152,20 +164,21 @@ namespace Microsoft.Maui.Storage
 			return secureStorage;
 		}
 
-		static void Save()
+		static void Save(string path, SecureStorageDictionary secureStorage)
 		{
-			var dir = Path.GetDirectoryName(AppSecureStoragePath);
+			var dir = Path.GetDirectoryName(path);
 			Directory.CreateDirectory(dir);
 
-			using var stream = File.Create(AppSecureStoragePath);
-			JsonSerializer.Serialize(stream, SecureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+			using var stream = File.Create(path);
+			JsonSerializer.Serialize(stream, secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 		}
 
 		public Task<byte[]> GetAsync(string key)
 		{
 			lock (Sync)
 			{
-				SecureStorage.TryGetValue(key, out var value);
+				var secureStorage = GetSecureStorage(out _);
+				secureStorage.TryGetValue(key, out var value);
 				return Task.FromResult(value);
 			}
 		}
@@ -174,11 +187,12 @@ namespace Microsoft.Maui.Storage
 		{
 			lock (Sync)
 			{
+				var secureStorage = GetSecureStorage(out var path);
 				if (value is null)
-					SecureStorage.TryRemove(key, out _);
+					secureStorage.TryRemove(key, out _);
 				else
-					SecureStorage[key] = value;
-				Save();
+					secureStorage[key] = value;
+				Save(path, secureStorage);
 				return Task.CompletedTask;
 			}
 		}
@@ -187,8 +201,9 @@ namespace Microsoft.Maui.Storage
 		{
 			lock (Sync)
 			{
-				var result = SecureStorage.TryRemove(key, out _);
-				Save();
+				var secureStorage = GetSecureStorage(out var path);
+				var result = secureStorage.TryRemove(key, out _);
+				Save(path, secureStorage);
 				return result;
 			}
 		}
@@ -197,8 +212,9 @@ namespace Microsoft.Maui.Storage
 		{
 			lock (Sync)
 			{
-				SecureStorage.Clear();
-				Save();
+				var secureStorage = GetSecureStorage(out var path);
+				secureStorage.Clear();
+				Save(path, secureStorage);
 			}
 		}
 	}

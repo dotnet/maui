@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 
 	[Category("SecureStorage")]
-	[Collection("UsesPreferences")]
+	[Collection(EssentialsStaticStateCollection.Name)]
 	public class SecureStorage_Tests
 	{
 		public SecureStorage_Tests()
@@ -156,6 +157,60 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			{
 				first.Remove(key);
 			}
+		}
+
+		[Fact]
+		public async Task Unpackaged_State_Follows_Current_AppDataDirectory()
+		{
+			var originalFileSystem = FileSystem.Current;
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var firstAppData = Path.Combine(root, "first", "AppData");
+			var secondAppData = Path.Combine(root, "second", "AppData");
+			var firstKey = $"first-{Guid.NewGuid():N}";
+			var secondKey = $"second-{Guid.NewGuid():N}";
+			byte[] firstValue = [1, 2, 3];
+			byte[] secondValue = [4, 5, 6];
+
+			try
+			{
+				FileSystem.SetCurrent(new StubFileSystem(firstAppData));
+				var first = new UnpackagedSecureStorageImplementation();
+				await first.SetAsync(firstKey, firstValue);
+
+				FileSystem.SetCurrent(new StubFileSystem(secondAppData));
+				var second = new UnpackagedSecureStorageImplementation();
+				Assert.Null(await second.GetAsync(firstKey));
+				await second.SetAsync(secondKey, secondValue);
+
+				FileSystem.SetCurrent(new StubFileSystem(firstAppData));
+				var restoredFirst = new UnpackagedSecureStorageImplementation();
+				Assert.Equal(firstValue, await restoredFirst.GetAsync(firstKey));
+				Assert.Null(await restoredFirst.GetAsync(secondKey));
+			}
+			finally
+			{
+				FileSystem.SetCurrent(originalFileSystem);
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		sealed class StubFileSystem : IFileSystem
+		{
+			public StubFileSystem(string appDataDirectory)
+			{
+				AppDataDirectory = appDataDirectory;
+			}
+
+			public string CacheDirectory => AppDataDirectory;
+
+			public string AppDataDirectory { get; }
+
+			public Task<Stream> OpenAppPackageFileAsync(string filename) =>
+				throw new NotSupportedException();
+
+			public Task<bool> AppPackageFileExistsAsync(string filename) =>
+				throw new NotSupportedException();
 		}
 #endif
 
