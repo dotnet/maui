@@ -57,40 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        #region Mapper & Constructor
-
-        public static PropertyMapper<Shell, ShellHandler> Mapper =
-            new PropertyMapper<Shell, ShellHandler>(ViewHandler.ViewMapper)
-            {
-                [nameof(Shell.CurrentItem)] = MapCurrentItem,
-                [nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
-                [nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
-                [nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
-                [nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
-                [nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
-                [nameof(Shell.FlyoutFooter)] = MapFlyoutFooter,
-                [nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
-                [nameof(Shell.FlyoutHeaderBehavior)] = MapFlyoutHeaderBehavior,
-                [nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
-                [nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
-                [nameof(IFlyoutView.IsPresented)] = MapIsPresented,
-                [nameof(Shell.FlyoutContent)] = MapFlyout,
-                [nameof(Shell.FlyoutContentTemplate)] = MapFlyout,
-                [nameof(Shell.FlowDirection)] = MapFlowDirection,
-                [nameof(Shell.FlyoutBackgroundImage)] = MapFlyoutBackgroundImage,
-                [nameof(Shell.FlyoutBackgroundImageAspect)] = MapFlyoutBackgroundImage,
-                [nameof(Shell.FlyoutVerticalScrollMode)] = MapFlyoutVerticalScrollMode,
-            };
-
-        public static CommandMapper<Shell, ShellHandler> CommandMapper =
-            new CommandMapper<Shell, ShellHandler>(ViewHandler.ViewCommandMapper);
-
-        public ShellHandler() : base(Mapper, CommandMapper)
-        {
-        }
-
-        #endregion
-
         #region Handler Lifecycle
 
         protected override UIView CreatePlatformView()

@@ -1,5 +1,5 @@
 ﻿#nullable disable
-#if WINDOWS || TIZEN || ANDROID
+#if WINDOWS || TIZEN || ANDROID || IOS || MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Text;
