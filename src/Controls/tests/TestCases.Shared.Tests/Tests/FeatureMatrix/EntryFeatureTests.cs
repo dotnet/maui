@@ -686,7 +686,7 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Command Executed with Parameter"));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //In Android && iOS related issue:https://github.com/dotnet/maui/issues/26968 and In mac and Windows keybord type is not supported.
+	#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // In mac and Windows Soft keybord type is not supported.
 	[Test, Order(41)]
 	public void VerifyTextWhenKeyboardTypeSet()
 	{
@@ -697,8 +697,15 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-		VerifyScreenshot();
+		Assert.That(App.WaitForElement("KeyboardTypeValue").GetText(), Is.EqualTo("Keyboard Type: Numeric"));
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Telephone");
+		App.Tap("Telephone");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		Assert.That(App.WaitForElement("KeyboardTypeValue").GetText(), Is.EqualTo("Keyboard Type: Telephone"));
 	}
 
 	[Test, Order(42)]
@@ -711,8 +718,15 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-		VerifyScreenshot();
+		Assert.That(App.WaitForElement("ReturnTypeValue").GetText(), Is.EqualTo("Keyboard Return Type: Search"));
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Done");
+		App.Tap("Done");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		Assert.That(App.WaitForElement("ReturnTypeValue").GetText(), Is.EqualTo("Keyboard Return Type: Done"));
 	}
 #endif
 

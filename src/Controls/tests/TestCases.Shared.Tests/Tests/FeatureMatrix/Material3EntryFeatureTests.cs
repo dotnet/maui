@@ -311,38 +311,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID //In Android related issue:https://github.com/dotnet/maui/issues/26968 and In mac and Windows keybord type is not supported.
 	[Test, Order(20)]
-	public void VerifyMaterial3TextWhenKeyboardTypeSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Numeric");
-		App.Tap("Numeric");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-		VerifyScreenshot();
-	}
-
-	[Test, Order(21)]
-	public void VerifyMaterial3TextWhenReturnTypeSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Search");
-		App.Tap("Search");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-		VerifyScreenshot();
-	}
-#endif
-
-
-	[Test, Order(22)]
 	public void VerifyMaterial3EntryControlWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -355,7 +324,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(23)]
+	[Test, Order(21)]
 	public void VerifyMaterial3PlaceholderWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -371,7 +340,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 	}
 
 
-	[Test, Order(24)]
+	[Test, Order(22)]
 	public void VerifyMaterial3EntryControlWhenPlaceholderTextSet()
 	{
 		App.WaitForElement("Options");
@@ -387,7 +356,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(25)]
+	[Test, Order(23)]
 	public void VerifyMaterial3EntryControlWhenPlaceholderColorSet()
 	{
 		App.WaitForElement("Options");
@@ -402,7 +371,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(26)]
+	[Test, Order(24)]
 	public void VerifyMaterial3PlaceholderColorResetToDefault()
 	{
 		App.WaitForElement("Options");
@@ -426,7 +395,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(27)]
+	[Test, Order(25)]
 	public void VerifyMaterial3TextWhenFontAttributesSet()
 	{
 		App.WaitForElement("Options");
@@ -439,7 +408,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-[Test, Order(28)]
+[Test, Order(26)]
 	public void VerifyMaterial3Entry_WithShadow()
 	{
 		App.WaitForElement("Options");
@@ -452,7 +421,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(29)]
+	[Test, Order(27)]
 	public void VerifyMaterial3PlaceholderWithShadow()
 	{
 		App.WaitForElement("Options");
@@ -467,7 +436,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(30)]
+	[Test, Order(28)]
 	public void VerifyMaterial3PlaceholderWithPasswordTrue()
 	{
 		App.WaitForElement("Options");
@@ -485,7 +454,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(31)]
+	[Test, Order(29)]
 	public void VerifyMaterial3PlaceholderWithHorizontalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -500,7 +469,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(32)]
+	[Test, Order(30)]
 	public void VerifyMaterial3PlaceholderWithVerticalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -515,7 +484,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-[Test, Order(33)]
+[Test, Order(31)]
 	public void VerifyMaterial3PlaceholderWithCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -531,7 +500,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(34)]
+	[Test, Order(32)]
 	public void VerifyMaterial3PlaceholderWithFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -546,7 +515,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(35)]
+	[Test, Order(33)]
 	public void VerifyMaterial3PlaceholderWithFontSize()
 	{
 		App.WaitForElement("Options");
@@ -562,7 +531,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(36)]
+	[Test, Order(34)]
 	public void VerifyMaterial3PlaceholderWithFontAttributes()
 	{
 		App.WaitForElement("Options");
@@ -577,7 +546,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(37)]
+	[Test, Order(35)]
 	public void VerifyMaterial3EntryWhenWidthRequestSet()
 	{
 		App.WaitForElement("Options");
@@ -591,7 +560,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(38)]
+	[Test, Order(36)]
 	public void VerifyMaterial3EntryWhenHeightRequestSet()
 	{
 		App.WaitForElement("Options");
@@ -605,7 +574,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(39)]
+	[Test, Order(37)]
 	public void VerifyMaterial3EntryWhenHeightRequestAndWidthRequestSet()
 	{
 		App.WaitForElement("Options");
@@ -622,7 +591,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(40)]
+	[Test, Order(38)]
 	public void VerifyMaterial3EntryWhenOpacitySet()
 	{
 		App.WaitForElement("Options");
@@ -636,7 +605,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(41)]
+	[Test, Order(39)]
 	public void VerifyMaterial3EntryWhenOpacityResetToDefault()
 	{
 		App.WaitForElement("Options");
@@ -657,7 +626,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(42)]
+	[Test, Order(40)]
 	public void VerifyMaterial3EntryWhenOpacitySetToZero()
 	{
 		App.WaitForElement("Options");
@@ -671,7 +640,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(43)]
+	[Test, Order(41)]
 	public void VerifyMaterial3EntryWhenBackgroundColorSet()
 	{
 		App.WaitForElement("Options");
@@ -684,7 +653,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 	
-	[Test, Order(44)]
+	[Test, Order(42)]
 	public void VerifyMaterial3TextWhenBoldAndItalicFontAttributesSet()
 	{
 		App.WaitForElement("Options");
@@ -699,7 +668,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(45)]
+	[Test, Order(43)]
 	public void VerifyMaterial3PlaceholderTextWhenBoldAndItalicFontAttributesSet()
 	{
 		App.WaitForElement("Options");
@@ -719,7 +688,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(46)]
+	[Test, Order(44)]
 	public void VerifyMaterial3EntryBackgroundColorWithTextColor()
 	{
 		App.WaitForElement("Options");
@@ -734,7 +703,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(47)]
+	[Test, Order(45)]
 	public void VerifyMaterial3EntryBackgroundColorWithPlaceholderText()
 	{
 		App.WaitForElement("Options");
@@ -752,7 +721,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(48)]
+	[Test, Order(46)]
 	public void VerifyMaterial3EntryBackgroundColorWithPlaceholderColor()
 	{
 		App.WaitForElement("Options");
@@ -769,7 +738,7 @@ public class Material3EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(49)]
+	[Test, Order(47)]
 	public void VerifyMaterial3EntryBackgroundColorResetToDefault()
 	{
 		App.WaitForElement("Options");

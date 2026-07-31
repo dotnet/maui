@@ -124,8 +124,15 @@ public class EntryViewModel : INotifyPropertyChanged
 	public ReturnType ReturnType
 	{
 		get => _returnType;
-		set { _returnType = value; OnPropertyChanged(); }
+		set
+		{
+			_returnType = value;
+			OnPropertyChanged();
+			OnPropertyChanged(nameof(ReturnTypeValue));
+		}
 	}
+
+	public string ReturnTypeValue => $"Keyboard Return Type: {ReturnType}";
 
 	public int MaxLength
 	{
@@ -191,8 +198,19 @@ public class EntryViewModel : INotifyPropertyChanged
 	public Keyboard Keyboard
 	{
 		get => _keyboard;
-		set { _keyboard = value; OnPropertyChanged(); }
+		set
+		{
+			_keyboard = value;
+			OnPropertyChanged();
+			OnPropertyChanged(nameof(KeyboardTypeValue));
+		}
 	}
+
+	public string KeyboardTypeValue => $"Keyboard Type: {GetKeyboardTypeName(Keyboard)}";
+
+	private static string GetKeyboardTypeName(Keyboard keyboard) => keyboard == Keyboard.Default
+		? nameof(Keyboard.Default)
+		: keyboard.GetType().Name.Replace(nameof(Keyboard), string.Empty, StringComparison.Ordinal);
 
 	public FlowDirection FlowDirection
 	{

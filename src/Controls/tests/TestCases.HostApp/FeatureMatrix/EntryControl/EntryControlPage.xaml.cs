@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;

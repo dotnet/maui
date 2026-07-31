@@ -58,6 +58,7 @@
                       AutomationId="Options"/>
 
               <Grid ColumnSpacing="10"
+                    RowSpacing="2"
                     Margin="0,10,0,10">
                      <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -70,11 +71,11 @@
 
                      <!-- Row 1: Labels -->
                      <Label Text="Selection Length:"
-                            FontSize="11"
+                            FontSize="10"
                             Grid.Row="0"
                             Grid.Column="0"/>
                      <Label Text="Cursor position:"
-                            FontSize="11"
+                            FontSize="10"
                             Grid.Row="0"
                             Grid.Column="1"/>
 
@@ -83,12 +84,14 @@
                                         Text="{Binding SelectionLength}"
                                         AutomationId="SelectionLengthEntry"
                                         IsCursorVisible="False"
+                                        FontSize="10"
                                         TextChanged="SelectionLength_Clicked"
                                         Grid.Row="1"
                                         Grid.Column="0"/>
                      <local:UITestEntry x:Name="CursorPositionEntry"
                                         Text="{Binding CursorPosition}"
                                         AutomationId="CursorPositionEntry"
+                                        FontSize="10"
                                         TextChanged="CursorPositionEntry_TextChanged"
                                         IsCursorVisible="False"
                                         Grid.Row="1"
@@ -101,22 +104,30 @@
                       AutomationId="UpdateCursorAndSelectionButton"/>
 
               <Label Text="Events:"
-                     FontSize="11"/>
+                     FontSize="10"/>
               <Label x:Name="TextChangedLabel"
                      Text="{Binding TextChangedText}"
                      AutomationId="TextChangedLabel"
-                     FontSize="11"/>
+                     FontSize="10"/>
               <Label x:Name="CompletedLabel"
                      Text="{Binding CompletedText}"
                      AutomationId="CompletedLabel"
-                     FontSize="11"/>
+                     FontSize="10"/>
               <Label x:Name="FocusedLabel"
                      Text="{Binding FocusedText}"
                      AutomationId="FocusedLabel"
-                     FontSize="11"/>
+                     FontSize="10"/>
               <Label x:Name="UnfocusedLabel"
                      Text="{Binding UnfocusedText}"
                      AutomationId="UnfocusedLabel"
-                     FontSize="11"/>
+                     FontSize="10"/>
+              <Label x:Name="KeyboardTypeValue"
+                     AutomationId="KeyboardTypeValue"
+                     Text="{Binding KeyboardTypeValue}"
+                     FontSize="10"/>
+              <Label x:Name="ReturnTypeValue"
+                     AutomationId="ReturnTypeValue"
+                     Text="{Binding ReturnTypeValue}"
+                     FontSize="10"/>
        </VerticalStackLayout>
 </ContentPage>
