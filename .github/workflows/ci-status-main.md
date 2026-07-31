@@ -1156,7 +1156,8 @@ Write the complete JSON object described above to exactly
 `/tmp/gh-aw/agent/manifest_final.json`. This fixed path is uploaded in gh-aw's
 same-run `agent` artifact and read as untrusted data by the trusted publisher.
 Do not choose another path, and do not pass or encode the manifest through the
-safe-output tool. Validate the final file with `jq -e .` before submission.
+safe-output tool. Validate the final file with
+`jq -e . /tmp/gh-aw/agent/manifest_final.json` before submission.
 
 Then call the argument-free `submit_ci_scan` safe-output tool exactly once for
 the entire run to authorize publication. Example manifest file shape:
