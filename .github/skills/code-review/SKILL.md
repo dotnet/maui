@@ -32,6 +32,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 4. **Severity calibration** — Distinguish errors from warnings from suggestions. Not everything is critical
 5. **Failure-mode probing** — Challenge your own conclusions with real failure scenarios, not softballs
 6. **Propagation-aware guards** — For an early return, idempotency flag, or latch above downstream side effects, trace every set/clear path and a repeat call after recipients or state change. If that trace exposes concrete misbehavior, do not dismiss it as rare or rationalize it into `LGTM`: use `NEEDS_DISCUSSION` while the failure remains unresolved, or `NEEDS_CHANGES` when the exact state transition verifies a ❌ Error.
+7. **Authentication is not availability** — A public GitHub PR remains reviewable when `gh` is unauthenticated. Never stop or ask for a token merely because a `gh` command failed; pivot immediately to anonymous public REST/web retrieval.
 
 ## Inputs
 
@@ -65,11 +66,33 @@ that the fixture does not provide. Then continue at Step 1.5.
 
 For a live `pr_number`:
 
-**If a retrieval command fails, the PR is still available.** A failing or unauthenticated
-command is a fact about that one tool, not about the review. Retry through another
-read-only route — `gh api repos/dotnet/maui/pulls/<PR_NUMBER>/files`, or the local
-checkout with `git diff` — and report an inability to review only after those also fail.
-Never ask the caller to paste the diff.
+**If a retrieval command fails, the PR is still available.** A failing or
+unauthenticated command is a fact about that one tool, not about the review.
+`gh api` also requires authentication, so it is not an unauthenticated fallback.
+For public `dotnet/maui` PRs, pivot to anonymous read-only retrieval:
+
+```bash
+# Candidate patch:
+curl -fsSL -H 'Accept: application/vnd.github.patch' \
+  https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>
+
+# Changed-file metadata and patches:
+curl -fsSL \
+  'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/files?per_page=100'
+
+# PR narrative, reviews, inline comments, issue comments, and check runs:
+curl -fsSL https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>
+curl -fsSL 'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/reviews?per_page=100'
+curl -fsSL 'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/comments?per_page=100'
+curl -fsSL 'https://api.github.com/repos/dotnet/maui/issues/<PR_NUMBER>/comments?per_page=100'
+```
+
+Equivalent `web_fetch` calls are acceptable. Use response `raw_url` values or
+`https://raw.githubusercontent.com/dotnet/maui/<HEAD_SHA>/<PATH>` for full
+changed-file contents. A local checkout with `git diff` is another valid route.
+Anonymous API rate limiting may require fewer targeted requests, but it is not
+an authentication blocker. Never ask the caller to provide a token or paste the
+diff until anonymous retrieval and local checkout routes have both failed.
 
 1. **Get the diff:**
    ```bash
