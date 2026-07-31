@@ -353,9 +353,12 @@ stimuli:
 
       Both attempts failed because they relied on PARENT MEASUREMENT FALLBACK which doesn't work during initial layout. Your approach must NOT depend on parent dimensions as a fallback.
 
-      Problem: Android RecyclerView inside ScrollView reports infinite height, causing items to overlap.
+      Problem: Android CollectionView EmptyView inside ScrollView receives an infinite height
+      constraint, leaving RecyclerViewHeight unusable during initial layout.
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
-      Target files: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+      Target files:
+      - src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+      - src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
       Platform: Android
     graders:
       - type: prompt
