@@ -28,13 +28,123 @@
     <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
   </PropertyGroup>
 
+  <!--
+    Built-in folder mappings declare only the legacy singular TargetPlatformIdentifier
+    metadata so that _MauiNormalizePlatformSpecificFolders is the single source of
+    truth for back-filling the plural TargetPlatformIdentifiers contract. Keeping
+    one source avoids drift between the two metadata fields and ensures the
+    normalization code path is exercised on every SingleProject build (so a
+    regression in the back-fill is caught immediately).
+
+    BackendIdentity records the stable, MAUI-owned key for each built-in backend so
+    the built-in platforms describe themselves through exactly the same registration
+    metadata that an external backend NuGet contributes. For recognized platform TFMs
+    activation still flows through TargetPlatformIdentifier(s); BackendIdentity here is
+    purely descriptive (built-ins do not declare an ActivationValue, so the neutral-TFM
+    activation branch never fires for them).
+  -->
   <ItemGroup>
-    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
-    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
-    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
-    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
-    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
+    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" BackendIdentity="android" />
+    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" BackendIdentity="ios" />
+    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" BackendIdentity="maccatalyst" />
+    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" BackendIdentity="windows" />
+    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" BackendIdentity="tizen" />
   </ItemGroup>
+
+  <!--
+    Normalize MauiPlatformSpecificFolder items so downstream targets and any
+    third-party extension can rely on a uniform shape:
+      - TargetPlatformIdentifiers is back-filled from the legacy singular
+        TargetPlatformIdentifier when only the singular is set.
+      - ActivationValue is back-filled from BackendIdentity so a backend that
+        only declares a stable identity key (BackendIdentity="gtk") can be
+        activated for a neutral TFM via <MauiActiveBackend>gtk</MauiActiveBackend>
+        without having to repeat the value. Built-in platforms declare a
+        BackendIdentity but no ActivationValue is derived for them here because
+        they are TPI-recognized (see the guard below), so they never take the
+        neutral-activation branch.
+      - ActivationProperty defaults to the well-known MauiActiveBackend selector
+        whenever an ActivationValue is present but no explicit property was named.
+      - _MauiResolvedActivationValue captures the *current value* of the property
+        named by ActivationProperty. This is the neutral-TFM (non-TPI) activation
+        signal consumed by _MauiCollectPlatformSpecificCompileItems.
+    Identity (folder path) is intentionally not rewritten here because MSBuild
+    item-Identity rewriting requires a remove/re-add dance that loses caller
+    metadata. Instead, downstream consumers apply EnsureTrailingSlash() at the
+    use site (see _MauiCollectPlatformSpecificCompileItems).
+  -->
+  <!--
+    BeforeTargets is intentionally limited to _MauiRemovePlatformCompileItems
+    because _MauiCollectPlatformSpecificCompileItems already declares
+    DependsOnTargets="_MauiNormalizePlatformSpecificFolders" (single source of
+    truth for that ordering). The Remove target does not depend on Collect (so
+    Normalize-Before-Remove is the only way to guarantee Remove sees the
+    back-filled TargetPlatformIdentifiers metadata when Collect is short-circuited).
+  -->
+  <Target Name="_MauiNormalizePlatformSpecificFolders"
+          BeforeTargets="_MauiRemovePlatformCompileItems"
+          Condition=" '$(SingleProject)' == 'true' ">
+    <ItemGroup>
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)' != '' ">
+        <TargetPlatformIdentifiers>%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)</TargetPlatformIdentifiers>
+      </MauiPlatformSpecificFolder>
+
+      <!--
+        Back-fill ActivationValue from BackendIdentity ONLY for folders that are not
+        already TPI-recognized. Built-in platforms carry both a TargetPlatformIdentifier
+        and a BackendIdentity; deriving an ActivationValue for them would let a stray
+        MauiActiveBackend value pull an unrelated built-in folder into a neutral build.
+        Gating on empty TargetPlatformIdentifier(s) keeps the neutral-activation branch
+        exclusive to backends that actually rely on it.
+      -->
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.ActivationValue)' == '' and '%(MauiPlatformSpecificFolder.BackendIdentity)' != '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifier)' == '' and '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' ">
+        <ActivationValue>%(MauiPlatformSpecificFolder.BackendIdentity)</ActivationValue>
+      </MauiPlatformSpecificFolder>
+
+      <!-- MauiActiveBackend is the well-known neutral-TFM selector; default to it when unset. -->
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.ActivationProperty)' == '' and '%(MauiPlatformSpecificFolder.ActivationValue)' != '' ">
+        <ActivationProperty>MauiActiveBackend</ActivationProperty>
+      </MauiPlatformSpecificFolder>
+
+      <!--
+        Resolve the *value* of the property named by ActivationProperty into a
+        dedicated metadata field. The '$(%(...))' form is MSBuild dynamic property
+        dereference: '%(...ActivationProperty)' expands to the property name first
+        (e.g. MauiActiveBackend), then '$(...)' expands that property's value. This
+        supports both the default MauiActiveBackend selector and a custom
+        ActivationProperty a backend NuGet may prefer. An unset property resolves
+        to empty and simply fails to activate, so a non-selected backend is excluded.
+      -->
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.ActivationProperty)' != '' ">
+        <_MauiResolvedActivationValue>$(%(MauiPlatformSpecificFolder.ActivationProperty))</_MauiResolvedActivationValue>
+      </MauiPlatformSpecificFolder>
+
+      <!--
+        Pre-compute whitespace-stripped, lower-cased forms of the wanted
+        ActivationValue and the resolved property value so the activation branch of
+        _MauiCollectPlatformSpecificCompileItems is a plain metadata equality check.
+        Doing the Regex.Replace/ToLowerInvariant normalization here (as metadata
+        values) rather than inline in the collect Condition keeps that Condition
+        parseable — nesting property functions that reference metadata on both sides
+        of an '==' inside a single item Condition trips MSBuild's condition parser
+        (MSB4092). Whitespace tolerance and case-insensitivity mirror the TPI match.
+      -->
+      <MauiPlatformSpecificFolder
+          Update="@(MauiPlatformSpecificFolder)"
+          Condition=" '%(MauiPlatformSpecificFolder.ActivationValue)' != '' ">
+        <_MauiActivationValueNormalized>$([System.Text.RegularExpressions.Regex]::Replace('%(MauiPlatformSpecificFolder.ActivationValue)', '\s+', '').ToLowerInvariant())</_MauiActivationValueNormalized>
+        <_MauiResolvedActivationValueNormalized>$([System.Text.RegularExpressions.Regex]::Replace('%(MauiPlatformSpecificFolder._MauiResolvedActivationValue)', '\s+', '').ToLowerInvariant())</_MauiResolvedActivationValueNormalized>
+      </MauiPlatformSpecificFolder>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
