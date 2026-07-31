@@ -731,7 +731,42 @@ $content
 }
 
 if (-not $gateSection -and $phaseSections.Count -eq 0) {
-    throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
+    # Reliability guard: in the deferred Stage-3 deep-results post, the PRAgent phase content
+    # (gate/content.md, code-review/content.md, …) can be absent even though the pipeline DID
+    # run and handed us a real trusted gate verdict — e.g. the content dir was not carried into
+    # the Stage-3 job, or the earlier review phase produced no files. Previously this hard-threw
+    # (exit 1), which FAILED the Post stage AND posted nothing: the Task-4 fallback notice never
+    # fires because Task-4 already deferred (aiSummaryReviewId='DEFERRED', not empty), so the PR
+    # got no summary at all (build 14829982, PR #36657: TRX deep results present, gate verdict
+    # INCONCLUSIVE, but every phase file "not found"). Rather than crash, synthesize a minimal
+    # gate section from the trusted verdict so the PR ALWAYS gets a summary (deep results are
+    # folded in below as usual). Only hard-throw when there is genuinely nothing — no phase
+    # content AND no trusted verdict (a local/manual misconfiguration).
+    if (-not [string]::IsNullOrWhiteSpace($TrustedGateResult)) {
+        $verdictUpper = $TrustedGateResult.ToUpperInvariant()
+        Write-Host "  ⚠️  No phase content found, but a trusted gate verdict ('$verdictUpper') was supplied — synthesizing a minimal gate section so the PR still gets a summary." -ForegroundColor Yellow
+        $gateContent = @"
+### Gate Result: $verdictUpper — detailed report unavailable
+
+The automated **test-verification gate** produced a **$verdictUpper** verdict, but its detailed per-test report could not be attached to this summary on this run (the review's phase content was not available when the deep results were posted). This is an **infrastructure** hiccup in assembling the report — **not** a problem with your PR.
+
+- The trusted gate verdict above is authoritative for the review decision.
+- Any deep UI test results for this run are shown below.
+
+**Next step:** re-comment ``/review`` to get a full report on a fresh agent.
+"@
+        $gateSection = @"
+<details open>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
+<br/>
+
+$gateContent
+
+</details>
+"@
+    } else {
+        throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
+    }
 }
 
 # The trusted gate verdict comes from the pipeline (Gate task output variable). For
