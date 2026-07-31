@@ -116,9 +116,15 @@ namespace Microsoft.Maui.Storage
 
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
-		static readonly string AppSecureStoragePath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
 		static readonly object Sync = new();
-		static readonly SecureStorageDictionary SecureStorage = Load();
+		static SecureStorageDictionary? _secureStorage;
+
+		static string AppSecureStoragePath =>
+			Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
+
+		// Caller must hold Sync. A failed Load leaves the field null so a later call can retry.
+		static SecureStorageDictionary SecureStorage =>
+			_secureStorage ??= Load();
 
 		static SecureStorageDictionary Load()
 		{

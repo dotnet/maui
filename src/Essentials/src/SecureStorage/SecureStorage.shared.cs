@@ -270,8 +270,7 @@ namespace Microsoft.Maui.Storage
 				{
 					var implementation = new SecureStorageImplementation(packageName);
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-					lock (_sync)
-						implementation.DefaultAccessible = _defaultAccessible;
+					implementation.DefaultAccessible = _defaultAccessible;
 #endif
 					return implementation;
 				},
@@ -289,7 +288,18 @@ namespace Microsoft.Maui.Storage
 
 		internal bool IsValueCreated => _implementation.IsValueCreated;
 
-		SecureStorageImplementation Implementation => _implementation.Value;
+		SecureStorageImplementation Implementation
+		{
+			get
+			{
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+				lock (_sync)
+					return _implementation.Value;
+#else
+				return _implementation.Value;
+#endif
+			}
+		}
 
 		internal string Alias => Implementation.Alias;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 using Xunit;
@@ -105,6 +106,59 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 #endif
 
+#if __IOS__ || MACCATALYST
+		[Fact]
+		public void AppInfo_Wrapper_Preserves_Default_Accessible()
+		{
+			var previous = new SecureStorageImplementation
+			{
+				DefaultAccessible = Security.SecAccessible.WhenUnlockedThisDeviceOnly,
+			};
+			var wrapper = new AppInfoSecureStorage("test.package", previous);
+
+			Assert.False(wrapper.IsValueCreated);
+			Assert.Equal(Security.SecAccessible.WhenUnlockedThisDeviceOnly, wrapper.DefaultAccessible);
+
+			_ = wrapper.Alias;
+			var implementation = GetWrappedImplementation(wrapper);
+
+			Assert.True(wrapper.IsValueCreated);
+			Assert.Equal(Security.SecAccessible.WhenUnlockedThisDeviceOnly, implementation.DefaultAccessible);
+
+			wrapper.DefaultAccessible = Security.SecAccessible.AfterFirstUnlockThisDeviceOnly;
+
+			Assert.Equal(Security.SecAccessible.AfterFirstUnlockThisDeviceOnly, implementation.DefaultAccessible);
+
+			var successor = new AppInfoSecureStorage("successor.package", wrapper);
+			Assert.Equal(Security.SecAccessible.AfterFirstUnlockThisDeviceOnly, successor.DefaultAccessible);
+		}
+#endif
+
+#if WINDOWS
+		[Fact]
+		public async Task Unpackaged_Instances_Share_Current_State()
+		{
+			var first = new UnpackagedSecureStorageImplementation();
+			var second = new UnpackagedSecureStorageImplementation();
+			var key = $"test-{Guid.NewGuid():N}";
+			byte[] firstValue = [1, 2, 3];
+			byte[] secondValue = [4, 5, 6];
+
+			try
+			{
+				await first.SetAsync(key, firstValue);
+				Assert.Equal(firstValue, await second.GetAsync(key));
+
+				await second.SetAsync(key, secondValue);
+				Assert.Equal(secondValue, await first.GetAsync(key));
+			}
+			finally
+			{
+				first.Remove(key);
+			}
+		}
+#endif
+
 		[Fact
 #if MACCATALYST
 			(Skip = "Need to configure entitlements.")
@@ -115,6 +169,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
 			Assert.Null(v);
 		}
+
+#if __IOS__ || MACCATALYST
+		static SecureStorageImplementation GetWrappedImplementation(AppInfoSecureStorage wrapper)
+		{
+			var field = typeof(AppInfoSecureStorage)
+				.GetField("_implementation", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			var lazy = Assert.IsType<Lazy<SecureStorageImplementation>>(field.GetValue(wrapper));
+			return lazy.Value;
+		}
+#endif
 
 		[Theory
 #if MACCATALYST

@@ -520,8 +520,9 @@ namespace Microsoft.Maui.Hosting
 					{
 						// SecureStorage namespaces follow the bridged package name. Apps that
 						// change PackageName must migrate existing secrets or register ISecureStorage.
+						var secureStoragePackageName = appInfo.PackageName;
 						TrackAndSet<ISecureStorage>(
-							previous => new AppInfoSecureStorage(appInfo.PackageName, previous),
+							previous => new AppInfoSecureStorage(secureStoragePackageName, previous),
 							() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
 							SecureStorage.SetDefault,
 							facadeCleanups);
