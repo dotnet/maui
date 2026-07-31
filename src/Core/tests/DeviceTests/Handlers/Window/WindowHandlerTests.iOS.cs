@@ -17,8 +17,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// PageViewController without a window should return UIStatusBarStyle.Default
 				// because the StatusBarTheme resolves to Default when no IWindow is available
-				var pvc = new Microsoft.Maui.Platform.PageViewController(
-					new DeviceTests.Stubs.StubBase(),
+				using var pvc = new Microsoft.Maui.Platform.PageViewController(
+					new DeviceTests.Stubs.ContentViewStub(),
 					MauiContext);
 
 				Assert.Equal(UIStatusBarStyle.Default, pvc.PreferredStatusBarStyle());

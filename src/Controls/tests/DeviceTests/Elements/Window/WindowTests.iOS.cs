@@ -33,18 +33,21 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(testCase.Page);
 
 				var rootController = ((IPlatformViewHandler)rootPage.Handler).ViewController;
-				var styleProvider = GetStatusBarStyleProvider(rootController);
 
-				Assert.Equal(UIStatusBarStyle.Default, styleProvider.PreferredStatusBarStyle());
+				Assert.Same(window, rootPage.Window);
+				Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
 
 				window.StatusBarTheme = StatusBarTheme.Dark;
+				var styleProvider = GetStatusBarStyleProvider(rootController);
+				if (rootPageType == typeof(Shell))
+					Assert.IsType<Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer>(styleProvider);
 				Assert.Equal(UIStatusBarStyle.LightContent, styleProvider.PreferredStatusBarStyle());
 
 				window.StatusBarTheme = StatusBarTheme.Light;
-				Assert.Equal(UIStatusBarStyle.DarkContent, styleProvider.PreferredStatusBarStyle());
+				Assert.Equal(UIStatusBarStyle.DarkContent, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
 
 				window.StatusBarTheme = StatusBarTheme.Default;
-				Assert.Equal(UIStatusBarStyle.Default, styleProvider.PreferredStatusBarStyle());
+				Assert.Equal(UIStatusBarStyle.Default, GetStatusBarStyleProvider(rootController).PreferredStatusBarStyle());
 			});
 		}
 

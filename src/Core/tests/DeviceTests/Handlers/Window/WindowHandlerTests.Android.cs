@@ -107,6 +107,31 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task StatusBarThemeDefaultUpdatesOnConfigurationChange()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var updateCount = 0;
+				var mapper = new PropertyMapper<IWindow, IWindowHandler>
+				{
+					[nameof(IWindow.StatusBarTheme)] = (handler, window) => updateCount++
+				};
+				var handler = new WindowHandlerProxyStub(mapper);
+				var window = new WindowStub { StatusBarTheme = StatusBarTheme.Default };
+
+				InitializeViewHandler(window, handler);
+				updateCount = 0;
+
+				LifecycleEvents.AppHostBuilderExtensions.UpdateStatusBarThemeOnConfigurationChange(window);
+				Assert.Equal(1, updateCount);
+
+				window.StatusBarTheme = StatusBarTheme.Dark;
+				LifecycleEvents.AppHostBuilderExtensions.UpdateStatusBarThemeOnConfigurationChange(window);
+				Assert.Equal(1, updateCount);
+			});
+		}
+
 		[Theory]
 		[InlineData(StatusBarTheme.Light, true)]
 		[InlineData(StatusBarTheme.Dark, false)]

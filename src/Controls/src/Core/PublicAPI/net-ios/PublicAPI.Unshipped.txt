@@ -5,6 +5,7 @@ static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microso
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
+~override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarStyle() -> UIKit.UIStatusBarStyle
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController

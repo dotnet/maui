@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Platform
 #if !MACCATALYST
 		public override UIStatusBarStyle PreferredStatusBarStyle()
 		{
-			var window = CurrentView?.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow();
+			var application = Context?.Services.GetService(typeof(IApplication)) as IApplication;
+			var window = CurrentView?.FindParentOfType<IWindow>() ??
+				Context?.GetOptionalPlatformWindow().GetWindow(application);
 			var theme = window?.StatusBarTheme ?? StatusBarTheme.Default;
 
 			return theme switch
