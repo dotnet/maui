@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		VisualElement _emptyViewFormsElement;
 		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
 		List<string> _cellReuseIds = new List<string>();
+		List<WeakReference<TemplatedCell>> _realizedTemplatedCells = new List<WeakReference<TemplatedCell>>();
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -76,33 +77,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal virtual void Disconnect()
 		{
-			UnbindVisibleCells();
+			UnbindRealizedTemplatedCells();
 			DisposeItemsSource();
 		}
 
-		// Deterministically unbind every currently-visible templated cell when this controller's
-		// handler disconnects (e.g. the page hosting this CollectionView is being removed/popped).
-		// Without this, cleanup (clearing BindingContext and removing the bound view from the
-		// ItemsView's logical children, see TemplatedCell.Unbind/DetachFromItemsView) relies on
-		// either CellDisplayingEndedFromDelegate's item-equality heuristic (which intentionally
-		// skips cells whose bound item hasn't changed - the common case when the whole CollectionView
-		// is being torn down rather than an individual item being replaced) or on the cell's own
-		// native deallocation, whose timing relative to this handler disconnecting is not guaranteed
-		// to happen promptly on every platform. Calling Unbind() here is idempotent (safe even if a
-		// cell was already unbound) and ensures the leak-prone reference is always released as soon
-		// as the CollectionView itself goes away.
-		void UnbindVisibleCells()
+		// Deterministically unbind every realized templated cell when this controller's handler
+		// disconnects (e.g. page popped), instead of relying on VisibleCells/recycling heuristics.
+		//
+		// Also the only place (with ClearMeasurementCells) that calls DetachFromItemsView() and
+		// disconnects each cell's Handler. Not done in TemplatedCell.Unbind() because that also
+		// runs during routine recycling, where removing the view mid-layout can corrupt native
+		// state (e.g. CarouselView). Here the CollectionView is going away, so
+		// it's safe to sever permanently.
+		void UnbindRealizedTemplatedCells()
 		{
-			if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+			for (int n = _realizedTemplatedCells.Count - 1; n >= 0; n--)
 			{
-				foreach (var cell in visibleCells)
+				if (_realizedTemplatedCells[n].TryGetTarget(out var templatedCell))
 				{
-					if (cell is TemplatedCell templatedCell)
+					if (templatedCell.PlatformHandler?.VirtualView is View view)
+					{
+						templatedCell.Unbind();
+						templatedCell.DetachFromItemsView();
+
+						// Recursive DisconnectHandlers() since the bound view (DataTemplate root)
+						// commonly has child views whose handlers also need disconnecting.
+						view.DisconnectHandlers();
+					}
+					else
 					{
 						templatedCell.Unbind();
 					}
 				}
 			}
+
+			_realizedTemplatedCells.Clear();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -555,9 +564,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				cell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);
 			}
 
+			RegisterRealizedTemplatedCell(cell);
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
 
 			ItemsViewLayout.PrepareCellForLayout(cell);
+		}
+
+		void RegisterRealizedTemplatedCell(TemplatedCell cell)
+		{
+			for (int n = _realizedTemplatedCells.Count - 1; n >= 0; n--)
+			{
+				if (!_realizedTemplatedCells[n].TryGetTarget(out var existingCell))
+				{
+					_realizedTemplatedCells.RemoveAt(n);
+					continue;
+				}
+
+				if (ReferenceEquals(existingCell, cell))
+				{
+					return;
+				}
+			}
+
+			_realizedTemplatedCells.Add(new WeakReference<TemplatedCell>(cell));
 		}
 
 		void ClearMeasurementCells()
@@ -566,6 +595,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 				measurementCell.Unbind();
+
+				// Discarded measurement cells are never reused and have no other strong references,
+				// so they can be GC'd before Disconnect() runs, leaking their handler if not
+				// disconnected here.
+				if (measurementCell.PlatformHandler?.VirtualView is View measurementView)
+				{
+					measurementCell.DetachFromItemsView();
+					measurementView.DisconnectHandlers();
+				}
 			}
 
 			_measurementCells.Clear();

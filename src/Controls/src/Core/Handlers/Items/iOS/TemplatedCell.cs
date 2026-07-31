@@ -85,31 +85,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
-			DetachFromItemsView();
+			ClearBindingContext();
 		}
 
-		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
-		// ItemsView's logical children (mirrors TemplatedCell2.Unbind()). Without this, a view
-		// created for this cell's DataTemplate stays reachable via the ItemsView's internal
-		// children list even after the cell stops being visible/bound, which prevents the view
-		// (and its handler/platform view) from ever being collected.
-		void DetachFromItemsView()
+		// Clears the bound view's BindingContext. Called during routine recycling and final teardown.
+		void ClearBindingContext()
 		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
-				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
 		}
 
-		protected override void Dispose(bool disposing)
+		// Removes the bound view from the ItemsView's logical children, so it (and its handler) can
+		// be collected. Intentionally NOT called from Unbind()/ClearBindingContext() - only from
+		// final teardown paths (ItemsViewController.Disconnect()/ClearMeasurementCells()), since
+		// removing it during routine recycling can corrupt native layout state (e.g. CarouselView
+		// crash).
+		internal void DetachFromItemsView()
 		{
-			// Ensure the logical-child link back to the ItemsView is always cleaned up when this
-			// cell is deallocated, even if PrepareForReuse/Unbind was never called for this
-			// instance (e.g. the cell was discarded rather than recycled by UICollectionView).
-			DetachFromItemsView();
-
-			base.Dispose(disposing);
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
+			}
 		}
 
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
@@ -207,6 +205,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					oldElement.BindingContext = null;
 					itemsView.RemoveLogicalChild(oldElement);
 					ClearSubviews();
+
+					// Template change discards oldElement's renderer for good, so its handler tree
+					// must be disconnected explicitly here to avoid a leak.
+					oldElement.DisconnectHandlers();
 				}
 
 				// Create the content and renderer for the view 
