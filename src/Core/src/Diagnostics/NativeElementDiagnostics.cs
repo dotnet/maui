@@ -40,17 +40,29 @@ namespace Microsoft.Maui.Diagnostics
 			string role,
 			string? discriminator = null)
 		{
-			if (owner is null)
-				throw new ArgumentNullException(nameof(owner));
-			if (nativeElement is null)
-				throw new ArgumentNullException(nameof(nativeElement));
-			if (string.IsNullOrWhiteSpace(role))
-				throw new ArgumentException("A native element role is required.", nameof(role));
+			return TryRegister(owner, nativeElement, role, discriminator, out var registration)
+				? registration
+				: EmptyRegistration.Instance;
+		}
+
+		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
+			Justification = "The fixed object-array payload is consumed by index and does not require reflected members.")]
+		internal static bool TryRegister(
+			object owner,
+			object nativeElement,
+			string role,
+			string? discriminator,
+			[NotNullWhen(true)] out IDisposable? registration)
+		{
+			ValidateRegistrationArguments(owner, nativeElement, role);
 
 			if (!IsRegistrationEnabled)
-				return EmptyRegistration.Instance;
+			{
+				registration = null;
+				return false;
+			}
 
-			var registration = new Registration(nativeElement);
+			registration = new Registration(nativeElement);
 			try
 			{
 				s_listener.Write(
@@ -62,7 +74,20 @@ namespace Microsoft.Maui.Diagnostics
 				Debug.WriteLine($"Native element registration observer failed: {ex}");
 			}
 
-			return registration;
+			return true;
+		}
+
+		internal static void ValidateRegistrationArguments(
+			object owner,
+			object nativeElement,
+			string role)
+		{
+			if (owner is null)
+				throw new ArgumentNullException(nameof(owner));
+			if (nativeElement is null)
+				throw new ArgumentNullException(nameof(nativeElement));
+			if (string.IsNullOrWhiteSpace(role))
+				throw new ArgumentException("A native element role is required.", nameof(role));
 		}
 
 		[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
