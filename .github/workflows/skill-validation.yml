@@ -763,8 +763,8 @@ jobs:
           [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
 
           # Advisory exit: vally sets exit 1 on threshold miss / execution
-          # error. We capture it but DON'T propagate, deriving the real verdict
-          # from the JUnit report (preserves the legacy warn-only behavior).
+          # error. We capture it but DON'T propagate so every matrix artifact is
+          # still uploaded and the aggregate report can explain the failure.
           set +e
           npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
             "${SPECS[@]}" \
@@ -779,35 +779,60 @@ jobs:
           echo "vally exit code: $EVAL_RC (advisory)"
           echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
 
-          # Verdict from JUnit (source of truth). The root <testsuites> element
-          # carries aggregate failures/errors across every suite produced for
-          # this matrix entry.
+          # JUnit records individual failing trials even when their suite's
+          # aggregate score meets its threshold. Keep those counts as useful
+          # diagnostics, but use Vally's run-summary for the gate verdict.
           JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -n "$JUNIT" ]; then
             ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
-            if [ -z "$ROOT" ]; then
-              echo "::warning::JUnit file exists but contains no <testsuites> element — treating as failure"
-              echo "eval_passed=false" >> "$GITHUB_OUTPUT"
-            else
+            if [ -n "$ROOT" ]; then
               FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
               ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
-              echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
-              if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
-                # Guard: if Vally exited non-zero but JUnit shows no failures,
-                # an execution error may have been swallowed (partial output).
-                if [ "$EVAL_RC" -ne 0 ]; then
-                  echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as failure (possible partial output)"
-                  echo "eval_passed=false" >> "$GITHUB_OUTPUT"
-                else
-                  echo "eval_passed=true" >> "$GITHUB_OUTPUT"
-                fi
-              else
-                echo "eval_passed=false" >> "$GITHUB_OUTPUT"
-              fi
+              echo "JUnit trial diagnostics: failures=$FAILS errors=$ERRS"
             fi
-          else
-            echo "::warning::No JUnit report under $RESULTS_PATH"
+          fi
+
+          SUMMARY=$(find "$RESULTS_PATH" -name 'results.jsonl' -type f 2>/dev/null | head -1 || true)
+          if [ -z "$SUMMARY" ]; then
+            echo "::warning::No Vally results.jsonl under $RESULTS_PATH"
             echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+          else
+            SUMMARY_FILE="$SUMMARY" EVAL_RC="$EVAL_RC" node <<'NODE'
+          const fs = require('fs');
+          let summaries = [];
+          let passed = false;
+          try {
+            summaries = fs.readFileSync(process.env.SUMMARY_FILE, 'utf8')
+              .split(/\r?\n/)
+              .filter(Boolean)
+              .map(line => JSON.parse(line))
+              .filter(record => record.type === 'run-summary');
+
+            if (summaries.length !== 1) {
+              console.log(`::warning::Expected exactly one Vally run-summary, found ${summaries.length}`);
+            } else {
+              const summary = summaries[0];
+              console.log(
+                `Vally run summary: passed=${summary.passed} ` +
+                `hadExecutionErrors=${summary.hadExecutionErrors} evals=${summary.evals?.length ?? 0}`
+              );
+              passed =
+                summary.passed === true &&
+                summary.hadExecutionErrors === false &&
+                process.env.EVAL_RC === '0';
+              if (summary.passed === true && process.env.EVAL_RC !== '0') {
+                console.log(
+                  `::warning::Vally run-summary passed but the CLI exited ${process.env.EVAL_RC}; ` +
+                  'treating as failure (possible partial output)'
+                );
+              }
+            }
+          } catch (error) {
+            console.log(`::warning::Could not parse Vally run-summary: ${error.message}`);
+          }
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `eval_passed=${passed}\n`);
+          NODE
           fi
 
       - name: Upload results
