@@ -98,7 +98,7 @@ public class SwitchFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
 	[Test]
-	[Order(8)]
+	[Order(7)]
 	public void Switch_SetShadowAndToggled_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -114,7 +114,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(9)]
+	[Order(8)]
 	public void Switch_SetShadowAndOnColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -132,7 +132,7 @@ public class SwitchFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/19883
 	[Test]
-	[Order(10)]
+	[Order(9)]
 	public void Switch_SetShadowAndThumbColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -150,7 +150,7 @@ public class SwitchFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[Order(19)]
+	[Order(10)]
 	public void Switch_SetShadowAndOffColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -167,7 +167,7 @@ public class SwitchFeatureTests : _GalleryUITest
 #endif
 
 	[Test]
-	[Order(12)]
+	[Order(11)]
 	public void Switch_SetOffColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -181,7 +181,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(13)]
+	[Order(12)]
 	public void Switch_SetOffColorAndOnColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -198,7 +198,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(14)]
+	[Order(13)]
 	public void Switch_SetEnabledFalseAndToggled_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -214,7 +214,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(15)]
+	[Order(14)]
 	public void Switch_SetEnabledFalseAndOnColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -232,7 +232,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(17)]
+	[Order(15)]
 	public void Switch_SetFlowDirectionAndOnColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -250,7 +250,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(18)]
+	[Order(16)]
 	public void Switch_SetAllProperties_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -273,7 +273,7 @@ public class SwitchFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //For more information: // Issue Link: https://github.com/dotnet/maui/issues/19883
 	[Test]
-	[Order(20)]
+	[Order(17)]
 	public void Switch_SetOnColorAndThumbColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -290,7 +290,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(21)]
+	[Order(18)]
 	public void Switch_SetThumbColorAndOnColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -307,7 +307,7 @@ public class SwitchFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Order(22)]
+	[Order(19)]
 	public void Switch_SetOffColorAndThumbColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
