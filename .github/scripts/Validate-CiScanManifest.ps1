@@ -258,10 +258,13 @@ function Test-MarkerLikeContent {
     # HTML-entity evasion that would re-emerge as a real marker once GitHub
     # renders the body. Folding to alphanumerics collapses every one of those
     # spellings onto the same token, so the gate cannot be spelled around.
-    # NFKC normalization throws on invalid Unicode (e.g. an unpaired surrogate);
-    # such input can never fold into a valid marker, and the downstream
-    # Test-HiddenOrControlContent gate rejects it with a precise reason, so fall
-    # back to the raw value here rather than surfacing an opaque exception.
+    # NFKC normalization throws on invalid Unicode -- an unpaired surrogate or a
+    # noncharacter (U+xFFFE/U+xFFFF, U+FDD0-FDEF). Such input can never fold into a
+    # valid marker, and every code point that makes Normalize throw is itself
+    # rejected by the downstream Test-HiddenOrControlContent gate (surrogates and
+    # noncharacters alike), so falling back to the raw value here is a sound
+    # backstop rather than a fail-open: a marker smuggled alongside a throw-inducing
+    # code point is still rejected before publication.
     try {
         $normalized = $Value.Normalize([System.Text.NormalizationForm]::FormKC)
     }
@@ -319,14 +322,21 @@ function Test-HiddenOrControlContent {
     #   * C0 control characters other than tab/newline/carriage-return, and DEL.
     #   * The C1 control range (0x80-0x9F).
     #   * Bidirectional, invisible, and steganographic format/mark characters --
-    #     soft hyphen, Arabic letter mark, Mongolian vowel separator, the
-    #     zero-width/joiner/bidi ranges, line/paragraph separators, the variation
-    #     selectors, the Unicode tag block, and the variation selector supplement --
-    #     which can reorder or hide rendered text, or smuggle data invisibly
-    #     (Trojan-Source / ASCII-smuggling attacks). Several of these live in the
-    #     supplementary plane, so the body is walked by Unicode scalar value
+    #     soft hyphen, Arabic letter mark, Mongolian vowel/free variation selectors,
+    #     the zero-width/joiner/bidi ranges, line/paragraph separators, the variation
+    #     selectors and their supplement, the combining grapheme joiner, the Khmer
+    #     inherent vowels, the Hangul fillers, the Unicode tag block, and -- via a
+    #     whole-category match on Unicode Format (Cf) -- the musical, interlinear
+    #     annotation, and shorthand format controls. These reorder or hide rendered
+    #     text, or smuggle data invisibly (Trojan-Source / ASCII-smuggling attacks).
+    #     Enumerated ranges cover the invisible Mn/Lo code points (so a blanket
+    #     category reject cannot swallow legitimate accents or CJK); the category
+    #     match closes the rest of the Format class in one shot. Several of these live
+    #     in the supplementary plane, so the body is walked by Unicode scalar value
     #     (decoding surrogate pairs) rather than by UTF-16 code unit; an unpaired
     #     surrogate is itself rejected.
+    #   * Unicode noncharacters (U+xFFFE/U+xFFFF per plane and U+FDD0-FDEF), which are
+    #     reserved, never appear in real evidence, and make NFKC normalization throw.
     #   * HTML comment sequences, which are how the trusted publisher's own markers
     #     are spelled -- the agent body must never carry one.
     # It rejects rather than strips: evidence lines are hash-verified against frozen
@@ -360,16 +370,40 @@ function Test-HiddenOrControlContent {
             return "a C1 control character (U+$($code.ToString('X4')))"
         }
         if ($code -eq 0x00AD -or
+            $code -eq 0x034F -or
             $code -eq 0x061C -or
-            $code -eq 0x180E -or
+            ($code -ge 0x115F -and $code -le 0x1160) -or
+            ($code -ge 0x17B4 -and $code -le 0x17B5) -or
+            ($code -ge 0x180B -and $code -le 0x180F) -or
             ($code -ge 0x200B -and $code -le 0x200F) -or
             ($code -ge 0x2028 -and $code -le 0x202E) -or
             ($code -ge 0x2060 -and $code -le 0x206F) -or
+            $code -eq 0x3164 -or
             ($code -ge 0xFE00 -and $code -le 0xFE0F) -or
             $code -eq 0xFEFF -or
+            $code -eq 0xFFA0 -or
             ($code -ge 0xE0000 -and $code -le 0xE007F) -or
             ($code -ge 0xE0100 -and $code -le 0xE01EF)) {
             return "a bidirectional or invisible format character (U+$($code.ToString('X4')))"
+        }
+        # Unicode noncharacters (the U+xFFFE/U+xFFFF pair in every plane and the
+        # U+FDD0-FDEF block) are permanently reserved, never appear in real CI
+        # evidence, and are a normalization hazard: NormalizationForm.FormKC throws on
+        # them, which is how a marker spelled with compatibility characters could slip
+        # past Test-MarkerLikeContent's folding via its raw-value fallback. Rejecting
+        # them here keeps this gate the sound backstop for that fallback.
+        if (($code -band 0xFFFE) -eq 0xFFFE -or ($code -ge 0xFDD0 -and $code -le 0xFDEF)) {
+            return "a Unicode noncharacter (U+$($code.ToString('X4')))"
+        }
+        # Any remaining Unicode Format (Cf) scalar -- e.g. the musical, interlinear
+        # annotation, and shorthand format controls not enumerated above -- is
+        # invisible or reorders text and never belongs in a CI evidence line. Matching
+        # the whole category closes the class instead of chasing one range at a time,
+        # while the explicit lists above cover the invisible marks/fillers that are
+        # Mn/Lo rather than Cf (so a blanket category reject cannot swallow legitimate
+        # accents or CJK text).
+        if ([System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($code) -eq [System.Globalization.UnicodeCategory]::Format) {
+            return "a Unicode format character (U+$($code.ToString('X4')))"
         }
     }
 

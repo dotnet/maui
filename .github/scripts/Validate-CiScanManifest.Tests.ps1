@@ -721,8 +721,17 @@ Describe 'CI scanner issue payload gate' {
         @{ Case = 'Mongolian vowel separator'; Suffix = "gap$([char]0x180E)here"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'paragraph separator'; Suffix = "line$([char]0x2029)break"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'variation selector-16'; Suffix = "glyph$([char]0xFE0F)"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Mongolian free variation selector'; Suffix = "shape$([char]0x180B)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'combining grapheme joiner'; Suffix = "seam$([char]0x034F)less"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Khmer inherent vowel'; Suffix = "gap$([char]0x17B4)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Hangul filler'; Suffix = "blank$([char]0x3164)space"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'astral tag character'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE007F))"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'astral variation selector supplement'; Suffix = "mark$([char]::ConvertFromUtf32(0xE0100))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'musical format control'; Suffix = "beat$([char]::ConvertFromUtf32(0x1D173))here"; Expect = 'Unicode format character' }
+        @{ Case = 'interlinear annotation anchor'; Suffix = "gloss$([char]0xFFF9)here"; Expect = 'Unicode format character' }
+        @{ Case = 'shorthand format control'; Suffix = "steno$([char]::ConvertFromUtf32(0x1BCA0))here"; Expect = 'Unicode format character' }
+        @{ Case = 'BMP noncharacter'; Suffix = "reserved$([char]0xFFFE)slot"; Expect = 'Unicode noncharacter' }
+        @{ Case = 'astral noncharacter'; Suffix = "reserved$([char]::ConvertFromUtf32(0x1FFFE))slot"; Expect = 'Unicode noncharacter' }
         @{ Case = 'unpaired high surrogate'; Suffix = "dangling$([char]0xD800)"; Expect = 'unpaired high surrogate' }
         @{ Case = 'benign HTML comment open'; Suffix = '<!-- reviewer will not see this -->'; Expect = 'HTML comment sequence' }
         @{ Case = 'stray HTML comment close'; Suffix = 'looks fine --> but is not'; Expect = 'HTML comment sequence' }
@@ -775,7 +784,42 @@ Describe 'CI scanner issue payload gate' {
             Should -Not -Throw
     }
 
-    It 'rejects a null body' {
+    It 'still accepts a body with legitimate combining accents and CJK text' {
+        # Guardrail against category over-rejection: the Format-category and
+        # noncharacter checks must not swallow legitimate NonSpacingMark accents
+        # (U+0301) or OtherLetter CJK (U+4E2D), which do appear in real evidence
+        # (localized paths, author names, commit messages).
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nCafe$([char]0x0301) build for $([char]0x4E2D)$([char]0x6587) locale."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'rejects a marker smuggled past NFKC folding with a noncharacter' {
+        # A fullwidth-spelled marker embedded with a noncharacter (U+FFFE) makes
+        # Test-MarkerLikeContent's NFKC normalization throw, so its raw-value fallback
+        # never folds the fullwidth form onto the real token -- the marker gate passes.
+        # The hidden-content gate must be the backstop: it rejects the U+FFFE outright,
+        # so the smuggled marker can never reach publication.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $fullwidthMarker = -join ([int[]][char[]]'ciscanfingerprint' | ForEach-Object { [char]($_ + 0xFEE0) })
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$fullwidthMarker$([char]0xFFFE)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain*Unicode noncharacter*'
+    }
+
         $signature = New-TestSignature
         $signature.body = $null
         $manifest = New-CompleteManifest -MainSignatures @($signature)
