@@ -490,6 +490,9 @@ namespace Microsoft.Maui.Controls
 		// And we need to disable the public API analyzer briefly, because it doesn't understand hiding.
 		new public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+			if (_root == null)
+				return Graphics.Size.Zero;
+
 			var layoutManager = _layoutManager ??= CreateLayoutManager();
 
 			InMeasureMode = true;
@@ -584,7 +587,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public Graphics.Rect GetFlexFrame(IView view) =>
-			GetFlexItem(view).GetFrame();
+			GetFlexItem(view)?.GetFrame() ?? Graphics.Rect.Zero;
 
 		void EnsureFlexItemPropertiesUpdated()
 		{
@@ -599,6 +602,9 @@ namespace Microsoft.Maui.Controls
 
 		public void Layout(double width, double height)
 		{
+			if (_root == null)
+				return;
+
 			if (_root.Parent != null)   //Layout is only computed at root level
 				return;
 
