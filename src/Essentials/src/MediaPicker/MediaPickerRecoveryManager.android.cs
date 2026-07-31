@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using AndroidUri = Android.Net.Uri;
 
@@ -952,8 +951,15 @@ internal static class MediaPickerRecoveryStore
 	const string PreferencesFeatureName = "media_picker";
 	const int SerializedRecordVersion = 1;
 
-	internal static string PreferencesSharedName =>
-		Preferences.GetPrivatePreferencesSharedName(AppInfo.Current.PackageName, PreferencesFeatureName);
+	internal static string PreferencesSharedName
+	{
+		get
+		{
+			var packageName = Application.Context.PackageName ??
+				throw new InvalidOperationException("The Android application package name is unavailable.");
+			return Preferences.GetPrivatePreferencesSharedName(packageName, PreferencesFeatureName);
+		}
+	}
 
 	internal static PendingMediaPickerOperation? ReadActiveOperation()
 		=> DeserializePendingOperation(Preferences.Get(ActiveOperationKey, null, PreferencesSharedName));

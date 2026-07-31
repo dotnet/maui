@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
@@ -59,21 +60,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public void Recovery_Preferences_Namespace_Tracks_Current_AppInfo()
+		public void Recovery_Preferences_Namespace_Uses_Android_App_Package()
 		{
 			var originalAppInfo = AppInfo.Current;
+			var expected = Preferences.GetPrivatePreferencesSharedName(
+				Assert.IsType<string>(Application.Context.PackageName),
+				"media_picker");
 
 			try
 			{
 				AppInfo.SetCurrent(new StubAppInfo("first.package"));
-				Assert.Equal(
-					"first.package.microsoft.maui.essentials.media_picker",
-					MediaPickerRecoveryStore.PreferencesSharedName);
+				Assert.Equal(expected, MediaPickerRecoveryStore.PreferencesSharedName);
 
 				AppInfo.SetCurrent(new StubAppInfo("second.package"));
-				Assert.Equal(
-					"second.package.microsoft.maui.essentials.media_picker",
-					MediaPickerRecoveryStore.PreferencesSharedName);
+				Assert.Equal(expected, MediaPickerRecoveryStore.PreferencesSharedName);
 			}
 			finally
 			{
