@@ -345,6 +345,7 @@ function Test-HiddenOrControlContent {
     # It rejects rather than strips: evidence lines are hash-verified against frozen
     # CI evidence, so silently mutating the body would corrupt a legitimate match.
     $length = $Value.Length
+    $previousCode = -1
     for ($index = 0; $index -lt $length; $index++) {
         $unit = $Value[$index]
         if ([char]::IsHighSurrogate($unit)) {
@@ -372,6 +373,33 @@ function Test-HiddenOrControlContent {
         if ($code -ge 0x80 -and $code -le 0x9F) {
             return "a C1 control character (U+$($code.ToString('X4')))"
         }
+
+        # VS15/VS16 visibly select text or emoji presentation for a preceding emoji
+        # base. Permit only common CI status/callout bases; accepting every Unicode
+        # Symbol would let ignored selectors after arbitrary symbols encode hidden bits.
+        if ($code -eq 0xFE0E -or $code -eq 0xFE0F) {
+            $isEmojiVariationBase = $previousCode -in @(
+                0x203C, # double exclamation
+                0x2049, # exclamation question
+                0x2139, # information
+                0x2611, # ballot box with check
+                0x26A0, # warning
+                0x2705, # check mark button
+                0x2714, # heavy check mark
+                0x274C, # cross mark
+                0x274E, # negative squared cross
+                0x2753, # question mark
+                0x2754, # white question mark
+                0x2755, # white exclamation mark
+                0x2757, # heavy exclamation mark
+                0x2763, # heart exclamation
+                0x2764  # heart
+            )
+            if (-not $isEmojiVariationBase) {
+                return "an isolated emoji presentation selector (U+$($code.ToString('X4')))"
+            }
+        }
+
         if ($code -eq 0x00AD -or
             $code -eq 0x034F -or
             $code -eq 0x061C -or
@@ -382,7 +410,7 @@ function Test-HiddenOrControlContent {
             ($code -ge 0x2028 -and $code -le 0x202E) -or
             ($code -ge 0x2060 -and $code -le 0x206F) -or
             $code -eq 0x3164 -or
-            ($code -ge 0xFE00 -and $code -le 0xFE0F) -or
+            ($code -ge 0xFE00 -and $code -le 0xFE0D) -or
             $code -eq 0xFEFF -or
             $code -eq 0xFFA0 -or
             ($code -ge 0xFFF0 -and $code -le 0xFFF8) -or
@@ -410,6 +438,8 @@ function Test-HiddenOrControlContent {
         if ([System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($code) -eq [System.Globalization.UnicodeCategory]::Format) {
             return "a Unicode format character (U+$($code.ToString('X4')))"
         }
+
+        $previousCode = $code
     }
 
     if ($Value.Contains('<!--') -or $Value.Contains('-->')) {

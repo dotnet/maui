@@ -720,7 +720,10 @@ Describe 'CI scanner issue payload gate' {
         @{ Case = 'Arabic letter mark (bidi)'; Suffix = "sig$([char]0x061C)nal"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'Mongolian vowel separator'; Suffix = "gap$([char]0x180E)here"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'paragraph separator'; Suffix = "line$([char]0x2029)break"; Expect = 'bidirectional or invisible format character' }
-        @{ Case = 'variation selector-16'; Suffix = "glyph$([char]0xFE0F)"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'isolated variation selector-15'; Suffix = "glyph$([char]0xFE0E)"; Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'isolated variation selector-16'; Suffix = "glyph$([char]0xFE0F)"; Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'variation selector-15 after arbitrary symbol'; Suffix = ('cost $' + [char]0xFE0E); Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'variation selector-16 after arbitrary symbol'; Suffix = ('cost $' + [char]0xFE0F); Expect = 'isolated emoji presentation selector' }
         @{ Case = 'Mongolian free variation selector'; Suffix = "shape$([char]0x180B)here"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'combining grapheme joiner'; Suffix = "seam$([char]0x034F)less"; Expect = 'bidirectional or invisible format character' }
         @{ Case = 'Khmer inherent vowel'; Suffix = "gap$([char]0x17B4)here"; Expect = 'bidirectional or invisible format character' }
@@ -780,6 +783,35 @@ Describe 'CI scanner issue payload gate' {
         # for an unpaired surrogate or a hidden format character.
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild smiled $([char]::ConvertFromUtf32(0x1F600)) at us."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing an emoji presentation sequence' {
+        # VS16 visibly selects emoji presentation for the preceding warning symbol.
+        # It must not be treated like an isolated invisible selector and abort the
+        # all-or-nothing publication batch.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild emitted $([char]0x26A0)$([char]0xFE0F) during step 3."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing a text presentation sequence' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild emitted $([char]0x26A0)$([char]0xFE0E) during step 3."
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
