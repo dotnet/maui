@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					new RowDefinition(GridLength.Star)
 				},
-				BackgroundColor = Colors.Blue,
+				Background = Colors.Blue,
 				WidthRequest = 200,
 				HeightRequest = 200
 			};
@@ -92,6 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task RoundedRectangleBorderLayoutIsCorrect()
 		{
 			Color stroke = Colors.Black;
+			Color background = Colors.Red;
 			const int strokeThickness = 4;
 			const int radius = 20;
 
@@ -107,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 					new RowDefinition(GridLength.Star),
 					new RowDefinition(GridLength.Star)
 				},
-				BackgroundColor = Colors.White
+				Background = Colors.White
 			};
 
 			var shape = new RoundRectangle()
@@ -120,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 				StrokeShape = shape,
 				Stroke = stroke,
 				StrokeThickness = strokeThickness,
-				BackgroundColor = Colors.Red,
+				Background = background,
 			};
 
 			grid.Add(border, 0, 0);
@@ -175,7 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Verify that the background color starts where we'd expect it to start
 				points[index] = new Point(innerX + (xdir * 0.25), innerY + (ydir * 0.25));
-				colors[index] = border.BackgroundColor;
+				colors[index] = background;
 				index++;
 			}
 
@@ -197,14 +198,14 @@ namespace Microsoft.Maui.DeviceTests
 					new RowDefinition(GridLength.Star),
 					new RowDefinition(GridLength.Star)
 				},
-				BackgroundColor = Colors.White
+				Background = Colors.White
 			};
 
 			var border = new Border()
 			{
 				Stroke = Colors.Black,
 				StrokeThickness = 10,
-				BackgroundColor = Colors.Red
+				Background = Colors.Red
 			};
 
 			grid.Add(border, 0, 0);
@@ -294,7 +295,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			double borderThickness = 10;
 			Border border = new Border() { WidthRequest = 200, HeightRequest = 100 };
-			border.BackgroundColor = Colors.Red;
+			border.Background = Colors.Red;
 			border.Stroke = Colors.Blue;
 			border.StrokeThickness = borderThickness;
 

@@ -31,7 +31,11 @@ namespace Microsoft.Maui.DeviceTests
 
 
 					if (useColor)
+					{
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 						backgroundColorContentPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
+#pragma warning restore CS0618
+					}
 					else
 						backgroundColorContentPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
 
@@ -167,7 +171,11 @@ namespace Microsoft.Maui.DeviceTests
 					ContentPage modalPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
 
 					if (useColor)
+					{
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 						modalPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
+#pragma warning restore CS0618
+					}
 					else
 						modalPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
 
@@ -211,7 +219,7 @@ namespace Microsoft.Maui.DeviceTests
 					var modalPage = new ContentPage()
 					{
 						Content = modalButton,
-						BackgroundColor = Colors.Purple.WithAlpha(0.5f)
+						Background = Colors.Purple.WithAlpha(0.5f)
 					};
 
 					var container = (WindowRootViewContainer)handler.PlatformView.Content;
@@ -258,14 +266,14 @@ namespace Microsoft.Maui.DeviceTests
 					var modalPageA = new ContentPage()
 					{
 						Content = modalButtonA,
-						BackgroundColor = Colors.Green.WithAlpha(0.5f)
+						Background = Colors.Green.WithAlpha(0.5f)
 					};
 
 					var modalButtonB = new Button() { Text = "Modal B Button" };
 					var modalPageB = new ContentPage()
 					{
 						Content = modalButtonB,
-						BackgroundColor = Colors.Red.WithAlpha(0.5f)
+						Background = Colors.Red.WithAlpha(0.5f)
 					};
 
 					var container = (WindowRootViewContainer)handler.PlatformView.Content;

@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var label = new Label
 			{
-				BackgroundColor = Colors.LightBlue,
+				Background = Colors.LightBlue,
 				HorizontalOptions = LayoutOptions.Start,
 				Text = "Hello",
 				WidthRequest = 50,
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var scrollView = new ScrollView
 			{
-				BackgroundColor = Colors.DarkBlue,
+				Background = Colors.DarkBlue,
 				Content = label,
 				WidthRequest = 300,
 				HeightRequest = 200,
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new Label() { Text = "Text inside a ScrollView" };
 			var scrollView = new ScrollView() { MaximumHeightRequest = 500, Content = label };
 			var parentLayout = new VerticalStackLayout { scrollView };
-			parentLayout.BackgroundColor = Colors.Blue;
+			parentLayout.Background = Colors.Blue;
 
 			SetupBuilder();
 
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 100,
 				HeightRequest = 100,
 				Text = "Hello",
-				BackgroundColor = Colors.LightBlue,
+				Background = Colors.LightBlue,
 				Margin = new Thickness(horizontalMargin, verticalMargin)
 			};
 

@@ -342,7 +342,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void Cleanup()
 		{
-			PropertyChanged -= TitleBar_PropertyChanged;
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
@@ -373,7 +372,6 @@ namespace Microsoft.Maui.Controls
 				}
 #pragma warning restore CS0618
 			}
-			
 		}
 
 		void UpdateFlowDirectionState()

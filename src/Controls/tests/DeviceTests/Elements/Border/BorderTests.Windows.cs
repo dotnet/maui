@@ -106,7 +106,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var border = new Border
 			{
-				BackgroundColor = Colors.Blue,
+				Background = Colors.Blue,
 				WidthRequest = 80,
 				HeightRequest = 80,
 				Content = boxView
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var border = new Border
 			{
-				BackgroundColor = Colors.Blue,
+				Background = Colors.Blue,
 				WidthRequest = requestedSize,
 				HeightRequest = requestedSize,
 				StrokeThickness = strokeThickness,

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
-			var flyoutLayout = new VerticalStackLayout() { BackgroundColor = Colors.Blue };
+			var flyoutLayout = new VerticalStackLayout() { Background = Colors.Blue };
 			flyoutLayout.Add(flyoutLabel);
 
 			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 				Detail = new ContentPage()
 				{
 					Title = "Detail",
-					Content = new Label() { Text = "Detail", BackgroundColor = Colors.Red }
+					Content = new Label() { Text = "Detail", Background = Colors.Red }
 				},
 				Flyout = new ContentPage()
 				{

@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Updates the handler by re-applying <see cref="VisualElement.Background"/>.</summary>
 		public static void MapBackground(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
-			
+
 		[Obsolete("MapBackgroundColor is obsolete. Use MapBackground instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void MapBackgroundColor(IViewHandler handler, IView view) =>

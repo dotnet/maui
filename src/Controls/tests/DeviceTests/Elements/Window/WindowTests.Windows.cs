@@ -25,12 +25,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var mainPage = new ContentPage
 			{
-				BackgroundColor = Colors.Red
+				Background = Colors.Red
 			};
 
 			var secondaryPage = new ContentPage
 			{
-				BackgroundColor = Colors.Green
+				Background = Colors.Green
 			};
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.DeviceTests
 				TitleBar = new TitleBar()
 				{
 					Title = "Hello World",
-					BackgroundColor = Colors.CornflowerBlue
+					Background = Colors.CornflowerBlue
 				}
 			};
 

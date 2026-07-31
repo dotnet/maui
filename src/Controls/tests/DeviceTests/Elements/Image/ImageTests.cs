@@ -64,12 +64,14 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ImageBackgroundColorConsistent()
 		{
 			var expected = Colors.AliceBlue;
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			var image = new Image()
 			{
 				BackgroundColor = expected,
 				HeightRequest = 100,
 				WidthRequest = 200
 			};
+#pragma warning restore CS0618
 
 			await ValidateHasColor(image, expected, typeof(ImageHandler));
 		}

@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				return new Controls.StackLayout
 				{
-#pragma warning disable CS0618 
+#pragma warning disable CS0618
 					BackgroundColor = Colors.Red
 #pragma warning restore CS0618
 				};
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var layout = new Controls.StackLayout
 			{
 				HorizontalOptions = LayoutOptions.Fill,
-	#pragma warning disable CS0618 
+	#pragma warning disable CS0618
 				BackgroundColor = Color.FromArgb("#e3f2fd"),
 	#pragma warning restore CS0618
 				Padding = 5,
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			BindableObject _target;
 			public CellContentView(BindableObject target, BindableObject container = null, bool hasVisualState = true, bool hasSeparator = true)
 			{
-#pragma warning disable CS0618 
+#pragma warning disable CS0618
 				BackgroundColor = Colors.Transparent;
 #pragma warning restore CS0618
 				var separator = new BoxView

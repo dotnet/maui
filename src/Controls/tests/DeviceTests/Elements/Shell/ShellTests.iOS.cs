@@ -326,7 +326,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var expected = Colors.Red;
 
-			var shellTitleView = new VerticalStackLayout { BackgroundColor = expected };
+			var shellTitleView = new VerticalStackLayout { Background = expected };
 			var titleViewContent = new Label { Text = "TitleView" };
 			shellTitleView.Children.Add(titleViewContent);
 
@@ -365,7 +365,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			var shellTitleView = new VerticalStackLayout { BackgroundColor = Colors.Green };
+			var shellTitleView = new VerticalStackLayout { Background = Colors.Green };
 			var titleViewContent = new Label { Text = "Full Height TitleView" };
 			shellTitleView.Children.Add(titleViewContent);
 

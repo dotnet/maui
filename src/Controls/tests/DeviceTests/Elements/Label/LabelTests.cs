@@ -320,7 +320,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					WidthRequest = 200,
 					HeightRequest = 100,
-					BackgroundColor = Colors.Blue,
+					Background = Colors.Blue,
 					FormattedText = new FormattedString
 					{
 						Spans =
@@ -749,12 +749,14 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task LabelBackgroundColorConsistent()
 		{
 			var expected = Colors.AliceBlue;
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			var label = new Label()
 			{
 				BackgroundColor = expected,
 				HeightRequest = 100,
 				WidthRequest = 200
 			};
+#pragma warning restore CS0618
 
 			await ValidateHasColor(label, expected, typeof(LabelHandler));
 		}

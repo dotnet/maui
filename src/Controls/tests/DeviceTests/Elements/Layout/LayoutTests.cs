@@ -395,7 +395,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Grid grid = new Grid()
 			{
-				BackgroundColor = Colors.Cyan,
+				Background = Colors.Cyan,
 				WidthRequest = 200,  // TODO: I really don't want to set size - need to hit iOS safe area too
 				HeightRequest = 500
 			};

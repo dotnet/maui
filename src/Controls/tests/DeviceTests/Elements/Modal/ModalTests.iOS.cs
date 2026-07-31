@@ -18,8 +18,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var expected = Colors.Red;
 
-			rootPage.BackgroundColor = expected;
-			modalPage.BackgroundColor = Colors.Transparent;
+			rootPage.Background = expected;
+			modalPage.Background = Colors.Transparent;
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (handler) =>
