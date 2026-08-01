@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Hosting
 		static readonly object s_appActionsSetLock = new();
 		static readonly List<AppActionsSetAssignment> s_appActionsSetAssignments = new();
 		static Task s_appActionsSetTail = Task.CompletedTask;
+		static readonly object s_appInfoSecureStorageBridgeLock = new();
 
 		// Serializes the shared map-token assignment graph and per-implementation state.
 		// It is intentionally NOT held across user code, facade reads, or user-implementable
@@ -285,6 +286,7 @@ namespace Microsoft.Maui.Hosting
 					BridgeAppInfoSecureStorageFromDI(
 						versionTrackingDependencies.AppInfo,
 						versionTrackingDependencies.SecureStorage,
+						versionTrackingDependencies.AppInfoOwner,
 						versionTrackingDependencies.AppInfoSecureStoragePredecessor,
 						facadeCleanups);
 
@@ -439,6 +441,7 @@ namespace Microsoft.Maui.Hosting
 				IVersionTracking? VersionTracking,
 				IGeocoding? Geocoding,
 				ISecureStorage? SecureStorage,
+				FacadeAssignment<IAppInfo>? AppInfoOwner,
 				FacadePredecessor<ISecureStorage> AppInfoSecureStoragePredecessor) BridgeEssentialsFromDI(
 				IServiceProvider services,
 				List<Action> facadeCleanups,
@@ -449,6 +452,7 @@ namespace Microsoft.Maui.Hosting
 				IVersionTracking? versionTracking = null;
 				IGeocoding? geocoding = null;
 				ISecureStorage? secureStorage = null;
+				FacadeAssignment<IAppInfo>? appInfoOwner = null;
 				FacadePredecessor<ISecureStorage> appInfoSecureStoragePredecessor = default;
 
 				// SetDefault pattern types
@@ -539,7 +543,16 @@ namespace Microsoft.Maui.Hosting
 								"defaultImplementation"));
 					}
 
-					TrackAndSet(appInfo, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
+					lock (s_appInfoSecureStorageBridgeLock)
+					{
+						appInfoOwner = TrackAndSet(
+							appInfo,
+							() => GetFacadeBackingField<IAppInfo>(
+								typeof(AppInfo),
+								"currentImplementation"),
+							AppInfo.SetCurrent,
+							facadeCleanups);
+					}
 				}
 				BridgeIfRegistered<IConnectivity>(services, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
@@ -556,6 +569,7 @@ namespace Microsoft.Maui.Hosting
 					versionTracking,
 					geocoding,
 					secureStorage,
+					appInfoOwner,
 					appInfoSecureStoragePredecessor);
 			}
 
@@ -566,6 +580,7 @@ namespace Microsoft.Maui.Hosting
 					IVersionTracking? VersionTracking,
 					IGeocoding? Geocoding,
 					ISecureStorage? SecureStorage,
+					FacadeAssignment<IAppInfo>? AppInfoOwner,
 					FacadePredecessor<ISecureStorage> AppInfoSecureStoragePredecessor) dependencies,
 				List<Action> facadeCleanups)
 			{
@@ -596,10 +611,11 @@ namespace Microsoft.Maui.Hosting
 			static void BridgeAppInfoSecureStorageFromDI(
 				IAppInfo? appInfo,
 				ISecureStorage? secureStorage,
+				FacadeAssignment<IAppInfo>? appInfoOwner,
 				FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo,
 				List<Action> facadeCleanups)
 			{
-				if (appInfo is null || secureStorage is not null)
+				if (appInfo is null || secureStorage is not null || appInfoOwner is null)
 					return;
 
 				// Install VersionTracking ownership before invoking the app-provided PackageName
@@ -613,18 +629,55 @@ namespace Microsoft.Maui.Hosting
 				if (defaultAccessiblePredecessor is IPlatformSecureStorage platformSecureStorage)
 					inheritedDefaultAccessible = platformSecureStorage.DefaultAccessible;
 
-				TrackAndSetAppInfoSecureStorage(
-					secureStoragePackageName,
-					predecessorBeforeAppInfo,
-					facadeCleanups,
-					defaultAccessiblePredecessor,
-					inheritedDefaultAccessible);
+				lock (s_appInfoSecureStorageBridgeLock)
+				{
+					if (!IsCurrentFacadeOwner(
+						appInfoOwner,
+						() => GetFacadeBackingField<IAppInfo>(
+							typeof(AppInfo),
+							"currentImplementation")))
+					{
+						return;
+					}
+
+					TrackAndSetAppInfoSecureStorage(
+						secureStoragePackageName,
+						predecessorBeforeAppInfo,
+						facadeCleanups,
+						defaultAccessiblePredecessor,
+						inheritedDefaultAccessible);
+				}
 #else
-				TrackAndSetAppInfoSecureStorage(
-					secureStoragePackageName,
-					predecessorBeforeAppInfo,
-					facadeCleanups);
+				lock (s_appInfoSecureStorageBridgeLock)
+				{
+					if (!IsCurrentFacadeOwner(
+						appInfoOwner,
+						() => GetFacadeBackingField<IAppInfo>(
+							typeof(AppInfo),
+							"currentImplementation")))
+					{
+						return;
+					}
+
+					TrackAndSetAppInfoSecureStorage(
+						secureStoragePackageName,
+						predecessorBeforeAppInfo,
+						facadeCleanups);
+				}
 #endif
+			}
+
+			static bool IsCurrentFacadeOwner<T>(
+				FacadeAssignment<T> assignment,
+				Func<T?> currentGetter)
+				where T : class
+			{
+				lock (FacadeBridgeState<T>.SyncRoot)
+				{
+					return ReferenceEquals(
+						FacadeBridgeState<T>.FindOwner(currentGetter()),
+						assignment);
+				}
 			}
 
 			static void TrackAndSetAppInfoSecureStorage(
@@ -753,7 +806,7 @@ namespace Microsoft.Maui.Hosting
 				}
 			}
 
-			static void TrackAndSet<T>(
+			static FacadeAssignment<T> TrackAndSet<T>(
 				T impl,
 				Func<T?> currentGetter,
 				Action<T?> setter,
@@ -761,10 +814,10 @@ namespace Microsoft.Maui.Hosting
 				bool allowsSharedOwnership = false)
 				where T : class
 			{
-				TrackAndSet(_ => impl, currentGetter, setter, facadeCleanups, allowsSharedOwnership);
+				return TrackAndSet(_ => impl, currentGetter, setter, facadeCleanups, allowsSharedOwnership);
 			}
 
-			static void TrackAndSet<T>(
+			static FacadeAssignment<T> TrackAndSet<T>(
 				Func<T?, T> implementationFactory,
 				Func<T?> currentGetter,
 				Action<T?> setter,
@@ -793,6 +846,7 @@ namespace Microsoft.Maui.Hosting
 				}
 
 				AddFacadeCleanup(assignment, currentGetter, setter, facadeCleanups, facadeSyncRoot);
+				return assignment;
 			}
 
 			// Invariant: every bridge-owned get-current-owner -> set/restore sequence MUST hold

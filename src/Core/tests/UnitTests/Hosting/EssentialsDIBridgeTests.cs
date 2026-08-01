@@ -1231,6 +1231,51 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task ConcurrentAppInfoPackageNameCannotStalePublishSecureStorage()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var firstEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseFirstPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var firstAppInfo = new BlockingPackageNameAppInfo(
+				"first.package",
+				firstEnteredPackageName,
+				releaseFirstPackageName);
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppInfo>(firstAppInfo);
+				var firstBuild = Task.Run(() => firstApp = firstBuilder.Build());
+				await firstEnteredPackageName.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				var secondAppInfo = new StubAppInfo(packageName: "second.package");
+				secondBuilder.Services.AddSingleton<IAppInfo>(secondAppInfo);
+				secondApp = secondBuilder.Build();
+				var secondSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+				releaseFirstPackageName.SetResult(true);
+				await firstBuild.WaitAsync(timeout);
+
+				Assert.Same(secondAppInfo, AppInfo.Current);
+				Assert.Same(secondSecureStorage, SecureStorage.Default);
+				Assert.Equal(
+					"second.package.microsoft.maui.essentials.preferences",
+					secondSecureStorage.Alias);
+			}
+			finally
+			{
+				releaseFirstPackageName.TrySetResult(true);
+				firstApp?.Dispose();
+				secondApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public void OverlappingMauiAppsOwnIndependentLazyVersionTrackingFacades()
 		{
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
@@ -2136,6 +2181,32 @@ namespace Microsoft.Maui.UnitTests.Hosting
 						SecureStorageInitializedDuringPackageName = implementation;
 					}
 
+					return base.PackageName;
+				}
+			}
+		}
+
+		sealed class BlockingPackageNameAppInfo : StubAppInfo
+		{
+			readonly TaskCompletionSource<bool> _enteredPackageName;
+			readonly TaskCompletionSource<bool> _releasePackageName;
+
+			public BlockingPackageNameAppInfo(
+				string packageName,
+				TaskCompletionSource<bool> enteredPackageName,
+				TaskCompletionSource<bool> releasePackageName)
+				: base(packageName: packageName)
+			{
+				_enteredPackageName = enteredPackageName;
+				_releasePackageName = releasePackageName;
+			}
+
+			public override string PackageName
+			{
+				get
+				{
+					_enteredPackageName.TrySetResult(true);
+					_releasePackageName.Task.GetAwaiter().GetResult();
 					return base.PackageName;
 				}
 			}
