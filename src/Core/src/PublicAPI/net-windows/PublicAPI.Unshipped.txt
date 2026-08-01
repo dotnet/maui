@@ -1,4 +1,9 @@
 #nullable enable
+Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Dark = 2 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
 Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated
 Microsoft.Maui.Platform.MauiLayoutAutomationPeer
 Microsoft.Maui.Platform.MauiLayoutAutomationPeer.MauiLayoutAutomationPeer(Microsoft.Maui.Platform.LayoutPanel! owner) -> void

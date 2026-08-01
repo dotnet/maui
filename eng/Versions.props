@@ -39,7 +39,7 @@
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- dotnet-optimization -->
-    <optimizationandroidx64MIBCRuntimePackageVersion>1.0.0-prerelease.26317.1</optimizationandroidx64MIBCRuntimePackageVersion>
+    <optimizationandroidx64MIBCRuntimePackageVersion>1.0.0-prerelease.26318.1</optimizationandroidx64MIBCRuntimePackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
     <MicrosoftExtensionsConfigurationVersion>11.0.0-rc.1.26381.101</MicrosoftExtensionsConfigurationVersion>
@@ -79,6 +79,7 @@
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- wasdk -->
+    <MicrosoftWindowsCsWin32PackageVersion>0.3.298</MicrosoftWindowsCsWin32PackageVersion>
     <MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>0.5.0</MicrosoftWindowsSDKBuildToolsWinAppPackageVersion>
     <MicrosoftWindowsAppSDKPackageVersion>2.3.1</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.28000.2526</MicrosoftWindowsSDKBuildToolsPackageVersion>
@@ -98,6 +99,8 @@
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>11.0.0-rc.1.26381.101</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>11.0.0-rc.1.26381.101</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>11.0.0-rc.1.26381.101</MicrosoftJSInteropPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>11.0.0-rc.1.26381.101</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>11.0.0-rc.1.26381.101</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
     <!-- Everything else (previous edition) -->
     <MicrosoftAspNetCorePackageVersion>10.0.2</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
@@ -173,6 +176,7 @@
     <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
     <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
+    <AvaloniaControlsMauiPackageVersion>11.0.0-preview.6.26198.1455</AvaloniaControlsMauiPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->
