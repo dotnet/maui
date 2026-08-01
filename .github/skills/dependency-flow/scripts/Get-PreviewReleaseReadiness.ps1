@@ -192,13 +192,17 @@ function Test-PluginEnabled {
     # users are never silently opted in. (Matches the hardening shipped in #36268.)
 
     # Match an enabled entry, tolerant of a marketplace suffix being present or
-    # absent. Anchored to the start of a line (after optional whitespace) so a
-    # commented-out entry such as `// "dotnet-release-tracker@x": true` is ignored.
-    # A string-aware JSONC comment scrub below also removes block-commented and
-    # inline-commented entries before matching, so neither is read as enabled.
+    # absent. We anchor the key to a JSON boundary — an opening `{`, a `,`, or
+    # whitespace — via a look-behind rather than to the start of a physical line,
+    # so a *minified* single-line settings file (e.g. `{"enabledPlugins":{"dotnet-
+    # release-tracker@x":true}}`) still matches. A start-of-line anchor would have
+    # produced a false negative for minified JSON, wrongly reporting an enabled
+    # plugin as not-enabled. Comment avoidance is handled by the string-aware
+    # Remove-JsoncComments scrub below (it strips block-, line-, and inline-comment
+    # entries before matching), so we no longer rely on a line anchor for that.
     # Examples that match: "dotnet-release-tracker": true
     #                      "dotnet-release-tracker@dotnet-release": true
-    $pattern = '(?m)^\s*"' + [regex]::Escape($Plugin) + '(@[^"]+)?"\s*:\s*true'
+    $pattern = '(?<=[{,\s])"' + [regex]::Escape($Plugin) + '(@[^"]+)?"\s*:\s*true'
     foreach ($path in ($candidates | Select-Object -Unique)) {
         if (Test-Path -LiteralPath $path) {
             try {
