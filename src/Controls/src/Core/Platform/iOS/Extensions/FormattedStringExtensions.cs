@@ -21,7 +21,16 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString? ToNSAttributedString(this Label label)
-			=> ToNSAttributedString(
+		{
+			// Resolve the *effective* flow direction so that inherited RTL is honored
+			// (e.g. FlowDirection="MatchParent" under an RTL parent), matching how the
+			// plain-text path uses EffectiveUserInterfaceLayoutDirection. ToFlowDirection()
+			// always resolves to a concrete LeftToRight/RightToLeft (never MatchParent), so
+			// an already-resolved LTR label does not fall back to NSWritingDirection.Natural.
+			var effectiveFlowDirection = ((IVisualElementController)label).EffectiveFlowDirection;
+			var flowDirection = effectiveFlowDirection.ToFlowDirection();
+
+			return ToNSAttributedString(
 				label.FormattedText,
 				label.RequireFontManager(),
 				label.LineHeight,
@@ -30,7 +39,9 @@ namespace Microsoft.Maui.Controls.Platform
 				label.TextColor,
 				label.TextTransform,
 				label.LineBreakMode,
-				label.CharacterSpacing);
+				label.CharacterSpacing,
+				flowDirection);
+		}
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -51,7 +62,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
 			LineBreakMode lineBreakMode,
-			double defaultCharacterSpacing = 0d)
+			double defaultCharacterSpacing = 0d,
+			FlowDirection defaultFlowDirection = FlowDirection.MatchParent)
 		{
 			if (formattedString == null)
 			{
@@ -68,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing));
+					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing, defaultFlowDirection));
 			}
 
 			return attributed;
@@ -93,7 +105,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
 			LineBreakMode lineBreakMode,
-			double defaultCharacterSpacing = 0d)
+			double defaultCharacterSpacing = 0d,
+			FlowDirection defaultFlowDirection = FlowDirection.MatchParent)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -115,12 +128,28 @@ namespace Microsoft.Maui.Controls.Platform
 				style.LineHeightMultiple = new nfloat(lineHeight);
 			}
 
+			// Set the writing direction on the paragraph style so that RTL text is
+			// rendered correctly in the attributed string (plain-text labels use
+			// EffectiveUserInterfaceLayoutDirection at the view level, but
+			// NSAttributedString paragraphs need their own direction hint).
+			style.BaseWritingDirection = defaultFlowDirection switch
+			{
+				FlowDirection.RightToLeft => NSWritingDirection.RightToLeft,
+				FlowDirection.LeftToRight => NSWritingDirection.LeftToRight,
+				_ => NSWritingDirection.Natural
+			};
+
+			// Mirror Start/End alignment for RTL so that TextAlignment.Start means
+			// "leading edge" on all flow directions, matching the plain-text path
+			// (which calls ToPlatformHorizontal(EffectiveUserInterfaceLayoutDirection)).
+			var isRtl = defaultFlowDirection == FlowDirection.RightToLeft;
 			style.Alignment = defaultHorizontalAlignment switch
 			{
-				TextAlignment.Start => UITextAlignment.Left,
+				TextAlignment.Start => isRtl ? UITextAlignment.Right : UITextAlignment.Left,
 				TextAlignment.Center => UITextAlignment.Center,
-				TextAlignment.End => UITextAlignment.Right,
-				_ => UITextAlignment.Left
+				TextAlignment.End => isRtl ? UITextAlignment.Left : UITextAlignment.Right,
+				TextAlignment.Justify => UITextAlignment.Justified,
+				_ => isRtl ? UITextAlignment.Right : UITextAlignment.Left
 			};
 
 			style.LineBreakMode = lineBreakMode switch
@@ -147,8 +176,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
 			// CharacterSpacing with validation
-			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
-				? span.CharacterSpacing 
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty)
+				? span.CharacterSpacing
 				: defaultCharacterSpacing;
 			characterSpacing = Math.Max(0, characterSpacing);
 
