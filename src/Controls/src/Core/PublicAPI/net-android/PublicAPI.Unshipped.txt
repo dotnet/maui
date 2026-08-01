@@ -285,3 +285,4 @@ override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAd
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool

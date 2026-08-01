@@ -188,3 +188,4 @@ virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
