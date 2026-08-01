@@ -148,9 +148,17 @@ namespace Microsoft.Maui.Storage
 					return current;
 
 				var packageName = SecureStorageImplementation.GetDefaultPackageName();
+#if WINDOWS
+				var appDataDirectory = FileSystem.AppDataDirectory;
+#endif
 				return EssentialsImplementation.GetOrCreate(
 					ref defaultImplementation,
-					() => new SecureStorageImplementation(packageName));
+					() => new SecureStorageImplementation(
+						packageName
+#if WINDOWS
+						, appDataDirectory
+#endif
+						));
 			}
 		}
 
@@ -218,13 +226,32 @@ namespace Microsoft.Maui.Storage
 		{
 		}
 
-		internal SecureStorageImplementation(string packageName)
+		internal SecureStorageImplementation(
+			string packageName
+#if WINDOWS
+			, string? appDataDirectory = null
+#endif
+			)
 		{
 			Alias = Preferences.GetPrivatePreferencesSharedName(packageName, "preferences");
+#if WINDOWS
+			UnpackagedAppDataDirectory = appDataDirectory;
+#endif
 			InitializePlatform();
 		}
 
 		internal string Alias { get; }
+
+		internal static bool UsesFileSystemAppDataDirectory =>
+#if WINDOWS
+			!AppInfoUtils.IsPackagedApp;
+#else
+			false;
+#endif
+
+#if WINDOWS
+		internal string? UnpackagedAppDataDirectory { get; }
+#endif
 
 		partial void InitializePlatform();
 
@@ -277,6 +304,9 @@ namespace Microsoft.Maui.Storage
 		internal AppInfoSecureStorage(
 			string packageName,
 			ISecureStorage? previous
+#if WINDOWS
+			, string appDataDirectory
+#endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 			, Security.SecAccessible? inheritedDefaultAccessible = null
 #endif
@@ -285,7 +315,12 @@ namespace Microsoft.Maui.Storage
 			_implementation = new(
 				() =>
 				{
-					var implementation = new SecureStorageImplementation(packageName);
+					var implementation = new SecureStorageImplementation(
+						packageName
+#if WINDOWS
+						, appDataDirectory
+#endif
+						);
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 					implementation.DefaultAccessible = _defaultAccessible;
 #endif

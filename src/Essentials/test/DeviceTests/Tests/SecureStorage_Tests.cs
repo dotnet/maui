@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task Unpackaged_Write_Uses_Captured_AppDataDirectory()
+		public async Task Unpackaged_Instance_Uses_Captured_AppDataDirectory()
 		{
 			var originalFileSystem = FileSystem.Current;
 			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
@@ -373,18 +373,153 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			{
 				FileSystem.SetCurrent(new StubFileSystem(firstAppData));
 				var storage = new UnpackagedSecureStorageImplementation();
-				var writePath = storage.CaptureWritePath();
 
 				FileSystem.SetCurrent(new StubFileSystem(secondAppData));
-				await storage.SetAsync(key, value, writePath);
+				await storage.SetAsync(key, value);
 				Assert.Null(await new UnpackagedSecureStorageImplementation().GetAsync(key));
+				Assert.Equal(value, await storage.GetAsync(key));
+				Assert.True(storage.Remove(key));
 
 				FileSystem.SetCurrent(new StubFileSystem(firstAppData));
-				Assert.Equal(value, await new UnpackagedSecureStorageImplementation().GetAsync(key));
+				Assert.Null(await new UnpackagedSecureStorageImplementation().GetAsync(key));
 			}
 			finally
 			{
 				FileSystem.SetCurrent(originalFileSystem);
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public void AppInfo_Bridge_Captures_Owning_FileSystem_AppDataDirectory()
+		{
+			var originalAppInfo = AppInfo.Current;
+			var originalFileSystem = FileSystem.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var firstAppData = Path.Combine(root, "first", "AppData");
+			var secondAppData = Path.Combine(root, "second", "AppData");
+			MauiApp firstApp = null;
+			MauiApp secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IFileSystem>(new StubFileSystem(firstAppData));
+				firstBuilder.Services.AddSingleton<IAppInfo>(
+					new WindowsStubAppInfo("first.securestorage.package"));
+				firstApp = firstBuilder.Build();
+				var firstWrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				Assert.False(firstWrapper.IsValueCreated);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IFileSystem>(new StubFileSystem(secondAppData));
+				secondBuilder.Services.AddSingleton<IAppInfo>(
+					new WindowsStubAppInfo("second.securestorage.package"));
+				secondApp = secondBuilder.Build();
+
+				var implementation = GetWrappedImplementation(firstWrapper);
+				Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
+			}
+			finally
+			{
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+				SecureStorage.SetDefault(originalSecureStorage);
+				FileSystem.SetCurrent(originalFileSystem);
+				AppInfo.SetCurrent(originalAppInfo);
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public void FileSystem_Bridge_Owns_Default_SecureStorage_Only_For_File_Backed_Storage()
+		{
+			var originalSecureStorage = SecureStorage.Default;
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var appDataDirectory = Path.Combine(root, "AppData");
+			MauiApp app = null;
+
+			SecureStorage.SetDefault(null);
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IFileSystem>(
+					new StubFileSystem(appDataDirectory));
+				app = builder.Build();
+
+				if (SecureStorageImplementation.UsesFileSystemAppDataDirectory)
+				{
+					var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+					var implementation = GetWrappedImplementation(wrapper);
+					Assert.Equal(appDataDirectory, implementation.UnpackagedAppDataDirectory);
+				}
+				else
+				{
+					Assert.Null(GetSecureStorageBackingField());
+				}
+
+				app.Dispose();
+				app = null;
+				Assert.Null(GetSecureStorageBackingField());
+			}
+			finally
+			{
+				app?.Dispose();
+				SecureStorage.SetDefault(originalSecureStorage);
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public async Task AppInfo_Bridge_Captures_FileSystem_Before_Reentrant_PackageName()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var enteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releasePackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = AppInfo.Current;
+			var originalFileSystem = FileSystem.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var firstAppData = Path.Combine(root, "first", "AppData");
+			var secondAppData = Path.Combine(root, "second", "AppData");
+			var appInfo = new BlockingWindowsStubAppInfo(
+				"reentrant.securestorage.package",
+				enteredPackageName,
+				releasePackageName);
+			MauiApp app = null;
+
+			SecureStorage.SetDefault(null);
+			FileSystem.SetCurrent(new StubFileSystem(firstAppData));
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IAppInfo>(appInfo);
+				var build = Task.Run(() => app = builder.Build());
+				await enteredPackageName.Task.WaitAsync(timeout);
+
+				FileSystem.SetCurrent(new StubFileSystem(secondAppData));
+				releasePackageName.SetResult(true);
+				await build.WaitAsync(timeout);
+
+				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				var implementation = GetWrappedImplementation(wrapper);
+				Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
+			}
+			finally
+			{
+				releasePackageName.TrySetResult(true);
+				app?.Dispose();
+				SecureStorage.SetDefault(originalSecureStorage);
+				FileSystem.SetCurrent(originalFileSystem);
+				AppInfo.SetCurrent(originalAppInfo);
 				if (Directory.Exists(root))
 					Directory.Delete(root, recursive: true);
 			}
@@ -406,6 +541,78 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			public Task<bool> AppPackageFileExistsAsync(string filename) =>
 				throw new NotSupportedException();
+		}
+
+		class WindowsStubAppInfo : IAppInfo
+		{
+			public WindowsStubAppInfo(string packageName)
+			{
+				PackageName = packageName;
+			}
+
+			public virtual string PackageName { get; }
+
+			public string Name => "Test";
+
+			public string VersionString => "1.0.0";
+
+			public Version Version => Version.Parse(VersionString);
+
+			public string BuildString => "1";
+
+			public AppTheme RequestedTheme => AppTheme.Light;
+
+			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+
+			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
+
+			public void ShowSettingsUI()
+			{
+			}
+		}
+
+		sealed class BlockingWindowsStubAppInfo : WindowsStubAppInfo
+		{
+			readonly TaskCompletionSource<bool> _enteredPackageName;
+			readonly TaskCompletionSource<bool> _releasePackageName;
+
+			public BlockingWindowsStubAppInfo(
+				string packageName,
+				TaskCompletionSource<bool> enteredPackageName,
+				TaskCompletionSource<bool> releasePackageName)
+				: base(packageName)
+			{
+				_enteredPackageName = enteredPackageName;
+				_releasePackageName = releasePackageName;
+			}
+
+			public override string PackageName
+			{
+				get
+				{
+					_enteredPackageName.TrySetResult(true);
+					_releasePackageName.Task.GetAwaiter().GetResult();
+					return base.PackageName;
+				}
+			}
+		}
+
+		static SecureStorageImplementation GetWrappedImplementation(
+			AppInfoSecureStorage wrapper)
+		{
+			var field = typeof(AppInfoSecureStorage)
+				.GetField("_implementation", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			var lazy = Assert.IsType<Lazy<SecureStorageImplementation>>(field.GetValue(wrapper));
+			return lazy.Value;
+		}
+
+		static ISecureStorage GetSecureStorageBackingField()
+		{
+			var field = typeof(SecureStorage)
+				.GetField("defaultImplementation", BindingFlags.Static | BindingFlags.NonPublic);
+			Assert.NotNull(field);
+			return (ISecureStorage)field.GetValue(null);
 		}
 #endif
 

@@ -288,7 +288,9 @@ namespace Microsoft.Maui.Hosting
 					BridgeAppInfoSecureStorageFromDI(
 						versionTrackingDependencies.AppInfo,
 						versionTrackingDependencies.SecureStorage,
+						versionTrackingDependencies.FileSystem,
 						versionTrackingDependencies.AppInfoOwner,
+						versionTrackingDependencies.FileSystemOwner,
 						versionTrackingDependencies.AppInfoSecureStoragePredecessor,
 						facadeCleanups);
 
@@ -443,7 +445,9 @@ namespace Microsoft.Maui.Hosting
 				IVersionTracking? VersionTracking,
 				IGeocoding? Geocoding,
 				ISecureStorage? SecureStorage,
+				IFileSystem? FileSystem,
 				FacadeAssignment<IAppInfo>? AppInfoOwner,
+				FacadeAssignment<IFileSystem>? FileSystemOwner,
 				AppInfoSecureStoragePredecessor AppInfoSecureStoragePredecessor) BridgeEssentialsFromDI(
 				IServiceProvider services,
 				List<Action> facadeCleanups,
@@ -454,7 +458,9 @@ namespace Microsoft.Maui.Hosting
 				IVersionTracking? versionTracking = null;
 				IGeocoding? geocoding = null;
 				ISecureStorage? secureStorage = null;
+				IFileSystem? fileSystem = null;
 				FacadeAssignment<IAppInfo>? appInfoOwner = null;
+				FacadeAssignment<IFileSystem>? fileSystemOwner = null;
 				AppInfoSecureStoragePredecessor appInfoSecureStoragePredecessor = default;
 
 				// SetDefault pattern types
@@ -535,16 +541,27 @@ namespace Microsoft.Maui.Hosting
 #endif
 				}
 				appInfo = services.GetService<IAppInfo>();
-				if (appInfo is not null)
+				fileSystem = services.GetService<IFileSystem>();
+				var fileSystemOwnsSecureStorage =
+					fileSystem is not null &&
+					SecureStorageImplementation.UsesFileSystemAppDataDirectory;
+				if (secureStorage is null &&
+					(appInfo is not null
+#if WINDOWS
+					|| fileSystemOwnsSecureStorage
+#endif
+					))
 				{
-					if (secureStorage is null)
-					{
-						(appInfoOwner, appInfoSecureStoragePredecessor) =
-							TrackAndSetAppInfoWithSecureStoragePredecessor(
-								appInfo,
-								facadeCleanups);
-					}
-					else
+					(appInfoOwner, fileSystemOwner, appInfoSecureStoragePredecessor) =
+						TrackAndSetSecureStorageDependencies(
+							appInfo,
+							fileSystem,
+							fileSystemOwnsSecureStorage,
+							facadeCleanups);
+				}
+				else
+				{
+					if (appInfo is not null)
 					{
 						lock (s_appInfoSecureStorageBridgeLock)
 						{
@@ -557,11 +574,17 @@ namespace Microsoft.Maui.Hosting
 								facadeCleanups);
 						}
 					}
+
+					if (fileSystem is not null)
+					{
+						var trackedFileSystemOwner = TrackAndSet(fileSystem, () => GetFacadeBackingField<IFileSystem>(typeof(FileSystem), "currentImplementation"), FileSystem.SetCurrent, facadeCleanups);
+						if (fileSystemOwnsSecureStorage)
+							fileSystemOwner = trackedFileSystemOwner;
+					}
 				}
 				BridgeIfRegistered<IConnectivity>(services, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceInfo>(services, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);
-				BridgeIfRegistered<IFileSystem>(services, () => GetFacadeBackingField<IFileSystem>(typeof(FileSystem), "currentImplementation"), FileSystem.SetCurrent, facadeCleanups);
 				geocoding = preResolvedGeocoding ?? services.GetService<IGeocoding>();
 				if (geocoding is not null)
 					TrackAndSet(geocoding, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
@@ -573,7 +596,9 @@ namespace Microsoft.Maui.Hosting
 					versionTracking,
 					geocoding,
 					secureStorage,
+					fileSystem,
 					appInfoOwner,
+					fileSystemOwner,
 					appInfoSecureStoragePredecessor);
 			}
 
@@ -584,7 +609,9 @@ namespace Microsoft.Maui.Hosting
 					IVersionTracking? VersionTracking,
 					IGeocoding? Geocoding,
 					ISecureStorage? SecureStorage,
+					IFileSystem? FileSystem,
 					FacadeAssignment<IAppInfo>? AppInfoOwner,
+					FacadeAssignment<IFileSystem>? FileSystemOwner,
 					AppInfoSecureStoragePredecessor AppInfoSecureStoragePredecessor) dependencies,
 				List<Action> facadeCleanups)
 			{
@@ -615,35 +642,46 @@ namespace Microsoft.Maui.Hosting
 			static void BridgeAppInfoSecureStorageFromDI(
 				IAppInfo? appInfo,
 				ISecureStorage? secureStorage,
+				IFileSystem? fileSystem,
 				FacadeAssignment<IAppInfo>? appInfoOwner,
+				FacadeAssignment<IFileSystem>? fileSystemOwner,
 				AppInfoSecureStoragePredecessor predecessor,
 				List<Action> facadeCleanups)
 			{
-				if (appInfo is null || secureStorage is not null || appInfoOwner is null)
+				if (secureStorage is not null ||
+					(appInfoOwner is null
+#if WINDOWS
+					&& fileSystemOwner is null
+#endif
+					))
 					return;
 
 				// Install VersionTracking ownership before invoking the app-provided PackageName
 				// getter, which may reentrantly access other static Essentials facades.
 				// SecureStorage namespaces follow the bridged package name. Apps that change
 				// PackageName must migrate existing secrets or register ISecureStorage.
-				var secureStoragePackageName = appInfo.PackageName;
+#if WINDOWS
+				var appDataDirectory = (fileSystem ?? FileSystem.Current).AppDataDirectory;
+#endif
+				var secureStoragePackageName = (appInfo ?? AppInfo.Current).PackageName;
 
 				// PackageName can yield while a newer app takes AppInfo ownership. Keep the
 				// original app's cleanup slot and install its matching SecureStorage only if
 				// that AppInfo assignment becomes current again.
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 				var installation = new DeferredAppInfoSecureStorageInstallation(
 					appInfoOwner,
+					fileSystemOwner,
 					secureStoragePackageName,
-					predecessor.Facade,
-					predecessor.DefaultAccessiblePredecessor,
-					predecessor.InheritedDefaultAccessible);
-#else
-				var installation = new DeferredAppInfoSecureStorageInstallation(
-					appInfoOwner,
-					secureStoragePackageName,
-					predecessor.Facade);
+					predecessor.Facade
+#if WINDOWS
+					, appDataDirectory
 #endif
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+					,
+					predecessor.DefaultAccessiblePredecessor,
+					predecessor.InheritedDefaultAccessible
+#endif
+					);
 				facadeCleanups.Add(() => CleanupDeferredAppInfoSecureStorageInstallation(installation));
 
 				lock (s_appInfoSecureStorageBridgeLock)
@@ -675,6 +713,9 @@ namespace Microsoft.Maui.Hosting
 				Debug.Assert(Monitor.IsEntered(s_appInfoSecureStorageBridgeLock));
 				Debug.Assert(installation.SecureStorageCleanup is null);
 
+				if (installation.AppInfoOwner is null)
+					return TryInstallAppInfoSecureStorageWithFileSystemOwner(installation);
+
 				var appInfoFacadeSyncRoot = EssentialsImplementation.GetSyncRoot<IAppInfo>();
 				lock (FacadeBridgeState<IAppInfo>.SyncRoot)
 				{
@@ -690,32 +731,71 @@ namespace Microsoft.Maui.Hosting
 							return false;
 						}
 
-						NormalizeDeferredAppInfoSecureStoragePredecessor(installation);
-						var secureStorageCleanups = new List<Action>();
-						// No user code runs below. Hold the AppInfo locks until SecureStorage is
-						// published so a direct AppInfo.SetCurrent cannot split the paired update.
-						// A newer SecureStorage-only app retains precedence; its cleanup retries
-						// reconciliation after removing that newer assignment.
-						if (!TrackAndSetAppInfoSecureStorage(
-							installation.PackageName,
-							installation.PredecessorBeforeAppInfo,
-							secureStorageCleanups
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-							, installation.DefaultAccessiblePredecessor,
-							installation.InheritedDefaultAccessible
-#endif
-							, preserveNewerAssignments: true
-							))
-						{
-							return false;
-						}
-
-						Debug.Assert(secureStorageCleanups.Count == 1);
-						installation.SecureStorageCleanup = secureStorageCleanups[0];
-						installation.ReleasePredecessor();
-						return true;
+						return TryInstallAppInfoSecureStorageWithFileSystemOwner(installation);
 					}
 				}
+			}
+
+			static bool TryInstallAppInfoSecureStorageWithFileSystemOwner(
+				DeferredAppInfoSecureStorageInstallation installation)
+			{
+#if WINDOWS
+				if (installation.FileSystemOwner is not null)
+				{
+					var fileSystemFacadeSyncRoot = EssentialsImplementation.GetSyncRoot<IFileSystem>();
+					lock (FacadeBridgeState<IFileSystem>.SyncRoot)
+					{
+						lock (fileSystemFacadeSyncRoot)
+						{
+							var current = GetFacadeBackingField<IFileSystem>(
+								typeof(FileSystem),
+								"currentImplementation");
+							if (!ReferenceEquals(
+								FacadeBridgeState<IFileSystem>.FindOwner(current),
+								installation.FileSystemOwner))
+							{
+								return false;
+							}
+
+							return TryInstallAppInfoSecureStorageCore(installation);
+						}
+					}
+				}
+#endif
+
+				return TryInstallAppInfoSecureStorageCore(installation);
+			}
+
+			static bool TryInstallAppInfoSecureStorageCore(
+				DeferredAppInfoSecureStorageInstallation installation)
+			{
+				NormalizeDeferredAppInfoSecureStoragePredecessor(installation);
+				var secureStorageCleanups = new List<Action>();
+				// No user code runs below. Hold every app-owned dependency lock until SecureStorage
+				// is published so direct facade setters cannot split the derived assignment.
+				// A newer SecureStorage-only app retains precedence; its cleanup retries
+				// reconciliation after removing that newer assignment.
+				if (!TrackAndSetAppInfoSecureStorage(
+					installation.PackageName,
+					installation.PredecessorBeforeAppInfo,
+					secureStorageCleanups
+#if WINDOWS
+					, installation.AppDataDirectory
+#endif
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+					, installation.DefaultAccessiblePredecessor,
+					installation.InheritedDefaultAccessible
+#endif
+					, preserveNewerAssignments: true
+					))
+				{
+					return false;
+				}
+
+				Debug.Assert(secureStorageCleanups.Count == 1);
+				installation.SecureStorageCleanup = secureStorageCleanups[0];
+				installation.ReleasePredecessor();
+				return true;
 			}
 
 			static void NormalizeDeferredAppInfoSecureStoragePredecessor(
@@ -749,6 +829,9 @@ namespace Microsoft.Maui.Hosting
 				string packageName,
 				FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo,
 				List<Action> facadeCleanups
+#if WINDOWS
+				, string appDataDirectory
+#endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 				, ISecureStorage? defaultAccessiblePredecessor,
 				global::Security.SecAccessible? inheritedDefaultAccessible
@@ -795,6 +878,9 @@ namespace Microsoft.Maui.Hosting
 						var appInfoSecureStorage = new AppInfoSecureStorage(
 							packageName,
 							previous
+#if WINDOWS
+							, appDataDirectory
+#endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 							, ReferenceEquals(current, defaultAccessiblePredecessor) &&
 								IsUnownedCustomPlatformSecureStorage(current)
@@ -937,10 +1023,13 @@ namespace Microsoft.Maui.Hosting
 #endif
 
 			static (
-				FacadeAssignment<IAppInfo> AppInfoOwner,
+				FacadeAssignment<IAppInfo>? AppInfoOwner,
+				FacadeAssignment<IFileSystem>? FileSystemOwner,
 				AppInfoSecureStoragePredecessor SecureStoragePredecessor)
-				TrackAndSetAppInfoWithSecureStoragePredecessor(
-					IAppInfo appInfo,
+				TrackAndSetSecureStorageDependencies(
+					IAppInfo? appInfo,
+					IFileSystem? fileSystem,
+					bool fileSystemOwnsSecureStorage,
 					List<Action> facadeCleanups)
 			{
 				var secureStorageFacadeSyncRoot = EssentialsImplementation.GetSyncRoot<ISecureStorage>();
@@ -952,8 +1041,8 @@ namespace Microsoft.Maui.Hosting
 
 					lock (s_appInfoSecureStorageBridgeLock)
 					{
-						// The bridge gate serializes this SecureStorage -> AppInfo acquisition
-						// with the AppInfo -> SecureStorage order used by deferred installation.
+						// The bridge gate serializes this SecureStorage -> dependencies acquisition
+						// with the dependency -> SecureStorage order used by deferred installation.
 						lock (FacadeBridgeState<ISecureStorage>.SyncRoot)
 						{
 							lock (secureStorageFacadeSyncRoot)
@@ -965,14 +1054,33 @@ namespace Microsoft.Maui.Hosting
 								if (!predecessor.Matches(current, currentOwner))
 									continue;
 
-								var appInfoOwner = TrackAndSet(
-									appInfo,
-									() => GetFacadeBackingField<IAppInfo>(
-										typeof(AppInfo),
-										"currentImplementation"),
-									AppInfo.SetCurrent,
-									facadeCleanups);
-								return (appInfoOwner, predecessor);
+								FacadeAssignment<IAppInfo>? appInfoOwner = null;
+								if (appInfo is not null)
+								{
+									appInfoOwner = TrackAndSet(
+										appInfo,
+										() => GetFacadeBackingField<IAppInfo>(
+											typeof(AppInfo),
+											"currentImplementation"),
+										AppInfo.SetCurrent,
+										facadeCleanups);
+								}
+
+								FacadeAssignment<IFileSystem>? fileSystemOwner = null;
+								if (fileSystem is not null)
+								{
+									var trackedFileSystemOwner = TrackAndSet(
+										fileSystem,
+										() => GetFacadeBackingField<IFileSystem>(
+											typeof(FileSystem),
+											"currentImplementation"),
+										FileSystem.SetCurrent,
+										facadeCleanups);
+									if (fileSystemOwnsSecureStorage)
+										fileSystemOwner = trackedFileSystemOwner;
+								}
+
+								return (appInfoOwner, fileSystemOwner, predecessor);
 							}
 						}
 					}
@@ -1600,9 +1708,10 @@ namespace Microsoft.Maui.Hosting
 			{
 				facadeCleanups.Add(() =>
 				{
-					// Either facade can be the last ownership change that makes a deferred
-					// AppInfo-derived SecureStorage assignment eligible for installation.
+					// Any dependency or SecureStorage ownership change can make a deferred
+					// derived SecureStorage assignment eligible for installation.
 					if (typeof(T) == typeof(IAppInfo) ||
+						typeof(T) == typeof(IFileSystem) ||
 						typeof(T) == typeof(ISecureStorage))
 					{
 						lock (s_appInfoSecureStorageBridgeLock)
@@ -1932,9 +2041,13 @@ namespace Microsoft.Maui.Hosting
 			sealed class DeferredAppInfoSecureStorageInstallation
 			{
 				public DeferredAppInfoSecureStorageInstallation(
-					FacadeAssignment<IAppInfo> appInfoOwner,
+					FacadeAssignment<IAppInfo>? appInfoOwner,
+					FacadeAssignment<IFileSystem>? fileSystemOwner,
 					string packageName,
 					FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo
+#if WINDOWS
+					, string appDataDirectory
+#endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 					, ISecureStorage? defaultAccessiblePredecessor,
 					global::Security.SecAccessible? inheritedDefaultAccessible
@@ -1942,19 +2055,29 @@ namespace Microsoft.Maui.Hosting
 					)
 				{
 					AppInfoOwner = appInfoOwner;
+					FileSystemOwner = fileSystemOwner;
 					PackageName = packageName;
 					PredecessorBeforeAppInfo = predecessorBeforeAppInfo;
+#if WINDOWS
+					AppDataDirectory = appDataDirectory;
+#endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 					DefaultAccessiblePredecessor = defaultAccessiblePredecessor;
 					InheritedDefaultAccessible = inheritedDefaultAccessible;
 #endif
 				}
 
-				public FacadeAssignment<IAppInfo> AppInfoOwner { get; }
+				public FacadeAssignment<IAppInfo>? AppInfoOwner { get; }
+
+				public FacadeAssignment<IFileSystem>? FileSystemOwner { get; }
 
 				public string PackageName { get; }
 
 				public FacadePredecessor<ISecureStorage> PredecessorBeforeAppInfo { get; private set; }
+
+#if WINDOWS
+				public string AppDataDirectory { get; }
+#endif
 
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 				public ISecureStorage? DefaultAccessiblePredecessor { get; private set; }
@@ -2037,34 +2160,80 @@ namespace Microsoft.Maui.Hosting
 						return;
 
 					var wasCurrent = index == s_appActionsSetAssignments.Count - 1;
+					assignment.MarkRemoved();
 					s_appActionsSetAssignments.RemoveAt(index);
 					if (wasCurrent && s_appActionsSetAssignments.Count > 0)
 						QueueAppActionsSetUnderLock(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
 				}
 			}
 
-			static void QueueAppActionsSetUnderLock(AppActionsSetAssignment assignment)
+			static void QueueAppActionsSetUnderLock(
+				AppActionsSetAssignment assignment,
+				bool requestReplayIfQueued = false)
 			{
 				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
-				s_appActionsSetTail = ApplyAppActionsSetAsync(s_appActionsSetTail, assignment);
+				if (!assignment.TryMarkQueued(requestReplayIfQueued))
+					return;
+
+				var applyTask = ApplyAppActionsSetAsync(s_appActionsSetTail, assignment);
+				s_appActionsSetTail = CompleteAppActionsQueueEntryAsync(applyTask, assignment.Removed);
+			}
+
+			static async Task CompleteAppActionsQueueEntryAsync(Task applyTask, Task removed)
+			{
+				await Task.WhenAny(applyTask, removed).ConfigureAwait(false);
 			}
 
 			static async Task ApplyAppActionsSetAsync(Task predecessor, AppActionsSetAssignment assignment)
 			{
-				await predecessor;
-				// Never invoke an app-provided implementation while holding the assignment lock.
-				await Task.Yield();
-
-				lock (s_appActionsSetLock)
+				var attemptedApply = false;
+				try
 				{
-					if (s_appActionsSetAssignments.Count == 0 ||
-						!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
-					{
+					var completed = await Task.WhenAny(predecessor, assignment.Removed).ConfigureAwait(false);
+					if (ReferenceEquals(completed, assignment.Removed))
 						return;
+
+					await predecessor.ConfigureAwait(false);
+					// Never invoke an app-provided implementation while holding the assignment lock.
+					await Task.Yield();
+
+					lock (s_appActionsSetLock)
+					{
+						if (s_appActionsSetAssignments.Count == 0 ||
+							!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+						{
+							return;
+						}
+					}
+
+					attemptedApply = true;
+					await SetAppActionsAsync(assignment.Implementation, assignment.Logger, assignment.Actions).ConfigureAwait(false);
+
+					lock (s_appActionsSetLock)
+					{
+						if (s_appActionsSetAssignments.Count > 0 &&
+							!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+						{
+							QueueAppActionsSetUnderLock(
+								s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1],
+								requestReplayIfQueued: true);
+						}
 					}
 				}
-
-				await SetAppActionsAsync(assignment.Implementation, assignment.Logger, assignment.Actions).ConfigureAwait(false);
+				finally
+				{
+					lock (s_appActionsSetLock)
+					{
+						var replayRequested = assignment.MarkQueueCompleted();
+						if ((!attemptedApply || replayRequested) &&
+							!assignment.IsRemoved &&
+							s_appActionsSetAssignments.Count > 0 &&
+							ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+						{
+							QueueAppActionsSetUnderLock(assignment);
+						}
+					}
+				}
 			}
 
 			static void Subscribe(
@@ -2084,6 +2253,11 @@ namespace Microsoft.Maui.Hosting
 
 		sealed class AppActionsSetAssignment
 		{
+			readonly TaskCompletionSource<bool> _removed =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+			bool _isQueued;
+			bool _replayRequested;
+
 			public AppActionsSetAssignment(
 				IAppActions implementation,
 				ILogger? logger,
@@ -2099,6 +2273,37 @@ namespace Microsoft.Maui.Hosting
 			public ILogger? Logger { get; }
 
 			public List<AppAction> Actions { get; }
+
+			public Task Removed => _removed.Task;
+
+			public bool IsRemoved => _removed.Task.IsCompleted;
+
+			public void MarkRemoved() =>
+				_removed.TrySetResult(true);
+
+			public bool TryMarkQueued(bool requestReplayIfQueued)
+			{
+				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
+				if (_isQueued)
+				{
+					if (requestReplayIfQueued)
+						_replayRequested = true;
+					return false;
+				}
+
+				_isQueued = true;
+				_replayRequested = false;
+				return true;
+			}
+
+			public bool MarkQueueCompleted()
+			{
+				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
+				var replayRequested = _replayRequested;
+				_isQueued = false;
+				_replayRequested = false;
+				return replayRequested;
+			}
 		}
 
 #if WINDOWS || TIZEN

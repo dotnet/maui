@@ -2301,13 +2301,120 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				secondBuilder.Build().Dispose();
 
 				releaseFirst.TrySetResult(true);
-				await first.SecondCallCompleted.Task.WaitAsync(timeout);
+				await first.FirstCallCompleted.Task.WaitAsync(timeout);
+				await Task.Delay(100);
 
 				Assert.Equal(0, second.CallCount);
+				Assert.Equal(1, first.CallCount);
 				Assert.Equal("first", Assert.Single(publishedActions!).Id);
 			}
 			finally
 			{
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public async Task DisposedHungAppActionsDoesNotBlockLaterConfiguration()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			var releaseFirst = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			IReadOnlyList<AppAction>? publishedActions = null;
+			var first = new ControlledStubAppActions(
+				releaseFirst.Task,
+				actions => publishedActions = actions);
+			var second = new ControlledStubAppActions(
+				Task.CompletedTask,
+				actions => publishedActions = actions);
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppActions>(first);
+				firstBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("first", "First")));
+				firstApp = firstBuilder.Build();
+				await first.FirstCallStarted.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppActions>(second);
+				secondBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("second", "Second")));
+				secondApp = secondBuilder.Build();
+
+				firstApp.Dispose();
+				firstApp = null;
+
+				await second.FirstCallCompleted.Task.WaitAsync(timeout);
+				Assert.Equal("second", Assert.Single(publishedActions!).Id);
+
+				releaseFirst.TrySetResult(true);
+				await first.FirstCallCompleted.Task.WaitAsync(timeout);
+				await second.SecondCallCompleted.Task.WaitAsync(timeout);
+				Assert.Equal("second", Assert.Single(publishedActions!).Id);
+			}
+			finally
+			{
+				releaseFirst.TrySetResult(true);
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public async Task InFlightCurrentAppActionsReplaysAfterStaleCompletion()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			var releaseFirst = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseSecond = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			IReadOnlyList<AppAction>? publishedActions = null;
+			var first = new ControlledStubAppActions(
+				releaseFirst.Task,
+				actions => publishedActions = actions);
+			var second = new PublishingThenBlockingStubAppActions(
+				releaseSecond.Task,
+				actions => publishedActions = actions);
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppActions>(first);
+				firstBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("first", "First")));
+				firstApp = firstBuilder.Build();
+				await first.FirstCallStarted.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppActions>(second);
+				secondBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("second", "Second")));
+				secondApp = secondBuilder.Build();
+
+				firstApp.Dispose();
+				firstApp = null;
+				await second.FirstCallStarted.Task.WaitAsync(timeout);
+				Assert.Equal("second", Assert.Single(publishedActions!).Id);
+
+				releaseFirst.TrySetResult(true);
+				await first.FirstCallCompleted.Task.WaitAsync(timeout);
+				Assert.Equal("first", Assert.Single(publishedActions!).Id);
+
+				releaseSecond.TrySetResult(true);
+				await second.SecondCallCompleted.Task.WaitAsync(timeout);
+				Assert.Equal("second", Assert.Single(publishedActions!).Id);
+			}
+			finally
+			{
+				releaseFirst.TrySetResult(true);
+				releaseSecond.TrySetResult(true);
+				secondApp?.Dispose();
 				firstApp?.Dispose();
 			}
 		}
@@ -2849,6 +2956,49 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					FirstCallCompleted.TrySetResult(true);
 				else if (call == 2)
 					SecondCallCompleted.TrySetResult(true);
+			}
+		}
+
+		sealed class PublishingThenBlockingStubAppActions : IAppActions
+		{
+			readonly Task _releaseFirst;
+			readonly Action<IReadOnlyList<AppAction>> _publish;
+			int _callCount;
+
+			public PublishingThenBlockingStubAppActions(
+				Task releaseFirst,
+				Action<IReadOnlyList<AppAction>> publish)
+			{
+				_releaseFirst = releaseFirst;
+				_publish = publish;
+			}
+
+			public bool IsSupported => true;
+
+			public TaskCompletionSource<bool> FirstCallStarted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public TaskCompletionSource<bool> SecondCallCompleted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
+
+			public Task<IEnumerable<AppAction>> GetAsync() =>
+				Task.FromResult<IEnumerable<AppAction>>(Array.Empty<AppAction>());
+
+			public async Task SetAsync(IEnumerable<AppAction> actions)
+			{
+				var call = Interlocked.Increment(ref _callCount);
+				_publish(actions.ToArray());
+				if (call == 1)
+				{
+					FirstCallStarted.TrySetResult(true);
+					await _releaseFirst.ConfigureAwait(false);
+				}
+				else if (call == 2)
+				{
+					SecondCallCompleted.TrySetResult(true);
+				}
 			}
 		}
 

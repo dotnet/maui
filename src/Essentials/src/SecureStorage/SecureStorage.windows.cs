@@ -21,7 +21,8 @@ namespace Microsoft.Maui.Storage
 		{
 			_secureStorage = AppInfoUtils.IsPackagedApp
 				? new PackagedSecureStorageImplementation(Alias)
-				: new UnpackagedSecureStorageImplementation();
+				: new UnpackagedSecureStorageImplementation(
+					UnpackagedAppDataDirectory ?? FileSystem.AppDataDirectory);
 		}
 
 		async Task<string> PlatformGetAsync(string key)
@@ -124,16 +125,27 @@ namespace Microsoft.Maui.Storage
 		static readonly object Sync = new();
 		static SecureStorageDictionary _secureStorage;
 		static string _secureStoragePath;
+		readonly string _path;
 
-		static string AppSecureStoragePath =>
-			Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
+		public UnpackagedSecureStorageImplementation()
+			: this(FileSystem.AppDataDirectory)
+		{
+		}
 
-		public string CaptureWritePath() => AppSecureStoragePath;
+		internal UnpackagedSecureStorageImplementation(string appDataDirectory)
+		{
+			if (appDataDirectory is null)
+				throw new ArgumentNullException(nameof(appDataDirectory));
+
+			_path = Path.Combine(appDataDirectory, "..", "Settings", "securestorage.dat");
+		}
+
+		public string CaptureWritePath() => _path;
 
 		// Caller must hold Sync. A failed Load leaves the fields unchanged so a later call can retry.
-		static SecureStorageDictionary GetSecureStorage(out string path)
+		SecureStorageDictionary GetSecureStorage(out string path)
 		{
-			path = AppSecureStoragePath;
+			path = _path;
 			return GetSecureStorage(path);
 		}
 
