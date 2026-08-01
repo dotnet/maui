@@ -18,7 +18,14 @@
         does NOT exist on origin, the branch is in-flight — the release
         notes for that exact patch haven't been published yet, so it hasn't
         shipped. If the tag exists, the branch has already shipped that
-        patch and is skipped.
+        patch. Shipped SRs are normally retired, EXCEPT the most-recently-
+        shipped one (highest shipped patch), which is emitted as
+        mode='shipped' so its tracker keeps refreshing through post-ship
+        follow-up (adding the new build to the GitHub issue version dropdown,
+        release notes, milestone close-out). The workflow treats 'shipped'
+        as REFRESH-ONLY: it updates the tracker issue while it stays open but
+        never re-creates it, so once a human closes it, it stays closed.
+        Older shipped SRs are skipped.
 
       Lane 2 — next SR off main
         Identifies the highest SR (across in-flight branches AND shipped tags)
@@ -151,6 +158,11 @@ $Script:StrictStableTagRegex = '^(\d+)\.0\.(\d+)$'
 #   Preview tag: `<major>.0.0-preview.<N>.<YYYYMMDD>[.<build>]`
 #     e.g., 11.0.0-preview.5.26304.4
 $Script:StrictPreviewTagRegex = '^(\d+)\.0\.0-preview\.(\d+)\.\d+(?:\.\d+)?$'
+# .NET 6 through the currently active majors use seven previews before RC1.
+# This is release policy, not a pointer to the current preview. If a future
+# major changes cadence, update this explicit invariant (and its RC tests)
+# rather than silently inferring a stage from branch/tag names.
+$Script:FinalPreviewNumber = 7
 
 # Backwards-compatible exports for tests that dot-source this script.
 # Tests assert against the same regex strings the algorithm uses.
@@ -283,6 +295,54 @@ function Test-IsBranchInFlight {
     return -not $ShippedPatches.Contains($BranchPatch)
 }
 
+function Test-IsUnpublishedHotfixOnLatestShippedSr {
+    <#
+    .SYNOPSIS
+        True when the most-recently-shipped SR branch has advanced within its
+        patch decade to an untagged hotfix candidate.
+    .DESCRIPTION
+        The tracker for the latest shipped SR remains post-ship/refresh-only
+        until a newer stable tag is published. Without this distinction, a live
+        branch bump such as SR9 10.0.90 -> 10.0.91 is misclassified as a brand-new
+        in-flight SR and bypasses shipped lifecycle semantics.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$SrNumber,
+        [Parameter(Mandatory)][int]$BranchPatch,
+        [Parameter(Mandatory)][int]$HighestShippedPatch
+    )
+
+    if ($HighestShippedPatch -le 0) { return $false }
+    $highestShippedSr = [int][math]::Floor($HighestShippedPatch / 10)
+    return $SrNumber -eq $highestShippedSr -and
+        $BranchPatch -gt $HighestShippedPatch -and
+        (Test-IsPatchInSrCycle -SrNumber $SrNumber -Patch $BranchPatch)
+}
+
+function Test-IsPatchInSrCycle {
+    param(
+        [Parameter(Mandatory)][int]$SrNumber,
+        [Parameter(Mandatory)][int]$Patch
+    )
+
+    $patchFloor = $SrNumber * 10
+    return $Patch -ge $patchFloor -and $Patch -lt ($patchFloor + 10)
+}
+
+function Test-IsSrCutBeforeBump {
+    param(
+        [Parameter(Mandatory)][int]$SrNumber,
+        [Parameter(Mandatory)][int]$BranchPatch,
+        [Parameter(Mandatory)][int]$HighestShippedPatch
+    )
+
+    if ($HighestShippedPatch -lt 0) { return $false }
+    $highestShippedSr = [int][math]::Floor($HighestShippedPatch / 10)
+    return $SrNumber -eq ($highestShippedSr + 1) -and
+        $BranchPatch -ge (($SrNumber - 1) * 10) -and
+        $BranchPatch -lt ($SrNumber * 10)
+}
+
 function Test-IsStaleSrBranch {
     <#
     .SYNOPSIS
@@ -383,7 +443,7 @@ function Get-RemoteSrBranchesForMajor {
         origin matching the strict SR pattern for the given major version.
         Throws on git failure.
     .OUTPUTS
-        @(@{ branch = 'release/10.0.1xx-sr7'; srNumber = 7 }, ...)
+        @(@{ branch = 'release/10.0.1xx-sr7'; srNumber = 7; sha = '<commit>' }, ...)
         Sorted by srNumber ascending.
     #>
     param([int]$Major)
@@ -396,8 +456,9 @@ function Get-RemoteSrBranchesForMajor {
     foreach ($line in $lines) {
         if (-not $line) { continue }
         # Format: "<sha>\trefs/heads/<branchName>"
-        if ($line -match '^[0-9a-f]{40}\s+refs/heads/(.+)$') {
-            $branch = $Matches[1]
+        if ($line -match '^([0-9a-f]{40})\s+refs/heads/(.+)$') {
+            $sha = $Matches[1]
+            $branch = $Matches[2]
             if ($branch -match $Script:StrictSrBranchRegex) {
                 $branchMajor = [int]$Matches[1]
                 $sr          = [int]$Matches[2]
@@ -405,6 +466,7 @@ function Get-RemoteSrBranchesForMajor {
                     $branches += [pscustomobject]@{
                         branch   = $branch
                         srNumber = $sr
+                        sha      = $sha
                     }
                 }
             } else {
@@ -538,7 +600,7 @@ function New-Tracker {
     param(
         [int]$Major,
         [int]$SrNumber,
-        [string]$Mode,                 # 'in-flight' or 'candidate'
+        [string]$Mode,                 # 'in-flight', 'candidate', or 'shipped'
         [string]$BranchName,            # nullable for candidate without branch
         [string]$SurveyRef,             # branch or development ref to survey
         [string]$PriorSrBranch,         # nullable; used as -SrBranch for -Candidate mode
@@ -546,7 +608,10 @@ function New-Tracker {
         [string]$PriorShippedTag,
         [int]$ExpectedPatch,
         [string]$ExpectedTag,
-        [int]$HasRecentActivityCount
+        [int]$HasRecentActivityCount,
+        [bool]$HotfixInProgress = $false,
+        [string]$HotfixVersion,
+        [string]$HotfixCommit
     )
     $canonical = "net$Major-sr$SrNumber"
     $milestone = ".NET $Major SR$SrNumber"
@@ -560,6 +625,13 @@ function New-Tracker {
     $title = "[Release Readiness] .NET $Major SR$SrNumber — $branchDisplay"
     if ($Mode -eq 'candidate') {
         $title = "[Release Readiness] .NET $Major SR$SrNumber — candidate from $SurveyRef"
+    }
+    elseif ($Mode -eq 'shipped') {
+        $title = if ($HotfixInProgress) {
+            "[Release Readiness] .NET $Major SR$SrNumber — hotfix $HotfixVersion in progress ($branchDisplay)"
+        } else {
+            "[Release Readiness] .NET $Major SR$SrNumber — shipped ($branchDisplay)"
+        }
     }
     return [pscustomobject]@{
         branchType           = 'sr'
@@ -580,6 +652,9 @@ function New-Tracker {
         recentCommitCount    = $HasRecentActivityCount
         priorShippedPatch    = $PriorShippedPatch
         priorShippedTag      = $PriorShippedTag
+        hotfixInProgress     = $HotfixInProgress
+        hotfixVersion        = $HotfixVersion
+        hotfixCommit         = $HotfixCommit
     }
 }
 
@@ -685,11 +760,11 @@ function Invoke-DetectionForMajor {
     $srBranches = Get-RemoteSrBranchesForMajor -Major $Major
     Write-Host "[major $Major] Found $($srBranches.Count) strict release/$Major.0.*xx-sr* branches on origin" -ForegroundColor Cyan
     $highestBranchSr = 0
+    $validSrBranches = [System.Collections.Generic.List[object]]::new()
     $inflightBranchesBySr = @{}
     foreach ($entry in $srBranches) {
         $branch = $entry.branch
         $sr     = $entry.srNumber
-        if ($sr -gt $highestBranchSr) { $highestBranchSr = $sr }
 
         Write-Verbose "Inspecting branch $branch (sr$sr)..."
         $versionInfo = Get-VersionFromGitRef -GitRef "origin/$branch" -Repo $Repo
@@ -702,9 +777,45 @@ function Invoke-DetectionForMajor {
             continue
         }
         $branchPatch = [int]$Matches[2]
+        $branchMajor = [int]$Matches[1]
         $expectedTag = $versionInfo.Tag
+        if (-not (Test-IsPatchInSrCycle -SrNumber $sr -Patch $branchPatch)) {
+            $expectedPatchFloor = $sr * 10
+            $isCutBeforeBump = Test-IsSrCutBeforeBump -SrNumber $sr `
+                -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
+            if ($isCutBeforeBump) {
+                $validSrBranches.Add($entry)
+                $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+                $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'in-flight' `
+                    -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                    -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                    -ExpectedPatch $expectedPatchFloor -ExpectedTag "$branchMajor.0.$expectedPatchFloor" `
+                    -HasRecentActivityCount $recent
+                $trackers.Add($tracker)
+                $inflightBranchesBySr[$sr] = $branch
+                Write-Host "  -> in-flight SR tracker in cut-before-bump state: SR$sr (live patch=$branchPatch, expected patch=$expectedPatchFloor, recent=$recent)" -ForegroundColor Yellow
+                continue
+            }
+            Write-Warning "[major $Major] Branch '$branch' declares patch $branchPatch outside SR$sr's [$($sr * 10)..$(($sr * 10) + 9)] range — skipping Lane 1 to avoid duplicate/misnumbered trackers."
+            continue
+        }
+        $validSrBranches.Add($entry)
+        if ($sr -gt $highestBranchSr) { $highestBranchSr = $sr }
 
-        if (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
+        $isUnpublishedLatestSrHotfix = Test-IsUnpublishedHotfixOnLatestShippedSr `
+            -SrNumber $sr -BranchPatch $branchPatch -HighestShippedPatch $highestShippedPatch
+
+        if ($isUnpublishedLatestSrHotfix) {
+            $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+            $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'shipped' `
+                -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                -ExpectedPatch $highestShippedPatch -ExpectedTag $highestShippedTag `
+                -HasRecentActivityCount $recent -HotfixInProgress $true `
+                -HotfixVersion $versionInfo.Tag -HotfixCommit $entry.sha
+            $trackers.Add($tracker)
+            Write-Host "  -> shipped SR tracker with unpublished hotfix: SR$sr (published=$highestShippedTag, live=$expectedTag, recent=$recent)" -ForegroundColor Yellow
+        } elseif (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
             $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
 
             # Staleness guard: a tag-absent branch below the shipped watermark
@@ -728,7 +839,28 @@ function Invoke-DetectionForMajor {
             $inflightBranchesBySr[$sr] = $branch
             Write-Host "  -> in-flight SR tracker: SR$sr (patch=$branchPatch, no tag $expectedTag yet, recent=$recent)" -ForegroundColor Green
         } else {
-            Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
+            # Already shipped (the stable tag exists). We normally retire the
+            # tracker here, BUT the most-recently-shipped SR still has post-ship
+            # follow-up the tracker should keep surfacing until a human signs off
+            # (e.g. adding the new build to the GitHub issue version dropdown,
+            # release notes, closing out the milestone). So keep emitting the
+            # HIGHEST shipped SR as mode='shipped'. The workflow consumes this as
+            # REFRESH-ONLY: it refreshes the tracker issue while it stays open and
+            # never re-creates it once a human closes it — implementing
+            # "update until closed manually" without resurrecting a closed tracker.
+            # Lower (older) shipped SRs stay retired.
+            if ($branchPatch -eq $highestShippedPatch) {
+                $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
+                $tracker = New-Tracker -Major $Major -SrNumber $sr -Mode 'shipped' `
+                    -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
+                    -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
+                    -ExpectedPatch $branchPatch -ExpectedTag $expectedTag `
+                    -HasRecentActivityCount $recent
+                $trackers.Add($tracker)
+                Write-Host "  -> shipped SR tracker (refresh-until-closed): SR$sr (patch=$branchPatch, tag $expectedTag exists, recent=$recent)" -ForegroundColor Yellow
+            } else {
+                Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
+            }
         }
     }
 
@@ -742,7 +874,7 @@ function Invoke-DetectionForMajor {
         $highestShippedSr = [int]([math]::Floor($highestShippedPatch / 10))
         $highestSr        = [int][math]::Max([int]$highestBranchSr, [int]$highestShippedSr)
         $nextSr           = $highestSr + 1
-        $nextSrBranchExists = $srBranches | Where-Object { $_.srNumber -eq $nextSr }
+        $nextSrBranchExists = $validSrBranches | Where-Object { $_.srNumber -eq $nextSr }
 
         if (-not $nextSrBranchExists) {
             $candidateRef = $mainBranchForMajor
@@ -767,7 +899,7 @@ function Invoke-DetectionForMajor {
             # are NOT the prior of a current candidate.
             $priorSrNumber = $nextSr - 1
             $priorSrBranchName = "release/$Major.0.1xx-sr$priorSrNumber"
-            $priorSrBranchExists = $srBranches | Where-Object { $_.branch -eq $priorSrBranchName }
+            $priorSrBranchExists = $validSrBranches | Where-Object { $_.branch -eq $priorSrBranchName }
             $priorSrBranch = $null
             if ($priorSrBranchExists) {
                 $priorSrBranch = $priorSrBranchName
@@ -851,10 +983,33 @@ function Invoke-DetectionForMajor {
         $previewBranchAlreadyExists = $previewBranches | Where-Object { $_.previewNumber -eq $candidatePreviewN }
         $previewAlreadyShipped = $shippedPreviews.Contains($candidatePreviewN)
 
-        if ($previewAlreadyShipped) {
-            Write-Host "[major $Major] preview$candidatePreviewN (from $previewCandidateRef) already shipped — skipping Lane 4" -ForegroundColor DarkGray
-        } elseif ($previewBranchAlreadyExists) {
-            Write-Host "[major $Major] preview$candidatePreviewN already has a branch; covered by Lane 3" -ForegroundColor DarkGray
+        if ($previewAlreadyShipped -or $previewBranchAlreadyExists) {
+            if ($candidatePreviewN -lt $Script:FinalPreviewNumber) {
+                # Cut/tag-before-bump transition: Preview N has its own branch or
+                # tag, so its report intentionally excludes net<N>.0. Keep
+                # net<N>.0 covered by a separate Preview N+1 candidate
+                # immediately; its iteration check stays BLOCKED until the source
+                # branch actually bumps.
+                $nextPreviewN = $candidatePreviewN + 1
+                $nextAlreadyShipped = $shippedPreviews.Contains($nextPreviewN)
+                $nextBranchExists = $previewBranches | Where-Object { $_.previewNumber -eq $nextPreviewN }
+                if (-not $nextAlreadyShipped -and -not $nextBranchExists) {
+                    $recent = Get-RecentCommitCount -Ref $previewCandidateRef -Days $ActivityWindowDays
+                    $tracker = New-PreviewTracker -Major $Major -PreviewNumber $nextPreviewN -Mode 'candidate' `
+                        -BranchName $null -SurveyRef $previewCandidateRef `
+                        -HasRecentActivityCount $recent
+                    $trackers.Add($tracker)
+                    Write-Host "  -> cut-before-bump candidate preview tracker: preview$nextPreviewN (surveyRef=$previewCandidateRef still advertises preview$candidatePreviewN, recent=$recent)" -ForegroundColor Yellow
+                }
+            } else {
+                # Preview 7 is the final preview; its next cycle is rc1, not
+                # preview8. Keep the current Preview 7 tracker scoped to its branch
+                # and warn until the dedicated RC lane exists.
+                Write-Warning "[major $Major] preview$candidatePreviewN is cut while $previewCandidateRef still advertises preview$candidatePreviewN. The next cycle is rc1, but RC tracking is not yet implemented; no preview8 tracker will be invented."
+            }
+            if ($previewAlreadyShipped) {
+                Write-Host "[major $Major] preview$candidatePreviewN (from $previewCandidateRef) already shipped; next-cycle transition handled separately" -ForegroundColor DarkGray
+            }
         } else {
             $recent = Get-RecentCommitCount -Ref $previewCandidateRef -Days $ActivityWindowDays
             $tracker = New-PreviewTracker -Major $Major -PreviewNumber $candidatePreviewN -Mode 'candidate' `
@@ -863,6 +1018,40 @@ function Invoke-DetectionForMajor {
             $trackers.Add($tracker)
             Write-Host "  -> candidate preview tracker: preview$candidatePreviewN (surveyRef=$previewCandidateRef, recent=$recent)" -ForegroundColor Green
         }
+    } elseif ($candidatePreviewVersionInfo -and $candidatePreviewVersionInfo.PreLabel -eq 'rc') {
+        # The pre-release train does NOT end at the last preview: .NET ships
+        # preview1..preview7, then rc1, rc2, then GA (the same discontinuity
+        # Get-ReleaseReadiness.ps1's Get-PreviewTrainMilestoneTitle exists to
+        # handle). Once the survey ref is bumped past the final preview it flips
+        # to label=rc/iteration=1 rather than preview8 — verified against this
+        # repo: release/10.0.1xx-rc1's Versions.props carries rc/1, and the rc
+        # branches and tags use naming exactly parallel to previews
+        # (release/<major>.0.1xx-rc<N>, <major>.0.0-rc.<N>.<build>).
+        #
+        # The `PreLabel -eq 'preview'` guard above therefore stops matching for
+        # the whole rc window, and this lane produces no tracker for rc1 or rc2.
+        # Emitting one here is NOT the fix: the rest of the preview lane is still
+        # preview-only, so an rc tracker would break downstream rather than help.
+        # Closing the gap requires, together:
+        #   1. Get-PreviewReadiness.ps1 — its branch parser hard-`throw`s on any
+        #      ref that isn't `release/<major>.0.1xx-preview<N>`, so an rc tracker
+        #      would fail the workflow's report job outright.
+        #   2. Lane 3 + Get-RemotePreviewBranchesForMajor / Get-PreviewTagsForMajor
+        #      — rc branches and tags don't match the strict preview regexes, so
+        #      in-flight detection and the "already shipped / already has a branch"
+        #      dedup would never fire and this lane would re-propose the same rc
+        #      candidate forever, even after it was cut and shipped.
+        #   3. New-PreviewTracker / New-PreviewRegressionLabelList — canonicalKey,
+        #      milestoneName, expectedTagPrefix and labels are all preview-shaped.
+        #
+        # Until that lands, WARN loudly. The bug that matters most here is not the
+        # missing tracker but the silence: this case previously fell into the
+        # generic DarkGray "No active preview cycle" line below, which is also what
+        # a major legitimately in SR phase prints. A release captain had no way to
+        # tell "nothing to do" apart from "rc1 needs a tracker and you won't get one".
+        $rcIter = $candidatePreviewVersionInfo.PreIter
+        Write-Warning ("[major $Major] $previewCandidateRef is in the rc phase (label=rc, iteration=$rcIter) but this lane only emits preview trackers, " +
+                       "so no rc$rcIter tracker will be created. Track rc$rcIter manually until rc support is added to the preview lane.")
     } else {
         $labelDisplay = if ($candidatePreviewVersionInfo) { ($candidatePreviewVersionInfo.PreLabel) } else { '<n/a>' }
         $iterDisplay  = if ($candidatePreviewVersionInfo) { ($candidatePreviewVersionInfo.PreIter)  } else { '<n/a>' }
@@ -885,7 +1074,10 @@ function Invoke-DetectionForMajor {
 
 # Guard: skip the driver when dot-sourced (tests dot-source to access helpers
 # like New-RegressionLabelList and the strict regex constants).
-if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+# `InvocationName -eq '.'` alone reliably detects dot-sourcing across every form;
+# matching `$MyInvocation.Line` against a leading dot is avoided because that text
+# can be the whole command line and would wrongly skip a later `&`/`-File` call.
+if ($MyInvocation.InvocationName -eq '.') { return }
 
 if (-not (Test-Path (Join-Path $Repo '.git'))) {
     throw "Fail-closed: $Repo is not a git repository. Pass -Repo <checkout>."

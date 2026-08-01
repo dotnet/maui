@@ -118,6 +118,24 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
+			public void EmptySvgAppIconSucceeds_Issue35293()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/appicon_empty.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = "appicon",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			}
+
+			[Fact]
 			public void GenerationSkippedOnIncrementalBuild()
 			{
 				var items = new[]
@@ -1822,6 +1840,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				}
 				var size = ResizeImageInfo.Parse(item);
 				Assert.Equal(resize, size.Resize);
+			}
+		}
+
+		public class ExecuteForCustomPlatform : ExecuteForApp
+		{
+			public ExecuteForCustomPlatform(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
+			[Fact]
+			public void UsesGenericDesktopFallback()
+			{
+				var task = GetNewTask("custom-platform", new TaskItem("images/camera.svg", ResizeMetadata));
+
+				var success = task.Execute();
+
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("camera.png", 1792, 1792);
+				AssertFileSize("camera@2x.png", 3584, 3584);
+				Assert.Equal(2, task.CopiedResources.Length);
 			}
 		}
 	}

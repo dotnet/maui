@@ -41,6 +41,20 @@ function Write-CategoryListOutput {
     Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$Value"
 }
 
+# True when the current HEAD is already the prepared CI review worktree, i.e. the
+# squash-merge commit that Review-PR.ps1 STEP 1 creates ("PR #<n> squashed for
+# review"). In that state HEAD already contains the PR's changes vs the base, so
+# the manual-mode fork-head `git checkout` is BOTH redundant (the merge-base..HEAD
+# diff already reflects the PR) AND fails — the trusted-scripts overlay leaves
+# uncommitted changes, so the checkout aborts ("Your local changes would be
+# overwritten by checkout") and detection wrongly falls back to running ALL
+# categories (which then skips the deep UI test stage and publishes no UI results).
+function Test-PreparedReviewWorktreeSubject {
+    param([string]$HeadSubject, [string]$PrNumber)
+    if ([string]::IsNullOrWhiteSpace($HeadSubject) -or [string]::IsNullOrWhiteSpace($PrNumber)) { return $false }
+    return [bool]($HeadSubject.Trim() -match "^PR #$([regex]::Escape($PrNumber.Trim())) squashed for review\b")
+}
+
 # Native git commands don't throw on non-zero exit — and `try/catch` won't
 # catch them either. Wrap every git invocation in manual-PR mode so a silent
 # fetch/checkout failure can't leave us reading a stale/wrong worktree.
@@ -168,21 +182,38 @@ if ($isManualPrTest) {
             $script:detectOriginalRef = (& git rev-parse HEAD 2>$null)
         }
 
+        # Detect the prepared CI review worktree: when Review-PR.ps1 already
+        # squash-merged the PR (HEAD subject "PR #<n> squashed for review"), HEAD
+        # contains the PR changes and the fork-head checkout below is redundant and
+        # would abort on the trusted-scripts overlay. In that case use the current
+        # HEAD for the diff and skip the checkout. (See Test-PreparedReviewWorktreeSubject.)
+        $headSubject = (& git log -1 --format=%s HEAD 2>$null)
+        $alreadyOnPrWorktree = Test-PreparedReviewWorktreeSubject -HeadSubject $headSubject -PrNumber $PrNumber
+
         try {
             # Use Invoke-Git so a silent non-zero exit (network drop, bad URL, missing
             # ref) raises an exception instead of letting us proceed with stale state.
-            # Fetch base branch from the base repo.
+            # Fetch base branch from the base repo (needed for merge-base regardless of path).
             git remote remove _detect_base 2>$null | Out-Null
             Invoke-Git remote add _detect_base $baseRepoCloneUrl
             Invoke-Git fetch _detect_base "$TargetBranch" --no-tags --prune --depth=200
             Invoke-Git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch
 
-            # Fetch head commit (works for forks too) and check it out so the diff reflects the PR changes.
-            git remote remove _detect_head 2>$null | Out-Null
-            Invoke-Git remote add _detect_head $headRepoCloneUrl
-            Invoke-Git fetch _detect_head "$headSha" --no-tags --depth=200
-            Invoke-Git checkout --quiet $headSha
-            $script:detectHeadMutated = $true
+            if ($alreadyOnPrWorktree) {
+                # HEAD already reflects the PR (squash-merged by Review-PR.ps1). Do NOT
+                # check out the fork head — it is redundant and aborts on the overlay's
+                # uncommitted changes. The merge-base..HEAD diff below already captures
+                # the PR's changes, so detection produces specific categories instead of ALL.
+                Write-Host "Detected prepared review worktree (HEAD = '$headSubject'); using current HEAD for category diff and skipping the fork-head checkout." -ForegroundColor Cyan
+            } else {
+                # Standalone / manual run: HEAD is NOT the PR. Fetch the head commit
+                # (works for forks too) and check it out so the diff reflects the PR changes.
+                git remote remove _detect_head 2>$null | Out-Null
+                Invoke-Git remote add _detect_head $headRepoCloneUrl
+                Invoke-Git fetch _detect_head "$headSha" --no-tags --depth=200
+                Invoke-Git checkout --quiet $headSha
+                $script:detectHeadMutated = $true
+            }
         } finally {
             # Temp remotes were only needed for the fetch — drop them whether or not setup succeeded
             # so we don't leave stray entries in `.git/config` for future runs.
@@ -489,11 +520,32 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 # FINAL DECISION
 # ============================================================================
 
+# Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
+# eng/Versions.props, or darc-managed versions in eng/Version.Details.xml) don't
+# touch any specific control, but they CAN cause broad rendering/runtime
+# regressions across the whole app. Rather than skipping UI tests entirely
+# ("No UI-relevant changes"), run a small, fixed, representative smoke set so the
+# bump is actually validated — without falling back to ALL (which the deep stage
+# skips as it can't finish in the time budget). Tunable: keep this set small and
+# fast (core control + text + layout rendering).
+$dependencyInfraFiles = @('eng/Versions.props', 'eng/Version.Details.xml')
+$dependencyInfraChanged = @($allChangedFiles | Where-Object {
+    $f = $_.Replace('\', '/')
+    $dependencyInfraFiles -contains $f
+}).Count -gt 0
+$smokeCategories = @('Button', 'Label', 'Layout')
+
 if ($addedCategories.Count -eq 0) {
     if ($touchesControls) {
         # Changed files under src/Controls/ but couldn't map to specific categories — run all
         Write-Host "Changed files touch Controls/Core/Essentials but no specific categories identified. Running all." -ForegroundColor Yellow
         Write-CategoryListOutput ''
+        return
+    } elseif ($dependencyInfraChanged) {
+        # Dependency/SDK version bump with no specific control mapped — run a
+        # representative UI smoke set so the bump is validated.
+        Write-Host "Dependency/SDK version file(s) changed (no specific control mapped) — running a representative UI smoke set ($([string]::Join(', ', $smokeCategories))) to validate the bump." -ForegroundColor Yellow
+        Write-CategoryListOutput ([string]::Join(',', $smokeCategories))
         return
     } else {
         # No UI-relevant changes at all

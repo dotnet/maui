@@ -1,20 +1,39 @@
 namespace Microsoft.Maui.Controls.Platform
 {
 	/// <summary>
-	/// Resolved from the handler's <see cref="Microsoft.Maui.IMauiContext.Services"/> to create the
-	/// <see cref="IGesturePlatformManager"/> used for a handler connection. Register a custom
-	/// implementation to override gesture handling behavior application-wide.
+	/// Application-wide factory for creating <see cref="IGesturePlatformManager"/> instances.
+	/// Register an implementation in the application's <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection"/>
+	/// to replace the built-in platform gesture handling for every handler connection.
 	/// </summary>
-	internal interface IGesturePlatformManagerFactory
+	/// <remarks>
+	/// <para>
+	/// When an <see cref="IGesturePlatformManagerFactory"/> is present in
+	/// <see cref="Microsoft.Maui.IMauiContext.Services"/>, the framework calls
+	/// <see cref="CreateGesturePlatformManager"/> instead of constructing the default
+	/// <c>GesturePlatformManager</c>. This lets alternative platform backends (for example,
+	/// community-maintained backends that do not use <c>IPlatformViewHandler</c>)
+	/// supply their own gesture infrastructure without subclassing or forking the built-in types.
+	/// </para>
+	/// <para>
+	/// The factory takes precedence over the framework's internal handler-scoped customization path.
+	/// </para>
+	/// <example>
+	/// Registering a custom factory:
+	/// <code lang="csharp">
+	/// builder.Services.AddSingleton&lt;IGesturePlatformManagerFactory, MyGestureFactory&gt;();
+	/// </code>
+	/// </example>
+	/// </remarks>
+	public interface IGesturePlatformManagerFactory
 	{
 		/// <summary>
-		/// Creates a new gesture platform manager for the supplied handler connection.
+		/// Creates a new <see cref="IGesturePlatformManager"/> for the supplied handler connection.
 		/// </summary>
-		/// <param name="handler">The handler whose platform view the gestures are attached to.</param>
+		/// <param name="handler">The handler connection for which the gesture manager is created.</param>
 		/// <returns>
-		/// A new gesture platform manager instance owned and disposed by <see cref="GestureManager"/>.
-		/// This method must return a new instance for each call because <see cref="GestureManager"/>
-		/// disposes and recreates the manager on each connect or handler change.
+		/// A new <see cref="IGesturePlatformManager"/> instance. The framework owns and disposes this
+		/// instance. Return a new instance for each call because the manager is disposed and recreated
+		/// on every connect or handler change.
 		/// </returns>
 		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler);
 	}
