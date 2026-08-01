@@ -8,11 +8,14 @@ namespace Microsoft.Maui.Platform
 	{
 		// TODO Add public docs
 		public static IWindow? GetWindow(this UIWindow? platformWindow)
+			=> platformWindow.GetWindow(IPlatformApplication.Current?.Application);
+
+		internal static IWindow? GetWindow(this UIWindow? platformWindow, IApplication? application)
 		{
 			if (platformWindow is null)
 				return null;
 
-			foreach (var window in IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>())
+			foreach (var window in application?.Windows ?? Array.Empty<IWindow>())
 			{
 				if (window?.Handler?.PlatformView == platformWindow)
 					return window;

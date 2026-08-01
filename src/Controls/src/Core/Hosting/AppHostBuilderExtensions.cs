@@ -104,9 +104,9 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
 			handlersCollection.AddHandler<Slider, SliderHandler2>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
-            handlersCollection.AddHandler<Entry, EntryHandler2>();
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
+			handlersCollection.AddHandler<Entry, EntryHandler2>();
 		}
 		else
 		{
@@ -122,9 +122,9 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 			handlersCollection.AddHandler<Slider, SliderHandler>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-            handlersCollection.AddHandler<Entry, EntryHandler>();
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
+			handlersCollection.AddHandler<Entry, EntryHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -215,8 +215,8 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
-		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
+		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
+		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
@@ -347,6 +347,11 @@ public static partial class AppHostBuilderExtensions
 		ImageButton.RemapForControls();
 
 		Slider.RemapForControls();
+
+#if IOS || MACCATALYST
+		NavigationPage.RemapForControls();
+#endif
+
 		return builder;
 	}
 }

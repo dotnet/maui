@@ -516,5 +516,46 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+
+	// ========== Event/Interaction Tests ==========
+
+	void DragSlider(int startPercent, int endPercent)
+	{
+		var sliderRect = App.WaitForElement("SliderGrid").GetRect();
+		var startX = sliderRect.X + (sliderRect.Width * startPercent / 100);
+		var centerY = sliderRect.Y + (sliderRect.Height / 2);
+		var endX = sliderRect.X + (sliderRect.Width * endPercent / 100);
+		App.DragCoordinates(startX, centerY, endX, centerY);
+	}
+
+	[Test]
+	[Category(UITestCategories.Material3)]
+	public void Material3Slider_DragStartedAndCompletedEventTriggered()
+	{
+		App.WaitForElement("SliderGrid");
+		DragSlider(30, 70);
+		App.WaitForTextToBePresentInElement("DragStartStatusLabel", "Drag Started");
+		App.WaitForTextToBePresentInElement("DragCompletedStatusLabel", "Drag Completed");
+	}
+
+	[Test]
+	[Category(UITestCategories.Material3)]
+	public void Material3Slider_ValueChangedEvent_FiredOnDrag()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ValueEntry");
+		App.ClearText("ValueEntry");
+		App.EnterText("ValueEntry", "0");
+		App.PressEnter();
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SliderGrid");
+
+		App.WaitForTextToBePresentInElement("ValueChangedEventStatus", "Not Raised");
+
+		DragSlider(10, 60);
+		App.WaitForTextToBePresentInElement("ValueChangedEventStatus", "Raised");
+	}
 }
 #endif

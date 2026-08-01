@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -108,6 +109,193 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.SelectedIndex = 2;
 
 			Assert.Equal(-1, picker.SelectedIndex);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeItemsSourceAppliesAfterItemsSource()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(-1, picker.SelectedIndex);
+
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Paul", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsAppliesWhenIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+
+			picker.Items.Add("John");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsSurvivesParentSetUntilIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.Items.Add("John");
+
+			var layout = new VerticalStackLayout();
+			layout.Children.Add(picker);
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsSurvivesHandlerAttachmentUntilIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.Items.Add("John");
+
+			picker.Handler = Substitute.For<IViewHandler>();
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeItemsSourceClampsAfterItemsSource()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 42;
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void PendingSelectedIndexCanBeClearedBeforeItemsLoad()
+		{
+			var picker = new Picker();
+
+			picker.SelectedIndex = 2;
+			picker.SelectedIndex = -1;
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedItemSetAfterPendingSelectedIndexClearsPendingIndex()
+		{
+			var items = new ObservableCollection<string>();
+			var picker = new Picker
+			{
+				ItemsSource = items
+			};
+
+			picker.SelectedIndex = 2;
+
+			Assert.Equal(-1, picker.SelectedIndex);
+
+			picker.SelectedItem = "Paul";
+
+			items.Add("John");
+			items.Add("Paul");
+			items.Add("George");
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Paul", picker.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeEmptyItemsSourceAppliesWhenIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var items = new ObservableCollection<string>();
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.ItemsSource = items;
+
+			items.Add("John");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
 		}
 
 		[Fact]

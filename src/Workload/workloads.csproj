@@ -2,7 +2,8 @@
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
@@ -21,11 +22,20 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <WixToolsetPath>$(PkgMicrosoft_Signed_Wix)\tools</WixToolsetPath>
+    <!-- WiX 6 tool paths -->
+    <WixExe>$(PkgMicrosoft_Wix)\tools\net6.0\any\wix.exe</WixExe>
+    <HeatExe>$(PkgMicrosoft_WixToolset_Heat)\tools\net472\x64\heat.exe</HeatExe>
     <SwixPluginPath>$(PkgMicroBuild_Plugins_SwixBuild_Dotnet)</SwixPluginPath>
     <SwixBuildTargets>$(SwixPluginPath)\build\MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
-    <SwixTargetsPath>$(PkgMicroBuild_Plugins_SwixBuild_Dotnet)\build\MicroBuild.Plugins.SwixBuild.targets</SwixTargetsPath>
+    <SwixTargetsPath>$(SwixPluginPath)\build\MicroBuild.Plugins.SwixBuild.targets</SwixTargetsPath>
   </PropertyGroup>
+
+  <!-- WiX 6 extension assemblies -->
+  <ItemGroup>
+    <WixExtensions Include="$(PkgMicrosoft_WixToolset_UI_wixext)\wixext6\WixToolset.UI.wixext.dll" />
+    <WixExtensions Include="$(PkgMicrosoft_WixToolset_Dependency_wixext)\wixext6\WixToolset.Dependency.wixext.dll" />
+    <WixExtensions Include="$(PkgMicrosoft_WixToolset_Util_wixext)\wixext6\WixToolset.Util.wixext.dll" />
+  </ItemGroup>
 
   <Import Project="$(WorkloadMsiGenProps)" />
 
@@ -33,7 +43,6 @@
   <PropertyGroup>
     <!-- The following properties can be set to true to opt in to workload pack group MSIs -->
     <CreateWorkloadPackGroups Condition=" '$(CreateWorkloadPackGroups)' == '' ">false</CreateWorkloadPackGroups>
-    <UseWorkloadPackGroupsForVS Condition=" '$(UseWorkloadPackGroupsForVS)' == '' ">false</UseWorkloadPackGroupsForVS>
     <SkipRedundantMsiCreation Condition=" '$(SkipRedundantMsiCreation)' == '' ">false</SkipRedundantMsiCreation>
     <!-- This property should be set to true when producing the last build that will be supported by a major workload version
           https://devblogs.microsoft.com/visualstudio/removing-out-of-support-components-from-your-visual-studio-installations
@@ -49,11 +58,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Workloads" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Signed.WiX" GeneratePathProperty="true" />
-    <PackageReference Include="MicroBuild.Plugins.SwixBuild.Dotnet" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Workloads" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="MicroBuild.Plugins.SwixBuild.Dotnet" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" PrivateAssets="all" />
+    <!-- WiX 6 packages. ExcludeAssets="all" on Microsoft.Wix because it's a DotnetTool package type. -->
+    <PackageReference Include="Microsoft.Wix" ExcludeAssets="all" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WixToolset.Heat" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 
     <Target Name="_SetMsiVersionFromNuGetVersion" >
@@ -114,8 +128,8 @@
       BeforeTargets="SignFiles" >
     <CreateVisualStudioWorkload
         AllowMissingPacks="true"
-        BaseIntermediateOutputPath="$(IntermediateOutputPath)"
-        BaseOutputPath="$(OutputPath)"
+        BaseIntermediateOutputPath="$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)'))"
+        BaseOutputPath="$([System.IO.Path]::GetFullPath('$(OutputPath)'))"
         ComponentResources="@(ComponentResources)"
         CreateWorkloadPackGroups="$(CreateWorkloadPackGroups)"
         EnableSideBySideManifests="$(EnableSideBySideManifests)"
@@ -123,8 +137,9 @@
         PackageSource="$(NuGetPackagePath)"
         ShortNames="@(ShortNames)"
         SkipRedundantMsiCreation="$(SkipRedundantMsiCreation)"
-        UseWorkloadPackGroupsForVS="$(UseWorkloadPackGroupsForVS)"
-        WixToolsetPath="$(WixToolsetPath)"
+        WixExe="$(WixExe)"
+        HeatExe="$(HeatExe)"
+        WixExtensions="@(WixExtensions)"
         WorkloadManifestPackageFiles="@(WorkloadPackages)" >
       <Output TaskParameter="Msis" ItemName="VSWorkloadMsis" />
       <Output TaskParameter="SwixProjects" ItemName="SwixProjects" />

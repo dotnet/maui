@@ -565,29 +565,29 @@ namespace Microsoft.Maui.Controls
 			/// <returns>Prints out the values of <see cref="Position"/> and <see cref="Spacing"/>.</returns>
 			public override string ToString() => $"Image Position = {Position}, Spacing = {Spacing}";
 		}
-
+#nullable enable
 		/// <summary>
 		/// A converter to convert a string to a <see cref="ButtonContentLayout"/> object.
 		/// </summary>
 		public sealed class ButtonContentTypeConverter : TypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(string);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> false;
 
-			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 			{
 				// IMPORTANT! Update ButtonContentDesignTypeConverter.IsValid if making changes here
-				var strValue = value?.ToString();
-				if (strValue == null)
-					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+				var strValue = (value?.ToString()) ?? throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
 
 				string[] parts = strValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 				if (parts.Length != 1 && parts.Length != 2)
+				{
 					throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(ButtonContentLayout)}");
+				}
 
 				double spacing = DefaultSpacing;
 				var position = ButtonContentLayout.ImagePosition.Left;
@@ -598,17 +598,22 @@ namespace Microsoft.Maui.Controls
 				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
 
 				if (spacingIndex > -1)
+				{
 					spacing = double.Parse(parts[spacingIndex], CultureInfo.InvariantCulture);
+				}
 
 				if (positionIndex > -1)
+				{
 					position = (ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
+				}
 
 				return new ButtonContentLayout(position, spacing);
 			}
 
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 				=> throw new NotSupportedException();
 		}
+#nullable disable
 
 		private protected override string GetDebuggerDisplay()
 		{
