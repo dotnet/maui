@@ -35,9 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -45,12 +46,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 
-#if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif
