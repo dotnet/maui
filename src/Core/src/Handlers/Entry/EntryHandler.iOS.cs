@@ -44,8 +44,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(entry);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, entry);
+			if (!handler.IsConnectingHandler())
+			{
+				// If we're not connecting the handler, we need to update the text formatting
+				// This is because the text may have changed, and we need to ensure that
+				// any attributed string formatting is applied correctly.
+				MapFormatting(handler, entry);
+			}
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry)
@@ -129,16 +134,22 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
 
+		// NOTE: This method routes through UpdateValue() rather than calling platform methods
+		// directly. This means any AppendToMapping/ModifyMapping customizations on MaxLength,
+		// CharacterSpacing, and HorizontalTextAlignment will also fire here, and subclass
+		// overrides of MapMaxLength/MapCharacterSpacing/MapHorizontalTextAlignment will be
+		// invoked. This is intentional for extensibility but is a behavioral change vs. prior
+		// releases where MapFormatting bypassed the mapper entirely for these three properties.
 		public static void MapFormatting(IEntryHandler handler, IEntry entry)
 		{
-			handler.PlatformView?.UpdateMaxLength(entry);
+			handler.UpdateValue(nameof(IEntry.MaxLength));
 
 			// Update all of the attributed text formatting properties
-			handler.PlatformView?.UpdateCharacterSpacing(entry);
+			handler.UpdateValue(nameof(IEntry.CharacterSpacing));
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
+			handler.UpdateValue(nameof(IEntry.HorizontalTextAlignment));
 		}
 
 		protected virtual bool OnShouldReturn(UITextField view) =>
