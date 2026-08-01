@@ -1210,6 +1210,27 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void SecureStorageInitializedDuringAppInfoHandoffIsNotRestoredAfterDisposal()
+		{
+			Assert.Null(GetStaticField(typeof(SecureStorage), "defaultImplementation"));
+			var appInfo = new SecureStorageInitializingAppInfo();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppInfo>(appInfo);
+			var app = builder.Build();
+
+			var initializedDuringHandoff = Assert.IsType<SecureStorageImplementation>(
+				appInfo.SecureStorageInitializedDuringPackageName);
+			Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+			app.Dispose();
+
+			Assert.NotSame(
+				initializedDuringHandoff,
+				GetStaticField(typeof(SecureStorage), "defaultImplementation"));
+			Assert.Null(GetStaticField(typeof(SecureStorage), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void OverlappingMauiAppsOwnIndependentLazyVersionTrackingFacades()
 		{
 			Assert.Null(GetStaticField(typeof(VersionTracking), "defaultImplementation"));
@@ -2090,6 +2111,29 @@ namespace Microsoft.Maui.UnitTests.Hosting
 						{
 							_readingPackageName = false;
 						}
+					}
+
+					return base.PackageName;
+				}
+			}
+		}
+
+		sealed class SecureStorageInitializingAppInfo : StubAppInfo
+		{
+			bool _initializedSecureStorage;
+
+			public ISecureStorage? SecureStorageInitializedDuringPackageName { get; private set; }
+
+			public override string PackageName
+			{
+				get
+				{
+					if (!_initializedSecureStorage)
+					{
+						_initializedSecureStorage = true;
+						var implementation = new SecureStorageImplementation(base.PackageName);
+						SecureStorage.SetDefault(implementation);
+						SecureStorageInitializedDuringPackageName = implementation;
 					}
 
 					return base.PackageName;

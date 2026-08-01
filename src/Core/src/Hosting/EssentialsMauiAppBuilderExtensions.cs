@@ -285,6 +285,7 @@ namespace Microsoft.Maui.Hosting
 					BridgeAppInfoSecureStorageFromDI(
 						versionTrackingDependencies.AppInfo,
 						versionTrackingDependencies.SecureStorage,
+						versionTrackingDependencies.AppInfoSecureStoragePredecessor,
 						facadeCleanups);
 
 					// Resolve app-owned cleanup before registering AppActions handlers. Facade
@@ -437,7 +438,8 @@ namespace Microsoft.Maui.Hosting
 				IAppInfo? AppInfo,
 				IVersionTracking? VersionTracking,
 				IGeocoding? Geocoding,
-				ISecureStorage? SecureStorage) BridgeEssentialsFromDI(
+				ISecureStorage? SecureStorage,
+				FacadePredecessor<ISecureStorage> AppInfoSecureStoragePredecessor) BridgeEssentialsFromDI(
 				IServiceProvider services,
 				List<Action> facadeCleanups,
 				IGeocoding? preResolvedGeocoding = null)
@@ -447,6 +449,7 @@ namespace Microsoft.Maui.Hosting
 				IVersionTracking? versionTracking = null;
 				IGeocoding? geocoding = null;
 				ISecureStorage? secureStorage = null;
+				FacadePredecessor<ISecureStorage> appInfoSecureStoragePredecessor = default;
 
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, () => GetFacadeBackingField<IAccelerometer>(typeof(Accelerometer), "defaultImplementation"), Accelerometer.SetDefault, facadeCleanups);
@@ -527,7 +530,17 @@ namespace Microsoft.Maui.Hosting
 				}
 				appInfo = services.GetService<IAppInfo>();
 				if (appInfo is not null)
+				{
+					if (secureStorage is null)
+					{
+						appInfoSecureStoragePredecessor = CaptureFacadePredecessor(
+							() => GetFacadeBackingField<ISecureStorage>(
+								typeof(SecureStorage),
+								"defaultImplementation"));
+					}
+
 					TrackAndSet(appInfo, () => GetFacadeBackingField<IAppInfo>(typeof(AppInfo), "currentImplementation"), AppInfo.SetCurrent, facadeCleanups);
+				}
 				BridgeIfRegistered<IConnectivity>(services, () => GetFacadeBackingField<IConnectivity>(typeof(Connectivity), "currentImplementation"), Connectivity.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceDisplay>(services, () => GetFacadeBackingField<IDeviceDisplay>(typeof(DeviceDisplay), "currentImplementation"), DeviceDisplay.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IDeviceInfo>(services, () => GetFacadeBackingField<IDeviceInfo>(typeof(DeviceInfo), "currentImplementation"), DeviceInfo.SetCurrent, facadeCleanups);
@@ -537,7 +550,13 @@ namespace Microsoft.Maui.Hosting
 					TrackAndSet(geocoding, () => GetFacadeBackingField<IGeocoding>(typeof(Geocoding), "defaultImplementation"), Geocoding.SetCurrent, facadeCleanups);
 				BridgeIfRegistered<IPermissions>(services, () => GetFacadeBackingField<IPermissions>(typeof(Permissions), "currentImplementation"), Permissions.SetCurrent, facadeCleanups);
 
-				return (preferences, appInfo, versionTracking, geocoding, secureStorage);
+				return (
+					preferences,
+					appInfo,
+					versionTracking,
+					geocoding,
+					secureStorage,
+					appInfoSecureStoragePredecessor);
 			}
 
 			static void BridgeLazyVersionTrackingFromDI(
@@ -546,7 +565,8 @@ namespace Microsoft.Maui.Hosting
 					IAppInfo? AppInfo,
 					IVersionTracking? VersionTracking,
 					IGeocoding? Geocoding,
-					ISecureStorage? SecureStorage) dependencies,
+					ISecureStorage? SecureStorage,
+					FacadePredecessor<ISecureStorage> AppInfoSecureStoragePredecessor) dependencies,
 				List<Action> facadeCleanups)
 			{
 				if (dependencies.VersionTracking is not null)
@@ -576,6 +596,7 @@ namespace Microsoft.Maui.Hosting
 			static void BridgeAppInfoSecureStorageFromDI(
 				IAppInfo? appInfo,
 				ISecureStorage? secureStorage,
+				FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo,
 				List<Action> facadeCleanups)
 			{
 				if (appInfo is null || secureStorage is not null)
@@ -592,24 +613,85 @@ namespace Microsoft.Maui.Hosting
 				if (defaultAccessiblePredecessor is IPlatformSecureStorage platformSecureStorage)
 					inheritedDefaultAccessible = platformSecureStorage.DefaultAccessible;
 
-				TrackAndSet<ISecureStorage>(
-					previous => new AppInfoSecureStorage(
-						secureStoragePackageName,
-						previous,
-						ReferenceEquals(previous, defaultAccessiblePredecessor) &&
-							IsUnownedCustomPlatformSecureStorage(previous)
-								? inheritedDefaultAccessible
-								: null),
-					() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
-					SecureStorage.SetDefault,
-					facadeCleanups);
+				TrackAndSetAppInfoSecureStorage(
+					secureStoragePackageName,
+					predecessorBeforeAppInfo,
+					facadeCleanups,
+					defaultAccessiblePredecessor,
+					inheritedDefaultAccessible);
 #else
-				TrackAndSet<ISecureStorage>(
-					previous => new AppInfoSecureStorage(secureStoragePackageName, previous),
-					() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
-					SecureStorage.SetDefault,
+				TrackAndSetAppInfoSecureStorage(
+					secureStoragePackageName,
+					predecessorBeforeAppInfo,
 					facadeCleanups);
 #endif
+			}
+
+			static void TrackAndSetAppInfoSecureStorage(
+				string packageName,
+				FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo,
+				List<Action> facadeCleanups
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+				, ISecureStorage? defaultAccessiblePredecessor,
+				global::Security.SecAccessible? inheritedDefaultAccessible
+#endif
+				)
+			{
+				FacadeAssignment<ISecureStorage> assignment;
+				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<ISecureStorage>();
+
+				lock (FacadeBridgeState<ISecureStorage>.SyncRoot)
+				{
+					lock (facadeSyncRoot)
+					{
+						var current = GetFacadeBackingField<ISecureStorage>(
+							typeof(SecureStorage),
+							"defaultImplementation");
+						var currentOwner = FacadeBridgeState<ISecureStorage>.FindOwner(current);
+						var expectedAlias = Preferences.GetPrivatePreferencesSharedName(
+							packageName,
+							"preferences");
+						var initializedDuringHandoff =
+							predecessorBeforeAppInfo.Implementation is null &&
+							predecessorBeforeAppInfo.Owner is null &&
+							currentOwner is null &&
+							current is SecureStorageImplementation implementation &&
+							string.Equals(implementation.Alias, expectedAlias, StringComparison.Ordinal);
+						var previous = initializedDuringHandoff
+							? null
+							: current;
+						var previousOwner = initializedDuringHandoff
+							? null
+							: currentOwner;
+						var appInfoSecureStorage = new AppInfoSecureStorage(
+							packageName,
+							previous
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+							, ReferenceEquals(current, defaultAccessiblePredecessor) &&
+								IsUnownedCustomPlatformSecureStorage(current)
+									? inheritedDefaultAccessible
+									: null
+#endif
+							);
+
+						assignment = new FacadeAssignment<ISecureStorage>(
+							appInfoSecureStorage,
+							previous,
+							previousOwner,
+							allowsSharedOwnership: false);
+						FacadeBridgeState<ISecureStorage>.Assignments.Add(assignment);
+						SetFacade<ISecureStorage>(SecureStorage.SetDefault, appInfoSecureStorage);
+					}
+				}
+
+				AddFacadeCleanup(
+					assignment,
+					() => GetFacadeBackingField<ISecureStorage>(
+						typeof(SecureStorage),
+						"defaultImplementation"),
+					SecureStorage.SetDefault,
+					facadeCleanups,
+					facadeSyncRoot);
 			}
 
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
@@ -653,6 +735,22 @@ namespace Microsoft.Maui.Hosting
 				var impl = services.GetService<T>();
 				if (impl is not null)
 					TrackAndSet(impl, currentGetter, setter, facadeCleanups);
+			}
+
+			static FacadePredecessor<T> CaptureFacadePredecessor<T>(Func<T?> getter)
+				where T : class
+			{
+				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<T>();
+				lock (FacadeBridgeState<T>.SyncRoot)
+				{
+					lock (facadeSyncRoot)
+					{
+						var implementation = getter();
+						return new(
+							implementation,
+							FacadeBridgeState<T>.FindOwner(implementation));
+					}
+				}
 			}
 
 			static void TrackAndSet<T>(
@@ -1455,6 +1553,19 @@ namespace Microsoft.Maui.Hosting
 				public bool Matches(VersionTrackingDependency<T> other) =>
 					ReferenceEquals(Implementation, other.Implementation) &&
 					ReferenceEquals(Owner, other.Owner);
+			}
+
+			readonly struct FacadePredecessor<T> where T : class
+			{
+				public FacadePredecessor(T? implementation, FacadeAssignment<T>? owner)
+				{
+					Implementation = implementation;
+					Owner = owner;
+				}
+
+				public T? Implementation { get; }
+
+				public FacadeAssignment<T>? Owner { get; }
 			}
 
 			static void LogMissingNativeLifecycleInterface<T>(IServiceProvider services, string requiredInterface)
