@@ -177,18 +177,15 @@ namespace Microsoft.Maui.Controls.Handlers
             // Connect using the adapter (which properly implements IStackNavigationView via page delegation)
             _stackNavigationManager.Connect(_navigationViewAdapter, _navigationContainer);
 
-            // Apply dark/light background to the navigation container when the page has no explicit
-            // Background, matching old ShellPageContainer constructor behavior.
-            // We set it on the container (not the page's platform view) because the page's handler
-            // hasn't been created yet at this point — StackNavigationManager creates it asynchronously.
-            // The page view is transparent by default, so the container background shows through.
+            // Apply background to the navigation container when the page has no explicit Background.
+            // Matches old ShellPageContainer constructor behavior.
             if (_rootPage is IView view && view.Background is null && _navigationContainer is not null)
             {
                 var context = _mauiContext!.Context!;
                 bool isDark = Controls.Application.Current?.RequestedTheme == ApplicationModel.AppTheme.Dark;
-                int bgColor = isDark
-                    ? AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundDark)
-                    : AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundLight);
+                int bgColor = RuntimeFeature.IsMaterial3Enabled
+                    ? GetMaterial3Background(context)
+                    : GetResourceBackground(context, isDark);
                 _navigationContainer.SetBackgroundColor(new global::Android.Graphics.Color(bgColor));
             }
 
@@ -544,6 +541,20 @@ namespace Microsoft.Maui.Controls.Handlers
                 _rootPage = null;
             }
             base.Dispose(disposing);
+        }
+
+        static int GetMaterial3Background(Context context)
+        {
+            // Material3 colorSurface automatically adapts to light/dark theme.
+            // The theme resolution happens in GetThemeAttrColor based on the active theme.
+            return ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+        }
+
+        static int GetResourceBackground(Context context, bool isDark)
+        {
+            return isDark
+                ? AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundDark)
+                : AndroidX.Core.Content.ContextCompat.GetColor(context, global::Android.Resource.Color.BackgroundLight);
         }
     }
 

@@ -33,6 +33,10 @@
     <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <WinAppManifestPath>Platforms\Windows\Package.appxmanifest</WinAppManifestPath>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
   </ItemGroup>
@@ -56,5 +60,11 @@
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+  <!-- Local, git-ignored passkey test config written by ../Configure-Passkeys.ps1: the default server URL
+       (baked in via AssemblyMetadata, read by PasskeysViewModel) plus Apple signing + entitlements.
+       Absent by default — then PasskeysViewModel uses its built-in placeholder and CI is unaffected.
+       See ../README.md. -->
+  <Import Project="Passkeys.Local.props" Condition="Exists('$(MSBuildThisFileDirectory)Passkeys.Local.props')" />
 
 </Project>

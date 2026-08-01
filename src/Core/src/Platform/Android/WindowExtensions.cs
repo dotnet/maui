@@ -54,14 +54,36 @@ namespace Microsoft.Maui
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{
-				// Automatically adjust icon/text colors based on app theme
-				var configuration = activity.Resources?.Configuration;
-				var isLightTheme = configuration is null ||
-					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
-
+				var isLightTheme = IsLightTheme(activity);
 				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
 				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
+		}
+
+		internal static void UpdateStatusBarTheme(this Window? window, Activity activity, StatusBarTheme statusBarTheme)
+		{
+			if (window is null)
+			{
+				return;
+			}
+
+			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
+			if (windowInsetsController is not null)
+			{
+				windowInsetsController.AppearanceLightStatusBars = statusBarTheme switch
+				{
+					StatusBarTheme.Light => true,
+					StatusBarTheme.Dark => false,
+					_ => IsLightTheme(activity),
+				};
+			}
+		}
+
+		static bool IsLightTheme(Activity activity)
+		{
+			var configuration = activity.Resources?.Configuration;
+			return configuration is null ||
+				(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 		}
 	}
 }
