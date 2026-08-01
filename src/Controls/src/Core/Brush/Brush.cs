@@ -116,6 +116,11 @@ namespace Microsoft.Maui.Controls
 			return brush == null || brush.IsEmpty;
 		}
 
+		/// <summary>
+		/// Determines whether the specified brush contains a transparent color.
+		/// </summary>
+		/// <param name="background">The brush to evaluate.</param>
+		/// <returns><see langword="true"/> if the brush contains a transparent color; otherwise, <see langword="false"/>.</returns>
 		public static bool HasTransparency(Brush background)
 		{
 

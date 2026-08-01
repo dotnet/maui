@@ -32,6 +32,7 @@ static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdge
 override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer
 Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer.MauiPasswordTextBoxAutomationPeer(Microsoft.Maui.Platform.MauiPasswordTextBox! owner) -> void
+override Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer.IsPasswordCore() -> bool
 static Microsoft.Maui.Handlers.WebViewHandler.MapBackground(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
