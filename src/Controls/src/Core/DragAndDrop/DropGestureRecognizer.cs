@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	public class DropGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>Bindable property for <see cref="AllowDrop"/>.</summary>
-		public static readonly BindableProperty AllowDropProperty = BindableProperty.Create(nameof(AllowDrop), typeof(bool), typeof(DropGestureRecognizer), true);
+		public static readonly BindableProperty AllowDropProperty = BindableProperty.Create(nameof(AllowDrop), typeof(bool), typeof(DropGestureRecognizer), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="DragOverCommand"/>.</summary>
 		public static readonly BindableProperty DragOverCommandProperty = BindableProperty.Create(nameof(DragOverCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty DragLeaveCommandParameterProperty = BindableProperty.Create(nameof(DragLeaveCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="DropCommand"/>.</summary>
-		public static readonly BindableProperty DropCommandProperty = BindableProperty.Create(nameof(DropCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
+		public static readonly BindableProperty DropCommandProperty = BindableProperty.Create(nameof(DropCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="DropCommandParameter"/>.</summary>
 		public static readonly BindableProperty DropCommandParameterProperty = BindableProperty.Create(nameof(DropCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls
 		public bool AllowDrop
 		{
 			get { return (bool)GetValue(AllowDropProperty); }
-			set { SetValue(AllowDropProperty, value); }
+			set { SetValue(AllowDropProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

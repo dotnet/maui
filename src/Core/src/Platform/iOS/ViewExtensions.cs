@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				// Non-UIControl views (like UICollectionView) only get interaction disable
-				platformView.UserInteractionEnabled = view.IsEnabled;
+				platformView.UserInteractionEnabled = view.IsEnabled && !view.InputTransparent;
 			}
 		}
 
@@ -626,7 +626,9 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			platformView.UserInteractionEnabled = !view.InputTransparent;
+			platformView.UserInteractionEnabled = platformView is UIControl
+				? !view.InputTransparent
+				: view.IsEnabled && !view.InputTransparent;
 		}
 
 		public static void UpdateInputTransparent(this UIView platformView, bool isReadOnly, bool inputTransparent)
@@ -648,9 +650,11 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					if (platformView.Interactions is not null)
+					// Cache Interactions; each access marshals the whole native array (see #34396).
+					var interactions = platformView.Interactions;
+					if (interactions is not null)
 					{
-						foreach (var ia in platformView.Interactions)
+						foreach (var ia in interactions)
 						{
 							if (ia is UIToolTipInteraction toolTipInteraction)
 							{
@@ -1059,6 +1063,20 @@ namespace Microsoft.Maui.Platform
 		internal static void MarkAsCrossPlatformLayoutBacking(this UIView view)
 		{
 			view.Tag = NativeViewControlledByCrossPlatformLayout;
+		}
+
+		/// <summary>
+		/// Resets the transform of a view's layer to identity.
+		/// This is used when a WrapperView is created to prevent transform compounding
+		/// between the WrapperView and its child.
+		/// </summary>
+		internal static void ResetLayerTransform(this UIView? view)
+		{
+			if (view?.Layer is CALayer layer)
+			{
+				layer.Transform = CATransform3D.Identity;
+				layer.AnchorPoint = new CGPoint(0.5, 0.5);
+			}
 		}
 	}
 }

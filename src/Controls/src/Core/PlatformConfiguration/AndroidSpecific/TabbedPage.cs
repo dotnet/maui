@@ -2,6 +2,7 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using System;
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.TabbedPage;
 
 	/// <summary>The tabbed page instance that Microsoft.Maui.Controls created on the Android platform.</summary>
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to enable swipe paging; otherwise, <see langword="false"/>.</param>
 		public static void SetIsSwipePagingEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsSwipePagingEnabledProperty, value);
+			element.SetValue(IsSwipePagingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets a Boolean value that controls whether swipe paging is enabled.</summary>
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to enable smooth scroll; otherwise, <see langword="false"/>.</param>
 		public static void SetIsSmoothScrollEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsSmoothScrollEnabledProperty, value);
+			element.SetValue(IsSmoothScrollEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether smooth scrolling is enabled for <c>this</c><see cref="Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage"/>.</summary>

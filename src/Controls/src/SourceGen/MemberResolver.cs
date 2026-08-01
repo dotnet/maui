@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -117,7 +119,7 @@ internal static class MemberResolver
 		// Check if root identifier also resolves to a type in the compilation
 		var conflictsWithStatic = (onThis || onDataType) && 
 			compilation != null && 
-			ResolvesToType(compilation, rootIdentifier);
+			ResolvesToType(compilation, rootIdentifier, GetContainingNamespace(thisType));
 
 		MemberLocation location;
 		if (onThis && onDataType)
@@ -135,18 +137,42 @@ internal static class MemberResolver
 	/// <summary>
 	/// Checks if an identifier resolves to a type in the compilation (including via global usings).
 	/// </summary>
-	private static bool ResolvesToType(Compilation compilation, string identifier)
+	public static bool StartsWithTypeReference(Compilation compilation, string expression, string? containingNamespace = null)
 	{
+		foreach (var typeName in GetPossibleTypeNames(expression))
+		{
+			if (ResolvesToType(compilation, typeName, containingNamespace))
+				return true;
+		}
+
+		return false;
+	}
+
+	public static bool ResolvesToType(Compilation compilation, string typeName, string? containingNamespace = null)
+	{
+		var normalizedTypeName = NormalizeTypeName(typeName);
+		if (string.IsNullOrEmpty(normalizedTypeName))
+			return false;
+
+		if (compilation.GetTypeByMetadataName(normalizedTypeName) != null)
+			return true;
+
+		if (!string.IsNullOrEmpty(containingNamespace) &&
+			compilation.GetTypeByMetadataName($"{containingNamespace}.{normalizedTypeName}") != null)
+		{
+			return true;
+		}
+
 		// Collect all global using namespaces from the compilation's syntax trees
 		var globalNamespaces = new HashSet<string>();
 		
 		foreach (var tree in compilation.SyntaxTrees)
 		{
 			var root = tree.GetRoot();
-			foreach (var usingDirective in root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.UsingDirectiveSyntax>())
+			foreach (var usingDirective in root.DescendantNodes().OfType<UsingDirectiveSyntax>())
 			{
 				// Check for global usings (global using System;)
-				if (usingDirective.GlobalKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GlobalKeyword))
+				if (usingDirective.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword))
 				{
 					var namespaceName = usingDirective.Name?.ToString();
 					if (!string.IsNullOrEmpty(namespaceName))
@@ -158,18 +184,99 @@ internal static class MemberResolver
 		// Check if the identifier resolves to a type in any of the global namespaces
 		foreach (var ns in globalNamespaces)
 		{
-			var fullName = $"{ns}.{identifier}";
+			var fullName = $"{ns}.{normalizedTypeName}";
 			var type = compilation.GetTypeByMetadataName(fullName);
 			if (type != null)
 				return true;
 		}
 		
 		// Also check in the global namespace itself
-		var globalType = compilation.GetTypeByMetadataName(identifier);
+		var globalType = compilation.GetTypeByMetadataName(normalizedTypeName);
 		if (globalType != null)
 			return true;
 		
 		return false;
+	}
+
+	public static string? GetContainingNamespace(ITypeSymbol? typeSymbol)
+		=> GetNamespaceName(typeSymbol?.ContainingNamespace);
+
+	private static string? GetNamespaceName(INamespaceSymbol? namespaceSymbol)
+	{
+		if (namespaceSymbol == null || namespaceSymbol.IsGlobalNamespace)
+			return null;
+
+		var names = new Stack<string>();
+		var current = namespaceSymbol;
+		while (current != null && !current.IsGlobalNamespace)
+		{
+			names.Push(current.Name);
+			current = current.ContainingNamespace;
+		}
+
+		return string.Join(".", names);
+	}
+
+	private static string NormalizeTypeName(string typeName)
+	{
+		var normalized = typeName.Trim();
+		const string GlobalAlias = "global::";
+		if (normalized.StartsWith(GlobalAlias, StringComparison.Ordinal))
+			normalized = normalized.Substring(GlobalAlias.Length);
+		return normalized;
+	}
+
+	private static IEnumerable<string> GetPossibleTypeNames(string expression)
+	{
+		var leadingMemberAccess = ReadLeadingMemberAccess(expression);
+		if (string.IsNullOrEmpty(leadingMemberAccess))
+			yield break;
+
+		var normalized = NormalizeTypeName(leadingMemberAccess);
+		var parts = normalized.Split('.');
+		for (var i = parts.Length; i >= 1; i--)
+			yield return string.Join(".", parts.Take(i));
+	}
+
+	private static string ReadLeadingMemberAccess(string expression)
+	{
+		if (string.IsNullOrWhiteSpace(expression))
+			return string.Empty;
+
+		var trimmed = expression.TrimStart();
+		var start = 0;
+		var position = 0;
+		const string GlobalAlias = "global::";
+		if (trimmed.StartsWith(GlobalAlias, StringComparison.Ordinal))
+			position = GlobalAlias.Length;
+
+		if (!TryReadIdentifier(trimmed, ref position))
+			return string.Empty;
+
+		while (position < trimmed.Length && trimmed[position] == '.')
+		{
+			var beforeDot = position;
+			position++;
+			if (!TryReadIdentifier(trimmed, ref position))
+			{
+				position = beforeDot;
+				break;
+			}
+		}
+
+		return trimmed.Substring(start, position - start);
+	}
+
+	private static bool TryReadIdentifier(string text, ref int position)
+	{
+		if (position >= text.Length || (!char.IsLetter(text[position]) && text[position] != '_'))
+			return false;
+
+		position++;
+		while (position < text.Length && (char.IsLetterOrDigit(text[position]) || text[position] == '_'))
+			position++;
+
+		return true;
 	}
 
 	/// <summary>
@@ -230,17 +337,20 @@ internal static class MemberResolver
 	}
 
 	/// <summary>
-	/// Checks if a type has a member (property or field) with the given name.
+	/// Checks if a type has a member with the given name.
 	/// </summary>
-	private static bool HasMember(ITypeSymbol type, string memberName)
+	public static bool HasMember(ITypeSymbol? type, string memberName, bool includeMethods = false)
 	{
+		if (type == null)
+			return false;
+
 		// Check this type and all base types
 		var currentType = type;
 		while (currentType != null)
 		{
 			foreach (var member in currentType.GetMembers(memberName))
 			{
-				if (member is IPropertySymbol || member is IFieldSymbol)
+				if (member is IPropertySymbol || member is IFieldSymbol || (includeMethods && member is IMethodSymbol))
 					return true;
 			}
 			currentType = currentType.BaseType;

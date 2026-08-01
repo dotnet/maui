@@ -98,7 +98,32 @@ namespace Microsoft.Maui.Platform
 		public void LoadHtml(string? html, string? baseUrl)
 		{
 			if (html != null)
-				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
+			{
+				// Use the provided baseUrl, or fall back to the app bundle path so that
+				// relative resources (images, CSS, JS) bundled with the app continue to resolve.
+				var resolvedBaseUrl = !string.IsNullOrEmpty(baseUrl)
+					? new NSUrl(baseUrl, true)
+					: new NSUrl(NSBundle.MainBundle.BundlePath, true);
+
+				// LoadSimulatedRequest (iOS 15+ / macCatalyst 15+) is preferred over LoadHtmlString because:
+				//   1. History  — creates a back/forward history entry for both the null and non-null
+				//                 BaseUrl cases, so GoBack/GoForward work correctly for HtmlWebViewSource.
+				//   2. Privacy  — the HTML document is passed as a parameter; WKWebView.Url only reflects
+				//                 the base URL, so the page contents are never exposed in URLs, logs, or
+				//                 navigation-event arguments.
+				//   3. Compat   — preserves the resolved base URL as the origin, keeping cookies,
+				//                 JavaScript evaluation, and relative-resource resolution working exactly
+				//                 as they did with the previous LoadHtmlString approach.
+				// On iOS 13/14 and earlier macCatalyst, fall back to LoadHtmlString.
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
+				{
+					LoadSimulatedRequest(new NSUrlRequest(resolvedBaseUrl), html);
+				}
+				else
+				{
+					LoadHtmlString(html, resolvedBaseUrl);
+				}
+			}
 		}
 
 		async Task LoadUrlAsync(string? url)
@@ -182,29 +207,11 @@ namespace Microsoft.Maui.Platform
 
 		bool LoadFile(string url)
 		{
-			try
-			{
-				var file = Path.GetFileNameWithoutExtension(url);
-				var ext = Path.GetExtension(url);
+			ILogger? logger = null;
+			if (_handler.TryGetTarget(out var handler))
+				logger = handler.MauiContext?.CreateLogger<MauiWKWebView>();
 
-				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
-
-				if (nsUrl == null)
-				{
-					return false;
-				}
-
-				LoadFileUrl(nsUrl, nsUrl);
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				if (_handler.TryGetTarget(out var handler))
-					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Could not load {url} as local file: {ex}");
-			}
-
-			return false;
+			return this.LoadFile(url, logger);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

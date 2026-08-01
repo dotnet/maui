@@ -49,7 +49,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		class CollectionViewStringGroup : List<string>
+		[Fact(DisplayName = "Removing a grouped CollectionView section does not crash")]
+		public async Task RemovingGroupedCollectionViewSectionDoesNotCrash()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var data = new List<string> { "item 1", "item 2" };
+			var groupData = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("Header 1", data),
+				new("Header 2", data),
+				new("Header 3", data)
+			};
+
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				IsGrouped = true,
+				ItemsSource = groupData,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			var initialFrame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(initialFrame, collectionView);
+
+				var uiCollectionView = handler.Controller.CollectionView;
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+
+				groupData.RemoveAt(groupData.Count - 1);
+
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+			});
+		}
+
+		class CollectionViewStringGroup : ObservableCollection<string>
 		{
 			public string GroupHeader { get; private set; }
 			public CollectionViewStringGroup(string header, IEnumerable<string> data) : base(data)
@@ -567,6 +615,155 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 			return null;
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36010
+		// CollectionViewHandler2 must not throw NullReferenceException when a
+		// GridItemsLayout property changes after the handler has been disconnected
+		// and then reconnected (the cached-workspace / native-host restore pattern).
+		[Theory(DisplayName = "CollectionViewHandler2 Does Not Crash After Disconnect-Restore-PropertyChange")]
+		[InlineData(nameof(GridItemsLayout.Span))]
+		[InlineData(nameof(GridItemsLayout.HorizontalItemSpacing))]
+		[InlineData(nameof(GridItemsLayout.VerticalItemSpacing))]
+		[InlineData(nameof(ItemsLayout.SnapPointsType))]
+		[InlineData(nameof(ItemsLayout.SnapPointsAlignment))]
+		[Category(TestCategory.CollectionView)]
+		public async Task CollectionViewHandler2DoesNotCrashAfterDisconnectRestorePropertyChange(string propertyName)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var itemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical)
+			{
+				HorizontalItemSpacing = 8,
+				VerticalItemSpacing = 8
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				ItemsLayout = itemsLayout,
+				ItemsSource = Enumerable.Range(1, 12).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(200);
+
+				// Step 1: Shelve — disconnect the handler (sets _layoutPropertyCache = null)
+				var mauiContext = handler.MauiContext;
+				((IElementHandler)handler).DisconnectHandler();
+
+				await Task.Delay(50);
+
+				// Step 2: Restore — re-attach the same handler instance
+				((IElementHandler)handler).SetMauiContext(mauiContext);
+				((IElementHandler)handler).SetVirtualView(collectionView);
+
+				await Task.Delay(50);
+
+				// Step 3: Change a GridItemsLayout property — must NOT throw NullReferenceException.
+				// Before the fix, _layoutPropertyCache was null here and TryGetValue crashed.
+				var exception = await Record.ExceptionAsync(async () =>
+				{
+					await InvokeOnMainThreadAsync(() =>
+					{
+						switch (propertyName)
+						{
+							case nameof(GridItemsLayout.Span):
+								itemsLayout.Span = 4;
+								break;
+							case nameof(GridItemsLayout.HorizontalItemSpacing):
+								itemsLayout.HorizontalItemSpacing = 16;
+								break;
+							case nameof(GridItemsLayout.VerticalItemSpacing):
+								itemsLayout.VerticalItemSpacing = 16;
+								break;
+							case nameof(ItemsLayout.SnapPointsType):
+								itemsLayout.SnapPointsType = SnapPointsType.MandatorySingle;
+								break;
+							case nameof(ItemsLayout.SnapPointsAlignment):
+								itemsLayout.SnapPointsAlignment = SnapPointsAlignment.Center;
+								break;
+						}
+					});
+				});
+
+				Assert.Null(exception);
+			});
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36010 (LinearItemsLayout path)
+		// ItemSpacing change on a LinearItemsLayout must also survive disconnect+restore.
+		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Disconnect-Restore-LinearItemSpacingChange")]
+		[Category(TestCategory.CollectionView)]
+		public async Task CollectionViewHandler2DoesNotCrashAfterDisconnectRestoreLinearItemSpacingChange()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+			{
+				ItemSpacing = 4
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				ItemsLayout = itemsLayout,
+				ItemsSource = Enumerable.Range(1, 12).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(200);
+
+				var mauiContext = handler.MauiContext;
+				((IElementHandler)handler).DisconnectHandler();
+
+				await Task.Delay(50);
+
+				((IElementHandler)handler).SetMauiContext(mauiContext);
+				((IElementHandler)handler).SetVirtualView(collectionView);
+
+				await Task.Delay(50);
+
+				var exception = await Record.ExceptionAsync(async () =>
+				{
+					await InvokeOnMainThreadAsync(() =>
+					{
+						itemsLayout.ItemSpacing = 20;
+					});
+				});
+
+				Assert.Null(exception);
+			});
 		}
 	}
 }
