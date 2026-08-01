@@ -11,11 +11,25 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// </summary>
 	public sealed partial class Path : Shape, IShape
 	{
+		// Subscribe to the assigned Data geometry / RenderTransform via weak proxies so a shared,
+		// long-lived Geometry/Transform does not root the transient Path (and its visual tree)
+		// through a plain multicast-delegate subscription. See issue #36375.
+		readonly WeakNotifyPropertyChangedProxy _dataProxy = new();
+		readonly WeakNotifyPropertyChangedProxy _transformProxy = new();
+		PropertyChangedEventHandler _dataChangedHandler;
+		PropertyChangedEventHandler _transformChangedHandler;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Path"/> class.
 		/// </summary>
 		public Path() : base()
 		{
+		}
+
+		~Path()
+		{
+			_dataProxy?.Unsubscribe();
+			_transformProxy?.Unsubscribe();
 		}
 
 		public Path(Geometry data) : this()
@@ -54,33 +68,33 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static void OnGeometryPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue != null)
+			var path = bindable as Path;
+
+			if (oldValue is PathGeometry oldPathGeometry)
+				oldPathGeometry.InvalidatePathGeometryRequested -= path.OnInvalidatePathGeometryRequested;
+
+			path._dataProxy.Unsubscribe();
+
+			if (newValue is Geometry newGeometry)
 			{
-				(oldValue as Geometry).PropertyChanged -= (bindable as Path).OnGeometryPropertyChanged;
+				path._dataChangedHandler ??= path.OnGeometryPropertyChanged;
+				path._dataProxy.Subscribe(newGeometry, path._dataChangedHandler);
 
-				if (oldValue is PathGeometry pathGeometry)
-					pathGeometry.InvalidatePathGeometryRequested -= (bindable as Path).OnInvalidatePathGeometryRequested;
-			}
-
-			if (newValue != null)
-			{
-				(newValue as Geometry).PropertyChanged += (bindable as Path).OnGeometryPropertyChanged;
-
-				if (newValue is PathGeometry pathGeometry)
-					pathGeometry.InvalidatePathGeometryRequested += (bindable as Path).OnInvalidatePathGeometryRequested;
+				if (newValue is PathGeometry newPathGeometry)
+					newPathGeometry.InvalidatePathGeometryRequested += path.OnInvalidatePathGeometryRequested;
 			}
 		}
 
 		static void OnTransformPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue != null)
-			{
-				(oldValue as Transform).PropertyChanged -= (bindable as Path).OnTransformPropertyChanged;
-			}
+			var path = bindable as Path;
 
-			if (newValue != null)
+			path._transformProxy.Unsubscribe();
+
+			if (newValue is Transform newTransform)
 			{
-				(newValue as Transform).PropertyChanged += (bindable as Path).OnTransformPropertyChanged;
+				path._transformChangedHandler ??= path.OnTransformPropertyChanged;
+				path._transformProxy.Subscribe(newTransform, path._transformChangedHandler);
 			}
 		}
 
