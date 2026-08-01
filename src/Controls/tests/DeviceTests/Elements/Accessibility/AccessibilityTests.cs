@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -132,6 +133,45 @@ namespace Microsoft.Maui.DeviceTests
 
 		class AllControlsTestCase : IEnumerable<object[]>
 		{
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ActivityIndicator))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Border))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BoxView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Button))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(CarouselView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(CheckBox))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(CollectionView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ContentView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(DatePicker))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Editor))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Ellipse))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Entry))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(GraphicsView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Grid))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(HorizontalStackLayout))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Image))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ImageButton))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(IndicatorView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Label))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LabelWithText))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Line))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Path))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Picker))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Polygon))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Polyline))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ProgressBar))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RadioButton))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Rectangle))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RefreshView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RoundRectangle))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ScrollView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(SearchBar))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Slider))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Stepper))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(SwipeView))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Switch))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TimePicker))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(VerticalStackLayout))]
+			[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(WebView))]
 			public IEnumerator<object[]> GetEnumerator()
 			{
 #if IOS

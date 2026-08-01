@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -262,6 +263,10 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator ShellItem(TemplatedPage page) => (ShellSection)(ShellContent)page;
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2111:ReflectionToDynamicallyAccessedMembers", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
 		public static implicit operator ShellItem(MenuItem menuItem) => new MenuShellItem(menuItem);
 
 		/// <inheritdoc/>
@@ -373,19 +378,19 @@ namespace Microsoft.Maui.Controls
 			if (this.IsVisibleItem && CurrentItem != null)
 				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
 		}
-
+#nullable enable
 		private sealed class ShellItemConverter : TypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(ShellSection)
 					|| sourceType == typeof(ShellContent)
 					|| sourceType == typeof(TemplatedPage)
 					|| sourceType == typeof(MenuItem);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> false;
 
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 				=> value switch
 				{
 					ShellSection shellSection => (ShellItem)shellSection,
@@ -395,10 +400,10 @@ namespace Microsoft.Maui.Controls
 					_ => throw new NotSupportedException(),
 				};
 
-			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+			public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
 				=> throw new NotSupportedException();
 		}
-
+#nullable disable
 		/// <summary>
 		/// Provides a debug view for the <see cref="ShellItem"/> class.
 		/// </summary>

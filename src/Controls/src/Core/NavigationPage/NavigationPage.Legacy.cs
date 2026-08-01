@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls
 
 			var previousPage = CurrentPage;
 			var navigationType = DetermineNavigationType();
-			
+
 			SendNavigating(navigationType, previousPage);
 			FireDisappearing(CurrentPage);
 			FireAppearing(page);
@@ -203,13 +203,13 @@ namespace Microsoft.Maui.Controls
 
 				if (args.Task != null)
 					await args.Task;
-			} 
-			
+			}
+
 			SendNavigated(previousPage, navigationType);
 			Pushed?.Invoke(this, args);
 		}
 
-#if IOS
+#if IOS || MACCATALYST
 		// Because iOS currently doesn't use our `IStackNavigationView` structures
 		// there are scenarios where the legacy handler needs to alert the xplat
 		// code of when a navigation has occurred.
@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls
 
 			if (page == CurrentPage)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+				MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 				PopAsync();
 				return;
 			}

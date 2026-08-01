@@ -65,10 +65,10 @@ namespace Microsoft.Maui.ApplicationModel
 #endif
 
 			// Check if there's flags specified to use
-			if (tabsFlags.HasValue)
+			if (tabsFlags.HasValue && tabsIntent?.Intent != null)
 				tabsIntent.Intent.SetFlags(tabsFlags.Value);
 
-			if (nativeUri != null)
+			if (nativeUri != null && context != null && tabsIntent != null)
 				tabsIntent.LaunchUrl(context, nativeUri);
 		}
 

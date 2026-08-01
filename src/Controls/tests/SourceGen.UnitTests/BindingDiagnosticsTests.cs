@@ -298,9 +298,211 @@ public class ItemModel
 			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
 		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
 
-		// x:Reference bindings skip compilation entirely — no MAUIG2045 should be emitted
-		// for properties on the DataTemplate's x:DataType (ItemModel).
+		// x:Reference resolves to ContentPage; BindingContext is 'object', so SelectItemCommand
+		// can't be resolved statically. MAUIG2045 is suppressed for x:Reference bindings.
 		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045" && d.GetMessage().Contains("ItemModel", StringComparison.Ordinal));
+	}
+
+	[Fact]
+	public void BindingWithXReferenceToNonRootElement_ResolvesCorrectType()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<StackLayout>
+		<Label x:Name="StatusLabel" Text="Ready" />
+		<CollectionView ItemsSource="{Binding Items}">
+			<CollectionView.ItemTemplate>
+				<DataTemplate x:DataType="test:ItemModel">
+					<Label Text="{Binding Source={x:Reference StatusLabel}, Path=Text}" />
+				</DataTemplate>
+			</CollectionView.ItemTemplate>
+		</CollectionView>
+	</StackLayout>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel
+{
+	public System.Collections.Generic.List<ItemModel> Items { get; set; }
+}
+
+public class ItemModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// Path=Text resolves against Label (the x:Reference target), not ItemModel (x:DataType).
+		// Label.Text exists, so there should be no MAUIG2045 at all.
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
+	}
+
+	[Fact]
+	public void BindingWithRelativeSourceAncestorTypeInvalidPath_ReportsPropertyNotFound()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<ContentPage.Resources>
+		<DataTemplate x:Key="MyTemplate">
+			<Label Text="{Binding Source={RelativeSource AncestorType={x:Type test:TestPage}}, Path=NonExistentProperty}" />
+		</DataTemplate>
+	</ContentPage.Resources>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public sealed partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// AncestorType=TestPage is sealed, so no derived runtime ancestor can exist — the path is
+		// provably wrong on that type, so MAUIG2045 must fire, consistent with x:DataType binding
+		// behavior.
+		var diagnostic = result.Diagnostics.FirstOrDefault(d => d.Id == "MAUIG2045");
+		Assert.NotNull(diagnostic);
+		Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+
+		var message = diagnostic.GetMessage();
+		Assert.Contains("NonExistentProperty", message, System.StringComparison.Ordinal);
+		Assert.Contains("TestPage", message, System.StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void BindingWithRelativeSourceAncestorTypeMatchingIssue36818Repro_SuppressesPropertyNotFound()
+	{
+		// XAML root is `BasePage : ContentPage`, and `BasePage` declares `SelectedItem`.
+		// The binding declares AncestorType={x:Type ContentPage} (the framework base type, not the
+		// derived BasePage). At runtime the resolved ancestor is the BasePage instance, so the
+		// binding is valid — MAUIG2045 must NOT fire, since ContentPage is unsealed and BasePage (a
+		// real derived type present in this same compilation) legitimately supplies SelectedItem.
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<views:BasePage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:views="clr-namespace:Test.Views"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.Views.ControlsPage"
+	x:DataType="test:ViewModel">
+	<ContentView>
+		<CollectionView SelectedItem="{Binding SelectedItem, Source={RelativeSource AncestorType={x:Type ContentPage}}, Mode=TwoWay}" />
+	</ContentView>
+</views:BasePage>
+""";
+
+		var csharp =
+"""
+using System.Windows.Input;
+
+namespace Test.Views;
+
+public partial class BasePage : Microsoft.Maui.Controls.ContentPage
+{
+	public static readonly Microsoft.Maui.Controls.BindableProperty SelectedItemProperty =
+		Microsoft.Maui.Controls.BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(BasePage));
+
+	public object SelectedItem
+	{
+		get => GetValue(SelectedItemProperty);
+		set => SetValue(SelectedItemProperty, value);
+	}
+
+	public ICommand NavigateCommand { get; set; }
+}
+
+namespace Test;
+
+public class ViewModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("ControlsPage.xaml", xaml), assertNoCompilationErrors: false);
+
+		// ContentPage (the declared AncestorType) is unsealed and does not declare SelectedItem, but
+		// the real derived type BasePage does — MAUIG2045 must be suppressed.
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
+	}
+
+	[Fact]
+	public void BindingWithRelativeSourceUnresolvedAncestorTypeInvalidPath_SuppressesPropertyNotFound()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:ViewModel">
+	<ContentPage.Resources>
+		<DataTemplate x:Key="MyTemplate">
+			<Label Text="{Binding Source={RelativeSource AncestorType=NonExistentAncestorType}, Path=NonExistentProperty}" />
+		</DataTemplate>
+	</ContentPage.Resources>
+</ContentPage>
+""";
+
+		var csharp =
+"""
+namespace Test;
+
+public partial class TestPage : Microsoft.Maui.Controls.ContentPage { }
+
+public class ViewModel
+{
+	public string Name { get; set; }
+}
+""";
+
+		var compilation = CreateMauiCompilation()
+			.AddSyntaxTrees(Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(csharp));
+		var result = RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml), assertNoCompilationErrors: false);
+
+		// AncestorType="NonExistentAncestorType" cannot be resolved to a type, so no type inference
+		// was possible for this binding — MAUIG2045 must stay suppressed even though Path is invalid,
+		// since this binding was never compiled before (it always fell back to runtime Binding).
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "MAUIG2045");
 	}
 
 	[Fact]

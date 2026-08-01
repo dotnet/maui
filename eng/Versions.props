@@ -39,7 +39,7 @@
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- dotnet-optimization -->
-    <optimizationandroidx64MIBCRuntimePackageVersion>1.0.0-prerelease.26317.1</optimizationandroidx64MIBCRuntimePackageVersion>
+    <optimizationandroidx64MIBCRuntimePackageVersion>1.0.0-prerelease.26318.1</optimizationandroidx64MIBCRuntimePackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
     <MicrosoftExtensionsConfigurationVersion>11.0.0-rc.1.26379.102</MicrosoftExtensionsConfigurationVersion>
@@ -173,6 +173,7 @@
     <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
     <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
+    <AvaloniaControlsMauiPackageVersion>11.0.0-preview.6.26198.1455</AvaloniaControlsMauiPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->

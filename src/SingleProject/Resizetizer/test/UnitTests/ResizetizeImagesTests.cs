@@ -1048,6 +1048,81 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			//	AssertFileSize(DestinationFilename, exWidth, exHeight);
 			//}
 
+			[Fact]
+			public void AppIconWithMonochromeFileGeneratesMonochromeLayer()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_background.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = "images/appicon.svg",
+						["MonochromeFile"] = "images/camera.svg",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				// Monochrome PNG should be generated at each density
+				AssertFileExists("mipmap-mdpi/dotnet_background_monochrome.png");
+				AssertFileExists("mipmap-xhdpi/dotnet_background_monochrome.png");
+
+				// Adaptive icon XML should reference the monochrome layer
+				AssertFileContains("mipmap-anydpi-v26/dotnet_background.xml",
+					"<monochrome android:drawable=\"@mipmap/dotnet_background_monochrome\"");
+				AssertFileContains("mipmap-anydpi-v26/dotnet_background_round.xml",
+					"<monochrome android:drawable=\"@mipmap/dotnet_background_monochrome\"");
+			}
+
+			[Fact]
+			public void AppIconWithoutMonochromeFileFallsBackToForeground()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_background.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = "images/appicon.svg",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				// No monochrome PNG should be generated
+				AssertFileNotExists("mipmap-mdpi/dotnet_background_monochrome.png");
+
+				// Adaptive icon XML should reference the foreground as monochrome (backwards compat)
+				AssertFileContains("mipmap-anydpi-v26/dotnet_background.xml",
+					"<monochrome android:drawable=\"@mipmap/dotnet_background_foreground\"");
+				AssertFileContains("mipmap-anydpi-v26/dotnet_background_round.xml",
+					"<monochrome android:drawable=\"@mipmap/dotnet_background_foreground\"");
+			}
+
+			[Fact]
+			public void AppIconMonochromeLayerHasCorrectSize()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_background.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = "images/appicon.svg",
+						["MonochromeFile"] = "images/camera.svg",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				// Monochrome follows the same AppIconParts sizing as foreground/background
+				AssertFileSize("mipmap-mdpi/dotnet_background_monochrome.png", 108, 108);
+				AssertFileSize("mipmap-xhdpi/dotnet_background_monochrome.png", 216, 216);
+			}
 		}
 
 		public class ExecuteForiOS : ExecuteForPlatformApp
@@ -1765,6 +1840,27 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				}
 				var size = ResizeImageInfo.Parse(item);
 				Assert.Equal(resize, size.Resize);
+			}
+		}
+
+		public class ExecuteForCustomPlatform : ExecuteForApp
+		{
+			public ExecuteForCustomPlatform(ITestOutputHelper output)
+				: base(output)
+			{
+			}
+
+			[Fact]
+			public void UsesGenericDesktopFallback()
+			{
+				var task = GetNewTask("custom-platform", new TaskItem("images/camera.svg", ResizeMetadata));
+
+				var success = task.Execute();
+
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+				AssertFileSize("camera.png", 1792, 1792);
+				AssertFileSize("camera@2x.png", 3584, 3584);
+				Assert.Equal(2, task.CopiedResources.Length);
 			}
 		}
 	}

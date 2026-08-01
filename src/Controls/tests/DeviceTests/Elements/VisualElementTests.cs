@@ -4,10 +4,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-#if IOS || MACCATALYST
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
-#endif
-
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElement)]
@@ -46,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS || ANDROID
 							handlers.AddHandler<Toolbar, ToolbarHandler>();
 #else
-							handlers.AddHandler<NavigationPage, Controls.Handlers.Compatibility.NavigationRenderer>();
+							handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
 						});
 			}

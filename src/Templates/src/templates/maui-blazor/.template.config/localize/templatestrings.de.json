@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Ziel DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Include Beispielseiten",
   "symbols/IncludeSampleContent/description": "Konfiguriert, ob Beispielseiten und Stile hinzugefügt werden, um grundlegende Verwendungsmuster zu veranschaulichen.",
-  "symbols/Empty/description": "Konfiguriert, ob Beispielseiten und Formatierungen weggelassen werden sollen, die grundlegende Verwendungsmuster veranschaulichen."
+  "symbols/empty/description": "Konfiguriert, ob Beispielseiten und Formatierungen weggelassen werden sollen, die grundlegende Verwendungsmuster veranschaulichen."
 }

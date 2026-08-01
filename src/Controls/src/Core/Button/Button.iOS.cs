@@ -159,10 +159,12 @@ namespace Microsoft.Maui.Controls
 		{
 			bounds = this.ComputeFrame(bounds);
 
-			var platformButton = Handler?.PlatformView as UIButton;
-
-			// Layout the image and title of the button
-			LayoutButton(platformButton, this, bounds);
+			// During animated transitions, UIKit may trigger LayoutSubviews after the handler
+			// has been disconnected. Guard against accessing a null PlatformView.
+			if (Handler?.PlatformView is UIButton platformButton)
+			{
+				LayoutButton(platformButton, this, bounds);
+			}
 
 			return new Size(bounds.Width, bounds.Height);
 		}

@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this layout.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.Container.
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the layout should obey safe area insets.

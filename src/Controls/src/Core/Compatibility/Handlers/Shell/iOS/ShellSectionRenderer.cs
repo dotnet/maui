@@ -15,6 +15,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, IDisconnectable
 	{
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> TopViewController;
+#endif
+
 		#region IShellContentRenderer
 
 		public bool IsInMoreTab { get; set; }
@@ -607,6 +612,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				ShellItemRenderer.UpdateTabBarItemBadge(TabBarItem, ShellSection);
 			});
 		}
 
