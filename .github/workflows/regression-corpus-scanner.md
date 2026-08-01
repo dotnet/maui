@@ -139,9 +139,13 @@ network: defaults
 tools:
   github:
     # The agent only needs the normalized candidate context plus the merged
-    # introducing PR diff. Filter all fetched content through the integrity proxy.
+    # introducing PR diff. Keep every agent MCP read integrity-filtered.
     toolsets: [pull_requests, repos]
     min-integrity: approved
+    # The deterministic pre-pass applies its own maintainer-association checks before
+    # extracting attribution. Let its gh calls read those fields without DIFC redaction;
+    # this does not disable min-integrity filtering on the agent's MCP reads.
+    integrity-proxy: false
   edit:
   # Shell utilities plus `git` for local diff/SHA inspection. The executable
   # allowlist cannot restrict Git subcommands; safe-outputs is the write boundary.

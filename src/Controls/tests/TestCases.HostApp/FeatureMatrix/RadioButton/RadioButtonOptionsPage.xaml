@@ -12,7 +12,7 @@
 
        <ScrollView>
               <Grid ColumnDefinitions="Auto, Auto"
-                    RowDefinitions="Auto, Auto, Auto,Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                    RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
 
                      <!-- Content -->
                      <Label Grid.Row="0"
@@ -35,13 +35,78 @@
                                     AutomationId="ViewContentButton"/>
                      </StackLayout>
 
+                     <!-- 2x2 Numeric Options -->
+                     <Grid Grid.Row="2"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           ColumnDefinitions="*, *"
+                           RowDefinitions="Auto, Auto"
+                           ColumnSpacing="20"
+                           RowSpacing="10">
+                            <VerticalStackLayout Grid.Row="0"
+                                                 Grid.Column="0"
+                                                 Spacing="4">
+                                   <Label Text="Border Width:"
+                                          FontSize="15"
+                                          VerticalOptions="Center"/>
+                                   <Entry x:Name="BorderWidthEntry"
+                                          AutomationId="BorderWidthEntry"
+                                          TextChanged="OnBorderWidthChanged"
+                                          Keyboard="Numeric"
+                                          HorizontalOptions="Start"
+                                          WidthRequest="150"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Row="0"
+                                                 Grid.Column="1"
+                                                 Spacing="4">
+                                   <Label Text="Character Spacing:"
+                                          FontSize="15"
+                                          VerticalOptions="Center"/>
+                                   <Entry x:Name="CharacterSpacingEntry"
+                                          AutomationId="CharacterSpacingEntry"
+                                          TextChanged="OnCharacterSpacingChanged"
+                                          Keyboard="Numeric"
+                                          HorizontalOptions="Start"
+                                          WidthRequest="150"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Row="1"
+                                                 Grid.Column="0"
+                                                 Spacing="4">
+                                   <Label Text="Corner Radius:"
+                                          FontSize="15"
+                                          VerticalOptions="Center"/>
+                                   <Entry x:Name="CornerRadiusEntry"
+                                          AutomationId="CornerRadiusEntry"
+                                          TextChanged="OnCornerRadiusChanged"
+                                          Keyboard="Numeric"
+                                          HorizontalOptions="Start"
+                                          WidthRequest="150"/>
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 Spacing="4">
+                                   <Label Text="Font Size:"
+                                          FontSize="15"
+                                          VerticalOptions="Center"/>
+                                   <Entry x:Name="FontSizeEntry"
+                                          AutomationId="FontSizeEntry"
+                                          TextChanged="OnFontSizeChanged"
+                                          Keyboard="Numeric"
+                                          HorizontalOptions="Start"
+                                          WidthRequest="150"/>
+                            </VerticalStackLayout>
+                     </Grid>
+
                      <!-- IsChecked -->
-                     <Label Grid.Row="1"
+                     <Label Grid.Row="3"
                             Grid.Column="0"
                             Text="Is Checked:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="1"
+                     <StackLayout Grid.Row="3"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="IsCheckedTrueRadio"
@@ -58,12 +123,12 @@
                      </StackLayout>
 
                      <!-- GroupName -->
-                     <Label Grid.Row="2"
+                     <Label Grid.Row="4"
                             Grid.Column="0"
                             Text="Group Name:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="2"
+                     <StackLayout Grid.Row="4"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="GroupNameOneRadio"
@@ -80,12 +145,12 @@
                      </StackLayout>
 
                      <!-- Value -->
-                     <Label Grid.Row="3"
+                     <Label Grid.Row="1"
                             Grid.Column="0"
                             Text="Value:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <Entry Grid.Row="3"
+                     <Entry Grid.Row="1"
                             Grid.Column="1"
                             x:Name="ValueEntry"
                             AutomationId="ValueEntry"
@@ -94,12 +159,12 @@
                             WidthRequest="150"/>
 
                      <!-- Border Color -->
-                     <Label Grid.Row="4"
+                     <Label Grid.Row="5"
                             Grid.Column="0"
                             Text="Border Color:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="4"
+                     <StackLayout Grid.Row="5"
                                   Grid.Column="1"
                                   Orientation="Horizontal"
                                   Spacing="5">
@@ -120,58 +185,13 @@
                                     AutomationId="BorderColorPurpleButton"/>
                      </StackLayout>
 
-                     <!-- Border Width -->
-                     <Label Grid.Row="5"
-                            Grid.Column="0"
-                            Text="Border Width:"
-                            FontSize="15"
-                            VerticalOptions="Center"/>
-                     <Entry Grid.Row="5"
-                            Grid.Column="1"
-                            x:Name="BorderWidthEntry"
-                            AutomationId="BorderWidthEntry"
-                            TextChanged="OnBorderWidthChanged"
-                            Keyboard="Numeric"
-                            HorizontalOptions="Start"
-                            WidthRequest="150"/>
-
-                     <!-- Character Spacing -->
-                     <Label Grid.Row="6"
-                            Grid.Column="0"
-                            Text="Character Spacing:"
-                            FontSize="15"
-                            VerticalOptions="Center"/>
-                     <Entry Grid.Row="6"
-                            Grid.Column="1"
-                            x:Name="CharacterSpacingEntry"
-                            AutomationId="CharacterSpacingEntry"
-                            TextChanged="OnCharacterSpacingChanged"
-                            Keyboard="Numeric"
-                            HorizontalOptions="Start"
-                            WidthRequest="150"/>
-
-                     <!-- Corner Radius -->
-                     <Label Grid.Row="7"
-                            Grid.Column="0"
-                            Text="Corner Radius:"
-                            FontSize="15"
-                            VerticalOptions="Center"/>
-                     <Entry Grid.Row="7"
-                            Grid.Column="1"
-                            x:Name="CornerRadiusEntry"
-                            AutomationId="CornerRadiusEntry"
-                            TextChanged="OnCornerRadiusChanged"
-                            Keyboard="Numeric"
-                            HorizontalOptions="Start"
-                            WidthRequest="150"/>
-
                      <!-- Flow Direction -->
-                     <Label Grid.Row="8"
+                     <Label Grid.Row="6"
                             Grid.Column="0"
                             Text="Flow Direction:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="8"
+                     <StackLayout Grid.Row="6"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="FlowDirectionLeftToRight"
@@ -187,12 +207,12 @@
                      </StackLayout>
 
                      <!-- Font Attributes -->
-                     <Label Grid.Row="9"
+                     <Label Grid.Row="7"
                             Grid.Column="0"
                             Text="Font Attributes:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="9"
+                     <StackLayout Grid.Row="7"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="FontAttributesNone"
@@ -214,12 +234,12 @@
                      </StackLayout>
 
                      <!-- Font Family -->
-                     <Label Grid.Row="10"
+                     <Label Grid.Row="8"
                             Grid.Column="0"
                             Text="Font Family:"
                             FontSize="15"
                             VerticalOptions="Start"/>
-                     <StackLayout Grid.Row="10"
+                     <StackLayout Grid.Row="8"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="FontFamilyDokdo"
@@ -234,28 +254,35 @@
                                          CheckedChanged="OnFontFamilyChanged"/>
                      </StackLayout>
 
-                     <!-- Font Size -->
-                     <Label Grid.Row="11"
+                     <!-- Font Auto Scaling Enabled -->
+                     <Label Grid.Row="9"
                             Grid.Column="0"
-                            Text="Font Size:"
+                            Text="Font Auto Scaling:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <Entry Grid.Row="11"
-                            Grid.Column="1"
-                            x:Name="FontSizeEntry"
-                            AutomationId="FontSizeEntry"
-                            TextChanged="OnFontSizeChanged"
-                            Keyboard="Numeric"
-                            HorizontalOptions="Start"
-                            WidthRequest="150"/>
+                     <StackLayout Grid.Row="9"
+                                  Grid.Column="1"
+                                  Orientation="Horizontal">
+                            <RadioButton AutomationId="FontAutoScalingEnabledTrueRadio"
+                                         GroupName="FontAutoScaling"
+                                         Content="True"
+                                         IsChecked="True"
+                                         FontSize="14"
+                                         CheckedChanged="OnFontAutoScalingChanged"/>
+                            <RadioButton AutomationId="FontAutoScalingEnabledFalseRadio"
+                                         GroupName="FontAutoScaling"
+                                         Content="False"
+                                         FontSize="14"
+                                         CheckedChanged="OnFontAutoScalingChanged"/>
+                     </StackLayout>
 
                      <!-- Is Enabled -->
-                     <Label Grid.Row="12"
+                     <Label Grid.Row="10"
                             Grid.Column="0"
                             Text="Is Enabled:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="12"
+                     <StackLayout Grid.Row="10"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="IsEnabledTrueRadio"
@@ -272,11 +299,11 @@
                      </StackLayout>
 
                      <!-- Is Visible -->
-                     <Label Grid.Row="13"
+                     <Label Grid.Row="11"
                             Grid.Column="0"
                             Text="Is Visible:"
                             FontSize="15"/>
-                     <StackLayout Grid.Row="13"
+                     <StackLayout Grid.Row="11"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="IsVisibleTrueRadio"
@@ -293,12 +320,12 @@
                      </StackLayout>
 
                      <!-- Text Color -->
-                     <Label Grid.Row="14"
+                     <Label Grid.Row="12"
                             Grid.Column="0"
                             Text="Text Color:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="14"
+                     <StackLayout Grid.Row="12"
                                   Grid.Column="1"
                                   Orientation="Horizontal"
                                   Spacing="5">
@@ -320,12 +347,12 @@
                      </StackLayout>
 
                      <!-- Text Transform -->
-                     <Label Grid.Row="15"
+                     <Label Grid.Row="13"
                             Grid.Column="0"
                             Text="Text Transform:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <StackLayout Grid.Row="15"
+                     <StackLayout Grid.Row="13"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="TextTransformNone"
@@ -347,13 +374,13 @@
                      </StackLayout>
 
                      <!-- Selected Value -->
-                     <Label Grid.Row="16"
+                     <Label Grid.Row="14"
                             Grid.Column="0"
                             Text="Selected Value:"
                             FontSize="16"
                             Margin="0,0,10,10"/>
                      <StackLayout Orientation="Horizontal"
-                                  Grid.Row="16"
+                                  Grid.Row="14"
                                   Grid.Column="1">
                             <RadioButton AutomationId="SelectedValueRadioButtonOne"
                                          Content="One"

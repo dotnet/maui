@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static int s_dividerHorizontalDarkId = int.MinValue;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-		internal static readonly BindableProperty IsSelectedProperty = BindableProperty.CreateAttached("IsSelected", typeof(bool), typeof(Cell), false);
+		internal static readonly BindableProperty IsSelectedProperty = BindableProperty.CreateAttached("IsSelected", typeof(bool), typeof(Cell), BooleanBoxes.FalseBox);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		readonly Context _context;
@@ -722,7 +722,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Cell previousCell;
 #pragma warning restore CS0618 // Type or member is obsolete
 				if (_selectedCell.TryGetTarget(out previousCell))
-					previousCell.SetValue(IsSelectedProperty, false);
+					previousCell.SetValue(IsSelectedProperty, BooleanBoxes.FalseBox);
 			}
 
 			_lastSelected = view;
@@ -733,7 +733,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 			Cell cell = GetCellForPosition(index);
 #pragma warning restore CS0618 // Type or member is obsolete
-			cell.SetValue(IsSelectedProperty, true);
+			cell.SetValue(IsSelectedProperty, BooleanBoxes.TrueBox);
 #pragma warning disable CS0618 // Type or member is obsolete
 			_selectedCell = new WeakReference<Cell>(cell);
 #pragma warning restore CS0618 // Type or member is obsolete

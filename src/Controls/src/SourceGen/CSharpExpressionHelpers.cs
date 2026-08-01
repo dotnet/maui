@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -15,6 +17,18 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// </summary>
 /// <param name="Code">The C# expression code to emit (already has single quotes transformed to double quotes).</param>
 internal sealed record Expression(string Code);
+
+internal readonly struct InterpolatedStringIdentifier
+{
+	public string Identifier { get; }
+	public string TypeReferenceCandidate { get; }
+
+	public InterpolatedStringIdentifier(string identifier, string? typeReferenceCandidate = null)
+	{
+		Identifier = identifier;
+		TypeReferenceCandidate = typeReferenceCandidate ?? identifier;
+	}
+}
 
 /// <summary>
 /// Helper methods for detecting and transforming C# expressions embedded in XAML.
@@ -35,6 +49,7 @@ static class CSharpExpressionHelpers
 			@"|\s*\.[A-Za-z_]" +             // Dot prefix for binding: {.Name
 			@"|\s*this\." +                  // this. prefix for local: {this.Foo
 			@"|\s*BindingContext\." +        // BindingContext. prefix for binding: {BindingContext.Foo
+			@"|\s*[A-Za-z_]\w*\.\(" +        // Attached BP target syntax: {target.(Grid.Row)
 		@")",
 		RegexOptions.Compiled);
 
@@ -181,8 +196,12 @@ static class CSharpExpressionHelpers
 		var colonIndex = identifier.IndexOf(':');
 		if (colonIndex >= 0)
 		{
-			// Any prefix:Name pattern is a markup extension (custom or known)
-			// C# doesn't use this syntax, so it's safe to treat as markup
+			// If prefix:Name is followed by '.', it's a type reference in an expression
+			// (e.g., {local:Helper.GetValue()} or {this.(ios:Page.Prop)}), not a markup extension
+			if (end < trimmed.Length && trimmed[end] == '.')
+				return false;
+
+			// Otherwise, prefix:Name is a markup extension (custom or known)
 			return true;
 		}
 
@@ -888,5 +907,524 @@ static class CSharpExpressionHelpers
 	{
 		// Use same extraction as expressions
 		return GetExpressionCode(value);
+	}
+
+	// Pattern to match xmlns prefix usage: prefix:TypeName (not at start of expression where it's a markup ext)
+	static readonly Regex XmlnsPrefixPattern = new Regex(
+		@"(?<![a-zA-Z0-9_])([a-zA-Z_]\w*):([A-Z]\w*)",
+		RegexOptions.Compiled);
+
+	/// <summary>
+	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
+	/// E.g., "local:ExprHelper.GetValue()" → "Microsoft.Maui.Controls.Xaml.UnitTests.ExprHelper.GetValue()"
+	/// </summary>
+	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, SourceGenContext context)
+	{
+		return ReplaceOutsideLiteralSegments(code, XmlnsPrefixPattern, match =>
+		{
+			var prefix = match.Groups[1].Value;
+			var typeName = match.Groups[2].Value;
+
+			// Skip the "x" prefix (x:Static, etc.) and known C# patterns
+			if (prefix == "x" || prefix == "global")
+				return match.Value;
+
+			var namespaceUri = nsResolver.LookupNamespace(prefix);
+			if (namespaceUri == null)
+				return match.Value;
+
+			// Resolve to CLR type
+			var xmlType = new XmlType(namespaceUri, typeName, null);
+			if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+			{
+				return typeSymbol!.ToFQDisplayString();
+			}
+
+			return match.Value;
+		});
+	}
+
+	// Pattern to match attached bindable property syntax: target.(Type.Property) or standalone (Type.Property)
+	static readonly Regex AttachedPropertyPattern = new Regex(
+		@"(?:(?<target>[A-Za-z_]\w*)\.)?\((?<member>(?:global::)?[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+)\)",
+		RegexOptions.Compiled);
+
+	public static bool TryGetStandaloneAttachedProperty(string code, Compilation compilation, out string attachedProperty)
+	{
+		foreach (Match match in MatchesOutsideLiteralSegments(code, AttachedPropertyPattern))
+		{
+			if (!match.Groups["target"].Success
+				&& IsAttachedProperty(match.Groups["member"].Value, compilation))
+			{
+				attachedProperty = match.Value;
+				return true;
+			}
+		}
+
+		attachedProperty = string.Empty;
+		return false;
+	}
+
+	/// <summary>
+	/// Transforms attached bindable property syntax to static Get method calls.
+	/// E.g., "gridChild.(Grid.Row)" → "Grid.GetRow(gridChild)"
+	/// E.g., "this.(Grid.Row)" → "Grid.GetRow(this)"
+	/// </summary>
+	public static string TransformAttachedProperties(string code)
+	{
+		return ReplaceOutsideLiteralSegments(code, AttachedPropertyPattern, match =>
+		{
+			var target = match.Groups["target"].Value; // "gridChild", "this", or empty
+			var member = match.Groups["member"].Value; // "Grid.Row" or "global::Namespace.Grid.Row"
+
+			if (string.IsNullOrEmpty(target))
+				return match.Value;
+
+			if (!TrySplitAttachedProperty(member, out var typeName, out var propertyName))
+				return match.Value;
+
+			return $"{typeName}.Get{propertyName}({target})";
+		});
+	}
+
+	static bool TrySplitAttachedProperty(string member, out string typeName, out string propertyName)
+	{
+		typeName = string.Empty;
+		propertyName = string.Empty;
+
+		var lastDot = member.LastIndexOf('.');
+		if (lastDot <= 0 || lastDot == member.Length - 1)
+			return false;
+
+		typeName = member.Substring(0, lastDot);
+		propertyName = member.Substring(lastDot + 1);
+
+		if (!IsIdentifier(propertyName) || !LooksLikeTypeName(typeName))
+			return false;
+
+		return true;
+	}
+
+	static bool IsAttachedProperty(string member, Compilation compilation)
+	{
+		if (!TrySplitAttachedProperty(member, out var typeName, out var propertyName))
+			return false;
+
+		foreach (var type in ResolveTypeSymbols(typeName, compilation))
+		{
+			if (HasAttachedProperty(type, propertyName, compilation))
+				return true;
+		}
+
+		return false;
+	}
+
+	static IEnumerable<INamedTypeSymbol> ResolveTypeSymbols(string typeName, Compilation compilation)
+	{
+		var metadataName = typeName.StartsWith("global::", StringComparison.Ordinal)
+			? typeName.Substring("global::".Length)
+			: typeName;
+		var seen = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+		var foundDirectMatch = false;
+
+		foreach (var type in compilation.GetTypesByMetadataName(metadataName).OfType<INamedTypeSymbol>())
+		{
+			foundDirectMatch = true;
+			if (seen.Add(type))
+				yield return type;
+		}
+
+		if (foundDirectMatch)
+			yield break;
+
+		foreach (var type in FindTypes(compilation.GlobalNamespace, metadataName))
+		{
+			if (seen.Add(type))
+				yield return type;
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> FindTypes(INamespaceSymbol namespaceSymbol, string metadataName)
+	{
+		foreach (var nestedNamespace in namespaceSymbol.GetNamespaceMembers())
+		{
+			foreach (var type in FindTypes(nestedNamespace, metadataName))
+				yield return type;
+		}
+
+		foreach (var type in namespaceSymbol.GetTypeMembers())
+		{
+			foreach (var candidate in FindTypes(type, metadataName))
+				yield return candidate;
+		}
+	}
+
+	static IEnumerable<INamedTypeSymbol> FindTypes(INamedTypeSymbol typeSymbol, string metadataName)
+	{
+		if (typeSymbol.Name == metadataName
+			|| typeSymbol.ToFQDisplayString() == $"global::{metadataName}")
+		{
+			yield return typeSymbol;
+		}
+
+		foreach (var nestedType in typeSymbol.GetTypeMembers())
+		{
+			foreach (var candidate in FindTypes(nestedType, metadataName))
+				yield return candidate;
+		}
+	}
+
+	static bool HasAttachedProperty(INamedTypeSymbol type, string propertyName, Compilation compilation)
+	{
+		var bindablePropertyType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableProperty");
+		var bindablePropertyName = $"{propertyName}Property";
+
+		foreach (var member in type.GetMembers(bindablePropertyName))
+		{
+			if (member is IFieldSymbol field
+				&& field.IsStatic
+				&& (bindablePropertyType is null || SymbolEqualityComparer.Default.Equals(field.Type, bindablePropertyType)))
+			{
+				return true;
+			}
+		}
+
+		var getterName = $"Get{propertyName}";
+		foreach (var member in type.GetMembers(getterName))
+		{
+			if (member is IMethodSymbol method
+				&& method.IsStatic
+				&& method.Parameters.Length == 1
+				&& method.ReturnsVoid == false)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool LooksLikeTypeName(string typeName)
+	{
+		var candidate = typeName.StartsWith("global::", StringComparison.Ordinal)
+			? typeName.Substring("global::".Length)
+			: typeName;
+
+		var lastDot = candidate.LastIndexOf('.');
+		var typeSegment = lastDot >= 0 ? candidate.Substring(lastDot + 1) : candidate;
+
+		return typeSegment.Length > 0 && char.IsUpper(typeSegment[0]);
+	}
+
+	static bool IsIdentifier(string value)
+	{
+		if (string.IsNullOrEmpty(value) || !(char.IsLetter(value[0]) || value[0] == '_'))
+			return false;
+
+		for (var i = 1; i < value.Length; i++)
+		{
+			if (!(char.IsLetterOrDigit(value[i]) || value[i] == '_'))
+				return false;
+		}
+
+		return true;
+	}
+
+	static string ReplaceOutsideLiteralSegments(string code, Regex pattern, MatchEvaluator evaluator)
+	{
+		var matches = pattern.Matches(code).Cast<Match>().ToArray();
+		if (matches.Length == 0)
+			return code;
+
+		var literalSpans = GetLiteralSegmentSpans(code);
+		var result = new StringBuilder(code.Length);
+		var currentIndex = 0;
+
+		foreach (var match in matches)
+		{
+			if (OverlapsLiteralSegment(match.Index, match.Length, literalSpans))
+				continue;
+
+			result.Append(code, currentIndex, match.Index - currentIndex);
+			result.Append(evaluator(match));
+			currentIndex = match.Index + match.Length;
+		}
+
+		result.Append(code, currentIndex, code.Length - currentIndex);
+		return result.ToString();
+	}
+
+	static IEnumerable<Match> MatchesOutsideLiteralSegments(string code, Regex pattern)
+	{
+		var matches = pattern.Matches(code).Cast<Match>().ToArray();
+		if (matches.Length == 0)
+			yield break;
+
+		var literalSpans = GetLiteralSegmentSpans(code);
+
+		foreach (var match in matches)
+		{
+			if (!OverlapsLiteralSegment(match.Index, match.Length, literalSpans))
+				yield return match;
+		}
+	}
+
+	static List<(int Start, int End)> GetLiteralSegmentSpans(string code)
+	{
+		var tree = CSharpSyntaxTree.ParseText(code, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+		var spans = new List<(int Start, int End)>();
+
+		foreach (var token in root.DescendantTokens(descendIntoTrivia: true))
+		{
+			if (!IsLiteralSegmentToken(token))
+				continue;
+
+			spans.Add((token.SpanStart, token.Span.End));
+		}
+
+		return spans;
+	}
+
+	static bool IsLiteralSegmentToken(SyntaxToken token)
+	{
+		var kind = token.Kind().ToString();
+		return kind.Contains("StringLiteralToken", StringComparison.Ordinal)
+			|| kind.Contains("CharacterLiteralToken", StringComparison.Ordinal)
+			|| kind.Equals("InterpolatedStringTextToken", StringComparison.Ordinal)
+			|| kind.Equals("InterpolatedRawStringTextToken", StringComparison.Ordinal);
+	}
+
+	static bool OverlapsLiteralSegment(int start, int length, List<(int Start, int End)> literalSpans)
+	{
+		var end = start + length;
+		foreach (var span in literalSpans)
+		{
+			if (start < span.End && end > span.Start)
+				return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Extracts identifiers from interpolated string holes.
+	/// E.g., for <c>$"Hello, {Name1}!"</c> returns ["Name1"].
+	/// For <c>$"Hello, {User.Name}!"</c> returns ["User"].
+	/// Only returns root identifiers (first segment before any dot).
+	/// </summary>
+	public static List<string> ExtractInterpolatedStringIdentifiers(string expressionCode)
+		=> ExtractInterpolatedStringIdentifierReferences(expressionCode)
+			.Select(reference => reference.Identifier)
+			.Distinct()
+			.ToList();
+
+	public static List<InterpolatedStringIdentifier> ExtractInterpolatedStringIdentifierReferences(string expressionCode)
+	{
+		var identifiers = new List<InterpolatedStringIdentifier>();
+		var seen = new HashSet<string>(StringComparer.Ordinal);
+
+		// Try parsing as a C# expression to extract interpolation holes
+		var tree = CSharpSyntaxTree.ParseText(expressionCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+
+		foreach (var interpolation in root.DescendantNodes().OfType<InterpolationSyntax>())
+		{
+			// Get the expression inside the interpolation hole
+			var expr = interpolation.Expression;
+			if (expr == null)
+				continue;
+
+			ExtractInterpolatedExpressionIdentifiers(expr, identifiers, seen);
+		}
+
+		return identifiers;
+	}
+
+	static void ExtractInterpolatedExpressionIdentifiers(ExpressionSyntax expression, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		switch (expression)
+		{
+			case IdentifierNameSyntax idName:
+				AddInterpolatedIdentifier(idName.Identifier.Text, idName.Identifier.Text, identifiers, seen);
+				break;
+			case MemberAccessExpressionSyntax memberAccess:
+				AddMemberAccessRoot(memberAccess, identifiers, seen);
+				break;
+			case InvocationExpressionSyntax invocation:
+				AddInvocationIdentifiers(invocation, identifiers, seen);
+				break;
+			case BinaryExpressionSyntax binary:
+				ExtractInterpolatedExpressionIdentifiers(binary.Left, identifiers, seen);
+				ExtractInterpolatedExpressionIdentifiers(binary.Right, identifiers, seen);
+				break;
+			case ConditionalExpressionSyntax conditional:
+				ExtractInterpolatedExpressionIdentifiers(conditional.Condition, identifiers, seen);
+				ExtractInterpolatedExpressionIdentifiers(conditional.WhenTrue, identifiers, seen);
+				ExtractInterpolatedExpressionIdentifiers(conditional.WhenFalse, identifiers, seen);
+				break;
+			case ParenthesizedExpressionSyntax parenthesized:
+				ExtractInterpolatedExpressionIdentifiers(parenthesized.Expression, identifiers, seen);
+				break;
+			case PrefixUnaryExpressionSyntax prefixUnary:
+				ExtractInterpolatedExpressionIdentifiers(prefixUnary.Operand, identifiers, seen);
+				break;
+			case PostfixUnaryExpressionSyntax postfixUnary:
+				ExtractInterpolatedExpressionIdentifiers(postfixUnary.Operand, identifiers, seen);
+				break;
+			case ConditionalAccessExpressionSyntax conditionalAccess:
+				ExtractInterpolatedExpressionIdentifiers(conditionalAccess.Expression, identifiers, seen);
+				ExtractConditionalAccessIdentifiers(conditionalAccess.WhenNotNull, identifiers, seen);
+				break;
+			case ElementAccessExpressionSyntax elementAccess:
+				ExtractInterpolatedExpressionIdentifiers(elementAccess.Expression, identifiers, seen);
+				foreach (var argument in elementAccess.ArgumentList.Arguments)
+					ExtractInterpolatedExpressionIdentifiers(argument.Expression, identifiers, seen);
+				break;
+			case CastExpressionSyntax cast:
+				ExtractInterpolatedExpressionIdentifiers(cast.Expression, identifiers, seen);
+				break;
+			case AwaitExpressionSyntax awaitExpression:
+				ExtractInterpolatedExpressionIdentifiers(awaitExpression.Expression, identifiers, seen);
+				break;
+		}
+	}
+
+	static void AddInvocationIdentifiers(InvocationExpressionSyntax invocation, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		switch (invocation.Expression)
+		{
+			case IdentifierNameSyntax identifier when IsNameOfInvocation(identifier):
+				return;
+			case IdentifierNameSyntax identifier:
+				AddInterpolatedIdentifier(identifier.Identifier.Text, identifier.Identifier.Text, identifiers, seen);
+				break;
+			case MemberAccessExpressionSyntax memberAccess:
+				if (!AddMemberAccessRoot(memberAccess, identifiers, seen))
+					ExtractInterpolatedExpressionIdentifiers(memberAccess.Expression, identifiers, seen);
+				break;
+			default:
+				ExtractInterpolatedExpressionIdentifiers(invocation.Expression, identifiers, seen);
+				break;
+		}
+
+		foreach (var argument in invocation.ArgumentList.Arguments)
+			ExtractInterpolatedExpressionIdentifiers(argument.Expression, identifiers, seen);
+	}
+
+	static bool IsNameOfInvocation(IdentifierNameSyntax identifier)
+		=> string.Equals(identifier.Identifier.Text, "nameof", StringComparison.Ordinal);
+
+	static void ExtractConditionalAccessIdentifiers(ExpressionSyntax expression, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		switch (expression)
+		{
+			case InvocationExpressionSyntax invocation:
+				foreach (var argument in invocation.ArgumentList.Arguments)
+					ExtractInterpolatedExpressionIdentifiers(argument.Expression, identifiers, seen);
+				break;
+			case MemberAccessExpressionSyntax memberAccess:
+				if (!AddMemberAccessRoot(memberAccess, identifiers, seen))
+					ExtractInterpolatedExpressionIdentifiers(memberAccess.Expression, identifiers, seen);
+				break;
+			default:
+				ExtractInterpolatedExpressionIdentifiers(expression, identifiers, seen);
+				break;
+		}
+	}
+
+	static bool AddMemberAccessRoot(MemberAccessExpressionSyntax memberAccess, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		if (!TryGetMemberAccessParts(memberAccess, out var parts) || parts.Count == 0)
+			return false;
+
+		var rootIdentifier = parts[0];
+		var typeReferenceCandidate = parts.Count > 1
+			? string.Join(".", parts.Take(parts.Count - 1))
+			: rootIdentifier;
+		AddInterpolatedIdentifier(rootIdentifier, typeReferenceCandidate, identifiers, seen);
+		return true;
+	}
+
+	static bool TryGetMemberAccessParts(ExpressionSyntax expression, out List<string> parts)
+	{
+		parts = new List<string>();
+		return TryAppendMemberAccessParts(expression, parts);
+	}
+
+	static bool TryAppendMemberAccessParts(ExpressionSyntax expression, List<string> parts)
+	{
+		switch (expression)
+		{
+			case IdentifierNameSyntax identifier:
+				parts.Add(identifier.Identifier.Text);
+				return true;
+			case MemberAccessExpressionSyntax memberAccess:
+				if (!TryAppendMemberAccessParts(memberAccess.Expression, parts))
+					return false;
+				parts.Add(memberAccess.Name.Identifier.Text);
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	static void AddInterpolatedIdentifier(string identifier, string typeReferenceCandidate, List<InterpolatedStringIdentifier> identifiers, HashSet<string> seen)
+	{
+		if (string.IsNullOrEmpty(identifier))
+			return;
+
+		var key = $"{identifier}|{typeReferenceCandidate}";
+		if (seen.Add(key))
+			identifiers.Add(new InterpolatedStringIdentifier(identifier, typeReferenceCandidate));
+	}
+
+	/// <summary>
+	/// Checks if a lambda expression body is a method group reference (member access without invocation).
+	/// E.g., <c>(s, e) => this.OnClicked</c> is a method group (missing parentheses).
+	/// Returns the method group expression and the lambda parameters if detected, null otherwise.
+	/// </summary>
+	public static (string methodGroup, string suggestion)? DetectLambdaMethodGroupReference(string expressionCode)
+	{
+		// Parse the expression as C#
+		var tree = CSharpSyntaxTree.ParseText(expressionCode, new CSharpParseOptions(kind: SourceCodeKind.Script));
+		var root = tree.GetRoot();
+
+		// Find lambda expressions
+		var lambda = root.DescendantNodes().OfType<ParenthesizedLambdaExpressionSyntax>().FirstOrDefault();
+		if (lambda == null)
+			return null;
+
+		// Get the lambda body - should be an expression (not a block)
+		var body = lambda.ExpressionBody;
+		if (body == null)
+			return null;
+
+		// Check if the body is a member access (this.Method or just Method) without invocation
+		if (body is MemberAccessExpressionSyntax memberAccess)
+		{
+			// Check that the parent is NOT an InvocationExpression
+			// (If it were "this.Method()", the body would be InvocationExpressionSyntax, not MemberAccessExpressionSyntax)
+			var methodGroup = memberAccess.ToString();
+			return (methodGroup, CreateLambdaMethodGroupSuggestion(methodGroup, lambda.ParameterList.Parameters));
+		}
+
+		// Also check for bare identifier (e.g., (s, e) => OnClicked)
+		if (body is IdentifierNameSyntax identifier)
+		{
+			var methodGroup = identifier.Identifier.Text;
+			return (methodGroup, CreateLambdaMethodGroupSuggestion(methodGroup, lambda.ParameterList.Parameters));
+		}
+
+		return null;
+	}
+
+	static string CreateLambdaMethodGroupSuggestion(string methodGroup, SeparatedSyntaxList<ParameterSyntax> parameters)
+	{
+		var parameterNames = parameters.Select(p => p.Identifier.Text).ToList();
+		if (parameterNames.Any(name => string.IsNullOrEmpty(name) || name == "_"))
+			return string.Empty;
+
+		return $" Did you mean '{methodGroup}({string.Join(", ", parameterNames)})'?";
 	}
 }
