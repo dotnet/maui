@@ -3,7 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Storage;
 using Xunit;
 using Xunit.Abstractions;
@@ -132,6 +136,42 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			var successor = new AppInfoSecureStorage("successor.package", wrapper);
 			Assert.Equal(Security.SecAccessible.AfterFirstUnlockThisDeviceOnly, successor.DefaultAccessible);
+		}
+
+		[Fact]
+		public void AppInfo_Bridge_Inherits_Custom_Platform_Default_Accessible_Outside_Facade_Lock()
+		{
+			var originalAppInfo = AppInfo.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var previous = new PlatformSecureStorageStub
+			{
+				DefaultAccessible = Security.SecAccessible.WhenUnlockedThisDeviceOnly,
+			};
+
+			SecureStorage.SetDefault(previous);
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "bridged.securestorage.package"));
+
+				using (builder.Build())
+				{
+					var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+					Assert.False(wrapper.IsValueCreated);
+					Assert.Equal(Security.SecAccessible.WhenUnlockedThisDeviceOnly, wrapper.DefaultAccessible);
+					Assert.Equal(1, previous.DefaultAccessibleGetterCount);
+				}
+
+				Assert.Same(previous, SecureStorage.Default);
+			}
+			finally
+			{
+				SecureStorage.SetDefault(originalSecureStorage);
+				AppInfo.SetCurrent(originalAppInfo);
+			}
 		}
 #endif
 
@@ -264,6 +304,73 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.NotNull(field);
 			var lazy = Assert.IsType<Lazy<SecureStorageImplementation>>(field.GetValue(wrapper));
 			return lazy.Value;
+		}
+
+		sealed class PlatformSecureStorageStub : ISecureStorage, IPlatformSecureStorage
+		{
+			Security.SecAccessible _defaultAccessible = Security.SecAccessible.AfterFirstUnlock;
+
+			public int DefaultAccessibleGetterCount { get; private set; }
+
+			public Security.SecAccessible DefaultAccessible
+			{
+				get
+				{
+					Assert.False(
+						Monitor.IsEntered(EssentialsImplementation.GetSyncRoot<ISecureStorage>()),
+						"Custom IPlatformSecureStorage.DefaultAccessible must not be read while the SecureStorage facade lock is held.");
+
+					DefaultAccessibleGetterCount++;
+					return _defaultAccessible;
+				}
+				set => _defaultAccessible = value;
+			}
+
+			public Task<string> GetAsync(string key) =>
+				Task.FromResult<string>(null);
+
+			public Task SetAsync(string key, string value) =>
+				Task.CompletedTask;
+
+			public Task SetAsync(string key, string value, Security.SecAccessible accessible) =>
+				Task.CompletedTask;
+
+			public bool Remove(string key) =>
+				false;
+
+			public void RemoveAll()
+			{
+			}
+		}
+
+		sealed class StubAppInfo : IAppInfo
+		{
+			readonly string _packageName;
+
+			public StubAppInfo(string packageName)
+			{
+				_packageName = packageName;
+			}
+
+			public string PackageName => _packageName;
+
+			public string Name => "Test";
+
+			public string VersionString => "1.0.0";
+
+			public Version Version => Version.Parse(VersionString);
+
+			public string BuildString => "1";
+
+			public AppTheme RequestedTheme => AppTheme.Light;
+
+			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+
+			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
+
+			public void ShowSettingsUI()
+			{
+			}
 		}
 #endif
 

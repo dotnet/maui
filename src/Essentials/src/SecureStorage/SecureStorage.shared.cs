@@ -263,7 +263,13 @@ namespace Microsoft.Maui.Storage
 		Security.SecAccessible _defaultAccessible;
 #endif
 
-		internal AppInfoSecureStorage(string packageName, ISecureStorage? previous)
+		internal AppInfoSecureStorage(
+			string packageName,
+			ISecureStorage? previous
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+			, Security.SecAccessible? inheritedDefaultAccessible = null
+#endif
+			)
 		{
 			_implementation = new(
 				() =>
@@ -280,7 +286,7 @@ namespace Microsoft.Maui.Storage
 			// This wrapper is created while the SecureStorage facade assignment locks are held.
 			// Only read framework-owned predecessors here; invoking a custom platform getter would
 			// execute app code under those locks. A DI-registered ISecureStorage bypasses this wrapper.
-			_defaultAccessible = previous switch
+			_defaultAccessible = inheritedDefaultAccessible ?? previous switch
 			{
 				AppInfoSecureStorage wrapper => wrapper.DefaultAccessible,
 				SecureStorageImplementation implementation => implementation.DefaultAccessible,

@@ -586,12 +586,57 @@ namespace Microsoft.Maui.Hosting
 				// SecureStorage namespaces follow the bridged package name. Apps that change
 				// PackageName must migrate existing secrets or register ISecureStorage.
 				var secureStoragePackageName = appInfo.PackageName;
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+				var defaultAccessiblePredecessor = CaptureUnownedCustomPlatformSecureStoragePredecessor();
+				global::Security.SecAccessible? inheritedDefaultAccessible = null;
+				if (defaultAccessiblePredecessor is IPlatformSecureStorage platformSecureStorage)
+					inheritedDefaultAccessible = platformSecureStorage.DefaultAccessible;
+
+				TrackAndSet<ISecureStorage>(
+					previous => new AppInfoSecureStorage(
+						secureStoragePackageName,
+						previous,
+						ReferenceEquals(previous, defaultAccessiblePredecessor) &&
+							IsUnownedCustomPlatformSecureStorage(previous)
+								? inheritedDefaultAccessible
+								: null),
+					() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
+					SecureStorage.SetDefault,
+					facadeCleanups);
+#else
 				TrackAndSet<ISecureStorage>(
 					previous => new AppInfoSecureStorage(secureStoragePackageName, previous),
 					() => GetFacadeBackingField<ISecureStorage>(typeof(SecureStorage), "defaultImplementation"),
 					SecureStorage.SetDefault,
 					facadeCleanups);
+#endif
 			}
+
+#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
+			static ISecureStorage? CaptureUnownedCustomPlatformSecureStoragePredecessor()
+			{
+				var facadeSyncRoot = EssentialsImplementation.GetSyncRoot<ISecureStorage>();
+				lock (FacadeBridgeState<ISecureStorage>.SyncRoot)
+				{
+					lock (facadeSyncRoot)
+					{
+						var current = GetFacadeBackingField<ISecureStorage>(
+							typeof(SecureStorage),
+							"defaultImplementation");
+
+						return IsUnownedCustomPlatformSecureStorage(current)
+							? current
+							: null;
+					}
+				}
+			}
+
+			static bool IsUnownedCustomPlatformSecureStorage(ISecureStorage? implementation) =>
+				implementation is IPlatformSecureStorage &&
+				implementation is not AppInfoSecureStorage &&
+				implementation is not SecureStorageImplementation &&
+				FacadeBridgeState<ISecureStorage>.FindOwner(implementation) is null;
+#endif
 
 			/// <summary>
 			/// Resolves a DI-registered implementation and assigns it to the corresponding static facade.
