@@ -718,5 +718,46 @@ configuration:
       - addLabel:
           label: partner/syncfusion
       description: Add 'partner/syncfusion' label to issues opened by the Syncfusion partner team
+    - if:
+      - payloadType: Pull_Request
+      - isPullRequest
+      - isActivitySender:
+          user: github-actions[bot]
+          issueAuthor: False
+      - isActivitySender:
+          issueAuthor: True
+      - isAction:
+          action: Opened
+      - or:
+        - and:
+          - targetsBranch:
+              branch: net11.0
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''main'' => ''net11\.0''$'
+              isRegex: True
+        - and:
+          - targetsBranch:
+              branch: release/11.0.1xx-preview7
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-preview7''$'
+              isRegex: True
+        - and:
+          - targetsBranch:
+              branch: release/11.0.1xx-rc1
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc1''$'
+              isRegex: True
+        - and:
+          - targetsBranch:
+              branch: release/11.0.1xx-rc2
+          - titleContains:
+              pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc2''$'
+              isRegex: True
+      then:
+      - approvePullRequest:
+          comment: Auto-approved automated inter-branch merge.
+      - enableAutoMerge:
+          mergeMethod: merge
+      description: '[Inter-branch merge] Auto-approve and enable auto-merge for exact forward-merge flows'
 onFailure: 
 onSuccess: 
