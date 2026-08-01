@@ -233,6 +233,15 @@ namespace Microsoft.Maui.Controls.Platform
 						lineHeight = endRect.Bottom - endRect.Top;
 					}
 
+					// Guard against a zero (or negative) line height. This can happen when the
+					// TextBlock was measured while collapsed/hidden, which caches a
+					// MeasuredLineHeight of 0. Without this check, causing an infinite loop and an eventual
+					// OutOfMemoryException as lineHeights grows without bound.
+					if (lineHeight <= 0)
+					{
+						break;
+					}
+
 					lineHeights.Add(lineHeight);
 					yaxis += lineHeight;
 				}
