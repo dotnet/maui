@@ -227,5 +227,76 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, isEnabled);
 			});
 		}
+
+		[Fact]
+		[Description("SwipeItem icon and text should be vertically aligned when SwipeView has large content")]
+		public async Task SwipeItemIconAndTextVerticallyAligned()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/36736
+			// When SwipeView wraps tall content (e.g., CollectionView), the SwipeItem button
+			// should self-size its content (AtMost height) rather than being forced to fill
+			// the entire content area (Exactly height), which would misalign icon and text.
+			SetupBuilder();
+
+			var content = new VerticalStackLayout
+			{
+				HeightRequest = 300,
+				Background = new SolidColorBrush(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				Text = "Delete",
+				BackgroundColor = Colors.Red,
+				IconImageSource = new FontImageSource
+				{
+					Glyph = "X",
+					FontFamily = "Arial",
+					Size = 20
+				}
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 300,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// Wait for SwipeView to create action view with children
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeButton = actionView.GetChildAt(0);
+				Assert.NotNull(swipeButton);
+
+				// Wait for button to be laid out
+				await AssertEventually(() => swipeButton.Height > 0);
+
+				// The button's MeasuredHeight should be LESS than its layout height.
+				// This proves it was measured with AtMost (self-sizing) rather than
+				// Exactly (forced to fill), which keeps icon+text vertically aligned.
+				Assert.True(
+					swipeButton.MeasuredHeight < swipeButton.Height,
+					$"SwipeItem button should self-size (MeasuredHeight={swipeButton.MeasuredHeight}) " +
+					$"rather than fill entire area (Height={swipeButton.Height}). " +
+					$"If MeasuredHeight equals Height, the button is forced to fill, " +
+					$"causing icon and text to misalign.");
+			});
+		}
 	}
 }
