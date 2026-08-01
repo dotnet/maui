@@ -296,6 +296,30 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Null(v);
 		}
 
+		[Fact]
+		public void Default_Creation_Reads_AppInfo_Outside_SecureStorage_Facade_Lock()
+		{
+			var originalAppInfo = AppInfo.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var appInfo = new LockCheckingAppInfo();
+
+			try
+			{
+				AppInfo.SetCurrent(appInfo);
+				SecureStorage.SetDefault(null);
+
+				var implementation = Assert.IsType<SecureStorageImplementation>(SecureStorage.Default);
+
+				Assert.Equal("lock.check.package.microsoft.maui.essentials.preferences", implementation.Alias);
+				Assert.Equal(1, appInfo.PackageNameGetterCount);
+			}
+			finally
+			{
+				SecureStorage.SetDefault(originalSecureStorage);
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
 #if __IOS__ || MACCATALYST
 		static SecureStorageImplementation GetWrappedImplementation(AppInfoSecureStorage wrapper)
 		{
@@ -481,6 +505,42 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				fetched = await SecureStorage.GetAsync(key);
 				Assert.Null(fetched);
 			});
+		}
+
+		sealed class LockCheckingAppInfo : IAppInfo
+		{
+			public int PackageNameGetterCount { get; private set; }
+
+			public string PackageName
+			{
+				get
+				{
+					Assert.False(
+						Monitor.IsEntered(EssentialsImplementation.GetSyncRoot<ISecureStorage>()),
+						"AppInfo.PackageName must not be read while the SecureStorage facade lock is held.");
+
+					PackageNameGetterCount++;
+					return "lock.check.package";
+				}
+			}
+
+			public string Name => "Test";
+
+			public string VersionString => "1.0.0";
+
+			public Version Version => Version.Parse(VersionString);
+
+			public string BuildString => "1";
+
+			public AppTheme RequestedTheme => AppTheme.Light;
+
+			public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
+
+			public LayoutDirection RequestedLayoutDirection => LayoutDirection.LeftToRight;
+
+			public void ShowSettingsUI()
+			{
+			}
 		}
 	}
 }

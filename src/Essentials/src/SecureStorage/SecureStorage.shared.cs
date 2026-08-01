@@ -140,8 +140,19 @@ namespace Microsoft.Maui.Storage
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
-		public static ISecureStorage Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new SecureStorageImplementation());
+		public static ISecureStorage Default
+		{
+			get
+			{
+				if (Volatile.Read(ref defaultImplementation) is { } current)
+					return current;
+
+				var packageName = SecureStorageImplementation.GetDefaultPackageName();
+				return EssentialsImplementation.GetOrCreate(
+					ref defaultImplementation,
+					() => new SecureStorageImplementation(packageName));
+			}
+		}
 
 		internal static void SetDefault(ISecureStorage? implementation) =>
 			EssentialsImplementation.Set(ref defaultImplementation, implementation);
@@ -242,7 +253,7 @@ namespace Microsoft.Maui.Storage
 		public void RemoveAll()
 			=> PlatformRemoveAll();
 
-		static string GetDefaultPackageName()
+		internal static string GetDefaultPackageName()
 		{
 #if !NETSTANDARD && PLATFORM
 			return AppInfo.Current.PackageName;
