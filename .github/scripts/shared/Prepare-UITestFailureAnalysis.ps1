@@ -111,9 +111,9 @@ if (-not [string]::IsNullOrWhiteSpace($Platform)) {
 foreach ($cat in $regular.Keys) {
     [void]$sb.AppendLine()
     [void]$sb.AppendLine("### Category: $cat")
-    foreach ($it in @($regular[$cat] | Select-Object -First 25)) {
-        $err = if ($it.Error) { (($it.Error -split "`r?`n") | Select-Object -First 12) -join "`n" } else { '' }
-        $stk = if ($it.Stack) { (($it.Stack -split "`r?`n") | Select-Object -First 8)  -join "`n" } else { '' }
+    foreach ($it in @($regular[$cat] | Select-Object -First 8)) {
+        $err = if ($it.Error) { (($it.Error -split "`r?`n") | Select-Object -First 6) -join "`n" } else { '' }
+        $stk = if ($it.Stack) { (($it.Stack -split "`r?`n") | Select-Object -First 4)  -join "`n" } else { '' }
         [void]$sb.AppendLine()
         [void]$sb.AppendLine("- Test: $($it.Name)")
         $body = $err
@@ -124,9 +124,9 @@ foreach ($cat in $regular.Keys) {
             [void]$sb.AppendLine('  ```')
         }
     }
-    if (@($regular[$cat]).Count -gt 25) {
+    if (@($regular[$cat]).Count -gt 8) {
         [void]$sb.AppendLine()
-        [void]$sb.AppendLine("- _(+$((@($regular[$cat]).Count) - 25) more in this category — omitted)_")
+        [void]$sb.AppendLine("- _(+$((@($regular[$cat]).Count) - 8) more in this category — omitted; group by the patterns above)_")
     }
 }
 

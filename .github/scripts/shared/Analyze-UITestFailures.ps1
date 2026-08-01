@@ -63,6 +63,25 @@ Remove-Item $OutputFile -ErrorAction SilentlyContinue
 
 $inputContent = Get-Content $InputFile -Raw
 
+# Hard safety-net cap on the analysis input. The whole prompt below is passed
+# to `copilot` as a SINGLE `-p` command-line argument, so it is bounded by the
+# OS per-argument limit — Linux MAX_ARG_STRLEN is 128 KB and macOS constrains
+# total argv+env — NOT by the model's context window. A deep run with hundreds
+# of failing snapshot tests (e.g. 311 failures / build 14842388 #36821) built a
+# multi-hundred-KB prompt that blew that limit: `copilot` failed to start with
+# "Argument list too long", the analysis was silently omitted, and the summary
+# fell back to a raw ~1800-line TRX dump with no grouped ✗/●/ℹ triage. Cap the
+# untrusted input (failing-test text + diff) well under the limit; the grouped
+# counts the prompt asks for still reflect the full run, and the prep step
+# already states the true totals, so a representative sample is sufficient.
+$maxInputChars = 80000
+if ($inputContent.Length -gt $maxInputChars) {
+    $omitted = $inputContent.Length - $maxInputChars
+    $inputContent = $inputContent.Substring(0, $maxInputChars) +
+        "`n`n_(analysis input truncated here — $omitted more characters omitted to stay within the CLI argument-size limit; the failing-test counts stated above reflect the FULL run, so group by the patterns visible in this sample.)_"
+    Write-Host "Analysis input capped to $maxInputChars chars (omitted $omitted) to stay under the CLI argument-size limit."
+}
+
 $metaPrompt = @"
 You are performing a read-only triage of the DEEP UI TEST FAILURES for GitHub PR #$PRNumber in the .NET MAUI repository. Your single job is to judge, for each failing UI test, whether the failure was most likely CAUSED BY THIS PR's changes or is UNRELATED (pre-existing, flaky, infrastructure, or a snapshot-baseline issue).
 
