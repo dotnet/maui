@@ -1230,8 +1230,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Null(GetStaticField(typeof(SecureStorage), "defaultImplementation"));
 		}
 
-		[Fact]
-		public async Task ConcurrentAppInfoPackageNameCannotStalePublishSecureStorage()
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ConcurrentAppInfoPackageNameCannotStalePublishSecureStorage(
+			bool disposeSecondAppFirst)
 		{
 			var timeout = TimeSpan.FromSeconds(30);
 			var firstEnteredPackageName = new TaskCompletionSource<bool>(
@@ -1266,6 +1269,35 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				Assert.Equal(
 					"second.package.microsoft.maui.essentials.preferences",
 					secondSecureStorage.Alias);
+
+				if (disposeSecondAppFirst)
+				{
+					secondApp.Dispose();
+					secondApp = null;
+
+					Assert.Same(firstAppInfo, AppInfo.Current);
+					var firstSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+					Assert.Equal(
+						"first.package.microsoft.maui.essentials.preferences",
+						firstSecureStorage.Alias);
+
+					firstApp?.Dispose();
+					firstApp = null;
+				}
+				else
+				{
+					firstApp?.Dispose();
+					firstApp = null;
+
+					Assert.Same(secondAppInfo, AppInfo.Current);
+					Assert.Same(secondSecureStorage, SecureStorage.Default);
+
+					secondApp.Dispose();
+					secondApp = null;
+				}
+
+				Assert.Null(GetStaticField(typeof(AppInfo), "currentImplementation"));
+				Assert.Null(GetStaticField(typeof(SecureStorage), "defaultImplementation"));
 			}
 			finally
 			{
@@ -1273,6 +1305,422 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				firstApp?.Dispose();
 				secondApp?.Dispose();
 			}
+		}
+
+		[Fact]
+		public async Task DeferredAppInfoSecureStorageDoesNotShadowNewerExplicitSecureStorage()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var firstEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseFirstPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var firstAppInfo = new BlockingPackageNameAppInfo(
+				"first.package",
+				firstEnteredPackageName,
+				releaseFirstPackageName);
+			var explicitSecureStorage = new StubSecureStorage();
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+			MauiApp? secureStorageApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppInfo>(firstAppInfo);
+				var firstBuild = Task.Run(() => firstApp = firstBuilder.Build());
+				await firstEnteredPackageName.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				var secondAppInfo = new StubAppInfo(packageName: "second.package");
+				secondBuilder.Services.AddSingleton<IAppInfo>(secondAppInfo);
+				secondApp = secondBuilder.Build();
+
+				releaseFirstPackageName.SetResult(true);
+				await firstBuild.WaitAsync(timeout);
+
+				var secureStorageBuilder = MauiApp.CreateBuilder();
+				secureStorageBuilder.Services.AddSingleton<ISecureStorage>(explicitSecureStorage);
+				secureStorageApp = secureStorageBuilder.Build();
+				Assert.Same(explicitSecureStorage, SecureStorage.Default);
+
+				secondApp.Dispose();
+				secondApp = null;
+
+				Assert.Same(firstAppInfo, AppInfo.Current);
+				Assert.Same(explicitSecureStorage, SecureStorage.Default);
+
+				secureStorageApp.Dispose();
+				secureStorageApp = null;
+
+				var firstSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				Assert.Equal(
+					"first.package.microsoft.maui.essentials.preferences",
+					firstSecureStorage.Alias);
+
+				firstApp?.Dispose();
+				firstApp = null;
+				Assert.Null(GetStaticField(typeof(AppInfo), "currentImplementation"));
+				Assert.Null(GetStaticField(typeof(SecureStorage), "defaultImplementation"));
+			}
+			finally
+			{
+				releaseFirstPackageName.TrySetResult(true);
+				firstApp?.Dispose();
+				secondApp?.Dispose();
+				secureStorageApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public async Task DeferredAppInfoSecureStorageDoesNotShadowNewerDirectSecureStorage()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var firstEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseFirstPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = GetStaticField(typeof(AppInfo), "currentImplementation");
+			var originalSecureStorage = GetStaticField(typeof(SecureStorage), "defaultImplementation");
+			var firstAppInfo = new BlockingPackageNameAppInfo(
+				"first.package",
+				firstEnteredPackageName,
+				releaseFirstPackageName);
+			var directSecureStorage = new StubSecureStorage();
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppInfo>(firstAppInfo);
+				var firstBuild = Task.Run(() => firstApp = firstBuilder.Build());
+				await firstEnteredPackageName.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "second.package"));
+				secondApp = secondBuilder.Build();
+
+				releaseFirstPackageName.SetResult(true);
+				await firstBuild.WaitAsync(timeout);
+
+				SecureStorage.SetDefault(directSecureStorage);
+				secondApp.Dispose();
+				secondApp = null;
+
+				Assert.Same(firstAppInfo, AppInfo.Current);
+				Assert.Same(directSecureStorage, SecureStorage.Default);
+
+				firstApp?.Dispose();
+				firstApp = null;
+				Assert.Same(directSecureStorage, SecureStorage.Default);
+			}
+			finally
+			{
+				releaseFirstPackageName.TrySetResult(true);
+				firstApp?.Dispose();
+				secondApp?.Dispose();
+				SecureStorage.SetDefault((ISecureStorage?)originalSecureStorage);
+				AppInfo.SetCurrent((IAppInfo?)originalAppInfo);
+			}
+		}
+
+		[Fact]
+		public async Task ImmediateAppInfoSecureStorageDoesNotShadowNewerDirectSecureStorage()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var enteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releasePackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = GetStaticField(typeof(AppInfo), "currentImplementation");
+			var originalSecureStorage = GetStaticField(typeof(SecureStorage), "defaultImplementation");
+			var appInfo = new BlockingPackageNameAppInfo(
+				"immediate.package",
+				enteredPackageName,
+				releasePackageName);
+			var directSecureStorage = new StubSecureStorage();
+			MauiApp? app = null;
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IAppInfo>(appInfo);
+				var build = Task.Run(() => app = builder.Build());
+				await enteredPackageName.Task.WaitAsync(timeout);
+
+				SecureStorage.SetDefault(directSecureStorage);
+				releasePackageName.SetResult(true);
+				await build.WaitAsync(timeout);
+
+				Assert.Same(appInfo, AppInfo.Current);
+				Assert.Same(directSecureStorage, SecureStorage.Default);
+
+				app?.Dispose();
+				app = null;
+				Assert.Same(directSecureStorage, SecureStorage.Default);
+			}
+			finally
+			{
+				releasePackageName.TrySetResult(true);
+				app?.Dispose();
+				SecureStorage.SetDefault((ISecureStorage?)originalSecureStorage);
+				AppInfo.SetCurrent((IAppInfo?)originalAppInfo);
+			}
+		}
+
+		[Fact]
+		public void DirectAppInfoWriterCannotSplitImmediateSecureStoragePublication()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var enteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releasePackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = GetStaticField(typeof(AppInfo), "currentImplementation");
+			var originalSecureStorage = GetStaticField(typeof(SecureStorage), "defaultImplementation");
+			var appInfo = new BlockingPackageNameAppInfo(
+				"immediate.package",
+				enteredPackageName,
+				releasePackageName);
+			var directAppInfo = new StubAppInfo(packageName: "direct.package");
+			MauiApp? app = null;
+			Task? directWriter = null;
+			var appInfoSyncRoot = EssentialsImplementation.GetSyncRoot<IAppInfo>();
+			var secureStorageSyncRoot = EssentialsImplementation.GetSyncRoot<ISecureStorage>();
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IAppInfo>(appInfo);
+				var build = Task.Run(() => app = builder.Build());
+				enteredPackageName.Task.WaitAsync(timeout).GetAwaiter().GetResult();
+
+				Monitor.Enter(secureStorageSyncRoot);
+				try
+				{
+					releasePackageName.SetResult(true);
+					Assert.True(
+						SpinWait.SpinUntil(
+							() =>
+							{
+								if (!Monitor.TryEnter(appInfoSyncRoot))
+									return true;
+
+								Monitor.Exit(appInfoSyncRoot);
+								return false;
+							},
+							TimeSpan.FromSeconds(5)),
+						"Immediate SecureStorage publication did not retain the AppInfo facade lock.");
+
+					directWriter = Task.Run(() => AppInfo.SetCurrent(directAppInfo));
+					Assert.False(
+						directWriter.Wait(TimeSpan.FromMilliseconds(250)),
+						"Direct AppInfo writer bypassed the in-flight paired SecureStorage publication.");
+				}
+				finally
+				{
+					Monitor.Exit(secureStorageSyncRoot);
+				}
+
+				build.WaitAsync(timeout).GetAwaiter().GetResult();
+				Assert.True(
+					directWriter.Wait(timeout),
+					"Direct AppInfo writer did not complete after paired publication.");
+
+				Assert.Same(directAppInfo, AppInfo.Current);
+				var appSecureStorage = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				Assert.Equal(
+					"immediate.package.microsoft.maui.essentials.preferences",
+					appSecureStorage.Alias);
+
+				app?.Dispose();
+				app = null;
+				Assert.Same(directAppInfo, AppInfo.Current);
+			}
+			finally
+			{
+				if (Monitor.IsEntered(secureStorageSyncRoot))
+					Monitor.Exit(secureStorageSyncRoot);
+				releasePackageName.TrySetResult(true);
+				directWriter?.Wait(timeout);
+				app?.Dispose();
+				SecureStorage.SetDefault((ISecureStorage?)originalSecureStorage);
+				AppInfo.SetCurrent((IAppInfo?)originalAppInfo);
+			}
+		}
+
+		[Fact]
+		public void DirectAppInfoWriterCannotSplitDeferredSecureStorageReconciliation()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var firstEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseFirstPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = GetStaticField(typeof(AppInfo), "currentImplementation");
+			var originalSecureStorage = GetStaticField(typeof(SecureStorage), "defaultImplementation");
+			var firstAppInfo = new BlockingPackageNameAppInfo(
+				"first.package",
+				firstEnteredPackageName,
+				releaseFirstPackageName);
+			var directAppInfo = new StubAppInfo(packageName: "direct.package");
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+			Task? secondDispose = null;
+			Task? directWriter = null;
+			var directWriterCompletedBeforePublication = false;
+			var secureStorageSyncRoot = EssentialsImplementation.GetSyncRoot<ISecureStorage>();
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppInfo>(firstAppInfo);
+				var firstBuild = Task.Run(() => firstApp = firstBuilder.Build());
+				firstEnteredPackageName.Task.WaitAsync(timeout).GetAwaiter().GetResult();
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "second.package"));
+				secondBuilder.Services.AddSingleton<ISecureStorage>(new StubSecureStorage());
+				secondApp = secondBuilder.Build();
+
+				releaseFirstPackageName.SetResult(true);
+				firstBuild.WaitAsync(timeout).GetAwaiter().GetResult();
+
+				Monitor.Enter(secureStorageSyncRoot);
+				try
+				{
+					secondDispose = Task.Run(() => secondApp.Dispose());
+					Assert.True(
+						SpinWait.SpinUntil(
+							() => ReferenceEquals(
+								GetStaticField(typeof(AppInfo), "currentImplementation"),
+								firstAppInfo),
+							timeout),
+						"Second app disposal did not restore the deferred AppInfo owner.");
+
+					directWriter = Task.Run(() => AppInfo.SetCurrent(directAppInfo));
+					directWriterCompletedBeforePublication =
+						directWriter.Wait(TimeSpan.FromMilliseconds(250));
+				}
+				finally
+				{
+					Monitor.Exit(secureStorageSyncRoot);
+				}
+
+				Assert.True(
+					Task.WaitAll(new[] { secondDispose, directWriter }, timeout),
+					"Deferred reconciliation tasks did not complete.");
+				secondApp = null;
+
+				Assert.Same(directAppInfo, AppInfo.Current);
+				if (directWriterCompletedBeforePublication)
+				{
+					Assert.IsNotType<AppInfoSecureStorage>(
+						GetStaticField(typeof(SecureStorage), "defaultImplementation"));
+				}
+
+				firstApp?.Dispose();
+				firstApp = null;
+				Assert.Same(directAppInfo, AppInfo.Current);
+				Assert.Same(
+					originalSecureStorage,
+					GetStaticField(typeof(SecureStorage), "defaultImplementation"));
+			}
+			finally
+			{
+				if (Monitor.IsEntered(secureStorageSyncRoot))
+					Monitor.Exit(secureStorageSyncRoot);
+				releaseFirstPackageName.TrySetResult(true);
+				secondDispose?.Wait(timeout);
+				directWriter?.Wait(timeout);
+				firstApp?.Dispose();
+				secondApp?.Dispose();
+				SecureStorage.SetDefault((ISecureStorage?)originalSecureStorage);
+				AppInfo.SetCurrent((IAppInfo?)originalAppInfo);
+			}
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task AppInfoSecureStorageReleasesDisposedPredecessor(
+			bool deferInstallation)
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var successorEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseSuccessorPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var successorAppInfo = new BlockingPackageNameAppInfo(
+				"successor.package",
+				successorEnteredPackageName,
+				releaseSuccessorPackageName);
+			MauiApp? predecessorApp = null;
+			MauiApp? successorApp = null;
+			MauiApp? newerSecureStorageApp = null;
+			WeakReference? predecessorSecureStorageReference = null;
+
+			try
+			{
+				(predecessorApp, predecessorSecureStorageReference) =
+					BuildDisposableSecureStorageApp();
+
+				var successorBuilder = MauiApp.CreateBuilder();
+				successorBuilder.Services.AddSingleton<IAppInfo>(successorAppInfo);
+				var successorBuild = Task.Run(() => successorApp = successorBuilder.Build());
+				await successorEnteredPackageName.Task.WaitAsync(timeout);
+
+				predecessorApp.Dispose();
+				predecessorApp = null;
+
+				if (deferInstallation)
+				{
+					var newerSecureStorageBuilder = MauiApp.CreateBuilder();
+					newerSecureStorageBuilder.Services.AddSingleton<ISecureStorage>(
+						new StubSecureStorage());
+					newerSecureStorageApp = newerSecureStorageBuilder.Build();
+				}
+
+				releaseSuccessorPackageName.SetResult(true);
+				await successorBuild.WaitAsync(timeout);
+				if (deferInstallation)
+					Assert.Same(
+						newerSecureStorageApp!.Services.GetRequiredService<ISecureStorage>(),
+						SecureStorage.Default);
+				else
+					Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+				Assert.False(
+					await TestHelpers.WaitForCollect(predecessorSecureStorageReference),
+					"Pending or installed AppInfo SecureStorage should not retain a disposed predecessor assignment.");
+
+				if (deferInstallation)
+				{
+					newerSecureStorageApp!.Dispose();
+					newerSecureStorageApp = null;
+					Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				}
+			}
+			finally
+			{
+				releaseSuccessorPackageName.TrySetResult(true);
+				newerSecureStorageApp?.Dispose();
+				successorApp?.Dispose();
+				predecessorApp?.Dispose();
+			}
+		}
+
+		static (MauiApp App, WeakReference SecureStorageReference) BuildDisposableSecureStorageApp()
+		{
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<ISecureStorage>(_ => new StubSecureStorage());
+			var app = builder.Build();
+			return (
+				app,
+				new WeakReference(app.Services.GetRequiredService<ISecureStorage>()));
 		}
 
 		[Fact]

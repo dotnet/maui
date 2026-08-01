@@ -173,6 +173,130 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				AppInfo.SetCurrent(originalAppInfo);
 			}
 		}
+
+		[Fact]
+		public async Task Deferred_AppInfo_Bridge_Preserves_Original_Custom_Platform_Default_Accessible()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var firstEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseFirstPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = AppInfo.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var previous = new PlatformSecureStorageStub
+			{
+				DefaultAccessible = Security.SecAccessible.WhenUnlockedThisDeviceOnly,
+			};
+			var firstAppInfo = new BlockingStubAppInfo(
+				"first.securestorage.package",
+				firstEnteredPackageName,
+				releaseFirstPackageName);
+			MauiApp firstApp = null;
+			MauiApp secondApp = null;
+
+			SecureStorage.SetDefault(previous);
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppInfo>(firstAppInfo);
+				var firstBuild = Task.Run(() => firstApp = firstBuilder.Build());
+				await firstEnteredPackageName.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "second.securestorage.package"));
+				secondApp = secondBuilder.Build();
+
+				releaseFirstPackageName.SetResult(true);
+				await firstBuild.WaitAsync(timeout);
+
+				secondApp.Dispose();
+				secondApp = null;
+
+				Assert.Same(firstAppInfo, AppInfo.Current);
+				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				Assert.Equal(
+					Security.SecAccessible.WhenUnlockedThisDeviceOnly,
+					wrapper.DefaultAccessible);
+
+				firstApp.Dispose();
+				firstApp = null;
+				Assert.Same(previous, SecureStorage.Default);
+			}
+			finally
+			{
+				releaseFirstPackageName.TrySetResult(true);
+				firstApp?.Dispose();
+				secondApp?.Dispose();
+				SecureStorage.SetDefault(originalSecureStorage);
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
+		[Fact]
+		public async Task Deferred_AppInfo_Bridge_Preserves_Custom_Accessibility_After_Predecessor_Disposal()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var successorEnteredPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var releaseSuccessorPackageName = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalAppInfo = AppInfo.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var previous = new PlatformSecureStorageStub
+			{
+				DefaultAccessible = Security.SecAccessible.WhenUnlockedThisDeviceOnly,
+			};
+			var successorAppInfo = new BlockingStubAppInfo(
+				"successor.securestorage.package",
+				successorEnteredPackageName,
+				releaseSuccessorPackageName);
+			MauiApp predecessorApp = null;
+			MauiApp successorApp = null;
+
+			SecureStorage.SetDefault(previous);
+
+			try
+			{
+				var predecessorBuilder = MauiApp.CreateBuilder();
+				predecessorBuilder.Services.AddSingleton<IAppInfo>(
+					new StubAppInfo(packageName: "predecessor.securestorage.package"));
+				predecessorApp = predecessorBuilder.Build();
+				Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+
+				var successorBuilder = MauiApp.CreateBuilder();
+				successorBuilder.Services.AddSingleton<IAppInfo>(successorAppInfo);
+				var successorBuild = Task.Run(() => successorApp = successorBuilder.Build());
+				await successorEnteredPackageName.Task.WaitAsync(timeout);
+
+				predecessorApp.Dispose();
+				predecessorApp = null;
+				Assert.Same(previous, SecureStorage.Default);
+
+				releaseSuccessorPackageName.SetResult(true);
+				await successorBuild.WaitAsync(timeout);
+
+				Assert.Same(successorAppInfo, AppInfo.Current);
+				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				Assert.Equal(
+					Security.SecAccessible.WhenUnlockedThisDeviceOnly,
+					wrapper.DefaultAccessible);
+
+				successorApp.Dispose();
+				successorApp = null;
+				Assert.Same(previous, SecureStorage.Default);
+			}
+			finally
+			{
+				releaseSuccessorPackageName.TrySetResult(true);
+				successorApp?.Dispose();
+				predecessorApp?.Dispose();
+				SecureStorage.SetDefault(originalSecureStorage);
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
 #endif
 
 #if WINDOWS
@@ -367,7 +491,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 		}
 
-		sealed class StubAppInfo : IAppInfo
+		class StubAppInfo : IAppInfo
 		{
 			readonly string _packageName;
 
@@ -376,7 +500,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				_packageName = packageName;
 			}
 
-			public string PackageName => _packageName;
+			public virtual string PackageName => _packageName;
 
 			public string Name => "Test";
 
@@ -394,6 +518,32 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			public void ShowSettingsUI()
 			{
+			}
+		}
+
+		sealed class BlockingStubAppInfo : StubAppInfo
+		{
+			readonly TaskCompletionSource<bool> _enteredPackageName;
+			readonly TaskCompletionSource<bool> _releasePackageName;
+
+			public BlockingStubAppInfo(
+				string packageName,
+				TaskCompletionSource<bool> enteredPackageName,
+				TaskCompletionSource<bool> releasePackageName)
+				: base(packageName)
+			{
+				_enteredPackageName = enteredPackageName;
+				_releasePackageName = releasePackageName;
+			}
+
+			public override string PackageName
+			{
+				get
+				{
+					_enteredPackageName.TrySetResult(true);
+					_releasePackageName.Task.GetAwaiter().GetResult();
+					return base.PackageName;
+				}
 			}
 		}
 #endif
