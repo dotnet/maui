@@ -558,6 +558,16 @@ stages:
                 for ($i = 0; $i -lt 6 -and (Test-Path $dotnetDir); $i++) {
                   try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
                 }
+                # Wiping ./.dotnet also removes the .NET WORKLOADS that the earlier
+                # 'Install .NET and workloads' step installed (android/ios/maccatalyst).
+                # The buildtasks reinstall (dotnet-buildtasks) restores only the SDK, NOT
+                # the platform workload, so the gate's later test build would hit
+                # NETSDK1147 ("the following workloads must be installed: android") — a pure
+                # GATE-INFRA flake, not the PR (build 14843829 / #36572). Drop a PERSISTENT
+                # marker (not removed on success like $wipeMarker) so the dedicated
+                # 'Restore .NET workloads if .dotnet was wiped' step below reinstalls them
+                # band-correctly before the gate runs.
+                New-Item -ItemType File -Force -Path (Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads') | Out-Null
               }
               try {
                 $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -600,7 +610,34 @@ stages:
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
-            
+
+          # If 'Build MSBuild Tasks' wiped ./.dotnet on a retry (corrupt-SDK
+          # recovery), the .NET WORKLOADS installed by 'Install .NET and workloads'
+          # are gone and the buildtasks reinstall restored only the SDK — so the
+          # gate's test build would fail with NETSDK1147 ("the following workloads
+          # must be installed: android"), a GATE-INFRA flake wrongly surfaced as an
+          # ENV/INCONCLUSIVE gate (build 14843829 / #36572). Re-run the SAME proven,
+          # band-correct workload install ONLY in that case (marker present), so the
+          # common no-wipe path pays nothing. build.ps1 --target=dotnet is idempotent
+          # and uses the repo's pinned workload manifest (never a mismatched band).
+          - pwsh: |
+              $marker = Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads'
+              if (Test-Path $marker) {
+                Write-Host "##[warning]./.dotnet was wiped by a Build MSBuild Tasks retry — reinstalling .NET workloads so the gate build does not hit NETSDK1147 (missing android/ios/maccatalyst workload)."
+                ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+                if ($LASTEXITCODE -ne 0) { Write-Host "##[warning]Workload reinstall exited $LASTEXITCODE — the gate will still classify a residual NETSDK1147 as retryable ENV." }
+                Remove-Item $marker -Force -ErrorAction SilentlyContinue
+              } else {
+                Write-Host "No ./.dotnet wipe this run — workloads from 'Install .NET and workloads' are intact; skipping reinstall."
+              }
+            displayName: 'Restore .NET workloads if .dotnet was wiped'
+            retryCountOnTaskFailure: 2
+            continueOnError: true
+            timeoutInMinutes: 30
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
           # Restore .NET tools (includes xharness)
           - bash: dotnet tool restore
             displayName: 'Restore .NET Tools'
