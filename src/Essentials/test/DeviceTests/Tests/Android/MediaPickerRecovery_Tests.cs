@@ -1012,14 +1012,23 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		{
 			var captureForResult = new TestMediaCaptureForResult(RecoveredMediaPickerResultKind.CapturePhoto);
 			var activeTaskCompletionSource = new TaskCompletionSource<JavaBoolean>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var activeLaunchCompletionSourceField = typeof(ActivityForResultRequest<TakePicture, JavaBoolean>)
-				.GetField("activeLaunchCompletionSource", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(activeLaunchCompletionSourceField);
+			var pendingRequestsField = typeof(ActivityForResultRequest<TakePicture, JavaBoolean>)
+				.GetField("_pendingRequests", BindingFlags.Instance | BindingFlags.NonPublic);
+			var pendingRequests = Assert.IsType<System.Runtime.CompilerServices.ConditionalWeakTable<AndroidX.Activity.ComponentActivity, TaskCompletionSource<JavaBoolean>>>(
+				pendingRequestsField?.GetValue(captureForResult));
+			var currentActivity = Assert.IsAssignableFrom<AndroidX.Activity.ComponentActivity>(Platform.CurrentActivity);
 
 			// Seed the base request as if Launch already has one in-process activity result pending.
-			activeLaunchCompletionSourceField.SetValue(captureForResult, activeTaskCompletionSource);
+			pendingRequests.Add(currentActivity, activeTaskCompletionSource);
 
-			await Assert.ThrowsAsync<InvalidOperationException>(() => captureForResult.Launch(AndroidUri.Empty));
+			try
+			{
+				await Assert.ThrowsAsync<InvalidOperationException>(() => captureForResult.Launch(currentActivity, AndroidUri.Empty));
+			}
+			finally
+			{
+				pendingRequests.Remove(currentActivity);
+			}
 		}
 
 		[Fact]

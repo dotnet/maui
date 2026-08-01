@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -6,6 +7,8 @@ using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
+using AndroidX.SavedState;
+using AndroidBundle = Android.OS.Bundle;
 using JavaObject = Java.Lang.Object;
 
 namespace Microsoft.Maui.ApplicationModel;
@@ -40,6 +43,10 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	where TContract : ActivityResultContract, new()
 	where TResult : JavaObject
 {
+	const string ActivityIdentityValueKey = "activityIdentity";
+	static readonly string ActivityIdentitySavedStateKey =
+		$"Microsoft.Maui.ApplicationModel.ActivityForResultRequest.{typeof(TContract).FullName}.{typeof(TResult).FullName}";
+
 	readonly Lock activeLaunchLock = new();
 
 	// Tracks one ActivityResultLauncher per ComponentActivity instance.
@@ -47,9 +54,17 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	// eligible for collection when the activity is no longer referenced.
 	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
 
+	// Saved-state registration gives each logical activity a stable identity across
+	// configuration recreation without conflating concurrent instances of the same type.
+	readonly ConditionalWeakTable<ComponentActivity, ActivityRegistrationState> _activityRegistrationStates = new();
+
 	// Tracks pending TaskCompletionSource per ComponentActivity to prevent race conditions.
 	// This prevents Activity B from overwriting Activity A's pending request.
 	readonly ConditionalWeakTable<ComponentActivity, TaskCompletionSource<TResult>> _pendingRequests = new();
+
+	// Keep every activity with an active request alive until completion so a recreated
+	// instance can migrate the matching request without breaking concurrent child activities.
+	readonly HashSet<ComponentActivity> _inFlightActivities = new(ReferenceEqualityComparer.Instance);
 
 	/// <summary>
 	/// Gets a value indicating whether the request has a launcher registered for the
@@ -73,6 +88,11 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		// activity is not legal — must happen once during onCreate.
 		if (_activityLaunchers.TryGetValue(componentActivity, out _))
 			return;
+
+		var registrationState = GetOrCreateActivityRegistrationState(componentActivity);
+
+		// Migrate pending TCS from the old activity to the new one on config change (e.g. rotation).
+		MigratePendingRequests(componentActivity, registrationState.Identity);
 
 		var contract = new TContract();
 
@@ -190,6 +210,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			}
 
 			_pendingRequests.Add(launchingActivity, completionSource);
+			_inFlightActivities.Add(launchingActivity);
 		}
 
 		// Get the launcher for this specific activity
@@ -237,6 +258,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 				return null;
 
 			_pendingRequests.Remove(componentActivity);
+			_inFlightActivities.Remove(componentActivity);
 			return completionSource;
 		}
 	}
@@ -249,6 +271,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 				ReferenceEquals(activeCompletionSource, completionSource))
 			{
 				_pendingRequests.Remove(componentActivity);
+				_inFlightActivities.Remove(componentActivity);
 			}
 		}
 	}
@@ -262,5 +285,75 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 
 		return null;
+	}
+
+	/// <summary>
+	/// Migrates any pending TCS from the old (destroyed) activity to the new activity
+	/// during a configuration change, so the result callback can find the TCS under the
+	/// new activity's key.
+	/// </summary>
+	void MigratePendingRequests(ComponentActivity newActivity, string activityIdentity)
+	{
+		lock (activeLaunchLock)
+		{
+			ComponentActivity oldActivity = null;
+			TaskCompletionSource<TResult> completionSource = null;
+
+			foreach (var candidate in _inFlightActivities)
+			{
+				if (ReferenceEquals(candidate, newActivity) ||
+					!candidate.IsChangingConfigurations ||
+					!_activityRegistrationStates.TryGetValue(candidate, out var candidateRegistrationState) ||
+					!string.Equals(candidateRegistrationState.Identity, activityIdentity, StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				if (_pendingRequests.TryGetValue(candidate, out completionSource))
+				{
+					oldActivity = candidate;
+					break;
+				}
+			}
+
+			if (oldActivity is null)
+				return;
+
+			_pendingRequests.Remove(oldActivity);
+			_pendingRequests.Add(newActivity, completionSource);
+			_inFlightActivities.Remove(oldActivity);
+			_inFlightActivities.Add(newActivity);
+		}
+	}
+
+	ActivityRegistrationState GetOrCreateActivityRegistrationState(ComponentActivity componentActivity)
+	{
+		if (_activityRegistrationStates.TryGetValue(componentActivity, out var registrationState))
+			return registrationState;
+
+		var restoredState = componentActivity.SavedStateRegistry.ConsumeRestoredStateForKey(ActivityIdentitySavedStateKey);
+		var activityIdentity = restoredState?.GetString(ActivityIdentityValueKey);
+		if (string.IsNullOrEmpty(activityIdentity))
+			activityIdentity = Guid.NewGuid().ToString("N");
+
+		registrationState = new ActivityRegistrationState(activityIdentity);
+		_activityRegistrationStates.Add(componentActivity, registrationState);
+		componentActivity.SavedStateRegistry.RegisterSavedStateProvider(ActivityIdentitySavedStateKey, registrationState);
+		return registrationState;
+	}
+
+	sealed class ActivityRegistrationState : JavaObject, SavedStateRegistry.ISavedStateProvider
+	{
+		public ActivityRegistrationState(string identity)
+			=> Identity = identity;
+
+		public string Identity { get; }
+
+		public AndroidBundle SaveState()
+		{
+			var state = new AndroidBundle();
+			state.PutString(ActivityIdentityValueKey, Identity);
+			return state;
+		}
 	}
 }

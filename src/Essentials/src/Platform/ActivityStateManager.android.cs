@@ -6,6 +6,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using AndroidX.Activity;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -236,7 +237,7 @@ namespace Microsoft.Maui.ApplicationModel
 			// (user pressed Back, or the activity was explicitly finished). On a
 			// configuration-change destroy (e.g. rotation) the system immediately
 			// recreates the activity and the picker result still needs to be delivered
-			// to the original (captured) activity instance — cancelling here would
+			// through the replacement activity's registration — cancelling here would
 			// turn rotation-during-picker into a silent task cancellation.
 			if (activity is ComponentActivity componentActivity && componentActivity.IsFinishing
 				&& MediaPickerImplementation.IsPhotoPickerAvailable)
