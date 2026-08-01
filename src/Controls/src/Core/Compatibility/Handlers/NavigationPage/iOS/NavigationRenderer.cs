@@ -2184,6 +2184,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() =>
+			(Current.Handler as IPlatformViewHandler)?.ViewController;
+#endif
+
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
 			ChildViewControllerForStatusBarHidden();
 

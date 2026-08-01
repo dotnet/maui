@@ -1,17 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
-	public partial class Map : IMap, IEnumerable<IMapPin>
+	public partial class Map : IMap, IMapClusterImageProvider, IEnumerable<IMapPin>
 	{
 		IList<IMapElement> IMap.Elements => _mapElements.Cast<IMapElement>().ToList();
 
 		IList<IMapPin> IMap.Pins => _pins.Cast<IMapPin>().ToList();
 
 		Location? IMap.LastUserLocation => _lastUserLocation;
+
+		int IMapClusterImageProvider.ClusterImageVersion => _clusterImageVersion;
 
 		void IMap.Clicked(Location location) => MapClicked?.Invoke(this, new MapClickedEventArgs(location));
 
@@ -22,6 +27,39 @@ namespace Microsoft.Maui.Controls.Maps
 			var args = new ClusterClickedEventArgs(controlPins, location);
 			ClusterClicked?.Invoke(this, args);
 			return args.Handled;
+		}
+
+		Microsoft.Maui.IImageSource? IMapClusterImageProvider.GetClusterImage(IReadOnlyList<IMapPin> pins, int count, Location location)
+		{
+			var provider = ClusterImageProvider;
+			if (provider is not null)
+			{
+				// The provider is app code invoked from platform callbacks (a native MapKit delegate on
+				// iOS, a fire-and-forget task on Android) where an unhandled exception either crashes the
+				// app or silently drops the cluster marker - degrade to the static/default icon instead.
+				try
+				{
+					// Pins/identifier are resolved lazily: a provider that only reads Count (like the
+					// sample) never triggers the platform's O(members × pins) resolution scan.
+					var image = provider(new ClusterInfo(count, location,
+						() => pins.OfType<Pin>().ToList(),
+						() =>
+						{
+							foreach (var pin in pins)
+								if (pin is Pin controlPin)
+									return controlPin.ClusteringIdentifier ?? Pin.DefaultClusteringIdentifier;
+							return Pin.DefaultClusteringIdentifier;
+						}));
+					if (image is not null)
+						return image;
+				}
+				catch (Exception ex)
+				{
+					Handler?.MauiContext?.Services?.GetService<ILogger<Map>>()?.LogWarning(ex, "ClusterImageProvider threw; falling back to the static or default cluster icon");
+				}
+			}
+
+			return ClusterImageSource;
 		}
 
 		void IMap.UserLocationUpdated(Location location)
