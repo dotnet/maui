@@ -724,8 +724,6 @@ configuration:
       - isActivitySender:
           user: github-actions[bot]
           issueAuthor: False
-      - isActivitySender:
-          issueAuthor: True
       - isAction:
           action: Opened
       - or:
