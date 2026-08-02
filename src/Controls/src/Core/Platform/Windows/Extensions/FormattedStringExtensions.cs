@@ -43,9 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 			=> UpdateInlines(textBlock, fontManager, formattedString, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
 
-		// Private overload that supports CharacterSpacing inheritance
-		// TODO: Make this method public in .NET 11
-		static void UpdateInlines(
+		public static void UpdateInlines(
 			this TextBlock textBlock,
 			IFontManager fontManager,
 			FormattedString formattedString,
@@ -114,9 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 			=> ToRunAndColorsTuples(formattedString, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
 
-		// Private overload that supports CharacterSpacing inheritance
-		// TODO: Make this method public in .NET 11
-		static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
+		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
 			this FormattedString formattedString,
 			IFontManager fontManager,
 			double defaultLineHeight,
@@ -149,9 +145,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 			=> ToRunAndColorsTuple(span, fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
 
-		// Private overload that supports CharacterSpacing inheritance
-		// TODO: Make this method public in .NET 11
-		static Tuple<Run, Color, Color> ToRunAndColorsTuple(
+		public static Tuple<Run, Color, Color> ToRunAndColorsTuple(
 			this Span span,
 			IFontManager fontManager,
 			Font? defaultFont,

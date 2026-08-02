@@ -21,8 +21,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <para>
 /// IMPORTANT (XIHR determinism): the cache holds only what is needed to diff the PREVIOUS generation
 /// against the CURRENT one. It deliberately does NOT accumulate a growing chain of patch bodies, and
-/// generated output never embeds the <see cref="CacheEntry.Version"/> counter — the emitted
-/// <c>__version</c> is a deterministic content hash of the current XAML. This keeps the generator's
+/// generated output never embeds the <see cref="CacheEntry.Version"/> counter. This keeps the generator's
 /// output a pure function of the current content: identical XAML always produces identical output, and
 /// reverting an edit restores the earlier output. (Accumulating patches / embedding a monotonic counter
 /// is exactly what made the generator non-deterministic and could leave reverted code uncompilable.)
@@ -67,9 +66,8 @@ internal static class XamlHotReloadState
 		public int NextNodeId { get; set; }
 		/// <summary>
 		/// A monotonic generation counter, kept purely for internal bookkeeping/diagnostics. It does
-		/// NOT drive code generation — the emitted <c>__version</c> is a content hash, and dispatch is
-		/// unconditional — so its value never leaks into generated output. Retained so tooling can tell
-		/// how many times a file has been regenerated in the current build session.
+		/// NOT drive code generation and its value never leaks into generated output. Retained so tooling
+		/// can tell how many times a file has been regenerated in the current build session.
 		/// </summary>
 		public int Version { get; set; }
 	}
