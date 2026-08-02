@@ -8,6 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class EntryFeatureTests : _GalleryUITest
 {
 	public const string EntryFeatureMatrix = "Entry Feature Matrix";
+	public const string MainLabel = "MainLabel";
 
 	public override string GalleryPageName => EntryFeatureMatrix;
 
@@ -78,6 +79,8 @@ public class EntryFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("TestEntry");
 		App.WaitForElement("SelectionLengthEntry");
+		App.Tap(MainLabel);
+		App.WaitForElement("SelectionLengthEntry");
 		App.Tap("SelectionLengthEntry");
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
@@ -123,6 +126,9 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 #endif
 		VerifyScreenshotWithKeyboardHandling();
+		App.Tap(MainLabel);
+		App.Tap("TestEntry");
+		VerifyScreenshotWithKeyboardHandling();
 	}
 
 	[Test]
@@ -135,6 +141,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		App.Tap(MainLabel);
 		App.Tap("TestEntry");
 		VerifyScreenshotWithKeyboardHandling();
 	}
@@ -150,6 +158,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		App.Tap(MainLabel);
 		App.Tap("TestEntry");
 		VerifyScreenshotWithKeyboardHandling();
 	}
@@ -167,6 +177,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.Tap(MainLabel);
+		App.Tap("TestEntry");
 		VerifyScreenshotWithKeyboardHandling();
 	}
 #endif
@@ -180,6 +192,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("TextColorRed");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		//VerifyScreenshotWithKeyboardHandling(); // Refer to issue https://github.com/dotnet/maui/issues/31326
+		App.Tap(MainLabel);
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		VerifyScreenshotWithKeyboardHandling();
@@ -210,6 +226,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -222,6 +241,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -236,6 +258,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
+		App.Tap(MainLabel);
 		// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
 		App.EnterText("TestEntry", "123");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test Entry"));
@@ -252,6 +276,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -266,6 +293,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -282,6 +312,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -303,6 +336,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("TextChangedLabel");
 #endif
 		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
@@ -319,6 +354,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
@@ -336,6 +374,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -350,6 +391,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -363,6 +407,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -378,6 +425,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -415,6 +465,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -432,6 +485,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
+		App.Tap(MainLabel);
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
 	}
 
@@ -453,13 +508,15 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
+		App.Tap(MainLabel);
+		// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
 		App.EnterText("TestEntry", "123");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
 
 	}
 #endif
 
-	[Test]
+	[Test, Order(13)]
 	public void VerifyHorizontalTextAlignmentWhenVerticalTextAlignmentSet()
 	{
 		App.WaitForElement("Options");
@@ -471,6 +528,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -484,6 +542,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -498,6 +559,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -513,6 +577,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.EnterText("FontSizeEntry", "20");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
@@ -529,6 +596,8 @@ public class EntryFeatureTests : _GalleryUITest
 			App.Tap("Apply");
 			App.WaitForElement("TestEntry");
 			App.ClearText("TestEntry");
+			App.Tap(MainLabel);
+			App.ClearText("TestEntry");
 			App.EnterText("TestEntry", "Testig");
 			App.EnterText("TestEntry", " ");
 			Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
@@ -544,6 +613,8 @@ public class EntryFeatureTests : _GalleryUITest
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("TestEntry");
+			App.ClearText("TestEntry");
+			App.Tap(MainLabel);
 			App.ClearText("TestEntry");
 			App.EnterText("TestEntry", "Testig");
 			App.EnterText("TestEntry", " ");
@@ -585,6 +656,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.Tap(MainLabel);
+		App.Tap("TestEntry");
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("10"));
 	}
@@ -606,6 +679,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		App.Tap(MainLabel);
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("10"));
@@ -648,6 +723,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.Tap(MainLabel);
+		App.Tap("TestEntry");
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("0"));
 	}
 
@@ -679,6 +756,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.Tap(MainLabel);
 		App.ClearText("TestEntry");
 		App.EnterText("TestEntry", "Test");
 		App.Tap("TestEntry");
@@ -730,6 +809,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.ClearText("TestEntry");
+		App.Tap(MainLabel);
+		App.ClearText("TestEntry");
 		App.EnterText("TestEntry", "123");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("123"));
 		App.WaitForElement("Options");
@@ -739,6 +820,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.EnterText("TestEntry", "123");
+		App.Tap(MainLabel);
 		App.EnterText("TestEntry", "123");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test Entry"));
 
@@ -753,6 +836,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.WaitForElement("Options");
+		App.Tap(MainLabel);
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("VisibleFalse");
@@ -772,6 +857,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -787,6 +875,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -802,6 +893,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.Tap(MainLabel);
+		App.ClearText("TestEntry");
+		App.Tap(MainLabel);
 		App.ClearText("TestEntry");
 		App.DismissKeyboard();
 		VerifyScreenshot(cropBottom: CropBottomValue);
@@ -845,6 +940,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -858,6 +956,8 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("TEST ENTRY"));
+		App.Tap(MainLabel);
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("TEST ENTRY"));
 	}
 
@@ -877,7 +977,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(14)]
 	public void VerifyPlaceholderWithShadow()
 	{
 		App.WaitForElement("Options");
@@ -890,10 +990,12 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
+		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 #endif
 
-	[Test]
+	[Test, Order(10)]
 	public void VerifyPlaceholderWithClearButtonVisible()
 	{
 		App.WaitForElement("Options");
@@ -907,7 +1009,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshotWithKeyboardHandling("PlaceholderWithClearButtonVisible");
 	}
 
-	[Test]
+	[Test, Order(12)]
 	public void VerifyPlaceholderWithPasswordTrue()
 	{
 		App.WaitForElement("Options");
@@ -925,7 +1027,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(8)]
 	public void VerifyPlaceholderWithHorizontalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -937,10 +1039,13 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(9)]
 	public void VerifyPlaceholderWithVerticalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -952,11 +1057,14 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
-	[Test]
+	[Test, Order(11)]
 	public void VerifyPlaceholderWithCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -973,7 +1081,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(7)]
 	public void VerifyPlaceholderWithFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -985,10 +1093,13 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(6)]
 	public void VerifyPlaceholderWithFontSize()
 	{
 		App.WaitForElement("Options");
@@ -1004,7 +1115,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(5)]
 	public void VerifyPlaceholderWithFontAttributes()
 	{
 		App.WaitForElement("Options");
@@ -1016,6 +1127,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
+		ClearEntryFocusIfItIsWindowsPlatform();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+		App.Tap(MainLabel);
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
@@ -1050,5 +1164,16 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotOrSetException(ref exception, screenshotName, cropBottom: CropBottomValue);
 
+	}
+
+	/// <summary>
+	/// On Windows, to hide the cursor in the Entry control, we need to focus out of the Entry.
+	/// This method taps on coordinates (50,50) to achieve that.
+	/// </summary>
+	void ClearEntryFocusIfItIsWindowsPlatform()
+	{
+#if WINDOWS
+		App.TapCoordinates(50, 50); // To focus out of the Entry and hide the cursor
+#endif
 	}
 }
