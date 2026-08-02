@@ -242,9 +242,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
-#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
-#endif
 	[InlineData(typeof(SwipeView))]
 #if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
@@ -351,13 +349,9 @@ public class MemoryTests : ControlsHandlerTestBase
 			var viewHandler = view.Handler;
 			Assert.NotNull(viewHandler);
 
-			bool isWindowsHybridWebView = false;
-
 			if (view is HybridWebView)
 			{
 #if WINDOWS
-				isWindowsHybridWebView = true;
-
 				// Await WebView2's own readiness API instead of polling or using a fixed delay.
 				// EnsureCoreWebView2Async completes exactly when initialization finishes (or
 				// immediately if already initialized), so there's no magic timeout/interval to tune.
@@ -372,13 +366,12 @@ public class MemoryTests : ControlsHandlerTestBase
 			handlerReference = new WeakReference(viewHandler);
 			platformViewReference = new WeakReference(viewHandler.PlatformView);
 
-			// Windows HybridWebView's WebView2-backed platform view can still be completing
-			// async initialization work that holds a live reference even after the await above,
-			// so explicitly disconnect its handler before letting it fall out of scope. Other
-			// controls are left to rely on the passive GC pass (their existing/original
-			// contract) so this scoped teardown doesn't weaken leak coverage for unrelated
-			// handlers.
-			if (isWindowsHybridWebView && viewHandler is IViewHandler disconnectableHandler)
+			// Explicitly disconnect the child view's handler before letting it fall out of
+			// scope. Real apps tear down handlers this way (e.g. when a page/element is
+			// removed), and some platform views (e.g. UIStepper on iOS 26+) rely on this
+			// deterministic teardown path to release native-side retains that a bare GC
+			// pass can't reach on its own.
+			if (viewHandler is IViewHandler disconnectableHandler)
 			{
 				disconnectableHandler.DisconnectHandler();
 			}
