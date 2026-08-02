@@ -81,11 +81,13 @@ public class SimpleTemplateTest : BaseTemplateTests
 		foreach (var source in packageSources.Elements("add"))
 		{
 			var key = source.Attribute("key")!.Value;
+			var patterns = key == nugetOrg ? new[] { "Avalonia*", "MicroCom.*" } : new[] { "*" };
 			sourceMapping.Add(
 				new XElement("packageSource",
 					new XAttribute("key", key),
-					new XElement("package",
-						new XAttribute("pattern", key == nugetOrg ? "Avalonia*" : "*"))));
+					patterns.Select(pattern =>
+						new XElement("package",
+							new XAttribute("pattern", pattern)))));
 		}
 
 		config.Root.Add(sourceMapping);
