@@ -41,6 +41,22 @@ static Microsoft.Maui.Handlers.EntryHandler.MapBackground(Microsoft.Maui.Handler
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapBackground(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapStatusBarTheme(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
+override Microsoft.Maui.MauiUIApplicationDelegate.ValidateCommand(UIKit.UICommand! command) -> void
+override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
+override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
+override Microsoft.Maui.Platform.MauiView.AccessibilityActivate() -> bool
+override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.get -> string?
+override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.set -> void
+override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
+virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.StepperHandler.MapFlowDirection(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
