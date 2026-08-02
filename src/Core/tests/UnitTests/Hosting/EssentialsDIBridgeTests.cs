@@ -272,6 +272,18 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void DIRegisteredPasskeys_BridgedToStaticFacade()
+		{
+			var mock = new StubPasskeys();
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IPasskeys>(mock);
+
+			using var app = builder.Build();
+
+			Assert.Same(mock, Passkeys.Default);
+		}
+
+		[Fact]
 		public void NoDIRegistration_StaticFacadeUnchanged()
 		{
 			// When nothing is registered in DI, the backing field should remain null
@@ -2870,6 +2882,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public bool ShouldShowRationale<TPermission>()
 				where TPermission : Permissions.BasePermission, new() => false;
+		}
+
+		sealed class StubPasskeys : IPasskeys
+		{
+			public bool IsSupported => true;
+
+			public Task<PasskeyCreationResponse> CreateAsync(
+				PasskeyCreationOptions options,
+				CancellationToken cancellationToken = default) =>
+				throw new NotSupportedException();
+
+			public Task<PasskeyAssertionResponse> AssertAsync(
+				PasskeyRequestOptions options,
+				CancellationToken cancellationToken = default) =>
+				throw new NotSupportedException();
 		}
 
 		class StubWebAuthenticator : IWebAuthenticator

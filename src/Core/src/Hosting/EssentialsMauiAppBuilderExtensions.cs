@@ -520,6 +520,7 @@ namespace Microsoft.Maui.Hosting
 					TrackAndSet(webAuthenticator, () => GetFacadeBackingField<IWebAuthenticator>(typeof(WebAuthenticator), "defaultImplementation"), WebAuthenticator.SetDefault, facadeCleanups);
 #endif
 				}
+				BridgeIfRegistered<IPasskeys>(services, () => GetFacadeBackingField<IPasskeys>(typeof(Passkeys), "defaultImplementation"), Passkeys.SetDefault, facadeCleanups);
 #if WINDOWS || __IOS__ || __MACCATALYST__
 				BridgeIfRegistered<IWindowStateManager>(services, () => GetFacadeBackingField<IWindowStateManager>(typeof(WindowStateManager), "defaultImplementation"), WindowStateManager.SetDefault, facadeCleanups);
 #endif
