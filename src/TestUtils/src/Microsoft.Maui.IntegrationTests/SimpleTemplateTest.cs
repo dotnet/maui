@@ -85,7 +85,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 				new XElement("packageSource",
 					new XAttribute("key", key),
 					new XElement("package",
-						new XAttribute("pattern", key == nugetOrg ? "Avalonia.Controls.Maui*" : "*"))));
+						new XAttribute("pattern", key == nugetOrg ? "Avalonia*" : "*"))));
 		}
 
 		config.Root.Add(sourceMapping);
