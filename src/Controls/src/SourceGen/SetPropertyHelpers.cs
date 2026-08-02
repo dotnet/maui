@@ -229,7 +229,8 @@ static class SetPropertyHelpers
 				context.TypeCache, 
 				context.RootType, 
 				null, 
-				context.ProjectItem)
+				context.ProjectItem,
+				context.ReportDiagnostic)
 			{
 				ParentContext = context
 			};

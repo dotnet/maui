@@ -71,11 +71,16 @@ public static class XamlIncrementalHotReloadHandler
 		// building and main-thread dispatch latency, not just the UI-thread invoke loop.
 		var sw = Stopwatch.StartNew();
 
-		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated
-		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
-		// handledTypes records every recognized incremental-XAML type (one carrying a generated
-		// UpdateComponent()), independent of whether it currently has live instances — this is the
-		// synchronous "what kind of update is this" signal surfaced on UpdateRequested/UpdateSkipped.
+		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated type whose
+		// XAML actually changed in this delta, then issue a single MainThread.BeginInvokeOnMainThread.
+		//
+		// handledTypes is the synchronous, pre-dispatch "this is a XAML change" signal tooling reads.
+		// UpdateComponent() is now emitted on EVERY XAML type (member stability), so its mere presence no
+		// longer distinguishes a XAML edit from a pure C#/code-behind edit. Instead we look at whether the
+		// method's BODY is non-empty: the generator emits an EMPTY UpdateComponent() when a generation
+		// carries no XAML change, and a patched (non-empty) one when the XAML changed. A pure C# edit does
+		// not regenerate the XAML code, so UpdateComponent() stays empty for that page — correctly read as
+		// "not a XAML change" — while the method still never appears/disappears across generations.
 		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
 		var handledTypes = new List<Type>();
 
@@ -91,14 +96,14 @@ public static class XamlIncrementalHotReloadHandler
 #pragma warning restore IL2070, IL2075
 
 			if (ucMethod is null)
-				continue;
+				continue; // not an incremental-XAML type at all
+
+			if (IsEmptyUpdateComponent(ucMethod))
+				continue; // XAML unchanged in this delta (e.g. a pure C# edit) — not a XAML change
 
 			handledTypes.Add(type);
 
 			var instances = XamlComponentRegistry.GetInstances(type);
-			if (instances.Count == 0)
-				continue;
-
 			foreach (var instance in instances)
 				dispatchBatch.Add((instance, ucMethod, type));
 		}
@@ -154,6 +159,39 @@ public static class XamlIncrementalHotReloadHandler
 			// report; never returning it strands that wait until timeout.
 			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
 		});
+	}
+
+	// The generator emits an EMPTY UpdateComponent() body when a generation carries no XAML change, and a
+	// patched (non-empty) one when the XAML changed. An empty method compiles to a trivial body (just a
+	// return / a couple of nops), so its IL is only a few bytes; any real patch is far larger. This lets
+	// the handler distinguish a XAML change from a pure C#/code-behind edit without adding or removing the
+	// method across generations. Unlike reflecting a generated method's return value, UpdateComponent() is
+	// always part of a XAML-change delta (it is what applies Hot Reload), so its body is reliably current.
+	const int EmptyUpdateComponentMaxIL = 8;
+
+	// GetMethodBody() is [RequiresUnreferencedCode] (IL2026). The trimmer/ILC honors
+	// UnconditionalSuppressMessage (a #pragma only silences the Roslyn analyzer, not the publish-time
+	// trim/AOT warning). This is safe: XIHR is a dev-time (Hot Reload) feature gated by
+	// RuntimeFeature.IsIncrementalHotReloadEnabled, which is off for Release/publish, so this method is
+	// never reached under trimming/AOT — the "trimming may change method bodies" caveat cannot apply.
+	[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+		Justification = "XIHR is a dev-time feature disabled under trimming/AOT (Release); IsEmptyUpdateComponent is never reached there.")]
+	static bool IsEmptyUpdateComponent(MethodInfo ucMethod)
+	{
+		try
+		{
+			var body = ucMethod.GetMethodBody();
+			var il = body?.GetILAsByteArray();
+			return il is null || il.Length <= EmptyUpdateComponentMaxIL;
+		}
+#pragma warning disable CA1031
+		catch
+		{
+			// If the IL cannot be inspected on this runtime, fall back to treating the update as a XAML
+			// change (the pre-regression behavior) rather than silently dropping it.
+			return false;
+		}
+#pragma warning restore CA1031
 	}
 }
 #endif

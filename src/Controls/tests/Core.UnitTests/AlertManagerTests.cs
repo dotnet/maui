@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -531,6 +532,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, callOrder.Count);
 			Assert.Equal("Unsubscribe", callOrder[0]);
 			Assert.Equal("Subscribe", callOrder[1]);
+		}
+
+		[Theory]
+		[InlineData(typeof(AlertArguments))]
+		[InlineData(typeof(ActionSheetArguments))]
+		[InlineData(typeof(PromptArguments))]
+		public void AlertArgumentTypesArePartOfSupportedPublicContract(Type argumentType)
+		{
+			// These argument types flow through the public IAlertManager/IAlertManagerSubscription
+			// contract, so they must be public and discoverable (not hidden with EditorBrowsableState.Never).
+			Assert.True(argumentType.IsPublic, $"{argumentType.Name} must be public.");
+
+			var editorBrowsable = argumentType
+				.GetCustomAttributes(typeof(EditorBrowsableAttribute), inherit: false)
+				.Cast<EditorBrowsableAttribute>()
+				.FirstOrDefault();
+
+			Assert.True(
+				editorBrowsable is null || editorBrowsable.State != EditorBrowsableState.Never,
+				$"{argumentType.Name} must not be marked EditorBrowsableState.Never; it is part of the supported public contract.");
+		}
+
+		[Fact]
+		public void AlertManagerInterfacesArePublic()
+		{
+			// The real regression surface this PR restores — IAlertManager / IAlertManagerSubscription —
+			// guarded independently of the PublicAPI.Unshipped.txt baseline. A future servicing PR could
+			// re-hide these to `internal` (as #35024 did) AND drop the matching baseline lines in the same
+			// commit: the PublicAPI analyzer sees no discrepancy and the behavioral tests still compile
+			// (Substitute.For<T>() works identically for internal-via-InternalsVisibleTo or public), so
+			// only an explicit visibility assertion catches a silent re-hide.
+			Assert.True(typeof(IAlertManager).IsPublic, "IAlertManager must be public.");
+			Assert.True(typeof(IAlertManagerSubscription).IsPublic, "IAlertManagerSubscription must be public.");
 		}
 	}
 }
