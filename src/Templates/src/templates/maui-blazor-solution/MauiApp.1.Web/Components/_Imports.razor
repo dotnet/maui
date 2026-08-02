@@ -19,6 +19,6 @@
 @using MauiApp._1.Web.Client.Layout
 ##endif*@
 @using MauiApp._1.Web.Components
-@*#if ((UseServer && !UseWebAssembly) && InteractiveAtRoot) -->
+@*#if (UseServer && (!UseWebAssembly || !InteractiveAtRoot)) -->
 @using MauiApp._1.Web.Components.Layout
 ##endif*@
