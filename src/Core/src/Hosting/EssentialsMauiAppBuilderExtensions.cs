@@ -670,6 +670,8 @@ namespace Microsoft.Maui.Hosting
 				// PackageName can yield while a newer app takes AppInfo ownership. Keep the
 				// original app's cleanup slot and install its matching SecureStorage only if
 				// that AppInfo assignment becomes current again.
+				// These values are only snapshots: installation revalidates every app-owned
+				// dependency and the SecureStorage predecessor under their facade locks.
 				var installation = new DeferredAppInfoSecureStorageInstallation(
 					appInfoOwner,
 					fileSystemOwner,
