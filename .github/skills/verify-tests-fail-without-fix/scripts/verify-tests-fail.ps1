@@ -2009,7 +2009,23 @@ function Write-MarkdownReport {
         $envExcerpt = @($WithoutFixResultsList + $WithFixResultsList |
             Where-Object { $_.EnvError -and $_.Error -and -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) } | ForEach-Object { $_.Error } | Select-Object -First 1)
         $envExcerptLine = if ($envExcerpt) { "`n> ``$envExcerpt``" } else { "" }
-        $failureClassification = "🩺 **Could not verify — environment/infrastructure error.** The gate ran the tests but hit an environment error (the test app crashed or exited before writing its results, an emulator/simulator/Appium/XHarness flake, or an empty/invalid result file), so it could not record a real pass/fail. The ⚠️ ENV ERROR marks below are **infrastructure**, not test failures — this is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent.$envExcerptLine"
+        # An APP_CRASH (the app under test SIGABRT/exited mid-run) is NOT always a
+        # transient infra flake: it can be deterministic and rooted in the code under
+        # test or the runtime/native libraries it exercises. The gate already retries
+        # env errors up to 3x (rebooting the device between attempts), so if it still
+        # reached INCONCLUSIVE the crash PERSISTED across all attempts — telling the
+        # author "not a problem with your PR, just retry" is then misleading (a plain
+        # retry is unlikely to help, and it may be the code under test). Give an honest,
+        # non-accusatory message for the crash case (build 14846070 / #36572: the
+        # with-fix MediaPicker ProcessImage test SIGABRT'd on a fresh agent on all 3
+        # attempts). Non-crash env errors (emulator/sim boot, Appium, empty result
+        # file) keep the transient-flake "retry on a fresh agent" wording.
+        $isAppCrash = $envExcerpt -and ($envExcerpt -match '(?i)APP_CRASH|crashed during test run|exit code 80')
+        if ($isAppCrash) {
+            $failureClassification = "🩺 **Could not verify — the app under test crashed (APP_CRASH).** The app SIGABRT'd / exited before the test produced a pass/fail, so the gate could not record a real result. The gate already retried on a rebooted device up to 3×; if it still reports this, the crash **persisted across every attempt** — a plain ``/review`` retry is unlikely to change it. This is **not necessarily** a problem with your PR, but it is also **not** a transient flake: the crash is either in the runtime/native libraries the test exercises **or** in the code under test. Download the ``adb-logcat`` / ``adb-bugreport`` from the ``drop-deep-uitests``/gate artifact to see the native stack before retrying.$envExcerptLine"
+        } else {
+            $failureClassification = "🩺 **Could not verify — environment/infrastructure error.** The gate ran the tests but hit an environment error (an emulator/simulator/Appium/XHarness flake, a device that would not boot, or an empty/invalid result file), so it could not record a real pass/fail. The ⚠️ ENV ERROR marks below are **infrastructure**, not test failures — this is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent.$envExcerptLine"
+        }
     }
 
     $lines = @()

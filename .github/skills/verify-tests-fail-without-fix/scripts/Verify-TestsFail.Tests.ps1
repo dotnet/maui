@@ -423,6 +423,35 @@ Describe 'Write-MarkdownReport — new-snapshot-no-baseline does not double-mess
     }
 }
 
+Describe 'Write-MarkdownReport — persisted APP_CRASH gets an honest (non-"just retry") message' {
+    It 'shows the app-crash message, not the generic transient-flake retry wording (PR #36572 / build 14846070)' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        # Without-fix: compile-coupled build error (new ProcessImage API removed).
+        $wo = @(@{ TestName = 'Android_MediaPicker_Tests'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false;
+                  FailureMessage = "MediaPicker_Tests.cs(43,54): error CS0117: 'MediaPickerImplementation' does not contain a definition for 'ProcessImage'"; Error = 'Android_MediaPicker_Tests' })
+        # With-fix: the app under test crashed (SIGABRT) — persisted APP_CRASH env error.
+        $w  = @(@{ TestName = 'Android_MediaPicker_Tests'; Passed = $false; BuildError = $false; EnvError = $true; FilterMismatch = $false;
+                  FailureMessage = 'App crashed during test run (XHarness exit 80 APP_CRASH)'; Error = 'App crashed during test run (XHarness exit 80 APP_CRASH)' })
+        $tests = @([pscustomobject]@{ TestName = 'Android_MediaPicker_Tests' })
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $false -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+            -ReportBaseBranch 'net11.0' -ReportRevertableFiles @('src/Essentials/src/MediaPicker/MediaPicker.android.cs') -ReportNewFiles @()
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match 'the app under test crashed \(APP_CRASH\)'
+        $report | Should -Match 'persisted across every attempt'
+        # Must NOT use the transient-flake "retry on a fresh agent" wording for a crash.
+        $report | Should -Not -Match 'Comment ``/review`` to retry on a fresh agent'
+    }
+}
+
+
 Describe 'Get-TestResultFromOutput — MSBuild-server/BuildTasks infra flake is ENV, not BUILD error' {
     It 'classifies "required MSBuild tasks are not yet built or out of date" as EnvError' {
         $log = New-LogFile -Content @"
