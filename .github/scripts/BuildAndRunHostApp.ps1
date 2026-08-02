@@ -522,7 +522,24 @@ try {
         . "$PSScriptRoot/shared/Get-TrxResults.ps1"
         $firstRun = Get-TrxResults -TrxPath $trxFilePath
         if ($firstRun -and [int]$firstRun.Failed -gt 0 -and [int]$firstRun.Passed -gt 0) {
-            $failedNames = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' } | ForEach-Object { $_.name })
+            # "Baseline snapshot not yet created" failures are brand-new VerifyScreenshot
+            # tests with no committed baseline — deterministic new-baseline results, not
+            # emulator flake. Retrying them wastes a full re-run (they can never pass
+            # without a committed baseline) and can exhaust the deep category time budget
+            # on snapshot-heavy PRs. Exclude them from the flaky-retry set; the downstream
+            # summary reclassifies them as "new baseline".
+            $failedResults = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' })
+            $baselineFailures = @($failedResults | Where-Object { ($_.error -as [string]) -match '(?i)Baseline snapshot not yet created' })
+            $failedNames = @($failedResults |
+                Where-Object { ($_.error -as [string]) -notmatch '(?i)Baseline snapshot not yet created' } |
+                ForEach-Object { $_.name })
+            if ($baselineFailures.Count -gt 0) {
+                Write-Info "  ⚠ $($baselineFailures.Count) new-baseline failure(s) (no committed snapshot) excluded from flaky-retry — deterministic, not emulator flake."
+            }
+            if ($failedNames.Count -eq 0) {
+                Write-Info "  No flaky (non-baseline) failures to retry — skipping Android retry."
+            }
+            else {
             Write-Host ""
             Write-Warn "🔄 Retrying $($failedNames.Count) failed test(s) on Android..."
             
@@ -623,6 +640,7 @@ try {
                     # Remove the retry TRX to prevent double-counting by downstream aggregators
                     Remove-Item $retryTrxPath -Force -ErrorAction SilentlyContinue
                 }
+            }
             }
         }
     }
