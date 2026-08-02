@@ -65,6 +65,10 @@ namespace Microsoft.Maui.Storage
 
 	interface ISecureStorageImplementation
 	{
+		// Returns the file path a write should target, or null for packaged apps, which persist via
+		// ApplicationData settings and have no path. Callers must treat the result as optional: the
+		// packaged SetAsync ignores writePath, while the unpackaged implementation always returns a
+		// non-null path and rejects a null one.
 		string CaptureWritePath();
 
 		Task<byte[]> GetAsync(string key);
@@ -85,6 +89,7 @@ namespace Microsoft.Maui.Storage
 			_alias = alias;
 		}
 
+		// Packaged apps persist via ApplicationData settings, so there is no file path to capture.
 		public string CaptureWritePath() => null;
 
 		public Task<byte[]> GetAsync(string key)
