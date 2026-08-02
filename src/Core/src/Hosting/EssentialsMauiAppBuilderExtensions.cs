@@ -663,7 +663,9 @@ namespace Microsoft.Maui.Hosting
 				// SecureStorage namespaces follow the bridged package name. Apps that change
 				// PackageName must migrate existing secrets or register ISecureStorage.
 #if WINDOWS
-				var appDataDirectory = (fileSystem ?? FileSystem.Current).AppDataDirectory;
+				var appDataDirectory = SecureStorageImplementation.UsesFileSystemAppDataDirectory
+					? (fileSystem ?? FileSystem.Current).AppDataDirectory
+					: null;
 #endif
 				var secureStoragePackageName = (appInfo ?? AppInfo.Current).PackageName;
 
@@ -834,7 +836,7 @@ namespace Microsoft.Maui.Hosting
 				FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo,
 				List<Action> facadeCleanups
 #if WINDOWS
-				, string appDataDirectory
+				, string? appDataDirectory
 #endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 				, ISecureStorage? defaultAccessiblePredecessor,
@@ -2050,7 +2052,7 @@ namespace Microsoft.Maui.Hosting
 					string packageName,
 					FacadePredecessor<ISecureStorage> predecessorBeforeAppInfo
 #if WINDOWS
-					, string appDataDirectory
+					, string? appDataDirectory
 #endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 					, ISecureStorage? defaultAccessiblePredecessor,
@@ -2080,7 +2082,7 @@ namespace Microsoft.Maui.Hosting
 				public FacadePredecessor<ISecureStorage> PredecessorBeforeAppInfo { get; private set; }
 
 #if WINDOWS
-				public string AppDataDirectory { get; }
+				public string? AppDataDirectory { get; }
 #endif
 
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS

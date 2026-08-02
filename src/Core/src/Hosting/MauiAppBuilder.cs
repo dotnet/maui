@@ -210,11 +210,13 @@ namespace Microsoft.Maui.Hosting
 			}
 			catch (Exception initializationException)
 			{
+				Exception? cleanupException = null;
 				try
 				{
 					if (serviceProvider is IAsyncDisposable && serviceProvider is not IDisposable)
 					{
-						var disposal = builtApplication.DisposeAsync();
+						var disposal =
+							builtApplication.DisposeAfterFailedInitializationAsync(out cleanupException);
 						if (disposal.IsCompleted)
 						{
 							disposal.GetAwaiter().GetResult();
@@ -236,6 +238,12 @@ namespace Microsoft.Maui.Hosting
 						initializationException,
 						disposalException);
 				}
+
+				if (cleanupException is not null)
+					throw new AggregateException(
+						"MauiApp initialization and cleanup both failed.",
+						initializationException,
+						cleanupException);
 
 				throw;
 			}

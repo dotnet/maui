@@ -149,7 +149,9 @@ namespace Microsoft.Maui.Storage
 
 				var packageName = SecureStorageImplementation.GetDefaultPackageName();
 #if WINDOWS
-				var appDataDirectory = FileSystem.AppDataDirectory;
+				var appDataDirectory = SecureStorageImplementation.UsesFileSystemAppDataDirectory
+					? FileSystem.AppDataDirectory
+					: null;
 #endif
 				return EssentialsImplementation.GetOrCreate(
 					ref defaultImplementation,
@@ -309,7 +311,7 @@ namespace Microsoft.Maui.Storage
 			string packageName,
 			ISecureStorage? previous
 #if WINDOWS
-			, string appDataDirectory
+			, string? appDataDirectory
 #endif
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
 			, Security.SecAccessible? inheritedDefaultAccessible = null

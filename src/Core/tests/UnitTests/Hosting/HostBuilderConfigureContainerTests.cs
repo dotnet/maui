@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Storage;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Hosting
@@ -699,6 +700,63 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.True(factory.Provider.IsDisposed);
 		}
 
+		[Fact]
+		public async Task BuildFailureRestoresEssentialsFacadeBeforeAsyncOnlyServiceProviderDisposalCompletes()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var returnTimeout = TimeSpan.FromSeconds(1);
+			var originalPreferences = Preferences.Default;
+			var bridgedPreferences = new StubPreferences();
+			var context = new QueuedSynchronizationContext();
+			var factory = new UIThreadAsyncOnlyServiceProviderFactory(context);
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureContainer(factory);
+			builder.Services.AddSingleton<IPreferences>(bridgedPreferences);
+			builder.Services.AddSingleton<IMauiInitializeService, ThrowingInitializeService>();
+			var buildReturned = new TaskCompletionSource<Exception>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+
+			try
+			{
+				var build = Task.Run(() =>
+				{
+					var originalContext = SynchronizationContext.Current;
+					try
+					{
+						SynchronizationContext.SetSynchronizationContext(context);
+						buildReturned.TrySetResult(Record.Exception(builder.Build));
+					}
+					finally
+					{
+						SynchronizationContext.SetSynchronizationContext(originalContext);
+					}
+				});
+
+				await factory.DisposeStarted.Task.WaitAsync(timeout);
+				var returnedBeforePump =
+					await Task.WhenAny(buildReturned.Task, Task.Delay(returnTimeout)) == buildReturned.Task;
+				var exception = await buildReturned.Task.WaitAsync(timeout);
+
+				Assert.True(
+					returnedBeforePump,
+					"Build blocked while the async-only provider awaited dispatched disposal work.");
+				Assert.IsType<InvalidOperationException>(exception);
+				Assert.Equal("initialization failed", exception.Message);
+				Assert.Same(originalPreferences, Preferences.Default);
+				Assert.False(factory.Provider.IsDisposed);
+
+				context.RunAll();
+				await Task.WhenAll(build, factory.DisposeCompleted.Task).WaitAsync(timeout);
+
+				Assert.True(factory.Provider.IsDisposed);
+			}
+			finally
+			{
+				context.RunAll();
+				Preferences.SetDefault(originalPreferences);
+			}
+		}
+
 		static (MauiApp App, DisposableConfigurationProvider Configuration, ConfigurationReadingCleanup Cleanup)
 			BuildAppWithTrackedConfiguration()
 		{
@@ -882,6 +940,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				throw new InvalidOperationException("initialization failed");
 			}
+		}
+
+		sealed class StubPreferences : IPreferences
+		{
+			public bool ContainsKey(string key, string sharedName = null) => false;
+			public void Remove(string key, string sharedName = null) { }
+			public void Clear(string sharedName = null) { }
+			public void Set<T>(string key, T value, string sharedName = null) { }
+			public T Get<T>(string key, T defaultValue, string sharedName = null) => defaultValue;
 		}
 
 		sealed class BlockingRepeatedInitializeService : IMauiInitializeService

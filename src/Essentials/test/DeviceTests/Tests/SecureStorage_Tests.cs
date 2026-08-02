@@ -458,8 +458,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				secondApp = secondBuilder.Build();
 
 				var implementation = GetWrappedImplementation(firstWrapper);
-				Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
-				Assert.True(implementation.NamespaceUnpackagedStorageByAlias);
+				if (SecureStorageImplementation.UsesFileSystemAppDataDirectory)
+				{
+					Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
+					Assert.True(implementation.NamespaceUnpackagedStorageByAlias);
+				}
+				else
+				{
+					Assert.Null(implementation.UnpackagedAppDataDirectory);
+				}
 			}
 			finally
 			{
@@ -515,6 +522,47 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
+		public void Packaged_Default_And_AppInfo_Bridge_Do_Not_Read_FileSystem_AppDataDirectory()
+		{
+			if (SecureStorageImplementation.UsesFileSystemAppDataDirectory)
+				return;
+
+			var originalAppInfo = AppInfo.Current;
+			var originalFileSystem = FileSystem.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var fileSystem = new ThrowingAppDataDirectoryFileSystem();
+
+			try
+			{
+				AppInfo.SetCurrent(new WindowsStubAppInfo("packaged.default.securestorage"));
+				FileSystem.SetCurrent(fileSystem);
+				SecureStorage.SetDefault(null);
+
+				var defaultImplementation =
+					Assert.IsType<SecureStorageImplementation>(SecureStorage.Default);
+				Assert.Null(defaultImplementation.UnpackagedAppDataDirectory);
+
+				SecureStorage.SetDefault(null);
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IFileSystem>(fileSystem);
+				builder.Services.AddSingleton<IAppInfo>(
+					new WindowsStubAppInfo("packaged.bridged.securestorage"));
+
+				using var app = builder.Build();
+				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				var bridgedImplementation = GetWrappedImplementation(wrapper);
+
+				Assert.Null(bridgedImplementation.UnpackagedAppDataDirectory);
+			}
+			finally
+			{
+				SecureStorage.SetDefault(originalSecureStorage);
+				FileSystem.SetCurrent(originalFileSystem);
+				AppInfo.SetCurrent(originalAppInfo);
+			}
+		}
+
+		[Fact]
 		public async Task AppInfo_Bridge_Captures_FileSystem_Before_Reentrant_PackageName()
 		{
 			var timeout = TimeSpan.FromSeconds(30);
@@ -550,7 +598,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 				var implementation = GetWrappedImplementation(wrapper);
-				Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
+				if (SecureStorageImplementation.UsesFileSystemAppDataDirectory)
+					Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
+				else
+					Assert.Null(implementation.UnpackagedAppDataDirectory);
 			}
 			finally
 			{
@@ -574,6 +625,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			public string CacheDirectory => AppDataDirectory;
 
 			public string AppDataDirectory { get; }
+
+			public Task<Stream> OpenAppPackageFileAsync(string filename) =>
+				throw new NotSupportedException();
+
+			public Task<bool> AppPackageFileExistsAsync(string filename) =>
+				throw new NotSupportedException();
+		}
+
+		sealed class ThrowingAppDataDirectoryFileSystem : IFileSystem
+		{
+			public string CacheDirectory => Path.GetTempPath();
+
+			public string AppDataDirectory =>
+				throw new InvalidOperationException("Packaged SecureStorage must not read AppDataDirectory.");
 
 			public Task<Stream> OpenAppPackageFileAsync(string filename) =>
 				throw new NotSupportedException();

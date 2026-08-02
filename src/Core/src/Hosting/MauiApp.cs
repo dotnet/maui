@@ -286,6 +286,53 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
+		internal ValueTask DisposeAfterFailedInitializationAsync(out Exception? cleanupException)
+		{
+			cleanupException = null;
+			if (!TryBeginDispose(waitForInFlightInitialization: false, out var completion))
+				return WaitForDisposalAsync(completion);
+
+			var exceptions = new List<Exception>();
+			var cleanupServices = CapturePostProviderCleanupServices(exceptions);
+			RunSharedCleanup(exceptions);
+			CleanupPostProviderServices(cleanupServices, exceptions);
+			cleanupException = CreateCleanupException(exceptions);
+
+			return DisposeProviderAfterFailedInitializationAsync(completion, exceptions);
+		}
+
+		private async ValueTask DisposeProviderAfterFailedInitializationAsync(
+			TaskCompletionSource<ExceptionDispatchInfo?> completion,
+			List<Exception> exceptions)
+		{
+			try
+			{
+				try
+				{
+					if (_services is IAsyncDisposable asyncDisposable)
+						await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+					else
+						(_services as IDisposable)?.Dispose();
+				}
+				catch (Exception ex)
+				{
+					exceptions.Add(ex);
+				}
+			}
+			finally
+			{
+				FinishDisposal(completion, exceptions);
+			}
+		}
+
+		private static Exception? CreateCleanupException(List<Exception> exceptions) =>
+			exceptions.Count switch
+			{
+				0 => null,
+				1 => exceptions[0],
+				_ => new AggregateException("One or more MauiApp cleanup services failed.", exceptions),
+			};
+
 		private static void CleanupPostProviderServices(
 			List<IMauiAppPostProviderCleanupService> cleanupServices,
 			List<Exception> exceptions)
