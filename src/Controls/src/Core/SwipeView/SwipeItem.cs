@@ -48,9 +48,10 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// When unset, a <see cref="FontImageSource"/> uses its own <see cref="FontImageSource.Color"/> and falls
 		/// back to a color contrasting <see cref="BackgroundColor"/>, while image icons such as PNG and SVG render
-		/// with their original colors. When set, this property tints font, file-based, and URI-based image icons on
-		/// Android, iOS, MacCatalyst, and Windows, and can be bound with <see cref="AppThemeBinding"/> to follow the
-		/// current theme. Stream-based image icons on Windows and all icons on Tizen currently render with their
+		/// with their original colors. When set, this property tints font icons and image icons on Android, iOS, and
+		/// MacCatalyst (including stream-based sources, since the resolved platform image is tinted), and font,
+		/// file-based, and URI-based icons on Windows, and can be bound with <see cref="AppThemeBinding"/> to follow
+		/// the current theme. Stream-based image icons on Windows and all icons on Tizen currently render with their
 		/// original colors regardless of this property.
 		/// </remarks>
 		public Color IconColor
@@ -92,9 +93,12 @@ namespace Microsoft.Maui.Controls
 			var swipeItem = (SwipeItem)bindable;
 			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.TextColor));
 
-			// TextColor also drives the icon tint for a colorless font icon (GetIconTintColor falls
-			// back to GetTextColor), so refresh the icon too or its tint would remain stale.
-			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			// TextColor only drives the icon tint for an untinted font icon: GetIconTintColor falls
+			// back to GetTextColor only when IconColor is unset and the source is a FontImageSource
+			// without its own Color. Refresh the icon just in that case so its tint isn't left stale,
+			// avoiding a needless image reload for image sources or an explicitly tinted icon.
+			if (swipeItem.IconColor is null && swipeItem.IconImageSource is FontImageSource { Color: null })
+				swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
 		}
 
 		static void OnIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)

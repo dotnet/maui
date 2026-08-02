@@ -20,9 +20,10 @@ namespace Microsoft.Maui
 		/// <remarks>
 		/// When <see langword="null"/>, a font icon is tinted with its own color (falling back to a
 		/// color contrasting the item background), and image icons render with their original colors.
-		/// When set, the color is applied to font, file-based, and URI-based image icons on Android,
-		/// iOS, MacCatalyst, and Windows. Stream-based image icons on Windows and all icons on Tizen
-		/// currently render with their original colors regardless of this property.
+		/// When set, the color tints font icons and image icons on Android, iOS, and MacCatalyst
+		/// (including stream-based sources, since the resolved platform image is tinted), and font,
+		/// file-based, and URI-based icons on Windows. Stream-based image icons on Windows and all
+		/// icons on Tizen currently render with their original colors regardless of this property.
 		/// </remarks>
 #if NETSTANDARD2_0
 		Color? IconColor { get; }
