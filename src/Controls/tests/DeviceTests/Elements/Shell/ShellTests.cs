@@ -23,10 +23,6 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 using Microsoft.Maui.Controls.Platform.Compatibility;
 #endif
 
-#if IOS || MACCATALYST
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
-#endif
-
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]

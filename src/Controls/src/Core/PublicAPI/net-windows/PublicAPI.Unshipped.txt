@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.Maui.Controls.Window.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.Controls.Window.StatusBarTheme.set -> void
+static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
@@ -238,3 +241,7 @@ Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.UpdatedTypes.
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.UpdateEmptyViewVisibility() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.UpdateInlines(this Microsoft.UI.Xaml.Controls.TextBlock! textBlock, Microsoft.Maui.IFontManager! fontManager, Microsoft.Maui.Controls.FormattedString! formattedString, double defaultLineHeight, Microsoft.Maui.TextAlignment defaultHorizontalAlignment, Microsoft.Maui.Font? defaultFont, Microsoft.Maui.Graphics.Color? defaultColor, Microsoft.Maui.TextTransform defaultTextTransform, double defaultCharacterSpacing) -> void
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToRunAndColorsTuples(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight, Microsoft.Maui.TextAlignment defaultHorizontalAlignment, Microsoft.Maui.Font? defaultFont, Microsoft.Maui.Graphics.Color? defaultColor, Microsoft.Maui.TextTransform defaultTextTransform, double defaultCharacterSpacing) -> System.Collections.Generic.IEnumerable<System.Tuple<Microsoft.UI.Xaml.Documents.Run!, Microsoft.Maui.Graphics.Color!, Microsoft.Maui.Graphics.Color!>!>!
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToRunAndColorsTuple(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, Microsoft.Maui.Font? defaultFont, Microsoft.Maui.Graphics.Color? defaultColor, Microsoft.Maui.TextTransform defaultTextTransform, double defaultCharacterSpacing) -> System.Tuple<Microsoft.UI.Xaml.Documents.Run!, Microsoft.Maui.Graphics.Color!, Microsoft.Maui.Graphics.Color!>!

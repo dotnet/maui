@@ -170,8 +170,8 @@ public class XamlIncrementalHotReloadE2ETests
 	/// Regression for the XIHR versioning determinism bug (Tomas Matousek). Editing a property to an
 	/// INVALID value and then reverting it must leave the generator in a state where the generated
 	/// output for the (now identical to baseline) XAML compiles cleanly and does not retain the
-	/// invalid intermediate value. Today's monotonic __version chain accumulates every patch, so the
-	/// invalid "Level22" block lingers in UpdateComponent() and the output fails to compile.
+	/// invalid intermediate value. Previously, accumulated versioned patches retained every edit, so
+	/// the invalid "Level22" block lingered in UpdateComponent() and the output failed to compile.
 	/// </summary>
 	[Fact]
 	public void RevertToOriginal_ProducesCompilableOutput_WithoutStalePatch()
@@ -198,14 +198,13 @@ public class XamlIncrementalHotReloadE2ETests
 	}
 
 	/// <summary>
-	/// Determinism + reverse-transition (Tomas Matousek's determinism principle + Kirill's revert
-	/// requirement). The generated content identity (<c>__version</c>) is a pure function of the
-	/// current XAML content — so a revert to identical content restores the identical identity, not
-	/// an ever-growing counter. And the reverse edit's <c>UpdateComponent()</c> carries an absolute
-	/// patch that restores the baseline value on live instances.
+	/// Reverse-transition (Kirill's revert requirement): editing a property forward then reverting must
+	/// produce a <c>UpdateComponent()</c> that restores the baseline value on live instances, without
+	/// retaining the intermediate value. (Determinism of the generated output is covered separately and
+	/// exhaustively by <see cref="RevertedGeneration_InitializeComponent_IsByteIdentical_ToInitialGeneration"/>.)
 	/// </summary>
 	[Fact]
-	public void ContentHash_IsDeterministic_And_RevertRestoresIdentity()
+	public void ReverseEdit_UC_RestoresBaselineValue_WithoutRetainingIntermediate()
 	{
 		string Page(string text) => $$"""
 			<?xml version="1.0" encoding="utf-8" ?>
@@ -218,24 +217,12 @@ public class XamlIncrementalHotReloadE2ETests
 
 		var v1 = Page("Hello");
 		var v2 = Page("World");
-		int h1 = GeneratorHelpers.StableContentHash(v1);
-		int h2 = GeneratorHelpers.StableContentHash(v2);
-		Assert.NotEqual(h1, h2); // different content => different identity
 
+		// V1 -> V2 -> V1 (revert).
 		using var harness = CreateHarness();
 		var generation = harness.Generate(v1, v2, v1);
-		var icV1 = generation[0].InitializeComponentSource!;
-		var icV2 = generation[1].InitializeComponentSource!;
 		var ucV2 = generation[1].UpdateComponentSource;
-		var icV3 = generation[2].InitializeComponentSource!;
 		var ucV3 = generation[2].UpdateComponentSource;
-
-		// Fresh instances stamp the content hash of their own generation.
-		Assert.Contains($"__version = {h1};", icV1, StringComparison.Ordinal);
-		Assert.Contains($"__version = {h2};", icV2, StringComparison.Ordinal);
-		// Determinism: the reverted generation (byte-identical to V1) reproduces V1's identity exactly —
-		// NOT h2+1 or any history-dependent value. This is the property the old monotonic counter broke.
-		Assert.Contains($"__version = {h1};", icV3, StringComparison.Ordinal);
 
 		// Forward edit's UC applies the new value (its non-empty body is also the XAML-change signal)...
 		Assert.NotNull(ucV2);
@@ -253,9 +240,9 @@ public class XamlIncrementalHotReloadE2ETests
 	/// <c>InitializeComponent</c> for a given XAML must be BYTE-IDENTICAL regardless of how that
 	/// content was reached. Both sources here come from the SAME generator driver/options, so edit
 	/// history is the only variable: phase 1 (<c>icV1</c>) generates V1 from a clean state; phase 3
-	/// (<c>icV3</c>) reaches byte-identical V1 content by reverting an edit (V1→V2→V1). If any embedded
-	/// value (registry node IDs, the <c>__version</c> content hash, etc.) depended on edit history, the
-	/// two would differ; they must not. Covers a property-only edit AND a structural edit (added child).
+	/// (<c>icV3</c>) reaches byte-identical V1 content by reverting an edit (V1→V2→V1). If any generated
+	/// value, such as registry node IDs, depended on edit history, the two would differ; they must not.
+	/// Covers a property-only edit AND a structural edit (added child).
 	/// </summary>
 	[Theory]
 	[InlineData("<Label Text=\"Hi\" />", "<Label Text=\"Bye\" />")]          // property-only edit
