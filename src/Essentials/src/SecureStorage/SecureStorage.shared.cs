@@ -229,13 +229,15 @@ namespace Microsoft.Maui.Storage
 		internal SecureStorageImplementation(
 			string packageName
 #if WINDOWS
-			, string? appDataDirectory = null
+			, string? appDataDirectory = null,
+			bool namespaceUnpackagedStorageByAlias = false
 #endif
 			)
 		{
 			Alias = Preferences.GetPrivatePreferencesSharedName(packageName, "preferences");
 #if WINDOWS
 			UnpackagedAppDataDirectory = appDataDirectory;
+			NamespaceUnpackagedStorageByAlias = namespaceUnpackagedStorageByAlias;
 #endif
 			InitializePlatform();
 		}
@@ -251,6 +253,8 @@ namespace Microsoft.Maui.Storage
 
 #if WINDOWS
 		internal string? UnpackagedAppDataDirectory { get; }
+
+		internal bool NamespaceUnpackagedStorageByAlias { get; }
 #endif
 
 		partial void InitializePlatform();
@@ -318,7 +322,8 @@ namespace Microsoft.Maui.Storage
 					var implementation = new SecureStorageImplementation(
 						packageName
 #if WINDOWS
-						, appDataDirectory
+						, appDataDirectory,
+						namespaceUnpackagedStorageByAlias: true
 #endif
 						);
 #if IOS || MACCATALYST || MACOS || TVOS || WATCHOS

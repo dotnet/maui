@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,7 +23,8 @@ namespace Microsoft.Maui.Storage
 			_secureStorage = AppInfoUtils.IsPackagedApp
 				? new PackagedSecureStorageImplementation(Alias)
 				: new UnpackagedSecureStorageImplementation(
-					UnpackagedAppDataDirectory ?? FileSystem.AppDataDirectory);
+					UnpackagedAppDataDirectory ?? FileSystem.AppDataDirectory,
+					NamespaceUnpackagedStorageByAlias ? Alias : null);
 		}
 
 		async Task<string> PlatformGetAsync(string key)
@@ -126,37 +128,63 @@ namespace Microsoft.Maui.Storage
 		static SecureStorageDictionary _secureStorage;
 		static string _secureStoragePath;
 		readonly string _path;
+		readonly string _legacyPath;
 
 		public UnpackagedSecureStorageImplementation()
-			: this(FileSystem.AppDataDirectory)
+			: this(FileSystem.AppDataDirectory, alias: null)
 		{
 		}
 
-		internal UnpackagedSecureStorageImplementation(string appDataDirectory)
+		internal UnpackagedSecureStorageImplementation(
+			string appDataDirectory,
+			string alias = null)
 		{
 			if (appDataDirectory is null)
 				throw new ArgumentNullException(nameof(appDataDirectory));
 
-			_path = Path.Combine(appDataDirectory, "..", "Settings", "securestorage.dat");
+			var settingsDirectory = Path.Combine(appDataDirectory, "..", "Settings");
+			_legacyPath = Path.Combine(settingsDirectory, "securestorage.dat");
+			_path = alias is null
+				? _legacyPath
+				: Path.Combine(settingsDirectory, GetAliasPathSegment(alias), "securestorage.dat");
 		}
 
 		public string CaptureWritePath() => _path;
+
+		static string GetAliasPathSegment(string alias) =>
+			Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(alias)));
 
 		// Caller must hold Sync. A failed Load leaves the fields unchanged so a later call can retry.
 		SecureStorageDictionary GetSecureStorage(out string path)
 		{
 			path = _path;
-			return GetSecureStorage(path);
+			return GetSecureStorage(
+				path,
+				string.Equals(path, _legacyPath, StringComparison.OrdinalIgnoreCase)
+					? null
+					: _legacyPath);
 		}
 
 		// Caller must hold Sync. Unpackaged FileSystem paths already include publisher/package
 		// identity, so the captured path is also the storage namespace for this operation.
-		static SecureStorageDictionary GetSecureStorage(string path)
+		static SecureStorageDictionary GetSecureStorage(
+			string path,
+			string fallbackPath = null)
 		{
 			if (_secureStorage is null ||
 				!string.Equals(_secureStoragePath, path, StringComparison.OrdinalIgnoreCase))
 			{
-				var secureStorage = Load(path);
+				var pathExists = File.Exists(path);
+				var migrateFallback =
+					!pathExists &&
+					fallbackPath is not null &&
+					File.Exists(fallbackPath);
+				// Copy legacy shared data forward on first alias-scoped access. Keep the legacy
+				// file intact so unbridged/default callers preserve their historical store.
+				var secureStorage = Load(migrateFallback ? fallbackPath : path);
+				if (migrateFallback)
+					Save(path, secureStorage);
+
 				_secureStorage = secureStorage;
 				_secureStoragePath = path;
 			}
@@ -195,8 +223,19 @@ namespace Microsoft.Maui.Storage
 			var dir = Path.GetDirectoryName(path);
 			Directory.CreateDirectory(dir);
 
-			using var stream = File.Create(path);
-			JsonSerializer.Serialize(stream, secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+			var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+			try
+			{
+				using (var stream = File.Create(temporaryPath))
+					JsonSerializer.Serialize(stream, secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+
+				File.Move(temporaryPath, path, overwrite: true);
+			}
+			finally
+			{
+				if (File.Exists(temporaryPath))
+					File.Delete(temporaryPath);
+			}
 		}
 
 		public Task<byte[]> GetAsync(string key)
@@ -219,7 +258,11 @@ namespace Microsoft.Maui.Storage
 
 			lock (Sync)
 			{
-				var secureStorage = GetSecureStorage(writePath);
+				var secureStorage = GetSecureStorage(
+					writePath,
+					string.Equals(writePath, _path, StringComparison.OrdinalIgnoreCase)
+						? _legacyPath
+						: null);
 				if (value is null)
 					secureStorage.TryRemove(key, out _);
 				else

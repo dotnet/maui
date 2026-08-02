@@ -2238,6 +2238,42 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task AppActionsWorkerContinuesWhenFailureLoggingThrows()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			var loggerFactory = new ThrowingLoggerFactory();
+			var second = new ControlledStubAppActions(Task.CompletedTask, _ => { });
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+				firstBuilder.Services.AddSingleton<IAppActions, FaultingStubAppActions>();
+				firstBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("first", "First")));
+				firstApp = firstBuilder.Build();
+				await loggerFactory.LogStarted.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppActions>(second);
+				secondBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("second", "Second")));
+				secondApp = secondBuilder.Build();
+
+				loggerFactory.ReleaseLog.TrySetResult(true);
+				await second.FirstCallCompleted.Task.WaitAsync(timeout);
+			}
+			finally
+			{
+				loggerFactory.ReleaseLog.TrySetResult(true);
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public async Task LaterAppActionsConfigurationWinsWhenEarlierSetCompletesLast()
 		{
 			var timeout = TimeSpan.FromSeconds(10);
@@ -2301,11 +2337,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				secondBuilder.Build().Dispose();
 
 				releaseFirst.TrySetResult(true);
-				await first.FirstCallCompleted.Task.WaitAsync(timeout);
-				await Task.Delay(100);
+				await first.SecondCallCompleted.Task.WaitAsync(timeout);
 
 				Assert.Equal(0, second.CallCount);
-				Assert.Equal(1, first.CallCount);
 				Assert.Equal("first", Assert.Single(publishedActions!).Id);
 			}
 			finally
@@ -2315,18 +2349,25 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task DisposedHungAppActionsDoesNotBlockLaterConfiguration()
+		public async Task DisposedRunningAppActionsCompletesBeforeLaterConfigurationStarts()
 		{
 			var timeout = TimeSpan.FromSeconds(10);
 			var releaseFirst = new TaskCompletionSource<bool>(
 				TaskCreationOptions.RunContinuationsAsynchronously);
-			IReadOnlyList<AppAction>? publishedActions = null;
-			var first = new ControlledStubAppActions(
+			var firstSetAsyncRunning = 0;
+			var overlapDetected = 0;
+			var first = new OverlapDetectingStubAppActions(
 				releaseFirst.Task,
-				actions => publishedActions = actions);
-			var second = new ControlledStubAppActions(
+				onStart: () => Volatile.Write(ref firstSetAsyncRunning, 1),
+				onEnd: () => Volatile.Write(ref firstSetAsyncRunning, 0));
+			var second = new OverlapDetectingStubAppActions(
 				Task.CompletedTask,
-				actions => publishedActions = actions);
+				onStart: () =>
+				{
+					if (Volatile.Read(ref firstSetAsyncRunning) != 0)
+						Interlocked.Exchange(ref overlapDetected, 1);
+				},
+				onEnd: () => { });
 			MauiApp? firstApp = null;
 			MauiApp? secondApp = null;
 
@@ -2337,7 +2378,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				firstBuilder.ConfigureEssentials(essentials =>
 					essentials.AddAppAction(new AppAction("first", "First")));
 				firstApp = firstBuilder.Build();
-				await first.FirstCallStarted.Task.WaitAsync(timeout);
+				await first.SetStarted.Task.WaitAsync(timeout);
 
 				var secondBuilder = MauiApp.CreateBuilder();
 				secondBuilder.Services.AddSingleton<IAppActions>(second);
@@ -2348,13 +2389,10 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				firstApp.Dispose();
 				firstApp = null;
 
-				await second.FirstCallCompleted.Task.WaitAsync(timeout);
-				Assert.Equal("second", Assert.Single(publishedActions!).Id);
-
 				releaseFirst.TrySetResult(true);
-				await first.FirstCallCompleted.Task.WaitAsync(timeout);
-				await second.SecondCallCompleted.Task.WaitAsync(timeout);
-				Assert.Equal("second", Assert.Single(publishedActions!).Id);
+				await first.SetCompleted.Task.WaitAsync(timeout);
+				await second.SetCompleted.Task.WaitAsync(timeout);
+				Assert.Equal(0, Volatile.Read(ref overlapDetected));
 			}
 			finally
 			{
@@ -2365,22 +2403,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task InFlightCurrentAppActionsReplaysAfterStaleCompletion()
+		public async Task DisposedQueuedAppActionsCanCollectBehindHungPredecessor()
 		{
 			var timeout = TimeSpan.FromSeconds(10);
 			var releaseFirst = new TaskCompletionSource<bool>(
 				TaskCreationOptions.RunContinuationsAsynchronously);
-			var releaseSecond = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
-			IReadOnlyList<AppAction>? publishedActions = null;
-			var first = new ControlledStubAppActions(
-				releaseFirst.Task,
-				actions => publishedActions = actions);
-			var second = new PublishingThenBlockingStubAppActions(
-				releaseSecond.Task,
-				actions => publishedActions = actions);
+			var first = new ControlledStubAppActions(releaseFirst.Task, _ => { });
 			MauiApp? firstApp = null;
-			MauiApp? secondApp = null;
+			MauiApp? queuedApp = null;
+			WeakReference? queuedAppActionsReference = null;
 
 			try
 			{
@@ -2391,32 +2422,30 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				firstApp = firstBuilder.Build();
 				await first.FirstCallStarted.Task.WaitAsync(timeout);
 
-				var secondBuilder = MauiApp.CreateBuilder();
-				secondBuilder.Services.AddSingleton<IAppActions>(second);
-				secondBuilder.ConfigureEssentials(essentials =>
-					essentials.AddAppAction(new AppAction("second", "Second")));
-				secondApp = secondBuilder.Build();
+				(queuedApp, queuedAppActionsReference) = BuildQueuedAppActionsApp();
+				queuedApp.Dispose();
+				queuedApp = null;
 
-				firstApp.Dispose();
-				firstApp = null;
-				await second.FirstCallStarted.Task.WaitAsync(timeout);
-				Assert.Equal("second", Assert.Single(publishedActions!).Id);
-
-				releaseFirst.TrySetResult(true);
-				await first.FirstCallCompleted.Task.WaitAsync(timeout);
-				Assert.Equal("first", Assert.Single(publishedActions!).Id);
-
-				releaseSecond.TrySetResult(true);
-				await second.SecondCallCompleted.Task.WaitAsync(timeout);
-				Assert.Equal("second", Assert.Single(publishedActions!).Id);
+				Assert.False(
+					await TestHelpers.WaitForCollect(queuedAppActionsReference),
+					"A disposed queued AppActions implementation should not remain rooted behind a hung predecessor.");
 			}
 			finally
 			{
 				releaseFirst.TrySetResult(true);
-				releaseSecond.TrySetResult(true);
-				secondApp?.Dispose();
+				queuedApp?.Dispose();
 				firstApp?.Dispose();
 			}
+		}
+
+		static (MauiApp App, WeakReference AppActionsReference) BuildQueuedAppActionsApp()
+		{
+			var appActions = new ControlledStubAppActions(Task.CompletedTask, _ => { });
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddSingleton<IAppActions>(appActions);
+			builder.ConfigureEssentials(essentials =>
+				essentials.AddAppAction(new AppAction("queued", "Queued")));
+			return (builder.Build(), new WeakReference(appActions));
 		}
 
 		[Fact]
@@ -2959,26 +2988,28 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
-		sealed class PublishingThenBlockingStubAppActions : IAppActions
+		sealed class OverlapDetectingStubAppActions : IAppActions
 		{
-			readonly Task _releaseFirst;
-			readonly Action<IReadOnlyList<AppAction>> _publish;
-			int _callCount;
+			readonly Task _release;
+			readonly Action _onStart;
+			readonly Action _onEnd;
 
-			public PublishingThenBlockingStubAppActions(
-				Task releaseFirst,
-				Action<IReadOnlyList<AppAction>> publish)
+			public OverlapDetectingStubAppActions(
+				Task release,
+				Action onStart,
+				Action onEnd)
 			{
-				_releaseFirst = releaseFirst;
-				_publish = publish;
+				_release = release;
+				_onStart = onStart;
+				_onEnd = onEnd;
 			}
 
 			public bool IsSupported => true;
 
-			public TaskCompletionSource<bool> FirstCallStarted { get; } =
+			public TaskCompletionSource<bool> SetStarted { get; } =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-			public TaskCompletionSource<bool> SecondCallCompleted { get; } =
+			public TaskCompletionSource<bool> SetCompleted { get; } =
 				new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			public event EventHandler<AppActionEventArgs>? AppActionActivated { add { } remove { } }
@@ -2988,17 +3019,11 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public async Task SetAsync(IEnumerable<AppAction> actions)
 			{
-				var call = Interlocked.Increment(ref _callCount);
-				_publish(actions.ToArray());
-				if (call == 1)
-				{
-					FirstCallStarted.TrySetResult(true);
-					await _releaseFirst.ConfigureAwait(false);
-				}
-				else if (call == 2)
-				{
-					SecondCallCompleted.TrySetResult(true);
-				}
+				_onStart();
+				SetStarted.TrySetResult(true);
+				await _release.ConfigureAwait(false);
+				_onEnd();
+				SetCompleted.TrySetResult(true);
 			}
 		}
 
@@ -3203,6 +3228,58 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				if (logLevel >= LogLevel.Error && exception is not null)
 					_error.TrySetResult(exception);
+			}
+		}
+
+		sealed class ThrowingLoggerFactory : ILoggerFactory
+		{
+			public TaskCompletionSource<bool> LogStarted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public TaskCompletionSource<bool> ReleaseLog { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public void AddProvider(ILoggerProvider provider)
+			{
+			}
+
+			public ILogger CreateLogger(string categoryName) =>
+				new ThrowingLogger(LogStarted, ReleaseLog);
+
+			public void Dispose()
+			{
+			}
+		}
+
+		sealed class ThrowingLogger : ILogger
+		{
+			readonly TaskCompletionSource<bool> _logStarted;
+			readonly TaskCompletionSource<bool> _releaseLog;
+
+			public ThrowingLogger(
+				TaskCompletionSource<bool> logStarted,
+				TaskCompletionSource<bool> releaseLog)
+			{
+				_logStarted = logStarted;
+				_releaseLog = releaseLog;
+			}
+
+			public IDisposable? BeginScope<TState>(TState state)
+				where TState : notnull =>
+				null;
+
+			public bool IsEnabled(LogLevel logLevel) => true;
+
+			public void Log<TState>(
+				LogLevel logLevel,
+				EventId eventId,
+				TState state,
+				Exception? exception,
+				Func<TState, Exception?, string> formatter)
+			{
+				_logStarted.TrySetResult(true);
+				_releaseLog.Task.GetAwaiter().GetResult();
+				throw new InvalidOperationException("logging failed");
 			}
 		}
 

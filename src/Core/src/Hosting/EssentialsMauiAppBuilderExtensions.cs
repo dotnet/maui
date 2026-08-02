@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Hosting
 	{
 		static readonly object s_appActionsSetLock = new();
 		static readonly List<AppActionsSetAssignment> s_appActionsSetAssignments = new();
-		static Task s_appActionsSetTail = Task.CompletedTask;
+		static AppActionsSetAssignment? s_pendingAppActionsSetAssignment;
+		static bool s_appActionsSetWorkerRunning;
 		static readonly object s_appInfoSecureStorageBridgeLock = new();
 
 		// Serializes the shared map-token assignment graph and per-implementation state.
@@ -2160,63 +2161,62 @@ namespace Microsoft.Maui.Hosting
 						return;
 
 					var wasCurrent = index == s_appActionsSetAssignments.Count - 1;
-					assignment.MarkRemoved();
 					s_appActionsSetAssignments.RemoveAt(index);
-					if (wasCurrent && s_appActionsSetAssignments.Count > 0)
-						QueueAppActionsSetUnderLock(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
+					if (wasCurrent)
+					{
+						QueueAppActionsSetUnderLock(
+							s_appActionsSetAssignments.Count > 0
+								? s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]
+								: null);
+					}
 				}
 			}
 
-			static void QueueAppActionsSetUnderLock(
-				AppActionsSetAssignment assignment,
-				bool requestReplayIfQueued = false)
+			static void QueueAppActionsSetUnderLock(AppActionsSetAssignment? assignment)
 			{
 				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
-				if (!assignment.TryMarkQueued(requestReplayIfQueued))
-					return;
-
-				var applyTask = ApplyAppActionsSetAsync(s_appActionsSetTail, assignment);
-				s_appActionsSetTail = CompleteAppActionsQueueEntryAsync(applyTask, assignment.Removed);
+				s_pendingAppActionsSetAssignment = assignment;
+				if (assignment is not null && !s_appActionsSetWorkerRunning)
+				{
+					s_appActionsSetWorkerRunning = true;
+					_ = RunAppActionsSetWorkerAsync();
+				}
 			}
 
-			static async Task CompleteAppActionsQueueEntryAsync(Task applyTask, Task removed)
+			static async Task RunAppActionsSetWorkerAsync()
 			{
-				await Task.WhenAny(applyTask, removed).ConfigureAwait(false);
-			}
-
-			static async Task ApplyAppActionsSetAsync(Task predecessor, AppActionsSetAssignment assignment)
-			{
-				var attemptedApply = false;
 				try
 				{
-					var completed = await Task.WhenAny(predecessor, assignment.Removed).ConfigureAwait(false);
-					if (ReferenceEquals(completed, assignment.Removed))
-						return;
-
-					await predecessor.ConfigureAwait(false);
 					// Never invoke an app-provided implementation while holding the assignment lock.
 					await Task.Yield();
 
-					lock (s_appActionsSetLock)
+					while (true)
 					{
-						if (s_appActionsSetAssignments.Count == 0 ||
-							!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+						AppActionsSetAssignment? assignment;
+						lock (s_appActionsSetLock)
 						{
-							return;
+							assignment = s_pendingAppActionsSetAssignment;
+							s_pendingAppActionsSetAssignment = null;
+							if (assignment is null)
+								return;
+
+							if (s_appActionsSetAssignments.Count == 0 ||
+								!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+							{
+								continue;
+							}
 						}
-					}
 
-					attemptedApply = true;
-					await SetAppActionsAsync(assignment.Implementation, assignment.Logger, assignment.Actions).ConfigureAwait(false);
-
-					lock (s_appActionsSetLock)
-					{
-						if (s_appActionsSetAssignments.Count > 0 &&
-							!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+						try
 						{
-							QueueAppActionsSetUnderLock(
-								s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1],
-								requestReplayIfQueued: true);
+							await SetAppActionsAsync(
+								assignment.Implementation,
+								assignment.Logger,
+								assignment.Actions).ConfigureAwait(false);
+						}
+						catch (Exception ex)
+						{
+							Trace.TraceError($"AppActions failure logging threw an exception: {ex}");
 						}
 					}
 				}
@@ -2224,13 +2224,11 @@ namespace Microsoft.Maui.Hosting
 				{
 					lock (s_appActionsSetLock)
 					{
-						var replayRequested = assignment.MarkQueueCompleted();
-						if ((!attemptedApply || replayRequested) &&
-							!assignment.IsRemoved &&
-							s_appActionsSetAssignments.Count > 0 &&
-							ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
+						s_appActionsSetWorkerRunning = false;
+						if (s_pendingAppActionsSetAssignment is not null)
 						{
-							QueueAppActionsSetUnderLock(assignment);
+							s_appActionsSetWorkerRunning = true;
+							_ = RunAppActionsSetWorkerAsync();
 						}
 					}
 				}
@@ -2253,11 +2251,6 @@ namespace Microsoft.Maui.Hosting
 
 		sealed class AppActionsSetAssignment
 		{
-			readonly TaskCompletionSource<bool> _removed =
-				new(TaskCreationOptions.RunContinuationsAsynchronously);
-			bool _isQueued;
-			bool _replayRequested;
-
 			public AppActionsSetAssignment(
 				IAppActions implementation,
 				ILogger? logger,
@@ -2273,37 +2266,6 @@ namespace Microsoft.Maui.Hosting
 			public ILogger? Logger { get; }
 
 			public List<AppAction> Actions { get; }
-
-			public Task Removed => _removed.Task;
-
-			public bool IsRemoved => _removed.Task.IsCompleted;
-
-			public void MarkRemoved() =>
-				_removed.TrySetResult(true);
-
-			public bool TryMarkQueued(bool requestReplayIfQueued)
-			{
-				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
-				if (_isQueued)
-				{
-					if (requestReplayIfQueued)
-						_replayRequested = true;
-					return false;
-				}
-
-				_isQueued = true;
-				_replayRequested = false;
-				return true;
-			}
-
-			public bool MarkQueueCompleted()
-			{
-				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
-				var replayRequested = _replayRequested;
-				_isQueued = false;
-				_replayRequested = false;
-				return replayRequested;
-			}
 		}
 
 #if WINDOWS || TIZEN

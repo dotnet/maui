@@ -392,6 +392,44 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
+		public async Task Unpackaged_Alias_Namespaces_Shared_AppDataDirectory()
+		{
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var appDataDirectory = Path.Combine(root, "AppData");
+			var key = $"test-{Guid.NewGuid():N}";
+			var legacyKey = $"legacy-{Guid.NewGuid():N}";
+			byte[] value = [1, 2, 3];
+			byte[] legacyValue = [4, 5, 6];
+			var first = new UnpackagedSecureStorageImplementation(appDataDirectory, "first.alias");
+			var second = new UnpackagedSecureStorageImplementation(appDataDirectory, "second.alias");
+			var historical = new UnpackagedSecureStorageImplementation(appDataDirectory);
+
+			try
+			{
+				Assert.NotEqual(first.CaptureWritePath(), second.CaptureWritePath());
+				Assert.Equal(
+					Path.Combine(appDataDirectory, "..", "Settings", "securestorage.dat"),
+					historical.CaptureWritePath());
+
+				await historical.SetAsync(legacyKey, legacyValue);
+				Assert.Equal(legacyValue, await first.GetAsync(legacyKey));
+				Assert.True(File.Exists(first.CaptureWritePath()));
+				Assert.Equal(legacyValue, await second.GetAsync(legacyKey));
+				Assert.True(File.Exists(second.CaptureWritePath()));
+
+				await first.SetAsync(key, value);
+				Assert.Equal(value, await first.GetAsync(key));
+				Assert.Null(await second.GetAsync(key));
+				Assert.Null(await historical.GetAsync(key));
+			}
+			finally
+			{
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
 		public void AppInfo_Bridge_Captures_Owning_FileSystem_AppDataDirectory()
 		{
 			var originalAppInfo = AppInfo.Current;
@@ -421,6 +459,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				var implementation = GetWrappedImplementation(firstWrapper);
 				Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
+				Assert.True(implementation.NamespaceUnpackagedStorageByAlias);
 			}
 			finally
 			{
