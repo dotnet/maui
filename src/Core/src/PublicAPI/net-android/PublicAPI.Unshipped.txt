@@ -357,3 +357,8 @@ override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
 Microsoft.Maui.ISwipeItemMenuItem.IconColor.get -> Microsoft.Maui.Graphics.Color?
 Microsoft.Maui.ISwipeItemMenuItem.TextColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextAlignment(this Microsoft.Maui.Platform.MauiTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapSelectionLength(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

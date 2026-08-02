@@ -49,7 +49,7 @@ public partial class TestPage : ContentPage
 """;
 
 	[Fact]
-	public void CSharpExpression_IC_EmitsVersionField()
+	public void CSharpExpression_IC_EmitsRegistration()
 	{
 		var xaml =
 """
@@ -64,7 +64,6 @@ public partial class TestPage : ContentPage
 """;
 		var (_, text) = RunGenerator(xaml, ViewModelCode, enableIncrementalHotReload: true);
 		Assert.NotNull(text);
-		Assert.Contains("private int __version = 0;", text, StringComparison.Ordinal);
 		Assert.Contains("XamlComponentRegistry.Register(this,", text, StringComparison.Ordinal);
 	}
 

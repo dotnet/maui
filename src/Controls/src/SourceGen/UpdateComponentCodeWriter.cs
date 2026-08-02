@@ -19,23 +19,21 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The method is emitted UNCONDITIONALLY (no <c>if (__version == N)</c> version-chain guard) and is
-/// present on EVERY generation — even the first compile and no-op edits — so a XIHR type never gains
-/// or loses the method across generations (that member churn is what crashes Roslyn's EnC delta
-/// tracking). Its body applies the current patch and then stamps <c>__version</c> with a deterministic
-/// content hash of the current XAML:
+/// The method is emitted UNCONDITIONALLY and is present on EVERY generation — even the first compile
+/// and no-op edits — so a XIHR type never gains or loses the method across generations (that member
+/// churn is what crashes Roslyn's EnC delta tracking). Its body is EMPTY when this generation carries
+/// no XAML change and contains the patch when the XAML changed:
 /// <code>
 /// internal void UpdateComponent()
 /// {
-///     /* absolute previous→current patch (property sets assign target values) */
-///     __version = 123456789; // stable content hash of the current XAML
-///     return;
+///     /* absolute previous→current patch (property sets assign target values); empty when unchanged */
 /// }
 /// </code>
-/// Because patch property-sets are absolute, a single patch brings any live instance to the current
-/// state regardless of which edit it was last updated to, and a revert to earlier content collapses
-/// to the earlier patch/identity — deterministic, revert-stable output for identical XAML (no
-/// accumulated chain, no stale intermediate values). See the XIHR versioning determinism fix.
+/// The empty-vs-non-empty body is also the runtime's "is this a XAML change?" signal (see
+/// <c>XamlIncrementalHotReloadHandler</c>). Because patch property-sets are absolute, a single patch
+/// brings any live instance to the current state regardless of which edit it was last updated to, and a
+/// revert to earlier content collapses to the earlier patch — deterministic, revert-stable output for
+/// identical XAML (no accumulated chain, no stale intermediate values).
 /// </para>
 /// <para>
 /// Property value encoding strategy (in priority order):
@@ -56,9 +54,9 @@ static class UpdateComponentCodeWriter
 
 	/// <summary>
 	/// Generates the statements that apply a single previous→current patch (property sets, child-list
-	/// changes, etc.), WITHOUT any <c>if (__version == N)</c> guard or <c>__version</c> assignment — the
-	/// caller (<see cref="GenerateUpdateComponent(INamedTypeSymbol, string, string?, int)"/>) wraps this
-	/// body and stamps the content-hash identity. Returns <see langword="null"/> when
+	/// changes, etc.). The caller
+	/// (<see cref="GenerateUpdateComponent(INamedTypeSymbol, string, string?)"/>) wraps this body in the
+	/// <c>UpdateComponent()</c> method. Returns <see langword="null"/> when
 	/// <paramref name="diff"/> contains no changes.
 	/// </summary>
 	/// <param name="fromVersion">Vestigial: the monotonic version no longer drives dispatch (kept for the state/bookkeeping call chain and test signatures).</param>
@@ -147,9 +145,6 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Assembles a complete <c>UpdateComponent()</c> source file from accumulated patch bodies.
-	/// Each patch body becomes an <c>if (__version == N) { ... }</c> block inside the single method.
-	/// </summary>
 	/// <summary>
 	/// Generates the <c>UpdateComponent()</c> method body from a single baseline→current patch.
 	/// The patch is <em>always</em> emitted (even when <paramref name="patchBody"/> is null/empty), so the
@@ -264,8 +259,8 @@ static class UpdateComponentCodeWriter
 		{
 			parentVar = $"__rp_{changeIdx}";
 			// B5 fix: wrap the entire emission in `if (TryGet) { ... }` instead of early-return,
-			// so a missing parent only skips this change — the outer `__version = toVersion;`
-			// assignment must still execute or the instance would be stranded at the old version.
+			// so a missing parent only skips this change rather than aborting the whole method and
+			// dropping the remaining changes.
 			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{change.ParentNodeId}\", out var {parentVar}))");
 			codeWriter.WriteLine("{");
 			codeWriter.Indent++;
@@ -461,8 +456,7 @@ static class UpdateComponentCodeWriter
 			|| childType == null)
 		{
 			// Skip emission for this unresolvable change; do NOT emit `return;` — that would
-			// abort the entire UpdateComponent() and bypass the trailing `__version = toVersion;`,
-			// stranding the live instance at the old version. See B5 design note in GeneratePatchBody.
+			// abort the entire UpdateComponent() and drop the remaining changes. See B5 design note in GeneratePatchBody.
 			codeWriter.WriteLine($"// Cannot resolve type '{newElement.XmlType.Name}' — content change skipped");
 			return;
 		}

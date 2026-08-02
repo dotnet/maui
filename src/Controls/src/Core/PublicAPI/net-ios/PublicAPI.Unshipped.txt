@@ -5,7 +5,7 @@ static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microso
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
-~override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarStyle() -> UIKit.UIStatusBarStyle
+override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarStyle() -> UIKit.UIStatusBarStyle
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ChildViewControllerForStatusBarStyle() -> UIKit.UIViewController
@@ -212,3 +212,6 @@ Microsoft.Maui.Controls.Label.~Label() -> void
 ~Microsoft.Maui.Controls.SwipeItem.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SwipeItem.TextColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SwipeItem.TextColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
+~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapIsEnabled(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
