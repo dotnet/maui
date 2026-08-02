@@ -152,6 +152,34 @@ OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side err
         Remove-Item -LiteralPath $log -Force
     }
 
+    It 'flags a fixture-wide OneTimeSetUp app-launch/crash-recovery timeout as env, even WITH failure counts (real #35640 build 14844563)' {
+        # The app crashed on launch and never recovered, so every test in the fixture failed at
+        # OneTimeSetUp before any assertion ran (Passed=0/Failed=N). This must be EnvError
+        # (INCONCLUSIVE), never a plain FAIL — the fix was never actually verified.
+        $log = New-LogFile @'
+  Passed: 0
+  Failed: 17
+OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.Passed   | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'still treats a fixture with at least one PASS as real results (crash-recovery phrase must NOT override a partial pass)' {
+        # Guard: the app-launch env-class only applies when NO test passed. If some tests passed,
+        # the app clearly launched, so trust the counts (a real failure must still block).
+        $log = New-LogFile @'
+  Passed: 5
+  Failed: 2
+Some later flake mentioned the app did not recover after crash-recovery attempts
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+
     It 'flags a brand-new snapshot with no committed baseline as env/SnapshotBaselineMissing' {
         $log = New-LogFile "VisualTestFailedException : Baseline snapshot not yet created for MyNewTest"
         $r = Get-TestResultFromOutput -LogFile $log

@@ -898,6 +898,17 @@ function Get-TestResultFromOutput {
         @{ Pattern = "Call InitialSetup before accessing the App property"; Message = "Appium app/session did not initialize (InitialSetup/OneTimeSetup failed — test agent could not start the Appium session)" }
         @{ Pattern = "The app representing .+ could not be found"; Message = "Appium could not find/launch the app under test (mac2/simulator driver could not resolve the app bundle)" }
         @{ Pattern = "OneTimeSetUp:\s*OpenQA\.Selenium"; Message = "Appium/Selenium error during fixture OneTimeSetUp (session/app setup failed before any test ran)" }
+        # App CRASHED ON LAUNCH and the harness's crash-recovery relaunch attempts were exhausted:
+        # the fixture's [OneTimeSetUp] then times out waiting for the app's navigation UI (e.g.
+        # "Timed out waiting for Go To Test button to appear (the app did not recover after
+        # crash-recovery attempts)"), so EVERY test in the fixture fails at setup before a single
+        # assertion runs. The app under test never came up, so the gate verified NOTHING about the
+        # fix — reporting FAILED here is a FALSE FAILED (build 14844563 / #35640 android: all 17
+        # Material3CarouselViewFeatureTests failed identically at OneTimeSetUp on an agent that had
+        # also just flaked the emulator boot). This env-pattern is only reachable when NO test
+        # passed (Passed=0); if any test had launched+passed we would have trusted the counts above,
+        # so it cannot mask a partial real failure. Classify as env/INCONCLUSIVE (retryable).
+        @{ Pattern = "(?i)the app did not recover after crash-recovery attempts"; Message = "The test app crashed on launch and did not recover after the harness's crash-recovery relaunch attempts, so the fixture's OneTimeSetUp timed out and NO test could run (agent/app-launch infrastructure, not a fix problem). Retry on a fresh agent." }
     )
     foreach ($envErr in $envErrorPatterns) {
         if ($content -match $envErr.Pattern) {
