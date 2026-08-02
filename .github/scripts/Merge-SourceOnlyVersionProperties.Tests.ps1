@@ -269,4 +269,26 @@ Describe 'Merge-SourceOnlyVersionProperty' {
             Merge-SourceOnlyVersionProperty -SourcePath $script:SourcePath -TargetPath $script:TargetPath
         } | Should -Throw '*no PropertyGroup matching source group 1*'
     }
+
+    It 'fails closed when the corresponding target group shares no property' {
+        Write-TestXml -Path $script:SourcePath -Content @'
+<Project>
+  <PropertyGroup>
+    <Shared>one</Shared>
+    <SourceOnly>two</SourceOnly>
+  </PropertyGroup>
+</Project>
+'@
+        Write-TestXml -Path $script:TargetPath -Content @'
+<Project>
+  <PropertyGroup>
+    <Different>zzz</Different>
+  </PropertyGroup>
+</Project>
+'@
+
+        {
+            Merge-SourceOnlyVersionProperty -SourcePath $script:SourcePath -TargetPath $script:TargetPath
+        } | Should -Throw '*shares no property with the corresponding source group*'
+    }
 }

@@ -129,6 +129,14 @@ jobs:
             throw "Invalid MergeToBranch value '$mergeToBranch'."
           }
 
+          # The prefix regex still admits values Git rejects as refs (a trailing '/', '..', '@{', ...),
+          # so validate it as a real branch name before it is used to build refs.
+          git check-ref-format --branch $mergeToBranch *> $null
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "MergeToBranch value '$mergeToBranch' is not a valid Git branch name."
+          }
+
           "merge_to_branch=$mergeToBranch" >> $env:GITHUB_OUTPUT
 
       - name: Check for an open net11.0 to release merge PR
@@ -197,6 +205,14 @@ jobs:
             throw "Invalid MergeToBranch value '$mergeToBranch'."
           }
 
+          # The prefix regex still admits values Git rejects as refs (a trailing '/', '..', '@{', ...),
+          # and this value is used to build refspecs below, so validate it as a real branch name.
+          git check-ref-format --branch $mergeToBranch *> $null
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "MergeToBranch value '$mergeToBranch' is not a valid Git branch name."
+          }
+
           "merge_to_branch=$mergeToBranch" >> $env:GITHUB_OUTPUT
           "merge_branch=merge/net11.0-to-$mergeToBranch" >> $env:GITHUB_OUTPUT
 
@@ -220,13 +236,13 @@ jobs:
             throw "Failed to fetch merge refs."
           }
 
-          $commitsToMerge = @(git rev-list "origin/$env:MERGE_TO_BRANCH..origin/net11.0")
+          $commitCount = git rev-list --count "origin/$env:MERGE_TO_BRANCH..origin/net11.0"
           if ($LASTEXITCODE -ne 0)
           {
             throw "Failed to determine whether net11.0 has commits to merge."
           }
 
-          if ($commitsToMerge.Count -eq 0)
+          if ([int]$commitCount -eq 0)
           {
             Write-Host 'No net11.0 commits need reconciliation.'
             exit 0

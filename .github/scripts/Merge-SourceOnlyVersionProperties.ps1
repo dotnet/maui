@@ -361,7 +361,10 @@ function Merge-SourceOnlyVersionProperty {
             $insertAt = $nextAnchor.Line
         }
         else {
-            $insertAt = $targetGroup.EndLine
+            # No property from the source group is present in the target group at this index, so the
+            # Nth-group correspondence cannot be verified. Fail closed rather than risk inserting into
+            # an unrelated group (which would still produce well-formed XML).
+            throw "Cannot place source-only property '$($missing.Name)' because target PropertyGroup $($missing.GroupIndex) shares no property with the corresponding source group, so their correspondence cannot be verified."
         }
 
         $targetLines.Lines.Insert($insertAt, $sourcePropertyLine.Text)
