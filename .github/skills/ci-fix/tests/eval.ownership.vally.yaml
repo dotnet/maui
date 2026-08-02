@@ -32,8 +32,9 @@ stimuli:
   - name: comment-only-reference-does-not-stop-triage
     tags: { source_issue: "36051", source_pr: "36657", kind: false-dedup }
     prompt: |
-      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
-      to this frozen main-branch snapshot.
+      Your first action must be to invoke the `ci-fix` skill. Do not reason
+      about or answer the snapshot until that invocation completes. Then apply
+      its triage protocol to this frozen main-branch snapshot.
 
       Tracking issue #36051 is open, has the ci-scan label, and has no open or
       merged [ci-fix] PR. A search for #36051 found open human PR #36657.
@@ -51,6 +52,8 @@ stimuli:
 
       Do not query GitHub; the snapshot above is complete.
     graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
       - type: output-contains
         config: { substring: "Decision: Continue" }
       - type: output-not-contains
@@ -60,8 +63,9 @@ stimuli:
   - name: incidental-body-reference-does-not-stop-triage
     tags: { kind: false-dedup }
     prompt: |
-      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
-      to this frozen main-branch snapshot.
+      Your first action must be to invoke the `ci-fix` skill. Do not reason
+      about or answer the snapshot until that invocation completes. Then apply
+      its triage protocol to this frozen main-branch snapshot.
 
       Tracking issue #48101 is open, in scope, and has no [ci-fix] PR. The
       title-and-body search found open human PR #48116:
@@ -79,6 +83,8 @@ stimuli:
 
       Do not query GitHub; the snapshot above is complete.
     graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
       - type: output-contains
         config: { substring: "Decision: Continue" }
       - type: output-not-contains
@@ -88,8 +94,9 @@ stimuli:
   - name: explicit-human-reference-stops-competing-fix
     tags: { kind: human-ownership }
     prompt: |
-      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
-      to this frozen main-branch snapshot.
+      Your first action must be to invoke the `ci-fix` skill. Do not reason
+      about or answer the snapshot until that invocation completes. Then apply
+      its triage protocol to this frozen main-branch snapshot.
 
       Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
       human PR #48115 has this body:
@@ -102,6 +109,8 @@ stimuli:
 
       Do not query GitHub.
     graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
       - type: output-contains
         config: { substring: "Decision: Stop" }
       - type: output-not-contains
@@ -111,8 +120,9 @@ stimuli:
   - name: explicit-human-url-reference-stops-competing-fix
     tags: { kind: human-ownership }
     prompt: |
-      Before deciding, invoke the `ci-fix` skill and apply its triage protocol
-      to this frozen main-branch snapshot.
+      Your first action must be to invoke the `ci-fix` skill. Do not reason
+      about or answer the snapshot until that invocation completes. Then apply
+      its triage protocol to this frozen main-branch snapshot.
 
       Tracking issue #48103 is open, in scope, and has no [ci-fix] PR. Open
       human PR #48117 has this body:
@@ -126,6 +136,8 @@ stimuli:
 
       Do not query GitHub.
     graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
       - type: output-contains
         config: { substring: "Decision: Stop" }
       - type: output-not-contains
