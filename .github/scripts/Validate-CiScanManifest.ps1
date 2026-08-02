@@ -393,7 +393,8 @@ function Test-HiddenOrControlContent {
                 0x2755, # white exclamation mark
                 0x2757, # heavy exclamation mark
                 0x2763, # heart exclamation
-                0x2764  # heart
+                0x2764, # heart
+                0x1F6E0 # hammer and wrench
             )
             if (-not $isEmojiVariationBase) {
                 return "an isolated emoji presentation selector (U+$($code.ToString('X4')))"

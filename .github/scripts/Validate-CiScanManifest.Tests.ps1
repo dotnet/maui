@@ -709,7 +709,7 @@ Describe 'CI scanner issue payload gate' {
             Should -Throw '*must not contain scanner marker content*'
     }
 
-    It 'rejects a body carrying hidden or control content invisible to a reviewer' -ForEach @(
+    It 'rejects a <Case> body carrying hidden or control content invisible to a reviewer' -ForEach @(
         @{ Case = 'ANSI/ESC escape'; Suffix = "$([char]0x1B)[31mred text"; Expect = 'C0 control character' }
         @{ Case = 'bare C0 control'; Suffix = "col$([char]0x07)umn"; Expect = 'C0 control character' }
         @{ Case = 'DEL character'; Suffix = "trailing$([char]0x7F)"; Expect = 'DEL control character' }
@@ -799,6 +799,19 @@ Describe 'CI scanner issue payload gate' {
         # all-or-nothing publication batch.
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild emitted $([char]0x26A0)$([char]0xFE0F) during step 3."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'accepts the production scanner task heading with emoji presentation' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$([char]::ConvertFromUtf32(0x1F6E0))$([char]0xFE0F) Build Microsoft.Maui.sln"
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Fingerprint $fingerprint -Body $body)
         )
