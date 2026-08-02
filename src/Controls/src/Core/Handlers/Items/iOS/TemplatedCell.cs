@@ -85,9 +85,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
+			ClearBindingContext();
+		}
+
+		// Clears the bound view's BindingContext. Called during routine recycling and final teardown.
+		void ClearBindingContext()
+		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
+			}
+		}
+
+		// Removes the bound view from the ItemsView's logical children, so it (and its handler) can
+		// be collected. Intentionally NOT called from Unbind()/ClearBindingContext() - only from
+		// final teardown paths (ItemsViewController.Disconnect()/ClearMeasurementCells()), since
+		// removing it during routine recycling can corrupt native layout state (e.g. CarouselView
+		// crash).
+		internal void DetachFromItemsView()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
 		}
 
@@ -186,6 +205,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					oldElement.BindingContext = null;
 					itemsView.RemoveLogicalChild(oldElement);
 					ClearSubviews();
+
+					// Template change discards oldElement's renderer for good, so its handler tree
+					// must be disconnected explicitly here to avoid a leak.
+					oldElement.DisconnectHandlers();
 				}
 
 				// Create the content and renderer for the view 
@@ -216,6 +239,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (oldElement != null && !ReferenceEquals(bindingContext, oldElement.BindingContext))
 				{
 					oldElement.BindingContext = bindingContext;
+				}
+
+				// This cell may have been unbound while off-screen (e.g. its previous item was
+				// removed from the ItemsSource, see ItemsViewController.CellDisplayingEndedFromDelegate),
+				// which detaches the view from the ItemsView's logical children (Parent becomes null).
+				// If the cell is now being reused/rebound with the same template, the view must be
+				// re-attached; otherwise it silently drops out of the logical tree even though it's
+				// visibly bound and displayed again. Mirrors TemplatedCell2.BindVirtualView().
+				if (oldElement is not null && oldElement.Parent is null)
+				{
+					itemsView.AddLogicalChild(oldElement);
 				}
 			}
 
