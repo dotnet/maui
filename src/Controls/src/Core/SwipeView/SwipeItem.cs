@@ -91,6 +91,10 @@ namespace Microsoft.Maui.Controls
 		{
 			var swipeItem = (SwipeItem)bindable;
 			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.TextColor));
+
+			// TextColor also drives the icon tint for a colorless font icon (GetIconTintColor falls
+			// back to GetTextColor), so refresh the icon too or its tint would remain stale.
+			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
 		}
 
 		static void OnIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)

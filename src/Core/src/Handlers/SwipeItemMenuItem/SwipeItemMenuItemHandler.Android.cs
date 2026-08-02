@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Handlers
 			// ISwipeItemMenuItem.TextColor wins over the luminosity-contrast fallback
 			// (base ITextStyle.TextColor is always null on MenuItem via explicit interface impl).
 			Color? resolved = view is ISwipeItemMenuItem swipeItem ? swipeItem.GetTextColor() : view!.TextColor;
-			var textColor = resolved?.ToPlatform();
 
-			if (textColor != null)
-				textView.SetTextColor(textColor.Value);
+			// UpdateTextColor restores the cached themed default when resolved is null so a
+			// previously applied color is not left stale (for example when Background is removed).
+			textView.UpdateTextColor(resolved);
 		}
 
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)
@@ -71,12 +71,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
 
-			var textColor = handler.VirtualView.GetTextColor()?.ToPlatform();
-
 			if (handler.PlatformView is TextView textView)
 			{
-				if (textColor != null)
-					textView.SetTextColor(textColor.Value);
+				// Route through UpdateTextColor so the contrast fallback is applied and, when it
+				// resolves to null, the TextView is reset to its cached themed default.
+				textView.UpdateTextColor(handler.VirtualView.GetTextColor());
 
 				textView.TextAlignment = ATextAlignment.Center;
 			}
