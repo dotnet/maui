@@ -46,13 +46,13 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the color used to tint <see cref="MenuItem.IconImageSource"/>. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// When unset, a <see cref="FontImageSource"/> uses its own <see cref="FontImageSource.Color"/> and falls
-		/// back to a color contrasting <see cref="BackgroundColor"/>, while image icons such as PNG and SVG render
-		/// with their original colors. When set, this property tints font icons and image icons on Android, iOS, and
-		/// MacCatalyst (including stream-based sources, since the resolved platform image is tinted), and font,
-		/// file-based, and URI-based icons on Windows, and can be bound with <see cref="AppThemeBinding"/> to follow
-		/// the current theme. Stream-based image icons on Windows and all icons on Tizen currently render with their
-		/// original colors regardless of this property.
+		/// When unset, a font icon is tinted by its own <see cref="FontImageSource.Color"/>, then by
+		/// <see cref="TextColor"/>, then by a color contrasting <see cref="BackgroundColor"/>; image icons such as
+		/// PNG and SVG render with their original colors. When set, this property tints font icons and image icons on
+		/// Android, iOS, and MacCatalyst (including stream-based sources, since the resolved platform image is
+		/// tinted), and font, file-based, and URI-based icons on Windows, and can be bound with
+		/// <see cref="AppThemeBinding"/> to follow the current theme. Stream-based image icons on Windows and all
+		/// icons on Tizen currently render with their original colors regardless of this property.
 		/// </remarks>
 		public Color IconColor
 		{
@@ -64,9 +64,11 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the color used for the swipe item's label text. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// When unset, the label falls back to a color contrasting <see cref="BackgroundColor"/>.
-		/// When set, that color is used as the label color, and it can be bound with
-		/// <see cref="AppThemeBinding"/> to follow the current theme.
+		/// When unset, the label falls back to a color contrasting <see cref="BackgroundColor"/>, except when the
+		/// item's icon is a <see cref="FontImageSource"/> that already specifies its own
+		/// <see cref="FontImageSource.Color"/>, or when no <see cref="BackgroundColor"/> is set; in those cases the
+		/// label keeps the platform default. When set, that color is used as the label color, and it can be bound
+		/// with <see cref="AppThemeBinding"/> to follow the current theme.
 		/// </remarks>
 		public Color TextColor
 		{
@@ -94,10 +96,10 @@ namespace Microsoft.Maui.Controls
 			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.TextColor));
 
 			// TextColor only drives the icon tint for an untinted font icon: GetIconTintColor falls
-			// back to GetTextColor only when IconColor is unset and the source is a FontImageSource
+			// back to GetTextColor only when IconColor is unset and the source is an IFontImageSource
 			// without its own Color. Refresh the icon just in that case so its tint isn't left stale,
 			// avoiding a needless image reload for image sources or an explicitly tinted icon.
-			if (swipeItem.IconColor is null && swipeItem.IconImageSource is FontImageSource { Color: null })
+			if (swipeItem.IconColor is null && swipeItem.IconImageSource is IFontImageSource { Color: null })
 				swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
 		}
 
