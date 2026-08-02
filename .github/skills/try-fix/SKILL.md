@@ -29,6 +29,11 @@ If the prompt does not include a **problem to fix** and a **test command to veri
    `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Never use
    `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash` to
    revert or clean changes, including after artifacts have been captured.
+7. **Baseline-file boundary** - After Step 2, modify ONLY files listed in
+   `.github/.baseline-state.json` under `RevertedFiles`. The restore script
+   tracks only those original fix files; editing any other tracked file makes
+   restoration incomplete. If the approach requires another tracked file,
+   report `Blocked` instead of editing it.
 
 **Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
 
@@ -57,7 +62,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 |-------|----------|-------------|
 | Problem | Yes | Description of the bug/issue to fix |
 | Test command | Yes | **Repository-specific script** to build and test. Use `BuildAndRunHostApp.ps1` for UI tests, `Run-DeviceTests.ps1` for device tests, or `dotnet test` for unit tests. The correct command is determined by the test type detected in the PR. **ALWAYS use the appropriate script - NEVER manually build/compile.** |
-| Target files | Yes | Files to investigate for the fix |
+| Target files | Yes | Files to investigate; any file absent from the baseline state's `RevertedFiles` is read-only |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
@@ -219,6 +224,10 @@ pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$O
 ```powershell
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
+
+Read `.github/.baseline-state.json` after this command. Its `RevertedFiles`
+array is the complete modification allow-list for the attempt. Target files
+outside that array may be inspected but MUST NOT be edited.
 
 **If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 

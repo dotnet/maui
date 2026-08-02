@@ -1,0 +1,95 @@
+# Must-pass restoration protocol for try-fix. This is separate from the
+# semantic capability suite because baseline creation, target-file isolation,
+# and restoration are invariants: a strong prose answer must not mask them.
+
+name: try-fix-restore-protocol
+description: >-
+  Verifies that try-fix establishes a real broken baseline, changes only the
+  caller-provided target file, and restores the synthetic PR head without raw
+  git cleanup.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 15m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+environment:
+  skills:
+    - ..
+  git:
+    type: worktree
+    ref: 8935253083b24930f9a6f153f72b5ac196d1ae59
+    source: .
+
+stimuli:
+  - name: restores-synthetic-fix-without-raw-git
+    tags:
+      kind: protocol
+    prompt: |
+      Please run a try-fix attempt on this Android Entry issue:
+
+      The bug is that Entry text is lost when the user rotates the device. The
+      current PR enables native view-state saving in CreatePlatformView, but the
+      regression test still fails.
+
+      Try a different mechanism for persisting the text across orientation changes.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
+      Target file: src/Core/src/Handlers/Entry/EntryHandler.Android.cs
+
+      You may modify only that target file. If another tracked file is required,
+      report the attempt as Blocked instead of editing it.
+
+      Cleanup constraint: after capturing the attempt artifacts, invoke
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Do not use
+      `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash`
+      to clean the working tree.
+    environment:
+      # Turn the frozen main snapshot into a synthetic one-commit PR. The
+      # production-file change gives EstablishBrokenBaseline.ps1 a real,
+      # committed fix to revert and restore without depending on a live PR ref.
+      commands:
+        - |
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          perl -0pi -e 's/(var nativeEntry = new MauiAppCompatEditText\(Context\);\n)/$1\t\t\tnativeEntry.SaveEnabled = true;\n/' src/Core/src/Handlers/Entry/EntryHandler.Android.cs
+          git add src/Core/src/Handlers/Entry/EntryHandler.Android.cs
+          git commit -m "Synthetic Entry state restoration attempt"
+          git rev-parse HEAD > .github/.try-fix-fixture-head
+    graders:
+      - type: skill-invocation
+        config: { required: [try-fix] }
+      - type: output-not-matches
+        config:
+          pattern: 'git reset --hard'
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              command: 'EstablishBrokenBaseline\.ps1\b(?!\s+-Restore\b)'
+            - name: '^(bash|powershell)$'
+              command: 'EstablishBrokenBaseline\.ps1\s+-Restore\b'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|(?:&&|\|\||;|\n)\s*)git(?:\s+-\S+)*\s+(?:checkout|clean|restore|reset|stash)\b'
+      - type: run-command
+        name: baseline-restored-cleanly
+        config:
+          command: bash
+          args:
+            - -lc
+            - 'test ! -e .github/.baseline-state.json && test "$(git rev-parse HEAD)" = "$(cat .github/.try-fix-fixture-head)" && test -z "$(git status --porcelain --untracked-files=no)"'
+          expected_exit_code: 0
+    constraints:
+      max_duration: 15m
+      expect_skills:
+        - try-fix
+
+scoring:
+  # Every protocol signal must pass in every trial. A single missed baseline,
+  # out-of-scope edit, raw-git cleanup, or failed restore makes the suite red.
+  threshold: 1.0

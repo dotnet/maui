@@ -1,13 +1,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # try-fix capability suite — Vally migration
 #
-# Direct port of the legacy try-fix eval.yaml (8 scenarios). The try-fix
+# Direct port of the legacy try-fix eval.yaml (7 scenarios). The try-fix
 # skill proposes ONE alternative fix approach, tests it, records the
 # result with failure analysis, then reverts.
 #
 # These are LIVE behavioral-protocol tests, not regression-detection. They
 # probe how the agent BEHAVES (does it repeat a failed approach? does it claim
-# PASS without a device? does it use the prescribed restore script?), which
+# PASS without a device?), which
 # has no documented answer to recite. A frozen worktree supplies the MAUI
 # files and scripts those workflows require; without it Vally starts Copilot
 # in an empty temporary directory and the protocol cannot run deterministically.
@@ -35,9 +35,9 @@ name: try-fix-capabilities
 description: >-
   Capability suite for the try-fix skill — verifies it proposes a
   genuinely distinct alternative fix, never claims success without
-  running the test, avoids repeating prior failed approaches, uses the
-  prescribed restore script, and stops with a documented Fail at the
-  iteration limit.
+  running the test, avoids repeating prior failed approaches, and stops with
+  a documented Fail at the iteration limit. The must-pass restoration
+  protocol is isolated in eval.restore.vally.yaml.
 version: "1.0.0"
 type: capability
 
@@ -236,92 +236,7 @@ stimuli:
         - try-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 5 — must use the prescribed baseline/restore script, not raw
-  # git commands, to reset file state.
-  # ───────────────────────────────────────────────────────────────────────
-  - name: regression-uses-restore-script-not-raw-git
-    tags:
-      kind: protocol
-    prompt: |
-      Please run a try-fix attempt on this Android Entry issue:
-
-      The bug is that Entry text is lost when the user rotates the device. The
-      current PR enables native view-state saving in CreatePlatformView, but the
-      regression test still fails.
-
-      Try a different mechanism for persisting the text across orientation changes.
-
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
-      Target file: src/Core/src/Handlers/Entry/EntryHandler.Android.cs
-
-      Cleanup constraint: after capturing the attempt artifacts, invoke
-      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Do not use
-      `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash`
-      to clean the working tree.
-    environment:
-      # Turn the frozen main snapshot into a synthetic one-commit PR. The
-      # production-file change gives EstablishBrokenBaseline.ps1 a real,
-      # committed fix to revert and restore without depending on a live PR ref.
-      commands:
-        - |
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          perl -0pi -e 's/(var nativeEntry = new MauiAppCompatEditText\(Context\);\n)/$1\t\t\tnativeEntry.SaveEnabled = true;\n/' src/Core/src/Handlers/Entry/EntryHandler.Android.cs
-          git add src/Core/src/Handlers/Entry/EntryHandler.Android.cs
-          git commit -m "Synthetic Entry state restoration attempt"
-          git rev-parse HEAD > .github/.try-fix-fixture-head
-    graders:
-      # Crisp floor: the most destructive raw-git revert must not be the
-      # agent's reset mechanism. `git reset --hard` is unambiguous —
-      # softer mentions of git are left to the judge to avoid false fails.
-      - type: output-not-matches
-        config:
-          pattern: 'git reset --hard'
-      # Deterministic protocol signals: establish a real baseline before the
-      # attempt, restore it afterward, and reject raw-git cleanup.
-      - type: tool-calls
-        config:
-          required:
-            - name: '^(bash|powershell)$'
-              command: '(?:^|(?:&&|\|\||;)\s*)pwsh\s+\.github/scripts/EstablishBrokenBaseline\.ps1\b(?!\s+-Restore\b)'
-            - name: '^(bash|powershell)$'
-              command: '(?:^|(?:&&|\|\||;)\s*)pwsh\s+\.github/scripts/EstablishBrokenBaseline\.ps1\s+-Restore\b'
-          disallowed:
-            - name: '^(bash|powershell)$'
-              command: '(?:^|(?:&&|\|\||;)\s*)git(?:\s+\S+)*\s+(?:checkout|clean|restore|reset|stash)\b'
-      # The restoration must remove the baseline state file, retain the
-      # synthetic PR head, and leave tracked files clean, not merely issue a
-      # no-op command.
-      - type: run-command
-        name: baseline-restored-cleanly
-        config:
-          command: bash
-          args:
-            - -lc
-            - 'test ! -e .github/.baseline-state.json && test "$(git rev-parse HEAD)" = "$(cat .github/.try-fix-fixture-head)" && test -z "$(git status --porcelain --untracked-files=no)"'
-          expected_exit_code: 0
-      - type: prompt
-        config:
-          scoring: scale_1_5
-          threshold: 0.6
-    rubric:
-      - >-
-        The agent uses the prescribed baseline/restore script to reset
-        file state, not raw git commands (git checkout / git clean /
-        git restore / git reset / git stash) as the revert mechanism.
-      - >-
-        The agent calls the restore step after testing completes, whether
-        the fix passed or failed.
-      - >-
-        The agent documents a fix approach that differs from the
-        native SaveEnabled mechanism already present in the synthetic PR.
-    constraints:
-      max_duration: 15m
-      expect_skills:
-        - try-fix
-
-  # ───────────────────────────────────────────────────────────────────────
-  # Scenario 6 — exhausting the iteration limit must produce a documented
+  # Scenario 5 — exhausting the iteration limit must produce a documented
   # Fail, not silence and not a false Pass.
   # ───────────────────────────────────────────────────────────────────────
   - name: edge-case-exhausted-iterations-documented-fail
@@ -363,7 +278,7 @@ stimuli:
         - try-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 7 — must not repeat the same ROOT CAUSE disguised as a
+  # Scenario 6 — must not repeat the same ROOT CAUSE disguised as a
   # different approach (shared parent-measurement-fallback flaw).
   # ───────────────────────────────────────────────────────────────────────
   - name: regression-no-repeated-root-cause-disguised
@@ -407,7 +322,7 @@ stimuli:
         - try-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 8 — must verify which platform-specific code path is actually
+  # Scenario 7 — must verify which platform-specific code path is actually
   # used before implementing (iOS NavigationPage uses Legacy, not
   # MauiNavigationImpl).
   # ───────────────────────────────────────────────────────────────────────
@@ -451,7 +366,5 @@ scoring:
   # unweighted mean of grader [0,1] scores; skill passes when the mean across runs >=
   # threshold. Judge-only scenarios reduce to "judge normalized score >=
   # 0.6" (raw >= 3.4/5); multi-grader scenarios average crisp protocol signals
-  # with the judge. The restore-script case has three equally weighted graders
-  # after adding a deterministic tool-call check. Threshold DEFAULTS to 1.0
-  # when omitted, so it is set here.
+  # with the judge. The restoration protocol has its own threshold-1.0 suite.
   threshold: 0.6
