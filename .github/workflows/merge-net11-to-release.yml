@@ -164,3 +164,141 @@ jobs:
     with:
       configuration_file_branch: 'net11.0'
       configuration_file_path: 'github-merge-flow-release-11.jsonc'
+
+  ReconcileVersionProperties:
+    needs:
+      - CheckForOpenMergePullRequest
+      - Merge
+    if: >-
+      github.ref_name == 'net11.0' &&
+      needs.CheckForOpenMergePullRequest.outputs.should_run == 'true' &&
+      needs.Merge.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout net11.0
+        uses: actions/checkout@v6
+        with:
+          ref: net11.0
+          fetch-depth: 0
+          # This job pushes its reconciliation commit to the generated merge branch.
+          persist-credentials: true
+
+      - name: Resolve merge branches
+        id: branches
+        shell: pwsh
+        run: |
+          $config = Get-Content -Raw github-merge-flow-release-11.jsonc | ConvertFrom-Json
+          $mergeToBranch = $config.'merge-flow-configurations'.'net11.0'.MergeToBranch
+
+          if ($mergeToBranch -notmatch '^release/[A-Za-z0-9._/-]+$')
+          {
+            throw "Invalid MergeToBranch value '$mergeToBranch'."
+          }
+
+          "merge_to_branch=$mergeToBranch" >> $env:GITHUB_OUTPUT
+          "merge_branch=merge/net11.0-to-$mergeToBranch" >> $env:GITHUB_OUTPUT
+
+      - name: Preserve source-only version properties
+        shell: pwsh
+        env:
+          MERGE_BRANCH: ${{ steps.branches.outputs.merge_branch }}
+          MERGE_TO_BRANCH: ${{ steps.branches.outputs.merge_to_branch }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+
+          $refSpecs = @(
+            '+refs/heads/net11.0:refs/remotes/origin/net11.0'
+            ('+refs/heads/{0}:refs/remotes/origin/{0}' -f $env:MERGE_TO_BRANCH)
+            ('+refs/heads/{0}:refs/remotes/origin/{0}' -f $env:MERGE_BRANCH)
+          )
+          git fetch --quiet origin @refSpecs
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to fetch merge refs."
+          }
+
+          $commitsToMerge = @(git rev-list "origin/$env:MERGE_TO_BRANCH..origin/net11.0")
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to determine whether net11.0 has commits to merge."
+          }
+
+          if ($commitsToMerge.Count -eq 0)
+          {
+            Write-Host 'No net11.0 commits need reconciliation.'
+            exit 0
+          }
+
+          git merge-base --is-ancestor origin/net11.0 "origin/$env:MERGE_BRANCH"
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Generated merge branch '$env:MERGE_BRANCH' does not contain the current net11.0 head."
+          }
+
+          git checkout --quiet -B $env:MERGE_BRANCH "origin/$env:MERGE_BRANCH"
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to check out generated merge branch '$env:MERGE_BRANCH'."
+          }
+
+          $sourceVersions = Join-Path $env:RUNNER_TEMP 'net11-Versions.props'
+          $sourceProcess = Start-Process `
+            -FilePath 'git' `
+            -ArgumentList @('show', 'origin/net11.0:eng/Versions.props') `
+            -RedirectStandardOutput $sourceVersions `
+            -NoNewWindow `
+            -Wait `
+            -PassThru
+          if ($sourceProcess.ExitCode -ne 0)
+          {
+            throw "Failed to read eng/Versions.props from net11.0."
+          }
+
+          & ./.github/scripts/Merge-SourceOnlyVersionProperties.ps1 `
+            -SourcePath $sourceVersions `
+            -TargetPath eng/Versions.props
+
+          $changes = git status --porcelain -- eng/Versions.props
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to inspect reconciled eng/Versions.props."
+          }
+
+          if ([string]::IsNullOrWhiteSpace(($changes | Out-String)))
+          {
+            Write-Host 'No source-only version properties need to be committed.'
+            exit 0
+          }
+
+          git config user.name 'github-actions[bot]'
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to configure the reconciliation commit author name."
+          }
+
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to configure the reconciliation commit author email."
+          }
+
+          git add -- eng/Versions.props
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to stage reconciled eng/Versions.props."
+          }
+
+          git commit -m 'Preserve source-only version properties after release reset'
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to commit reconciled eng/Versions.props."
+          }
+
+          git push origin "HEAD:$env:MERGE_BRANCH"
+          if ($LASTEXITCODE -ne 0)
+          {
+            throw "Failed to push reconciled merge branch '$env:MERGE_BRANCH'."
+          }
