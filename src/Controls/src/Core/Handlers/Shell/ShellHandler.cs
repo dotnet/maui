@@ -45,11 +45,10 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
 #endif
 #if IOS || MACCATALYST
-			// Status bar / home indicator (iOS platform configuration properties).
 			["PrefersHomeIndicatorAutoHidden"] = MapPrefersHomeIndicatorAutoHidden,
 			["PrefersStatusBarHidden"] = MapPrefersStatusBarHidden,
 			["PreferredStatusBarUpdateAnimation"] = MapPreferredStatusBarUpdateAnimation,
-			// FlyoutIcon and ForegroundColor affect nav-bar toolbar items on iOS.
+			// Refresh toolbar items when these properties change on iOS.
 			[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
 			[Shell.ForegroundColorProperty.PropertyName] = MapForegroundColor,
 #endif

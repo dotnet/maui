@@ -23,8 +23,7 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
-    /// Shell section handler for iOS. Owns a UINavigationController for the navigation stack
-    /// and manages root content and top tabs when a section has multiple ShellContents.
+    /// Handles the iOS Shell section navigation stack, root content, and top tabs.
     /// </summary>
     public partial class ShellSectionHandler : ElementHandler<ShellSection, UIView>, IAppearanceObserver, IDisconnectable
     {
@@ -34,15 +33,12 @@ namespace Microsoft.Maui.Controls.Handlers
         internal ShellSectionNavController _navigationController = null!;
         internal IShellNavBarAppearanceTracker? _appearanceTracker;
 
-        // Navigation completion tasks — keyed by the pushed UIViewController.
         readonly Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks = new();
         TaskCompletionSource<bool>? _popCompletionTask;
         UIViewController[]? _pendingViewControllers;
 
-        // Navigation stack tracking
         internal readonly Dictionary<Element, IShellPageRendererTracker> _trackers = new();
 
-        // Root content management (from ShellSectionRootRenderer)
         UIView? _containerArea;
         UIView? _blurView;
         ShellContent? _currentContent;
@@ -58,14 +54,9 @@ namespace Microsoft.Maui.Controls.Handlers
         UIViewPropertyAnimator? _pageAnimation;
         UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
-        // Prevents multiple concurrent GoToAsync("..") dispatches from SendPop().
-        // On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
-        // and combinations that may cause SendPop() to be called multiple times.
-        // Once a back-navigation dispatch is in flight, all subsequent calls are blocked
-        // until it completes (success or cancel).
+        // iOS 26+ can raise back-navigation callbacks more than once per gesture; guard SendPop().
         bool _sendPopPending;
 
-        // Root view controller for content hosting
         ShellSectionRootViewController? _rootViewController;
 
         Page? _displayedPage;
@@ -109,10 +100,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _shellContext = VirtualView.FindParentOfType<Shell>()?.Handler as IShellContext;
 
-            // Set up appearance tracker
             _appearanceTracker = _shellContext?.CreateNavBarAppearanceTracker();
 
-            // Subscribe to events
             VirtualView.PropertyChanged += HandlePropertyChanged;
             ((IShellSectionController)VirtualView).NavigationRequested += OnNavigationRequested;
 
@@ -125,13 +114,10 @@ namespace Microsoft.Maui.Controls.Handlers
                 ((IShellSectionController)VirtualView).AddDisplayedPageObserver(this, OnDisplayedPageChanged);
             }
 
-            // Set up interactive pop gesture
             SetupInteractivePopGesture();
 
-            // Load root content and navigation stack
             LoadPages();
 
-            // Update tab bar item
             UpdateTabBarItem();
             UpdateFlowDirection();
         }
@@ -140,7 +126,6 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             ((IDisconnectable)this).Disconnect();
 
-            // Dispose root content
             _rootViewController?.View?.RemoveFromSuperview();
             _rootViewController?.RemoveFromParentViewController();
 
@@ -156,7 +141,6 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             _contentRenderers.Clear();
 
-            // Dispose nav stack trackers
             foreach (var page in VirtualView.Stack)
             {
                 if (page is null)
@@ -189,8 +173,6 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _pageAnimation?.StopAnimation(true);
             _pageAnimation = null;
-
-            // ShellSectionRootViewController doesn't implement IDisconnectable
 
             if (_displayedPage is not null)
             {
@@ -235,31 +217,17 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        // When there are more than 5 tabs, iOS collapses the overflow tabs into its own
-        // "More" list, backed by a separate UINavigationController (UITabBarController.
-        // MoreNavigationController) that isn't one of our own _navigationController
-        // instances. Without this, that nav bar never receives our Shell nav bar
-        // appearance (e.g. Shell.SetBackgroundColor), so the "More" page renders with
-        // the default (white) nav bar instead of the Shell-defined color.
+        // Apply Shell nav-bar appearance to the system MoreNavigationController too.
         void ApplyAppearanceToMoreNavigationController(ShellAppearance? appearance)
         {
             var moreNavigationController = _navigationController?.TabBarController?.MoreNavigationController;
 
             if (moreNavigationController is null)
             {
-                // OnAppearanceChanged fires as soon as this section connects (from
-                // AddAppearanceObserver), which happens *before* ShellItemHandler attaches
-                // this section's _navigationController to the shared UITabBarController
-                // (that assignment happens once, after every section has been created).
-                // TabBarController is therefore still null at this point. Defer to the next
-                // run loop turn, by which time the tab bar wiring will be complete and
-                // MoreNavigationController resolvable.
+                // On connect, TabBarController is still null; retry after ShellItemHandler finishes attaching the section.
                 _navigationController?.BeginInvokeOnMainThread(() =>
                 {
-                    // Guard against a handler that was disconnected while this callback was
-                    // queued (e.g. Shell.Items.Clear() or a fast section swap) - _appearanceTracker
-                    // is nulled out in DisconnectHandler, so skip applying appearance to a stale
-                    // MoreNavigationController on an already-torn-down section.
+                    // The handler may disconnect before this deferred callback runs.
                     if (_appearanceTracker is null)
                     {
                         return;
@@ -298,10 +266,8 @@ namespace Microsoft.Maui.Controls.Handlers
                 throw new InvalidOperationException($"Content not found for active {VirtualView}. Title: {VirtualView.Title}. Route: {VirtualView.Route}.");
             }
 
-            // Create root view controller that will host content
             _rootViewController = new ShellSectionRootViewController(this);
 
-            // Create container area for content pages
             _containerArea = new UIView();
             _containerArea.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
             if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
@@ -310,21 +276,16 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             _rootViewController.View!.AddSubview(_containerArea);
 
-            // Load all content renderers
             LoadContentRenderers();
 
-            // Subscribe to items collection changes
             ShellSectionController.ItemsCollectionChanged += OnShellSectionItemsChanged;
 
-            // Set up blur view for top tab header
             UIVisualEffect blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.ExtraLight);
             _blurView = new UIVisualEffectView(blurEffect);
             _rootViewController.View!.AddSubview(_blurView);
 
-            // Update top tab header visibility
             UpdateHeaderVisibility();
 
-            // Set up root page tracker
             var tracker = _shellContext!.CreatePageRendererTracker();
             tracker.IsRootPage = true;
             tracker.ViewController = _rootViewController;
@@ -334,10 +295,8 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             _rootTracker = tracker;
 
-            // Push root VC onto nav controller
             _navigationController.PushViewController(_rootViewController, false);
 
-            // Push any existing stack pages
             var stack = VirtualView.Stack;
             for (int i = 1; i < stack.Count; i++)
             {
@@ -352,7 +311,6 @@ namespace Microsoft.Maui.Controls.Handlers
             Dictionary<ShellContent, Page> createdPages = new();
             var contentItems = ShellSectionController.GetItems();
 
-            // Pre-create all pages in case visibility changes remove a page from shell
             for (int i = 0; i < contentItems.Count; i++)
             {
                 ShellContent item = contentItems[i];
@@ -392,7 +350,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        // Ensures ShellContent has a handler so its Content property is tracked via the mapper.
+        // Ensure Content changes flow through ShellContentHandler.MapContent.
         static void EnsureShellContentHandler(ShellContent shellContent)
         {
             if (shellContent.Handler is not null)
@@ -407,8 +365,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        // Called by ShellContentHandler.MapContent when ShellContent.Content changes at runtime.
-        // Rebuilds the renderer for the affected content so the displayed page stays in sync.
+        // Rebuild the renderer when ShellContentHandler.MapContent reports a new page.
         internal void OnShellContentContentChanged(ShellContent shellContent)
         {
             if (!_contentRenderers.TryGetValue(shellContent, out var oldRenderer))
@@ -510,7 +467,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // No change — skip animation (mapper fires during ConnectHandler)
             if (newContent == oldContent)
             {
                 return;
@@ -541,7 +497,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Currently visible item removed
             if (oldIndex == -1 && _currentIndex <= newIndex)
             {
                 newIndex++;
@@ -578,7 +533,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 RemoveNonVisibleRenderers();
             }
 
-            // Update page tracker before animation for immediate title display
+            // Update the tracker first so the title changes immediately.
             if (newContent is IShellContentController scc && _rootTracker is not null)
             {
                 _rootTracker.Page = scc.Page;
@@ -665,7 +620,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnShellSectionItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            // Make sure we do this after the header has a chance to react
+            // Let the header react before recomputing its visibility.
             _rootViewController?.BeginInvokeOnMainThread(UpdateHeaderVisibility);
 
             if (e.OldItems is not null)
@@ -790,10 +745,7 @@ namespace Microsoft.Maui.Controls.Handlers
             Task<bool> task;
             if (_rootViewController is not null)
             {
-                // PopToRootViewController(...) below already calls
-                // _navigationController.PopToRootViewController(animated) internally — don't
-                // call it again here, or the native nav controller receives a duplicate
-                // pop-to-root request for the same operation.
+                // Avoid sending UINavigationController a duplicate pop-to-root request.
                 task = PopToRootViewController(_rootViewController, animated);
             }
             else
@@ -883,13 +835,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
                     if (!showsPresentation)
                     {
-                        // Not in visible tab — complete immediately
                         CompletePushImmediately(pageViewController);
                         completionSource.TrySetResult(true);
                     }
                     else
                     {
-                        // Wire manager's TCS to caller's TCS
                         managerTcs.Task.ContinueWith(t => completionSource.TrySetResult(t.Result),
                             TaskScheduler.FromCurrentSynchronizationContext());
                     }
@@ -908,9 +858,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return true;
             }
 
-            // On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
-            // and fire multiple times for a single user back action. Guard against multiple
-            // concurrent GoToAsync("..") dispatches to prevent navigating to the wrong page.
+            // iOS 26+ can raise these callbacks more than once per back action.
             if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
             {
                 if (_sendPopPending)
@@ -943,14 +891,11 @@ namespace Microsoft.Maui.Controls.Handlers
                         {
                             command.Execute(commandParameter);
                         }
-                        // Reset the iOS 26+ guard so subsequent back presses are not blocked.
                         _sendPopPending = false;
                         return false;
                     }
 
-                    // Route through Shell.SendBackButtonPressed so that Shell subclass overrides
-                    // are invoked consistently for both the navigation bar back button and the
-                    // hardware/system back button.
+                    // Route through Shell.SendBackButtonPressed so Shell overrides run here too.
                     if (_shellContext?.Shell?.SendBackButtonPressed() == true)
                     {
                         _sendPopPending = false;  // reset before returning
@@ -980,7 +925,6 @@ namespace Microsoft.Maui.Controls.Handlers
                     _sendPopPending = false;
                 }
 
-                // Navigation was cancelled — restore nav bar alpha
                 if (_navigationController.NavigationBar.Items!.Length == navItemsCount)
                 {
                     for (int i = 0; i < _navigationController.NavigationBar.Subviews.Length; i++)
@@ -1093,8 +1037,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 RefreshStatusBarAndHomeIndicatorAppearance(e.PropertyName);
         }
 
-        // Forwards status bar / home indicator property changes from the displayed page
-        // to the Shell handler so the registered mapper entries are invoked.
+        // Forward status-bar/home-indicator changes through the Shell handler mapper.
         void RefreshStatusBarAndHomeIndicatorAppearance(string? propertyName = null)
         {
             if (_shellContext is not IElementHandler shellHandler)
@@ -1129,9 +1072,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal void UpdateTabBarItem()
         {
-            // Title drives the UITabBarController tab label.
-            // Only set it on the nav controller — not on _rootViewController, as UIKit would
-            // then use it as a nav bar title fallback, shifting the flyout icon.
+            // Set the title on the nav controller only; UIKit otherwise uses it as a nav-bar fallback title.
             _navigationController.Title = VirtualView.Title;
 
             VirtualView.Icon.LoadImage(VirtualView.FindMauiContext()!, icon =>
@@ -1144,7 +1085,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _navigationController.TabBarItem = new UITabBarItem(VirtualView.Title, image, null);
                 _navigationController.TabBarItem.AccessibilityIdentifier = VirtualView.AutomationId ?? VirtualView.Title;
 
-                // Re-apply badge state after recreating UITabBarItem, which clears it.
+                // Reapply badge state after recreating UITabBarItem.
                 ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, VirtualView);
             });
         }
@@ -1158,8 +1099,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        // Extends UpdateFlowDirection() to also update the tab bar and applies unconditionally
-        // regardless of which section is currently active.
+        // Also update the shared tab bar, even when this section is not active.
         internal void UpdateFlowDirectionForControls()
         {
             if (_shellContext?.Shell is null)
@@ -1176,10 +1116,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 tabBar.UpdateFlowDirection(shell);
             }
 
-            // Sync tracked pages' FlowDirection with Shell to trigger MAUI layout re-arrangement.
-            // Shell section pages have a disconnected visual tree so MatchParent cannot auto-resolve.
-            // Only resolve MatchParent (inherited) pages — pages with an explicit FlowDirection
-            // override must not be silently overwritten (matches legacy ShellSectionRootRenderer).
+            // Resolve MatchParent pages manually because this Shell subtree is visually disconnected.
             if (_rootTracker?.Page is { FlowDirection: FlowDirection.MatchParent } rootPage)
             {
                 rootPage.FlowDirection = shell.FlowDirection;
@@ -1386,7 +1323,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Whether this section is displayed in the "More" tab (>5 tabs).
+        /// Whether this section is currently shown under the system "More" tab.
         /// </summary>
         internal bool IsInMoreTab
         {
@@ -1423,8 +1360,7 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Inner Classes
 
         /// <summary>
-        /// Root view controller for the shell section content area.
-        /// Hosts the ShellContent pages and top tab header.
+        /// Hosts ShellContent pages and the top-tab header for a section.
         /// </summary>
         sealed class ShellSectionRootViewController : UIViewController, IShellSectionRootRenderer
         {
@@ -1484,7 +1420,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             public new void Dispose()
             {
-                // No-op — lifecycle managed by handler
+                // Lifecycle is managed by the handler.
             }
         }
 
@@ -1570,10 +1506,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void DisposeNavigationResources()
         {
-            // Break the retain cycle: _navigationController (native) -> Delegate/gesture
-            // Delegate (managed closures capturing `this`) -> ShellSectionHandler. Neither
-            // was ever cleared before, so the native nav controller kept the handler alive
-            // past disconnect.
+            // Break the nav-controller delegate retain cycle so the handler can be collected after disconnect.
             _navigationController.Delegate = null!;
             if (_navigationController.InteractivePopGestureRecognizer is not null)
             {
@@ -1621,7 +1554,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// UINavigationController delegate for navigation completion and nav bar visibility.
+        /// UINavigationController delegate for completion and nav-bar visibility updates.
         /// </summary>
         sealed class NavDelegate : UINavigationControllerDelegate
         {
@@ -1682,7 +1615,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     coordinator.NotifyWhenInteractionChanges(handler.OnInteractionChanged);
                 }
 
-                // Set BackButtonItem early to avoid flickering
+                // Set BackButtonItem early to avoid flicker.
                 var currentPage = handler._shellContext?.Shell?.GetCurrentShellPage();
                 if (currentPage?.Handler is IPlatformViewHandler pvh &&
                     pvh.ViewController == viewController &&
@@ -1699,7 +1632,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Gesture recognizer delegate for the interactive pop gesture.
+        /// Delegate for the interactive pop gesture.
         /// </summary>
         sealed class GestureDelegate : UIGestureRecognizerDelegate
         {
@@ -1740,10 +1673,7 @@ namespace Microsoft.Maui.Controls.Handlers
         #endregion
 
         /// <summary>
-        /// Custom UINavigationController that receives UINavigationBarDelegate callbacks
-        /// (ShouldPopItem, DidPopItem) and routes them to ShellSectionHandler.
-        /// UINavigationController acts as its own NavigationBar.Delegate, so these methods
-        /// must live on the nav controller itself — an external object cannot receive them.
+        /// UINavigationController subclass that relays navigation-bar pop callbacks to the handler.
         /// </summary>
         internal sealed class ShellSectionNavController : UINavigationController
         {
@@ -1779,19 +1709,18 @@ namespace Microsoft.Maui.Controls.Handlers
                     return true;
                 }
 
-                // If stacks are in sync, nothing to do.
                 if (handler.VirtualView.Stack.Count == NavigationBar.Items.Length)
                 {
                     return true;
                 }
 
-                // Stacks out of sync: treat as user-initiated back (e.g. swipe-back).
+                // A mismatch means UIKit already popped natively (for example via swipe-back).
                 return handler.SendPop();
             }
         }
 
         /// <summary>
-        /// Adapter that wraps ShellSectionHandler to implement the IShellSectionRenderer interface.
+        /// Adapter that exposes <see cref="ShellSectionHandler"/> as <see cref="IShellSectionRenderer"/>.
         /// </summary>
         internal class ShellSectionHandlerAdapter : IShellSectionRenderer
         {
@@ -1813,7 +1742,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 get => _handler.VirtualView;
                 set
                 {
-                    // The handler manages its own VirtualView via SetVirtualView
+                    // Setter exists only for interface compatibility.
                 }
             }
 
