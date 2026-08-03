@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat
 			{
 				Opaque = false,
+				PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
 				Scale = 1,
 			});
 

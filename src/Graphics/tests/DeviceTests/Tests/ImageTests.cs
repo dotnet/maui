@@ -55,6 +55,7 @@ public class ImageTests
 #if IOS || MACCATALYST
 	[Theory]
 	[InlineData(1f)]
+	[InlineData(2f)]
 	[InlineData(3f)]
 	public void ScaleImageUsesOneXBackingScale(float sourceScale)
 	{
