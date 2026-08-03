@@ -5,10 +5,7 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	/// <summary>
-	/// Provides a mapper entry point for <see cref="ShellContent.Content"/> changes on iOS.
-	/// <see cref="ShellContent"/> has no platform view of its own — its content is rendered
-	/// by the owning <see cref="ShellSectionHandler"/>. This handler exists solely to
-	/// route <see cref="ShellContent.Content"/> property changes to the section handler.
+	/// Routes <see cref="ShellContent.Content"/> changes to the owning <see cref="ShellSectionHandler"/> on iOS.
 	/// </summary>
 	public partial class ShellContentHandler : ElementHandler<ShellContent, UIView>
 	{
@@ -25,7 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		// No native visual - the actual page renderer lives on ShellSectionHandler.
+		// Placeholder view; ShellSectionHandler renders the actual content.
 		protected override UIView CreatePlatformElement() => new UIView();
 
 		internal static void MapContent(ShellContentHandler handler, ShellContent shellContent)

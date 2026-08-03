@@ -17,7 +17,7 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
-    /// Shell item handler for iOS. Owns a UITabBarController for bottom tab management.
+    /// Handles the iOS Shell item tab bar.
     /// </summary>
     public partial class ShellItemHandler : ElementHandler<ShellItem, UIView>, IAppearanceObserver, IDisconnectable
     {
@@ -69,22 +69,17 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.ConnectHandler(platformView);
 
-            // Find the IShellContext from the parent handler
             _shellContext = VirtualView!.FindParentOfType<Shell>()?.Handler as IShellContext;
 
-            // Set up appearance tracker
             _appearanceTracker = _shellContext?.CreateTabBarAppearanceTracker();
 
-            // Register as appearance observer
             if (_shellContext?.Shell is IShellController shellController)
             {
                 shellController.AddAppearanceObserver(this, VirtualView);
             }
 
-            // Subscribe to items collection changes
             ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 
-            // Set up tab selection delegate
             _tabBarController.ViewDidLoad();
             _tabBarController.ShouldSelectViewController = (tabController, viewController) =>
             {
@@ -92,8 +87,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 var renderer = RendererForViewController(viewController);
                 if (renderer is not null)
                 {
-                    // On iOS 26+, disabled tabs can still be selected by dragging.
-                    // Return false to prevent selecting disabled tabs.
+                    // iOS 26+ can still drag-select disabled tabs.
                     if (!renderer.ShellSection.IsEnabled && (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
                     {
                         return false;
@@ -105,19 +99,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 return accept;
             };
 
-            // ShouldSelectViewController only fires *before* UIKit assigns the new selection,
-            // and only sets CurrentItem for taps on one of the visible tab bar buttons. Tapping a
-            // row inside the native "More" list doesn't go through that same synchronous
-            // set-before-assign path in a way we can rely on, so CurrentItem would never update
-            // for sections aggregated into "More". ViewControllerSelected (didSelectViewController)
-            // fires *after* the selection has actually changed, for every selection path
-            // (visible tab buttons, "More" list rows, and the "More" button itself), so it's the
-            // reliable single place to keep CurrentItem in sync — mirroring how the legacy
-            // ShellItemRenderer caught every selection change via its SelectedViewController
-            // property setter override.
+            // DidSelect catches every native selection path, including rows in the system "More" list.
             _tabBarController.ViewControllerSelected += OnNativeViewControllerSelected;
 
-            // Create section renderers for all tabs
             CreateTabRenderers();
         }
 
@@ -226,18 +210,13 @@ namespace Microsoft.Maui.Controls.Handlers
             _tabBarController.ViewControllers = viewControllers;
             _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
 
-            // Each section's FlowDirection mapper runs during AddRenderer above, before this tab bar
-            // is attached to the shared UITabBarController, so its attempt to mirror the tab bar for
-            // RTL (ShellSectionHandler.UpdateFlowDirectionForControls) is a no-op at that point. Apply
-            // it here now that the tab bar actually exists.
+            // Reapply after attaching the shared tab bar; the earlier RTL update runs too soon.
             UpdateTabBarFlowDirection();
 
-            // Apply initial IsEnabled state for newly added tab items
             SetTabItemsEnabledState();
 
             UpdateTabBarHidden();
 
-            // Make sure we are at the right item
             GoTo(VirtualView.CurrentItem);
             UpdateMoreCellsEnabled();
         }
@@ -266,12 +245,7 @@ namespace Microsoft.Maui.Controls.Handlers
         }
 
         /// <summary>
-        /// Handles UITabBarControllerDelegate.DidSelectViewController (fired *after* UIKit has
-        /// already updated the selection), for every native selection path: tapping a visible tab
-        /// bar button, tapping the "More" button itself, and tapping a row inside the "More"
-        /// list. This is the equivalent of the legacy ShellItemRenderer's override of the
-        /// SelectedViewController property setter, which our plain (non-subclassed)
-        /// UITabBarController has no way to override directly.
+        /// Handles the post-selection callback for visible tabs and the system "More" list.
         /// </summary>
         void OnNativeViewControllerSelected(object? sender, UITabBarSelectionEventArgs e)
         {
@@ -293,7 +267,7 @@ namespace Microsoft.Maui.Controls.Handlers
         MoreNavigationDelegate? _moreNavigationDelegate;
 
         /// <summary>
-        /// Delegate for MoreNavigationController to handle DidShowViewController.
+        /// Keeps <see cref="ShellItem.CurrentItem"/> in sync for MoreNavigationController selections.
         /// </summary>
         sealed class MoreNavigationDelegate : UINavigationControllerDelegate
         {
@@ -381,11 +355,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     }
                 }
 
-                // Removing a tab can shift the remaining tabs across the 5-tab "More" threshold
-                // (e.g. a section that used to be tab #6 can become tab #4). Recompute IsInMoreTab
-                // for the surviving renderers so pushes route to the correct navigation stack —
-                // otherwise a renderer can keep stale IsInMoreTab=true and push onto the hidden
-                // MoreNavigationController instead of its now-regular tab.
+                // Recompute IsInMoreTab after removals in case sections move across the 5-tab "More" threshold.
                 var remainingItems = ShellItemController.GetItems();
                 var remainingCount = remainingItems.Count;
                 var stillUsesMore = remainingCount > 5;
@@ -431,10 +401,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 _tabBarController.ViewControllers = viewControllers;
                 _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
 
-                // See CreateTabRenderers for why this needs to run again after (re)attaching the tab bar.
+                // Reapply after reattaching the tab bar.
                 UpdateTabBarFlowDirection();
 
-                // Apply initial IsEnabled state for each tab item
                 SetTabItemsEnabledState();
 
                 if (goTo)
@@ -517,11 +486,7 @@ namespace Microsoft.Maui.Controls.Handlers
 #if MACCATALYST
                 if (_tabBarController.TabBar is not null && _tabBarController.TabBar.Hidden != !ShellItemController.ShowTabs)
                 {
-                    // Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar
-                    // which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
-                    // This is a side effect of TabSidebar mode when there's no sidebar to show.
-
-                    // Explicitly set Alpha and Hidden to override this incorrect system behavior.
+                    // TabSidebar mode can leave the tab bar hidden/transparent on iOS/MacCatalyst 18+.
                     _tabBarController.TabBar.Alpha = 1.0f;
                     _tabBarController.TabBar.Hidden = !ShellItemController.ShowTabs;
                 }
@@ -651,14 +616,7 @@ namespace Microsoft.Maui.Controls.Handlers
             return null;
         }
 
-        // The global UITabBarItem.Appearance disabled-state title color (set once in
-        // ShellTabBarAppearanceTracker) doesn't reliably re-render once a specific item's
-        // Enabled flips back to true - the item's title label can keep showing the disabled
-        // color until something forces per-item text attributes to be reassigned. Explicitly
-        // clearing/re-setting the per-item title attributes (and re-tinting the icon, since
-        // UITabBarAppearance.Disabled.IconColor doesn't work either) on every enable/disable
-        // change works around this, matching the legacy ShellItemRenderer's
-        // UpdateTabBarItemEnabled behavior.
+        // Reassign per-item title/icon state on every enable change; global disabled appearance does not repaint reliably.
         void UpdateTabBarItemEnabled(UITabBarItem tabBarItem, bool isEnabled)
         {
             tabBarItem.Enabled = isEnabled;
@@ -707,13 +665,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // When there are more than 5 sections, iOS collapses the overflow behind a system
-            // "More" tab. TabBar.Items only reflects the visible native tabs (including the
-            // "More" item itself), so it can never be used to reach the overflow sections'
-            // badge/enabled state - not even on initial render. Each section's own
-            // ViewController.TabBarItem is what iOS actually renders for both the visible tabs
-            // and the "More" list, so update those directly - mirrors the legacy
-            // ShellItemRenderer's ApplyInitialDisabledState.
+            // Update each view controller's TabBarItem directly; TabBar.Items only covers visible tabs and the system "More" item.
             var count = Math.Min(items.Count, viewControllers.Length);
             for (int tabIndex = 0; tabIndex < count; tabIndex++)
             {
@@ -905,10 +857,7 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Tab Bar Controller
 
         /// <summary>
-        /// Thin UITabBarController subclass so UIKit can deliver TraitCollectionDidChange,
-        /// ViewWillLayoutSubviews, and ViewDidLayoutSubviews back to the handler. A plain
-        /// UITabBarController never receives these as handler callbacks since nothing else
-        /// forwards them.
+        /// UITabBarController subclass that forwards UIKit lifecycle callbacks to the handler.
         /// </summary>
         internal sealed class ShellItemTabBarController : UITabBarController
         {
@@ -955,8 +904,7 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Adapter
 
         /// <summary>
-        /// Wraps <see cref="ShellItemHandler"/> to implement <see cref="IShellItemRenderer"/>
-        /// so the handler can be used in contexts that expect the renderer interface.
+        /// Adapter that exposes <see cref="ShellItemHandler"/> as <see cref="IShellItemRenderer"/>.
         /// </summary>
         internal class ShellItemHandlerAdapter : IShellItemRenderer
         {
@@ -972,8 +920,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 get => _handler.VirtualView;
                 set
                 {
-                    // The handler manages its own VirtualView via SetVirtualView
-                    // This setter exists for interface compatibility; the handler owns its ShellSection via VirtualView.
+                    // Setter exists only for interface compatibility; the handler owns VirtualView.
                 }
             }
 

@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellFlyoutContentManager = _tableViewController?.ShellFlyoutContentManager;
 			AddChildViewController(_tableViewController);
 
-			// When used from the handler path, the mapper drives updates directly.
-			// Only subscribe to PropertyChanged for the compatibility renderer path.
+			// Only the compatibility renderer subscribes here; handlers use mapper-driven updates.
 			if (context is not Handlers.ShellHandler)
 			{
 				context.Shell.PropertyChanged += HandleShellPropertyChanged;

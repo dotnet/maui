@@ -5,8 +5,6 @@ namespace Microsoft.Maui.Controls
 {
     public partial class ShellItem
     {
-        // ── IsEnabled per tab ─────────────────────────────────────────────────────
-        // Called when ShellSection.IsEnabled changes to update the tab bar item state.
         internal static void MapIsEnabled(ShellItemHandler handler, ShellItem item)
         {
             if (handler._tabBarController.TabBar?.Items is null)
@@ -19,8 +17,6 @@ namespace Microsoft.Maui.Controls
                 handler._tabBarController.TabBar.Items[i].Enabled = items[i].IsEnabled;
         }
 
-        // ── Badge updates ─────────────────────────────────────────────────────────
-        // Called when ShellSection.BadgeText/Color/TextColor changes.
         internal static void UpdateTabBarItemBadge(ShellItemHandler handler, ShellSection section, int index)
         {
             if (handler._tabBarController.TabBar?.Items is null ||

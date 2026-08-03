@@ -15,12 +15,10 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
-    /// Shell handler for iOS. Manages the flyout layout, Shell item switching,
-    /// and UIViewController containment.
+    /// Handles iOS Shell flyout layout, item switching, and view-controller containment.
     /// </summary>
     public partial class ShellHandler : ViewHandler<Shell, UIView>, IShellContext, IAppearanceObserver, IFlyoutBehaviorObserver
     {
-        // Flyout views and gesture
         UIView? _flyoutView;
         UIView? _detailView;
         UIView? _tapoffView;
@@ -36,7 +34,6 @@ namespace Microsoft.Maui.Controls.Handlers
         double _flyoutWidth = -1;
         double _flyoutHeight = -1;
 
-        // Shell item handler
         IShellItemRenderer? _currentShellItemRenderer;
         IShellItemRenderer? _incomingRenderer;
         Task _activeTransition = Task.CompletedTask;
@@ -66,8 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var container = new ShellContainerView();
             container.SetHandler(this);
 
-            // A real UIViewController is required so ToUIViewController() resolves correctly
-            // and UIKit's formal parent-child containment chain is intact for proper nav-bar layout.
+            // Use a real UIViewController so ToUIViewController() and containment-based nav-bar layout work.
             var hostVC = new ShellHostViewController(this);
             hostVC.View = container;
             ViewController = hostVC;
@@ -79,13 +75,10 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.ConnectHandler(platformView);
 
-            // Register as appearance observer
             ShellController.AddAppearanceObserver(this, VirtualView);
 
-            // Setup flyout
             SetupFlyout();
 
-            // Setup initial shell item
             if (VirtualView.CurrentItem is not null)
             {
                 SwitchToItem(VirtualView.CurrentItem, animate: false);
@@ -97,7 +90,6 @@ namespace Microsoft.Maui.Controls.Handlers
             ShellController.RemoveAppearanceObserver(this);
             ((IShellController)VirtualView).RemoveFlyoutBehaviorObserver(this);
 
-            // Dispose flyout resources
             if (_flyoutAnimation is not null)
             {
                 _flyoutAnimation.StopAnimation(true);
@@ -122,13 +114,10 @@ namespace Microsoft.Maui.Controls.Handlers
             _detailView?.RemoveFromSuperview();
             _detailView = null;
 
-            // Dispose current item renderer
             (_currentShellItemRenderer as IDisconnectable)?.Disconnect();
             if (_currentShellItemRenderer is not null)
             {
-                // Unparent the current renderer's view controller before disposal, symmetric
-                // with the AddChildViewController/DidMoveToParentViewController pairing done in
-                // SetCurrentShellItemRendererAsync.
+                // Remove the child controller before disposal to match SetCurrentShellItemRendererAsync.
                 _currentShellItemRenderer.ViewController.WillMoveToParentViewController(null);
                 _currentShellItemRenderer.ViewController.View?.RemoveFromSuperview();
                 _currentShellItemRenderer.ViewController.RemoveFromParentViewController();
@@ -136,15 +125,12 @@ namespace Microsoft.Maui.Controls.Handlers
             _currentShellItemRenderer?.Dispose();
             _currentShellItemRenderer = null;
 
-            // Dispose flyout content renderer
             if (_flyoutContentRenderer is IDisposable disposable)
             {
                 disposable.Dispose();
             }
             _flyoutContentRenderer = null;
 
-            // Release the host UIViewController created in CreatePlatformView so it doesn't
-            // outlive the handler.
             ViewController = null;
 
             base.DisconnectHandler(platformView);
@@ -417,7 +403,7 @@ namespace Microsoft.Maui.Controls.Handlers
             _incomingRenderer = value;
             await _activeTransition;
 
-            // Selected item changed while the transition was finishing
+            // Selection changed while the previous transition was finishing.
             if (_incomingRenderer != value ||
                 value.ShellItem != VirtualView.CurrentItem)
             {
@@ -434,9 +420,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_detailView is null)
             {
-                // Handler disconnected while this transition's await was pending, so neither
-                // renderer will ever be attached to a view. Dispose both to avoid leaking
-                // (oldRenderer was only Disconnect()'d above, never Dispose()'d).
+                // Disconnect happened while awaiting the previous transition; neither renderer will attach.
                 (newRenderer as IDisconnectable)?.Disconnect();
                 newRenderer.Dispose();
                 oldRenderer?.Dispose();
@@ -444,13 +428,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            // Add new renderer's view to detail container
             var newView = newRenderer.ViewController.View;
 
             if (newView is not null)
             {
-                // Establish formal VC containment before adding the child view so UIKit's
-                // nav-bar layout sees the full parentViewController chain.
+                // Add controller containment before the child view so nav-bar layout sees the full parent chain.
                 ViewController?.AddChildViewController(newRenderer.ViewController);
 
                 newView.Frame = _detailView.Bounds;
@@ -469,14 +451,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 _activeTransition = transition.Transition(oldRenderer, newRenderer);
                 await _activeTransition;
 
-                // Symmetrically remove the old child view controller from its parent.
                 oldRenderer.ViewController?.WillMoveToParentViewController(null);
                 oldRenderer.ViewController?.View?.RemoveFromSuperview();
                 oldRenderer.ViewController?.RemoveFromParentViewController();
                 oldRenderer.Dispose();
             }
 
-            // Current renderer is still valid
             if (_currentShellItemRenderer == value)
             {
                 UpdateBackgroundColor();
@@ -542,8 +522,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public static void MapFlyoutBehavior(ShellHandler handler, Shell shell)
         {
-            // Effective flyout behavior is resolved via IFlyoutBehaviorObserver
-            // which accounts for per-page overrides (Shell.SetFlyoutBehavior)
+            // Effective behavior already comes through IFlyoutBehaviorObserver, including page overrides.
         }
 
         public static void MapFlyoutWidth(ShellHandler handler, Shell shell)
@@ -584,8 +563,6 @@ namespace Microsoft.Maui.Controls.Handlers
             handler.GetFlyoutContentRenderer()?.UpdateVerticalScrollMode();
         }
 
-        // ── Status bar / home indicator ───────────────────────────────────────────
-        // Moved here from Shell.iOS.cs so these can live directly in the Mapper.
         public static void MapPrefersHomeIndicatorAutoHidden(ShellHandler handler, Shell shell)
         {
             ((IShellContext)handler).CurrentShellItemRenderer?.ViewController
@@ -604,15 +581,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 ?.SetNeedsStatusBarAppearanceUpdate();
         }
 
-        // ── FlyoutIcon / ForegroundColor ──────────────────────────────────────────
-        // These affect toolbar items on displayed pages — trigger a tracker refresh.
         public static void MapFlyoutIcon(ShellHandler handler, Shell shell)
             => TriggerLeftBarButtonUpdate(handler, shell);
 
         public static void MapForegroundColor(ShellHandler handler, Shell shell)
             => TriggerLeftBarButtonUpdate(handler, shell);
 
-        // Finds the active page's ShellPageRendererTracker and refreshes toolbar items.
+        // Refresh toolbar items so FlyoutIcon/ForegroundColor changes reach the current page.
         internal static void TriggerLeftBarButtonUpdate(ShellHandler handler, Shell shell)
         {
             var section = shell.CurrentItem?.CurrentItem;
@@ -639,10 +614,7 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Host View Controller
 
         /// <summary>
-        /// Hosts Shell's content. Delegates status-bar/home-indicator preferences to the
-        /// currently displayed page, mirroring legacy <c>ShellRenderer</c>'s overrides — without
-        /// this, <c>Page.On&lt;iOS&gt;().SetPrefersStatusBarHidden()</c> and
-        /// <c>SetPrefersHomeIndicatorAutoHidden()</c> have no effect.
+        /// Hosts Shell content and forwards status-bar/home-indicator preferences to the current page.
         /// </summary>
         sealed class ShellHostViewController : UIViewController
         {
@@ -682,8 +654,7 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Container View
 
         /// <summary>
-        /// Custom UIView subclass that triggers flyout layout on bounds change.
-        /// Holds a weak reference to the handler to avoid retain cycles.
+        /// Relayouts the flyout on bounds changes without retaining the handler.
         /// </summary>
         sealed class ShellContainerView : UIView
         {
@@ -927,20 +898,14 @@ namespace Microsoft.Maui.Controls.Handlers
             nfloat openPixels = openLimit * openPercent;
 
             if (_flyoutBehavior == FlyoutBehavior.Locked)
-                // Matches the legacy ShellRenderer (SlideFlyoutTransition.LayoutViews), which uses
-                // this same formula for both LTR and RTL. In RTL the locked flyout is anchored to
-                // the trailing (right) edge and, on phone-sized flyout widths, ends up overlapping
-                // this detail frame entirely - that is expected/baseline-matching renderer behavior,
-                // not something to special-case here.
+                // Match legacy ShellRenderer: locked RTL flyouts intentionally overlap the detail frame.
                 _detailView.Frame = new CGRect(bounds.X + flyoutWidth, bounds.Y, bounds.Width - flyoutWidth, flyoutHeight);
             else
                 _detailView.Frame = bounds;
 
             if (IsRTL)
             {
-                // Use the full bounds width here (not _detailView.Frame.Width, which is reduced
-                // in Locked mode) so the flyout still lands flush against the right edge instead
-                // of being shifted left by an extra flyoutWidth.
+                // Use full bounds so locked RTL flyouts stay flush with the trailing edge.
                 var positionX = bounds.Width - openPixels;
                 _flyoutView.Frame = new CGRect(positionX, 0, flyoutWidth, flyoutHeight);
             }
@@ -949,12 +914,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _flyoutView.Frame = new CGRect(-openLimit + openPixels, 0, flyoutWidth, flyoutHeight);
             }
 
-            // The tapoff/backdrop view's frame is only set once at creation time (AddTapoffView),
-            // so without this it stays at whatever size the container was when the flyout was first
-            // opened - e.g. it doesn't grow to cover a device rotation, leaving part of the detail
-            // view exposed. Keep it in sync with the container's current bounds on every layout pass
-            // (mirrors the legacy ShellFlyoutRenderer.ViewWillTransitionToSize, which explicitly
-            // resizes TapoffView.Frame on rotation).
+            // Keep the backdrop sized to the container after rotations; AddTapoffView sizes it only once.
             if (_tapoffView is not null)
             {
                 _tapoffView.Frame = bounds;
@@ -1091,17 +1051,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_detailView is not null)
             {
-                // UIView.AccessibilityElementsHidden hides the whole subtree, including any
-                // subviews added to it *after* the flag is set. SetupFlyout() runs synchronously
-                // (and may call this multiple times) before the current item's content view has
-                // been attached to _detailView - that attachment happens later, asynchronously,
-                // in SetCurrentShellItemRendererAsync. If we hide _detailView before content
-                // exists, the content stays hidden from accessibility/automation forever once it
-                // is finally added, even though nothing about the flyout state actually changed
-                // in the interim. Skip hiding until real content has been attached, matching the
-                // legacy ShellFlyoutRenderer, which only ever evaluates this once (on IsOpen /
-                // FlyoutBehavior changes) - not immediately after the first render pass, so it
-                // never re-hides content that was just attached during initial load.
+                // Wait until content is attached before hiding _detailView or accessibility can stay hidden forever.
                 _detailView.AccessibilityElementsHidden = _currentShellItemRenderer is not null && detailElementsHidden;
             }
         }
