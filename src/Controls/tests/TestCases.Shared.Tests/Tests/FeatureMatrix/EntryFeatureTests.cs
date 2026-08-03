@@ -196,6 +196,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+		App.WaitForKeyboardToShow();
 		VerifyScreenshotWithKeyboardHandling();
 	}
 
