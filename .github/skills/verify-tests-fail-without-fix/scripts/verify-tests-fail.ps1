@@ -3142,6 +3142,22 @@ foreach ($t in $AllDetectedTests) {
     # the identical missing-lib error in both. (build 14699033, PR #36653.)
     $bothNativeLib = [bool]$wo.NativeLibLoadFailure -and [bool]$w.NativeLibLoadFailure
     if ($bothNativeLib) { $bothNativeLibCount++ }
+    # A with-fix NATIVE shared-library load failure (missing libSkiaSharp/libHarfBuzzSharp .so on
+    # the gate agent) means the test HOST crashed before running the fixed code — the fix is
+    # unverifiable via that test REGARDLESS of the without-fix leg. The $bothNativeLib guard above
+    # only catches the case where BOTH legs hit the missing lib; it misses the (equally
+    # environmental) case where the without-fix leg failed for a DIFFERENT reason — most commonly a
+    # compile-coupled build error (new API + test in the same project), so the without-fix run
+    # never reached the native-lib load at all. A genuine assertion regression never presents as a
+    # DllNotFoundException, so reclassify a with-fix native-lib failure as env/INCONCLUSIVE.
+    # (build 14850956, PR #35710: GenerateSplash* libSkiaSharp DllNotFound on the Linux android
+    # gate; without-fix was compile-coupled Passed=False/Failed=0 so $bothNativeLib was false and
+    # the with-fix native-lib failures were wrongly counted as a genuine FAILED.)
+    if ([bool]$w.NativeLibLoadFailure -and -not $w.EnvError) {
+        $w.EnvError = $true
+        if (-not $w.Error) { $w.Error = "With-fix run failed to load a native shared library (e.g. libSkiaSharp/libHarfBuzzSharp) on the gate agent — the test host crashed before exercising the fix, so it is unverifiable here (environment, not a fix failure). Common for Resizetizer/Graphics image tests on a Linux (android) gate agent that lacks the SkiaSharp native runtime." }
+        Write-Host "  🧩 $($t.TestName): with-fix failure is a native-library load error (missing .so on the gate agent) — reclassifying as INCONCLUSIVE, not FAILED" -ForegroundColor Yellow
+    }
     $woInconclusive = $wo.EnvError -or $wo.BuildError -or $wo.FilterMismatch -or $bothNativeLib
     $wInconclusive  = $w.EnvError  -or $w.BuildError  -or $w.FilterMismatch  -or $bothNativeLib
     # FAIL → PASS: reproduces the bug and the fix resolves it.

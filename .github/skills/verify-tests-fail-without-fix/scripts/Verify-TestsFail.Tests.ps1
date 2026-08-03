@@ -533,3 +533,19 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         $r.EnvError | Should -Not -BeTrue
     }
 }
+
+Describe 'Get-TestResultFromOutput — native-lib load failure flag (feeds with-fix env reclassify)' {
+    It 'flags libSkiaSharp DllNotFound as NativeLibLoadFailure in the device-count FAIL path (build 14850956 #35710)' {
+        $log = New-LogFile -Content @"
+  [xUnit.net 00:00:00.94]     Microsoft.Maui.Resizetizer.Tests.GenerateSplashAndroidResourcesTests.SplashScreenResectsAlias [FAIL]
+  [xUnit.net 00:00:00.94]       Error occurred in processing Android-specific image resources. System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+  [xUnit.net 00:00:00.94]       /home/vsts/work/1/s/artifacts/bin/Resizetizer.UnitTests/Debug/net11.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
+  Passed: 3
+  Failed: 24
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.Passed | Should -BeFalse
+        Remove-Item -LiteralPath $log -Force
+    }
+}
