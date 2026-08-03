@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = true)
+		protected virtual void SetupBuilder(bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
