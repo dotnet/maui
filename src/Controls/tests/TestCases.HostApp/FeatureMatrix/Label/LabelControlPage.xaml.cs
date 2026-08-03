@@ -17,6 +17,7 @@ public class LabelControlPage : NavigationPage
 public partial class LabelControlMainPage : ContentPage
 {
 	private LabelViewModel _viewModel;
+	private bool _recreating;
 
 	public LabelControlMainPage(LabelViewModel viewModel)
 	{
@@ -33,6 +34,12 @@ public partial class LabelControlMainPage : ContentPage
 
 	async void MainLabel_Tapped(object sender, TappedEventArgs e)
 	{
+		// Guard against re-entrancy: repeated taps before PopAsync completes would otherwise
+		// insert multiple pages and pop the wrong one. Recreation runs at most once per instance.
+		if (_recreating)
+			return;
+		_recreating = true;
+
 		// Recreate the page to verify initial mappers
 		// Clear BindingContext first so old Label properly detaches the FormattedString
 		// (triggers propertyChanging which unsubscribes events and calls RemoveSpans)
