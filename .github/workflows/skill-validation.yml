@@ -1021,6 +1021,7 @@ jobs:
           STATIC_RESULT: ${{ needs.static-check.result }}
           EVAL_RESULT: ${{ needs.evaluate.result }}
           HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
+          EXPECTED_ENTRIES: ${{ needs.discover-eval.outputs.entries }}
           DISCOVER_RESULT: ${{ needs.discover-eval.result }}
           IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
           HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
@@ -1069,6 +1070,13 @@ jobs:
             const staticResult = process.env.STATIC_RESULT;
             const evalResult = process.env.EVAL_RESULT;
             const hasEntries = process.env.HAS_ENTRIES === 'true';
+            let expectedEvalScopes = [];
+            try {
+              const entries = JSON.parse(process.env.EXPECTED_ENTRIES || '[]');
+              expectedEvalScopes = entries.map(e => e && e.name).filter(Boolean);
+            } catch (e) {
+              console.log('Could not parse expected eval entries:', e.message);
+            }
             const discoverResult = process.env.DISCOVER_RESULT;
             const isContributor = process.env.IS_CONTRIBUTOR === 'true';
             const evalRan = discoverResult === 'success';
@@ -1230,6 +1238,11 @@ jobs:
                 }
               }
             }
+            const observedEvalScopes = new Set(suites.map(s => s.scope).filter(Boolean));
+            const missingEvalScopes = expectedEvalScopes.filter(scope => !observedEvalScopes.has(scope));
+            const evalComplete = !hasEntries ||
+              (evalResult === 'success' && expectedEvalScopes.length > 0 &&
+                hasResults && missingEvalScopes.length === 0);
 
             // ── LLM evaluation section ────────────────────────────
             if (!evalRan && !isContributor) {
@@ -1241,6 +1254,14 @@ jobs:
             } else if (!hasEntries) {
               lines.push('### ⏭️ LLM Evaluation: Skipped');
               lines.push('_No changed skills with eval specs found._');
+              lines.push('');
+            } else if (!evalComplete) {
+              lines.push('### ⚠️ LLM Evaluation Incomplete');
+              if (missingEvalScopes.length > 0) {
+                lines.push(`_No valid JUnit suite results were found for: ${missingEvalScopes.map(s => `\`${s}\``).join(', ')}._`);
+              } else {
+                lines.push('_Evaluation jobs completed, but no valid JUnit suite results were found._');
+              }
               lines.push('');
             } else if (hasResults) {
               if (evalPassed) {
@@ -1337,10 +1358,6 @@ jobs:
                 lines.push('</details>');
                 lines.push('');
               }
-            } else if (evalResult === 'success') {
-              lines.push('### ⚠️ LLM Evaluation Incomplete');
-              lines.push('_Evaluation jobs completed, but no valid JUnit suite results were found._');
-              lines.push('');
             } else if (evalResult === 'failure') {
               lines.push('### ❌ LLM Evaluation Failed');
               lines.push('');
@@ -1420,6 +1437,8 @@ jobs:
               evalStatus = 'Needs attention';  // discovery job failed → can't tell if eval was needed; don't mask as Skipped/Passed
             } else if (!hasEntries) {
               evalStatus = 'Skipped';
+            } else if (!evalComplete) {
+              evalStatus = 'Needs attention';
             } else if (hasResults) {
               evalStatus = evalPassed ? 'Passed' : 'Failed';
             } else if (evalResult === 'success') {
@@ -1542,7 +1561,7 @@ jobs:
             // Save eval pass/fail for downstream jobs
             const outputPath = process.env.GITHUB_OUTPUT;
             if (outputPath) {
-              fs.appendFileSync(outputPath, `eval_passed=${hasResults ? evalPassed : 'na'}\n`);
+              fs.appendFileSync(outputPath, `eval_passed=${evalComplete ? evalPassed : 'na'}\n`);
             }
 
   # ==========================================================================

@@ -54,11 +54,19 @@ stimuli:
       # committed fix to revert and restore without depending on a live PR ref.
       commands:
         - |
+          set -e
+          base_head=$(git rev-parse HEAD)
           git config user.name "Vally Fixture"
           git config user.email "vally-fixture@example.invalid"
           perl -0pi -e 's/(var nativeEntry = new MauiAppCompatEditText\(Context\);\n)/$1\t\t\tnativeEntry.SaveEnabled = true;\n/' src/Core/src/Handlers/Entry/EntryHandler.Android.cs
+          if git diff --quiet -- src/Core/src/Handlers/Entry/EntryHandler.Android.cs; then
+            echo "Synthetic fixture substitution did not change the target file" >&2
+            exit 1
+          fi
           git add src/Core/src/Handlers/Entry/EntryHandler.Android.cs
           git commit -m "Synthetic Entry state restoration attempt"
+          test "$(git rev-parse HEAD^)" = "$base_head"
+          test "$(git diff --name-only HEAD^ HEAD)" = "src/Core/src/Handlers/Entry/EntryHandler.Android.cs"
           git rev-parse HEAD > .github/.try-fix-fixture-head
     graders:
       - type: skill-invocation
@@ -75,7 +83,7 @@ stimuli:
               command: 'EstablishBrokenBaseline\.ps1\s+-Restore\b'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|(?:&&|\|\||;|\n)\s*)git(?:\s+-\S+)*\s+(?:checkout|clean|restore|reset|stash)\b'
+              command: '(?:^|(?:&&|\|\||;|\||\n)\s*)git(?:(?:\s+(?:-C|-c)\s+\S+)|(?:\s+-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
       - type: run-command
         name: baseline-restored-cleanly
         config:

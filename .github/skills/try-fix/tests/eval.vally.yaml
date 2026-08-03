@@ -81,6 +81,15 @@ stimuli:
 
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
       Files to look at: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+    environment:
+      commands:
+        - |
+          set -e
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+          git add src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+          git commit -m "Synthetic CollectionView lifecycle fix"
     graders:
       # Judge-only: "distinct from the prior approach" is purely semantic.
       # A regex floor here would either ban one phrasing (brittle) or add
@@ -164,6 +173,15 @@ stimuli:
       - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
       - Target: src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
       - Platform: ios
+    environment:
+      commands:
+        - |
+          set -e
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
+          git add src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
+          git commit -m "Synthetic ScrollView gesture fix"
     graders:
       # Crisp failure-mode floor: claiming PASS when the test never ran.
       - type: output-not-matches
@@ -213,6 +231,15 @@ stimuli:
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
       Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
       Hint: The fix needs to happen before layout measurement, not after navigation completes.
+    environment:
+      commands:
+        - |
+          set -e
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
+          git add src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
+          git commit -m "Synthetic Shell navigation fix"
     graders:
       - type: prompt
         config:
@@ -252,6 +279,15 @@ stimuli:
 
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
       Target: src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
+    environment:
+      commands:
+        - |
+          set -e
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
+          git add src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
+          git commit -m "Synthetic CollectionView overlap fix"
     graders:
       - type: output-not-matches
         config:
@@ -300,6 +336,16 @@ stimuli:
       - src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
       - src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
       Platform: Android
+    environment:
+      commands:
+        - |
+          set -e
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
+          git add src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
+          git commit -m "Synthetic EmptyView measurement fix"
     graders:
       - type: prompt
         config:
@@ -340,6 +386,16 @@ stimuli:
       Platform: iOS
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+    environment:
+      commands:
+        - |
+          set -e
+          git config user.name "Vally Fixture"
+          git config user.email "vally-fixture@example.invalid"
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs
+          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
+          git add src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
+          git commit -m "Synthetic NavigationPage disconnect fix"
     graders:
       - type: prompt
         config:

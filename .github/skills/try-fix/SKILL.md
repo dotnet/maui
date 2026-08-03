@@ -32,7 +32,9 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 7. **Baseline-file boundary** - After Step 2, modify ONLY files listed in
    `.github/.baseline-state.json` under `RevertedFiles`. The restore script
    tracks only those original fix files; editing any other tracked file makes
-   restoration incomplete. If the approach requires another tracked file,
+   restoration incomplete. If the state file is absent, or its `NewFiles`
+   array is non-empty, report `Blocked` before editing: added production files
+   are not safely restorable. If the approach requires another tracked file,
    report `Blocked` instead of editing it.
 
 **Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
@@ -227,7 +229,10 @@ Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 
 Read `.github/.baseline-state.json` after this command. Its `RevertedFiles`
 array is the complete modification allow-list for the attempt. Target files
-outside that array may be inspected but MUST NOT be edited.
+outside that array may be inspected but MUST NOT be edited. If the state file
+was not created, or `NewFiles` contains any path, report `Blocked` immediately
+and proceed to Step 9 without modifying tracked files; the restore script does
+not safely restore added production files.
 
 **If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 
