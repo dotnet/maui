@@ -129,6 +129,8 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(platformPicker.ScrollX > 0, $"Expected Picker ScrollX to be greater than 0 after a horizontal drag, but it was {platformPicker.ScrollX}.");
 					Assert.Equal(1, clickCount);
 
+					DispatchTap(platformPicker);
+					Assert.Equal(2, clickCount);
 					platformPicker.Click -= OnPickerClicked;
 
 					void OnPickerClicked(object sender, System.EventArgs e)
