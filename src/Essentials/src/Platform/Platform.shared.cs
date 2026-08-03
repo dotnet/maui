@@ -154,6 +154,15 @@ namespace Microsoft.Maui.ApplicationModel
 		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs args) =>
 			WindowStateManager.Default.OnActivated(window, args);
 
+		/// <summary>
+		/// Called when the Windows application receives activation arguments that may be handled by platform features.
+		/// </summary>
+		/// <param name="application">The application instance that received the activation.</param>
+		/// <param name="args">The activation arguments.</param>
+		/// <returns><see langword="true"/> if a platform feature handled the activation; otherwise, <see langword="false"/>.</returns>
+		public static bool OnAppInstanceActivated(UI.Xaml.Application application, Microsoft.Windows.AppLifecycle.AppActivationArguments args) =>
+			WebAuthenticator.Default.OnAppInstanceActivated(args);
+
 #elif TIZEN
 		/// <summary>
 		/// Gets a <see cref="Tizen.Applications.Package"/> object with information about the current application package.

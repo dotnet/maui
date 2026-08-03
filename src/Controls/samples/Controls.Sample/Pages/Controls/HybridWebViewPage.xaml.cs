@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
+			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this), SampleInvokeJsContext.Default);
 		}
 
 		int count;
@@ -128,6 +128,8 @@ namespace Maui.Controls.Sample.Pages
 
 		[JsonSourceGenerationOptions(WriteIndented = true)]
 		[JsonSerializable(typeof(ComputationResult))]
+		[JsonSerializable(typeof(SyncReturn))]
+		[JsonSerializable(typeof(int))]
 		[JsonSerializable(typeof(double))]
 		[JsonSerializable(typeof(string))]
 		[JsonSerializable(typeof(Dictionary<string, string>))]

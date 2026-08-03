@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -28,7 +28,14 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 #if IOS || MACCATALYST
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					if (includeNavigationViewHandler)
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					}
+					else
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					}
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
@@ -351,6 +358,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS || ANDROID
 			, Skip = "Failing https://github.com/dotnet/maui/issues/27411"
@@ -379,6 +387,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
+#endif
 
 		[Fact(DisplayName = "Child Pages Do Not Leak"
 #if WINDOWS

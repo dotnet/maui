@@ -90,6 +90,14 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
+		// For grouped collections, add inter-section spacing to create the gap between the
+		// trailing/bottom edge of each section and the leading/top edge (header) of the next section.
+		// This mirrors CV1's GetInsetForSection right-inset (horizontal) / bottom-inset (vertical) approach.
+		if (groupingInfo.IsGrouped && itemSpacing > 0)
+		{
+			layoutConfiguration.InterSectionSpacing = new NFloat(itemSpacing);
+		}
+
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
@@ -133,6 +141,35 @@ internal static class LayoutFactory2
 			// On iOS 26.1+, the default (.automatic → .safeArea) actively insets cells at section level.
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 				section.ContentInsetsReference = UIContentInsetsReference.None;
+
+			// For grouped sections with a group header/footer, add content insets to create
+			// the gap between the header/footer supplementary item and the first/last item.
+			// InterSectionSpacing (set on layoutConfiguration above) handles the gap between sections.
+			if (groupingInfo.IsGrouped && itemSpacing > 0)
+			{
+				if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					var leadingInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
+					var trailingInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
+
+					if (leadingInset > 0 || trailingInset > 0)
+					{
+						section.ContentInsets = new NSDirectionalEdgeInsets(0, leadingInset, 0, trailingInset);
+					}
+				}
+				else
+				{
+					// Vertical: top inset creates gap between header and first item,
+					// bottom inset creates gap between last item and footer.
+					var topInset = groupingInfo.HasHeader ? new NFloat(itemSpacing) : new NFloat(0);
+					var bottomInset = groupingInfo.HasFooter ? new NFloat(itemSpacing) : new NFloat(0);
+
+					if (topInset > 0 || bottomInset > 0)
+					{
+						section.ContentInsets = new NSDirectionalEdgeInsets(topInset, 0, bottomInset, 0);
+					}
+				}
+			}
 
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
@@ -645,6 +682,43 @@ internal static class LayoutFactory2
 			// Get the viewport of the UICollectionView at the current content offset
 			var contentOffset = CollectionView.ContentOffset;
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
+
+			var carouselController = (CollectionView.Delegate as CarouselViewDelegator2)?.ViewController;
+			if (carouselController?.DragStartPosition is >= 0)
+			{
+				var currentIndexPath = carouselController.GetScrollToIndexPath(carouselController.DragStartPosition);
+				var itemCount = (int)CollectionView.NumberOfItemsInSection(currentIndexPath.Section);
+				if (itemCount > 0)
+				{
+					var velocity = Configuration.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+						? scrollingVelocity.X
+						: scrollingVelocity.Y;
+
+					if (velocity != 0)
+					{
+						var targetItem = (int)currentIndexPath.Item;
+
+						if (velocity > 0)
+							targetItem++;
+						else
+							targetItem--;
+
+						targetItem = Math.Clamp(targetItem, 0, itemCount - 1);
+						var targetIndexPath = NSIndexPath.FromItemSection(targetItem, currentIndexPath.Section);
+						var targetItemAttributes = LayoutAttributesForItem(targetIndexPath);
+
+						if (targetItemAttributes is not null)
+						{
+							return Items.SnapHelpers.AdjustContentOffset(
+								CollectionView.ContentOffset,
+								targetItemAttributes.Frame,
+								viewport,
+								alignment,
+								Configuration.ScrollDirection);
+						}
+					}
+				}
+			}
 
 			// Find the spot in the viewport we're trying to align with
 			var alignmentTarget = Items.SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, Configuration.ScrollDirection);

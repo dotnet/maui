@@ -13,7 +13,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Media
 {
-	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot, IViewScreenshot
 	{
 		public bool IsCaptureSupported =>
 			true;
@@ -113,6 +113,9 @@ namespace Microsoft.Maui.Media
 
 			return Task.FromResult<IScreenshotResult?>(result);
 		}
+
+		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
+			platformView is UIView view ? CaptureAsync(view) : Task.FromResult<IScreenshotResult?>(null);
 
 		static bool TryRender(UIView view, out Exception? error)
 		{

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Webkit;
@@ -8,10 +7,6 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
-	[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
-#endif
 	public class MauiHybridWebView : AWebView, IHybridPlatformWebView
 	{
 		private readonly WeakReference<HybridWebViewHandler> _handler;
@@ -36,12 +31,31 @@ namespace Microsoft.Maui.Platform
 			UpdateClipBounds(width, height);
 		}
 
+		// OnAttachedToWindow — calls Attach(this) when inside a SwipeRefreshLayout.
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
+
+			if (RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(this))
+			{
+				RefreshViewWebViewScrollCapture.Attach(this);
+				// If a page has already loaded before this HybridWebView was placed inside a
+				// RefreshView (late-attach), the observer was never injected. Re-inject now.
+				if (!string.IsNullOrEmpty(Url))
+				{
+					RefreshViewWebViewScrollCapture.InjectObserver(this);
+				}
+			}
+		}
+
+		// OnDetachedFromWindow — calls Detach().
+		protected override void OnDetachedFromWindow()
+		{
+			RefreshViewWebViewScrollCapture.Detach(this);
+			base.OnDetachedFromWindow();
 		}
 
 		void UpdateClipBounds(int width, int height)
@@ -76,6 +90,17 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CA1416 // Validate platform compatibility
 			PostWebMessage(new WebMessage(rawMessage), AndroidAppOriginUri);
 #pragma warning restore CA1416 // Validate platform compatibility
+		}
+
+		// Dispose(bool) — calls Detach() on cleanup.
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				RefreshViewWebViewScrollCapture.Detach(this);
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -918,17 +919,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var rootServiceProvider = serviceCollection.BuildServiceProvider();
 
 			var appContext = new MauiContext(rootServiceProvider);
-			
+
 			// Simulate the window creation flow
 			var windowContext = appContext.MakeWindowScope(new object(), out var scope);
-			
+
 			// Verify we can get scoped services
 			var service1 = windowContext.Services.GetRequiredService<TestScopedService>();
 			var service2 = windowContext.Services.GetRequiredService<TestScopedService>();
-			
+
 			// Should be the same instance since it's scoped
 			Assert.Same(service1, service2);
-			
+
 			// Create window and set up handler
 			var window = new TestWindow(new ContentPage());
 			var handler = new WindowHandlerStub();
@@ -945,6 +946,275 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		private class TestScopedService
 		{
 			public string TestProperty { get; set; } = "test";
+		}
+
+		[Fact]
+		public void StatusBarThemeDefaultValue()
+		{
+			var window = new Window();
+			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+		}
+
+		[Theory]
+		[InlineData(StatusBarTheme.Default)]
+		[InlineData(StatusBarTheme.Light)]
+		[InlineData(StatusBarTheme.Dark)]
+		public void StatusBarThemeCanBeSetToAllValues(StatusBarTheme theme)
+		{
+			var window = new Window
+			{
+				StatusBarTheme = theme
+			};
+			Assert.Equal(theme, window.StatusBarTheme);
+		}
+
+		[Theory]
+		[InlineData(StatusBarTheme.Default)]
+		[InlineData(StatusBarTheme.Light)]
+		[InlineData(StatusBarTheme.Dark)]
+		public void StatusBarThemeIsBindableForAllValues(StatusBarTheme theme)
+		{
+			var window = new Window();
+			window.SetValue(Window.StatusBarThemeProperty, theme);
+			Assert.Equal(theme, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeIsStyleable()
+		{
+			var style = new Style(typeof(Window))
+			{
+				Setters =
+				{
+					new Setter { Property = Window.StatusBarThemeProperty, Value = StatusBarTheme.Dark }
+				},
+			};
+
+			var app = new TestApp();
+			app.Resources.Add(style);
+
+			var window = app.CreateWindow();
+			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeChangesWithAppThemeBinding()
+		{
+			AppInfo.SetCurrent(new MockAppInfo() { RequestedTheme = AppTheme.Light });
+			var app = new Application();
+			Application.Current = app;
+
+			try
+			{
+				var window = app.LoadPage(new ContentPage());
+
+				window.SetBinding(Window.StatusBarThemeProperty, new AppThemeBinding
+				{
+					Light = StatusBarTheme.Light,
+					Dark = StatusBarTheme.Dark
+				});
+
+				Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
+
+				((MockAppInfo)AppInfo.Current).RequestedTheme = AppTheme.Dark;
+				((IApplication)app).ThemeChanged();
+
+				Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+			}
+			finally
+			{
+				Application.Current = null;
+			}
+		}
+
+		[Fact]
+		public void StatusBarThemePropertyChangedDoesNotFireForSameValue()
+		{
+			var window = new Window { StatusBarTheme = StatusBarTheme.Dark };
+			var changeCount = 0;
+
+			window.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(Window.StatusBarTheme))
+					changeCount++;
+			};
+
+			window.StatusBarTheme = StatusBarTheme.Dark;
+			Assert.Equal(0, changeCount);
+		}
+	}
+
+	/// <summary>
+	/// Unit tests for <see cref="Window.CanConsumeBackNavigation"/> — pure C# logic,
+	/// no Android platform dependencies required.
+	/// </summary>
+	public class CanConsumeBackNavigationTests : BaseTestFixture
+	{
+		[Fact]
+		public void NullPage_ReturnsFalse()
+		{
+			Assert.False(Window.CanConsumeBackNavigation(null));
+		}
+
+		[Fact]
+		public void ContentPage_ReturnsFalse()
+		{
+			// A plain ContentPage with no navigation stack → cannot consume back.
+			var page = new ContentPage();
+			Assert.False(Window.CanConsumeBackNavigation(page));
+		}
+
+		[Fact]
+		public void NavigationPage_SinglePage_ReturnsFalse()
+		{
+			// NavigationPage with only the root page — nothing to pop.
+			var nav = new TestNavigationPage(true, new ContentPage());
+			Assert.False(Window.CanConsumeBackNavigation(nav));
+		}
+
+		[Fact]
+		public async Task NavigationPage_MultiplePagesInStack_ReturnsTrue()
+		{
+			// After pushing a second page the stack has > 1 entry — back can be consumed.
+			var nav = new TestNavigationPage(true, new ContentPage());
+			_ = new TestWindow(nav);
+			await nav.PushAsync(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(nav));
+		}
+
+		[Fact]
+		public void FlyoutPage_IsPresented_ReturnsTrue()
+		{
+			// FlyoutPage with flyout open → back closes the flyout.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = true,
+				IsPlatformEnabled = true,
+			};
+			Assert.True(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void FlyoutPage_NotPresented_NoNavigation_ReturnsFalse()
+		{
+			// FlyoutPage with flyout closed and plain ContentPage detail → cannot consume back.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = false,
+				IsPlatformEnabled = true,
+			};
+			Assert.False(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void FlyoutPage_BackButtonPressedSubscriber_DoesNotSuppressAnimation()
+		{
+			// Regression: HasBackButtonPressedSubscribers was a false positive.
+			// A subscriber that doesn't set Handled=true must NOT suppress the animation.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = false,
+				IsPlatformEnabled = true,
+			};
+			flyout.BackButtonPressed += (s, e) => { /* does not set e.Handled = true */ };
+			Assert.False(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public async Task FlyoutPage_DetailIsNavigationPageWithStack_ReturnsTrue()
+		{
+			// FlyoutPage whose detail is a NavigationPage with multiple pages → back navigates.
+			var nav = new TestNavigationPage(true, new ContentPage());
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = nav,
+				IsPresented = false,
+				IsPlatformEnabled = true,
+			};
+			_ = new TestWindow(flyout);
+			await nav.PushAsync(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void UnknownPageType_ReturnsFalse()
+		{
+			// Custom/unknown page types must conservatively return false to avoid blocking
+			// the back-to-home animation for containers that don't override OnBackButtonPressed.
+			var page = new ContentPage();
+			Assert.False(Window.CanConsumeBackNavigation(page));
+		}
+
+		[Fact]
+		public void FlyoutPage_SplitMode_ReturnsFalse()
+		{
+			// In split mode (tablets), CanChangeIsPresented=false while IsPresented is locked true.
+			// The flyout is always visible so back must NOT be consumed.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = true,
+				IsPlatformEnabled = true,
+			};
+			((IFlyoutPageController)flyout).CanChangeIsPresented = false;
+			Assert.False(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void Shell_RootPage_ReturnsFalse()
+		{
+			// Shell at root with a single content page and no flyout visible -> cannot consume back.
+			var shell = CreateSimpleShell();
+			Assert.False(Window.CanConsumeBackNavigation(shell));
+		}
+
+		[Fact]
+		public void Shell_FlyoutIsPresented_ReturnsTrue()
+		{
+			// Shell flyout is open and not locked -> back closes the flyout.
+			var shell = CreateSimpleShell(FlyoutBehavior.Flyout);
+			shell.FlyoutIsPresented = true;
+			Assert.True(Window.CanConsumeBackNavigation(shell));
+		}
+
+		[Fact]
+		public void Shell_FlyoutIsPresented_Locked_ReturnsFalse()
+		{
+			// Locked flyout is always visible -- IsPresented should not suppress the
+			// back-to-home animation even if true.
+			var shell = CreateSimpleShell(FlyoutBehavior.Locked);
+			shell.FlyoutIsPresented = true;
+			Assert.False(Window.CanConsumeBackNavigation(shell));
+		}
+
+		[Fact]
+		public async Task Shell_StackGreaterThanOne_ReturnsTrue()
+		{
+			// After pushing a page via shell navigation the section stack is > 1 -> back can pop.
+			var shell = CreateSimpleShell();
+			_ = new TestWindow(shell);
+			await shell.Navigation.PushAsync(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(shell));
+		}
+
+		static Shell CreateSimpleShell(FlyoutBehavior flyoutBehavior = FlyoutBehavior.Disabled)
+		{
+			var shell = new Shell { FlyoutBehavior = flyoutBehavior };
+			var content = new ShellContent { Content = new ContentPage() };
+			var section = new ShellSection();
+			section.Items.Add(content);
+			var item = new ShellItem();
+			item.Items.Add(section);
+			shell.Items.Add(item);
+			return shell;
 		}
 	}
 }

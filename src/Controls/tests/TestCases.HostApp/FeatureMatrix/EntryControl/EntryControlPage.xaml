@@ -7,10 +7,14 @@
        <VerticalStackLayout Padding="20"
                             Spacing="8">
               <Label Text="Entry Control"
+                     AutomationId="MainLabel"
                      FontSize="20"
                      Margin="0,0,0,50"
-                     HorizontalOptions="Center"/>
-
+                     HorizontalOptions="Center">
+                     <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="MainLabel_Tapped"/>
+                     </Label.GestureRecognizers>
+              </Label>
               <local:UITestEntry x:Name="EntryControl"
                                  IsCursorVisible="False"
                                  Text="{Binding Text}"

@@ -31,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsResumed { get; set; }
 		public bool IsStopped { get; set; }
 		public FlowDirection FlowDirection { get; set; }
+		public StatusBarTheme StatusBarTheme { get; set; }
 
 		public void FrameChanged(Rect frame)
 		{

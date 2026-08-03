@@ -94,36 +94,25 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The local listener if view is in a registered view hierarchy, null otherwise</returns>
 		internal static MauiWindowInsetListener? FindListenerForView(AView view)
 		{
+			if (!ShouldSetMauiWindowInsetListener(view))
+			{
+				return null;
+			}
+
+			return FindRegisteredListenerForView(view);
+		}
+
+		internal static MauiWindowInsetListener? FindRegisteredListenerForView(AView view)
+		{
 			// Walk up the view hierarchy looking for a registered view
 			var parent = view.Parent;
 			while (parent is not null)
 			{
-				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
-				// We want the layout listener logic to get applied to the MaterialToolbar itself
-				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
-				// CollectionView/CarouselView items are not excluded to enable per-item SafeAreaEdges control.
-				// Performance overhead is negligible due to early pass-through for items without insets.
-				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout || parent is MauiScrollView))
-				{
-					return null;
-				}
-
 				if (parent is AView parentView)
 				{
-					// Check if this parent view is registered
-					// Clean up dead references while searching
-					for (int i = _registeredViews.Count - 1; i >= 0; i--)
+					if (FindRegisteredListener(parentView) is MauiWindowInsetListener listener)
 					{
-						var entry = _registeredViews[i];
-						if (!entry.View.TryGetTarget(out var registeredView))
-						{
-							_registeredViews.RemoveAt(i);
-						}
-						else if (ReferenceEquals(registeredView, parentView))
-						{
-							return entry.Listener;
-						}
+						return listener;
 					}
 				}
 
@@ -131,6 +120,60 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		internal static bool ShouldSetMauiWindowInsetListener(AView view)
+		{
+			var parent = view.Parent;
+			var isInsideRecyclerEmptyView = false;
+
+			while (parent is not null)
+			{
+				if (parent is IMauiRecyclerViewEmptyView)
+				{
+					isInsideRecyclerEmptyView = true;
+				}
+
+				// MaterialToolbar needs its own inset handling, so it is exempt from all listener-suppression branches.
+				// Skip listeners for views inside AppBarLayout/MauiScrollView, and for recycler item views
+				// unless SafeAreaEdges was explicitly set.
+				if (view is not MaterialToolbar &&
+					(parent is AppBarLayout ||
+						parent is MauiScrollView ||
+						(parent is IMauiRecyclerView && !isInsideRecyclerEmptyView && !HasExplicitSafeAreaEdges(view))))
+				{
+					return false;
+				}
+
+				parent = parent.Parent;
+			}
+
+			return true;
+		}
+
+		static MauiWindowInsetListener? FindRegisteredListener(AView parentView)
+		{
+			// Check if this parent view is registered. Clean up dead references while searching.
+			for (int i = _registeredViews.Count - 1; i >= 0; i--)
+			{
+				var entry = _registeredViews[i];
+				if (!entry.View.TryGetTarget(out var registeredView))
+				{
+					_registeredViews.RemoveAt(i);
+				}
+				else if (ReferenceEquals(registeredView, parentView))
+				{
+					return entry.Listener;
+				}
+			}
+
+			return null;
+		}
+
+		static bool HasExplicitSafeAreaEdges(AView view)
+		{
+			return view is ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaView2 safeAreaView } &&
+				safeAreaView.HasExplicitSafeAreaEdges;
 		}
 
 		/// <summary>
@@ -474,7 +517,6 @@ internal static class MauiWindowInsetListenerExtensions
 	/// <param name="context">The Android context to get the listener from</param>
 	public static bool TrySetMauiWindowInsetListener(this View view, Context context)
 	{
-		// Check if this view is contained within a registered view first
 		if (MauiWindowInsetListener.FindListenerForView(view) is MauiWindowInsetListener localListener)
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
@@ -483,6 +525,37 @@ internal static class MauiWindowInsetListenerExtensions
 		}
 
 		// If no listener available, this is likely a configuration issue but not critical
+		return false;
+	}
+
+	/// <summary>
+	/// Refreshes the MauiWindowInsetListener attached to the specified view after SafeAreaEdges eligibility changes.
+	/// Unlike TrySetMauiWindowInsetListener, this finds the registered parent listener before applying
+	/// eligibility checks so it can detach the listener and reset applied safe areas when the view is
+	/// no longer eligible.
+	/// </summary>
+	/// <param name="view">The Android view to refresh the listener on</param>
+	/// <param name="context">The Android context to get the listener from</param>
+	public static bool RefreshMauiWindowInsetListener(this View view, Context context)
+	{
+		var listener = MauiWindowInsetListener.FindRegisteredListenerForView(view);
+		if (listener is null)
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+			ViewCompat.SetWindowInsetsAnimationCallback(view, null);
+			return false;
+		}
+
+		if (MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(view))
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
+			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
+			return true;
+		}
+
+		ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+		ViewCompat.SetWindowInsetsAnimationCallback(view, null);
+		listener.ResetAppliedSafeAreas(view);
 		return false;
 	}
 
@@ -499,7 +572,7 @@ internal static class MauiWindowInsetListenerExtensions
 		ViewCompat.SetWindowInsetsAnimationCallback(view, null);
 
 		// Reset view state - prefer local listener if available, otherwise use global
-		var listener = MauiWindowInsetListener.FindListenerForView(view);
+		var listener = MauiWindowInsetListener.FindRegisteredListenerForView(view);
 		listener?.ResetView(view);
 	}
 }

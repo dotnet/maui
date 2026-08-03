@@ -44,7 +44,7 @@ handle_error() {
     info "Troubleshooting tips:"
     echo "  • Make sure you're in a directory containing a .NET MAUI project"
     echo "  • Verify that PR #${pr_number:-NUMBER} exists: https://github.com/dotnet/maui/pull/${pr_number:-NUMBER}"
-    echo "  • Check if there's a completed build for this PR (look for green checkmarks)"
+    echo "  • Check if there's a completed maui-pr build with PackageArtifacts for this PR"
     echo "  • Check your internet connection"
     echo "  • Visit: https://github.com/dotnet/maui/wiki/Testing-PR-Builds"
     exit $exit_code
@@ -200,6 +200,7 @@ check_build_in_progress() {
 get_build_info() {
     local sha="$1"
     local pr_num="$2"
+    local merge_sha="${3:-}"
     
     info "Looking for build artifacts for commit ${sha:0:7}..."
     
@@ -208,23 +209,15 @@ get_build_info() {
     local checks_json
     checks_json=$(curl -s -H "User-Agent: MAUI-PR-Script" -H "Accept: application/vnd.github.v3+json" ${GITHUB_AUTH_HEADER:+-H "$GITHUB_AUTH_HEADER"} "$checks_url")
     
-    # Find the main MAUI build check (not uitests)
-    local build_check=$(echo "$checks_json" | jq -r '.check_runs[] | select((.name | startswith("maui-pr")) and (.name | contains("uitests") | not) and .status == "completed" and (.details_url | contains("buildId="))) | @json' | head -n 1)
+    # Find the aggregate MAUI PR build check. Job-level checks share the
+    # maui-pr prefix and can point at the same build with a different result.
+    local build_check=$(echo "$checks_json" | jq -r '.check_runs[]? | select(.name == "maui-pr" and .status == "completed" and (.details_url | contains("buildId="))) | @json' | head -n 1)
     
     if [ -n "$build_check" ] && [ "$build_check" != "null" ]; then
         local conclusion=$(echo "$build_check" | jq -r '.conclusion')
         if [ "$conclusion" != "success" ]; then
-            warning "Build completed with status: $conclusion"
-            if [ "$YES_FLAG" = true ]; then
-                info "Auto-accepting non-successful build (-y flag)"
-            else
-                read -p "Do you want to continue anyway? (y/N) " -n 1 -r
-                echo >&2
-                if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                    error "Build was not successful. Aborting."
-                    exit 1
-                fi
-            fi
+            warning "The aggregate maui-pr build completed with status: $conclusion"
+            warning "Continuing because PackageArtifacts may still be available when unrelated CI legs fail."
         fi
         
         # Extract build ID from details URL
@@ -239,13 +232,17 @@ get_build_info() {
     
     # Strategy 2: Query Azure DevOps directly (handles merge commits not reported to GitHub)
     info "Searching Azure DevOps directly for PR #$pr_num builds..."
-    local builds_url="https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/build/builds?api-version=7.1&branchName=refs/pull/$pr_num/merge&\$top=10"
+    local builds_url="https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/build/builds?api-version=7.1&branchName=refs/pull/$pr_num/merge&\$top=25"
     local builds_json
     builds_json=$(curl -s -H "User-Agent: MAUI-PR-Script" "$builds_url" 2>/dev/null)
     
     if [ -n "$builds_json" ]; then
         local completed_build
-        completed_build=$(echo "$builds_json" | jq -r '[.value[] | select(.definition.name == "maui-pr" and .status == "completed")] | first | @json' 2>/dev/null || echo "")
+        completed_build=$(echo "$builds_json" | jq -r --arg head "$sha" --arg merge "$merge_sha" '[.value[] | select(.definition.name == "maui-pr" and .status == "completed" and (((.triggerInfo["pr.sourceSha"] // "") == $head) or ((.sourceVersion // "") == $head) or ($merge != "" and (.sourceVersion // "") == $merge)))] | first | @json' 2>/dev/null || echo "")
+
+        if { [ -z "$completed_build" ] || [ "$completed_build" == "null" ]; } && echo "$builds_json" | jq -e '[.value[] | select(.definition.name == "maui-pr" and .status == "completed")] | length > 0' >/dev/null 2>&1; then
+            warning "Found completed maui-pr builds for PR #$pr_num, but none match the current head/merge commit."
+        fi
         
         if [ -n "$completed_build" ] && [ "$completed_build" != "null" ]; then
             local azdo_build_id=$(echo "$completed_build" | jq -r '.id')
@@ -266,17 +263,8 @@ get_build_info() {
             fi
             
             if [ "$azdo_result" != "succeeded" ]; then
-                warning "Build completed with result: $azdo_result"
-                if [ "$YES_FLAG" = true ]; then
-                    info "Auto-accepting non-successful build (-y flag)"
-                else
-                    read -p "Do you want to continue anyway? (y/N) " -n 1 -r
-                    echo >&2
-                    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-                        error "Build was not successful. Aborting."
-                        exit 1
-                    fi
-                fi
+                warning "The aggregate maui-pr build completed with result: $azdo_result"
+                warning "Continuing because PackageArtifacts may still be available when unrelated CI legs fail."
             fi
             
             success "Found build ID: $azdo_build_id (via Azure DevOps)"
@@ -299,6 +287,35 @@ get_build_info() {
     exit 1
 }
 
+check_pack_job_status() {
+    local build_id="$1"
+    local timeline_url="https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/build/builds/$build_id/timeline?api-version=7.1"
+    local timeline_json
+
+    if ! timeline_json=$(curl -s -H "User-Agent: MAUI-PR-Script" "$timeline_url" 2>/dev/null); then
+        warning "Could not verify pack job status from the Azure DevOps timeline."
+        return 0
+    fi
+
+    local pack_count
+    pack_count=$(echo "$timeline_json" | jq -r '[.records[]? | select((.type == "Job" or .type == "Phase") and (.name == "Pack macOS" or .name == "Pack Windows"))] | length' 2>/dev/null || echo "0")
+    if [ "$pack_count" == "0" ] || [ -z "$pack_count" ]; then
+        warning "Could not verify pack job status from the Azure DevOps timeline."
+        return 0
+    fi
+
+    local non_succeeded
+    non_succeeded=$(echo "$timeline_json" | jq -r '.records[]? | select((.type == "Job" or .type == "Phase") and (.name == "Pack macOS" or .name == "Pack Windows") and .result != "succeeded") | "\(.name) (\(.type)): \(.result // .state // "unknown")"' 2>/dev/null || echo "")
+    if [ -n "$non_succeeded" ]; then
+        warning "PackageArtifacts exists, but one or more pack/package-producing jobs did not report success:"
+        while IFS= read -r record; do
+            [ -n "$record" ] && warning "  $record"
+        done <<< "$non_succeeded"
+    else
+        info "Verified pack/package-producing jobs succeeded."
+    fi
+}
+
 # Get artifacts from Azure DevOps
 get_build_artifacts() {
     local build_id="$1"
@@ -315,6 +332,8 @@ get_build_artifacts() {
         error "No 'PackageArtifacts' artifact found in build $build_id"
         exit 1
     fi
+
+    check_pack_job_status "$build_id"
     
     echo "$download_url"
 }
@@ -567,6 +586,8 @@ EOF
     pr_state=$(echo "$pr_json" | jq -r '.state')
     local pr_sha
     pr_sha=$(echo "$pr_json" | jq -r '.head.sha')
+    local pr_merge_sha
+    pr_merge_sha=$(echo "$pr_json" | jq -r '.merge_commit_sha // ""')
     
     info "PR #$pr_number: $pr_title"
     info "State: $pr_state"
@@ -578,7 +599,7 @@ EOF
     
     step "Finding build artifacts"
     local build_id
-    build_id=$(get_build_info "$pr_sha" "$pr_number")
+    build_id=$(get_build_info "$pr_sha" "$pr_number" "$pr_merge_sha")
     
     step "Downloading artifacts"
     local download_url

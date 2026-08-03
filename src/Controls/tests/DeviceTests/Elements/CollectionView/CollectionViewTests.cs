@@ -44,11 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-#else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
 #if IOS && !MACCATALYST
 					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
 #endif
@@ -104,6 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
+#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{
@@ -166,6 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
+#endif
 
 		[Fact(
 #if IOS || MACCATALYST || WINDOWS

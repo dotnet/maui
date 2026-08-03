@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -141,8 +142,8 @@ namespace Microsoft.Maui.Media
 			}
 
 			await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			// StorageWrite no longer exists starting from Android API 33
-			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+			// Only request storage write permission when saving to gallery on older Android versions
+			if (options?.SaveToGallery == true && !OperatingSystem.IsAndroidVersionAtLeast(29))
 				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
 			var captureIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
@@ -172,6 +173,12 @@ namespace Microsoft.Maui.Media
 					capturePath = useActivityResultCapture
 						? await CaptureVideoWithActivityResultAsync(options)
 						: await CaptureVideoAsync(captureIntent);
+				}
+
+				// Save to gallery if requested
+				if (capturePath is not null && options?.SaveToGallery == true)
+				{
+					await SaveToGalleryAsync(capturePath, photo);
 				}
 
 				// Return the file that we just captured
@@ -540,6 +547,28 @@ namespace Microsoft.Maui.Media
 
 		async Task<string> CaptureVideoAsync(Intent captureIntent)
 		{
+			// On Android 12 (API 31-32), the camera app creates the video in MediaStore as a pending item.
+			// Android 12 strictly enforces ownership via requireOwnershipForItem() and throws
+			// IllegalStateException when another app tries to read the pending URI.
+			// Fix: Use the same FileProvider + ExtraOutput approach as CapturePhotoAsync.
+			if (OperatingSystem.IsAndroidVersionAtLeast(31) && !OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Mp4;
+				var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+
+				AndroidUri outputUri = null;
+
+				void OnCreate(Intent intent)
+				{
+					outputUri ??= FileProvider.GetUriForFile(tmpFile);
+					intent.PutExtra(MediaStore.ExtraOutput, outputUri);
+				}
+
+				await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
+
+				return tmpFile.AbsolutePath;
+			}
+
 			string path = null;
 
 			void OnResult(Intent intent)
@@ -556,6 +585,117 @@ namespace Microsoft.Maui.Media
 			return path;
 		}
 
+		/// <summary>
+		/// Saves the captured media file to the device's gallery.
+		/// On API 29+, uses MediaStore with scoped storage and IsPending flag. On older versions, copies to public external storage and scans the copied file.
+		/// </summary>
+		static async Task SaveToGalleryAsync(string filePath, bool isPhoto)
+		{
+			var context = Application.Context ?? throw new InvalidOperationException("An Android application context is required to save media to the gallery.");
+			var fileName = System.IO.Path.GetFileName(filePath);
+			var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+			var mimeType = GetMimeType(extension, isPhoto);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(29))
+			{
+				await SaveToMediaStoreAsync(context, filePath, fileName, mimeType, isPhoto);
+				return;
+			}
+
+			SaveToExternalStorageAndScan(context, filePath, fileName, mimeType, isPhoto);
+		}
+
+		[SupportedOSPlatform("android29.0")]
+		static async Task SaveToMediaStoreAsync(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
+		{
+			var contentResolver = context.ContentResolver ?? throw new InvalidOperationException("An Android content resolver is required to save media to the gallery.");
+			var contentValues = new ContentValues();
+			contentValues.Put(MediaStore.IMediaColumns.DisplayName, fileName);
+			contentValues.Put(MediaStore.IMediaColumns.MimeType, mimeType);
+			contentValues.Put(MediaStore.IMediaColumns.RelativePath,
+				isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+			contentValues.Put(MediaStore.IMediaColumns.IsPending, 1);
+
+			var collection = isPhoto
+				? MediaStore.Images.Media.ExternalContentUri
+				: MediaStore.Video.Media.ExternalContentUri;
+
+			var insertUri = contentResolver.Insert(collection, contentValues)
+				?? throw new IOException("Unable to create a MediaStore entry for the captured media.");
+
+			try
+			{
+				using (var outputStream = contentResolver.OpenOutputStream(insertUri) ?? throw new IOException("Unable to open the MediaStore entry for writing."))
+				using (var inputStream = File.OpenRead(filePath))
+				{
+					await inputStream.CopyToAsync(outputStream);
+				}
+
+				contentValues.Clear();
+				contentValues.Put(MediaStore.IMediaColumns.IsPending, 0);
+
+				if (contentResolver.Update(insertUri, contentValues, null, null) == 0)
+				{
+					throw new IOException("Unable to publish the captured media to the gallery.");
+				}
+			}
+			catch (Exception saveException)
+			{
+				try
+				{
+					contentResolver.Delete(insertUri, null, null);
+				}
+				catch (Exception cleanupException)
+				{
+					throw new System.AggregateException("Failed to save media to the gallery and clean up the pending MediaStore entry.", saveException, cleanupException);
+				}
+
+				throw;
+			}
+		}
+
+		static void SaveToExternalStorageAndScan(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
+		{
+			var directory = global::Android.OS.Environment.GetExternalStoragePublicDirectory(
+				isPhoto ? global::Android.OS.Environment.DirectoryPictures : global::Android.OS.Environment.DirectoryMovies);
+
+			if (directory?.AbsolutePath is not string directoryPath || string.IsNullOrEmpty(directoryPath))
+			{
+				throw new IOException("Unable to find the public gallery directory for the captured media.");
+			}
+
+			Directory.CreateDirectory(directoryPath);
+
+			var destinationPath = System.IO.Path.Combine(directoryPath, fileName);
+			if (!string.Equals(filePath, destinationPath, StringComparison.Ordinal))
+			{
+				File.Copy(filePath, destinationPath, overwrite: true);
+			}
+
+			global::Android.Media.MediaScannerConnection.ScanFile(
+				context,
+				new[] { destinationPath },
+				new[] { mimeType },
+				null);
+		}
+
+		static string GetMimeType(string extension, bool isPhoto)
+		{
+			return extension switch
+			{
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".heic" or ".heif" => "image/heif",
+				".webp" => "image/webp",
+				".gif" => "image/gif",
+				".mp4" => "video/mp4",
+				".3gp" => "video/3gpp",
+				".mkv" => "video/x-matroska",
+				".webm" => "video/webm",
+				_ => isPhoto ? "image/jpeg" : "video/mp4",
+			};
+		}
+
 		async Task<List<FileResult>> PickMultipleUsingIntermediateActivity(MediaPickerOptions options, bool photo)
 		{
 			var intent = new Intent(Intent.ActionGetContent);
@@ -566,7 +706,7 @@ namespace Microsoft.Maui.Media
 				intent.PutExtra(Intent.ExtraAllowMultiple, options.SelectionLimit > 1 || options.SelectionLimit == 0);
 
 				// Set a maximum when 2 or more. When the limit is 1 we only allow a single one and 0 should allow unlimited.
-				if (options.SelectionLimit >= 2)
+				if (options.SelectionLimit >= 2 && OperatingSystem.IsAndroidVersionAtLeast(33))
 				{
 					intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
 				}
