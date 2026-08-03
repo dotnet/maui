@@ -3,7 +3,8 @@
 [CmdletBinding()]
 param(
     [string]$SourcePath = '',
-    [string]$TargetPath = ''
+    [string]$TargetPath = '',
+    [string]$AncestorPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -230,7 +231,12 @@ function Merge-SourceOnlyVersionProperty {
         [Parameter(Mandatory = $true)]
         [string]$SourcePath,
         [Parameter(Mandatory = $true)]
-        [string]$TargetPath
+        [string]$TargetPath,
+        # Optional merge-base (three-way) version of the target file. When supplied, a source
+        # property missing from the target is only restored if it is ALSO absent from this ancestor
+        # (i.e. genuinely added on the source branch). A property present in the ancestor but absent
+        # from the target was intentionally deleted on the target branch and must NOT be resurrected.
+        [string]$AncestorPath = ''
     )
 
     $sourceFile = Read-Utf8TextFile -Path $SourcePath
@@ -245,6 +251,22 @@ function Merge-SourceOnlyVersionProperty {
     foreach ($group in $targetGroups) {
         foreach ($property in $group.Properties) {
             [void]$targetNames.Add($property.Name)
+        }
+    }
+
+    # Three-way provenance: names present in the merge-base ancestor. A property missing from the
+    # target that IS in the ancestor was deleted on the target branch, so it must not be restored.
+    $ancestorNames = $null
+    if (-not [string]::IsNullOrWhiteSpace($AncestorPath)) {
+        $ancestorFile = Read-Utf8TextFile -Path $AncestorPath
+        $ancestorDocument = Read-SafeXmlDocument -Text $ancestorFile.Text -Description "Ancestor file '$($ancestorFile.Path)'"
+        $ancestorGroups = @(Get-DirectPropertyGroup -Document $ancestorDocument)
+        $ancestorNames = [System.Collections.Generic.HashSet[string]]::new(
+            [System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($group in $ancestorGroups) {
+            foreach ($property in $group.Properties) {
+                [void]$ancestorNames.Add($property.Name)
+            }
         }
     }
 
@@ -265,6 +287,11 @@ function Merge-SourceOnlyVersionProperty {
     foreach ($group in $sourceGroups) {
         foreach ($property in $group.Properties) {
             if ($targetNames.Contains($property.Name)) {
+                continue
+            }
+
+            # Deleted on the target branch (present in ancestor, absent from target): do not resurrect.
+            if ($null -ne $ancestorNames -and $ancestorNames.Contains($property.Name)) {
                 continue
             }
 
@@ -392,7 +419,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         throw 'SourcePath and TargetPath are required.'
     }
 
-    $result = Merge-SourceOnlyVersionProperty -SourcePath $SourcePath -TargetPath $TargetPath
+    $result = Merge-SourceOnlyVersionProperty -SourcePath $SourcePath -TargetPath $TargetPath -AncestorPath $AncestorPath
     if ($result.Changed) {
         Write-Output "Added source-only version properties: $($result.AddedProperties -join ', ')"
     }

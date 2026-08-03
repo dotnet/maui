@@ -25,6 +25,7 @@ Describe 'Merge-SourceOnlyVersionProperty' {
         New-Item -ItemType Directory -Path $script:TestRoot | Out-Null
         $script:SourcePath = Join-Path $script:TestRoot 'source.props'
         $script:TargetPath = Join-Path $script:TestRoot 'target.props'
+        $script:AncestorPath = Join-Path $script:TestRoot 'ancestor.props'
     }
 
     AfterEach {
@@ -290,5 +291,76 @@ Describe 'Merge-SourceOnlyVersionProperty' {
         {
             Merge-SourceOnlyVersionProperty -SourcePath $script:SourcePath -TargetPath $script:TargetPath
         } | Should -Throw '*shares no property with the corresponding source group*'
+    }
+
+    It 'does not resurrect a property deleted on the target when an ancestor is supplied' {
+        # Ancestor had both pins; the target (release) intentionally deleted DeletedPin while the
+        # source (net11.0) left it unchanged. Three-way provenance must NOT restore it.
+        Write-TestXml -Path $script:AncestorPath -Content @'
+<Project>
+  <PropertyGroup>
+    <KeptPin>1.0.0</KeptPin>
+    <DeletedPin>1.0.0</DeletedPin>
+  </PropertyGroup>
+</Project>
+'@
+        Write-TestXml -Path $script:SourcePath -Content @'
+<Project>
+  <PropertyGroup>
+    <KeptPin>1.0.0</KeptPin>
+    <DeletedPin>1.0.0</DeletedPin>
+  </PropertyGroup>
+</Project>
+'@
+        Write-TestXml -Path $script:TargetPath -Content @'
+<Project>
+  <PropertyGroup>
+    <KeptPin>2.0.0</KeptPin>
+  </PropertyGroup>
+</Project>
+'@
+
+        $result = Merge-SourceOnlyVersionProperty `
+            -SourcePath $script:SourcePath -TargetPath $script:TargetPath -AncestorPath $script:AncestorPath
+        $updated = Get-Content -LiteralPath $script:TargetPath -Raw
+
+        $result.Changed | Should -BeFalse
+        $updated | Should -Not -Match 'DeletedPin'
+        $updated | Should -Match '<KeptPin>2\.0\.0</KeptPin>'
+    }
+
+    It 'restores a property genuinely added on the source when absent from the ancestor' {
+        # NewPin is absent from the ancestor (added on net11.0), so it is a real source-only add.
+        Write-TestXml -Path $script:AncestorPath -Content @'
+<Project>
+  <PropertyGroup>
+    <KeptPin>1.0.0</KeptPin>
+  </PropertyGroup>
+</Project>
+'@
+        Write-TestXml -Path $script:SourcePath -Content @'
+<Project>
+  <PropertyGroup>
+    <KeptPin>1.0.0</KeptPin>
+    <NewPin>3.0.0</NewPin>
+  </PropertyGroup>
+</Project>
+'@
+        Write-TestXml -Path $script:TargetPath -Content @'
+<Project>
+  <PropertyGroup>
+    <KeptPin>2.0.0</KeptPin>
+  </PropertyGroup>
+</Project>
+'@
+
+        $result = Merge-SourceOnlyVersionProperty `
+            -SourcePath $script:SourcePath -TargetPath $script:TargetPath -AncestorPath $script:AncestorPath
+        $updated = Get-Content -LiteralPath $script:TargetPath -Raw
+
+        $result.Changed | Should -BeTrue
+        $result.AddedProperties | Should -Be @('NewPin')
+        $updated | Should -Match '<NewPin>3\.0\.0</NewPin>'
+        $updated | Should -Match '<KeptPin>2\.0\.0</KeptPin>'
     }
 }

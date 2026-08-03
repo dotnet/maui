@@ -225,10 +225,13 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $false
 
+          # Fetch the always-present source/target branches first. The generated merge branch is
+          # fetched separately below because Arcade legitimately produces no merge branch when there
+          # is nothing to merge (or only filtered automation commits), and a combined fetch would
+          # fail on the missing ref before the intended no-work check.
           $refSpecs = @(
             '+refs/heads/net11.0:refs/remotes/origin/net11.0'
             ('+refs/heads/{0}:refs/remotes/origin/{0}' -f $env:MERGE_TO_BRANCH)
-            ('+refs/heads/{0}:refs/remotes/origin/{0}' -f $env:MERGE_BRANCH)
           )
           git fetch --quiet origin @refSpecs
           if ($LASTEXITCODE -ne 0)
@@ -245,6 +248,14 @@ jobs:
           if ([int]$commitCount -eq 0)
           {
             Write-Host 'No net11.0 commits need reconciliation.'
+            exit 0
+          }
+
+          # A missing generated merge branch is a clean no-op (Arcade merged nothing), not an error.
+          git fetch --quiet origin ('+refs/heads/{0}:refs/remotes/origin/{0}' -f $env:MERGE_BRANCH)
+          if ($LASTEXITCODE -ne 0)
+          {
+            Write-Host "Generated merge branch '$env:MERGE_BRANCH' does not exist; nothing to reconcile."
             exit 0
           }
 
@@ -273,9 +284,32 @@ jobs:
             throw "Failed to read eng/Versions.props from net11.0."
           }
 
+          # Extract the merge-base (three-way ancestor) copy of eng/Versions.props so the reconciler
+          # can tell a property genuinely added on net11.0 apart from one intentionally deleted on the
+          # release branch, and never resurrect a deleted pin.
+          $mergeBase = "$(git merge-base origin/net11.0 "origin/$env:MERGE_TO_BRANCH")".Trim()
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mergeBase))
+          {
+            throw "Failed to determine the merge base between net11.0 and $env:MERGE_TO_BRANCH."
+          }
+
+          $ancestorVersions = Join-Path $env:RUNNER_TEMP 'ancestor-Versions.props'
+          $ancestorProcess = Start-Process `
+            -FilePath 'git' `
+            -ArgumentList @('show', "$($mergeBase):eng/Versions.props") `
+            -RedirectStandardOutput $ancestorVersions `
+            -NoNewWindow `
+            -Wait `
+            -PassThru
+          if ($ancestorProcess.ExitCode -ne 0)
+          {
+            throw "Failed to read eng/Versions.props from the merge base."
+          }
+
           & ./.github/scripts/Merge-SourceOnlyVersionProperties.ps1 `
             -SourcePath $sourceVersions `
-            -TargetPath eng/Versions.props
+            -TargetPath eng/Versions.props `
+            -AncestorPath $ancestorVersions
 
           $changes = git status --porcelain -- eng/Versions.props
           if ($LASTEXITCODE -ne 0)
