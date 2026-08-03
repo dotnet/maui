@@ -2398,9 +2398,68 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task DisposedRunningAppActionsCompletesBeforeLaterConfigurationStarts()
+		public async Task DisposedRunningAppActionsDoesNotBlockLaterConfigurationAndLatestIsReplayed()
 		{
 			var timeout = TimeSpan.FromSeconds(10);
+			var releaseFirst = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var publishLock = new object();
+			var publishOrder = new List<string>();
+			void RecordPublish(IReadOnlyList<AppAction> actions)
+			{
+				lock (publishLock)
+					publishOrder.Add(actions.Single().Id);
+			}
+
+			var first = new ControlledStubAppActions(releaseFirst.Task, RecordPublish);
+			var second = new ControlledStubAppActions(
+				Task.CompletedTask,
+				RecordPublish);
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppActions>(first);
+				firstBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("first", "First")));
+				firstApp = firstBuilder.Build();
+				await first.FirstCallStarted.Task.WaitAsync(timeout);
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppActions>(second);
+				secondBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("second", "Second")));
+				secondApp = secondBuilder.Build();
+
+				firstApp.Dispose();
+				firstApp = null;
+
+				await second.FirstCallCompleted.Task.WaitAsync(timeout);
+				lock (publishLock)
+					Assert.Equal(new[] { "second" }, publishOrder);
+
+				releaseFirst.TrySetResult(true);
+				await first.FirstCallCompleted.Task.WaitAsync(timeout);
+				await second.SecondCallCompleted.Task.WaitAsync(timeout);
+
+				lock (publishLock)
+					Assert.Equal(new[] { "second", "first", "second" }, publishOrder);
+			}
+			finally
+			{
+				releaseFirst.TrySetResult(true);
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
+		public async Task ActiveRunningAppActionsCompletesBeforeLaterConfigurationStarts()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			var noStartTimeout = TimeSpan.FromSeconds(1);
 			var releaseFirst = new TaskCompletionSource<bool>(
 				TaskCreationOptions.RunContinuationsAsynchronously);
 			var firstSetAsyncRunning = 0;
@@ -2435,12 +2494,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					essentials.AddAppAction(new AppAction("second", "Second")));
 				secondApp = secondBuilder.Build();
 
-				firstApp.Dispose();
-				firstApp = null;
+				var unexpectedStart = await Task.WhenAny(
+					second.SetStarted.Task,
+					Task.Delay(noStartTimeout));
+				Assert.NotSame(second.SetStarted.Task, unexpectedStart);
 
 				releaseFirst.TrySetResult(true);
 				await first.SetCompleted.Task.WaitAsync(timeout);
 				await second.SetCompleted.Task.WaitAsync(timeout);
+
 				Assert.Equal(0, Volatile.Read(ref overlapDetected));
 			}
 			finally

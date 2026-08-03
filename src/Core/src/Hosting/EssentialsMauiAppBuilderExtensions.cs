@@ -45,7 +45,8 @@ namespace Microsoft.Maui.Hosting
 		static readonly object s_appActionsSetLock = new();
 		static readonly List<AppActionsSetAssignment> s_appActionsSetAssignments = new();
 		static AppActionsSetAssignment? s_pendingAppActionsSetAssignment;
-		static bool s_appActionsSetWorkerRunning;
+		static AppActionsSetAssignment? s_appActionsSetApplyingAssignment;
+		static object? s_appActionsSetWorkerToken;
 		static readonly object s_appInfoSecureStorageBridgeLock = new();
 
 		// Serializes the shared map-token assignment graph and per-implementation state.
@@ -2166,6 +2167,7 @@ namespace Microsoft.Maui.Hosting
 						return;
 
 					var wasCurrent = index == s_appActionsSetAssignments.Count - 1;
+					assignment.IsRemoved = true;
 					s_appActionsSetAssignments.RemoveAt(index);
 					if (wasCurrent)
 					{
@@ -2173,6 +2175,15 @@ namespace Microsoft.Maui.Hosting
 							QueueAppActionsSetUnderLock(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
 						else
 							CancelPendingAppActionsSetUnderLock();
+					}
+
+					if (ReferenceEquals(s_appActionsSetApplyingAssignment, assignment))
+					{
+						// IAppActions has no cancellation contract. Detach a removed in-flight
+						// operation so it cannot indefinitely block a newer active app.
+						s_appActionsSetApplyingAssignment = null;
+						s_appActionsSetWorkerToken = null;
+						StartAppActionsSetWorkerUnderLock();
 					}
 				}
 			}
@@ -2192,14 +2203,22 @@ namespace Microsoft.Maui.Hosting
 			{
 				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
 				s_pendingAppActionsSetAssignment = assignment;
-				if (!s_appActionsSetWorkerRunning)
+				StartAppActionsSetWorkerUnderLock();
+			}
+
+			static void StartAppActionsSetWorkerUnderLock()
+			{
+				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
+				if (s_pendingAppActionsSetAssignment is not null &&
+					s_appActionsSetWorkerToken is null)
 				{
-					s_appActionsSetWorkerRunning = true;
-					_ = RunAppActionsSetWorkerAsync();
+					var workerToken = new object();
+					s_appActionsSetWorkerToken = workerToken;
+					_ = RunAppActionsSetWorkerAsync(workerToken);
 				}
 			}
 
-			static async Task RunAppActionsSetWorkerAsync()
+			static async Task RunAppActionsSetWorkerAsync(object workerToken)
 			{
 				try
 				{
@@ -2211,16 +2230,22 @@ namespace Microsoft.Maui.Hosting
 						AppActionsSetAssignment? assignment;
 						lock (s_appActionsSetLock)
 						{
+							if (!ReferenceEquals(s_appActionsSetWorkerToken, workerToken))
+								return;
+
 							assignment = s_pendingAppActionsSetAssignment;
 							s_pendingAppActionsSetAssignment = null;
 							if (assignment is null)
 								return;
 
-							if (s_appActionsSetAssignments.Count == 0 ||
+							if (assignment.IsRemoved ||
+								s_appActionsSetAssignments.Count == 0 ||
 								!ReferenceEquals(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1], assignment))
 							{
 								continue;
 							}
+
+							s_appActionsSetApplyingAssignment = assignment;
 						}
 
 						try
@@ -2234,17 +2259,35 @@ namespace Microsoft.Maui.Hosting
 						{
 							Trace.TraceError($"AppActions failure logging threw an exception: {ex}");
 						}
+						finally
+						{
+							lock (s_appActionsSetLock)
+							{
+								if (ReferenceEquals(s_appActionsSetApplyingAssignment, assignment))
+									s_appActionsSetApplyingAssignment = null;
+
+								if (!ReferenceEquals(s_appActionsSetWorkerToken, workerToken) &&
+									s_appActionsSetAssignments.Count > 0)
+								{
+									// A detached stale operation may finish after a newer publish.
+									// Requeue only; the authoritative worker remains responsible for
+									// serializing active assignments and restoring the latest state.
+									QueueAppActionsSetUnderLock(
+										s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
+								}
+							}
+						}
 					}
 				}
 				finally
 				{
 					lock (s_appActionsSetLock)
 					{
-						s_appActionsSetWorkerRunning = false;
-						if (s_pendingAppActionsSetAssignment is not null)
+						if (ReferenceEquals(s_appActionsSetWorkerToken, workerToken))
 						{
-							s_appActionsSetWorkerRunning = true;
-							_ = RunAppActionsSetWorkerAsync();
+							s_appActionsSetApplyingAssignment = null;
+							s_appActionsSetWorkerToken = null;
+							StartAppActionsSetWorkerUnderLock();
 						}
 					}
 				}
@@ -2282,6 +2325,9 @@ namespace Microsoft.Maui.Hosting
 			public ILogger? Logger { get; }
 
 			public List<AppAction> Actions { get; }
+
+			// Guarded by s_appActionsSetLock.
+			public bool IsRemoved { get; set; }
 		}
 
 #if WINDOWS || TIZEN
