@@ -4266,14 +4266,36 @@ stages:
                   }
 
                   # Post the deferred expert inline review (file:line findings) so it
-                  # lands together with the AI summary. Review-PR.ps1 wrote the
-                  # inline-findings.post.ok sentinel when the PR fix was the winner;
-                  # both it and inline-findings.json round-tripped via CopilotLogs and
-                  # were restored into $targetDir alongside the AI-summary content.
+                  # lands together with the AI summary. The gate for "should we post
+                  # inline?" is whether the PR fix (not a try-fix alternative) is the
+                  # winner — mirroring Review-PR.ps1's own
+                  #   $isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
+                  # We derive that here from winner.json, which round-trips reliably via
+                  # CopilotLogs into $targetDir alongside inline-findings.json.
+                  #
+                  # NOTE: we deliberately do NOT require the legacy inline-findings.post.ok
+                  # sentinel. That file is written by the Review stage's "Task 4: Post"
+                  # step AFTER the CopilotLogs artifact is published, so it never lands in
+                  # any artifact Stage 3 restores — gating on it silently dropped ALL
+                  # inline comments. The sentinel is still honored as a fast path when
+                  # present (e.g. future in-stage runs), but its ABSENCE no longer blocks.
                   $inlineFindings = Join-Path $targetDir "inline-findings.json"
                   $inlineSentinel = Join-Path $targetDir "inline-findings.post.ok"
+                  $inlineWinner   = Join-Path $targetDir "winner.json"
                   $inlineScript   = ".github/scripts/post-inline-review.ps1"
-                  if ((Test-Path $inlineSentinel) -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
+                  $isPRWinner = $true
+                  if (Test-Path $inlineWinner) {
+                    try {
+                      $wj = Get-Content $inlineWinner -Raw | ConvertFrom-Json
+                      # A non-PR try-fix candidate winning (isPRFix explicitly false) means
+                      # the PR fix was superseded — don't post the PR's inline findings.
+                      if ($wj -and ($wj.isPRFix -eq $false)) { $isPRWinner = $false }
+                    } catch {
+                      Write-Host "⚠️ Could not parse winner.json for inline gate — defaulting to PR-winner: $_"
+                    }
+                  }
+                  $shouldPostInline = ((Test-Path $inlineSentinel) -or $isPRWinner)
+                  if ($shouldPostInline -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
                     try {
                       Write-Host "Posting deferred expert inline review (with AI summary)..."
                       & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings
@@ -4281,8 +4303,12 @@ stages:
                     } catch {
                       Write-Host "⚠️ Deferred inline review posting failed (non-fatal): $_"
                     }
+                  } elseif (-not (Test-Path $inlineFindings)) {
+                    Write-Host "ℹ️ No inline-findings.json — agent produced no inline findings; skipping"
+                  } elseif (-not $isPRWinner) {
+                    Write-Host "ℹ️ A non-PR try-fix candidate won — skipping the PR's inline findings"
                   } else {
-                    Write-Host "ℹ️ No inline sentinel/findings — skipping deferred inline review"
+                    Write-Host "ℹ️ post-inline-review.ps1 not found — skipping deferred inline review"
                   }
 
                   # Apply labels
