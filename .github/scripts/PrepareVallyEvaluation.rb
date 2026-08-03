@@ -75,19 +75,41 @@ def inside?(path, root)
   path == root || path.start_with?("#{root}#{File::SEPARATOR}")
 end
 
+def validate_no_checkout_symlinks!(relative_path, repo_root, location)
+  current = repo_root
+  Pathname.new(relative_path).each_filename do |part|
+    current = File.join(current, part)
+    break unless File.exist?(current) || File.symlink?(current)
+
+    fail!("#{location} traverses checkout symlink: #{current}") if File.symlink?(current)
+  end
+end
+
 def validate_relative_path!(value, base, root, location)
   fail!("#{location} must be a relative path") if Pathname.new(value).absolute?
 
-  resolved = File.expand_path(value, base)
-  begin
-    real_path = File.realpath(resolved)
-  rescue Errno::ENOENT
-    fail!("#{location} does not exist: #{resolved}")
+  current = File.realpath(base)
+  Pathname.new(value).each_filename do |part|
+    if part == ".."
+      current = File.dirname(current)
+      fail!("#{location} escapes #{root}") unless inside?(current, root)
+      next
+    end
+    next if part == "."
+
+    candidate = File.join(current, part)
+    fail!("#{location} traverses checkout symlink: #{candidate}") if File.symlink?(candidate)
+    begin
+      current = File.realpath(candidate)
+    rescue Errno::ENOENT
+      fail!("#{location} does not exist: #{candidate}")
+    end
+    fail!("#{location} escapes #{root}") unless inside?(current, root)
   end
-  fail!("#{location} escapes #{root}") unless inside?(real_path, root)
+  current
 end
 
-def validate_environment!(environment, spec_path, skill_root, location)
+def validate_environment!(environment, spec_path, skill_root, repo_root, location)
   return unless environment
   fail!("#{location} must be a mapping") unless environment.is_a?(Hash)
 
@@ -105,12 +127,16 @@ def validate_environment!(environment, spec_path, skill_root, location)
     dest = file["dest"]
     fail!("#{location}.files[#{index}].src must be a string") unless src.is_a?(String)
     fail!("#{location}.files[#{index}].dest must be a string") unless dest.is_a?(String)
-    validate_relative_path!(src, File.dirname(spec_path), skill_root, "#{location}.files[#{index}].src")
+    src_location = "#{location}.files[#{index}].src"
+    resolved_src = validate_relative_path!(src, File.dirname(spec_path), skill_root, src_location)
+    relative_src = Pathname.new(resolved_src).relative_path_from(Pathname.new(skill_root)).to_s
+    validate_no_checkout_symlinks!(relative_src, skill_root, src_location)
     destination_parts = Pathname.new(dest).each_filename.to_a
     fail!("#{location}.files[#{index}].dest must be a non-empty relative path") if dest.empty? || Pathname.new(dest).absolute?
     fail!("#{location}.files[#{index}].dest must not traverse parent directories") if destination_parts.include?("..")
     forbidden_component = destination_parts.find { |part| FORBIDDEN_DESTINATION_COMPONENTS.include?(part.downcase) }
     fail!("#{location}.files[#{index}].dest targets forbidden VCS metadata: #{forbidden_component}") if forbidden_component
+    validate_no_checkout_symlinks!(dest, repo_root, "#{location}.files[#{index}].dest")
   end
 
   git = environment["git"]
@@ -119,6 +145,46 @@ def validate_environment!(environment, spec_path, skill_root, location)
   fail!("#{location}.git.type must be worktree") unless git["type"] == "worktree"
   fail!("#{location}.git.source must be .") unless git["source"] == "."
   fail!("#{location}.git.ref must be a full commit SHA") unless git["ref"].is_a?(String) && git["ref"].match?(/\A[0-9a-f]{40}\z/)
+end
+
+def validate_git_destination!(repo_root, ref, dest, location)
+  prefix = []
+  Pathname.new(dest).each_filename do |part|
+    prefix << part
+    path = prefix.join("/")
+    entry = run_git(repo_root, "ls-tree", ref, "--", path)
+    next if entry.empty?
+
+    mode = entry.split.first
+    fail!("#{location} traverses symlink at #{ref}:#{path}") if mode == "120000"
+  end
+end
+
+def validate_effective_git_destinations!(document, repo_root)
+  parent_environment = document["environment"] || {}
+  contexts = [["environment", parent_environment]]
+  Array(document["stimuli"]).each_with_index do |stimulus, index|
+    child_environment = stimulus["environment"] || {}
+    effective_environment = parent_environment.merge(child_environment)
+    effective_environment["files"] = Array(parent_environment["files"]) + Array(child_environment["files"])
+    contexts << ["stimuli[#{index}].environment", effective_environment]
+  end
+
+  contexts.each do |location, environment|
+    git = environment["git"]
+    files = Array(environment["files"])
+    next unless git && !files.empty?
+
+    ref = git.fetch("ref")
+    begin
+      run_git(repo_root, "cat-file", "-e", "#{ref}^{commit}")
+    rescue RuntimeError => e
+      fail!("#{location}.git.ref is unavailable for destination validation: #{e.message}")
+    end
+    files.each_with_index do |file, index|
+      validate_git_destination!(repo_root, ref, file.fetch("dest"), "#{location}.files[#{index}].dest")
+    end
+  end
 end
 
 def validate_graders!(graders, location)
@@ -130,18 +196,19 @@ def validate_graders!(graders, location)
   end
 end
 
-def validate_spec!(spec_path, skill_root)
+def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   document = YAML.safe_load_file(spec_path, permitted_classes: [], permitted_symbols: [], aliases: true)
   fail!("#{spec_path} must contain a mapping") unless document.is_a?(Hash)
 
-  validate_environment!(document["environment"], spec_path, skill_root, "environment")
+  validate_environment!(document["environment"], spec_path, skill_root, repo_root, "environment")
   validate_graders!(document["graders"], "graders")
 
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
-    validate_environment!(stimulus["environment"], spec_path, skill_root, "stimuli[#{index}].environment")
+    validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
     validate_graders!(stimulus["graders"], "stimuli[#{index}].graders")
   end
+  validate_effective_git_destinations!(document, repo_root) if inspect_git_refs
 end
 
 def fixture_files(fixture)
@@ -211,7 +278,7 @@ skill_root = File.realpath(File.dirname(tests_path))
 spec_paths.each do |spec_path|
   real_spec_path = File.realpath(spec_path)
   fail!("spec path escapes #{tests_path}: #{spec_path}") unless inside?(real_spec_path, tests_path)
-  validate_spec!(real_spec_path, skill_root)
+  validate_spec!(real_spec_path, skill_root, repo_root, inspect_git_refs: !validate_only)
 end
 
 if !validate_only && File.basename(skill_root) == "try-fix"
@@ -226,7 +293,7 @@ if !validate_only && File.basename(skill_root) == "try-fix"
     end
   end
 
-  spec_paths.each { |spec_path| validate_spec!(spec_path, skill_root) }
+  spec_paths.each { |spec_path| validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs: true) }
 end
 
 puts "Validated #{spec_paths.length} Vally eval spec(s) under #{tests_path}"

@@ -216,7 +216,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
-      Attempt #2 for Issue #77123. Attempt #1 already failed — do not repeat it.
+      Invoke the try-fix skill for Attempt #2 on Issue #77123. Attempt #1
+      already failed — do not repeat it.
 
       Bug: Shell flyout icon tint is lost on Android after navigation.
 
@@ -228,6 +229,11 @@ stimuli:
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35390"
       Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs
       Hint: The fix needs to happen when toolbar appearance is applied, not after navigation completes.
+
+      Before editing, record all three of these points in approach.md:
+      1. The prior attempt changed the page-selection callback.
+      2. It failed because toolbar appearance had already been applied.
+      3. This attempt instead changes the toolbar-appearance application mechanism.
 
       This is a frozen one-commit fixture. Establish its broken baseline with
       `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
@@ -316,7 +322,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
-      This is attempt #3 at fixing a bug. The pr-review agent needs another alternative.
+      Invoke the try-fix skill for attempt #3. The pr-review agent needs
+      another alternative.
 
       Prior attempts and their failures:
       - Attempt 1 (FAIL): Returned 0 from GetHeight() when infinity detected, hoping parent fallback handles it. Failed because parent.MeasuredHeight returns 0 during initial layout.
@@ -330,6 +337,10 @@ stimuli:
       Target file:
       - src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs
       Platform: Android
+
+      Before editing, record both of these points in approach.md:
+      1. Both prior attempts share the same failed parent-measurement-fallback root cause.
+      2. The new mechanism does not read or fall back to parent dimensions.
 
       This is a frozen one-commit fixture. Establish its broken baseline with
       `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
@@ -368,7 +379,8 @@ stimuli:
     tags:
       kind: workflow
     prompt: |
-      The pr-review agent needs an alternative fix attempt for a NavigationPage handler disconnection bug on iOS.
+      Invoke the try-fix skill for an alternative NavigationPage handler
+      disconnection fix on iOS.
 
       Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
@@ -377,6 +389,10 @@ stimuli:
       Platform: iOS
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+
+      Before editing, inspect the registration/Legacy navigation path and record
+      the concrete evidence in approach.md that iOS executes NavigationRenderer
+      through the Legacy implementation rather than MauiNavigationImpl.
 
       This is a frozen one-commit fixture. Establish its broken baseline with
       `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
