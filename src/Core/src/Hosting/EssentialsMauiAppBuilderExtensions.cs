@@ -2169,19 +2169,30 @@ namespace Microsoft.Maui.Hosting
 					s_appActionsSetAssignments.RemoveAt(index);
 					if (wasCurrent)
 					{
-						QueueAppActionsSetUnderLock(
-							s_appActionsSetAssignments.Count > 0
-								? s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]
-								: null);
+						if (s_appActionsSetAssignments.Count > 0)
+							QueueAppActionsSetUnderLock(s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
+						else
+							CancelPendingAppActionsSetUnderLock();
 					}
 				}
 			}
 
-			static void QueueAppActionsSetUnderLock(AppActionsSetAssignment? assignment)
+			static void CancelPendingAppActionsSetUnderLock()
+			{
+				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
+
+				// App actions are persistent OS launch affordances, not provider-owned state.
+				// Keep the last published set across MauiApp disposal so it can launch the next
+				// app instance; SetAsync(empty) here would erase Android shortcuts, iOS shortcut
+				// items, and the Windows jump list during normal application shutdown.
+				s_pendingAppActionsSetAssignment = null;
+			}
+
+			static void QueueAppActionsSetUnderLock(AppActionsSetAssignment assignment)
 			{
 				Debug.Assert(Monitor.IsEntered(s_appActionsSetLock));
 				s_pendingAppActionsSetAssignment = assignment;
-				if (assignment is not null && !s_appActionsSetWorkerRunning)
+				if (!s_appActionsSetWorkerRunning)
 				{
 					s_appActionsSetWorkerRunning = true;
 					_ = RunAppActionsSetWorkerAsync();

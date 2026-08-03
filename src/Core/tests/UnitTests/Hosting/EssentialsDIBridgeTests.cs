@@ -2361,6 +2361,43 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task DisposingLastConfiguredAppActionsPreservesPublishedLaunchActions()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			var noClearTimeout = TimeSpan.FromSeconds(1);
+			IReadOnlyList<AppAction>? publishedActions = null;
+			var appActions = new ControlledStubAppActions(
+				Task.CompletedTask,
+				actions => Volatile.Write(ref publishedActions, actions));
+			MauiApp? app = null;
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				builder.Services.AddSingleton<IAppActions>(appActions);
+				builder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("launch", "Launch")));
+				app = builder.Build();
+
+				await appActions.FirstCallCompleted.Task.WaitAsync(timeout);
+				app.Dispose();
+				app = null;
+
+				var unexpectedClear = await Task.WhenAny(
+					appActions.SecondCallCompleted.Task,
+					Task.Delay(noClearTimeout));
+
+				Assert.NotSame(appActions.SecondCallCompleted.Task, unexpectedClear);
+				Assert.Equal(1, appActions.CallCount);
+				Assert.Equal("launch", Assert.Single(Volatile.Read(ref publishedActions)!).Id);
+			}
+			finally
+			{
+				app?.Dispose();
+			}
+		}
+
+		[Fact]
 		public async Task DisposedRunningAppActionsCompletesBeforeLaterConfigurationStarts()
 		{
 			var timeout = TimeSpan.FromSeconds(10);
