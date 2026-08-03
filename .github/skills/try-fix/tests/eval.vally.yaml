@@ -386,13 +386,17 @@ stimuli:
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
       Target file:
       - src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
+      Registration evidence file (read-only):
+      - src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
       Platform: iOS
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
 
       Before editing, inspect the registration/Legacy navigation path and record
       the concrete evidence in approach.md that iOS executes NavigationRenderer
-      through the Legacy implementation rather than MauiNavigationImpl.
+      through the Legacy implementation rather than MauiNavigationImpl. Cite
+      the exact AppHostBuilderExtensions registration again in the final
+      Analysis.
 
       This is a frozen one-commit fixture. Establish its broken baseline with
       `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
@@ -402,6 +406,16 @@ stimuli:
         ref: 7fede996393862cd695ac70323a82bb10c75a652 # fixture: regression-verify-correct-platform-code-path
         source: .
     graders:
+      # Complement the semantic judge with direct evidence that the agent
+      # inspected the real registration and reported what it proves.
+      - type: tool-calls
+        config:
+          required:
+            - name: '^(bash|powershell|view|grep|rg)$'
+              pattern: 'src/Controls/src/Core/Hosting/AppHostBuilderExtensions\.cs'
+      - type: output-matches
+        config:
+          pattern: '(AppHostBuilderExtensions|AddHandler[^\r\n]*NavigationPage[^\r\n]*NavigationRenderer)'
       - type: prompt
         config:
           scoring: scale_1_5
