@@ -286,6 +286,51 @@ jobs:
           if [ ${#SPECS[@]} -eq 0 ]; then
             echo "No *.vally.yaml eval specs found." | tee -a sv-output.txt
           fi
+
+          if ! ruby -ryaml -rset -e '
+            required = "unset COPILOT_GITHUB_TOKEN GITHUB_TOKEN GH_TOKEN\nset -e\n"
+            failures = []
+            seen = Set.new
+            walk = lambda do |value, path|
+              if value.is_a?(Hash) || value.is_a?(Array)
+                return unless seen.add?(value.object_id)
+              end
+              case value
+              when Hash
+                if ["run-command", "program"].include?(value["type"])
+                  grader_env = value.dig("config", "env")
+                  ["COPILOT_GITHUB_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"].each do |name|
+                    unless grader_env.is_a?(Hash) && grader_env[name] == ""
+                      failures << "#{path}.config.env.#{name} must explicitly override the inherited credential with an empty string"
+                    end
+                  end
+                end
+                value.each do |key, child|
+                  child_path = "#{path}.#{key}"
+                  if key == "commands"
+                    Array(child).each_with_index do |command, index|
+                      unless command.is_a?(String) && command.start_with?(required)
+                        failures << "#{child_path}[#{index}] must begin with the token-scrubbing prologue"
+                      end
+                    end
+                  else
+                    walk.call(child, child_path)
+                  end
+                end
+              when Array
+                value.each_with_index { |child, index| walk.call(child, "#{path}[#{index}]") }
+              end
+            end
+            ARGV.each do |file|
+              document = YAML.safe_load(File.read(file), aliases: true)
+              walk.call(document, file)
+            end
+            abort failures.join("\n") unless failures.empty?
+          ' "${SPECS[@]}"; then
+            echo "One or more eval subprocess declarations can inherit model credentials." | tee -a sv-output.txt
+            rc=1
+          fi
+
           for f in "${SPECS[@]}"; do
             spec_count=$((spec_count + 1))
             echo "::group::lint $f"
@@ -705,7 +750,7 @@ jobs:
 
           # Advisory exit — the baseline number is informational; do not fail.
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_BIN" eval \
             "${SPECS[@]}" \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
@@ -807,7 +852,7 @@ jobs:
           # error. We capture it but DON'T propagate so every matrix artifact is
           # still uploaded and the aggregate report can explain the failure.
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_BIN" eval \
             "${SPECS[@]}" \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
@@ -952,7 +997,7 @@ jobs:
           fi
 
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval -e "$SPEC" \
+          "$VALLY_BIN" eval -e "$SPEC" \
             --skill-dir .github/skills \
             --output-dir hermeticity-results/out \
             --junit \
