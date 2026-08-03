@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Platform
 
 			// If we implement the OnSelectionChanged method, this method is called after a keyboard layout change with SelectionStart = 0,
 			// Let's restore the cursor position to its previous location.
-			editText.SetSelection(Math.Min(previousCursorPosition, editText.Length()));
+			editText.SetSelection(Math.Clamp(previousCursorPosition, 0, editText.Length()));
 		}
 
 		internal static bool IsCompletedAction(this EditorActionEventArgs e, ImeAction currentInputImeFlag)
