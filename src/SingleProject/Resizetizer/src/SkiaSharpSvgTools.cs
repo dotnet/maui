@@ -36,17 +36,19 @@ namespace Microsoft.Maui.Resizetizer
 		public override void DrawUnscaled(SKCanvas canvas, float scale)
 		{
 			var size = GetOriginalSize();
-			if (size.IsEmpty)
+			if (scale >= 1 && (Quality != ResizeQuality.Fastest || size.IsEmpty))
 			{
-				throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
-			}
-			if (scale >= 1 && Quality != ResizeQuality.Fastest)
-			{
-				// Draw vectors directly for Auto/back-compat and Best/highest fidelity.
+				// Draw vectors directly for Auto/back-compat and Best/highest fidelity. Empty SVGs
+				// can have document dimensions but no drawn bounds; direct drawing is a no-op.
 				canvas.DrawPicture(svg.Picture, Paint);
 			}
 			else
 			{
+				if (size.IsEmpty)
+				{
+					throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
+				}
+
 				// Rasterize first so the final draw honors the selected sampling options.
 				var info = new SKImageInfo(
 					Math.Max(1, (int)Math.Ceiling(size.Width)),

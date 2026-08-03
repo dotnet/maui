@@ -1652,7 +1652,7 @@ namespace Microsoft.Maui.Controls
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1680,10 +1680,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys);
 		}
@@ -1707,7 +1707,7 @@ namespace Microsoft.Maui.Controls
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1733,10 +1733,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys, resolver);
 		}
@@ -1761,6 +1761,29 @@ namespace Microsoft.Maui.Controls
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
 		bool _isPointerOver;
+		bool _isItemSelected;
+
+		/// <summary>
+		/// Gets or sets whether this element is in the Selected visual state.
+		/// Platform handlers (CollectionView, Shell flyout, IndicatorView) use this property
+		/// to select/deselect items. The setter includes an equality guard to avoid redundant
+		/// state recomputation and routes through <see cref="ChangeVisualState"/> so that
+		/// IsEnabled and other state priorities (Disabled, PointerOver, Normal) are respected.
+		/// </summary>
+		internal bool IsItemSelected
+		{
+			get => _isItemSelected;
+			set
+			{
+				if (_isItemSelected == value)
+				{
+					return;
+				}
+
+				_isItemSelected = value;
+				ChangeVisualState();
+			}
+		}
 
 		internal bool IsPointerOver
 		{
@@ -1782,26 +1805,37 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			if (!IsEnabled)
+			try
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			}
-			else
-			{
-				bool isSelected = this.IsElementInSelectedState();
-				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
-												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+				if (!IsEnabled)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				}
+				else
+				{
+					bool isSelected = this.IsElementInSelectedState();
+					string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+													: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
 
-				VisualStateManager.GoToState(this, targetState);
-			}
+					VisualStateManager.GoToState(this, targetState);
+				}
 
-			if (IsEnabled)
+				if (IsEnabled)
+				{
+					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+					// exits and the control still has focus.
+					VisualStateManager.GoToState(this,
+						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				}
+			}
+			catch (InvalidOperationException)
 			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				// Swallow "PlatformView cannot be null here" thrown when a visual state cascade fans out
+				// during handler disconnect (e.g. on Windows: navigating away from a focused control runs
+				// UpdateIsFocused(false) inside DisconnectHandler -> ChangeVisualState -> VSM Setter ->
+				// mapper -> strongly-typed PlatformView accessor). The handler/PlatformView has already
+				// been released, so there is nothing for the mapper to update. See dotnet/maui#27101.
 			}
 		}
 
@@ -2570,6 +2604,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Re-evaluates the platform loaded/unloaded state for this element.
+		/// Called by handlers when the platform view enters the window asynchronously
+		/// (e.g., UINavigationController.ViewDidAppear under UITabBarController)
+		/// and the initial KVO-based loaded watcher may not have fired.
+		/// </summary>
+		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+#endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
 #nullable disable

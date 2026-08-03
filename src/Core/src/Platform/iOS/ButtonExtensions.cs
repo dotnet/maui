@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Platform
 					platformButton.SetTitleColor(null, UIControlState.Disabled);
 					platformButton.TintColor = window.TintColor;
 				}
-
 				return;
 			}
 
@@ -55,8 +54,7 @@ namespace Microsoft.Maui.Platform
 			platformButton.TintColor = color;
 		}
 
-		// TODO: Make this public in .NET 11
-		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
+		public static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
 			// Remove previous background gradient layer if any
 			platformButton.RemoveBackgroundLayer();

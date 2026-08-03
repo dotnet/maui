@@ -60,7 +60,25 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
+		// Deferred NavigatedTo support (iOS/MacCatalyst only):
+		// On iOS, the handler connects (OnHandlerChangedCore) before the Window parents
+		// the page, so NavigationProxy.Inner is null at that point. If NavigatedTo fires
+		// immediately, any PushModalAsync called from a NavigatedTo handler will silently
+		// fail (NavigationProxy queues the request and returns Task.CompletedTask).
+		// With the renderer, OnHandlerChangedCore was skipped (IsShimmed()=true) and
+		// NavigatedTo fired later from the renderer's ViewDidAppear.
+		// These partial methods let iOS defer SendNavigated to OnControllerAppeared
+		// (ViewDidAppear), when Inner is wired. On Android/Windows these are no-ops
+		// because Inner is already set before the handler connects.
+		partial void ShouldDeferNavigatedTo(ref bool defer);
+		partial void FireDeferredNavigatedTo();
+		partial void OnHandlerDisconnected();
+
 #if IOS || MACCATALYST
+		// On iOS/MacCatalyst, default to legacy NavigationImpl (event-based).
+		// UseHandlerNavigation() is called when NavigationViewHandler connects,
+		// enabling MauiNavigationImpl (RequestNavigation-based).
+		// This ensures the renderer fallback works without any special handling.
 		const bool UseMauiHandler = false;
 #else
 		const bool UseMauiHandler = true;
@@ -93,6 +111,36 @@ namespace Microsoft.Maui.Controls
 
 			if (root != null)
 				PushPage(root);
+		}
+
+		/// <summary>
+		/// Switches from legacy NavigationImpl to MauiNavigationImpl.
+		/// Called when NavigationViewHandler connects on iOS/MacCatalyst.
+		/// </summary>
+		internal void UseHandlerNavigation()
+		{
+			if (!_setForMaui)
+			{
+				_setForMaui = true;
+
+				var oldInner = NavigationProxy?.Inner;
+				Navigation = new MauiNavigationImpl(this);
+				if (oldInner is not null)
+				{
+					NavigationProxy.Inner = oldInner;
+				}
+
+				// Child pages' NavigationProxy.Inner still references the old proxy.
+				// Re-wire them to the new one so PushModalAsync etc. route correctly.
+				var newProxy = NavigationProxy;
+				foreach (var child in InternalChildren)
+				{
+					if (child is NavigableElement nav)
+					{
+						nav.NavigationProxy.Inner = newProxy;
+					}
+				}
+			}
 		}
 
 		/// <summary>Gets or sets the background color for the bar at the top of the NavigationPage. This is a bindable property.</summary>
@@ -566,6 +614,9 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is Page newPage && ((NavigationPage)bindable).HasAppeared)
 				newPage.SendAppearing();
+
+			// Refresh Enabled on the predictive back callback when the active page changes.
+			(((NavigationPage)bindable).Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		internal IToolbar FindMyToolbar()
@@ -739,6 +790,19 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
+#if IOS || MACCATALYST
+			// On iOS/MacCatalyst, enable handler-based navigation (MauiNavigationImpl)
+			// when NavigationViewHandler connects. Constructor defaults to legacy
+			// NavigationImpl on these platforms to support renderer fallback.
+			if (Handler is NavigationViewHandler && !_setForMaui)
+			{
+				UseHandlerNavigation();
+				// The legacy NavigationImpl may have set CurrentNavigationTask (e.g. PushAsync
+				// in a subclass constructor). Clear it so SendHandlerUpdateAsync can take over.
+				CurrentNavigationTask = null;
+			}
+#endif
+
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
 				var navStack = Navigation.NavigationStack;
@@ -748,12 +812,18 @@ namespace Microsoft.Maui.Controls
 
 				var navigationType = DetermineNavigationType();
 
+				// On iOS, ShouldDeferNavigatedTo sets defer=true when Inner is null.
+				// When deferred, SendNavigated is skipped here and fired later from
+				// OnControllerAppeared (ViewDidAppear) via FireDeferredNavigatedTo.
+				bool deferNavigatedTo = false;
+				ShouldDeferNavigatedTo(ref deferNavigatedTo);
+
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
 					FireAppearing(CurrentPage);
 				},
-				() =>
+				deferNavigatedTo ? null : () =>
 				{
 					SendNavigated(null, navigationType);
 				})
@@ -762,9 +832,14 @@ namespace Microsoft.Maui.Controls
 
 			// If the handler is disconnected and we're still waiting for updates from the handler
 			// Just complete any waits
-			if (Handler == null && _waitingCount > 0)
+			if (Handler is null && _waitingCount > 0)
 			{
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
+			}
+
+			if (Handler is null)
+			{
+				OnHandlerDisconnected();
 			}
 		}
 
@@ -836,7 +911,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// InsertPageBefore changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 
@@ -980,7 +1057,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// RemovePage changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 		}

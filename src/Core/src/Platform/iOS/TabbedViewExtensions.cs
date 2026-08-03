@@ -50,6 +50,10 @@ namespace Microsoft.Maui.Platform
 			if (effectiveBarColor != null)
 			{
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
+				if (OperatingSystem.IsIOSVersionAtLeast(26))
+				{
+					tabBar.BackgroundColor = effectiveBarColor;
+				}
 			}
 
 			// Set BarTextColor
@@ -152,7 +156,7 @@ namespace Microsoft.Maui.Platform
 				newSize.Width = isRegularTabBar ? regularSquareSize : compactSquareSize;
 				newSize.Height = newSize.Width;
 			}
-			
+
 			return image.ResizeImageSource(newSize.Width, newSize.Height, new CGSize(image.Size.Width, image.Size.Height));
 		}
 	}

@@ -154,6 +154,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					tabbed.PagesChanged -= OnPagesChanged;
 				}
 
+				if (_currentBarBackground is GradientBrush currentGradientBrush)
+				{
+					if (ReferenceEquals(currentGradientBrush.Parent, Tabbed))
+					{
+						currentGradientBrush.Parent = null;
+					}
+					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+				}
+				_currentBarBackground = null;
+
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
 
@@ -275,6 +285,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			return GetViewController(current);
 		}
+
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() =>
+			ChildViewControllerForStatusBarHidden();
+#endif
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
 		{

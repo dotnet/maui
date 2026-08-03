@@ -89,14 +89,6 @@
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.Extensions.AI"
-        Version="$(MicrosoftExtensionsAIVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Extensions.AI.Abstractions"
-        Version="$(MicrosoftExtensionsAIAbstractionsVersion)"
-    />
-    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationVersion)"
     />
@@ -153,6 +145,10 @@
         Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
     />
     <PackageReference
+        Update="Microsoft.Windows.CsWin32"
+        Version="$(MicrosoftWindowsCsWin32PackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"
@@ -165,6 +161,10 @@
     <PackageReference
         Update="Microsoft.Windows.SDK.BuildTools"
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
+        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
@@ -205,6 +205,14 @@
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+        Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.EntityFrameworkCore.Sqlite"
+        Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
