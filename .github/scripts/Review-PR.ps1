@@ -2413,7 +2413,11 @@ if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
             if ($DryRun) { $applyArgs.DryRun = $true }
             & $applyFinalizeScript @applyArgs
         } catch {
-            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $_" -ForegroundColor Yellow
+            # Backstop, not a live path: the child sanitizes its own console output and its
+            # one throw carries no PR-derived text today. Kept because a future throw that
+            # quotes the recommendation would otherwise reach stdout unsanitized, and every
+            # other console sink in this script already goes through the sanitizer.
+            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
         }
     } else {
         Write-Host "  ⚠️ apply-pr-finalize.ps1 not found — skipping" -ForegroundColor Yellow
