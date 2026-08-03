@@ -174,8 +174,7 @@ namespace DisplaySettings
                     return $false
                 }
                 ([DisplaySettings.NativeMethods]::DISP_CHANGE_FAILED) {
-                    Write-Error "The resolution change test failed (FAILED)"
-                    return $false
+                    Write-Warning "The resolution change test failed (FAILED). Attempting to apply the resolution anyway..."
                 }
                 default {
                     Write-Warning "Unexpected test result, attempting to apply anyway..."
