@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using NSubstitute;
 using Xunit;
 using Xunit.Sdk;
 
@@ -824,6 +825,104 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+		}
+
+		// A colorless font icon derives its tint from TextColor, so a runtime TextColor change must
+		// also refresh the icon. Element.OnBindablePropertySet already fires the same-key mapper
+		// update automatically, so these tests also guard against a duplicate same-key invocation.
+		[Fact]
+		public void ChangingTextColorRefreshesIconForColorlessFontIcon()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
+		[Fact]
+		public void ChangingTextColorDoesNotRefreshIconWhenIconColorIsExplicit()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconColor = Colors.Blue,
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
+		[Fact]
+		public void ChangingTextColorDoesNotRefreshIconWhenFontIconHasItsOwnColor()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
+			};
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
+		[Fact]
+		public void ChangingTextColorDoesNotRefreshIconForNonFontIcon()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = "icon.png"
+			};
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
+		// Element.OnBindablePropertySet fires the same-key mapper update automatically, so the
+		// property callbacks must not invoke it again (which would reload the icon twice).
+		[Fact]
+		public void SettingIconColorInvokesIconMapperOnce()
+		{
+			var swipeItem = new SwipeItem();
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.IconColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
+		[Fact]
+		public void SettingTextColorInvokesTextColorMapperOnce()
+		{
+			var swipeItem = new SwipeItem();
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
 		}
 
 		static void ForceFullGC()

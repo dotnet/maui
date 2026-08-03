@@ -19,12 +19,12 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <remarks>
 		/// When <see langword="null"/>, a font icon is tinted by its own color, then by the item's
-		/// <see cref="ITextStyle.TextColor"/>, then by a color contrasting the item background; image
-		/// icons render with their original colors. When set, the color tints font icons and image icons
-		/// on Android, iOS, and MacCatalyst (including stream-based sources, since the resolved platform
-		/// image is tinted), and font, file-based, and URI-based icons on Windows. Stream-based image
-		/// icons on Windows and all icons on Tizen currently render with their original colors regardless
-		/// of this property.
+		/// <see cref="ISwipeItemMenuItem.TextColor"/>, then by a color contrasting the item background;
+		/// image icons render with their original colors. When set, the color tints font icons and image
+		/// icons on Android, iOS, and MacCatalyst (including stream-based sources, since the resolved
+		/// platform image is tinted), and font, file-based, and URI-based icons on Windows. Stream-based
+		/// image icons on Windows and all icons on Tizen currently render with their original colors
+		/// regardless of this property.
 		/// </remarks>
 #if NETSTANDARD2_0
 		Color? IconColor { get; }
@@ -36,8 +36,10 @@ namespace Microsoft.Maui
 		/// Gets the color used for the item's label text.
 		/// </summary>
 		/// <remarks>
-		/// When <see langword="null"/>, the label falls back to a color contrasting the item background.
-		/// When set, that color is used as the label color.
+		/// When <see langword="null"/>, the label falls back to a color contrasting the item background,
+		/// except when no background is set or the item's icon is a font icon that already specifies its
+		/// own color; in those cases the label keeps the platform default. When set, that color is used
+		/// as the label color.
 		/// </remarks>
 #if NETSTANDARD2_0
 		new Color? TextColor { get; }

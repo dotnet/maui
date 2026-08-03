@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(SwipeItem), true, propertyChanged: OnIsVisibleChanged);
 
 		/// <summary>Bindable property for <see cref="IconColor"/>.</summary>
-		public static readonly BindableProperty IconColorProperty = BindableProperty.Create(nameof(IconColor), typeof(Color), typeof(SwipeItem), null, propertyChanged: OnIconColorChanged);
+		public static readonly BindableProperty IconColorProperty = BindableProperty.Create(nameof(IconColor), typeof(Color), typeof(SwipeItem), null);
 
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(SwipeItem), null, propertyChanged: OnTextColorChanged);
@@ -84,20 +84,15 @@ namespace Microsoft.Maui.Controls
 
 		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 
-		static void OnIconColorChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var swipeItem = (SwipeItem)bindable;
-			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
-		}
-
 		static void OnTextColorChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var swipeItem = (SwipeItem)bindable;
-			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.TextColor));
 
-			// TextColor only drives the icon tint for an untinted font icon: GetIconTintColor falls
-			// back to GetTextColor only when IconColor is unset and the source is an IFontImageSource
-			// without its own Color. Refresh the icon just in that case so its tint isn't left stale,
+			// The same-key TextColor mapper update is already fired automatically by
+			// Element.OnBindablePropertySet, so only the cross-key IconColor refresh is done here:
+			// TextColor drives the icon tint for an untinted font icon (GetIconTintColor falls back
+			// to GetTextColor only when IconColor is unset and the source is an IFontImageSource
+			// without its own Color). Refresh the icon just in that case so its tint isn't left stale,
 			// avoiding a needless image reload for image sources or an explicitly tinted icon.
 			if (swipeItem.IconColor is null && swipeItem.IconImageSource is IFontImageSource { Color: null })
 				swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
