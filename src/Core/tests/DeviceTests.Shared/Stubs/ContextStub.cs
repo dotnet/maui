@@ -47,6 +47,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(global::Android.Content.Context))
 				return MauiProgramDefaults.DefaultContext;
 
+			if (serviceType == typeof(global::Android.App.Activity))
+				return (global::Android.App.Activity)MauiProgramDefaults.DefaultContext;
+
 			if (serviceType == typeof(NavigationRootManager))
 				return _windowManager ??= new NavigationRootManager(this);
 #elif IOS || MACCATALYST
