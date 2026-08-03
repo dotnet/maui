@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+#if IOS || MACCATALYST
+using CoreGraphics;
+using UIKit;
+#endif
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
 using Xunit;
@@ -47,6 +51,36 @@ public class ImageTests
 		Assert.NotNull(newStream);
 		Assert.True(newStream.Length > 0, "Assert.True(newStream.Length > 0)");
 	}
+
+#if IOS || MACCATALYST
+	[Theory]
+	[InlineData(1f)]
+	[InlineData(3f)]
+	public void ScaleImageUsesOneXBackingScale(float sourceScale)
+	{
+		var sourceSize = new CGSize(30, 20);
+		var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
+		{
+			Opaque = false,
+			Scale = sourceScale,
+		});
+
+		using var source = sourceRenderer.CreateImage(context =>
+		{
+			UIColor.Red.SetFill();
+			context.FillRect(new CGRect(CGPoint.Empty, sourceSize));
+		});
+
+		using var scaled = source.ScaleImage(new CGSize(10, 5));
+
+		Assert.Equal(1, (double)scaled.CurrentScale);
+		Assert.Equal(10, (double)scaled.Size.Width);
+		Assert.Equal(5, (double)scaled.Size.Height);
+		Assert.NotNull(scaled.CGImage);
+		Assert.Equal(10, (int)scaled.CGImage.Width);
+		Assert.Equal(5, (int)scaled.CGImage.Height);
+	}
+#endif
 
 	[Theory]
 	[InlineData(ImageFormat.Png, 2.0f)]
