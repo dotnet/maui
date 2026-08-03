@@ -18,15 +18,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[Fact]
 		public void ProcessMauiSplashScreensSelectsFirstSplashForThemedAppleMetadata()
 		{
-			var targetFile = Path.Combine(
-				FindRepositoryRoot(),
-				"src",
-				"SingleProject",
-				"Resizetizer",
-				"src",
-				"nuget",
-				"buildTransitive",
-				"Microsoft.Maui.Resizetizer.After.targets");
+			var targetFile = GetTargetFile();
 			var metadataElements = GetSplashMetadataElements(targetFile);
 			var projectFile = Path.Combine(DestinationDirectory, "SelectFirstSplash.proj");
 			Directory.CreateDirectory(DestinationDirectory);
@@ -63,15 +55,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[Fact]
 		public void ProcessMauiSplashScreensWarnsWhenThemedAppleSplashIsUnsupported()
 		{
-			var targetFile = Path.Combine(
-				FindRepositoryRoot(),
-				"src",
-				"SingleProject",
-				"Resizetizer",
-				"src",
-				"nuget",
-				"buildTransitive",
-				"Microsoft.Maui.Resizetizer.After.targets");
+			var targetFile = GetTargetFile();
 			var metadataAndWarnings = GetSplashMetadataElements(targetFile, includeWarnings: true);
 			var projectFile = Path.Combine(DestinationDirectory, "UnsupportedThemedSplash.proj");
 			Directory.CreateDirectory(DestinationDirectory);
@@ -102,15 +86,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[Fact]
 		public void ProcessMauiSplashScreensPassesNormalizedSplashItemsToAndroid()
 		{
-			var targetFile = Path.Combine(
-				FindRepositoryRoot(),
-				"src",
-				"SingleProject",
-				"Resizetizer",
-				"src",
-				"nuget",
-				"buildTransitive",
-				"Microsoft.Maui.Resizetizer.After.targets");
+			var targetFile = GetTargetFile();
 
 			var doc = XDocument.Load(targetFile);
 			var processSplashScreens = Assert.Single(doc.Root.Elements().Where(e => e.Name.LocalName == "Target" && e.Attribute("Name")?.Value == "ProcessMauiSplashScreens"));
@@ -122,15 +98,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[Fact]
 		public void ResizetizeCollectItemsHashesOnlyFirstSplashDarkFile()
 		{
-			var targetFile = Path.Combine(
-				FindRepositoryRoot(),
-				"src",
-				"SingleProject",
-				"Resizetizer",
-				"src",
-				"nuget",
-				"buildTransitive",
-				"Microsoft.Maui.Resizetizer.After.targets");
+			var targetFile = GetTargetFile();
 			var darkFileHashElements = GetDarkFileHashElements(targetFile);
 			var projectFile = Path.Combine(DestinationDirectory, "FirstDarkFileHash.proj");
 			var firstDarkFile = Path.Combine(DestinationDirectory, "first-dark.png");
@@ -250,14 +218,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				: "dotnet";
 		}
 
-		static string FindRepositoryRoot()
+		static string GetTargetFile()
 		{
-			var directory = new DirectoryInfo(AppContext.BaseDirectory);
+			var targetFile = Path.Combine(AppContext.BaseDirectory, "Microsoft.Maui.Resizetizer.After.targets");
+			Assert.True(File.Exists(targetFile), $"Expected target file to be copied to test output: {targetFile}");
 
-			while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "Microsoft.Maui.sln")))
-				directory = directory.Parent;
-
-			return directory?.FullName ?? throw new DirectoryNotFoundException("Could not find the repository root.");
+			return targetFile;
 		}
 	}
 }

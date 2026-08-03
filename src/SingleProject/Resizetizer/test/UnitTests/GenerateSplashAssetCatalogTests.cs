@@ -104,35 +104,44 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[Fact]
 		public void NonPngRasterWithoutResizeUsesMatchingAssetFilenames()
 		{
-			var lightFile = CreateJpegImage("camera.jpg", "images/camera.png");
-			var darkFile = CreateJpegImage("camera_color.jpg", "images/camera_color.png");
-			var splash = new TaskItem(lightFile, new Dictionary<string, string>
+			var inputDirectory = Path.Combine(Path.GetTempPath(), "Microsoft.Maui.Resizetizer.Tests", nameof(GenerateSplashAssetCatalogTests), Path.GetRandomFileName());
+			try
 			{
-				["Resize"] = bool.FalseString,
-				["DarkFile"] = darkFile,
-			});
+				var lightFile = CopyImageWithExtension(inputDirectory, "camera.jpg", "images/camera.png");
+				var darkFile = CopyImageWithExtension(inputDirectory, "camera_color.jpg", "images/camera_color.png");
+				var splash = new TaskItem(lightFile, new Dictionary<string, string>
+				{
+					["Resize"] = bool.FalseString,
+					["DarkFile"] = darkFile,
+				});
 
-			var task = GetNewTask(splash);
-			var success = task.Execute();
-			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+				var task = GetNewTask(splash);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.jpg");
-			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage@2x.jpg");
-			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.jpg");
-			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@2x.jpg");
-			AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png");
-			AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png");
+				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.jpg");
+				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage@2x.jpg");
+				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.jpg");
+				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@2x.jpg");
+				AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png");
+				AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png");
 
-			using var imageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashImage.imageset", "Contents.json")));
-			var filenames = imageJson.RootElement.GetProperty("images").EnumerateArray()
-				.Select(image => image.GetProperty("filename").GetString())
-				.ToArray();
-			Assert.Contains("MauiSplashImage.jpg", filenames);
-			Assert.Contains("MauiSplashImage@2x.jpg", filenames);
-			Assert.Contains("MauiSplashImageDark.jpg", filenames);
-			Assert.Contains("MauiSplashImageDark@2x.jpg", filenames);
-			Assert.DoesNotContain("MauiSplashImage.png", filenames);
-			Assert.DoesNotContain("MauiSplashImageDark.png", filenames);
+				using var imageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashImage.imageset", "Contents.json")));
+				var filenames = imageJson.RootElement.GetProperty("images").EnumerateArray()
+					.Select(image => image.GetProperty("filename").GetString())
+					.ToArray();
+				Assert.Contains("MauiSplashImage.jpg", filenames);
+				Assert.Contains("MauiSplashImage@2x.jpg", filenames);
+				Assert.Contains("MauiSplashImageDark.jpg", filenames);
+				Assert.Contains("MauiSplashImageDark@2x.jpg", filenames);
+				Assert.DoesNotContain("MauiSplashImage.png", filenames);
+				Assert.DoesNotContain("MauiSplashImageDark.png", filenames);
+			}
+			finally
+			{
+				if (Directory.Exists(inputDirectory))
+					Directory.Delete(inputDirectory, recursive: true);
+			}
 		}
 
 		[Fact]
@@ -292,15 +301,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				? appearances[0].GetProperty("value").GetString()
 				: null;
 
-		string CreateJpegImage(string filename, string sourceFile)
+		static string CopyImageWithExtension(string inputDirectory, string filename, string sourceFile)
 		{
-			Directory.CreateDirectory(DestinationDirectory);
-			var destination = Path.Combine(DestinationDirectory, filename);
-			using var bitmap = SKBitmap.Decode(sourceFile);
-			using var image = SKImage.FromBitmap(bitmap);
-			using var data = image.Encode(SKEncodedImageFormat.Jpeg, 90);
-			using var stream = File.OpenWrite(destination);
-			data.SaveTo(stream);
+			Directory.CreateDirectory(inputDirectory);
+			var destination = Path.Combine(inputDirectory, filename);
+			File.Copy(sourceFile, destination);
 
 			return destination;
 		}
