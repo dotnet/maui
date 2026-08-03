@@ -28,10 +28,25 @@ public class Issue33034 : _IssuesUITest
 		IUIElement WaitForSettledEdgeLabel(string automationId) =>
 			App.WaitForElement(() =>
 			{
-				var element = App.FindElement(automationId);
-				return element is not null && Math.Abs(element.GetRect().X - initialRect.X) <= 5
-					? element
-					: null;
+				try
+				{
+					var element = App.FindElement(automationId);
+					if (element is null)
+						return null;
+
+					// Wait for BOTH X and Width to settle: capturing the rect while width is still
+					// mid-layout would let the later Within(5) assertions flake.
+					var rect = element.GetRect();
+					return Math.Abs(rect.X - initialRect.X) <= 5 && Math.Abs(rect.Width - initialRect.Width) <= 5
+						? element
+						: null;
+				}
+				catch
+				{
+					// WaitForElement(Func<>) rethrows query exceptions, so swallow transient/stale-element
+					// failures from FindElement/GetRect here to keep polling instead of failing immediately.
+					return null;
+				}
 			}, $"Timed out waiting for {automationId} to settle");
 
 		App.TapTab("Second Tab");
