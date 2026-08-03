@@ -1082,6 +1082,40 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits until the element's text is exactly equal to <paramref name="text"/> (ordinal), rather
+		/// than merely containing it. Use this when the element's placeholder/initial text already
+		/// contains the expected value as a substring, which would make a Contains-based wait pass
+		/// prematurely on the placeholder.
+		/// </summary>
+		public static bool WaitForTextEqualToElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
+		{
+			timeout ??= DefaultTimeout;
+			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
+
+			DateTime start = DateTime.Now;
+
+			while (true)
+			{
+				var element = app.FindElements(automationId).FirstOrDefault();
+
+				if (element is not null && element.TryGetText(out var s) && string.Equals(s, text, StringComparison.Ordinal))
+				{
+					return true;
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
+
+					return false;
+				}
+
+				Task.Delay(retryFrequency.Milliseconds).Wait();
+			}
+		}
+
+		/// <summary>
 		/// Repeatedly executes a query until it returns a non-empty value or the specified retry count is reached.
 		/// </summary>
 		/// <typeparam name="T">The type of the element.</typeparam>

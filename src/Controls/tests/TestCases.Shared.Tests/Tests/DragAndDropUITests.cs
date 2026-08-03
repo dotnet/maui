@@ -41,10 +41,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		void AssertEventText(string automationId, string expectedText)
 		{
+			// Wait for the label's text to become EXACTLY the expected value. A substring wait is
+			// unreliable here because each label's placeholder (e.g. "DragOverEvents: ") already
+			// contains the expected event name (e.g. "DragOver"), so a Contains-based wait would pass
+			// immediately on the placeholder and the following equality assertion would still flap.
 			Assert.That(
-				App.WaitForTextToBePresentInElement(automationId, expectedText),
+				App.WaitForTextEqualToElement(automationId, expectedText),
 				Is.True,
-				$"Timed out waiting for {automationId} to contain '{expectedText}'.");
+				$"Timed out waiting for {automationId} to become '{expectedText}'.");
 			Assert.That(App.FindElement(automationId).GetText(), Is.EqualTo(expectedText));
 		}
 
