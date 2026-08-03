@@ -8,6 +8,7 @@ require "yaml"
 BASE_REF = "8935253083b24930f9a6f153f72b5ac196d1ae59"
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
+FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
 
 FIXTURES = {
   "eval.restore.vally.yaml" => [
@@ -105,7 +106,11 @@ def validate_environment!(environment, spec_path, skill_root, location)
     fail!("#{location}.files[#{index}].src must be a string") unless src.is_a?(String)
     fail!("#{location}.files[#{index}].dest must be a string") unless dest.is_a?(String)
     validate_relative_path!(src, File.dirname(spec_path), skill_root, "#{location}.files[#{index}].src")
-    fail!("#{location}.files[#{index}].dest must be relative") if Pathname.new(dest).absolute? || dest.split("/").include?("..")
+    destination_parts = Pathname.new(dest).each_filename.to_a
+    fail!("#{location}.files[#{index}].dest must be a non-empty relative path") if dest.empty? || Pathname.new(dest).absolute?
+    fail!("#{location}.files[#{index}].dest must not traverse parent directories") if destination_parts.include?("..")
+    forbidden_component = destination_parts.find { |part| FORBIDDEN_DESTINATION_COMPONENTS.include?(part.downcase) }
+    fail!("#{location}.files[#{index}].dest targets forbidden VCS metadata: #{forbidden_component}") if forbidden_component
   end
 
   git = environment["git"]
