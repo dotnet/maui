@@ -225,28 +225,33 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(cell);
 
-			// Simulate UICollectionView tearing the cell down (either recycling it via
-			// PrepareForReuse or discarding it outright) and disconnect the CollectionView's
-			// own handler, then drop all local references. Without this, the locals here
-			// (cell/collectionView/handler) remain GC roots for the duration of this method in
-			// Debug builds, so the cell is never finalized/disposed before WaitForGC's GC
-			// cycles run, and the templated Label can never become collectible.
+			// Simulate the cell being discarded outright (e.g. its bound item was removed from
+			// the ItemsSource) while the ItemsView itself stays alive and in use, as it would for
+			// the remainder of the page's lifetime. This is the scenario the production fix
+			// targets: the templated cell's bound view previously stayed registered as a logical
+			// child of the ItemsView even after the cell that displayed it was gone, permanently
+			// rooting the view (and its content) for as long as the ItemsView remained alive.
+			//
+			// Deliberately keep collectionView (and its handler) alive here instead of nulling
+			// them out - the leak only manifests when the ItemsView outlives the discarded cell,
+			// so nulling it out too would mask the very regression this test guards against.
 			await InvokeOnMainThreadAsync(() =>
 			{
 				cell.Unbind();
-				handler.DisconnectHandler();
-				collectionView.Handler = null;
 			});
 
 			cell = null;
-			handler = null;
-			collectionView = null;
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
 			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
+
+			// Keep the still-alive ItemsView (and its handler) reachable past WaitForGC so the
+			// JIT can't optimize them away as dead stores before the assertion runs above.
+			GC.KeepAlive(collectionView);
+			GC.KeepAlive(handler);
 		}
 
 		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
