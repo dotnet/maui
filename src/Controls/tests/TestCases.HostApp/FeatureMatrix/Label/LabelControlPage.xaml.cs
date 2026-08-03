@@ -52,7 +52,6 @@ public partial class LabelControlMainPage : ContentPage
 		var label = new Label
 		{
 			Style = style,
-			BindingContext = _viewModel,
 		};
 
 		var tapGestureRecognizer = new TapGestureRecognizer();
