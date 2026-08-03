@@ -3,60 +3,34 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.LabelControlMainPage"
              Title="LabelControlPage">
-  <ContentPage.Resources>
-    <Style x:Key="MainLabelStyle"
-           TargetType="Label">
-      <Setter Property="HeightRequest"
-              Value="600"/>
-      <Setter Property="Text"
-              Value="{Binding Text, Mode=TwoWay}"/>
-      <Setter Property="CharacterSpacing"
-              Value="{Binding CharacterSpacing}"/>
-      <Setter Property="FontAttributes"
-              Value="{Binding FontAttributes}"/>
-      <Setter Property="FontAutoScalingEnabled"
-              Value="{Binding FontAutoScalingEnabled}"/>
-      <Setter Property="FontFamily"
-              Value="{Binding FontFamily}"/>
-      <Setter Property="FontSize"
-              Value="{Binding FontSize}"/>
-      <Setter Property="FormattedText"
-              Value="{Binding FormattedText}"/>
-      <Setter Property="HorizontalTextAlignment"
-              Value="{Binding HorizontalTextAlignment}"/>
-      <Setter Property="LineBreakMode"
-              Value="{Binding LineBreakMode}"/>
-      <Setter Property="LineHeight"
-              Value="{Binding LineHeight}"/>
-      <Setter Property="MaxLines"
-              Value="{Binding MaxLines}"/>
-      <Setter Property="Padding"
-              Value="{Binding Padding}"/>
-      <Setter Property="TextColor"
-              Value="{Binding TextColor}"/>
-      <Setter Property="TextDecorations"
-              Value="{Binding TextDecorations}"/>
-      <Setter Property="TextTransform"
-              Value="{Binding TextTransform}"/>
-      <Setter Property="TextType"
-              Value="{Binding TextType}"/>
-      <Setter Property="VerticalTextAlignment"
-              Value="{Binding VerticalTextAlignment}"/>
-      <Setter Property="BackgroundColor"
-              Value="LightGray"/>
-      <Setter Property="AutomationId"
-              Value="MainLabel"/>
-    </Style>
-  </ContentPage.Resources>
-
   <ContentPage.ToolbarItems>
     <ToolbarItem Text="Options"
                  Clicked="NavigateToOptionsPage_Clicked"
                  AutomationId="Options"/>
   </ContentPage.ToolbarItems>
 
-  <VerticalStackLayout x:Name="MainLabelHost">
-    <Label Style="{StaticResource MainLabelStyle}">
+  <VerticalStackLayout>
+    <Label
+      HeightRequest="600"
+      Text="{Binding Text , Mode=TwoWay}"
+      CharacterSpacing="{Binding CharacterSpacing}"
+      FontAttributes="{Binding FontAttributes}"
+      FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+      FontFamily="{Binding FontFamily}"
+      FontSize="{Binding FontSize}"
+      FormattedText="{Binding FormattedText}"
+      HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+      LineBreakMode="{Binding LineBreakMode}"
+      LineHeight="{Binding LineHeight}"
+      MaxLines="{Binding MaxLines}"
+      Padding="{Binding Padding}"
+      TextColor="{Binding TextColor}"
+      TextDecorations="{Binding TextDecorations}"
+      TextTransform="{Binding TextTransform}"
+      TextType="{Binding TextType}"
+      VerticalTextAlignment="{Binding VerticalTextAlignment}"
+      BackgroundColor="LightGray"
+      AutomationId="MainLabel">
       <Label.GestureRecognizers>
         <TapGestureRecognizer Tapped="MainLabel_Tapped"/>
       </Label.GestureRecognizers>
