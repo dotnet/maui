@@ -254,10 +254,9 @@ jobs:
       # nonstandard filename with --eval-spec. This also SKIPS SKILL.md structural
       # linting. We do NOT
       # lint SKILL.md / *.agent.md here on purpose: vally's skill linter flags
-      # two PRE-EXISTING repo issues unrelated to this migration (try-fix
-      # SKILL.md exceeds the 500-line limit; find-regression-risk is missing
-      # name/description frontmatter) that would false-red this gate. Those are
-      # tracked as follow-ups in the PR description.
+      # a PRE-EXISTING repo issue unrelated to this migration (try-fix
+      # SKILL.md exceeds the 500-line limit) that would false-red this gate.
+      # That is tracked as a follow-up in the PR description.
       - name: Lint eval specs
         id: check
         shell: bash
