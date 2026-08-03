@@ -51,17 +51,17 @@ public class Issue28986_ParentChildTest : _IssuesUITest
 
         App.RetryAssert(() =>
         {
-            var parentGridRect = App.WaitForElement("ParentGrid").GetRect();
+            var parentGridRect = App.FindElement("ParentGrid").GetRect();
             var screenTop = parentGridRect.Y;
             var screenBottom = parentGridRect.Y + parentGridRect.Height;
 
-            var topIndicatorRect = App.WaitForElement("TopIndicator").GetRect();
+            var topIndicatorRect = App.FindElement("TopIndicator").GetRect();
             var topInsetFromScreenTop = topIndicatorRect.Y - screenTop;
             Assert.That(topInsetFromScreenTop, Is.GreaterThan(5),
                 $"Top indicator should be inset from screen top by safe area. " +
                 $"Current inset: {topInsetFromScreenTop}pt (expected >5pt)");
 
-            var bottomIndicatorRect = App.WaitForElement("BottomIndicator").GetRect();
+            var bottomIndicatorRect = App.FindElement("BottomIndicator").GetRect();
             var bottomIndicatorBottom = bottomIndicatorRect.Y + bottomIndicatorRect.Height;
             var bottomInsetFromScreenBottom = screenBottom - bottomIndicatorBottom;
 
