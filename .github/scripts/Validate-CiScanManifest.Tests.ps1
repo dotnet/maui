@@ -1626,6 +1626,44 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
         $workflowSource | Should -Not -Match '(?ms)^  threat-detection:.*?^\s+engine: false'
     }
 
+    It 'keeps threat detection aligned with the trusted variation-selector rule' {
+        $validatorPath = Join-Path $PSScriptRoot 'Validate-CiScanManifest.ps1'
+        $validatorSource = Get-Content -LiteralPath $validatorPath -Raw
+        $validatorMatch = [regex]::Match(
+            $validatorSource,
+            '(?s)\$isEmojiVariationBase = \$previousCode -in @\((?<bases>.*?)\r?\n\s+\)')
+
+        $validatorMatch.Success | Should -BeTrue
+
+        $validatorBases = @(
+            [regex]::Matches($validatorMatch.Groups['bases'].Value, '0x(?<code>[0-9A-F]+)') |
+                ForEach-Object { "U+$($_.Groups['code'].Value)" }
+        )
+
+        $lockPath = Join-Path (Split-Path $PSScriptRoot -Parent) "workflows/$workflowName.lock.yml"
+        $lockSource = Get-Content -LiteralPath $lockPath -Raw
+        $compiledPromptMatch = [regex]::Match(
+            $lockSource,
+            '(?m)^\s+CUSTOM_PROMPT: (?<json>".*")$')
+        $compiledPromptMatch.Success | Should -BeTrue
+        $compiledPrompt = [System.Text.Json.JsonSerializer]::Deserialize[string](
+            $compiledPromptMatch.Groups['json'].Value)
+
+        foreach ($prompt in @($workflowSource, $compiledPrompt)) {
+            $promptMatch = [regex]::Match(
+                $prompt,
+                'Approved VS15/VS16 bases \(exactly\): (?<bases>U\+[0-9A-F]+(?:, U\+[0-9A-F]+)*)\.')
+
+            $promptMatch.Success | Should -BeTrue
+            @($promptMatch.Groups['bases'].Value -split ', ') |
+                Should -BeExactly $validatorBases
+            $prompt |
+                Should -Match 'Do not flag VS15 \(U\+FE0E\) or\s+VS16 \(U\+FE0F\) solely when it immediately follows one of the approved bases'
+            $prompt |
+                Should -Match 'Flag an isolated VS15/VS16 or a selector following any other base\.'
+        }
+    }
+
     It 'uses one bounded fixed same-run artifact file and no tool-selected transport' {
         $workflowSource |
             Should -Match 'CI_SCAN_MANIFEST_PATH: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/agent/manifest_final\.json'

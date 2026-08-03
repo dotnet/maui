@@ -147,6 +147,53 @@ BeforeAll {
             $Source -match '\[ "\$staged_size" -ne "\$manifest_size" \]'
     }
 
+    function Test-TrustedEmojiSelectorPrompt {
+        param(
+            [Parameter(Mandatory = $true)][string]$Source,
+            [Parameter(Mandatory = $true)][string]$ValidatorSource
+        )
+
+        $validatorMatch = [regex]::Match(
+            $ValidatorSource,
+            '(?s)\$isEmojiVariationBase = \$previousCode -in @\((?<bases>.*?)\r?\n\s+\)')
+        $promptMatch = [regex]::Match(
+            $Source,
+            'Approved VS15/VS16 bases \(exactly\): (?<bases>U\+[0-9A-F]+(?:, U\+[0-9A-F]+)*)\.')
+        if (-not $validatorMatch.Success -or -not $promptMatch.Success) {
+            return $false
+        }
+
+        $validatorBases = @(
+            [regex]::Matches($validatorMatch.Groups['bases'].Value, '0x(?<code>[0-9A-F]+)') |
+                ForEach-Object { "U+$($_.Groups['code'].Value)" }
+        )
+        $promptBases = @($promptMatch.Groups['bases'].Value -split ', ')
+
+        return @(
+            Compare-Object `
+                -ReferenceObject $validatorBases `
+                -DifferenceObject $promptBases `
+                -SyncWindow 0
+        ).Count -eq 0 -and
+            $Source -match 'Do not flag VS15 \(U\+FE0E\) or\s+VS16 \(U\+FE0F\) solely when it immediately follows one of the approved bases' -and
+            $Source -match 'Flag an isolated VS15/VS16 or a selector following any other base\.'
+    }
+
+    function Get-CompiledThreatDetectionPrompt {
+        param([Parameter(Mandatory = $true)][string]$LockPath)
+
+        $lockSource = Get-Content -LiteralPath $LockPath -Raw
+        $promptMatch = [regex]::Match(
+            $lockSource,
+            '(?m)^\s+CUSTOM_PROMPT: (?<json>".*")$')
+        if (-not $promptMatch.Success) {
+            throw "The compiled lock '$LockPath' no longer contains the threat-detection CUSTOM_PROMPT."
+        }
+
+        return [System.Text.Json.JsonSerializer]::Deserialize[string](
+            $promptMatch.Groups['json'].Value)
+    }
+
     function New-ProbeManifest {
         param(
             [string]$Path,
@@ -461,6 +508,12 @@ Describe 'CI scanner twin discovery mutation coverage' {
                 Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-main.md') -Raw
                 Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-net11.md') -Raw
             )
+            $script:CompiledThreatPrompts = @(
+                Get-CompiledThreatDetectionPrompt `
+                    -LockPath (Join-Path $PSScriptRoot '../workflows/ci-status-main.lock.yml')
+                Get-CompiledThreatDetectionPrompt `
+                    -LockPath (Join-Path $PSScriptRoot '../workflows/ci-status-net11.lock.yml')
+            )
             $script:SafeJobStepsNeedle = "      steps:`n        - name: Require successful agent submission gate"
         }
 
@@ -472,6 +525,28 @@ Describe 'CI scanner twin discovery mutation coverage' {
         It 'baseline: both twins bound regular-file threat-detection staging' {
             @($script:WorkflowSources | Where-Object { Test-BoundedThreatDetectionStaging -Source $_ }).Count |
                 Should -Be 2
+        }
+
+        It 'baseline: both twins mirror the trusted emoji-selector rule in threat detection' {
+            @(
+                $script:WorkflowSources |
+                    Where-Object {
+                        Test-TrustedEmojiSelectorPrompt `
+                            -Source $_ `
+                            -ValidatorSource $script:ValidatorSource
+                    }
+            ).Count | Should -Be 2
+        }
+
+        It 'baseline: both compiled twins execute the trusted emoji-selector rule' {
+            @(
+                $script:CompiledThreatPrompts |
+                    Where-Object {
+                        Test-TrustedEmojiSelectorPrompt `
+                            -Source $_ `
+                            -ValidatorSource $script:ValidatorSource
+                    }
+            ).Count | Should -Be 2
         }
 
         It 'mutation "nested-string-transport": a manifest tool input fails the handoff invariant' {
@@ -517,6 +592,63 @@ Describe 'CI scanner twin discovery mutation coverage' {
 
                 $mutated | Should -Not -BeExactly $source
                 (Test-BoundedThreatDetectionStaging -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "selector-carveout-removed": restoring generic selector rejection fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms)\n      Apply this exact rule to variation selectors\..*?Flag an isolated VS15/VS16 or a selector following any other base\.\r?\n',
+                    "`n      Flag variation selectors as hidden or invisible content.`n")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
+
+        It 'mutation "selector-carveout-widened": adding an untrusted base fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'U+2764, U+1F6E0.',
+                    'U+2764, U+1F600, U+1F6E0.')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
+
+        It 'mutation "selector-negative-rule-removed": dropping disallowed-base rejection fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    '      Flag an isolated VS15/VS16 or a selector following any other base.',
+                    '')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
+
+        It 'mutation "stale-compiled-selector-rule": an omitted approved base fails the compiled prompt invariant' {
+            foreach ($prompt in $script:CompiledThreatPrompts) {
+                $mutated = $prompt.Replace(
+                    ', U+1F6E0.',
+                    '.')
+
+                $mutated | Should -Not -BeExactly $prompt
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
             }
         }
     }
