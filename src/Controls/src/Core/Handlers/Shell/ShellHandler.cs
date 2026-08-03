@@ -53,6 +53,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
 			[Shell.ForegroundColorProperty.PropertyName] = MapForegroundColor,
 #endif
+			};
+
+		public static CommandMapper<Shell, ShellHandler> CommandMapper =
+				new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);
 
 		public ShellHandler() : base(Mapper, CommandMapper)
 		{
