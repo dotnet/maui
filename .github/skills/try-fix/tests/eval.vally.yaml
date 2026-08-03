@@ -11,6 +11,11 @@
 # has no documented answer to recite. A frozen worktree supplies the MAUI
 # files and scripts those workflows require; without it Vally starts Copilot
 # in an empty temporary directory and the protocol cannot run deterministically.
+# Each operational case pins an immutable one-commit fallback so the PR can be
+# evaluated by the current base workflow. The updated trusted workflow replaces
+# those refs with structurally equivalent generated commits before selecting
+# model auth. They provide a real committed production diff for protocol
+# exercise; these capability cases do not claim to reproduce the narrated bugs.
 #
 # Brittleness reduction vs the legacy spec:
 #   Legacy banned exact phrasings via output_not_contains — e.g.
@@ -67,18 +72,21 @@ stimuli:
     prompt: |
       The pr-review agent needs an alternative fix attempt for issue #54321.
 
-      The bug: CollectionView throws ObjectDisposedException on Android when the user navigates back
-      from a page that contains a CollectionView. The current PR already tried adding a null check on
-      the adapter inside OnMeasure() — that didn't fix it reliably.
+      The bug: WebView throws ObjectDisposedException on Android when the user navigates back
+      from a page that contains a WebView. The current PR already tried adding a null check on
+      the platform view inside DisconnectHandler() — that didn't fix it reliably.
 
       Please try a different approach focused on lifecycle/disposal timing.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
-      Files to look at: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35552"
+      Files to look at: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
     environment:
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: happy-path-distinct-alternative-fix
+        ref: 709ea3d7c75a03fa011956941fd9ca7c631e9d24 # fixture: happy-path-distinct-alternative-fix
         source: .
     graders:
       # Judge-only: "distinct from the prior approach" is purely semantic.
@@ -91,8 +99,8 @@ stimuli:
     rubric:
       - >-
         The agent proposes a fix approach clearly distinct from the
-        existing failed approach (a null check on the adapter inside
-        OnMeasure). It does not restate the same fix in different words.
+        existing failed approach (a null check on the platform view inside
+        DisconnectHandler). It does not restate the same fix in different words.
       - >-
         The agent documents WHY its chosen approach differs from the
         existing fix — naming the mechanism (lifecycle/disposal timing),
@@ -157,16 +165,19 @@ stimuli:
       IMPORTANT: Before taking any other action, note that no iOS simulator or device is available for testing.
 
       try-fix invocation for Issue #99001:
-      - Bug: Button inside a ScrollView doesn't fire its Clicked event on iOS
-      - The existing fix adds a gesture recognizer passthrough in ScrollViewHandler
+      - Bug: Editor inside a Border uses the wrong height for centered text on iOS
+      - The existing fix changes the native layout calculation in EditorHandler
       - Please try a different approach
-      - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
-      - Target: src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
+      - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue35662"
+      - Target: src/Core/src/Handlers/Editor/EditorHandler.iOS.cs
       - Platform: ios
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
     environment:
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: regression-no-success-without-running-test
+        ref: 45662d6e08ae7fc7f6db0314d00111e34b5f99b1 # fixture: regression-no-success-without-running-test
         source: .
     graders:
       # Crisp failure-mode floor: claiming PASS when the test never ran.
@@ -207,20 +218,23 @@ stimuli:
     prompt: |
       Attempt #2 for Issue #77123. Attempt #1 already failed — do not repeat it.
 
-      Bug: NullReferenceException in ShellItemHandler on Android when popping to root.
+      Bug: Shell flyout icon tint is lost on Android after navigation.
 
       Attempt #1 result: FAIL
-      What was tried: Modified OnPageSelected to reset cached navigation state after navigation completed.
-      Why it failed: OnPageSelected fires after layout measurement has already consumed the cached value,
-      so resetting it there has no effect on the crash.
+      What was tried: Updated the icon only from the page-selection callback after navigation completed.
+      Why it failed: The toolbar binds its appearance before that callback,
+      so updating it there has no effect on the displayed tint.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
-      Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
-      Hint: The fix needs to happen before layout measurement, not after navigation completes.
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35390"
+      Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs
+      Hint: The fix needs to happen when toolbar appearance is applied, not after navigation completes.
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
     environment:
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: edge-case-second-attempt-avoids-prior-approach
+        ref: 2b1326a2098b26419ebe421455b04d081cfd3a25 # fixture: edge-case-second-attempt-avoids-prior-approach
         source: .
     graders:
       - type: prompt
@@ -233,9 +247,9 @@ stimuli:
         approach (the page-selection callback modification) and explains
         why that approach failed.
       - >-
-        The agent proposes a fix that intercepts at an earlier lifecycle
-        point — before layout measurement — consistent with the failure
-        analysis, not after navigation completes.
+        The agent proposes a fix at the toolbar-appearance application
+        point, consistent with the failure analysis, not after navigation
+        completes.
       - >-
         The agent's approach documentation explains why this attempt is
         different from attempt #1 at the mechanism level.
@@ -252,19 +266,22 @@ stimuli:
     tags:
       kind: verdict-integrity
     prompt: |
-      try-fix for CollectionView item overlap on Android (Issue #CollectionViewOverlap).
+      try-fix for CarouselView item overlap on Android (Issue #CarouselViewOverlap).
 
       The test assertion is: rect1.Bottom <= rect2.Top (items must not visually overlap).
       Every approach has been failing because the root cause appears to be in the Android
       RecyclerView layout manager, not in MAUI wrapper code. After trying up to 3 approaches
       you should stop and report the result.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
-      Target: src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CarouselViewOverlap"
+      Target: src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
     environment:
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: edge-case-exhausted-iterations-documented-fail
+        ref: 5beb719c5c378c37b5b6e2f37fba4cdacadcaeae # fixture: edge-case-exhausted-iterations-documented-fail
         source: .
     graders:
       - type: output-not-matches
@@ -307,17 +324,19 @@ stimuli:
 
       Both attempts failed because they relied on PARENT MEASUREMENT FALLBACK which doesn't work during initial layout. Your approach must NOT depend on parent dimensions as a fallback.
 
-      Problem: Android CollectionView EmptyView inside ScrollView receives an infinite height
-      constraint, leaving RecyclerViewHeight unusable during initial layout.
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
-      Target files:
-      - src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
-      - src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
+      Problem: Android CollectionView header/footer template updates receive an unusable
+      measurement during initial layout.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~DynamicCollectionViewTemplates"
+      Target file:
+      - src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs
       Platform: Android
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
     environment:
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: regression-no-repeated-root-cause-disguised
+        ref: d1a7b782d363f34f72527284fdf8d76acdcc91ce # fixture: regression-no-repeated-root-cause-disguised
         source: .
     graders:
       - type: prompt
@@ -353,16 +372,18 @@ stimuli:
 
       Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
       Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
-      Target files:
-      - src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs
+      Target file:
       - src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
       Platform: iOS
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
     environment:
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: regression-verify-correct-platform-code-path
+        ref: 7fede996393862cd695ac70323a82bb10c75a652 # fixture: regression-verify-correct-platform-code-path
         source: .
     graders:
       - type: prompt

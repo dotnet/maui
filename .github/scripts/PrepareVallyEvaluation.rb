@@ -13,54 +13,47 @@ FIXTURES = {
   "eval.restore.vally.yaml" => [
     {
       marker: "restores-synthetic-fix-without-raw-git",
-      message: "Synthetic Entry state restoration attempt",
-      files: {
-        "src/Core/src/Handlers/Entry/EntryHandler.Android.cs" => lambda do |content|
-          needle = "var nativeEntry = new MauiAppCompatEditText(Context);\n"
-          replacement = "#{needle}\t\t\tnativeEntry.SaveEnabled = true;\n"
-          raise "Entry fixture target changed" unless content.scan(needle).length == 1
-
-          content.sub(needle, replacement)
-        end
-      }
+      fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+      message: "Synthetic WebView lifecycle restoration attempt",
+      files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
     }
   ],
   "eval.vally.yaml" => [
     {
       marker: "happy-path-distinct-alternative-fix",
-      message: "Synthetic CollectionView lifecycle fix",
-      files: ["src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs"]
+      fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+      message: "Synthetic WebView lifecycle fix",
+      files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
     },
     {
       marker: "regression-no-success-without-running-test",
-      message: "Synthetic ScrollView gesture fix",
-      files: ["src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs"]
+      fallback_ref: "45662d6e08ae7fc7f6db0314d00111e34b5f99b1",
+      message: "Synthetic Editor layout fix",
+      files: ["src/Core/src/Handlers/Editor/EditorHandler.iOS.cs"]
     },
     {
       marker: "edge-case-second-attempt-avoids-prior-approach",
-      message: "Synthetic Shell navigation fix",
-      files: ["src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs"]
+      fallback_ref: "2b1326a2098b26419ebe421455b04d081cfd3a25",
+      message: "Synthetic Shell toolbar fix",
+      files: ["src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs"]
     },
     {
       marker: "edge-case-exhausted-iterations-documented-fail",
-      message: "Synthetic CollectionView overlap fix",
-      files: ["src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs"]
+      fallback_ref: "5beb719c5c378c37b5b6e2f37fba4cdacadcaeae",
+      message: "Synthetic CarouselView overlap fix",
+      files: ["src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs"]
     },
     {
       marker: "regression-no-repeated-root-cause-disguised",
-      message: "Synthetic EmptyView measurement fix",
-      files: [
-        "src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs",
-        "src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs"
-      ]
+      fallback_ref: "d1a7b782d363f34f72527284fdf8d76acdcc91ce",
+      message: "Synthetic CollectionView template update fix",
+      files: ["src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs"]
     },
     {
       marker: "regression-verify-correct-platform-code-path",
+      fallback_ref: "7fede996393862cd695ac70323a82bb10c75a652",
       message: "Synthetic NavigationPage disconnect fix",
-      files: [
-        "src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs",
-        "src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs"
-      ]
+      files: ["src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs"]
     }
   ]
 }.freeze
@@ -187,13 +180,16 @@ def create_fixture_commit(repo_root, fixture)
   end
 end
 
-def patch_fixture_ref!(spec_path, marker, fixture_head)
+def patch_fixture_ref!(spec_path, fixture, fixture_head)
+  marker = fixture.fetch(:marker)
+  fallback_ref = fixture.fetch(:fallback_ref)
   content = File.read(spec_path)
-  pattern = /^(\s*ref:\s*)[0-9a-f]{40}(\s+#\s*fixture:\s*#{Regexp.escape(marker)}\s*)$/
-  matches = content.scan(pattern).length
-  raise "Expected one fixture marker #{marker} in #{spec_path}, found #{matches}" unless matches == 1
+  pattern = /^(\s*ref:\s*)([0-9a-f]{40})(\s+#\s*fixture:\s*#{Regexp.escape(marker)}\s*)$/
+  matches = content.scan(pattern)
+  raise "Expected one fixture marker #{marker} in #{spec_path}, found #{matches.length}" unless matches.length == 1
+  raise "Fixture #{marker} fallback ref changed" unless matches.first[1] == fallback_ref
 
-  File.write(spec_path, content.sub(pattern, "\\1#{fixture_head}\\2"))
+  File.write(spec_path, content.sub(pattern, "\\1#{fixture_head}\\3"))
 end
 
 repo_root = File.realpath(File.expand_path(ARGV.fetch(0)))
@@ -220,7 +216,7 @@ if !validate_only && File.basename(skill_root) == "try-fix"
 
     fixtures.each do |fixture|
       fixture_head = create_fixture_commit(repo_root, fixture)
-      patch_fixture_ref!(spec_path, fixture[:marker], fixture_head)
+      patch_fixture_ref!(spec_path, fixture, fixture_head)
       puts "Prepared #{fixture[:marker]} at #{fixture_head}"
     end
   end

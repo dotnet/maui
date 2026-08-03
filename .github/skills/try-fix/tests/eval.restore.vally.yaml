@@ -26,16 +26,19 @@ stimuli:
     tags:
       kind: protocol
     prompt: |
-      Please run a try-fix attempt on this Android Entry issue:
+      Please run a try-fix attempt on this Android WebView issue:
 
-      The bug is that Entry text is lost when the user rotates the device. The
-      current PR enables native view-state saving in CreatePlatformView, but the
-      regression test still fails.
+      The bug is that WebView resources survive after navigating away. The
+      current PR destroys the native view during handler disconnection, but the
+      regression test still detects a retained page.
 
-      Try a different mechanism for persisting the text across orientation changes.
+      Try a different lifecycle/disposal mechanism.
 
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
-      Target file: src/Core/src/Handlers/Entry/EntryHandler.Android.cs
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35552"
+      Target file: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
+
+      This is a frozen one-commit fixture. Establish its broken baseline with
+      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
 
       You may modify only that target file. If another tracked file is required,
       report the attempt as Blocked instead of editing it.
@@ -45,11 +48,15 @@ stimuli:
       `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash`
       to clean the working tree.
     environment:
-      # The trusted, tokenless workflow provisioner replaces this frozen base
-      # with a verified one-commit fixture before Vally receives model auth.
+      # The immutable fallback is itself a verified one-commit fixture, so the
+      # PR remains evaluatable by the current base workflow. Once this workflow
+      # change is merged, the trusted tokenless provisioner replaces it with an
+      # structurally equivalent synthetic commit before Vally receives model
+      # auth. These fixtures supply a real committed production diff for the
+      # restoration protocol; they do not reproduce the narrated product bug.
       git:
         type: worktree
-        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: restores-synthetic-fix-without-raw-git
+        ref: 709ea3d7c75a03fa011956941fd9ca7c631e9d24 # fixture: restores-synthetic-fix-without-raw-git
         source: .
     graders:
       - type: skill-invocation
@@ -68,7 +75,7 @@ stimuli:
               result: 'Restored\s+True'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|(?:&&|\|\||;|\||\n)\s*)git(?:(?:\s+(?:-C|-c)\s+\S+)|(?:\s+-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
+              command: '(?:^\s*|(?:&&|\|\||;|\||\n)\s*)git(?:(?:\s+(?:-C|-c)\s+\S+)|(?:\s+-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
       - type: diff-empty
     constraints:
       max_duration: 15m

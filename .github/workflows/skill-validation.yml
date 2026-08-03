@@ -44,6 +44,7 @@ on:
     paths:
       - '.github/skills/**'
       - '.github/plugin.json'
+      - '.github/scripts/PrepareVallyEvaluation.rb'
       - '.github/workflows/skill-validation.yml'
 
   issue_comment:
@@ -443,9 +444,11 @@ jobs:
               --paginate --jq '.[].filename')
             SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
               sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-            # Workflow change ⇒ evaluate all skills with specs.
-            WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
-            if [ -n "$WORKFLOW_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
+            # Trusted evaluation-harness change => evaluate all skills with specs.
+            HARNESS_CHANGES=$(echo "$CHANGED" \
+              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/PrepareVallyEvaluation\.rb)$' \
+              || true)
+            if [ -n "$HARNESS_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
           fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
@@ -465,7 +468,7 @@ jobs:
           $evalAll = $env:EVAL_ALL -eq "true"
 
           if ($evalAll) {
-            Write-Host "Workflow changes detected - evaluating all skills with tests"
+            Write-Host "Evaluation harness changes detected - evaluating all skills with tests"
             $skills = @(Get-ChildItem -Path ".github/skills" -Directory |
               Select-Object -ExpandProperty Name)
           } else {
