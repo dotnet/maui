@@ -105,43 +105,39 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public void NonPngRasterWithoutResizeUsesMatchingAssetFilenames()
 		{
 			var inputDirectory = Path.Combine(Path.GetTempPath(), "Microsoft.Maui.Resizetizer.Tests", nameof(GenerateSplashAssetCatalogTests), Path.GetRandomFileName());
-			try
+			var lightFile = CopyImageWithExtension(inputDirectory, "camera.jpg", "images/camera.png");
+			var darkFile = CopyImageWithExtension(inputDirectory, "camera_color.jpg", "images/camera_color.png");
+			var splash = new TaskItem(lightFile, new Dictionary<string, string>
 			{
-				var lightFile = CopyImageWithExtension(inputDirectory, "camera.jpg", "images/camera.png");
-				var darkFile = CopyImageWithExtension(inputDirectory, "camera_color.jpg", "images/camera_color.png");
-				var splash = new TaskItem(lightFile, new Dictionary<string, string>
-				{
-					["Resize"] = bool.FalseString,
-					["DarkFile"] = darkFile,
-				});
+				["Resize"] = bool.FalseString,
+				["DarkFile"] = darkFile,
+			});
+			var imageSetPath = Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashImage.imageset");
+			Directory.CreateDirectory(imageSetPath);
+			File.WriteAllText(Path.Combine(imageSetPath, "MauiSplashImage.png"), "stale");
+			File.WriteAllText(Path.Combine(imageSetPath, "MauiSplashImageDark.png"), "stale");
 
-				var task = GetNewTask(splash);
-				var success = task.Execute();
-				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.jpg");
-				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage@2x.jpg");
-				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.jpg");
-				AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@2x.jpg");
-				AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png");
-				AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png");
+			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.jpg");
+			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage@2x.jpg");
+			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.jpg");
+			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@2x.jpg");
+			AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png");
+			AssertFileNotExists("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png");
 
-				using var imageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashImage.imageset", "Contents.json")));
-				var filenames = imageJson.RootElement.GetProperty("images").EnumerateArray()
-					.Select(image => image.GetProperty("filename").GetString())
-					.ToArray();
-				Assert.Contains("MauiSplashImage.jpg", filenames);
-				Assert.Contains("MauiSplashImage@2x.jpg", filenames);
-				Assert.Contains("MauiSplashImageDark.jpg", filenames);
-				Assert.Contains("MauiSplashImageDark@2x.jpg", filenames);
-				Assert.DoesNotContain("MauiSplashImage.png", filenames);
-				Assert.DoesNotContain("MauiSplashImageDark.png", filenames);
-			}
-			finally
-			{
-				if (Directory.Exists(inputDirectory))
-					Directory.Delete(inputDirectory, recursive: true);
-			}
+			using var imageJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashImage.imageset", "Contents.json")));
+			var filenames = imageJson.RootElement.GetProperty("images").EnumerateArray()
+				.Select(image => image.GetProperty("filename").GetString())
+				.ToArray();
+			Assert.Contains("MauiSplashImage.jpg", filenames);
+			Assert.Contains("MauiSplashImage@2x.jpg", filenames);
+			Assert.Contains("MauiSplashImageDark.jpg", filenames);
+			Assert.Contains("MauiSplashImageDark@2x.jpg", filenames);
+			Assert.DoesNotContain("MauiSplashImage.png", filenames);
+			Assert.DoesNotContain("MauiSplashImageDark.png", filenames);
 		}
 
 		[Fact]

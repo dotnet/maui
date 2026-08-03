@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Resizetizer
 					return true;
 
 				CleanStoryboard();
+				CleanImageSet();
 
 				var info = ResizeImageInfo.Parse(splash);
 				var lightInfo = CloneForAsset(info, DpiPath.Ios.SplashImageName);
@@ -276,6 +277,13 @@ namespace Microsoft.Maui.Resizetizer
 			var storyboard = Path.Combine(IntermediateOutputPath, "MauiSplash.storyboard");
 			if (File.Exists(storyboard))
 				File.Delete(storyboard);
+		}
+
+		private void CleanImageSet()
+		{
+			var imageSetPath = Path.Combine(IntermediateOutputPath, DpiPath.Ios.SplashImageSetPath);
+			if (Directory.Exists(imageSetPath))
+				Directory.Delete(imageSetPath, recursive: true);
 		}
 
 		private void DeleteColorSet()
