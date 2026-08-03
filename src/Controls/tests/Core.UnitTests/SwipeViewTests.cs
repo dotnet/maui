@@ -847,6 +847,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
 		}
 
+		// Discriminating test for the IFontImageSource (interface, not concrete FontImageSource) guard:
+		// a custom ImageSource implementing IFontImageSource with a null Color must still trigger the
+		// cross-key icon refresh. This fails if the guard regresses to the concrete-type check.
+		[Fact]
+		public void ChangingTextColorRefreshesIconForCustomColorlessFontImageSource()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new CustomFontImageSource()
+			};
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.TextColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+		}
+
 		[Fact]
 		public void ChangingTextColorDoesNotRefreshIconWhenIconColorIsExplicit()
 		{
@@ -933,6 +952,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				GC.WaitForPendingFinalizers();
 				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
 			}
+		}
+
+		// A custom ImageSource that implements IFontImageSource without being the concrete
+		// FontImageSource, used to verify the icon-tint guard keys off the interface, not the type.
+		sealed class CustomFontImageSource : ImageSource, IFontImageSource
+		{
+			Color IFontImageSource.Color => null;
+			Font IFontImageSource.Font => Font.Default;
+			string IFontImageSource.Glyph => "A";
 		}
 	}
 }
