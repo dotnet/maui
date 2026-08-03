@@ -114,6 +114,9 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				TaskCompletionSource<PermissionResult> tcs;
 
+				if (!MainThread.IsMainThread)
+					throw new PermissionException("Permission request must be invoked on main thread.");
+
 				lock (locker)
 				{
 					tcs = new TaskCompletionSource<PermissionResult>();
@@ -122,9 +125,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 					requests.Add(requestCode, tcs);
 				}
-
-				if (!MainThread.IsMainThread)
-					throw new PermissionException("Permission request must be invoked on main thread.");
 
 				ActivityCompat.RequestPermissions(ActivityStateManager.Default.GetCurrentActivity(true), permissions.ToArray(), requestCode);
 
