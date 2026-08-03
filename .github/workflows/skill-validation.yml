@@ -24,7 +24,11 @@
 #   - Evaluator: @microsoft/vally-cli, pinned + run via npx from npm (trusted)
 #   - Skill/test content: checked out from the PR (markdown/YAML data files;
 #     the evaluate job needs full history for frozen-worktree fixtures)
-#   - No PR code is compiled or executed
+#   - A workflow-SHA-pinned validator rejects PR-authored commands, process
+#     environment overrides, local MCP servers, executable graders, and escaping
+#     file overlays before model auth is selected. Synthetic git fixtures are
+#     prepared by that trusted script while the job is tokenless.
+#   - No PR code is compiled or executed.
 #   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
 #     (COPILOT_GITHUB_TOKEN, a name `gh` does not read) and NO GITHUB_TOKEN /
 #     GH_TOKEN, so it cannot recite documented fixes via the live GitHub API.
@@ -247,6 +251,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate safe Vally specs
+        env:
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          while IFS= read -r tests_path; do
+            ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
+          done < <(find .github/skills -name '*.vally.yaml' -exec dirname {} \; | sort -u)
 
       # ── Lint eval specs with Vally ────────────────────────────────
       # Lint ONLY the explicitly enumerated *.vally.yaml eval specs. Vally's
@@ -507,6 +524,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Validate specs and prepare trusted fixtures
+        env:
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
+
       # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
         id: select-token
@@ -718,6 +747,18 @@ jobs:
         if: always()
         run: git restore --staged --worktree --source=HEAD -- .github/skills
 
+      - name: Revalidate specs and restore trusted fixtures
+        env:
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
+
       - name: Run Vally evaluation
         id: eval-run
         env:
@@ -851,6 +892,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate safe Vally specs
+        env:
+          TRUSTED_REPOSITORY: ${{ github.repository }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" ".github/skills/code-review/tests" --validate-only
+          git show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" \
+            > .github/skills/code-review/tests/hermeticity.vally.yaml
 
       - name: Select Copilot token
         id: select-token

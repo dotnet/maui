@@ -55,12 +55,6 @@ environment:
   # Isolate the unit under test instead of exposing every repository skill.
   skills:
     - ..
-  # Vally otherwise creates an empty /tmp workspace. Pin a real MAUI checkout
-  # so target files and the prescribed baseline/restore script are available.
-  git:
-    type: worktree
-    ref: 8935253083b24930f9a6f153f72b5ac196d1ae59
-    source: .
 
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
@@ -82,14 +76,10 @@ stimuli:
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
       Files to look at: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
     environment:
-      commands:
-        - |
-          set -e
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
-          git add src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
-          git commit -m "Synthetic CollectionView lifecycle fix"
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: happy-path-distinct-alternative-fix
+        source: .
     graders:
       # Judge-only: "distinct from the prior approach" is purely semantic.
       # A regex floor here would either ban one phrasing (brittle) or add
@@ -174,14 +164,10 @@ stimuli:
       - Target: src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
       - Platform: ios
     environment:
-      commands:
-        - |
-          set -e
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
-          git add src/Compatibility/Core/src/iOS/Renderers/ScrollViewRenderer.cs
-          git commit -m "Synthetic ScrollView gesture fix"
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: regression-no-success-without-running-test
+        source: .
     graders:
       # Crisp failure-mode floor: claiming PASS when the test never ran.
       - type: output-not-matches
@@ -232,14 +218,10 @@ stimuli:
       Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
       Hint: The fix needs to happen before layout measurement, not after navigation completes.
     environment:
-      commands:
-        - |
-          set -e
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
-          git add src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellItemRendererBase.cs
-          git commit -m "Synthetic Shell navigation fix"
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: edge-case-second-attempt-avoids-prior-approach
+        source: .
     graders:
       - type: prompt
         config:
@@ -280,14 +262,10 @@ stimuli:
       Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
       Target: src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
     environment:
-      commands:
-        - |
-          set -e
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
-          git add src/Compatibility/Core/src/Android/CollectionView/ItemsViewRenderer.cs
-          git commit -m "Synthetic CollectionView overlap fix"
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: edge-case-exhausted-iterations-documented-fail
+        source: .
     graders:
       - type: output-not-matches
         config:
@@ -337,15 +315,10 @@ stimuli:
       - src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
       Platform: Android
     environment:
-      commands:
-        - |
-          set -e
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
-          git add src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs src/Controls/src/Core/Handlers/Items/Android/Adapters/EmptyViewAdapter.cs
-          git commit -m "Synthetic EmptyView measurement fix"
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: regression-no-repeated-root-cause-disguised
+        source: .
     graders:
       - type: prompt
         config:
@@ -387,15 +360,10 @@ stimuli:
 
       IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
     environment:
-      commands:
-        - |
-          set -e
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs
-          printf '\n// Vally fixture: committed candidate fix.\n' >> src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
-          git add src/Controls/src/Core/NavigationPage/NavigationPage.Legacy.cs src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
-          git commit -m "Synthetic NavigationPage disconnect fix"
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: regression-verify-correct-platform-code-path
+        source: .
     graders:
       - type: prompt
         config:

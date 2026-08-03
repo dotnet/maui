@@ -20,10 +20,6 @@ defaults:
 environment:
   skills:
     - ..
-  git:
-    type: worktree
-    ref: 8935253083b24930f9a6f153f72b5ac196d1ae59
-    source: .
 
 stimuli:
   - name: restores-synthetic-fix-without-raw-git
@@ -49,25 +45,12 @@ stimuli:
       `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash`
       to clean the working tree.
     environment:
-      # Turn the frozen main snapshot into a synthetic one-commit PR. The
-      # production-file change gives EstablishBrokenBaseline.ps1 a real,
-      # committed fix to revert and restore without depending on a live PR ref.
-      commands:
-        - |
-          set -e
-          base_head=$(git rev-parse HEAD)
-          git config user.name "Vally Fixture"
-          git config user.email "vally-fixture@example.invalid"
-          perl -0pi -e 's/(var nativeEntry = new MauiAppCompatEditText\(Context\);\n)/$1\t\t\tnativeEntry.SaveEnabled = true;\n/' src/Core/src/Handlers/Entry/EntryHandler.Android.cs
-          if git diff --quiet -- src/Core/src/Handlers/Entry/EntryHandler.Android.cs; then
-            echo "Synthetic fixture substitution did not change the target file" >&2
-            exit 1
-          fi
-          git add src/Core/src/Handlers/Entry/EntryHandler.Android.cs
-          git commit -m "Synthetic Entry state restoration attempt"
-          test "$(git rev-parse HEAD^)" = "$base_head"
-          test "$(git diff --name-only HEAD^ HEAD)" = "src/Core/src/Handlers/Entry/EntryHandler.Android.cs"
-          git rev-parse HEAD > .github/.try-fix-fixture-head
+      # The trusted, tokenless workflow provisioner replaces this frozen base
+      # with a verified one-commit fixture before Vally receives model auth.
+      git:
+        type: worktree
+        ref: 8935253083b24930f9a6f153f72b5ac196d1ae59 # fixture: restores-synthetic-fix-without-raw-git
+        source: .
     graders:
       - type: skill-invocation
         config: { required: [try-fix] }
@@ -79,19 +62,14 @@ stimuli:
           required:
             - name: '^(bash|powershell)$'
               command: 'EstablishBrokenBaseline\.ps1\b(?!\s+-Restore\b)'
+              result: 'Success\s+True'
             - name: '^(bash|powershell)$'
               command: 'EstablishBrokenBaseline\.ps1\s+-Restore\b'
+              result: 'Restored\s+True'
           disallowed:
             - name: '^(bash|powershell)$'
               command: '(?:^|(?:&&|\|\||;|\||\n)\s*)git(?:(?:\s+(?:-C|-c)\s+\S+)|(?:\s+-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
-      - type: run-command
-        name: baseline-restored-cleanly
-        config:
-          command: bash
-          args:
-            - -lc
-            - 'test ! -e .github/.baseline-state.json && test "$(git rev-parse HEAD)" = "$(cat .github/.try-fix-fixture-head)" && test -z "$(git status --porcelain --untracked-files=no)"'
-          expected_exit_code: 0
+      - type: diff-empty
     constraints:
       max_duration: 15m
       expect_skills:
@@ -99,5 +77,6 @@ stimuli:
 
 scoring:
   # Every protocol signal must pass in every trial. A single missed baseline,
-  # out-of-scope edit, raw-git cleanup, or failed restore makes the suite red.
+  # out-of-scope edit, raw-git cleanup, failed restore, or dirty final workspace
+  # makes the suite red.
   threshold: 1.0
