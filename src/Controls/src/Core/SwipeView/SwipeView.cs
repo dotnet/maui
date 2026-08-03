@@ -237,6 +237,7 @@ namespace Microsoft.Maui.Controls
 		View? _scrollParent;
 		Element? _templateParent;
 		SwipeDirection? _swipeDirection;
+		readonly WeakScrollParentProxy _scrolledProxy = new();
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
 
@@ -323,20 +324,7 @@ namespace Microsoft.Maui.Controls
 
 		void UnsubscribeFromParentScrolledEvents()
 		{
-			if (_scrollParent is ScrollView scrollView)
-			{
-				scrollView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			else if (_scrollParent is ListView listView)
-			{
-				listView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
-			else if (_scrollParent is CollectionView collectionView)
-			{
-				collectionView.Scrolled -= OnParentScrolled;
-			}
+			_scrolledProxy.Unsubscribe();
 			_scrollParent = null;
 		}
 
@@ -356,7 +344,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is ScrollView scrollView)
 			{
-				scrollView.Scrolled += OnParentScrolled;
+				_scrolledProxy.Subscribe(scrollView, this);
 				return true;
 			}
 
@@ -365,7 +353,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is ListView listView)
 			{
-				listView.Scrolled += OnParentScrolled;
+				_scrolledProxy.Subscribe(listView, this);
 				return true;
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -374,7 +362,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
 			{
-				collectionView.Scrolled += OnParentScrolled;
+				_scrolledProxy.Subscribe(collectionView, this);
 				return true;
 			}
 
@@ -406,6 +394,86 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Math.Abs(e.HorizontalDelta) > SwipeMinimumDelta || Math.Abs(e.VerticalDelta) > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
+		}
+
+		// Subscribes to a scroll parent's Scrolled event while holding the owning SwipeView
+		// only via a WeakReference, so a long-lived scroll container can never root a detached
+		// SwipeView (issue #36481). If the SwipeView has been collected by the time an event
+		// fires, the proxy detaches itself from the source. The proxy keeps a strong reference
+		// to its own forwarding delegates so they stay valid while it is subscribed, and the
+		// SwipeView holds the proxy, so no finalizer is required.
+		sealed class WeakScrollParentProxy
+		{
+			WeakReference<SwipeView>? _target;
+			object? _source;
+			readonly EventHandler<ScrolledEventArgs> _scrollViewHandler;
+			readonly EventHandler<ItemsViewScrolledEventArgs> _itemsViewHandler;
+
+			public WeakScrollParentProxy()
+			{
+				_scrollViewHandler = OnScrolled;
+				_itemsViewHandler = OnItemsViewScrolled;
+			}
+
+			public void Subscribe(object source, SwipeView target)
+			{
+				Unsubscribe();
+
+				_target = new WeakReference<SwipeView>(target);
+				_source = source;
+
+				switch (source)
+				{
+					case ScrollView scrollView:
+						scrollView.Scrolled += _scrollViewHandler;
+						break;
+#pragma warning disable CS0618 // Type or member is obsolete
+					case ListView listView:
+						listView.Scrolled += _scrollViewHandler;
+						break;
+#pragma warning restore CS0618 // Type or member is obsolete
+					case Microsoft.Maui.Controls.CollectionView collectionView:
+						collectionView.Scrolled += _itemsViewHandler;
+						break;
+				}
+			}
+
+			public void Unsubscribe()
+			{
+				switch (_source)
+				{
+					case ScrollView scrollView:
+						scrollView.Scrolled -= _scrollViewHandler;
+						break;
+#pragma warning disable CS0618 // Type or member is obsolete
+					case ListView listView:
+						listView.Scrolled -= _scrollViewHandler;
+						break;
+#pragma warning restore CS0618 // Type or member is obsolete
+					case Microsoft.Maui.Controls.CollectionView collectionView:
+						collectionView.Scrolled -= _itemsViewHandler;
+						break;
+				}
+
+				_source = null;
+				_target = null;
+			}
+
+			void OnScrolled(object? sender, ScrolledEventArgs e)
+			{
+				if (_target is not null && _target.TryGetTarget(out var swipeView))
+					swipeView.OnParentScrolled(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			void OnItemsViewScrolled(object? sender, ItemsViewScrolledEventArgs e)
+			{
+				if (_target is not null && _target.TryGetTarget(out var swipeView))
+					swipeView.OnParentScrolled(sender, e);
+				else
+					Unsubscribe();
+			}
 		}
 
 		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)

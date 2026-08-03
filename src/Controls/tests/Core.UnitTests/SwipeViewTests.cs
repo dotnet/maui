@@ -657,5 +657,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
 			}
 		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36481
+		// A SwipeView strongly subscribed to an ancestor ScrollView's Scrolled event via a
+		// plain delegate. Detaching the SwipeView by removing an intermediate ancestor (which
+		// leaves SwipeView.Parent unchanged) never ran the unsubscribe path, so the long-lived
+		// ScrollView rooted the detached SwipeView through the still-live Scrolled delegate.
+		[Fact]
+		public void SwipeViewDoesNotLeakWhenAncestorScrollViewOutlivesIt()
+		{
+			// Long-lived scroll container, kept alive for the whole test.
+			var scroll = new ScrollView();
+
+			var swipeViewRef = CreateDetachedSwipeViewUnderScrollView(scroll);
+
+			ForceFullGC();
+
+			GC.KeepAlive(scroll);
+
+			Assert.False(swipeViewRef.IsAlive,
+				"SwipeView was kept alive by the ancestor ScrollView's Scrolled subscription — issue #36481 regression.");
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateDetachedSwipeViewUnderScrollView(ScrollView scroll)
+		{
+			var inner = new VerticalStackLayout();
+			scroll.Content = inner;
+
+			var swipe = new SwipeView { Content = new Label() };
+			inner.Children.Add(swipe);   // SwipeView subscribes to scroll.Scrolled
+
+			// Detach the SwipeView by removing the intermediate ancestor. swipe.Parent stays
+			// 'inner', so OnParentChangedCore never runs and the plain-delegate unsubscribe
+			// path is never reached. Before the fix, scroll keeps swipe alive.
+			scroll.Content = null;
+
+			return new WeakReference(swipe);
+		}
 	}
 }
