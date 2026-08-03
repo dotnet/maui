@@ -121,16 +121,27 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var availableScrollHeight = Math.Max(uiScrollView.ContentSize.Height - uiScrollView.Frame.Height, 0);
-				var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
-				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
-				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
-				
-				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == minScrollVertical && uiScrollView.ContentOffset.X == minScrollHorizontal;
+				// Cross-platform scroll coordinates treat (0,0) as the top of the content, but when the
+				// scroll view has content insets (e.g. it consumes the safe area) the native rest offset
+				// is (-adjustedInset.Left, -adjustedInset.Top) and the native maximum extends past
+				// ContentSize - Bounds by the trailing insets. Translate the request into native offset
+				// space and clamp against the inset-aware range (issue #36801).
+				var adjustedInset = uiScrollView.AdjustedContentInset;
+				var bounds = uiScrollView.Bounds;
+
+				var minScrollHorizontal = -(double)adjustedInset.Left;
+				var minScrollVertical = -(double)adjustedInset.Top;
+				var maxScrollHorizontal = Math.Max(minScrollHorizontal, uiScrollView.ContentSize.Width + adjustedInset.Right - bounds.Width);
+				var maxScrollVertical = Math.Max(minScrollVertical, uiScrollView.ContentSize.Height + adjustedInset.Bottom - bounds.Height);
+
+				var targetHorizontal = Math.Clamp(request.HorizontalOffset - (double)adjustedInset.Left, minScrollHorizontal, maxScrollHorizontal);
+				var targetVertical = Math.Clamp(request.VerticalOffset - (double)adjustedInset.Top, minScrollVertical, maxScrollVertical);
+
+				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == targetVertical && uiScrollView.ContentOffset.X == targetHorizontal;
 
 				if (!alreadyAtTarget)
 				{
-    				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+    				uiScrollView.SetContentOffset(new CGPoint(targetHorizontal, targetVertical), !request.Instant);
 				}
 
 				if (request.Instant || alreadyAtTarget)
@@ -257,8 +268,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				VirtualView.HorizontalOffset = platformView.ContentOffset.X;
-				VirtualView.VerticalOffset = platformView.ContentOffset.Y;
+				// Report offsets in cross-platform content coordinates: with content insets the native
+				// rest offset is (-adjustedInset.Left, -adjustedInset.Top), which maps to (0,0)
+				// cross-platform so ScrollToAsync(ScrollX, ScrollY, ...) round-trips (issue #36801).
+				var adjustedInset = platformView.AdjustedContentInset;
+				VirtualView.HorizontalOffset = platformView.ContentOffset.X + adjustedInset.Left;
+				VirtualView.VerticalOffset = platformView.ContentOffset.Y + adjustedInset.Top;
 			}
 		}
 	}
