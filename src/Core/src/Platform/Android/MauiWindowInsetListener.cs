@@ -31,7 +31,16 @@ namespace Microsoft.Maui.Platform
 		readonly HashSet<AView> _trackedViews = [];
 		bool IsImeAnimating { get; set; }
 
-		AView? _pendingView;
+		// Views whose dispatches were gated while an IME animation was in flight; they all get
+		// RequestApplyInsets once the animation ends so no view is left with stale insets.
+		readonly HashSet<AView> _pendingViews = [];
+
+		// Views that started using this listener while an IME animation was in flight.
+		// The IsImeAnimating gate exists to keep already-correct views stable during the
+		// animation; a view that just (re)attached has no valid safe-area padding yet, so it
+		// must bypass the gate or it stays without padding until the animation ends (#37012).
+		// Cleared when an animation ends or a new one starts.
+		readonly HashSet<AView> _viewsAttachedDuringImeAnimation = [];
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -230,19 +239,35 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		/// <summary>
+		/// Notifies this listener that a view has (re)attached to the window and started using it.
+		/// Views attached while an IME animation is in flight are exempted from the IsImeAnimating
+		/// gate for the remainder of that animation so they can obtain their safe-area padding.
+		/// Must be called on UI thread.
+		/// </summary>
+		/// <param name="view">The view that attached</param>
+		internal void NotifyViewAttached(AView view)
+		{
+			if (IsImeAnimating)
+			{
+				_viewsAttachedDuringImeAnimation.Add(view);
+			}
+		}
+
 		public virtual WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 		{
-			if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
+			if (insets is null || !insets.HasInsets || v is null ||
+				(IsImeAnimating && !_viewsAttachedDuringImeAnimation.Contains(v)))
 			{
-				if (IsImeAnimating)
+				if (IsImeAnimating && v is not null)
 				{
-					_pendingView = v;
+					_pendingViews.Add(v);
 				}
 
 				return insets;
 			}
 
-			_pendingView = null;
+			_pendingViews.Remove(v);
 
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
@@ -370,6 +395,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_trackedViews.Remove(view);
+			_pendingViews.Remove(view);
+			_viewsAttachedDuringImeAnimation.Remove(view);
 		}
 
 		public void ResetAllViews()
@@ -429,6 +456,8 @@ namespace Microsoft.Maui.Platform
 			if (disposing)
 			{
 				ResetAllViews();
+				_pendingViews.Clear();
+				_viewsAttachedDuringImeAnimation.Clear();
 			}
 			base.Dispose(disposing);
 		}
@@ -438,7 +467,7 @@ namespace Microsoft.Maui.Platform
 			base.OnPrepare(animation);
 			if (IsImeAnimation(animation))
 			{
-				IsImeAnimating = true;
+				StartImeAnimation();
 			}
 		}
 
@@ -446,10 +475,21 @@ namespace Microsoft.Maui.Platform
 		{
 			if (IsImeAnimation(animation))
 			{
-				IsImeAnimating = true;
+				StartImeAnimation();
 			}
 
 			return bounds;
+		}
+
+		void StartImeAnimation()
+		{
+			if (!IsImeAnimating)
+			{
+				IsImeAnimating = true;
+
+				// Exemptions only apply to the animation during which the view attached
+				_viewsAttachedDuringImeAnimation.Clear();
+			}
 		}
 
 		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
@@ -478,13 +518,19 @@ namespace Microsoft.Maui.Platform
 
 			if (IsImeAnimation(animation))
 			{
-				if (_pendingView is AView view)
+				_viewsAttachedDuringImeAnimation.Clear();
+
+				if (_pendingViews.Count > 0)
 				{
-					_pendingView = null;
-					view.Post(() =>
+					var pendingViews = _pendingViews.ToArray();
+					_pendingViews.Clear();
+					pendingViews[0].Post(() =>
 					{
 						IsImeAnimating = false;
-						ViewCompat.RequestApplyInsets(view);
+						foreach (var view in pendingViews)
+						{
+							ViewCompat.RequestApplyInsets(view);
+						}
 					});
 				}
 				else
@@ -521,6 +567,7 @@ internal static class MauiWindowInsetListenerExtensions
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
+			localListener.NotifyViewAttached(view);
 			return true;
 		}
 
@@ -550,6 +597,7 @@ internal static class MauiWindowInsetListenerExtensions
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
+			listener.NotifyViewAttached(view);
 			return true;
 		}
 
