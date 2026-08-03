@@ -35,8 +35,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 		SetTestIdentifier(id, framework, config, shouldPack, additionalDotNetNewParams, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var usesAvalonia = additionalDotNetNewParams.Contains("--with-avalonia", StringComparison.Ordinal);
+		var newParams = usesAvalonia ? $"{additionalDotNetNewParams} --no-restore" : additionalDotNetNewParams;
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams, output: _output),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, newParams, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 
@@ -47,6 +49,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		var buildProps = BuildProps;
 
+		if (usesAvalonia)
+		{
+			buildProps.RemoveAll(p => p.StartsWith("RestoreConfigFile=", StringComparison.Ordinal));
+			buildProps.Add($"RestoreConfigFile={CreateAvaloniaNuGetConfig(projectDir)}");
+		}
+
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
 			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
@@ -55,6 +63,37 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.True(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	private string CreateAvaloniaNuGetConfig(string projectDir)
+	{
+		var config = XDocument.Load(TestNuGetConfig);
+		var packageSources = config.Root!.Element("packageSources")!;
+		const string nugetOrg = "nuget.org";
+
+		packageSources.Add(
+			new XElement("add",
+				new XAttribute("key", nugetOrg),
+				new XAttribute("value", "https://api.nuget.org/v3/index.json"),
+				new XAttribute("protocolVersion", "3")));
+
+		var sourceMapping = new XElement("packageSourceMapping");
+		foreach (var source in packageSources.Elements("add"))
+		{
+			var key = source.Attribute("key")!.Value;
+			var patterns = key == nugetOrg ? new[] { "Avalonia*", "MicroCom.*" } : new[] { "*" };
+			sourceMapping.Add(
+				new XElement("packageSource",
+					new XAttribute("key", key),
+					patterns.Select(pattern =>
+						new XElement("package",
+							new XAttribute("pattern", pattern)))));
+		}
+
+		config.Root.Add(sourceMapping);
+		var path = Path.Combine(projectDir, "NuGet.config");
+		config.Save(path);
+		return path;
 	}
 
 	[Theory]
