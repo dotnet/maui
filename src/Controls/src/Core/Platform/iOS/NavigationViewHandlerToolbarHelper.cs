@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls
 
 #if !MACCATALYST
         public override UIViewController ChildViewControllerForStatusBarStyle() =>
-            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? this;
+            (Child?.Handler as IPlatformViewHandler)?.ViewController ?? base.ChildViewControllerForStatusBarStyle()!;
 #endif
 
         public override bool PrefersStatusBarHidden()
