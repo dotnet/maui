@@ -42,7 +42,35 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			Output.WriteLine($"Cleaning up directories={DeleteDirectory}");
 
 			if (Directory.Exists(DeleteDirectory))
-				Directory.Delete(DeleteDirectory, true);
+				DeleteDirectoryWithRetries(DeleteDirectory);
+		}
+
+		void DeleteDirectoryWithRetries(string directory)
+		{
+			const int attempts = 3;
+
+			for (var attempt = 1; ; attempt++)
+			{
+				Exception cleanupException;
+				try
+				{
+					Directory.Delete(directory, true);
+					return;
+				}
+				catch (IOException ex) when (attempt < attempts)
+				{
+					cleanupException = ex;
+				}
+				catch (UnauthorizedAccessException ex) when (attempt < attempts)
+				{
+					cleanupException = ex;
+				}
+
+				Output.WriteLine($"Retrying cleanup for {directory} after attempt {attempt}: {cleanupException.Message}");
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				System.Threading.Thread.Sleep(100);
+			}
 		}
 
 		protected void AssertFileSize(string file, int width, int height)
