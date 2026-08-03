@@ -82,6 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var activity = (AppCompatActivity)MauiProgramDefaults.DefaultContext;
 				Assert.NotNull(activity);
+				EnsureHandlerCreated(builder => builder.Services.AddSingleton<Activity>(activity));
 
 				var platformWindow = activity.Window;
 				Assert.NotNull(platformWindow);

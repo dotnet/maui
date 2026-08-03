@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 			{
 				info.ClassName = s_radioButtonClassName;
 				info.Checkable = true;
-				info.Checked = radioButton.IsChecked;
+				info.Checked = radioButton.IsChecked ? 1 : 0;
 			}
 
 			if (!string.IsNullOrWhiteSpace(virtualView.AutomationId) &&
