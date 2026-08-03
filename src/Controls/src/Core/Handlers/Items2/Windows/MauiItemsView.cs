@@ -335,6 +335,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// the viewport — DesiredSize = max(contentWidth, MinWidth), so the ScrollViewer
 		// still sees the full content extent for many-item scenarios.
 		bool itemsWidthChanged = false;
+		var measured = base.MeasureOverride(availableSize);
+
 		if (_isHorizontalLayout && _itemsRepeater is not null)
 		{
 			if (!emptyViewWillFill && !double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
@@ -355,8 +357,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_itemsRepeater.ClearValue(MinWidthProperty);
 		}
 
-		var measured = base.MeasureOverride(availableSize);
-
 		// When the EmptyView is visible, stretch it to fill the remaining viewport
 		// space (after Header/Footer/Items) so it occupies the entire available area.
 		// The EmptyView is laid out inside the StackPanel between the items repeater
@@ -373,10 +373,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		return measured;
 	}
 
-	/// _itemsRepeater MinWidth to the available viewport width minus the
-	/// Header/Footer's own widths, so items stretch to fill the remaining space (needed for
-	/// UniformGridLayout's ItemsStretch=Fill when there are few items) without claiming the
-	/// space the Header/Footer need. Returns true if the MinWidth value changed.
+	/// <summary>
+	/// Sets the _itemsRepeater MinWidth to the available viewport width minus the
+	/// Header/Footer's own widths, so items stretch to fill the remaining space.
+	/// Returns true if the MinWidth value changed.
+	/// </summary>
 	bool ApplyItemsRepeaterMinWidth(global::Windows.Foundation.Size availableSize)
 	{
 		if (_itemsRepeater is null)
@@ -392,7 +393,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			: 0;
 
 		var remainingWidth = availableSize.Width - headerWidth - footerWidth;
-		var newMinWidth = Math.Max(remainingWidth , 0);
+		var newMinWidth = Math.Max(remainingWidth, 0);
 
 		if (_itemsRepeater.MinWidth == newMinWidth)
 		{
