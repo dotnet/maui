@@ -113,8 +113,8 @@ namespace Microsoft.Maui.Platform
 			{
 				// A custom tint was previously applied; simply clearing it (setting null)
 				// strips the native state-based colors and leaves a white/transparent thumb.
-				// Rebuild the platform default thumb tint (skyblue when on, light grey when off,
-				// opaque grey when disabled) so the native appearance is restored.
+				// Rebuild the platform default thumb tint from the current theme's checked,
+				// normal, and disabled state colors so the native appearance is restored.
 				aSwitch.ThumbTintList = aSwitch.GetDefaultThumbColorStateList();
 				_customThumbTintApplied.Remove(aSwitch);
 			}
