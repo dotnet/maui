@@ -45,8 +45,9 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 	}
 
 	/// <summary>
-	/// Whether to emit <c>XamlComponentRegistry.Register()</c> calls and the <c>__version</c> field
-	/// into the generated <c>InitializeComponent()</c> partial.  Required for incremental XAML Hot Reload.
+	/// Whether to emit <c>XamlComponentRegistry.Register()</c> calls and the
+	/// <c>XamlIncrementalHotReloadHandler.Track()</c> call into the generated
+	/// <c>InitializeComponent()</c> partial.  Required for incremental XAML Hot Reload.
 	/// Defaults to <see langword="false"/> until the feature is complete.
 	/// </summary>
 	public bool EnableIncrementalHotReload

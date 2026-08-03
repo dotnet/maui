@@ -95,18 +95,10 @@ static class InitializeComponentCodeWriter
 			codeWriter.WriteLine($"{accessModifier} partial class {rootType.Name}");
 			using (newblock())
 			{
-				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
-				{
-					codeWriter.WriteLine("#pragma warning disable CS0414 // __version is a write-only content-identity marker (stamped by IC/UC, read by diagnostics/tooling)");
-					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
-					codeWriter.WriteLine("private int __version = 0;");
-					codeWriter.WriteLine("#pragma warning restore CS0414");
-					codeWriter.WriteLine();
-				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
-				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
+				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem, sourceProductionContext.ReportDiagnostic);
 
 				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
 				// Use cached effective IDs (from state) if available, to stay consistent with UC patches.
@@ -151,7 +143,7 @@ $$"""
 
 		if (rlr?.ResourceContent != null)
 		{
-			this.InitializeComponentRuntime();{{(nodeIds != null ? "\n\t\t\tglobal::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);\n\t\t\t__version = 0;" : "")}}
+			this.InitializeComponentRuntime();{{(nodeIds != null ? "\n\t\t\tglobal::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);" : "")}}
 			return;
 		}
 
@@ -216,15 +208,6 @@ $$"""
 							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
 						}
 
-						// Stamp fresh instances with the deterministic content hash of the current XAML.
-						// UpdateComponent() stamps the SAME hash after it runs, so a freshly-created
-						// instance and a live (hot-reloaded) one converge on the same __version for
-						// identical content. This is a pure function of the current content —
-						// deterministic and revert-stable — unlike the old monotonic version counter,
-						// which depended on edit history held in mutable static state. The value is a
-						// write-only content-identity marker (not read for dispatch); it lets diagnostics
-						// and tooling recognize which XAML content an instance currently reflects.
-						codeWriter.WriteLine($"__version = {GeneratorHelpers.StableContentHash(xamlItem.Xaml)};");
 						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
 				}

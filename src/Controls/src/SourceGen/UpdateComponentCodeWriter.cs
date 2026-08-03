@@ -19,23 +19,21 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The method is emitted UNCONDITIONALLY (no <c>if (__version == N)</c> version-chain guard) and is
-/// present on EVERY generation — even the first compile and no-op edits — so a XIHR type never gains
-/// or loses the method across generations (that member churn is what crashes Roslyn's EnC delta
-/// tracking). Its body applies the current patch and then stamps <c>__version</c> with a deterministic
-/// content hash of the current XAML:
+/// The method is emitted UNCONDITIONALLY and is present on EVERY generation — even the first compile
+/// and no-op edits — so a XIHR type never gains or loses the method across generations (that member
+/// churn is what crashes Roslyn's EnC delta tracking). Its body is EMPTY when this generation carries
+/// no XAML change and contains the patch when the XAML changed:
 /// <code>
 /// internal void UpdateComponent()
 /// {
-///     /* absolute previous→current patch (property sets assign target values) */
-///     __version = 123456789; // stable content hash of the current XAML
-///     return;
+///     /* absolute previous→current patch (property sets assign target values); empty when unchanged */
 /// }
 /// </code>
-/// Because patch property-sets are absolute, a single patch brings any live instance to the current
-/// state regardless of which edit it was last updated to, and a revert to earlier content collapses
-/// to the earlier patch/identity — deterministic, revert-stable output for identical XAML (no
-/// accumulated chain, no stale intermediate values). See the XIHR versioning determinism fix.
+/// The empty-vs-non-empty body is also the runtime's "is this a XAML change?" signal (see
+/// <c>XamlIncrementalHotReloadHandler</c>). Because patch property-sets are absolute, a single patch
+/// brings any live instance to the current state regardless of which edit it was last updated to, and a
+/// revert to earlier content collapses to the earlier patch — deterministic, revert-stable output for
+/// identical XAML (no accumulated chain, no stale intermediate values).
 /// </para>
 /// <para>
 /// Property value encoding strategy (in priority order):
@@ -56,9 +54,9 @@ static class UpdateComponentCodeWriter
 
 	/// <summary>
 	/// Generates the statements that apply a single previous→current patch (property sets, child-list
-	/// changes, etc.), WITHOUT any <c>if (__version == N)</c> guard or <c>__version</c> assignment — the
-	/// caller (<see cref="GenerateUpdateComponent(INamedTypeSymbol, string, string?, int)"/>) wraps this
-	/// body and stamps the content-hash identity. Returns <see langword="null"/> when
+	/// changes, etc.). The caller
+	/// (<see cref="GenerateUpdateComponent(INamedTypeSymbol, string, string?)"/>) wraps this body in the
+	/// <c>UpdateComponent()</c> method. Returns <see langword="null"/> when
 	/// <paramref name="diff"/> contains no changes.
 	/// </summary>
 	/// <param name="fromVersion">Vestigial: the monotonic version no longer drives dispatch (kept for the state/bookkeeping call chain and test signatures).</param>
@@ -147,9 +145,6 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Assembles a complete <c>UpdateComponent()</c> source file from accumulated patch bodies.
-	/// Each patch body becomes an <c>if (__version == N) { ... }</c> block inside the single method.
-	/// </summary>
 	/// <summary>
 	/// Generates the <c>UpdateComponent()</c> method body from a single baseline→current patch.
 	/// The patch is <em>always</em> emitted (even when <paramref name="patchBody"/> is null/empty), so the
@@ -264,8 +259,8 @@ static class UpdateComponentCodeWriter
 		{
 			parentVar = $"__rp_{changeIdx}";
 			// B5 fix: wrap the entire emission in `if (TryGet) { ... }` instead of early-return,
-			// so a missing parent only skips this change — the outer `__version = toVersion;`
-			// assignment must still execute or the instance would be stranded at the old version.
+			// so a missing parent only skips this change rather than aborting the whole method and
+			// dropping the remaining changes.
 			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{change.ParentNodeId}\", out var {parentVar}))");
 			codeWriter.WriteLine("{");
 			codeWriter.Indent++;
@@ -461,8 +456,7 @@ static class UpdateComponentCodeWriter
 			|| childType == null)
 		{
 			// Skip emission for this unresolvable change; do NOT emit `return;` — that would
-			// abort the entire UpdateComponent() and bypass the trailing `__version = toVersion;`,
-			// stranding the live instance at the old version. See B5 design note in GeneratePatchBody.
+			// abort the entire UpdateComponent() and drop the remaining changes. See B5 design note in GeneratePatchBody.
 			codeWriter.WriteLine($"// Cannot resolve type '{newElement.XmlType.Name}' — content change skipped");
 			return;
 		}
@@ -582,8 +576,217 @@ static class UpdateComponentCodeWriter
 				TryEmitMarkupNodeChange(codeWriter, syntheticDiff, typeSymbol, varName, isRoot: false,
 					compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 			}
+			else if (kvp.Value is ElementNode or ListNode)
+			{
+				if (!TryEmitNewElementComplexProperty(
+					codeWriter,
+					element,
+					kvp.Value,
+					varName,
+					typeSymbol,
+					compilation,
+					xmlnsCache,
+					typeCache,
+					rootType,
+					sourceProductionContext,
+					projectItem))
+				{
+					codeWriter.WriteLine($"// Complex property '{kvp.Key.LocalName}' ({kvp.Value.GetType().Name}) — skipped (not yet supported)");
+				}
+			}
 		}
 	}
+
+	/// <summary>
+	/// Emits an element-valued property while constructing a new element. This deliberately uses
+	/// the InitializeComponent visitor pipeline; mutations on existing elements continue through
+	/// <see cref="EmitPropertyChange"/> and retain their narrower supported surface.
+	/// </summary>
+	static bool TryEmitNewElementComplexProperty(
+		IndentedTextWriter codeWriter,
+		ElementNode element,
+		INode propertyNode,
+		string varName,
+		INamedTypeSymbol typeSymbol,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		// This speculative path does not run SetResourcesVisitor, so accepting resources here
+		// would emit an incomplete subtree.
+		if (ContainsInlineResources(propertyNode))
+			return false;
+
+		var preflightDiagnosticContext = CreateConversionContext(
+			compilation,
+			sourceProductionContext,
+			xmlnsCache,
+			typeCache,
+			rootType,
+			projectItem);
+		preflightDiagnosticContext.BeginDiagnosticBuffering();
+		bool containsStaticResource;
+		try
+		{
+			containsStaticResource = ContainsStaticResourceReference(propertyNode, markup => ExpandMarkupForUC(
+				markup,
+				compilation,
+				xmlnsCache,
+				typeCache,
+				rootType,
+				sourceProductionContext,
+				projectItem,
+				preflightDiagnosticContext.ReportDiagnostic));
+		}
+		finally
+		{
+			preflightDiagnosticContext.DiscardBufferedDiagnostics();
+		}
+
+		if (containsStaticResource)
+			return false;
+
+		using var captureStringWriter = new StringWriter(CultureInfo.InvariantCulture);
+		using var captureWriter = new IndentedTextWriter(captureStringWriter, "\t") { NewLine = NewLine };
+		var context = CreateConversionContext(
+			compilation,
+			sourceProductionContext,
+			xmlnsCache,
+			typeCache,
+			rootType,
+			projectItem,
+			captureWriter);
+		context.Variables[element] = new DirectValue(typeSymbol, varName);
+		context.BeginDiagnosticBuffering();
+
+		try
+		{
+			propertyNode.Accept(new CreateValuesVisitor(context), element);
+			propertyNode.Accept(new SetPropertiesVisitor(context, stopOnResourceDictionary: true), element);
+		}
+		catch (InvalidOperationException)
+		{
+			context.DiscardBufferedDiagnostics();
+			return false;
+		}
+
+		captureWriter.Flush();
+		var capturedCode = captureStringWriter.ToString();
+		if (string.IsNullOrWhiteSpace(capturedCode))
+		{
+			context.DiscardBufferedDiagnostics();
+			return false;
+		}
+
+		codeWriter.WriteLine("{");
+		codeWriter.Indent++;
+		foreach (var line in capturedCode.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
+		{
+			if (!string.IsNullOrEmpty(line))
+				codeWriter.WriteLine(line);
+		}
+
+		foreach (var localMethod in context.LocalMethods)
+		{
+			codeWriter.WriteLine();
+			foreach (var line in localMethod.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
+			{
+				if (string.IsNullOrWhiteSpace(line))
+					codeWriter.InnerWriter.WriteLine();
+				else
+					codeWriter.WriteLine(line);
+			}
+		}
+
+		codeWriter.Indent--;
+		codeWriter.WriteLine("}");
+		context.FlushBufferedDiagnostics();
+		return true;
+	}
+
+	static bool ContainsInlineResources(INode node)
+	{
+		if (node is ElementNode element)
+		{
+			if (element.XmlType.Name == "ResourceDictionary")
+				return true;
+
+			foreach (var property in element.Properties)
+			{
+				if (property.Key.LocalName == "Resources"
+					|| property.Key.LocalName.EndsWith(".Resources", StringComparison.Ordinal)
+					|| ContainsInlineResources(property.Value))
+				{
+					return true;
+				}
+			}
+
+			foreach (var child in element.CollectionItems)
+			{
+				if (ContainsInlineResources(child))
+					return true;
+			}
+
+			return false;
+		}
+
+		if (node is ListNode list)
+		{
+			foreach (var child in list.CollectionItems)
+			{
+				if (ContainsInlineResources(child))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool ContainsStaticResourceReference(INode node, Func<MarkupNode, INode?> expandMarkup)
+	{
+		if (node is MarkupNode markup)
+		{
+			var expanded = expandMarkup(markup);
+			return expanded is not null && ContainsStaticResourceReference(expanded, expandMarkup);
+		}
+
+		if (node is ElementNode element)
+		{
+			if (IsStaticResourceExtension(element.XmlType.Name))
+				return true;
+
+			foreach (var property in element.Properties.Values)
+			{
+				if (ContainsStaticResourceReference(property, expandMarkup))
+					return true;
+			}
+
+			foreach (var child in element.CollectionItems)
+			{
+				if (ContainsStaticResourceReference(child, expandMarkup))
+					return true;
+			}
+
+			return false;
+		}
+
+		if (node is ListNode list)
+		{
+			foreach (var child in list.CollectionItems)
+			{
+				if (ContainsStaticResourceReference(child, expandMarkup))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	static bool IsStaticResourceExtension(string typeName) =>
+		typeName is "StaticResource" or "StaticResourceExtension";
 
 	/// <summary>
 	/// Recursively creates children for a newly created element, handling both
@@ -1280,12 +1483,20 @@ static class UpdateComponentCodeWriter
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		INamedTypeSymbol rootType,
 		SourceProductionContext sourceProductionContext,
-		ProjectItem? projectItem)
+		ProjectItem? projectItem,
+		Action<Diagnostic>? diagnosticReporter = null)
 	{
 		var markupString = markupNode.MarkupString;
 
 		// Build a minimal SourceGenContext for ExpandMarkupsVisitor's parser
-		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
+		var ctx = CreateConversionContext(
+			compilation,
+			sourceProductionContext,
+			xmlnsCache,
+			typeCache,
+			rootType,
+			projectItem,
+			diagnosticReporter: diagnosticReporter);
 
 		// Classification: expression or markup extension?
 		bool TryResolveMarkup(string name)
@@ -1775,12 +1986,14 @@ static class UpdateComponentCodeWriter
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
 		INamedTypeSymbol rootType,
 		ProjectItem? projectItem,
-		IndentedTextWriter? writer = null)
+		IndentedTextWriter? writer = null,
+		Action<Diagnostic>? diagnosticReporter = null)
 	{
 		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		diagnosticReporter ??= sourceProductionContext.ReportDiagnostic;
 		return new SourceGenContext(
 			writer ?? new IndentedTextWriter(new StringWriter()),
 			compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi, diagnosticReporter);
 	}
 }

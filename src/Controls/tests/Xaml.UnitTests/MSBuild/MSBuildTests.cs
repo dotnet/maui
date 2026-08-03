@@ -1410,6 +1410,142 @@ public static class After
 				StringComparison.OrdinalIgnoreCase);
 		}
 
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_RemovesOnlyCompileItemsMarkedExcluded()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs"));
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\ExternalTrue\\ExcludedMarker.cs"));
+			project.Add(compileItems);
+
+			WriteFile("Platforms\\ExternalFalse\\ExplicitFalseMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExplicitFalseMarker
+{
+	public static string Value => ""False"";
+}");
+
+			WriteFile("Platforms\\ExternalTrue\\ExcludedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExcludedMarker
+{
+	public static string Value => ""True"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// Model a downstream SDK target that explicitly keeps one physical Platforms/**
+			// Compile item without registering a folder allow-list.
+			var downstreamCompileTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestMarkCompileIncluded")
+				.WithAttribute("BeforeTargets", "_MauiRemovePlatformCompileItems");
+			var downstreamCompileMetadata = NewElement("ItemGroup");
+			downstreamCompileMetadata.Add(NewElement("Compile")
+				.WithAttribute("Remove", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs"));
+			var explicitlyIncludedCompile = NewElement("Compile")
+				.WithAttribute("Include", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs");
+			explicitlyIncludedCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			explicitlyIncludedCompile.Add(NewElement("TestMetadata").WithValue("preserved"));
+			downstreamCompileMetadata.Add(explicitlyIncludedCompile);
+			downstreamCompileTarget.Add(downstreamCompileMetadata);
+			project.Add(downstreamCompileTarget);
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpCompileItems")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			var dumpItems = NewElement("ItemGroup");
+			dumpItems.Add(NewElement("_TestKeptCompile")
+				.WithAttribute("Include", "@(Compile)")
+				.WithAttribute("Condition", " '%(Compile.Filename)' == 'ExplicitFalseMarker' "));
+			dumpTarget.Add(dumpItems);
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_ITEMS: @(Compile->'%(Filename)', '|')"));
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Condition", " '%(Compile.Filename)' == 'ExplicitFalseMarker' ")
+				.WithAttribute("Text", "KEEP_META: %(Compile.ExcludeFromCurrentConfiguration)|%(Compile.TestMetadata)"));
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "KEEP_COUNT: @(_TestKeptCompile->Count())"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExplicitFalseMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExcludedMarker");
+			Assert.Contains("COMPILE_ITEMS: ExplicitFalseMarker", log, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("KEEP_META: false|preserved", log, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("KEEP_COUNT: 1", log, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_MatchesAbsoluteCompilePath()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""Entry"";
+}");
+
+			WriteFile("Platforms\\Absolute\\AbsoluteMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AbsoluteMarker
+{
+	public static string Value => ""Absolute"";
+}");
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Entry.cs"));
+			var absolutePlatformCompile = NewElement("Compile")
+				.WithAttribute("Include", IOPath.Combine(tempDirectory, "Platforms", "Absolute", "AbsoluteMarker.cs"));
+			absolutePlatformCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("true"));
+			compileItems.Add(absolutePlatformCompile);
+			project.Add(compileItems);
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.Entry");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AbsoluteMarker");
+		}
+
 		// Backward compatibility: a folder that declares only the legacy singular
 		// TargetPlatformIdentifier metadata must continue to match exactly that TPI.
 		[Theory]
@@ -1463,6 +1599,109 @@ public static class LegacyIosMarker
 				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
 			else
 				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
+		}
+
+		[Theory]
+		[InlineData("macos", "", true)]
+		[InlineData("", "macos", true)]
+		[InlineData("android", "macos", false)]
+		[InlineData("", "cocoa", false)]
+		public void SingleProject_BackendIdentitySupportsRecognizedAndNeutralActivation(
+			string targetPlatformIdentifier,
+			string activeBackend,
+			bool shouldIncludeMacosFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\MacOS\\")
+				.WithAttribute("TargetPlatformIdentifiers", "macos")
+				.WithAttribute("BackendIdentity", "macos"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\MacOS\\MacosMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class MacosMarker
+{
+	public static string Value => ""MacOS"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var additionalArgs = "";
+			if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+				additionalArgs += $" -p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			if (!string.IsNullOrEmpty(activeBackend))
+				additionalArgs += $" -p:MauiActiveBackend={activeBackend}";
+			Build(projectFile, additionalArgs: additionalArgs);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeMacosFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
+		}
+
+		[Fact]
+		public void SingleProject_NeutralTfmCanActivateBuiltInBackendByIdentity()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Android\\AndroidMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AndroidMarker
+{
+	public static string Value => ""Android"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: "-p:MauiActiveBackend=android");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AndroidMarker");
 		}
 
 		// Neutral-TFM activation (the GTK scenario from #35021/#36650). On a plain
