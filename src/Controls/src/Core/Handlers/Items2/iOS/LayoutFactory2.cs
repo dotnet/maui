@@ -398,6 +398,11 @@ internal static class LayoutFactory2
 					return;
 				}
 
+				if (cv2Controller.IsRotating())
+				{
+					return;
+				}
+
 				// Calculate page index accounting for ItemSpacing
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
 
@@ -464,11 +469,6 @@ internal static class LayoutFactory2
 							isHorizontal ? UICollectionViewScrollPosition.Left : UICollectionViewScrollPosition.Top,
 							false);
 					}
-				}
-
-				if (cv2Controller.IsRotating())
-				{
-					return;
 				}
 
 				//Update the CarouselView position
