@@ -1111,7 +1111,7 @@ namespace UITest.Appium
 					return false;
 				}
 
-				Task.Delay(retryFrequency.Milliseconds).Wait();
+				Task.Delay(retryFrequency).Wait();
 			}
 		}
 
