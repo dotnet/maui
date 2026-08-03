@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
     /// Shell item handler for iOS. Owns a UITabBarController for bottom tab management.
-    /// Replaces the old ShellItemRenderer which subclassed UITabBarController.
     /// </summary>
     public partial class ShellItemHandler : ElementHandler<ShellItem, UIView>, IAppearanceObserver, IDisconnectable
     {
@@ -43,6 +42,9 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 [nameof(ShellItem.CurrentItem)] = MapCurrentItem,
                 [Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible,
+                ["PrefersHomeIndicatorAutoHidden"] = MapPrefersHomeIndicatorAutoHidden,
+                ["PrefersStatusBarHidden"] = MapPrefersStatusBarHidden,
+                ["PreferredStatusBarUpdateAnimation"] = MapPreferredStatusBarUpdateAnimation,
             };
 
         public static CommandMapper<ShellItem, ShellItemHandler> CommandMapper =
@@ -190,7 +192,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void UpdateTabBarFlowDirection()
         {
             if (_shellContext?.Shell is { } shell)
+            {
                 _tabBarController.TabBar.UpdateFlowDirection(shell);
+            }
         }
 
         void CreateTabRenderers()
@@ -661,7 +665,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
             var disabledColor = _shellContext?.Shell is null ? null : Shell.GetTabBarDisabledColor(_shellContext.Shell)?.ToPlatform();
             if (disabledColor is null)
+            {
                 return;
+            }
 
             var textAttributes = isEnabled ? null : new UIStringAttributes { ForegroundColor = disabledColor };
             tabBarItem.SetTitleTextAttributes(textAttributes!, UIControlState.Disabled);
@@ -713,7 +719,9 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 var tabBarItem = viewControllers[tabIndex].TabBarItem;
                 if (tabBarItem is null)
+                {
                     continue;
+                }
 
                 UpdateTabBarItemEnabled(tabBarItem, items[tabIndex].IsEnabled);
                 UpdateTabBarItemBadge(tabBarItem, items[tabIndex]);
@@ -869,11 +877,27 @@ namespace Microsoft.Maui.Controls.Handlers
         public static void MapCurrentItem(ShellItemHandler handler, ShellItem shellItem)
         {
             handler.GoTo(shellItem.CurrentItem);
+            handler.UpdateTabBarHidden();
         }
 
         public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem shellItem)
         {
             handler.UpdateTabBarHidden();
+        }
+
+        public static void MapPrefersHomeIndicatorAutoHidden(ShellItemHandler handler, ShellItem item)
+        {
+            handler._tabBarController?.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+        }
+
+        public static void MapPrefersStatusBarHidden(ShellItemHandler handler, ShellItem item)
+        {
+            handler._tabBarController?.SetNeedsStatusBarAppearanceUpdate();
+        }
+
+        public static void MapPreferredStatusBarUpdateAnimation(ShellItemHandler handler, ShellItem item)
+        {
+            handler._tabBarController?.SetNeedsStatusBarAppearanceUpdate();
         }
 
         #endregion
@@ -900,7 +924,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 base.TraitCollectionDidChange(previousTraitCollection);
 
                 if (_handlerRef.TryGetTarget(out var handler))
+                {
                     handler.OnTraitCollectionDidChange(previousTraitCollection);
+                }
             }
 
             public override void ViewWillLayoutSubviews()
@@ -908,7 +934,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 base.ViewWillLayoutSubviews();
 
                 if (_handlerRef.TryGetTarget(out var handler))
+                {
                     handler.ViewWillLayoutSubviews();
+                }
             }
 
             public override void ViewDidLayoutSubviews()
@@ -916,7 +944,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 base.ViewDidLayoutSubviews();
 
                 if (_handlerRef.TryGetTarget(out var handler))
+                {
                     handler.ViewDidLayoutSubviews();
+                }
             }
         }
 
@@ -925,8 +955,8 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Adapter
 
         /// <summary>
-        /// Adapter that wraps ShellItemHandler to implement the IShellItemRenderer interface.
-        /// This allows the new handler to be used where the old renderer interface is expected.
+        /// Wraps <see cref="ShellItemHandler"/> to implement <see cref="IShellItemRenderer"/>
+        /// so the handler can be used in contexts that expect the renderer interface.
         /// </summary>
         internal class ShellItemHandlerAdapter : IShellItemRenderer
         {
@@ -943,7 +973,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 set
                 {
                     // The handler manages its own VirtualView via SetVirtualView
-                    // This setter exists for interface compatibility
+                    // This setter exists for interface compatibility; the handler owns its ShellSection via VirtualView.
                 }
             }
 

@@ -15,8 +15,8 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
-    /// Shell handler for iOS. Uses a container UIView with frame-based flyout layout.
-    /// Replaces the old ShellRenderer + ShellFlyoutRenderer approach.
+    /// Shell handler for iOS. Manages the flyout layout, Shell item switching,
+    /// and UIViewController containment.
     /// </summary>
     public partial class ShellHandler : ViewHandler<Shell, UIView>, IShellContext, IAppearanceObserver, IFlyoutBehaviorObserver
     {
@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Controls.Handlers
             set
             {
                 if (_isOpen == value)
+                {
                     return;
+                }
 
                 _isOpen = value;
                 VirtualView?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, value);
@@ -64,12 +66,8 @@ namespace Microsoft.Maui.Controls.Handlers
             var container = new ShellContainerView();
             container.SetHandler(this);
 
-            // Without a ViewController, ToUIViewController() falls back to
-            // ContainerViewController, which only adds Shell's content as a plain subview —
-            // never as a child view controller. That breaks the parentViewController chain
-            // UIKit's nav-bar layout relies on for bar-button-item positioning (hamburger icon,
-            // toolbar items). Hosting a real UIViewController here, like the legacy ShellRenderer
-            // did, restores proper containment.
+            // A real UIViewController is required so ToUIViewController() resolves correctly
+            // and UIKit's formal parent-child containment chain is intact for proper nav-bar layout.
             var hostVC = new ShellHostViewController(this);
             hostVC.View = container;
             ViewController = hostVC;
@@ -312,7 +310,9 @@ namespace Microsoft.Maui.Controls.Handlers
             var flyoutView = _flyoutContentRenderer.ViewController.View;
 
             if (flyoutView is null)
+            {
                 return;
+            }
 
             // Setup flyout and detail views
             _detailView = detailView;
@@ -399,7 +399,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 ?.Layer;
 
             if (oldLayer?.AnimationKeys?.Length > 0)
+            {
                 oldLayer.RemoveAllAnimations();
+            }
 
             await _activeTransition;
 
@@ -447,9 +449,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (newView is not null)
             {
-                // Formally announce parent-child view controller containment before adding the
-                // child view, so UIKit's private nav-bar layout pass sees a real
-                // parentViewController chain for the ShellItem's tab bar controller.
+                // Establish formal VC containment before adding the child view so UIKit's
+                // nav-bar layout sees the full parentViewController chain.
                 ViewController?.AddChildViewController(newRenderer.ViewController);
 
                 newView.Frame = _detailView.Bounds;
@@ -457,7 +458,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 _detailView.AddSubview(newView);
 
                 if (ViewController is not null)
+                {
                     newRenderer.ViewController.DidMoveToParentViewController(ViewController);
+                }
             }
 
             if (oldRenderer is not null)
@@ -581,6 +584,56 @@ namespace Microsoft.Maui.Controls.Handlers
             handler.GetFlyoutContentRenderer()?.UpdateVerticalScrollMode();
         }
 
+        // ── Status bar / home indicator ───────────────────────────────────────────
+        // Moved here from Shell.iOS.cs so these can live directly in the Mapper.
+        public static void MapPrefersHomeIndicatorAutoHidden(ShellHandler handler, Shell shell)
+        {
+            ((IShellContext)handler).CurrentShellItemRenderer?.ViewController
+                ?.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+        }
+
+        public static void MapPrefersStatusBarHidden(ShellHandler handler, Shell shell)
+        {
+            ((IShellContext)handler).CurrentShellItemRenderer?.ViewController
+                ?.SetNeedsStatusBarAppearanceUpdate();
+        }
+
+        public static void MapPreferredStatusBarUpdateAnimation(ShellHandler handler, Shell shell)
+        {
+            ((IShellContext)handler).CurrentShellItemRenderer?.ViewController
+                ?.SetNeedsStatusBarAppearanceUpdate();
+        }
+
+        // ── FlyoutIcon / ForegroundColor ──────────────────────────────────────────
+        // These affect toolbar items on displayed pages — trigger a tracker refresh.
+        public static void MapFlyoutIcon(ShellHandler handler, Shell shell)
+            => TriggerLeftBarButtonUpdate(handler, shell);
+
+        public static void MapForegroundColor(ShellHandler handler, Shell shell)
+            => TriggerLeftBarButtonUpdate(handler, shell);
+
+        // Finds the active page's ShellPageRendererTracker and refreshes toolbar items.
+        internal static void TriggerLeftBarButtonUpdate(ShellHandler handler, Shell shell)
+        {
+            var section = shell.CurrentItem?.CurrentItem;
+            if (section?.Handler is not ShellSectionHandler sectionHandler)
+            {
+                return;
+            }
+
+            var displayedPage = section.DisplayedPage;
+            if (displayedPage is null)
+            {
+                return;
+            }
+
+            if (sectionHandler._trackers.TryGetValue(displayedPage, out var tracker) &&
+                tracker is ShellPageRendererTracker shellRendererTracker)
+            {
+                shellRendererTracker.UpdateToolbarItemsInternal();
+            }
+        }
+
         #endregion
 
         #region Host View Controller
@@ -687,7 +740,9 @@ namespace Microsoft.Maui.Controls.Handlers
             _panGestureRecognizer.ShouldReceiveTouch += (sender, touch) =>
             {
                 if (!((IShellContext)this).AllowFlyoutGesture || _flyoutBehavior != FlyoutBehavior.Flyout)
+                {
                     return false;
+                }
 
                 return ShouldReceiveTouch(touch, PlatformView);
             };
@@ -702,13 +757,19 @@ namespace Microsoft.Maui.Controls.Handlers
             double openLimit = _flyoutView?.Frame.Width ?? 0;
 
             if (openLimit <= 0)
+            {
                 return;
+            }
 
             if (IsRTL)
+            {
                 translation = -translation;
+            }
 
             if (IsOpen)
+            {
                 openProgress = 1 - (-translation / openLimit);
+            }
             else
                 openProgress = translation / openLimit;
 
@@ -720,7 +781,9 @@ namespace Microsoft.Maui.Controls.Handlers
                     _gestureActive = true;
 
                     if (_tapoffView is null)
+                    {
                         AddTapoffView();
+                    }
 
                     if (_flyoutAnimation is not null)
                     {
@@ -730,7 +793,9 @@ namespace Microsoft.Maui.Controls.Handlers
                     }
 
                     if (_tapoffView is not null)
+                    {
                         _tapoffView.Layer.Opacity = (float)openProgress;
+                    }
 
                     LayoutFlyoutViews((nfloat)openProgress);
                     break;
@@ -741,12 +806,16 @@ namespace Microsoft.Maui.Controls.Handlers
                     if (IsOpen)
                     {
                         if (openProgress < 0.8)
+                        {
                             IsOpen = false;
+                        }
                     }
                     else
                     {
                         if (openProgress > 0.2)
+                        {
                             IsOpen = true;
+                        }
                     }
 
                     LayoutSidebar(true);
@@ -759,7 +828,9 @@ namespace Microsoft.Maui.Controls.Handlers
             _layoutOccured = true;
 
             if (_gestureActive)
+            {
                 return;
+            }
 
             if (cancelExisting && _flyoutAnimation is not null)
             {
@@ -768,7 +839,9 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             if (animate && _flyoutAnimation is not null)
+            {
                 return;
+            }
 
             if (!animate && _flyoutAnimation is not null)
             {
@@ -777,7 +850,9 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             if (IsOpen)
+            {
                 UpdateTapoffView();
+            }
 
             if (animate && _tapoffView is not null && _flyoutView is not null && _detailView is not null)
             {
@@ -821,7 +896,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 UpdateTapoffView();
 
                 if (_tapoffView is not null)
+                {
                     _tapoffView.Layer.Opacity = IsOpen ? 1 : 0;
+                }
 
                 UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, null);
             }
@@ -830,12 +907,16 @@ namespace Microsoft.Maui.Controls.Handlers
         void LayoutFlyoutViews(nfloat openPercent)
         {
             if (_flyoutView is null || _detailView is null)
+            {
                 return;
+            }
 
             var bounds = PlatformView.Bounds;
 
             if (_flyoutBehavior == FlyoutBehavior.Locked)
+            {
                 openPercent = 1;
+            }
 
             nfloat flyoutWidth = GetFlyoutWidth();
             nfloat flyoutHeight = _flyoutHeight >= 0
@@ -875,16 +956,22 @@ namespace Microsoft.Maui.Controls.Handlers
             // (mirrors the legacy ShellFlyoutRenderer.ViewWillTransitionToSize, which explicitly
             // resizes TapoffView.Frame on rotation).
             if (_tapoffView is not null)
+            {
                 _tapoffView.Frame = bounds;
+            }
         }
 
         nfloat GetFlyoutWidth()
         {
             if (_flyoutWidth >= 0)
+            {
                 return (nfloat)_flyoutWidth;
+            }
 
             if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+            {
                 return 320;
+            }
 
             var bounds = PlatformView.Bounds;
             return (nfloat)(Math.Min(bounds.Width, bounds.Height) * 0.8);
@@ -893,9 +980,13 @@ namespace Microsoft.Maui.Controls.Handlers
         void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
         {
             if (behavior == FlyoutBehavior.Locked)
+            {
                 IsOpen = true;
+            }
             else if (behavior == FlyoutBehavior.Disabled)
+            {
                 IsOpen = false;
+            }
 
             LayoutSidebar(false);
             UpdateFlyoutAccessibility();
@@ -904,7 +995,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void UpdateTapoffView()
         {
             if (IsOpen && _flyoutBehavior == FlyoutBehavior.Flyout)
+            {
                 AddTapoffView();
+            }
             else
                 RemoveTapoffView();
         }
@@ -912,13 +1005,17 @@ namespace Microsoft.Maui.Controls.Handlers
         void AddTapoffView()
         {
             if (_tapoffView is not null)
+            {
                 return;
+            }
 
             _tapoffView = new UIView(PlatformView.Bounds);
             _tapoffView.Layer.Opacity = 0;
 
             if (_flyoutView is not null)
+            {
                 PlatformView.InsertSubviewBelow(_tapoffView, _flyoutView);
+            }
             else
                 PlatformView.AddSubview(_tapoffView);
 
@@ -936,7 +1033,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void RemoveTapoffView()
         {
             if (_tapoffView is null)
+            {
                 return;
+            }
 
             _tapoffView.RemoveFromSuperview();
             _tapoffView = null;
@@ -945,7 +1044,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void UpdateTapoffViewBackgroundColor()
         {
             if (_tapoffView is null)
+            {
                 return;
+            }
 
             _tapoffView.UpdateBackground(_backdropBrush);
 
@@ -984,7 +1085,9 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             if (_flyoutView is not null)
+            {
                 _flyoutView.AccessibilityElementsHidden = flyoutElementsHidden;
+            }
 
             if (_detailView is not null)
             {

@@ -44,10 +44,15 @@ namespace Microsoft.Maui.Controls.Handlers
 #if ANDROID
 					[nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
 #endif
-				};
-
-		public static CommandMapper<Shell, ShellHandler> CommandMapper =
-				new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);
+#if IOS || MACCATALYST
+			// Status bar / home indicator (iOS platform configuration properties).
+			["PrefersHomeIndicatorAutoHidden"] = MapPrefersHomeIndicatorAutoHidden,
+			["PrefersStatusBarHidden"] = MapPrefersStatusBarHidden,
+			["PreferredStatusBarUpdateAnimation"] = MapPreferredStatusBarUpdateAnimation,
+			// FlyoutIcon and ForegroundColor affect nav-bar toolbar items on iOS.
+			[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+			[Shell.ForegroundColorProperty.PropertyName] = MapForegroundColor,
+#endif
 
 		public ShellHandler() : base(Mapper, CommandMapper)
 		{

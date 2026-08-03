@@ -5,13 +5,10 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	/// <summary>
-	/// Handler-era replacement for the previous manual <c>ShellContent.PropertyChanged</c>
-	/// subscription. <see cref="ShellContent"/> has no visible platform view of its own on iOS —
-	/// its <see cref="ShellContent.Content"/> is rendered by the owning
-	/// <see cref="ShellSectionHandler"/> — so this handler exists purely to give
-	/// <see cref="ShellContent"/> a genuine <see cref="Mapper"/> entry point for
-	/// <see cref="ShellContent.Content"/> changes, mirroring the existing Windows
-	/// <c>ShellContentHandler</c>.
+	/// Provides a mapper entry point for <see cref="ShellContent.Content"/> changes on iOS.
+	/// <see cref="ShellContent"/> has no platform view of its own — its content is rendered
+	/// by the owning <see cref="ShellSectionHandler"/>. This handler exists solely to
+	/// route <see cref="ShellContent.Content"/> property changes to the section handler.
 	/// </summary>
 	public partial class ShellContentHandler : ElementHandler<ShellContent, UIView>
 	{
