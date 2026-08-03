@@ -371,7 +371,14 @@ Describe 'New-ExclusiveTempFile' {
             $n = "forced$($script:ForcedIndex)"; $script:ForcedIndex++; $n
         }
         try {
-            # It must have skipped the planted path entirely...
+            # Proves the helper actually *reached* the planted path and moved past it.
+            # Without this, an implementation that ignores the seam and picks its own random
+            # name also passes — the planted symlink would never have been in its way, so the
+            # skip logic goes unexercised and the test leans on the exhaustion test to catch
+            # seam-ignoring. Asserting the generator advanced makes this test self-sufficient.
+            $script:ForcedIndex | Should -BeGreaterThan 1
+            $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
+
             $path | Should -Not -Be $planted
             'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
             # ...so the symlink target is untouched, and the link is still a link.
@@ -394,6 +401,10 @@ Describe 'New-ExclusiveTempFile' {
             $n = "dangle$($script:DangleIndex)"; $script:DangleIndex++; $n
         }
         try {
+            # As above: pins that the planted path was tried and skipped, not bypassed.
+            $script:DangleIndex | Should -BeGreaterThan 1
+            $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
+
             $path | Should -Not -Be $planted
             'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
             # Writing through a dangling link would have created the target.
@@ -452,8 +463,18 @@ Describe 'New-ExclusiveTempFile' {
         $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
         try {
             $script:Calls = 0
-            { New-ExclusiveTempFile -Prefix 'missing-dir/nope/body' -NameGenerator { $script:Calls++; 'x' } } |
-                Should -Throw -ExpectedMessage '*Could not find a part of the path*'
+            # Assert on the exception *type*, not the message: .NET message strings are
+            # localized, so matching "Could not find a part of the path" would fail on a
+            # non-en-US agent. The type is culture-invariant.
+            $thrown = $null
+            try {
+                New-ExclusiveTempFile -Prefix 'missing-dir/nope/body' -NameGenerator { $script:Calls++; 'x' }
+            } catch {
+                $thrown = $_.Exception
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown | Should -BeOfType ([System.IO.DirectoryNotFoundException])
             $script:Calls | Should -Be 1
         } finally {
             $env:AGENT_TEMPDIRECTORY = $saved

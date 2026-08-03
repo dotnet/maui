@@ -296,6 +296,10 @@ function New-ExclusiveTempFile {
     for ($attempt = 0; $attempt -lt $MaxAttempts; $attempt++) {
         $candidate = Join-Path $baseDir "$Prefix-$(& $NameGenerator).md"
         try {
+            # -Path, not -LiteralPath: New-Item has no -LiteralPath parameter (binding it
+            # throws ParameterBindingException), and -Path does not glob when *creating* —
+            # it takes the path literally, so it will not resolve onto an existing file.
+            # Reviewers have suggested -LiteralPath here twice; it is not applicable.
             $file = New-Item -ItemType File -Path $candidate -ErrorAction Stop
             return $file.FullName
         } catch [System.IO.DirectoryNotFoundException] {
