@@ -75,10 +75,12 @@ internal class FlyoutContainerViewController : UIViewController
         return GetActiveDetailViewController() ?? base.ChildViewControllerForStatusBarHidden();
     }
 
+#if !MACCATALYST
     public override UIViewController? ChildViewControllerForStatusBarStyle()
     {
         return GetActiveDetailViewController() ?? base.ChildViewControllerForStatusBarStyle();
     }
+#endif
 
     public override UIViewController? ChildViewControllerForHomeIndicatorAutoHidden
     {
