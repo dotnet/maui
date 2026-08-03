@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	[Category("Permissions")]
 	[Collection("AndroidPermissions")]
-	public class Permissions_Android_Tests
+	public class Android_Permissions_Tests
 	{
 		const int RequestCodeRange = 1000;
 
@@ -32,14 +32,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			var initialPendingRequestCount = GetPendingRequestCount();
 
-			for (var i = 0; i < RequestCodeRange; i++)
+			await Task.Run(async () =>
 			{
-				await Task.Run(async () =>
+				for (var i = 0; i < RequestCodeRange; i++)
 				{
 					await Assert.ThrowsAsync<PermissionException>(
 						() => Permissions.RequestAsync<TestRuntimePermission>()).ConfigureAwait(false);
-				}).ConfigureAwait(false);
-			}
+				}
+			}).ConfigureAwait(false);
 
 			Assert.Equal(initialPendingRequestCount, GetPendingRequestCount());
 
