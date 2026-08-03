@@ -68,14 +68,14 @@ stimuli:
         config:
           required:
             - name: '^(bash|powershell)$'
-              command: 'EstablishBrokenBaseline\.ps1\b(?!\s+-Restore\b)'
+              command: 'EstablishBrokenBaseline\.ps1\b(?![^\r\n;&|]*\s+-Restore\b)'
               result: 'Success\s+True'
             - name: '^(bash|powershell)$'
               command: 'EstablishBrokenBaseline\.ps1\s+-Restore\b'
               result: 'Restored\s+True'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^\s*|(?:&&|\|\||;|\||\n)\s*)git(?:(?:\s+(?:-C|-c)\s+\S+)|(?:\s+-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
+              command: '(?:^\s*|(?:&&|\|\||;|\||\n)\s*)(?:(?:(?:\S*/)?command(?:\s+-\S+)*|(?:\S*/)?env(?:\s+(?:(?:-u|--unset)\s+\S+|(?:-i|--ignore-environment|--)|\S+=\S+))*|exec)\s+)*git(?:\s+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
       - type: diff-empty
     constraints:
       max_duration: 15m
