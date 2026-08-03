@@ -213,7 +213,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		if (App is AppiumIOSApp)
-			App.WaitForKeyboardToShow();
+			Assert.That(App.WaitForKeyboardToShow(), Is.True, "The iOS keyboard did not appear before the snapshot.");
 		VerifyScreenshotWithKeyboardHandling();
 	}
 
