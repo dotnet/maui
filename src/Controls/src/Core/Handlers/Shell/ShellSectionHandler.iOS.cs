@@ -23,9 +23,8 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
     /// <summary>
-    /// Shell section handler for iOS. Owns a UINavigationController for navigation stack
-    /// and manages root content + top tabs (when multiple ShellContents exist).
-    /// Replaces the old ShellSectionRenderer + ShellSectionRootRenderer approach.
+    /// Shell section handler for iOS. Owns a UINavigationController for the navigation stack
+    /// and manages root content and top tabs when a section has multiple ShellContents.
     /// </summary>
     public partial class ShellSectionHandler : ElementHandler<ShellSection, UIView>, IAppearanceObserver, IDisconnectable
     {
@@ -35,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal ShellSectionNavController _navigationController = null!;
         internal IShellNavBarAppearanceTracker? _appearanceTracker;
 
-        // Navigation completion tracking (previously in NavigationControllerManager)
+        // Navigation completion tasks — keyed by the pushed UIViewController.
         readonly Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks = new();
         TaskCompletionSource<bool>? _popCompletionTask;
         UIViewController[]? _pendingViewControllers;
@@ -83,6 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 [nameof(ShellSection.CurrentItem)] = MapCurrentItem,
                 [nameof(BaseShellItem.Title)] = MapTitle,
                 [nameof(BaseShellItem.Icon)] = MapIcon,
+                [VisualElement.FlowDirectionProperty.PropertyName] = MapFlowDirection,
             };
 
         public static CommandMapper<ShellSection, ShellSectionHandler> CommandMapper =
@@ -160,7 +160,9 @@ namespace Microsoft.Maui.Controls.Handlers
             foreach (var page in VirtualView.Stack)
             {
                 if (page is null)
+                {
                     continue;
+                }
                 DisposePage(page, calledFromDispose: true);
             }
 
@@ -191,7 +193,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // ShellSectionRootViewController doesn't implement IDisconnectable
 
             if (_displayedPage is not null)
+            {
                 _displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
+            }
 
             VirtualView.PropertyChanged -= HandlePropertyChanged;
             ((IShellSectionController)VirtualView).NavigationRequested -= OnNavigationRequested;
@@ -257,11 +261,15 @@ namespace Microsoft.Maui.Controls.Handlers
                     // is nulled out in DisconnectHandler, so skip applying appearance to a stale
                     // MoreNavigationController on an already-torn-down section.
                     if (_appearanceTracker is null)
+                    {
                         return;
+                    }
 
                     var deferredMoreNavigationController = _navigationController?.TabBarController?.MoreNavigationController;
                     if (deferredMoreNavigationController is not null)
+                    {
                         SetOrResetMoreNavigationControllerAppearance(deferredMoreNavigationController, appearance);
+                    }
                 });
                 return;
             }
@@ -272,7 +280,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void SetOrResetMoreNavigationControllerAppearance(UINavigationController moreNavigationController, ShellAppearance? appearance)
         {
             if (appearance is null)
+            {
                 _appearanceTracker?.ResetAppearance(moreNavigationController);
+            }
             else
                 _appearanceTracker?.SetAppearance(moreNavigationController, appearance);
         }
@@ -284,7 +294,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void LoadPages()
         {
             if (VirtualView.CurrentItem is null)
+            {
                 throw new InvalidOperationException($"Content not found for active {VirtualView}. Title: {VirtualView.Title}. Route: {VirtualView.Route}.");
+            }
 
             // Create root view controller that will host content
             _rootViewController = new ShellSectionRootViewController(this);
@@ -317,7 +329,9 @@ namespace Microsoft.Maui.Controls.Handlers
             tracker.IsRootPage = true;
             tracker.ViewController = _rootViewController;
             if (VirtualView.CurrentItem is not null)
+            {
                 tracker.Page = ((IShellContentController)VirtualView.CurrentItem).GetOrCreateContent();
+            }
             _rootTracker = tracker;
 
             // Push root VC onto nav controller
@@ -354,7 +368,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 ShellContent item = contentItems[i];
 
                 if (_contentRenderers.ContainsKey(item))
+                {
                     continue;
+                }
 
                 if (!createdPages.TryGetValue(item, out var page))
                 {
@@ -376,32 +392,35 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        // Concern #4: gives ShellContent a genuine Handler/Mapper on iOS (see
-        // ShellContentHandler.iOS.cs) so Content changes are observed the same way any other
-        // mapped property is - instead of a manual PropertyChanged subscription.
+        // Ensures ShellContent has a handler so its Content property is tracked via the mapper.
         static void EnsureShellContentHandler(ShellContent shellContent)
         {
             if (shellContent.Handler is not null)
+            {
                 return;
+            }
 
             var mauiContext = shellContent.FindMauiContext();
             if (mauiContext is not null)
+            {
                 shellContent.ToHandler(mauiContext);
+            }
         }
 
-        // Concern #4: a ShellContent's Content can be swapped in place at runtime
-        // while it remains the ShellSection's CurrentItem. Since CurrentItem doesn't
-        // change, OnShellSectionCurrentItemChanged never fires, so the cached
-        // renderer for this content would otherwise go stale. Rebuild it here.
-        // Called by ShellContentHandler.MapContent when ShellContent.Content changes.
+        // Called by ShellContentHandler.MapContent when ShellContent.Content changes at runtime.
+        // Rebuilds the renderer for the affected content so the displayed page stays in sync.
         internal void OnShellContentContentChanged(ShellContent shellContent)
         {
             if (!_contentRenderers.TryGetValue(shellContent, out var oldRenderer))
+            {
                 return;
+            }
 
             var newPage = ((IShellContentController)shellContent).GetOrCreateContent();
             if (oldRenderer.VirtualView == newPage)
+            {
                 return;
+            }
 
             bool isCurrent = shellContent == _currentContent;
 
@@ -417,7 +436,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 newRenderer.ViewController!.View!.Frame = _containerArea.Bounds;
                 _containerArea.AddSubview(newRenderer.ViewController!.View!);
                 if (_rootTracker is not null)
+                {
                     _rootTracker.Page = newPage;
+                }
             }
         }
 
@@ -454,7 +475,9 @@ namespace Microsoft.Maui.Controls.Handlers
                     _rootViewController.View!.AddSubview(_header.ViewController.View!);
                 }
                 if (_blurView is not null)
+                {
                     _blurView.Hidden = false;
+                }
                 LayoutHeader();
             }
             else
@@ -467,7 +490,9 @@ namespace Microsoft.Maui.Controls.Handlers
                     _header = null;
                 }
                 if (_blurView is not null)
+                {
                     _blurView.Hidden = true;
+                }
             }
         }
 
@@ -481,30 +506,40 @@ namespace Microsoft.Maui.Controls.Handlers
             var oldContent = _currentContent;
 
             if (newContent is null)
+            {
                 return;
+            }
 
             // No change — skip animation (mapper fires during ConnectHandler)
             if (newContent == oldContent)
+            {
                 return;
+            }
 
             if (_currentContent is null)
             {
                 _currentContent = newContent;
                 _currentIndex = ShellSectionController.GetItems().IndexOf(_currentContent);
                 if (_rootTracker is not null)
+                {
                     _rootTracker.Page = ((IShellContentController)newContent).Page;
+                }
                 return;
             }
 
             var items = ShellSectionController.GetItems();
             if (items.Count == 0)
+            {
                 return;
+            }
 
             var oldIndex = _currentIndex;
             var newIndex = items.IndexOf(newContent);
 
             if (oldContent is null || !_contentRenderers.TryGetValue(oldContent, out var oldRenderer))
+            {
                 return;
+            }
 
             // Currently visible item removed
             if (oldIndex == -1 && _currentIndex <= newIndex)
@@ -516,7 +551,9 @@ namespace Microsoft.Maui.Controls.Handlers
             _currentIndex = newIndex;
 
             if (!_contentRenderers.ContainsKey(newContent))
+            {
                 return;
+            }
 
             var currentRenderer = _contentRenderers[newContent];
             _isAnimatingOut = oldRenderer;
@@ -556,7 +593,9 @@ namespace Microsoft.Maui.Controls.Handlers
             UIView containerView)
         {
             if (newRenderer.ViewController?.View is null)
+            {
                 return null;
+            }
 
             containerView.AddSubview(newRenderer.ViewController.View);
             int motionDirection = newIndex > oldIndex ? -1 : 1;
@@ -565,14 +604,18 @@ namespace Microsoft.Maui.Controls.Handlers
             newRenderer.ViewController.View.Frame = new CGRect(-motionDirection * bounds.Width, 0, bounds.Width, bounds.Height);
 
             if (oldRenderer.ViewController?.View is not null)
+            {
                 oldRenderer.ViewController.View.Frame = containerView.Bounds;
+            }
 
             return new UIViewPropertyAnimator(0.25, UIViewAnimationCurve.EaseOut, () =>
             {
                 newRenderer.ViewController.View.Frame = containerView.Bounds;
 
                 if (oldRenderer.ViewController?.View is not null)
+                {
                     oldRenderer.ViewController.View.Frame = new CGRect(motionDirection * bounds.Width, 0, bounds.Width, bounds.Height);
+                }
             });
         }
 
@@ -580,7 +623,9 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             var activeItem = VirtualView?.CurrentItem;
             if (activeItem is null)
+            {
                 return;
+            }
 
             if (_contentRenderers.TryGetValue(activeItem, out var activeRenderer))
             {
@@ -589,7 +634,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 foreach (var r in _contentRenderers)
                 {
                     if (r.Value == activeRenderer)
+                    {
                         continue;
+                    }
 
                     r.Value.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
 
@@ -626,16 +673,24 @@ namespace Microsoft.Maui.Controls.Handlers
                 foreach (ShellContent oldItem in e.OldItems)
                 {
                     if (_currentContent == oldItem)
+                    {
                         continue;
+                    }
 
                     if (!_contentRenderers.TryGetValue(oldItem, out var oldRenderer))
+                    {
                         continue;
+                    }
 
                     if (oldRenderer == _isAnimatingOut)
+                    {
                         continue;
+                    }
 
                     if (e.OldStartingIndex < _currentIndex)
+                    {
                         _currentIndex--;
+                    }
 
                     _contentRenderers.Remove(oldItem);
                     (oldItem.Handler as IElementHandler)?.DisconnectHandler();
@@ -650,7 +705,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 foreach (ShellContent newItem in e.NewItems)
                 {
                     if (_contentRenderers.ContainsKey(newItem))
+                    {
                         continue;
+                    }
 
                     var page = ((IShellContentController)newItem).GetOrCreateContent();
                     var renderer = SetPageRenderer(page, newItem);
@@ -781,7 +838,9 @@ namespace Microsoft.Maui.Controls.Handlers
             var viewController = renderer?.ViewController;
 
             if (viewController is null && _trackers.ContainsKey(page))
+            {
                 viewController = _trackers[page].ViewController;
+            }
 
             if (viewController is not null)
             {
@@ -845,7 +904,9 @@ namespace Microsoft.Maui.Controls.Handlers
         internal bool SendPop(UIViewController? topViewController = null)
         {
             if (ActiveViewControllers().Length < _navigationController.NavigationBar.Items!.Length)
+            {
                 return true;
+            }
 
             // On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
             // and fire multiple times for a single user back action. Guard against multiple
@@ -853,7 +914,9 @@ namespace Microsoft.Maui.Controls.Handlers
             if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
             {
                 if (_sendPopPending)
+                {
                     return false;
+                }
 
                 _sendPopPending = true;
             }
@@ -877,7 +940,9 @@ namespace Microsoft.Maui.Controls.Handlers
                     if (command is not null)
                     {
                         if (command.CanExecute(commandParameter))
+                        {
                             command.Execute(commandParameter);
+                        }
                         // Reset the iOS 26+ guard so subsequent back presses are not blocked.
                         _sendPopPending = false;
                         return false;
@@ -922,7 +987,9 @@ namespace Microsoft.Maui.Controls.Handlers
                     {
                         var child = _navigationController.NavigationBar.Subviews[i];
                         if (child.Alpha != 1)
+                        {
                             UIView.Animate(.2f, () => child.Alpha = 1);
+                        }
                     }
                 }
             });
@@ -933,7 +1000,9 @@ namespace Microsoft.Maui.Controls.Handlers
         bool ShouldPop()
         {
             if (_shellContext?.Shell is null)
+            {
                 return false;
+            }
 
             var shellItem = _shellContext.Shell.CurrentItem;
             var shellSection = shellItem?.CurrentItem;
@@ -965,26 +1034,38 @@ namespace Microsoft.Maui.Controls.Handlers
         void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName)
+            {
                 UpdateTabBarItem();
+            }
             else if (e.PropertyName == BaseShellItem.IconProperty.PropertyName)
+            {
                 UpdateTabBarItem();
+            }
             else if (e.PropertyName == ShellSection.CurrentItemProperty.PropertyName)
+            {
                 OnShellSectionCurrentItemChanged();
+            }
         }
 
         void HandleShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.Is(VisualElement.FlowDirectionProperty))
+            {
                 UpdateFlowDirection();
+            }
         }
 
         void OnDisplayedPageChanged(Page page)
         {
             if (_displayedPage == page)
+            {
                 return;
+            }
 
             if (_displayedPage is not null)
+            {
                 _displayedPage.PropertyChanged -= OnDisplayedPagePropertyChanged;
+            }
 
             _displayedPage = page;
 
@@ -999,26 +1080,27 @@ namespace Microsoft.Maui.Controls.Handlers
         void OnDisplayedPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == Shell.NavBarIsVisibleProperty.PropertyName)
+            {
                 UpdateNavigationBarHidden();
+            }
             else if (e.PropertyName == Shell.NavBarHasShadowProperty.PropertyName)
+            {
                 UpdateNavigationBarHasShadow();
+            }
             else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
                      e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName ||
                      e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName)
                 RefreshStatusBarAndHomeIndicatorAppearance(e.PropertyName);
         }
 
-        // Concern #9: Shell.Mapper.cs/ShellItem.Mapper.cs already register mapper entries for
-        // these Page-scoped attached properties, but they're keyed to Shell/ShellItem's own
-        // PropertyMapper, which only dispatches when Shell/ShellItem itself raises
-        // PropertyChanged with that name — never true for a Page-level attached property. This
-        // forwards the displayed page's change to the Shell handler via UpdateValue(), which
-        // invokes those existing (previously unreachable) mapper actions instead of manually
-        // poking the view controller here.
+        // Forwards status bar / home indicator property changes from the displayed page
+        // to the Shell handler so the registered mapper entries are invoked.
         void RefreshStatusBarAndHomeIndicatorAppearance(string? propertyName = null)
         {
             if (_shellContext is not IElementHandler shellHandler)
+            {
                 return;
+            }
 
             if (propertyName is not null)
             {
@@ -1056,13 +1138,13 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 UIImage? image = null;
                 if (icon?.Value is not null)
+                {
                     image = TabbedViewExtensions.AutoResizeTabBarImage(_navigationController.TraitCollection, icon.Value);
+                }
                 _navigationController.TabBarItem = new UITabBarItem(VirtualView.Title, image, null);
                 _navigationController.TabBarItem.AccessibilityIdentifier = VirtualView.AutomationId ?? VirtualView.Title;
 
-                // Creating a new UITabBarItem above discards any previously-applied Badge state
-                // (matching the legacy ShellSectionRenderer.UpdateTabBarItem, which re-applied the
-                // badge immediately after recreating TabBarItem for the same reason).
+                // Re-apply badge state after recreating UITabBarItem, which clears it.
                 ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, VirtualView);
             });
         }
@@ -1076,20 +1158,23 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        // Called by the Controls-layer ShellSection.iOS.cs MapFlowDirection mapper.
-        // Extends UpdateFlowDirection() to also update the tab bar container,
-        // and applies unconditionally (not only for the current section).
+        // Extends UpdateFlowDirection() to also update the tab bar and applies unconditionally
+        // regardless of which section is currently active.
         internal void UpdateFlowDirectionForControls()
         {
             if (_shellContext?.Shell is null)
+            {
                 return;
+            }
 
             var shell = _shellContext.Shell;
             _navigationController.View?.UpdateFlowDirection(shell);
             _navigationController.NavigationBar.UpdateFlowDirection(shell);
 
             if (_navigationController.TabBarController?.TabBar is { } tabBar)
+            {
                 tabBar.UpdateFlowDirection(shell);
+            }
 
             // Sync tracked pages' FlowDirection with Shell to trigger MAUI layout re-arrangement.
             // Shell section pages have a disconnected visual tree so MatchParent cannot auto-resolve.
@@ -1112,13 +1197,17 @@ namespace Microsoft.Maui.Controls.Handlers
         void UpdateNavigationBarHidden()
         {
             if (_displayedPage is not null)
+            {
                 _navigationController.SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
+            }
         }
 
         void UpdateNavigationBarHasShadow()
         {
             if (_displayedPage is not null)
+            {
                 _appearanceTracker?.SetHasShadow(_navigationController, Shell.GetNavBarHasShadow(_displayedPage));
+            }
         }
 
         void UpdateShadowImages()
@@ -1133,7 +1222,9 @@ namespace Microsoft.Maui.Controls.Handlers
         internal void LayoutRootSubviews()
         {
             if (_rootViewController?.View is null || _containerArea is null)
+            {
                 return;
+            }
 
             _didLayoutSubviews = true;
             _containerArea.Frame = _rootViewController.View.Bounds;
@@ -1145,7 +1236,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void LayoutContentRenderers()
         {
             if (_isAnimatingOut is not null || _rootViewController?.View is null)
+            {
                 return;
+            }
 
             var items = ShellSectionController.GetItems();
             for (int i = 0; i < items.Count; i++)
@@ -1166,7 +1259,9 @@ namespace Microsoft.Maui.Controls.Handlers
         void LayoutHeader()
         {
             if (VirtualView is null || _rootViewController?.View is null)
+            {
                 return;
+            }
 
             int tabThickness = 0;
             if (_header is not null)
@@ -1174,11 +1269,15 @@ namespace Microsoft.Maui.Controls.Handlers
                 tabThickness = HeaderHeight;
                 nfloat headerTop = 0;
                 if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11))
+                {
                     headerTop = _rootViewController.View!.SafeAreaInsets.Top;
+                }
 
                 CGRect frame = new CGRect(_rootViewController.View!.Bounds.X, headerTop, _rootViewController.View.Bounds.Width, HeaderHeight);
                 if (_blurView is not null)
+                {
                     _blurView.Frame = frame;
+                }
                 _header.ViewController.View!.Frame = frame;
             }
 
@@ -1199,7 +1298,9 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             if (tabThickness > 0)
+            {
                 _additionalSafeArea = new UIEdgeInsets(tabThickness, 0, 0, 0);
+            }
             else
                 _additionalSafeArea = UIEdgeInsets.Zero;
 
@@ -1222,14 +1323,18 @@ namespace Microsoft.Maui.Controls.Handlers
             if (OperatingSystem.IsIOSVersionAtLeast(11) && pageHandler.ViewController is not null)
             {
                 if (!pageHandler.ViewController.AdditionalSafeAreaInsets.Equals(_additionalSafeArea))
+                {
                     pageHandler.ViewController.AdditionalSafeAreaInsets = _additionalSafeArea;
+                }
             }
         }
 
         void UpdateAllAdditionalSafeAreaInsets()
         {
             if (!OperatingSystem.IsIOSVersionAtLeast(11))
+            {
                 return;
+            }
 
             var items = ShellSectionController.GetItems();
             for (int i = 0; i < items.Count; i++)
@@ -1265,12 +1370,16 @@ namespace Microsoft.Maui.Controls.Handlers
         Element? ElementForViewController(UIViewController viewController)
         {
             if (_rootViewController == viewController)
+            {
                 return VirtualView;
+            }
 
             foreach (var child in VirtualView.Stack)
             {
                 if (child?.Handler is IPlatformViewHandler handler && viewController == handler.ViewController)
+                {
                     return child;
+                }
             }
 
             return null;
@@ -1302,6 +1411,11 @@ namespace Microsoft.Maui.Controls.Handlers
         public static void MapIcon(ShellSectionHandler handler, ShellSection shellSection)
         {
             handler.UpdateTabBarItem();
+        }
+
+        public static void MapFlowDirection(ShellSectionHandler handler, ShellSection shellSection)
+        {
+            handler.UpdateFlowDirectionForControls();
         }
 
         #endregion
@@ -1346,7 +1460,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 var handler = GetHandler();
                 if (handler is not null)
+                {
                     handler._isRotating = true;
+                }
             }
 
             public override void ViewWillAppear(bool animated)
@@ -1361,7 +1477,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 base.ViewSafeAreaInsetsDidChange();
                 var handler = GetHandler();
                 if (handler is not null && handler._didLayoutSubviews && !handler._isRotating)
+                {
                     handler.LayoutHeader();
+                }
             }
 
             public new void Dispose()
@@ -1421,9 +1539,13 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _pendingViewControllers ??= _navigationController.ViewControllers;
             if (_pendingViewControllers is not null && _pendingViewControllers.Contains(viewController))
+            {
                 _pendingViewControllers = _pendingViewControllers.Remove(viewController);
+            }
             if (_pendingViewControllers is not null)
+            {
                 _navigationController.ViewControllers = _pendingViewControllers;
+            }
         }
 
         UIViewController[] ActiveViewControllers() =>
@@ -1454,7 +1576,9 @@ namespace Microsoft.Maui.Controls.Handlers
             // past disconnect.
             _navigationController.Delegate = null!;
             if (_navigationController.InteractivePopGestureRecognizer is not null)
+            {
                 _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
+            }
 
             foreach (var kvp in _completionTasks)
                 kvp.Value.TrySetCanceled();
@@ -1474,7 +1598,9 @@ namespace Microsoft.Maui.Controls.Handlers
             {
                 bool navBarVisible;
                 if (element is ShellSection)
+                {
                     navBarVisible = (_rootViewController as IShellSectionRootRenderer)?.ShowNavBar ?? true;
+                }
                 else
                     navBarVisible = Shell.GetNavBarIsVisible(element);
 
@@ -1512,7 +1638,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 bool animated)
             {
                 if (!_handlerRef.TryGetTarget(out var handler))
+                {
                     return;
+                }
 
                 if (handler._completionTasks.TryGetValue(viewController, out var source))
                 {
@@ -1541,7 +1669,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 bool animated)
             {
                 if (!_handlerRef.TryGetTarget(out var handler))
+                {
                     return;
+                }
 
                 var (isHidden, shouldAnimate) = handler.GetNavigationBarVisibility(viewController);
                 navigationController.SetNavigationBarHidden(isHidden, shouldAnimate && animated);
@@ -1585,13 +1715,19 @@ namespace Microsoft.Maui.Controls.Handlers
             public override bool ShouldBegin(UIGestureRecognizer recognizer)
             {
                 if (!_navigationControllerRef.TryGetTarget(out var navController))
+                {
                     return false;
+                }
 
                 if ((navController.ViewControllers?.Length ?? 0) <= 1)
+                {
                     return false;
+                }
 
                 if (!_handlerRef.TryGetTarget(out var handler))
+                {
                     return false;
+                }
 
                 return handler.ShouldPop();
             }
