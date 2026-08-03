@@ -33,50 +33,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
-			App.WaitForElement("DragStartEventsLabel");
-			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
+			AssertEventText("DragStartEventsLabel", "DragStarting");
+			AssertEventText("DragOverEventsLabel", "DragOver");
+			AssertEventText("DragCompletedEventsLabel", "DropCompleted");
+			AssertEventText("DropEventsLabel", "Drop");
+		}
 
-			if (string.IsNullOrEmpty(textAfterDragStart))
-			{
-				Assert.Fail("Text was expected: Drag start event");
-			}
-			else
-			{
-				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
-			}
-
-			App.WaitForElement("DragOverEventsLabel");
-			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragOver))
-			{
-				Assert.Fail("Text was expected: Drag over event");
-			}
-			else
-			{
-				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
-			}
-
-			App.WaitForElement("DragCompletedEventsLabel");
-			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragComplete))
-			{
-				Assert.Fail("Text was expected: Drag complete event");
-			}
-			else
-			{
-				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
-			}
-
-			App.WaitForElement("DropEventsLabel");
-			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDrop))
-			{
-				Assert.Fail("Text was expected: Drop event");
-			}
-			else
-			{
-				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
-			}
+		void AssertEventText(string automationId, string expectedText)
+		{
+			Assert.That(
+				App.WaitForTextToBePresentInElement(automationId, expectedText),
+				Is.True,
+				$"Timed out waiting for {automationId} to contain '{expectedText}'.");
+			Assert.That(App.FindElement(automationId).GetText(), Is.EqualTo(expectedText));
 		}
 
 		[Test]
