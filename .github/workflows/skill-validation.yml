@@ -45,6 +45,7 @@ on:
       - '.github/skills/**'
       - '.github/plugin.json'
       - '.github/scripts/PrepareVallyEvaluation.rb'
+      - '.github/scripts/TestPrepareVallyEvaluation.rb'
       - '.github/workflows/skill-validation.yml'
 
   issue_comment:
@@ -261,7 +262,10 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
           git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          git show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
+          ruby "$PREPARER_TESTS" "$PREPARER"
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
           done < <(find .github/skills -name '*.vally.yaml' -exec dirname {} \; | sort -u)
@@ -446,7 +450,7 @@ jobs:
               sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
             # Trusted evaluation-harness change => evaluate all skills with specs.
             HARNESS_CHANGES=$(echo "$CHANGED" \
-              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/PrepareVallyEvaluation\.rb)$' \
+              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb)$' \
               || true)
             if [ -n "$HARNESS_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
           fi

@@ -9,6 +9,8 @@ BASE_REF = "8935253083b24930f9a6f153f72b5ac196d1ae59"
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
+PERSISTENT_GIT_IDENTITY_PATTERN =
+  /(?:\A|[;&|]\s*)git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
 
 FIXTURES = {
   "eval.restore.vally.yaml" => [
@@ -112,6 +114,12 @@ end
 def validate_environment!(environment, spec_path, skill_root, repo_root, location)
   return unless environment
   fail!("#{location} must be a mapping") unless environment.is_a?(Hash)
+
+  Array(environment["commands"]).each_with_index do |command, index|
+    next unless command.is_a?(String) && command.match?(PERSISTENT_GIT_IDENTITY_PATTERN)
+
+    fail!("#{location}.commands[#{index}] persistently writes Git identity; use per-command git -c instead")
+  end
 
   forbidden = FORBIDDEN_ENVIRONMENT_KEYS & environment.keys
   fail!("#{location} uses forbidden key(s): #{forbidden.join(', ')}") unless forbidden.empty?
