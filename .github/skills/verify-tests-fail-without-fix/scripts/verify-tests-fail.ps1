@@ -859,6 +859,26 @@ function Get-TestResultFromOutput {
                         FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
                     }
                 }
+                # A snapshot "size differs" failure means the committed baseline PNG has DIFFERENT
+                # pixel DIMENSIONS than the gate simulator's screenshot — i.e. the baseline was
+                # captured on a different-sized device than the gate boots (e.g. an iPhone 16 Pro
+                # 1206x2472 baseline vs the gate's pinned iPhone 11 Pro 1124x2286). A PR *code* fix
+                # can never change screenshot dimensions, so this failure is environmental in BOTH
+                # the without-fix and with-fix runs and the gate cannot A/B verify the test. When
+                # every remaining failure is a size mismatch (alone or together with new-baseline
+                # tests), report INCONCLUSIVE, never FAILED. This is distinct from a real pixel
+                # DIFF ("N% difference"), which is a genuine visual regression and falls through.
+                # (build 14850018, PR #37032: ChangingItemSpacing... baseline 1206x2472 vs gate
+                # 1124x2286 — identical size mismatch in both legs, wrongly reported FAILED.)
+                $sizeMismatchCount = ([regex]::Matches($content, '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?')).Count
+                if ($sizeMismatchCount -gt 0 -and ($sizeMismatchCount + $baselineMissingCount) -ge $deviceFailCount) {
+                    Write-Host "  ⚠️  All $deviceFailCount failing test(s) are snapshot SIZE mismatches (baseline captured on a different device size than the gate simulator) — INCONCLUSIVE (a code fix cannot change screenshot dimensions)" -ForegroundColor Yellow
+                    return @{
+                        Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
+                        Error = "Snapshot size mismatch for $sizeMismatchCount test(s): the committed baseline PNG dimensions differ from the gate simulator's screenshot size (baseline captured on a different-sized device). A PR code fix cannot change screenshot dimensions, so the gate cannot A/B verify these tests — the baseline needs regenerating on the current device."
+                        FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
+                    }
+                }
                 return @{
                     Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
                     PassCount = $devicePassCount; Total = $deviceTotal; Skipped = 0
@@ -953,6 +973,26 @@ function Get-TestResultFromOutput {
         return @{
             Passed = $false; EnvError = $true; SnapshotBaselineMissing = $true
             Error = "New snapshot test — baseline image not yet created; the gate cannot validate a brand-new VerifyScreenshot test (the baseline PNG is added separately by a maintainer)"
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+        }
+    }
+
+    # ── Snapshot SIZE mismatch (baseline captured on a different-sized device) ──
+    # "Snapshot different than baseline: X.png (size differs - baseline is WxH pixels, actual is
+    # WxH pixels)" means the committed baseline PNG has different DIMENSIONS than the gate
+    # simulator's screenshot — the baseline was captured on a different device size than the gate
+    # boots (e.g. an iPhone 16 Pro 1206x2472 baseline vs the pinned iPhone 11 Pro 1124x2286). A PR
+    # *code* fix can never change screenshot dimensions, so this failure is environmental in BOTH
+    # the without-fix and with-fix runs and the gate cannot A/B verify the test → INCONCLUSIVE,
+    # never FAILED. This is DISTINCT from a real pixel DIFF ("N% difference") against a same-size
+    # baseline, which is a genuine visual regression and is NOT matched here. Reachable on the
+    # UITest path (NUnit "Passed=False", no "Passed:/Failed:" counts). (build 14850018, PR #37032:
+    # ChangingItemSpacingDoesNotShiftFirstItemOutOfView.png baseline 1206x2472 vs gate 1124x2286 —
+    # identical size mismatch in both legs, wrongly reported FAILED.)
+    if ($content -match '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?') {
+        return @{
+            Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
+            Error = "Snapshot size mismatch: the committed baseline PNG dimensions differ from the gate simulator's screenshot size — the baseline was captured on a different-sized device. A PR code fix cannot change screenshot dimensions, so the gate cannot A/B verify this test; the baseline needs regenerating on the current device."
             FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }

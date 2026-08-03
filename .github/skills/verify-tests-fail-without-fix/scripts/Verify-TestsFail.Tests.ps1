@@ -491,3 +491,45 @@ error NETSDK1147: the following workloads must be installed: android
         $r.EnvError | Should -Not -BeTrue
     }
 }
+
+Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
+    It 'classifies a UITest snapshot SIZE mismatch as INCONCLUSIVE (env), not a failure (build 14850018 #37032)' {
+        $log = New-LogFile -Content @"
+  [UITest] Issue36422 (filter: Issue36422)
+  FixtureSetup for Issue36422(iOS)
+      Error Message:
+   Snapshot different than baseline: ChangingItemSpacingDoesNotShiftFirstItemOutOfView.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+   at VisualTestUtils.VisualRegressionTester.VerifyMatchesSnapshot(...)
+  [UITest] Issue36422: Passed=False Failed=1 [303s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Error | Should -Match 'size'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'classifies device-test size mismatches (Passed:/Failed: counts) as INCONCLUSIVE (env)' {
+        $log = New-LogFile -Content @"
+  Passed: 3
+  Failed: 2
+  Snapshot different than baseline: A.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+  Snapshot different than baseline: B.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.SnapshotSizeMismatch | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does NOT mask a genuine pixel DIFF (N% difference against a same-size baseline)' {
+        $log = New-LogFile -Content @"
+  [UITest] IssueReal (filter: IssueReal)
+   Snapshot different than baseline: RealRegression.png (17.08% difference)
+  [UITest] IssueReal: Passed=False Failed=1 [40s]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.SnapshotSizeMismatch | Should -Not -BeTrue
+        $r.EnvError | Should -Not -BeTrue
+    }
+}
