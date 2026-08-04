@@ -69,7 +69,7 @@ public class Issue33287SecondPage : ContentPage
 			}
 		};
 
-		async void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName != nameof(Window) || Window is not null)
 				return;
@@ -77,9 +77,10 @@ public class Issue33287SecondPage : ContentPage
 			PropertyChanged -= OnPropertyChanged;
 			updateStatus("Page detached");
 
-			// Request the alert before handler teardown changes IsPlatformEnabled.
-			await DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
-			updateStatus("Alert request completed");
+			// The original NRE occurs synchronously while creating the alert request.
+			// A detached page may keep the returned task pending until it is reattached.
+			_ = DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
+			updateStatus("Alert request returned");
 		}
 	}
 }
