@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Media
 			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
 		}
 
+		[System.Runtime.Versioning.SupportedOSPlatform("android26.0")]
 		static async Task<Bitmap?> RenderUsingPixelCopyAsync(View view, Window? window)
 		{
 			if (view.Width <= 0 || view.Height <= 0 || !view.IsAttachedToWindow)
