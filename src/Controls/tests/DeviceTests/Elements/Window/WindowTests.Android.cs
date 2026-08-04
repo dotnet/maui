@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using AndroidX.Core.View;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -35,6 +36,47 @@ namespace Microsoft.Maui.DeviceTests
 				((IWindow)window).Destroying();
 
 				Assert.NotNull(windowScopeField.GetValue(mauiContext));
+			});
+		}
+
+		[Fact]
+		public async Task StatusBarThemeDoesNotChangeNavigationBarTheme()
+		{
+			SetupBuilder();
+
+			var window = new Window(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(window.Page);
+
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
+
+				var controller = WindowCompat.GetInsetsController(platformWindow, platformWindow.DecorView);
+				Assert.NotNull(controller);
+
+				var originalLightStatusBars = controller.AppearanceLightStatusBars;
+				var originalLightNavigationBars = controller.AppearanceLightNavigationBars;
+				try
+				{
+					controller.AppearanceLightNavigationBars = true;
+					window.StatusBarTheme = StatusBarTheme.Dark;
+
+					Assert.False(controller.AppearanceLightStatusBars);
+					Assert.True(controller.AppearanceLightNavigationBars);
+
+					controller.AppearanceLightNavigationBars = false;
+					window.StatusBarTheme = StatusBarTheme.Light;
+
+					Assert.True(controller.AppearanceLightStatusBars);
+					Assert.False(controller.AppearanceLightNavigationBars);
+				}
+				finally
+				{
+					controller.AppearanceLightStatusBars = originalLightStatusBars;
+					controller.AppearanceLightNavigationBars = originalLightNavigationBars;
+				}
 			});
 		}
 

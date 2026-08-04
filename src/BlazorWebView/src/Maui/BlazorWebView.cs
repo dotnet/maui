@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
-			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
+			return GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
 		}
 
 		/// <summary>
@@ -125,13 +125,31 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
 		{
 			ArgumentNullException.ThrowIfNull(workItem);
-			if (Handler is null)
+			var handler = Handler;
+			if (handler is null)
 			{
 				return false;
 			}
 
-			return await ((BlazorWebViewHandler)(Handler!)).TryDispatchAsync(workItem);
+			return await GetBlazorWebViewHandler(handler).TryDispatchAsync(workItem);
 		}
+
+		private IBlazorWebViewHandler GetBlazorWebViewHandler()
+		{
+			var handler = Handler;
+			if (handler is null)
+			{
+				throw new InvalidOperationException(
+					$"{nameof(BlazorWebView)} must be connected to a handler before this operation can be performed.");
+			}
+
+			return GetBlazorWebViewHandler(handler);
+		}
+
+		private static IBlazorWebViewHandler GetBlazorWebViewHandler(IViewHandler handler) =>
+			handler as IBlazorWebViewHandler ??
+				throw new InvalidOperationException(
+					$"The handler type '{handler.GetType().FullName}' must implement {nameof(IBlazorWebViewHandler)}.");
 
 		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>

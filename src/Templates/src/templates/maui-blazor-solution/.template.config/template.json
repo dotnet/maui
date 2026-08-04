@@ -383,11 +383,24 @@
       ]
     },
     "InteractivityLocation": {
-      "type": "generated",
-      "generator": "constant",
-      "parameters": {
-        "value": "InteractiveGlobal"
-      }
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "InteractivePerPage",
+      "displayName": "Interactivity _location",
+      "description": "Chooses which components will have interactive rendering enabled",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
+      "choices": [
+        {
+          "choice": "InteractivePerPage",
+          "displayName": "Per page/component",
+          "description": "Interactivity is applied on a per-page or per-component basis"
+        },
+        {
+          "choice": "InteractiveGlobal",
+          "displayName": "Global",
+          "description": "Interactivity is applied at the root level"
+        }
+      ]
     },
     "UseWebAssembly": {
       "type": "computed",

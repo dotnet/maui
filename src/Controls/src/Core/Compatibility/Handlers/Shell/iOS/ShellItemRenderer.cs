@@ -15,6 +15,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+			=> CurrentRenderer?.ViewController;
+#endif
+
 		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
 		#region IShellItemRenderer
