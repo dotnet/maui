@@ -85,15 +85,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
-			// Transient cleanup only: detach the bound view from the ItemsView's logical
-			// children so it doesn't stay permanently rooted if the cell is discarded, but
-			// deliberately leave the native subtree, PlatformHandler, and CurrentTemplate
-			// intact. CarouselView Loop mode (and ItemsViewController.CellDisplayingEndedFromDelegate)
-			// may call this speculatively on a cell about to be redisplayed with the same
-			// content, and Bind() relies on the native view still being attached to cheaply
-			// reattach the logical child without re-running SetupPlatformView() (which would
-			// otherwise install duplicate Auto Layout constraints on every reuse cycle).
+			// Transient cleanup only: clear the bound view's BindingContext and detach it from
+			// the ItemsView's logical children so it doesn't stay permanently rooted if the cell
+			// is discarded, but deliberately leave the native subtree, PlatformHandler, and
+			// CurrentTemplate intact. CarouselView Loop mode (and
+			// ItemsViewController.CellDisplayingEndedFromDelegate) may call this speculatively on
+			// a cell about to be redisplayed with the same content, and Bind() relies on the
+			// native view still being attached to cheaply reattach the logical child without
+			// re-running SetupPlatformView() (which would otherwise install duplicate Auto Layout
+			// constraints on every reuse cycle).
+			ClearBindingContext();
 			DetachFromItemsView();
+		}
+
+		// Clears the bound view's BindingContext. Called during routine recycling and final teardown.
+		void ClearBindingContext()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				view.BindingContext = null;
+			}
 		}
 
 		// Permanent teardown for cells/content that are discarded outright and never
@@ -105,6 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var view = PlatformHandler?.VirtualView as View;
 
+			ClearBindingContext();
 			DetachFromItemsView();
 			ClearSubviews();
 
@@ -118,17 +130,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ReleaseContent();
 		}
 
-		// Managed-only cleanup: clears the bound view's BindingContext and removes it from the
-		// ItemsView's logical children (mirrors TemplatedCell2.Unbind()). Uses view.Parent
-		// (itself backed by a WeakReference<Element>) rather than tracking a separate reference.
-		// Invoked via Unbind()/ReleaseContent() from cell reuse/eviction call sites and from
-		// Dispose(bool) on the deterministic disposing path - never from the finalizer, where
-		// touching the managed object graph would be unsafe.
-		void DetachFromItemsView()
+		// Removes the bound view from the ItemsView's logical children, so it (and its handler) can
+		// be collected. Now also invoked from Unbind() for transient cleanup (previously reserved
+		// only for final teardown paths via ItemsViewController.Disconnect()/ClearMeasurementCells())
+		// as part of fixing the leak where a discarded/reused cell's bound view stayed permanently
+		// rooted as a logical child of the ItemsView.
+		internal void DetachFromItemsView()
 		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
-				view.BindingContext = null;
 				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
 		}
@@ -250,7 +260,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Remove the old view, if it exists. A template change discards oldElement's
 				// renderer for good, so this permanently detaches and disconnects it to avoid
 				// leaking (unlike the same-template branch below, which keeps the native
-				// subtree attached for cheap reuse).
+				// subtree attached for cheap reuse). ReleaseContent() clears the BindingContext,
+				// removes the logical child, clears native subviews, and disconnects the handler
+				// tree (equivalent to the previous oldElement.DisconnectHandlers() call, since
+				// view == oldElement here).
 				if (oldElement != null)
 				{
 					ReleaseContent();

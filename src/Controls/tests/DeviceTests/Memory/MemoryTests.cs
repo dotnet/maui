@@ -348,9 +348,37 @@ public class MemoryTests : ControlsHandlerTestBase
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			var handler = CreateHandler<LayoutHandler>(layout);
+			var viewHandler = view.Handler;
+			Assert.NotNull(viewHandler);
+
+			if (view is HybridWebView)
+			{
+#if WINDOWS
+				// Await WebView2's own readiness API instead of polling or using a fixed delay.
+				// EnsureCoreWebView2Async completes exactly when initialization finishes (or
+				// immediately if already initialized), so there's no magic timeout/interval to tune.
+				if (viewHandler.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
+				{
+					await webView2.EnsureCoreWebView2Async();
+				}
+#endif
+			}
+
 			viewReference = new WeakReference(view);
-			handlerReference = new WeakReference(view.Handler);
-			platformViewReference = new WeakReference(view.Handler.PlatformView);
+			handlerReference = new WeakReference(viewHandler);
+			platformViewReference = new WeakReference(viewHandler.PlatformView);
+
+			// Explicitly disconnect the child view's handler before letting it fall out of
+			// scope. Real apps tear down handlers this way (e.g. when a page/element is
+			// removed), and some platform views (e.g. UIStepper on iOS 26+) rely on this
+			// deterministic teardown path to release native-side retains that a bare GC
+			// pass can't reach on its own.
+			if (viewHandler is IViewHandler disconnectableHandler)
+			{
+				disconnectableHandler.DisconnectHandler();
+			}
+
+			view.Handler = null;
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
