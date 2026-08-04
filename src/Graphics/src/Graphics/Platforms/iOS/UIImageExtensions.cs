@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Graphics.Platform
 {
 	public static class UIImageExtensions
 	{
+		private static readonly object s_imageRendererFormatLock = new();
+
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
 			if (maxWidth <= 0 || maxHeight <= 0)
@@ -58,12 +60,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			// BeginImageContext always rendered at scale 1, so keep that behavior while replacing the
 			// API that is unsupported on MacCatalyst 17+.
-			using var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat
-			{
-				Opaque = false,
-				PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
-				Scale = 1,
-			});
+			using var renderer = new UIGraphicsImageRenderer(size, CreateImageRendererFormat());
 
 			var image = renderer.CreateImage(context => target.Draw(new CGRect(CGPoint.Empty, size)));
 
@@ -73,6 +70,31 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			return image;
+		}
+
+		private static UIGraphicsImageRendererFormat CreateImageRendererFormat()
+		{
+			lock (s_imageRendererFormatLock)
+			{
+				var previousCheckStatus = UIApplication.CheckForIllegalCrossThreadCalls;
+
+				try
+				{
+					// Downsize supports background processing, but this UIKit constructor has a managed UI-thread check.
+					UIApplication.CheckForIllegalCrossThreadCalls = false;
+
+					return new UIGraphicsImageRendererFormat
+					{
+						Opaque = false,
+						PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
+						Scale = 1,
+					};
+				}
+				finally
+				{
+					UIApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+				}
+			}
 		}
 
 		public static UIImage NormalizeOrientation(this UIImage target, bool disposeOriginal = false)
