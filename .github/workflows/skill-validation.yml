@@ -948,6 +948,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Validate safe Vally specs
+        id: trusted-spec
         env:
           TRUSTED_REPOSITORY: ${{ github.repository }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
@@ -957,8 +958,11 @@ jobs:
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" ".github/skills/code-review/tests" --validate-only
-          git show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" \
-            > .github/skills/code-review/tests/hermeticity.vally.yaml
+          TRUSTED_SPEC_DIR=$(mktemp -d "$RUNNER_TEMP/hermeticity-spec.XXXXXX")
+          HERMETICITY_SPEC="$TRUSTED_SPEC_DIR/hermeticity.vally.yaml"
+          git show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" > "$HERMETICITY_SPEC"
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$HERMETICITY_SPEC" --strict
+          echo "path=$HERMETICITY_SPEC" >> "$GITHUB_OUTPUT"
 
       - name: Select Copilot token
         id: select-token
@@ -996,17 +1000,17 @@ jobs:
           # If a GitHub-shaped token leaks in, the rate limit is elevated and
           # the assertion FAILS → hermeticity not verified.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}
         run: |
-          SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
           mkdir -p hermeticity-results
-          if [ ! -f "$SPEC" ]; then
-            echo "::warning::hermeticity spec not found at $SPEC"
+          if [ ! -f "$HERMETICITY_SPEC" ]; then
+            echo "::warning::trusted hermeticity spec not found"
             echo "inconclusive" > hermeticity-results/verdict.txt
             exit 0
           fi
 
           set +e
-          "$VALLY_BIN" eval -e "$SPEC" \
+          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval -e "$HERMETICITY_SPEC" \
             --skill-dir .github/skills \
             --output-dir hermeticity-results/out \
             --junit \
