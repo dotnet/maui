@@ -81,6 +81,29 @@ public class ImageTests
 		Assert.Equal(10, (int)scaled.CGImage.Width);
 		Assert.Equal(5, (int)scaled.CGImage.Height);
 	}
+
+	[Fact]
+	public async Task ScaleImageCanRunOnBackgroundThread()
+	{
+		var sourceSize = new CGSize(30, 20);
+		var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
+		{
+			Opaque = false,
+			Scale = 2,
+		});
+
+		using var source = sourceRenderer.CreateImage(context =>
+		{
+			UIColor.Red.SetFill();
+			context.FillRect(new CGRect(CGPoint.Empty, sourceSize));
+		});
+
+		using var scaled = await Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
+
+		Assert.Equal(1, (double)scaled.CurrentScale);
+		Assert.Equal(10, (int)scaled.CGImage.Width);
+		Assert.Equal(5, (int)scaled.CGImage.Height);
+	}
 #endif
 
 	[Theory]
