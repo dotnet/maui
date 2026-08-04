@@ -212,7 +212,11 @@ end
 def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   fail!("#{spec_path} uses Vally parameter placeholders; trusted validation requires structurally static specs") if File.read(spec_path).match?(PARAM_PLACEHOLDER_PATTERN)
 
-  document = YAML.safe_load_file(spec_path, permitted_classes: [], permitted_symbols: [], aliases: true)
+  begin
+    document = YAML.safe_load_file(spec_path, permitted_classes: [], permitted_symbols: [], aliases: false)
+  rescue Psych::AliasesNotEnabled
+    fail!("#{spec_path} uses YAML aliases; trusted validation requires alias-free specs")
+  end
   fail!("#{spec_path} must contain a mapping") unless document.is_a?(Hash)
 
   validate_environment!(document["environment"], spec_path, skill_root, repo_root, "environment")

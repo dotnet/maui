@@ -75,7 +75,7 @@ stimuli:
         config:
           pattern: '(LGTM|NEEDS_DISCUSSION)'
       - type: tool-calls
-        config: &review-input-only
+        config:
           required:
             - name: '^(bash|view|grep|rg)$'
               pattern: 'change\.diff'
@@ -164,7 +164,22 @@ stimuli:
         config:
           pattern: '(LGTM|NEEDS_DISCUSSION)'
       - type: tool-calls
-        config: *review-input-only
+        config:
+          required:
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'change\.diff'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'AppHostBuilderExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'HybridWebViewHandler\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'MauiHandlersCollectionExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'RuntimeFeature\.cs'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       - type: prompt
         name: annotated-helper-judge
         config:
@@ -241,7 +256,22 @@ stimuli:
         config:
           pattern: 'NEEDS_CHANGES'
       - type: tool-calls
-        config: *review-input-only
+        config:
+          required:
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'change\.diff'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'AppHostBuilderExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'HybridWebViewHandler\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'MauiHandlersCollectionExtensions\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'RuntimeFeature\.cs'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '\b(?:gh|curl|wget)\b'
+            - name: '^(web_fetch|web_search|github-mcp-server-.*)$'
       - type: prompt
         name: reachable-suppression-judge
         config:

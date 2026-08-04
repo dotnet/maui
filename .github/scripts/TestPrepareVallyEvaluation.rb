@@ -41,6 +41,19 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "uses Vally parameter placeholders"
   end
 
+  def test_rejects_yaml_aliases
+    write_raw_spec(<<~YAML)
+      shared: &shared
+        skills: [".."]
+      environment: *shared
+    YAML
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "uses YAML aliases"
+  end
+
   def test_rejects_forbidden_environment_key
     write_spec("environment" => { "mcpServers" => {} })
 
