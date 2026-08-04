@@ -619,20 +619,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Brush.IsNullOrEmpty(brush))
 			{
 				var color = _shellContext.Shell.FlyoutBackgroundColor;
-				if (_defaultBackgroundColor is null)
+				if (color == null)
 				{
-					if (RuntimeFeature.IsMaterial3Enabled)
-					{
-						var colorSurface = ContextExtensions.GetThemeAttrColor(_shellContext.AndroidContext, Resource.Attribute.colorSurface);
-						_defaultBackgroundColor = new ColorDrawable(new AColor(colorSurface));
-					}
-					else
-					{
-						_defaultBackgroundColor = _rootView.Background;
-					}
+					// Re-resolve colorSurface from the live theme every time rather than caching it,
+					// so the flyout background stays in sync when the app theme changes at runtime.
+					var previousBackground = _defaultBackgroundColor;
+					var colorSurface = ContextExtensions.GetThemeAttrColor(_shellContext.AndroidContext, Resource.Attribute.colorSurface);
+					_defaultBackgroundColor = new ColorDrawable(new AColor(colorSurface));
+					_rootView.Background = _defaultBackgroundColor;
+					previousBackground?.Dispose();
 				}
-
-				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToPlatform());
+				else
+				{
+					_rootView.Background = new ColorDrawable(color.ToPlatform());
+				}
 			}
 			else
 				_rootView.UpdateBackground(brush);
