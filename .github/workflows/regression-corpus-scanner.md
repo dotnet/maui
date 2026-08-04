@@ -128,7 +128,7 @@ concurrency:
   group: "gh-aw-${{ github.workflow }}"
   cancel-in-progress: false
 
-model: claude-opus-5
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:
