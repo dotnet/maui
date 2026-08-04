@@ -16,9 +16,7 @@ public class Issue13323 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void CarouselView_EntryTap_DoesNotChangePosition()
 	{
-		App.WaitForElement("CarouselView13323", timeout: TimeSpan.FromSeconds(30));
-
-		App.Tap("GoToItem2");
+		NavigateToSecondItem("CarouselView13323", "GoToItem2");
 		App.WaitForTextToBePresentInElement("PositionLabel", "Position:2");
 		App.WaitForElement("CenterEntry_2");
 
@@ -37,9 +35,7 @@ public class Issue13323 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void CarouselView_Loop_EntryTap_DoesNotChangePosition()
 	{
-		App.WaitForElement("LoopCarouselView13323", timeout: TimeSpan.FromSeconds(30));
-
-		App.Tap("LoopGoToItem2");
+		NavigateToSecondItem("LoopCarouselView13323", "LoopGoToItem2");
 		App.WaitForTextToBePresentInElement("LoopPositionLabel", "LoopPosition:2");
 		App.WaitForElement("LoopCenterEntry_2");
 
@@ -51,6 +47,21 @@ public class Issue13323 : _IssuesUITest
 		App.DismissKeyboard();
 #if ANDROID
 		App.WaitForKeyboardToHide();
+#endif
+	}
+
+	// Navigates the given CarouselView to item 2. On iOS the classic CarouselView does not reliably
+	// respond to the programmatic ScrollTo in CI, so we drive it with real swipe gestures (the same
+	// approach used by Issue29261). On the other platforms the "Go to Item 2" button is reliable.
+	void NavigateToSecondItem(string carouselId, string goToButtonId)
+	{
+		App.WaitForElement(carouselId);
+#if IOS
+		App.ScrollRight(carouselId, ScrollStrategy.Gesture, 0.9, 500);
+		App.ScrollRight(carouselId, ScrollStrategy.Gesture, 0.9, 500);
+#else
+		App.WaitForElement(goToButtonId);
+		App.Tap(goToButtonId);
 #endif
 	}
 }
