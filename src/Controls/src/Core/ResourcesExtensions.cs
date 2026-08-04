@@ -165,10 +165,6 @@ namespace Microsoft.Maui.Controls
 				element = element.Parent;
 			}
 
-			//Fallback for the XF previewer
-			if (Application.Current != null && ((IResourcesProvider)Application.Current).IsResourcesCreated && Application.Current.Resources.TryGetValue(key, out value))
-				return true;
-
 			value = null;
 			return false;
 		}
