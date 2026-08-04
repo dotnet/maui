@@ -57,8 +57,8 @@ type: capability
 defaults:
   runs: 1
   timeout: 3m
-  model: gpt-5.6-sol
-  judge_model: claude-opus-5
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
   executor: copilot-sdk
 
 stimuli:

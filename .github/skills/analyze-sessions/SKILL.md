@@ -217,8 +217,8 @@ version: "1.0"
 type: capability
 defaults:
   runs: 3
-  model: gpt-5.6-sol
-  judge_model: claude-opus-5
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
   executor: copilot-sdk
 stimuli:
   - name: <mode>-floor
