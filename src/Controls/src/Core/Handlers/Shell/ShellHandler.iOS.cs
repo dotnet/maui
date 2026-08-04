@@ -210,7 +210,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected virtual IShellItemRenderer CreateShellItemRenderer(ShellItem item)
         {
-            var handler = new ShellItemHandler();
+            // Resolve through the handler registry so custom ShellItemHandler subclasses
+            // registered via AddHandler<ShellItem, THandler>() are honored, matching Android.
+            var handler = MauiContext!.Handlers.GetHandler(item.GetType()) as ShellItemHandler
+                 ?? new ShellItemHandler();
             handler.SetMauiContext(item.FindMauiContext()!);
             handler.SetVirtualView(item);
             return new ShellItemHandler.ShellItemHandlerAdapter(handler);
@@ -228,7 +231,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection)
         {
-            var handler = new ShellSectionHandler();
+            // Resolve through the handler registry so custom ShellSectionHandler subclasses
+            // registered via AddHandler<ShellSection, THandler>() are honored, matching Android.
+            var handler = MauiContext!.Handlers.GetHandler(shellSection.GetType()) as ShellSectionHandler
+                 ?? new ShellSectionHandler();
             handler.SetMauiContext(shellSection.FindMauiContext()!);
             handler.SetVirtualView(shellSection);
             return new ShellSectionHandler.ShellSectionHandlerAdapter(handler);
@@ -632,6 +638,30 @@ namespace Microsoft.Maui.Controls.Handlers
 
             public override bool PrefersStatusBarHidden()
                 => Shell?.CurrentPage?.OnThisPlatform()?.PrefersStatusBarHidden() == StatusBarHiddenMode.True;
+
+#if !MACCATALYST
+            public override UIViewController? ChildViewControllerForStatusBarStyle()
+            {
+                if (Shell?.Window?.StatusBarTheme == StatusBarTheme.Default)
+                {
+                    return base.ChildViewControllerForStatusBarStyle();
+                }
+
+                return null;
+            }
+
+            public override UIStatusBarStyle PreferredStatusBarStyle()
+            {
+                var theme = Shell?.Window?.StatusBarTheme ?? StatusBarTheme.Default;
+
+                return theme switch
+                {
+                    StatusBarTheme.Light => UIStatusBarStyle.DarkContent,
+                    StatusBarTheme.Dark => UIStatusBarStyle.LightContent,
+                    _ => base.PreferredStatusBarStyle()
+                };
+            }
+#endif
 
             public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
             {

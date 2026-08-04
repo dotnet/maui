@@ -1244,7 +1244,7 @@ namespace Microsoft.Maui.Controls.Handlers
             if (_didLayoutSubviews)
             {
                 var newInset = new Thickness(left, top, right, bottom);
-                if (newInset != _lastTabThickness || tabThickness != _lastTabThickness)
+                if (newInset != _lastInset || tabThickness != _lastTabThickness)
                 {
                     _lastTabThickness = tabThickness;
                     _lastInset = newInset;
@@ -1513,11 +1513,12 @@ namespace Microsoft.Maui.Controls.Handlers
                 _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
             }
 
+            // Complete pending sources with false (not cancel) so awaiting async void methods don't surface an exception.
             foreach (var kvp in _completionTasks)
-                kvp.Value.TrySetCanceled();
+                kvp.Value.TrySetResult(false);
             _completionTasks.Clear();
 
-            _popCompletionTask?.TrySetCanceled();
+            _popCompletionTask?.TrySetResult(false);
             _popCompletionTask = null;
             _pendingViewControllers = null;
             _sendPopPending = false;
