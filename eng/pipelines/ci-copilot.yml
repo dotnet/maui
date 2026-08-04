@@ -4147,9 +4147,16 @@ stages:
                   Write-Host "PRAgent directory not found in CopilotLogs — posting a standalone deep-results review"
                   if ($deepBlock) {
                     try {
+                      # Wrap the deep-results block in a collapsible <details> section so the
+                      # fallback summary is expandable/compact — matching the full AI summary,
+                      # which always wraps deep results in a "📱 UI Tests" <details> block.
+                      $wrappedDeep = "<details open>" + [Environment]::NewLine +
+                        "<summary><strong>📱 Deep UI Test Results</strong> — click to expand/collapse</summary>" +
+                        [Environment]::NewLine + [Environment]::NewLine + $deepBlock +
+                        [Environment]::NewLine + [Environment]::NewLine + "</details>"
                       $doBody = "## AI Review Summary" + [Environment]::NewLine + [Environment]::NewLine +
                         "> ℹ️ The review agent did not produce a full summary on this run (an infrastructure issue on the CI agent), but the **deep UI tests completed** — their results are below. Re-comment ``/review`` for a fresh full review." +
-                        [Environment]::NewLine + [Environment]::NewLine + $deepBlock
+                        [Environment]::NewLine + [Environment]::NewLine + $wrappedDeep
                       $doTmp = New-TemporaryFile
                       @{ body = $doBody; event = 'COMMENT' } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
                       gh api -X POST "repos/dotnet/maui/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
