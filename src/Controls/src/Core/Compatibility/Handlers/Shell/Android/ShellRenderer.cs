@@ -152,26 +152,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				IsDarkTheme ? Resource.Attribute.colorPrimaryDark : global::Android.Resource.Attribute.ColorBackground,
 				DefaultBottomNavigationViewBackgroundColor);
 
-		// Reads a color from a theme attribute. Returns the supplied fallback when the attribute
-		// is not declared on the current theme — GetThemeAttrColor returns 0 (transparent) in that
-		// case, which would otherwise paint Shell chrome invisible on non-MAUI base themes.
-		// Also returns the fallback when Android's Context.Configuration.UiMode doesn't match
-		// MAUI's authoritative IsDarkTheme (runtime AppTheme flip on an Activity that keeps
-		// itself across uiMode config changes) — the theme attribute would resolve to a stale
-		// value and Context.CreateConfigurationContext can't force fresh theme resolution.
-		static Color ReadThemeColor(Context context, int attr, Color fallback)
-		{
-			var configuration = context.Resources?.Configuration;
-			if (configuration is not null)
-			{
-				var contextIsDark = (configuration.UiMode & UiMode.NightMask) == UiMode.NightYes;
-				if (contextIsDark != IsDarkTheme)
-					return fallback;
-			}
-
-			int raw = context.GetThemeAttrColor(attr);
-			return raw == 0 ? fallback : new AColor(raw).ToColor();
-		}
+		// Reads a color from a theme attribute. Returns the supplied fallback only when the
+		// attribute isn't declared on the current theme (checked via the existing
+		// TryResolveAttribute helper), which would otherwise paint Shell chrome invisible on
+		// non-MAUI base themes — a legitimate transparent theme color is no longer confused with
+		// a failed resolution. We always read the live theme attribute (no UiMode-vs-IsDarkTheme
+		// guard) so a runtime AppTheme flip picks up the resolved color as soon as Android applies
+		// the configuration change, rather than getting stuck on a hardcoded fallback with no
+		// further trigger to refresh it.
+		static Color ReadThemeColor(Context context, int attr, Color fallback) =>
+			context.TryResolveAttribute(attr) ? new AColor(context.GetThemeAttrColor(attr)).ToColor() : fallback;
 
 		// Context-aware accessors used by the appearance trackers: resolve from the M3 theme
 		// attributes above when Material 3 is enabled, otherwise resolve from the M2 attributes
