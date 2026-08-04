@@ -17,6 +17,18 @@ namespace Microsoft.Maui.Handlers
 	{
 		private static readonly IPropertyMapper<ILabel, ILabelHandler> TextMapper = new PropertyMapper<ILabel, ILabelHandler>
 		{
+#if WINDOWS
+			// WinUI must apply text formatting before Text. Otherwise, a TextBlock
+			// connected without text retains different line metrics when text is added later.
+			[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(ITextStyle.Font)] = MapFont,
+			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			[nameof(ILabel.LineHeight)] = MapLineHeight,
+			[nameof(ILabel.Text)] = MapText,
+			[nameof(ITextStyle.TextColor)] = MapTextColor,
+			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
+#else
 			// Ensure Text is mapped before LineHeight/Decorations/CharacterSpacing/HorizontalTextAlignment/TextColor/Font
 			// due to them being applied to the native object (i.e. AttributedText on iOS) created by mapping Text
 			[nameof(ILabel.Text)] = MapText,
@@ -27,6 +39,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ITextStyle.TextColor)] = MapTextColor,
+#endif
 		};
 
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(TextMapper, ViewHandler.ViewMapper)

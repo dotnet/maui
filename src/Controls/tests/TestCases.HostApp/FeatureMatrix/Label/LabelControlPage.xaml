@@ -9,9 +9,8 @@
                  AutomationId="Options"/>
   </ContentPage.ToolbarItems>
 
-  <VerticalStackLayout x:Name="MainLabelHost">
+  <VerticalStackLayout>
     <Label
-      x:Name="MainLabel"
       HeightRequest="600"
       Text="{Binding Text , Mode=TwoWay}"
       CharacterSpacing="{Binding CharacterSpacing}"
