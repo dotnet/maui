@@ -1296,6 +1296,59 @@ jobs:
             function suiteKey(scope, label) {
               return `${scope}\u0000${label}`;
             }
+            function closingTagOutsideCdata(xml, tag, start) {
+              let cursor = start;
+              while (cursor < xml.length) {
+                const close = xml.indexOf(`</${tag}>`, cursor);
+                if (close < 0) return -1;
+                const cdata = xml.indexOf('<![CDATA[', cursor);
+                if (cdata < 0 || cdata > close) return close;
+                const cdataEnd = xml.indexOf(']]>', cdata + 9);
+                if (cdataEnd < 0) return -1;
+                cursor = cdataEnd + 3;
+              }
+              return -1;
+            }
+            function testcaseBlocks(block) {
+              const out = [];
+              const openTags = block.matchAll(/<testcase\b[^>]*>/g);
+              for (const match of openTags) {
+                const openTag = match[0];
+                const start = match.index;
+                if (openTag.endsWith('/>')) {
+                  out.push(openTag);
+                  continue;
+                }
+                const endTag = '</testcase>';
+                const end = closingTagOutsideCdata(block, 'testcase', start + openTag.length);
+                if (end < 0) continue;
+                out.push(block.slice(start, end + endTag.length));
+              }
+              return out;
+            }
+            function hasFailedSkillInvocation(testcase) {
+              const properties = (testcase.match(/<properties>[\s\S]*?<\/properties>/) || [''])[0];
+              return /<property name="grader\.skill-invocation\.passed" value="false"\/>/
+                .test(properties);
+            }
+
+            // Regression fixture: a self-closing property must not be mistaken
+            // for the end of its enclosing non-self-closing testcase.
+            const invocationVetoFixture = [
+              '<testcase name="routing-violation">',
+              '<properties>',
+              '<property name="grader.other.passed" value="true"/>',
+              '<property name="grader.skill-invocation.passed" value="false"/>',
+              '</properties>',
+              '<system-out><![CDATA[the transcript mentions </testcase> safely]]></system-out>',
+              '</testcase>',
+            ].join('');
+            const invocationVetoBlocks = testcaseBlocks(invocationVetoFixture);
+            if (invocationVetoBlocks.length !== 1 ||
+                !hasFailedSkillInvocation(invocationVetoBlocks[0]) ||
+                !invocationVetoBlocks[0].includes('safely]]></system-out></testcase>')) {
+              throw new Error('Internal JUnit parser failed the skill-invocation veto fixture.');
+            }
 
             const suites = [];
             let evalPassed = true;
@@ -1320,15 +1373,13 @@ jobs:
                   // Failing/erroring stimuli, deduped by testcase name (runs>1
                   // flattens each stimulus into one testcase per trial).
                   const failures = new Map();
-                  const tcs = block.match(/<testcase\b[\s\S]*?(?:\/>|<\/testcase>)/g) || [];
+                  const tcs = testcaseBlocks(block);
                   for (const tc of tcs) {
                     const tcOpen = (tc.match(/<testcase\b[^>]*?(?:>|\/>)/) || [''])[0];
                     const tcName = tagAttr(tcOpen, 'name') || '(stimulus)';
                     const fm = tc.match(/<failure\b[^>]*message="([^"]*)"/);
                     const em = tc.match(/<error\b[^>]*message="([^"]*)"/);
-                    const properties = (tc.match(/<properties>[\s\S]*?<\/properties>/) || [''])[0];
-                    const skillInvocationFailed =
-                      /<property name="grader\.skill-invocation\.passed" value="false"\/>/.test(properties);
+                    const skillInvocationFailed = hasFailedSkillInvocation(tc);
                     if (skillInvocationFailed) skillInvocationFailures += 1;
                     if (fm || em) {
                       const kind = em ? 'error' : 'fail';
