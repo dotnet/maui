@@ -648,6 +648,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return new WeakReference(sv);
 		}
 
+		// Regression test for https://github.com/dotnet/maui/issues/36481
+		// A SwipeView subscribes to its nearest ancestor ScrollView's non-weak Scrolled event.
+		// If the SwipeView is detached from the scroll container by removing an INTERMEDIATE
+		// ancestor (here: clearing scroll.Content) — leaving the SwipeView's own direct Parent
+		// unchanged — OnParentChangedCore never runs, so the Scrolled subscription is never torn
+		// down and the long-lived ScrollView permanently roots the detached SwipeView.
+		[Fact]
+		public void AncestorScrollViewScrolledDoesNotKeepSwipeViewAlive()
+		{
+			// Long-lived scroll container, exactly as the issue describes.
+			var scroll = new ScrollView();
+
+			var swipeViewRef = CreateSwipeViewUnderScroll(scroll);
+
+			ForceFullGC();
+
+			GC.KeepAlive(scroll);
+
+			Assert.False(swipeViewRef.IsAlive,
+				"SwipeView was kept alive by the ancestor ScrollView's Scrolled event — issue #36481 regression.");
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeViewUnderScroll(ScrollView scroll)
+		{
+			var inner = new VerticalStackLayout();
+			scroll.Content = inner;
+
+			var swipe = new SwipeView { Content = new Label() };
+			inner.Children.Add(swipe);   // subscribes scroll.Scrolled
+
+			// Detach an intermediate ancestor: swipe.Parent stays 'inner', so the
+			// SwipeView's OnParentChangedCore never fires and the Scrolled handler leaks.
+			scroll.Content = null;
+
+			return new WeakReference(swipe);
+		}
+
 		static void ForceFullGC()
 		{
 			for (int i = 0; i < 5; i++)

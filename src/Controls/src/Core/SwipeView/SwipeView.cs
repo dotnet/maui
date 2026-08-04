@@ -237,6 +237,7 @@ namespace Microsoft.Maui.Controls
 		View? _scrollParent;
 		Element? _templateParent;
 		SwipeDirection? _swipeDirection;
+		readonly WeakScrolledProxy _scrolledProxy = new();
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
 
@@ -323,20 +324,7 @@ namespace Microsoft.Maui.Controls
 
 		void UnsubscribeFromParentScrolledEvents()
 		{
-			if (_scrollParent is ScrollView scrollView)
-			{
-				scrollView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			else if (_scrollParent is ListView listView)
-			{
-				listView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
-			else if (_scrollParent is CollectionView collectionView)
-			{
-				collectionView.Scrolled -= OnParentScrolled;
-			}
+			_scrolledProxy.Unsubscribe();
 			_scrollParent = null;
 		}
 
@@ -356,7 +344,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is ScrollView scrollView)
 			{
-				scrollView.Scrolled += OnParentScrolled;
+				_scrolledProxy.Subscribe(scrollView, OnParentScrolled);
 				return true;
 			}
 
@@ -365,7 +353,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is ListView listView)
 			{
-				listView.Scrolled += OnParentScrolled;
+				_scrolledProxy.Subscribe(listView, OnParentScrolled);
 				return true;
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -374,7 +362,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
 			{
-				collectionView.Scrolled += OnParentScrolled;
+				_scrolledProxy.Subscribe(collectionView, OnParentScrolled);
 				return true;
 			}
 
@@ -455,6 +443,91 @@ namespace Microsoft.Maui.Controls
 		void ISwipeView.RequestClose(SwipeViewCloseRequest swipeCloseRequest)
 		{
 			Handler?.Invoke(nameof(ISwipeView.RequestClose), swipeCloseRequest);
+		}
+
+		// Subscribes the SwipeView to the nearest scroll container's non-weak Scrolled event
+		// through weak references, so a still-live scroll container can never root a detached
+		// SwipeView when the unsubscribe path (OnParentChangedCore) does not run — e.g. when an
+		// intermediate ancestor is removed. See https://github.com/dotnet/maui/issues/36481.
+		sealed class WeakScrolledProxy
+		{
+			WeakReference<ScrollView>? _scrollView;
+			WeakReference<ListView>? _listView;
+			WeakReference<ItemsView>? _itemsView;
+			WeakReference<SwipeView>? _target;
+
+			public void Subscribe(ScrollView source, EventHandler<ScrolledEventArgs> handler)
+			{
+				Unsubscribe();
+				_scrollView = new WeakReference<ScrollView>(source);
+				_target = new WeakReference<SwipeView>((SwipeView)handler.Target!);
+				source.Scrolled += OnScrolled;
+			}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			public void Subscribe(ListView source, EventHandler<ScrolledEventArgs> handler)
+			{
+				Unsubscribe();
+				_listView = new WeakReference<ListView>(source);
+				_target = new WeakReference<SwipeView>((SwipeView)handler.Target!);
+				source.Scrolled += OnScrolled;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			public void Subscribe(ItemsView source, EventHandler<ItemsViewScrolledEventArgs> handler)
+			{
+				Unsubscribe();
+				_itemsView = new WeakReference<ItemsView>(source);
+				_target = new WeakReference<SwipeView>((SwipeView)handler.Target!);
+				source.Scrolled += OnItemsViewScrolled;
+			}
+
+			void OnScrolled(object? sender, ScrolledEventArgs e)
+			{
+				if (_target is not null && _target.TryGetTarget(out var swipeView))
+				{
+					swipeView.OnParentScrolled(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			void OnItemsViewScrolled(object? sender, ItemsViewScrolledEventArgs e)
+			{
+				if (_target is not null && _target.TryGetTarget(out var swipeView))
+				{
+					swipeView.OnParentScrolled(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public void Unsubscribe()
+			{
+				if (_scrollView is not null && _scrollView.TryGetTarget(out var scrollView))
+				{
+					scrollView.Scrolled -= OnScrolled;
+				}
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (_listView is not null && _listView.TryGetTarget(out var listView))
+				{
+					listView.Scrolled -= OnScrolled;
+				}
+#pragma warning restore CS0618 // Type or member is obsolete
+				if (_itemsView is not null && _itemsView.TryGetTarget(out var itemsView))
+				{
+					itemsView.Scrolled -= OnItemsViewScrolled;
+				}
+
+				_scrollView = null;
+				_listView = null;
+				_itemsView = null;
+				_target = null;
+			}
 		}
 
 		class HandlerSwipeItems : List<Maui.ISwipeItem>, ISwipeItems
