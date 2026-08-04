@@ -29,7 +29,7 @@
     Pull request number (for phrasing only).
 
 .PARAMETER Model
-    Copilot model. Defaults to $env:COPILOT_REVIEW_MODEL or 'gpt-5.5'
+    Copilot model. Defaults to $env:COPILOT_REVIEW_MODEL or 'gpt-5.6-sol'
     (same default as the main review).
 #>
 [CmdletBinding()]
@@ -54,8 +54,11 @@ if (-not $copilotCmd) {
 }
 
 if ([string]::IsNullOrWhiteSpace($Model)) {
-    $Model = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
+    $Model = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.6-sol' }
 }
+# Context-window tier and reasoning effort mirror the main review (CLI: --context / --effort).
+$Context = if ($env:COPILOT_REVIEW_CONTEXT) { $env:COPILOT_REVIEW_CONTEXT } else { 'long_context' }
+$Effort = if ($env:COPILOT_REVIEW_EFFORT) { $env:COPILOT_REVIEW_EFFORT } else { 'max' }
 
 $outDir = Split-Path -Parent $OutputFile
 if ($outDir -and -not (Test-Path $outDir)) { New-Item -ItemType Directory -Force -Path $outDir | Out-Null }
@@ -137,7 +140,7 @@ try {
     # surface lightweight progress. Any line we echo is scrubbed of ##vso
     # directives so untrusted text on the stream can't drive the agent
     # (security rule 6).
-    & copilot -p $metaPrompt --allow-all --output-format json --model $Model --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
+    & copilot -p $metaPrompt --allow-all --output-format json --model $Model --context $Context --effort $Effort --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
         $line = ($_ | Out-String).Trim()
         if (-not $line) { return }
         $safe = $line -replace '##vso\[[^]]*\]', ''
