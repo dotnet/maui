@@ -356,8 +356,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void FallbackToApplicationCurrent()
+		public void DoesNotFallBackToApplicationCurrentWhenDetached()
 		{
+			// The "XF previewer" fallback used to resolve dynamic resources for detached
+			// elements from the static Application.Current.Resources, running resource
+			// changes (and user callbacks) on elements not attached to any tree (#36822)
 			Application.Current.Resources = new ResourceDictionary { { "foo", "FOO" } };
 
 			var label = new Label();
@@ -365,6 +368,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetBinding(Label.TextProperty, "Text", BindingMode.TwoWay);
 			label.SetDynamicResource(Label.TextProperty, "foo");
 
+			// Detached elements do not resolve resources from the static application
+			Assert.Null(label.Text);
+
+			// The resource resolves through resource inheritance once attached
+			Application.Current.LoadPage(new ContentPage { Content = label });
 			Assert.Equal("FOO", label.Text);
 		}
 
