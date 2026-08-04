@@ -9,10 +9,19 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(GradientStops))]
 	public abstract class GradientBrush : Brush
 	{
+		readonly WeakNotifyCollectionChangedProxy _gradientStopsProxy = new();
+		readonly NotifyCollectionChangedEventHandler _gradientStopsChanged;
+
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
+			_gradientStopsChanged = OnGradientStopCollectionChanged;
 			GradientStops = new GradientStopCollection();
+		}
+
+		~GradientBrush()
+		{
+			_gradientStopsProxy.Unsubscribe();
 		}
 
 		public event EventHandler InvalidateGradientBrushRequested;
@@ -49,7 +58,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnGradientStopCollectionChanged;
+				_gradientStopsProxy.Unsubscribe();
 
 				foreach (var oldStop in oldCollection)
 				{
@@ -61,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnGradientStopCollectionChanged;
+			_gradientStopsProxy.Subscribe(newCollection, _gradientStopsChanged);
 
 			foreach (var newStop in newCollection)
 			{
