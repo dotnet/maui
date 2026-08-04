@@ -91,15 +91,16 @@ namespace Microsoft.Maui.Layouts
 			double desiredWidth, LayoutAlignment horizontalLayoutAlignment)
 		{
 			double frameX = startX + startMargin;
+			var availableWidth = Math.Max(0, boundsWidth - desiredWidth);
 
 			switch (horizontalLayoutAlignment)
 			{
 				case LayoutAlignment.Center:
-					frameX += (boundsWidth - desiredWidth) / 2;
+					frameX += availableWidth / 2;
 					break;
 
 				case LayoutAlignment.End:
-					frameX += boundsWidth - desiredWidth;
+					frameX += availableWidth;
 					break;
 			}
 
@@ -122,15 +123,16 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			double frameY = bounds.Y + margin.Top;
+			var availableHeight = Math.Max(0, bounds.Height - desiredHeight);
 
 			switch (alignment)
 			{
 				case LayoutAlignment.Center:
-					frameY += (bounds.Height - desiredHeight) / 2;
+					frameY += availableHeight / 2;
 					break;
 
 				case LayoutAlignment.End:
-					frameY += bounds.Height - desiredHeight;
+					frameY += availableHeight;
 					break;
 			}
 
