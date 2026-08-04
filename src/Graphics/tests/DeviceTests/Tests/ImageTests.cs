@@ -126,9 +126,10 @@ public class ImageTests
 		else
 			DispatchQueue.MainQueue.DispatchSync(ScaleAndWait);
 
+		Assert.True(completedWhileMainThreadWasBlocked, "ScaleImage must not synchronously depend on main-thread progress.");
+
 		using var scaled = await scaleTask;
 
-		Assert.True(completedWhileMainThreadWasBlocked, "ScaleImage must not synchronously depend on main-thread progress.");
 		Assert.Equal(10, (int)scaled.CGImage.Width);
 		Assert.Equal(5, (int)scaled.CGImage.Height);
 	}
