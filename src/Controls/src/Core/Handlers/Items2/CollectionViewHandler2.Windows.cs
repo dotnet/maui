@@ -288,11 +288,13 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
 				var actualItem = visualElement.BindingContext;
-				// Guard against false positives for null items: object.Equals(null, null) = true would
-				// mark every null-item container as Selected whenever SelectedItem is null (no selection).
-				bool isSelected = actualItem is not null &&
-					(object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem));
-				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
+				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
+				// Use IsItemSelected instead of GoToState directly so that ChangeVisualState()
+				// has the correct selected state when a pointer-enter/leave or IsEnabled change
+				// fires later. IsElementInSelectedState() reads IsItemSelected, so bypassing it
+				// here (as was done before PR #35421) caused PointerOver-exit and re-enable
+				// events to incorrectly transition the item to Normal instead of Selected.
+				visualElement.IsItemSelected = isSelected;
 
 				// When the item template defines a "Selected" visual state, MAUI
 				// handles the selection appearance. Suppress the native WinUI
