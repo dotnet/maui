@@ -69,6 +69,8 @@ stimuli:
         - src: fixtures/trim-aot/case-a/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
           dest: review-input/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
     graders:
+      - type: skill-invocation
+        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: '(LGTM|NEEDS_DISCUSSION)'
@@ -156,6 +158,8 @@ stimuli:
         - src: fixtures/trim-aot/case-b/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
           dest: review-input/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
     graders:
+      - type: skill-invocation
+        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: '(LGTM|NEEDS_DISCUSSION)'
@@ -231,6 +235,8 @@ stimuli:
         - src: fixtures/trim-aot/case-c/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
           dest: review-input/src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs
     graders:
+      - type: skill-invocation
+        config: { required: [code-review] }
       - type: output-matches
         config:
           pattern: 'NEEDS_CHANGES'
@@ -276,7 +282,7 @@ stimuli:
         - code-review
 
 scoring:
-  # Each scenario has one expected-verdict grader plus a review-input access
-  # grader and a prompt grader. A missing verdict can score at most 2/3 for
-  # that scenario; 0.9 prevents the other scenarios from masking its failure.
+  # Each scenario proves skill activation, the expected verdict, review-input
+  # access, and semantic reasoning. The workflow treats any failed
+  # skill-invocation detail as a hard veto in addition to this aggregate score.
   threshold: 0.9

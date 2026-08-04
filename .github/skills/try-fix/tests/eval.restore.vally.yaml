@@ -75,7 +75,7 @@ stimuli:
               result: 'Restored\s+True'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^\s*|(?:&&|\|\||;|\||\n)\s*)(?:(?:(?:\S*/)?command(?:\s+-\S+)*|(?:\S*/)?env(?:\s+(?:(?:-u|--unset)\s+\S+|(?:-i|--ignore-environment|--)|\S+=\S+))*|exec)\s+)*git(?:\s+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
+              command: '(?:^\s*|(?:&&|\|\||;|\||&|\n|\$\(|\(|\{|\`)\s*)(?:(?:then|do|if|while|until)\s+)?!?\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S+\s+)*(?:(?:(?:\S*/)?command(?:\s+-\S+)*|(?:\S*/)?env(?:\s+(?:(?:-u|--unset)\s+\S+|(?:-i|--ignore-environment|--)|\S+=\S+))*|(?:\S*/)?sudo(?:\s+-\S+)*|(?:\S*/)?xargs(?:\s+-\S+)*|exec)\s+|(?:\S*/)?(?:sh|bash|zsh)(?:\s+-\S+)*\s+[''\"]?)*(?:\S*/)?git(?:\s+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
       - type: diff-empty
     constraints:
       max_duration: 15m

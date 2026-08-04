@@ -263,9 +263,11 @@ jobs:
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
+          RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
           git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           git show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
-          ruby "$PREPARER_TESTS" "$PREPARER"
+          git show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
+          ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC"
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
           done < <(find .github/skills -name '*.vally.yaml' -exec dirname {} \; | sort -u)
@@ -1311,10 +1313,10 @@ jobs:
                   const label = suiteProp(block, 'evalName') || tagAttr(openTag, 'name') || '(unnamed)';
                   const score = suiteProp(block, 'overallScore');
                   const threshold = suiteProp(block, 'threshold');
-                  const passed = suiteProp(block, 'passed') === 'true';
+                  const vallyPassed = suiteProp(block, 'passed') === 'true';
+                  let skillInvocationFailures = 0;
                   const suiteFailures = Number(tagAttr(openTag, 'failures') || 0);
                   const suiteErrors = Number(tagAttr(openTag, 'errors') || 0);
-                  if (!passed) evalPassed = false;
                   // Failing/erroring stimuli, deduped by testcase name (runs>1
                   // flattens each stimulus into one testcase per trial).
                   const failures = new Map();
@@ -1324,19 +1326,32 @@ jobs:
                     const tcName = tagAttr(tcOpen, 'name') || '(stimulus)';
                     const fm = tc.match(/<failure\b[^>]*message="([^"]*)"/);
                     const em = tc.match(/<error\b[^>]*message="([^"]*)"/);
+                    const properties = (tc.match(/<properties>[\s\S]*?<\/properties>/) || [''])[0];
+                    const skillInvocationFailed =
+                      /<property name="grader\.skill-invocation\.passed" value="false"\/>/.test(properties);
+                    if (skillInvocationFailed) skillInvocationFailures += 1;
                     if (fm || em) {
                       const kind = em ? 'error' : 'fail';
                       const msg = xmlDecode((em && em[1]) || (fm && fm[1]) || '')
                         .split('\n')[0].slice(0, 240);
                       if (!failures.has(tcName)) failures.set(tcName, { kind, msg });
+                    } else if (skillInvocationFailed) {
+                      failures.set(tcName, {
+                        kind: 'skill',
+                        msg: 'required or disallowed skill invocation constraint failed',
+                      });
                     }
                   }
+                  const passed = vallyPassed && skillInvocationFailures === 0;
+                  if (!passed) evalPassed = false;
                   suites.push({
                     scope,
                     label,
                     score,
                     threshold,
                     passed,
+                    vallyPassed,
+                    skillInvocationFailures,
                     suiteFailures,
                     suiteErrors,
                     failures: [...failures.entries()],
@@ -1413,7 +1428,9 @@ jobs:
                 const sc = s.score != null && s.score !== '' ? Number(s.score).toFixed(2) : '—';
                 const th = s.threshold != null && s.threshold !== '' ? Number(s.threshold).toFixed(2) : '—';
                 let v = '❌';
-                if (s.passed) {
+                if (s.skillInvocationFailures > 0) {
+                  v = `❌ ${s.skillInvocationFailures} skill invocation failure${s.skillInvocationFailures === 1 ? '' : 's'}`;
+                } else if (s.passed) {
                   v = s.suiteFailures > 0
                     ? `✅ aggregate; ${s.suiteFailures} trial failure${s.suiteFailures === 1 ? '' : 's'}`
                     : '✅';
@@ -1455,7 +1472,11 @@ jobs:
                 );
                 lines.push('');
                 for (const [name, info] of s.failures) {
-                  const tag = info.kind === 'error' ? '🛑 error' : '❌ fail';
+                  const tag = info.kind === 'error'
+                    ? '🛑 error'
+                    : info.kind === 'skill'
+                      ? '❌ skill'
+                      : '❌ fail';
                   const safeName = String(name).replace(/\|/g, '\\|');
                   const safeMsg = (info.msg || '').replace(/\|/g, '\\|');
                   lines.push(`- **${safeName}** (${tag}): ${safeMsg}`);

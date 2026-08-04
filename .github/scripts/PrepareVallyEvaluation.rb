@@ -9,6 +9,7 @@ BASE_REF = "8935253083b24930f9a6f153f72b5ac196d1ae59"
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
+PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
   /(?:\A|[;&|]\s*)git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
 
@@ -198,13 +199,19 @@ end
 def validate_graders!(graders, location)
   Array(graders).each_with_index do |grader, index|
     next unless grader.is_a?(Hash)
-    next unless FORBIDDEN_GRADERS.include?(grader["type"])
+    grader_type = grader["type"]
+    if grader_type == "skill-invocation" && grader.key?("name")
+      fail!("#{location}[#{index}] must not rename the skill-invocation grader")
+    end
+    next unless FORBIDDEN_GRADERS.include?(grader_type)
 
-    fail!("#{location}[#{index}] uses forbidden grader #{grader['type']}")
+    fail!("#{location}[#{index}] uses forbidden grader #{grader_type}")
   end
 end
 
 def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
+  fail!("#{spec_path} uses Vally parameter placeholders; trusted validation requires structurally static specs") if File.read(spec_path).match?(PARAM_PLACEHOLDER_PATTERN)
+
   document = YAML.safe_load_file(spec_path, permitted_classes: [], permitted_symbols: [], aliases: true)
   fail!("#{spec_path} must contain a mapping") unless document.is_a?(Hash)
 
