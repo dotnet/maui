@@ -321,8 +321,8 @@ namespace Microsoft.Maui.Controls.Internals
 		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
 		{
-			// Use cached type check after first apply (source type doesn't change)
-			var isTSource = _isTSource;
+			// Use the cached type check after first apply, but don't reuse it while a relative source is unresolved.
+			var isTSource = sourceObject is not null && _isTSource;
 			if (!_hasDefaultValue)
 			{
 				isTSource = sourceObject is TSource;
