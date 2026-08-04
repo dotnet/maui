@@ -19,7 +19,7 @@ End-to-end PR review workflow that orchestrates phases to explore independent fi
 ```
 Gate (pre-run)    → Already completed by Review-PR.ps1 before this skill runs
 Phase 1: Pre-Flight   → Gather context, classify files, code review     → .github/pr-review/pr-preflight.md
-Phase 2: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×4 models)
+Phase 2: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×2 models)
 Phase 3: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
 
@@ -45,14 +45,14 @@ Phase 3: Report       → Write review recommendation                     → .g
 
 ### Multi-Model Configuration
 
-Phase 2 uses these 4 AI models (run SEQUENTIALLY — they modify the same files):
+Phase 2 uses these 2 AI models (run SEQUENTIALLY — they modify the same files):
 
 | Order | Model |
 |-------|-------|
 | 1 | `claude-opus-5` |
-| 2 | `claude-sonnet-5` |
-| 3 | `gpt-5.3-codex` |
-| 4 | `gpt-5.6-sol` |
+| 2 | `gpt-5.6-sol` |
+
+Two models keep the try-fix phase fast (each attempt is a full build+test cycle, so every extra model adds ~15–20 min to the review) while preserving cross-family diversity: `claude-opus-5` explores a different model family from the GPT-5.6 Sol orchestrator, and `gpt-5.6-sol` provides a same-family fallback.
 
 **🚨 MANDATORY: Use `mode: "sync"` for ALL try-fix task invocations.** Never use `mode: "background"`. Background mode causes the orchestrator to move on before the attempt finishes, which means `try-fix/content.md` is never written and try-fix results are lost from the PR comment. Each try-fix task MUST complete and return its result before you proceed to the next attempt or to the Phase 3 completion checklist.
 
@@ -88,13 +88,13 @@ Pre-Flight now has two parts:
 
 ---
 
-## Phase 2: Try-Fix → Invoke `try-fix` Skill (×4 Models)
+## Phase 2: Try-Fix → Invoke `try-fix` Skill (×2 Models)
 
 > Read and follow `.github/skills/try-fix/SKILL.md`
 
 > **⚠️ THIS PHASE IS MANDATORY. YOU MUST NEVER SKIP IT. NO EXCEPTIONS.**
 
-Even if the PR's fix looks correct and Gate passed, you MUST still run all 4 models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
+Even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
@@ -110,12 +110,8 @@ The purpose is NOT to re-test the PR's fix, but to:
 
 - [ ] Attempt 1 launched with claude-opus-5
 - [ ] `try-fix/content.md` updated with attempt 1 result
-- [ ] Attempt 2 launched with claude-sonnet-5
+- [ ] Attempt 2 launched with gpt-5.6-sol
 - [ ] `try-fix/content.md` updated with attempt 2 result
-- [ ] Attempt 3 launched with gpt-5.3-codex
-- [ ] `try-fix/content.md` updated with attempt 3 result
-- [ ] Attempt 4 launched with gpt-5.6-sol
-- [ ] `try-fix/content.md` updated with attempt 4 result
 - [ ] Cross-pollination round completed (all models queried)
 - [ ] Best fix selected with comparison table
 
@@ -216,7 +212,7 @@ Write `content.md`:
 - ❌ Running try-fix in parallel — SEQUENTIAL ONLY, always `mode: "sync"`
 - ❌ Using `mode: "background"` for try-fix tasks — results will be lost
 - ❌ Skipping cleanup between attempts — ALWAYS run cleanup commands
-- ❌ Declaring exhaustion without querying all 4 models
+- ❌ Declaring exhaustion without querying both models
 
 ---
 
@@ -264,7 +260,7 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 |-------|--------------|------------|------------|
 | Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
 | 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
-| 2. Try-Fix | `try-fix` skill (×4) | **4-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
+| 2. Try-Fix | `try-fix` skill (×2) | **2-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
 | 3. Report | `pr-report.md` | Write review recommendation | Never skip |
 
 ---
