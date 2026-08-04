@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 36933, "DatePicker and TimePicker Background set to null at runtime does not clear on iOS/MacCatalyst", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 36933, "DatePicker and TimePicker Background set to null at runtime does not clear on iOS/MacCatalyst", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue36933 : ContentPage
 {
 	public Issue36933()
