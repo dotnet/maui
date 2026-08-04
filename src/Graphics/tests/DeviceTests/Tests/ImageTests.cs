@@ -98,11 +98,22 @@ public class ImageTests
 			context.FillRect(new CGRect(CGPoint.Empty, sourceSize));
 		});
 
-		using var scaled = await Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
+		var previousCheckStatus = UIApplication.CheckForIllegalCrossThreadCalls;
 
-		Assert.Equal(1, (double)scaled.CurrentScale);
-		Assert.Equal(10, (int)scaled.CGImage.Width);
-		Assert.Equal(5, (int)scaled.CGImage.Height);
+		try
+		{
+			UIApplication.CheckForIllegalCrossThreadCalls = true;
+
+			using var scaled = await Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
+
+			Assert.Equal(1, (double)scaled.CurrentScale);
+			Assert.Equal(10, (int)scaled.CGImage.Width);
+			Assert.Equal(5, (int)scaled.CGImage.Height);
+		}
+		finally
+		{
+			UIApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
+		}
 	}
 #endif
 
