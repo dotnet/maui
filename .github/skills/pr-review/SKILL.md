@@ -96,6 +96,8 @@ Pre-Flight now has two parts:
 
 Even if the PR's fix looks correct and Gate passed, you MUST still run both models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
+> **⏱️ HARD TIME BUDGET — Phase 2 must finish within ~90 minutes.** Task 3 (this whole Copilot Review step) is force-killed at **180 minutes**, and a killed Task 3 **FAILS the entire review and posts nothing** — far worse than a bounded, partial exploration. Track wall-clock time from the moment you enter Phase 2. Order of work: (1) run each of the two models **once**, writing `try-fix/content.md` after each attempt; (2) select the best fix. Do the optional cross-pollination round **only if you are comfortably under budget**. The moment you approach ~90 minutes — or sooner if attempts stop making progress — **STOP immediately**, finalize `try-fix/content.md` with the results so far, and move to Phase 3. Never run open-ended "exhaustion", per-candidate deep-dive, or repeated cross-pollination loops that can consume the whole budget and time out the task.
+
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
 
 "Independent" means each model explores a **different fix approach** from the PR's fix — not that models are isolated from code-review context. Code-review findings are provided as advisory background to improve fix quality.
@@ -112,7 +114,7 @@ The purpose is NOT to re-test the PR's fix, but to:
 - [ ] `try-fix/content.md` updated with attempt 1 result
 - [ ] Attempt 2 launched with gpt-5.6-sol
 - [ ] `try-fix/content.md` updated with attempt 2 result
-- [ ] Cross-pollination round completed (all models queried)
+- [ ] Cross-pollination round completed (optional — skipped if budget was tight)
 - [ ] Best fix selected with comparison table
 
 ### Round 1: Independent Exploration
@@ -161,9 +163,9 @@ pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 
 **📝 MANDATORY: Update `try-fix/content.md` after EVERY attempt.** Do not wait until all attempts are done. After each try-fix attempt completes (pass or fail), immediately write/update `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/try-fix/content.md` with all results so far. This ensures the PR comment always reflects the latest try-fix state, even if a later attempt times out or the agent is interrupted.
 
-### Round 2+: Cross-Pollination (MANDATORY)
+### Round 2 (OPTIONAL — only if well under the 90-minute budget): Cross-Pollination
 
-After Round 1, invoke EACH model via task agent:
+Skip this round entirely if time is tight. If — and only if — you are comfortably under the Phase 2 budget after Round 1, invoke EACH model once via task agent:
 ```
 "Review PR #XXXXX fix attempts:
   - Attempt 1: {approach} - ✅/❌
@@ -172,7 +174,7 @@ After Round 1, invoke EACH model via task agent:
   Do you have any NEW fix ideas? Reply: 'NEW IDEA: {desc}' or 'NO NEW IDEAS'"
 ```
 
-Run any new ideas as additional try-fix attempts. Repeat until all say "NO NEW IDEAS" (max 3 rounds).
+Run at most a couple of genuinely new ideas as additional attempts. Do **one** cross-pollination round at most — never loop. Stop and proceed to selection the moment you approach the budget.
 
 ### Selecting the Best Fix
 
