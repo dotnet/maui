@@ -221,9 +221,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(VerticalStackLayout))]
 	[InlineData(typeof(HorizontalStackLayout))]
 	[InlineData(typeof(AbsoluteLayout))]
-#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(HybridWebView))]
-#endif
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
@@ -244,9 +242,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
-#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
-#endif
 	[InlineData(typeof(SwipeView))]
 	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
