@@ -23,12 +23,18 @@ public class Issue33287 : _IssuesUITest
 		App.WaitForElement("GoBackButton");
 		App.Tap("GoBackButton");
 
-		// Back on main page — wait for the delayed DisplayAlertAsync to fire.
-		// Without the fix the NRE crashes the app and this element becomes unreachable.
+		// Back on the main page, wait until the detached page's alert request completes.
+		// Without the fix the NRE crashes the app and this status is never updated.
 		App.WaitForElement("MainPageLabel");
-		System.Threading.Thread.Sleep(3000);
+		Assert.That(
+			App.WaitForTextToBePresentInElement(
+				"AlertStatusLabel",
+				"Alert request completed",
+				timeout: TimeSpan.FromSeconds(10)),
+			Is.True,
+			"The detached page's alert request should complete");
 
-		// Verify the app is still alive and responsive after the alert fired on the detached page.
+		// Verify the app is still alive and responsive after the alert request on the detached page.
 		// Without the fix the app process is dead and this call will throw/timeout.
 		Assert.That(App.FindElement("MainPageLabel").GetText(), Is.EqualTo("MainPage"),
 			"App should remain responsive after DisplayAlertAsync on an unloaded page");
