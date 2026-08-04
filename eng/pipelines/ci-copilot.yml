@@ -4245,30 +4245,12 @@ stages:
                   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
                   Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
 
-                  # Post the full review. Pass the trusted gate verdict (Gate task output var)
-                  # so the APPROVE veto keys off it, not the agent-writable gate-result.txt. An
-                  # empty value (ReviewPR crashed before the gate) is the non-blocking sentinel.
-                  $postScript = ".github/scripts/post-ai-summary-comment.ps1"
-                  if (Test-Path $postScript) {
-                    Write-Host "Posting full AI summary review with deep results..."
-                    $trustedGate = "$(trustedGateResult)"
-                    # An EMPTY trusted verdict here means RunGate produced no gateResult — the
-                    # Gate task was stopped by its 150-min hang-safety timeout (or crashed before
-                    # writing a verdict). Map it to the TIMEDOUT sentinel so the renderer shows an
-                    # honest "gate did not finish" Gate section AND vetoes APPROVE (the fix was not
-                    # verified). A gate that actually ran always sets PASSED/SKIPPED/INCONCLUSIVE/FAILED,
-                    # so this only ever fires on the timeout/crash path.
-                    if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
-                    Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM"
-                    $output | ForEach-Object { Write-Host $_ }
-                    Write-Host "✅ Full AI summary review posted with deep results"
-                  }
-
-                  # Post the deferred expert inline review (file:line findings) so it
-                  # lands together with the AI summary. The gate for "should we post
-                  # inline?" is whether the PR fix (not a try-fix alternative) is the
-                  # winner — mirroring Review-PR.ps1's own
+                  # ORDER MATTERS: post the expert INLINE findings FIRST, then the AI
+                  # Summary. The summary must land AFTER the file:line expert-review
+                  # comments so a reader sees the detailed findings and then the summary
+                  # conclusion (GitHub orders comments by post time). The gate for "should
+                  # we post inline?" is whether the PR fix (not a try-fix alternative) is
+                  # the winner — mirroring Review-PR.ps1's own
                   #   $isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
                   # We derive that here from winner.json, which round-trips reliably via
                   # CopilotLogs into $targetDir alongside inline-findings.json.
@@ -4297,11 +4279,11 @@ stages:
                   $shouldPostInline = ((Test-Path $inlineSentinel) -or $isPRWinner)
                   if ($shouldPostInline -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
                     try {
-                      Write-Host "Posting deferred expert inline review (with AI summary)..."
+                      Write-Host "Posting expert inline review (before the AI summary)..."
                       & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings
-                      Write-Host "✅ Deferred inline review posted"
+                      Write-Host "✅ Expert inline review posted"
                     } catch {
-                      Write-Host "⚠️ Deferred inline review posting failed (non-fatal): $_"
+                      Write-Host "⚠️ Expert inline review posting failed (non-fatal): $_"
                     }
                   } elseif (-not (Test-Path $inlineFindings)) {
                     Write-Host "ℹ️ No inline-findings.json — agent produced no inline findings; skipping"
@@ -4309,6 +4291,28 @@ stages:
                     Write-Host "ℹ️ A non-PR try-fix candidate won — skipping the PR's inline findings"
                   } else {
                     Write-Host "ℹ️ post-inline-review.ps1 not found — skipping deferred inline review"
+                  }
+
+                  # Post the AI Summary LAST — AFTER the expert inline findings above — so
+                  # it appears as the closing summary beneath the detailed findings. Pass
+                  # the trusted gate verdict (Gate task output var) so the APPROVE veto keys
+                  # off it, not the agent-writable gate-result.txt. An empty value (ReviewPR
+                  # crashed before the gate) is the non-blocking sentinel.
+                  $postScript = ".github/scripts/post-ai-summary-comment.ps1"
+                  if (Test-Path $postScript) {
+                    Write-Host "Posting full AI summary review with deep results (after inline findings)..."
+                    $trustedGate = "$(trustedGateResult)"
+                    # An EMPTY trusted verdict here means RunGate produced no gateResult — the
+                    # Gate task was stopped by its 150-min hang-safety timeout (or crashed before
+                    # writing a verdict). Map it to the TIMEDOUT sentinel so the renderer shows an
+                    # honest "gate did not finish" Gate section AND vetoes APPROVE (the fix was not
+                    # verified). A gate that actually ran always sets PASSED/SKIPPED/INCONCLUSIVE/FAILED,
+                    # so this only ever fires on the timeout/crash path.
+                    if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
+                    Write-Host "Trusted gate verdict for veto: '$trustedGate'"
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM"
+                    $output | ForEach-Object { Write-Host $_ }
+                    Write-Host "✅ Full AI summary review posted with deep results"
                   }
 
                   # Apply labels
