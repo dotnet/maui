@@ -2,6 +2,7 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Text;
+using Android.Text.Method;
 using Android.Views;
 using Google.Android.Material.TextField;
 
@@ -24,17 +25,18 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     {
         // Outlined box is the Material 3 resting-state appearance for date/time fields.
         BoxBackgroundMode = BoxBackgroundOutline;
-        _inputEditText = new MauiMaterialEditText(Context!);
+        _inputEditText = new MauiMaterialDateTimePickerEditText(Context!);
         AddView(_inputEditText);
 
-        // Keep the field focusable so the TextInputLayout can draw its highlighted (focused)
-        // outline while the picker dialog is open (the handler requests focus when showing it).
         // The soft keyboard and blinking cursor are suppressed because the value is chosen through
         // the picker dialog rather than typed. Tapping the field itself does NOT open the dialog.
-        _inputEditText.FocusableInTouchMode = true;
         _inputEditText.InputType = InputTypes.Null;
         _inputEditText.KeyListener = null;
         _inputEditText.SetCursorVisible(false);
+
+        // Set focusability after InputType/KeyListener so RequestFocus() can highlight the outline
+        // while the picker dialog is open.
+        _inputEditText.FocusableInTouchMode = true;
 
         // Only the trailing (calendar/clock) end icon opens the picker dialog. The click listener that
         // wires the tap is attached by the handler in ConnectHandler so it can be torn down
@@ -105,5 +107,14 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
                 layout.ShowPicker?.Invoke();
             }
         }
+    }
+
+    sealed class MauiMaterialDateTimePickerEditText : MauiMaterialEditText
+    {
+        public MauiMaterialDateTimePickerEditText(Context context) : base(context)
+        {
+        }
+
+        protected override IMovementMethod? DefaultMovementMethod => null;
     }
 }
