@@ -1,5 +1,4 @@
 #nullable disable
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -12,12 +11,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		bool _disposed;
 		IShellContext _shellContext;
-		ColorStateList _defaultTextColors;
-		Drawable _defaultBackground;
-		Drawable.ConstantState _defaultBackgroundState;
-		Drawable _defaultSelectedIndicator;
-		Drawable.ConstantState _defaultSelectedIndicatorState;
-		bool _capturedDefaults;
 
 		public ShellTabLayoutAppearanceTracker(IShellContext shellContext)
 		{
@@ -44,43 +37,38 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetColors(TabLayout tabLayout, Color foreground, Color background, Color title, Color unselected)
 		{
-			CaptureDefaults(tabLayout);
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				if (ShellRenderer.DefaultTitleColor is not null && ShellRenderer.DefaultUnselectedColor is not null)
+				{
+					var materialTitleArgb = title.ToPlatform(ShellRenderer.DefaultTitleColor).ToArgb();
+					var materialUnselectedArgb = unselected.ToPlatform(ShellRenderer.DefaultUnselectedColor).ToArgb();
+					tabLayout.SetTabTextColors(materialUnselectedArgb, materialTitleArgb);
+				}
+				else if (tabLayout.TabTextColors is { } nativeTextColors)
+				{
+					var materialTitleArgb = title?.ToPlatform().ToArgb()
+						?? nativeTextColors.GetColorForState(new[] { R.Attribute.StateSelected }, new global::Android.Graphics.Color(nativeTextColors.DefaultColor));
+					var materialUnselectedArgb = unselected?.ToPlatform().ToArgb() ?? nativeTextColors.DefaultColor;
+					tabLayout.SetTabTextColors(materialUnselectedArgb, materialTitleArgb);
+				}
 
-			var titleColor = title ?? ShellRenderer.DefaultTitleColor;
-			var titleArgb = titleColor?.ToPlatform().ToArgb()
-				?? _defaultTextColors?.GetColorForState(new[] { R.Attribute.StateSelected }, new global::Android.Graphics.Color(_defaultTextColors.DefaultColor))
-				?? global::Android.Graphics.Color.Transparent.ToArgb();
+				if (background is not null || ShellRenderer.DefaultBackgroundColor is not null)
+					tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
+
+				if (foreground is not null || ShellRenderer.DefaultForegroundColor is not null)
+					tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
+
+				return;
+			}
+
+			var titleArgb = title.ToPlatform(ShellRenderer.DefaultTitleColor).ToArgb();
 			var unselectedArgb = unselected.ToPlatform(ShellRenderer.DefaultUnselectedColor).ToArgb();
 
 			tabLayout.SetTabTextColors(unselectedArgb, titleArgb);
-
-			var backgroundColor = background ?? ShellRenderer.DefaultBackgroundColor;
-			tabLayout.SetBackground(backgroundColor is null
-				? CreateDrawable(tabLayout, _defaultBackgroundState, _defaultBackground)
-				: new ColorDrawable(backgroundColor.ToPlatform()));
-
-			var indicatorColor = foreground ?? ShellRenderer.DefaultForegroundColor;
-			if (indicatorColor is null)
-				tabLayout.SetSelectedTabIndicator(CreateDrawable(tabLayout, _defaultSelectedIndicatorState, _defaultSelectedIndicator));
-			else
-				tabLayout.SetSelectedTabIndicatorColor(indicatorColor.ToPlatform());
+			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
+			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
 		}
-
-		void CaptureDefaults(TabLayout tabLayout)
-		{
-			if (_capturedDefaults)
-				return;
-
-			_capturedDefaults = true;
-			_defaultTextColors = tabLayout.TabTextColors;
-			_defaultBackground = tabLayout.Background;
-			_defaultBackgroundState = _defaultBackground?.GetConstantState();
-			_defaultSelectedIndicator = tabLayout.TabSelectedIndicator;
-			_defaultSelectedIndicatorState = _defaultSelectedIndicator?.GetConstantState();
-		}
-
-		static Drawable CreateDrawable(TabLayout tabLayout, Drawable.ConstantState state, Drawable fallback) =>
-			state?.NewDrawable(tabLayout.Resources)?.Mutate() ?? fallback?.Mutate();
 
 		#region IDisposable
 
