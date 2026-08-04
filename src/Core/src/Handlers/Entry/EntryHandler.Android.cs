@@ -27,11 +27,25 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
+			var cursorPosition = ((IEntry)view).CursorPosition;
+			var selectionLength = ((IEntry)view).SelectionLength;
+			var restoreSelection = _set;
+
+			if (restoreSelection)
+				PlatformView.SelectionChanged -= OnSelectionChanged;
+
 			base.SetVirtualView(view);
 
-			if (!_set)
-				PlatformView.SelectionChanged += OnSelectionChanged;
+			if (restoreSelection)
+			{
+				// Text mapping moves the native selection to the end; preserve the incoming selection when reusing the handler.
+				VirtualView.CursorPosition = cursorPosition;
+				VirtualView.SelectionLength = selectionLength;
+				UpdateValue(nameof(IEntry.CursorPosition));
+				UpdateValue(nameof(IEntry.SelectionLength));
+			}
 
+			PlatformView.SelectionChanged += OnSelectionChanged;
 			_set = true;
 		}
 
@@ -247,6 +261,9 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
+			if (this.IsMappingProperties())
+				return;
+
 			var cursorPosition = PlatformView.GetCursorPosition();
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 

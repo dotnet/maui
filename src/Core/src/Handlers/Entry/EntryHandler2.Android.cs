@@ -13,6 +13,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 {
 	ClearButtonClickListener? _clearButtonClickListener;
 	ColorStateList? _defaultHintTextColors;
+	bool _selectionChangedSet;
 
 	public static PropertyMapper<IEntry, EntryHandler2> Mapper =
 	  new(ViewMapper)
@@ -63,12 +64,29 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 
 	public override void SetVirtualView(IView view)
 	{
+		var cursorPosition = ((IEntry)view).CursorPosition;
+		var selectionLength = ((IEntry)view).SelectionLength;
+		var restoreSelection = _selectionChangedSet;
+
+		if (restoreSelection && PlatformView.EditText is MauiMaterialEditText editText)
+			editText.SelectionChanged -= OnSelectionChanged;
+
 		base.SetVirtualView(view);
+
+		if (restoreSelection && VirtualView is { } virtualView)
+		{
+			// Text mapping moves the native selection to the end; preserve the incoming selection when reusing the handler.
+			virtualView.CursorPosition = cursorPosition;
+			virtualView.SelectionLength = selectionLength;
+			UpdateValue(nameof(IEntry.CursorPosition));
+			UpdateValue(nameof(IEntry.SelectionLength));
+		}
 
 		if (PlatformView.EditText is MauiMaterialEditText _editText)
 		{
 			_editText.SelectionChanged -= OnSelectionChanged;
 			_editText.SelectionChanged += OnSelectionChanged;
+			_selectionChangedSet = true;
 		}
 	}
 
@@ -91,6 +109,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 		if (platformView.EditText is MauiMaterialEditText _editText)
 		{
 			_editText.SelectionChanged -= OnSelectionChanged;
+			_selectionChangedSet = false;
 		}
 
 		platformView.EditText?.EditorAction -= OnEditorAction;
@@ -351,7 +370,7 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 
 	void OnSelectionChanged(object? sender, EventArgs e)
 	{
-		if (VirtualView is null)
+		if (this.IsMappingProperties() || VirtualView is null)
 		{
 			return;
 		}

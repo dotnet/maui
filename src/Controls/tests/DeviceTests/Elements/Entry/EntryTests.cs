@@ -297,7 +297,9 @@ namespace Microsoft.Maui.DeviceTests
 			var thirdEntry = new Entry
 			{
 				MaxLength = 2,
-				Text = longText
+				Text = longText,
+				CursorPosition = 1,
+				SelectionLength = 1
 			};
 
 			if (useMaterial3)
@@ -308,7 +310,11 @@ namespace Microsoft.Maui.DeviceTests
 					secondEntry,
 					thirdEntry,
 					longText,
-					() => handler.PlatformView.EditText?.Text);
+					() => handler.PlatformView.EditText?.Text,
+					() => handler.PlatformView.EditText?.SelectionStart ?? -1,
+					() => handler.PlatformView.EditText is { } editText
+						? Math.Abs(editText.SelectionEnd - editText.SelectionStart)
+						: -1);
 			}
 			else
 			{
@@ -318,7 +324,9 @@ namespace Microsoft.Maui.DeviceTests
 					secondEntry,
 					thirdEntry,
 					longText,
-					() => handler.PlatformView.Text);
+					() => handler.PlatformView.Text,
+					() => handler.PlatformView.SelectionStart,
+					() => Math.Abs(handler.PlatformView.SelectionEnd - handler.PlatformView.SelectionStart));
 			}
 		}
 
@@ -327,7 +335,9 @@ namespace Microsoft.Maui.DeviceTests
 			Entry secondEntry,
 			Entry thirdEntry,
 			string expectedText,
-			Func<string?> getPlatformText)
+			Func<string> getPlatformText,
+			Func<int> getPlatformCursorPosition,
+			Func<int> getPlatformSelectionLength)
 			where THandler : IElementHandler
 		{
 			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(secondEntry));
@@ -339,6 +349,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal("AA", thirdEntry.Text);
 			Assert.Equal(thirdEntry.Text, await InvokeOnMainThreadAsync(getPlatformText));
+			Assert.Equal(1, thirdEntry.CursorPosition);
+			Assert.Equal(1, thirdEntry.SelectionLength);
+			Assert.Equal(thirdEntry.CursorPosition, await InvokeOnMainThreadAsync(getPlatformCursorPosition));
+			Assert.Equal(thirdEntry.SelectionLength, await InvokeOnMainThreadAsync(getPlatformSelectionLength));
 		}
 #endif
 

@@ -15,9 +15,25 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static MauiAppBuilder ConfigureTestBuilder(this MauiAppBuilder mauiAppBuilder)
 		{
+#if ANDROID
+			const string material3SwitchName = "Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled";
+			var isMaterial3Enabled = RuntimeFeature.IsMaterial3Enabled;
+			System.AppContext.SetSwitch(material3SwitchName, true);
+			try
+			{
+				// Tests instantiate EntryHandler2 directly, so configure its Controls mappings without changing the suite's default handler.
+				mauiAppBuilder.RemapForControls();
+			}
+			finally
+			{
+				System.AppContext.SetSwitch(material3SwitchName, isMaterial3Enabled);
+			}
+#else
+			mauiAppBuilder.RemapForControls();
+#endif
+
 			return
 				mauiAppBuilder
-					.RemapForControls()
 					.ConfigureLifecycleEvents(lifecycle =>
 					{
 #if IOS || MACCATALYST
