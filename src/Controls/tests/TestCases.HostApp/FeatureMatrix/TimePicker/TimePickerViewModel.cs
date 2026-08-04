@@ -13,10 +13,12 @@ public class TimePickerViewModel : INotifyPropertyChanged
 	private string _fontFamily;
 	private double _fontSize = -1.0d;
 	private string _format = "hh:mm tt";
+	private bool _fontAutoScalingEnabled = true;
 	private bool _isEnabled = true;
+	private bool _isOpen;
 	private bool _isVisible = true;
 	private Shadow _shadow;
-	private TimeSpan _time = new TimeSpan(10, 0, 0);
+	private TimeSpan? _time = new TimeSpan(10, 0, 0);
 	private Color _textColor;
 	private CultureInfo _culture;
 
@@ -95,6 +97,19 @@ public class TimePickerViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public bool FontAutoScalingEnabled
+	{
+		get => _fontAutoScalingEnabled;
+		set
+		{
+			if (_fontAutoScalingEnabled != value)
+			{
+				_fontAutoScalingEnabled = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public bool IsEnabled
 	{
 		get => _isEnabled;
@@ -103,6 +118,19 @@ public class TimePickerViewModel : INotifyPropertyChanged
 			if (_isEnabled != value)
 			{
 				_isEnabled = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsOpen
+	{
+		get => _isOpen;
+		set
+		{
+			if (_isOpen != value)
+			{
+				_isOpen = value;
 				OnPropertyChanged();
 			}
 		}
@@ -134,7 +162,7 @@ public class TimePickerViewModel : INotifyPropertyChanged
 		}
 	}
 
-	public TimeSpan Time
+	public TimeSpan? Time
 	{
 		get => _time;
 		set
@@ -173,6 +201,39 @@ public class TimePickerViewModel : INotifyPropertyChanged
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void ResetToDefaults()
+	{
+		_characterSpacing = 0.0d;
+		_flowDirection = FlowDirection.MatchParent;
+		_fontAttributes = FontAttributes.None;
+		_fontFamily = null;
+		_fontSize = -1.0d;
+		_format = "hh:mm tt";
+		_fontAutoScalingEnabled = true;
+		_isEnabled = true;
+		_isOpen = false;
+		_isVisible = true;
+		_shadow = null;
+		_time = new TimeSpan(10, 0, 0);
+		_textColor = null;
+		_culture = new CultureInfo("en-US");
+
+		OnPropertyChanged(nameof(CharacterSpacing));
+		OnPropertyChanged(nameof(FlowDirection));
+		OnPropertyChanged(nameof(FontAttributes));
+		OnPropertyChanged(nameof(FontFamily));
+		OnPropertyChanged(nameof(FontSize));
+		OnPropertyChanged(nameof(Format));
+		OnPropertyChanged(nameof(FontAutoScalingEnabled));
+		OnPropertyChanged(nameof(IsEnabled));
+		OnPropertyChanged(nameof(IsOpen));
+		OnPropertyChanged(nameof(IsVisible));
+		OnPropertyChanged(nameof(Shadow));
+		OnPropertyChanged(nameof(Time));
+		OnPropertyChanged(nameof(TextColor));
+		OnPropertyChanged(nameof(Culture));
+	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{

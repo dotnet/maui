@@ -6,6 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.TimePicker)]
 public class TimePickerFeatureTests : _GalleryUITest
 {
 	public const string TimePickerFeatureMatrix = "Time Picker Feature Matrix";
@@ -20,25 +21,38 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(1)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_InitialState_VerifyVisualState()
 	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
 		App.WaitForElement("TimePickerControl");
 		App.Tap("TimePickerControl");
+		Exception? exception = null;
+		VerifyScreenshotOrSetException(ref exception, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #if IOS
-        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-        App.WaitForElement("Done");
-        App.Tap("Done");
+		App.WaitForElement("Done");
+		App.Tap("Done");
+#elif ANDROID
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif WINDOWS
+		App.WaitForElement("DismissButton");
+		App.Tap("DismissButton");
 #else
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.TapCoordinates(10, 10);
 #endif
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30199
 
 	[Test, Order(4)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetTimeAndCharacterSpacing_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -56,7 +70,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(6)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetTimeAndTextColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -73,7 +86,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(7)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -92,7 +104,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(8)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFontAttributesAndFontSize_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -112,7 +123,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(10)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFontFamilyAndFontSize_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -130,7 +140,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(13)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetTimeAndIsEnabled_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -147,7 +156,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
 
 	[Test, Order(15)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetShadow_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -164,7 +172,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(16)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFormat_t_AndTime_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -184,7 +191,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(17)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFormatTAndTime_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -204,7 +210,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(18)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFormat_T_WithFontAttributes_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -226,7 +231,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(19)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFormat_T_WithFontFamily_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -248,7 +252,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(20)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFormat_T_WithFontSize_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -275,12 +278,9 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 
 	[Test, Order(2)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_ModifyOldTimeAndNewTime_VerifyVisualState()
 	{
 #if ANDROID
-		App.WaitForElement("OK");
-		App.Tap("OK");
 		App.WaitForElement("TimePickerControl");
 		App.Tap("TimePickerControl");
 		App.WaitForElement(AppiumQuery.ByAccessibilityId("6"));
@@ -288,14 +288,12 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElement("OK");
 		App.Tap("OK");
 #elif WINDOWS
-        App.WaitForElement("AcceptButton");
-        App.Tap("AcceptButton");
-        App.WaitForElement("TimePickerControl");
-        App.Tap("TimePickerControl");
-        App.WaitForElement("6");
-        App.Tap("6");
-        App.WaitForElement("AcceptButton");
-        App.Tap("AcceptButton");
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement("6");
+		App.Tap("6");
+		App.WaitForElement("AcceptButton");
+		App.Tap("AcceptButton");
 #endif
 		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
 		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
@@ -306,7 +304,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 
 	[Test, Order(3)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_OldTimeAndNewTime_VerifyVisualState()
 	{
 #if ANDROID
@@ -323,18 +320,18 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElement("Cancel");
 		App.Tap("Cancel");
 #elif WINDOWS
-        App.WaitForElement("TimePickerControl");
-        App.Tap("TimePickerControl");
-        App.WaitForElement("7");
-        App.Tap("7");
-        App.WaitForElement("AcceptButton");
-        App.Tap("AcceptButton");
-        App.WaitForElement("TimePickerControl");
-        App.Tap("TimePickerControl");
-        App.WaitForElement("8");
-        App.Tap("8");
-        App.WaitForElement("DismissButton");
-        App.Tap("DismissButton");
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement("7");
+		App.Tap("7");
+		App.WaitForElement("AcceptButton");
+		App.Tap("AcceptButton");
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement("8");
+		App.Tap("8");
+		App.WaitForElement("DismissButton");
+		App.Tap("DismissButton");
 #endif
 		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("07:00:00"));
 		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
@@ -344,8 +341,7 @@ public class TimePickerFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30192
 
-    [Test, Order(5)]
-    [Category(UITestCategories.TimePicker)]
+	[Test, Order(5)]
     public void TimePicker_SetFlowDirectionAndTime_VerifyVisualState()
     {
         App.WaitForElement("Options");
@@ -362,7 +358,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(9)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFontAttributesAndFormat_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -391,7 +386,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(11)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFontFamilyAndFormat_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -420,7 +414,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(12)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetFontSizeAndFormat_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -443,7 +436,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #endif
 
 	[Test, Order(14)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetTimeAndIsVisible_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -455,10 +447,73 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForNoElement("TimePickerControl");
 	}
 
+	[Test, Order(24)]
+	public void TimePicker_ClearTime_UpdatesNullableTimeAndEventArgs()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("CultureUSButton");
+		App.Tap("CultureUSButton");
+		App.WaitForElement("ClearTimeButton");
+		App.Tap("ClearTimeButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("CultureFormatLabel").GetText(), Is.EqualTo("Culture: en-US, Time: No time selected"));
+		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("<null>"));
+		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
+	}
+
+	[Test, Order(25)]
+	public void TimePicker_DisableFontAutoScaling_UpdatesBoundProperty()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAutoScalingFalseButton");
+		App.Tap("FontAutoScalingFalseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: False"));
+	}
+
+#if TEST_FAILS_ON_CATALYST
+	[Test, Order(26)]
+	public void TimePicker_IsOpenAndEvents_StaySynchronized()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		App.WaitForElement("OpenTimePickerButton");
+		App.Tap("OpenTimePickerButton");
+
+#if ANDROID
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif IOS
+		App.WaitForElement("Done");
+		App.Tap("Done");
+#elif WINDOWS
+		App.WaitForElement("DismissButton");
+		App.Tap("DismissButton");
+#else
+		App.TapCoordinates(10, 10);
+#endif
+
+		Assert.That(App.WaitForElement("IsOpenStatusLabel").GetText(), Is.EqualTo("IsOpen: False"));
+		Assert.That(App.WaitForElement("OpenedCountLabel").GetText(), Is.EqualTo("Opened: 1"));
+		Assert.That(App.WaitForElement("ClosedCountLabel").GetText(), Is.EqualTo("Closed: 1"));
+	}
+#endif
+
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
 
 	[Test, Order(21)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetCulture_enUS_VerifyTimeFormat()
 	{
 		App.WaitForElement("Options");
@@ -482,7 +537,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
 
 	[Test, Order(22)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetCulture_arEG_VerifyTimeFormat()
 	{
 		App.WaitForElement("Options");
@@ -501,12 +555,8 @@ public class TimePickerFeatureTests : _GalleryUITest
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ar-EG, Time: 11:30 ص"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
-
+	
 	[Test, Order(23)]
-	[Category(UITestCategories.TimePicker)]
 	public void TimePicker_SetCulture_jaJP_VerifyTimeFormat()
 	{
 		App.WaitForElement("Options");
