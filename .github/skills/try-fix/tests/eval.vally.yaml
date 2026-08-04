@@ -29,7 +29,7 @@
 #
 # Scoring (see scoring block): this suite deliberately omits scoring.weights,
 # so Vally 0.10 uses the unweighted mean of grader [0,1] scores; skill passes
-# when the mean >= scoring.threshold (0.6), unless any trial has an execution
+# when the mean >= scoring.threshold (0.8), unless any trial has an execution
 # error (a separate hard failure regardless of the numeric aggregate). Every
 # scenario also has a deterministic skill-invocation grader. The workflow
 # treats any failed invocation detail as a hard veto so aggregate semantic
@@ -452,8 +452,10 @@ stimuli:
 scoring:
   # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
   # unweighted mean of grader [0,1] scores; skill passes when the mean across runs >=
-  # threshold. Multi-grader scenarios average crisp protocol signals with the
-  # judge. Skill activation is checked per trial, and the workflow treats a
-  # failed skill-invocation detail as a hard veto. The restoration protocol has
-  # its own threshold-1.0 suite.
-  threshold: 0.6
+  # threshold. At 0.6, passing invocation/structural floors could dilute every
+  # semantic judge failure to a suite score of 0.607. The 0.8 threshold keeps
+  # the behavioral judges load-bearing while retaining aggregate multi-run
+  # tolerance (the healthy live suite scores above 0.9). Skill activation is
+  # checked per trial, and the workflow treats a failed skill-invocation detail
+  # as a hard veto. The restoration protocol has its own threshold-1.0 suite.
+  threshold: 0.8

@@ -498,6 +498,7 @@ jobs:
               $entries += @{
                 name = $skill
                 tests_path = $testsDir
+                spec_files = @($specs | Sort-Object -Property Name | Select-Object -ExpandProperty Name)
               }
             } else {
               Write-Host "  -> $skill has NO eval*.vally.yaml (static-only)"
@@ -509,7 +510,7 @@ jobs:
             echo "entries=[]" >> $env:GITHUB_OUTPUT
             echo "has_entries=false" >> $env:GITHUB_OUTPUT
           } else {
-            $json = $entries | ConvertTo-Json -Compress -AsArray
+            $json = $entries | ConvertTo-Json -Compress -AsArray -Depth 4
             Write-Host "Entries to evaluate: $json"
             echo "entries=$json" >> $env:GITHUB_OUTPUT
             echo "has_entries=true" >> $env:GITHUB_OUTPUT
@@ -873,6 +874,8 @@ jobs:
           set -e
           echo "vally exit code: $EVAL_RC (advisory)"
           echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RESULTS_PATH"
+          printf '%s\n' "$EVAL_RC" > "$RESULTS_PATH/eval-exit-code.txt"
 
           # The aggregate comment job consumes the uploaded artifacts and owns
           # the gate verdict. Print per-matrix JUnit counts here only as an
@@ -1182,10 +1185,11 @@ jobs:
             const staticResult = process.env.STATIC_RESULT;
             const evalResult = process.env.EVAL_RESULT;
             const hasEntries = process.env.HAS_ENTRIES === 'true';
+            let expectedEvalEntries = [];
             let expectedEvalScopes = [];
             try {
-              const entries = JSON.parse(process.env.EXPECTED_ENTRIES || '[]');
-              expectedEvalScopes = entries.map(e => e && e.name).filter(Boolean);
+              expectedEvalEntries = JSON.parse(process.env.EXPECTED_ENTRIES || '[]');
+              expectedEvalScopes = expectedEvalEntries.map(e => e && e.name).filter(Boolean);
             } catch (e) {
               console.log('Could not parse expected eval entries:', e.message);
             }
@@ -1368,6 +1372,7 @@ jobs:
                   hasResults = true;
                   const openTag = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
                   const label = suiteProp(block, 'evalName') || tagAttr(openTag, 'name') || '(unnamed)';
+                  const specFile = path.basename(suiteProp(block, 'evalFilePath') || '');
                   const score = suiteProp(block, 'overallScore');
                   const threshold = suiteProp(block, 'threshold');
                   const vallyPassed = suiteProp(block, 'passed') === 'true';
@@ -1402,6 +1407,7 @@ jobs:
                   suites.push({
                     scope,
                     label,
+                    specFile,
                     score,
                     threshold,
                     passed,
@@ -1414,11 +1420,104 @@ jobs:
                 }
               }
             }
-            const observedEvalScopes = new Set(suites.map(s => s.scope).filter(Boolean));
-            const missingEvalScopes = expectedEvalScopes.filter(scope => !observedEvalScopes.has(scope));
+            function reconcileEvaluation(entries, observedSuites, exitCodes) {
+              const expectedKeys = new Set();
+              const expectedScopes = [];
+              const invalidExpectedScopes = [];
+              for (const entry of entries) {
+                const scope = entry && entry.name;
+                const files = entry && Array.isArray(entry.spec_files) ? entry.spec_files : [];
+                if (!scope || files.length === 0) {
+                  if (scope) invalidExpectedScopes.push(scope);
+                  continue;
+                }
+                expectedScopes.push(scope);
+                for (const file of files) expectedKeys.add(suiteKey(scope, file));
+              }
+
+              const observedCounts = new Map();
+              for (const suite of observedSuites) {
+                const key = suiteKey(suite.scope, suite.specFile);
+                observedCounts.set(key, (observedCounts.get(key) || 0) + 1);
+              }
+              const missingKeys = [...expectedKeys].filter(key => !observedCounts.has(key));
+              const unexpectedKeys = [...observedCounts.keys()].filter(key => !expectedKeys.has(key));
+              const duplicateKeys = [...observedCounts.entries()]
+                .filter(([, count]) => count !== 1)
+                .map(([key]) => key);
+              const missingExitScopes = expectedScopes.filter(scope => !exitCodes.has(scope));
+              const unexplainedExitScopes = expectedScopes.filter(scope => {
+                const exitCode = exitCodes.get(scope);
+                if (exitCode === 0 || exitCode == null) return false;
+                return !observedSuites.some(s => s.scope === scope && !s.passed);
+              });
+
+              return {
+                expectedKeys,
+                missingKeys,
+                unexpectedKeys,
+                duplicateKeys,
+                invalidExpectedScopes,
+                missingExitScopes,
+                unexplainedExitScopes,
+                complete: expectedKeys.size > 0 &&
+                  missingKeys.length === 0 &&
+                  unexpectedKeys.length === 0 &&
+                  duplicateKeys.length === 0 &&
+                  invalidExpectedScopes.length === 0 &&
+                  missingExitScopes.length === 0 &&
+                  unexplainedExitScopes.length === 0,
+              };
+            }
+
+            const evalExitCodes = new Map();
+            for (const scope of expectedEvalScopes) {
+              const exitFile = path.join(
+                'eval-results',
+                `skill-eval-results-${scope}`,
+                'eval-exit-code.txt'
+              );
+              try {
+                const raw = fs.readFileSync(exitFile, 'utf8').trim();
+                if (/^\d+$/.test(raw)) evalExitCodes.set(scope, Number(raw));
+              } catch { /* a missing result marker makes the evaluation incomplete */ }
+            }
+
+            // Regression fixture: one completed sibling suite must not satisfy a
+            // two-spec matrix leg after Vally exits nonzero with partial JUnit.
+            const fixtureEntries = [
+              { name: 'try-fix', spec_files: ['eval.restore.vally.yaml', 'eval.vally.yaml'] },
+            ];
+            const completeSuiteFixture = reconcileEvaluation(
+              fixtureEntries,
+              [
+                { scope: 'try-fix', specFile: 'eval.restore.vally.yaml', passed: true },
+                { scope: 'try-fix', specFile: 'eval.vally.yaml', passed: true },
+              ],
+              new Map([['try-fix', 0]])
+            );
+            const partialSuiteFixture = reconcileEvaluation(
+              fixtureEntries,
+              [{ scope: 'try-fix', specFile: 'eval.vally.yaml', passed: true }],
+              new Map([['try-fix', 1]])
+            );
+            if (!completeSuiteFixture.complete ||
+                partialSuiteFixture.complete ||
+                partialSuiteFixture.missingKeys.length !== 1 ||
+                !partialSuiteFixture.missingKeys[0].endsWith('\u0000eval.restore.vally.yaml')) {
+              throw new Error('Internal completeness check accepted a partial multi-spec JUnit result.');
+            }
+
+            const reconciliation = reconcileEvaluation(
+              expectedEvalEntries,
+              suites,
+              evalExitCodes
+            );
+            const missingEvalScopes = expectedEvalScopes.filter(scope =>
+              !suites.some(s => s.scope === scope)
+            );
             const evalComplete = !hasEntries ||
-              (evalResult === 'success' && expectedEvalScopes.length > 0 &&
-                hasResults && missingEvalScopes.length === 0);
+              (evalResult === 'success' && hasResults && reconciliation.complete);
 
             // ── LLM evaluation section ────────────────────────────
             if (!evalRan && !isContributor) {
@@ -1435,8 +1534,15 @@ jobs:
               lines.push('### ⚠️ LLM Evaluation Incomplete');
               if (missingEvalScopes.length > 0) {
                 lines.push(`_No valid JUnit suite results were found for: ${missingEvalScopes.map(s => `\`${s}\``).join(', ')}._`);
+              } else if (reconciliation.missingKeys.length > 0) {
+                const missing = reconciliation.missingKeys.map(key => `\`${key.split('\u0000')[1]}\``);
+                lines.push(`_Expected eval suite results are missing for: ${missing.join(', ')}._`);
+              } else if (reconciliation.missingExitScopes.length > 0) {
+                lines.push(`_Evaluation outcome markers are missing for: ${reconciliation.missingExitScopes.map(s => `\`${s}\``).join(', ')}._`);
+              } else if (reconciliation.unexplainedExitScopes.length > 0) {
+                lines.push(`_Vally exited nonzero without a corresponding failed suite for: ${reconciliation.unexplainedExitScopes.map(s => `\`${s}\``).join(', ')}._`);
               } else {
-                lines.push('_Evaluation jobs completed, but no valid JUnit suite results were found._');
+                lines.push('_Evaluation artifacts do not match the discovered matrix specs._');
               }
               lines.push('');
             } else if (hasResults) {
