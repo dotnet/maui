@@ -112,7 +112,7 @@ public class ImageTests
 	{
 		using var source = CreatePatternImage(UIImageOrientation.Up);
 
-		Task<UIImage>? scaleTask = null;
+		Task<UIImage> scaleTask = null;
 		var completedWhileMainThreadWasBlocked = false;
 
 		void ScaleAndWait()
@@ -126,7 +126,7 @@ public class ImageTests
 		else
 			DispatchQueue.MainQueue.DispatchSync(ScaleAndWait);
 
-		using var scaled = await scaleTask!;
+		using var scaled = await scaleTask;
 
 		Assert.True(completedWhileMainThreadWasBlocked, "ScaleImage must not synchronously depend on main-thread progress.");
 		Assert.Equal(10, (int)scaled.CGImage.Width);
