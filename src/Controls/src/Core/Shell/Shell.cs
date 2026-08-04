@@ -1179,7 +1179,8 @@ namespace Microsoft.Maui.Controls
 		/// The flyout background image appears beneath the flyout header and behind any flyout items, menu items, and the flyout footer. 
 		/// </remarks>
 		public static readonly BindableProperty FlyoutBackgroundImageProperty =
-			BindableProperty.Create(nameof(FlyoutBackgroundImage), typeof(ImageSource), typeof(Shell), default(ImageSource), BindingMode.OneTime);
+			BindableProperty.Create(nameof(FlyoutBackgroundImage), typeof(ImageSource), typeof(Shell), default(ImageSource), BindingMode.OneTime,
+				propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
 
 		/// <summary>
 		/// The aspect ratio of the background image.
@@ -1245,7 +1246,8 @@ namespace Microsoft.Maui.Controls
 		/// This icon can be changed by setting the FlyoutIcon property.
 		/// </summary>
 		public static readonly BindableProperty FlyoutIconProperty =
-			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null);
+			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null,
+				propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
 
 		/// <summary>
 		/// Modifies the behavior of the flyout scroll.

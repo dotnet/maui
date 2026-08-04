@@ -53,7 +53,8 @@ namespace Microsoft.Maui.Controls
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
-		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
+		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource),
+			propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
 		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
@@ -937,6 +938,10 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is ImageSource newImageSource)
 				newImageSource.SourceChanged += ((Page)bindable).OnImageSourceSourceChanged;
+
+			// Parent the image source so DynamicResources inside it resolve through
+			// the element tree (#36822 follow-up)
+			bindable.AddRemoveLogicalChildren(oldvalue, newValue);
 		}
 
 		void OnImageSourceSourceChanged(object sender, EventArgs e)

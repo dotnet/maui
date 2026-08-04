@@ -128,7 +128,10 @@ namespace Microsoft.Maui.Controls
 
 				if (value is not null)
 				{
-					value.OnResourcesChanged(this.GetMergedResources());
+					// Push through OnParentResourcesChanged (not OnResourcesChanged) so the page's
+					// own resources shadow application-level values for its resource listeners,
+					// matching the SetParent propagation path (#36822 follow-up)
+					value.OnParentResourcesChanged(this.GetMergedResources());
 					((IElementDefinition)this).AddResourcesChangedListener(value.OnParentResourcesChanged);
 				}
 

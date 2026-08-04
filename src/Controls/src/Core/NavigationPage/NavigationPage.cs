@@ -34,7 +34,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
 		/// <summary>Bindable property for attached property <c>TitleIconImageSource</c>.</summary>
-		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
+		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource),
+			propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
 
 		/// <summary>Bindable property for attached property <c>IconColor</c>.</summary>
 		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), null);

@@ -51,6 +51,10 @@ namespace Microsoft.Maui.Controls
 				newvalue.SourceChanged += OnSourceChanged;
 				SetInheritedBindingContext(newvalue, BindingContext);
 			}
+
+			// Parent the image source so DynamicResources inside it resolve through
+			// the element tree (#36822 follow-up)
+			this.AddRemoveLogicalChildren(oldvalue, newvalue);
 		}
 
 		void OnSourcePropertyChanging(ImageSource oldvalue, ImageSource newvalue)

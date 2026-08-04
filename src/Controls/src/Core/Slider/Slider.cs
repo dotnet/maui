@@ -85,7 +85,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Slider), null);
 
 		/// <summary>Bindable property for <see cref="ThumbImageSource"/>. This is a bindable property.</summary>
-		public static readonly BindableProperty ThumbImageSourceProperty = BindableProperty.Create(nameof(ThumbImageSource), typeof(ImageSource), typeof(Slider), default(ImageSource));
+		public static readonly BindableProperty ThumbImageSourceProperty = BindableProperty.Create(nameof(ThumbImageSource), typeof(ImageSource), typeof(Slider), default(ImageSource),
+			propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
 
 		/// <summary>Bindable property for <see cref="DragStartedCommand"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty DragStartedCommandProperty = BindableProperty.Create(nameof(DragStartedCommand), typeof(ICommand), typeof(Slider), default(ICommand));
