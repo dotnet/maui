@@ -56,6 +56,11 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
+			if (size.Width <= 0 || size.Height <= 0)
+			{
+				return target;
+			}
+
 			var width = checked((int)Math.Ceiling(size.Width));
 			var height = checked((int)Math.Ceiling(size.Height));
 

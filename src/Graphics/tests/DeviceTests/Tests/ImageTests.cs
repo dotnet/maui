@@ -84,6 +84,20 @@ public class ImageTests
 		Assert.Equal(5, (int)scaled.CGImage.Height);
 	}
 
+	[Theory]
+	[InlineData(0, 10)]
+	[InlineData(10, 0)]
+	[InlineData(-1, 10)]
+	[InlineData(10, -1)]
+	public void ScaleImageReturnsOriginalForNonPositiveSize(double width, double height)
+	{
+		using var source = CreatePatternImage(UIImageOrientation.Up);
+
+		var scaled = source.ScaleImage(new CGSize(width, height), disposeOriginal: true);
+
+		Assert.Same(source, scaled);
+	}
+
 	[Fact]
 	public async Task ScaleImageCanRunOnBackgroundThread()
 	{
