@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			// BeginImageContext always rendered at scale 1, so keep that behavior while replacing the
 			// API that is unsupported on MacCatalyst 17+.
-			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat
+			using var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat
 			{
 				Opaque = false,
 				PreferredRange = UIGraphicsImageRendererFormatRange.Standard,

@@ -60,7 +60,7 @@ public class ImageTests
 	public void ScaleImageUsesOneXBackingScale(float sourceScale)
 	{
 		var sourceSize = new CGSize(30, 20);
-		var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
+		using var sourceRenderer = new UIGraphicsImageRenderer(sourceSize, new UIGraphicsImageRendererFormat
 		{
 			Opaque = false,
 			Scale = sourceScale,
