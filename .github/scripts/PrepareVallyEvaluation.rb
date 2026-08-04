@@ -11,7 +11,7 @@ FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
-  /(?:\A|[;&|]\s*)git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
+  /(?:\A|[;&|\r\n])\s*git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
 
 FIXTURES = {
   "eval.restore.vally.yaml" => [

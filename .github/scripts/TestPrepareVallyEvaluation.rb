@@ -143,6 +143,12 @@ class TestPrepareVallyEvaluation < Minitest::Test
     )
   end
 
+  def test_rejects_newline_separated_git_identity_write
+    assert_rejects_persistent_identity(
+      "printf 'prepare fixture'\r\n  git config user.email vally-fixture@example.invalid"
+    )
+  end
+
   def test_try_fix_raw_git_cleanup_matcher_boundaries
     skip "restore spec not provided" unless RESTORE_SPEC
 
