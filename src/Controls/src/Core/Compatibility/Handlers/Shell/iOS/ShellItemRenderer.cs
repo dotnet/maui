@@ -670,7 +670,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
 #if MACCATALYST
-				if (TabBar != null && TabBar.Hidden != !ShellItemController.ShowTabs)
+				if (TabBar != null && (TabBar.Hidden != !ShellItemController.ShowTabs || TabBar.Alpha != 1.0f))
 				{
 					// Root Cause: On MacCatalyst 18+, DisableiOS18ToolbarTabs() sets Mode = TabSidebar 
 					// which causes iOS to set TabBar.Hidden = true and Alpha = 0 by the system.
