@@ -56,17 +56,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = shellContext;
 			_shellContext.CurrentDrawerLayout.DrawerStateChanged += OnFlyoutStateChanging;
 			LoadView(shellContext);
-
-			// Android no longer binds a hardcoded FlyoutBackgroundColor default (that hardcoded
-			// value used to change on every theme flip and drive this update indirectly via
-			// OnShellPropertyChanged). Since the color now stays null and colorSurface is read
-			// directly from the theme, we need our own hook to refresh the flyout background
-			// when the OS theme changes.
-			if (Application.Current is not null)
-				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
 		}
-
-		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e) => UpdateFlyoutBackground();
 
 		void OnFlyoutStateChanging(object sender, AndroidX.DrawerLayout.Widget.DrawerLayout.DrawerStateChangedEventArgs e)
 		{
@@ -629,20 +619,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (Brush.IsNullOrEmpty(brush))
 			{
 				var color = _shellContext.Shell.FlyoutBackgroundColor;
-				if (color == null)
+				if (_defaultBackgroundColor is null)
 				{
-					// Re-resolve colorSurface from the live theme every time rather than caching it,
-					// so the flyout background stays in sync when the app theme changes at runtime.
-					var previousBackground = _defaultBackgroundColor;
-					var colorSurface = ContextExtensions.GetThemeAttrColor(_shellContext.AndroidContext, Resource.Attribute.colorSurface);
-					_defaultBackgroundColor = new ColorDrawable(new AColor(colorSurface));
-					_rootView.Background = _defaultBackgroundColor;
-					previousBackground?.Dispose();
+					if (RuntimeFeature.IsMaterial3Enabled)
+					{
+						var colorSurface = ContextExtensions.GetThemeAttrColor(_shellContext.AndroidContext, Resource.Attribute.colorSurface);
+						_defaultBackgroundColor = new ColorDrawable(new AColor(colorSurface));
+					}
+					else
+					{
+						_defaultBackgroundColor = _rootView.Background;
+					}
 				}
-				else
-				{
-					_rootView.Background = new ColorDrawable(color.ToPlatform());
-				}
+
+				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToPlatform());
 			}
 			else
 				_rootView.UpdateBackground(brush);
@@ -768,9 +758,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_shellContext?.Shell != null)
 				_shellContext.Shell.PropertyChanged -= OnShellPropertyChanged;
-
-			if (Application.Current is not null)
-				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 
 			_flyoutHeader?.MeasureInvalidated -= OnFlyoutHeaderMeasureInvalidated;
 
