@@ -117,8 +117,13 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 	public static void MapBackground(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView?.UpdateBackground(entry);
 
-	public static void MapText(EntryHandler2 handler, IEntry entry) =>
+	public static void MapText(EntryHandler2 handler, IEntry entry)
+	{
+		if (handler.IsMappingProperties())
+			handler.UpdateValue(nameof(IEntry.MaxLength));
+
 		handler.PlatformView.EditText?.UpdateText(entry);
+	}
 
 	public static void MapTextColor(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateTextColor(entry);
@@ -163,8 +168,16 @@ public class EntryHandler2 : ViewHandler<IEntry, MauiMaterialTextInputLayout>
 	public static void MapIsSpellCheckEnabled(EntryHandler2 handler, IEntry entry) =>
 		handler.PlatformView.EditText?.UpdateIsSpellCheckEnabled(entry);
 
-	public static void MapMaxLength(EntryHandler2 handler, IEntry entry) =>
-		handler.PlatformView.EditText?.UpdateMaxLength(entry);
+	public static void MapMaxLength(EntryHandler2 handler, IEntry entry)
+	{
+		if (handler.PlatformView.EditText is not { } editText)
+			return;
+
+		if (handler.IsMappingProperties())
+			editText.SetLengthFilter(entry.MaxLength);
+		else
+			editText.UpdateMaxLength(entry);
+	}
 
 	public static void MapPlaceholder(EntryHandler2 handler, IEntry entry)
 	{

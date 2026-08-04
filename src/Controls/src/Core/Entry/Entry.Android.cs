@@ -58,7 +58,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, entry);
+			var isMappingProperties = handler.IsMappingProperties();
+			if (isMappingProperties)
+				handler.UpdateValue(nameof(IEntry.MaxLength));
+
+			Platform.EditTextExtensions.UpdateText(handler.PlatformView.EditText, entry, isMappingProperties);
 		}
 
 		// Material3 specific overload for EntryHandler2

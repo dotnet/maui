@@ -278,9 +278,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if ANDROID
-		[Fact(DisplayName = "Entry text respects MaxLength when the handler is reused")]
+		[Theory(DisplayName = "Entry text respects MaxLength when the handler is reused")]
+		[InlineData(false)]
+		[InlineData(true)]
 		[Category(TestCategory.Entry)]
-		public async Task EntryTextRespectsMaxLengthWhenHandlerIsReused()
+		public async Task EntryTextRespectsMaxLengthWhenHandlerIsReused(bool useMaterial3)
 		{
 			var firstEntry = new Entry
 			{
@@ -292,23 +294,51 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Text = longText
 			};
-
-			var handler = await CreateHandlerAsync<EntryHandler>(firstEntry);
-			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(secondEntry));
-
-			Assert.Equal(longText, secondEntry.Text);
-			Assert.Equal(longText, await GetPlatformText(handler));
-
 			var thirdEntry = new Entry
 			{
 				MaxLength = 2,
 				Text = longText
 			};
 
+			if (useMaterial3)
+			{
+				var handler = await CreateHandlerAsync<EntryHandler2>(firstEntry);
+				await VerifyEntryTextRespectsMaxLengthWhenHandlerIsReused(
+					handler,
+					secondEntry,
+					thirdEntry,
+					longText,
+					() => handler.PlatformView.EditText?.Text);
+			}
+			else
+			{
+				var handler = await CreateHandlerAsync<EntryHandler>(firstEntry);
+				await VerifyEntryTextRespectsMaxLengthWhenHandlerIsReused(
+					handler,
+					secondEntry,
+					thirdEntry,
+					longText,
+					() => handler.PlatformView.Text);
+			}
+		}
+
+		async Task VerifyEntryTextRespectsMaxLengthWhenHandlerIsReused<THandler>(
+			THandler handler,
+			Entry secondEntry,
+			Entry thirdEntry,
+			string expectedText,
+			Func<string?> getPlatformText)
+			where THandler : IElementHandler
+		{
+			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(secondEntry));
+
+			Assert.Equal(expectedText, secondEntry.Text);
+			Assert.Equal(expectedText, await InvokeOnMainThreadAsync(getPlatformText));
+
 			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(thirdEntry));
 
 			Assert.Equal("AA", thirdEntry.Text);
-			Assert.Equal("AA", await GetPlatformText(handler));
+			Assert.Equal(thirdEntry.Text, await InvokeOnMainThreadAsync(getPlatformText));
 		}
 #endif
 
