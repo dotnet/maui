@@ -1,6 +1,8 @@
 #nullable disable
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -48,9 +50,46 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var barBackground = background ?? ShellRenderer.DefaultBackgroundColor;
-			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
+			var barTextColor = title ?? ShellRenderer.DefaultTitleColor;
+			var iconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+
+			shellToolbar.BarTextColor = barTextColor;
 			shellToolbar.BarBackground = barBackground is null ? null : new SolidColorBrush(barBackground);
-			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+			shellToolbar.IconColor = iconColor;
+
+			if (RuntimeFeature.IsMaterial3Enabled && (barBackground is null || barTextColor is null || iconColor is null))
+				RefreshMaterial3Defaults(toolbar, barBackground is null, barTextColor is null, iconColor is null);
+		}
+
+		static void RefreshMaterial3Defaults(AToolbar toolbar, bool updateBackground, bool updateTitle, bool updateIcons)
+		{
+			if (toolbar.Context is null)
+				return;
+
+			var requestedTheme = Application.Current?.RequestedTheme ?? AppTheme.Unspecified;
+			if (requestedTheme is not AppTheme.Light and not AppTheme.Dark)
+				return;
+
+			using var configuration = new Configuration(toolbar.Context.Resources.Configuration);
+			configuration.UiMode = (configuration.UiMode & ~UiMode.NightMask) |
+				(requestedTheme == AppTheme.Dark ? UiMode.NightYes : UiMode.NightNo);
+
+			using var configurationContext = toolbar.Context.CreateConfigurationContext(configuration);
+			using var themedContext = new MauiMaterialContextThemeWrapper(configurationContext);
+			var surfaceColor = themedContext.GetThemeAttrColor(Resource.Attribute.colorSurface);
+			var onSurfaceColor = themedContext.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
+
+			if (updateBackground)
+				toolbar.SetBackgroundColor(new global::Android.Graphics.Color(surfaceColor));
+
+			if (updateTitle)
+				toolbar.SetTitleTextColor(onSurfaceColor);
+
+			if (updateIcons)
+			{
+				toolbar.NavigationIcon?.SetTint(onSurfaceColor);
+				toolbar.OverflowIcon?.SetTint(onSurfaceColor);
+			}
 		}
 
 		#region IDisposable
