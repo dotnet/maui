@@ -277,6 +277,41 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal("short", await GetPlatformText(handler));
 		}
 
+#if ANDROID
+		[Fact(DisplayName = "Entry text respects MaxLength when the handler is reused")]
+		[Category(TestCategory.Entry)]
+		public async Task EntryTextRespectsMaxLengthWhenHandlerIsReused()
+		{
+			var firstEntry = new Entry
+			{
+				MaxLength = 2,
+				Text = "first"
+			};
+			string longText = new string('A', 5001);
+			var secondEntry = new Entry
+			{
+				Text = longText
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(firstEntry);
+			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(secondEntry));
+
+			Assert.Equal(longText, secondEntry.Text);
+			Assert.Equal(longText, await GetPlatformText(handler));
+
+			var thirdEntry = new Entry
+			{
+				MaxLength = 2,
+				Text = longText
+			};
+
+			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(thirdEntry));
+
+			Assert.Equal("AA", thirdEntry.Text);
+			Assert.Equal("AA", await GetPlatformText(handler));
+		}
+#endif
+
 		[Fact(
 #if WINDOWS
 		Skip = "Fails on Windows"

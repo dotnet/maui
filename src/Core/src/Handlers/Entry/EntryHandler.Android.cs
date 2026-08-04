@@ -70,8 +70,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateBackground(entry);
 
-		public static void MapText(IEntryHandler handler, IEntry entry) =>
+		public static void MapText(IEntryHandler handler, IEntry entry)
+		{
+			if (handler.IsMappingProperties())
+				handler.UpdateValue(nameof(IEntry.MaxLength));
+
 			handler.PlatformView?.UpdateText(entry);
+		}
 
 		public static void MapTextColor(IEntryHandler handler, IEntry entry)
 		{
@@ -102,8 +107,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsSpellCheckEnabled(entry);
 
-		public static void MapMaxLength(IEntryHandler handler, IEntry entry) =>
-			handler.PlatformView?.UpdateMaxLength(entry);
+		public static void MapMaxLength(IEntryHandler handler, IEntry entry)
+		{
+			if (handler.PlatformView is not { } platformView)
+				return;
+
+			if (handler.IsMappingProperties())
+				platformView.SetLengthFilter(entry.MaxLength);
+			else
+				platformView.UpdateMaxLength(entry);
+		}
 
 		public static void MapPlaceholder(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholder(entry);

@@ -35,11 +35,14 @@ namespace Microsoft.Maui.Controls.Platform
 			return (oldText, newText);
 		}
 
-		public static void UpdateText(this EditText editText, InputView inputView)
+		public static void UpdateText(this EditText editText, InputView inputView) =>
+			UpdateText(editText, inputView, false);
+
+		internal static void UpdateText(this EditText editText, InputView inputView, bool forceUpdate)
 		{
 			(var oldText, var newText) = GetTexts(editText, inputView);
 
-			if (oldText != newText)
+			if (forceUpdate || oldText != newText)
 			{
 				editText.Text = newText;
 
