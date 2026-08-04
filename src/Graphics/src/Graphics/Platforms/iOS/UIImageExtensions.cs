@@ -75,25 +75,21 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private static UIGraphicsImageRendererFormat CreateImageRendererFormat()
 		{
-			UIGraphicsImageRendererFormat format = null;
-
-			void CreateFormat()
-			{
-				format = new UIGraphicsImageRendererFormat
-				{
-					Opaque = false,
-					PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
-					Scale = 1,
-				};
-			}
-
 			if (NSThread.IsMain)
-				CreateFormat();
-			else
-				DispatchQueue.MainQueue.DispatchSync(CreateFormat);
+				return CreateImageRendererFormatOnMainThread();
 
+			UIGraphicsImageRendererFormat format = null!;
+			DispatchQueue.MainQueue.DispatchSync(() => format = CreateImageRendererFormatOnMainThread());
 			return format;
 		}
+
+		private static UIGraphicsImageRendererFormat CreateImageRendererFormatOnMainThread() =>
+			new()
+			{
+				Opaque = false,
+				PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
+				Scale = 1,
+			};
 
 		public static UIImage NormalizeOrientation(this UIImage target, bool disposeOriginal = false)
 		{
