@@ -1,7 +1,5 @@
 using System;
-using CoreFoundation;
 using CoreGraphics;
-using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform
@@ -58,12 +56,34 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			// BeginImageContext always rendered at scale 1, so keep that behavior while replacing the
-			// API that is unsupported on MacCatalyst 17+.
-			using var format = CreateImageRendererFormat();
-			using var renderer = new UIGraphicsImageRenderer(size, format);
+			var width = checked((int)Math.Ceiling(size.Width));
+			var height = checked((int)Math.Ceiling(size.Height));
 
-			var image = renderer.CreateImage(context => target.Draw(new CGRect(CGPoint.Empty, size)));
+			using var colorSpace = CGColorSpace.CreateDeviceRGB();
+			using var context = new CGBitmapContext(
+				IntPtr.Zero,
+				width,
+				height,
+				8,
+				checked(4 * width),
+				colorSpace,
+				CGBitmapFlags.PremultipliedFirst);
+
+			context.TranslateCTM(0, height);
+			context.ScaleCTM(1, -1);
+
+			UIGraphics.PushContext(context);
+			try
+			{
+				target.Draw(new CGRect(CGPoint.Empty, size));
+			}
+			finally
+			{
+				UIGraphics.PopContext();
+			}
+
+			using var cgImage = context.ToImage();
+			var image = UIImage.FromImage(cgImage, 1, UIImageOrientation.Up);
 
 			if (disposeOriginal)
 			{
@@ -72,24 +92,6 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			return image;
 		}
-
-		private static UIGraphicsImageRendererFormat CreateImageRendererFormat()
-		{
-			if (NSThread.IsMain)
-				return CreateImageRendererFormatOnMainThread();
-
-			UIGraphicsImageRendererFormat format = null!;
-			DispatchQueue.MainQueue.DispatchSync(() => format = CreateImageRendererFormatOnMainThread());
-			return format;
-		}
-
-		private static UIGraphicsImageRendererFormat CreateImageRendererFormatOnMainThread() =>
-			new()
-			{
-				Opaque = false,
-				PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
-				Scale = 1,
-			};
 
 		public static UIImage NormalizeOrientation(this UIImage target, bool disposeOriginal = false)
 		{

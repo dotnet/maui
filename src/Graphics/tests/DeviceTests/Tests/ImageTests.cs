@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 #if IOS || MACCATALYST
+using CoreFoundation;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 #endif
 using Microsoft.Maui.Graphics.Platform;
@@ -98,22 +100,122 @@ public class ImageTests
 			context.FillRect(new CGRect(CGPoint.Empty, sourceSize));
 		});
 
-		var previousCheckStatus = UIApplication.CheckForIllegalCrossThreadCalls;
+		using var scaled = await Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
 
-		try
+		Assert.Equal(1, (double)scaled.CurrentScale);
+		Assert.Equal(10, (int)scaled.CGImage.Width);
+		Assert.Equal(5, (int)scaled.CGImage.Height);
+	}
+
+	[Fact]
+	public async Task ScaleImageDoesNotRequireMainThreadProgress()
+	{
+		using var source = CreatePatternImage(UIImageOrientation.Up);
+
+		Task<UIImage>? scaleTask = null;
+		var completedWhileMainThreadWasBlocked = false;
+
+		void ScaleAndWait()
 		{
-			UIApplication.CheckForIllegalCrossThreadCalls = true;
-
-			using var scaled = await Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
-
-			Assert.Equal(1, (double)scaled.CurrentScale);
-			Assert.Equal(10, (int)scaled.CGImage.Width);
-			Assert.Equal(5, (int)scaled.CGImage.Height);
+			scaleTask = Task.Run(() => source.ScaleImage(new CGSize(10, 5)));
+			completedWhileMainThreadWasBlocked = scaleTask.Wait(TimeSpan.FromSeconds(5));
 		}
-		finally
+
+		if (NSThread.IsMain)
+			ScaleAndWait();
+		else
+			DispatchQueue.MainQueue.DispatchSync(ScaleAndWait);
+
+		using var scaled = await scaleTask!;
+
+		Assert.True(completedWhileMainThreadWasBlocked, "ScaleImage must not synchronously depend on main-thread progress.");
+		Assert.Equal(10, (int)scaled.CGImage.Width);
+		Assert.Equal(5, (int)scaled.CGImage.Height);
+	}
+
+	[Theory]
+	[InlineData(UIImageOrientation.Up)]
+	[InlineData(UIImageOrientation.Down)]
+	[InlineData(UIImageOrientation.Left)]
+	[InlineData(UIImageOrientation.Right)]
+	[InlineData(UIImageOrientation.UpMirrored)]
+	[InlineData(UIImageOrientation.DownMirrored)]
+	[InlineData(UIImageOrientation.LeftMirrored)]
+	[InlineData(UIImageOrientation.RightMirrored)]
+	public void ScaleImageMatchesUIKitRendering(UIImageOrientation orientation)
+	{
+		var targetSize = new CGSize(12.25, 8.75);
+		using var source = CreatePatternImage(orientation);
+		using var expected = RunOnMainThread(() =>
 		{
-			UIApplication.CheckForIllegalCrossThreadCalls = previousCheckStatus;
-		}
+			using var format = new UIGraphicsImageRendererFormat
+			{
+				Opaque = false,
+				PreferredRange = UIGraphicsImageRendererFormatRange.Standard,
+				Scale = 1,
+			};
+			using var renderer = new UIGraphicsImageRenderer(targetSize, format);
+			return renderer.CreateImage(_ => source.Draw(new CGRect(CGPoint.Empty, targetSize)));
+		});
+		using var actual = source.ScaleImage(targetSize);
+
+		Assert.Equal(UIImageOrientation.Up, actual.Orientation);
+		Assert.Equal(GetPixelData(expected), GetPixelData(actual));
+	}
+
+	private static UIImage CreatePatternImage(UIImageOrientation orientation)
+	{
+		using var image = RunOnMainThread(() =>
+		{
+			var sourceSize = new CGSize(30, 20);
+			using var renderer = new UIGraphicsImageRenderer(sourceSize);
+			return renderer.CreateImage(context =>
+			{
+				UIColor.FromRGBA(1f, 0f, 0f, 0.5f).SetFill();
+				context.FillRect(new CGRect(0, 0, 20, 10));
+				UIColor.Blue.SetFill();
+				context.FillRect(new CGRect(20, 0, 10, 20));
+				UIColor.Green.SetFill();
+				context.FillRect(new CGRect(0, 10, 10, 10));
+			});
+		});
+
+		return UIImage.FromImage(image.CGImage, 1, orientation);
+	}
+
+	private static byte[] GetPixelData(UIImage image)
+	{
+		var cgImage = image.CGImage;
+		var width = checked((int)cgImage.Width);
+		var height = checked((int)cgImage.Height);
+		var bytesPerRow = checked(4 * width);
+		var pixels = new byte[checked(bytesPerRow * height)];
+
+		using var colorSpace = CGColorSpace.CreateDeviceRGB();
+		using var context = new CGBitmapContext(
+			pixels,
+			width,
+			height,
+			8,
+			bytesPerRow,
+			colorSpace,
+			CGBitmapFlags.ByteOrder32Little | CGBitmapFlags.PremultipliedFirst);
+
+		context.TranslateCTM(0, height);
+		context.ScaleCTM(1, -1);
+		context.DrawImage(new CGRect(0, 0, width, height), cgImage);
+
+		return pixels;
+	}
+
+	private static T RunOnMainThread<T>(Func<T> action)
+	{
+		if (NSThread.IsMain)
+			return action();
+
+		T result = default!;
+		DispatchQueue.MainQueue.DispatchSync(() => result = action());
+		return result;
 	}
 #endif
 
