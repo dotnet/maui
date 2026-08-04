@@ -20,8 +20,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IShellContext _shellContext;
 		ShellItem _shellItem;
-		static ColorStateList _defaultListLight;
-		static ColorStateList _defaultListDark;
+		// Instance fields (not static): each tracker is already scoped to one _shellContext/
+		// window (see ShellRenderer.CreateBottomNavViewAppearanceTracker), so caching per-instance
+		// avoids reusing colors resolved from another window/Activity's theme overlay, without
+		// needing any extra key-by-context bookkeeping.
+		ColorStateList _defaultListLight;
+		ColorStateList _defaultListDark;
 
 		bool _disposed;
 		ColorStateList _itemTextColor;
@@ -33,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = shellContext;
 		}
 
-		static ColorStateList GetDefaultTabColorList(Context context) =>
+		ColorStateList GetDefaultTabColorList(Context context) =>
 			ShellRenderer.IsDarkTheme ?
 			_defaultListDark ??= MakeDefaultColorStateList(context)
 			: _defaultListLight ??= MakeDefaultColorStateList(context);
@@ -194,11 +198,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_itemTextColor?.Dispose();
 				_itemIconTint?.Dispose();
+				_defaultListLight?.Dispose();
+				_defaultListDark?.Dispose();
 
 				_itemIconTint = null;
 				_shellItem = null;
 				_shellContext = null;
 				_itemTextColor = null;
+				_defaultListLight = null;
+				_defaultListDark = null;
 			}
 		}
 

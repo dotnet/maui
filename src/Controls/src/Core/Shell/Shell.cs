@@ -775,18 +775,19 @@ namespace Microsoft.Maui.Controls
 		// Delegate to ShellRenderer's context-aware helpers so both this shared Toolbar handler
 		// path (used by PushAsync-ed pages) and the native ShellRenderer/trackers path read from
 		// the same Android theme attributes. No hardcoded hex values live here anymore.
-		static Color DefaultBackgroundColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetBackgroundColor);
-		static Color DefaultForegroundColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetForegroundColor);
-		static Color DefaultTitleColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetTitleColor);
+		Color DefaultBackgroundColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetBackgroundColor, Handlers.Compatibility.ShellRenderer.DefaultBackgroundColor);
+		Color DefaultForegroundColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetForegroundColor, Handlers.Compatibility.ShellRenderer.DefaultForegroundColor);
+		Color DefaultTitleColor => ResolveAndroidDefault(Handlers.Compatibility.ShellRenderer.GetTitleColor, Handlers.Compatibility.ShellRenderer.DefaultTitleColor);
 
-		static Color ResolveAndroidDefault(Func<global::Android.Content.Context, Color> resolve)
+		Color ResolveAndroidDefault(Func<global::Android.Content.Context, Color> resolve, Color fallback)
 		{
-			// UpdateToolbarAppearanceFeatures can fire before any window's handler is attached,
-			// so fall back to the hardcoded default while there is no context to resolve against.
-			var context = Application.Current?.Windows?.FirstOrDefault()?.Handler?.MauiContext?.Context;
-			return context is null
-				? Handlers.Compatibility.ShellRenderer.DefaultBackgroundColor
-				: resolve(context);
+			// UpdateToolbarAppearanceFeatures can fire before this Shell's own window handler is
+			// attached, so fall back to the role-specific hardcoded default (not always the
+			// background color) while there is no context to resolve against. Resolve from this
+			// Shell's own Window rather than Application.Current.Windows.FirstOrDefault() so a
+			// secondary window doesn't inherit another Activity's theme overlay.
+			var context = Window?.Handler?.MauiContext?.Context;
+			return context is null ? fallback : resolve(context);
 		}
 #else
 		static Color DefaultBackgroundColor => null;
@@ -1282,27 +1283,19 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current is not null)
+			// Android resolves its own default flyout background from the theme's colorSurface
+			// attribute for both Material2 and Material3 (see
+			// ShellFlyoutTemplatedContentRenderer.UpdateFlyoutBackground and flyoutcontent.axml),
+			// so leave FlyoutBackgroundColor unset there — binding a hardcoded AppThemeBinding
+			// default would otherwise always win over that theme attribute since
+			// UpdateFlyoutBackground only falls back to it when the color is null.
+			if (Application.Current is not null && DeviceInfo.Platform != DevicePlatform.Android)
 			{
-				Color light;
-				Color dark;
-
-				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
-				{
-					light = Color.FromArgb("#FEF7FF");
-					dark = Color.FromArgb("#141218");
-				}
-				else
-				{
-					light = Colors.White;
-					dark = Colors.Black;
-				}
-
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding
 					{
-						Light = light,
-						Dark = dark,
+						Light = Colors.White,
+						Dark = Colors.Black,
 						Mode = BindingMode.OneWay
 					});
 			}
