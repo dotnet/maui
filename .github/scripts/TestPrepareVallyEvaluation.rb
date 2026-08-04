@@ -143,6 +143,13 @@ class TestPrepareVallyEvaluation < Minitest::Test
     )
   end
 
+  def test_rejects_multiline_git_name_write
+    assert_rejects_persistent_identity(<<~SH)
+      echo ok
+      git config user.name "Vally Fixture"
+    SH
+  end
+
   def test_rejects_newline_separated_git_identity_write
     assert_rejects_persistent_identity(
       "printf 'prepare fixture'\r\n  git config user.email vally-fixture@example.invalid"
