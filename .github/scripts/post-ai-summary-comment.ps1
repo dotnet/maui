@@ -895,6 +895,25 @@ $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 
 Write-Host "  ✅ Built review body ($($commentBody.Length) chars)" -ForegroundColor Green
 
+# GitHub caps both PR-review bodies AND issue-comment bodies at 65,536 characters. A body over
+# that limit makes every POST path fail with HTTP 422 "Body is too long", which previously failed
+# the whole Post AI Summary stage (observed on build 14857215). Truncate defensively so the post
+# always succeeds; the full deep-test detail remains available in the build artifacts.
+$githubBodyMaxChars = 65500
+if ($commentBody.Length -gt $githubBodyMaxChars) {
+    $truncationNotice = "`n`n---`n`nℹ **Summary truncated** — this report exceeded GitHub's 65,536-character limit. See the full deep-test results and analysis in the pipeline build artifacts."
+    $keep = $githubBodyMaxChars - $truncationNotice.Length
+    if ($keep -lt 0) { $keep = 0 }
+    $commentBody = $commentBody.Substring(0, $keep)
+    # If truncation left an unbalanced fenced code block open, close it so markdown stays valid.
+    $codeFence = [string][char]96 * 3
+    if ((([regex]::Matches($commentBody, '(?m)^```')).Count % 2) -ne 0) {
+        $commentBody += "`n" + $codeFence
+    }
+    $commentBody += $truncationNotice
+    Write-Host "  ℹ Review body exceeded $githubBodyMaxChars chars; truncated to $($commentBody.Length) chars." -ForegroundColor Yellow
+}
+
 # ============================================================================
 # DRY RUN
 # ============================================================================
