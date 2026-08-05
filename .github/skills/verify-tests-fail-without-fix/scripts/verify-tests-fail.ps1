@@ -37,6 +37,11 @@
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
     If not provided, auto-detects from test files in the git diff.
 
+.PARAMETER TestProject
+    Required with an explicit TestFilter for UnitTest and DeviceTest. For UnitTest, pass a key from the unit
+    test project map (for example, Controls.Core.UnitTests) or a repo-relative .csproj path. For DeviceTest,
+    pass the Run-DeviceTests project name (Controls, Core, Essentials, Graphics, or BlazorWebView).
+
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
@@ -79,6 +84,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$TestFilter,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestProject,
 
     [Parameter(Mandatory = $false)]
     [string[]]$FixFiles,
@@ -224,6 +232,60 @@ $script:DeviceTestProjectMap = @{
     "Essentials.DeviceTests"           = "Essentials"
     "Graphics.DeviceTests"             = "Graphics"
     "MauiBlazorWebView.DeviceTests"    = "BlazorWebView"
+}
+
+function Resolve-ExplicitTestProject {
+    param(
+        [Parameter(Mandatory)][string]$TestType,
+        [string]$TestProject,
+        [Parameter(Mandatory)][string]$RepoRoot
+    )
+
+    switch ($TestType) {
+        "UnitTest" {
+            if (-not $TestProject) {
+                throw "UnitTest with an explicit TestFilter requires -TestProject (project key or repo-relative .csproj path)."
+            }
+
+            if ($script:UnitTestProjectMap.ContainsKey($TestProject)) {
+                return @{
+                    Project = $TestProject
+                    ProjectPath = $script:UnitTestProjectMap[$TestProject]
+                }
+            }
+
+            $candidatePath = Join-Path $RepoRoot $TestProject
+            if ($TestProject.EndsWith(".csproj", [StringComparison]::OrdinalIgnoreCase) -and (Test-Path $candidatePath)) {
+                return @{
+                    Project = [System.IO.Path]::GetFileNameWithoutExtension($TestProject)
+                    ProjectPath = $TestProject
+                }
+            }
+
+            throw "Unknown UnitTest project '$TestProject'. Use a known project key or repo-relative .csproj path."
+        }
+        "DeviceTest" {
+            if (-not $TestProject) {
+                throw "DeviceTest with an explicit TestFilter requires -TestProject."
+            }
+
+            $knownProjects = @($script:DeviceTestProjectMap.Values)
+            if ($knownProjects -notcontains $TestProject) {
+                throw "Unknown DeviceTest project '$TestProject'. Expected one of: $($knownProjects -join ', ')."
+            }
+
+            return @{
+                Project = $TestProject
+                ProjectPath = $null
+            }
+        }
+        default {
+            return @{
+                Project = $null
+                ProjectPath = $null
+            }
+        }
+    }
 }
 
 function Get-TestTypeFromFiles {
@@ -1198,12 +1260,19 @@ if (-not $TestFilter) {
 } else {
     # Explicit filter provided — use single test entry with given/detected type
     $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+    try {
+        $explicitProject = Resolve-ExplicitTestProject -TestType $effectiveType `
+            -TestProject $TestProject -RepoRoot $RepoRoot
+    } catch {
+        Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
     $AllDetectedTests = @(@{
         Type = $effectiveType
         TestName = $TestFilter
         Filter = $TestFilter
-        Project = $null
-        ProjectPath = $null
+        Project = $explicitProject.Project
+        ProjectPath = $explicitProject.ProjectPath
         Runner = switch ($effectiveType) {
             "UITest" { "BuildAndRunHostApp" }
             "DeviceTest" { "Run-DeviceTests" }

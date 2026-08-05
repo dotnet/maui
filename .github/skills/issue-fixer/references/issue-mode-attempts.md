@@ -46,12 +46,16 @@ state:
 git worktree add -b issue-<N>-attempt-<K> <temp-root>/attempt-<K> <checkpoint-sha>
 ```
 
+Create `<attempt-output>` as an absolute directory outside `<temp-root>/attempt-<K>` so artifacts survive
+worktree removal.
+
 Invoke `try-fix` with:
 
 - `Mode: Issue`
 - `Broken checkpoint: <checkpoint-sha>`
 - `Attempt worktree: <absolute-path>`
 - `Reproduction paths: <explicit list>`
+- `Output directory: <absolute-attempt-output-path>`
 - the ordinary problem/platform/target-files/test-command/hints inputs
 
 Issue mode must verify before editing:
@@ -94,14 +98,16 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
   -BaseBranch issue-<N>-repro-checkpoint `
   -FixFiles @(<explicit-candidate-product-paths>) `
   -TestType <type> `
+  -TestProject <unit-project-key-or-csproj-path | device-project-name> `
   -TestFilter "<filter>" `
   -Platform <platform-if-required> `
   -PRNumber <N> `
   -RequireFullVerification
 ```
 
-Both the reproduction and candidate must be committed in this disposable worktree. Never omit
-`-RequireFullVerification`; failure-only mode cannot establish that the candidate passes.
+Both the reproduction and candidate must be committed in this disposable worktree. `-TestProject` is required
+for `UnitTest` and `DeviceTest`; omit it for `UITest`/`XamlUnitTest`. Never omit `-RequireFullVerification`;
+failure-only mode cannot establish that the candidate passes.
 
 ## 5. Materialize and clean up
 

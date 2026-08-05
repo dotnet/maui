@@ -44,7 +44,15 @@ BeforeAll {
     if (-not $invokeTestRunFunction) { throw "Function 'Invoke-TestRun' not found" }
     $script:invokeTestRunText = $invokeTestRunFunction.Extent.Text
 
-    foreach ($helperName in @('Set-WithoutFixFileState', 'Set-WithFixFileState')) {
+    $script:UnitTestProjectMap = @{
+        "Controls.Core.UnitTests" = "src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj"
+    }
+    $script:DeviceTestProjectMap = @{
+        "Controls.DeviceTests" = "Controls"
+        "Core.DeviceTests" = "Core"
+    }
+
+    foreach ($helperName in @('Resolve-ExplicitTestProject', 'Set-WithoutFixFileState', 'Set-WithFixFileState')) {
         $helper = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $helperName
@@ -91,39 +99,6 @@ Build FAILED.
         $r.Passed | Should -BeFalse
         $r.Error | Should -Match 'MAUIX2017'
         Remove-Item -LiteralPath $log -Force
-    }
-
-    Describe 'Full verification file-state transitions' {
-        It 'removes and restores a fix composed entirely of new committed files' {
-            $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
-            New-Item -ItemType Directory -Path $repo | Out-Null
-
-            try {
-                Push-Location $repo
-                git init --quiet
-                git config user.email "verify-tests@example.invalid"
-                git config user.name "Verify Tests"
-                "baseline" | Set-Content baseline.txt
-                git add -- baseline.txt
-                git commit --quiet -m "baseline"
-                $mergeBase = (git rev-parse HEAD).Trim()
-
-                "new product implementation" | Set-Content new-fix.cs
-                git add -- new-fix.cs
-                git commit --quiet -m "add fix"
-
-                Set-WithoutFixFileState -RepoRoot $repo -MergeBase $mergeBase -NewFiles @('new-fix.cs')
-                Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeFalse
-
-                Set-WithFixFileState -RepoRoot $repo -NewFiles @('new-fix.cs')
-                Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeTrue
-                Get-Content (Join-Path $repo 'new-fix.cs') | Should -Be 'new product implementation'
-                git status --porcelain | Should -BeNullOrEmpty
-            } finally {
-                Pop-Location
-                Remove-Item -LiteralPath $repo -Recurse -Force
-            }
-        }
     }
 
     It 'flags CS / MSB / NETSDK / XA compile errors as build errors' {
@@ -212,6 +187,39 @@ Describe 'Get-AutoDetectedTests — frozen worktree isolation' {
     }
 }
 
+Describe 'Full verification file-state transitions' {
+    It 'removes and restores a fix composed entirely of new committed files' {
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $repo | Out-Null
+
+        try {
+            Push-Location $repo
+            git init --quiet
+            git config user.email "verify-tests@example.invalid"
+            git config user.name "Verify Tests"
+            "baseline" | Set-Content baseline.txt
+            git add -- baseline.txt
+            git commit --quiet -m "baseline"
+            $mergeBase = (git rev-parse HEAD).Trim()
+
+            "new product implementation" | Set-Content new-fix.cs
+            git add -- new-fix.cs
+            git commit --quiet -m "add fix"
+
+            Set-WithoutFixFileState -RepoRoot $repo -MergeBase $mergeBase -NewFiles @('new-fix.cs')
+            Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeFalse
+
+            Set-WithFixFileState -RepoRoot $repo -NewFiles @('new-fix.cs')
+            Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeTrue
+            Get-Content (Join-Path $repo 'new-fix.cs') | Should -Be 'new product implementation'
+            git status --porcelain | Should -BeNullOrEmpty
+        } finally {
+            Pop-Location
+            Remove-Item -LiteralPath $repo -Recurse -Force
+        }
+    }
+}
+
 Describe 'Get-AutoDetectedTests — ordinary PR metadata' {
     It 'uses PR metadata when the explicit base is a branch name' {
         $detector = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-" + [Guid]::NewGuid().ToString('N') + ".ps1")
@@ -235,5 +243,40 @@ Describe 'Get-AutoDetectedTests — ordinary PR metadata' {
         } finally {
             Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'Explicit test project resolution' {
+    It 'resolves a known unit test project key' {
+        $result = Resolve-ExplicitTestProject -TestType UnitTest `
+            -TestProject Controls.Core.UnitTests -RepoRoot $TestDrive
+        $result.Project | Should -Be 'Controls.Core.UnitTests'
+        $result.ProjectPath | Should -Be 'src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj'
+    }
+
+    It 'resolves a repo-relative unit test project path' {
+        $projectPath = 'tests/Custom.UnitTests.csproj'
+        $fullPath = Join-Path $TestDrive $projectPath
+        New-Item -ItemType Directory -Path (Split-Path $fullPath) -Force | Out-Null
+        '<Project />' | Set-Content $fullPath
+
+        $result = Resolve-ExplicitTestProject -TestType UnitTest `
+            -TestProject $projectPath -RepoRoot $TestDrive
+        $result.Project | Should -Be 'Custom.UnitTests'
+        $result.ProjectPath | Should -Be $projectPath
+    }
+
+    It 'requires an explicit project for unit and device tests' {
+        { Resolve-ExplicitTestProject -TestType UnitTest -RepoRoot $TestDrive } |
+            Should -Throw '*requires -TestProject*'
+        { Resolve-ExplicitTestProject -TestType DeviceTest -RepoRoot $TestDrive } |
+            Should -Throw '*requires -TestProject*'
+    }
+
+    It 'resolves a non-Controls device test project without defaulting' {
+        $result = Resolve-ExplicitTestProject -TestType DeviceTest `
+            -TestProject Core -RepoRoot $TestDrive
+        $result.Project | Should -Be 'Core'
+        $result.ProjectPath | Should -BeNullOrEmpty
     }
 }

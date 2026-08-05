@@ -403,7 +403,12 @@ This step runs BEFORE testing so you can catch design flaws before spending time
 
 2. **Identify your changed files:**
    ```powershell
-   git diff --name-only HEAD
+   $changedFiles = if ($Mode -eq "Issue") {
+       git diff --cached --name-only $BrokenCheckpoint
+   } else {
+       git diff --name-only HEAD
+   }
+   $changedFiles
    ```
 
    If you have NO code changes (e.g., Blocked because no device available before any fix was applied), still proceed to step 4 and write `'[]'` — the artifact gate is the enforcement mechanism.
@@ -451,7 +456,12 @@ This step runs BEFORE testing so you can catch design flaws before spending time
    # Snapshot the diff that was reviewed — Step 7.5 uses this to detect whether the test loop mutated code.
    # Use Set-Content -Value with Out-String so the file is created even when the diff is empty
    # (a bare `git diff | Set-Content` does NOT create the file when the pipe is empty).
-   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
+   $reviewDiff = if ($Mode -eq "Issue") {
+       git diff --cached --binary $BrokenCheckpoint | Out-String
+   } else {
+       git diff | Out-String
+   }
+   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value $reviewDiff -NoNewline
    ```
 
    **Remember `$findingsCount`** — you will report it as `findings_count` in Step 10 and summarize it in `analysis.md` (Step 8).
@@ -519,7 +529,11 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
    # Also: `Get-Content -Raw` on a 0-byte file returns $null, not "". The Step 6 snapshot
    # creates a 0-byte file when the diff is empty (the documented Blocked-with-no-diff path),
    # so coalesce $null to "" via `?? ''` to avoid a false-positive "" -ne $null drift detection.
-   $currentDiff  = (git diff | Out-String)
+   $currentDiff = if ($Mode -eq "Issue") {
+       git diff --cached --binary $BrokenCheckpoint | Out-String
+   } else {
+       git diff | Out-String
+   }
    $reviewedDiff = if (Test-Path "$OUTPUT_DIR/reviewer-findings.diff") {
        (Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw) ?? ''
    } else { '' }
@@ -534,7 +548,8 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 
 2. **If `$diffChanged` is `$true`, re-do the Step 6 self-review against the new diff.** This is YOU walking the rules again — it is *not* something the script does. Repeat the same procedure from Step 6:
 
-   1. **Re-list changed files:** `git diff --name-only HEAD`
+   1. **Re-list changed files:** issue mode uses
+      `git diff --cached --name-only $BrokenCheckpoint`; PR mode uses `git diff --name-only HEAD`.
    2. **Re-walk the rules** in `.github/agents/maui-expert-reviewer.md` — every Overarching Principle, the always-active dimensions, and any routed dimensions whose file paths now match.
    3. **Rewrite `$OUTPUT_DIR/reviewer-findings.json`** with the new findings (or `'[]'` if clean). The file MUST be overwritten — appending or leaving the old content is a bug. Use the same JSON schema documented in Step 6.
 
@@ -542,7 +557,12 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 
    ```powershell
    # Re-snapshot the diff (matches Step 6's snapshot logic — works for empty diffs too).
-   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
+   $reviewDiff = if ($Mode -eq "Issue") {
+       git diff --cached --binary $BrokenCheckpoint | Out-String
+   } else {
+       git diff | Out-String
+   }
+   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value $reviewDiff -NoNewline
 
    # Re-validate the JSON parses and capture the new count.
    try {
