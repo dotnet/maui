@@ -340,7 +340,9 @@ formatting separate:
    not net11.
 2. Build a unique ref list containing `net11.0` and, when it exists, the
    evaluated release branch.
-3. Query the latest definition-1095 build independently for each ref.
+3. Query a bounded, server-ordered window of definition-1095 builds independently
+   for each ref, then select newest `queueTime` with build ID as the deterministic
+   tie-breaker.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
    - exact-HEAD completed/succeeded → `green`
@@ -349,9 +351,11 @@ formatting separate:
    - build SHA different from branch HEAD → `stale`
    - no build, malformed response, missing SHA/HEAD, or unknown result → `unknown`
    - GitHub Actions or unavailable internal authentication → `skipped`
-6. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
+6. Bound each Azure CLI and GitHub branch query; a timeout becomes `unknown`
+   evidence instead of hanging the local run.
+7. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
    `in-progress` → `WATCH`, `unknown` → `UNKNOWN`; `skipped` is fail-open.
-7. In public-safe mode, omit the internal branch records and local table
+8. In public-safe mode, omit the internal branch records and local table
    completely. Never serialize build IDs, numbers, SHAs, URLs, raw Azure errors,
    account details, or internal branch evidence into public tracker output.
 

@@ -394,8 +394,7 @@ if (-not $SkipE2E) {
             -Mode in-flight `
             -TrackerKey 'dnceng/internal/_git/public-safe-sentinel' `
             -OutputDir $previewOut `
-            -OutputFormat both `
-            -PublicSafe:$true 2>&1 | Out-Null
+            -OutputFormat both 2>&1 | Out-Null
         Assert-Eq -Label "Preview driver exits successfully" -Expected 0 -Actual $LASTEXITCODE
 
         $previewJsonPath = Join-Path $previewOut 'preview-readiness.json'
@@ -414,7 +413,7 @@ if (-not $SkipE2E) {
                 -Expected $true -Actual ([bool]($previewMarkdown -match 'local official-build reconciliation.+no Maestro subscription by design'))
             Assert-Eq -Label "Preview driver distinguishes no scanner from zero scanner issues" `
                 -Expected $true -Actual ([bool]($previewMarkdown -match 'No CI Failure Scanner runs against'))
-            Assert-Eq -Label "Preview driver applies PublicSafe to Markdown and JSON" `
+            Assert-Eq -Label "Preview driver applies default PublicSafe to Markdown and JSON" `
                 -Expected $false -Actual ([bool](("$previewMarkdown`n$previewJsonText") -match 'dnceng/internal|\.NET Release Tracker|dotnet-release-tracker|api://'))
             Assert-Eq -Label "Preview driver PublicSafe assertion is discriminating in Markdown and JSON" `
                 -Expected $true -Actual ([bool]($previewMarkdown -match '_internal URL omitted_' -and $previewJsonText -match '_internal URL omitted_'))
@@ -8845,7 +8844,33 @@ $orderedArgs = Get-InternalOfficialBuildAzArguments `
     -Organization 'dnceng' `
     -Project 'internal'
 Assert-Eq -Label "internal Azure query: uses runs list with definition 1095" -Expected 'pipelines runs list --pipeline-ids 1095' -Actual (($orderedArgs[0..4]) -join ' ')
-Assert-Eq -Label "internal Azure query: orders by newest queue time before top 1" -Expected $true -Actual ([bool](($orderedArgs -join ' ') -match '--query-order QueueTimeDesc --top 1'))
+Assert-Eq -Label "internal Azure query: requests a bounded server-ordered window" -Expected $true -Actual ([bool](($orderedArgs -join ' ') -match '--query-order QueueTimeDesc --top 5'))
+
+$timeoutFetcher = New-AzdoInternalOfficialBuildFetcher -TimeoutSeconds 7 -ProcessInvoker {
+    param($FileName, $Arguments, $TimeoutSeconds)
+    return [PSCustomObject]@{
+        Started = $true
+        TimedOut = $true
+        ExitCode = -1
+        Stdout = ''
+        Stderr = ''
+    }
+}
+$timeoutFetchResult = & $timeoutFetcher $internalInflightRef
+Assert-Eq -Label "internal Azure query: timeout is fail-open failure evidence" -Expected $false -Actual $timeoutFetchResult.Success
+Assert-Eq -Label "internal Azure query: timeout reason is explicit" -Expected 'timeout' -Actual $timeoutFetchResult.FailureKind
+
+$headTimeoutFetcher = New-GitHubBranchHeadFetcher -Repository 'dotnet/maui' -TimeoutSeconds 7 -ProcessInvoker {
+    param($FileName, $Arguments, $TimeoutSeconds)
+    return [PSCustomObject]@{
+        Started = $true
+        TimedOut = $true
+        ExitCode = -1
+        Stdout = ''
+        Stderr = ''
+    }
+}
+Assert-Eq -Label "internal branch HEAD query: timeout returns unavailable HEAD" -Expected $null -Actual (& $headTimeoutFetcher $internalInflightRef)
 
 $validManualJson = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 75 | ConvertTo-Json -Depth 8)
 $manualWithWarning = ConvertFrom-InternalOfficialBuildAzOutput `

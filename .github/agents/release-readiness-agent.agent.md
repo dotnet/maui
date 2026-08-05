@@ -147,6 +147,7 @@ The script treats `origin/main` as the SR-to-be. Report header reads "CANDIDATE 
 ```bash
 pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview7 -Mode candidate -SurveyRef net11.0 \
+  -PublicSafe:$false \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview7-candidate \
   -OutputFormat markdown
 ```
@@ -169,11 +170,13 @@ Never silently accept inferred labels for the final report.
 Use the routing and lifecycle decision from steps 0-1. For the SR lane, append the resolved `-Candidate` or `-Shipped [-ShippedTag <tag>]` arguments; do not run an existing tagged SR with default in-flight semantics. See SKILL.md for the full parameter contract. Tell the user the script is running — for large repos this is 60-120s.
 
 For a **local net11 preview run**, do not ask the user to find an internal build
-ID and do not manually query one build. Run `Get-PreviewReadiness.ps1` normally.
-When local dnceng/internal access is available, the script automatically checks
-official `dotnet-maui` definition `1095` for both `refs/heads/net11.0` and the
-evaluated release branch (when it exists). Candidate mode still checks
-`net11.0`; a not-yet-created release branch is skipped.
+ID and do not manually query one build. Run `Get-PreviewReadiness.ps1` with
+`-PublicSafe:$false`; this explicit opt-in produces the enriched local report
+while the script remains safe by default for direct callers. When local
+dnceng/internal access is available, the script automatically checks official
+`dotnet-maui` definition `1095` for both `refs/heads/net11.0` and the evaluated
+release branch (when it exists). Candidate mode still checks `net11.0`; a
+not-yet-created release branch is skipped.
 
 GitHub Actions/public tracker runs are different: `GITHUB_ACTIONS=true` skips the
 internal query before Azure CLI is invoked, and public-safe output contains no
