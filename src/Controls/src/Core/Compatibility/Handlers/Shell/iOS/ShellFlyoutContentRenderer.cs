@@ -135,6 +135,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int previousIndex = GetPreviousIndex(_footerView);
 			if (_footer is not null)
 			{
+				_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
 				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
 				_tableViewController.FooterView = null;
