@@ -60,7 +60,7 @@ max-daily-ai-credits: -1
 
 tools:
   github:
-    toolsets: [pull_requests, issues, search]
+    toolsets: [issues, search]
   edit:
   bash: ["dotnet", "git", "gh", "find", "ls", "cat", "grep", "head", "tail", "wc", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod", "curl"]
 

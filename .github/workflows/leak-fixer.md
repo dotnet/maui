@@ -372,7 +372,15 @@ N=<issue-number>
 # The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
 # Use the same extraction as daily-leak-hunter.md (last Type.Member pair of the first identifier
 # chain) so off-contract / fully-qualified titles key identically on both sides of the pipeline.
-API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title | gsub("[\r\n]+";" ")' \
+# Fetch the title first so a TRANSIENT fetch failure fails closed (empty title => abort) rather than
+# silently yielding an empty $API, which would disable the same-API dedup scan below and let a
+# duplicate [leak-fix] PR be opened under a re-filed leak.
+TITLE=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title | gsub("[\r\n]+";" ")')
+if test -z "$TITLE"; then
+  echo "ERROR: could not read issue #$N title (transient gh failure?) — aborting to avoid fail-open dedup." >&2
+  exit 1
+fi
+API=$(printf '%s' "$TITLE" \
   | sed -E 's/^\[leak-scan\] *//' \
   | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
 echo "target rooting API: $API"
