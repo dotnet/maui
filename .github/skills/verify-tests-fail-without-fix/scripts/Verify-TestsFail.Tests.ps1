@@ -52,7 +52,12 @@ BeforeAll {
         "Core.DeviceTests" = "Core"
     }
 
-    foreach ($helperName in @('Resolve-ExplicitTestProject', 'Set-WithoutFixFileState', 'Set-WithFixFileState')) {
+    foreach ($helperName in @(
+        'Resolve-ExplicitTestProject',
+        'New-ExplicitTestEntry',
+        'Set-WithoutFixFileState',
+        'Set-WithFixFileState'
+    )) {
         $helper = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $helperName
@@ -278,5 +283,33 @@ Describe 'Explicit test project resolution' {
             -TestProject Core -RepoRoot $TestDrive
         $result.Project | Should -Be 'Core'
         $result.ProjectPath | Should -BeNullOrEmpty
+    }
+
+    It 'rejects absolute and traversal unit test project paths' {
+        $outsidePath = Join-Path (Split-Path $TestDrive -Parent) (
+            "outside-" + [Guid]::NewGuid().ToString('N') + ".csproj")
+        '<Project />' | Set-Content $outsidePath
+
+        try {
+            $relativeEscape = [System.IO.Path]::GetRelativePath($TestDrive, $outsidePath)
+            { Resolve-ExplicitTestProject -TestType UnitTest `
+                -TestProject $relativeEscape -RepoRoot $TestDrive } |
+                Should -Throw '*escapes the repository root*'
+
+            { Resolve-ExplicitTestProject -TestType UnitTest `
+                -TestProject $outsidePath -RepoRoot $TestDrive } |
+                Should -Throw '*must be repo-relative*'
+        } finally {
+            Remove-Item -LiteralPath $outsidePath -Force
+        }
+    }
+
+    It 'builds one explicit entry contract for both verification modes' {
+        $entry = New-ExplicitTestEntry -TestType DeviceTest -TestFilter 'Category=Core' `
+            -TestProject Core -RepoRoot $TestDrive
+        $entry.Type | Should -Be 'DeviceTest'
+        $entry.Project | Should -Be 'Core'
+        $entry.Filter | Should -Be 'Category=Core'
+        $entry.Runner | Should -Be 'Run-DeviceTests'
     }
 }
