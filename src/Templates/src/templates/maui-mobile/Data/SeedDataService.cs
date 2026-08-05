@@ -42,50 +42,49 @@ public class SeedDataService
 
 		await using Stream templateStream = await FileSystem.OpenAppPackageFileAsync(_seedDataFilePath);
 
-		ProjectsJson? payload = null;
+		ProjectsJson payload;
 		try
 		{
-			payload = JsonSerializer.Deserialize(templateStream, JsonContext.Default.ProjectsJson);
+			payload = JsonSerializer.Deserialize(templateStream, JsonContext.Default.ProjectsJson)
+				?? throw new InvalidDataException("Seed data did not contain a project payload.");
 		}
 		catch (Exception e)
 		{
 			_logger.LogError(e, "Error deserializing seed data");
+			throw;
 		}
 
 		try
 		{
-			if (payload is not null)
+			foreach (var project in payload.Projects)
 			{
-				foreach (var project in payload.Projects)
+				if (project is null)
 				{
-					if (project is null)
+					continue;
+				}
+
+				if (project.Category is not null)
+				{
+					await _categoryRepository.SaveItemAsync(project.Category);
+					project.CategoryID = project.Category.ID;
+				}
+
+				await _projectRepository.SaveItemAsync(project);
+
+				if (project.Tasks is not null)
+				{
+					foreach (var task in project.Tasks)
 					{
-						continue;
+						task.ProjectID = project.ID;
+						await _taskRepository.SaveItemAsync(task);
 					}
+				}
 
-					if (project.Category is not null)
+				if (project.Tags is not null)
+				{
+					foreach (var tag in project.Tags)
 					{
-						await _categoryRepository.SaveItemAsync(project.Category);
-						project.CategoryID = project.Category.ID;
-					}
-
-					await _projectRepository.SaveItemAsync(project);
-
-					if (project?.Tasks is not null)
-					{
-						foreach (var task in project.Tasks)
-						{
-							task.ProjectID = project.ID;
-							await _taskRepository.SaveItemAsync(task);
-						}
-					}
-
-					if (project?.Tags is not null)
-					{
-						foreach (var tag in project.Tags)
-						{
-							await _tagRepository.SaveItemAsync(tag, project.ID);
-						}
+						await _tagRepository.SaveItemAsync(tag, project.ID);
 					}
 				}
 			}
