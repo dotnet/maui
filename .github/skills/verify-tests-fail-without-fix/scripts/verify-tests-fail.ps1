@@ -60,7 +60,7 @@
 
 .EXAMPLE
     # Verify unit tests (no platform needed)
-    ./verify-tests-fail.ps1 -TestType UnitTest -TestFilter "Maui12345"
+    ./verify-tests-fail.ps1 -TestType UnitTest -TestProject Controls.Core.UnitTests -TestFilter "Maui12345"
 
 .EXAMPLE
     # Verify XAML unit tests
@@ -252,11 +252,33 @@ function Resolve-ExplicitTestProject {
                 }
             }
 
-            $candidatePath = Join-Path $RepoRoot $TestProject
-            if ($TestProject.EndsWith(".csproj", [StringComparison]::OrdinalIgnoreCase) -and (Test-Path $candidatePath)) {
+            if ([System.IO.Path]::IsPathRooted($TestProject)) {
+                throw "UnitTest project paths must be repo-relative, not absolute: '$TestProject'."
+            }
+
+            $repoFullPath = [System.IO.Path]::GetFullPath($RepoRoot).TrimEnd(
+                [System.IO.Path]::DirectorySeparatorChar,
+                [System.IO.Path]::AltDirectorySeparatorChar)
+            $repoPrefix = $repoFullPath + [System.IO.Path]::DirectorySeparatorChar
+            $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $repoFullPath $TestProject))
+            $pathComparison = if ([OperatingSystem]::IsWindows()) {
+                [StringComparison]::OrdinalIgnoreCase
+            } else {
+                [StringComparison]::Ordinal
+            }
+
+            if (-not $candidatePath.StartsWith($repoPrefix, $pathComparison)) {
+                throw "UnitTest project path escapes the repository root: '$TestProject'."
+            }
+
+            if ($TestProject.EndsWith(".csproj", [StringComparison]::OrdinalIgnoreCase) -and
+                (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+                $relativeProjectPath = ([System.IO.Path]::GetRelativePath(
+                    $repoFullPath,
+                    $candidatePath)).Replace('\', '/')
                 return @{
                     Project = [System.IO.Path]::GetFileNameWithoutExtension($TestProject)
-                    ProjectPath = $TestProject
+                    ProjectPath = $relativeProjectPath
                 }
             }
 
@@ -283,6 +305,32 @@ function Resolve-ExplicitTestProject {
                 ProjectPath = $null
             }
         }
+    }
+}
+
+function New-ExplicitTestEntry {
+    param(
+        [Parameter(Mandatory)][string]$TestType,
+        [Parameter(Mandatory)][string]$TestFilter,
+        [string]$TestProject,
+        [Parameter(Mandatory)][string]$RepoRoot
+    )
+
+    $resolvedProject = Resolve-ExplicitTestProject -TestType $TestType `
+        -TestProject $TestProject -RepoRoot $RepoRoot
+
+    return @{
+        Type = $TestType
+        TestName = $TestFilter
+        Filter = $TestFilter
+        Project = $resolvedProject.Project
+        ProjectPath = $resolvedProject.ProjectPath
+        Runner = switch ($TestType) {
+            "UITest" { "BuildAndRunHostApp" }
+            "DeviceTest" { "Run-DeviceTests" }
+            default { "dotnet-test" }
+        }
+        NeedsPlatform = ($TestType -in @("UITest", "DeviceTest"))
     }
 }
 
@@ -1096,13 +1144,13 @@ if ($DetectedFixFiles.Count -eq 0) {
         }
     } else {
         $effectiveType = if ($TestType) { $TestType } else { "UITest" }
-        $AllDetectedTests = @(@{
-            Type = $effectiveType
-            TestName = $TestFilter
-            Filter = $TestFilter
-            Project = $null
-            ProjectPath = $null
-        })
+        try {
+            $AllDetectedTests = @(New-ExplicitTestEntry -TestType $effectiveType `
+                -TestFilter $TestFilter -TestProject $TestProject -RepoRoot $RepoRoot)
+        } catch {
+            Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
+            exit 1
+        }
     }
 
     # Create output directory
@@ -1242,25 +1290,12 @@ if (-not $TestFilter) {
     # Explicit filter provided — use single test entry with given/detected type
     $effectiveType = if ($TestType) { $TestType } else { "UITest" }
     try {
-        $explicitProject = Resolve-ExplicitTestProject -TestType $effectiveType `
-            -TestProject $TestProject -RepoRoot $RepoRoot
+        $AllDetectedTests = @(New-ExplicitTestEntry -TestType $effectiveType `
+            -TestFilter $TestFilter -TestProject $TestProject -RepoRoot $RepoRoot)
     } catch {
         Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
         exit 1
     }
-    $AllDetectedTests = @(@{
-        Type = $effectiveType
-        TestName = $TestFilter
-        Filter = $TestFilter
-        Project = $explicitProject.Project
-        ProjectPath = $explicitProject.ProjectPath
-        Runner = switch ($effectiveType) {
-            "UITest" { "BuildAndRunHostApp" }
-            "DeviceTest" { "Run-DeviceTests" }
-            default { "dotnet-test" }
-        }
-        NeedsPlatform = ($effectiveType -in @("UITest", "DeviceTest"))
-    })
 }
 
 # Create output directory
