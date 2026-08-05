@@ -360,6 +360,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetRenderer(measurementCell.PlatformHandler);
 			_bound = true;
 			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
+
+			// Complete the ownership transfer on the donor so it no longer references the handler
+			// it just gave away. Without this, if the donor cell is later disposed directly
+			// (Dispose() is a public entry point on this unsealed type) it would tear down the
+			// handler subtree that now belongs to this cell.
+			measurementCell.PlatformHandler = null;
+			measurementCell.CurrentTemplate = null;
+			measurementCell._bound = false;
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)
