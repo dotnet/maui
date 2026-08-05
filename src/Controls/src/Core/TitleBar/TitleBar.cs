@@ -342,7 +342,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void Cleanup()
 		{
-			PropertyChanged -= TitleBar_PropertyChanged;
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
@@ -363,6 +362,15 @@ namespace Microsoft.Maui.Controls
 			else if (e.PropertyName == nameof(FlowDirection))
 			{
 				UpdateFlowDirectionState();
+			}
+			else
+			{
+#pragma warning disable CS0618 // BackgroundColor — legacy property change bridge for template bindings/backward compatibility
+				if (e.PropertyName == BackgroundColorProperty.PropertyName)
+				{
+					base.OnPropertyChanged(nameof(BackgroundColorBridge));
+				}
+#pragma warning restore CS0618
 			}
 		}
 
@@ -397,6 +405,11 @@ namespace Microsoft.Maui.Controls
 				return _defaultTemplate;
 			}
 		}
+
+		// Bridge property so the source-generated lambda binding interceptor accesses a non-obsolete member.
+#pragma warning disable CS0618 // BackgroundColor — internal bridge for lambda binding interceptors
+		Color BackgroundColorBridge => BackgroundColor;
+#pragma warning restore CS0618
 
 		protected override void OnApplyTemplate()
 		{
@@ -460,10 +473,12 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 			};
 
+#pragma warning disable CS0618 // BackgroundColor — TitleBar template binding kept for backward compatibility
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
-				static (TitleBar tb) => tb.BackgroundColor,
+				static (TitleBar tb) => tb.BackgroundColorBridge,
 				source: RelativeBindingSource.TemplatedParent);
+#pragma warning restore CS0618
 
 			contentGrid.SetBinding(
 				BackgroundProperty,

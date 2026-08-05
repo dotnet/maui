@@ -194,12 +194,14 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task EntryBackgroundColorConsistent()
 		{
 			var expected = Colors.AliceBlue;
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			var entry = new Entry()
 			{
 				BackgroundColor = expected,
 				HeightRequest = 100,
 				WidthRequest = 200
 			};
+#pragma warning restore CS0618
 
 			await ValidateHasColor(entry, expected, typeof(EntryHandler));
 		}

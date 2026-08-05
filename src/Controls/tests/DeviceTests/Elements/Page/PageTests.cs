@@ -37,7 +37,9 @@ namespace Microsoft.Maui.DeviceTests
 			var color = Color.Parse(colorStr);
 
 			var page = new ContentPage();
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			page.BackgroundColor = color;
+#pragma warning restore CS0618
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
 			{
@@ -73,6 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 			var color = Color.Parse(colorStr);
 
 			var page = new ContentPage();
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			page.BackgroundColor = Colors.HotPink;
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
@@ -81,6 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await handler.PlatformView.AssertContainsColor(color, handler.MauiContext);
 			});
+#pragma warning restore CS0618
 		}
 
 		[Fact("No issues using Page IsBusy property")]

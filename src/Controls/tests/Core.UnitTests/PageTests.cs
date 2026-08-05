@@ -26,6 +26,67 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void BackgroundImageSourceOverridesImplicitBackgroundStyle()
+		{
+			var styledBackground = new SolidColorBrush(Colors.Red);
+			var style = new Style(typeof(Page))
+			{
+				ApplyToDerivedTypes = true,
+				Setters =
+				{
+					new Setter { Property = VisualElement.BackgroundProperty, Value = styledBackground }
+				}
+			};
+			var app = new Application();
+			app.Resources.Add(style);
+			var imageSource = new FileImageSource { File = "background.png" };
+			var page = new ContentPage { BackgroundImageSource = imageSource };
+
+			var actual = Assert.IsType<ImageSourcePaint>(((IView)page).Background);
+
+			Assert.Same(imageSource, actual.ImageSource);
+			GC.KeepAlive(app);
+		}
+
+		[Fact]
+		public void ImplicitBackgroundStyleUsedWhenImageSourceIsNotSet()
+		{
+			var styledBackground = new SolidColorBrush(Colors.Red);
+			var style = new Style(typeof(Page))
+			{
+				ApplyToDerivedTypes = true,
+				Setters =
+				{
+					new Setter { Property = VisualElement.BackgroundProperty, Value = styledBackground }
+				}
+			};
+			var app = new Application();
+			app.Resources.Add(style);
+			var page = new ContentPage();
+
+			var actual = Assert.IsType<SolidPaint>(((IView)page).Background);
+
+			Assert.Equal(Colors.Red, actual.Color);
+			GC.KeepAlive(app);
+		}
+
+		[Fact]
+		public void LocalBackgroundOverridesBackgroundImageSource()
+		{
+			var background = new SolidColorBrush(Colors.Red);
+			var imageSource = new FileImageSource { File = "background.png" };
+			var page = new ContentPage
+			{
+				Background = background,
+				BackgroundImageSource = imageSource
+			};
+
+			var actual = Assert.IsType<SolidPaint>(((IView)page).Background);
+
+			Assert.Equal(Colors.Red, actual.Color);
+		}
+
+		[Fact]
 		public void TestChildFillBehavior()
 		{
 			var mockHandler = NSubstitute.Substitute.For<IViewHandler>();

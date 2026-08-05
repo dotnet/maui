@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 					Page = new ContentPage(),
 					TitleBar = new TitleBar()
 					{
-						BackgroundColor = Colors.Red,
+						Background = Colors.Red,
 						Icon = new FileImageSource { File = "blue.png" },
 						Content = new Label () { Text = "Hello, TitleBar!" },
 					},

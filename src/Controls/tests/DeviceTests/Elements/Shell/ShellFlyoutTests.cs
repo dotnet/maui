@@ -205,7 +205,7 @@ namespace Microsoft.Maui.DeviceTests
                         // so we have to account for that in the default setup
                         var headerMargin = new Thickness(0, headerMarginTop ?? 0, 0, headerMarginBottom ?? 0);
                         var contentMargin = new Thickness(0, contentMarginTop, 0, contentMarginBottom);
-                        var flyoutHeader = new Label() { Text = "Flyout Header", BackgroundColor = Colors.AliceBlue };
+                        var flyoutHeader = new Label() { Text = "Flyout Header", Background = Colors.AliceBlue };
 
                         // If margin top is null we don't set anything so safe area is added automatically
                         if (headerMarginTop.HasValue)

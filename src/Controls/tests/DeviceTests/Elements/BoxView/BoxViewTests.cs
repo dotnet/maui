@@ -37,12 +37,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expected = Colors.AliceBlue;
 
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			var boxView = new BoxView()
 			{
 				BackgroundColor = expected,
 				HeightRequest = 100,
 				WidthRequest = 200
 			};
+#pragma warning restore CS0618
 
 			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
 		}

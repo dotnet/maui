@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var swipeItemContent = new Grid
 			{
-				BackgroundColor = expectedColor,
+				Background = expectedColor,
 				WidthRequest = 60,
 			};
 

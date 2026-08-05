@@ -53,9 +53,9 @@ namespace Microsoft.Maui.DeviceTests
 			switch (name)
 			{
 				case "ScrollView":
-					return new ScrollView() { SafeAreaEdges = SafeAreaEdges.None, Content = new Label() { Text = "ScrollView" }, Margin = margin, BackgroundColor = Colors.Orange };
+					return new ScrollView() { SafeAreaEdges = SafeAreaEdges.None, Content = new Label() { Text = "ScrollView" }, Margin = margin, Background = Colors.Orange };
 				case "VerticalStackLayout":
-					return new VerticalStackLayout() { SafeAreaEdges = SafeAreaEdges.None, Margin = margin, Children = { new Label() { Text = "VerticalStackLayout" } }, BackgroundColor = Colors.Orange };
+					return new VerticalStackLayout() { SafeAreaEdges = SafeAreaEdges.None, Margin = margin, Children = { new Label() { Text = "VerticalStackLayout" } }, Background = Colors.Orange };
 			}
 
 			throw new ArgumentException(nameof(name));

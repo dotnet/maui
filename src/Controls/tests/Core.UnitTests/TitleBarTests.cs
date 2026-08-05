@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -7,6 +8,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class TitleBarTests : BaseTestFixture
 	{
+		[Fact]
+		public void BackgroundColorBridgeNotifiesAfterReattachingTitleBar()
+		{
+			var window = new Window { Page = new ContentPage() };
+			var titleBar = new TitleBar();
+			window.TitleBar = titleBar;
+			window.TitleBar = null;
+			window.TitleBar = titleBar;
+
+			var notifications = 0;
+			titleBar.PropertyChanged += (_, args) =>
+			{
+				if (args.PropertyName == "BackgroundColorBridge")
+					notifications++;
+			};
+
+#pragma warning disable CS0618 // BackgroundColor — verifies backward-compatible template updates
+			titleBar.BackgroundColor = Colors.Red;
+#pragma warning restore CS0618
+
+			Assert.Equal(1, notifications);
+		}
+
 		[Fact, Category(TestCategory.Memory)]
 		public async Task TitleBarDoesNotLeak()
 		{

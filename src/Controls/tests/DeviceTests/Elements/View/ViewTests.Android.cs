@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 				for (int i = 0; i < columnCount; i++)
 				{
 					var content = new ContentView();
-					content.BackgroundColor = new Color(255 / (i + 1), 255 / (i + 1), 255 / (i + 1));
+					content.Background = new Color(255 / (i + 1), 255 / (i + 1), 255 / (i + 1));
 					content.HeightRequest = 50;
 					grid.Add(content, i);
 				}

@@ -827,12 +827,25 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!Brush.IsNullOrEmpty(Background))
-					return Background;
-				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
-					return new ImageSourcePaint(BackgroundImageSource);
+				var background = Background;
+				var backgroundImageSource = BackgroundImageSource;
+
+				if (!ImageSource.IsNullOrEmpty(backgroundImageSource))
+				{
+					var backgroundSpecificity = GetContext(BackgroundProperty)?.Values.GetSpecificity() ?? SetterSpecificity.DefaultValue;
+					var backgroundImageSpecificity = GetContext(BackgroundImageSourceProperty)?.Values.GetSpecificity() ?? SetterSpecificity.DefaultValue;
+
+					// A local image should override a style default without changing equal/local Background precedence.
+					if (Brush.IsNullOrEmpty(background) || backgroundImageSpecificity > backgroundSpecificity)
+						return new ImageSourcePaint(backgroundImageSource);
+				}
+
+				if (!Brush.IsNullOrEmpty(background))
+					return background;
+#pragma warning disable CS0618 // BackgroundColor fallback for IView.Background backward compatibility
 				if (BackgroundColor.IsNotDefault())
 					return new SolidColorBrush(BackgroundColor);
+#pragma warning restore CS0618
 
 				return null;
 			}

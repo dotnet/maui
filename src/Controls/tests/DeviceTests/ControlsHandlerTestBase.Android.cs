@@ -241,7 +241,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			public Task FinishedLoading => _taskCompletionSource.Task;
 
-			public Task FinishedDestroying => _taskCompletionSource.Task;
+			public Task FinishedDestroying => _finishedDestroying.Task;
 
 			public FakeActivityRootView FakeActivityRootView { get; set; }
 

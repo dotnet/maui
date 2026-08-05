@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			shell.FlyoutContent = new CollectionView()
 			{
 				ItemsSource = Enumerable.Range(0, 100).ToList(),
-				BackgroundColor = Colors.Orange
+				Background = Colors.Orange
 			};
 		}
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var grid = new Grid
 			{
-				BackgroundColor = Colors.Orange
+				Background = Colors.Orange
 			};
 
 			for (int i = 0; i < 100; i++)

@@ -35,12 +35,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var color = Color.Parse(colorStr);
 
+#pragma warning disable CS0618 // BackgroundColor compatibility is the behavior under test.
 			var checkBox = new CheckBox
 			{
 				BackgroundColor = Colors.HotPink
 			};
 
 			checkBox.BackgroundColor = color;
+#pragma warning restore CS0618
 
 			await ValidateHasColor<CheckBoxHandler>(checkBox, color);
 		}

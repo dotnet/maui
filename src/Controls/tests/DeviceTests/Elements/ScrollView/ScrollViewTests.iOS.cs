@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 100,
 				HeightRequest = 5000,
 				Text = "Hello",
-				BackgroundColor = Colors.LightBlue
+				Background = Colors.LightBlue
 			};
 
 			var bottomLabel = new Label { Text = "Howdy" };

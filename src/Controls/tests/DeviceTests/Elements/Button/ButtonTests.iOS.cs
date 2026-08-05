@@ -56,13 +56,13 @@ namespace Microsoft.Maui.DeviceTests
 			var gridHeight = 300;
 			var gridWidth = 300;
 
-			var button = new Button { BackgroundColor = Colors.Yellow, VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center };
+			var button = new Button { Background = Colors.Yellow, VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center };
 			if (includeText)
 			{
 				button.Text = "Hello world!";
 			}
 
-			var layout = new Grid() { HeightRequest = gridHeight, WidthRequest = gridWidth, BackgroundColor = Colors.Blue };
+			var layout = new Grid() { HeightRequest = gridHeight, WidthRequest = gridWidth, Background = Colors.Blue };
 			layout.Add(button);
 
 			var buttonHandler = await CreateHandlerAsync<ButtonHandler>(button);
