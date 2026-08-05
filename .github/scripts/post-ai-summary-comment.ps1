@@ -730,6 +730,27 @@ $content
     }
 }
 
+# If the agent-produced review phases (pre-flight / code-review / try-fix / report) are
+# ALL absent even though the gate ran, the Copilot expert-review agent didn't complete —
+# most often a transient auth-validation 401 or a review-stage timeout. Surface an explicit
+# notice so the reader understands WHY those sections are missing and knows to re-run,
+# instead of silently posting a gate+deep-only summary.
+$agentPhaseKeys = @('pre-flight', 'code-review', 'try-fix', 'report')
+$hasAgentPhase = $false
+foreach ($ak in $agentPhaseKeys) { if ($phaseContentByKey.ContainsKey($ak)) { $hasAgentPhase = $true; break } }
+if (-not $hasAgentPhase -and $gateSection) {
+    $phaseSections += @"
+<details open>
+<summary><strong>⚠️ Expert review incomplete</strong></summary>
+<br/>
+
+The test-verification **gate** ran (see above), but the Copilot **expert review + try-fix** phase did not produce output on this run — usually a transient CI-agent authentication hiccup or a review-stage timeout, **not** a problem with your PR. Re-comment ``/review`` to get the full expert analysis (Pre-Flight, Code Review, Fix candidates, and Report).
+
+</details>
+"@
+    Write-Host "  ℹ️ Added 'expert review incomplete' notice (no agent phase content present)" -ForegroundColor Yellow
+}
+
 if (-not $gateSection -and $phaseSections.Count -eq 0) {
     # Reliability guard: in the deferred Stage-3 deep-results post, the PRAgent phase content
     # (gate/content.md, code-review/content.md, …) can be absent even though the pipeline DID
