@@ -231,25 +231,41 @@ jobs:
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Checkout repository scripts
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          # Shallow, fast checkout — this job only needs .github/scripts. A full clone of the
-          # large dotnet/maui repo occasionally stalls on the network and, with only the job's
-          # 10-min timeout to stop it, the WHOLE trigger-review job gets CANCELLED — silently,
-          # since a cancellation skips the downstream steps (no pipeline queued, no notice). A
-          # shallow clone completes in seconds; the per-step timeout below turns a rare stall
-          # into a proper step FAILURE (which runs the cleanup/notice steps) instead of a
-          # job-level cancellation. (Recurring hang: #35640, and #36828 trigger 30647459829.)
-          fetch-depth: 1
-        timeout-minutes: 4
+      # The trigger only needs one trusted helper from the workflow revision. Cloning the entire
+      # MAUI repository just for this file occasionally hangs in `git fetch` until the job's
+      # 10-minute timeout, silently losing the /review command. Fetch the immutable file directly
+      # from GitHub instead and retry transient API failures.
+      - name: Download trusted label helper
+        id: label_helper
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HELPER_PATH: ${{ runner.temp }}/Update-AgentLabels.ps1
+        run: |
+          for attempt in 1 2 3; do
+            if gh api \
+              -H "Accept: application/vnd.github.raw+json" \
+              "repos/${{ github.repository }}/contents/.github/scripts/shared/Update-AgentLabels.ps1?ref=${GITHUB_SHA}" \
+              > "${HELPER_PATH}" &&
+              grep -q '^function Set-AgentReviewInProgress' "${HELPER_PATH}"; then
+              echo "path=${HELPER_PATH}" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
 
-      # Never let a trigger checkout/setup hang fail SILENTLY: if the job was cancelled (e.g. the
-      # checkout hit its timeout) or an early step failed before the pipeline could be queued,
-      # tell the commenter to retry. Uses gh + the event payload directly (no repo scripts, which
-      # may be exactly what failed to check out). Skipped once the pipeline actually queued
-      # (trigger_azdo succeeded) and on the normal lock-skip path.
+            rm -f "${HELPER_PATH}"
+            if [ "${attempt}" -lt 3 ]; then
+              sleep $((attempt * 5))
+            fi
+          done
+
+          echo "::error::Could not download the trusted review-label helper from ${GITHUB_SHA}."
+          exit 1
+
+      # Never let trigger setup fail SILENTLY: if the helper download or another early step fails
+      # before the pipeline can be queued, tell the commenter to retry. Uses gh + the event
+      # payload directly, so it does not depend on the helper that may have failed to download.
+      # Skipped once the pipeline actually queued (trigger_azdo succeeded) and on the normal
+      # lock-skip path.
       - name: Report trigger infra failure so it is never silent
         if: (cancelled() || failure()) && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' && steps.trigger_azdo.outcome != 'success'
         env:
@@ -258,7 +274,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "> [!WARNING]
-          > Your \`/review\` couldn't start due to a transient CI infrastructure issue (the trigger job's repository checkout did not complete in time). This is **not** a problem with your PR. Please comment \`/review\` again to retry." || echo "notice post best-effort failed"
+          > Your \`/review\` couldn't start due to a transient CI infrastructure issue (the trigger job couldn't finish setup). This is **not** a problem with your PR. Please comment \`/review\` again to retry." || echo "notice post best-effort failed"
 
       - name: Set review in-progress lock
         id: review_lock
@@ -266,8 +282,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          LABEL_HELPER_PATH: ${{ steps.label_helper.outputs.path }}
         run: |
-          . .github/scripts/shared/Update-AgentLabels.ps1
+          . $env:LABEL_HELPER_PATH
           $labels = Get-AgentLabels -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
           if ($labels -contains 's/agent-review-in-progress') {
             if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
@@ -501,8 +518,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          LABEL_HELPER_PATH: ${{ steps.label_helper.outputs.path }}
         run: |
-          . .github/scripts/shared/Update-AgentLabels.ps1
+          . $env:LABEL_HELPER_PATH
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
       - name: Hide the /review command comment as resolved

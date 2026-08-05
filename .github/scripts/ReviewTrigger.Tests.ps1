@@ -16,6 +16,7 @@ BeforeAll {
 
     $script:Workflow = $workflow
     $script:MatchJob = $matchJob.Value
+    $script:TriggerReviewJob = $workflow.Substring($matchJob.Index + $matchJob.Length)
 }
 
 Describe '/review command matching' {
@@ -102,5 +103,31 @@ Describe '/review command matching' {
     It 'continues to route workflow dispatch to a normal review' {
         $script:MatchJob | Should -Match 'github\.event_name.*workflow_dispatch'
         $script:MatchJob | Should -Match 'echo "matched=true" >> "\$GITHUB_OUTPUT"'
+    }
+}
+
+Describe '/review trigger setup' {
+    It 'downloads only the trusted label helper instead of cloning the repository' {
+        $script:TriggerReviewJob | Should -Not -Match 'actions/checkout@'
+        $script:TriggerReviewJob | Should -Match 'name: Download trusted label helper'
+        $script:TriggerReviewJob | Should -Match ([regex]::Escape(
+            'contents/.github/scripts/shared/Update-AgentLabels.ps1?ref=${GITHUB_SHA}'))
+        $script:TriggerReviewJob | Should -Match 'timeout-minutes: 2'
+        $script:TriggerReviewJob | Should -Match 'for attempt in 1 2 3'
+    }
+
+    It 'sources the downloaded helper for both lock operations' {
+        $script:TriggerReviewJob | Should -Match 'id: label_helper'
+        $script:TriggerReviewJob | Should -Match 'path=\$\{HELPER_PATH\}'
+
+        $helperSources = [regex]::Matches(
+            $script:TriggerReviewJob,
+            '(?m)^\s*LABEL_HELPER_PATH: \$\{\{ steps\.label_helper\.outputs\.path \}\}\s*$')
+        $dotSources = [regex]::Matches(
+            $script:TriggerReviewJob,
+            '(?m)^\s*\. \$env:LABEL_HELPER_PATH\s*$')
+
+        $helperSources.Count | Should -Be 2
+        $dotSources.Count | Should -Be 2
     }
 }
