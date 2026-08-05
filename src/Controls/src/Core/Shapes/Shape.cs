@@ -133,6 +133,13 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		/// <summary>
+		/// Gets the effective stroke thickness used for path inset calculations.
+		/// Returns 0 when no Stroke brush is set, since no stroke will be rendered
+		/// and the fill path should not be inset.
+		/// </summary>
+		internal double EffectiveStrokeThickness => Stroke is null ? 0 : StrokeThickness;
+
+		/// <summary>
 		/// Gets or sets the collection of values that specify the pattern of dashes and gaps in the shape's outline. This is a bindable property.
 		/// </summary>
 		public DoubleCollection StrokeDashArray
@@ -317,10 +324,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = path.GetBoundsByFlattening(1);
 
-			viewBounds.X += StrokeThickness / 2;
-			viewBounds.Y += StrokeThickness / 2;
-			viewBounds.Width -= StrokeThickness;
-			viewBounds.Height -= StrokeThickness;
+			var effectiveStroke = EffectiveStrokeThickness;
+			viewBounds.X += effectiveStroke / 2;
+			viewBounds.Y += effectiveStroke / 2;
+			viewBounds.Width -= effectiveStroke;
+			viewBounds.Height -= effectiveStroke;
 
 			Matrix3x2 transform;
 
@@ -456,8 +464,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
-			widthConstraint -= StrokeThickness;
-			heightConstraint -= StrokeThickness;
+			var effectiveStroke = EffectiveStrokeThickness;
+			widthConstraint -= effectiveStroke;
+			heightConstraint -= effectiveStroke;
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
@@ -505,8 +514,8 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			result.Height += StrokeThickness;
-			result.Width += StrokeThickness;
+			result.Height += effectiveStroke;
+			result.Width += effectiveStroke;
 			if (this is Line or Path or Polyline)
 			{
 				result.Height += Margin.VerticalThickness;
