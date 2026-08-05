@@ -30,7 +30,9 @@ function Invoke-Git([string[]]$Arguments, [switch]$IgnoreExitCode) {
 
 function Test-GitSuccess([string[]]$Arguments) {
     & git @Arguments *> $null
-    return $LASTEXITCODE -eq 0
+    $succeeded = $LASTEXITCODE -eq 0
+    $global:LASTEXITCODE = 0
+    return $succeeded
 }
 
 function Test-SafePublishSourceRef([string]$Value) {
