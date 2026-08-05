@@ -71,7 +71,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 
-			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
+			var background = appearanceElement.EffectiveTabBarBackgroundColor is not null
+				? new SolidColorBrush(appearanceElement.EffectiveTabBarBackgroundColor)
+				: !Brush.IsNullOrEmpty(appearance.Background)
+					? appearance.Background
+					: appearance.BackgroundColor is not null
+						? new SolidColorBrush(appearance.BackgroundColor)
+						: null;
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
 			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
@@ -84,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					null,
 					foregroundColor ?? titleColor,
 					unselectedColor,
-					backgroundColor,
+					background,
 					titleColor ?? foregroundColor,
 					unselectedColor);
 

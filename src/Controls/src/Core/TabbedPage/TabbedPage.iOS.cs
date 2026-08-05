@@ -846,7 +846,7 @@ namespace Microsoft.Maui.Controls
 				_defaultBarTextColor,
 				IsSet(SelectedTabColorProperty) ? SelectedTabColor : null,
 				IsSet(UnselectedTabColorProperty) ? UnselectedTabColor : null,
-				IsSet(BarBackgroundColorProperty) ? BarBackgroundColor : null,
+				IsSet(BarBackgroundColorProperty) ? BarBackgroundColor.AsPaint() : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null,
 				IsSet(BarTextColorProperty) ? BarTextColor : null);
 		}
