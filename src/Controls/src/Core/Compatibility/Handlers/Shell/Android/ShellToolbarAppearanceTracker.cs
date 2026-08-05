@@ -29,7 +29,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
-			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, ShellRenderer.DefaultBackgroundColor, ShellRenderer.DefaultTitleColor);
+			if (RuntimeFeature.IsMaterial3Enabled)
+				SetColors(toolbar, toolbarTracker, null, null, null);
+			else
+				SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, ShellRenderer.DefaultBackgroundColor, ShellRenderer.DefaultTitleColor);
 		}
 
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
@@ -42,9 +45,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shellToolbar is null)
 				return;
 
-			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
-			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
-			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+			var defaultBackground = RuntimeFeature.IsMaterial3Enabled ? null : ShellRenderer.DefaultBackgroundColor;
+			var defaultForeground = RuntimeFeature.IsMaterial3Enabled ? null : ShellRenderer.DefaultForegroundColor;
+			var defaultTitle = RuntimeFeature.IsMaterial3Enabled ? null : ShellRenderer.DefaultTitleColor;
+			var barBackground = background ?? defaultBackground;
+			shellToolbar.BarTextColor = title ?? defaultTitle;
+			shellToolbar.BarBackground = barBackground is null ? null : new SolidColorBrush(barBackground);
+			shellToolbar.IconColor = foreground ?? defaultForeground;
+			toolbarTracker.TintColor = foreground;
 		}
 
 		#region IDisposable

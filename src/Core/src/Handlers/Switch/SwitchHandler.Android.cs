@@ -1,15 +1,19 @@
 using System;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Nfc.CardEmulators;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
+using MSwitch = Google.Android.Material.MaterialSwitch.MaterialSwitch;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
 		CheckedChangeListener? _changeListener;
+		ColorStateList? _defaultTrackTintCache;
 		protected override ASwitch CreatePlatformView()
 		{
 			return new ASwitch(Context);
@@ -20,6 +24,11 @@ namespace Microsoft.Maui.Handlers
 			_changeListener = new CheckedChangeListener(this);
 			platformView.SetOnCheckedChangeListener(_changeListener);
 
+			// Cache the original theme tint before first modification 
+			// so it can be restored when TrackColor is cleared.
+			if (platformView is MSwitch materialSwitch)
+				_defaultTrackTintCache = materialSwitch.TrackTintList;
+
 			base.ConnectHandler(platformView);
 		}
 
@@ -27,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.SetOnCheckedChangeListener(null);
 			_changeListener = null;
+			_defaultTrackTintCache = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -55,8 +65,19 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
-			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateTrackColor(view);
+			if (handler is not SwitchHandler platformHandler)
+				return;
+
+			handler.PlatformView?.UpdateTrackColor(view);
+
+			if (platformHandler.PlatformView is MSwitch materialSwitch)
+			{
+				var trackColor = view.TrackColor;
+
+				materialSwitch.TrackTintList = trackColor is not null
+					? ColorStateList.ValueOf(trackColor.ToPlatform())
+					: platformHandler._defaultTrackTintCache;
+			}
 		}
 
 		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)

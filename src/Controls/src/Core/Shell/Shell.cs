@@ -764,39 +764,11 @@ namespace Microsoft.Maui.Controls
 			if (pivot is ShellContent || pivot is ShellSection || pivot is ContentPage)
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
-				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
-				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
+				Toolbar.BarTextColor = appearance?.TitleColor;
+				Toolbar.BarBackground = appearance?.BackgroundColor;
+				Toolbar.IconColor = appearance?.ForegroundColor;
 			}
 		}
-
-#if ANDROID
-		static Color DefaultBackgroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
-		static Color DefaultForegroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-		static Color DefaultTitleColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-
-		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
-
-		static Color ResolveThemeColor(Color light, Color dark)
-		{
-			if (IsDarkTheme)
-			{
-				return dark;
-			}
-
-			return light;
-		}
-#else
-		static Color DefaultBackgroundColor => null;
-		static readonly Color DefaultForegroundColor = null;
-		static readonly Color DefaultTitleColor = null;
-#endif
 
 
 		void IShellController.AppearanceChanged(Element source, bool appearanceSet)
@@ -1277,27 +1249,14 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current is not null)
+			if (Application.Current is not null &&
+				(DeviceInfo.Platform != DevicePlatform.Android || !RuntimeFeature.IsMaterial3Enabled))
 			{
-				Color light;
-				Color dark;
-
-				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
-				{
-					light = Color.FromArgb("#FEF7FF");
-					dark = Color.FromArgb("#141218");
-				}
-				else
-				{
-					light = Colors.White;
-					dark = Colors.Black;
-				}
-
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
 					new AppThemeBinding
 					{
-						Light = light,
-						Dark = dark,
+						Light = Colors.White,
+						Dark = Colors.Black,
 						Mode = BindingMode.OneWay
 					});
 			}
@@ -1796,8 +1755,8 @@ namespace Microsoft.Maui.Controls
 				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
 			}
-      
-      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+
+			// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
 			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;

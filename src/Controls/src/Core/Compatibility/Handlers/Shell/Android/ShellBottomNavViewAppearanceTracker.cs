@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		static ColorStateList _defaultListDark;
 
 		bool _disposed;
+		bool _originalAppearanceCaptured;
+		ColorStateList _originalItemTextColor;
+		ColorStateList _originalItemIconTint;
+		Drawable _originalBackground;
 		ColorStateList _itemTextColor;
 		ColorStateList _itemIconTint;
 
@@ -40,13 +44,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
-			bottomView.ItemIconTintList = GetDefaultTabColorList(_shellContext.AndroidContext);
-			bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
-			SetBackgroundColor(bottomView, null);
+			CaptureNativeAppearance(bottomView);
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				bottomView.ItemIconTintList = _originalItemIconTint;
+				bottomView.ItemTextColor = _originalItemTextColor;
+				RestoreBackground(bottomView);
+			}
+			else
+			{
+				bottomView.ItemIconTintList = GetDefaultTabColorList(_shellContext.AndroidContext);
+				bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
+				SetBackgroundColor(bottomView, ShellRenderer.DefaultBottomNavigationViewBackgroundColor);
+			}
 		}
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
+			CaptureNativeAppearance(bottomView);
+
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
@@ -57,21 +74,46 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_itemTextColor = MakeColorStateList(
 				titleColor ?? foregroundColor,
 				disabledColor,
-				unselectedColor);
+				unselectedColor,
+				_originalItemTextColor);
 
 			_itemIconTint = MakeColorStateList(
 				foregroundColor ?? titleColor,
 				disabledColor,
-				unselectedColor);
+				unselectedColor,
+				_originalItemIconTint);
 
 			bottomView.ItemTextColor = _itemTextColor;
 			bottomView.ItemIconTintList = _itemIconTint;
 
-			SetBackgroundColor(bottomView, backgroundColor);
+			if (backgroundColor is null && RuntimeFeature.IsMaterial3Enabled)
+				RestoreBackground(bottomView);
+			else
+				SetBackgroundColor(bottomView, backgroundColor ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor);
+		}
+
+		void CaptureNativeAppearance(BottomNavigationView bottomView)
+		{
+			if (_originalAppearanceCaptured)
+				return;
+
+			_originalItemTextColor = bottomView.ItemTextColor;
+			_originalItemIconTint = bottomView.ItemIconTintList;
+			_originalBackground = bottomView.Background;
+			_originalAppearanceCaptured = true;
+		}
+
+		void RestoreBackground(BottomNavigationView bottomView)
+		{
+#pragma warning disable CS0618 // Obsolete
+			ViewCompat.SetBackground(bottomView, _originalBackground);
+#pragma warning restore CS0618 // Obsolete
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
 		{
+			color ??= ShellRenderer.DefaultBottomNavigationViewBackgroundColor;
+
 #pragma warning disable XAOBS001 // Obsolete
 			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
 #pragma warning restore XAOBS001 // Obsolete
@@ -79,12 +121,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
 			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Colors.Transparent.ToPlatform();
-			AColor newColor;
-
-			if (color == null)
-				newColor = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
-			else
-				newColor = color.ToPlatform();
+			AColor newColor = color.ToPlatform();
 
 			if (menuView == null)
 			{
@@ -131,16 +168,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return null;
 
 			var baseCSL = AppCompatResources.GetColorStateList(context, mTypedValue.ResourceId);
-			var colorPrimary = (ShellRenderer.IsDarkTheme) ? AColor.White : RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#625B71").ToPlatform() : ShellRenderer.DefaultBackgroundColor.ToPlatform();
+			var colorPrimary = ShellRenderer.IsDarkTheme ? AColor.White : ShellRenderer.DefaultBackgroundColor.ToPlatform();
 			int defaultColor = baseCSL.DefaultColor;
 			var disabledcolor = baseCSL.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray);
 
 			return MakeColorStateList(colorPrimary, disabledcolor, defaultColor);
 		}
 
-		ColorStateList MakeColorStateList(Color titleColor, Color disabledColor, Color unselectedColor)
+		ColorStateList MakeColorStateList(Color titleColor, Color disabledColor, Color unselectedColor, ColorStateList originalList)
 		{
-			var defaultList = GetDefaultTabColorList(_shellContext.AndroidContext);
+			var defaultList = RuntimeFeature.IsMaterial3Enabled
+				? originalList
+				: GetDefaultTabColorList(_shellContext.AndroidContext);
+
+			defaultList ??= GetDefaultTabColorList(_shellContext.AndroidContext);
 
 			var disabledInt = disabledColor == null ?
 				defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray) :
@@ -181,6 +222,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_itemTextColor?.Dispose();
 				_itemIconTint?.Dispose();
 
+				_originalBackground = null;
+				_originalItemIconTint = null;
+				_originalItemTextColor = null;
 				_itemIconTint = null;
 				_shellItem = null;
 				_shellContext = null;

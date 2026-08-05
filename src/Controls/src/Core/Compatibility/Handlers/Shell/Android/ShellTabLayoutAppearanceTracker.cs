@@ -1,14 +1,21 @@
 #nullable disable
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using R = Android.Resource;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellTabLayoutAppearanceTracker : IShellTabLayoutAppearanceTracker
 	{
 		bool _disposed;
+		bool _originalAppearanceCaptured;
+		ColorStateList _originalTextColors;
+		Drawable _originalBackground;
+		int? _originalIndicatorColor;
 		IShellContext _shellContext;
 
 		public ShellTabLayoutAppearanceTracker(IShellContext shellContext)
@@ -18,10 +25,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(TabLayout tabLayout)
 		{
-			SetColors(tabLayout, ShellRenderer.DefaultForegroundColor,
-				ShellRenderer.DefaultBackgroundColor,
-				ShellRenderer.DefaultTitleColor,
-				ShellRenderer.DefaultUnselectedColor);
+			CaptureNativeColors(tabLayout);
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				RestoreNativeColors(tabLayout);
+			}
+			else
+			{
+				SetColors(tabLayout, ShellRenderer.DefaultForegroundColor,
+					ShellRenderer.DefaultBackgroundColor,
+					ShellRenderer.DefaultTitleColor,
+					ShellRenderer.DefaultUnselectedColor);
+			}
 		}
 
 		public virtual void SetAppearance(TabLayout tabLayout, ShellAppearance appearance)
@@ -36,12 +52,87 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetColors(TabLayout tabLayout, Color foreground, Color background, Color title, Color unselected)
 		{
+			CaptureNativeColors(tabLayout);
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				if (title is null && unselected is null)
+				{
+					tabLayout.TabTextColors = _originalTextColors;
+				}
+				else if (_originalTextColors is not null)
+				{
+					// Preserve the disabled-state color from the native/original ColorStateList
+					// instead of collapsing to a 2-state list, which would silently drop any
+					// disabled-state styling supplied by the native Material3 theme.
+					var materialTitleArgb = title?.ToPlatform().ToArgb()
+						?? _originalTextColors.GetColorForState(new[] { R.Attribute.StateSelected }, new global::Android.Graphics.Color(_originalTextColors.DefaultColor));
+					var materialUnselectedArgb = unselected?.ToPlatform().ToArgb() ?? _originalTextColors.DefaultColor;
+					var disabledArgb = _originalTextColors.GetColorForState(new[] { -R.Attribute.StateEnabled }, new global::Android.Graphics.Color(materialUnselectedArgb));
+
+					tabLayout.TabTextColors = ColorStateListExtensions.CreateSwitch(disabledArgb, materialTitleArgb, materialUnselectedArgb);
+				}
+				else
+				{
+					var nativeTextColor = tabLayout.Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
+					tabLayout.SetTabTextColors(
+						unselected?.ToPlatform().ToArgb() ?? nativeTextColor,
+						title?.ToPlatform().ToArgb() ?? nativeTextColor);
+				}
+
+				if (background is null)
+					tabLayout.SetBackground(_originalBackground);
+				else
+					tabLayout.SetBackground(new ColorDrawable(background.ToPlatform()));
+
+				if (foreground is not null)
+					tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform());
+				else if (_originalIndicatorColor is int indicatorColor)
+					tabLayout.SetSelectedTabIndicatorColor(indicatorColor);
+
+				return;
+			}
+
 			var titleArgb = title.ToPlatform(ShellRenderer.DefaultTitleColor).ToArgb();
 			var unselectedArgb = unselected.ToPlatform(ShellRenderer.DefaultUnselectedColor).ToArgb();
 
 			tabLayout.SetTabTextColors(unselectedArgb, titleArgb);
 			tabLayout.SetBackground(new ColorDrawable(background.ToPlatform(ShellRenderer.DefaultBackgroundColor)));
 			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
+		}
+
+		void CaptureNativeColors(TabLayout tabLayout)
+		{
+			if (_originalAppearanceCaptured)
+				return;
+
+			_originalTextColors = tabLayout.TabTextColors;
+			_originalBackground = tabLayout.Background;
+
+			using var styledAttributes = tabLayout.Context.Theme.ObtainStyledAttributes(
+				null,
+				Resource.Styleable.TabLayout,
+				Resource.Attribute.tabStyle,
+				0);
+
+			if (styledAttributes.HasValue(Resource.Styleable.TabLayout_tabIndicatorColor))
+				_originalIndicatorColor = styledAttributes.GetColor(Resource.Styleable.TabLayout_tabIndicatorColor, 0);
+			else
+				_originalIndicatorColor = tabLayout.Context.GetThemeAttrColor(Resource.Attribute.colorPrimary);
+
+			_originalAppearanceCaptured = true;
+		}
+
+		void RestoreNativeColors(TabLayout tabLayout)
+		{
+			if (!_originalAppearanceCaptured)
+				return;
+
+			tabLayout.TabTextColors = _originalTextColors;
+			tabLayout.SetBackground(_originalBackground);
+
+			if (_originalIndicatorColor is int indicatorColor)
+				tabLayout.SetSelectedTabIndicatorColor(indicatorColor);
 		}
 
 		#region IDisposable
@@ -57,6 +148,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			_disposed = true;
+			_originalBackground = null;
+			_originalTextColors = null;
 			_shellContext = null;
 		}
 

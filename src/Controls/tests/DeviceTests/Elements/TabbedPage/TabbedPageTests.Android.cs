@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
@@ -69,6 +70,53 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.True(success);
+		}
+
+		[Fact]
+		public async Task BottomTabsPreserveMaterial3Background()
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var bottomNavigationView = GetBottomNavigationView(handler);
+
+				Assert.NotNull(bottomNavigationView.Background);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact]
+		public async Task ClearingBarBackgroundColorRestoresMaterial3Background()
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var bottomNavigationView = GetBottomNavigationView(handler);
+				var originalBackground = bottomNavigationView.Background;
+				Assert.NotNull(originalBackground);
+
+				// Set a custom BarBackgroundColor and verify it's applied.
+				tabbedPage.BarBackgroundColor = Colors.Red;
+				Assert.True(bottomNavigationView.Background is ColorDrawable customBackground &&
+					customBackground.Color == Colors.Red.ToPlatform());
+
+				// Clearing BarBackgroundColor should restore the original Material3 themed
+				// background instead of leaving it null/transparent.
+				tabbedPage.BarBackgroundColor = null;
+				Assert.Same(originalBackground, bottomNavigationView.Background);
+
+				return Task.CompletedTask;
+			});
 		}
 
 		[Fact]
