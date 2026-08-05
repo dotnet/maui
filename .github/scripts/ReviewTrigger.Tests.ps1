@@ -14,15 +14,15 @@ BeforeAll {
         throw 'Could not find the match job in review-trigger.yml.'
     }
 
-    $triggerJob = [regex]::Match(
-        $workflow,
-        '(?ms)^  trigger-review:\s.*\z')
+    $triggerJobPattern = '(?ms)^  trigger-review:\s.*?(?=^  [A-Za-z0-9_-]+:[ \t]*\r?$|\z)'
+    $triggerJob = [regex]::Match($workflow, $triggerJobPattern)
     if (-not $triggerJob.Success) {
         throw 'Could not find the trigger-review job in review-trigger.yml.'
     }
 
     $script:Workflow = $workflow
     $script:MatchJob = $matchJob.Value
+    $script:TriggerJobPattern = $triggerJobPattern
     $script:TriggerJob = $triggerJob.Value
 }
 
@@ -122,8 +122,22 @@ Describe 'review trigger hardening' {
         $script:MatchJob | Should -Match '(?m)^      - name: Check actor permission$'
         $script:MatchJob | Should -Match 'ACTOR: \$\{\{ github\.actor \}\}'
         $script:MatchJob | Should -Match 'REPO: \$\{\{ github\.repository \}\}'
+        $script:MatchJob | Should -Match 'Permission lookup failed.*treating the caller as unauthorized'
+        $script:MatchJob | Should -Match 'PERMISSION="none"'
         $script:TriggerJob | Should -Match "(?m)^    if: needs\.match\.outputs\.proceed == 'true'$"
         $script:TriggerJob | Should -Not -Match '(?m)^        id: auth$'
+    }
+
+    It 'stops trigger-review extraction at the next top-level job' {
+        $workflowWithFutureJob = $script:Workflow.TrimEnd() + @'
+
+  future-job:
+    runs-on: ubuntu-latest
+'@
+        $triggerJob = [regex]::Match($workflowWithFutureJob, $script:TriggerJobPattern)
+
+        $triggerJob.Success | Should -BeTrue
+        $triggerJob.Value | Should -Not -Match '(?m)^  future-job:'
     }
 
     It 'does not interpolate actor or repository directly into shell commands' {

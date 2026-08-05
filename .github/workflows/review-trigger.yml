@@ -85,9 +85,9 @@ jobs:
             echo "proceed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission'); then
-            echo "::error::Failed to determine repository permission for ${ACTOR}."
-            exit 1
+          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null); then
+            echo "::warning::Permission lookup failed for ${ACTOR}; treating the caller as unauthorized."
+            PERMISSION="none"
           fi
           echo "User ${ACTOR} has permission: ${PERMISSION}"
           # write, maintain, and admin can all trigger /review
