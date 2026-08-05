@@ -1,5 +1,4 @@
 using Android.Content;
-using Android.Runtime;
 
 namespace Microsoft.Maui.Platform;
 
@@ -12,10 +11,7 @@ public class MauiMaterialDatePicker : MauiMaterialDateTimePickerBase
     public MauiMaterialDatePicker(Context context)
         : base(context, Resource.Drawable.material_ic_calendar_black_24dp)
     {
+        SetEndIconContentDescription(Resource.String.maui_date_picker_open);
     }
 
-    protected MauiMaterialDatePicker(nint javaReference, JniHandleOwnership transfer)
-        : base(javaReference, transfer)
-    {
-    }
 }

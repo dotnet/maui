@@ -1,6 +1,5 @@
 using System;
 using Android.Content;
-using Android.Runtime;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views;
@@ -45,15 +44,11 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         SetEndIconDrawable(endIconResource);
     }
 
-    protected MauiMaterialDateTimePickerBase(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-    {
-    }
-
     /// <summary>
     /// The readonly edit text hosted inside the outlined layout. Handlers use this to update the
     /// displayed text, text color, and font.
     /// </summary>
-    public MauiMaterialEditText? InputEditText => _inputEditText;
+    public MauiMaterialEditText? InputEditText => _inputEditText ??= EditText as MauiMaterialEditText;
 
     /// <summary>Invoked when the field (via its end icon) is tapped to open the picker dialog.</summary>
     public Action? ShowPicker { get; set; }
