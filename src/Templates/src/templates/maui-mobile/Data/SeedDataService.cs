@@ -45,8 +45,7 @@ public class SeedDataService
 		try
 		{
 			string json = await reader.ReadToEndAsync();
-			payload = JsonSerializer.Deserialize(json, JsonContext.Default.ProjectsJson)
-				?? throw new InvalidDataException("Seed data did not contain a project payload.");
+			payload = DeserializeSeedData(json);
 
 			if (payload.Projects.Count == 0)
 			{
@@ -102,6 +101,71 @@ public class SeedDataService
 			throw;
 		}
 	}
+
+	private static ProjectsJson DeserializeSeedData(string json)
+	{
+		using JsonDocument document = JsonDocument.Parse(json);
+		JsonElement projectsElement = document.RootElement.GetProperty(nameof(ProjectsJson.Projects));
+		var projects = new List<Project>();
+
+		foreach (JsonElement projectElement in projectsElement.EnumerateArray())
+		{
+			var project = new Project
+			{
+				Name = GetRequiredString(projectElement, nameof(Project.Name)),
+				Description = GetRequiredString(projectElement, nameof(Project.Description)),
+				Icon = GetRequiredString(projectElement, nameof(Project.Icon)),
+				Category = DeserializeCategory(projectElement.GetProperty(nameof(Project.Category))),
+				Tasks = DeserializeTasks(projectElement.GetProperty(nameof(Project.Tasks))),
+				Tags = DeserializeTags(projectElement.GetProperty(nameof(Project.Tags)))
+			};
+
+			projects.Add(project);
+		}
+
+		return new ProjectsJson { Projects = projects };
+	}
+
+	private static Category DeserializeCategory(JsonElement categoryElement) =>
+		new()
+		{
+			Title = GetRequiredString(categoryElement, nameof(Category.Title)),
+			Color = GetRequiredString(categoryElement, nameof(Category.Color))
+		};
+
+	private static List<ProjectTask> DeserializeTasks(JsonElement tasksElement)
+	{
+		var tasks = new List<ProjectTask>();
+		foreach (JsonElement taskElement in tasksElement.EnumerateArray())
+		{
+			tasks.Add(new ProjectTask
+			{
+				Title = GetRequiredString(taskElement, nameof(ProjectTask.Title)),
+				IsCompleted = taskElement.GetProperty(nameof(ProjectTask.IsCompleted)).GetBoolean()
+			});
+		}
+
+		return tasks;
+	}
+
+	private static List<Tag> DeserializeTags(JsonElement tagsElement)
+	{
+		var tags = new List<Tag>();
+		foreach (JsonElement tagElement in tagsElement.EnumerateArray())
+		{
+			tags.Add(new Tag
+			{
+				Title = GetRequiredString(tagElement, nameof(Tag.Title)),
+				Color = GetRequiredString(tagElement, nameof(Tag.Color))
+			});
+		}
+
+		return tags;
+	}
+
+	private static string GetRequiredString(JsonElement element, string propertyName) =>
+		element.GetProperty(propertyName).GetString()
+			?? throw new InvalidDataException($"Seed data property '{propertyName}' was null.");
 
 	private async Task ClearTablesAsync()
 	{
