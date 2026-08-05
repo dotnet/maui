@@ -1373,7 +1373,7 @@ namespace Microsoft.Maui.Platform
 			int index = _actionView?.IndexOfChild(host) ?? -1;
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (_isResettingSwipe || swipeItems is null)
+			if (_isResettingSwipe || swipeItems is null || index < 0 || index >= swipeItems.Count)
 			{
 				return false;
 			}
@@ -1390,10 +1390,13 @@ namespace Microsoft.Maui.Platform
 
 		sealed class SwipeItemAccessibilityDelegate(MauiSwipeView swipeView, AccessibilityDelegateCompat? originalDelegate) : AccessibilityDelegateCompatWrapper(originalDelegate)
 		{
+			readonly WeakReference<MauiSwipeView> _swipeViewRef = new(swipeView);
+
 			public override bool PerformAccessibilityAction(AView? host, int action, Bundle? args)
 			{
 				if (host is not null &&
-					action == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick?.Id
+					action == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick?.Id &&
+					_swipeViewRef.TryGetTarget(out var swipeView)
 					)
 				{
 					return swipeView.TryExecuteSwipeItemFromAccessibility(host);
