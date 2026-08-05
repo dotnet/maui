@@ -124,7 +124,7 @@ function ConvertTo-SafeInternalBuildNumber {
     if ($null -eq $BuildNumber) { return $null }
 
     $value = [string]$BuildNumber
-    if ($value -match '^\d{8}\.\d{1,10}$') {
+    if ($value -match '\A\d{8}\.\d{1,10}\z') {
         return $value
     }
 
@@ -155,6 +155,91 @@ function Select-LatestInternalOfficialBuild {
         Select-Object -First 1
 }
 
+function Get-InternalOfficialBuildAzArguments {
+    param(
+        [Parameter(Mandatory = $true)][string]$BranchRef,
+        [Parameter(Mandatory = $true)][int]$DefinitionId,
+        [Parameter(Mandatory = $true)][string]$Organization,
+        [Parameter(Mandatory = $true)][string]$Project,
+        [AllowNull()][string]$ManualBuildId,
+        [AllowNull()][string]$ManualBuildBranchRef
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($ManualBuildId) -and $BranchRef -eq $ManualBuildBranchRef) {
+        return @(
+            'pipelines', 'build', 'show',
+            '--id', $ManualBuildId,
+            '--org', "https://dev.azure.com/$Organization",
+            '--project', $Project,
+            '-o', 'json'
+        )
+    }
+
+    return @(
+        'pipelines', 'runs', 'list',
+        '--pipeline-ids', "$DefinitionId",
+        '--branch', $BranchRef,
+        '--query-order', 'QueueTimeDesc',
+        '--top', '1',
+        '--org', "https://dev.azure.com/$Organization",
+        '--project', $Project,
+        '-o', 'json'
+    )
+}
+
+function ConvertFrom-InternalOfficialBuildAzOutput {
+    param(
+        [AllowNull()][string]$Stdout,
+        [AllowNull()][string]$Stderr,
+        [Parameter(Mandatory = $true)][int]$ExitCode,
+        [Parameter(Mandatory = $true)][bool]$ManualQuery,
+        [Parameter(Mandatory = $true)][int]$ExpectedDefinitionId
+    )
+
+    if ($ExitCode -ne 0) {
+        $errorText = "$Stdout`n$Stderr"
+        $failureKind = if ($errorText -match '(?i)TF400813|VS30063|unauthori[sz]ed|forbidden|401|403|not have permission|az login|sign in|authentication') {
+            'access'
+        } else {
+            'query'
+        }
+        return [PSCustomObject]@{
+            Success = $false
+            FailureKind = $failureKind
+            Message = "Azure DevOps query failed (exit $ExitCode)."
+        }
+    }
+
+    try {
+        $parsed = $Stdout | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        return [PSCustomObject]@{
+            Success = $false
+            FailureKind = 'malformed'
+            Message = 'Azure DevOps returned malformed JSON.'
+        }
+    }
+
+    if ($ManualQuery) {
+        $definition = Get-InternalBuildProperty $parsed 'definition'
+        $actualDefinitionId = Get-InternalBuildProperty $definition 'id'
+        if ($null -eq $actualDefinitionId -or [string]$actualDefinitionId -ne [string]$ExpectedDefinitionId) {
+            return [PSCustomObject]@{
+                Success = $false
+                FailureKind = 'definition-mismatch'
+                Message = "Azure DevOps build does not belong to definition $ExpectedDefinitionId."
+            }
+        }
+    }
+
+    $build = if ($ManualQuery) {
+        $parsed
+    } else {
+        Select-LatestInternalOfficialBuild -Builds @($parsed)
+    }
+    return [PSCustomObject]@{ Success = $true; Build = $build }
+}
+
 function New-AzdoInternalOfficialBuildFetcher {
     param(
         [int]$DefinitionId = $Script:InternalOfficialBuildDefinitionId,
@@ -181,59 +266,31 @@ function New-AzdoInternalOfficialBuildFetcher {
             }
         }
 
-        $azArgs = if (-not [string]::IsNullOrWhiteSpace($manualId) -and $BranchRef -eq $manualRef) {
-            @(
-                'pipelines', 'build', 'show',
-                '--id', $manualId,
-                '--org', "https://dev.azure.com/$organization",
-                '--project', $projectName,
-                '-o', 'json'
-            )
-        } else {
-            @(
-                'pipelines', 'build', 'list',
-                '--definition-ids', "$definition",
-                '--branch', $BranchRef,
-                '--top', '20',
-                '--org', "https://dev.azure.com/$organization",
-                '--project', $projectName,
-                '-o', 'json'
-            )
-        }
+        $manualQuery = -not [string]::IsNullOrWhiteSpace($manualId) -and $BranchRef -eq $manualRef
+        $azArgs = Get-InternalOfficialBuildAzArguments `
+            -BranchRef $BranchRef `
+            -DefinitionId $definition `
+            -Organization $organization `
+            -Project $projectName `
+            -ManualBuildId $manualId `
+            -ManualBuildBranchRef $manualRef
 
         $global:LASTEXITCODE = 0
-        $output = & az @azArgs 2>&1
-        $exitCode = $LASTEXITCODE
-        $text = $output -join "`n"
-        if ($exitCode -ne 0) {
-            $failureKind = if ($text -match '(?i)TF400813|VS30063|unauthori[sz]ed|forbidden|401|403|not have permission|az login|sign in|authentication') {
-                'access'
-            } else {
-                'query'
-            }
-            return [PSCustomObject]@{
-                Success = $false
-                FailureKind = $failureKind
-                Message = "Azure DevOps query failed (exit $exitCode)."
-            }
-        }
-
+        $stderrPath = [System.IO.Path]::GetTempFileName()
         try {
-            $parsed = $text | ConvertFrom-Json -ErrorAction Stop
-        } catch {
-            return [PSCustomObject]@{
-                Success = $false
-                FailureKind = 'malformed'
-                Message = 'Azure DevOps returned malformed JSON.'
-            }
+            $output = & az @azArgs 2> $stderrPath
+            $exitCode = $LASTEXITCODE
+            $stderr = [System.IO.File]::ReadAllText($stderrPath)
+        } finally {
+            Remove-Item -LiteralPath $stderrPath -Force -ErrorAction SilentlyContinue
         }
-
-        $build = if (-not [string]::IsNullOrWhiteSpace($manualId) -and $BranchRef -eq $manualRef) {
-            $parsed
-        } else {
-            Select-LatestInternalOfficialBuild -Builds @($parsed)
-        }
-        return [PSCustomObject]@{ Success = $true; Build = $build }
+        $stdout = $output -join "`n"
+        return ConvertFrom-InternalOfficialBuildAzOutput `
+            -Stdout $stdout `
+            -Stderr $stderr `
+            -ExitCode $exitCode `
+            -ManualQuery:$manualQuery `
+            -ExpectedDefinitionId $definition
     }.GetNewClosure()
 }
 
@@ -287,7 +344,6 @@ function Get-InternalOfficialBuildHealth {
     }
 
     $results = [System.Collections.Generic.List[object]]::new()
-    $successfulQueryCount = 0
     foreach ($branchRef in $branchRefs) {
         try {
             $fetchResult = & $BuildFetcher $branchRef
@@ -302,14 +358,6 @@ function Get-InternalOfficialBuildHealth {
         $success = [bool](Get-InternalBuildProperty $fetchResult 'Success')
         $failureKind = [string](Get-InternalBuildProperty $fetchResult 'FailureKind')
         if (-not $success -and $failureKind -eq 'access') {
-            if ($successfulQueryCount -eq 0) {
-                return [PSCustomObject]@{
-                    overall = 'skipped'
-                    skipReason = 'internal-auth-unavailable'
-                    branches = @()
-                }
-            }
-
             $branchName = $branchRef -replace '^refs/heads/', ''
             [void]$results.Add([PSCustomObject]@{
                 branch = $branchName
@@ -335,7 +383,6 @@ function Get-InternalOfficialBuildHealth {
             continue
         }
 
-        $successfulQueryCount++
         $build = Get-InternalBuildProperty $fetchResult 'Build'
         $headSha = try { [string](& $HeadFetcher $branchRef) } catch { $null }
         $classification = Get-InternalOfficialBuildClassification `
@@ -372,6 +419,17 @@ function Get-InternalOfficialBuildHealth {
     }
 
     $branchResults = @($results)
+    $nonAuthResults = @($branchResults | Where-Object {
+        [string](Get-InternalBuildProperty $_ 'reason') -ne 'internal-auth-unavailable'
+    })
+    if ($branchResults.Count -gt 0 -and $nonAuthResults.Count -eq 0) {
+        return [PSCustomObject]@{
+            overall = 'skipped'
+            skipReason = 'internal-auth-unavailable'
+            branches = @()
+        }
+    }
+
     return [PSCustomObject]@{
         overall = Get-InternalOfficialBuildOverallClassification -Branches $branchResults
         skipReason = $null

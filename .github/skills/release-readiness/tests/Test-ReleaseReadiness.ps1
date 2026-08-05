@@ -8623,6 +8623,7 @@ function New-InternalBuildFixture {
     return [PSCustomObject]@{
         id = $Id
         buildNumber = $Number
+        definition = [PSCustomObject]@{ id = 1095 }
         status = $Status
         result = $Result
         sourceBranch = $BranchRef
@@ -8715,7 +8716,7 @@ $inaccessible = Get-InternalOfficialBuildHealth `
     -GitHubActions:$false
 Assert-Eq -Label "internal inaccessible auth: fail-open skipped" -Expected 'skipped' -Actual $inaccessible.overall
 Assert-Eq -Label "internal inaccessible auth: classified reason" -Expected 'internal-auth-unavailable' -Actual $inaccessible.skipReason
-Assert-Eq -Label "internal inaccessible auth: stops after first denied query" -Expected 1 -Actual $script:InternalAccessFetchCount
+Assert-Eq -Label "internal inaccessible auth: queries every branch before collapsing" -Expected 2 -Actual $script:InternalAccessFetchCount
 Assert-Eq -Label "internal inaccessible auth: adds no local checklist row" -Expected 0 -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $inaccessible -PublicSafe:$false).Count)
 
 $partialAccessFailure = Invoke-InternalFixtureHealth @{
@@ -8726,6 +8727,23 @@ Assert-Eq -Label "internal partial auth failure: preserves both branch outcomes"
 Assert-Eq -Label "internal partial auth failure: earlier red remains overall red" -Expected 'red' -Actual $partialAccessFailure.overall
 Assert-Eq -Label "internal partial auth failure: inaccessible branch is unknown" -Expected 'unknown/internal-auth-unavailable' -Actual "$($partialAccessFailure.branches[1].classification)/$($partialAccessFailure.branches[1].reason)"
 Assert-Eq -Label "internal partial auth failure: earlier build evidence is retained" -Expected 71 -Actual $partialAccessFailure.branches[0].build.id
+
+$queryThenAccess = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $false; FailureKind = 'query'; Message = 'fixture transient' }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $false; FailureKind = 'access'; Message = 'fixture denied' }
+}
+Assert-Eq -Label "internal query then auth failure: preserves both unknown rows" -Expected 2 -Actual $queryThenAccess.branches.Count
+Assert-Eq -Label "internal query then auth failure: remains unknown, not skipped" -Expected 'unknown' -Actual $queryThenAccess.overall
+Assert-Eq -Label "internal query then auth failure: preserves query reason" -Expected 'query' -Actual $queryThenAccess.branches[0].reason
+Assert-Eq -Label "internal query then auth failure: preserves auth reason" -Expected 'internal-auth-unavailable' -Actual $queryThenAccess.branches[1].reason
+
+$accessThenRed = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $false; FailureKind = 'access'; Message = 'fixture denied' }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Result 'failed' -Id 74) }
+}
+Assert-Eq -Label "internal auth then red: continues to second branch" -Expected 2 -Actual $accessThenRed.branches.Count
+Assert-Eq -Label "internal auth then red: later red remains overall red" -Expected 'red' -Actual $accessThenRed.overall
+Assert-Eq -Label "internal auth then red: later build evidence is retained" -Expected 74 -Actual $accessThenRed.branches[1].build.id
 
 $script:InternalGhaFetchCount = 0
 $ghaFetcher = {
@@ -8803,6 +8821,7 @@ $untrustedBuildText = $untrustedBuildNumber | ConvertTo-Json -Depth 8
 Assert-Eq -Label "internal build number: valid pipeline token is preserved" -Expected '20260730.12' -Actual $untrustedBuildNumber.branches[1].build.buildNumber
 Assert-Eq -Label "internal build number: instruction-like value is replaced" -Expected 'invalid-build-number' -Actual $untrustedBuildNumber.branches[0].build.buildNumber
 Assert-Eq -Label "internal build number: raw instruction text does not reach JSON" -Expected $false -Actual ([bool]($untrustedBuildText -match 'IGNORE previous instructions'))
+Assert-Eq -Label "internal build number: trailing newline is rejected" -Expected 'invalid-build-number' -Actual (ConvertTo-SafeInternalBuildNumber "20260730.1`n")
 
 $localChecks = @(Convert-InternalOfficialBuildHealthToChecks -Health $netRed -PublicSafe:$false)
 $localChecksText = $localChecks | ConvertTo-Json -Depth 8
@@ -8819,6 +8838,35 @@ $latestSelectionFixture = Select-LatestInternalOfficialBuild -Builds @(
     [PSCustomObject]@{ id = 101; queueTime = '2026-07-29T12:00:00Z' }
 )
 Assert-Eq -Label "internal build selection: newest queue time wins with ID tie-breaker" -Expected 101 -Actual $latestSelectionFixture.id
+
+$orderedArgs = Get-InternalOfficialBuildAzArguments `
+    -BranchRef $internalInflightRef `
+    -DefinitionId 1095 `
+    -Organization 'dnceng' `
+    -Project 'internal'
+Assert-Eq -Label "internal Azure query: uses runs list with definition 1095" -Expected 'pipelines runs list --pipeline-ids 1095' -Actual (($orderedArgs[0..4]) -join ' ')
+Assert-Eq -Label "internal Azure query: orders by newest queue time before top 1" -Expected $true -Actual ([bool](($orderedArgs -join ' ') -match '--query-order QueueTimeDesc --top 1'))
+
+$validManualJson = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 75 | ConvertTo-Json -Depth 8)
+$manualWithWarning = ConvertFrom-InternalOfficialBuildAzOutput `
+    -Stdout $validManualJson `
+    -Stderr 'WARNING: extension installed' `
+    -ExitCode 0 `
+    -ManualQuery:$true `
+    -ExpectedDefinitionId 1095
+Assert-Eq -Label "internal Azure parser: successful stderr warning does not corrupt JSON" -Expected $true -Actual $manualWithWarning.Success
+Assert-Eq -Label "internal Azure parser: valid manual build is retained" -Expected 75 -Actual $manualWithWarning.Build.id
+
+$wrongDefinition = New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 76
+$wrongDefinition.definition.id = 999
+$wrongDefinitionResult = ConvertFrom-InternalOfficialBuildAzOutput `
+    -Stdout ($wrongDefinition | ConvertTo-Json -Depth 8) `
+    -Stderr '' `
+    -ExitCode 0 `
+    -ManualQuery:$true `
+    -ExpectedDefinitionId 1095
+Assert-Eq -Label "internal manual override: wrong pipeline is rejected" -Expected $false -Actual $wrongDefinitionResult.Success
+Assert-Eq -Label "internal manual override: mismatch reason is explicit" -Expected 'definition-mismatch' -Actual $wrongDefinitionResult.FailureKind
 
 $candidateRefs = @(Get-InternalOfficialBuildBranches `
     -MajorVersion 11 `
