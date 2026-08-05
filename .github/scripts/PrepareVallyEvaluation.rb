@@ -11,62 +11,137 @@ FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
 REQUIRED_SKILL_INVOCATION_SPECS = %w[
+  .github/skills/agentic-labeler/tests/eval.vally.yaml
   .github/skills/ci-fix/tests/eval.ownership.vally.yaml
+  .github/skills/code-review/tests/eval.producer-trace.vally.yaml
   .github/skills/code-review/tests/eval.trim-aot.vally.yaml
   .github/skills/try-fix/tests/eval.restore.vally.yaml
   .github/skills/try-fix/tests/eval.vally.yaml
+  .github/skills/verify-tests-fail-without-fix/tests/eval.vally.yaml
 ].freeze
+REQUIRED_SKILL_PATTERNS = {
+  ".github/skills/code-review/tests/eval.producer-trace.vally.yaml" => {
+    "producer-trace workflow step" => /^### Step 1\.5: Trace External Output Contracts \(Always Active\)$/,
+    "External Output Contract output section" => /^### External Output Contract$/
+  }
+}.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
   /(?:\A|[;&|\r\n])\s*git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
 
+VERIFY_FIX_TRANSFORM = lambda do |content|
+  marker = "\t\tinternal static bool VallyFixtureIsFixed => true;\n\n"
+  insertion = "\t{\n#{marker}"
+  transformed = content.sub("\t{\n", insertion)
+  raise "Could not add verify fixture marker to Brush" if transformed == content
+
+  transformed
+end
+
+VERIFY_TEST_TRANSFORM = lambda do |content|
+  test = [
+    "\t\t[Fact]",
+    "\t\tpublic void VallyFixtureDetectsFix()",
+    "\t\t{",
+    "\t\t\tvar property = typeof(Brush).GetProperty(",
+    "\t\t\t\t\"VallyFixtureIsFixed\",",
+    "\t\t\t\tSystem.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);",
+    "\t\t\tAssert.NotNull(property);",
+    "\t\t\tAssert.True((bool)property.GetValue(null));",
+    "\t\t}"
+  ].join("\n")
+  transformed = content.sub(/\n\t}\n}\s*\z/, "\n\n#{test}\n\t}\n}\n")
+  raise "Could not add verify fixture test" if transformed == content
+
+  transformed
+end
+
+VERIFY_FULL_FILES = {
+  "src/Controls/src/Core/Brush/Brush.cs" => VERIFY_FIX_TRANSFORM,
+  "src/Controls/tests/Core.UnitTests/BrushTypeConverterUnitTests.cs" => VERIFY_TEST_TRANSFORM
+}.freeze
+
+VERIFY_FAILURE_ONLY_FILES = {
+  "src/Controls/tests/Core.UnitTests/BrushTypeConverterUnitTests.cs" => VERIFY_TEST_TRANSFORM
+}.freeze
+
 FIXTURES = {
-  "eval.restore.vally.yaml" => [
-    {
-      marker: "restores-synthetic-fix-without-raw-git",
-      fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
-      message: "Synthetic WebView lifecycle restoration attempt",
-      files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
-    }
-  ],
-  "eval.vally.yaml" => [
-    {
-      marker: "happy-path-distinct-alternative-fix",
-      fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
-      message: "Synthetic WebView lifecycle fix",
-      files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
-    },
-    {
-      marker: "regression-no-success-without-running-test",
-      fallback_ref: "45662d6e08ae7fc7f6db0314d00111e34b5f99b1",
-      message: "Synthetic Editor layout fix",
-      files: ["src/Core/src/Handlers/Editor/EditorHandler.iOS.cs"]
-    },
-    {
-      marker: "edge-case-second-attempt-avoids-prior-approach",
-      fallback_ref: "2b1326a2098b26419ebe421455b04d081cfd3a25",
-      message: "Synthetic Shell toolbar fix",
-      files: ["src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs"]
-    },
-    {
-      marker: "edge-case-exhausted-iterations-documented-fail",
-      fallback_ref: "5beb719c5c378c37b5b6e2f37fba4cdacadcaeae",
-      message: "Synthetic CarouselView overlap fix",
-      files: ["src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs"]
-    },
-    {
-      marker: "regression-no-repeated-root-cause-disguised",
-      fallback_ref: "d1a7b782d363f34f72527284fdf8d76acdcc91ce",
-      message: "Synthetic CollectionView template update fix",
-      files: ["src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs"]
-    },
-    {
-      marker: "regression-verify-correct-platform-code-path",
-      fallback_ref: "7fede996393862cd695ac70323a82bb10c75a652",
-      message: "Synthetic NavigationPage disconnect fix",
-      files: ["src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs"]
-    }
-  ]
+  "try-fix" => {
+    "eval.restore.vally.yaml" => [
+      {
+        marker: "restores-synthetic-fix-without-raw-git",
+        fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+        message: "Synthetic WebView lifecycle restoration attempt",
+        files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
+      }
+    ],
+    "eval.vally.yaml" => [
+      {
+        marker: "happy-path-distinct-alternative-fix",
+        fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+        message: "Synthetic WebView lifecycle fix",
+        files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
+      },
+      {
+        marker: "regression-no-success-without-running-test",
+        fallback_ref: "45662d6e08ae7fc7f6db0314d00111e34b5f99b1",
+        message: "Synthetic Editor layout fix",
+        files: ["src/Core/src/Handlers/Editor/EditorHandler.iOS.cs"]
+      },
+      {
+        marker: "edge-case-second-attempt-avoids-prior-approach",
+        fallback_ref: "2b1326a2098b26419ebe421455b04d081cfd3a25",
+        message: "Synthetic Shell toolbar fix",
+        files: ["src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs"]
+      },
+      {
+        marker: "edge-case-exhausted-iterations-documented-fail",
+        fallback_ref: "5beb719c5c378c37b5b6e2f37fba4cdacadcaeae",
+        message: "Synthetic CarouselView overlap fix",
+        files: ["src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs"]
+      },
+      {
+        marker: "regression-no-repeated-root-cause-disguised",
+        fallback_ref: "d1a7b782d363f34f72527284fdf8d76acdcc91ce",
+        message: "Synthetic CollectionView template update fix",
+        files: ["src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs"]
+      },
+      {
+        marker: "regression-verify-correct-platform-code-path",
+        fallback_ref: "7fede996393862cd695ac70323a82bb10c75a652",
+        message: "Synthetic NavigationPage disconnect fix",
+        files: ["src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs"]
+      }
+    ]
+  },
+  "verify-tests-fail-without-fix" => {
+    "eval.vally.yaml" => [
+      {
+        marker: "happy-path-full-verification-mode",
+        fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+        message: "Synthetic full test verification fixture",
+        files: VERIFY_FULL_FILES
+      },
+      {
+        marker: "happy-path-verify-failure-only-mode",
+        fallback_ref: "dd3471362e150efea6eaf8f782cbcbe8e05a2bfe",
+        message: "Synthetic failure-only test verification fixture",
+        files: VERIFY_FAILURE_ONLY_FILES
+      },
+      {
+        marker: "regression-no-manual-git-revert",
+        fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+        message: "Synthetic restore-protocol verification fixture",
+        files: VERIFY_FULL_FILES
+      },
+      {
+        marker: "edge-case-require-full-verification-with-fix-files",
+        fallback_ref: "45662d6e08ae7fc7f6db0314d00111e34b5f99b1",
+        message: "Synthetic required-full-verification fixture",
+        files: VERIFY_FULL_FILES
+      }
+    ]
+  }
 }.freeze
 
 def fail!(message)
@@ -239,6 +314,11 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   validate_graders!(document["graders"], "graders")
   relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
   require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
+  Array(REQUIRED_SKILL_PATTERNS[relative_spec_path]).each do |description, pattern|
+    skill_path = File.join(skill_root, "SKILL.md")
+    fail!("#{relative_spec_path} requires #{skill_path}") unless File.file?(skill_path)
+    fail!("#{relative_spec_path} requires #{description} in #{skill_path}") unless File.read(skill_path).match?(pattern)
+  end
 
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
@@ -322,8 +402,9 @@ spec_paths.each do |spec_path|
   validate_spec!(real_spec_path, skill_root, repo_root, inspect_git_refs: !validate_only)
 end
 
-if !validate_only && File.basename(skill_root) == "try-fix"
-  FIXTURES.each do |spec_name, fixtures|
+skill_fixtures = FIXTURES[File.basename(skill_root)]
+if !validate_only && skill_fixtures
+  skill_fixtures.each do |spec_name, fixtures|
     spec_path = File.join(tests_path, spec_name)
     fail!("missing fixture spec #{spec_path}") unless File.file?(spec_path)
 

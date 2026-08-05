@@ -331,6 +331,11 @@ A prose-only change — documentation or comments — **need not** carry the fam
 - [Probe]: [Answer — what actually happens in this scenario]
 - [Probe]: [Answer]
 
+### External Output Contract
+*(Required when changed code classifies external tool output; otherwise state "Not applicable.")*
+| Consumer token/pattern | Producer location | Producer emission condition | Consumer assumption | Ordinary negative case | Downstream effect |
+|---|---|---|---|---|---|
+
 ### Verdict: LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION
 **Confidence:** high / medium / low *(justified against calibration table)*
 **Summary:** [2-3 sentences explaining the verdict]

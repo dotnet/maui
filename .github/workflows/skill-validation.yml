@@ -637,18 +637,24 @@ jobs:
           echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
 
       # ── Run LLM evaluation (Vally) ───────────────────────────────
-      # ── Baseline (pre-PR) evaluation ─────────────────────────────
+      # ── Optional baseline (pre-PR) evaluation ────────────────────
       # Run the SAME specs against the skill's instruction files as they exist
       # on the PR base, so the results comment can show before → after and prove
       # a reviewer change actually moved the needle. Only reviewer instructions
       # (SKILL.md / *.md, NOT tests/) are reverted to base; the PR's eval specs
       # and frozen fixtures are kept. Informational only — it never gates (the
       # gate uses the authoritative "after" run below). Skipped when there is no
-      # base (manual dispatch), the skill is new on this branch, or its
+      # Explicit `/evaluate-skills --baseline` opt-in only: the baseline
+      # approximately doubles Copilot sessions while never affecting the gate,
+      # so automatic PR runs spend their limited quota on the authoritative
+      # result. Skipped when there is no base, the skill is new on this branch, or its
       # instructions are unchanged versus base, or non-Markdown reviewer assets
       # changed (either case cannot produce a useful comparison).
       - name: Run Vally evaluation (baseline)
         id: eval-baseline
+        if: >-
+          github.event_name == 'issue_comment' &&
+          contains(github.event.comment.body, '--baseline')
         continue-on-error: true
         env:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
@@ -766,7 +772,7 @@ jobs:
             --output-dir "$RESULTS_PATH" \
             --junit \
             "${RUNS_ARGS[@]}" \
-            --workers 4 \
+            --workers 3 \
             --verbose
           BASELINE_RC=$?
           set -e
@@ -868,7 +874,7 @@ jobs:
             --output-dir "$RESULTS_PATH" \
             --junit \
             "${RUNS_ARGS[@]}" \
-            --workers 4 \
+            --workers 3 \
             --verbose
           EVAL_RC=$?
           set -e
