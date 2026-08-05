@@ -636,6 +636,30 @@ jobs:
           echo "::add-mask::${TOKENS[$IDX]}"
           echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
 
+      - name: Wait for selected PAT API quota
+        env:
+          GH_TOKEN: ${{ steps.select-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          minimum_remaining=500
+          read -r remaining reset_at < <(
+            gh api rate_limit --jq '.resources.core | [.remaining, .reset] | @tsv'
+          )
+          if [ "$remaining" -lt "$minimum_remaining" ]; then
+            now=$(date +%s)
+            wait_seconds=$((reset_at - now + 30))
+            if [ "$wait_seconds" -gt 0 ] && [ "$wait_seconds" -le 3900 ]; then
+              echo "Selected PAT has ${remaining} core requests remaining; waiting ${wait_seconds}s for reset."
+              sleep "$wait_seconds"
+            fi
+            remaining=$(gh api rate_limit --jq '.resources.core.remaining')
+          fi
+          if [ "$remaining" -lt "$minimum_remaining" ]; then
+            echo "::error::Selected PAT has only ${remaining} core requests remaining after quota preflight."
+            exit 1
+          fi
+          echo "Selected PAT has ${remaining} core requests available."
+
       # ── Run LLM evaluation (Vally) ───────────────────────────────
       # ── Optional baseline (pre-PR) evaluation ────────────────────
       # Run the SAME specs against the skill's instruction files as they exist

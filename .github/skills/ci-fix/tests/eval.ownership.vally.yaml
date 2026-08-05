@@ -35,6 +35,7 @@ stimuli:
       Your first action must be to invoke the `ci-fix` skill. Do not reason
       about or answer the snapshot until that invocation completes. Then apply
       its triage protocol to this frozen main-branch snapshot.
+      Call the skill tool before emitting any response text.
 
       Tracking issue #36051 is open, has the ci-scan label, and has no open or
       merged [ci-fix] PR. A search for #36051 found open human PR #36657.
@@ -54,10 +55,8 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [ci-fix] }
-      - type: output-contains
-        config: { substring: "Decision: Continue" }
-      - type: output-not-contains
-        config: { substring: "Decision: Stop" }
+      - type: output-matches
+        config: { pattern: '^Decision: Continue\r?\nNext: [^\r\n]+$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
   - name: incidental-body-reference-does-not-stop-triage
@@ -66,6 +65,7 @@ stimuli:
       Your first action must be to invoke the `ci-fix` skill. Do not reason
       about or answer the snapshot until that invocation completes. Then apply
       its triage protocol to this frozen main-branch snapshot.
+      Call the skill tool before emitting any response text.
 
       Tracking issue #48101 is open, in scope, and has no [ci-fix] PR. The
       title-and-body search found open human PR #48116:
@@ -85,10 +85,8 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [ci-fix] }
-      - type: output-contains
-        config: { substring: "Decision: Continue" }
-      - type: output-not-contains
-        config: { substring: "Decision: Stop" }
+      - type: output-matches
+        config: { pattern: '^Decision: Continue\r?\nNext: [^\r\n]+$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
   - name: explicit-human-reference-stops-competing-fix
@@ -97,6 +95,7 @@ stimuli:
       Your first action must be to invoke the `ci-fix` skill. Do not reason
       about or answer the snapshot until that invocation completes. Then apply
       its triage protocol to this frozen main-branch snapshot.
+      Call the skill tool before emitting any response text.
 
       Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
       human PR #48115 has this body:
@@ -111,10 +110,8 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [ci-fix] }
-      - type: output-contains
-        config: { substring: "Decision: Stop" }
-      - type: output-not-contains
-        config: { substring: "Decision: Continue" }
+      - type: output-matches
+        config: { pattern: '^Decision: Stop\r?\nNext: [^\r\n]+$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
   - name: explicit-human-url-reference-stops-competing-fix
@@ -123,6 +120,7 @@ stimuli:
       Your first action must be to invoke the `ci-fix` skill. Do not reason
       about or answer the snapshot until that invocation completes. Then apply
       its triage protocol to this frozen main-branch snapshot.
+      Call the skill tool before emitting any response text.
 
       Tracking issue #48103 is open, in scope, and has no [ci-fix] PR. Open
       human PR #48117 has this body:
@@ -138,10 +136,8 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [ci-fix] }
-      - type: output-contains
-        config: { substring: "Decision: Stop" }
-      - type: output-not-contains
-        config: { substring: "Decision: Continue" }
+      - type: output-matches
+        config: { pattern: '^Decision: Stop\r?\nNext: [^\r\n]+$' }
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
 scoring:

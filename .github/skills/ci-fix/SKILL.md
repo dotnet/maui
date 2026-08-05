@@ -1,6 +1,6 @@
 ---
 name: ci-fix
-description: Common safety and triage protocol for .NET MAUI CI-fixer workflows. Use whenever investigating, creating, or advancing a `[ci-fix]` or `[ci-fix-net11]` pull request from a `ci-scan` issue, including manual single-issue dispatches and scheduled sweeps.
+description: Common safety and triage protocol for .NET MAUI CI-fixer workflows. Use whenever investigating, creating, or advancing a `[ci-fix]` or `[ci-fix-net11]` pull request from a `ci-scan` issue, including frozen ownership snapshots, Continue/Watch/Stop/Skip classification, manual single-issue dispatches, and scheduled sweeps.
 ---
 
 # CI-fix triage protocol
@@ -27,6 +27,10 @@ inspect, not a decision by itself.
 Reason through all ownership evidence before emitting the decision. Return
 exactly one terminal decision; never emit a provisional decision and then
 correct it later in the response.
+
+When the caller requests a strict decision format, complete the classification
+before writing any response text. Emit only the final decision and requested
+next action. Do not include a draft, correction, or alternate decision.
 
 ## Deduplicate without false ownership
 

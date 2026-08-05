@@ -120,7 +120,33 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator(routing_tests_path)
 
     refute status.success?
-    assert_includes stderr, "must include skill-invocation"
+    assert_includes stderr, "must include skill-invocation targeting try-fix"
+  end
+
+  def test_rejects_decorative_skill_invocation_grader_for_routing_specs
+    routing_tests_path = File.join(@repo_root, ".github", "skills", "try-fix", "tests")
+    FileUtils.mkdir_p(routing_tests_path)
+    File.write(
+      File.join(routing_tests_path, "eval.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "decorative-routing-grader",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["another-skill"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(routing_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "must include skill-invocation targeting try-fix"
   end
 
   def test_requires_producer_trace_output_contract_in_skill_template

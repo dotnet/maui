@@ -30,6 +30,7 @@ REQUIRED_SKILL_PATTERNS = {
   }
 }.freeze
 REQUIRED_FIRST_ACTION_SKILLS = {
+  ".github/skills/ci-fix/tests/eval.ownership.vally.yaml" => "ci-fix",
   ".github/skills/code-review/tests/eval.producer-trace.vally.yaml" => "code-review"
 }.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
@@ -307,6 +308,18 @@ def validate_graders!(graders, location)
   end
 end
 
+def skill_invocation_targets?(grader, skill_name)
+  return false unless grader.is_a?(Hash) && grader["type"] == "skill-invocation"
+
+  config = grader["config"]
+  return false unless config.is_a?(Hash)
+
+  %w[required disallowed].any? do |key|
+    values = config[key]
+    values.is_a?(Array) && values.include?(skill_name)
+  end
+end
+
 def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   fail!("#{spec_path} uses Vally parameter placeholders; trusted validation requires structurally static specs") if File.read(spec_path).match?(PARAM_PLACEHOLDER_PATTERN)
 
@@ -322,6 +335,7 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
   require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
   required_first_action_skill = REQUIRED_FIRST_ACTION_SKILLS[relative_spec_path]
+  skill_name = File.basename(skill_root)
   Array(REQUIRED_SKILL_PATTERNS[relative_spec_path]).each do |description, pattern|
     skill_path = File.join(skill_root, "SKILL.md")
     fail!("#{relative_spec_path} requires #{skill_path}") unless File.file?(skill_path)
@@ -333,8 +347,8 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
     validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
     graders = Array(stimulus["graders"])
     validate_graders!(graders, "stimuli[#{index}].graders")
-    if require_skill_invocation && graders.none? { |grader| grader.is_a?(Hash) && grader["type"] == "skill-invocation" }
-      fail!("stimuli[#{index}].graders must include skill-invocation for #{relative_spec_path}")
+    if require_skill_invocation && graders.none? { |grader| skill_invocation_targets?(grader, skill_name) }
+      fail!("stimuli[#{index}].graders must include skill-invocation targeting #{skill_name} for #{relative_spec_path}")
     end
     if required_first_action_skill
       first_action = "Your first action must be to invoke the `#{required_first_action_skill}` skill."
@@ -391,7 +405,7 @@ def create_fixture_commit(repo_root, fixture, parent_ref: BASE_REF)
                       "#{content}\n// Vally fixture: committed candidate fix.\n"
                     end
       blob = run_git(repo_root, "hash-object", "-w", "--stdin", input: transformed)
-      mode = run_git(repo_root, "ls-tree", BASE_REF, "--", path).split.first
+      mode = run_git(repo_root, "ls-tree", parent_ref, "--", path).split.first
       raise "Could not determine mode for #{path}" unless mode
 
       run_git(repo_root, "update-index", "--add", "--cacheinfo", mode, blob, path, env: index_env)
