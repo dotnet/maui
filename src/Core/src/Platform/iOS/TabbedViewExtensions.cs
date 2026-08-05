@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 			UIColor? defaultBarTextColor,
 			Color? selectedTabColor,
 			Color? unselectedTabColor,
-			Color? barBackgroundColor,
+			Paint? barBackground,
 			Color? selectedBarTextColor,
 			Color? unSelectedBarTextColor)
 		{
@@ -45,7 +45,25 @@ namespace Microsoft.Maui.Platform
 				_tabBarAppearance.ConfigureWithDefaultBackground();
 			}
 
-			var effectiveBarColor = (barBackgroundColor == null) ? defaultBarColor : barBackgroundColor.ToPlatform();
+			var effectiveBarColor = barBackground switch
+			{
+				null => defaultBarColor,
+				SolidPaint solidPaint => solidPaint.Color?.ToPlatform(),
+				_ => null,
+			};
+
+			if (barBackground is GradientPaint)
+			{
+				_tabBarAppearance.BackgroundEffect = null;
+				_tabBarAppearance.BackgroundColor = UIColor.Clear;
+				tabBar.BackgroundColor = UIColor.Clear;
+				tabBar.UpdateBackground(barBackground);
+			}
+			else
+			{
+				tabBar.RemoveBackgroundLayer();
+			}
+
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
 			{

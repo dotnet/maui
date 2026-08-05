@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 		public double FlyoutHeight => _doubleArray[1];
 
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
-			TabBarBackgroundColor ?? BackgroundColor;
+			TabBarBackgroundColor;
 
 		Color IShellAppearanceElement.EffectiveTabBarDisabledColor =>
 			TabBarDisabledColor ?? DisabledColor;
