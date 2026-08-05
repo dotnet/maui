@@ -33,50 +33,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
-			App.WaitForElement("DragStartEventsLabel");
-			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
+			AssertEventText("DragStartEventsLabel", "DragStarting");
+			AssertEventText("DragOverEventsLabel", "DragOver");
+			AssertEventText("DragCompletedEventsLabel", "DropCompleted");
+			AssertEventText("DropEventsLabel", "Drop");
+		}
 
-			if (string.IsNullOrEmpty(textAfterDragStart))
-			{
-				Assert.Fail("Text was expected: Drag start event");
-			}
-			else
-			{
-				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
-			}
-
-			App.WaitForElement("DragOverEventsLabel");
-			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragOver))
-			{
-				Assert.Fail("Text was expected: Drag over event");
-			}
-			else
-			{
-				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
-			}
-
-			App.WaitForElement("DragCompletedEventsLabel");
-			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragComplete))
-			{
-				Assert.Fail("Text was expected: Drag complete event");
-			}
-			else
-			{
-				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
-			}
-
-			App.WaitForElement("DropEventsLabel");
-			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDrop))
-			{
-				Assert.Fail("Text was expected: Drop event");
-			}
-			else
-			{
-				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
-			}
+		void AssertEventText(string automationId, string expectedText)
+		{
+			// Wait for the label's text to become EXACTLY the expected value. A substring wait is
+			// unreliable here because each label's placeholder (e.g. "DragOverEvents: ") already
+			// contains the expected event name (e.g. "DragOver"), so a Contains-based wait would pass
+			// immediately on the placeholder. WaitForTextEqualToElement polls until the text matches
+			// exactly, so the Assert below fails only on a genuine timeout; no separate GetText re-read
+			// is needed (it would only re-open a window for transient Appium flakiness).
+			Assert.That(
+				App.WaitForTextEqualToElement(automationId, expectedText),
+				Is.True,
+				$"Timed out waiting for {automationId} to become '{expectedText}'.");
 		}
 
 		[Test]
@@ -94,7 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
 
-			App.WaitForElement("DragStartEventsLabel");
+			App.WaitForTextEqualToElement("DragStartEventsLabel", "DragStarting");
 			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
 			if (string.IsNullOrEmpty(textAfterDragStart))
@@ -106,7 +80,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
 			}
 
-			App.WaitForElement("DragOverEventsLabel");
+			App.WaitForTextEqualToElement("DragOverEventsLabel", "DragOver");
 			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
@@ -117,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
 			}
 
-			App.WaitForElement("DragCompletedEventsLabel");
+			App.WaitForTextEqualToElement("DragCompletedEventsLabel", "DropCompleted");
 			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragComplete))
 			{
@@ -139,7 +113,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
 
-			App.WaitForElement("DropEventsLabel");
+			App.WaitForTextEqualToElement("DropEventsLabel", "Drop");
 			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDrop))
 			{

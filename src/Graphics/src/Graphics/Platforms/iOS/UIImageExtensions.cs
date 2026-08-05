@@ -56,10 +56,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
+#pragma warning disable CA1416 // Preserve the existing rendering behavior while these unsupported APIs are replaced.
 			UIGraphics.BeginImageContext(size);
 			target.Draw(new CGRect(CGPoint.Empty, size));
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
+#pragma warning restore CA1416
 
 			if (disposeOriginal)
 			{
