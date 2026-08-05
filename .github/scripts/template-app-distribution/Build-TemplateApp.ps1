@@ -564,7 +564,7 @@ switch ($Platform) {
             #
             #   1. A Simulator app (.app.zip) - runnable in the iOS Simulator on any Mac, so a
             #      maintainer can smoke-test the build with no device. `dotnet publish` rejects
-            #      simulator RIDs, so use `dotnet build` + iossimulator-arm64 (macos-15 runners
+            #      simulator RIDs, so use `dotnet build` + iossimulator-arm64 (macos-26 runners
             #      and Apple Silicon testers are arm64).
             #   2. An unsigned device IPA (.ipa) - what testers install on real hardware via
             #      AltStore/Sideloadly (which re-signs with their own Apple ID). A *directly*
