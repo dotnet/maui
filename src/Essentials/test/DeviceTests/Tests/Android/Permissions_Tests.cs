@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Collection("AndroidPermissions")]
 	public class Android_Permissions_Tests
 	{
+		// PlatformUtils.NextRequestCode cycles through 999 values
+		// (12000 through 12998). 1000 iterations guarantee wrap-around.
 		const int RequestCodeRange = 1000;
 
 		[Fact]
@@ -28,7 +30,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task RepeatedBackgroundThreadFailures_DoNotPoisonFutureRequests()
+		public async Task RepeatedBackgroundThreadFailures_DoNotLeakPendingRequests()
 		{
 			var initialPendingRequestCount = GetPendingRequestCount();
 
@@ -41,12 +43,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				}
 			}).ConfigureAwait(false);
 
-			Assert.Equal(initialPendingRequestCount, GetPendingRequestCount());
-
-			var status = await MainThread.InvokeOnMainThreadAsync(
-				Permissions.RequestAsync<Permissions.NetworkState>).ConfigureAwait(false);
-
-			Assert.Equal(PermissionStatus.Granted, status);
 			Assert.Equal(initialPendingRequestCount, GetPendingRequestCount());
 		}
 

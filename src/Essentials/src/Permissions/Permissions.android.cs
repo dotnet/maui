@@ -64,7 +64,6 @@ namespace Microsoft.Maui.ApplicationModel
 				new Dictionary<int, TaskCompletionSource<PermissionResult>>();
 
 			static readonly object locker = new object();
-			static int requestCode;
 
 			public virtual (string androidPermission, bool isRuntime)[] RequiredPermissions { get; }
 
@@ -112,21 +111,40 @@ namespace Microsoft.Maui.ApplicationModel
 
 			protected virtual async Task<PermissionResult> DoRequest(string[] permissions)
 			{
-				TaskCompletionSource<PermissionResult> tcs;
-
 				if (!MainThread.IsMainThread)
 					throw new PermissionException("Permission request must be invoked on main thread.");
 
+				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
+				var permissionArray = permissions.ToArray();
+				var tcs = new TaskCompletionSource<PermissionResult>();
+				int currentRequestCode;
+
 				lock (locker)
 				{
-					tcs = new TaskCompletionSource<PermissionResult>();
-
-					requestCode = PlatformUtils.NextRequestCode();
-
-					requests.Add(requestCode, tcs);
+					currentRequestCode = PlatformUtils.NextRequestCode();
+					requests.Add(currentRequestCode, tcs);
 				}
 
-				ActivityCompat.RequestPermissions(ActivityStateManager.Default.GetCurrentActivity(true), permissions.ToArray(), requestCode);
+				try
+				{
+					ActivityCompat.RequestPermissions(
+						activity,
+						permissionArray,
+						currentRequestCode);
+				}
+				catch
+				{
+					lock (locker)
+					{
+						if (requests.TryGetValue(currentRequestCode, out var pendingRequest) &&
+							ReferenceEquals(pendingRequest, tcs))
+						{
+							requests.Remove(currentRequestCode);
+						}
+					}
+
+					throw;
+				}
 
 				var result = await tcs.Task;
 				return result;
