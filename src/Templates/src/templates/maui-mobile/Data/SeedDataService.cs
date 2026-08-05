@@ -38,21 +38,28 @@ public class SeedDataService
 
 	private async Task LoadSeedDataCoreAsync()
 	{
-		await ClearTablesAsync();
-
 		await using Stream templateStream = await FileSystem.OpenAppPackageFileAsync(_seedDataFilePath);
+		using var reader = new StreamReader(templateStream);
 
 		ProjectsJson payload;
 		try
 		{
-			payload = JsonSerializer.Deserialize(templateStream, JsonContext.Default.ProjectsJson)
+			string json = await reader.ReadToEndAsync();
+			payload = JsonSerializer.Deserialize(json, JsonContext.Default.ProjectsJson)
 				?? throw new InvalidDataException("Seed data did not contain a project payload.");
+
+			if (payload.Projects.Count == 0)
+			{
+				throw new InvalidDataException("Seed data did not contain any projects.");
+			}
 		}
 		catch (Exception e)
 		{
 			_logger.LogError(e, "Error deserializing seed data");
 			throw;
 		}
+
+		await ClearTablesAsync();
 
 		try
 		{
