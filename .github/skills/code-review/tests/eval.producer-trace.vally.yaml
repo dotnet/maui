@@ -29,7 +29,7 @@ stimuli:
       source_pr: "36185"
       kind: producer-trace
     prompt: >-
-      /code-review
+      Your first action must be to invoke the `code-review` skill.
 
       Review a candidate patch before merge. The review input is materialized
       under `review-input`: inspect `review-input/change.diff` first, then read

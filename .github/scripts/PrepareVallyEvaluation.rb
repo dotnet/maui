@@ -7,6 +7,10 @@ require "tmpdir"
 require "yaml"
 
 BASE_REF = "8935253083b24930f9a6f153f72b5ac196d1ae59"
+FIXTURE_COMMIT_ENV = {
+  "GIT_AUTHOR_DATE" => "2000-01-01T00:00:00Z",
+  "GIT_COMMITTER_DATE" => "2000-01-01T00:00:00Z"
+}.freeze
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
@@ -24,6 +28,9 @@ REQUIRED_SKILL_PATTERNS = {
     "producer-trace workflow step" => /^### Step 1\.5: Trace External Output Contracts \(Always Active\)$/,
     "External Output Contract output section" => /^### External Output Contract$/
   }
+}.freeze
+REQUIRED_FIRST_ACTION_SKILLS = {
+  ".github/skills/code-review/tests/eval.producer-trace.vally.yaml" => "code-review"
 }.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
@@ -118,26 +125,26 @@ FIXTURES = {
     "eval.vally.yaml" => [
       {
         marker: "happy-path-full-verification-mode",
-        fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
+        fallback_ref: "a35eb7d99044ff2bba96a798c1ec81bac87c09e3",
         message: "Synthetic full test verification fixture",
         files: VERIFY_FULL_FILES
       },
       {
         marker: "happy-path-verify-failure-only-mode",
-        fallback_ref: "dd3471362e150efea6eaf8f782cbcbe8e05a2bfe",
+        fallback_ref: "0d560ac4f2599c17c2ee93e398ef86e9034b81cb",
         message: "Synthetic failure-only test verification fixture",
         files: VERIFY_FAILURE_ONLY_FILES
       },
       {
         marker: "regression-no-manual-git-revert",
-        fallback_ref: "709ea3d7c75a03fa011956941fd9ca7c631e9d24",
-        message: "Synthetic restore-protocol verification fixture",
+        fallback_ref: "a35eb7d99044ff2bba96a798c1ec81bac87c09e3",
+        message: "Synthetic full test verification fixture",
         files: VERIFY_FULL_FILES
       },
       {
         marker: "edge-case-require-full-verification-with-fix-files",
-        fallback_ref: "45662d6e08ae7fc7f6db0314d00111e34b5f99b1",
-        message: "Synthetic required-full-verification fixture",
+        fallback_ref: "a35eb7d99044ff2bba96a798c1ec81bac87c09e3",
+        message: "Synthetic full test verification fixture",
         files: VERIFY_FULL_FILES
       }
     ]
@@ -314,6 +321,7 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   validate_graders!(document["graders"], "graders")
   relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
   require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
+  required_first_action_skill = REQUIRED_FIRST_ACTION_SKILLS[relative_spec_path]
   Array(REQUIRED_SKILL_PATTERNS[relative_spec_path]).each do |description, pattern|
     skill_path = File.join(skill_root, "SKILL.md")
     fail!("#{relative_spec_path} requires #{skill_path}") unless File.file?(skill_path)
@@ -328,6 +336,10 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
     if require_skill_invocation && graders.none? { |grader| grader.is_a?(Hash) && grader["type"] == "skill-invocation" }
       fail!("stimuli[#{index}].graders must include skill-invocation for #{relative_spec_path}")
     end
+    if required_first_action_skill
+      first_action = "Your first action must be to invoke the `#{required_first_action_skill}` skill."
+      fail!("stimuli[#{index}].prompt must require first-action #{required_first_action_skill} invocation") unless stimulus["prompt"].to_s.include?(first_action)
+    end
   end
   validate_effective_git_destinations!(document, repo_root) if inspect_git_refs
 end
@@ -336,14 +348,43 @@ def fixture_files(fixture)
   fixture[:files].is_a?(Hash) ? fixture[:files].keys : fixture[:files]
 end
 
-def create_fixture_commit(repo_root, fixture)
+def create_skill_overlay_commit(repo_root, parent_ref, relative_root, message)
+  Dir.mktmpdir("vally-skill-overlay-") do |temp_root|
+    index_path = File.join(temp_root, "index")
+    index_env = { "GIT_INDEX_FILE" => index_path }
+    run_git(repo_root, "read-tree", parent_ref, env: index_env)
+
+    parent_files = run_git(repo_root, "ls-tree", "-r", "--name-only", parent_ref, "--", relative_root).split("\n")
+    current_files = run_git(repo_root, "ls-tree", "-r", "--name-only", "HEAD", "--", relative_root).split("\n")
+    (parent_files - current_files).each do |path|
+      run_git(repo_root, "update-index", "--remove", "--", path, env: index_env)
+    end
+    current_files.each do |path|
+      entry = run_git(repo_root, "ls-tree", "HEAD", "--", path).split
+      raise "Could not determine current tree entry for #{path}" unless entry.length >= 3
+
+      run_git(repo_root, "update-index", "--add", "--cacheinfo", entry[0], entry[2], path, env: index_env)
+    end
+
+    tree = run_git(repo_root, "write-tree", env: index_env)
+    run_git(
+      repo_root,
+      "-c", "user.name=Vally Fixture",
+      "-c", "user.email=vally-fixture@example.invalid",
+      "commit-tree", tree, "-p", parent_ref, "-m", message,
+      env: FIXTURE_COMMIT_ENV
+    )
+  end
+end
+
+def create_fixture_commit(repo_root, fixture, parent_ref: BASE_REF)
   Dir.mktmpdir("vally-fixture-") do |temp_root|
     index_path = File.join(temp_root, "index")
     index_env = { "GIT_INDEX_FILE" => index_path }
-    run_git(repo_root, "read-tree", BASE_REF, env: index_env)
+    run_git(repo_root, "read-tree", parent_ref, env: index_env)
 
     fixture_files(fixture).each do |path|
-      content = run_git(repo_root, "show", "#{BASE_REF}:#{path}", strip: false)
+      content = run_git(repo_root, "show", "#{parent_ref}:#{path}", strip: false)
       transformed = if fixture[:files].is_a?(Hash)
                       fixture[:files].fetch(path).call(content)
                     else
@@ -361,12 +402,13 @@ def create_fixture_commit(repo_root, fixture)
       repo_root,
       "-c", "user.name=Vally Fixture",
       "-c", "user.email=vally-fixture@example.invalid",
-      "commit-tree", tree, "-p", BASE_REF, "-m", fixture[:message]
+      "commit-tree", tree, "-p", parent_ref, "-m", fixture[:message],
+      env: FIXTURE_COMMIT_ENV
     )
 
     parent = run_git(repo_root, "rev-parse", "#{head}^")
     changed = run_git(repo_root, "diff", "--name-only", "#{head}^", head).split("\n").sort
-    raise "Fixture #{fixture[:marker]} has unexpected parent #{parent}" unless parent == BASE_REF
+    raise "Fixture #{fixture[:marker]} has unexpected parent #{parent}" unless parent == parent_ref
     raise "Fixture #{fixture[:marker]} changed #{changed.inspect}" unless changed == fixture_files(fixture).sort
 
     head
@@ -407,12 +449,24 @@ end
 
 skill_fixtures = FIXTURES[File.basename(skill_root)]
 if !validate_only && skill_fixtures
+  fixture_parent = if File.basename(skill_root) == "verify-tests-fail-without-fix"
+                     scripts_root = Pathname.new(File.join(skill_root, "scripts"))
+                       .relative_path_from(Pathname.new(repo_root)).to_s
+                     create_skill_overlay_commit(
+                       repo_root,
+                       BASE_REF,
+                       scripts_root,
+                       "Synthetic verification skill baseline"
+                     )
+                   else
+                     BASE_REF
+                   end
   skill_fixtures.each do |spec_name, fixtures|
     spec_path = File.join(tests_path, spec_name)
     fail!("missing fixture spec #{spec_path}") unless File.file?(spec_path)
 
     fixtures.each do |fixture|
-      fixture_head = create_fixture_commit(repo_root, fixture)
+      fixture_head = create_fixture_commit(repo_root, fixture, parent_ref: fixture_parent)
       patch_fixture_ref!(spec_path, fixture, fixture_head)
       puts "Prepared #{fixture[:marker]} at #{fixture_head}"
     end

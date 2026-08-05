@@ -151,6 +151,41 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "requires External Output Contract output section"
   end
 
+  def test_requires_producer_trace_first_action_invocation
+    code_review_root = File.join(@repo_root, ".github", "skills", "code-review")
+    code_review_tests_path = File.join(code_review_root, "tests")
+    FileUtils.mkdir_p(code_review_tests_path)
+    File.write(
+      File.join(code_review_root, "SKILL.md"),
+      <<~MARKDOWN
+        ### Step 1.5: Trace External Output Contracts (Always Active)
+        ### External Output Contract
+      MARKDOWN
+    )
+    File.write(
+      File.join(code_review_tests_path, "eval.producer-trace.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "producer-trace",
+            "prompt" => "Review the materialized candidate patch.",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["code-review"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(code_review_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "must require first-action code-review invocation"
+  end
+
   def test_rejects_vcs_metadata_destination
     write_fixture("fixture.txt")
     write_spec(
