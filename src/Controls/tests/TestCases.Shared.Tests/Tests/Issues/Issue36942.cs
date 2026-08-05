@@ -9,7 +9,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue36942(TestDevice device) : base(device)
 		{
 		}
-
 		public override string Issue => "Border with Shadow breaks descendant BackgroundColor UI updates on Android";
 
 		[Test]
@@ -23,4 +22,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-

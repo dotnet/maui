@@ -86,7 +86,6 @@ namespace Maui.Controls.Sample.Issues
 
 			Content = grid;
 		}
-
 		void OnToggleTapped(object sender, TappedEventArgs e)
 		{
 			_activated = !_activated;
@@ -95,4 +94,3 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 }
-
