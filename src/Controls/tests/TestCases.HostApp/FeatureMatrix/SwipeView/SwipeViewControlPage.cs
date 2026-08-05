@@ -135,10 +135,10 @@ public class SwipeViewControlMainPage : ContentPage
 						var itemLabel = new Label { FontSize = 18, HeightRequest = 30 };
 						itemLabel.SetBinding(Label.TextProperty, nameof(SwipeViewViewModel.ItemModel.Title));
 
-						var leftSwipeItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
-						var rightSwipeItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
-						var topSwipeItems = CreateSwipeItems(swipeItemType);
-						var bottomSwipeItems = CreateSwipeItems(swipeItemType);
+						var leftSwipeItems = CreateSwipeItems(swipeItemType, "Left_", allowMultiple: true);
+						var rightSwipeItems = CreateSwipeItems(swipeItemType, "Right_", allowMultiple: true);
+						var topSwipeItems = CreateSwipeItems(swipeItemType, "Top_");
+						var bottomSwipeItems = CreateSwipeItems(swipeItemType, "Bottom_");
 						var swipeView = new SwipeView
 						{
 							Content = itemLabel,
@@ -175,7 +175,7 @@ public class SwipeViewControlMainPage : ContentPage
 		return finalContent;
 	}
 
-	private SwipeItems CreateSwipeItems(string type, bool allowMultiple = false)
+	private SwipeItems CreateSwipeItems(string type, string sidePrefix = "", bool allowMultiple = false)
 	{
 		var swipeItems = new SwipeItems
 		{
@@ -189,9 +189,10 @@ public class SwipeViewControlMainPage : ContentPage
 				var labelItem = new SwipeItem
 				{
 					Text = "Label",
-					AutomationId = "SwipeLabelItem",
+					AutomationId = $"{sidePrefix}SwipeLabelItem",
 					BackgroundColor = _viewModel.SwipeItemsBackgroundColor,
-					IsEnabled = !_viewModel.DisableSwipeItem
+					IsEnabled = !_viewModel.DisableSwipeItem,
+					IsVisible = !_viewModel.HideSwipeItem
 				};
 				if (_viewModel.UseCommandBinding)
 				{
@@ -209,9 +210,10 @@ public class SwipeViewControlMainPage : ContentPage
 					var labelItem2 = new SwipeItem
 					{
 						Text = "Label2",
-						AutomationId = "SwipeLabelItem2",
+						AutomationId = $"{sidePrefix}SwipeLabelItem2",
 						BackgroundColor = Colors.Orange,
-						IsEnabled = !_viewModel.DisableSwipeItem
+						IsEnabled = !_viewModel.DisableSwipeItem,
+						IsVisible = !_viewModel.HideSwipeItem
 					};
 					if (_viewModel.UseCommandBinding)
 					{
@@ -230,10 +232,11 @@ public class SwipeViewControlMainPage : ContentPage
 				var iconItem = new SwipeItem
 				{
 					Text = "Icon",
-					AutomationId = "SwipeIconItem",
+					AutomationId = $"{sidePrefix}SwipeIconItem",
 					IconImageSource = "groceries.png",
 					BackgroundColor = _viewModel.SwipeItemsBackgroundColor,
-					IsEnabled = !_viewModel.DisableSwipeItem
+					IsEnabled = !_viewModel.DisableSwipeItem,
+					IsVisible = !_viewModel.HideSwipeItem
 				};
 				if (_viewModel.UseCommandBinding)
 				{
@@ -251,10 +254,11 @@ public class SwipeViewControlMainPage : ContentPage
 					var iconItem2 = new SwipeItem
 					{
 						Text = "Icon2",
-						AutomationId = "SwipeIconItem2",
+						AutomationId = $"{sidePrefix}SwipeIconItem2",
 						IconImageSource = "groceries.png",
 						BackgroundColor = Colors.Orange,
-						IsEnabled = !_viewModel.DisableSwipeItem
+						IsEnabled = !_viewModel.DisableSwipeItem,
+						IsVisible = !_viewModel.HideSwipeItem
 					};
 					if (_viewModel.UseCommandBinding)
 					{
@@ -274,13 +278,14 @@ public class SwipeViewControlMainPage : ContentPage
 				{
 					Text = "Click Me",
 					TextColor = Colors.Black,
-					AutomationId = "SwipeButtonItem",
+					AutomationId = $"{sidePrefix}SwipeButtonItem",
 					BackgroundColor = _viewModel.SwipeItemsBackgroundColor,
 					Padding = new Thickness(5)
 				};
 				button.Clicked += (s, e) => _viewModel.EventInvokedText = "Button Clicked";
 
-				swipeItems.Add(new SwipeItemView { Content = button });
+				var buttonView = new SwipeItemView { Content = button, IsVisible = !_viewModel.HideSwipeItem };
+				swipeItems.Add(buttonView);
 				break;
 		}
 
@@ -289,10 +294,10 @@ public class SwipeViewControlMainPage : ContentPage
 
 	private SwipeView CreateSwipeView(View contentView, string swipeItemType)
 	{
-		var leftItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
-		var rightItems = CreateSwipeItems(swipeItemType, allowMultiple: true);
-		var topItems = CreateSwipeItems(swipeItemType);
-		var bottomItems = CreateSwipeItems(swipeItemType);
+		var leftItems = CreateSwipeItems(swipeItemType, "Left_", allowMultiple: true);
+		var rightItems = CreateSwipeItems(swipeItemType, "Right_", allowMultiple: true);
+		var topItems = CreateSwipeItems(swipeItemType, "Top_");
+		var bottomItems = CreateSwipeItems(swipeItemType, "Bottom_");
 		var swipeView = new SwipeView
 		{
 			Content = contentView,

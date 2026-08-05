@@ -95,5 +95,10 @@
             <CheckBox IsChecked="{Binding UseCommandBinding}" AutomationId="UseCommandBindingCheckBox"/>
             <Label Text="Use Command Binding" VerticalOptions="Center"/>
         </HorizontalStackLayout>
+        <!-- Hide SwipeItem (SwipeItem.IsVisible=false) -->
+        <HorizontalStackLayout Spacing="10">
+            <CheckBox IsChecked="{Binding HideSwipeItem}" AutomationId="HideSwipeItemCheckBox"/>
+            <Label Text="Hide SwipeItem (IsVisible=False)" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
     </VerticalStackLayout>
 </ContentPage>

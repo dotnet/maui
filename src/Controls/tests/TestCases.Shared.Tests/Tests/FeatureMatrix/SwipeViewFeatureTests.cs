@@ -924,6 +924,13 @@ public class SwipeViewFeatureTests : _GalleryUITest
 	[Test, Order(55)]
 	public void VerifySwipeChangingEventFiresMultipleTimesDuringGesture()
 	{
+		// Order(54) mutates Threshold/SwipeMode/backgrounds and leaves the SwipeView opened.
+		// Visit Options -> Apply to trigger the MainPage Options command which calls _viewModel.Reset()
+		// so this test starts from a known state.
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
 		App.WaitForElement("SwipeViewControl");
 		Assert.That(App.WaitForElement("SwipeChangingCountLabel").GetText(), Is.EqualTo("0"));
 		App.SwipeLeftToRight("SwipeViewControl");
@@ -933,6 +940,57 @@ public class SwipeViewFeatureTests : _GalleryUITest
 			$"SwipeChangingCountLabel should contain an integer, was: '{countText}'");
 		Assert.That(count, Is.GreaterThan(1),
 			$"SwipeChanging should fire multiple times during a swipe gesture, but fired {count} times.");
+	}
+
+	[Test, Order(56)]
+	public void VerifySwipeItemHiddenWhenIsVisibleFalse()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HideSwipeItemCheckBox");
+		App.Tap("HideSwipeItemCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		// The Label swipe item should not be visible/tappable when IsVisible=false.
+		Assert.That(App.FindElement("Label"), Is.Null,
+			"SwipeItem with IsVisible=false should not be present in the UI after swiping.");
+	}
+
+	[Test, Order(57)]
+	public void VerifySwipeEndedIsOpenFalseWhenSwipeBelowThreshold()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ThresholdEntry");
+		App.ClearText("ThresholdEntry");
+		App.EnterText("ThresholdEntry", "5000");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		// With a very large Threshold, the swipe should not reach open state.
+		var ended = App.WaitForElement("SwipeEndedLabel").GetText();
+		Assert.That(ended, Does.Contain("IsOpen: Closed"),
+			$"When swipe distance is below Threshold, SwipeEnded.IsOpen must be false. Was: '{ended}'");
+	}
+
+	[Test, Order(58)]
+	public void VerifyThresholdZero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ThresholdEntry");
+		App.ClearText("ThresholdEntry");
+		App.EnterText("ThresholdEntry", "0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+		App.WaitForElement("Label");
+		// Threshold=0 should still allow the swipe to open (control clamps to a usable minimum).
+		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
 	}
 #endif
 

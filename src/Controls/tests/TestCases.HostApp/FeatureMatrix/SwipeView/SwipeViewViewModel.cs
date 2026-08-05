@@ -29,6 +29,7 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 	private bool _useMultipleSwipeItems = false;
 	private bool _disableSwipeItem = false;
 	private bool _useCommandBinding = false;
+	private bool _hideSwipeItem = false;
 
 	public event PropertyChangedEventHandler PropertyChanged;
 	public event Action<OpenSwipeItem> RequestOpen;
@@ -234,6 +235,18 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public bool HideSwipeItem
+	{
+		get => _hideSwipeItem;
+		set
+		{
+			if (_hideSwipeItem != value)
+			{
+				_hideSwipeItem = value;
+				OnPropertyChanged(nameof(HideSwipeItem));
+			}
+		}
+	}
 
 	public ICommand OpenLeftCommand { get; }
 	public ICommand OpenRightCommand { get; }
@@ -275,6 +288,7 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		UseMultipleSwipeItems = false;
 		DisableSwipeItem = false;
 		UseCommandBinding = false;
+		HideSwipeItem = false;
 	}
 
 	void OnPropertyChanged(string name) =>
