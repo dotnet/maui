@@ -116,7 +116,8 @@ namespace Microsoft.Maui.ApplicationModel
 
 				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
 				var permissionArray = permissions.ToArray();
-				var tcs = new TaskCompletionSource<PermissionResult>();
+				var tcs = new TaskCompletionSource<PermissionResult>(
+					TaskCreationOptions.RunContinuationsAsynchronously);
 				int currentRequestCode;
 
 				lock (locker)
