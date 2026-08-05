@@ -98,13 +98,11 @@ Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper
 Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper.MauiMaterialContextThemeWrapper(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialDatePicker
 Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.HidePicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.HidePicker.set -> void
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.InputEditText.get -> Microsoft.Maui.Platform.MauiMaterialEditText?
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.MauiMaterialDateTimePickerBase(Android.Content.Context! context, int endIconResource) -> void
-Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.MauiMaterialDateTimePickerBase(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiMaterialDateTimePickerBase.ShowPicker.set -> void
 Microsoft.Maui.Platform.MauiMaterialEditText
@@ -132,10 +130,6 @@ Microsoft.Maui.Platform.MauiMaterialTextView
 Microsoft.Maui.Platform.MauiMaterialTextView.MauiMaterialTextView(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker
 Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context) -> void
-Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.Platform.MauiMaterialTimePicker.OnClick(Android.Views.View? v) -> void
-Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.get -> System.Action?
-Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, bool useMaterial3) -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void

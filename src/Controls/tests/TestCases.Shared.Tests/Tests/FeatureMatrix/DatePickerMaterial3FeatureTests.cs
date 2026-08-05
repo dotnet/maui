@@ -13,13 +13,12 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	{
 	}
 
-	// The Material 3 DatePicker only opens the dialog when its trailing calendar icon is tapped,
-	// not when tapping the field body. The icon is the TextInputLayout's end icon
-	// (native resource id "text_input_end_icon").
 	void OpenDatePickerDialog()
 	{
 		App.WaitForElement("DatePickerControl");
-		App.Tap(AppiumQuery.ById("text_input_end_icon"));
+		var endIcon = AppiumQuery.ByAccessibilityId("Open date picker");
+		App.WaitForElement(endIcon);
+		App.Tap(endIcon);
 	}
 
 	[Test, Order(1)]
