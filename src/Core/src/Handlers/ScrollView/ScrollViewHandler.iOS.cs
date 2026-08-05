@@ -121,45 +121,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				// Cross-platform scroll coordinates treat (0,0) as the top of the content, but when the
-				// scroll view has content insets (e.g. it consumes the safe area) the native rest offset
-				// is (-adjustedInset.Left, -adjustedInset.Top) and the native maximum extends past
-				// ContentSize - Bounds by the trailing insets. Translate the request into native offset
-				// space and clamp against the inset-aware range (issue #36801).
-				var adjustedInset = uiScrollView.AdjustedContentInset;
-				var bounds = uiScrollView.Bounds;
-
-				// With ContentInsetAdjustmentBehavior.Always, MauiScrollView bakes the safe area into
-				// ContentSize (CrossPlatformArrange) while UIKit also applies the same safe area through
-				// AdjustedContentInset; exclude the duplicated amount (adjusted minus the explicit
-				// ContentInset, i.e. the system-contributed part) so the maximum stops at the content
-				// instead of inside the padding.
-				var duplicatedPadding = UIEdgeInsets.Zero;
-				if (uiScrollView.ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always)
-				{
-					var contentInset = uiScrollView.ContentInset;
-					duplicatedPadding = new UIEdgeInsets(
-						adjustedInset.Top - contentInset.Top,
-						adjustedInset.Left - contentInset.Left,
-						adjustedInset.Bottom - contentInset.Bottom,
-						adjustedInset.Right - contentInset.Right);
-				}
-
-				var minScrollHorizontal = -(double)adjustedInset.Left;
-				var minScrollVertical = -(double)adjustedInset.Top;
-				var maxScrollHorizontal = Math.Max(minScrollHorizontal,
-					uiScrollView.ContentSize.Width - duplicatedPadding.Left - duplicatedPadding.Right + adjustedInset.Right - bounds.Width);
-				var maxScrollVertical = Math.Max(minScrollVertical,
-					uiScrollView.ContentSize.Height - duplicatedPadding.Top - duplicatedPadding.Bottom + adjustedInset.Bottom - bounds.Height);
-
-				var targetHorizontal = Math.Clamp(request.HorizontalOffset - (double)adjustedInset.Left, minScrollHorizontal, maxScrollHorizontal);
-				var targetVertical = Math.Clamp(request.VerticalOffset - (double)adjustedInset.Top, minScrollVertical, maxScrollVertical);
-
-				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == targetVertical && uiScrollView.ContentOffset.X == targetHorizontal;
+				var target = GetTargetContentOffset(uiScrollView, request);
+				bool alreadyAtTarget = uiScrollView.ContentOffset == target;
 
 				if (!alreadyAtTarget)
 				{
-    				uiScrollView.SetContentOffset(new CGPoint(targetHorizontal, targetVertical), !request.Instant);
+					uiScrollView.SetContentOffset(target, !request.Instant);
 				}
 
 				if (request.Instant || alreadyAtTarget)
@@ -167,6 +134,39 @@ namespace Microsoft.Maui.Handlers
 					scrollView.ScrollFinished();
 				}
 			}
+		}
+
+		// Cross-platform scroll coordinates treat (0,0) as the top of the content, but with content
+		// insets (e.g. a scroll view consuming the safe area) the native rest offset is
+		// (-adjustedInset.Left, -adjustedInset.Top) and the native maximum extends past
+		// ContentSize - Bounds by the trailing insets. Translate the request into native offset
+		// space and clamp against the inset-aware range (issue #36801).
+		static CGPoint GetTargetContentOffset(UIScrollView uiScrollView, ScrollToRequest request)
+		{
+			var adjustedInset = uiScrollView.AdjustedContentInset;
+			var bounds = uiScrollView.Bounds;
+			var contentWidth = (double)uiScrollView.ContentSize.Width;
+			var contentHeight = (double)uiScrollView.ContentSize.Height;
+
+			// With ContentInsetAdjustmentBehavior.Always, MauiScrollView bakes the safe area into
+			// ContentSize while UIKit also applies it through AdjustedContentInset; exclude the
+			// duplicated (system-contributed) amount so the maximum stops at the content instead
+			// of inside the padding.
+			if (uiScrollView.ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always)
+			{
+				var contentInset = uiScrollView.ContentInset;
+				contentWidth -= adjustedInset.Left + adjustedInset.Right - contentInset.Left - contentInset.Right;
+				contentHeight -= adjustedInset.Top + adjustedInset.Bottom - contentInset.Top - contentInset.Bottom;
+			}
+
+			var minScrollHorizontal = -(double)adjustedInset.Left;
+			var minScrollVertical = -(double)adjustedInset.Top;
+			var maxScrollHorizontal = Math.Max(minScrollHorizontal, contentWidth + adjustedInset.Right - bounds.Width);
+			var maxScrollVertical = Math.Max(minScrollVertical, contentHeight + adjustedInset.Bottom - bounds.Height);
+
+			return new CGPoint(
+				Math.Clamp(request.HorizontalOffset - (double)adjustedInset.Left, minScrollHorizontal, maxScrollHorizontal),
+				Math.Clamp(request.VerticalOffset - (double)adjustedInset.Top, minScrollVertical, maxScrollVertical));
 		}
 
 		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler)
