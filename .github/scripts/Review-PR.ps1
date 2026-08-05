@@ -1257,8 +1257,23 @@ function Invoke-CopilotStep {
             $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = 'false'
         }
 
+        # The copilot CLI validates COPILOT_GITHUB_TOKEN at startup via a GitHub API
+        # call that intermittently returns a transient 401 ("could not be validated" /
+        # "Bad credentials"), which kills the step in seconds and drops the ENTIRE
+        # expert-review + try-fix output — leaving a summary missing those sections
+        # (observed on #37100 build 14871140). The token is almost always still valid,
+        # so retry a few times on that specific transient startup failure.
+        $maxCopilotAuthRetries = 3
+        $copilotAuthRetryDelaySec = 20
+        for ($copilotAttempt = 1; $copilotAttempt -le $maxCopilotAuthRetries; $copilotAttempt++) {
+        $authValidationFailed = $false
+        if ($copilotAttempt -gt 1) {
+            Write-Host "  🔄 Retrying Copilot (attempt $copilotAttempt/$maxCopilotAuthRetries) after a transient auth-validation 401..." -ForegroundColor Yellow
+        }
+
         & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --context long_context --effort max --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
             $line = $_.ToString()
+            if ($line -match '(?i)could not be validated|Bad credentials|Failed to fetch PAT user login \(401\)') { $authValidationFailed = $true }
             try {
                 $event = $line | ConvertFrom-Json -ErrorAction Stop
                 switch ($event.type) {
@@ -1404,6 +1419,11 @@ function Invoke-CopilotStep {
                 }
             }
         }
+        $copilotAttemptExit = $LASTEXITCODE
+        if ($copilotAttemptExit -eq 0 -or -not $authValidationFailed -or $copilotAttempt -ge $maxCopilotAuthRetries) { break }
+        Write-Host "  ⚠️ Copilot exited $copilotAttemptExit after a transient auth-validation 401; retrying in ${copilotAuthRetryDelaySec}s..." -ForegroundColor Yellow
+        Start-Sleep -Seconds $copilotAuthRetryDelaySec
+        } # end transient-auth retry loop
     } finally {
         foreach ($key in $savedOtel.Keys) {
             if ($null -eq $savedOtel[$key]) {
