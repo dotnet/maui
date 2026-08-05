@@ -21,6 +21,9 @@ namespace Microsoft.Maui.Handlers
 		LinearLayoutCompat? _sideBySideView;
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
 		FlyoutDetailFragment? _detailHostFragment;
+		FragmentManager? _detailHostFragmentManager;
+		Context? _detailHostContext;
+		bool _detailHostAddCommitted;
 
 		ScopedFragment? DetailViewFragment => _detailHostFragment?.DetailFragment;
 
@@ -78,14 +81,8 @@ namespace Microsoft.Maui.Handlers
 
 			var currentDetailFragment = detailHost.DetailFragment;
 
-			if (currentDetailFragment is not null &&
-				currentDetailFragment.DetailView == VirtualView.Detail &&
-				!currentDetailFragment.IsDestroyed)
-			{
-				return;
-			}
-
 			if (currentDetailFragment?.DetailView is IView previousDetail &&
+				detailHost.RequestedDetailView == previousDetail &&
 				previousDetail != VirtualView.Detail)
 			{
 				previousDetail.Handler?.DisconnectHandler();
@@ -100,77 +97,151 @@ namespace Microsoft.Maui.Handlers
 		// Adds the long-lived detail host fragment to navigationlayout_content exactly once.
 		FlyoutDetailFragment? EnsureDetailHost(Context context)
 		{
-			if (_detailHostFragment is not null)
-				return _detailHostFragment;
-
 			var fragmentManager = MauiContext?.GetFragmentManager();
-			if (fragmentManager is null)
+			if (fragmentManager is null || fragmentManager.IsDestroyed(context))
 				return null;
+
+			if (_detailHostFragment is not null &&
+				ReferenceEquals(_detailHostFragmentManager, fragmentManager))
+			{
+				if (_detailHostAddCommitted)
+				{
+					// A reconnect supersedes a removal deferred while the manager had saved state.
+					_pendingFragment?.Dispose();
+					_pendingFragment = null;
+				}
+				else if (_pendingFragment is null)
+				{
+					ScheduleDetailHostAdd(_detailHostFragment, fragmentManager, context);
+				}
+
+				return _detailHostFragment;
+			}
+
+			ReleaseStaleDetailHost();
 
 			var detailHost = new FlyoutDetailFragment();
 			_detailHostFragment = detailHost;
+			_detailHostFragmentManager = fragmentManager;
+			_detailHostContext = context;
+			_detailHostAddCommitted = false;
 
+			ScheduleDetailHostAdd(detailHost, fragmentManager, context);
+
+			return detailHost;
+		}
+
+		void ScheduleDetailHostAdd(FlyoutDetailFragment detailHost, FragmentManager fragmentManager, Context context)
+		{
 			_pendingFragment =
 				fragmentManager
 					.RunOrWaitForResume(context, (fm) =>
 					{
+						if (!ReferenceEquals(_detailHostFragment, detailHost) ||
+							!ReferenceEquals(_detailHostFragmentManager, fragmentManager))
+						{
+							return;
+						}
+
 						fm
 							.BeginTransactionEx()
 							.ReplaceEx(Resource.Id.navigationlayout_content, detailHost)
 							.SetReorderingAllowed(true)
 							.Commit();
-					});
 
-			return _detailHostFragment;
+						_detailHostAddCommitted = true;
+						_pendingFragment = null;
+					});
 		}
 
 		// Removes the detail host (and with it the ChildFragmentManager hosting the detail page) when
 		// the FlyoutView is disconnected, so the detail graph is released and no host fragment is
 		// left orphaned in the activity FragmentManager.
 		//
-		// The Remove is committed with SetReorderingAllowed(true). This matters when the host's own
-		// add is still pending (committed but not yet executed): queuing a reorder-allowed Remove in
-		// the same looper cycle lets the FragmentManager collapse the pending Add+Remove, so the
-		// host view is never created and never calls findViewById(navigationlayout_content) against a
-		// container that NavigationRootManager may have synchronously detached. Contains() stays true
-		// across that window (FragmentManager.FindFragmentById resolves a fragment as soon as its add
-		// is committed), so the guard below does not skip the Remove. IsStateSaved IS skipped, because
-		// committing after onSaveInstanceState throws; on that path the activity FragmentManager is
-		// itself being torn down, so the host is reclaimed with it.
+		// If the host add was committed but has not executed, the reorder-allowed Remove is queued
+		// without relying on FindFragmentById so FragmentManager can collapse the pending Add+Remove.
+		// RunOrWaitForResume defers cleanup while state is saved instead of abandoning the host.
 		void RemoveDetailHost()
 		{
 			var detailHost = _detailHostFragment;
-			_detailHostFragment = null;
 			if (detailHost is null)
 				return;
 
-			var context = MauiContext?.Context;
-			if (context is null)
-				return;
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+			detailHost.CancelPendingDetail();
 
-			FragmentManager? fragmentManager = null;
-			try
+			var fragmentManager = _detailHostFragmentManager;
+			var context = _detailHostContext;
+			if (!_detailHostAddCommitted ||
+				fragmentManager is null ||
+				context is null ||
+				fragmentManager.IsDestroyed(context))
 			{
-				fragmentManager = MauiContext?.GetFragmentManager();
-			}
-			catch (InvalidOperationException)
-			{
-				// No FragmentManager available (context already torn down); nothing to remove from.
-			}
-
-			if (fragmentManager is null ||
-				fragmentManager.IsDestroyed(context) ||
-				fragmentManager.IsStateSaved ||
-				!fragmentManager.Contains(detailHost))
-			{
+				ClearDetailHost(detailHost);
 				return;
 			}
 
-			fragmentManager
-				.BeginTransactionEx()
-				.RemoveEx(detailHost)
-				.SetReorderingAllowed(true)
-				.Commit();
+			var pendingFragment = fragmentManager.RunOrWaitForResume(context, fm =>
+			{
+				fm
+					.BeginTransactionEx()
+					.RemoveEx(detailHost)
+					.SetReorderingAllowed(true)
+					.Commit();
+
+				ClearDetailHost(detailHost);
+				_pendingFragment = null;
+			});
+
+			_pendingFragment = pendingFragment;
+			if (pendingFragment is null)
+				ClearDetailHost(detailHost);
+		}
+
+		void ReleaseStaleDetailHost()
+		{
+			var detailHost = _detailHostFragment;
+			if (detailHost is null)
+				return;
+
+			var fragmentManager = _detailHostFragmentManager;
+			var context = _detailHostContext;
+			var removeCommittedHost =
+				_detailHostAddCommitted &&
+				fragmentManager is not null &&
+				context is not null &&
+				!fragmentManager.IsDestroyed(context);
+
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+			detailHost.CancelPendingDetail();
+			ClearDetailHost(detailHost);
+
+			if (removeCommittedHost)
+			{
+				// This cleanup belongs to the old manager and must not be cancelled when the new host
+				// starts using the handler's pending-operation slot.
+				_ = fragmentManager!.RunOrWaitForResume(context!, fm =>
+				{
+					fm
+						.BeginTransactionEx()
+						.RemoveEx(detailHost)
+						.SetReorderingAllowed(true)
+						.Commit();
+				});
+			}
+		}
+
+		void ClearDetailHost(FlyoutDetailFragment detailHost)
+		{
+			if (!ReferenceEquals(_detailHostFragment, detailHost))
+				return;
+
+			_detailHostFragment = null;
+			_detailHostFragmentManager = null;
+			_detailHostContext = null;
+			_detailHostAddCommitted = false;
 		}
 
 		void UpdateDetail()

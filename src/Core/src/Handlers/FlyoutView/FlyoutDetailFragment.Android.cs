@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Handlers
 		bool _hasPendingDetail;
 
 		public ScopedFragment? DetailFragment => _detailFragment;
+		public IView? RequestedDetailView { get; private set; }
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 		{
@@ -75,10 +76,25 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public override void OnDestroyView()
+		{
+			_detailContainer = null;
+			base.OnDestroyView();
+		}
+
 		// Set, replace, or clear (pass null) the detail page. Safe to call before the fragment's
 		// view exists; the request is queued and applied in OnViewCreated.
 		public void SetDetail(IView? detailView, IMauiContext mauiContext)
 		{
+			if (IsDetailRequested(detailView))
+				return;
+
+			CancelPendingDetailCore();
+			RequestedDetailView = detailView;
+
+			if (IsCurrentDetail(detailView))
+				return;
+
 			if (_detailContainer is null || !IsAdded)
 			{
 				_pendingDetailView = detailView;
@@ -93,15 +109,36 @@ namespace Microsoft.Maui.Handlers
 		// Cancels a detail transaction that has been queued but not yet committed.
 		public void CancelPendingDetail()
 		{
+			CancelPendingDetailCore();
+			RequestedDetailView = _detailFragment?.DetailView;
+		}
+
+		void CancelPendingDetailCore()
+		{
 			_pendingDetail?.Dispose();
 			_pendingDetail = null;
+			_pendingDetailView = null;
+			_pendingDetailMauiContext = null;
+			_hasPendingDetail = false;
+		}
+
+		bool IsCurrentDetail(IView? detailView)
+		{
+			if (detailView is null)
+				return _detailFragment is null;
+
+			return _detailFragment is { IsDestroyed: false } currentDetail &&
+				currentDetail.DetailView == detailView;
+		}
+
+		bool IsDetailRequested(IView? detailView)
+		{
+			return RequestedDetailView == detailView &&
+				(_hasPendingDetail || _pendingDetail is not null || IsCurrentDetail(detailView));
 		}
 
 		void ApplyDetail(IView? detailView, IMauiContext? mauiContext)
 		{
-			// A newer detail request supersedes any still-queued one.
-			CancelPendingDetail();
-
 			var context = mauiContext?.Context;
 			if (context is null || _detailContainer is null)
 				return;
@@ -113,7 +150,6 @@ namespace Microsoft.Maui.Handlers
 				var existing = _detailFragment;
 				if (existing is not null)
 				{
-					_detailFragment = null;
 					_pendingDetail = childFragmentManager.RunOrWaitForResume(context, fm =>
 					{
 						fm
@@ -121,6 +157,11 @@ namespace Microsoft.Maui.Handlers
 							.RemoveEx(existing)
 							.SetReorderingAllowed(true)
 							.Commit();
+
+						if (ReferenceEquals(_detailFragment, existing))
+							_detailFragment = null;
+
+						_pendingDetail = null;
 					});
 				}
 
@@ -132,12 +173,15 @@ namespace Microsoft.Maui.Handlers
 			var containerId = _detailContainerId;
 			_pendingDetail = childFragmentManager.RunOrWaitForResume(context, fm =>
 			{
-				_detailFragment = new ScopedFragment(detail, scopedMauiContext);
+				var detailFragment = new ScopedFragment(detail, scopedMauiContext);
 				fm
 					.BeginTransactionEx()
-					.ReplaceEx(containerId, _detailFragment)
+					.ReplaceEx(containerId, detailFragment)
 					.SetReorderingAllowed(true)
 					.Commit();
+
+				_detailFragment = detailFragment;
+				_pendingDetail = null;
 			});
 		}
 	}
