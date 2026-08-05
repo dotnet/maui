@@ -30,13 +30,20 @@ public class Issue33612 : _IssuesUITest
 	public void TappingSuggestionItemStillInvokesItsOwnGesture()
 	{
 		App.WaitForElement("SuggestionsContainer");
-		App.WaitForElement("First item");
+		var firstItem = App.WaitForElement("First item");
 
-		App.Tap("First item");
+		if (Device == TestDevice.Mac)
+		{
+			var itemBounds = firstItem.GetRect();
+			App.TapCoordinates(itemBounds.CenterX(), itemBounds.CenterY());
+		}
+		else
+		{
+			App.Tap("First item");
+		}
 
 		App.WaitForElement("OK");
 		App.Tap("OK");
-
 		var tappedItemText = App.WaitForElement("TappedItemLabel").GetText();
 		Assert.That(tappedItemText, Is.EqualTo("First item"));
 	}
