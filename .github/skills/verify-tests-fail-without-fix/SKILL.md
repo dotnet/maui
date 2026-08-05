@@ -130,6 +130,11 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 **Note:** `-RequireFullVerification` ensures the script errors if no fix files are detected, preventing silent fallback to failure-only mode.
 
+Full verification requires the with-fix state to be committed in the worktree so it can be restored from
+`HEAD`. Explicit `-FixFiles` may include modified, deleted, or newly added product files; new files are removed
+for the without-fix run and restored from `HEAD` for the with-fix run. This makes disposable issue-mode
+candidate commits valid inputs as well as ordinary PR commits.
+
 ## Requirements
 
 **Verify Failure Only Mode:**

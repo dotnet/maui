@@ -44,12 +44,24 @@ BeforeAll {
     if (-not $invokeTestRunFunction) { throw "Function 'Invoke-TestRun' not found" }
     $script:invokeTestRunText = $invokeTestRunFunction.Extent.Text
 
+    foreach ($helperName in @('Set-WithoutFixFileState', 'Set-WithFixFileState')) {
+        $helper = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $helperName
+        }, $true)
+        if (-not $helper) { throw "Function '$helperName' not found" }
+        Invoke-Expression $helper.Extent.Text
+    }
+
+    function Write-Log { param([string]$Message) }
+
     function New-LogFile {
         param([string]$Content)
         $f = Join-Path ([System.IO.Path]::GetTempPath()) ("verifylog-" + [Guid]::NewGuid().ToString('N') + ".log")
         $Content | Set-Content -LiteralPath $f -Encoding UTF8
         return $f
     }
+
 }
 
 Describe 'Invoke-TestRun — host-only target frameworks' {
@@ -79,6 +91,39 @@ Build FAILED.
         $r.Passed | Should -BeFalse
         $r.Error | Should -Match 'MAUIX2017'
         Remove-Item -LiteralPath $log -Force
+    }
+
+    Describe 'Full verification file-state transitions' {
+        It 'removes and restores a fix composed entirely of new committed files' {
+            $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $repo | Out-Null
+
+            try {
+                Push-Location $repo
+                git init --quiet
+                git config user.email "verify-tests@example.invalid"
+                git config user.name "Verify Tests"
+                "baseline" | Set-Content baseline.txt
+                git add -- baseline.txt
+                git commit --quiet -m "baseline"
+                $mergeBase = (git rev-parse HEAD).Trim()
+
+                "new product implementation" | Set-Content new-fix.cs
+                git add -- new-fix.cs
+                git commit --quiet -m "add fix"
+
+                Set-WithoutFixFileState -RepoRoot $repo -MergeBase $mergeBase -NewFiles @('new-fix.cs')
+                Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeFalse
+
+                Set-WithFixFileState -RepoRoot $repo -NewFiles @('new-fix.cs')
+                Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeTrue
+                Get-Content (Join-Path $repo 'new-fix.cs') | Should -Be 'new product implementation'
+                git status --porcelain | Should -BeNullOrEmpty
+            } finally {
+                Pop-Location
+                Remove-Item -LiteralPath $repo -Recurse -Force
+            }
+        }
     }
 
     It 'flags CS / MSB / NETSDK / XA compile errors as build errors' {

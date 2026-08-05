@@ -173,8 +173,9 @@ not an executable input. Keep two independent evidence tracks so you never over-
      relevant setup, steps, and observable failure. Run it unfixed and require the expected failure.
    - **Sandbox (temporary):** delegate to `sandbox-agent`, implement the scenario in
      `src/Controls/samples/Controls.Sample.Sandbox/`, and follow
-     `.github/instructions/sandbox.instructions.md`. Use `BuildAndRunSandbox.ps1`; verify actual Appium actions,
-     completion markers, device logs, and the expected failure. A successful launch is not a reproduction.
+     `.github/instructions/sandbox.instructions.md`. Use `.github/scripts/BuildAndRunSandbox.ps1`; verify
+     actual Appium actions, completion markers, device logs, and the expected failure. A successful launch is
+     not a reproduction.
 4. **If it won't reproduce, enumerate variables** (discipline 4) and record each attempt:
 
    | Variable | Value tried | Result | Notes |
@@ -182,7 +183,7 @@ not an executable input. Keep two independent evidence tracks so you never over-
    | Harness | unit / XAML / device / UI test / Sandbox | ❌/✅ | path + why selected |
    | Scenario source | issue body/comments/snippets | | relevant setup/steps translated |
    | MAUI source commit | `<sha>` via merge-base / approximate `<sha>` | ❌/✅ | never substitute a package label for a commit |
-   | Harness command | repo test runner / `BuildAndRunSandbox.ps1` | | exact command |
+   | Harness command | repo test runner / `.github/scripts/BuildAndRunSandbox.ps1` | | exact command |
    | Package provenance | version→commit `<mapped sha>` / `unmapped` | | approximate-baseline label if unmapped |
    | API level | e.g. 34 | | |
    | Deploy mode | fast-deploy / embedded APK | | controlled harness setting |
@@ -228,24 +229,21 @@ challenge that fix* — because a fix that survives being attacked by other mode
 cross-pollination + comparison-table selection), then adds an adversarial challenge of the winner.
 
 Don't hand-roll the fix loop — every attempt goes through **`try-fix`**
-(`.github/skills/try-fix/SKILL.md`), which establishes a baseline, applies **one** approach, tests it, records
-artifacts, and reverts.
+(`.github/skills/try-fix/SKILL.md`) in **Issue mode**. Before Round 1, read and follow
+[`references/issue-mode-attempts.md`](references/issue-mode-attempts.md): commit the repo-owned reproduction
+only on a temporary local checkpoint branch, create a disposable worktree/branch per attempt, and preserve
+reproduction scaffolding independently from candidate product changes.
 
 > 🚨 **Sequential only — never parallel/background.** Run each `try-fix` with `mode: "sync"`, one fully
 > completing before the next starts. try-fix mutates the same target files, shares the emulator/device, and
-> reverts to baseline between runs; running them concurrently corrupts each other's file state and results.
-> Restore baseline between attempts exactly as try-fix/pr-review prescribe.
+> uses local candidate commits; running tests concurrently still corrupts shared device state. Git isolation
+> comes from one disposable attempt worktree per model — never run issue-mode try-fix in the session worktree.
 
 #### Round 1 — independent exploration
 
-Invoke `try-fix` via `general-purpose` task agents across these 4 models, **SEQUENTIALLY**:
-
-| Order | Model |
-|-------|-------|
-| 1 | `claude-opus-4.6` |
-| 2 | `claude-opus-4.7` |
-| 3 | `gpt-5.3-codex` |
-| 4 | `gpt-5.5` |
+Invoke `try-fix` via `general-purpose` task agents using the **current four-model roster and order** from
+`pr-review`'s `Multi-Model Configuration`, **SEQUENTIALLY**. That section is canonical; do not duplicate or
+substitute the roster here.
 
 Feed each `try-fix` invocation:
 - `problem` — the faithful + minimized reproductions and the Phase 2 evidence-selected root-cause hypothesis
@@ -254,6 +252,8 @@ Feed each `try-fix` invocation:
   evidence)
 - `platform` — the reproduced platform from Phase 1
 - `target_files` — the files identified in Phase 2
+- `mode` — `Issue`
+- `broken_checkpoint` / `attempt_worktree` / `reproduction_paths` — from the issue-mode protocol
 - `test_command` — the strongest empirical command currently available: the planned Phase 4 regression command
   when Phase 1 produced an automated test; otherwise the Sandbox reproducer, explicitly labeled provisional.
   A Sandbox reproducer does not replace Phase 4's non-circular regression test.
@@ -282,11 +282,11 @@ Pick the winner.
 
 #### Materialize the selected fix
 
-`try-fix` **always restores the working directory to baseline**, so the winner exists only as its recorded
-`fix.diff` after exploration. Apply that exact candidate diff to the session feature worktree, verify the
-materialized diff matches the reviewed candidate and contains no attempt artifacts, then rerun the same
-empirical command. Do not commit or push. This materialized diff — not a prose summary or a reverted attempt —
-is what the adversarial reviewers challenge and what Phase 4 verifies.
+Use the winning attempt's reachable `candidate-commit.txt`, not an uncommitted worktree. Export
+source-baseline→winner as a complete binary patch and apply it to the session feature worktree. Verify it
+contains exactly the reproduction + selected fix and no attempt artifacts. Keep a disposable worktree at the
+winning commit for Phase 4's committed-state full verification. Do not commit or push the session branch. The
+materialized session diff is what the adversarial reviewers challenge.
 
 #### Adversarial challenge of the selected fix (the "challenge that fix" step)
 
@@ -327,7 +327,10 @@ Prove the fix works with a test that would actually catch the bug.
      probe now. A dispute loops back to test authoring; don't let the earlier fix consensus waive this gate.
 2. **Verify fail-without-fix / pass-with-fix** via **`verify-tests-fail-without-fix`**
    (`.github/skills/verify-tests-fail-without-fix/SKILL.md`) — remember its **inverted** semantics
-   (tests *failing* without the fix is the *good* outcome).
+   (tests *failing* without the fix is the *good* outcome). In issue mode, run it from the disposable winning
+   candidate worktree with explicit checkpoint base, committed fix files, test type/filter, and
+   **`-RequireFullVerification`** exactly as shown in `references/issue-mode-attempts.md`. Never accept its
+   failure-only mode as proof that the fix passes.
    - Local device/unit runs: **`run-device-tests`** (`.github/skills/run-device-tests/SKILL.md`).
    - Helix unit projects (XAML, Core, Essentials, Resizetizer, …): **`run-helix-tests`**
      (`.github/skills/run-helix-tests/SKILL.md`).
@@ -366,7 +369,7 @@ Use this structure:
 - Controlled harness: <test type + path | Sandbox page + temporary status>
 - MAUI runtime bits: <source commit / affected package train>
 - MAUI source provenance: <resolved via merge-base or version→sha | unresolved — analysis baseline <sha> is approximate>
-- Harness command: <repo test runner | BuildAndRunSandbox.ps1>
+- Harness command: <repo test runner | .github/scripts/BuildAndRunSandbox.ps1>
 - Translated setup / steps: <what was recreated from the report>
 - Result: <failing automated test ✅ | repeatable Sandbox reproduction ⚠️ temporary | not reproducible — remaining delta>
 - Variable enumeration: <table or link to it>

@@ -1504,14 +1504,15 @@ function Write-MarkdownReport {
     # ── Fix files (collapsible) ──
     $lines += ""
     $lines += "<details>"
-    $lines += "<summary>📁 Fix files reverted ($($ReportRevertableFiles.Count) files)</summary>"
+    $totalFixFiles = $ReportRevertableFiles.Count + $ReportNewFiles.Count
+    $lines += "<summary>📁 Fix files toggled ($totalFixFiles files)</summary>"
     $lines += ""
     foreach ($f in $ReportRevertableFiles) {
         $lines += "- ``$f``"
     }
     if ($ReportNewFiles.Count -gt 0) {
         $lines += ""
-        $lines += "**New files (not reverted):**"
+        $lines += "**New files (removed for without-fix run):**"
         foreach ($f in $ReportNewFiles) {
             $lines += "- ``$f``"
         }
@@ -1541,9 +1542,69 @@ Write-Log "BaseBranch: $BaseBranchName"
 Write-Log "MergeBase: $MergeBase"
 Write-Log ""
 
+function Set-WithoutFixFileState {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][string]$MergeBase,
+        [string[]]$RevertableFiles = @(),
+        [string[]]$NewFiles = @()
+    )
+
+    foreach ($file in $RevertableFiles) {
+        Write-Log "  Reverting: $file"
+        $gitOutput = git checkout $MergeBase -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to revert $file from $MergeBase`: $gitOutput"
+        }
+    }
+
+    foreach ($file in $NewFiles) {
+        Write-Log "  Removing new fix file for baseline: $file"
+        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+        $wtPath = Join-Path $RepoRoot $file
+        if (Test-Path $wtPath) {
+            Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Set-WithFixFileState {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [string[]]$RevertableFiles = @(),
+        [string[]]$DeletedByPrFiles = @(),
+        [string[]]$NewFiles = @()
+    )
+
+    foreach ($file in $RevertableFiles) {
+        if ($DeletedByPrFiles -contains $file) {
+            Write-Log "  Re-removing (deleted by PR): $file"
+            git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+            $wtPath = Join-Path $RepoRoot $file
+            if (Test-Path $wtPath) {
+                Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            Write-Log "  Restoring: $file"
+            $gitOutput = git checkout HEAD -- $file 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to restore $file from HEAD: $gitOutput"
+            }
+        }
+    }
+
+    foreach ($file in $NewFiles) {
+        Write-Log "  Restoring new fix file: $file"
+        $gitOutput = git checkout HEAD -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to restore new fix file $file from HEAD: $gitOutput"
+        }
+    }
+}
+
 # Verify each fix file is usable. A PR can MODIFY, ADD, or DELETE a fix file:
 #   - modified → exists on disk (HEAD) and at merge-base
-#   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (not reverted)
+#   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (removed for baseline)
 #   - deleted  → does NOT exist on disk (HEAD), exists at merge-base
 # A PR-deleted file legitimately does not exist in the with-fix worktree, so a
 # plain Test-Path is NOT a valid existence gate — it wrongly aborted (→ infra
@@ -1591,21 +1652,17 @@ foreach ($file in $FixFiles) {
         }
     } else {
         $NewFiles += $file
-        Write-Log "  ○ $file (new file - skipping revert)"
+        Write-Log "  ✓ $file (new file - will remove for baseline and restore from HEAD)"
     }
 }
 
-if ($RevertableFiles.Count -eq 0) {
-    Write-Host "❌ No revertable fix files found. All fix files are new." -ForegroundColor Red
-    Write-Host "   Cannot verify test behavior without files to revert." -ForegroundColor Yellow
-    exit 1
-}
-
-# Check for uncommitted changes ONLY on files we will revert
+# Check for uncommitted changes on every fix file. Full verification restores
+# the with-fix state from HEAD, so modified, added, and deleted fix files must
+# all be committed.
 Write-Log ""
-Write-Log "Checking for uncommitted changes on revertable files..."
+Write-Log "Checking for uncommitted changes on fix files..."
 $uncommittedFiles = @()
-foreach ($file in $RevertableFiles) {
+foreach ($file in $FixFiles) {
     # Check if file has uncommitted changes (staged or unstaged)
     $status = git status --porcelain -- $file 2>$null
     if ($status) {
@@ -1618,8 +1675,8 @@ if ($uncommittedFiles.Count -gt 0) {
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
     Write-Host "║  ERROR: Uncommitted changes detected in fix files         ║" -ForegroundColor Red
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-    Write-Host "║  This script requires revertable fix files to be          ║" -ForegroundColor Red
-    Write-Host "║  committed so they can be restored via git checkout HEAD. ║" -ForegroundColor Red
+    Write-Host "║  This script requires all fix files to be committed       ║" -ForegroundColor Red
+    Write-Host "║  so the with-fix state can be restored from HEAD.         ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     Write-Host ""
     Write-Host "Uncommitted files:" -ForegroundColor Yellow
@@ -1631,7 +1688,7 @@ if ($uncommittedFiles.Count -gt 0) {
     exit 1
 }
 
-Write-Log "  ✓ All revertable fix files are committed"
+Write-Log "  ✓ All fix files are committed"
 
 # Step 1: Revert fix files to merge-base state
 Write-Log ""
@@ -1639,17 +1696,15 @@ Write-Log "=========================================="
 Write-Log "STEP 1: Reverting fix files to merge-base ($($MergeBase.Substring(0, 8)))"
 Write-Log "=========================================="
 
-foreach ($file in $RevertableFiles) {
-    Write-Log "  Reverting: $file"
-    $gitOutput = git checkout $MergeBase -- $file 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Log "  ERROR: Failed to revert $file from $MergeBase"
-        Write-Log "  Git output: $gitOutput"
-        exit 1
-    }
+try {
+    Set-WithoutFixFileState -RepoRoot $RepoRoot -MergeBase $MergeBase `
+        -RevertableFiles $RevertableFiles -NewFiles $NewFiles
+} catch {
+    Write-Log "  ERROR: Failed to form without-fix state: $($_.Exception.Message)"
+    exit 1
 }
 
-Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
+Write-Log "  ✓ Baseline formed: $($RevertableFiles.Count) reverted, $($NewFiles.Count) new file(s) removed"
 
 # Step 2: Run ALL tests WITHOUT fix
 Write-Host ""
@@ -1727,28 +1782,15 @@ Write-Log "=========================================="
 Write-Log "STEP 3: Restoring fix files from HEAD"
 Write-Log "=========================================="
 
-foreach ($file in $RevertableFiles) {
-    if ($DeletedByPrFiles -contains $file) {
-        # The PR deleted this file; its with-fix state is "absent". STEP 1
-        # restored it from the merge-base for the baseline run, so re-delete it
-        # (worktree + index) to match HEAD — `git checkout HEAD -- $file` would
-        # fail here because HEAD has no copy of a PR-deleted file.
-        Write-Log "  Re-removing (deleted by PR): $file"
-        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
-        $wtPath = Join-Path $RepoRoot $file
-        if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
-    } else {
-        Write-Log "  Restoring: $file"
-        $gitOutput = git checkout HEAD -- $file 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log "  ERROR: Failed to restore $file from HEAD"
-            Write-Log "  Git output: $gitOutput"
-            exit 1
-        }
-    }
+try {
+    Set-WithFixFileState -RepoRoot $RepoRoot -RevertableFiles $RevertableFiles `
+        -DeletedByPrFiles $DeletedByPrFiles -NewFiles $NewFiles
+} catch {
+    Write-Log "  ERROR: Failed to restore with-fix state: $($_.Exception.Message)"
+    exit 1
 }
 
-Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
+Write-Log "  ✓ With-fix state restored: $($RevertableFiles.Count) existing, $($NewFiles.Count) new file(s)"
 
 # Step 4: Run ALL tests WITH fix
 Write-Host ""

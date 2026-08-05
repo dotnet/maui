@@ -1,6 +1,6 @@
 ---
 name: try-fix
-description: Attempts ONE alternative fix for a bug, tests it empirically, and reports results. ALWAYS explores a DIFFERENT approach from existing PR fixes. Use when CI or an agent needs to try independent fix alternatives. Invoke with problem description, test command, target files, and optional hints.
+description: Attempts ONE alternative fix for a bug, tests it empirically, and reports results. Supports PR mode (existing committed fix) and issue mode (broken reproduction checkpoint in a disposable worktree). ALWAYS explores a DIFFERENT approach from existing fixes or attempts. Use when CI or an agent needs to try independent fix alternatives. Invoke with problem description, test command, target files, and optional hints.
 compatibility: Requires PowerShell, git, .NET MAUI build environment, Android/iOS device or emulator
 ---
 
@@ -22,7 +22,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 
 1. **Always run once activated** - Never question whether to run. The invoker decides WHEN, you decide WHAT alternative to try
 2. **Single-shot** - Each invocation = ONE fix idea, tested, reported
-3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
+3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes/attempts
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
 6. **Script-only restoration** - The ONLY permitted cleanup command is
@@ -55,16 +55,21 @@ If the prompt does not include a **problem to fix** and a **test command to veri
    `$OUTPUT_DIR` at the start of each later shell command instead of writing a
    repository marker file.
 
-**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
+**Every invocation runs all 11 Workflow steps below using its mode-specific baseline/capture mechanics.** Step
+6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the
+`@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the
+recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on
+`reviewer-findings.json`. Before returning the final report, verify that Step 9 completed: PR mode must run the
+exact script-only restore command above; issue mode must hand the explicitly named disposable worktree back to
+the invoker for targeted removal.
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
 🚨 **Try-fix runs MUST be executed ONE AT A TIME - NEVER in parallel.**
 
-**Why:** Each try-fix run:
-- Modifies the same target source files
-- Uses the same device/emulator for testing
-- Runs EstablishBrokenBaseline.ps1 which reverts files to a known state
+**Why:** Each try-fix run uses the same device/emulator. PR mode also modifies the same worktree and runs
+`EstablishBrokenBaseline.ps1`; issue mode isolates Git state in separate worktrees but still cannot safely run
+device tests concurrently.
 
 **If run in parallel:**
 - Multiple agents will overwrite each other's code changes
@@ -85,7 +90,11 @@ All inputs are provided by the invoker (CI, agent, or user).
 | Target files | Yes | Files to investigate; any file absent from the baseline state's `RevertedFiles` is read-only |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
-| Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
+| Mode | Optional | `PR` (default) or `Issue`. Issue mode is only for a disposable attempt worktree created by `issue-fixer`. |
+| Baseline | Optional | PR mode: base branch/ref hints. Issue mode: the committed broken-checkpoint SHA. |
+| Attempt worktree | Issue mode | Absolute disposable worktree path whose clean `HEAD` equals the broken checkpoint. |
+| Reproduction paths | Issue mode | Explicit repo-owned test/Sandbox paths committed at the checkpoint; candidate fixes may not modify them. |
+| Output directory | Issue mode | Absolute path outside the disposable worktree so artifacts survive worktree removal. |
 
 ## Outputs
 
@@ -99,6 +108,7 @@ Results reported back to the invoker:
 | `analysis` | Why it worked, or why it failed and what was learned |
 | `diff` | The actual code changes made (for review) |
 | `findings_count` | Number of self-review findings recorded (0 = clean self-review) |
+| `candidate_commit` | Issue mode only: ephemeral local commit containing the complete candidate |
 
 ## Output Structure (MANDATORY)
 
@@ -108,13 +118,20 @@ Results reported back to the invoker:
 # Set issue/PR number explicitly (from branch name, PR context, or manual input)
 $IssueNumber = "<ISSUE_OR_PR_NUMBER>"  # Replace with actual number
 
-# Find next attempt number
-$tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
-$existingAttempts = (Get-ChildItem "$tryFixDir/attempt-*" -Directory -ErrorAction SilentlyContinue).Count
-$attemptNum = $existingAttempts + 1
+# PR mode uses the normal repo output tree.
+# Issue mode MUST receive an absolute output directory outside its disposable worktree.
+if ($Mode -eq "Issue") {
+    if (-not [System.IO.Path]::IsPathRooted($ProvidedOutputDirectory)) {
+        throw "Issue mode requires an absolute Output directory outside the attempt worktree."
+    }
+    $OUTPUT_DIR = $ProvidedOutputDirectory
+} else {
+    $tryFixDir = "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/try-fix"
+    $existingAttempts = (Get-ChildItem "$tryFixDir/attempt-*" -Directory -ErrorAction SilentlyContinue).Count
+    $attemptNum = $existingAttempts + 1
+    $OUTPUT_DIR = "$tryFixDir/attempt-$attemptNum"
+}
 
-# Create output directory
-$OUTPUT_DIR = "$tryFixDir/attempt-$attemptNum"
 New-Item -ItemType Directory -Path $OUTPUT_DIR -Force | Out-Null
 
 Write-Host "Output directory: $OUTPUT_DIR"
@@ -143,6 +160,7 @@ equivalent repository marker. The only attempt artifacts belong under
 | `fix.diff` | After Step 7 (Test) | Output of `git diff` showing your changes |
 | `test-output.log` | After Step 7 (Test) | Full output from test command |
 | `analysis.md` | After Step 8 (Capture) | Why it worked/failed, insights learned, and a one-line self-review summary |
+| `candidate-commit.txt` | Issue mode, after Step 8 | Ephemeral local candidate commit SHA |
 
 **Example approach.md:**
 ```markdown
@@ -171,7 +189,10 @@ The skill is complete when:
 - [ ] **Expert self-review performed inline (Step 6) and `reviewer-findings.json` written** — `[]` if clean. **Refreshed by Step 7.5 if the test loop modified code, so the saved findings reflect the final diff.**
 - [ ] Analysis provided (success explanation or failure reasoning with evidence)
 - [ ] Artifacts saved to output directory (verified by Step 8 file-existence gate)
-- [ ] Baseline target files restored with no attempt-created changes; pre-existing untracked harness inputs remain untouched
+- [ ] PR mode: baseline restored. Issue mode: complete candidate committed/exported and disposable worktree
+      handed back to the invoker for removal.
+- [ ] Baseline target files restored with no attempt-created changes; pre-existing untracked harness inputs
+      remain untouched
 - [ ] Results reported to invoker (including `findings_count`)
 
 🚨 **CRITICAL: What counts as "Pass" vs "Fail"**
@@ -202,6 +223,42 @@ The skill is complete when:
 **Never stop due to:** Compile errors (fix them), infrastructure blame (debug your code), giving up too early.
 
 > **Session limits:** Each try-fix *invocation* allows up to 3 compile/test iterations. The *calling orchestrator* controls how many invocations (attempts) to run per session (typically 4-5 as part of pr-review Phase 3).
+
+---
+
+## Execution modes
+
+### PR mode (default)
+
+Use the existing workflow exactly as written: `EstablishBrokenBaseline.ps1` detects committed product changes,
+reverts them to the merge-base state, and restores them after artifact capture.
+
+### Issue mode
+
+Issue mode is invoked only by `issue-fixer`. Read
+`.github/skills/issue-fixer/references/issue-mode-attempts.md` before Step 1. The invoker has already created a
+disposable worktree/branch at a committed broken-reproduction checkpoint.
+
+The following substitutions are mandatory throughout Steps 1–10:
+
+1. **Baseline:** Step 2 verifies clean `HEAD == <broken-checkpoint>` and that all reproduction paths are
+   committed. It does **not** run `EstablishBrokenBaseline.ps1`.
+2. **Candidate boundary:** Candidate changes may not touch reproduction paths. After Step 5, stage only explicit
+   candidate product paths; never use `git add .`.
+3. **Diff under review:** Wherever PR mode uses plain `git diff`, issue mode uses
+   `git diff --cached --binary <broken-checkpoint>` after explicit staging. Wherever PR mode lists
+   `git diff --name-only HEAD`, issue mode lists `git diff --cached --name-only <broken-checkpoint>`.
+4. **Test-loop changes:** Restage only explicit candidate paths before Step 7.5 and reject any change to a
+   reproduction path.
+5. **Complete artifact:** Step 8 creates an ephemeral local candidate commit, writes its SHA to
+   `candidate-commit.txt`, and exports
+   `git diff --binary <broken-checkpoint> <candidate-commit>` to `fix.diff`. A plain working-tree diff is
+   forbidden because it omits untracked/staged additions.
+6. **Cleanup:** Step 9 does not restore or reset. It reports the worktree path and candidate branch/commit to
+   the invoker, which removes the explicitly named disposable worktree after artifacts are copied. Never remove,
+   reset, or clean the session worktree.
+
+Temporary issue-mode commits are local isolation artifacts, not user-facing history. Never push them.
 
 ---
 
@@ -242,6 +299,12 @@ The skill is complete when:
 
 ### Step 2: Establish Baseline (MANDATORY)
 
+**Issue mode:** follow the issue-mode substitution above. Verify the disposable worktree path, clean status,
+checkpoint SHA, and committed reproduction paths; write those facts to `baseline.log`. If any check fails,
+report `Blocked`. Do not run the PR baseline script.
+
+**PR mode:**
+
 🚨 **ONLY use EstablishBrokenBaseline.ps1 — NEVER use `git checkout`, `git restore`, or `git reset` to revert fix files.**
 
 The script auto-restores any previous baseline, tracks state, and prevents loops.
@@ -269,7 +332,8 @@ not safely restore added production files.
 
 **If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 
-**If something fails mid-attempt:** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`
+**If something fails mid-attempt (PR mode):** `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`.
+In issue mode, leave the disposable worktree for the invoker's targeted removal.
 
 ### Step 3: Analyze Target Files
 
@@ -317,6 +381,10 @@ Based on your analysis and any provided hints, design a single fix approach:
 ### Step 5: Apply the Fix
 
 Implement your fix. Use `git status --short` and `git diff` to track changes.
+
+**Issue mode:** before Step 6, confirm no reproduction path changed, then stage only the explicit candidate
+product paths. Include additions/deletions/renames; never use `git add .`. All issue-mode self-review and drift
+checks operate on the staged checkpoint→candidate diff.
 
 ### Step 6: Expert Self-Review (MANDATORY — runs BEFORE testing)
 
@@ -499,10 +567,21 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 # 1. Save result (MUST be exactly "Pass", "Fail", or "Blocked")
 "Pass" | Set-Content "$OUTPUT_DIR/result.txt"  # or "Fail"
 
-# 2. Save the diff (use Set-Content -Value with Out-String so the file is created
-#    even when the diff is empty — a bare `git diff | Set-Content` does not create
-#    the file when the pipe is empty, which would fail the artifact gate.)
-Set-Content -Path "$OUTPUT_DIR/fix.diff" -Value (git diff | Out-String) -NoNewline
+# 2. Save the complete candidate.
+if ($Mode -eq "Issue") {
+    # Candidate paths were staged explicitly in Step 5/7.5. This temporary local
+    # commit makes added/deleted/renamed files part of a complete, reachable artifact.
+    git -c user.name="MAUI Issue Fixer" -c user.email="issue-fixer@example.invalid" `
+        commit -m "Temporary issue $IssueNumber candidate"
+    if ($LASTEXITCODE -ne 0) { throw "Failed to create issue-mode candidate commit." }
+    $candidateCommit = (git rev-parse HEAD).Trim()
+    $candidateCommit | Set-Content "$OUTPUT_DIR/candidate-commit.txt"
+    Set-Content -Path "$OUTPUT_DIR/fix.diff" `
+        -Value (git diff --binary $BrokenCheckpoint $candidateCommit | Out-String) -NoNewline
+} else {
+    # Use Set-Content -Value with Out-String so the file exists for an empty diff.
+    Set-Content -Path "$OUTPUT_DIR/fix.diff" -Value (git diff | Out-String) -NoNewline
+}
 
 # 3. Save test output (should already exist from Step 7)
 # Copy-Item "path/to/test-output.log" "$OUTPUT_DIR/test-output.log"
@@ -533,7 +612,9 @@ Set-Content -Path "$OUTPUT_DIR/fix.diff" -Value (git diff | Out-String) -NoNewli
 ```powershell
 # Run the file-existence check, but DEFER any throw until after Step 9 has restored the worktree.
 $missing = @()
-@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log", "reviewer-findings.json", "reviewer-findings.diff") | ForEach-Object {
+$requiredArtifacts = @("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log", "reviewer-findings.json", "reviewer-findings.diff")
+if ($Mode -eq "Issue") { $requiredArtifacts += "candidate-commit.txt" }
+$requiredArtifacts | ForEach-Object {
     if (Test-Path "$OUTPUT_DIR/$_") {
         Write-Host "✅ $_"
     } else {
@@ -558,6 +639,12 @@ if ($missing.Count -gt 0) {
 **Analysis quality matters.** Bad: "Didn't work". Good: "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached value was already used."
 
 ### Step 9: Restore Working Directory (MANDATORY — runs even if Step 8 gate failed)
+
+**Issue mode:** do not run restore/reset/clean commands. Report the disposable worktree, candidate branch, and
+candidate commit to the invoker. The invoker copies artifacts from the external output directory, then removes
+only that explicitly named worktree. This is the issue-mode equivalent of restoring the baseline.
+
+**PR mode:**
 
 **ALWAYS restore, even if fix failed or Step 8 detected missing artifacts.** Skipping restore corrupts the next sequential try-fix attempt.
 
@@ -600,6 +687,8 @@ Provide structured output to the invoker:
 
 **Result:** ✅ PASS / ❌ FAIL
 
+**Candidate Commit (Issue mode):** [ephemeral local SHA, or N/A]
+
 **Self-Review:** N findings (X critical, Y major, Z moderate/minor) — see `reviewer-findings.json`
 
 **Analysis:**
@@ -629,7 +718,7 @@ contents of `approach.md` or `analysis.md` being visible to the invoker.
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/9) |
+| Git state unrecoverable | PR mode: run baseline restore. Issue mode: stop and return the disposable worktree to the invoker for targeted removal. |
 
 ---
 
