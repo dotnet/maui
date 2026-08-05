@@ -166,6 +166,39 @@ The Copilot expert-review task ended before this phase was persisted, usually be
 "@
 }
 
+function Get-AuthoritativeGateContent {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [string]$GateContent = '',
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [string]$TrustedGateResult = ''
+    )
+
+    # A TIMEDOUT verdict means the Gate task was killed before its trusted wrapper could
+    # publish a result. Any gate/content.md left behind is necessarily partial or stale and
+    # must not override that pipeline fact. Build 14878396 / PR #36698 retained partial
+    # FAILED-looking A/B content after the 150-minute task timeout, which made the summary
+    # falsely say the fix failed even though the Gate never completed.
+    if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') {
+        return @'
+### Gate Result: TIMEDOUT — test verification did not finish
+
+The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 150 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
+
+- This is almost always a transient **infrastructure** issue on the CI agent — **not** a problem with your PR.
+- Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
+- The rest of the review below (expert analysis and findings) ran as usual.
+
+**Next step:** re-comment `/review` to retry the gate on a fresh agent.
+'@
+    }
+
+    return $GateContent
+}
+
 function Limit-MarkdownContent {
     param(
         [Parameter(Mandatory = $true)]
@@ -714,15 +747,6 @@ if (Test-Path $gateFilePath) {
     $gateContent = Get-Content $gateFilePath -Raw -Encoding UTF8
     if (-not [string]::IsNullOrWhiteSpace($gateContent)) {
         Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
-        $gateSection = @"
-<details>
-<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
-<br/>
-
-$gateContent
-
-</details>
-"@
     } else {
         Write-Host "  ⏭️  gate (empty)" -ForegroundColor Gray
     }
@@ -730,27 +754,21 @@ $gateContent
     Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
 }
 
-# When the pipeline reports a timed-out / no-verdict gate (its 150-min hang-safety cap fired,
-# or the gate task crashed before writing a verdict), the agent-written gate/content.md is
-# usually absent. Synthesize an honest Gate section from the trusted TIMEDOUT verdict so the
-# AI Summary still renders normally (the rest of the review ran fine) and the Gate section
-# itself explains why test verification did not complete. Guarded to TIMEDOUT so normal runs
-# and local/manual runs (empty verdict → SKIPPED) are unaffected.
-if ([string]::IsNullOrWhiteSpace($gateContent) -and $TrustedGateResult -match '(?i)TIMEDOUT') {
-    $gateContent = @'
-### Gate Result: TIMEDOUT — test verification did not finish
+$hadPersistedGateContent = -not [string]::IsNullOrWhiteSpace($gateContent)
+$gateContent = Get-AuthoritativeGateContent -GateContent $gateContent -TrustedGateResult $TrustedGateResult
 
-The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 150 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
+if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') {
+    if ($hadPersistedGateContent) {
+        Write-Host "  ⏱️  gate (discarded partial content; trusted verdict is TIMEDOUT)" -ForegroundColor Yellow
+    } else {
+        Write-Host "  ⏱️  gate (synthesized TIMEDOUT section — gate did not complete)" -ForegroundColor Yellow
+    }
+}
 
-- This is almost always a transient **infrastructure** issue on the CI agent — **not** a problem with your PR.
-- Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
-- The rest of the review below (expert analysis and findings) ran as usual.
-
-**Next step:** re-comment `/review` to retry the gate on a fresh agent.
-'@
-    Write-Host "  ⏱️  gate (synthesized TIMEDOUT section — gate did not complete)" -ForegroundColor Yellow
+if (-not [string]::IsNullOrWhiteSpace($gateContent)) {
+    $gateOpen = if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') { ' open' } else { '' }
     $gateSection = @"
-<details open>
+<details$gateOpen>
 <summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
 <br/>
 

@@ -29,6 +29,7 @@ BeforeAll {
         'Add-MissingUITestResultsNote',
         'New-FutureActionSection',
         'New-MissingAgentPhaseContent',
+        'Get-AuthoritativeGateContent',
         'Limit-MarkdownContent'
     )) {
         $function = $ast.Find({
@@ -231,6 +232,30 @@ Describe 'Get-GateStatus' {
 
     It 'returns Unknown for empty gate content' {
         Get-GateStatus -GateContent '' | Should -Be 'Unknown'
+    }
+}
+
+Describe 'Get-AuthoritativeGateContent' {
+    It 'overrides partial FAILED content when the trusted Gate verdict is TIMEDOUT' {
+        $partial = @'
+### Gate Result: ❌ FAILED
+
+The fix does not pass the tests.
+'@
+
+        $result = Get-AuthoritativeGateContent -GateContent $partial -TrustedGateResult 'TIMEDOUT'
+
+        $result | Should -Match 'Gate Result: TIMEDOUT'
+        $result | Should -Match 'test verification did not finish'
+        $result | Should -Not -Match 'Gate Result: ❌ FAILED'
+        $result | Should -Not -Match 'fix does not pass'
+    }
+
+    It 'preserves completed Gate content for non-timeout verdicts' {
+        $content = '### Gate Result: ✅ PASSED'
+
+        Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'PASSED' |
+            Should -Be $content
     }
 }
 
