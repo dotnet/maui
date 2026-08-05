@@ -12,6 +12,7 @@ public class SeedDataService
 	private readonly CategoryRepository _categoryRepository;
 	private readonly string _seedDataFilePath = "SeedData.json";
 	private readonly ILogger<SeedDataService> _logger;
+	private readonly SemaphoreSlim _seedLock = new(1, 1);
 
 	public SeedDataService(ProjectRepository projectRepository, TaskRepository taskRepository, TagRepository tagRepository, CategoryRepository categoryRepository, ILogger<SeedDataService> logger)
 	{
@@ -23,6 +24,19 @@ public class SeedDataService
 	}
 
 	public async Task LoadSeedDataAsync()
+	{
+		await _seedLock.WaitAsync();
+		try
+		{
+			await LoadSeedDataCoreAsync();
+		}
+		finally
+		{
+			_seedLock.Release();
+		}
+	}
+
+	private async Task LoadSeedDataCoreAsync()
 	{
 		await ClearTablesAsync();
 
