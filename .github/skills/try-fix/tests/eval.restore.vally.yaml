@@ -4,9 +4,9 @@
 
 name: try-fix-restore-protocol
 description: >-
-  Verifies that try-fix establishes a real broken baseline, changes only the
-  caller-provided target file, and restores the synthetic PR head without raw
-  git cleanup.
+  Verifies that try-fix establishes a real broken baseline, leaves no
+  agent-created changes outside the caller-provided target file, and restores
+  the synthetic PR head without raw git cleanup.
 version: "1.0.0"
 type: capability
 
@@ -34,7 +34,10 @@ stimuli:
 
       Try a different lifecycle/disposal mechanism.
 
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35552"
+      Test command: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test. The probe is intentionally side-effect-free so
+      any final workspace diff is attributable to the try-fix attempt.
       Target file: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
 
       This is a frozen one-commit fixture. Establish its broken baseline with
@@ -84,6 +87,7 @@ stimuli:
 
 scoring:
   # Every protocol signal must pass in every trial. A single missed baseline,
-  # out-of-scope edit, raw-git cleanup, failed restore, or dirty final workspace
-  # makes the suite red.
+  # agent-created out-of-scope edit, raw-git cleanup, failed restore, or dirty
+  # final workspace makes the suite red. Build-generated drift is outside this
+  # protocol test and belongs in the build script's own regression coverage.
   threshold: 1.0

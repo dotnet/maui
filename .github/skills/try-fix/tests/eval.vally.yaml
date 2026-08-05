@@ -78,7 +78,9 @@ stimuli:
 
       Please try a different approach focused on lifecycle/disposal timing.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35552"
+      Test: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
       Files to look at: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
 
       This is a frozen one-commit fixture. Establish its broken baseline with
@@ -171,7 +173,9 @@ stimuli:
       - Bug: Editor inside a Border uses the wrong height for centered text on iOS
       - The existing fix changes the native layout calculation in EditorHandler
       - Please try a different approach
-      - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue35662"
+      - Test command: pwsh -NoProfile -Command 'Write-Error "No iOS device or simulator is available in this environment"; exit 1'
+      - Run this deterministic unavailable-device probe once; do not retry it
+        or substitute another test.
       - Target: src/Core/src/Handlers/Editor/EditorHandler.iOS.cs
       - Platform: ios
 
@@ -231,7 +235,9 @@ stimuli:
       Why it failed: The toolbar binds its appearance before that callback,
       so updating it there has no effect on the displayed tint.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue35390"
+      Test: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
       Files: src/Controls/src/Core/Compatibility/Handlers/Shell/Android/ShellToolbarTracker.cs
       Hint: The fix needs to happen when toolbar appearance is applied, not after navigation completes.
 
@@ -282,11 +288,14 @@ stimuli:
       try-fix for CarouselView item overlap on Android (Issue #CarouselViewOverlap).
 
       The test assertion is: rect1.Bottom <= rect2.Top (items must not visually overlap).
-      Every approach has been failing because the root cause appears to be in the Android
-      RecyclerView layout manager, not in MAUI wrapper code. After trying up to 3 approaches
-      you should stop and report the result.
+      Two iterations of this approach already failed because the root cause
+      appears to be in the Android RecyclerView layout manager, not in MAUI
+      wrapper code. This is the final third iteration.
 
-      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CarouselViewOverlap"
+      Test: pwsh -NoProfile -Command 'Write-Error "CarouselViewOverlap assertion failed: rect1.Bottom > rect2.Top"; exit 1'
+      Run this deterministic ordinary test-failure probe once. Do not retry it
+      or substitute another test; stop and report Fail with the learned root
+      cause after it fails.
       Target: src/Controls/src/Core/Handlers/Items/Android/MauiCarouselRecyclerView.cs
 
       This is a frozen one-commit fixture. Establish its broken baseline with
@@ -342,7 +351,9 @@ stimuli:
 
       Problem: Android CollectionView header/footer template updates receive an unusable
       measurement during initial layout.
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~DynamicCollectionViewTemplates"
+      Test command: pwsh -NoProfile -Command 'Write-Error "No Android device or emulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
       Target file:
       - src/Controls/src/Core/Handlers/Items/StructuredItemsViewHandler.Android.cs
       Platform: Android
@@ -394,7 +405,9 @@ stimuli:
       disconnection fix on iOS.
 
       Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
-      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
+      Test command: pwsh -NoProfile -Command 'Write-Error "No iOS device or simulator is available in this environment"; exit 1'
+      Run this deterministic unavailable-device probe once; do not retry it or
+      substitute another test.
       Target file:
       - src/Controls/src/Core/Compatibility/Handlers/NavigationPage/iOS/NavigationRenderer.cs
       Registration evidence file (read-only):
