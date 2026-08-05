@@ -89,8 +89,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		internal PathF GetInnerPath(float strokeThickness)
 		{
-			float w = (float)(WidthForPathComputation - strokeThickness);
-			float h = (float)(HeightForPathComputation - strokeThickness);
+			float w = (float)Math.Max(0, WidthForPathComputation - strokeThickness);
+			float h = (float)Math.Max(0, HeightForPathComputation - strokeThickness);
 			float x = strokeThickness / 2;
 			float y = strokeThickness / 2;
 
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IRoundRectangle.InnerPath()
 		{
-			return GetInnerPath((float)StrokeThickness);		 
+			return GetInnerPath((float)EffectiveStrokeThickness);		 
 		}
 
 		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeThickness)
