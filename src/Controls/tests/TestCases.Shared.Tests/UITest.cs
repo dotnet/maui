@@ -260,6 +260,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 		)
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("verify_screenshot", name);
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			
 			// If retryTimeout is specified, keep retrying until timeout expires
