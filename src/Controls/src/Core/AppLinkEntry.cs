@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Thumbnail"/>.</summary>
 		public static readonly BindableProperty ThumbnailProperty = BindableProperty.Create(nameof(Thumbnail), typeof(ImageSource), typeof(AppLinkEntry), default(ImageSource),
-			propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
+			propertyChanged: (bindable, oldValue, newValue) => bindable.ReparentImageSource(oldValue, newValue));
 
 		/// <summary>Bindable property for <see cref="AppLinkUri"/>.</summary>
 		public static readonly BindableProperty AppLinkUriProperty = BindableProperty.Create(nameof(AppLinkUri), typeof(Uri), typeof(AppLinkEntry), null);

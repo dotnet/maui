@@ -1180,7 +1180,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public static readonly BindableProperty FlyoutBackgroundImageProperty =
 			BindableProperty.Create(nameof(FlyoutBackgroundImage), typeof(ImageSource), typeof(Shell), default(ImageSource), BindingMode.OneTime,
-				propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
+				propertyChanged: (bindable, oldValue, newValue) => bindable.ReparentImageSource(oldValue, newValue));
 
 		/// <summary>
 		/// The aspect ratio of the background image.
@@ -1247,7 +1247,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(Shell), null,
-				propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
+				propertyChanged: (bindable, oldValue, newValue) => bindable.ReparentImageSource(oldValue, newValue));
 
 		/// <summary>
 		/// Modifies the behavior of the flyout scroll.

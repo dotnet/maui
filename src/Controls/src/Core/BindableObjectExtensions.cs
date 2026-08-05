@@ -192,6 +192,28 @@ namespace Microsoft.Maui.Controls
 				owner.AddLogicalChild(newView);
 		}
 
+		/// <summary>
+		/// Parents an <see cref="ImageSource"/>-valued property through <see cref="Element.Parent"/>
+		/// (the same pattern <see cref="ImageElement"/> uses) so DynamicResources inside the source
+		/// resolve through the element tree. The source is deliberately not added as a logical child:
+		/// logical children surface through IVisualTreeElement.GetVisualChildren(), where compatibility
+		/// renderers would attempt to build a platform view for it, and IControlTemplated owners clear
+		/// their logical children on template changes.
+		/// </summary>
+		internal static void ReparentImageSource(this BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not Element owner)
+				return;
+
+			// A source can be assigned to more than one owner and the most recent assignment
+			// wins, so only release ownership if this owner still holds it
+			if (oldValue is ImageSource oldSource && ReferenceEquals(oldSource.Parent, owner))
+				oldSource.Parent = null;
+
+			if (newValue is ImageSource newSource)
+				newSource.Parent = owner;
+		}
+
 		internal static bool TrySetAppTheme(
 			this BindableObject self,
 			string lightResourceKey,

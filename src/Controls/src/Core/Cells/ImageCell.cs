@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 			// Parent the image source so DynamicResources inside it resolve through
 			// the element tree (#36822 follow-up)
-			this.AddRemoveLogicalChildren(oldvalue, newvalue);
+			this.ReparentImageSource(oldvalue, newvalue);
 		}
 
 		void OnSourcePropertyChanging(ImageSource oldvalue, ImageSource newvalue)

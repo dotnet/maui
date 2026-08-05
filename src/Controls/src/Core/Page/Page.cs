@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource),
-			propertyChanged: (bindable, oldValue, newValue) => bindable.AddRemoveLogicalChildren(oldValue, newValue));
+			propertyChanged: (bindable, oldValue, newValue) => bindable.ReparentImageSource(oldValue, newValue));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
 		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
@@ -941,7 +941,7 @@ namespace Microsoft.Maui.Controls
 
 			// Parent the image source so DynamicResources inside it resolve through
 			// the element tree (#36822 follow-up)
-			bindable.AddRemoveLogicalChildren(oldvalue, newValue);
+			bindable.ReparentImageSource(oldvalue, newValue);
 		}
 
 		void OnImageSourceSourceChanged(object sender, EventArgs e)

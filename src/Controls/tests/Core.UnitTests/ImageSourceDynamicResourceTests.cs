@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -6,8 +8,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	// Follow-up to https://github.com/dotnet/maui/issues/36822 (PR #37065):
 	// ImageSource-valued properties are element-valued but were never parented, so
 	// DynamicResources inside them only resolved through the removed Application.Current
-	// fallback (and only for app-level resources). The image sources are now added as
-	// logical children of their owner so they resolve through the element tree.
+	// fallback (and only for app-level resources). The image sources now get their
+	// Parent assigned to the owning element (the ImageElement pattern) so they resolve
+	// through the element tree without becoming logical/visual children.
 	public class ImageSourceDynamicResourceTests : BaseTestFixture
 	{
 		protected override void Dispose(bool disposing)
@@ -94,6 +97,133 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Null(first.Parent);
 			Assert.Equal(page, second.Parent);
+		}
+
+		[Fact]
+		public void ImageSourceIsNotExposedAsLogicalOrVisualChild()
+		{
+			var app = SetUpAppWithAccentColor();
+
+			var icon = new FontImageSource { Glyph = "x" };
+			var page = new ContentPage { IconImageSource = icon };
+			app.LoadPage(page);
+
+			Assert.Equal(page, icon.Parent);
+			// Compatibility renderers auto-package visual children; an ImageSource has no
+			// view handler, so it must not surface through the visual tree
+			Assert.DoesNotContain((IVisualTreeElement)icon, ((IVisualTreeElement)page).GetVisualChildren());
+			Assert.DoesNotContain(icon, page.LogicalChildrenInternal);
+		}
+
+		[Fact]
+		public void SharedImageSourceKeepsMostRecentOwnerWhenClearedFromAnother()
+		{
+			SetUpAppWithAccentColor();
+
+			var icon = new FontImageSource { Glyph = "x" };
+			var pageA = new ContentPage { IconImageSource = icon };
+			var pageB = new ContentPage { IconImageSource = icon };
+
+			// The most recent assignment wins
+			Assert.Equal(pageB, icon.Parent);
+
+			// Clearing the property on a non-owner must not steal the parent from the owner
+			pageA.IconImageSource = null;
+
+			Assert.Equal(pageB, icon.Parent);
+		}
+
+		[Fact]
+		public void TitleBarIconStaysParentedAfterControlTemplateChange()
+		{
+			SetUpAppWithAccentColor();
+
+			var icon = new FontImageSource { Glyph = "x" };
+			icon.SetDynamicResource(FontImageSource.ColorProperty, "AccentColor");
+
+			var titleBar = new TitleBar
+			{
+				Resources = new ResourceDictionary { { "AccentColor", Colors.Green } },
+				Icon = icon
+			};
+
+			Assert.Equal(Colors.Green, icon.Color);
+
+			// Replacing the template clears the TitleBar's logical children; the icon must
+			// survive because it is parented directly, not registered as a logical child
+			titleBar.ControlTemplate = new ControlTemplate(() =>
+			{
+				var grid = new Grid();
+				Internals.NameScope.SetNameScope(grid, new Internals.NameScope());
+				return grid;
+			});
+
+			Assert.Equal(titleBar, icon.Parent);
+			Assert.Equal(Colors.Green, icon.Color);
+		}
+
+		[Fact]
+		public void ShellContentIconDynamicResourceResolvesThroughTree()
+		{
+			var app = SetUpAppWithAccentColor();
+
+			var icon = new FontImageSource { Glyph = "x" };
+			icon.SetDynamicResource(FontImageSource.ColorProperty, "AccentColor");
+
+			var shellContent = new ShellContent { Content = new ContentPage() };
+			var shell = new Shell();
+			shell.Items.Add(shellContent);
+			app.LoadPage(shell);
+
+			shellContent.Icon = icon;
+
+			Assert.Equal(shellContent, icon.Parent);
+			Assert.Equal(Colors.Red, icon.Color);
+		}
+
+		[Fact]
+		public void ClearingIconKeepsForwardedFlyoutIconParented()
+		{
+			SetUpAppWithAccentColor();
+
+			var icon = new FontImageSource { Glyph = "x" };
+			var shellContent = new ShellContent { Icon = icon };
+
+			// Icon forwards to FlyoutIcon when FlyoutIcon is not explicitly set
+			Assert.Same(icon, shellContent.FlyoutIcon);
+
+			shellContent.Icon = null;
+
+			// Still referenced through FlyoutIcon, so it must stay parented
+			Assert.Equal(shellContent, icon.Parent);
+		}
+
+		[Fact]
+		public void AllImageSourcePropertiesParentTheirSource()
+		{
+			SetUpAppWithAccentColor();
+
+			var owners = new (string Name, Func<ImageSource, Element> Assign)[]
+			{
+				("Page.IconImageSource", src => new ContentPage { IconImageSource = src }),
+				("Page.BackgroundImageSource", src => new ContentPage { BackgroundImageSource = src }),
+				("NavigationPage.TitleIconImageSource", src => { var page = new ContentPage(); NavigationPage.SetTitleIconImageSource(page, src); return page; }),
+				("Slider.ThumbImageSource", src => new Slider { ThumbImageSource = src }),
+				("ImageCell.ImageSource", src => new ImageCell { ImageSource = src }),
+				("AppLinkEntry.Thumbnail", src => new AppLinkEntry { Thumbnail = src }),
+				("TitleBar.Icon", src => new TitleBar { Icon = src }),
+				("Shell.FlyoutIcon", src => new Shell { FlyoutIcon = src }),
+				("Shell.FlyoutBackgroundImage", src => new Shell { FlyoutBackgroundImage = src }),
+				("BaseShellItem.Icon", src => new ShellContent { Icon = src }),
+				("BaseShellItem.FlyoutIcon", src => new ShellContent { FlyoutIcon = src }),
+			};
+
+			foreach (var (name, assign) in owners)
+			{
+				var source = new FontImageSource { Glyph = "x" };
+				var owner = assign(source);
+				Assert.True(ReferenceEquals(source.Parent, owner), $"{name} should parent its ImageSource");
+			}
 		}
 	}
 }

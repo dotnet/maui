@@ -149,8 +149,9 @@ namespace Microsoft.Maui.Controls
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			// Parent the image source so DynamicResources inside it resolve through
-			// the element tree (#36822 follow-up)
-			bindable.AddRemoveLogicalChildren(oldValue, newValue);
+			// the element tree (#36822 follow-up); Parent (not logical child) so a
+			// ControlTemplate change, which clears logical children, can't unparent it
+			bindable.ReparentImageSource(oldValue, newValue);
 
 			var titlebar = (TitleBar)bindable;
 			var imageSource = newValue as ImageSource;

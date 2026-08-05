@@ -37,7 +37,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="FlyoutIcon"/>.</summary>
 		public static readonly BindableProperty FlyoutIconProperty =
-			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(BaseShellItem), null, BindingMode.OneTime);
+			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(BaseShellItem), null, BindingMode.OneTime,
+				propertyChanged: OnImageSourcePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty =
@@ -245,11 +246,29 @@ namespace Microsoft.Maui.Controls
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			OnImageSourcePropertyChanged(bindable, oldValue, newValue);
+
 			if (newValue == null || bindable.IsSet(FlyoutIconProperty))
 				return;
 
 			var shellItem = (BaseShellItem)bindable;
 			shellItem.FlyoutIcon = (ImageSource)newValue;
+		}
+
+		static void OnImageSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shellItem = (BaseShellItem)bindable;
+
+			// Parent the image source so DynamicResources inside it resolve through the
+			// element tree (#36822 follow-up). Icon forwards to FlyoutIcon, so the same
+			// source can back both properties; only release the parent once this item no
+			// longer references the source at all
+			if (oldValue is ImageSource oldSource && ReferenceEquals(oldSource.Parent, shellItem) &&
+				!ReferenceEquals(shellItem.Icon, oldSource) && !ReferenceEquals(shellItem.FlyoutIcon, oldSource))
+				oldSource.Parent = null;
+
+			if (newValue is ImageSource newSource)
+				newSource.Parent = shellItem;
 		}
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
