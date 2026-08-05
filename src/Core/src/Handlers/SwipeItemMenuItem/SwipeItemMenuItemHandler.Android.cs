@@ -197,6 +197,11 @@ namespace Microsoft.Maui.Handlers
 
 					var tintColor = item.GetIconTintColor()?.ToPlatform();
 
+					// File/resource image services can return drawables backed by a shared ConstantState,
+					// so mutate before changing the color filter to avoid bleeding the tint between
+					// SwipeItems that use the same resource. Attach the now-uniquely-stateful drawable.
+					platformImage = platformImage.Mutate();
+
 					if (tintColor is not null)
 					{
 						platformImage.SetColorFilter(tintColor.Value, FilterMode.SrcAtop);
