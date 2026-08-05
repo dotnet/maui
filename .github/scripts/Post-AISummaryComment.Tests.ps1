@@ -27,7 +27,9 @@ BeforeAll {
         'Get-AIReviewEventForRun',
         'Test-DeepUITestsHadNoSignal',
         'Add-MissingUITestResultsNote',
-        'New-FutureActionSection'
+        'New-FutureActionSection',
+        'New-MissingAgentPhaseContent',
+        'Limit-MarkdownContent'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -159,6 +161,35 @@ Describe 'Add-MissingUITestResultsNote' {
 
     It 'is a no-op for empty content' {
         Add-MissingUITestResultsNote -Content '' | Should -Be ''
+    }
+}
+
+Describe 'New-MissingAgentPhaseContent' {
+    It 'renders an explicit incomplete placeholder for every required expert phase' {
+        foreach ($phase in @('pre-flight', 'code-review', 'try-fix', 'report')) {
+            $content = New-MissingAgentPhaseContent -PhaseKey $phase
+            $content | Should -Match 'did not produce output'
+            $content | Should -Match 'review is \*\*incomplete\*\*'
+            $content | Should -Match '/review'
+        }
+    }
+}
+
+Describe 'Limit-MarkdownContent' {
+    It 'keeps short content unchanged' {
+        Limit-MarkdownContent -Content 'short content' -MaxChars 512 -SectionName 'test' |
+            Should -Be 'short content'
+    }
+
+    It 'shortens oversized content, balances markdown blocks, and stays within budget' {
+        $content = "<details>`n```text`n" + ('x' * 2000)
+        $result = Limit-MarkdownContent -Content $content -MaxChars 700 -SectionName 'UI Tests'
+
+        $result.Length | Should -BeLessOrEqual 700
+        $result | Should -Match 'was shortened to keep every required review section visible'
+        ([regex]::Matches($result, '(?m)^```')).Count % 2 | Should -Be 0
+        ([regex]::Matches($result, '(?i)<details(?:\s|>)')).Count |
+            Should -Be ([regex]::Matches($result, '(?i)</details>')).Count
     }
 }
 

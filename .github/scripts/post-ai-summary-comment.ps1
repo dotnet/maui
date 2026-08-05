@@ -91,13 +91,15 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
-    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔗 Regression Cross-Reference" }
     "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "📋 Pre-Flight — Context & Validation" }
     "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "🔬 Code Review — Deep Analysis" }
     "try-fix"          = @{ File = "try-fix/content.md";            Title = "🛠️ Fix — Analysis & Comparison" }
     "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "📝 Recommended PR Title & Description" }
     "report"           = @{ File = "report/content.md";             Title = "🏁 Report — Final Recommendation" }
+    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔗 Regression Cross-Reference" }
+    # Keep the potentially very large UI-test details last so they cannot hide the
+    # expert-review sections if a final defensive truncation is ever needed.
+    "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
 }
 
 function Test-PhaseContentIsNoOp {
@@ -118,6 +120,7 @@ function Test-PhaseContentIsNoOp {
                 $normalized -match '^Full UI test matrix will run \(no specific categories detected from PR changes\)\.?$'
             )
         }
+
         "regression-check" {
             $withoutHeading = ($normalized -replace '(?m)^##\s+.*Regression Cross-Reference\s*\n+', '').Trim()
             return (
@@ -137,6 +140,80 @@ function Test-PhaseContentIsNoOp {
         default {
             return $false
         }
+    }
+}
+
+function New-MissingAgentPhaseContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('pre-flight', 'code-review', 'try-fix', 'report')]
+        [string]$PhaseKey
+    )
+
+    $phaseName = switch ($PhaseKey) {
+        'pre-flight' { 'Pre-Flight' }
+        'code-review' { 'Code Review' }
+        'try-fix' { 'Fix / Try-Fix' }
+        'report' { 'Report / Final Recommendation' }
+    }
+
+    return @"
+⚠️ **$phaseName did not produce output on this run.**
+
+The Copilot expert-review task ended before this phase was persisted, usually because the review-stage time budget expired or the CI agent encountered a transient authentication/runtime problem. Earlier completed sections remain valid, but this review is **incomplete** without this phase.
+
+**Next step:** re-comment ``/review`` to retry on a fresh agent. If this repeats across runs, a maintainer should inspect the reviewer token and Task 3 logs.
+"@
+}
+
+function Limit-MarkdownContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Content,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(512, 65500)]
+        [int]$MaxChars,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SectionName
+    )
+
+    if ($Content.Length -le $MaxChars) {
+        return $Content
+    }
+
+    $notice = "`n`n_This $SectionName section was shortened to keep every required review section visible. Full details remain available in the pipeline build artifacts._"
+    $keep = [Math]::Max(0, $MaxChars - $notice.Length - 256)
+
+    while ($true) {
+        $candidate = $Content.Substring(0, [Math]::Min($keep, $Content.Length)).TrimEnd()
+        $lastNewline = $candidate.LastIndexOf("`n")
+        if ($lastNewline -gt [Math]::Floor($candidate.Length * 0.8)) {
+            $candidate = $candidate.Substring(0, $lastNewline).TrimEnd()
+        }
+
+        $suffix = ""
+        if ((([regex]::Matches($candidate, '(?m)^```')).Count % 2) -ne 0) {
+            $codeFence = [string][char]96 * 3
+            $suffix += "`n$codeFence"
+        }
+
+        $openDetails = ([regex]::Matches($candidate, '(?i)<details(?:\s|>)')).Count
+        $closedDetails = ([regex]::Matches($candidate, '(?i)</details>')).Count
+        $unclosedDetails = [Math]::Max(0, $openDetails - $closedDetails)
+
+        $result = $candidate + $suffix + $notice
+        if ($unclosedDetails -gt 0) {
+            $result += "`n" + (("</details>`n" * $unclosedDetails).TrimEnd())
+        }
+
+        if ($result.Length -le $MaxChars -or $keep -eq 0) {
+            return $result
+        }
+
+        $keep = [Math]::Max(0, $keep - ($result.Length - $MaxChars) - 64)
     }
 }
 
@@ -684,7 +761,8 @@ $gateContent
 }
 
 $phaseSections = @()
-$phaseContentByKey = @{}
+$phaseContentByKey = [ordered]@{}
+$phaseTitleByKey = @{}
 
 foreach ($key in $phases.Keys) {
     $phase = $phases[$key]
@@ -713,15 +791,7 @@ foreach ($key in $phases.Keys) {
                     $phaseTitle = "$($phase.Title) — $($catMatch.Groups[1].Value)"
                 }
             }
-            $phaseSections += @"
-<details>
-<summary><strong>$phaseTitle</strong></summary>
-<br/>
-
-$content
-
-</details>
-"@
+            $phaseTitleByKey[$key] = $phaseTitle
         } else {
             Write-Host "  ⏭️  $key (empty)" -ForegroundColor Gray
         }
@@ -730,28 +800,36 @@ $content
     }
 }
 
-# If the agent-produced review phases (pre-flight / code-review / try-fix / report) are
-# ALL absent even though the gate ran, the Copilot expert-review agent didn't complete —
-# most often a transient auth-validation 401 or a review-stage timeout. Surface an explicit
-# notice so the reader understands WHY those sections are missing and knows to re-run,
-# instead of silently posting a gate+deep-only summary.
+# Keep every expected expert-review section visible. Task 3 can persist pre-flight,
+# code-review, and try-fix output but still hit its time budget before report/content.md;
+# previously that silently removed the Report section and made a partial review look complete.
+$hadActualPhaseContent = $phaseContentByKey.Count -gt 0
 $agentPhaseKeys = @('pre-flight', 'code-review', 'try-fix', 'report')
-$hasAgentPhase = $false
-foreach ($ak in $agentPhaseKeys) { if ($phaseContentByKey.ContainsKey($ak)) { $hasAgentPhase = $true; break } }
-if (-not $hasAgentPhase -and $gateSection) {
+foreach ($key in $agentPhaseKeys) {
+    if (-not $phaseContentByKey.Contains($key)) {
+        $phaseContentByKey[$key] = New-MissingAgentPhaseContent -PhaseKey $key
+        $phaseTitleByKey[$key] = $phases[$key].Title
+        Write-Host "  ℹ️ Added explicit $key placeholder (phase output missing)" -ForegroundColor Yellow
+    }
+}
+
+foreach ($key in $phases.Keys) {
+    if (-not $phaseContentByKey.Contains($key)) {
+        continue
+    }
+
     $phaseSections += @"
-<details open>
-<summary><strong>⚠️ Expert review incomplete</strong></summary>
+<details>
+<summary><strong>$($phaseTitleByKey[$key])</strong></summary>
 <br/>
 
-The test-verification **gate** ran (see above), but the Copilot **expert review + try-fix** phase did not produce output on this run — usually a transient CI-agent authentication hiccup, an **expired reviewer access token**, or a review-stage timeout, **not** a problem with your PR. Re-comment ``/review`` to retry; if it keeps happening across re-runs, the reviewer's `COPILOT_TOKEN` likely needs refreshing (maintainer action).
+$($phaseContentByKey[$key])
 
 </details>
 "@
-    Write-Host "  ℹ️ Added 'expert review incomplete' notice (no agent phase content present)" -ForegroundColor Yellow
 }
 
-if (-not $gateSection -and $phaseSections.Count -eq 0) {
+if (-not $gateSection) {
     # Reliability guard: in the deferred Stage-3 deep-results post, the PRAgent phase content
     # (gate/content.md, code-review/content.md, …) can be absent even though the pipeline DID
     # run and handed us a real trusted gate verdict — e.g. the content dir was not carried into
@@ -785,7 +863,7 @@ $gateContent
 
 </details>
 "@
-    } else {
+    } elseif (-not $hadActualPhaseContent) {
         throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
     }
 }
@@ -917,10 +995,96 @@ $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 Write-Host "  ✅ Built review body ($($commentBody.Length) chars)" -ForegroundColor Green
 
 # GitHub caps both PR-review bodies AND issue-comment bodies at 65,536 characters. A body over
-# that limit makes every POST path fail with HTTP 422 "Body is too long", which previously failed
-# the whole Post AI Summary stage (observed on build 14857215). Truncate defensively so the post
-# always succeeds; the full deep-test detail remains available in the build artifacts.
+# that limit makes every POST path fail with HTTP 422 "Body is too long". Rebuild oversized
+# summaries with per-section budgets first so Gate, every expert phase, applicable UI Tests, and
+# Next Steps all remain present. The final substring fallback below is only a last-resort guard.
 $githubBodyMaxChars = 65500
+if ($commentBody.Length -gt $githubBodyMaxChars) {
+    Write-Host "  ℹ Review body exceeded $githubBodyMaxChars chars; compacting large sections while preserving all headings." -ForegroundColor Yellow
+
+    $compactBudgets = @{
+        'pre-flight'       = 4000
+        'code-review'      = 6500
+        'try-fix'          = 5000
+        'pr-finalize'      = 3000
+        'report'           = 4000
+        'regression-check' = 2500
+        'uitests'          = 12000
+    }
+
+    $compactSessionParts = @()
+    if ($gateSection) {
+        $compactGateContent = Limit-MarkdownContent -Content $gateContent -MaxChars 7000 -SectionName 'Gate'
+        $compactGateOpen = if ($gateContent -match '(?i)TIMEDOUT|detailed report unavailable') { ' open' } else { '' }
+        $compactSessionParts += @"
+<details$compactGateOpen>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
+<br/>
+
+$compactGateContent
+
+</details>
+"@
+    }
+
+    $compactPhaseSections = @()
+    foreach ($key in $phases.Keys) {
+        if (-not $phaseContentByKey.Contains($key)) {
+            continue
+        }
+
+        $compactContent = Limit-MarkdownContent `
+            -Content $phaseContentByKey[$key] `
+            -MaxChars $compactBudgets[$key] `
+            -SectionName $key
+
+        $compactPhaseSections += @"
+<details>
+<summary><strong>$($phaseTitleByKey[$key])</strong></summary>
+<br/>
+
+$compactContent
+
+</details>
+"@
+    }
+
+    if ($compactPhaseSections.Count -gt 0) {
+        $compactSessionParts += ($compactPhaseSections -join "`n`n---`n`n")
+    }
+
+    $compactPhaseContent = $compactSessionParts -join "`n`n---`n`n"
+    $compactSessionBlock = @"
+$sessionMarkerStart
+<details>
+<summary><strong>🗂️ Review Sessions</strong> — click to expand</summary>
+<br/>
+
+$compactPhaseContent
+
+</details>
+$sessionMarkerEnd
+"@
+    $compactFutureActionSection = Limit-MarkdownContent -Content $futureActionSection -MaxChars 4000 -SectionName 'Next Steps'
+    $commentBody = @"
+$MARKER
+
+## AI Review Summary
+
+$authorPing
+
+$statusChipRow
+
+---
+
+$compactSessionBlock
+
+$compactFutureActionSection
+"@
+    $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
+    Write-Host "  ✅ Compacted review body to $($commentBody.Length) chars with all required sections preserved." -ForegroundColor Green
+}
+
 if ($commentBody.Length -gt $githubBodyMaxChars) {
     $truncationNotice = "`n`n---`n`nℹ **Summary truncated** — this report exceeded GitHub's 65,536-character limit. See the full deep-test results and analysis in the pipeline build artifacts."
     $keep = $githubBodyMaxChars - $truncationNotice.Length
