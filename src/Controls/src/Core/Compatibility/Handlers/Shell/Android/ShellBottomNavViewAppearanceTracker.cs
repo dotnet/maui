@@ -49,6 +49,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
+			var shellAppearance = appearance as ShellAppearance;
+			var background = backgroundColor is not null
+				? new SolidColorBrush(backgroundColor)
+				: !Brush.IsNullOrEmpty(shellAppearance?.Background)
+					? shellAppearance.Background
+					: shellAppearance?.BackgroundColor is not null
+						? new SolidColorBrush(shellAppearance.BackgroundColor)
+						: null;
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
 			var disabledColor = controller.EffectiveTabBarDisabledColor;
 			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
@@ -67,7 +75,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bottomView.ItemTextColor = _itemTextColor;
 			bottomView.ItemIconTintList = _itemIconTint;
 
-			SetBackgroundColor(bottomView, backgroundColor);
+			if (background is GradientBrush)
+				bottomView.UpdateBackground(background);
+			else
+				SetBackgroundColor(bottomView, backgroundColor ?? shellAppearance?.BackgroundColor);
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
