@@ -323,6 +323,7 @@ Describe 'New-ExclusiveTempFile' {
     BeforeAll {
         $script:SandboxDir = Join-Path ([System.IO.Path]::GetTempPath()) "apply-prfinalize-tests-$([System.IO.Path]::GetRandomFileName())"
         New-Item -ItemType Directory -Path $script:SandboxDir -Force | Out-Null
+        $script:RealNewItem = Get-Command New-Item -CommandType Cmdlet
         $script:OriginalAgentTemp = $env:AGENT_TEMPDIRECTORY
         $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
     }
@@ -367,15 +368,21 @@ Describe 'New-ExclusiveTempFile' {
         # $script: scope is required — a plain $i++ inside the scriptblock would mutate a
         # local copy, so every attempt would re-request the planted name.
         $script:ForcedIndex = 0
+        $script:AttemptedPaths = @()
+        Mock New-Item {
+            $script:AttemptedPaths += $Path
+            & $script:RealNewItem -ItemType $ItemType -Path $Path -ErrorAction Stop
+        } -ParameterFilter { $ItemType -eq 'File' }
+
         $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
             $n = "forced$($script:ForcedIndex)"; $script:ForcedIndex++; $n
         }
         try {
-            # Proves the helper actually *reached* the planted path and moved past it.
-            # Without this, an implementation that ignores the seam and picks its own random
-            # name also passes — the planted symlink would never have been in its way, so the
-            # skip logic goes unexercised and the test leans on the exhaustion test to catch
-            # seam-ignoring. Asserting the generator advanced makes this test self-sufficient.
+            # The spy proves New-Item actually attempted the planted path before moving on.
+            # Generator consumption alone is insufficient: an implementation could generate
+            # forced0, skip it without calling New-Item, then successfully create forced1.
+            $script:AttemptedPaths[0] | Should -Be $planted
+            $script:AttemptedPaths[1] | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
             $script:ForcedIndex | Should -BeGreaterThan 1
             $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
 
@@ -397,11 +404,19 @@ Describe 'New-ExclusiveTempFile' {
         New-Item -ItemType SymbolicLink -Path $planted -Target $missingTarget | Out-Null
 
         $script:DangleIndex = 0
+        $script:AttemptedPaths = @()
+        Mock New-Item {
+            $script:AttemptedPaths += $Path
+            & $script:RealNewItem -ItemType $ItemType -Path $Path -ErrorAction Stop
+        } -ParameterFilter { $ItemType -eq 'File' }
+
         $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
             $n = "dangle$($script:DangleIndex)"; $script:DangleIndex++; $n
         }
         try {
-            # As above: pins that the planted path was tried and skipped, not bypassed.
+            # As above: pins that the planted path was attempted and skipped, not bypassed.
+            $script:AttemptedPaths[0] | Should -Be $planted
+            $script:AttemptedPaths[1] | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
             $script:DangleIndex | Should -BeGreaterThan 1
             $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
 
