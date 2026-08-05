@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.Collections.Generic;
@@ -21,7 +22,6 @@ using ParentView = Tizen.NUI.BaseComponents.View;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
-using System;
 #endif
 
 namespace Microsoft.Maui
@@ -66,6 +66,26 @@ namespace Microsoft.Maui
 			}
 		}
 
+		/// <summary>
+		/// Captures a screenshot of the specified <paramref name="view"/>.
+		/// </summary>
+		/// <remarks>
+		/// On non-built-in platform TFMs (e.g. <c>net10.0-macos</c> AppKit backends,
+		/// <c>net10.0</c> Linux/GTK backends) where MAUI does not ship a screenshot
+		/// implementation, capture is routed through a keyed DI hook. Third-party
+		/// platform backends can opt in by registering a
+		/// <see cref="Func{T, TResult}"/> of <see cref="object"/> to
+		/// <c>Task&lt;IScreenshotResult?&gt;</c> under the service key
+		/// <c>"Microsoft.Maui.ViewCapture"</c>:
+		/// <code>
+		/// builder.Services.AddKeyedSingleton&lt;Func&lt;object, Task&lt;IScreenshotResult?&gt;&gt;&gt;(
+		///     "Microsoft.Maui.ViewCapture",
+		///     (_, _) =&gt; platformView =&gt; ((AppKit.NSView)platformView).CaptureAsync());
+		/// </code>
+		/// If no hook is registered (or the <see cref="IElementHandler.PlatformView"/>
+		/// is <see langword="null"/>), the returned task resolves to
+		/// <see langword="null"/>.
+		/// </remarks>
 		public static Task<IScreenshotResult?> CaptureAsync(this IView view)
 		{
 #if PLATFORM
@@ -77,7 +97,7 @@ namespace Microsoft.Maui
 
 			return CaptureAsync(platformView);
 #else
-			return Task.FromResult<IScreenshotResult?>(null);
+			return ScreenshotDispatch.CaptureAsync(view?.Handler, ScreenshotDispatch.ViewCaptureKey);
 #endif
 		}
 

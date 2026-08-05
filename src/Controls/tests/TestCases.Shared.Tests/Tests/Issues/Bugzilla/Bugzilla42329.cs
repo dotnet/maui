@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // Issue - https://github.com/dotnet/maui/issues/36299
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -40,6 +41,23 @@ public class Bugzilla42329 : _IssuesUITest
 		App.WaitForElement(Page3Title);
 		App.Tap(Page3Title);
 
+#if MACCATALYST
+		await WaitForFlyoutAnimation();
+		App.WaitForElement("Menu");
+		App.Tap("Menu");
+
+		await WaitForFlyoutAnimation();
+		App.WaitForElement(Page2Title);
+		App.Tap(Page2Title);
+
+		await WaitForFlyoutAnimation();
+		App.WaitForElement(LabelPage2);
+		App.Tap(LabelPage2);
+
+		await WaitForFlyoutAnimation();
+		App.WaitForElement(Page3Title);
+		App.Tap(Page3Title);
+#endif
 #if ANDROID || WINDOWS //In random scenario, the destructor called upon the fourth navigation. So added one more navigation for Android and Windows to make this test work.
 		App.TapInFlyoutPageFlyout(Page2Title);
 		App.TapInFlyoutPageFlyout(Page3Title);
@@ -54,3 +72,4 @@ public class Bugzilla42329 : _IssuesUITest
 		await Task.Delay(100);
 	}
 }
+#endif

@@ -226,8 +226,11 @@ namespace Microsoft.Maui.Controls.Platform
 			textStorage.AddLayoutManager(layoutManager);
 			layoutManager.AddTextContainer(textContainer);
 
-			textContainer.Size = new(control.Bounds.Width,
-				control.Lines == 0 ? nfloat.MaxValue : control.Bounds.Height);
+			// On iOS 26+ with NavigationPage, UILabel.Bounds may still be {0,0,0,0}
+			// during ArrangeOverride. Use finalSize (MAUI's computed size) as fallback.
+			var containerWidth = control.Bounds.Width > 0 ? control.Bounds.Width : (nfloat)finalSize.Width;
+			var containerHeight = control.Bounds.Height > 0 ? control.Bounds.Height : (nfloat)finalSize.Height;
+			textContainer.Size = new(containerWidth, control.Lines == 0 ? nfloat.MaxValue : containerHeight);
 
 			textStorage.SetString(attributedText);
 			layoutManager.EnsureLayoutForTextContainer(textContainer);

@@ -144,6 +144,10 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
+		// Indicates whether the measure invalidation has already been propagated
+		// to ancestors during this main loop.
+		bool _measureInvalidatedPropagated;
+
 		// Tracks whether this MauiView changed IsFocused, so we only clear focus we own.
 		// We intentionally do not rely on PreviouslyFocusedView here because composite
 		// controls can mirror a focused child Entry to the parent IsFocused state while
@@ -308,6 +312,18 @@ namespace Microsoft.Maui.Platform
 				UIKeyboard.WillHideNotification,
 				OnKeyboardWillHide);
 			_keyboardWillHideObserver = new WeakReference<NSObject>(hideObserver);
+
+			// When switching to SoftInput while keyboard is already open, iOS may not
+			// emit a new WillShow. Rehydrate from global keyboard tracking.
+			if (!_isKeyboardShowing
+				&& KeyboardAutoManagerScroll.IsKeyboardShowing
+				&& !KeyboardAutoManagerScroll.KeyboardFrame.IsEmpty)
+			{
+				_keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
+				_isKeyboardShowing = true;
+				_safeAreaInvalidated = true;
+				SetNeedsLayout();
+			}
 		}
 
 		void UnsubscribeFromKeyboardNotifications()
@@ -322,6 +338,13 @@ namespace Microsoft.Maui.Platform
 			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver(hideObserver);
 				_keyboardWillHideObserver = null;
+			}
+
+			// Clear stale keyboard state so that re-subscribing later doesn't
+			// pick up a phantom keyboard frame from a previous session (#34846).
+			if (_isKeyboardShowing)
+			{
+				ClearKeyboardState();
 			}
 		}
 
@@ -353,7 +376,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void OnKeyboardWillHide(NSNotification notification)
+		void OnKeyboardWillHide(NSNotification notification) => ClearKeyboardState();
+
+		void ClearKeyboardState()
 		{
 			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
@@ -627,6 +652,10 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The size that fits within the constraints</returns>
 		public override CGSize SizeThatFits(CGSize size)
 		{
+			// Invalidations shouldn't happen during measure pass,
+			// but we need to support that in case it happens.
+			_measureInvalidatedPropagated = false;
+
 			if (_crossPlatformLayoutReference == null)
 			{
 				return base.SizeThatFits(size);
@@ -658,6 +687,9 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			// Allow measure invalidations during layout pass
+			_measureInvalidatedPropagated = false;
 
 			if (_crossPlatformLayoutReference == null)
 			{
@@ -805,6 +837,12 @@ namespace Microsoft.Maui.Platform
 
 			// If we're not propagating, then this view is the one triggering the invalidation
 			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
+			if (_measureInvalidatedPropagated)
+			{
+				return false;
+			}
+
+			_measureInvalidatedPropagated = true;
 			return true;
 		}
 
@@ -906,6 +944,59 @@ namespace Microsoft.Maui.Platform
 					_isFocusedSetByUs = false;
 				}
 			}
+		}
+
+		/// <summary>
+		/// When true, <see cref="AccessibilityLabel"/>'s getter synthesizes the label on demand
+		/// from the layout's children instead of returning a stored snapshot. Set by
+		/// <see cref="SemanticExtensions.UpdateSemantics(UIView, IView)"/> when this layout was
+		/// promoted to an accessibility element with a Hint but no explicit Description, so that
+		/// child text changes are picked up on each VoiceOver focus. See PR #35590 review
+		/// comment r3291149230.
+		/// </summary>
+		internal bool SynthesizeAccessibilityLabelFromChildren { get; set; }
+
+		/// <inheritdoc/>
+		public override string? AccessibilityLabel
+		{
+			get
+			{
+				if (SynthesizeAccessibilityLabelFromChildren
+					&& CrossPlatformLayout is ILayout layout)
+				{
+					var synthesized = SemanticExtensions.SynthesizeAccessibilityLabelFromChildren(layout);
+					if (!string.IsNullOrWhiteSpace(synthesized))
+					{
+						return synthesized;
+					}
+				}
+
+				return base.AccessibilityLabel;
+			}
+			set => base.AccessibilityLabel = value;
+		}
+
+		/// <summary>
+		/// Optional callback invoked by <see cref="AccessibilityActivate"/> when VoiceOver activates this view.
+		/// Set by GesturePlatformManager for container layouts with tap gestures to bypass UIKit's
+		/// simulated-touch path, which can be intermittently unreliable on macOS Catalyst.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Memory", "MEM0002",
+			Justification = "Callback captures only a WeakReference<GesturePlatformManager>, which is not an NSObject. No circular strong NSObject reference is created.")]
+		internal Func<bool>? AccessibilityActivateCallback { get; set; }
+
+		/// <inheritdoc/>
+		public override bool AccessibilityActivate()
+		{
+			// Prefer direct MAUI gesture invocation over UIKit's simulated-touch mechanism.
+			// On macOS Catalyst, the simulated-touch path for UITapGestureRecognizer is
+			// intermittently unreliable when VoiceOver activates a container with Ctrl+Option+Space.
+			if (AccessibilityActivateCallback?.Invoke() == true)
+			{
+				return true;
+			}
+
+			return base.AccessibilityActivate();
 		}
 	}
 }

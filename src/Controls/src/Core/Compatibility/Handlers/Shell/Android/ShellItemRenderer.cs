@@ -154,9 +154,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual bool ChangeSection(ShellSection shellSection)
 		{
-			// Update shell appearance based on the new shell section when switching between tabs
-			((IShellController)ShellContext.Shell).AppearanceChanged(shellSection, false);
-			return ((IShellItemController)ShellItem).ProposeSection(shellSection);
+			var result = ((IShellItemController)ShellItem).ProposeSection(shellSection);
+			if (result)
+			{
+				((IShellController)ShellContext.Shell).AppearanceChanged(shellSection, false);
+			}
+			return result;
 		}
 
 		protected virtual Drawable CreateItemBackgroundDrawable()
@@ -191,7 +194,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				using (var innerLayout = new LinearLayout(Context))
 				{
 					innerLayout.SetClipToOutline(true);
-					innerLayout.SetBackground(CreateItemBackgroundDrawable());
+					innerLayout.SetBackground(
+						RuntimeFeature.IsMaterial3Enabled
+							? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
+							: CreateItemBackgroundDrawable());
 					innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
@@ -231,7 +237,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							image.SetImageDrawable(result?.Value);
 							if (result?.Value is not null)
 							{
-								var color = Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
+								var color = RuntimeFeature.IsMaterial3Enabled
+									? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
+									: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
 								result.Value.SetTint(color);
 							}
 						});
@@ -243,7 +251,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						text.Typeface = services.GetRequiredService<IFontManager>()
 							.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
 
-						text.SetTextColor(AColor.Black);
+						text.SetTextColor(
+							RuntimeFeature.IsMaterial3Enabled
+								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
+								: AColor.Black);
 						text.Text = shellContent.Title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 						{

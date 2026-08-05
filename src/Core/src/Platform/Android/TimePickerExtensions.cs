@@ -1,6 +1,7 @@
 using System;
 using Android.Content.Res;
 using AndroidX.AppCompat.Widget;
+using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.Platform;
 
@@ -58,5 +59,13 @@ public static class TimePickerExtensions
 				platformTimePicker.SetTextColor(cs);
 			}
 		}
+	}
+
+	// Make it public in .NET 11.
+	internal static void UpdateTextAlignment(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	{
+		mauiTimePicker.TextAlignment = timePicker.FlowDirection == FlowDirection.RightToLeft
+				? ATextAlignment.TextEnd
+				: ATextAlignment.TextStart;
 	}
 }

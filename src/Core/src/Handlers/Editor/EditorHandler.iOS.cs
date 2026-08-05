@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -10,6 +11,18 @@ namespace Microsoft.Maui.Handlers
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextView>
 	{
 		readonly MauiTextViewEventProxy _proxy = new();
+
+		// Height from MAUI's last PlatformArrange call. Native layout containers can assign
+		// a transient placeholder height directly to a view's Bounds via UIKit, bypassing
+		// MAUI's arrange pipeline. This field is zero until MAUI explicitly arranges the view,
+		// making it a reliable guard for the scrollability cap in GetDesiredSize.
+		double _lastArrangedHeight;
+
+		public override void PlatformArrange(Rect rect)
+		{
+			_lastArrangedHeight = rect.Height;
+			base.PlatformArrange(rect);
+		}
 
 		protected override MauiTextView CreatePlatformView()
 		{
@@ -54,6 +67,16 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			// Tracks whether the height constraint represents a content measurement rather
+			// than a real upper bound. When true, the cap at the bottom is skipped — either
+			// the base already returns the correct size (SizeThatFits substitution) or the
+			// caller provided a finite constraint and the standard MAUI measure contract
+			// applies (children may report DesiredSize larger than the constraint; the
+			// parent decides how to arrange). When false, the substitute came from
+			// Bounds.Height (a real frame bound) and the cap applies to preserve
+			// scrollability after rotation (#35114).
+			bool heightSubstitutedFromSizeThatFits = false;
+
 			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
 			{
 				// If we drop an infinite value into base.GetDesiredSize for the Editor, we'll
@@ -69,11 +92,43 @@ namespace Microsoft.Maui.Handlers
 
 				if (double.IsInfinity(heightConstraint))
 				{
-					heightConstraint = sizeThatFits.Height;
+					// Prefer _lastArrangedHeight over PlatformView.Bounds.Height. Native containers
+					// can set Bounds directly via UIKit outside MAUI's pipeline, making Bounds.Height
+					// unreliable. _lastArrangedHeight is zero until MAUI explicitly arranges the view,
+					// so the cap is skipped for transient placeholder frames and applied only once
+					// MAUI has given the view a real frame.
+					var currentHeight = _lastArrangedHeight;
+
+					if (!PlatformView.AllowAutoGrowth
+						&& currentHeight > 0
+						&& PlatformView.ContentSize.Height > currentHeight)
+					{
+						heightConstraint = currentHeight; // real MAUI-arranged bound — cap will apply
+					}
+					else
+					{
+						heightConstraint = sizeThatFits.Height;
+						heightSubstitutedFromSizeThatFits = true; // not a real bound — cap will be skipped
+					}
 				}
 			}
+			else
+			{
+				// Caller-provided finite constraint — not a substituted bound. Skip the cap.
+				heightSubstitutedFromSizeThatFits = true;
+			}
 
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
+			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			// Clamp the result to the constraint only when it represents a real upper bound.
+			// UITextView (a UIScrollView subclass) ignores the height in SizeThatFits and always
+			// returns full content height, so clamping is needed for caller- or frame-derived bounds.
+			if (!heightSubstitutedFromSizeThatFits && result.Height > heightConstraint)
+			{
+				return new Size(result.Width, heightConstraint);
+			}
+
+			return result;
 		}
 
 		public static void MapText(IEditorHandler handler, IEditor editor)
@@ -82,6 +137,28 @@ namespace Microsoft.Maui.Handlers
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
+		}
+
+		public static void MapBackground(IEditorHandler handler, IEditor editor)
+		{
+			if (handler.PlatformView is not MauiTextView platformView)
+				return;
+
+			if (editor.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (editor.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = ColorExtensions.BackgroundColor;
+			}
+			else
+			{
+				platformView.UpdateBackground(editor);
+			}
 		}
 
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>

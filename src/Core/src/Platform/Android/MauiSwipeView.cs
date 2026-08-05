@@ -133,6 +133,11 @@ namespace Microsoft.Maui.Platform
 			if (_contentView is null || _initialPoint is null)
 				return false;
 
+			if (_contentView is AWebView contentWebView)
+			{
+				return ShouldInterceptWebViewTouch(contentWebView, swipeDirection);
+			}
+
 			var viewGroup = _contentView as ViewGroup;
 
 			if (viewGroup is not null)
@@ -165,6 +170,17 @@ namespace Microsoft.Maui.Platform
 
 			return true;
 		}
+
+		// Determines whether the SwipeView should intercept touch events when the content is a WebView, based on the WebView's scroll position and the swipe direction.
+		static bool ShouldInterceptWebViewTouch(AWebView webView, SwipeDirection swipeDirection) =>
+			swipeDirection switch
+			{
+				SwipeDirection.Right => !webView.CanScrollHorizontally(-1), // at left edge
+				SwipeDirection.Left => !webView.CanScrollHorizontally(1),   // at right edge
+				SwipeDirection.Down => !webView.CanScrollVertically(-1),    // at top
+				SwipeDirection.Up => !webView.CanScrollVertically(1),       // at bottom
+				_ => true,
+			};
 
 		static bool ShouldInterceptScrollChildrenTouch(ViewGroup scrollView, bool isHorizontal)
 		{
@@ -621,6 +637,11 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var child in childs)
 			{
+				if (i >= items.Count)
+				{
+					break;
+				}
+
 				if (child.Visibility == ViewStates.Visible)
 				{
 					var item = items[i];
@@ -668,9 +689,10 @@ namespace Microsoft.Maui.Platform
 
 					child.Layout(l, t, r, b);
 
-					i++;
 					previousWidth += swipeItemWidth;
 				}
+
+				i++;
 			}
 		}
 
@@ -1001,11 +1023,13 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					foreach (var swipeItem in swipeItems)
-					{
-						if (GetIsVisible(swipeItem))
-							ExecuteSwipeItem(swipeItem);
-					}
+					// Execute only the first visible item. In Execute mode, a swipe
+					// triggers a single action — matching WinUI behavior. Executing
+					// multiple items would cause side effects (e.g., visibility changes)
+					// that could trigger unintended additional executions. See #7580.
+					var itemToExecute = swipeItems.FirstOrDefault(GetIsVisible);
+					if (itemToExecute != null)
+						ExecuteSwipeItem(itemToExecute);
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 						ResetSwipe();

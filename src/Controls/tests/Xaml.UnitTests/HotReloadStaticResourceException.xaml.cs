@@ -48,13 +48,13 @@ public partial class HotReloadStaticResourceException : ContentPage
 					Assert.Equal(13, xpe.XmlInfo.LinePosition);
 				}
 			};
-			
-			// Now expect the exception to be thrown (after handler is invoked)
-			var exception = Assert.Throws<XamlParseException>(() => new HotReloadStaticResourceException(inflator));
-			
-			// Verify handler was invoked and exception details are correct
+
+			// With the fix for #35018, missing resources during Hot Reload (handler set)
+			// no longer throw — the error is reported to the handler and the property is
+			// skipped, allowing the page to load with degraded styling.
+			var page = new HotReloadStaticResourceException(inflator);
+			Assert.NotNull(page);
 			Assert.True(handled, "Exception handler was not invoked");
-			Assert.Contains("StaticResource not found for key MissingResource", exception.Message, System.StringComparison.Ordinal);
 		}
 #else
 		[Fact(Skip = "This test runs only in debug")]

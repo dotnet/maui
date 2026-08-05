@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics;
+using Android.Views;
 using Android.Webkit;
 
 namespace Microsoft.Maui.Platform
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly WebViewHandler _handler;
 		readonly Rect _clipRect;
+		bool _hasSwipeViewParent;
 
 		public MauiWebView(WebViewHandler handler, Context context) : base(context)
 		{
@@ -35,6 +37,28 @@ namespace Microsoft.Maui.Platform
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
+
+			_hasSwipeViewParent = ((View)this).GetParentOfType<MauiSwipeView>() is not null;
+
+			if (RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(this))
+			{
+				RefreshViewWebViewScrollCapture.Attach(this);
+				// If a page has already loaded before this WebView was placed inside a
+				// RefreshView (late-attach), OnPageFinished already fired with IsAttached=false
+				// and the observer was never injected. Re-inject it now so inner-scroll can
+				// correctly prevent pull-to-refresh.
+				if (!string.IsNullOrEmpty(Url))
+				{
+					RefreshViewWebViewScrollCapture.InjectObserver(this);
+				}
+			}
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			RefreshViewWebViewScrollCapture.Detach(this);
+			base.OnDetachedFromWindow();
+			_hasSwipeViewParent = false;
 		}
 
 		void UpdateClipBounds(int width, int height)
@@ -64,6 +88,33 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (e == null)
+				return false;
+
+			switch (e.Action)
+			{
+				case MotionEventActions.Down:
+				case MotionEventActions.Move:
+					// Do not request disallow intercept when inside a SwipeView — that would set
+					// FLAG_DISALLOW_INTERCEPT on the SwipeView and prevent it from detecting
+					// swipe gestures
+					if (!_hasSwipeViewParent)
+					{
+						Parent?.RequestDisallowInterceptTouchEvent(true);
+					}
+					break;
+
+				case MotionEventActions.Up:
+				case MotionEventActions.Cancel:
+					Parent?.RequestDisallowInterceptTouchEvent(false);
+					break;
+			}
+
+			return base.OnTouchEvent(e);
+		}
+
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
 			_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
@@ -85,6 +136,16 @@ namespace Microsoft.Maui.Platform
 
 				LoadUrl(url ?? string.Empty);
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				RefreshViewWebViewScrollCapture.Detach(this);
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

@@ -99,10 +99,11 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (_borderView is not null)
+			{
 				BringSubviewToFront(_borderView);
+			}
 
 			var child = subviews[0];
-
 			child.Frame = Bounds;
 
 			if (MaskLayer is not null)

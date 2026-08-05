@@ -10,7 +10,7 @@
     Label categories:
     - Outcome labels (mutually exclusive): agent-approved, agent-changes-requested, agent-review-incomplete
     - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-pr-picked
-    - Manual labels (applied by maintainers): agent-fix-implemented
+    - Manual / queue labels: agent-fix-implemented, agent-ready-for-rerun, agent-review-in-progress
     - Tracking label: agent-reviewed (always applied on completed run)
 
 .NOTES
@@ -36,7 +36,9 @@ $script:SignalLabels = @{
 }
 
 $script:ManualLabels = @{
-    's/agent-fix-implemented' = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
+    's/agent-fix-implemented'   = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
+    's/agent-ready-for-rerun'   = @{ Description = 'AI review has new PR activity and is ready for rerun'; Color = '5319E7' }
+    's/agent-review-in-progress' = @{ Description = 'AI review is currently running for this PR'; Color = 'FBCA04' }
 }
 
 $script:TrackingLabel = @{
@@ -126,10 +128,32 @@ function Add-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
-        --method POST `
-        -f "labels[]=$LabelName" 2>$null | Out-Null
-    return $LASTEXITCODE -eq 0
+    $tmp = $null
+    try {
+        $tmp = New-TemporaryFile
+        @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
+        $output = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
+            --method POST `
+            --input $tmp 2>&1
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) {
+            return $true
+        }
+
+        $message = ($output | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($message)) {
+            $message = "gh api exited with code $exitCode."
+        } elseif ($message.Length -gt 1000) {
+            $message = $message.Substring(0, 1000) + '...'
+        }
+
+        Write-Host "  ⚠️  Failed to add label '$LabelName' to PR #$PRNumber (gh api exit code $exitCode): $message" -ForegroundColor Yellow
+        return $false
+    } finally {
+        if ($tmp) {
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 # ============================================================
@@ -143,9 +167,122 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 2>$null | Out-Null
+    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
+        --method DELETE 1>$null 2>$null
     return $LASTEXITCODE -eq 0
+}
+
+# ============================================================
+# Set-AgentReviewInProgress
+# ============================================================
+function Set-AgentReviewInProgress {
+    <#
+    .SYNOPSIS
+        Applies the persistent in-progress lock label before triggering review.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $label = 's/agent-review-in-progress'
+    $def = $script:ManualLabels[$label]
+    Ensure-LabelExists -LabelName $label -Description $def.Description -Color $def.Color -Owner $Owner -Repo $Repo
+
+    $currentLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($currentLabels -contains $label) {
+        Write-Host "  ✅ Already present: $label" -ForegroundColor Green
+        return $true
+    }
+
+    $ok = Add-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo
+    $updatedLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($ok -or $updatedLabels -contains $label) {
+        Write-Host "  ✅ Applied: $label" -ForegroundColor Green
+        return $true
+    }
+
+    Write-Host "  ⚠️  Failed to apply: $label" -ForegroundColor Yellow
+    return $false
+}
+
+# ============================================================
+# Clear-AgentReviewInProgress
+# ============================================================
+function Clear-AgentReviewInProgress {
+    <#
+    .SYNOPSIS
+        Removes the persistent in-progress lock label after review finishes.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $label = 's/agent-review-in-progress'
+    $currentLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($currentLabels -notcontains $label) {
+        Write-Host "  ✅ Not present: $label" -ForegroundColor Green
+        return $true
+    }
+
+    $ok = Remove-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo
+    $updatedLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($ok -or $updatedLabels -notcontains $label) {
+        Write-Host "  ✅ Removed: $label" -ForegroundColor Green
+        return $true
+    }
+
+    Write-Host "  ⚠️  Failed to remove: $label" -ForegroundColor Yellow
+    return $false
+}
+
+# ============================================================
+# Test-AgentReviewInProgressIsStale
+# ============================================================
+function Test-AgentReviewInProgressIsStale {
+    <#
+    .SYNOPSIS
+        Returns true when the in-progress lock label is older than the stale threshold.
+
+    .DESCRIPTION
+        This is a cancellation safety net. Normal AzDO runs clear the lock in a
+        final cleanup stage; if a run is cancelled before cleanup can start, the
+        scanner/manual trigger can recover after the conservative stale window.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui',
+        [int]$StaleAfterHours = 18
+    )
+
+    $label = 's/agent-review-in-progress'
+    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$label`") | .created_at" 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ⚠️  Could not inspect label history for PR #$PRNumber; treating $label as fresh" -ForegroundColor Yellow
+        return $false
+    }
+
+    if ($createdAtValues.Count -eq 0) {
+        Write-Host "  ⚠️  No label history found for $label on PR #$PRNumber; treating it as fresh" -ForegroundColor Yellow
+        return $false
+    }
+
+    $latestAppliedAt = $createdAtValues | ForEach-Object {
+        [datetimeoffset]::Parse([string]$_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+    } | Sort-Object -Descending | Select-Object -First 1
+
+    $age = [datetimeoffset]::UtcNow - $latestAppliedAt
+    if ($age -gt [timespan]::FromHours($StaleAfterHours)) {
+        Write-Host "  ⚠️  $label on PR #$PRNumber is stale (applied $($latestAppliedAt.ToString('u')))" -ForegroundColor Yellow
+        return $true
+    }
+
+    Write-Host "  ✅ $label on PR #$PRNumber is fresh (applied $($latestAppliedAt.ToString('u')))" -ForegroundColor Green
+    return $false
 }
 
 # ============================================================
@@ -323,7 +460,14 @@ function Update-AgentReviewedLabel {
 function Parse-PhaseOutcomes {
     <#
     .SYNOPSIS
-        Reads phase output content.md files and determines outcome + signal labels.
+        Determines outcome + signal labels from a review run's artifacts.
+
+    .DESCRIPTION
+        Prefers the authoritative machine-readable artifacts over prose:
+          - Gate  -> gate/gate-result.txt (PASSED|SKIPPED|FAILED); SKIPPED => no gate label.
+          - Fix   -> winner.json (isPRFix); false => 'win' (alternative beat PR),
+                     true => 'lose' (PR fix best); missing => no fix label.
+          - Outcome -> report/content.md Final Recommendation.
 
     .OUTPUTS
         Hashtable with keys: Outcome, GateResult, FixResult
@@ -340,38 +484,51 @@ function Parse-PhaseOutcomes {
         FixResult  = $null  # 'win', 'lose'
     }
 
-    # --- Parse Gate content.md ---
-    $gateFile = Join-Path $baseDir "gate/content.md"
-    if (Test-Path $gateFile) {
-        $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
-        if ($gateContent) {
-            # Match the Result line specifically to avoid false matches from other text
-            if ($gateContent -match '(?im)^\*?\*?Result\*?\*?:.*(?:✅|PASSED)') {
-                $result.GateResult = 'passed'
-            }
-            elseif ($gateContent -match '(?im)^\*?\*?Result\*?\*?:.*(?:❌|FAILED|SKIPPED)') {
-                $result.GateResult = 'failed'
+    # --- Gate result (authoritative: gate/gate-result.txt) ---
+    # The Gate phase writes the canonical verdict (PASSED|SKIPPED|FAILED) to gate-result.txt.
+    # SKIPPED means "no runnable tests were detected" — it is NOT a failure, so it maps to
+    # $null (no gate signal label). Fall back to the gate report header only if the file is
+    # missing (using the real "### Gate Result:" format, not the old broken "^Result:").
+    $gateVerdict = $null
+    $gateResultFile = Join-Path $baseDir "gate/gate-result.txt"
+    if (Test-Path $gateResultFile) {
+        $gateVerdict = (Get-Content $gateResultFile -Raw -ErrorAction SilentlyContinue)
+    }
+    if (-not $gateVerdict) {
+        $gateFile = Join-Path $baseDir "gate/content.md"
+        if (Test-Path $gateFile) {
+            $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
+            if ($gateContent -and $gateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(PASSED|FAILED|SKIPPED)') {
+                $gateVerdict = $matches[1]
             }
         }
     }
+    switch -Regex (($gateVerdict ?? '').Trim()) {
+        '(?i)^PASSED' { $result.GateResult = 'passed' }
+        '(?i)^FAILED' { $result.GateResult = 'failed' }
+        # SKIPPED / empty / anything else => $null (no gate signal label)
+    }
 
-    # --- Parse try-fix content.md for fix result ---
-    $fixFile = Join-Path $baseDir "try-fix/content.md"
-    if (Test-Path $fixFile) {
-        $fixContent = Get-Content $fixFile -Raw -ErrorAction SilentlyContinue
-        if ($fixContent) {
-            # Extract just the fix name (before any reason separator like " — ")
-            # to avoid false matches from reason text containing keywords like "try-fix" or "alternative"
-            if ($fixContent -match '(?i)Selected Fix:\s*\*?\*?\s*(.+?)(?:\s*—|\s*$)') {
-                $fixName = $matches[1].Trim()
-                # Agent wins: fix name starts with Candidate/Alternative/try-fix
-                if ($fixName -match '(?i)^(?:Candidate|Alternative|try-fix)') {
-                    $result.FixResult = 'win'
-                }
-                # Agent loses: fix name starts with PR
-                elseif ($fixName -match '(?i)^(?:\*?\*?\s*)?PR\b') {
-                    $result.FixResult = 'lose'
-                }
+    # --- Fix result (authoritative: winner.json) ---
+    # winner.json is the machine-readable comparison verdict written by the Report phase.
+    #   isPRFix = $false (winner is a try-fix-* candidate) => an alternative beat the PR => 'win'
+    #   isPRFix = $true  (winner is pr / pr-plus-reviewer)  => the PR fix was best        => 'lose'
+    # A missing/invalid winner.json (e.g. review-incomplete) => $null (no fix signal label),
+    # so we never guess a fix outcome the comparison did not actually produce.
+    $winnerFile = Join-Path $baseDir "winner.json"
+    if (Test-Path $winnerFile) {
+        $winner = $null
+        try { $winner = Get-Content $winnerFile -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop } catch { $winner = $null }
+        if ($winner) {
+            $winnerName = [string]$winner.winner
+            if ($null -ne $winner.isPRFix) {
+                $result.FixResult = if ($winner.isPRFix) { 'lose' } else { 'win' }
+            }
+            elseif ($winnerName -match '(?i)^try-fix') {
+                $result.FixResult = 'win'
+            }
+            elseif ($winnerName -match '(?i)^(pr|pr-plus-reviewer)$') {
+                $result.FixResult = 'lose'
             }
         }
     }

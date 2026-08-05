@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					// For ScrollView, we need to consider the margin, but we should not consider the header height, since it should overlap with the scroll view. 
+					// For ScrollView, we need to consider the margin, but we should not consider the header height, since it should overlap with the scroll view.
 					// The content inset is already managed by SetHeaderContentInset.
 					contentYOffset += HeaderView.View.Margin.VerticalThickness;
 				}

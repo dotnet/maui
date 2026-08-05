@@ -85,7 +85,7 @@ if ($Platform -eq "android") {
     Write-Info "Build command: dotnet build $($buildArgs -join ' ')"
     
     $buildStartTime = Get-Date
-    $maxAttempts = 2
+    $maxAttempts = 3
     $buildExitCode = 1
     
     for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
@@ -104,11 +104,31 @@ if ($Platform -eq "android") {
             # Restart ADB server to recover from broken pipe / transient errors
             Write-Info "Restarting ADB server..."
             & adb kill-server 2>$null
-            Start-Sleep -Seconds 2
-            & adb start-server
-            Start-Sleep -Seconds 2
-            & adb wait-for-device
             Start-Sleep -Seconds 3
+            & adb start-server
+            Start-Sleep -Seconds 3
+            
+            # Wait for device and verify emulator is fully responsive
+            Write-Info "Waiting for device to be fully ready..."
+            & adb wait-for-device
+            Start-Sleep -Seconds 5
+            
+            # Verify package manager is responsive before retrying build
+            $pmReady = $false
+            for ($pmCheck = 1; $pmCheck -le 10; $pmCheck++) {
+                $pmOutput = & adb shell pm list packages -3 2>&1
+                if ($LASTEXITCODE -eq 0 -and $pmOutput -notmatch 'Broken pipe|error') {
+                    $pmReady = $true
+                    Write-Info "Package manager responsive (check $pmCheck)"
+                    break
+                }
+                Write-Warn "Package manager not ready (check $pmCheck/10), waiting..."
+                Start-Sleep -Seconds 3
+            }
+            
+            if (-not $pmReady) {
+                Write-Warn "Package manager still unresponsive — attempting build anyway"
+            }
         }
         
         & dotnet build @buildArgs

@@ -27,27 +27,53 @@ on:
         default: 'main'
 
 jobs:
-  # Lightweight pre-flight gate. Runs the cheap comment-match + permission check
-  # so unauthorized users do NOT cause the heavier `trigger-review` runner to spin
-  # up. Both checks exit 0 and surface the result via an output, keeping the
-  # workflow run history clean (no noisy failed runs from drive-by `/review`
-  # comments by non-collaborators).
-  authorize:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.issue.pull_request &&
-       (github.event.comment.body == '/review' ||
-        startsWith(github.event.comment.body, '/review ')))
+  # Lightweight pre-flight gate that matches the command and checks permission
+  # before provisioning the write-capable trigger-review job.
+  match:
+    if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions:
       contents: read
       pull-requests: read
     outputs:
+      matched: ${{ steps.check.outputs.matched }}
       proceed: ${{ steps.gate.outputs.proceed }}
     steps:
+      - name: Match /review command
+        id: check
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          # `/review rerun` is not a supported command. Reject it explicitly so
+          # it cannot fall through to the generic `/review` matcher below. `sed`
+          # strips leading whitespace per line, so a leading BLANK line survives in
+          # TRIMMED_BODY; tolerate leading whitespace/newlines here (consistent with
+          # the generic matcher) so a pasted `\n/review rerun` can't evade the guard.
+          if [[ "${TRIMMED_BODY}" =~ ^[[:space:]]*/review[[:space:]]+rerun([[:space:]]|$) ]]; then
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Match `/review` as the first non-whitespace token, optionally followed by args.
+          # Allows arbitrary leading whitespace (spaces, tabs, newlines).
+          # `/review tests` is reserved for the gh-aw test-failure review workflow.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+tests([[:space:]]|$) ]]; then
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check actor permission
         id: gate
+        if: steps.check.outputs.matched == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           ACTOR: ${{ github.actor }}
@@ -59,7 +85,10 @@ jobs:
             echo "proceed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null || echo "none")
+          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission'); then
+            echo "::error::Failed to determine repository permission for ${ACTOR}."
+            exit 1
+          fi
           echo "User ${ACTOR} has permission: ${PERMISSION}"
           # write, maintain, and admin can all trigger /review
           if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
@@ -70,8 +99,8 @@ jobs:
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
   trigger-review:
-    needs: authorize
-    if: needs.authorize.outputs.proceed == 'true'
+    needs: match
+    if: needs.match.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
@@ -80,10 +109,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: read
+      issues: write
+      pull-requests: write
     env:
       REPO: ${{ github.repository }}
-      ACTOR: ${{ github.actor }}
     steps:
       - name: Parse parameters
         id: params
@@ -103,8 +132,11 @@ jobs:
             PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
-            # Strip the '/review' prefix and parse remaining args
-            ARGS=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+            # Trim any leading whitespace (spaces/tabs/newlines) the user may have
+            # accidentally typed before the slash command, then strip the '/review'
+            # prefix and parse remaining args.
+            TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
+            ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
@@ -113,11 +145,23 @@ jobs:
             set -- ${ARGS}
             while [ $# -gt 0 ]; do
               case "$1" in
+                --branch=*|-b=*)
+                  PIPELINE_REF="${1#*=}"
+                  ;;
                 --branch|-b)
                   shift
                   if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
                     PIPELINE_REF="$1"
                   fi
+                  ;;
+                --platform=*|-p=*)
+                  CANDIDATE=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
+                  for p in ${VALID_PLATFORMS}; do
+                    if [ "${CANDIDATE}" = "${p}" ]; then
+                      PLATFORM="${p}"
+                      break
+                    fi
+                  done
                   ;;
                 --platform|-p)
                   shift
@@ -145,6 +189,9 @@ jobs:
             done
           fi
 
+          # The AzDO payload adds refs/heads/, so accept either branch names or
+          # fully-qualified refs/heads/<branch> input without double-prefixing.
+          PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's|^refs/heads/||')
           # Sanitize ref to valid git ref characters only
           PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
           # Reject path traversal, empty segments, and leading /
@@ -183,7 +230,46 @@ jobs:
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Checkout repository scripts
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set review in-progress lock
+        id: review_lock
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Update-AgentLabels.ps1
+          $labels = Get-AgentLabels -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+          if ($labels -contains 's/agent-review-in-progress') {
+            if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
+              Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+            } else {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
+              "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+          }
+
+          $locked = Set-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+          if (-not $locked) {
+            throw "Failed to apply s/agent-review-in-progress to PR #$($env:PR_NUMBER)."
+          }
+          if ($labels -contains 's/agent-ready-for-rerun') {
+            if (Remove-Label -PRNumber $env:PR_NUMBER -LabelName 's/agent-ready-for-rerun' -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
+              Write-Host "  ✅ Removed stale queue label: s/agent-ready-for-rerun"
+            } else {
+              Write-Host "  ⚠️  Could not remove stale queue label: s/agent-ready-for-rerun" -ForegroundColor Yellow
+            }
+          }
+          "locked=false" >> $env:GITHUB_OUTPUT
+
       - name: Infer platform
+        if: steps.review_lock.outputs.locked != 'true'
         id: infer
         env:
           GH_TOKEN: ${{ github.token }}
@@ -230,6 +316,8 @@ jobs:
       # through `$GITHUB_OUTPUT` between steps (where they are masked but still
       # serialized to disk on the runner).
       - name: Trigger maui-copilot pipeline
+        id: trigger_azdo
+        if: steps.review_lock.outputs.locked != 'true'
         env:
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
@@ -302,4 +390,35 @@ jobs:
             echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
+          fi
+
+      - name: Clear review lock on trigger failure
+        if: always() && steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome != 'success'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Update-AgentLabels.ps1
+          Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+
+      - name: Hide the /review command comment as resolved
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+        run: |
+          # This job only runs after the pre-flight authorization gate succeeds, so
+          # collapse the recognized command no matter the trigger outcome, including
+          # a lock-skip (locked == 'true') or a failed AzDO trigger. Unauthorized
+          # commenters never enter this job, leaving their comments fully visible.
+          #
+          # We MINIMIZE (hide as resolved) rather than delete so the command — and its
+          # --branch/--platform options — survives in the REST comment history that the rerun
+          # scanner replays. Minimized comments are still returned by the REST list endpoint;
+          # only collapsed in the web UI. A failed hide must never fail the review trigger.
+          if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
+            echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
+          else
+            echo "::warning::Could not hide /review command comment ${COMMENT_NODE_ID}"
           fi

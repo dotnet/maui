@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Web;
+using Android.Graphics;
 using Android.Webkit;
 using Java.Net;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,32 @@ namespace Microsoft.Maui.Platform
 		}
 
 		private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+
+		// OnPageStarted — calls Reset() to clear stale scroll state.
+		public override void OnPageStarted(AWebView? view, string? url, Bitmap? favicon)
+		{
+			RefreshViewWebViewScrollCapture.Reset(view);
+			base.OnPageStarted(view, url, favicon);
+		}
+
+		// OnPageFinished — calls InjectObserver() to inject JS bridge when page loads.
+		public override void OnPageFinished(AWebView? view, string? url)
+		{
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				base.OnPageFinished(view, url);
+				return;
+			}
+
+			// Only inject the scroll-capture observer when the WebView is hosted inside
+			// a RefreshView – avoids unnecessary JS overhead for standalone HybridWebViews.
+			if (RefreshViewWebViewScrollCapture.IsAttached(view))
+			{
+				RefreshViewWebViewScrollCapture.InjectObserver(view);
+			}
+
+			base.OnPageFinished(view, url);
+		}
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{

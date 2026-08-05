@@ -152,6 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact("Cells Do Not Leak")]
 		public async Task CellsDoNotLeak()
 		{
@@ -183,6 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
 		}
+#endif
 
 		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
 		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]
@@ -251,6 +253,86 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 
+		private async Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<THandler>()
+			where THandler : class, IElementHandler
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, THandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var labels = new List<Label>();
+			var items = new ObservableCollection<string>
+			{
+				"one",
+				"two",
+				"three",
+				"four"
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						LineBreakMode = LineBreakMode.WordWrap
+					};
+
+					label.SetBinding(Label.TextProperty, ".");
+					labels.Add(label);
+
+					return label;
+				})
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<THandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				Assert.NotEmpty(labels);
+
+				// Change text of all the labels to force a relayout, including those that were
+				// only used for measurement cell. Now we should be sure that all visible cells
+				// have their MeasureInvalidated == true.
+				foreach (var label in labels)
+					label.Text = label.Text + " with enough extra text to invalidate the measured cell size";
+				// Add another item to force an animation
+				items.Add("five");
+				// Reset the data source to force another animation and a layout pass
+				collectionView.ItemsSource = null;
+
+				var platformView = (UIView)handler.PlatformView;
+				var uiCollectionView = platformView as UICollectionView ?? platformView.Subviews.OfType<UICollectionView>().FirstOrDefault();
+				Assert.NotNull(uiCollectionView);
+				// Force synchronous flush of the ItemsSource reloading
+				await uiCollectionView.PerformBatchUpdatesAsync(() => { });
+				// Force a layout
+				platformView.LayoutIfNeeded();
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Does Not Crash After Resetting Source With Running Animation")]
+		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
+		{
+			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler>();
+		}
+
+		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Resetting Source With Running Animation")]
+		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash2()
+		{
+			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler2>();
+		}
+
 		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
 		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
 		{
@@ -308,6 +390,36 @@ namespace Microsoft.Maui.DeviceTests
 				Labels.Add(new(label));
 				return label;
 			}
+		}
+
+		[Fact]
+		public async Task CollectionViewScrollsToTopIsEnabled()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = Enumerable.Range(0, 20).Select(i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label();
+					label.SetBinding(Label.TextProperty, ".");
+					return label;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, handler =>
+			{
+				var uiCollectionView = handler.Controller.CollectionView;
+				Assert.True(uiCollectionView.ScrollsToTop, "CollectionView's UICollectionView should have ScrollsToTop enabled");
+			});
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)
