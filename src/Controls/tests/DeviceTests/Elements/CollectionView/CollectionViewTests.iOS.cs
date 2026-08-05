@@ -16,11 +16,177 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingAndAddingItemsKeepsHeaderEntryFocused(bool isGrouped)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			IEnumerable<object> itemsSource;
+			Action clearItems;
+			Action addItems;
+
+			if (isGrouped)
+			{
+				var groups = new ObservableCollection<object>
+				{
+					new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" }
+				};
+				itemsSource = groups;
+				clearItems = groups.Clear;
+				addItems = () => groups.Add(new ObservableCollection<string> { "Item 4", "Item 5", "Item 6" });
+			}
+			else
+			{
+				var items = new ObservableCollection<object> { "Item 1", "Item 2", "Item 3" };
+				itemsSource = items;
+				clearItems = items.Clear;
+				addItems = () =>
+				{
+					items.Add("Item 4");
+					items.Add("Item 5");
+					items.Add("Item 6");
+				};
+			}
+
+			var entry = new Entry();
+			var header = new Grid();
+			header.Add(entry);
+
+			var collectionView = new CollectionView
+			{
+				Header = header,
+				IsGrouped = isGrouped,
+				ItemsSource = itemsSource,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async _ =>
+			{
+				await AssertEventually(() => entry.Handler?.PlatformView is UITextField { Window: not null });
+
+				var platformEntry = (UITextField)entry.Handler.PlatformView;
+				Assert.True(platformEntry.BecomeFirstResponder());
+				await AssertEventually(() => platformEntry.IsFirstResponder);
+
+				clearItems();
+				await Task.Delay(100);
+
+				Assert.True(platformEntry.IsFirstResponder);
+
+				addItems();
+				await Task.Delay(100);
+
+				Assert.True(platformEntry.IsFirstResponder);
+			});
+		}
+
+		[Fact]
+		public async Task ClearingItemsSourceBeforeControllerIsAttachedDoesNotCrash()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var items = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+			var collectionView = new CollectionView
+			{
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			var handler = await CreateHandlerAsync<CollectionViewHandler2>(collectionView);
+			Assert.Null(handler.PlatformView.Window);
+
+			await InvokeOnMainThreadAsync(items.Clear);
+
+			((IElementHandler)handler).DisconnectHandler();
+		}
+
+		[Fact]
+		public async Task DisposedItemsSourceIgnoresQueuedCollectionChanges()
+		{
+			var items = new ObservableCollection<string> { "Item 1" };
+			ObservableItemsSource observableSource = null;
+			UICollectionViewController controller = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				controller = new UICollectionViewController(new UICollectionViewFlowLayout());
+				observableSource = new ObservableItemsSource(items, controller);
+				using var collectionChangedQueued = new System.Threading.ManualResetEventSlim();
+
+				var clearItems = Task.Run(() =>
+				{
+					items.Clear();
+					collectionChangedQueued.Set();
+				});
+
+				Assert.True(collectionChangedQueued.Wait(TimeSpan.FromSeconds(5)));
+				clearItems.GetAwaiter().GetResult();
+				observableSource.Dispose();
+			});
+
+			await InvokeOnMainThreadAsync(() => { });
+
+			Assert.Equal(1, observableSource.Count);
+			await InvokeOnMainThreadAsync(controller.Dispose);
+		}
+
+		[Fact]
+		public async Task DisposedGroupedSourceIgnoresQueuedCollectionChanges()
+		{
+			var groups = new ObservableCollection<object>
+			{
+				new ObservableCollection<string> { "Item 1" }
+			};
+			ObservableGroupedSource observableSource = null;
+			UICollectionViewController controller = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				controller = new UICollectionViewController(new UICollectionViewFlowLayout());
+				observableSource = new ObservableGroupedSource(groups, controller);
+				using var collectionChangedQueued = new System.Threading.ManualResetEventSlim();
+
+				var clearGroups = Task.Run(() =>
+				{
+					groups.Clear();
+					collectionChangedQueued.Set();
+				});
+
+				Assert.True(collectionChangedQueued.Wait(TimeSpan.FromSeconds(5)));
+				clearGroups.GetAwaiter().GetResult();
+				observableSource.Dispose();
+			});
+
+			await InvokeOnMainThreadAsync(() => { });
+
+			Assert.Equal(1, observableSource.GroupCount);
+			await InvokeOnMainThreadAsync(controller.Dispose);
+		}
+
 		[Fact]
 		public async Task ItemsSourceGroupedClearDoestCrash()
 		{

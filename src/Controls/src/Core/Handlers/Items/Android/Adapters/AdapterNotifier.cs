@@ -3,7 +3,7 @@ using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	internal class AdapterNotifier : ICollectionChangedNotifier
+	internal class AdapterNotifier : ICollectionChangedNotifier, ICollectionChangedNotifierWithCleanup
 	{
 		readonly RecyclerView.Adapter _adapter;
 
@@ -16,6 +16,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (IsValidAdapter())
 				_adapter.NotifyDataSetChanged();
+		}
+
+		internal void NotifyDataSetChangedAndUnbind()
+		{
+			if (IsValidAdapter())
+			{
+				if (_adapter is IItemsViewAdapter itemsViewAdapter)
+				{
+					itemsViewAdapter.UnbindAllItems();
+				}
+
+				_adapter.NotifyDataSetChanged();
+			}
 		}
 
 		public void NotifyItemChanged(IItemsViewSource source, int startIndex)
@@ -56,8 +69,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void NotifyItemRangeRemoved(IItemsViewSource source, int startIndex, int count)
 		{
+			NotifyItemRangeRemoved(startIndex, count, unbind: false);
+		}
+
+		void ICollectionChangedNotifierWithCleanup.NotifyItemRangeRemovedAndUnbind(IItemsViewSource source, int startIndex, int count)
+		{
+			NotifyItemRangeRemoved(startIndex, count, unbind: true);
+		}
+
+		void NotifyItemRangeRemoved(int startIndex, int count, bool unbind)
+		{
 			if (IsValidAdapter())
 			{
+				if (unbind && _adapter is IItemsViewAdapter itemsViewAdapter)
+				{
+					itemsViewAdapter.UnbindItemRange(startIndex, count);
+				}
+
 				_adapter.NotifyItemRangeRemoved(startIndex, count);
 			}
 		}

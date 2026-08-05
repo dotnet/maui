@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Foundation;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -48,14 +49,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposed)
+			if (_disposed)
 			{
-				if (disposing)
-				{
-					((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
-				}
+				return;
+			}
 
-				_disposed = true;
+			_disposed = true;
+
+			if (disposing)
+			{
+				((INotifyCollectionChanged)_itemsSource).CollectionChanged -= CollectionChanged;
 			}
 		}
 
@@ -108,7 +111,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (!ObserveChanges)
+			if (!ObserveChanges || _disposed)
 			{
 				return;
 			}
@@ -125,6 +128,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
+			if (_disposed)
+				return;
+
 			if (!_collectionViewController.TryGetTarget(out var controller))
 				return;
 
@@ -161,16 +167,73 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+			var previousCount = Count;
 
 			Count = ItemsCount();
 
 			OnCollectionViewUpdating(args);
 
 			var collectionView = controller.CollectionView;
-			collectionView.ReloadData();
+			if (controller.IsViewLoaded && controller.View.Window is not null && !collectionView.Hidden && Count == 0)
+			{
+				if (previousCount > 0)
+				{
+					UnbindVisibleCells(collectionView, _section);
+					collectionView.DeleteItems(CreateIndexesFrom(0, previousCount));
+				}
+			}
+			else
+			{
+				collectionView.ReloadData();
+			}
 			collectionView.CollectionViewLayout.InvalidateLayout();
 
 			OnCollectionViewUpdated(args);
+		}
+
+		internal static void UnbindVisibleCells(UICollectionView collectionView, int section = -1)
+		{
+			var visibleCells = collectionView.VisibleCells;
+			for (int n = 0; n < visibleCells.Length; n++)
+			{
+				var cell = visibleCells[n];
+				var indexPath = collectionView.IndexPathForCell(cell);
+				if (section < 0 || indexPath?.Section == section)
+				{
+					switch (cell)
+					{
+						case TemplatedCell templatedCell:
+							templatedCell.Unbind();
+							break;
+						case Items2.TemplatedCell2 templatedCell:
+							templatedCell.Unbind();
+							break;
+					}
+				}
+
+			}
+		}
+
+		internal static UIView FindHeaderFirstResponder(UICollectionView collectionView)
+		{
+			var subviews = collectionView.Subviews;
+			for (int n = 0; n < subviews.Length; n++)
+			{
+				if (subviews[n].Tag == ItemsViewSupplementaryView.HeaderTag)
+				{
+					return subviews[n].FindFirstResponder();
+				}
+			}
+
+			return null;
+		}
+
+		internal static void RestoreFirstResponder(UIView firstResponder)
+		{
+			if (firstResponder is not null && !firstResponder.IsFirstResponder && firstResponder.Window is not null)
+			{
+				firstResponder.BecomeFirstResponder();
+			}
 		}
 
 		protected virtual NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
@@ -319,9 +382,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var headerFirstResponder = FindHeaderFirstResponder(collectionView);
 			OnCollectionViewUpdating(args);
 			update(collectionView);
 			OnCollectionViewUpdated(args);
+			RestoreFirstResponder(headerFirstResponder);
 		}
 
 		void OnCollectionViewUpdating(NotifyCollectionChangedEventArgs args)

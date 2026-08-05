@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Android.Content;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -8,12 +9,19 @@ using ViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter
+	internal interface IItemsViewAdapter
+	{
+		void UnbindAllItems();
+		void UnbindItemRange(int startIndex, int count);
+	}
+
+	public class ItemsViewAdapter<TItemsView, TItemsViewSource> : RecyclerView.Adapter, IItemsViewAdapter
 		where TItemsView : ItemsView
 		where TItemsViewSource : IItemsViewSource
 	{
 		protected readonly TItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
+		readonly HashSet<TemplatedItemViewHolder> _boundViewHolders = new();
 		protected internal TItemsViewSource ItemsSource;
 
 		bool _disposed;
@@ -54,10 +62,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 			{
+				_boundViewHolders.Remove(templatedItemViewHolder);
 				templatedItemViewHolder.Recycle(ItemsView);
 			}
 
 			base.OnViewRecycled(holder);
+		}
+
+		void IItemsViewAdapter.UnbindItemRange(int startIndex, int count)
+		{
+			var endIndex = startIndex + count;
+
+			foreach (var viewHolder in _boundViewHolders)
+			{
+				var position = viewHolder.BindingAdapterPosition;
+				if (position >= startIndex && position < endIndex)
+				{
+					viewHolder.Unbind(ItemsView);
+				}
+			}
+		}
+
+		void IItemsViewAdapter.UnbindAllItems()
+		{
+			foreach (var viewHolder in _boundViewHolders)
+			{
+				viewHolder.Unbind(ItemsView);
+			}
 		}
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -71,6 +102,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));
 					break;
 			}
+		}
+
+		private protected void TrackBoundViewHolder(TemplatedItemViewHolder viewHolder)
+		{
+			_boundViewHolders.Add(viewHolder);
 		}
 
 		protected virtual bool IsSelectionEnabled(ViewGroup parent, int viewType) => true;
@@ -149,6 +185,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
 		{
+			TrackBoundViewHolder(templatedItemViewHolder);
 			templatedItemViewHolder.Bind(context, ItemsView);
 		}
 

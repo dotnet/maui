@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (!ObserveChanges)
+			if (!ObserveChanges || _disposed)
 			{
 				return;
 			}
@@ -161,6 +161,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
+			if (_disposed)
+				return;
+
 			if (!_collectionViewController.TryGetTarget(out var controller))
 				return;
 
@@ -207,11 +210,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 		void Reload(bool collectionWasReset = false)
 		{
+			var previousGroupCount = _groupCount;
+
 			ResetGroupTracking();
 
 			_groupCount = GroupsCount();
 
-			_collectionView.ReloadData();
+			if (collectionWasReset && !NotLoadedYet() && !_collectionView.Hidden && _groupCount == 0)
+			{
+				if (previousGroupCount > 0)
+				{
+					ObservableItemsSource.UnbindVisibleCells(_collectionView);
+					_collectionView.DeleteSections(CreateIndexSetFrom(0, previousGroupCount));
+				}
+			}
+			else
+			{
+				_collectionView.ReloadData();
+			}
+
 			if (collectionWasReset)
 			{
 				_collectionView.LayoutIfNeeded();
@@ -440,7 +457,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			var headerFirstResponder = ObservableItemsSource.FindHeaderFirstResponder(_collectionView);
 			update();
+			ObservableItemsSource.RestoreFirstResponder(headerFirstResponder);
 		}
 
 		int GroupsCount()

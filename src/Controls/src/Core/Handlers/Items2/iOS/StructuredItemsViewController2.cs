@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
 
@@ -11,8 +12,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class StructuredItemsViewController2<TItemsView> : ItemsViewController2<TItemsView>
 		where TItemsView : StructuredItemsView
 	{
-		public const int HeaderTag = 111;
-		public const int FooterTag = 222;
+		public const int HeaderTag = ItemsViewSupplementaryView.HeaderTag;
+		public const int FooterTag = ItemsViewSupplementaryView.FooterTag;
 
 		bool _disposed;
 

@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public class StructuredItemsViewController<TItemsView> : ItemsViewController<TItemsView>
 		where TItemsView : StructuredItemsView
 	{
-		public const int HeaderTag = 111;
-		public const int FooterTag = 222;
+		public const int HeaderTag = ItemsViewSupplementaryView.HeaderTag;
+		public const int FooterTag = ItemsViewSupplementaryView.FooterTag;
 
 		bool _disposed;
 
