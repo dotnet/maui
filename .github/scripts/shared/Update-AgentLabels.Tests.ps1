@@ -20,9 +20,17 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    # Extract only the pure functions under test (they read files, make no gh/network
-    # calls): Parse-PhaseOutcomes and its fallback helper Get-OutcomeFromCodeReviewVerdict.
-    foreach ($fnName in @('Get-OutcomeFromCodeReviewVerdict', 'Parse-PhaseOutcomes')) {
+    # Extract the functions under test. Network-facing helpers called by
+    # Update-AgentSignalLabels are mocked in that function's Describe block.
+    foreach ($fnName in @(
+        'Ensure-LabelExists',
+        'Get-AgentLabels',
+        'Add-Label',
+        'Remove-Label',
+        'Get-OutcomeFromCodeReviewVerdict',
+        'Parse-PhaseOutcomes',
+        'Update-AgentSignalLabels'
+    )) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -127,6 +135,44 @@ Describe 'Parse-PhaseOutcomes — Gate result from gate-result.txt' {
         $root = New-FixtureRoot
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).GateResult | Should -BeNullOrEmpty
         Remove-Item -Recurse -Force $root
+    }
+}
+
+Describe 'Update-AgentSignalLabels — stale signal cleanup' {
+    BeforeEach {
+        Mock Get-AgentLabels {
+            @(
+                's/agent-gate-passed',
+                's/agent-gate-failed',
+                's/agent-fix-win',
+                's/agent-fix-pr-picked'
+            )
+        }
+        Mock Remove-Label { $true }
+        Mock Add-Label { $true }
+        Mock Ensure-LabelExists {}
+    }
+
+    It 'removes both old Gate labels when the current run has no Gate signal' {
+        Update-AgentSignalLabels -PRNumber '1' -GateResult $null -FixResult $null
+
+        Should -Invoke Remove-Label -Times 1 -ParameterFilter {
+            $LabelName -eq 's/agent-gate-passed'
+        }
+        Should -Invoke Remove-Label -Times 1 -ParameterFilter {
+            $LabelName -eq 's/agent-gate-failed'
+        }
+    }
+
+    It 'removes both old Fix labels when the current run has no winner' {
+        Update-AgentSignalLabels -PRNumber '1' -GateResult $null -FixResult $null
+
+        Should -Invoke Remove-Label -Times 1 -ParameterFilter {
+            $LabelName -eq 's/agent-fix-win'
+        }
+        Should -Invoke Remove-Label -Times 1 -ParameterFilter {
+            $LabelName -eq 's/agent-fix-pr-picked'
+        }
     }
 }
 

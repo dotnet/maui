@@ -420,6 +420,17 @@ function Update-AgentSignalLabels {
             Write-Host "  🗑️  Removed stale: s/agent-gate-passed" -ForegroundColor Yellow
         }
     }
+    else {
+        # SKIPPED / INCONCLUSIVE / TIMEDOUT produce no current gate signal. Remove
+        # either label from an older run so the PR does not keep advertising a stale
+        # pass or failure after the latest Gate was unable or not required to verify.
+        foreach ($staleLabel in @('s/agent-gate-passed', 's/agent-gate-failed')) {
+            if ($currentLabels -contains $staleLabel) {
+                Remove-Label -PRNumber $PRNumber -LabelName $staleLabel -Owner $Owner -Repo $Repo | Out-Null
+                Write-Host "  🗑️  Removed stale: $staleLabel" -ForegroundColor Yellow
+            }
+        }
+    }
 
     # --- Fix labels ---
     if ($FixResult -eq 'win') {
@@ -448,6 +459,16 @@ function Update-AgentSignalLabels {
         if ($currentLabels -contains 's/agent-fix-win') {
             Remove-Label -PRNumber $PRNumber -LabelName 's/agent-fix-win' -Owner $Owner -Repo $Repo | Out-Null
             Write-Host "  🗑️  Removed stale: s/agent-fix-win" -ForegroundColor Yellow
+        }
+    }
+    else {
+        # A missing/invalid winner means this run did not complete a trustworthy fix
+        # comparison. Clear both alternatives rather than retaining a previous run's winner.
+        foreach ($staleLabel in @('s/agent-fix-win', 's/agent-fix-pr-picked')) {
+            if ($currentLabels -contains $staleLabel) {
+                Remove-Label -PRNumber $PRNumber -LabelName $staleLabel -Owner $Owner -Repo $Repo | Out-Null
+                Write-Host "  🗑️  Removed stale: $staleLabel" -ForegroundColor Yellow
+            }
         }
     }
 }
