@@ -4328,7 +4328,10 @@ stages:
                   if (Test-Path $labelScript) {
                     try {
                       . $labelScript
-                      Apply-AgentLabels -PRNumber $prNumber -RepoRoot (Get-Location).Path
+                      Apply-AgentLabels `
+                        -PRNumber $prNumber `
+                        -RepoRoot (Get-Location).Path `
+                        -TrustedGateResult $trustedGate
                       Write-Host "✅ Labels applied"
                     } catch {
                       Write-Host "⚠️ Label application failed: $_"

@@ -136,6 +136,20 @@ Describe 'Parse-PhaseOutcomes — Gate result from gate-result.txt' {
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).GateResult | Should -BeNullOrEmpty
         Remove-Item -Recurse -Force $root
     }
+
+    It 'trusts TIMEDOUT over partial FAILED content from the artifact' {
+        $root = New-FixtureRoot -GateContentMd "### Gate Result: ❌ FAILED`n`nThe fix did not pass."
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root -TrustedGateResult 'TIMEDOUT').GateResult |
+            Should -BeNullOrEmpty
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'trusts the pipeline verdict over a contradictory gate-result.txt' {
+        $root = New-FixtureRoot -GateResultTxt 'FAILED'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root -TrustedGateResult 'PASSED').GateResult |
+            Should -Be 'passed'
+        Remove-Item -Recurse -Force $root
+    }
 }
 
 Describe 'Update-AgentSignalLabels — stale signal cleanup' {

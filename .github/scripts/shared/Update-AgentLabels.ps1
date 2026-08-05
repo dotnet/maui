@@ -559,7 +559,9 @@ function Parse-PhaseOutcomes {
     #>
     param(
         [Parameter(Mandatory)] [string]$PRNumber,
-        [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null)
+        [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
+        [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+        [string]$TrustedGateResult = ''
     )
 
     $baseDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
@@ -569,22 +571,25 @@ function Parse-PhaseOutcomes {
         FixResult  = $null  # 'win', 'lose'
     }
 
-    # --- Gate result (authoritative: gate/gate-result.txt) ---
-    # The Gate phase writes the canonical verdict (PASSED|SKIPPED|FAILED) to gate-result.txt.
-    # SKIPPED means "no runnable tests were detected" — it is NOT a failure, so it maps to
-    # $null (no gate signal label). Fall back to the gate report header only if the file is
-    # missing (using the real "### Gate Result:" format, not the old broken "^Result:").
-    $gateVerdict = $null
-    $gateResultFile = Join-Path $baseDir "gate/gate-result.txt"
-    if (Test-Path $gateResultFile) {
-        $gateVerdict = (Get-Content $gateResultFile -Raw -ErrorAction SilentlyContinue)
-    }
-    if (-not $gateVerdict) {
-        $gateFile = Join-Path $baseDir "gate/content.md"
-        if (Test-Path $gateFile) {
-            $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
-            if ($gateContent -and $gateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(PASSED|FAILED|SKIPPED)') {
-                $gateVerdict = $matches[1]
+    # --- Gate result ---
+    # Stage 3 supplies the pipeline-frozen verdict whenever available. It must override
+    # gate-result.txt/content.md because those files cross the agent-writable artifact
+    # boundary. In particular, a timed-out Gate can leave partial FAILED-looking content
+    # even though no trusted verdict was produced (build 14878396 / PR #36698).
+    $gateVerdict = $TrustedGateResult
+    if ([string]::IsNullOrWhiteSpace($gateVerdict)) {
+        # Local/Task-3 fallback: use the Gate phase artifacts when no frozen value was passed.
+        $gateResultFile = Join-Path $baseDir "gate/gate-result.txt"
+        if (Test-Path $gateResultFile) {
+            $gateVerdict = (Get-Content $gateResultFile -Raw -ErrorAction SilentlyContinue)
+        }
+        if (-not $gateVerdict) {
+            $gateFile = Join-Path $baseDir "gate/content.md"
+            if (Test-Path $gateFile) {
+                $gateContent = Get-Content $gateFile -Raw -ErrorAction SilentlyContinue
+                if ($gateContent -and $gateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(PASSED|FAILED|SKIPPED|INCONCLUSIVE|TIMEDOUT)') {
+                    $gateVerdict = $matches[1]
+                }
             }
         }
     }
@@ -673,6 +678,8 @@ function Apply-AgentLabels {
     param(
         [Parameter(Mandatory)] [string]$PRNumber,
         [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
+        [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+        [string]$TrustedGateResult = '',
         [string]$Owner = 'dotnet',
         [string]$Repo = 'maui'
     )
@@ -681,7 +688,10 @@ function Apply-AgentLabels {
     Write-Host "🏷️  Applying agent labels to PR #$PRNumber..." -ForegroundColor Cyan
 
     # Parse phase outcomes from content.md files
-    $outcomes = Parse-PhaseOutcomes -PRNumber $PRNumber -RepoRoot $RepoRoot
+    $outcomes = Parse-PhaseOutcomes `
+        -PRNumber $PRNumber `
+        -RepoRoot $RepoRoot `
+        -TrustedGateResult $TrustedGateResult
     Write-Host "  📊 Parsed outcomes:" -ForegroundColor Gray
     Write-Host "     Outcome:    $($outcomes.Outcome ?? '(none)')" -ForegroundColor Gray
     Write-Host "     Gate:       $($outcomes.GateResult ?? '(skipped)')" -ForegroundColor Gray
