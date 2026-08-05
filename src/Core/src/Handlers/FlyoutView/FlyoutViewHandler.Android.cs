@@ -216,6 +216,7 @@ namespace Microsoft.Maui.Handlers
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
 			detailHost.CancelPendingDetail();
+			detailHost.DetailFragment?.DetailView.Handler?.DisconnectHandler();
 			ClearDetailHost(detailHost);
 
 			if (removeCommittedHost)

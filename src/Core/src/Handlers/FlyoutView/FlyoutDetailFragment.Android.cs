@@ -127,7 +127,8 @@ namespace Microsoft.Maui.Handlers
 			if (detailView is null)
 				return _detailFragment is null;
 
-			return _detailFragment is { IsDestroyed: false } currentDetail &&
+			return detailView.Handler?.PlatformView is not null &&
+				_detailFragment is { IsDestroyed: false } currentDetail &&
 				currentDetail.DetailView == detailView;
 		}
 
