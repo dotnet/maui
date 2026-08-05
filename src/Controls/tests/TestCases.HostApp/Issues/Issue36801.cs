@@ -4,8 +4,12 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue36801 : ContentPage
 {
 	readonly ScrollView _scrollView;
+	readonly VerticalStackLayout _content;
+	readonly Label _probeLabel;
 	readonly Label _endResultLabel;
 	readonly Label _topResultLabel;
+	readonly Label _elementResultLabel;
+	readonly Label _deferredResultLabel;
 
 	public Issue36801()
 	{
@@ -14,14 +18,15 @@ public class Issue36801 : ContentPage
 
 		_endResultLabel = new Label { Text = "EndPending", AutomationId = "EndResultLabel" };
 		_topResultLabel = new Label { Text = "TopPending", AutomationId = "TopResultLabel" };
+		_elementResultLabel = new Label { Text = "ElementPending", AutomationId = "ElementResultLabel" };
+		_deferredResultLabel = new Label { Text = "DeferredPending", AutomationId = "DeferredResultLabel" };
 
 		var scrollToEndButton = new Button { Text = "Scroll to end", AutomationId = "ScrollToEndButton" };
 		scrollToEndButton.Clicked += async (sender, e) =>
 		{
 			_endResultLabel.Text = "EndPending";
 			await _scrollView.ScrollToAsync(0, _scrollView.ContentSize.Height, animated: false);
-			await Task.Delay(100);
-			_endResultLabel.Text = EvaluateOffset(expectEnd: true);
+			await EvaluateUntilSuccess(_endResultLabel, () => EvaluateOffset(expectEnd: true, kind: "end"));
 		};
 
 		var scrollToTopButton = new Button { Text = "Scroll to top", AutomationId = "ScrollToTopButton" };
@@ -29,27 +34,35 @@ public class Issue36801 : ContentPage
 		{
 			_topResultLabel.Text = "TopPending";
 			await _scrollView.ScrollToAsync(0, 0, animated: false);
-			await Task.Delay(100);
-			_topResultLabel.Text = EvaluateOffset(expectEnd: false);
+			await EvaluateUntilSuccess(_topResultLabel, () => EvaluateOffset(expectEnd: false, kind: "top"));
 		};
 
-		var content = new VerticalStackLayout { Padding = 16, Spacing = 6 };
+		var scrollToProbeButton = new Button { Text = "Scroll to probe (End)", AutomationId = "ScrollToProbeButton" };
+		scrollToProbeButton.Clicked += async (sender, e) =>
+		{
+			_elementResultLabel.Text = "ElementPending";
+			await _scrollView.ScrollToAsync(_probeLabel, ScrollToPosition.End, animated: false);
+			await EvaluateUntilSuccess(_elementResultLabel, EvaluateElementEnd);
+		};
+
+		_content = new VerticalStackLayout { Padding = 16, Spacing = 6 };
 
 		// Spacer so the scrollable content starts below the floating header
-		content.Add(new BoxView { HeightRequest = 220, Color = Colors.Transparent });
+		_content.Add(new BoxView { HeightRequest = 220, Color = Colors.Transparent });
 		for (int i = 0; i < 60; i++)
 		{
-			content.Add(new Label { Text = $"Filler {i}", HeightRequest = 30 });
+			_content.Add(new Label { Text = $"Filler {i}", HeightRequest = 30 });
 		}
 
-		content.Add(new Label
+		_probeLabel = new Label
 		{
 			Text = "BOTTOM PROBE",
 			AutomationId = "ProbeLabel",
 			FontAttributes = FontAttributes.Bold
-		});
+		};
+		_content.Add(_probeLabel);
 
-		_scrollView = new ScrollView { Content = content };
+		_scrollView = new ScrollView { Content = _content };
 
 		// Floating header keeps the buttons and result labels visible and tappable
 		// regardless of the scroll position.
@@ -59,12 +72,12 @@ public class Issue36801 : ContentPage
 			Spacing = 6,
 			BackgroundColor = Colors.LightGray,
 			VerticalOptions = LayoutOptions.Start,
-			Children = { scrollToEndButton, scrollToTopButton, _endResultLabel, _topResultLabel }
+			Children = { scrollToEndButton, scrollToTopButton, scrollToProbeButton, _endResultLabel, _topResultLabel, _elementResultLabel, _deferredResultLabel }
 		};
 
-		Content = new Grid { Children = { _scrollView, header } };
+		Content = new Grid { AutomationId = "PageRoot", Children = { _scrollView, header } };
 
-#if IOS
+#if IOS || MACCATALYST
 		// Give the native scroll view explicit content insets so it has a non-zero
 		// AdjustedContentInset regardless of how the host positions the page relative
 		// to the system chrome. This mirrors the issue's "custom chrome" scenario
@@ -78,40 +91,117 @@ public class Issue36801 : ContentPage
 			}
 		};
 #endif
+
+		// Issue a request before any handler or layout exists so it travels through the
+		// deferred PendingScrollToRequest drain in the first layout pass, where the adjusted
+		// insets may still be stale (the #35395 OnAppearing scenario).
+		RunDeferredScroll();
 	}
 
-	string EvaluateOffset(bool expectEnd)
+	async void RunDeferredScroll()
 	{
-#if IOS
+		await _scrollView.ScrollToAsync(0, 100000, animated: false);
+		await EvaluateUntilSuccess(_deferredResultLabel, () => EvaluateOffset(expectEnd: true, kind: "deferred"));
+	}
+
+	// Re-evaluates until the offset settles on the expected value so the UI test's polling
+	// wait can converge instead of freezing a single too-early sample.
+	static async Task EvaluateUntilSuccess(Label label, Func<string> evaluate)
+	{
+		for (int attempt = 0; attempt < 20; attempt++)
+		{
+			var result = evaluate();
+			label.Text = result;
+			if (result.StartsWith("Success", StringComparison.Ordinal))
+			{
+				return;
+			}
+
+			await Task.Delay(250);
+		}
+	}
+
+	string EvaluateOffset(bool expectEnd, string kind)
+	{
+#if IOS || MACCATALYST
 		if (_scrollView.Handler?.PlatformView is not UIKit.UIScrollView nativeScrollView)
 		{
-			return "Fail: native scroll view unavailable";
+			return $"Fail ({kind}): native scroll view unavailable";
+		}
+
+		if (_content.Handler?.PlatformView is not UIKit.UIView contentView)
+		{
+			return $"Fail ({kind}): content platform view unavailable";
 		}
 
 		var adjustedInset = nativeScrollView.AdjustedContentInset;
 		if (adjustedInset.Top + adjustedInset.Bottom <= 0)
 		{
 			// Without insets the buggy and correct math coincide and the test proves nothing
-			var frameInWindow = nativeScrollView.ConvertRectToView(nativeScrollView.Bounds, null);
-			var screen = UIKit.UIScreen.MainScreen.Bounds;
-			var safeArea = nativeScrollView.SafeAreaInsets;
-			return $"Fail: scenario invalid, no adjusted content insets " +
-				$"(behavior={nativeScrollView.ContentInsetAdjustmentBehavior}, safeArea=({safeArea.Top:F0},{safeArea.Bottom:F0}), " +
-				$"frame={frameInWindow.Y:F0}x{frameInWindow.Height:F0}, screen={screen.Height:F0}, " +
+			return $"Fail ({kind}): scenario invalid, no adjusted content insets " +
+				$"(behavior={nativeScrollView.ContentInsetAdjustmentBehavior}, " +
 				$"contentInset=({nativeScrollView.ContentInset.Top:F0},{nativeScrollView.ContentInset.Bottom:F0}))";
 		}
 
+		// Independent oracle: measure where the content platform view actually sits inside the
+		// scroll view instead of re-deriving the implementation's ContentSize arithmetic.
+		// At the end, the content's last pixel must rest exactly at the bottom of the
+		// unobscured viewport; at the top, the offset must be the natural rest position.
 		double expected = expectEnd
-			? nativeScrollView.ContentSize.Height + adjustedInset.Bottom - nativeScrollView.Bounds.Height
-			: -adjustedInset.Top;
-		double actual = nativeScrollView.ContentOffset.Y;
-		var kind = expectEnd ? "end" : "top";
+			? (double)(contentView.Frame.Bottom + adjustedInset.Bottom - nativeScrollView.Bounds.Height)
+			: -(double)adjustedInset.Top;
+		double actual = (double)nativeScrollView.ContentOffset.Y;
 
-		return Math.Abs(actual - expected) <= 1.5
-			? $"Success ({kind}): offset={actual:F1}"
-			: $"Fail ({kind}): actual={actual:F1} expected={expected:F1}";
+		if (Math.Abs(actual - expected) > 1.5)
+		{
+			return $"Fail ({kind}): actual={actual:F1} expected={expected:F1}";
+		}
+
+		// Also pin the public contract: ScrollY is published in cross-platform content
+		// coordinates, i.e. the native offset shifted by the adjusted inset (0 at rest)
+		double expectedScrollY = expected + (double)adjustedInset.Top;
+		if (Math.Abs(_scrollView.ScrollY - expectedScrollY) > 1.5)
+		{
+			return $"Fail ({kind}): ScrollY={_scrollView.ScrollY:F1} expected={expectedScrollY:F1}";
+		}
+
+		return $"Success ({kind}): offset={actual:F1} scrollY={_scrollView.ScrollY:F1}";
 #else
-		return "Success: not applicable on this platform";
+		return $"Skipped ({kind}): not applicable on this platform";
+#endif
+	}
+
+	string EvaluateElementEnd()
+	{
+#if IOS || MACCATALYST
+		if (_scrollView.Handler?.PlatformView is not UIKit.UIScrollView nativeScrollView)
+		{
+			return "Fail (element): native scroll view unavailable";
+		}
+
+		if (_probeLabel.Handler?.PlatformView is not UIKit.UIView probeView)
+		{
+			return "Fail (element): probe platform view unavailable";
+		}
+
+		var adjustedInset = nativeScrollView.AdjustedContentInset;
+		if (adjustedInset.Top + adjustedInset.Bottom <= 0)
+		{
+			return "Fail (element): scenario invalid, no adjusted content insets";
+		}
+
+		// Independent geometric oracle: after ScrollToAsync(probe, End) the probe's bottom edge
+		// must sit exactly at the bottom of the unobscured viewport, in window coordinates.
+		var probeInWindow = probeView.ConvertRectToView(probeView.Bounds, null);
+		var scrollInWindow = nativeScrollView.ConvertRectToView(nativeScrollView.Bounds, null);
+		double visibleBottom = (double)(scrollInWindow.Bottom - adjustedInset.Bottom);
+		double actual = (double)probeInWindow.Bottom;
+
+		return Math.Abs(actual - visibleBottom) <= 1.5
+			? $"Success (element): bottom={actual:F1}"
+			: $"Fail (element): actual={actual:F1} expected={visibleBottom:F1}";
+#else
+		return "Skipped (element): not applicable on this platform";
 #endif
 	}
 }

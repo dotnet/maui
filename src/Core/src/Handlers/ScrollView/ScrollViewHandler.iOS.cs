@@ -129,10 +129,28 @@ namespace Microsoft.Maui.Handlers
 				var adjustedInset = uiScrollView.AdjustedContentInset;
 				var bounds = uiScrollView.Bounds;
 
+				// With ContentInsetAdjustmentBehavior.Always, MauiScrollView bakes the safe area into
+				// ContentSize (CrossPlatformArrange) while UIKit also applies the same safe area through
+				// AdjustedContentInset; exclude the duplicated amount (adjusted minus the explicit
+				// ContentInset, i.e. the system-contributed part) so the maximum stops at the content
+				// instead of inside the padding.
+				var duplicatedPadding = UIEdgeInsets.Zero;
+				if (uiScrollView.ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always)
+				{
+					var contentInset = uiScrollView.ContentInset;
+					duplicatedPadding = new UIEdgeInsets(
+						adjustedInset.Top - contentInset.Top,
+						adjustedInset.Left - contentInset.Left,
+						adjustedInset.Bottom - contentInset.Bottom,
+						adjustedInset.Right - contentInset.Right);
+				}
+
 				var minScrollHorizontal = -(double)adjustedInset.Left;
 				var minScrollVertical = -(double)adjustedInset.Top;
-				var maxScrollHorizontal = Math.Max(minScrollHorizontal, uiScrollView.ContentSize.Width + adjustedInset.Right - bounds.Width);
-				var maxScrollVertical = Math.Max(minScrollVertical, uiScrollView.ContentSize.Height + adjustedInset.Bottom - bounds.Height);
+				var maxScrollHorizontal = Math.Max(minScrollHorizontal,
+					uiScrollView.ContentSize.Width - duplicatedPadding.Left - duplicatedPadding.Right + adjustedInset.Right - bounds.Width);
+				var maxScrollVertical = Math.Max(minScrollVertical,
+					uiScrollView.ContentSize.Height - duplicatedPadding.Top - duplicatedPadding.Bottom + adjustedInset.Bottom - bounds.Height);
 
 				var targetHorizontal = Math.Clamp(request.HorizontalOffset - (double)adjustedInset.Left, minScrollHorizontal, maxScrollHorizontal);
 				var targetVertical = Math.Clamp(request.VerticalOffset - (double)adjustedInset.Top, minScrollVertical, maxScrollVertical);

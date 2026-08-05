@@ -47,8 +47,13 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler is not null && _pendingScrollToRequested is not null)
 			{
-				OnScrollToRequested(_pendingScrollToRequested);
+				var pending = _pendingScrollToRequested;
 				_pendingScrollToRequested = null;
+
+				// Replay without going through OnScrollToRequested: that would reset the
+				// completion source and orphan the task the original caller is still awaiting
+				ScrollToRequested?.Invoke(this, pending);
+				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());
 			}
 		}
 
@@ -62,9 +67,17 @@ namespace Microsoft.Maui.Controls
 			double y = GetCoordinate(item, "Y", 0);
 			double x = GetCoordinate(item, "X", 0);
 
+			// The scrollable viewport can be smaller than this ScrollView's frame: on iOS, content
+			// insets (safe area, ContentInset) obscure part of the frame and (0,0) in scroll
+			// coordinates is the inset rest position. Compute element targets against the effective
+			// viewport so End/Center/MakeVisible land the element fully inside the visible region.
+			var viewportInsets = GetVisibleViewportInsets();
+			double viewportWidth = Math.Max(0, Width - viewportInsets.HorizontalThickness);
+			double viewportHeight = Math.Max(0, Height - viewportInsets.VerticalThickness);
+
 			if (position == ScrollToPosition.MakeVisible)
 			{
-				var scrollBounds = new Rect(ScrollX, ScrollY, Width, Height);
+				var scrollBounds = new Rect(ScrollX, ScrollY, viewportWidth, viewportHeight);
 				var itemBounds = new Rect(x, y, item.Width, item.Height);
 				if (scrollBounds.Contains(itemBounds))
 					return new Point(ScrollX, ScrollY);
@@ -84,15 +97,30 @@ namespace Microsoft.Maui.Controls
 			switch (position)
 			{
 				case ScrollToPosition.Center:
-					y = y - Height / 2 + item.Height / 2;
-					x = x - Width / 2 + item.Width / 2;
+					y = y - viewportHeight / 2 + item.Height / 2;
+					x = x - viewportWidth / 2 + item.Width / 2;
 					break;
 				case ScrollToPosition.End:
-					y = y - Height + item.Height;
-					x = x - Width + item.Width;
+					y = y - viewportHeight + item.Height;
+					x = x - viewportWidth + item.Width;
 					break;
 			}
 			return new Point(x, y);
+		}
+
+		// On iOS the scrollable viewport is smaller than the frame when the native scroll view
+		// carries content insets (safe area, ContentInset): the insets obscure part of the frame
+		// and (0,0) in cross-platform scroll coordinates is the inset rest position.
+		Thickness GetVisibleViewportInsets()
+		{
+#if IOS || MACCATALYST
+			if (Handler?.PlatformView is UIKit.UIScrollView platformView)
+			{
+				var inset = platformView.AdjustedContentInset;
+				return new Thickness(inset.Left, inset.Top, inset.Right, inset.Bottom);
+			}
+#endif
+			return default;
 		}
 
 		/// <summary>
