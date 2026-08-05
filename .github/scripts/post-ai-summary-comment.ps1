@@ -744,7 +744,7 @@ if (-not $hasAgentPhase -and $gateSection) {
 <summary><strong>⚠️ Expert review incomplete</strong></summary>
 <br/>
 
-The test-verification **gate** ran (see above), but the Copilot **expert review + try-fix** phase did not produce output on this run — usually a transient CI-agent authentication hiccup or a review-stage timeout, **not** a problem with your PR. Re-comment ``/review`` to get the full expert analysis (Pre-Flight, Code Review, Fix candidates, and Report).
+The test-verification **gate** ran (see above), but the Copilot **expert review + try-fix** phase did not produce output on this run — usually a transient CI-agent authentication hiccup, an **expired reviewer access token**, or a review-stage timeout, **not** a problem with your PR. Re-comment ``/review`` to retry; if it keeps happening across re-runs, the reviewer's `COPILOT_TOKEN` likely needs refreshing (maintainer action).
 
 </details>
 "@
