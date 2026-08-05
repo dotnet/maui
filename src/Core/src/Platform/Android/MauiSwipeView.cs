@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
@@ -603,8 +606,15 @@ namespace Microsoft.Maui.Platform
 						_swipeItems.Add(item, swipeItem);
 					}
 
-					if (swipeItem != null)
+					if (swipeItem is not null)
+					{
 						swipeItems.Add(swipeItem);
+
+						if (item is not null)
+						{
+							AttachSwipeItemAccessibilityDelegate(swipeItem);
+						}
+					}
 				}
 			}
 
@@ -1343,6 +1353,52 @@ namespace Microsoft.Maui.Platform
 						break;
 					}
 				}
+			}
+		}
+
+		// TalkBack's "double tap to activate" calls View.PerformAccessibilityAction(ACTION_CLICK).
+		// Swipe-item commands normally execute via manual touch hit-testing (see ProcessTouchSwipeItems
+		// above), so the swipe button has no OnClickListener and PerformClick() is a no-op for TalkBack
+		// users. ReplaceAccessibilityAction installs an ACTION_CLICK handler without a custom
+		// AccessibilityDelegateCompat subclass; AndroidX composes it with any delegate already on the
+		// view, so this doesn't disturb touch dispatch or existing accessibility behavior.
+		void AttachSwipeItemAccessibilityDelegate(AView swipeItemView)
+		{
+			var currentDelegate = ViewCompat.GetAccessibilityDelegate(swipeItemView);
+			ViewCompat.SetAccessibilityDelegate(swipeItemView, new SwipeItemAccessibilityDelegate(this, currentDelegate));
+		}
+
+		bool TryExecuteSwipeItemFromAccessibility(AView? host)
+		{
+			int index = _actionView?.IndexOfChild(host) ?? -1;
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (_isResettingSwipe || swipeItems is null)
+			{
+				return false;
+			}
+
+			ExecuteSwipeItem(swipeItems[index]);
+
+			if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+			{
+				ResetSwipe();
+			}
+
+			return true;
+		}
+
+		sealed class SwipeItemAccessibilityDelegate(MauiSwipeView swipeView, AccessibilityDelegateCompat? originalDelegate) : AccessibilityDelegateCompatWrapper(originalDelegate)
+		{
+			public override bool PerformAccessibilityAction(AView? host, int action, Bundle? args)
+			{
+				if (host is not null &&
+					action == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick?.Id
+					)
+				{
+					return swipeView.TryExecuteSwipeItemFromAccessibility(host);
+				}
+				return base.PerformAccessibilityAction(host, action, args);
 			}
 		}
 
