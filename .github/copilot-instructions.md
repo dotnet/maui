@@ -239,10 +239,10 @@ The repository includes specialized custom agents and reusable skills for specif
 ### Available Custom Agents
 
 1. **pr** - Sequential 4-phase workflow for reviewing and working on PRs
-   - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
+   - **Use when**: A PR already exists and needs review or work, including an issue being fixed through that PR
    - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
-   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
-   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "continue PR #XXXXX", "fix issue #XXXXX through PR #YYYYY"
+   - **Do NOT use for**: An issue with no PR yet → use `issue-fixer`. Just running tests manually → use `sandbox-agent`.
 
 2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
    - **Use when**: Creating new tests for issues or PRs
@@ -277,9 +277,9 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 
 1. **pr-review** (`.github/skills/pr-review/SKILL.md`)
    - **Purpose**: End-to-end PR review orchestrator — 3 phases: pr-preflight, try-fix, pr-report. Gate runs separately before this skill via Review-PR.ps1.
-   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "continue PR #XXXXX", "fix issue #XXXXX through PR #YYYYY"
    - **Capabilities**: Multi-model fix exploration, alternative comparison, PR review recommendation
-   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
+   - **Do NOT use for**: An issue with no PR yet → use `issue-fixer`. Just running tests manually → use `sandbox-agent`.
    - **Phase instructions** (in `.github/pr-review/`):
      - `pr-preflight.md` — Context gathering from issue/PR
      - `pr-report.md` — Final recommendation
@@ -373,7 +373,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 **Examples of correct delegation**:
 - User: "Review PR #12345" → Immediately invoke **pr** agent
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
-- User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
+- User: "Fix issue #67890" (no PR exists) → Invoke the **issue-fixer** skill
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
 - User: "Is SR7 ready to ship?" → Immediately invoke **release-readiness-agent**
 - User: "How does net11 preview6 look?" → Immediately invoke **release-readiness-agent**
