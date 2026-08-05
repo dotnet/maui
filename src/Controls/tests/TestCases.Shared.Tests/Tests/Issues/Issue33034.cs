@@ -8,6 +8,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33034 : _IssuesUITest
 {
+	const string FirstEdgeLabel = "FirstEdgeLabel";
+	const string SecondEdgeLabel = "SecondEdgeLabel";
+
 	public override string Issue => "SafeAreaEdges works correctly only on the first tab in Shell. Other tabs have content colliding with the display cutout in the landscape mode.";
 
 	public Issue33034(TestDevice device) : base(device) { }
@@ -16,19 +19,24 @@ public class Issue33034 : _IssuesUITest
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void SafeAreaShouldWorkOnAllShellTabs()
 	{
-		App.WaitForElement("EdgeLabel");
+		App.WaitForElement(FirstEdgeLabel);
 		App.SetOrientationLandscape();
 		//Adding delay to allow for orientation change to complete
 		Thread.Sleep(2000);
-		var initialRect = App.WaitForElement("EdgeLabel").GetRect();
+		var initialRect = App.WaitForElement(FirstEdgeLabel).GetRect();
+
+		void AssertEdgeLabelSettled(string automationId) =>
+			App.RetryAssert(() =>
+			{
+				var rect = App.WaitForElement(automationId).GetRect();
+				Assert.That(rect.X, Is.EqualTo(initialRect.X).Within(5));
+				Assert.That(rect.Width, Is.EqualTo(initialRect.Width).Within(5));
+			});
 
 		App.TapTab("Second Tab");
-		App.WaitForElement("EdgeLabel");
+		AssertEdgeLabelSettled(SecondEdgeLabel);
 		App.TapTab("First Tab");
-		var afterSwitchRect = App.WaitForElement("EdgeLabel").GetRect();
-
-		Assert.That(afterSwitchRect.X, Is.EqualTo(initialRect.X).Within(5));
-		Assert.That(afterSwitchRect.Width, Is.EqualTo(initialRect.Width).Within(5));
+		AssertEdgeLabelSettled(FirstEdgeLabel);
 	}
 }
 #endif
