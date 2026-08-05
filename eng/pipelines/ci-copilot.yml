@@ -1546,12 +1546,13 @@ stages:
           #  14648767 (#36274) — 1 min under the former 150m cap — so 150m
           #  risked false-killing real reviews; 180m gives ~30m headroom while
           #  still capping a true hang at 3h. NB: a step that HITS this cap is
-          #  CANCELED (not Failed) → the rest of the ReviewPR job is skipped and
-          #  the Deep condition (accepts Succeeded/SucceededWithIssues/Failed,
-          #  NOT Canceled) skips Deep. That is acceptable — a CLI hung on this
-          #  agent won't yield a useful review or Deep run, so aborting and
-          #  re-triggering on a fresh agent is the right outcome. A NORMAL review
-          #  failure exits the step 0 (set +e) → job Succeeds → Deep still runs.
+          #  CANCELED (not Failed) → the rest of the ReviewPR job is skipped.
+          #  The Deep UI Tests stage now ALSO accepts a Canceled ReviewPR (its
+          #  UI categories come from the early, infra-independent RunDetect and
+          #  it runs on a SEPARATE platform-pool agent), so a review that times
+          #  out still gets its deep UI tests instead of silently skipping them.
+          #  A NORMAL review failure exits the step 0 (set +e) → job Succeeds →
+          #  Deep still runs.
           # ─────────────────────────────────────────────────────────
           - bash: |
               echo "═══ TASK 3: COPILOT REVIEW ═══"
@@ -1868,7 +1869,7 @@ stages:
     # in-process results when no deep artifact exists).
     condition: >-
       and(
-        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
+        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), ''),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), 'NONE'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), 'ALL')
