@@ -62,11 +62,11 @@ public class Issue37012PageA : ContentPage
 		StartPaddingCapture();
 	}
 
-	// Captures the platform view's top padding on the first frame drawn after the page
-	// re-attaches, and again once the IME hide animation has certainly completed. Without
-	// the fix the first frame renders with zero safe-area padding (content under the status
-	// bar) and the padding only arrives when the IME animation ends.
-	void StartPaddingCapture()
+	// Captures the platform view's padding on the first frame drawn after the page
+	// re-attaches, and again once the IME hide animation has completed and the padding has
+	// settled. Without the fix the first frame renders with zero safe-area padding (content
+	// under the status bar) and the padding only arrives when the IME animation ends.
+	async void StartPaddingCapture()
 	{
 #if ANDROID
 		if (Handler?.PlatformView is not Android.Views.View platformView)
@@ -75,28 +75,91 @@ public class Issue37012PageA : ContentPage
 			return;
 		}
 
-		var firstDrawPadding = -1;
-		var preDrawListener = new FirstPreDrawListener(platformView, padding => firstDrawPadding = padding);
+		// The bug only reproduces when the page re-attaches while the IME hide animation is
+		// still in flight; the decor-view tracker installed by Page B makes that observable
+		// so a run where the animation already finished reports Inconclusive, not Success.
+		bool imeAnimatingAtReattach = Issue37012ImeAnimationTracker.IsImeAnimating;
+
+		var firstDrawTop = -1;
+		var firstDrawBottom = -1;
+		var preDrawListener = new FirstPreDrawListener(platformView, (top, bottom) =>
+		{
+			firstDrawTop = top;
+			firstDrawBottom = bottom;
+		});
 		platformView.ViewTreeObserver.AddOnPreDrawListener(preDrawListener);
 
-		Dispatcher.StartTimer(TimeSpan.FromMilliseconds(800), () =>
+		try
 		{
-			preDrawListener.Detach();
-			var finalPadding = platformView.PaddingTop;
-
-			if (finalPadding > 0 && firstDrawPadding == finalPadding)
+			// Poll until the IME is fully gone and the padding is stable across consecutive
+			// samples instead of sampling once at a fixed delay — slow CI emulators can
+			// exceed any hard-coded animation estimate.
+			int stableSamples = 0;
+			int lastTop = -1, lastBottom = -1;
+			for (int i = 0; i < 40 && stableSamples < 3; i++)
 			{
-				_resultLabel.Text = $"Success: first={firstDrawPadding} final={finalPadding}";
+				await Task.Delay(100);
+
+				var rootInsets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(platformView);
+				bool imeVisible = rootInsets?.IsVisible(AndroidX.Core.View.WindowInsetsCompat.Type.Ime()) ?? false;
+				if (Issue37012ImeAnimationTracker.IsImeAnimating || imeVisible)
+				{
+					stableSamples = 0;
+					continue;
+				}
+
+				if (platformView.PaddingTop == lastTop && platformView.PaddingBottom == lastBottom)
+				{
+					stableSamples++;
+				}
+				else
+				{
+					stableSamples = 0;
+					lastTop = platformView.PaddingTop;
+					lastBottom = platformView.PaddingBottom;
+				}
+			}
+
+			var finalTop = platformView.PaddingTop;
+			var finalBottom = platformView.PaddingBottom;
+
+			// With the keyboard fully hidden, the bottom safe-area padding must equal the
+			// non-IME insets — a larger value means keyboard-height padding leaked past the
+			// end of the animation (the stale-bottom-padding risk of the gate exemption)
+			var settledInsets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(platformView);
+			var expectedBottom = settledInsets?.GetInsets(
+				AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars() |
+				AndroidX.Core.View.WindowInsetsCompat.Type.DisplayCutout())?.Bottom ?? 0;
+
+			if (!imeAnimatingAtReattach)
+			{
+				_resultLabel.Text = "Inconclusive: IME animation completed before re-attach";
+			}
+			else if (finalTop == 0)
+			{
+				_resultLabel.Text = "Inconclusive: no top inset on this device";
+			}
+			else if (firstDrawTop != finalTop)
+			{
+				_resultLabel.Text = $"Fail: first frame top={firstDrawTop} settled top={finalTop}";
+			}
+			else if (finalBottom != expectedBottom)
+			{
+				_resultLabel.Text = $"Fail: stale bottom padding {finalBottom}, expected {expectedBottom}";
 			}
 			else
 			{
-				_resultLabel.Text = $"Fail: first={firstDrawPadding} final={finalPadding}";
+				_resultLabel.Text = $"Success: top={finalTop} bottom={finalBottom} firstBottom={firstDrawBottom}";
 			}
-
-			return false;
-		});
+		}
+		finally
+		{
+			preDrawListener.Detach();
+			Issue37012ImeAnimationTracker.Uninstall();
+		}
 #else
-		_resultLabel.Text = "Success: not applicable on this platform";
+		_resultLabel.Text = "Skipped: not applicable on this platform";
+		await Task.CompletedTask;
 #endif
 	}
 
@@ -104,9 +167,9 @@ public class Issue37012PageA : ContentPage
 	sealed class FirstPreDrawListener : Java.Lang.Object, Android.Views.ViewTreeObserver.IOnPreDrawListener
 	{
 		readonly Android.Views.View _view;
-		Action<int> _onFirstPreDraw;
+		Action<int, int> _onFirstPreDraw;
 
-		public FirstPreDrawListener(Android.Views.View view, Action<int> onFirstPreDraw)
+		public FirstPreDrawListener(Android.Views.View view, Action<int, int> onFirstPreDraw)
 		{
 			_view = view;
 			_onFirstPreDraw = onFirstPreDraw;
@@ -114,7 +177,7 @@ public class Issue37012PageA : ContentPage
 
 		public bool OnPreDraw()
 		{
-			_onFirstPreDraw?.Invoke(_view.PaddingTop);
+			_onFirstPreDraw?.Invoke(_view.PaddingTop, _view.PaddingBottom);
 			Detach();
 			return true;
 		}
@@ -158,9 +221,10 @@ public class Issue37012PageB : ContentPage
 		hideAndPopButton.Clicked += async (sender, e) =>
 		{
 			// Mirror the issue repro: request the keyboard hide, then swap pages while the
-			// IME hide animation is still in flight. The short delay guarantees the hide
-			// animation has started before Page A's platform views re-attach.
-			_ = entry.HideSoftInputAsync(CancellationToken.None);
+			// IME hide animation is still in flight. The short delay lets the hide animation
+			// start before Page A's platform views re-attach; whether it was still running at
+			// re-attach is verified by the tracker, not assumed.
+			await entry.HideSoftInputAsync(CancellationToken.None);
 			await Task.Delay(50);
 			await Navigation.PopAsync(animated: false);
 		};
@@ -175,5 +239,79 @@ public class Issue37012PageB : ContentPage
 				hideAndPopButton
 			}
 		};
+
+#if ANDROID
+		Loaded += (sender, e) => Issue37012ImeAnimationTracker.Install();
+#endif
 	}
 }
+
+#if ANDROID
+// Observes IME animations from the activity decor view (which MAUI does not attach its own
+// animation callback to) so the test pages can verify the "re-attached mid-animation"
+// precondition. DispatchModeContinueOnSubtree keeps the normal child dispatch intact.
+sealed class Issue37012ImeAnimationTracker : AndroidX.Core.View.WindowInsetsAnimationCompat.Callback
+{
+	static Issue37012ImeAnimationTracker _installed;
+
+	public static bool IsImeAnimating { get; private set; }
+
+	Issue37012ImeAnimationTracker() : base(DispatchModeContinueOnSubtree)
+	{
+	}
+
+	public static void Install()
+	{
+		if (_installed is null &&
+			Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView is Android.Views.View decorView)
+		{
+			_installed = new Issue37012ImeAnimationTracker();
+			AndroidX.Core.View.ViewCompat.SetWindowInsetsAnimationCallback(decorView, _installed);
+		}
+	}
+
+	// The HostApp process is shared across UI tests; remove the decor callback once the
+	// scenario completes so it cannot affect unrelated tests.
+	public static void Uninstall()
+	{
+		if (_installed is not null &&
+			Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView is Android.Views.View decorView)
+		{
+			AndroidX.Core.View.ViewCompat.SetWindowInsetsAnimationCallback(decorView, null);
+		}
+
+		_installed = null;
+		IsImeAnimating = false;
+	}
+
+	static bool IsIme(AndroidX.Core.View.WindowInsetsAnimationCompat animation) =>
+		(animation.TypeMask & AndroidX.Core.View.WindowInsetsCompat.Type.Ime()) != 0;
+
+	public override void OnPrepare(AndroidX.Core.View.WindowInsetsAnimationCompat animation)
+	{
+		if (IsIme(animation))
+		{
+			IsImeAnimating = true;
+		}
+
+		base.OnPrepare(animation);
+	}
+
+	public override AndroidX.Core.View.WindowInsetsCompat OnProgress(
+		AndroidX.Core.View.WindowInsetsCompat insets,
+		IList<AndroidX.Core.View.WindowInsetsAnimationCompat> runningAnimations)
+	{
+		return insets;
+	}
+
+	public override void OnEnd(AndroidX.Core.View.WindowInsetsAnimationCompat animation)
+	{
+		if (IsIme(animation))
+		{
+			IsImeAnimating = false;
+		}
+
+		base.OnEnd(animation);
+	}
+}
+#endif

@@ -267,7 +267,17 @@ namespace Microsoft.Maui.Platform
 				return insets;
 			}
 
-			_pendingViews.Remove(v);
+			if (IsImeAnimating)
+			{
+				// v was exempted through the gate and may be applying transient animation-time
+				// IME insets (e.g. keyboard-height bottom padding mid hide-animation); keep it
+				// pending so the end of the animation re-applies the final insets
+				_pendingViews.Add(v);
+			}
+			else
+			{
+				_pendingViews.Remove(v);
+			}
 
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
@@ -516,26 +526,68 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnEnd(animation);
 
-			if (IsImeAnimation(animation))
+			if (!IsImeAnimation(animation))
 			{
-				_viewsAttachedDuringImeAnimation.Clear();
+				return;
+			}
 
-				if (_pendingViews.Count > 0)
+			_viewsAttachedDuringImeAnimation.Clear();
+
+			// Keep the gate up for one more main-looper turn: the system's deferred
+			// post-animation inset dispatches can still carry animation-time IME insets.
+			// EndImeAnimation drains the *live* pending set, so dispatches gated between
+			// OnEnd and the posted runnable are flushed instead of silently dropped.
+			AView? poster = null;
+			foreach (var view in _pendingViews)
+			{
+				if (view.Handle != IntPtr.Zero && view.IsAttachedToWindow)
 				{
-					var pendingViews = _pendingViews.ToArray();
-					_pendingViews.Clear();
-					pendingViews[0].Post(() =>
-					{
-						IsImeAnimating = false;
-						foreach (var view in pendingViews)
-						{
-							ViewCompat.RequestApplyInsets(view);
-						}
-					});
+					poster = view;
+					break;
 				}
-				else
+			}
+
+			if (poster is not null)
+			{
+				poster.Post(EndImeAnimation);
+			}
+			else
+			{
+				// Nothing pending, or every pending view is detached: a detached view's Post
+				// only runs if that view re-attaches, which would leave the gate stuck for the
+				// whole subtree — end the animation synchronously instead.
+				EndImeAnimation();
+			}
+		}
+
+		void EndImeAnimation()
+		{
+			IsImeAnimating = false;
+
+			if (_pendingViews.Count == 0)
+			{
+				return;
+			}
+
+			var pendingViews = _pendingViews.ToArray();
+			_pendingViews.Clear();
+
+			foreach (var view in pendingViews)
+			{
+				// The page-pop scenarios that gate views here can also detach and dispose them
+				// before this runnable executes; skip dead peers instead of aborting the loop
+				if (view.Handle == IntPtr.Zero)
 				{
-					IsImeAnimating = false;
+					continue;
+				}
+
+				try
+				{
+					ViewCompat.RequestApplyInsets(view);
+				}
+				catch (ObjectDisposedException)
+				{
+					// The view was disposed while the re-apply was in flight; nothing to re-apply
 				}
 			}
 		}
@@ -597,7 +649,10 @@ internal static class MauiWindowInsetListenerExtensions
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
-			listener.NotifyViewAttached(view);
+			// Deliberately no NotifyViewAttached here: this is a SafeAreaEdges configuration
+			// change on a live, already-padded view — it must stay subject to the IME gate
+			// (it gets its updated insets at the end of any in-flight animation), whereas the
+			// gate exemption is only for views with no valid padding yet (fresh attach).
 			return true;
 		}
 
