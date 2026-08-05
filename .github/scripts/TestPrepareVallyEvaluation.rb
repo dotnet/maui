@@ -131,6 +131,27 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "traverses checkout symlink"
   end
 
+  def test_rejects_nested_source_symlink_that_escapes_later_overlay
+    fixture_dir = File.join(@tests_path, "fixture-dir")
+    FileUtils.mkdir_p(fixture_dir)
+    File.symlink("../../outside", File.join(fixture_dir, "escape"))
+    write_fixture("payload.txt")
+    write_spec(
+      "environment" => {
+        "files" => [
+          { "src" => "fixture-dir", "dest" => "seed" },
+          { "src" => "payload.txt", "dest" => "seed/escape/payload.txt" }
+        ]
+      }
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "contains symlink"
+    assert_includes stderr, "fixture-dir/escape"
+  end
+
   def test_rejects_skill_path_escape
     write_spec("environment" => { "skills" => ["../.."] })
 

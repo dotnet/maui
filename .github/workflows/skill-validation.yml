@@ -1317,22 +1317,51 @@ jobs:
               }
               return -1;
             }
-            function testcaseBlocks(block) {
-              const out = [];
-              const openTags = block.matchAll(/<testcase\b[^>]*>/g);
-              for (const match of openTags) {
-                const openTag = match[0];
-                const start = match.index;
-                if (openTag.endsWith('/>')) {
-                  out.push(openTag);
+            function openingTagOutsideCdata(xml, tag, start) {
+              let cursor = start;
+              const token = `<${tag}`;
+              while (cursor < xml.length) {
+                const open = xml.indexOf(token, cursor);
+                if (open < 0) return null;
+                const cdata = xml.indexOf('<![CDATA[', cursor);
+                if (cdata >= 0 && cdata < open) {
+                  const cdataEnd = xml.indexOf(']]>', cdata + 9);
+                  if (cdataEnd < 0) return null;
+                  cursor = cdataEnd + 3;
                   continue;
                 }
-                const endTag = '</testcase>';
-                const end = closingTagOutsideCdata(block, 'testcase', start + openTag.length);
-                if (end < 0) continue;
-                out.push(block.slice(start, end + endTag.length));
+                const match = xml.slice(open).match(new RegExp(`^<${tag}\\b[^>]*>`));
+                if (match) return { index: open, tag: match[0] };
+                cursor = open + token.length;
+              }
+              return null;
+            }
+            function elementBlocks(xml, tag) {
+              const out = [];
+              let cursor = 0;
+              while (cursor < xml.length) {
+                const opening = openingTagOutsideCdata(xml, tag, cursor);
+                if (!opening) break;
+                const openTag = opening.tag;
+                const start = opening.index;
+                if (openTag.endsWith('/>')) {
+                  out.push(openTag);
+                  cursor = start + openTag.length;
+                  continue;
+                }
+                const endTag = `</${tag}>`;
+                const end = closingTagOutsideCdata(xml, tag, start + openTag.length);
+                if (end < 0) break;
+                out.push(xml.slice(start, end + endTag.length));
+                cursor = end + endTag.length;
               }
               return out;
+            }
+            function testcaseBlocks(block) {
+              return elementBlocks(block, 'testcase');
+            }
+            function testsuiteBlocks(xml) {
+              return elementBlocks(xml, 'testsuite');
             }
             function hasFailedSkillInvocation(testcase) {
               const properties = (testcase.match(/<properties>[\s\S]*?<\/properties>/) || [''])[0];
@@ -1357,6 +1386,30 @@ jobs:
                 !invocationVetoBlocks[0].includes('safely]]></system-out></testcase>')) {
               throw new Error('Internal JUnit parser failed the skill-invocation veto fixture.');
             }
+            const suiteBoundaryFixture = [
+              '<testsuites>',
+              '<testsuite name="routing-suite">',
+              '<properties>',
+              '<property name="evalName" value="routing-suite"/>',
+              '<property name="evalFilePath" value="/tmp/eval.vally.yaml"/>',
+              '<property name="passed" value="true"/>',
+              '</properties>',
+              '<testcase name="routing-violation">',
+              '<properties>',
+              '<property name="grader.skill-invocation.passed" value="false"/>',
+              '</properties>',
+              '<system-out><![CDATA[the transcript mentions </testsuite> safely]]></system-out>',
+              '</testcase>',
+              '</testsuite>',
+              '</testsuites>',
+            ].join('');
+            const suiteBoundaryBlocks = testsuiteBlocks(suiteBoundaryFixture);
+            if (suiteBoundaryBlocks.length !== 1 ||
+                testcaseBlocks(suiteBoundaryBlocks[0]).length !== 1 ||
+                !hasFailedSkillInvocation(testcaseBlocks(suiteBoundaryBlocks[0])[0]) ||
+                !suiteBoundaryBlocks[0].includes('safely]]></system-out></testcase></testsuite>')) {
+              throw new Error('Internal JUnit parser failed the CDATA suite-boundary fixture.');
+            }
 
             const suites = [];
             let evalPassed = true;
@@ -1367,7 +1420,7 @@ jobs:
                 const scope = artifactScope(jf, 'eval-results', 'skill-eval-results-');
                 let xml = '';
                 try { xml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
-                const blocks = xml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                const blocks = testsuiteBlocks(xml);
                 for (const block of blocks) {
                   hasResults = true;
                   const openTag = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
@@ -1565,7 +1618,7 @@ jobs:
                   const bScope = artifactScope(jf, 'eval-results-baseline', 'skill-eval-baseline-');
                   let bxml = '';
                   try { bxml = fs.readFileSync(jf, 'utf8'); } catch { continue; }
-                  const bblocks = bxml.match(/<testsuite\b[\s\S]*?<\/testsuite>/g) || [];
+                  const bblocks = testsuiteBlocks(bxml);
                   for (const block of bblocks) {
                     const bOpen = (block.match(/<testsuite\b[^>]*>/) || [''])[0];
                     const bLabel = suiteProp(block, 'evalName') || tagAttr(bOpen, 'name') || '(unnamed)';

@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require "find"
 require "open3"
 require "pathname"
 require "tmpdir"
@@ -88,6 +89,14 @@ def validate_no_checkout_symlinks!(relative_path, repo_root, location)
   end
 end
 
+def validate_no_nested_symlinks!(path, location)
+  return unless File.directory?(path)
+
+  Find.find(path) do |entry|
+    fail!("#{location} contains symlink: #{entry}") if File.symlink?(entry)
+  end
+end
+
 def validate_relative_path!(value, base, root, location)
   fail!("#{location} must be a relative path") if Pathname.new(value).absolute?
 
@@ -140,6 +149,7 @@ def validate_environment!(environment, spec_path, skill_root, repo_root, locatio
     resolved_src = validate_relative_path!(src, File.dirname(spec_path), skill_root, src_location)
     relative_src = Pathname.new(resolved_src).relative_path_from(Pathname.new(skill_root)).to_s
     validate_no_checkout_symlinks!(relative_src, skill_root, src_location)
+    validate_no_nested_symlinks!(resolved_src, src_location)
     destination_parts = Pathname.new(dest).each_filename.to_a
     fail!("#{location}.files[#{index}].dest must be a non-empty relative path") if dest.empty? || Pathname.new(dest).absolute?
     fail!("#{location}.files[#{index}].dest must not traverse parent directories") if destination_parts.include?("..")
