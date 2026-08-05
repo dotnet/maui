@@ -2004,8 +2004,8 @@ jobs:
               conclusion = 'failure';
               title = 'LLM evaluation failed';
             } else {
-              conclusion = 'neutral';
-              title = `Evaluation: ${evalResult}`;
+              conclusion = 'failure';
+              title = `Evaluation incomplete: ${evalResult}`;
             }
 
             await github.rest.checks.create({

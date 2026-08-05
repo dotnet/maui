@@ -3,6 +3,7 @@
 require "fileutils"
 require "minitest/autorun"
 require "open3"
+require "pathname"
 require "tmpdir"
 require "yaml"
 
@@ -99,6 +100,27 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "must not rename the skill-invocation grader"
+  end
+
+  def test_requires_skill_invocation_grader_for_routing_specs
+    routing_tests_path = File.join(@repo_root, ".github", "skills", "try-fix", "tests")
+    FileUtils.mkdir_p(routing_tests_path)
+    File.write(
+      File.join(routing_tests_path, "eval.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "routing-regression",
+            "graders" => [{ "type" => "output-contains", "config" => { "substring" => "done" } }]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(routing_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "must include skill-invocation"
   end
 
   def test_rejects_vcs_metadata_destination
@@ -255,12 +277,12 @@ class TestPrepareVallyEvaluation < Minitest::Test
     File.write(File.join(@tests_path, name), "fixture")
   end
 
-  def run_validator
+  def run_validator(tests_path = @tests_path)
     Open3.capture3(
       "ruby",
       PREPARER,
       @repo_root,
-      ".github/skills/test-skill/tests",
+      Pathname.new(tests_path).relative_path_from(Pathname.new(@repo_root)).to_s,
       "--validate-only"
     )
   end

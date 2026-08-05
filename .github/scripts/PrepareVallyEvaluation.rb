@@ -10,6 +10,12 @@ BASE_REF = "8935253083b24930f9a6f153f72b5ac196d1ae59"
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
+REQUIRED_SKILL_INVOCATION_SPECS = %w[
+  .github/skills/ci-fix/tests/eval.ownership.vally.yaml
+  .github/skills/code-review/tests/eval.trim-aot.vally.yaml
+  .github/skills/try-fix/tests/eval.restore.vally.yaml
+  .github/skills/try-fix/tests/eval.vally.yaml
+].freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
   /(?:\A|[;&|\r\n])\s*git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
@@ -231,11 +237,17 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
 
   validate_environment!(document["environment"], spec_path, skill_root, repo_root, "environment")
   validate_graders!(document["graders"], "graders")
+  relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
+  require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
 
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
     validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
-    validate_graders!(stimulus["graders"], "stimuli[#{index}].graders")
+    graders = Array(stimulus["graders"])
+    validate_graders!(graders, "stimuli[#{index}].graders")
+    if require_skill_invocation && graders.none? { |grader| grader.is_a?(Hash) && grader["type"] == "skill-invocation" }
+      fail!("stimuli[#{index}].graders must include skill-invocation for #{relative_spec_path}")
+    end
   end
   validate_effective_git_destinations!(document, repo_root) if inspect_git_refs
 end
