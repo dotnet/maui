@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var colors = colorJson.RootElement.GetProperty("colors").EnumerateArray().ToArray();
 			Assert.Contains(colors, color => !color.TryGetProperty("appearances", out _));
 			Assert.Contains(colors, color => GetAppearanceValue(color) == "light");
-			var darkColor = Assert.Single(colors.Where(color => GetAppearanceValue(color) == "dark"));
+			Assert.All(colors, color =>
+				Assert.Equal("1.0", color.GetProperty("color").GetProperty("components").GetProperty("alpha").GetString()));
+			var darkColor = Assert.Single(colors, color => GetAppearanceValue(color) == "dark");
 			Assert.Equal("0", darkColor.GetProperty("color").GetProperty("components").GetProperty("red").GetString());
 			Assert.Equal("0", darkColor.GetProperty("color").GetProperty("components").GetProperty("green").GetString());
 			Assert.Equal("0", darkColor.GetProperty("color").GetProperty("components").GetProperty("blue").GetString());
@@ -227,9 +229,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			using var colorJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashColor.colorset", "Contents.json")));
 			var colors = colorJson.RootElement.GetProperty("colors").EnumerateArray().ToArray();
-			var anyColor = Assert.Single(colors.Where(color => !color.TryGetProperty("appearances", out _)));
-			var darkColor = Assert.Single(colors.Where(color => GetAppearanceValue(color) == "dark"));
-			Assert.Equal("1", anyColor.GetProperty("color").GetProperty("components").GetProperty("red").GetString());
+			var anyColor = Assert.Single(colors, color => !color.TryGetProperty("appearances", out _));
+			var darkColor = Assert.Single(colors, color => GetAppearanceValue(color) == "dark");
+			Assert.Equal("1.0", anyColor.GetProperty("color").GetProperty("components").GetProperty("red").GetString());
 			Assert.Equal("0", darkColor.GetProperty("color").GetProperty("components").GetProperty("red").GetString());
 		}
 

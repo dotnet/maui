@@ -270,7 +270,9 @@ namespace Microsoft.Maui.Resizetizer
 		}
 
 		private static string ToComponent(byte value) =>
-			(value / (float)byte.MaxValue).ToString("0.#######", CultureInfo.InvariantCulture);
+			value == byte.MaxValue
+				? "1.0"
+				: (value / (float)byte.MaxValue).ToString("0.#######", CultureInfo.InvariantCulture);
 
 		private void CleanStoryboard()
 		{
