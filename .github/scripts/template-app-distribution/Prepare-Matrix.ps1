@@ -115,14 +115,14 @@ $platformDefinitions = [ordered]@{
     }
     ios = [ordered]@{
         artifactPlatform = "ios"
-        runner = "macos-15"
+        runner = "macos-26"
         workload = "maui-ios"
         targetFramework = "$DotNetTfm-ios"
         runtimeIdentifier = "ios-arm64"
     }
     maccatalyst = [ordered]@{
         artifactPlatform = "macos"
-        runner = "macos-15"
+        runner = "macos-26"
         workload = "maui-maccatalyst"
         targetFramework = "$DotNetTfm-maccatalyst"
         runtimeIdentifier = ""
