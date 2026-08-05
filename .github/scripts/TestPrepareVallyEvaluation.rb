@@ -211,6 +211,25 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "escapes"
   end
 
+  def test_rejects_symlinked_skills_root_that_escapes_checkout
+    outside_root = Dir.mktmpdir("prepare-vally-skills-outside-")
+    begin
+      skills_root = File.join(@repo_root, ".github", "skills")
+      FileUtils.remove_entry(skills_root)
+      File.symlink(outside_root, skills_root)
+      @tests_path = File.join(skills_root, "test-skill", "tests")
+      FileUtils.mkdir_p(@tests_path)
+      write_spec("environment" => { "skills" => [".."] })
+
+      _stdout, stderr, status = run_validator
+
+      refute status.success?
+      assert_includes stderr, "skills root traverses checkout symlink"
+    ensure
+      FileUtils.remove_entry(outside_root)
+    end
+  end
+
   def test_rejects_default_scope_git_name_write
     assert_rejects_persistent_identity('git config user.name "Vally Fixture"')
   end
