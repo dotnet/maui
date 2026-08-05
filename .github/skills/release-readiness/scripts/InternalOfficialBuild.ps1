@@ -155,6 +155,73 @@ function Select-LatestInternalOfficialBuild {
         Select-Object -First 1
 }
 
+function Invoke-InternalOfficialBuildProcess {
+    param(
+        [Parameter(Mandatory = $true)][string]$FileName,
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 30
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FileName
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardInput = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    foreach ($argument in $Arguments) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            return [PSCustomObject]@{
+                Started = $false
+                TimedOut = $false
+                ExitCode = -1
+                Stdout = ''
+                Stderr = ''
+            }
+        }
+
+        # Prevent extension-install or credential prompts from waiting on stdin.
+        $process.StandardInput.Close()
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            try { $process.Kill($true) } catch { }
+            $process.WaitForExit()
+            return [PSCustomObject]@{
+                Started = $true
+                TimedOut = $true
+                ExitCode = -1
+                Stdout = $stdoutTask.GetAwaiter().GetResult()
+                Stderr = $stderrTask.GetAwaiter().GetResult()
+            }
+        }
+
+        return [PSCustomObject]@{
+            Started = $true
+            TimedOut = $false
+            ExitCode = $process.ExitCode
+            Stdout = $stdoutTask.GetAwaiter().GetResult()
+            Stderr = $stderrTask.GetAwaiter().GetResult()
+        }
+    } catch {
+        return [PSCustomObject]@{
+            Started = $false
+            TimedOut = $false
+            ExitCode = -1
+            Stdout = ''
+            Stderr = ''
+        }
+    } finally {
+        $process.Dispose()
+    }
+}
+
 function Get-InternalOfficialBuildAzArguments {
     param(
         [Parameter(Mandatory = $true)][string]$BranchRef,
@@ -180,7 +247,7 @@ function Get-InternalOfficialBuildAzArguments {
         '--pipeline-ids', "$DefinitionId",
         '--branch', $BranchRef,
         '--query-order', 'QueueTimeDesc',
-        '--top', '1',
+        '--top', '5',
         '--org', "https://dev.azure.com/$Organization",
         '--project', $Project,
         '-o', 'json'
@@ -246,7 +313,9 @@ function New-AzdoInternalOfficialBuildFetcher {
         [string]$Org = $Script:InternalOfficialBuildOrg,
         [string]$Project = $Script:InternalOfficialBuildProject,
         [AllowNull()][string]$ManualBuildId,
-        [AllowNull()][string]$ManualBuildBranchRef
+        [AllowNull()][string]$ManualBuildBranchRef,
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 30,
+        [AllowNull()][scriptblock]$ProcessInvoker
     )
 
     $definition = $DefinitionId
@@ -254,11 +323,18 @@ function New-AzdoInternalOfficialBuildFetcher {
     $projectName = $Project
     $manualId = $ManualBuildId
     $manualRef = $ManualBuildBranchRef
+    $timeout = $TimeoutSeconds
+    $checkCommandAvailability = $null -eq $ProcessInvoker
+    $invokeProcess = if ($ProcessInvoker) {
+        $ProcessInvoker
+    } else {
+        { param($FileName, $Arguments, $ProcessTimeout) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout }
+    }
 
     return {
         param([string]$BranchRef)
 
-        if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+        if ($checkCommandAvailability -and -not (Get-Command az -ErrorAction SilentlyContinue)) {
             return [PSCustomObject]@{
                 Success = $false
                 FailureKind = 'access'
@@ -275,39 +351,60 @@ function New-AzdoInternalOfficialBuildFetcher {
             -ManualBuildId $manualId `
             -ManualBuildBranchRef $manualRef
 
-        $global:LASTEXITCODE = 0
-        $stderrPath = [System.IO.Path]::GetTempFileName()
-        try {
-            $output = & az @azArgs 2> $stderrPath
-            $exitCode = $LASTEXITCODE
-            $stderr = [System.IO.File]::ReadAllText($stderrPath)
-        } finally {
-            Remove-Item -LiteralPath $stderrPath -Force -ErrorAction SilentlyContinue
+        $processResult = & $invokeProcess 'az' $azArgs $timeout
+        if ([bool](Get-InternalBuildProperty $processResult 'TimedOut')) {
+            return [PSCustomObject]@{
+                Success = $false
+                FailureKind = 'timeout'
+                Message = "Azure DevOps query timed out after $timeout seconds."
+            }
         }
-        $stdout = $output -join "`n"
+        if (-not [bool](Get-InternalBuildProperty $processResult 'Started')) {
+            return [PSCustomObject]@{
+                Success = $false
+                FailureKind = 'query'
+                Message = 'Azure CLI could not be started.'
+            }
+        }
+
         return ConvertFrom-InternalOfficialBuildAzOutput `
-            -Stdout $stdout `
-            -Stderr $stderr `
-            -ExitCode $exitCode `
+            -Stdout ([string](Get-InternalBuildProperty $processResult 'Stdout')) `
+            -Stderr ([string](Get-InternalBuildProperty $processResult 'Stderr')) `
+            -ExitCode ([int](Get-InternalBuildProperty $processResult 'ExitCode')) `
             -ManualQuery:$manualQuery `
             -ExpectedDefinitionId $definition
     }.GetNewClosure()
 }
 
 function New-GitHubBranchHeadFetcher {
-    param([Parameter(Mandatory = $true)][string]$Repository)
+    param(
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 30,
+        [AllowNull()][scriptblock]$ProcessInvoker
+    )
 
     $repo = $Repository
+    $timeout = $TimeoutSeconds
+    $checkCommandAvailability = $null -eq $ProcessInvoker
+    $invokeProcess = if ($ProcessInvoker) {
+        $ProcessInvoker
+    } else {
+        { param($FileName, $Arguments, $ProcessTimeout) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout }
+    }
     return {
         param([string]$BranchRef)
 
-        if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { return $null }
+        if ($checkCommandAvailability -and -not (Get-Command gh -ErrorAction SilentlyContinue)) { return $null }
         $branchName = $BranchRef -replace '^refs/heads/', ''
         $encodedBranch = [System.Uri]::EscapeDataString($branchName)
-        $global:LASTEXITCODE = 0
-        $output = & gh api "repos/$repo/commits/$encodedBranch" --jq '.sha' 2>$null
-        if ($LASTEXITCODE -ne 0) { return $null }
-        $sha = ($output -join "`n").Trim()
+        $ghArgs = @('api', "repos/$repo/commits/$encodedBranch", '--jq', '.sha')
+        $processResult = & $invokeProcess 'gh' $ghArgs $timeout
+        if (-not [bool](Get-InternalBuildProperty $processResult 'Started') -or
+            [bool](Get-InternalBuildProperty $processResult 'TimedOut') -or
+            [int](Get-InternalBuildProperty $processResult 'ExitCode') -ne 0) {
+            return $null
+        }
+        $sha = ([string](Get-InternalBuildProperty $processResult 'Stdout')).Trim()
         if ([string]::IsNullOrWhiteSpace($sha)) { return $null }
         return $sha
     }.GetNewClosure()

@@ -207,7 +207,7 @@ $isGitHubActions = if (Get-Command Test-IsGitHubActions -ErrorAction SilentlyCon
     "$env:GITHUB_ACTIONS" -ieq 'true'
 }
 $effectivePublicSafe = if ($null -eq $PublicSafe) {
-    $isGitHubActions -or $majorVersion -ne 11
+    $true
 } else {
     [bool]$PublicSafe
 }
@@ -2602,7 +2602,15 @@ if ($Script:PreviewInstallabilityHelperLoaded) {
 # override retained for diagnostics/backward compatibility.
 $internalOfficialBuildHealth = [PSCustomObject]@{
     overall = 'skipped'
-    skipReason = if ($isGitHubActions) { 'github-actions' } else { 'public-safe' }
+    skipReason = if ($isGitHubActions) {
+        'github-actions'
+    } elseif ($majorVersion -ne 11) {
+        'unsupported-major'
+    } elseif (-not $Script:InternalOfficialBuildHelperLoaded) {
+        'helper-unavailable'
+    } else {
+        'public-safe'
+    }
     branches = @()
 }
 $shouldQueryInternal = $Script:InternalOfficialBuildHelperLoaded -and
@@ -2633,8 +2641,8 @@ if ($Script:InternalOfficialBuildHelperLoaded) {
     $checks += New-Check `
         -Area "Internal release pipelines" `
         -Status "UNKNOWN" `
-        -Details "Internal release pipeline details are not queried in public workflow mode." `
-        -NextAction "Run this script locally with internal access, then publish only sanitized status."
+        -Details "Internal release pipeline checks are unavailable because the local helper could not be loaded." `
+        -NextAction "Restore InternalOfficialBuild.ps1, rerun locally with internal access, then publish only sanitized status."
 }
 
 # --- Component pin inventory ---

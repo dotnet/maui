@@ -105,6 +105,7 @@ pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
 pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode in-flight \
+  -PublicSafe:$false \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6
 
@@ -113,6 +114,7 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode candidate \
   -SurveyRef net11.0 \
+  -PublicSafe:$false \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
 ```
@@ -144,10 +146,11 @@ unknown fields must remain `TBD`.
 
 ### Preview: local net11 official-build health
 
-For net11 preview runs from a local checkout, `Get-PreviewReadiness.ps1`
-automatically queries the internal official `dotnet-maui` pipeline (Azure DevOps
-definition `1095`, org `dnceng`, project `internal`) when the current Azure CLI
-identity has access. No build ID is required. It independently checks:
+For net11 preview runs through this skill from a local checkout, invoke
+`Get-PreviewReadiness.ps1 -PublicSafe:$false`. The script then automatically
+queries the internal official `dotnet-maui` pipeline (Azure DevOps definition
+`1095`, org `dnceng`, project `internal`) when the current Azure CLI identity has
+access. No build ID is required. It independently checks:
 
 1. `refs/heads/net11.0` — the inflight source/survey lane.
 2. `refs/heads/release/11.0.1xx-previewN` — the evaluated release branch, when
@@ -165,15 +168,19 @@ The internal check is intentionally fail-open:
 - `GITHUB_ACTIONS=true` skips it before any Azure command runs.
 - Missing Azure CLI, expired login, or inaccessible dnceng/internal access yields
   `skipped` and does not downgrade the public-data verdict.
+- Azure CLI and GitHub branch queries have bounded execution; a timeout yields
+  `unknown` rather than hanging the local readiness run.
 - Local `red`/`stale` maps to `BLOCKED`, `in-progress` to `WATCH`, and `unknown`
   to `UNKNOWN`.
 - `-PublicSafe:$true` omits all internal IDs, SHAs, URLs, and branch rows. The
   public workflow uses this behavior and never receives internal credentials.
 
-`-IncludeInternal` remains as an explicit compatibility override when a caller
-requests a sanitized internal classification, and `-InternalBuildId` remains a
-diagnostic override for the evaluated release branch. Normal local runs should
-use automatic discovery.
+The script remains public-safe by default. This skill and the release-readiness
+agent explicitly pass `-PublicSafe:$false` for enriched local net11 reports;
+never reuse those artifacts in a public tracker issue. `-IncludeInternal`
+remains an explicit compatibility override when a caller requests a sanitized
+internal classification, and `-InternalBuildId` remains a diagnostic override
+for the evaluated release branch.
 
 ### Preview: authoritative blessed-build source (.NET Release Tracker)
 
@@ -382,9 +389,9 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-TrackerKey` | No | derived | Canonical key (default: `net<major>-preview<N>`) embedded for idempotent issue lookup. |
 | `-OutputDir` | No | — | If set, writes `preview-readiness.{json,md}`. |
 | `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
-| `-IncludeInternal` | No | off | Compatibility override that requests internal classification even with `-PublicSafe`; normal local net11 runs auto-detect access. GitHub Actions still skips. |
+| `-IncludeInternal` | No | off | Compatibility override that requests sanitized internal classification even with `-PublicSafe`; enriched local skill/agent runs pass `-PublicSafe:$false`. GitHub Actions still skips. |
 | `-InternalBuildId` | No | — | Diagnostic override for the evaluated release branch. Normal runs discover the latest definition-1095 build for each branch. |
-| `-PublicSafe` | No | auto | Defaults to `$true` in GitHub Actions and for non-net11 lanes, and `$false` for local net11 runs. The shared sanitizer removes private/internal coordinates from Preview Markdown and JSON, including internal IDs, SHAs, URLs, and branch rows. |
+| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON, including internal IDs, SHAs, URLs, and branch rows. The local skill/agent explicitly sets `$false` for enriched net11 reports that will remain local. |
 | `-ConfirmedWorkloadSetVersion` | No | — | Exact release-owner-confirmed workload-set CLI version. Required before Consumer installability can become `READY`. |
 | `-AdditionalPackageSource` | No | — | Repeatable `name=https://...` authenticated dnceng Azure Artifacts source without user information, query parameters, or fragments. Credentials come from `NuGetPackageSourceCredentials_<name>`, never from the argument, and must explicitly select `ValidAuthenticationTypes=Basic`. |
 
