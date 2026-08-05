@@ -850,10 +850,12 @@ namespace Microsoft.Maui.Controls
                 var menuIcon = UIImage.GetSystemImage("ellipsis.circle");
                 var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit,
                     UIMenuOptions.DisplayInline, secondaries.ToArray());
+#pragma warning disable CA1416 // UIBarButtonItem(UIImage?, UIMenu) is unavailable on iOS 13.
                 var menuButton = new UIBarButtonItem(menuIcon, menu)
                 {
                     AccessibilityIdentifier = "SecondaryToolbarMenuButton"
                 };
+#pragma warning restore CA1416
 
                 primaries ??= new();
                 primaries.Insert(0, menuButton);
