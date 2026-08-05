@@ -18,7 +18,7 @@ public class TimePickerFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30837
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST // The native TimePicker flyout has a different visual presentation on Mac Catalyst.
 
 	[Test, Order(1)]
 	public void TimePicker_InitialState_VerifyVisualState()
@@ -27,7 +27,7 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.Tap("Options");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("TimePickerControl");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.Tap("TimePickerControl");
 		Exception? exception = null;
 		VerifyScreenshotOrSetException(ref exception, tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -67,7 +67,7 @@ public class TimePickerFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST // The native TimePicker does not consistently render text and font customizations on Mac Catalyst.
 
 	[Test, Order(6)]
 	public void TimePicker_SetTimeAndTextColor_VerifyVisualState()
@@ -81,9 +81,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(7)]
 	public void TimePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
@@ -99,9 +96,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(8)]
 	public void TimePicker_SetFontAttributesAndFontSize_VerifyVisualState()
@@ -118,9 +112,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(10)]
 	public void TimePicker_SetFontFamilyAndFontSize_VerifyVisualState()
@@ -205,9 +196,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(18)]
 	public void TimePicker_SetFormat_T_WithFontAttributes_VerifyVisualState()
@@ -226,9 +214,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(19)]
 	public void TimePicker_SetFormat_T_WithFontFamily_VerifyVisualState()
@@ -247,9 +232,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // For more information : https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/timepicker?view=net-maui-9.0&tabs=macios#tabpanel_1_macios
 
 	[Test, Order(20)]
 	public void TimePicker_SetFormat_T_WithFontSize_VerifyVisualState()
@@ -275,7 +257,7 @@ public class TimePickerFeatureTests : _GalleryUITest
 
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Time selection automation for these tests is implemented only on Android and Windows.
 
 	[Test, Order(2)]
 	public void TimePicker_ModifyOldTimeAndNewTime_VerifyVisualState()
@@ -299,9 +281,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 
 	[Test, Order(3)]
 	public void TimePicker_OldTimeAndNewTime_VerifyVisualState()
@@ -355,7 +334,7 @@ public class TimePickerFeatureTests : _GalleryUITest
     }
 #endif
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST // The native TimePicker does not consistently render combined format and font customizations on Mac Catalyst.
 
 	[Test, Order(9)]
 	public void TimePicker_SetFontAttributesAndFormat_VerifyVisualState()
@@ -381,9 +360,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.Tap("CultureFormatLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(11)]
 	public void TimePicker_SetFontFamilyAndFormat_VerifyVisualState()
@@ -409,9 +385,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.Tap("CultureFormatLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_CATALYST
 
 	[Test, Order(12)]
 	public void TimePicker_SetFontSizeAndFormat_VerifyVisualState()
@@ -479,7 +452,7 @@ public class TimePickerFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: False"));
 	}
 
-#if TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // IsOpen is not implemented on Mac Catalyst, and its label does not update on Windows when the TimePicker flyout opens via user interaction.
 	[Test, Order(26)]
 	public void TimePicker_IsOpenAndEvents_StaySynchronized()
 	{
@@ -532,9 +505,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: en-US, Time: 5:30 AM"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30197
 
 	[Test, Order(22)]
 	public void TimePicker_SetCulture_arEG_VerifyTimeFormat()
@@ -573,6 +543,68 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Time: 17:30"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+#endif
+
+#if TEST_FAILS_ON_CATALYST // The native TimePicker does not consistently render text and font customizations on Mac Catalyst.
+
+	[Test, Order(27)]
+	public void TimePicker_SetTimeAndTextColorRed_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextColorRedButton");
+		App.Tap("TextColorRedButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(28)]
+	public void TimePicker_SetFontAttributesBold_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBoldButton");
+		App.Tap("FontAttributesBoldButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(29)]
+	public void TimePicker_SetFontAttributesNone_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesItalicButton");
+		App.Tap("FontAttributesItalicButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesNoneButton");
+		App.Tap("FontAttributesNoneButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(30)]
+	public void TimePicker_SetFontFamilyMontserratBold_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontFamilyMontserratBoldButton");
+		App.Tap("FontFamilyMontserratBoldButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
