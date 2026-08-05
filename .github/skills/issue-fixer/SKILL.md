@@ -253,7 +253,8 @@ Feed each `try-fix` invocation:
 - `platform` — the reproduced platform from Phase 1
 - `target_files` — the files identified in Phase 2
 - `mode` — `Issue`
-- `broken_checkpoint` / `attempt_worktree` / `reproduction_paths` — from the issue-mode protocol
+- `broken_checkpoint` / `attempt_worktree` / `reproduction_paths` / `output_directory` — from the issue-mode
+  protocol; the output directory must be absolute and outside the disposable worktree
 - `test_command` — the strongest empirical command currently available: the planned Phase 4 regression command
   when Phase 1 produced an automated test; otherwise the Sandbox reproducer, explicitly labeled provisional.
   A Sandbox reproducer does not replace Phase 4's non-circular regression test.
