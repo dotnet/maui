@@ -1185,7 +1185,12 @@ function Write-CopilotTokenUsageRecord {
 
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
-    param([string]$StepName, [string]$Prompt)
+    param(
+        [string]$StepName,
+        [string]$Prompt,
+        [ValidateRange(30, 1000)]
+        [int]$MaxAiCredits = 70
+    )
 
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
@@ -1271,7 +1276,7 @@ function Invoke-CopilotStep {
             Write-Host "  🔄 Retrying Copilot (attempt $copilotAttempt/$maxCopilotAuthRetries) after a transient auth-validation 401..." -ForegroundColor Yellow
         }
 
-        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --context long_context --effort max --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
+        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --context long_context --effort max --max-ai-credits $MaxAiCredits --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
             $line = $_.ToString()
             if ($line -match '(?i)could not be validated|Bad credentials|Failed to fetch PAT user login \(401\)') { $authValidationFailed = $true }
             try {
@@ -2274,32 +2279,37 @@ Run these AFTER your primary test command succeeds. If any regression test fails
     }
 }
 
-# ── STEP 5a: Try-Fix — iterative candidate generation (Copilot call 1) ────
-# The alternative-fix models (Opus 5 / Sonnet 5 / GPT-5.3-Codex / GPT-5.6 Sol) are selected
-# per-attempt by the pr-review skill's try-fix phase, so the panel brings genuine model
-# diversity while the orchestrator process stays on the reviewer default.
+# ── STEP 5a: Try-Fix — bounded two-candidate generation (Copilot call 1) ────
+# The two alternative-fix models are selected per attempt by the pr-review skill.
+# A hard Copilot credit cap backs up the prompt's wall-clock/candidate limits so a
+# complex PR cannot spend the full 180-minute task budget in STEP 5a and prevent
+# the final expert comparison from running.
 $step5aPrompt = @"
-Generate alternative fix candidates for PR #$PRNumber using an iterative expert-review-and-test loop.
+Generate a bounded set of alternative fix candidates for PR #$PRNumber.
+
+## HARD EXECUTION CONTRACT
+
+- Produce **at most two candidates total**.
+- Launch **no more than two child task invocations**, sequentially and with ``mode: "sync"``. Attempt both in order unless the remaining STEP 5a budget makes the second unsafe:
+  1. ``claude-opus-5`` — invoke the ``try-fix`` skill once.
+  2. ``gpt-5.6-sol`` — invoke the ``try-fix`` skill once.
+- Do not launch cross-pollination, final-audit, rubber-duck, or follow-up reviewer agents.
+- Do not invoke ``maui-expert-reviewer`` separately for each candidate. The ``try-fix`` skill's inline expert self-review is sufficient for this phase.
+- Each candidate gets one implementation/test pass and at most one focused correction/retest. If it still fails or is blocked, record that result and move on.
+- Never run an unrequested full test suite. Use only the detected primary test and the mandatory regression tests listed below.
+- Keep this entire STEP 5a within 90 minutes. Persist the aggregate after every candidate. If time is tight, stop launching work, write the partial aggregate honestly, and return so STEP 5b can finish the review.
 
 ## Phase 1 — Pre-Flight (context only)
-Use the pr-review skill's pre-flight phase to gather context about the issue and PR. Do NOT modify code.
+Gather issue/PR context and inspect the diff directly. Do NOT modify code and do NOT launch a separate expert-review agent; the dedicated expert pass runs in STEP 5b.
 Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
 
-## Phase 2 — Iterative Try-Fix loop
-For each candidate, follow this cycle:
-
-1. **Generate** — Use the code-review skill with the maui-expert-reviewer agent to analyze the problem and generate a fix candidate. Each candidate must explore a DIFFERENT approach from the PR's current fix and from previous candidates. The expert reviewer provides domain-specific guidance for MAUI (handlers, platform specifics, layout, etc.).
-2. **Test** — Run the candidate against the gate criteria and regression tests. Record pass/fail.
-3. **Learn** — If the candidate failed, feed the failure details (test output, error messages) back to the expert reviewer to inform the next candidate.
-4. **Repeat or stop** — Generate the next candidate incorporating lessons from failures. Stop when:
-   - A candidate passes ALL tests and is demonstrably better than the PR's fix, OR
-   - You've exhausted meaningfully different approaches (don't generate trivial variations)
-
-Number candidates sequentially (``try-fix-1``, ``try-fix-2``, ``try-fix-3``, ...).
+## Phase 2 — Two bounded Try-Fix attempts
+Invoke the ``try-fix`` skill once per model listed above. Candidate 2 must use the recorded result from candidate 1 to avoid repeating the same approach, but must not re-open or re-run candidate 1.
 
 For each candidate:
 - Write output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md``
 - Include: approach description, diff, test results, failure analysis (if failed)
+- Immediately update ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md`` before starting any later work.
 
 Aggregate all try-fix narrative to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
 $regressionTestInstruction
@@ -2312,7 +2322,7 @@ Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 "@
 
-Invoke-CopilotStep -StepName "STEP 5a: TRY-FIX" -Prompt $step5aPrompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 5a: TRY-FIX" -Prompt $step5aPrompt -MaxAiCredits 60 | Out-Null
 
 # Restore review branch between copilot calls
 git checkout $reviewBranch 2>$null | Out-Null
@@ -2373,6 +2383,14 @@ Run expert code review of PR #$PRNumber's fix and compare against all try-fix ca
 Read context from:
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md`` (and individual try-fix-{N}/content.md files)
+
+## HARD EXECUTION CONTRACT
+
+- Invoke the ``maui-expert-reviewer`` / ``code-review`` path **once only**. Do not launch a second audit, final-audit agent, rubber-duck pass, or per-candidate reviewer.
+- Write ``inline-findings.json`` and the initial expert evaluation before attempting any candidate refinement.
+- If reviewer feedback can improve the PR, apply at most one consolidated ``pr-plus-reviewer`` patch and run each required targeted validation command once. Do not enter an iterative repair/retest loop and do not run a full suite unless it is the explicitly required test command.
+- Whether validation passes, fails, or is blocked, proceed immediately to the comparative report. Record uncertainty instead of repeatedly refining the candidate.
+- Always write ``report/content.md``, ``winner.json``, and ``pr-finalize/content.md`` before optional investigation. Required output files take priority over additional testing.
 
 ## Phase 1 — Expert reviewer evaluation of the PR fix
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
@@ -2438,7 +2456,7 @@ $autonomousRules
 Do NOT re-run gate verification.
 "@
 
-Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt -MaxAiCredits 70 | Out-Null
 
 # Diagnostic: check what STEP 5b produced
 Write-Host ""

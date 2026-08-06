@@ -25,6 +25,7 @@ BeforeAll {
     # logic (banner, prerequisites, step driver) that runs at parse time.
     $reviewScript = Join-Path $PSScriptRoot 'Review-PR.ps1'
     $content = Get-Content -Raw $reviewScript
+    $pipelineContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml')
 
     function Get-FunctionBody {
         param([string]$ScriptText, [string]$FunctionName)
@@ -72,10 +73,42 @@ Describe 'Copilot reviewer configuration' {
         $content | Should -Match '--context long_context'
     }
 
+    It 'hard-caps both Copilot review calls and bounds try-fix to two candidates' {
+        $content | Should -Match '\[ValidateRange\(30, 1000\)\]'
+        $content | Should -Match ([regex]::Escape('--max-ai-credits $MaxAiCredits'))
+        $content | Should -Match 'STEP 5a: TRY-FIX.*-MaxAiCredits 60'
+        $content | Should -Match 'STEP 5b: EXPERT REVIEW \+ COMPARE.*-MaxAiCredits 70'
+        $content | Should -Match 'Produce \*\*at most two candidates total\*\*'
+        $content | Should -Match 'Do not launch cross-pollination'
+    }
+
     It 'defaults the local test reviewer to GPT-5.6 Sol with long context' {
         $reviewTests = Get-Content -Raw (Join-Path $PSScriptRoot 'Review-Tests.ps1')
         $reviewTests | Should -Match ([regex]::Escape('else { "gpt-5.6-sol" }'))
         $reviewTests | Should -Match ([regex]::Escape('"--context", "long_context"'))
+    }
+}
+
+Describe 'Reviewer pipeline timeout containment' {
+    It 'treats the Task 3 safety timeout as non-blocking' {
+        $task3Start = $pipelineContent.IndexOf("displayName: 'Task 3: Copilot Review (expert review + try-fix)'")
+        $task3Start | Should -BeGreaterThan -1
+        $task3Block = $pipelineContent.Substring($task3Start, [Math]::Min(1400, $pipelineContent.Length - $task3Start))
+        $task3Block | Should -Match 'timeoutInMinutes: 180'
+        $task3Block | Should -Match 'continueOnError: true'
+    }
+
+    It 'gives every Android emulator retry group enough time and keeps setup non-blocking' {
+        $avdBlocks = [regex]::Matches(
+            $pipelineContent,
+            "(?s)displayName: 'Create AVD and Boot Android Emulator'.{0,700}?timeoutInMinutes: 25.{0,700}?continueOnError: true"
+        )
+        $avdBlocks.Count | Should -Be 2
+    }
+
+    It 'requires the adb transport state column to be device instead of matching metadata text' {
+        $pipelineContent | Should -Not -Match 'adb devices \| grep ["'']emulator\.\*device'
+        ([regex]::Matches($pipelineContent, [regex]::Escape('$2 == "device"'))).Count | Should -Be 4
     }
 }
 

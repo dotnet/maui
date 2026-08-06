@@ -804,18 +804,30 @@ stages:
                   # retry + device-detection. Adding `|| true`/`|| echo` here would force $?=0 and
                   # silently break the retry loop. (Contrast the warmup step which DOES set -e and so
                   # must guard its wait-for-device.) Keep this unguarded.
-                  timeout 120 adb wait-for-device
-                  if [ $? -eq 0 ]; then
-                    # Capture device ID immediately while it's responsive
-                    DETECTED_DEVICE=$(adb devices | grep "emulator.*device" | awk '{print $1}' | head -1)
-                    if [ -z "$DETECTED_DEVICE" ]; then
-                      DETECTED_DEVICE="emulator-5554"
+                  if timeout 120 adb wait-for-device; then
+                    # `adb wait-for-device` can return during a momentary online
+                    # transition and the transport can already be OFFLINE by the
+                    # next command. Also, grep "emulator.*device" incorrectly
+                    # matches an OFFLINE row because its metadata contains
+                    # "device:generic_*" (build 14892784). Require column 2 to
+                    # remain exactly "device" before accepting this launch.
+                    DETECTED_DEVICE=""
+                    for DEVICE_STATE_CHECK in $(seq 1 6); do
+                      DETECTED_DEVICE=$(adb devices | awk '$1 ~ /^emulator-/ && $2 == "device" { print $1; exit }')
+                      if [ -n "$DETECTED_DEVICE" ]; then
+                        echo "Device online and stable: $DETECTED_DEVICE ($(adb devices -l | grep emulator || true))"
+                        break
+                      fi
+                      echo "ADB transport did not remain online ($DEVICE_STATE_CHECK/6); waiting..."
+                      sleep 5
+                    done
+                    if [ -n "$DETECTED_DEVICE" ]; then
+                      break
                     fi
-                    echo "Device detected: $DETECTED_DEVICE ($(adb devices -l | grep emulator || true))"
-                    break
+                    echo "##vso[task.logissue type=warning]adb wait-for-device returned, but the emulator never remained in device state (attempt $LAUNCH_ATTEMPT)"
                   fi
 
-                  echo "##vso[task.logissue type=warning]adb wait-for-device timed out (attempt $LAUNCH_ATTEMPT)"
+                  echo "##vso[task.logissue type=warning]Emulator did not establish a stable ADB connection (attempt $LAUNCH_ATTEMPT)"
                   adb devices -l
                   tail -30 /tmp/emulator.log
 
@@ -867,10 +879,10 @@ stages:
                   fi
                 done
 
-                DEVICE_ID="${DETECTED_DEVICE:-$(adb devices | grep 'emulator.*device' | awk '{print $1}' | head -1)}"
+                DEVICE_ID="${DETECTED_DEVICE:-$(adb devices | awk '$1 ~ /^emulator-/ && $2 == "device" { print $1; exit }')}"
                 if [ -z "$DEVICE_ID" ]; then
-                  DEVICE_ID="emulator-5554"
-                  echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
+                  echo "##vso[task.logissue type=error]Emulator boot completed but no online ADB transport is available"
+                  exit 1
                 fi
                 echo "✅ Emulator fully booted: $DEVICE_ID"
 
@@ -932,7 +944,14 @@ stages:
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
               displayName: 'Create AVD and Boot Android Emulator'
               retryCountOnTaskFailure: 3
-              timeoutInMinutes: 15
+              # The timeout covers ALL RetryHelper attempts, not each attempt.
+              # Build 14892784 reached a third recovery attempt at 12m26s and
+              # was killed by the former 15m cap before it could finish.
+              timeoutInMinutes: 25
+              # Emulator provisioning is infrastructure. If every retry fails,
+              # continue into Setup so code review still runs; the Gate will
+              # classify any device-dependent verification as inconclusive.
+              continueOnError: true
               condition: succeeded()
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
@@ -1545,12 +1564,10 @@ stages:
           #  try-fix (build + UI test per attempt) reached 149m on build
           #  14648767 (#36274) — 1 min under the former 150m cap — so 150m
           #  risked false-killing real reviews; 180m gives ~30m headroom while
-          #  still capping a true hang at 3h. NB: a step that HITS this cap is
-          #  CANCELED (not Failed) → the rest of the ReviewPR job is skipped.
-          #  The Deep UI Tests stage now ALSO accepts a Canceled ReviewPR (its
-          #  UI categories come from the early, infra-independent RunDetect and
-          #  it runs on a SEPARATE platform-pool agent), so a review that times
-          #  out still gets its deep UI tests instead of silently skipping them.
+          #  still capping a true hang at 3h. AzDO surfaces this task timeout as
+          #  Failed; continueOnError below converts it to SucceededWithIssues so
+          #  artifact publication, PostReview, Deep UI, and final-summary stages
+          #  still run instead of being skipped.
           #  A NORMAL review failure exits the step 0 (set +e) → job Succeeds →
           #  Deep still runs.
           # ─────────────────────────────────────────────────────────
@@ -1579,9 +1596,15 @@ stages:
             # the PR with only a terse "could not complete" notice. Now the review runs "as
             # usual" and the gate timeout is explained in the AI Summary's Gate section instead.
             # (A genuine test FAILURE exits 0 → Task 2 succeeds, so this does not change that
-            # path. A true CANCEL — the 180-min review cap — is neither, so this still skips.)
+            # path. The Task 3 timeout itself is handled by continueOnError below.)
             condition: succeededOrFailed()
             timeoutInMinutes: 180
+            # An outer safety timeout is an incomplete optional expert review,
+            # not a failed Gate. Preserve partial artifacts and let PostReview,
+            # Deep UI, and the final summary complete without making the whole
+            # build red. The per-Copilot AI-credit caps normally end both calls
+            # before this backstop is reached.
+            continueOnError: true
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
@@ -2108,11 +2131,23 @@ stages:
 
                   echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
                   if timeout 120 adb wait-for-device; then
-                    echo "Device connected on attempt $LAUNCH_ATTEMPT"
-                    break
+                    DETECTED_DEVICE=""
+                    for DEVICE_STATE_CHECK in $(seq 1 6); do
+                      DETECTED_DEVICE=$(adb devices | awk '$1 ~ /^emulator-/ && $2 == "device" { print $1; exit }')
+                      if [ -n "$DETECTED_DEVICE" ]; then
+                        echo "Device online and stable on attempt $LAUNCH_ATTEMPT: $DETECTED_DEVICE"
+                        break
+                      fi
+                      echo "ADB transport did not remain online ($DEVICE_STATE_CHECK/6); waiting..."
+                      sleep 5
+                    done
+                    if [ -n "$DETECTED_DEVICE" ]; then
+                      break
+                    fi
+                    echo "##vso[task.logissue type=warning]adb wait-for-device returned, but the emulator never remained in device state (attempt $LAUNCH_ATTEMPT)"
                   fi
 
-                  echo "##vso[task.logissue type=warning]adb wait-for-device timed out (attempt $LAUNCH_ATTEMPT)"
+                  echo "##vso[task.logissue type=warning]Emulator did not establish a stable ADB connection (attempt $LAUNCH_ATTEMPT)"
                   adb devices -l || true
                   tail -30 /tmp/emulator.log || true
                   if [ $LAUNCH_ATTEMPT -eq $MAX_LAUNCH_ATTEMPTS ]; then
@@ -2138,10 +2173,10 @@ stages:
                   [ $waited -ge 120 ] && { echo "##[error]PM timeout"; exit 1; }
                 done
 
-                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}' | head -1)
+                DEVICE_ID="${DETECTED_DEVICE:-$(adb devices | awk '$1 ~ /^emulator-/ && $2 == "device" { print $1; exit }')}"
                 if [ -z "$DEVICE_ID" ]; then
-                  DEVICE_ID="emulator-5554"
-                  echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
+                  echo "##vso[task.logissue type=error]Emulator boot completed but no online ADB transport is available"
+                  exit 1
                 fi
                 echo "✅ Emulator booted: $DEVICE_ID"
                 # timeout-wrap every 'adb shell' (a wedged device can block with
@@ -2162,7 +2197,11 @@ stages:
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
               displayName: 'Create AVD and Boot Android Emulator'
               retryCountOnTaskFailure: 3
-              timeoutInMinutes: 15
+              # RetryHelper shares one task timeout across all attempts.
+              timeoutInMinutes: 25
+              # Preserve the aggregation/final-summary path when hosted-agent
+              # emulator provisioning is unavailable.
+              continueOnError: true
 
           # Install the iOS simulator runtimes the deep stage needs. Two runtimes matter:
           #  1. The runtime matching the BUILD SDK (newest Xcode = 26.5). actool
