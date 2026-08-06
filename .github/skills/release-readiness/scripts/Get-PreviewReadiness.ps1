@@ -79,8 +79,8 @@
 
 .PARAMETER PublicSafe
     When true, internal build details are omitted and only the existing generic
-    public-safe row is rendered. Defaults to true in GitHub Actions and for
-    non-net11 lanes, and false for local net11 runs.
+    public-safe row is rendered. Defaults to true. Local net11 skill/agent runs
+    explicitly pass false for enriched output.
 
 .PARAMETER ConfirmedWorkloadSetVersion
     Exact workload-set CLI version confirmed by the release owner, for
@@ -2624,12 +2624,14 @@ if ($shouldQueryInternal) {
         -ManualBuildId $InternalBuildId `
         -ManualBuildBranchRef $manualBranchRef
     $headFetcher = New-GitHubBranchHeadFetcher -Repository $Repository
+    $buildCurrencyFetcher = New-GitBuildCurrencyFetcher
     $internalOfficialBuildHealth = Get-InternalOfficialBuildHealth `
         -MajorVersion $majorVersion `
         -ReleaseBranch $Branch `
         -ReleaseBranchExists $targetBranchExists `
         -BuildFetcher $buildFetcher `
         -HeadFetcher $headFetcher `
+        -BuildCurrencyFetcher $buildCurrencyFetcher `
         -GitHubActions:$false
 }
 

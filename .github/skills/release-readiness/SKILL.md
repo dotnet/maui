@@ -105,7 +105,7 @@ pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
 pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode in-flight \
-  -PublicSafe:$false \
+  '-PublicSafe:$false' \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6
 
@@ -114,7 +114,7 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode candidate \
   -SurveyRef net11.0 \
-  -PublicSafe:$false \
+  '-PublicSafe:$false' \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
 ```
@@ -147,7 +147,7 @@ unknown fields must remain `TBD`.
 ### Preview: local net11 official-build health
 
 For net11 preview runs through this skill from a local checkout, invoke
-`Get-PreviewReadiness.ps1 -PublicSafe:$false`. The script then automatically
+`Get-PreviewReadiness.ps1 '-PublicSafe:$false'`. The script then automatically
 queries the internal official `dotnet-maui` pipeline (Azure DevOps definition
 `1095`, org `dnceng`, project `internal`) when the current Azure CLI identity has
 access. No build ID is required. It independently checks:
@@ -159,9 +159,10 @@ access. No build ID is required. It independently checks:
 Candidate mode still checks `net11.0`; it adds the prospective release ref only
 after that ref exists. Identical refs are queried once. The local report includes
 each branch's health classification, build ID and number, pipeline status/result,
-source SHA, and internal build URL. A failed or canceled current-HEAD build is
-`red`; a build behind branch HEAD is `stale`; a queued/running build is
-`in-progress`; missing or malformed evidence is `unknown`.
+source SHA, and internal build URL. A failed or canceled current build is `red`;
+a partially successful build is `partial-success`; a build behind the newest
+trigger-eligible commit is `stale`; a queued/running build is `in-progress`;
+missing or malformed evidence is `unknown`.
 
 The internal check is intentionally fail-open:
 
@@ -170,13 +171,13 @@ The internal check is intentionally fail-open:
   `skipped` and does not downgrade the public-data verdict.
 - Azure CLI and GitHub branch queries have bounded execution; a timeout yields
   `unknown` rather than hanging the local readiness run.
-- Local `red`/`stale` maps to `BLOCKED`, `in-progress` to `WATCH`, and `unknown`
-  to `UNKNOWN`.
+- Local `red`/`stale` maps to `BLOCKED`, `in-progress`/`partial-success` to
+  `WATCH`, and `unknown` to `UNKNOWN`.
 - `-PublicSafe:$true` omits all internal IDs, SHAs, URLs, and branch rows. The
   public workflow uses this behavior and never receives internal credentials.
 
 The script remains public-safe by default. This skill and the release-readiness
-agent explicitly pass `-PublicSafe:$false` for enriched local net11 reports;
+agent explicitly pass `'-PublicSafe:$false'` for enriched local net11 reports;
 never reuse those artifacts in a public tracker issue. `-IncludeInternal`
 remains an explicit compatibility override when a caller requests a sanitized
 internal classification, and `-InternalBuildId` remains a diagnostic override
@@ -389,7 +390,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-TrackerKey` | No | derived | Canonical key (default: `net<major>-preview<N>`) embedded for idempotent issue lookup. |
 | `-OutputDir` | No | — | If set, writes `preview-readiness.{json,md}`. |
 | `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
-| `-IncludeInternal` | No | off | Compatibility override that requests sanitized internal classification even with `-PublicSafe`; enriched local skill/agent runs pass `-PublicSafe:$false`. GitHub Actions still skips. |
+| `-IncludeInternal` | No | off | Compatibility override that requests sanitized internal classification even with `-PublicSafe`; enriched local skill/agent runs pass `'-PublicSafe:$false'`. GitHub Actions still skips. |
 | `-InternalBuildId` | No | — | Diagnostic override for the evaluated release branch. Normal runs discover the latest definition-1095 build for each branch. |
 | `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON, including internal IDs, SHAs, URLs, and branch rows. The local skill/agent explicitly sets `$false` for enriched net11 reports that will remain local. |
 | `-ConfirmedWorkloadSetVersion` | No | — | Exact release-owner-confirmed workload-set CLI version. Required before Consumer installability can become `READY`. |
@@ -578,8 +579,8 @@ Eight critical gotchas this skill encodes — see [references/methodology.md](re
    latest definition-1095 build for both `net11.0` and the evaluated release
    branch, but GitHub Actions cannot access dnceng/internal. The preview engine
    auto-queries both only in eligible local runs, compares each build SHA to
-   branch HEAD, fails open on unavailable auth, and removes all internal
-   identifiers from public-safe output.
+   the newest trigger-eligible commit, fails open on unavailable auth, and
+   removes all internal identifiers from public-safe output.
 
 ## Shared module
 

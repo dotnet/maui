@@ -8778,6 +8778,15 @@ $inProgress = Invoke-InternalFixtureHealth @{
 Assert-Eq -Label "internal in-progress: overall in-progress" -Expected 'in-progress' -Actual $inProgress.overall
 Assert-Eq -Label "internal in-progress: readiness watches" -Expected 'WATCH' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $inProgress -PublicSafe:$false)[0].Status)
 
+$partialSuccess = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Result 'partiallySucceeded' -Id 14) }
+    $internalReleaseRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 15) }
+}
+Assert-Eq -Label "internal partial success: overall needs manual review" -Expected 'partial-success' -Actual $partialSuccess.overall
+$partialSuccessCheck = @(Convert-InternalOfficialBuildHealthToChecks -Health $partialSuccess -PublicSafe:$false)[0]
+Assert-Eq -Label "internal partial success: readiness watches instead of blocking" -Expected 'WATCH' -Actual $partialSuccessCheck.Status
+Assert-Eq -Label "internal partial success: action directs build-leg review" -Expected $true -Actual ([bool]($partialSuccessCheck.NextAction -match 'build legs'))
+
 $canceled = Get-InternalOfficialBuildClassification `
     -Build (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Result 'canceled' -Id 12) `
     -ExpectedBranchRef $internalInflightRef `
@@ -8789,6 +8798,33 @@ $malformed = Get-InternalOfficialBuildClassification `
     -ExpectedBranchRef $internalInflightRef `
     -BranchHeadSha $internalInflightHead
 Assert-Eq -Label "internal malformed build: classified unknown" -Expected 'unknown' -Actual $malformed.Classification
+
+$excludedPaths = @(
+    '.github/skills/release-readiness/SKILL.md',
+    'docs/README.md',
+    'README.md'
+)
+Assert-Eq -Label "internal trigger exclusions: excluded-only commits cover branch HEAD" -Expected $true -Actual (Test-InternalOfficialBuildChangedPathsCoverHead $excludedPaths)
+Assert-Eq -Label "internal trigger exclusions: source change requires a newer build" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('src/Core/src/Core.cs'))
+Assert-Eq -Label "internal trigger exclusions: docs wildcard does not hide nested source paths" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('docs/guides/release.md'))
+Assert-Eq -Label "internal trigger exclusions: docs wildcard remains case-sensitive" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('Docs/README.md'))
+Assert-Eq -Label "internal trigger exclusions: rename from included path requires build" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('src/moved.md', 'docs/moved.md'))
+Assert-Eq -Label "internal trigger exclusions: reverted source path still requires build" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('src/Core/src/Core.cs', 'src/Core/src/Core.cs', 'README.md'))
+
+$excludedHeadHealth = Get-InternalOfficialBuildHealth `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists:$false `
+    -BuildFetcher (New-InternalFixtureFetcher @{
+        $internalInflightRef = [PSCustomObject]@{ Success = $true; Build = (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -Id 16) }
+    }) `
+    -HeadFetcher (New-InternalHeadFixtureFetcher @{
+        $internalInflightRef = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+    }) `
+    -BuildCurrencyFetcher { param($BranchRef, $BuildSourceSha, $BranchHeadSha) return $true } `
+    -GitHubActions:$false
+Assert-Eq -Label "internal trigger exclusions: older successful build remains current" -Expected 'green' -Actual $excludedHeadHealth.overall
+Assert-Eq -Label "internal trigger exclusions: reason records excluded-only advance" -Expected 'completed-succeeded-after-trigger-excluded-changes' -Actual $excludedHeadHealth.branches[0].reason
 
 $publicSafeHealth = [PSCustomObject]@{
     overall = 'red'
@@ -8872,6 +8908,18 @@ $headTimeoutFetcher = New-GitHubBranchHeadFetcher -Repository 'dotnet/maui' -Tim
 }
 Assert-Eq -Label "internal branch HEAD query: timeout returns unavailable HEAD" -Expected $null -Actual (& $headTimeoutFetcher $internalInflightRef)
 
+$currencyTimeoutFetcher = New-GitBuildCurrencyFetcher -TimeoutSeconds 7 -ProcessInvoker {
+    param($FileName, $Arguments, $TimeoutSeconds)
+    return [PSCustomObject]@{
+        Started = $true
+        TimedOut = $true
+        ExitCode = -1
+        Stdout = ''
+        Stderr = ''
+    }
+}
+Assert-Eq -Label "internal build currency query: timeout does not waive stale evidence" -Expected $false -Actual (& $currencyTimeoutFetcher $internalInflightRef 'a' 'b')
+
 $validManualJson = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 75 | ConvertTo-Json -Depth 8)
 $manualWithWarning = ConvertFrom-InternalOfficialBuildAzOutput `
     -Stdout $validManualJson `
@@ -8903,6 +8951,11 @@ $dedupedRefs = @(Get-InternalOfficialBuildBranches `
     -ReleaseBranch 'net11.0' `
     -ReleaseBranchExists:$true)
 Assert-Eq -Label "internal identical refs: duplicate query avoided" -Expected 1 -Actual $dedupedRefs.Count
+
+$releaseReadinessSkillText = Get-Content (Join-Path $PSScriptRoot '..' 'SKILL.md') -Raw
+$releaseReadinessAgentText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'agents' 'release-readiness-agent.agent.md') -Raw
+Assert-Eq -Label "internal local command: skill protects PowerShell false from Bash expansion" -Expected $true -Actual ([bool]($releaseReadinessSkillText.Contains("'-PublicSafe:`$false'")))
+Assert-Eq -Label "internal local command: agent protects PowerShell false from Bash expansion" -Expected $true -Actual ([bool]($releaseReadinessAgentText.Contains("'-PublicSafe:`$false'")))
 
 # GitHub's GraphQL endpoint can fail independently of the REST API. Prove open
 # and merged PR discovery retain the engine's expected object shape and do not
