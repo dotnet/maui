@@ -41,11 +41,25 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
 
 		ScrollToRequestedEventArgs _pendingScrollToRequested;
-		bool _elementScrollDispatchQueued;
 
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
+
+			if (Handler is null)
+			{
+				// The handler went away with a request still queued, so nothing will ever
+				// dispatch it. Release the caller rather than leaving its task pending
+				// forever; Core does the same for its own pending request on disconnect.
+				if (_pendingScrollToRequested is not null)
+				{
+					_pendingScrollToRequested = null;
+					SendScrollFinished();
+				}
+
+				return;
+			}
+
 			DispatchPendingScrollToRequest();
 		}
 
@@ -68,17 +82,11 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Those callbacks run while the pass that produced the sizes is still arranging
-				// children, so resolve on the next tick, once positions are final.
-				if (!_elementScrollDispatchQueued)
-				{
-					_elementScrollDispatchQueued = true;
-					Dispatcher.Dispatch(() =>
-					{
-						_elementScrollDispatchQueued = false;
-						SendPendingScrollToRequest();
-					});
-				}
-
+				// children, so resolve on the next tick, once positions are final. Posting on
+				// every retry is deliberate: SendPendingScrollToRequest is a no-op once the
+				// request has been sent or superseded, so a dropped callback cannot wedge the
+				// request the way an "already queued" flag would.
+				Dispatcher.Dispatch(SendPendingScrollToRequest);
 				return;
 			}
 
@@ -493,6 +501,11 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				// This request supersedes anything still queued: a deferred element request
+				// whose dispatch is already scheduled must not run afterwards and restore the
+				// older target (latest request wins).
+				_pendingScrollToRequested = null;
+
 				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 			}
 		}

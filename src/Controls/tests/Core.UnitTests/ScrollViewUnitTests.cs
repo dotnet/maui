@@ -314,6 +314,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, y100Count);
 		}
 
+		[Fact]
+		public async Task DeferredElementScrollCompletesWhenTheHandlerGoesAway()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+
+			// No handler yet, so the request is held. An element target also cannot be resolved
+			// until layout has run, so it stays held even once a handler attaches.
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
+			Assert.False(task.IsCompleted);
+
+			scrollView.Handler = Substitute.For<IViewHandler>();
+			Assert.False(task.IsCompleted);
+
+			// The handler goes away before layout ever happens, so nothing will dispatch the
+			// request; the awaiting caller must still be released rather than hanging forever.
+			scrollView.Handler = null;
+
+			await task.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.True(task.IsCompleted);
+		}
+
 		void AssertInvalidated(IViewHandler handler)
 		{
 			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
