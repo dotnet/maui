@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var targetsFile = Path.Combine(AppContext.BaseDirectory, "nuget", "buildTransitive", "Microsoft.Maui.Resizetizer.After.targets");
 			var targets = File.ReadAllText(targetsFile);
 
-			Assert.Contains("FileHash=%(FileHash);ResizeQuality=%(ResizeQuality)", targets, StringComparison.Ordinal);
+			Assert.Contains("SupportedOSPlatformVersion=$(SupportedOSPlatformVersion);ResizeQuality=%(ResizeQuality)", targets, StringComparison.Ordinal);
 		}
 
 		[Theory]

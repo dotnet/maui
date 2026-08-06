@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -26,7 +27,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var foreground = appearance.ForegroundColor;
-			var background = appearance.BackgroundColor;
+			var background = !Brush.IsNullOrEmpty(appearance.Background)
+				? appearance.Background
+				: appearance.BackgroundColor is not null
+					? new SolidColorBrush(appearance.BackgroundColor)
+					: null;
 			var titleColor = appearance.TitleColor;
 
 			SetColors(toolbar, toolbarTracker, foreground, background, titleColor);
@@ -34,10 +39,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
-			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, ShellRenderer.DefaultBackgroundColor, ShellRenderer.DefaultTitleColor);
+			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, new SolidColorBrush(ShellRenderer.DefaultBackgroundColor), ShellRenderer.DefaultTitleColor);
 		}
 
-		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Brush background, Color title)
 		{
 			if (_disposed)
 				return;
@@ -48,8 +53,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
-			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
+			shellToolbar.BarBackground = background ?? new SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
 			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+		}
+
+		[Obsolete("Use SetColors(AToolbar, IShellToolbarTracker, Color, Brush, Color) instead.")]
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		{
+			SetColors(toolbar, toolbarTracker, foreground, background is not null ? new SolidColorBrush(background) : null, title);
 		}
 
 		#region IDisposable

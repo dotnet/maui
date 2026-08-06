@@ -1,4 +1,4 @@
-# Pester regression gate for `.github/scripts/**`.
+# Pester regression gate for `.github/scripts/**` and the scripts covered by those tests.
 #
 # Why this exists: the automation under `.github/scripts` ships a large Pester
 # suite (transport gating, safe-output expectation reconciliation, milestone
@@ -19,6 +19,7 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - 'eng/scripts/Set-ScreenResolution.ps1'
       - '.github/workflows/powershell-script-tests.yml'
   workflow_dispatch:
 

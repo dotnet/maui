@@ -103,7 +103,7 @@
     <Compile Remove="HybridWebViewSourceGen\**" />
   </ItemGroup>
 
-  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build" Condition="'$(BuildTaskOnlyBuild)' == 'true' or '$(TF_BUILD)' != 'true'">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" SubFolder="" Exclude="nuget\**\*.in.*;nuget\**\net-*\*" />
       <_CopyItems Include="nuget\buildTransitive\net-windows\**" SubFolder="net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" />
