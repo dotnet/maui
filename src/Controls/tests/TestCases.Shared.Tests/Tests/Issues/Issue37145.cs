@@ -4,9 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue99999 : _IssuesUITest
+public class Issue37145 : _IssuesUITest
 {
-	public Issue99999(TestDevice device) : base(device)
+	public Issue37145(TestDevice device) : base(device)
 	{
 	}
 
@@ -20,7 +20,7 @@ public class Issue99999 : _IssuesUITest
 
 		Exception? exception = null;
 
-		// Initial state — border should be visible (Red, width 3, corner radius 10)
+		// Initial state — border should be visible (Green, width 3, corner radius 10)
 		VerifyScreenshotOrSetException(ref exception, "RadioButtonBorderSet");
 
 		// Tap clear button to reset all border properties to defaults

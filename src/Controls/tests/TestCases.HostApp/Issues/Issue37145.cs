@@ -1,9 +1,9 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 99999, "RadioButton border properties not cleared when reset to default values on Android", PlatformAffected.Android)]
-public class Issue99999 : ContentPage
+[Issue(IssueTracker.Github, 37145, "RadioButton border properties not cleared when reset to default values on Android", PlatformAffected.Android)]
+public class Issue37145 : ContentPage
 {
-	public Issue99999()
+	public Issue37145()
 	{
 		var radioButton = new RadioButton
 		{
