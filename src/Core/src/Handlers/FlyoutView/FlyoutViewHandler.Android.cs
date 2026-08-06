@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
 		FlyoutDetailFragment? _detailHostFragment;
 		FragmentManager? _detailHostFragmentManager;
+		View? _detailHostNavigationRoot;
 		Context? _detailHostContext;
 		bool _detailHostAddCommitted;
 
@@ -102,7 +103,8 @@ namespace Microsoft.Maui.Handlers
 				return null;
 
 			if (_detailHostFragment is not null &&
-				ReferenceEquals(_detailHostFragmentManager, fragmentManager))
+				ReferenceEquals(_detailHostFragmentManager, fragmentManager) &&
+				ReferenceEquals(_detailHostNavigationRoot, _navigationRoot))
 			{
 				if (_detailHostAddCommitted)
 				{
@@ -123,6 +125,7 @@ namespace Microsoft.Maui.Handlers
 			var detailHost = new FlyoutDetailFragment();
 			_detailHostFragment = detailHost;
 			_detailHostFragmentManager = fragmentManager;
+			_detailHostNavigationRoot = _navigationRoot;
 			_detailHostContext = context;
 			_detailHostAddCommitted = false;
 
@@ -241,6 +244,7 @@ namespace Microsoft.Maui.Handlers
 
 			_detailHostFragment = null;
 			_detailHostFragmentManager = null;
+			_detailHostNavigationRoot = null;
 			_detailHostContext = null;
 			_detailHostAddCommitted = false;
 		}
