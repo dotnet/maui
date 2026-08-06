@@ -217,7 +217,7 @@ permissions:
   actions: read
   checks: read
 
-model: claude-opus-4.8
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:
