@@ -115,9 +115,7 @@ namespace Microsoft.Maui.ApplicationModel
 					throw new PermissionException("Permission request must be invoked on main thread.");
 
 				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
-				var permissionArray = permissions.ToArray();
-				var tcs = new TaskCompletionSource<PermissionResult>(
-					TaskCreationOptions.RunContinuationsAsynchronously);
+				var tcs = new TaskCompletionSource<PermissionResult>();
 				int currentRequestCode;
 
 				lock (locker)
@@ -130,7 +128,7 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					ActivityCompat.RequestPermissions(
 						activity,
-						permissionArray,
+						permissions,
 						currentRequestCode);
 				}
 				catch
@@ -213,15 +211,18 @@ namespace Microsoft.Maui.ApplicationModel
 
 			internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 			{
+				TaskCompletionSource<PermissionResult> tcs;
+
 				lock (locker)
 				{
-					if (requests.ContainsKey(requestCode))
-					{
-						var result = new PermissionResult(permissions, grantResults);
-						requests[requestCode].TrySetResult(result);
-						requests.Remove(requestCode);
-					}
+					if (!requests.TryGetValue(requestCode, out tcs))
+						return;
+
+					requests.Remove(requestCode);
 				}
+
+				var result = new PermissionResult(permissions, grantResults);
+				tcs.TrySetResult(result);
 			}
 		}
 

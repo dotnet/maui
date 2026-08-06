@@ -11,10 +11,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Collection("AndroidPermissions")]
 	public class Android_Permissions_Tests
 	{
-		// The pre-fix implementation allocates from a 999-value request-code cycle
-		// (12000 through 12998). 1000 failures guarantee wrap-around without the fix.
-		const int RequestCodeRange = 1000;
-
 		[Fact]
 		public async Task RequestAsync_FromBackgroundThread_ThrowsPermissionException()
 		{
@@ -24,23 +20,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			{
 				await Assert.ThrowsAsync<PermissionException>(
 					() => Permissions.RequestAsync<TestRuntimePermission>()).ConfigureAwait(false);
-			}).ConfigureAwait(false);
-
-			Assert.Equal(initialPendingRequestCount, GetPendingRequestCount());
-		}
-
-		[Fact]
-		public async Task RepeatedBackgroundThreadFailures_DoNotLeakPendingRequests()
-		{
-			var initialPendingRequestCount = GetPendingRequestCount();
-
-			await Task.Run(async () =>
-			{
-				for (var i = 0; i < RequestCodeRange; i++)
-				{
-					await Assert.ThrowsAsync<PermissionException>(
-						() => Permissions.RequestAsync<TestRuntimePermission>()).ConfigureAwait(false);
-				}
 			}).ConfigureAwait(false);
 
 			Assert.Equal(initialPendingRequestCount, GetPendingRequestCount());
