@@ -226,23 +226,110 @@ namespace Microsoft.Maui.DeviceTests
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async _ =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				await AssertEventually(() => entry.Handler?.PlatformView is AView { IsShown: true });
 
 				var platformEntry = (AView)entry.Handler.PlatformView;
+				var platformCollectionView = handler.PlatformView;
+				await AssertEventually(() => platformCollectionView.FindViewHolderForAdapterPosition(1) is not null);
 				Assert.True(platformEntry.RequestFocus());
 				await AssertEventually(() => platformEntry.HasFocus);
 
 				clearItems();
-				await Task.Delay(100);
+				await AssertEventually(() => platformCollectionView.GetAdapter().ItemCount == 1
+					&& platformCollectionView.FindViewHolderForAdapterPosition(1) is null);
 
 				Assert.True(platformEntry.HasFocus);
 
 				addItems();
-				await Task.Delay(100);
+				await AssertEventually(() => platformCollectionView.GetAdapter().ItemCount == 4
+					&& platformCollectionView.FindViewHolderForAdapterPosition(1) is not null);
 
 				Assert.True(platformEntry.HasFocus);
+			});
+		}
+
+		[Fact]
+		public async Task ClearingSourceUnbindsNoPositionItemHolderWithoutUnbindingHeader()
+		{
+			SetupBuilder();
+
+			var header = new object();
+			var item = new object();
+			var items = new ObservableCollection<object> { item };
+			var collectionView = new CollectionView
+			{
+				Header = header,
+				HeaderTemplate = new DataTemplate(() => new Label()),
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var adapter = handler.PlatformView.GetAdapter();
+
+				var headerViewType = adapter.GetItemViewType(0);
+				var headerHolder = Assert.IsType<TemplatedItemViewHolder>(
+					adapter.OnCreateViewHolder(handler.PlatformView, headerViewType));
+				adapter.OnBindViewHolder(headerHolder, 0);
+
+				var itemViewType = adapter.GetItemViewType(1);
+				var itemHolder = Assert.IsType<TemplatedItemViewHolder>(
+					adapter.OnCreateViewHolder(handler.PlatformView, itemViewType));
+				adapter.OnBindViewHolder(itemHolder, 1);
+
+				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, headerHolder.BindingAdapterPosition);
+				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, itemHolder.BindingAdapterPosition);
+				Assert.Same(header, headerHolder.View.BindingContext);
+				Assert.Same(item, itemHolder.View.BindingContext);
+
+				items.Clear();
+
+				Assert.Same(header, headerHolder.View.BindingContext);
+				Assert.Null(itemHolder.View.BindingContext);
+			});
+		}
+
+		[Fact]
+		public async Task ClearingGroupDoesNotUnbindNoPositionHolderFromAnotherGroup()
+		{
+			SetupBuilder();
+
+			var firstItem = new object();
+			var secondItem = new object();
+			var firstGroup = new ObservableCollection<object> { firstItem };
+			var secondGroup = new ObservableCollection<object> { secondItem };
+			var groups = new ObservableCollection<object> { firstGroup, secondGroup };
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var adapter = handler.PlatformView.GetAdapter();
+
+				var firstHolder = Assert.IsType<TemplatedItemViewHolder>(
+					adapter.OnCreateViewHolder(handler.PlatformView, adapter.GetItemViewType(0)));
+				adapter.OnBindViewHolder(firstHolder, 0);
+
+				var secondHolder = Assert.IsType<TemplatedItemViewHolder>(
+					adapter.OnCreateViewHolder(handler.PlatformView, adapter.GetItemViewType(1)));
+				adapter.OnBindViewHolder(secondHolder, 1);
+
+				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, firstHolder.BindingAdapterPosition);
+				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, secondHolder.BindingAdapterPosition);
+
+				firstGroup.Clear();
+
+				Assert.Null(firstHolder.View.BindingContext);
+				Assert.Same(secondItem, secondHolder.View.BindingContext);
 			});
 		}
 

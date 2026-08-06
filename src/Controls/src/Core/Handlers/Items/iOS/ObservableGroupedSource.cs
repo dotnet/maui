@@ -211,17 +211,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void Reload(bool collectionWasReset = false)
 		{
 			var previousGroupCount = _groupCount;
+			var headerFirstResponder = ObservableItemsSource.FindHeaderFirstResponder(_collectionView);
 
 			ResetGroupTracking();
 
 			_groupCount = GroupsCount();
 
-			if (collectionWasReset && !NotLoadedYet() && !_collectionView.Hidden && _groupCount == 0)
+			if (collectionWasReset && _groupCount == 0 && previousGroupCount > 0)
 			{
-				if (previousGroupCount > 0)
+				ObservableItemsSource.UnbindVisibleCells(_collectionView);
+				ObservableItemsSource.UnbindVisibleSupplementaryViews(_collectionView);
+
+				if (!NotLoadedYet()
+					&& !_collectionView.Hidden
+					&& _collectionView.NumberOfSections() == previousGroupCount)
 				{
-					ObservableItemsSource.UnbindVisibleCells(_collectionView);
 					_collectionView.DeleteSections(CreateIndexSetFrom(0, previousGroupCount));
+				}
+				else
+				{
+					_collectionView.ReloadData();
 				}
 			}
 			else
@@ -235,6 +244,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			_collectionView.CollectionViewLayout.InvalidateLayout();
+			if (headerFirstResponder is not null)
+			{
+				_collectionView.LayoutIfNeeded();
+			}
+			ObservableItemsSource.RestoreFirstResponder(headerFirstResponder);
 		}
 
 		NSIndexSet CreateIndexSetFrom(int startIndex, int count)

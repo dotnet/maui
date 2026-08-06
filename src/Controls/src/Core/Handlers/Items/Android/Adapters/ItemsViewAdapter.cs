@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		protected readonly TItemsView ItemsView;
 		readonly Func<View, Context, ItemContentView> _createItemContentView;
-		readonly HashSet<TemplatedItemViewHolder> _boundViewHolders = new();
+		readonly Dictionary<TemplatedItemViewHolder, int> _boundViewHolders = new();
 		protected internal TItemsViewSource ItemsSource;
 
 		bool _disposed;
@@ -72,23 +72,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void IItemsViewAdapter.UnbindItemRange(int startIndex, int count)
 		{
 			var endIndex = startIndex + count;
+			var boundViewHolders = new KeyValuePair<TemplatedItemViewHolder, int>[_boundViewHolders.Count];
+			((ICollection<KeyValuePair<TemplatedItemViewHolder, int>>)_boundViewHolders).CopyTo(boundViewHolders, 0);
 
-			foreach (var viewHolder in _boundViewHolders)
+			for (int n = 0; n < boundViewHolders.Length; n++)
 			{
+				var viewHolder = boundViewHolders[n].Key;
 				var position = viewHolder.BindingAdapterPosition;
+				if (position == RecyclerView.NoPosition)
+				{
+					position = boundViewHolders[n].Value;
+				}
+
 				if (position >= startIndex && position < endIndex)
 				{
 					viewHolder.Unbind(ItemsView);
+					_boundViewHolders.Remove(viewHolder);
 				}
 			}
 		}
 
 		void IItemsViewAdapter.UnbindAllItems()
 		{
-			foreach (var viewHolder in _boundViewHolders)
+			foreach (var viewHolder in _boundViewHolders.Keys)
 			{
 				viewHolder.Unbind(ItemsView);
 			}
+
+			_boundViewHolders.Clear();
 		}
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -99,14 +110,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					textViewHolder.TextView.Text = ItemsSource.GetItem(position).ToString();
 					break;
 				case TemplatedItemViewHolder templatedItemViewHolder:
+					TrackBoundViewHolder(templatedItemViewHolder, position);
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));
 					break;
 			}
 		}
 
-		private protected void TrackBoundViewHolder(TemplatedItemViewHolder viewHolder)
+		private protected void TrackBoundViewHolder(TemplatedItemViewHolder viewHolder, int position)
 		{
-			_boundViewHolders.Add(viewHolder);
+			_boundViewHolders[viewHolder] = position;
 		}
 
 		protected virtual bool IsSelectionEnabled(ViewGroup parent, int viewType) => true;
@@ -165,6 +177,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					ItemsSource?.Dispose();
 					ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
+					_boundViewHolders.Clear();
 				}
 
 				_disposed = true;
@@ -185,7 +198,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
 		{
-			TrackBoundViewHolder(templatedItemViewHolder);
 			templatedItemViewHolder.Bind(context, ItemsView);
 		}
 

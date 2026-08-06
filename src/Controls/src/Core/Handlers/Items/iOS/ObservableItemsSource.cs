@@ -171,15 +171,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Count = ItemsCount();
 
+			var collectionView = controller.CollectionView;
+			var headerFirstResponder = FindHeaderFirstResponder(collectionView);
 			OnCollectionViewUpdating(args);
 
-			var collectionView = controller.CollectionView;
-			if (controller.IsViewLoaded && controller.View.Window is not null && !collectionView.Hidden && Count == 0)
+			if (Count == 0 && previousCount > 0)
 			{
-				if (previousCount > 0)
+				UnbindVisibleCells(collectionView, _section);
+
+				NSIndexPath[] indexes = null;
+				if (controller.IsViewLoaded
+					&& controller.View.Window is not null
+					&& !collectionView.Hidden
+					&& _section < collectionView.NumberOfSections())
 				{
-					UnbindVisibleCells(collectionView, _section);
-					collectionView.DeleteItems(CreateIndexesFrom(0, previousCount));
+					indexes = CreateIndexesFrom(0, previousCount);
+				}
+
+				if (indexes is not null && collectionView.NumberOfItemsInSection(_section) == indexes.Length)
+				{
+					collectionView.DeleteItems(indexes);
+				}
+				else
+				{
+					collectionView.ReloadData();
 				}
 			}
 			else
@@ -187,6 +202,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				collectionView.ReloadData();
 			}
 			collectionView.CollectionViewLayout.InvalidateLayout();
+			if (headerFirstResponder is not null)
+			{
+				collectionView.LayoutIfNeeded();
+			}
+			RestoreFirstResponder(headerFirstResponder);
 
 			OnCollectionViewUpdated(args);
 		}
@@ -205,12 +225,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						case TemplatedCell templatedCell:
 							templatedCell.Unbind();
 							break;
-						case Items2.TemplatedCell2 templatedCell:
-							templatedCell.Unbind();
+						case Items2.TemplatedCell2 templatedCell2:
+							templatedCell2.Unbind();
 							break;
 					}
 				}
+			}
+		}
 
+		internal static void UnbindVisibleSupplementaryViews(UICollectionView collectionView)
+		{
+			UnbindVisibleSupplementaryViews(collectionView, UICollectionElementKindSectionKey.Header);
+			UnbindVisibleSupplementaryViews(collectionView, UICollectionElementKindSectionKey.Footer);
+		}
+
+		static void UnbindVisibleSupplementaryViews(UICollectionView collectionView, NSString elementKind)
+		{
+			var supplementaryViews = collectionView.GetVisibleSupplementaryViews(elementKind);
+			for (int n = 0; n < supplementaryViews.Length; n++)
+			{
+				var supplementaryView = supplementaryViews[n];
+				if (supplementaryView.Tag == ItemsViewSupplementaryView.HeaderTag
+					|| supplementaryView.Tag == ItemsViewSupplementaryView.FooterTag)
+				{
+					continue;
+				}
+
+				switch (supplementaryView)
+				{
+					case TemplatedCell templatedCell:
+						templatedCell.Unbind();
+						break;
+					case Items2.TemplatedCell2 templatedCell2:
+						templatedCell2.Unbind();
+						break;
+				}
 			}
 		}
 

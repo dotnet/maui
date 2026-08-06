@@ -77,23 +77,142 @@ namespace Microsoft.Maui.DeviceTests
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async _ =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
+				await AssertEventually(() => entry.Handler?.PlatformView is UITextField { Window: not null });
+
+				var platformEntry = (UITextField)entry.Handler.PlatformView;
+				var platformCollectionView = handler.Controller.CollectionView;
+				Assert.True(platformEntry.BecomeFirstResponder());
+				await AssertEventually(() => platformEntry.IsFirstResponder);
+
+				clearItems();
+				await AssertEventually(() => isGrouped
+					? platformCollectionView.NumberOfSections() == 0
+					: platformCollectionView.NumberOfItemsInSection(0) == 0);
+
+				Assert.True(platformEntry.IsFirstResponder);
+
+				addItems();
+				await AssertEventually(() => isGrouped
+					? platformCollectionView.NumberOfSections() == 1
+					: platformCollectionView.NumberOfItemsInSection(0) == 3);
+
+				Assert.True(platformEntry.IsFirstResponder);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task ClearingAfterNativeCountDriftDoesNotCrash(bool isGrouped)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var source = isGrouped
+				? new ObservableCollection<object>
+				{
+					new ObservableCollection<string> { "Item 1" },
+					new ObservableCollection<string> { "Item 2" }
+				}
+				: new ObservableCollection<object> { "Item 1", "Item 2" };
+			var entry = new Entry();
+			var header = new Grid();
+			header.Add(entry);
+			var collectionView = new CollectionView
+			{
+				Header = header,
+				IsGrouped = isGrouped,
+				ItemsSource = source,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				var platformCollectionView = handler.Controller.CollectionView;
+				await AssertEventually(() => isGrouped
+					? platformCollectionView.NumberOfSections() == 2
+					: platformCollectionView.NumberOfItemsInSection(0) == 2);
+
+				platformCollectionView.Hidden = true;
+				source.RemoveAt(0);
+				platformCollectionView.Hidden = false;
 				await AssertEventually(() => entry.Handler?.PlatformView is UITextField { Window: not null });
 
 				var platformEntry = (UITextField)entry.Handler.PlatformView;
 				Assert.True(platformEntry.BecomeFirstResponder());
 				await AssertEventually(() => platformEntry.IsFirstResponder);
 
-				clearItems();
-				await Task.Delay(100);
+				source.Clear();
 
+				await AssertEventually(() => isGrouped
+					? platformCollectionView.NumberOfSections() == 0
+					: platformCollectionView.NumberOfItemsInSection(0) == 0);
 				Assert.True(platformEntry.IsFirstResponder);
+			});
+		}
 
-				addItems();
-				await Task.Delay(100);
+		[Fact]
+		public async Task ClearingGroupedSourceClearsSupplementaryBindingContexts()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
-				Assert.True(platformEntry.IsFirstResponder);
+			var group = new ObservableCollection<string> { "Item 1", "Item 2" };
+			var groups = new ObservableCollection<object> { group };
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				GroupHeaderTemplate = new DataTemplate(() => new Label
+				{
+					AutomationId = "GroupHeader",
+					HeightRequest = 30
+				}),
+				GroupFooterTemplate = new DataTemplate(() => new Label
+				{
+					AutomationId = "GroupFooter",
+					HeightRequest = 30
+				}),
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 })
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async _ =>
+			{
+				Label groupHeader = null;
+				Label groupFooter = null;
+				await AssertEventually(() =>
+				{
+					groupHeader = collectionView.LogicalChildrenInternal
+						.OfType<Label>()
+						.FirstOrDefault(label => label.AutomationId == "GroupHeader");
+					groupFooter = collectionView.LogicalChildrenInternal
+						.OfType<Label>()
+						.FirstOrDefault(label => label.AutomationId == "GroupFooter");
+					return ReferenceEquals(groupHeader?.BindingContext, group)
+						&& ReferenceEquals(groupFooter?.BindingContext, group);
+				});
+
+				groups.Clear();
+
+				await AssertEventually(() =>
+					groupHeader.BindingContext is null
+					&& groupFooter.BindingContext is null);
 			});
 		}
 
