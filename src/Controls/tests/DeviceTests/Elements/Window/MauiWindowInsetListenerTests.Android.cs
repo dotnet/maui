@@ -33,9 +33,8 @@ namespace Microsoft.Maui.DeviceTests
 			return turn.Task;
 		}
 
-		// Records both inset dispatches that make it through the listener's gate (bypassing
-		// the safe-area math entirely) and the RequestApplyInsets re-apply issued by the
-		// end-of-animation drain
+		// Records inset dispatches that make it through the listener's gate (bypassing the
+		// safe-area math entirely) and any RequestApplyInsets the animation-end release issues
 		sealed class InsetRecordingView : AView, IHandleWindowInsets
 		{
 			public InsetRecordingView(AContext context) : base(context)
@@ -100,7 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task GateExemptionDoesNotOutliveTheAnimation()
+		public async Task GateExemptionIsClearedWhenTheAnimationEnds()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -112,8 +111,8 @@ namespace Microsoft.Maui.DeviceTests
 				listener.NotifyViewAttached(view);
 				listener.OnEnd(CreateImeAnimation());
 
-				// The exemption was granted during animation N; in animation N+1 the same
-				// view is tracked state again and must be gated
+				// Assert between OnEnd and the next OnPrepare, so this discriminates the
+				// clear in OnEnd specifically rather than passing on either clear site
 				listener.OnPrepare(CreateImeAnimation());
 				listener.OnApplyWindowInsets(view, insets);
 				Assert.Equal(0, view.HandledCount);
@@ -123,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task GateReleasesSynchronouslyWhenNoPendingViewIsAttached()
+		public async Task GateReleasesSynchronouslyWhenNoAttachedViewIsAvailable()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -132,14 +131,16 @@ namespace Microsoft.Maui.DeviceTests
 				var other = new InsetRecordingView(MauiContext.Context!);
 				var insets = CreateInsets();
 
+				// The listener knows about a view that carries padding, but it is detached
+				listener.TrackView(detached);
+
 				listener.OnPrepare(CreateImeAnimation());
 				listener.OnApplyWindowInsets(detached, insets);
 				Assert.Equal(0, detached.HandledCount);
 
-				// The only pending view is detached; posting the gate release through it
-				// would park the runnable until that view re-attaches (possibly never),
-				// leaving every view sharing this listener without safe-area updates.
-				// The release must happen synchronously instead.
+				// Posting the release through a detached view would park the runnable until
+				// that view re-attaches (possibly never), leaving every view sharing this
+				// listener without safe-area updates. It must release synchronously instead.
 				listener.OnEnd(CreateImeAnimation());
 
 				listener.OnApplyWindowInsets(other, insets);
@@ -148,7 +149,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task AllGatedViewsAreReappliedWhenAnimationEnds()
+		public async Task GatedDispatchesTriggerOneReapplyWhenTheAnimationEnds()
 		{
 			await InvokeOnMainThreadAsync(async () =>
 			{
@@ -163,6 +164,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					container.AddView(first);
 					container.AddView(second);
+					listener.TrackView(first);
 
 					try
 					{
@@ -173,18 +175,18 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.Equal(0, first.HandledCount);
 						Assert.Equal(0, second.HandledCount);
 
-						// Both views are attached, so the gate release is posted one
-						// main-looper turn after OnEnd; sequence on the same looper
-						// instead of racing a fixed delay
+						// The release is posted through an attached view; sequence on the same
+						// looper instead of racing a fixed delay
 						listener.OnEnd(CreateImeAnimation());
 						await NextLooperTurnAsync(container);
 
-						// The drain must issue RequestApplyInsets for *every* gated view —
-						// the pre-fix code remembered only the last one
+						// A single RequestApplyInsets reaches the ViewRootImpl and re-dispatches
+						// insets across the whole hierarchy, so exactly one call is expected —
+						// not one per gated view
 						Assert.Equal(1, first.RequestApplyInsetsCount);
-						Assert.Equal(1, second.RequestApplyInsetsCount);
+						Assert.Equal(0, second.RequestApplyInsetsCount);
 
-						// And the gate must be open again for everyone
+						// And the gate must be open again for every view, not just the poster
 						listener.OnApplyWindowInsets(first, insets);
 						listener.OnApplyWindowInsets(second, insets);
 						Assert.Equal(1, first.HandledCount);
@@ -213,17 +215,18 @@ namespace Microsoft.Maui.DeviceTests
 					var insets = CreateInsets();
 
 					container.AddView(view);
+					listener.TrackView(view);
 
 					try
 					{
-						// Animation 1 ends with a pending attached view, so its gate
-						// release is posted for the next looper turn...
+						// Animation 1 ends with a gated dispatch, so its gate release is
+						// posted for the next looper turn...
 						listener.OnPrepare(CreateImeAnimation());
 						listener.OnApplyWindowInsets(view, insets);
 						listener.OnEnd(CreateImeAnimation());
 
 						// ...but animation 2 starts before that runnable runs
-						// (hide immediately followed by show)
+						// (a hide immediately followed by a show)
 						listener.OnPrepare(CreateImeAnimation());
 						await NextLooperTurnAsync(container);
 

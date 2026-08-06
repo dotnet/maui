@@ -27,8 +27,12 @@ public class Issue37012 : _IssuesUITest
 			App.WaitForElement("PageBEntry");
 			App.Tap("PageBEntry");
 
-			// Ensure the keyboard is fully shown before triggering the hide + pop sequence
-			App.WaitForKeyboardToShow();
+			// Ensure the keyboard is fully shown before triggering the hide + pop sequence.
+			// This returns false on timeout rather than throwing, and without the keyboard
+			// there is no IME animation to race — which would otherwise be indistinguishable
+			// from a genuinely lost race and silently report Inconclusive forever.
+			Assert.That(App.WaitForKeyboardToShow(TimeSpan.FromSeconds(5)), Is.True,
+				"Keyboard never appeared; the IME-hide race cannot be exercised on this device.");
 
 			App.Tap("HideAndPopButton");
 
