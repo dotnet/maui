@@ -735,6 +735,9 @@ function Get-PreviewRepresentativePackRequests {
         $manifest = Get-InstallabilityProperty $evidence 'Manifest'
         $packs = Get-InstallabilityProperty $manifest 'packs'
         if ($null -eq $packs) { continue }
+        $versionSourceIsSensitive = [bool](
+            Get-InstallabilityProperty $evidence 'VersionSourceIsSensitive'
+        )
 
         $entries = if ($packs -is [System.Collections.IDictionary]) {
             @($packs.GetEnumerator() | ForEach-Object {
@@ -760,9 +763,10 @@ function Get-PreviewRepresentativePackRequests {
             if ($seen.ContainsKey($key)) { continue }
             $seen[$key] = $true
             [void]$requests.Add([PSCustomObject]@{
-                Category  = $representative.Category
-                PackageId = $packageId
-                Version   = $version
+                Category                 = $representative.Category
+                PackageId                = $packageId
+                Version                  = $version
+                VersionSourceIsSensitive = $versionSourceIsSensitive
             })
         }
     }
@@ -829,7 +833,8 @@ function ConvertTo-PublicInstallabilityResult {
         $source = Get-InstallabilityProperty $resolvedSource 'Source'
         $sourceName = [string](Get-InstallabilityProperty $source 'Name')
         $isSensitive = [bool](Get-InstallabilityProperty $source 'IsAdditional') -or
-            [bool](Get-InstallabilityProperty $source 'IsInternal')
+            [bool](Get-InstallabilityProperty $source 'IsInternal') -or
+            [bool](Get-InstallabilityProperty $Location 'VersionSourceIsSensitive')
         $unknownSources = @(
             @(Get-InstallabilityProperty $Location 'UnknownSources') |
                 ForEach-Object {
@@ -1194,9 +1199,14 @@ function Get-PreviewConsumerInstallability {
             $manifestContent = Get-InstallabilityProperty $entries 'data/WorkloadManifest.json'
             $location.ContentStatus = if ($manifestContent) { 'read' } else { 'unknown' }
             [void]$manifestEvidence.Add([PSCustomObject]@{
-                WorkloadId   = $location.WorkloadId
-                Dependencies = Get-InstallabilityProperty $entries 'data/WorkloadDependencies.json'
-                Manifest     = $manifestContent
+                WorkloadId                 = $location.WorkloadId
+                Dependencies               = Get-InstallabilityProperty $entries 'data/WorkloadDependencies.json'
+                Manifest                   = $manifestContent
+                VersionSourceIsSensitive   = [bool](
+                    Get-InstallabilityProperty $location.ResolvedSource.Source 'IsAdditional'
+                ) -or [bool](
+                    Get-InstallabilityProperty $location.ResolvedSource.Source 'IsInternal'
+                )
             })
         } catch {
             $location.ContentStatus = 'unknown'
@@ -1228,13 +1238,15 @@ function Get-PreviewConsumerInstallability {
         $location = Find-PreviewPackageLocation -ResolvedSources $resolvedSources -PackageId $request.PackageId `
             -Version $request.Version -Fetcher $Fetcher
         [void]$packLocations.Add([PSCustomObject]@{
-            Category       = $request.Category
-            PackageId      = $request.PackageId
-            Version        = $request.Version
-            Status         = $location.Status
-            Reason         = $null
-            ResolvedSource = $location.ResolvedSource
-            UnknownSources = $location.UnknownSources
+            Category                 = $request.Category
+            PackageId                = $request.PackageId
+            Version                  = $request.Version
+            Status                   = $location.Status
+            Reason                   = $null
+            ResolvedSource           = $location.ResolvedSource
+            VersionSourceIsSensitive = [bool]$request.VersionSourceIsSensitive -and
+                $null -eq $location.ResolvedSource
+            UnknownSources           = $location.UnknownSources
         })
     }
 

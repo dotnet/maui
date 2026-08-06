@@ -9140,6 +9140,15 @@ Assert-Eq -Label "installability: any-RID runtime alias resolves to its physical
     -Expected 'Microsoft.NETCore.App.Runtime.Mono.android-arm64' -Actual (
         @($iiLinuxPackRequests | Where-Object Category -eq 'android-runtime')[0].PackageId
     )
+$iiSensitivePackRequests = @(Get-PreviewRepresentativePackRequests `
+    -ManifestEvidence @([PSCustomObject]@{
+        Manifest = $iiComponentManifest
+        VersionSourceIsSensitive = $true
+    }) -Major 11 -RuntimeIdentifier 'linux-x64')
+Assert-Eq -Label "installability: representative packs retain sensitive manifest-version provenance" `
+    -Expected $true -Actual (
+        @($iiSensitivePackRequests | Where-Object Category -eq 'android-sdk')[0].VersionSourceIsSensitive
+    )
 
 $iiResult = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
     -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
@@ -9539,6 +9548,12 @@ $iiMixedSourceResult.ManifestPackages = @([PSCustomObject]@{
     ResolvedSource = [PSCustomObject]@{ Source = $iiFailedButUnusedSource }
     UnknownSources = @()
 })
+$iiMixedSourceResult.PackProbes = @([PSCustomObject]@{
+    Category = 'android-sdk'; PackageId = 'Example.Pack'
+    Version = '2.0.0-UNRESOLVED-PRIVATE'; Status = 'unknown'
+    ResolvedSource = $null; UnknownSources = @('public')
+    VersionSourceIsSensitive = $true
+})
 $iiMixedSourceResult | Add-Member -NotePropertyName PlatformRequirements -NotePropertyValue $null
 $iiMixedSourcePublic = ConvertTo-PublicInstallabilityResult -Result $iiMixedSourceResult `
     -Sources @($iiFailedButUnusedSource)
@@ -9549,6 +9564,12 @@ Assert-Eq -Label "installability: mixed-source public JSON does not disclose aut
     -Expected $false -Actual (($iiMixedSourcePublic | ConvertTo-Json -Depth 10).Contains('1.0.0-PRIVATE'))
 Assert-Eq -Label "installability: mixed-source public Markdown does not disclose authenticated-source version" `
     -Expected $false -Actual $iiMixedSourceMarkdown.Contains('1.0.0-PRIVATE')
+Assert-Eq -Label "installability: unresolved pack version inherited from authenticated manifest is withheld" `
+    -Expected 'withheld' -Actual $iiMixedSourcePublic.PackProbes[0].Version
+Assert-Eq -Label "installability: mixed-source public JSON does not disclose unresolved private pack version" `
+    -Expected $false -Actual (($iiMixedSourcePublic | ConvertTo-Json -Depth 10).Contains('2.0.0-UNRESOLVED-PRIVATE'))
+Assert-Eq -Label "installability: mixed-source public Markdown does not disclose unresolved private pack version" `
+    -Expected $false -Actual $iiMixedSourceMarkdown.Contains('2.0.0-UNRESOLVED-PRIVATE')
 
 $iiRedactedWithoutSources = ConvertTo-PublicInstallabilityResult -Result $iiInstallableWithHiddenFailure
 Assert-Eq -Label "installability: without -Sources, a source outside RequiredSources is NOT recognized as sensitive (documents why -Sources must be passed at every call site)" `
