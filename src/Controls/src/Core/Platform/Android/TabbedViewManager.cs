@@ -297,7 +297,7 @@ internal class TabbedViewManager
                 {
                     _tabLayout = new TabLayout(_context.Context)
                     {
-                        TabMode = _managesViewPager ? TabLayout.ModeAuto : TabLayout.ModeFixed,
+                        TabMode = TabLayout.ModeFixed,
                         TabGravity = TabLayout.GravityFill,
                         LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
                     };
