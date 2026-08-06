@@ -25,7 +25,6 @@
     <ApplicationId>com.microsoft.maui.uitests</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
-    <MauiAndroidSystemBarsUseMauiChrome Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(MauiAndroidSystemBarsUseMauiChrome)' == ''">true</MauiAndroidSystemBarsUseMauiChrome>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
     <!-- TODO: remove these obsolete nowarns and fix it in code -->
