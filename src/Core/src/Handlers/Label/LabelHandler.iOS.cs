@@ -36,18 +36,32 @@ namespace Microsoft.Maui.Handlers
 
 			if (label.Background.IsNullOrEmpty())
 			{
-				// UpdateBackground returns early for non-LayoutView/ContentView types (e.g. UILabel),
-				// leaving any previously applied solid BackgroundColor in place. Explicitly clear it
-				// and remove any residual gradient layer so the label returns to transparent default.
-				handler.PlatformView?.RemoveBackgroundLayer();
+				var containerView = handler.ContainerView as UIView;
 				if (handler.PlatformView is not null)
-					handler.PlatformView.BackgroundColor = UIColor.Clear;
+				{
+					// UpdateBackground returns early for non-LayoutView/ContentView types (e.g. UILabel),
+					// leaving any previously applied solid BackgroundColor in place. Explicitly clear it
+					// and remove any residual gradient layer so the label returns to transparent default.
+					handler.PlatformView?.RemoveBackgroundLayer();
+					handler.PlatformView?.BackgroundColor = UIColor.Clear;
+				}
+				if (containerView is not null)
+				{
+					containerView.RemoveBackgroundLayer();
+					containerView.BackgroundColor = UIColor.Clear;
+				}
+
 				return;
 			}
 
 			// Gradient sublayers cover UILabel text, so route them to WrapperView; solid colors stay on PlatformView for correct Clip masking.
 			if (label.Background is GradientPaint)
 			{
+				// A previous solid paint leaves an opaque BackgroundColor on the UILabel that would
+				// sit on top of the WrapperView's gradient and hide it. Clear it before applying the gradient.
+				if (handler.PlatformView is not null)
+					handler.PlatformView.BackgroundColor = UIColor.Clear;
+
 				handler.ToPlatform()?.UpdateBackground(label);
 			}
 			else
