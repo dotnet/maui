@@ -155,6 +155,11 @@ namespace Microsoft.Maui.Platform
 				((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 				this.InvalidateAncestorsMeasures();
 			}
+
+			// UIKit does not raise Scrolled when the inset changes while the offset stays put
+			// (keyboard, rotation, an auto-hiding bar), and the reported scroll offsets are
+			// derived from the inset, so they would go stale by the delta
+			(CrossPlatformLayout as IScrollViewportProvider)?.NotifyInsetsChanged();
 		}
 
 		/// <summary>
@@ -412,6 +417,40 @@ namespace Microsoft.Maui.Platform
 			// that would otherwise trigger infinite layout invalidation cycles (#32586, #33934).
 			return oldApplyingSafeAreaAdjustments == _appliesSafeAreaAdjustments &&
 				   (oldSafeArea.EqualsAtPixelLevel(_safeArea) || !_appliesSafeAreaAdjustments);
+		}
+
+		/// <summary>
+		/// The content extent to clamp scrolling against: <see cref="UIScrollView.ContentSize"/>
+		/// minus any safe-area padding that <see cref="CrossPlatformArrange"/> baked into it while
+		/// UIKit is *also* compensating for the same safe area through
+		/// <see cref="UIScrollView.AdjustedContentInset"/>.
+		/// </summary>
+		/// <remarks>
+		/// That double counting only happens with <see cref="UIScrollViewContentInsetAdjustmentBehavior.Always"/>.
+		/// With <see cref="UIScrollViewContentInsetAdjustmentBehavior.Never"/> the padding stands in
+		/// for an inset UIKit does not apply, and with
+		/// <see cref="UIScrollViewContentInsetAdjustmentBehavior.Automatic"/> no padding is added at
+		/// all — so in both of those the content size is already the scrollable extent. Kept here so
+		/// the rule lives with the arrange logic that produces it rather than being restated by the
+		/// handler (issue #36801).
+		/// </remarks>
+		internal CGSize ScrollableContentSize
+		{
+			get
+			{
+				var contentSize = ContentSize;
+
+				if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Always)
+				{
+					return contentSize;
+				}
+
+				var duplicated = SystemAdjustedContentInset;
+
+				return new CGSize(
+					contentSize.Width - duplicated.Left - duplicated.Right,
+					contentSize.Height - duplicated.Top - duplicated.Bottom);
+			}
 		}
 
 		UIEdgeInsets SystemAdjustedContentInset

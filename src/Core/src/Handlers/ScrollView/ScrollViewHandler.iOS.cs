@@ -7,11 +7,25 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout, IScrollViewportProvider
 	{
 		readonly ScrollEventProxy _eventProxy = new();
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
+		Thickness IScrollViewportProvider.ViewportInsets
+		{
+			get
+			{
+				if (PlatformView is not { } platformView)
+				{
+					return default;
+				}
+
+				var inset = platformView.AdjustedContentInset;
+				return new Thickness(inset.Left, inset.Top, inset.Right, inset.Bottom);
+			}
+		}
 
 		protected override UIScrollView CreatePlatformView()
 		{
@@ -145,19 +159,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			var adjustedInset = uiScrollView.AdjustedContentInset;
 			var bounds = uiScrollView.Bounds;
-			var contentWidth = (double)uiScrollView.ContentSize.Width;
-			var contentHeight = (double)uiScrollView.ContentSize.Height;
 
-			// With ContentInsetAdjustmentBehavior.Always, MauiScrollView bakes the safe area into
-			// ContentSize while UIKit also applies it through AdjustedContentInset; exclude the
-			// duplicated (system-contributed) amount so the maximum stops at the content instead
-			// of inside the padding.
-			if (uiScrollView.ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always)
-			{
-				var contentInset = uiScrollView.ContentInset;
-				contentWidth -= adjustedInset.Left + adjustedInset.Right - contentInset.Left - contentInset.Right;
-				contentHeight -= adjustedInset.Top + adjustedInset.Bottom - contentInset.Top - contentInset.Bottom;
-			}
+			// MauiScrollView reports the extent to clamp against, since only it knows when its
+			// arrange baked safe-area padding into ContentSize that UIKit is also applying
+			// through AdjustedContentInset
+			var contentSize = (uiScrollView as MauiScrollView)?.ScrollableContentSize ?? uiScrollView.ContentSize;
+			var contentWidth = (double)contentSize.Width;
+			var contentHeight = (double)contentSize.Height;
 
 			var minScrollHorizontal = -(double)adjustedInset.Left;
 			var minScrollVertical = -(double)adjustedInset.Top;
@@ -276,23 +284,34 @@ namespace Microsoft.Maui.Handlers
 
 			void Scrolled(object? sender, EventArgs e)
 			{
-				if (VirtualView == null)
+				if (sender is UIScrollView platformView)
 				{
-					return;
+					PublishScrollOffsets(VirtualView, platformView);
 				}
-
-				if (sender is not UIScrollView platformView)
-				{
-					return;
-				}
-
-				// Report offsets in cross-platform content coordinates: with content insets the native
-				// rest offset is (-adjustedInset.Left, -adjustedInset.Top), which maps to (0,0)
-				// cross-platform so ScrollToAsync(ScrollX, ScrollY, ...) round-trips (issue #36801).
-				var adjustedInset = platformView.AdjustedContentInset;
-				VirtualView.HorizontalOffset = platformView.ContentOffset.X + adjustedInset.Left;
-				VirtualView.VerticalOffset = platformView.ContentOffset.Y + adjustedInset.Top;
 			}
+		}
+
+		void IScrollViewportProvider.NotifyInsetsChanged()
+		{
+			if (PlatformView is { } platformView)
+			{
+				PublishScrollOffsets(VirtualView, platformView);
+			}
+		}
+
+		// Report offsets in cross-platform content coordinates: with content insets the native
+		// rest offset is (-adjustedInset.Left, -adjustedInset.Top), which maps to (0,0)
+		// cross-platform so ScrollToAsync(ScrollX, ScrollY, ...) round-trips (issue #36801).
+		static void PublishScrollOffsets(IScrollView? virtualView, UIScrollView platformView)
+		{
+			if (virtualView is null)
+			{
+				return;
+			}
+
+			var adjustedInset = platformView.AdjustedContentInset;
+			virtualView.HorizontalOffset = platformView.ContentOffset.X + adjustedInset.Left;
+			virtualView.VerticalOffset = platformView.ContentOffset.Y + adjustedInset.Top;
 		}
 	}
 }

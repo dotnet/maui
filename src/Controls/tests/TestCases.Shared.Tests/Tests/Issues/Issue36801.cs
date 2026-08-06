@@ -65,5 +65,31 @@ public class Issue36801 : _IssuesUITest
 		Assert.That(probeRect.Y + probeRect.Height, Is.LessThanOrEqualTo(pageRect.Y + pageRect.Height + 1),
 			"Probe label should be fully visible after ScrollToAsync(element, End)");
 	}
+
+	// The clamp has a mode-specific branch and the three ContentInsetAdjustmentBehavior modes
+	// bake the safe area into MauiScrollView.ContentSize differently, so each is exercised.
+	// The page asserts the resolved native behavior, so a mode that silently drifted fails
+	// instead of quietly testing a different branch.
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	[TestCase("ModeDefaultButton", "Automatic")]
+	[TestCase("ModeNoneButton", "Never")]
+	[TestCase("ModeContainerButton", "Always")]
+	public void ScrollToExtremesInEachInsetMode(string modeButton, string expectedMode)
+	{
+		App.WaitForElement(modeButton);
+		App.Tap(modeButton);
+
+		App.Tap("ScrollToEndButton");
+		var endSuccess = App.WaitForTextToBePresentInElement("EndResultLabel", "Success", timeout: TimeSpan.FromSeconds(10));
+		var endText = App.FindElement("EndResultLabel").GetText();
+		Assert.That(endSuccess, Is.True, $"[{expectedMode}] scroll to end did not reach the inset-aware maximum: {endText}");
+		Assert.That(endText, Does.Contain($"mode={expectedMode}"), $"[{expectedMode}] resolved to a different inset mode: {endText}");
+
+		App.Tap("ScrollToTopButton");
+		var topSuccess = App.WaitForTextToBePresentInElement("TopResultLabel", "Success", timeout: TimeSpan.FromSeconds(10));
+		var topText = App.FindElement("TopResultLabel").GetText();
+		Assert.That(topSuccess, Is.True, $"[{expectedMode}] scroll to top did not land on the rest position: {topText}");
+	}
 }
 #endif

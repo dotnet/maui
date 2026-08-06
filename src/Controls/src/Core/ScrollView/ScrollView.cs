@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -40,22 +41,65 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
 
 		ScrollToRequestedEventArgs _pendingScrollToRequested;
+		bool _elementScrollDispatchQueued;
 
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
-
-			if (Handler is not null && _pendingScrollToRequested is not null)
-			{
-				var pending = _pendingScrollToRequested;
-				_pendingScrollToRequested = null;
-
-				// Replay without going through OnScrollToRequested: that would reset the
-				// completion source and orphan the task the original caller is still awaiting
-				ScrollToRequested?.Invoke(this, pending);
-				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());
-			}
+			DispatchPendingScrollToRequest();
 		}
+
+		void DispatchPendingScrollToRequest()
+		{
+			if (Handler is null || _pendingScrollToRequested is not { } pending)
+			{
+				return;
+			}
+
+			if (pending.Mode == ScrollToMode.Element)
+			{
+				// An element target is resolved against this ScrollView's geometry and the
+				// element's position inside the arranged content. Before the first layout pass
+				// Width/Height are still -1 and every content coordinate is 0, so the request
+				// has to wait; OnSizeAllocated and ContentSizeChanged retry it.
+				if (Width < 0 || Height < 0 || ContentSize.IsZero)
+				{
+					return;
+				}
+
+				// Those callbacks run while the pass that produced the sizes is still arranging
+				// children, so resolve on the next tick, once positions are final.
+				if (!_elementScrollDispatchQueued)
+				{
+					_elementScrollDispatchQueued = true;
+					Dispatcher.Dispatch(() =>
+					{
+						_elementScrollDispatchQueued = false;
+						SendPendingScrollToRequest();
+					});
+				}
+
+				return;
+			}
+
+			SendPendingScrollToRequest();
+		}
+
+		void SendPendingScrollToRequest()
+		{
+			if (Handler is null || _pendingScrollToRequested is not { } pending)
+			{
+				return;
+			}
+
+			_pendingScrollToRequested = null;
+
+			// Replay without going through OnScrollToRequested: that would reset the
+			// completion source and orphan the task the original caller is still awaiting
+			ScrollToRequested?.Invoke(this, pending);
+			Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());
+		}
+
 
 		/// <summary>
 		/// Gets the scroll position for the specified element.
@@ -108,20 +152,11 @@ namespace Microsoft.Maui.Controls
 			return new Point(x, y);
 		}
 
-		// On iOS the scrollable viewport is smaller than the frame when the native scroll view
-		// carries content insets (safe area, ContentInset): the insets obscure part of the frame
-		// and (0,0) in cross-platform scroll coordinates is the inset rest position.
-		Thickness GetVisibleViewportInsets()
-		{
-#if IOS || MACCATALYST
-			if (Handler?.PlatformView is UIKit.UIScrollView platformView)
-			{
-				var inset = platformView.AdjustedContentInset;
-				return new Thickness(inset.Left, inset.Top, inset.Right, inset.Bottom);
-			}
-#endif
-			return default;
-		}
+		// The scrollable viewport can be smaller than the frame: on iOS the adjusted content
+		// insets obscure part of it. The handler owns that coordinate convention and reports
+		// it here; handlers whose viewport always equals the frame don't implement the contract.
+		Thickness GetVisibleViewportInsets() =>
+			(Handler as IScrollViewportProvider)?.ViewportInsets ?? default;
 
 		/// <summary>
 		/// Sends the scroll finished notification.
@@ -259,6 +294,10 @@ namespace Microsoft.Maui.Controls
 			// The ContentSize includes the margins for the content
 			ContentSize = new Size(frameSize.Width + margin.HorizontalThickness,
 				frameSize.Height + margin.VerticalThickness);
+
+			// The content has been arranged, so an element target can now be resolved: its
+			// position is read from the content tree, which is only meaningful once laid out
+			DispatchPendingScrollToRequest();
 		}
 
 		/// <summary>
@@ -561,6 +600,10 @@ namespace Microsoft.Maui.Controls
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			base.OnSizeAllocated(width, height);
+
+			// Geometry is now known, so an element-mode request held back at handler-attach
+			// can be resolved
+			DispatchPendingScrollToRequest();
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)

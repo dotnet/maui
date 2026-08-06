@@ -62,7 +62,20 @@ public class Issue36801 : ContentPage
 		};
 		_content.Add(_probeLabel);
 
-		_scrollView = new ScrollView { Content = _content };
+		// Set the mode on the ScrollView itself: SafeAreaEdges does not propagate from the
+		// page, and the ScrollView's own value is what selects ContentInsetAdjustmentBehavior.
+		_scrollView = new ScrollView { Content = _content, SafeAreaEdges = SafeAreaEdges.Default };
+
+		var modeDefaultButton = new Button { Text = "Mode Default", AutomationId = "ModeDefaultButton" };
+		modeDefaultButton.Clicked += (sender, e) => SetMode(SafeAreaEdges.Default);
+
+		var modeNoneButton = new Button { Text = "Mode None", AutomationId = "ModeNoneButton" };
+		modeNoneButton.Clicked += (sender, e) => SetMode(SafeAreaEdges.None);
+
+		var modeContainerButton = new Button { Text = "Mode Container", AutomationId = "ModeContainerButton" };
+		// SafeAreaEdges.Container is internal, so build the same value from the public enum.
+		// SafeAreaEdges.All would not do: it is mapped to Never, not Always.
+		modeContainerButton.Clicked += (sender, e) => SetMode(new SafeAreaEdges(SafeAreaRegions.Container));
 
 		// Floating header keeps the buttons and result labels visible and tappable
 		// regardless of the scroll position.
@@ -72,7 +85,12 @@ public class Issue36801 : ContentPage
 			Spacing = 6,
 			BackgroundColor = Colors.LightGray,
 			VerticalOptions = LayoutOptions.Start,
-			Children = { scrollToEndButton, scrollToTopButton, scrollToProbeButton, _endResultLabel, _topResultLabel, _elementResultLabel, _deferredResultLabel }
+			Children =
+			{
+				modeDefaultButton, modeNoneButton, modeContainerButton,
+				scrollToEndButton, scrollToTopButton, scrollToProbeButton,
+				_endResultLabel, _topResultLabel, _elementResultLabel, _deferredResultLabel
+			}
 		};
 
 		Content = new Grid { AutomationId = "PageRoot", Children = { _scrollView, header } };
@@ -83,7 +101,10 @@ public class Issue36801 : ContentPage
 		// to the system chrome. This mirrors the issue's "custom chrome" scenario
 		// (AdditionalSafeAreaInsets) and deterministically exposes the clamping math:
 		// the valid native offset range becomes [-60, ContentSize + 40 - Bounds.Height].
-		_scrollView.Loaded += (sender, e) =>
+		// Applied from HandlerChanged rather than Loaded so the inset is in place before the
+		// first layout pass, which is what drains the deferred scroll request — otherwise the
+		// scroll could be clamped against a different inset than the one asserted against.
+		_scrollView.HandlerChanged += (sender, e) =>
 		{
 			if (_scrollView.Handler?.PlatformView is UIKit.UIScrollView nativeScrollView)
 			{
@@ -96,6 +117,17 @@ public class Issue36801 : ContentPage
 		// deferred PendingScrollToRequest drain in the first layout pass, where the adjusted
 		// insets may still be stale (the #35395 OnAppearing scenario).
 		RunDeferredScroll();
+	}
+
+	void SetMode(SafeAreaEdges edges)
+	{
+		_scrollView.SafeAreaEdges = edges;
+
+		// Reset the results so a stale Success from the previous mode can't be read as this
+		// mode's outcome
+		_endResultLabel.Text = "EndPending";
+		_topResultLabel.Text = "TopPending";
+		_elementResultLabel.Text = "ElementPending";
 	}
 
 	async void RunDeferredScroll()
@@ -121,6 +153,24 @@ public class Issue36801 : ContentPage
 		}
 	}
 
+#if IOS || MACCATALYST
+	// The whole clamp has a mode-specific branch, so a fixture that silently resolved to a
+	// different ContentInsetAdjustmentBehavior than intended would test the wrong one.
+	string CheckResolvedMode(UIKit.UIScrollView nativeScrollView, string kind)
+	{
+		var edges = _scrollView.SafeAreaEdges;
+		var expected =
+			edges.Equals(new SafeAreaEdges(SafeAreaRegions.Container)) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Always :
+			edges.Equals(SafeAreaEdges.None) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Never :
+			UIKit.UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+
+		return nativeScrollView.ContentInsetAdjustmentBehavior == expected
+			? null
+			: $"Fail ({kind}): SafeAreaEdges={edges} resolved to " +
+				$"{nativeScrollView.ContentInsetAdjustmentBehavior}, expected {expected}";
+	}
+#endif
+
 	string EvaluateOffset(bool expectEnd, string kind)
 	{
 #if IOS || MACCATALYST
@@ -132,6 +182,11 @@ public class Issue36801 : ContentPage
 		if (_content.Handler?.PlatformView is not UIKit.UIView contentView)
 		{
 			return $"Fail ({kind}): content platform view unavailable";
+		}
+
+		if (CheckResolvedMode(nativeScrollView, kind) is string modeFailure)
+		{
+			return modeFailure;
 		}
 
 		var adjustedInset = nativeScrollView.AdjustedContentInset;
@@ -165,7 +220,7 @@ public class Issue36801 : ContentPage
 			return $"Fail ({kind}): ScrollY={_scrollView.ScrollY:F1} expected={expectedScrollY:F1}";
 		}
 
-		return $"Success ({kind}): offset={actual:F1} scrollY={_scrollView.ScrollY:F1}";
+		return $"Success ({kind}): mode={nativeScrollView.ContentInsetAdjustmentBehavior} offset={actual:F1} scrollY={_scrollView.ScrollY:F1}";
 #else
 		return $"Skipped ({kind}): not applicable on this platform";
 #endif
@@ -182,6 +237,11 @@ public class Issue36801 : ContentPage
 		if (_probeLabel.Handler?.PlatformView is not UIKit.UIView probeView)
 		{
 			return "Fail (element): probe platform view unavailable";
+		}
+
+		if (CheckResolvedMode(nativeScrollView, "element") is string modeFailure)
+		{
+			return modeFailure;
 		}
 
 		var adjustedInset = nativeScrollView.AdjustedContentInset;
