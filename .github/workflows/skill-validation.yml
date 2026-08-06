@@ -1322,8 +1322,8 @@ jobs:
               return m ? xmlDecode(m[1]) : null;
             }
             function tagAttr(tag, key) {
-              const m = (tag || '').match(new RegExp(key + '="([^"]*)"'));
-              return m ? xmlDecode(m[1]) : null;
+              const m = (tag || '').match(new RegExp("\\b" + key + "\\s*=\\s*([\"'])(.*?)\\1"));
+              return m ? xmlDecode(m[2]) : null;
             }
             function artifactScope(file, root, artifactPrefix) {
               const [artifact] = path.relative(root, file).split(path.sep);
@@ -1394,27 +1394,37 @@ jobs:
               return elementBlocks(xml, 'testsuite');
             }
             function hasFailedSkillInvocation(testcase) {
-              const properties = (testcase.match(/<properties>[\s\S]*?<\/properties>/) || [''])[0];
-              return /<property name="grader\.skill-invocation\.passed" value="false"\/>/
-                .test(properties);
+              const properties = (testcase.match(/<properties\b[^>]*>[\s\S]*?<\/properties>/) || [''])[0];
+              return elementBlocks(properties, 'property').some(property => {
+                const openTag = (property.match(/<property\b[^>]*>/) || [''])[0];
+                return tagAttr(openTag, 'name') === 'grader.skill-invocation.passed' &&
+                  tagAttr(openTag, 'value') === 'false';
+              });
             }
 
-            // Regression fixture: a self-closing property must not be mistaken
-            // for the end of its enclosing non-self-closing testcase.
-            const invocationVetoFixture = [
-              '<testcase name="routing-violation">',
-              '<properties>',
-              '<property name="grader.other.passed" value="true"/>',
+            // Regression fixtures cover equivalent JUnit property serialization
+            // and ensure a self-closing child is not mistaken for its testcase.
+            const invocationVetoProperties = [
               '<property name="grader.skill-invocation.passed" value="false"/>',
-              '</properties>',
-              '<system-out><![CDATA[the transcript mentions </testcase> safely]]></system-out>',
-              '</testcase>',
-            ].join('');
-            const invocationVetoBlocks = testcaseBlocks(invocationVetoFixture);
-            if (invocationVetoBlocks.length !== 1 ||
-                !hasFailedSkillInvocation(invocationVetoBlocks[0]) ||
-                !invocationVetoBlocks[0].includes('safely]]></system-out></testcase>')) {
-              throw new Error('Internal JUnit parser failed the skill-invocation veto fixture.');
+              '<property name="grader.skill-invocation.passed" value="false" />',
+              '<property value="false" name="grader.skill-invocation.passed"></property>',
+            ];
+            for (const failedProperty of invocationVetoProperties) {
+              const invocationVetoFixture = [
+                '<testcase name="routing-violation">',
+                '<properties>',
+                '<property name="grader.other.passed" value="true"/>',
+                failedProperty,
+                '</properties>',
+                '<system-out><![CDATA[the transcript mentions </testcase> safely]]></system-out>',
+                '</testcase>',
+              ].join('');
+              const invocationVetoBlocks = testcaseBlocks(invocationVetoFixture);
+              if (invocationVetoBlocks.length !== 1 ||
+                  !hasFailedSkillInvocation(invocationVetoBlocks[0]) ||
+                  !invocationVetoBlocks[0].includes('safely]]></system-out></testcase>')) {
+                throw new Error('Internal JUnit parser failed a skill-invocation veto fixture.');
+              }
             }
             const suiteBoundaryFixture = [
               '<testsuites>',
