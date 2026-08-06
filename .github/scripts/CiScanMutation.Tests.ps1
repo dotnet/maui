@@ -63,6 +63,14 @@ BeforeAll {
             Find    = '    if (Test-MarkerLikeContent -Value $rawBody) {'
             Replace = '    if ($false) {'
         }
+        # The hidden/control-content rejection is a distinct trusted-boundary
+        # layer from the marker check. Disabling it lets a body carrying an HTML
+        # comment (which the canonical marker also is) or invisible content flow
+        # to the deeper post-injection backstop instead of stopping at the edge.
+        'no-hidden-content-rejection' = @{
+            Find    = '    if ($hiddenReason) {'
+            Replace = '    if ($false) {'
+        }
         # Marker-like match patterns can replay trusted publisher state.
         'no-marker-pattern-rejection' = @{
             Find    = '    if (Test-MarkerLikeContent -Value $matchPattern) {'
@@ -118,6 +126,72 @@ BeforeAll {
 
         Set-Content -LiteralPath $Path -Value $source -Encoding utf8
         return $Path
+    }
+
+    function Test-FixedManifestHandoff {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match 'CI_SCAN_MANIFEST_PATH: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/agent/manifest_final\.json' -and
+            $Source -match 'argument-free `submit_ci_scan`' -and
+            $Source -notmatch '(?ms)^\s{6}inputs:\s*\r?\n\s{8}(?:manifest|manifest_path):' -and
+            $Source -notmatch 'one `manifest` argument'
+    }
+
+    function Test-BoundedThreatDetectionStaging {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match '\[ -L "\$manifest" \] \|\| \[ ! -f "\$manifest" \]' -and
+            $Source -match '\[ "\$manifest_size" -eq 0 \] \|\| \[ "\$manifest_size" -gt 500000 \]' -and
+            $Source -match 'cp --no-dereference -- "\$manifest" "\$staged"' -and
+            $Source -match '\[ -L "\$staged" \] \|\| \[ ! -f "\$staged" \]' -and
+            $Source -match '\[ "\$staged_size" -ne "\$manifest_size" \]'
+    }
+
+    function Test-TrustedEmojiSelectorPrompt {
+        param(
+            [Parameter(Mandatory = $true)][string]$Source,
+            [Parameter(Mandatory = $true)][string]$ValidatorSource
+        )
+
+        $validatorMatch = [regex]::Match(
+            $ValidatorSource,
+            '(?s)\$isEmojiVariationBase = \$previousCode -in @\((?<bases>.*?)\r?\n\s+\)')
+        $promptMatch = [regex]::Match(
+            $Source,
+            'Approved VS15/VS16 bases \(exactly\): (?<bases>U\+[0-9A-F]+(?:, U\+[0-9A-F]+)*)\.')
+        if (-not $validatorMatch.Success -or -not $promptMatch.Success) {
+            return $false
+        }
+
+        $validatorBases = @(
+            [regex]::Matches($validatorMatch.Groups['bases'].Value, '0x(?<code>[0-9A-F]+)') |
+                ForEach-Object { "U+$($_.Groups['code'].Value)" }
+        )
+        $promptBases = @($promptMatch.Groups['bases'].Value -split ', ')
+
+        return @(
+            Compare-Object `
+                -ReferenceObject $validatorBases `
+                -DifferenceObject $promptBases `
+                -SyncWindow 0
+        ).Count -eq 0 -and
+            $Source -match 'Do not flag VS15 \(U\+FE0E\) or\s+VS16 \(U\+FE0F\) solely when it immediately follows one of the approved bases' -and
+            $Source -match 'Flag an isolated VS15/VS16 or a selector following any other base\.'
+    }
+
+    function Get-CompiledThreatDetectionPrompt {
+        param([Parameter(Mandatory = $true)][string]$LockPath)
+
+        $lockSource = Get-Content -LiteralPath $LockPath -Raw
+        $promptMatch = [regex]::Match(
+            $lockSource,
+            '(?m)^\s+CUSTOM_PROMPT: (?<json>".*")$')
+        if (-not $promptMatch.Success) {
+            throw "The compiled lock '$LockPath' no longer contains the threat-detection CUSTOM_PROMPT."
+        }
+
+        return [System.Text.Json.JsonSerializer]::Deserialize[string](
+            $promptMatch.Groups['json'].Value)
     }
 
     function New-ProbeManifest {
@@ -306,7 +380,10 @@ Describe 'CI scanner marker mutation coverage' {
 
     It 'mutation "no-duplicate-rejection": a pre-marked body is rejected downstream' {
         $body = "$script:CanonicalMarker`n## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed"
-        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection') -Body $body
+        # Both edge-layer rejections (marker-like content and hidden/HTML-comment
+        # content) are disabled so this proves the *post-injection* backstop is
+        # independently load-bearing against duplicate markers.
+        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection', 'no-hidden-content-rejection') -Body $body
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*exactly one canonical fingerprint marker*'
@@ -314,10 +391,32 @@ Describe 'CI scanner marker mutation coverage' {
 
     It 'mutation "no-duplicate-rejection + no-post-injection-check": duplicate markers would ship' {
         $body = "$script:CanonicalMarker`n## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed"
-        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection', 'no-post-injection-check') -Body $body
+        $result = Invoke-ValidatorProbe -Mutation @('no-duplicate-rejection', 'no-hidden-content-rejection', 'no-post-injection-check') -Body $body
 
         $result.ok | Should -BeTrue
         ([regex]::Matches($result.body, '<!-- ci-scan-fingerprint:')).Count | Should -Be 2
+    }
+
+    It 'baseline: the real validator rejects a body carrying hidden control content' {
+        $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed$([char]0x1B)[31m"
+        $result = Invoke-ValidatorProbe -Body $body
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*must not contain*C0 control character*'
+    }
+
+    It 'mutation "no-hidden-content-rejection": a hidden-content body slips past the boundary' {
+        # A benign HTML comment carries no marker tokens, so only the new
+        # hidden/control-content layer stands between it and publication.
+        $body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed`n<!-- reviewer will not see this -->"
+        $result = Invoke-ValidatorProbe -Mutation @('no-hidden-content-rejection') -Body $body
+
+        # Prove the layer is load-bearing by asserting the concrete bypass: with the
+        # guard disabled the body is fully published with the hidden comment intact,
+        # not merely that some other error message differs.
+        $result.ok | Should -BeTrue
+        $result.error | Should -Not -BeLike '*HTML comment sequence*'
+        $result.body | Should -BeLike '*<!-- reviewer will not see this -->*'
     }
 
     It 'baseline: the real validator rejects that same pre-marked body outright' {
@@ -401,6 +500,157 @@ Describe 'CI scanner marker mutation coverage' {
 Describe 'CI scanner twin discovery mutation coverage' {
     It 'baseline: discovery finds both compiled twins' {
         @(Get-CiScanTwin).Count | Should -Be 2
+    }
+
+    Describe 'CI scanner fixed manifest handoff mutation coverage' {
+        BeforeAll {
+            $script:WorkflowSources = @(
+                Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-main.md') -Raw
+                Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/ci-status-net11.md') -Raw
+            )
+            $script:CompiledThreatPrompts = @(
+                Get-CompiledThreatDetectionPrompt `
+                    -LockPath (Join-Path $PSScriptRoot '../workflows/ci-status-main.lock.yml')
+                Get-CompiledThreatDetectionPrompt `
+                    -LockPath (Join-Path $PSScriptRoot '../workflows/ci-status-net11.lock.yml')
+            )
+            $script:SafeJobStepsNeedle = "      steps:`n        - name: Require successful agent submission gate"
+        }
+
+        It 'baseline: both twins use the fixed argument-free artifact handoff' {
+            @($script:WorkflowSources | Where-Object { Test-FixedManifestHandoff -Source $_ }).Count |
+                Should -Be 2
+        }
+
+        It 'baseline: both twins bound regular-file threat-detection staging' {
+            @($script:WorkflowSources | Where-Object { Test-BoundedThreatDetectionStaging -Source $_ }).Count |
+                Should -Be 2
+        }
+
+        It 'baseline: both twins mirror the trusted emoji-selector rule in threat detection' {
+            @(
+                $script:WorkflowSources |
+                    Where-Object {
+                        Test-TrustedEmojiSelectorPrompt `
+                            -Source $_ `
+                            -ValidatorSource $script:ValidatorSource
+                    }
+            ).Count | Should -Be 2
+        }
+
+        It 'baseline: both compiled twins execute the trusted emoji-selector rule' {
+            @(
+                $script:CompiledThreatPrompts |
+                    Where-Object {
+                        Test-TrustedEmojiSelectorPrompt `
+                            -Source $_ `
+                            -ValidatorSource $script:ValidatorSource
+                    }
+            ).Count | Should -Be 2
+        }
+
+        It 'mutation "nested-string-transport": a manifest tool input fails the handoff invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $source.Contains($script:SafeJobStepsNeedle) | Should -BeTrue
+                $mutated = $source.Replace(
+                    $script:SafeJobStepsNeedle,
+                    "      inputs:`n        manifest:`n          required: true`n          type: string`n$($script:SafeJobStepsNeedle)")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-FixedManifestHandoff -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "agent-selected-path": a manifest_path tool input fails the handoff invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $source.Contains($script:SafeJobStepsNeedle) | Should -BeTrue
+                $mutated = $source.Replace(
+                    $script:SafeJobStepsNeedle,
+                    "      inputs:`n        manifest_path:`n          required: true`n          type: string`n$($script:SafeJobStepsNeedle)")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-FixedManifestHandoff -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "symlink-staging": removing the source symlink guard fails the staging invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'if [ -L "$manifest" ] || [ ! -f "$manifest" ]; then',
+                    'if [ ! -f "$manifest" ]; then')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-BoundedThreatDetectionStaging -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "unbounded-staging": removing the byte cap fails the staging invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'if [ "$manifest_size" -eq 0 ] || [ "$manifest_size" -gt 500000 ]; then',
+                    'if [ "$manifest_size" -eq 0 ]; then')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-BoundedThreatDetectionStaging -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "selector-carveout-removed": restoring generic selector rejection fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms)\n      Apply this exact rule to variation selectors\..*?Flag an isolated VS15/VS16 or a selector following any other base\.\r?\n',
+                    "`n      Flag variation selectors as hidden or invisible content.`n")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
+
+        It 'mutation "selector-carveout-widened": adding an untrusted base fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'U+2764, U+1F6E0.',
+                    'U+2764, U+1F600, U+1F6E0.')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
+
+        It 'mutation "selector-negative-rule-removed": dropping disallowed-base rejection fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    '      Flag an isolated VS15/VS16 or a selector following any other base.',
+                    '')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
+
+        It 'mutation "stale-compiled-selector-rule": an omitted approved base fails the compiled prompt invariant' {
+            foreach ($prompt in $script:CompiledThreatPrompts) {
+                $mutated = $prompt.Replace(
+                    ', U+1F6E0.',
+                    '.')
+
+                $mutated | Should -Not -BeExactly $prompt
+                (Test-TrustedEmojiSelectorPrompt `
+                        -Source $mutated `
+                        -ValidatorSource $script:ValidatorSource) |
+                    Should -BeFalse
+            }
+        }
     }
 
     It 'mutation "one-twin-omitted": discovery reports a single twin' {
