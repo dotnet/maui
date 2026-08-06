@@ -41,9 +41,7 @@ public partial class Maui24849 : ContentPage
 			app.Resources.Add(new Style24849());
 			var page = new Maui24849(inflator);
 
-			// Attach the page to the application tree: implicit styles resolve through
-			// resource inheritance, not from the static Application.Current (#36822)
-			app.LoadPage(page);
+			app.MainPage = page;
 
 			Assert.False(page.button.IsEnabled);
 			Assert.Equal(Color.FromHex("#3c3c3b"), page.button.TextColor);
