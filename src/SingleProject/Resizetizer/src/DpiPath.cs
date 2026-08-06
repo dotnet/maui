@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Resizetizer
 			public static DpiPath Original =>
 				new DpiPath("drawable", 1.0m);
 
+			public static DpiPath OriginalNight =>
+				new DpiPath("drawable-night", 1.0m);
+
 			public static DpiPath[] Image
 				=> new[]
 				{
@@ -56,6 +59,16 @@ namespace Microsoft.Maui.Resizetizer
 					new DpiPath("drawable-xhdpi", 2.0m),
 					new DpiPath("drawable-xxhdpi", 3.0m),
 					new DpiPath("drawable-xxxhdpi", 4.0m),
+				};
+
+			public static DpiPath[] ImageNight
+				=> new[]
+				{
+					new DpiPath("drawable-night-mdpi", 1.0m),
+					new DpiPath("drawable-night-hdpi", 1.5m),
+					new DpiPath("drawable-night-xhdpi", 2.0m),
+					new DpiPath("drawable-night-xxhdpi", 3.0m),
+					new DpiPath("drawable-night-xxxhdpi", 4.0m),
 				};
 
 			public static DpiPath[] AppIcon
@@ -89,6 +102,11 @@ namespace Microsoft.Maui.Resizetizer
 		public static class Ios
 		{
 			public const string AppIconPath = "Assets.xcassets/{name}.appiconset";
+			public const string SplashImageName = "MauiSplashImage";
+			public const string SplashImageDarkName = "MauiSplashImageDark";
+			public const string SplashColorName = "MauiSplashColor";
+			public const string SplashImageSetPath = "Assets.xcassets/MauiSplashImage.imageset";
+			public const string SplashColorSetPath = "Assets.xcassets/MauiSplashColor.colorset";
 
 			public static DpiPath Original =>
 				new DpiPath("Resources", 1.0m);
@@ -99,6 +117,14 @@ namespace Microsoft.Maui.Resizetizer
 					new DpiPath("", 1.0m),
 					new DpiPath("", 2.0m, null,"@2x"),
 					new DpiPath("", 3.0m, null,"@3x"),
+				};
+
+			public static DpiPath[] SplashImageAsset
+				=> new[]
+				{
+					new DpiPath(SplashImageSetPath, 1.0m),
+					new DpiPath(SplashImageSetPath, 2.0m, null, "@2x"),
+					new DpiPath(SplashImageSetPath, 3.0m, null, "@3x"),
 				};
 
 			public static DpiPath[] AppIcon
