@@ -391,7 +391,7 @@ Describe 'CI scanner pipeline coverage gate' {
             Should -Throw '*exactly 5 issues are filed*'
     }
 
-    It 'rejects a cap skip that appears before five later filed entries' {
+    It 'accepts a cap skip before five later filed entries' {
         $earlySkip = New-TestSignature `
             -Fingerprint 'ci-scan-net11|net11.0|maui-pr|early sample|assertion failed|windows' `
             -Disposition 'skipped' `
@@ -404,8 +404,34 @@ Describe 'CI scanner pipeline coverage gate' {
         }
         $manifest = New-CompleteManifest -MainSignatures (@($earlySkip) + @($filed))
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*cannot use cap-reached before exactly 5 issues are filed*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.filed_count | Should -Be 5
+        $plan.has_cap_skip | Should -BeTrue
+    }
+
+    It 'accepts a substantive skip after five filed entries' {
+        $filed = for ($i = 1; $i -le 5; $i++) {
+            $fingerprint = "ci-scan-net11|net11.0|maui-pr|filed sample $i|assertion failed|windows"
+            New-TestSignature -Fingerprint $fingerprint -Body (
+                New-TestBody -Fingerprint $fingerprint
+            )
+        }
+        $substantiveSkip = New-TestSignature `
+            -Fingerprint 'ci-scan-net11|net11.0|maui-pr|known infrastructure failure|assertion failed|windows' `
+            -Disposition 'skipped' `
+            -SkipReason 'infrastructure-noise'
+        $manifest = New-CompleteManifest -MainSignatures (@($filed) + @($substantiveSkip))
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.filed_count | Should -Be 5
+        $plan.has_cap_skip | Should -BeFalse
+        $plan.pipelines[0].signatures[5].skip_reason | Should -BeExactly 'infrastructure-noise'
     }
 
     It 'rejects reordered configured pipelines' {
@@ -443,7 +469,41 @@ Describe 'CI scanner issue payload gate' {
         )
 
         { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*non-normalized or unsafe characters*'
+            Should -Throw '*unsafe characters*'
+    }
+
+    It 'canonicalizes the exact production uppercase fingerprint before publication' {
+        $productionFingerprint = 'ci-scan|main|maui-pr|runoniOS_MauiReleaseTrimFull|ios-simulator-boot-timeout|ios-simulator-64'
+        $canonicalFingerprint = 'ci-scan|main|maui-pr|runonios_mauireleasetrimfull|ios-simulator-boot-timeout|ios-simulator-64'
+        $body = (New-TestBody).Replace('- **Branch**: net11.0', '- **Branch**: main')
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $productionFingerprint -Body $body)
+        )
+        $evidenceRoot = New-DefaultEvidenceRoot
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -ExpectedBuilds (New-ExpectedBuilds) `
+            -TrustedEvidencePath $evidenceRoot `
+            -ScannerId 'ci-scan'
+
+        $plan.pipelines[0].signatures[0].fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Fingerprint | Should -BeExactly $canonicalFingerprint
+        $plan.issues[0].Body |
+            Should -Match "(?m)^<!-- ci-scan-fingerprint: $([regex]::Escape($canonicalFingerprint)) -->$"
+        $plan.issues[0].Body.Contains('runoniOS_MauiReleaseTrimFull') | Should -BeFalse
+    }
+
+    It 'rejects fingerprints that collide after trusted case canonicalization' {
+        $productionFingerprint = 'ci-scan|main|maui-pr|runoniOS_MauiReleaseTrimFull|ios-simulator-boot-timeout|ios-simulator-64'
+        $canonicalFingerprint = $productionFingerprint.ToLowerInvariant()
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $productionFingerprint -Disposition 'existing' -IssueNumber 36827),
+            (New-TestSignature -Fingerprint $canonicalFingerprint -Disposition 'existing' -IssueNumber 36828)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest -ScannerId 'ci-scan' } |
+            Should -Throw "*Duplicate fingerprint '$canonicalFingerprint'*"
     }
 
     <#
@@ -525,6 +585,50 @@ Describe 'CI scanner issue payload gate' {
 
         { Test-CiScanManifest -Manifest $manifest } |
             Should -Throw '*forbidden truncation placeholder*'
+    }
+
+    It 'canonicalizes the production em-dash title before publication' {
+        $rawTitle = "Recurring Android device test failure $([char]0x2014) StatusBarThemeAppliesWhenHandlerConnects fails on Android CoreCLR and Mono (net11.0)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Title $rawTitle)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $canonicalTitle = 'Recurring Android device test failure - StatusBarThemeAppliesWhenHandlerConnects fails on Android CoreCLR and Mono (net11.0)'
+        $plan.pipelines[0].signatures[0].title | Should -BeExactly $canonicalTitle
+        $plan.issues[0].Title | Should -BeExactly "[ci-scan-net11] $canonicalTitle"
+    }
+
+    It 'also canonicalizes an en-dash title separator' {
+        $rawTitle = "Recurring sample failure $([char]0x2013) Windows"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Title $rawTitle)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.pipelines[0].signatures[0].title |
+            Should -BeExactly 'Recurring sample failure - Windows'
+    }
+
+    It 'still rejects <Case> in a title rather than broadly normalizing Unicode' -ForEach @(
+        @{ Case = 'curly quote'; Character = [char]0x2019 }
+        @{ Case = 'non-breaking space'; Character = [char]0x00A0 }
+        @{ Case = 'emoji'; Character = [char]::ConvertFromUtf32(0x1F600) }
+    ) {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Title "Recurring sample $Character failure")
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must contain printable single-line ASCII only*'
     }
 
     <#
@@ -673,6 +777,185 @@ Describe 'CI scanner issue payload gate' {
                 -Manifest $manifest `
                 -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
             Should -Throw '*must not contain scanner marker content*'
+    }
+
+    It 'rejects a <Case> body carrying hidden or control content invisible to a reviewer' -ForEach @(
+        @{ Case = 'ANSI/ESC escape'; Suffix = "$([char]0x1B)[31mred text"; Expect = 'C0 control character' }
+        @{ Case = 'bare C0 control'; Suffix = "col$([char]0x07)umn"; Expect = 'C0 control character' }
+        @{ Case = 'DEL character'; Suffix = "trailing$([char]0x7F)"; Expect = 'DEL control character' }
+        @{ Case = 'C1 control (NEL)'; Suffix = "line$([char]0x0085)break"; Expect = 'C1 control character' }
+        @{ Case = 'right-to-left override'; Suffix = "$([char]0x202E)dettimbus"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'zero-width non-joiner'; Suffix = "hid$([char]0x200C)den"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'byte order mark'; Suffix = "$([char]0xFEFF)prefixed"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Arabic letter mark (bidi)'; Suffix = "sig$([char]0x061C)nal"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Mongolian vowel separator'; Suffix = "gap$([char]0x180E)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'paragraph separator'; Suffix = "line$([char]0x2029)break"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'isolated variation selector-15'; Suffix = "glyph$([char]0xFE0E)"; Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'isolated variation selector-16'; Suffix = "glyph$([char]0xFE0F)"; Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'variation selector-15 after arbitrary symbol'; Suffix = ('cost $' + [char]0xFE0E); Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'variation selector-16 after arbitrary symbol'; Suffix = ('cost $' + [char]0xFE0F); Expect = 'isolated emoji presentation selector' }
+        @{ Case = 'Mongolian free variation selector'; Suffix = "shape$([char]0x180B)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'combining grapheme joiner'; Suffix = "seam$([char]0x034F)less"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Khmer inherent vowel'; Suffix = "gap$([char]0x17B4)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Hangul filler'; Suffix = "blank$([char]0x3164)space"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Hangul Choseong filler'; Suffix = "col$([char]0x115F)umn"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'Hangul Jungseong filler'; Suffix = "col$([char]0x1160)umn"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'halfwidth Hangul filler'; Suffix = "blank$([char]0xFFA0)word"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'astral tag character'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE007F))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'astral variation selector supplement'; Suffix = "mark$([char]::ConvertFromUtf32(0xE0100))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'reserved default-ignorable Specials'; Suffix = "slot$([char]0xFFF0)here"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'unassigned default-ignorable tag-plane low'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE0080))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'unassigned default-ignorable tag-plane high'; Suffix = "hidden$([char]::ConvertFromUtf32(0xE0FFF))"; Expect = 'bidirectional or invisible format character' }
+        @{ Case = 'musical format control'; Suffix = "beat$([char]::ConvertFromUtf32(0x1D173))here"; Expect = 'Unicode format character' }
+        @{ Case = 'interlinear annotation anchor'; Suffix = "gloss$([char]0xFFF9)here"; Expect = 'Unicode format character' }
+        @{ Case = 'shorthand format control'; Suffix = "steno$([char]::ConvertFromUtf32(0x1BCA0))here"; Expect = 'Unicode format character' }
+        @{ Case = 'BMP noncharacter'; Suffix = "reserved$([char]0xFFFE)slot"; Expect = 'Unicode noncharacter' }
+        @{ Case = 'astral noncharacter'; Suffix = "reserved$([char]::ConvertFromUtf32(0x1FFFE))slot"; Expect = 'Unicode noncharacter' }
+        @{ Case = 'unpaired high surrogate'; Suffix = "dangling$([char]0xD800)"; Expect = 'unpaired high surrogate' }
+        @{ Case = 'benign HTML comment open'; Suffix = '<!-- reviewer will not see this -->'; Expect = 'HTML comment sequence' }
+        @{ Case = 'stray HTML comment close'; Suffix = 'looks fine --> but is not'; Expect = 'HTML comment sequence' }
+    ) {
+        # The manifest body no longer passes through gh-aw's sanitizeContent step,
+        # so the trusted boundary must reject content that a human reviewer cannot
+        # see rendered -- terminal escapes, invisible/bidirectional format chars,
+        # and HTML comments -- rather than publish it verbatim into an issue.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$Suffix"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw "*must not contain*$Expect*"
+    }
+
+    It 'still accepts a body whose only non-ASCII content is a legitimate tab or newline' {
+        # Guardrail against over-rejection: real CI evidence routinely contains tabs
+        # and newlines, and those must survive the hidden-content boundary.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n`tIndented follow-up line."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing a legitimate astral-plane emoji' {
+        # Guardrail against surrogate-pair over-rejection: an ordinary supplementary
+        # -plane emoji (U+1F600) is encoded as a surrogate pair, and the scalar walk
+        # must decode it to a harmless code point rather than mistaking either half
+        # for an unpaired surrogate or a hidden format character.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild smiled $([char]::ConvertFromUtf32(0x1F600)) at us."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing an emoji presentation sequence' {
+        # VS16 visibly selects emoji presentation for the preceding warning symbol.
+        # It must not be treated like an isolated invisible selector and abort the
+        # all-or-nothing publication batch.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild emitted $([char]0x26A0)$([char]0xFE0F) during step 3."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'accepts the production scanner task heading with emoji presentation' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$([char]::ConvertFromUtf32(0x1F6E0))$([char]0xFE0F) Build Microsoft.Maui.sln"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing a text presentation sequence' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nBuild emitted $([char]0x26A0)$([char]0xFE0E) during step 3."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body with legitimate combining accents and CJK text' {
+        # Guardrail against category over-rejection: the Format-category and
+        # noncharacter checks must not swallow legitimate NonSpacingMark accents
+        # (U+0301) or OtherLetter CJK (U+4E2D), which do appear in real evidence
+        # (localized paths, author names, commit messages).
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nCafe$([char]0x0301) build for $([char]0x4E2D)$([char]0x6587) locale."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'still accepts a body containing a visible U+FFFD replacement character' {
+        # Guardrail against Specials over-rejection: the reserved default-ignorable
+        # Specials reject (U+FFF0-FFF8) must stop short of U+FFFD, the replacement
+        # character, which is visibly rendered and legitimately appears when CI logs
+        # carry undecodable bytes. Rejecting it would refuse real evidence.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`nGarbled byte $([char]0xFFFD) in log."
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Not -Throw
+    }
+
+    It 'rejects a marker smuggled past NFKC folding with a noncharacter' {
+        # A fullwidth-spelled marker embedded with a noncharacter (U+FFFE) makes
+        # Test-MarkerLikeContent's NFKC normalization throw, so its raw-value fallback
+        # never folds the fullwidth form onto the real token -- the marker gate passes.
+        # The hidden-content gate must be the backstop: it rejects the U+FFFE outright,
+        # so the smuggled marker can never reach publication.
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $fullwidthMarker = -join ([int[]][char[]]'ciscanfingerprint' | ForEach-Object { [char]($_ + 0xFEE0) })
+        $body = "$(New-TestBody -Fingerprint $fingerprint)`n$fullwidthMarker$([char]0xFFFE)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must not contain*Unicode noncharacter*'
     }
 
     It 'rejects a null body' {
@@ -1019,13 +1302,70 @@ Observed 99 times according to the agent."
             Should -Throw '*Trusted evidence file is missing*'
     }
 
-    It 'rejects a body that omits its exact match pattern' {
+    It 'injects an evidence-verified match pattern omitted from the body' {
+        $evidenceRoot = Join-Path $TestDrive 'omitted-pattern-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different failure')
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -MatchPattern 'Different failure')
         )
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*must contain match_pattern exactly*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].Body |
+            Should -Match '(?ms)## Trusted Match Pattern\r?\n\r?\n    Different failure$'
+    }
+
+    It 'repairs the exact main production body and match_pattern mismatch' {
+        $pipeline = 'maui-pr-devicetests'
+        $buildId = 1540065
+        $fingerprint = 'ci-scan|main|maui-pr-devicetests|carouselviewdoesnotleakwithdefaultitemslayout|reference to microsoft.maui.controls.carouselview is still alive|maccatalyst'
+        $matchPattern = 'XHarness exit code: 1 (TESTS_FAILED)'
+        $body = (New-TestBody -Pipeline $pipeline -BuildId $buildId -Fingerprint $fingerprint).
+            Replace('Assertion failed', 'Reference to Microsoft.Maui.Controls.CarouselView is still alive')
+        $signature = New-TestSignature `
+            -Pipeline $pipeline `
+            -BuildId $buildId `
+            -Fingerprint $fingerprint `
+            -Title 'DeviceTestsMacCatalyst Controls Tests fail: CarouselView memory leak' `
+            -MatchPattern $matchPattern `
+            -Body $body
+        $manifest = [pscustomobject]@{
+            pipelines = @(
+                (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -BuildId 1540066)
+                (New-TestPipeline -Name $pipeline -DefinitionId 314 -BuildId $buildId -Signatures @($signature))
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 1540063)
+            )
+        }
+        $evidenceRoot = Join-Path $TestDrive 'main-production-pattern-evidence'
+        New-TestEvidence `
+            -Root $evidenceRoot `
+            -Pipeline $pipeline `
+            -BuildId $buildId `
+            -Lines @($matchPattern)
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath $evidenceRoot `
+            -ScannerId 'ci-scan'
+
+        $plan.issues[0].Body |
+            Should -Match "(?ms)## Trusted Match Pattern\r?\n\r?\n    $([regex]::Escape($matchPattern))$"
+        $plan.issues[0].MatchCount | Should -Be 1
+    }
+
+    It 'rejects trusted match-pattern injection that would exceed the body limit' {
+        $body = (New-TestBody).Replace('Assertion failed', 'Different failure')
+        $body += 'a' * (59000 - $body.Length)
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*exceeds 59000 characters after trusted match_pattern injection*'
     }
 
     It 'requires the safely rendered match pattern in the published body' {
@@ -1083,6 +1423,18 @@ Observed 99 times according to the agent."
 
         { Test-CiScanManifest -Manifest $manifest } |
             Should -Throw '*match_pattern*must not contain zero-width spaces*'
+    }
+
+    It 'rejects hidden content in a match pattern before trusted injection' {
+        $pattern = "Failure$([char]0x1B)[31m"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern $pattern)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot -ExtraLines @($pattern)) } |
+            Should -Throw '*match_pattern*C0 control character*'
     }
 
     It 'rejects a body that smuggles in a zero-width space' {
@@ -1237,51 +1589,112 @@ Describe 'CI scanner agent output gate' {
         $path = Join-Path $TestDrive 'agent-output.json'
         @{
             items = @(
-                @{ type = 'submit_ci_scan'; manifest = '{}' },
+                @{ type = 'submit_ci_scan' },
                 @{ type = 'noop'; body = 'alternate output' }
             )
         } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
 
-        { Get-ScannerManifestFromAgentOutput -Path $path } |
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
             Should -Throw '*exactly one item of type submit_ci_scan and no alternate outputs*'
     }
 
-    It 'rejects a manifest that is not a JSON string' {
-        # agent_output.json is agent-controlled. An already-decoded object used to be
-        # returned verbatim, so it reached validation without passing the emptiness or
-        # 500000-character limits that guard the string form.
-        $path = Join-Path $TestDrive 'object-manifest.json'
-        @{
-            items = @(
-                @{ type = 'submit_ci_scan'; manifest = @{ pipelines = @() } }
-            )
-        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
-
-        { Get-ScannerManifestFromAgentOutput -Path $path } |
-            Should -Throw '*manifest must be a JSON string*'
-    }
-
-    It 'rejects a manifest string over the size limit' {
-        $path = Join-Path $TestDrive 'oversized-manifest.json'
-        @{
-            items = @(
-                @{ type = 'submit_ci_scan'; manifest = ('x' * 500001) }
-            )
-        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
-
-        { Get-ScannerManifestFromAgentOutput -Path $path } |
-            Should -Throw '*exceeds the 500000 character limit*'
-    }
-
-    It 'accepts a well-formed manifest string' {
-        $path = Join-Path $TestDrive 'good-manifest.json'
+    It 'rejects the production nested-string transport even when its JSON is valid' {
+        $path = Join-Path $TestDrive 'nested-manifest.json'
         @{
             items = @(
                 @{ type = 'submit_ci_scan'; manifest = '{"pipelines":[]}' }
             )
         } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
 
-        $result = Get-ScannerManifestFromAgentOutput -Path $path
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
+            Should -Throw '*authorization-only and must not contain manifest data or a path*'
+    }
+
+    It 'rejects agent selection of an arbitrary manifest path' {
+        $path = Join-Path $TestDrive 'manifest-path.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan'; manifest_path = '/tmp/gh-aw/agent/other.json' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
+            Should -Throw '*authorization-only and must not contain manifest data or a path*'
+    }
+
+    It 'accepts exactly one argument-free submission authorization' {
+        $path = Join-Path $TestDrive 'authorization.json'
+        @{
+            items = @(
+                @{ type = 'submit_ci_scan' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } | Should -Not -Throw
+    }
+
+    It 'rejects a lone valid submission when the collector also recorded a rejected attempt' {
+        # gh-aw's collector diverts a duplicate or argument-carrying submit_ci_scan
+        # into a sibling `.errors` array while leaving one clean item in `.items`.
+        # Inspecting only `.items` would let the run look successful, so a non-empty
+        # `.errors` must fail the gate on its own.
+        $path = Join-Path $TestDrive 'collector-errors.json'
+        @{
+            items  = @(
+                @{ type = 'submit_ci_scan' }
+            )
+            errors = @(
+                @{ type = 'submit_ci_scan'; message = 'rejected: exceeds max of 1' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } |
+            Should -Throw '*collector reported 1 rejected submission attempt*'
+    }
+
+    It 'accepts a submission when the collector errors array is present but empty' {
+        # An empty `.errors` array is the normal shape and must not trip the gate.
+        $path = Join-Path $TestDrive 'empty-errors.json'
+        @{
+            items  = @(
+                @{ type = 'submit_ci_scan' }
+            )
+            errors = @()
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        { Assert-ScannerSubmissionFromAgentOutput -Path $path } | Should -Not -Throw
+    }
+
+    It 'reads multiline issue bodies from the fixed manifest file without nested JSON transport' {
+        $path = Join-Path $TestDrive 'manifest_final.json'
+        $body = "## Summary`nFirst line.`n`n## Error Message`nLiteral `"quoted`" line."
+        @{
+            pipelines = @(
+                @{
+                    name       = 'maui-pr'
+                    signatures = @(@{ body = $body })
+                }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
+
+        $result = Get-ScannerManifestFromFile -Path $path
+
+        $result.pipelines[0].signatures[0].body | Should -BeExactly $body
+    }
+
+    It 'rejects a fixed manifest file over the byte limit' {
+        $path = Join-Path $TestDrive 'oversized-manifest.json'
+        Set-Content -LiteralPath $path -Value ('x' * 500001) -NoNewline
+
+        { Get-ScannerManifestFromFile -Path $path } |
+            Should -Throw '*exceeds the 500000 byte limit*'
+    }
+
+    It 'accepts a well-formed fixed manifest file' {
+        $path = Join-Path $TestDrive 'good-manifest.json'
+        Set-Content -LiteralPath $path -Value '{"pipelines":[]}'
+
+        $result = Get-ScannerManifestFromFile -Path $path
         @($result.pipelines).Count | Should -Be 0
     }
 }
@@ -1315,7 +1728,116 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
 
     It 'requires exactly one complete submission and forbids alternate outputs' {
         $workflowSource | Should -Match 'select\(\.type == "submit_ci_scan"\)'
-        $workflowSource | Should -Match 'Expected exactly one submit_ci_scan output and no alternate outputs'
+        $workflowSource | Should -Match 'Expected exactly one argument-free submit_ci_scan output and no alternate outputs'
+    }
+
+    It 'requires a complete frozen evidence line rather than a matching paraphrase' {
+        $workflowSource |
+            Should -Match 'Copy at least one \*\*entire matching line\*\* from a frozen evidence file'
+        $workflowSource |
+            Should -Match 'do not summarize it or replace\s+volatile fields with placeholders such as `<id>`'
+        $workflowSource |
+            Should -Match 'shorter `match_pattern` substring is not sufficient for trusted evidence\s+identity'
+        $workflowSource |
+            Should -Match 'Do not attempt to classify or remove timestamps yourself; copy them\s+verbatim'
+        $workflowSource |
+            Should -Match 'trusted validator alone normalizes a recognized leading AzDO\s+transport timestamp'
+        $workflowSource |
+            Should -Match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt if the agent omitted it'
+    }
+
+    It 'defines cap exhaustion across the complete manifest rather than traversal order' {
+        $workflowSource |
+            Should -Match 'exactly five\s+entries are actually marked `filed` across the complete manifest'
+        $workflowSource |
+            Should -Match 'may appear before or after the fifth filed entry in fixed traversal order'
+        $workflowSource |
+            Should -Match 'Use a substantive\s+skip reason whenever it applies, even after the cap is reached'
+        $workflowSource |
+            Should -Match 'do not replace\s+it with `cap-reached` merely because of its position'
+    }
+
+    It 'fails the exact-once gate when the collector diverts an attempt into .errors' {
+        # A second or argument-carrying submission lands in agent_output.json's
+        # `.errors`, not `.items`; the post-steps gate must count and reject it.
+        $workflowSource | Should -Match 'error_count=\$\(jq ''\(\.errors // \[\]\) \| length'' "\$output"\)'
+        $workflowSource | Should -Match '\[ "\$error_count" -ne 0 \]'
+        $workflowSource | Should -Match 'no alternate outputs or collector errors'
+    }
+
+    It 'caps the submission safe-job at a single invocation' {
+        $workflowSource | Should -Match '(?ms)submit-ci-scan:.*?^      max: 1$'
+    }
+
+    It 'stages the untrusted manifest into threat detection and fails closed when it is missing' {
+        $workflowSource | Should -Match '(?m)^  threat-detection:$'
+        $workflowSource | Should -Match 'Stage scanner manifest for threat detection'
+        $workflowSource | Should -Match '\[ -L "\$manifest" \] \|\| \[ ! -f "\$manifest" \]'
+        $workflowSource | Should -Match 'manifest_size=\$\(stat -c ''%s'' -- "\$manifest"\)'
+        $workflowSource | Should -Match '\[ "\$manifest_size" -eq 0 \] \|\| \[ "\$manifest_size" -gt 500000 \]'
+        $workflowSource | Should -Match 'cp --no-dereference -- "\$manifest" "\$staged"'
+        $workflowSource | Should -Match '\[ -L "\$staged" \] \|\| \[ ! -f "\$staged" \]'
+        $workflowSource | Should -Match '\[ "\$staged_size" -ne "\$manifest_size" \]'
+        $workflowSource | Should -Match 'submit_ci_scan was authorized but manifest_final\.json is missing'
+        # The fail-closed decision must key off the download-independent output_types
+        # job output, not the continue-on-error agent_output.json download, so a
+        # transient artifact-download failure cannot silently skip manifest scanning.
+        $workflowSource | Should -Match 'OUTPUT_TYPES: \$\{\{ needs\.agent\.outputs\.output_types \}\}'
+        $workflowSource | Should -Match '\$OUTPUT_TYPES.*==.*\*submit_ci_scan\*'
+        $workflowSource | Should -Not -Match 'output=./tmp/gh-aw/agent_output\.json.\s*\r?\n\s*mkdir'
+        # The detection prompt must name the staged file so the AI engine scans it.
+        $workflowSource | Should -Match '/tmp/gh-aw/threat-detection/manifest_final\.json'
+        # AI detection must stay enabled (no `engine: false` under threat-detection).
+        $workflowSource | Should -Not -Match '(?ms)^  threat-detection:.*?^\s+engine: false'
+    }
+
+    It 'keeps threat detection aligned with the trusted variation-selector rule' {
+        $validatorPath = Join-Path $PSScriptRoot 'Validate-CiScanManifest.ps1'
+        $validatorSource = Get-Content -LiteralPath $validatorPath -Raw
+        $validatorMatch = [regex]::Match(
+            $validatorSource,
+            '(?s)\$isEmojiVariationBase = \$previousCode -in @\((?<bases>.*?)\r?\n\s+\)')
+
+        $validatorMatch.Success | Should -BeTrue
+
+        $validatorBases = @(
+            [regex]::Matches($validatorMatch.Groups['bases'].Value, '0x(?<code>[0-9A-F]+)') |
+                ForEach-Object { "U+$($_.Groups['code'].Value)" }
+        )
+
+        $lockPath = Join-Path (Split-Path $PSScriptRoot -Parent) "workflows/$workflowName.lock.yml"
+        $lockSource = Get-Content -LiteralPath $lockPath -Raw
+        $compiledPromptMatch = [regex]::Match(
+            $lockSource,
+            '(?m)^\s+CUSTOM_PROMPT: (?<json>".*")$')
+        $compiledPromptMatch.Success | Should -BeTrue
+        $compiledPrompt = [System.Text.Json.JsonSerializer]::Deserialize[string](
+            $compiledPromptMatch.Groups['json'].Value)
+
+        foreach ($prompt in @($workflowSource, $compiledPrompt)) {
+            $promptMatch = [regex]::Match(
+                $prompt,
+                'Approved VS15/VS16 bases \(exactly\): (?<bases>U\+[0-9A-F]+(?:, U\+[0-9A-F]+)*)\.')
+
+            $promptMatch.Success | Should -BeTrue
+            @($promptMatch.Groups['bases'].Value -split ', ') |
+                Should -BeExactly $validatorBases
+            $prompt |
+                Should -Match 'Do not flag VS15 \(U\+FE0E\) or\s+VS16 \(U\+FE0F\) solely when it immediately follows one of the approved bases'
+            $prompt |
+                Should -Match 'Flag an isolated VS15/VS16 or a selector following any other base\.'
+        }
+    }
+
+    It 'uses one bounded fixed same-run artifact file and no tool-selected transport' {
+        $workflowSource |
+            Should -Match 'CI_SCAN_MANIFEST_PATH: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/agent/manifest_final\.json'
+        $workflowSource | Should -Match '/tmp/gh-aw/agent/manifest_final\.json'
+        $workflowSource | Should -Match 'same-run `agent` artifact'
+        $workflowSource | Should -Match 'argument-free `submit_ci_scan`'
+        $workflowSource | Should -Match 'jq -e \. /tmp/gh-aw/agent/manifest_final\.json >/dev/null'
+        $workflowSource | Should -Not -Match '(?ms)^\s{6}inputs:\s*\r?\n\s{8}(?:manifest|manifest_path):'
+        $workflowSource | Should -Not -Match 'one `manifest` argument'
     }
 
     It 'keeps custom publisher staging identical to framework staging' {
@@ -1732,6 +2254,6 @@ Describe 'CI scanner twin configuration' {
                 -Manifest (New-CompleteManifest -MainSignatures @($signatures)) `
                 -TrustedEvidencePath (New-DefaultEvidenceRoot) `
                 -ScannerId 'ci-scan' } |
-            Should -Throw '*must be skipped with cap-reached because the issue cap was already reached*'
+            Should -Throw '*exceeding the cap of 5*'
     }
 }

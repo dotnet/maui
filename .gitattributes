@@ -19,4 +19,4 @@
 # avoid overriding GitInfo.txt on merge
 GitInfo.txt merge=ours
 
-.github/workflows/*.lock.yml linguist-generated=true merge=ours
+.github/workflows/*.lock.yml linguist-generated=true
