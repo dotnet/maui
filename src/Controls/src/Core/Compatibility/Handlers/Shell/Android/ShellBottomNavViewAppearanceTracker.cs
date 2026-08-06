@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			bottomView.ItemIconTintList = GetDefaultTabColorList(_shellContext.AndroidContext);
 			bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
-			SetBackgroundColor(bottomView, null);
+			SetBackground(bottomView, null);
 			AndroidSystemChrome.UpdateBottomChrome(
 				bottomView,
 				new SolidColorBrush(ShellRenderer.DefaultBottomNavigationViewBackgroundColor));
@@ -78,18 +78,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bottomView.ItemTextColor = _itemTextColor;
 			bottomView.ItemIconTintList = _itemIconTint;
 
-			if (background is GradientBrush)
-				bottomView.UpdateBackground(background);
-			else
-				SetBackgroundColor(bottomView, backgroundColor ?? shellAppearance?.BackgroundColor);
-
+			SetBackground(bottomView, background);
 			AndroidSystemChrome.UpdateBottomChrome(
 				bottomView,
 				background ?? new SolidColorBrush(ShellRenderer.DefaultBottomNavigationViewBackgroundColor));
 		}
 
-		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
+		protected virtual void SetBackground(BottomNavigationView bottomView, Brush brush)
 		{
+			if (brush is GradientBrush)
+			{
+				bottomView.UpdateBackground(brush);
+				return;
+			}
+
+			var color = (brush as SolidColorBrush)?.Color;
 #pragma warning disable XAOBS001 // Obsolete
 			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
 #pragma warning restore XAOBS001 // Obsolete
@@ -136,6 +139,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
 			}
+		}
+
+		[Obsolete("Use SetBackground(BottomNavigationView, Brush) instead.")]
+		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
+		{
+			SetBackground(bottomView, color is not null ? new SolidColorBrush(color) : null);
 		}
 
 		static ColorStateList MakeDefaultColorStateList(Context context)
