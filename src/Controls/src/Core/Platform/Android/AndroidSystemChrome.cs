@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 	internal static class AndroidSystemChrome
 	{
 		static readonly ConditionalWeakTable<AppBarLayout, OriginalAppBarBackground> s_originalAppBarBackgrounds = new();
+		static readonly ConditionalWeakTable<AView, PendingBottomChromeUpdate> s_pendingBottomChromeUpdates = new();
 
 		internal static void UpdateTopChrome(AView? chromeView, Brush? background)
 		{
@@ -55,9 +56,24 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			var window = GetActivityWindowForView(chromeView);
+			if (window is null && !chromeView.IsAttachedToWindow)
+			{
+				s_pendingBottomChromeUpdates
+					.GetValue(chromeView, static view => new PendingBottomChromeUpdate(view))
+					.Update(background);
+				return;
+			}
+
+			if (s_pendingBottomChromeUpdates.TryGetValue(chromeView, out var pendingUpdate))
+			{
+				pendingUpdate.Cancel();
+				s_pendingBottomChromeUpdates.Remove(chromeView);
+			}
+
 			UpdateSystemBarAppearance(
 				chromeView.Context,
-				GetActivityWindowForView(chromeView),
+				window,
 				updateStatusBar: false,
 				updateNavigationBar: true,
 				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom),
@@ -136,6 +152,50 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return activityWindow;
+		}
+
+		sealed class PendingBottomChromeUpdate
+		{
+			readonly WeakReference<AView> _view;
+			Brush? _background;
+			IDisposable? _loadedSubscription;
+			bool _canceled;
+
+			public PendingBottomChromeUpdate(AView view)
+			{
+				_view = new(view);
+			}
+
+			public void Update(Brush? background)
+			{
+				_background = background;
+
+				if (_loadedSubscription is not null || !_view.TryGetTarget(out var view))
+				{
+					return;
+				}
+
+				_loadedSubscription = view.OnLoaded(Apply);
+			}
+
+			public void Cancel()
+			{
+				_canceled = true;
+				_loadedSubscription?.Dispose();
+				_loadedSubscription = null;
+			}
+
+			void Apply()
+			{
+				if (_canceled || !_view.TryGetTarget(out var view))
+				{
+					return;
+				}
+
+				s_pendingBottomChromeUpdates.Remove(view);
+				Cancel();
+				UpdateBottomChrome(view, _background);
+			}
 		}
 
 		static void UpdateAppBarBackground(AppBarLayout? appBarLayout, Brush? background)

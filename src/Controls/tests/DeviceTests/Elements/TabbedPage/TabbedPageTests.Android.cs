@@ -340,6 +340,41 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("Bottom TabbedPage BarBackgroundColor should color the Android navigation bar on initial load")]
+		public async Task BottomTabbedPageBarBackgroundColorColorsAndroidNavigationBarOnInitialLoad()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var expectedColor = Colors.Green;
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true, pages: new[]
+			{
+				new ContentPage { Title = "Page 1" },
+				new ContentPage { Title = "Page 2" }
+			});
+			tabbedPage.BarBackgroundColor = expectedColor;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async handler =>
+			{
+				var bottomNavigationView = GetBottomNavigationView((IPlatformViewHandler)tabbedPage.Handler);
+				await AssertEventually(() => bottomNavigationView.IsAttachedToWindow);
+				await AssertEventually(() => GetViewBackgroundColor(bottomNavigationView) == expectedColor.ToPlatform().ToArgb());
+
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
+
+				if (OperatingSystem.IsAndroidVersionAtLeast(35))
+					return;
+
+#pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
+				await AssertEventually(() => platformWindow.NavigationBarColor == expectedColor.ToPlatform().ToArgb());
+#pragma warning restore CA1422
+			});
+		}
+
+		[Fact]
 		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
 		public async Task BottomNavigationViewExtendsToScreenBottom()
 		{
@@ -464,6 +499,19 @@ namespace Microsoft.Maui.DeviceTests
 						appBar.GetDrawableState(),
 						new global::Android.Graphics.Color(materialShapeDrawable.FillColor.DefaultColor)),
 				_ => throw new XunitException($"Expected AppBar background to be {nameof(ColorDrawable)} or {nameof(MaterialShapeDrawable)}, but was {appBar.Background?.GetType().FullName ?? "null"}.")
+			};
+		}
+
+		static int GetViewBackgroundColor(global::Android.Views.View view)
+		{
+			return view.Background switch
+			{
+				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
+				MaterialShapeDrawable materialShapeDrawable when materialShapeDrawable.FillColor is not null =>
+					materialShapeDrawable.FillColor.GetColorForState(
+						view.GetDrawableState(),
+						new global::Android.Graphics.Color(materialShapeDrawable.FillColor.DefaultColor)),
+				_ => throw new XunitException($"Expected view background to be {nameof(ColorDrawable)} or {nameof(MaterialShapeDrawable)}, but was {view.Background?.GetType().FullName ?? "null"}.")
 			};
 		}
 
