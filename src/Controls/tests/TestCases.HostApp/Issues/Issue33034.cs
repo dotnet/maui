@@ -12,7 +12,7 @@ public class Issue33034 : TestShell
 		{
 			Title = "First Tab",
 			AutomationId = "FirstTab",
-			ContentTemplate = new DataTemplate(() => new Issue33034TabContent("FirstEdgeLabel")),
+			ContentTemplate = new DataTemplate(typeof(Issue33034TabContent)),
 			Route = "tab1"
 		});
 
@@ -20,7 +20,7 @@ public class Issue33034 : TestShell
 		{
 			Title = "Second Tab",
 			AutomationId = "SecondTab",
-			ContentTemplate = new DataTemplate(() => new Issue33034TabContent("SecondEdgeLabel")),
+			ContentTemplate = new DataTemplate(typeof(Issue33034TabContent)),
 			Route = "tab2"
 		});
 
@@ -31,13 +31,13 @@ public class Issue33034 : TestShell
 
 public class Issue33034TabContent : ContentPage
 {
-	public Issue33034TabContent(string edgeLabelAutomationId)
+	public Issue33034TabContent()
 	{
 		// Full-width label to detect safe area padding on either side
 		var edgeLabel = new Label
 		{
 			Text = "EDGE LABEL",
-			AutomationId = edgeLabelAutomationId,
+			AutomationId = "EdgeLabel",
 			FontSize = 18,
 			FontAttributes = FontAttributes.Bold,
 			BackgroundColor = Colors.Red,
@@ -52,3 +52,4 @@ public class Issue33034TabContent : ContentPage
 		};
 	}
 }
+

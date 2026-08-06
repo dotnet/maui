@@ -41,9 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 				((IElementHandler)handler).DisconnectHandler();
 			});
 
-			// Allow UIKit to release controller-owned references before forcing managed GC.
-			await Task.Delay(100);
-
 			// Force garbage collection
 			await AssertionExtensions.WaitForGC(weakCarouselView, weakHandler);
 

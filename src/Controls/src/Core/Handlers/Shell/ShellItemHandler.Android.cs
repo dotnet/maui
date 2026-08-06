@@ -1197,9 +1197,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Disconnect the handler to unsubscribe from events and clean up resources.
             ((IElementHandler)_handler).DisconnectHandler();
 
-            // Do not dispose the wrapper fragment here; AndroidX FragmentManager still owns
-            // it and will call OnDestroyView/OnDestroy on its own teardown schedule. Disposing
-            // the managed wrapper early crashes native callbacks that run after this point.
+            _wrapperFragment?.Dispose();
             _wrapperFragment = null;
         }
     }
