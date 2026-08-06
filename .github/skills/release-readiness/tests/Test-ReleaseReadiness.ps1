@@ -8810,6 +8810,50 @@ Assert-Eq -Label "internal trigger exclusions: docs wildcard does not hide neste
 Assert-Eq -Label "internal trigger exclusions: docs wildcard remains case-sensitive" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('Docs/README.md'))
 Assert-Eq -Label "internal trigger exclusions: rename from included path requires build" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('src/moved.md', 'docs/moved.md'))
 Assert-Eq -Label "internal trigger exclusions: reverted source path still requires build" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('src/Core/src/Core.cs', 'src/Core/src/Core.cs', 'README.md'))
+Assert-Eq -Label "internal trigger exclusions: leading whitespace is part of a trigger-eligible path" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @(' .github/hidden.yml'))
+Assert-Eq -Label "internal trigger exclusions: trailing whitespace is part of a trigger-eligible path" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('README.md '))
+
+$mergeCurrencyFixtureRepo = Join-Path ([System.IO.Path]::GetTempPath()) "rr-internal-merge-fixture-$([guid]::NewGuid().ToString('N'))"
+$mergeCurrencyFixtureLocationPushed = $false
+try {
+    New-Item -ItemType Directory -Path $mergeCurrencyFixtureRepo -Force | Out-Null
+    git -C $mergeCurrencyFixtureRepo init -q 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo config user.email 'rr-test@example.com' 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo config user.name 'RR Test' 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo config commit.gpgsign false 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo config core.hooksPath (Join-Path (Join-Path $mergeCurrencyFixtureRepo '.git') '_disabled-hooks') 2>&1 | Out-Null
+
+    New-Item -ItemType Directory -Path (Join-Path $mergeCurrencyFixtureRepo 'docs') -Force | Out-Null
+    Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'docs/README.md') -Value 'base'
+    git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q -m 'Base' 2>&1 | Out-Null
+    $mergeCurrencyBaseSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+
+    git -C $mergeCurrencyFixtureRepo checkout -q -b side $mergeCurrencyBaseSha 2>&1 | Out-Null
+    Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'docs/side.md') -Value 'side'
+    git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q -m 'Excluded side change' 2>&1 | Out-Null
+
+    git -C $mergeCurrencyFixtureRepo checkout -q -b release $mergeCurrencyBaseSha 2>&1 | Out-Null
+    Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'docs/release.md') -Value 'release'
+    git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q -m 'Excluded release change' 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo merge -q --no-commit side 2>&1 | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $mergeCurrencyFixtureRepo 'src') -Force | Out-Null
+    Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'src/OnlyInMerge.cs') -Value 'source'
+    git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q -m 'Merge with source-only resolution' 2>&1 | Out-Null
+    $mergeCurrencyHeadSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+
+    Push-Location $mergeCurrencyFixtureRepo
+    $mergeCurrencyFixtureLocationPushed = $true
+    $mergeCurrencyFetcher = New-GitBuildCurrencyFetcher -TimeoutSeconds 5
+    Assert-Eq -Label "internal build currency: merge-result-only source path requires a newer build" `
+        -Expected $false -Actual (& $mergeCurrencyFetcher 'refs/heads/release' $mergeCurrencyBaseSha $mergeCurrencyHeadSha)
+} finally {
+    if ($mergeCurrencyFixtureLocationPushed) { Pop-Location }
+    if (Test-Path $mergeCurrencyFixtureRepo) { Remove-Item -Recurse -Force $mergeCurrencyFixtureRepo }
+}
 
 $excludedHeadHealth = Get-InternalOfficialBuildHealth `
     -MajorVersion 11 `
@@ -8919,6 +8963,26 @@ $currencyTimeoutFetcher = New-GitBuildCurrencyFetcher -TimeoutSeconds 7 -Process
     }
 }
 Assert-Eq -Label "internal build currency query: timeout does not waive stale evidence" -Expected $false -Actual (& $currencyTimeoutFetcher $internalInflightRef 'a' 'b')
+
+$pwshExecutable = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+$inheritedOutputChildCommand = @'
+$startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+$startInfo.FileName = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+$startInfo.UseShellExecute = $false
+[void]$startInfo.ArgumentList.Add('-NoProfile')
+[void]$startInfo.ArgumentList.Add('-Command')
+[void]$startInfo.ArgumentList.Add('Start-Sleep -Seconds 3')
+[void][System.Diagnostics.Process]::Start($startInfo)
+'@
+$inheritedOutputStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$inheritedOutputResult = Invoke-InternalOfficialBuildProcess `
+    -FileName $pwshExecutable `
+    -Arguments @('-NoProfile', '-Command', $inheritedOutputChildCommand) `
+    -TimeoutSeconds 1
+$inheritedOutputStopwatch.Stop()
+Assert-Eq -Label "internal process: inherited output handles respect the timeout" -Expected $true -Actual $inheritedOutputResult.TimedOut
+Assert-Eq -Label "internal process: inherited output handles return before the descendant exits" `
+    -Expected $true -Actual ($inheritedOutputStopwatch.Elapsed.TotalSeconds -lt 2.5)
 
 $validManualJson = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 75 | ConvertTo-Json -Depth 8)
 $manualWithWarning = ConvertFrom-InternalOfficialBuildAzOutput `
