@@ -89,6 +89,10 @@ public class ImageTests
 	[InlineData(10, 0)]
 	[InlineData(-1, 10)]
 	[InlineData(10, -1)]
+	[InlineData(double.NaN, 10)]
+	[InlineData(10, double.NaN)]
+	[InlineData(double.PositiveInfinity, 10)]
+	[InlineData(10, double.PositiveInfinity)]
 	public void ScaleImageReturnsOriginalForNonPositiveSize(double width, double height)
 	{
 		using var source = CreatePatternImage(UIImageOrientation.Up);
@@ -96,6 +100,7 @@ public class ImageTests
 		var scaled = source.ScaleImage(new CGSize(width, height), disposeOriginal: true);
 
 		Assert.Same(source, scaled);
+		Assert.NotNull(scaled.CGImage);
 	}
 
 	[Fact]
@@ -176,6 +181,10 @@ public class ImageTests
 
 		Assert.Equal(UIImageOrientation.Up, actual.Orientation);
 		Assert.Equal(GetPixelData(expected), GetPixelData(actual));
+		Assert.Equal(expected.CGImage.Width, actual.CGImage.Width);
+		Assert.Equal(expected.CGImage.Height, actual.CGImage.Height);
+		Assert.Equal(13, (double)actual.Size.Width);
+		Assert.Equal(9, (double)actual.Size.Height);
 	}
 
 	private static UIImage CreatePatternImage(UIImageOrientation orientation)

@@ -56,7 +56,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			if (size.Width <= 0 || size.Height <= 0)
+			if (!(size.Width > 0) || !(size.Height > 0) ||
+				double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
 				return target;
 			}
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				8,
 				checked(4 * width),
 				colorSpace,
-				CGBitmapFlags.PremultipliedFirst);
+				CGBitmapFlags.ByteOrder32Little | CGBitmapFlags.PremultipliedFirst);
 
 			context.TranslateCTM(0, height);
 			context.ScaleCTM(1, -1);
