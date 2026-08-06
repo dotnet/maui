@@ -163,7 +163,7 @@ function Test-InternalOfficialBuildChangedPathsCoverHead {
     $changedPaths = @($Paths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     if ($changedPaths.Count -eq 0) { return $false }
     foreach ($path in $changedPaths) {
-        if (-not (Test-InternalOfficialBuildTriggerExcludedPath $path.Trim())) {
+        if (-not (Test-InternalOfficialBuildTriggerExcludedPath $path)) {
             return $false
         }
     }
@@ -214,6 +214,8 @@ function Invoke-InternalOfficialBuildProcess {
 
     $process = [System.Diagnostics.Process]::new()
     $process.StartInfo = $startInfo
+    $timeoutMilliseconds = $TimeoutSeconds * 1000
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     try {
         if (-not $process.Start()) {
             return [PSCustomObject]@{
@@ -229,9 +231,29 @@ function Invoke-InternalOfficialBuildProcess {
         $process.StandardInput.Close()
         $stdoutTask = $process.StandardOutput.ReadToEndAsync()
         $stderrTask = $process.StandardError.ReadToEndAsync()
-        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        if (-not $process.WaitForExit($timeoutMilliseconds)) {
             try { $process.Kill($true) } catch { }
-            [void]$process.WaitForExit(5000)
+            [void]$process.WaitForExit(1000)
+            return [PSCustomObject]@{
+                Started = $true
+                TimedOut = $true
+                ExitCode = -1
+                Stdout = if ($stdoutTask.IsCompletedSuccessfully) { $stdoutTask.GetAwaiter().GetResult() } else { '' }
+                Stderr = if ($stderrTask.IsCompletedSuccessfully) { $stderrTask.GetAwaiter().GetResult() } else { '' }
+            }
+        }
+
+        $remainingMilliseconds = [Math]::Max(
+            0,
+            $timeoutMilliseconds - [int][Math]::Ceiling($stopwatch.Elapsed.TotalMilliseconds))
+        $outputTasks = [System.Threading.Tasks.Task[]]@($stdoutTask, $stderrTask)
+        $outputCompleted = $stdoutTask.IsCompleted -and $stderrTask.IsCompleted
+        if (-not $outputCompleted -and $remainingMilliseconds -gt 0) {
+            $outputCompleted = [System.Threading.Tasks.Task]::WaitAll(
+                $outputTasks,
+                $remainingMilliseconds)
+        }
+        if (-not $outputCompleted) {
             return [PSCustomObject]@{
                 Started = $true
                 TimedOut = $true
@@ -490,6 +512,7 @@ function New-GitBuildCurrencyFetcher {
             '--format=',
             '--name-only',
             '--no-renames',
+            '--diff-merges=first-parent',
             "$BuildSourceSha..$BranchHeadSha"
         ) $timeout
         if (-not [bool](Get-InternalBuildProperty $logResult 'Started') -or

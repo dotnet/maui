@@ -354,10 +354,12 @@ formatting separate:
    - GitHub Actions or unavailable internal authentication → `skipped`
 6. Bound each Azure CLI, GitHub, and local Git query; a timeout becomes `unknown`
    evidence instead of hanging the local run.
-7. When branch HEAD is newer than the build, inspect the paths touched by every
-   intervening commit against `eng/pipelines/ci-official.yml`; excluded-only
-   advances remain current. Do not use an aggregate tip-to-tip diff because a
-   later revert can hide an earlier trigger-eligible change.
+7. When branch HEAD is newer than the build, inspect the exact paths touched by
+   every intervening commit against `eng/pipelines/ci-official.yml`, including
+   each merge result relative to its first parent; excluded-only advances remain
+   current. Do not trim path text or use an aggregate tip-to-tip diff because
+   whitespace is valid in Git paths and a later revert can hide an earlier
+   trigger-eligible change.
 8. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
    `in-progress`/`partial-success` → `WATCH`, `unknown` → `UNKNOWN`; `skipped`
    is fail-open.
