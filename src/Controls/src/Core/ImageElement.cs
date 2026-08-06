@@ -49,7 +49,13 @@ namespace Microsoft.Maui.Controls
 					oldSource.SourceChanged -= image.OnImageSourceSourceChanged;
 				}
 
-				oldSource.Parent = null;
+				// Only release the parent if this element still owns it. The same source can be
+				// assigned to several owners and the most recent assignment wins, so an older
+				// owner clearing its value must not unparent the source from the current one.
+				if (ReferenceEquals(oldSource.Parent, bindable))
+				{
+					oldSource.Parent = null;
+				}
 			}
 
 			ImageSourceChanging(oldSource);

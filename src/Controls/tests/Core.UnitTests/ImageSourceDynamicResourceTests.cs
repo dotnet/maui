@@ -199,6 +199,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ClearingAnImageSourceFromAnOlderOwnerKeepsTheCurrentOwnersParent()
+		{
+			SetUpAppWithAccentColor();
+
+			var source = new FontImageSource { Glyph = "x" };
+
+			// ImageElement (Image/Button/ImageButton) parents sources too, and the same
+			// source can legitimately be assigned to more than one owner
+			var first = new Image { Source = source };
+			var second = new Image { Source = source };
+
+			Assert.Equal(second, source.Parent);
+
+			// The older owner no longer holds the parent, so clearing it must not unparent
+			// the source from the owner that does
+			first.Source = null;
+
+			Assert.Equal(second, source.Parent);
+		}
+
+		[Fact]
 		public void AllImageSourcePropertiesParentTheirSource()
 		{
 			SetUpAppWithAccentColor();
