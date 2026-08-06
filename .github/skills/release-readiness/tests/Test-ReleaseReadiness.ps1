@@ -9532,6 +9532,24 @@ Assert-Eq -Label "installability: source that failed but was never required is s
 Assert-Eq -Label "installability: redacted UnknownSources uses the generic authenticated-source placeholder" `
     -Expected 'authenticated-source' -Actual $iiRedactedWithSources.ManifestPackages[0].UnknownSources[0]
 
+$iiMixedSourceResult = $iiInstallableWithHiddenFailure.PSObject.Copy()
+$iiMixedSourceResult.ManifestPackages = @([PSCustomObject]@{
+    WorkloadId = 'Example.Workload'; PackageId = 'Example.Manifest'
+    Version = '1.0.0-PRIVATE'; Status = 'found'; ContentStatus = 'read'
+    ResolvedSource = [PSCustomObject]@{ Source = $iiFailedButUnusedSource }
+    UnknownSources = @()
+})
+$iiMixedSourceResult | Add-Member -NotePropertyName PlatformRequirements -NotePropertyValue $null
+$iiMixedSourcePublic = ConvertTo-PublicInstallabilityResult -Result $iiMixedSourceResult `
+    -Sources @($iiFailedButUnusedSource)
+$iiMixedSourceMarkdown = Format-PreviewInstallabilityMarkdown -Result $iiMixedSourcePublic
+Assert-Eq -Label "installability: nested version from authenticated source is withheld when workload-set source is public" `
+    -Expected 'withheld' -Actual $iiMixedSourcePublic.ManifestPackages[0].Version
+Assert-Eq -Label "installability: mixed-source public JSON does not disclose authenticated-source version" `
+    -Expected $false -Actual (($iiMixedSourcePublic | ConvertTo-Json -Depth 10).Contains('1.0.0-PRIVATE'))
+Assert-Eq -Label "installability: mixed-source public Markdown does not disclose authenticated-source version" `
+    -Expected $false -Actual $iiMixedSourceMarkdown.Contains('1.0.0-PRIVATE')
+
 $iiRedactedWithoutSources = ConvertTo-PublicInstallabilityResult -Result $iiInstallableWithHiddenFailure
 Assert-Eq -Label "installability: without -Sources, a source outside RequiredSources is NOT recognized as sensitive (documents why -Sources must be passed at every call site)" `
     -Expected 'internal_preview6_unused' -Actual $iiRedactedWithoutSources.ManifestPackages[0].UnknownSources[0]
@@ -9664,6 +9682,15 @@ $iiConfirmedUnverifiedCheck = ConvertTo-PreviewInstallabilityCheck -Result $iiCo
 Assert-Eq -Label "installability: unverified component pin remediation requests missing pin evidence" `
     -Expected 'Resolve the unavailable branch component pin evidence, then rerun without changing the supplied workload-set version.' `
     -Actual $iiConfirmedUnverifiedCheck.NextAction
+
+$iiUnconfirmedUnverifiedRun = Get-PreviewConsumerInstallability -Major 11 -Preview 6 `
+    -Pins $iiPinsMissingAndroid -PublicSafe $false -Fetcher $iiFetcher -PackageReader $iiPackageReader
+$iiUnconfirmedUnverifiedCheck = ConvertTo-PreviewInstallabilityCheck -Result $iiUnconfirmedUnverifiedRun
+Assert-Eq -Label "installability: unconfirmed candidate with unavailable pin evidence remains unconfirmed" `
+    -Expected $false -Actual $iiUnconfirmedUnverifiedRun.VersionConfirmed
+Assert-Eq -Label "installability: unconfirmed candidate remediation requests a confirmed version before pin repair" `
+    -Expected 'Supply the confirmed workload-set CLI version and any required authenticated package source, then rerun locally.' `
+    -Actual $iiUnconfirmedUnverifiedCheck.NextAction
 
 # Fix: markdown table cells built from feed/source-supplied strings (NuGet
 # source names) must not be able to break table structure (a literal '|')

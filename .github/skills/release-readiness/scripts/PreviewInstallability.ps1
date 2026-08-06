@@ -842,7 +842,7 @@ function ConvertTo-PublicInstallabilityResult {
             Category       = Get-InstallabilityProperty $Location 'Category'
             WorkloadId     = Get-InstallabilityProperty $Location 'WorkloadId'
             PackageId      = Get-InstallabilityProperty $Location 'PackageId'
-            Version        = if ($withholdVersions -and
+            Version        = if (($withholdVersions -or $isSensitive) -and
                 -not [string]::IsNullOrWhiteSpace([string](Get-InstallabilityProperty $Location 'Version'))) {
                 'withheld'
             } else {
@@ -1137,7 +1137,7 @@ function Get-PreviewConsumerInstallability {
         } else {
             'unknown'
         }
-        $failureKind = if ($hasUnverifiedPin -and -not $hasPinMismatch) {
+        $failureKind = if ($WorkloadSetCliVersion -and $hasUnverifiedPin -and -not $hasPinMismatch) {
             'component-pin-unverified'
         } else {
             $null
