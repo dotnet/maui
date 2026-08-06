@@ -57,15 +57,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			mauiDrawable.SetBackground(radioButton.Background);
-
-			if (radioButton.StrokeColor != null)
-				mauiDrawable.SetBorderBrush(new SolidPaint { Color = radioButton.StrokeColor });
-
-			if (radioButton.StrokeThickness > 0)
-				mauiDrawable.SetBorderWidth(radioButton.StrokeThickness);
-
-			if (radioButton.CornerRadius > 0)
-				mauiDrawable.SetCornerRadius(radioButton.CornerRadius);
+			mauiDrawable.SetBorderBrush(new SolidPaint { Color = radioButton.StrokeColor });
+			mauiDrawable.SetBorderWidth(radioButton.StrokeThickness);
+			mauiDrawable.SetCornerRadius(radioButton.CornerRadius);
 		}
 	}
 }
