@@ -166,7 +166,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (timePicker.Background.IsNullOrEmpty())
+			if (timePicker.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (timePicker.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;

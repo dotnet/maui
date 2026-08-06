@@ -22,11 +22,11 @@ public class Issue36933 : _IssuesUITest
 
 		// Tap clear button to set Background = null — should clear the initial background
 		App.Tap("ClearBackgroundButton");
-		VerifyScreenshotOrSetException(ref exception, "BackgroundCleared");
+		VerifyScreenshotOrSetException(ref exception, "Issue36933BackgroundCleared");
 
 		// Tap set button to set a new background color
 		App.Tap("SetBackgroundButton");
-		VerifyScreenshotOrSetException(ref exception, "BackgroundColorSet");
+		VerifyScreenshotOrSetException(ref exception, "Issue36933BackgroundColorSet");
 
 		if (exception is not null)
 		{

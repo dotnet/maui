@@ -351,7 +351,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (datePicker.Background.IsNullOrEmpty())
+			if (datePicker.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (datePicker.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;
