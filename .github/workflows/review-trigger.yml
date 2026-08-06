@@ -27,29 +27,32 @@ on:
         default: 'main'
 
 jobs:
-  # Coarse pre-filter that decides whether the comment is a /review command.
-  # Doing this in a tiny job (rather than only in the trigger-review job-level `if`)
-  # lets us match the command robustly with a bash regex — GitHub expression syntax
-  # has no trim/regex, so it can't reliably handle leading whitespace, tabs, or
-  # newlines that may precede the slash command (e.g. when users paste it).
+  # Lightweight pre-flight gate that matches the command and checks permission
+  # before provisioning the write-capable trigger-review job.
   match:
     if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
     runs-on: ubuntu-latest
-    # The actual work (a bash regex match) takes <1s, but GitHub-hosted runner
-    # provisioning ("Set up job") can take ~2 min under load. A 2-minute cap let that
-    # provisioning latency cancel the whole job mid-setup, skipping trigger-review so the
-    # AzDO pipeline never queued (e.g. dotnet/maui#36307 comment 4925414214). Give the
-    # runner ample headroom — the trivial step can't itself hang for minutes.
+    # The actual work (a bash regex match + a permission lookup) takes <1s, but
+    # GitHub-hosted runner provisioning ("Set up job") can take ~2 min under load. A
+    # 2-minute cap let that provisioning latency cancel the whole job mid-setup, skipping
+    # trigger-review so the AzDO pipeline never queued (e.g. dotnet/maui#36307 comment
+    # 4925414214). Give the runner ample headroom — the trivial steps can't themselves
+    # hang for minutes.
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       matched: ${{ steps.check.outputs.matched }}
+      proceed: ${{ steps.gate.outputs.proceed }}
     steps:
       - name: Match /review command
         id: check
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -74,9 +77,36 @@ jobs:
             echo "matched=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check actor permission
+        id: gate
+        if: steps.check.outputs.matched == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "workflow_dispatch — skipping collaborator check"
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null); then
+            echo "::warning::Permission lookup failed for ${ACTOR}; treating the caller as unauthorized."
+            PERMISSION="none"
+          fi
+          echo "User ${ACTOR} has permission: ${PERMISSION}"
+          # write, maintain, and admin can all trigger /review
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+            echo "::notice::User ${ACTOR} does not have sufficient access (${PERMISSION}). Only write/maintain/admin can trigger /review. Skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+
   trigger-review:
     needs: match
-    if: needs.match.outputs.matched == 'true'
+    if: needs.match.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
@@ -87,21 +117,9 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
+    env:
+      REPO: ${{ github.repository }}
     steps:
-      - name: Check actor permission
-        id: auth
-        if: github.event_name == 'issue_comment'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
-          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
-          # write, maintain, and admin can all trigger /review
-          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
-            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review."
-            exit 1
-          fi
-
       - name: Parse parameters
         id: params
         env:
@@ -220,7 +238,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
           PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
           if [ "${PR_STATE}" != "open" ]; then
             echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
@@ -265,9 +283,10 @@ jobs:
       # before the pipeline can be queued, tell the commenter to retry. Uses gh + the event
       # payload directly, so it does not depend on the helper that may have failed to download.
       # Skipped once the pipeline actually queued (trigger_azdo succeeded) and on the normal
-      # lock-skip path.
+      # lock-skip path. The pre-flight `match`/`gate` jobs already authorized the actor before
+      # this job could even start, so there is no separate auth-outcome check here.
       - name: Report trigger infra failure so it is never silent
-        if: (cancelled() || failure()) && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' && steps.trigger_azdo.outcome != 'success'
+        if: (cancelled() || failure()) && github.event_name == 'issue_comment' && steps.trigger_azdo.outcome != 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number }}
@@ -370,7 +389,7 @@ jobs:
           echo "(File-based detection is handled by the agentic-labeler.md workflow on PR open/reopen.)"
 
           # Check PR labels applied by agentic-labeler.md or manually
-          LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
+          LABELS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
 
@@ -393,10 +412,23 @@ jobs:
           echo "Inferred platform: ${PLATFORM}"
           echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
 
-      - name: Get OIDC Token
+      # OIDC -> AzDO token exchange -> pipeline trigger combined into a single
+      # step. Keeping the tokens in shell-local variables avoids persisting them
+      # through `$GITHUB_OUTPUT` between steps (where they are masked but still
+      # serialized to disk on the runner).
+      - name: Trigger maui-copilot pipeline
+        id: trigger_azdo
         if: steps.review_lock.outputs.locked != 'true'
-        id: oidc
+        env:
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
+          PLATFORM: ${{ steps.infer.outputs.platform }}
+          AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
+          # 1. Get GitHub OIDC token
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
             | jq -r '.value')
@@ -405,21 +437,17 @@ jobs:
             exit 1
           fi
           echo "::add-mask::${OIDC_TOKEN}"
-          echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
 
-      - name: Exchange for AzDO Token
-        if: steps.review_lock.outputs.locked != 'true'
-        id: token
-        env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
-        run: |
+          # 2. Exchange OIDC token for AzDO access token
           AZURE_RESPONSE=$(curl -s -X POST \
-            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
+            "https://login.microsoftonline.com/${AZDO_TENANT_ID}/oauth2/v2.0/token" \
             -d "grant_type=client_credentials" \
-            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
+            -d "client_id=${AZDO_CLIENT_ID}" \
             -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
             -d "client_assertion=${OIDC_TOKEN}" \
             -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+          # Drop OIDC token from memory once we have the AzDO token
+          unset OIDC_TOKEN
 
           AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
           if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
@@ -429,19 +457,9 @@ jobs:
             exit 1
           fi
           echo "::add-mask::${AZDO_TOKEN}"
-          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+          unset AZURE_RESPONSE
 
-      - name: Trigger maui-copilot pipeline
-        id: trigger_azdo
-        if: steps.review_lock.outputs.locked != 'true'
-        env:
-          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
-          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
-          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
-          PLATFORM: ${{ steps.infer.outputs.platform }}
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
+          # 3. Trigger the pipeline
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
           # Guard against a common mistake: a `--branch` that does not exist (an old/renamed
@@ -450,15 +468,16 @@ jobs:
           # the commenter gets no feedback. Validate the branch exists first and record a
           # specific reason so the failure-feedback step can tell them exactly what to fix.
           BRANCH_HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+            -H "Authorization: ******" -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${GH_REPO}/branches/${PIPELINE_REF}")
           if [ "${BRANCH_HTTP}" != "200" ]; then
             echo "fail_reason=branch-missing" >> "$GITHUB_OUTPUT"
             echo "::error::Pipeline branch '${PIPELINE_REF}' does not exist in ${GH_REPO} (HTTP ${BRANCH_HTTP})."
+            unset AZDO_TOKEN
             exit 1
           fi
 
-          # Platform is always resolved at this point (inferred or explicit)
+          # Platform is always resolved at this point (inferred or explicit).
           # Build JSON payload safely with jq to avoid injection.
           PAYLOAD=$(jq -n \
             --arg pr "${PR_NUMBER}" \
@@ -471,9 +490,10 @@ jobs:
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
-            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Authorization: ******" \
             -H "Content-Type: application/json" \
             -d "${PAYLOAD}")
+          unset AZDO_TOKEN
 
           HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
           RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
@@ -524,16 +544,15 @@ jobs:
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
       - name: Hide the /review command comment as resolved
-        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' }}
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' }}
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
         run: |
-          # Always collapse the /review command comment once the actor is authorized
-          # (steps.auth succeeded) and the command was recognized — no matter the trigger
-          # outcome, including a lock-skip (locked == 'true') or a failed AzDO trigger.
-          # !cancelled() lets this run even when an upstream step failed; the steps.auth gate
-          # still keeps an unauthorized commenter's comment fully visible.
+          # This job only runs after the pre-flight authorization gate succeeds, so
+          # collapse the recognized command no matter the trigger outcome, including
+          # a lock-skip (locked == 'true') or a failed AzDO trigger. Unauthorized
+          # commenters never enter this job, leaving their comments fully visible.
           #
           # We MINIMIZE (hide as resolved) rather than delete so the command — and its
           # --branch/--platform options — survives in the REST comment history that the rerun

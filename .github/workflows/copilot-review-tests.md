@@ -49,7 +49,7 @@ on:
         if [ "$EVENT_NAME" != "issue_comment" ] || [ -z "${ISSUE_PULL_REQUEST_URL:-}" ]; then
           echo "should_run=false" >> "$GITHUB_OUTPUT"; exit 0
         fi
-        if [[ "$COMMENT_BODY" =~ ^[[:space:]]*/review[[:space:]]+tests[[:space:]]*$ ]]; then
+        if [[ "$COMMENT_BODY" =~ ^/review[[:space:]]+tests[[:space:]]*$ ]]; then
           echo "should_run=true" >> "$GITHUB_OUTPUT"
         else
           echo "should_run=false" >> "$GITHUB_OUTPUT"
@@ -109,7 +109,7 @@ on:
         steps.exact_command.outputs.should_run == 'true' &&
         steps.check_membership.outputs.is_team_member == 'true' &&
         steps.check_command_position.outputs.command_position_ok == 'true'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     - name: Gather test-failure context
@@ -217,7 +217,7 @@ permissions:
   actions: read
   checks: read
 
-model: claude-opus-4.8
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:
