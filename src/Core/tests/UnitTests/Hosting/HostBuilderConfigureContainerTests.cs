@@ -701,18 +701,20 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task BuildFailureRestoresEssentialsFacadeBeforeAsyncOnlyServiceProviderDisposalCompletes()
+		public async Task BuildFailureRestoresEssentialsFacadeAfterAsyncOnlyServiceProviderDisposalCompletes()
 		{
 			var timeout = TimeSpan.FromSeconds(30);
 			var returnTimeout = TimeSpan.FromSeconds(1);
 			var originalPreferences = Preferences.Default;
 			var bridgedPreferences = new StubPreferences();
+			PreferencesReadingThrowingInitializeService initializer = null;
 			var context = new QueuedSynchronizationContext();
 			var factory = new UIThreadAsyncOnlyServiceProviderFactory(context);
 			var builder = MauiApp.CreateBuilder();
 			builder.ConfigureContainer(factory);
 			builder.Services.AddSingleton<IPreferences>(bridgedPreferences);
-			builder.Services.AddSingleton<IMauiInitializeService, ThrowingInitializeService>();
+			builder.Services.AddSingleton<IMauiInitializeService>(_ =>
+				initializer = new PreferencesReadingThrowingInitializeService());
 			var buildReturned = new TaskCompletionSource<Exception>(
 				TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -742,13 +744,20 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					"Build blocked while the async-only provider awaited dispatched disposal work.");
 				Assert.IsType<InvalidOperationException>(exception);
 				Assert.Equal("initialization failed", exception.Message);
-				Assert.Same(originalPreferences, Preferences.Default);
+				Assert.Same(bridgedPreferences, Preferences.Default);
 				Assert.False(factory.Provider.IsDisposed);
 
 				context.RunAll();
 				await Task.WhenAll(build, factory.DisposeCompleted.Task).WaitAsync(timeout);
 
+				Assert.NotNull(initializer);
+				Assert.Same(bridgedPreferences, initializer!.PreferencesDuringDispose);
 				Assert.True(factory.Provider.IsDisposed);
+				Assert.True(
+					SpinWait.SpinUntil(
+						() => ReferenceEquals(originalPreferences, Preferences.Default),
+						timeout),
+					"Essentials facade was not restored after provider disposal completed.");
 			}
 			finally
 			{
@@ -939,6 +948,22 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 				throw new InvalidOperationException("initialization failed");
+			}
+		}
+
+		sealed class PreferencesReadingThrowingInitializeService : IMauiInitializeService, IAsyncDisposable
+		{
+			public IPreferences PreferencesDuringDispose { get; private set; }
+
+			public void Initialize(IServiceProvider services)
+			{
+				throw new InvalidOperationException("initialization failed");
+			}
+
+			public ValueTask DisposeAsync()
+			{
+				PreferencesDuringDispose = Preferences.Default;
+				return ValueTask.CompletedTask;
 			}
 		}
 

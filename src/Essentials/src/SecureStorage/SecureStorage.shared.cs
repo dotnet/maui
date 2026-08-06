@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Storage
 		internal static string GetDefaultPackageName()
 		{
 #if !NETSTANDARD && PLATFORM
-			return AppInfo.Current.PackageName;
+			return AppInfoImplementation.GetDefaultPackageName();
 #else
 			return string.Empty;
 #endif

@@ -30,7 +30,9 @@ namespace Microsoft.Maui.ApplicationModel
 				OnActiveWindowThemeChanged();
 		}
 
-		public string PackageName => AppInfoUtils.IsPackagedApp
+		public string PackageName => GetDefaultPackageName();
+
+		internal static string GetDefaultPackageName() => AppInfoUtils.IsPackagedApp
 			? Package.Current.Id.Name
 			: _launchingAssembly.GetAppInfoValue("PackageName") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 

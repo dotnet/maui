@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Hosting
 		static readonly object s_appActionsSetLock = new();
 		static readonly List<AppActionsSetAssignment> s_appActionsSetAssignments = new();
 		static AppActionsSetAssignment? s_pendingAppActionsSetAssignment;
-		static AppActionsSetAssignment? s_appActionsSetApplyingAssignment;
 		static object? s_appActionsSetWorkerToken;
 		static readonly object s_appInfoSecureStorageBridgeLock = new();
 
@@ -288,7 +287,6 @@ namespace Microsoft.Maui.Hosting
 						versionTrackingDependencies.VersionTracking is not null;
 					BridgeLazyVersionTrackingFromDI(versionTrackingDependencies, facadeCleanups);
 					BridgeAppInfoSecureStorageFromDI(
-						versionTrackingDependencies.AppInfo,
 						versionTrackingDependencies.SecureStorage,
 						versionTrackingDependencies.FileSystem,
 						versionTrackingDependencies.AppInfoOwner,
@@ -643,7 +641,6 @@ namespace Microsoft.Maui.Hosting
 			}
 
 			static void BridgeAppInfoSecureStorageFromDI(
-				IAppInfo? appInfo,
 				ISecureStorage? secureStorage,
 				IFileSystem? fileSystem,
 				FacadeAssignment<IAppInfo>? appInfoOwner,
@@ -659,22 +656,19 @@ namespace Microsoft.Maui.Hosting
 					))
 					return;
 
-				// Install VersionTracking ownership before invoking the app-provided PackageName
-				// getter, which may reentrantly access other static Essentials facades.
-				// SecureStorage namespaces follow the bridged package name. Apps that change
-				// PackageName must migrate existing secrets or register ISecureStorage.
+				// Implicit SecureStorage retains the native package identity so bridging a custom
+				// IAppInfo cannot silently move existing secrets to a different namespace. Apps
+				// that need a custom namespace must register ISecureStorage explicitly.
 #if WINDOWS
 				var appDataDirectory = SecureStorageImplementation.UsesFileSystemAppDataDirectory
-					? (fileSystem ?? FileSystem.Current).AppDataDirectory
+					? fileSystem?.AppDataDirectory ?? FileSystemImplementation.GetDefaultAppDataDirectory()
 					: null;
 #endif
-				var secureStoragePackageName = (appInfo ?? AppInfo.Current).PackageName;
+				var secureStoragePackageName = SecureStorageImplementation.GetDefaultPackageName();
 
-				// PackageName can yield while a newer app takes AppInfo ownership. Keep the
-				// original app's cleanup slot and install its matching SecureStorage only if
-				// that AppInfo assignment becomes current again.
-				// These values are only snapshots: installation revalidates every app-owned
-				// dependency and the SecureStorage predecessor under their facade locks.
+				// Custom IFileSystem getters can yield while a newer app takes facade ownership.
+				// Installation revalidates every app-owned dependency and the SecureStorage
+				// predecessor under their facade locks before publishing the wrapper.
 				var installation = new DeferredAppInfoSecureStorageInstallation(
 					appInfoOwner,
 					fileSystemOwner,
@@ -2176,15 +2170,6 @@ namespace Microsoft.Maui.Hosting
 						else
 							CancelPendingAppActionsSetUnderLock();
 					}
-
-					if (ReferenceEquals(s_appActionsSetApplyingAssignment, assignment))
-					{
-						// IAppActions has no cancellation contract. Detach a removed in-flight
-						// operation so it cannot indefinitely block a newer active app.
-						s_appActionsSetApplyingAssignment = null;
-						s_appActionsSetWorkerToken = null;
-						StartAppActionsSetWorkerUnderLock();
-					}
 				}
 			}
 
@@ -2245,11 +2230,13 @@ namespace Microsoft.Maui.Hosting
 								continue;
 							}
 
-							s_appActionsSetApplyingAssignment = assignment;
 						}
 
 						try
 						{
+							// IAppActions writes process-global OS state and cannot be cancelled.
+							// Keep the sole worker attached until this write finishes so a stale
+							// completion can never overwrite a newer owner's publication.
 							await SetAppActionsAsync(
 								assignment.Implementation,
 								assignment.Logger,
@@ -2259,24 +2246,6 @@ namespace Microsoft.Maui.Hosting
 						{
 							Trace.TraceError($"AppActions failure logging threw an exception: {ex}");
 						}
-						finally
-						{
-							lock (s_appActionsSetLock)
-							{
-								if (ReferenceEquals(s_appActionsSetApplyingAssignment, assignment))
-									s_appActionsSetApplyingAssignment = null;
-
-								if (!ReferenceEquals(s_appActionsSetWorkerToken, workerToken) &&
-									s_appActionsSetAssignments.Count > 0)
-								{
-									// A detached stale operation may finish after a newer publish.
-									// Requeue only; the authoritative worker remains responsible for
-									// serializing active assignments and restoring the latest state.
-									QueueAppActionsSetUnderLock(
-										s_appActionsSetAssignments[s_appActionsSetAssignments.Count - 1]);
-								}
-							}
-						}
 					}
 				}
 				finally
@@ -2285,7 +2254,6 @@ namespace Microsoft.Maui.Hosting
 					{
 						if (ReferenceEquals(s_appActionsSetWorkerToken, workerToken))
 						{
-							s_appActionsSetApplyingAssignment = null;
 							s_appActionsSetWorkerToken = null;
 							StartAppActionsSetWorkerUnderLock();
 						}

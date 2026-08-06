@@ -175,23 +175,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task Deferred_AppInfo_Bridge_Preserves_Original_Custom_Platform_Default_Accessible()
+		public void Overlapping_AppInfo_Bridges_Preserve_Original_Custom_Platform_Default_Accessible()
 		{
-			var timeout = TimeSpan.FromSeconds(30);
-			var firstEnteredPackageName = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
-			var releaseFirstPackageName = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
 			var originalAppInfo = AppInfo.Current;
 			var originalSecureStorage = SecureStorage.Default;
 			var previous = new PlatformSecureStorageStub
 			{
 				DefaultAccessible = Security.SecAccessible.WhenUnlockedThisDeviceOnly,
 			};
-			var firstAppInfo = new BlockingStubAppInfo(
-				"first.securestorage.package",
-				firstEnteredPackageName,
-				releaseFirstPackageName);
+			var firstAppInfo = new StubAppInfo("first.securestorage.package");
 			MauiApp firstApp = null;
 			MauiApp secondApp = null;
 
@@ -201,25 +193,22 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			{
 				var firstBuilder = MauiApp.CreateBuilder();
 				firstBuilder.Services.AddSingleton<IAppInfo>(firstAppInfo);
-				var firstBuild = Task.Run(() => firstApp = firstBuilder.Build());
-				await firstEnteredPackageName.Task.WaitAsync(timeout);
+				firstApp = firstBuilder.Build();
+				var firstWrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 
 				var secondBuilder = MauiApp.CreateBuilder();
 				secondBuilder.Services.AddSingleton<IAppInfo>(
 					new StubAppInfo(packageName: "second.securestorage.package"));
 				secondApp = secondBuilder.Build();
 
-				releaseFirstPackageName.SetResult(true);
-				await firstBuild.WaitAsync(timeout);
-
 				secondApp.Dispose();
 				secondApp = null;
 
 				Assert.Same(firstAppInfo, AppInfo.Current);
-				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				Assert.Same(firstWrapper, SecureStorage.Default);
 				Assert.Equal(
 					Security.SecAccessible.WhenUnlockedThisDeviceOnly,
-					wrapper.DefaultAccessible);
+					firstWrapper.DefaultAccessible);
 
 				firstApp.Dispose();
 				firstApp = null;
@@ -227,7 +216,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 			finally
 			{
-				releaseFirstPackageName.TrySetResult(true);
 				firstApp?.Dispose();
 				secondApp?.Dispose();
 				SecureStorage.SetDefault(originalSecureStorage);
@@ -236,23 +224,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task Deferred_AppInfo_Bridge_Preserves_Custom_Accessibility_After_Predecessor_Disposal()
+		public void AppInfo_Bridge_Preserves_Custom_Accessibility_After_Predecessor_Disposal()
 		{
-			var timeout = TimeSpan.FromSeconds(30);
-			var successorEnteredPackageName = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
-			var releaseSuccessorPackageName = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
 			var originalAppInfo = AppInfo.Current;
 			var originalSecureStorage = SecureStorage.Default;
 			var previous = new PlatformSecureStorageStub
 			{
 				DefaultAccessible = Security.SecAccessible.WhenUnlockedThisDeviceOnly,
 			};
-			var successorAppInfo = new BlockingStubAppInfo(
-				"successor.securestorage.package",
-				successorEnteredPackageName,
-				releaseSuccessorPackageName);
+			var successorAppInfo = new StubAppInfo("successor.securestorage.package");
 			MauiApp predecessorApp = null;
 			MauiApp successorApp = null;
 
@@ -268,15 +248,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				var successorBuilder = MauiApp.CreateBuilder();
 				successorBuilder.Services.AddSingleton<IAppInfo>(successorAppInfo);
-				var successorBuild = Task.Run(() => successorApp = successorBuilder.Build());
-				await successorEnteredPackageName.Task.WaitAsync(timeout);
+				successorApp = successorBuilder.Build();
+				Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 
 				predecessorApp.Dispose();
 				predecessorApp = null;
-				Assert.Same(previous, SecureStorage.Default);
-
-				releaseSuccessorPackageName.SetResult(true);
-				await successorBuild.WaitAsync(timeout);
+				Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 
 				Assert.Same(successorAppInfo, AppInfo.Current);
 				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
@@ -290,7 +267,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 			finally
 			{
-				releaseSuccessorPackageName.TrySetResult(true);
 				successorApp?.Dispose();
 				predecessorApp?.Dispose();
 				SecureStorage.SetDefault(originalSecureStorage);
@@ -563,50 +539,86 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task AppInfo_Bridge_Captures_FileSystem_Before_Reentrant_PackageName()
+		public void AppInfo_Only_Bridge_Uses_Native_AppDataDirectory_When_FileSystem_Is_Owned_By_Another_App()
 		{
-			var timeout = TimeSpan.FromSeconds(30);
-			var enteredPackageName = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
-			var releasePackageName = new TaskCompletionSource<bool>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
+			if (!SecureStorageImplementation.UsesFileSystemAppDataDirectory)
+				return;
+
 			var originalAppInfo = AppInfo.Current;
 			var originalFileSystem = FileSystem.Current;
 			var originalSecureStorage = SecureStorage.Default;
 			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
-			var firstAppData = Path.Combine(root, "first", "AppData");
-			var secondAppData = Path.Combine(root, "second", "AppData");
-			var appInfo = new BlockingWindowsStubAppInfo(
-				"reentrant.securestorage.package",
-				enteredPackageName,
-				releasePackageName);
-			MauiApp app = null;
-
-			SecureStorage.SetDefault(null);
-			FileSystem.SetCurrent(new StubFileSystem(firstAppData));
+			var ambientAppData = Path.Combine(root, "ambient", "AppData");
+			MauiApp fileSystemApp = null;
+			MauiApp appInfoApp = null;
 
 			try
 			{
-				var builder = MauiApp.CreateBuilder();
-				builder.Services.AddSingleton<IAppInfo>(appInfo);
-				var build = Task.Run(() => app = builder.Build());
-				await enteredPackageName.Task.WaitAsync(timeout);
+				var fileSystemBuilder = MauiApp.CreateBuilder();
+				fileSystemBuilder.Services.AddSingleton<IFileSystem>(
+					new StubFileSystem(ambientAppData));
+				fileSystemApp = fileSystemBuilder.Build();
 
-				FileSystem.SetCurrent(new StubFileSystem(secondAppData));
-				releasePackageName.SetResult(true);
-				await build.WaitAsync(timeout);
+				var appInfoBuilder = MauiApp.CreateBuilder();
+				appInfoBuilder.Services.AddSingleton<IAppInfo>(
+					new WindowsStubAppInfo("custom.securestorage.package"));
+				appInfoApp = appInfoBuilder.Build();
 
 				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
 				var implementation = GetWrappedImplementation(wrapper);
-				if (SecureStorageImplementation.UsesFileSystemAppDataDirectory)
-					Assert.Equal(firstAppData, implementation.UnpackagedAppDataDirectory);
-				else
-					Assert.Null(implementation.UnpackagedAppDataDirectory);
+				Assert.Equal(
+					FileSystemImplementation.GetDefaultAppDataDirectory(),
+					implementation.UnpackagedAppDataDirectory);
+				Assert.NotEqual(ambientAppData, implementation.UnpackagedAppDataDirectory);
 			}
 			finally
 			{
-				releasePackageName.TrySetResult(true);
-				app?.Dispose();
+				appInfoApp?.Dispose();
+				fileSystemApp?.Dispose();
+				SecureStorage.SetDefault(originalSecureStorage);
+				FileSystem.SetCurrent(originalFileSystem);
+				AppInfo.SetCurrent(originalAppInfo);
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public void FileSystem_Only_Bridge_Uses_Owned_AppDataDirectory_When_AppInfo_Is_Owned_By_Another_App()
+		{
+			if (!SecureStorageImplementation.UsesFileSystemAppDataDirectory)
+				return;
+
+			var originalAppInfo = AppInfo.Current;
+			var originalFileSystem = FileSystem.Current;
+			var originalSecureStorage = SecureStorage.Default;
+			var historicalAlias = new SecureStorageImplementation().Alias;
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var ownedAppData = Path.Combine(root, "owned", "AppData");
+			MauiApp appInfoApp = null;
+			MauiApp fileSystemApp = null;
+
+			try
+			{
+				var appInfoBuilder = MauiApp.CreateBuilder();
+				appInfoBuilder.Services.AddSingleton<IAppInfo>(
+					new WindowsStubAppInfo("custom.securestorage.package"));
+				appInfoApp = appInfoBuilder.Build();
+
+				var fileSystemBuilder = MauiApp.CreateBuilder();
+				fileSystemBuilder.Services.AddSingleton<IFileSystem>(
+					new StubFileSystem(ownedAppData));
+				fileSystemApp = fileSystemBuilder.Build();
+
+				var wrapper = Assert.IsType<AppInfoSecureStorage>(SecureStorage.Default);
+				var implementation = GetWrappedImplementation(wrapper);
+				Assert.Equal(ownedAppData, implementation.UnpackagedAppDataDirectory);
+				Assert.Equal(historicalAlias, implementation.Alias);
+			}
+			finally
+			{
+				fileSystemApp?.Dispose();
+				appInfoApp?.Dispose();
 				SecureStorage.SetDefault(originalSecureStorage);
 				FileSystem.SetCurrent(originalFileSystem);
 				AppInfo.SetCurrent(originalAppInfo);
@@ -675,32 +687,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 		}
 
-		sealed class BlockingWindowsStubAppInfo : WindowsStubAppInfo
-		{
-			readonly TaskCompletionSource<bool> _enteredPackageName;
-			readonly TaskCompletionSource<bool> _releasePackageName;
-
-			public BlockingWindowsStubAppInfo(
-				string packageName,
-				TaskCompletionSource<bool> enteredPackageName,
-				TaskCompletionSource<bool> releasePackageName)
-				: base(packageName)
-			{
-				_enteredPackageName = enteredPackageName;
-				_releasePackageName = releasePackageName;
-			}
-
-			public override string PackageName
-			{
-				get
-				{
-					_enteredPackageName.TrySetResult(true);
-					_releasePackageName.Task.GetAwaiter().GetResult();
-					return base.PackageName;
-				}
-			}
-		}
-
 		static SecureStorageImplementation GetWrappedImplementation(
 			AppInfoSecureStorage wrapper)
 		{
@@ -732,11 +718,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public void Default_Creation_Reads_AppInfo_Outside_SecureStorage_Facade_Lock()
+		public void Default_Creation_Uses_Native_PackageName()
 		{
 			var originalAppInfo = AppInfo.Current;
 			var originalSecureStorage = SecureStorage.Default;
-			var appInfo = new LockCheckingAppInfo();
+			var historicalAlias = new SecureStorageImplementation().Alias;
+			var appInfo = new ThrowingPackageNameAppInfo();
 
 			try
 			{
@@ -745,8 +732,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				var implementation = Assert.IsType<SecureStorageImplementation>(SecureStorage.Default);
 
-				Assert.Equal("lock.check.package.microsoft.maui.essentials.preferences", implementation.Alias);
-				Assert.Equal(1, appInfo.PackageNameGetterCount);
+				Assert.Equal(historicalAlias, implementation.Alias);
 			}
 			finally
 			{
@@ -832,31 +818,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 		}
 
-		sealed class BlockingStubAppInfo : StubAppInfo
-		{
-			readonly TaskCompletionSource<bool> _enteredPackageName;
-			readonly TaskCompletionSource<bool> _releasePackageName;
-
-			public BlockingStubAppInfo(
-				string packageName,
-				TaskCompletionSource<bool> enteredPackageName,
-				TaskCompletionSource<bool> releasePackageName)
-				: base(packageName)
-			{
-				_enteredPackageName = enteredPackageName;
-				_releasePackageName = releasePackageName;
-			}
-
-			public override string PackageName
-			{
-				get
-				{
-					_enteredPackageName.TrySetResult(true);
-					_releasePackageName.Task.GetAwaiter().GetResult();
-					return base.PackageName;
-				}
-			}
-		}
 #endif
 
 		[Theory
@@ -968,22 +929,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			});
 		}
 
-		sealed class LockCheckingAppInfo : IAppInfo
+		sealed class ThrowingPackageNameAppInfo : IAppInfo
 		{
-			public int PackageNameGetterCount { get; private set; }
-
-			public string PackageName
-			{
-				get
-				{
-					Assert.False(
-						Monitor.IsEntered(EssentialsImplementation.GetSyncRoot<ISecureStorage>()),
-						"AppInfo.PackageName must not be read while the SecureStorage facade lock is held.");
-
-					PackageNameGetterCount++;
-					return "lock.check.package";
-				}
-			}
+			public string PackageName =>
+				throw new InvalidOperationException("Implicit SecureStorage must use the native package identity.");
 
 			public string Name => "Test";
 

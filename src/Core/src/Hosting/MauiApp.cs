@@ -295,14 +295,17 @@ namespace Microsoft.Maui.Hosting
 			var exceptions = new List<Exception>();
 			var cleanupServices = CapturePostProviderCleanupServices(exceptions);
 			RunSharedCleanup(exceptions);
-			CleanupPostProviderServices(cleanupServices, exceptions);
 			cleanupException = CreateCleanupException(exceptions);
 
-			return DisposeProviderAfterFailedInitializationAsync(completion, exceptions);
+			return DisposeProviderAfterFailedInitializationAsync(
+				completion,
+				cleanupServices,
+				exceptions);
 		}
 
 		private async ValueTask DisposeProviderAfterFailedInitializationAsync(
 			TaskCompletionSource<ExceptionDispatchInfo?> completion,
+			List<IMauiAppPostProviderCleanupService> cleanupServices,
 			List<Exception> exceptions)
 		{
 			try
@@ -318,6 +321,8 @@ namespace Microsoft.Maui.Hosting
 				{
 					exceptions.Add(ex);
 				}
+
+				CleanupPostProviderServices(cleanupServices, exceptions);
 			}
 			finally
 			{
