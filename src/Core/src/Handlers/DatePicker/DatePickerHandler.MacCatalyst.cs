@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -339,6 +340,31 @@ namespace Microsoft.Maui.Handlers
 
 					handler.SetVirtualOpenStateFromNative(true);
 				}
+			}
+		}
+		
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			if (handler.PlatformView is not UIDatePicker platformView)
+			{
+				return;
+			}
+
+			if (datePicker.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (datePicker.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(datePicker);
 			}
 		}
 	}
