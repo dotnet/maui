@@ -1,8 +1,10 @@
 # Must-pass operational protocol for verify-tests-fail-without-fix.
 #
 # These scenarios execute the real verification script against durable,
-# synthetic unit-test commits. Keeping them in a threshold-1 suite prevents
-# unrelated interpretation scenarios from averaging away a broken protocol.
+# synthetic unit-test commits. Its empty scoring map deliberately leaves the
+# aggregate threshold undefined: Vally therefore requires every grader to pass
+# its declared threshold in every trial, so unrelated scenarios cannot average
+# away a broken protocol.
 
 name: verify-tests-fail-without-fix-protocol
 description: >-
@@ -101,5 +103,79 @@ stimuli:
       expect_skills:
         - verify-tests-fail-without-fix
 
-scoring:
-  threshold: 1.0
+  - name: regression-no-manual-git-revert
+    tags:
+      kind: protocol
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture has both a unit test and a fix. Run full
+      verification against the local diff using PR number 900003 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Let the prescribed
+      script handle reverting and restoring the fix; do not manually run git
+      checkout, git restore, or git stash.
+    environment:
+      git:
+        type: worktree
+        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: regression-no-manual-git-revert
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent uses the verify-tests-fail.ps1 script, which handles
+        file revert/restore automatically.
+      - >-
+        The agent does not manually use git checkout, git restore, or git
+        stash to revert fix files.
+      - >-
+        The agent interprets the script output correctly to determine
+        whether verification passed or failed.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  - name: edge-case-require-full-verification-with-fix-files
+    tags:
+      kind: workflow
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture has both a unit test and a code fix. Verify
+      the test against the local diff using PR number 900004 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Require full
+      verification and let the script auto-detect the changed files.
+    environment:
+      git:
+        type: worktree
+        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: edge-case-require-full-verification-with-fix-files
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs full two-phase verification (fail without fix,
+        then pass with fix) because both test and fix files exist —
+        e.g. by passing the RequireFullVerification option.
+      - >-
+        The agent does not settle for failure-only verification when fix
+        files are present.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+# Explicitly opt into Vally's threshold-undefined verdict while avoiding the
+# strict-lint warning emitted when the scoring key is omitted.
+scoring: {}

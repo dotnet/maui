@@ -202,6 +202,39 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "must not restrict supported_executors"
   end
 
+  def test_rejects_aggregate_scoring_for_per_grader_must_pass_spec
+    protocol_tests_path = File.join(
+      @repo_root,
+      ".github",
+      "skills",
+      "verify-tests-fail-without-fix",
+      "tests"
+    )
+    FileUtils.mkdir_p(protocol_tests_path)
+    File.write(
+      File.join(protocol_tests_path, "eval.protocol.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "must-pass-protocol",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["verify-tests-fail-without-fix"] }
+              }
+            ]
+          }
+        ],
+        "scoring" => { "threshold" => 1.0 }
+      )
+    )
+
+    _stdout, stderr, status = run_validator(protocol_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "must use an empty scoring map so every grader must pass its declared threshold"
+  end
+
   def test_requires_producer_trace_output_contract_in_skill_template
     code_review_root = File.join(@repo_root, ".github", "skills", "code-review")
     code_review_tests_path = File.join(code_review_root, "tests")

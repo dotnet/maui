@@ -19,8 +19,9 @@
 # are better judged semantically (the failure is concluding the WRONG
 # thing, which can be phrased many ways), so they move into the rubric.
 #
-# Operational fail-without-fix/pass-with-fix scenarios live in
-# eval.protocol.vally.yaml, whose threshold 1.0 makes every grader must-pass.
+# Operational worktree/script scenarios live in eval.protocol.vally.yaml,
+# whose aggregate threshold is undefined so every grader must pass its own
+# threshold.
 #
 # Scoring: this suite deliberately omits scoring.weights, so Vally 0.10 uses
 # the unweighted mean of grader [0,1] scores. Every scenario also has a
@@ -164,88 +165,7 @@ stimuli:
         - verify-tests-fail-without-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 6 — must not manually revert files with raw git commands; the
-  # script handles revert/restore.
-  # ───────────────────────────────────────────────────────────────────────
-  - name: regression-no-manual-git-revert
-    tags:
-      kind: protocol
-    prompt: |
-      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
-
-      This frozen one-commit fixture has both a unit test and a fix. Run full
-      verification against the local diff using PR number 900003 and
-      `$(git rev-parse HEAD^)` as the explicit base branch. Let the prescribed
-      script handle reverting and restoring the fix; do not manually run git
-      checkout, git restore, or git stash.
-    environment:
-      git:
-        type: worktree
-        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: regression-no-manual-git-revert
-        source: .
-    graders:
-      - type: skill-invocation
-        config: { required: [verify-tests-fail-without-fix] }
-      - type: prompt
-        config:
-          scoring: scale_1_5
-          threshold: 0.6
-    rubric:
-      - >-
-        The agent uses the verify-tests-fail.ps1 script, which handles
-        file revert/restore automatically.
-      - >-
-        The agent does not manually use git checkout, git restore, or git
-        stash to revert fix files.
-      - >-
-        The agent interprets the script output correctly to determine
-        whether verification passed or failed.
-    constraints:
-      max_duration: 10m
-      expect_skills:
-        - verify-tests-fail-without-fix
-
-  # ───────────────────────────────────────────────────────────────────────
-  # Scenario 7 — uses RequireFullVerification when both test and fix files
-  # exist.
-  # ───────────────────────────────────────────────────────────────────────
-  - name: edge-case-require-full-verification-with-fix-files
-    tags:
-      kind: workflow
-    prompt: |
-      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
-
-      This frozen one-commit fixture has both a unit test and a code fix. Verify
-      the test against the local diff using PR number 900004 and
-      `$(git rev-parse HEAD^)` as the explicit base branch. Require full
-      verification and let the script auto-detect the changed files.
-    environment:
-      git:
-        type: worktree
-        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: edge-case-require-full-verification-with-fix-files
-        source: .
-    graders:
-      - type: skill-invocation
-        config: { required: [verify-tests-fail-without-fix] }
-      - type: prompt
-        config:
-          scoring: scale_1_5
-          threshold: 0.6
-    rubric:
-      - >-
-        The agent runs full two-phase verification (fail without fix,
-        then pass with fix) because both test and fix files exist —
-        e.g. by passing the RequireFullVerification option.
-      - >-
-        The agent does not settle for failure-only verification when fix
-        files are present.
-    constraints:
-      max_duration: 10m
-      expect_skills:
-        - verify-tests-fail-without-fix
-
-  # ───────────────────────────────────────────────────────────────────────
-  # Scenario 8 — a clear assertion failure (failure-only mode) is
+  # A clear assertion failure (failure-only mode) is
   # verification SUCCESS.
   # ───────────────────────────────────────────────────────────────────────
   - name: regression-test-failure-is-verification-success
@@ -279,7 +199,7 @@ stimuli:
         - verify-tests-fail-without-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 9 — explains the verification result format clearly.
+  # Explains the verification result format clearly.
   # ───────────────────────────────────────────────────────────────────────
   - name: feature-reports-verification-result-clearly
     tags:
@@ -311,7 +231,7 @@ stimuli:
         - verify-tests-fail-without-fix
 
   # ───────────────────────────────────────────────────────────────────────
-  # Scenario 10 — trusts the script's git-diff auto-detection of test files.
+  # Trusts the script's git-diff auto-detection of test files.
   # ───────────────────────────────────────────────────────────────────────
   - name: feature-trusts-script-auto-detection
     tags:

@@ -24,6 +24,9 @@ REQUIRED_SKILL_INVOCATION_SPECS = %w[
   .github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml
   .github/skills/verify-tests-fail-without-fix/tests/eval.vally.yaml
 ].freeze
+PER_GRADER_MUST_PASS_SPECS = %w[
+  .github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml
+].freeze
 DISALLOWED_SKILL_INVOCATION_STIMULI = {
   ".github/skills/try-fix/tests/eval.vally.yaml" => %w[
     negative-trigger-documentation-question
@@ -144,9 +147,7 @@ FIXTURES = {
         fallback_ref: "0d560ac4f2599c17c2ee93e398ef86e9034b81cb",
         message: "Synthetic failure-only test verification fixture",
         files: VERIFY_FAILURE_ONLY_FILES
-      }
-    ],
-    "eval.vally.yaml" => [
+      },
       {
         marker: "regression-no-manual-git-revert",
         fallback_ref: "a35eb7d99044ff2bba96a798c1ec81bac87c09e3",
@@ -343,6 +344,9 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   validate_graders!(document["graders"], "graders")
   relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
   require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
+  if PER_GRADER_MUST_PASS_SPECS.include?(relative_spec_path) && document["scoring"] != {}
+    fail!("#{relative_spec_path} must use an empty scoring map so every grader must pass its declared threshold")
+  end
   required_first_action_skill = REQUIRED_FIRST_ACTION_SKILLS[relative_spec_path]
   skill_name = File.basename(skill_root)
   Array(REQUIRED_SKILL_PATTERNS[relative_spec_path]).each do |description, pattern|
