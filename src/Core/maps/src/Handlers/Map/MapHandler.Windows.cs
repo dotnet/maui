@@ -215,24 +215,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (_mapControl != null)
 			{
-				_mapControl.Loaded -= OnMapControlLoaded;
 				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
-				_mapControl.Unloaded -= OnMapControlUnloaded;
-
-				if (_pinsLayer != null)
-				{
-					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
-					_pinsLayer = null;
-				}
-
-				if (_mapElementsLayer != null)
-				{
-					_mapElementsLayer = null;
-				}
+				_mapControl.Loaded -= OnMapControlLoaded;
+				_mapControl.Loaded += OnMapControlLoaded;
 			}
-
-			_mapIcons.Clear();
-			_pendingSpan = null;
 
 			if (_webView != null)
 			{
