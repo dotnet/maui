@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal static Color? GetIconTintColor(this ISwipeItemMenuItem swipeItemMenuItem)
 		{
-			if (swipeItemMenuItem.IconColor is Color iconColor)
+			if (swipeItemMenuItem is ISwipeItemMenuItemIconColor { IconColor: Color iconColor })
 				return iconColor;
 
 			// Font glyphs are single-color vectors, so tinting them is meaningful: use the explicit

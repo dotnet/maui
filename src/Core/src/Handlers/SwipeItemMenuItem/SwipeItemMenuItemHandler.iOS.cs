@@ -56,9 +56,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var color = view.GetTextColor();
-
-			if (color != null)
-				handler.PlatformView.SetTitleColor(color.ToPlatform(), UIControlState.Normal);
+			handler.PlatformView.SetTitleColor(color?.ToPlatform(), UIControlState.Normal);
+			UpdateTextColorIconDependency(handler, view);
 		}
 
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)
@@ -82,6 +81,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.UpdateBackground(view.Background);
+			UpdateBackgroundColorDependencies(handler);
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -122,7 +122,10 @@ namespace Microsoft.Maui.Handlers
 						// A tinted icon has to be rendered as a template so the tint actually takes effect.
 						// Without a tint the image keeps its own colors via AlwaysOriginal.
 						var tintColor = item.GetIconTintColor();
-						var renderingMode = tintColor is not null ? UIImageRenderingMode.AlwaysTemplate : UIImageRenderingMode.AlwaysOriginal;
+						var renderingMode =
+							item.Source is IFontImageSource || tintColor is not null
+								? UIImageRenderingMode.AlwaysTemplate
+								: UIImageRenderingMode.AlwaysOriginal;
 
 						button.SetImage(resizedImage.ImageWithRenderingMode(renderingMode), UIControlState.Normal);
 						button.TintColor = tintColor?.ToPlatform();

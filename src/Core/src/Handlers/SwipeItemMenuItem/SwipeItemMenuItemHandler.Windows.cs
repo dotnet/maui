@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -18,8 +20,11 @@ namespace Microsoft.Maui.Handlers
 			return new WSwipeItem();
 		}
 
-		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
+		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		{
 			handler.PlatformView.UpdateTextColor(view);
+			UpdateTextColorIconDependency(handler, view);
+		}
 
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 
@@ -30,8 +35,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Text = view.Text;
 		}
 
-		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
+		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		{
 			handler.PlatformView.UpdateBackground(view.Background);
+			UpdateBackgroundColorDependencies(handler);
+		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
@@ -52,10 +60,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.OnInvoked();
 		}
 
-		// Per-handler monotonic counter; captured before an async load and re-checked on completion so
-		// a stale untinted load cannot overwrite a newer tinted icon (or vice versa) on THIS SwipeItem.
-		int _iconLoadGeneration;
-
 		internal static async Task LoadFileIconAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem item)
 		{
 			if (handler.PlatformView is not WSwipeItem swipeItem || handler.MauiContext is null)
@@ -63,14 +67,10 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			// Use the concrete handler for per-instance state; the Windows mapper is always paired
-			// with the concrete SwipeItemMenuItemHandler, so this cast is safe.
-			var concreteHandler = handler as SwipeItemMenuItemHandler;
-			int generation = concreteHandler is not null
-				? System.Threading.Interlocked.Increment(ref concreteHandler._iconLoadGeneration)
-				: 0;
+			int generation = BeginIconLoad(handler);
 
-			if (item.Source is null)
+			var source = item.Source;
+			if (source is null)
 			{
 				swipeItem.IconSource = null;
 				return;
@@ -79,37 +79,47 @@ namespace Microsoft.Maui.Handlers
 			// ImageIconSource renders the image as-is and ignores Foreground, so an explicit tint has to go
 			// through BitmapIconSource/FontIconSource instead, which honor Foreground (BitmapIconSource
 			// draws the bitmap as a monochrome mask by default).
-			var tintColor = item.GetIconTintColor();
+			var tintColor = (item as ISwipeItemMenuItemIconColor)?.IconColor;
 
-			if (tintColor is not null)
-			{
-				var tintedIconSource = item.Source.ToIconSource(handler.MauiContext);
-
-				if (tintedIconSource is not null)
-				{
-					tintedIconSource.Foreground = tintColor.ToPlatform();
-					swipeItem.IconSource = tintedIconSource;
-					return;
-				}
-			}
-
-			var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
-			var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
-			var source = item.Source;
 			try
 			{
-				var service = imageSourceServiceProvider.GetRequiredImageSourceService(source);
+				if (tintColor is not null)
+				{
+					var tintedIconSource = CreateTintedIconSource(source, handler.MauiContext);
+
+					if (tintedIconSource is not null)
+					{
+						if (IsIconLoadCurrent(handler, item, swipeItem, generation) &&
+							ReferenceEquals(item.Source, source))
+						{
+							tintedIconSource.Foreground = tintColor.ToPlatform();
+							swipeItem.IconSource = tintedIconSource;
+						}
+
+						return;
+					}
+				}
+
+				var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
+				IImageSource loadSource = source;
+				if (source is IFontImageSource { Color: null } fontImageSource &&
+					item.GetTextColor() is Color fallbackColor)
+				{
+					loadSource = new TintedFontImageSource(fontImageSource, fallbackColor);
+				}
+
+				var service = imageSourceServiceProvider.GetRequiredImageSourceService(loadSource);
 				// Do not use ConfigureAwait(false): WinUI DependencyProperty writes require the UI thread.
-				var result = await service.GetImageSourceAsync(source, scale);
+				var result = await service.GetImageSourceAsync(loadSource, scale);
 
 				// Only apply the result if no newer load has started on THIS handler while this one was
 				// in flight. Checking item.Source == source alone is not enough: the source can be
 				// identical while IconColor changed, so a stale untinted result would overwrite a tinted one.
-				if (concreteHandler is not null &&
-					generation != System.Threading.Volatile.Read(ref concreteHandler._iconLoadGeneration))
+				if (!IsIconLoadCurrent(handler, item, swipeItem, generation))
 					return;
 
-				if (item.Source == source)
+				if (ReferenceEquals(item.Source, source))
 				{
 					swipeItem.IconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
 				}
@@ -118,6 +128,42 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(LogLevel.Warning, new EventId(), "Cannot load SwipeItem Icon", ex, static (state, _) => state);
 			}
+		}
+
+		internal static IconSource? CreateTintedIconSource(IImageSource source, IMauiContext mauiContext)
+		{
+			if (source is IFileImageSource fileImageSource)
+			{
+				var filename = fileImageSource.File;
+				if (string.IsNullOrEmpty(filename) || Path.IsPathRooted(filename))
+					return null;
+
+				return new BitmapIconSource
+				{
+					UriSource = new Uri("ms-appx:///" + Path.GetFileName(filename))
+				};
+			}
+
+			return source.ToIconSource(mauiContext);
+		}
+
+		sealed class TintedFontImageSource : IFontImageSource
+		{
+			readonly IFontImageSource _source;
+
+			public TintedFontImageSource(IFontImageSource source, Color color)
+			{
+				_source = source;
+				Color = color;
+			}
+
+			public bool IsEmpty => _source.IsEmpty;
+
+			public Color Color { get; }
+
+			public Font Font => _source.Font;
+
+			public string Glyph => _source.Glyph;
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter

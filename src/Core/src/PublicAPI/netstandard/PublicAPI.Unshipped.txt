@@ -17,8 +17,8 @@ Microsoft.Maui.ITab.Title.get -> string!
 Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
-Microsoft.Maui.ISwipeItemMenuItem.IconColor.get -> Microsoft.Maui.Graphics.Color?
-Microsoft.Maui.ISwipeItemMenuItem.TextColor.get -> Microsoft.Maui.Graphics.Color?
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using NSubstitute;
 using Xunit;
@@ -783,6 +784,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
+			Assert.Equal(Colors.Red, ((ITextStyle)swipeItem).TextColor);
 		}
 
 		[Fact]
@@ -827,9 +829,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(Colors.Red, ((ISwipeItemMenuItem)swipeItem).GetTextColor());
 		}
 
-		// A colorless font icon derives its tint from TextColor, so a runtime TextColor change must
-		// also refresh the icon. Element.OnBindablePropertySet already fires the same-key mapper
-		// update automatically, so these tests also guard against a duplicate same-key invocation.
+		// A colorless font icon derives its tint from TextColor, so the TextColor mapper must
+		// also refresh the source after initial mapping has completed.
 		[Fact]
 		public void ChangingTextColorRefreshesIconForColorlessFontIcon()
 		{
@@ -837,14 +838,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IconImageSource = new FontImageSource { Glyph = "A" }
 			};
-			var handler = Substitute.For<IElementHandler>();
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
 			swipeItem.Handler = handler;
 			handler.ClearReceivedCalls();
 
 			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
 			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
-			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			handler.Received(1).UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		// Discriminating test for the IFontImageSource (interface, not concrete FontImageSource) guard:
@@ -857,13 +860,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IconImageSource = new CustomFontImageSource()
 			};
-			var handler = Substitute.For<IElementHandler>();
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
 			swipeItem.Handler = handler;
 			handler.ClearReceivedCalls();
 
 			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
-			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			handler.Received(1).UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		[Fact]
@@ -874,14 +879,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IconColor = Colors.Blue,
 				IconImageSource = new FontImageSource { Glyph = "A" }
 			};
-			var handler = Substitute.For<IElementHandler>();
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
 			swipeItem.Handler = handler;
 			handler.ClearReceivedCalls();
 
 			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
 			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
-			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		[Fact]
@@ -891,13 +898,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IconImageSource = new FontImageSource { Glyph = "A", Color = Colors.Green }
 			};
-			var handler = Substitute.For<IElementHandler>();
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
 			swipeItem.Handler = handler;
 			handler.ClearReceivedCalls();
 
 			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
-			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		[Fact]
@@ -907,13 +916,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IconImageSource = "icon.png"
 			};
-			var handler = Substitute.For<IElementHandler>();
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
 			swipeItem.Handler = handler;
 			handler.ClearReceivedCalls();
 
 			swipeItem.TextColor = Colors.Red;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
-			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		// Element.OnBindablePropertySet fires the same-key mapper update automatically, so the
@@ -928,7 +939,90 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			swipeItem.IconColor = Colors.Red;
 
-			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.IconColor));
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+		}
+
+		[Fact]
+		public void SettingBackgroundColorInvokesBackgroundMapperOnce()
+		{
+			var swipeItem = new SwipeItem();
+			var handler = Substitute.For<IElementHandler>();
+			swipeItem.Handler = handler;
+			handler.ClearReceivedCalls();
+
+			swipeItem.BackgroundColor = Colors.Red;
+
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItem.Background));
+		}
+
+		[Fact]
+		public void BackgroundMapperRefreshesTextColorDependency()
+		{
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+
+			SwipeItemMenuItemHandler.UpdateBackgroundColorDependencies(handler);
+
+			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		[Fact]
+		public void InitialIconColorMappingDoesNotReloadSource()
+		{
+			var swipeItem = new SwipeItem { IconImageSource = "icon.png" };
+			var handler = new TestSwipeItemMenuItemHandler(
+				(ISwipeItemMenuItem)swipeItem,
+				ElementHandlerState.MappingProperties);
+
+			SwipeItemMenuItemHandler.MapIconColor(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Empty(handler.UpdatedProperties);
+
+			handler.State = ElementHandlerState.Connected;
+			SwipeItemMenuItemHandler.MapIconColor(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Equal(new[] { nameof(IMenuElement.Source) }, handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void InitialTextColorMappingDoesNotReloadSource()
+		{
+			var swipeItem = new SwipeItem
+			{
+				IconImageSource = new FontImageSource { Glyph = "A" }
+			};
+			var handler = new TestSwipeItemMenuItemHandler(
+				(ISwipeItemMenuItem)swipeItem,
+				ElementHandlerState.MappingProperties);
+
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Empty(handler.UpdatedProperties);
+
+			handler.State = ElementHandlerState.Connected;
+			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
+			Assert.Equal(new[] { nameof(IMenuElement.Source) }, handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void NewerIconLoadInvalidatesOlderLoadForCustomHandler()
+		{
+			var swipeItem = new SwipeItem { IconImageSource = "icon.png" };
+			var platformView = new object();
+			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
+			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
+			handler.PlatformView.Returns(platformView);
+
+			var firstGeneration = SwipeItemMenuItemHandler.BeginIconLoad(handler);
+			var secondGeneration = SwipeItemMenuItemHandler.BeginIconLoad(handler);
+
+			Assert.False(SwipeItemMenuItemHandler.IsIconLoadCurrent(
+				handler,
+				(ISwipeItemMenuItem)swipeItem,
+				platformView,
+				firstGeneration));
+			Assert.True(SwipeItemMenuItemHandler.IsIconLoadCurrent(
+				handler,
+				(ISwipeItemMenuItem)swipeItem,
+				platformView,
+				secondGeneration));
 		}
 
 		[Fact]
@@ -961,6 +1055,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Color IFontImageSource.Color => null;
 			Font IFontImageSource.Font => Font.Default;
 			string IFontImageSource.Glyph => "A";
+		}
+
+		sealed class TestSwipeItemMenuItemHandler : ISwipeItemMenuItemHandler, IElementHandlerStateExhibitor
+		{
+			public TestSwipeItemMenuItemHandler(ISwipeItemMenuItem virtualView, ElementHandlerState state)
+			{
+				VirtualView = virtualView;
+				State = state;
+			}
+
+			public IMauiContext MauiContext => null;
+
+			public object PlatformView { get; } = new();
+
+			public ImageSourcePartLoader SourceLoader => null;
+
+			public ElementHandlerState State { get; set; }
+
+			public List<string> UpdatedProperties { get; } = new();
+
+			public ISwipeItemMenuItem VirtualView { get; private set; }
+
+			IElement IElementHandler.VirtualView => VirtualView;
+
+			public void DisconnectHandler()
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+			}
+
+			public void SetVirtualView(IElement view)
+			{
+				VirtualView = (ISwipeItemMenuItem)view;
+			}
+
+			public void UpdateValue(string property)
+			{
+				UpdatedProperties.Add(property);
+			}
 		}
 	}
 }

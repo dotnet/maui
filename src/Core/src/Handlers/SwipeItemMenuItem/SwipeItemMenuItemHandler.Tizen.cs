@@ -14,7 +14,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
-			(handler.PlatformView)?.UpdateTextColor(view);
+			if (handler.PlatformView is not Button button)
+				return;
+
+			var textColor = view is ISwipeItemMenuItem swipeItem
+				? swipeItem.GetTextColor()
+				: view.TextColor;
+			button.TextColor = textColor?.ToPlatform() ?? TColor.Default;
+
+			if (view is ISwipeItemMenuItem swipeItemMenuItem)
+				UpdateTextColorIconDependency(handler, swipeItemMenuItem);
 		}
 
 		[MissingMapper]
@@ -34,11 +43,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
-			var textColor = handler.VirtualView.GetTextColor()?.ToPlatform() ?? TColor.Default;
-			if (textColor != TColor.Default)
-			{
-				handler.PlatformView.TextColor = textColor;
-			}
+			UpdateBackgroundColorDependencies(handler);
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
