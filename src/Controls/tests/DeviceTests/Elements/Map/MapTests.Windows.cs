@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task RemovingMapFromVisualTreeDoesNotCrash()
 		{
 			var map = new Map { IsEnabled = false };
-			var layout = new Grid
+			var layout = new VerticalStackLayout
 			{
 				map
 			};
