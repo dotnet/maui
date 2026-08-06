@@ -222,13 +222,11 @@ namespace Microsoft.Maui.Maps.Handlers
 				if (_pinsLayer != null)
 				{
 					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
-					_mapControl.Layers.Remove(_pinsLayer);
 					_pinsLayer = null;
 				}
 
 				if (_mapElementsLayer != null)
 				{
-					_mapControl.Layers.Remove(_mapElementsLayer);
 					_mapElementsLayer = null;
 				}
 			}
