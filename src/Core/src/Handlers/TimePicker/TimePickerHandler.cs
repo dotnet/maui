@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ITimePicker, ITimePickerHandler> Mapper = new PropertyMapper<ITimePicker, ITimePickerHandler>(ViewHandler.ViewMapper)
 		{
-#if ANDROID || WINDOWS
+#if IOS || ANDROID || WINDOWS
 			[nameof(ITimePicker.Background)] = MapBackground,
 #endif
 #if IOS || ANDROID
