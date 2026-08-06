@@ -40,6 +40,16 @@ public class Issue10445 : TestShell
 			}
 		};
 
-		AddContentPage(page, "Home");
+		AddBottomTab(page, "Home");
+		AddBottomTab(new ContentPage
+		{
+			Title = "Settings",
+			Content = new Label
+			{
+				Text = "Settings",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
+			}
+		}, "Settings");
 	}
 }
