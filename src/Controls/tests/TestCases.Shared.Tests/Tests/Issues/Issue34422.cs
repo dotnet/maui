@@ -17,7 +17,11 @@ public class Issue34422 : _IssuesUITest
 		App.WaitForElement("TestSearchBar");
         App.Tap("TestSearchBar");
 		App.Tap("AddTextButton");
+#if IOS
+		VerifyScreenshot(cropBottom:1000);
+#else
 		VerifyScreenshot();
+#endif
 	}
 
 	[Test, Order(2)]
@@ -29,6 +33,10 @@ public class Issue34422 : _IssuesUITest
         App.Tap("TestSearchBar");
 		App.Tap("AddTextButton");
 		App.Tap("ClearButton");
+#if IOS
+		VerifyScreenshot(cropBottom:1000);
+#else
 		VerifyScreenshot();
+#endif
 	}
 }
