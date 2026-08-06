@@ -184,10 +184,23 @@ function Test-ReviewCommentHasRecoveryMarker {
         [Parameter(Mandatory = $true)][Int64]$CommentId
     )
 
-    $reactions = @(Invoke-ReviewRecoveryGhApi -Arguments @(
-        "repos/$Owner/$Repo/issues/comments/$CommentId/reactions?per_page=100",
-        '-H', 'Accept: application/vnd.github+json'
-    ))
+    $reactions = [System.Collections.Generic.List[object]]::new()
+    for ($page = 1; ; $page++) {
+        $pageReactions = @(Invoke-ReviewRecoveryGhApi -Arguments @(
+            "repos/$Owner/$Repo/issues/comments/$CommentId/reactions?per_page=100&page=$page",
+            '-H', 'Accept: application/vnd.github+json'
+        ))
+
+        foreach ($reaction in $pageReactions) {
+            if ($null -ne $reaction) {
+                $reactions.Add($reaction)
+            }
+        }
+
+        if ($pageReactions.Count -lt 100) {
+            break
+        }
+    }
 
     return @($reactions | Where-Object {
         $_.content -eq $script:RecoveryMarker -and

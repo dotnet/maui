@@ -72,6 +72,41 @@ Describe 'Select-ReviewCommandCandidates' {
     }
 }
 
+Describe 'Test-ReviewCommentHasRecoveryMarker' {
+    It 'finds a recovery marker after the first page of reactions' {
+        $firstPage = @(
+            1..100 | ForEach-Object {
+                [pscustomobject]@{
+                    content = 'heart'
+                    user = [pscustomobject]@{ login = "user-$_" }
+                }
+            }
+        )
+        $marker = [pscustomobject]@{
+            content = 'rocket'
+            user = [pscustomobject]@{ login = 'github-actions[bot]' }
+        }
+
+        Mock Invoke-ReviewRecoveryGhApi {
+            param([string[]]$Arguments)
+
+            if ($Arguments[0] -match 'page=1$') {
+                return $firstPage
+            }
+
+            return @($marker)
+        }
+
+        Test-ReviewCommentHasRecoveryMarker `
+            -Owner 'dotnet' `
+            -Repo 'maui' `
+            -CommentId 12345 |
+            Should -BeTrue
+
+        Should -Invoke Invoke-ReviewRecoveryGhApi -Times 2 -Exactly
+    }
+}
+
 Describe 'Invoke-MissedReviewCommandRecovery' {
     BeforeEach {
         $script:Now = [datetimeoffset]'2026-08-06T22:00:00Z'

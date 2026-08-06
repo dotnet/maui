@@ -132,6 +132,8 @@ Describe 'review trigger hardening' {
 
     It 'skips delayed webhook deliveries already handled by recovery' {
         $script:MatchJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions\?per_page=100'
+        $script:MatchJob | Should -Match 'gh api --paginate --slurp'
+        $script:MatchJob | Should -Match "jq -e '\.\[\]\[\] \| select"
         $script:MatchJob | Should -Match '\.content == "rocket" and \.user\.login == "github-actions\[bot\]"'
         $script:MatchJob | Should -Match 'already recovered; skipping delayed duplicate delivery'
         $script:MatchJob | Should -Match 'IssueComment\{isMinimized\}'

@@ -96,7 +96,7 @@ jobs:
           # the recovery workflow remains the backstop for a skipped command.
           REACTIONS_READ=false
           for attempt in 1 2 3; do
-            if REACTIONS=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions?per_page=100" 2>/dev/null); then
+            if REACTIONS=$(gh api --paginate --slurp "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions?per_page=100" 2>/dev/null); then
               REACTIONS_READ=true
               break
             fi
@@ -107,7 +107,7 @@ jobs:
             echo "proceed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if echo "${REACTIONS}" | jq -e '.[] | select(.content == "rocket" and .user.login == "github-actions[bot]")' >/dev/null; then
+          if echo "${REACTIONS}" | jq -e '.[][] | select(.content == "rocket" and .user.login == "github-actions[bot]")' >/dev/null; then
             echo "::notice::Review comment ${COMMENT_ID} was already recovered; skipping delayed duplicate delivery."
             echo "proceed=false" >> "$GITHUB_OUTPUT"
             exit 0
