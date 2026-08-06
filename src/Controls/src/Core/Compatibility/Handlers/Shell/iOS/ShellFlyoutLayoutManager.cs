@@ -78,7 +78,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					sv.Scrolled += ScrollViewScrolled;
 					removeScrolledEvent = () => sv.Scrolled -= ScrollViewScrolled;
 					void ScrollViewScrolled(object sender, ScrolledEventArgs e) =>
-						OnScrolled((nfloat)sv.ScrollY);
+						// ScrollY is reported in content coordinates (native ContentOffset plus the
+						// adjusted inset), but OnScrolled works in native offsets, which rest at
+						// -headerHeight because SetHeaderContentInset puts the header in ContentInset.
+						// Convert back, the same way the CollectionView branch below does.
+						OnScrolled((nfloat)sv.ScrollY - (ScrollView?.AdjustedContentInset.Top ?? 0));
 				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (Content is CollectionView cv)
