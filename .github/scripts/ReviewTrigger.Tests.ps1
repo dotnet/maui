@@ -121,11 +121,22 @@ Describe 'review trigger hardening' {
         $script:MatchJob | Should -Match '(?m)^      proceed: \$\{\{ steps\.gate\.outputs\.proceed \}\}$'
         $script:MatchJob | Should -Match '(?m)^      - name: Check actor permission$'
         $script:MatchJob | Should -Match 'ACTOR: \$\{\{ github\.actor \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \}\}'
         $script:MatchJob | Should -Match 'REPO: \$\{\{ github\.repository \}\}'
         $script:MatchJob | Should -Match 'Permission lookup failed.*treating the caller as unauthorized'
         $script:MatchJob | Should -Match 'PERMISSION="none"'
         $script:TriggerJob | Should -Match "(?m)^    if: needs\.match\.outputs\.proceed == 'true'$"
         $script:TriggerJob | Should -Not -Match '(?m)^        id: auth$'
+    }
+
+    It 'skips delayed webhook deliveries already handled by recovery' {
+        $script:MatchJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions\?per_page=100'
+        $script:MatchJob | Should -Match '\.content == "rocket" and \.user\.login == "github-actions\[bot\]"'
+        $script:MatchJob | Should -Match 'already recovered; skipping delayed duplicate delivery'
+        $script:MatchJob | Should -Match 'IssueComment\{isMinimized\}'
+        $script:MatchJob | Should -Match 'already minimized by recovery; skipping delayed duplicate delivery'
+        $script:MatchJob | Should -Match '(?m)^          for attempt in 1 2 3; do$'
     }
 
     It 'stops trigger-review extraction at the next top-level job' {
@@ -158,5 +169,8 @@ Describe 'review trigger hardening' {
     It 'only hides commands after the pre-flight authorization gate succeeded' {
         $script:TriggerJob | Should -Not -Match 'steps\.auth'
         $script:TriggerJob | Should -Match "(?m)^        if: \$\{\{ !cancelled\(\) && github\.event_name == 'issue_comment' \}\}$"
+        $script:TriggerJob | Should -Match '(?m)^      - name: Acknowledge and hide the /review command comment$'
+        $script:TriggerJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions'
+        $script:TriggerJob | Should -Match "-f content='rocket'"
     }
 }

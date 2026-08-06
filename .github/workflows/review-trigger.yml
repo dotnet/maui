@@ -35,6 +35,7 @@ jobs:
     timeout-minutes: 2
     permissions:
       contents: read
+      issues: read
       pull-requests: read
     outputs:
       matched: ${{ steps.check.outputs.matched }}
@@ -77,6 +78,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ACTOR: ${{ github.actor }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
           REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
@@ -85,6 +88,53 @@ jobs:
             echo "proceed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          # The scheduled recovery workflow adds a rocket reaction and minimizes
+          # the source comment after it dispatches a missed command. If the
+          # original webhook is delivered later, refuse to trigger the same
+          # review a second time. Retry transient reads before failing closed;
+          # the recovery workflow remains the backstop for a skipped command.
+          REACTIONS_READ=false
+          for attempt in 1 2 3; do
+            if REACTIONS=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions?per_page=100" 2>/dev/null); then
+              REACTIONS_READ=true
+              break
+            fi
+            sleep "${attempt}"
+          done
+          if [ "${REACTIONS_READ}" != "true" ]; then
+            echo "::warning::Could not check whether /review comment ${COMMENT_ID} was already recovered; skipping so the recovery workflow can retry safely."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if echo "${REACTIONS}" | jq -e '.[] | select(.content == "rocket" and .user.login == "github-actions[bot]")' >/dev/null; then
+            echo "::notice::Review comment ${COMMENT_ID} was already recovered; skipping delayed duplicate delivery."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MINIMIZED_READ=false
+          for attempt in 1 2 3; do
+            if IS_MINIMIZED=$(gh api graphql \
+              -f query='query($id:ID!){node(id:$id){... on IssueComment{isMinimized}}}' \
+              -f id="${COMMENT_NODE_ID}" \
+              --jq '.data.node.isMinimized' 2>/dev/null); then
+              MINIMIZED_READ=true
+              break
+            fi
+            sleep "${attempt}"
+          done
+          if [ "${MINIMIZED_READ}" != "true" ]; then
+            echo "::warning::Could not check whether /review comment ${COMMENT_ID} was minimized; skipping so the recovery workflow can retry safely."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${IS_MINIMIZED}" = "true" ]; then
+            echo "::notice::Review comment ${COMMENT_ID} was already minimized by recovery; skipping delayed duplicate delivery."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null); then
             echo "::warning::Permission lookup failed for ${ACTOR}; treating the caller as unauthorized."
             PERMISSION="none"
@@ -402,10 +452,11 @@ jobs:
           . .github/scripts/shared/Update-AgentLabels.ps1
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
-      - name: Hide the /review command comment as resolved
+      - name: Acknowledge and hide the /review command comment
         if: ${{ !cancelled() && github.event_name == 'issue_comment' }}
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id }}
           COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
         run: |
           # This job only runs after the pre-flight authorization gate succeeds, so
@@ -417,6 +468,19 @@ jobs:
           # --branch/--platform options — survives in the REST comment history that the rerun
           # scanner replays. Minimized comments are still returned by the REST list endpoint;
           # only collapsed in the web UI. A failed hide must never fail the review trigger.
+          #
+          # The rocket reaction and minimized state are durable idempotency
+          # signals for the scheduled recovery workflow. Either one prevents a
+          # delayed issue_comment webhook from double-triggering a recovered command.
+          if gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions" \
+            --method POST \
+            -f content='rocket' \
+            --silent; then
+            echo "Acknowledged /review command comment ${COMMENT_ID}"
+          else
+            echo "::warning::Could not acknowledge /review command comment ${COMMENT_ID}"
+          fi
+
           if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
             echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
           else

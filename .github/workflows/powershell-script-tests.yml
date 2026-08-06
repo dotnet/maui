@@ -20,6 +20,8 @@ on:
     paths:
       - '.github/scripts/**'
       - '.github/workflows/powershell-script-tests.yml'
+      - '.github/workflows/review-trigger.yml'
+      - '.github/workflows/review-trigger-recovery.yml'
   workflow_dispatch:
 
 concurrency:
