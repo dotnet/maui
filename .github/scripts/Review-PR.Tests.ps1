@@ -74,10 +74,10 @@ Describe 'Copilot reviewer configuration' {
     }
 
     It 'hard-caps both Copilot review calls and bounds try-fix to two candidates' {
-        $content | Should -Match '\[ValidateRange\(30, 1000\)\]'
+        $content | Should -Match '\[ValidateRange\(30, 10000\)\]'
         $content | Should -Match ([regex]::Escape('--max-ai-credits $MaxAiCredits'))
-        $content | Should -Match 'STEP 5a: TRY-FIX.*-MaxAiCredits 60'
-        $content | Should -Match 'STEP 5b: EXPERT REVIEW \+ COMPARE.*-MaxAiCredits 70'
+        $content | Should -Match 'STEP 5a: TRY-FIX.*-MaxAiCredits 2000'
+        $content | Should -Match 'STEP 5b: EXPERT REVIEW \+ COMPARE.*-MaxAiCredits 1500'
         $content | Should -Match 'Produce \*\*at most two candidates total\*\*'
         $content | Should -Match 'Do not launch cross-pollination'
     }
