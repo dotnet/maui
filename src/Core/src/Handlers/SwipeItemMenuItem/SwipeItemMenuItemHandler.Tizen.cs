@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null)
 				return;
 
-			handler.PlatformView.UpdateBackground(handler.VirtualView.Background);
+			handler.PlatformView.UpdateBackground(view.Background);
 			UpdateBackgroundColorDependencies(handler);
 		}
 
