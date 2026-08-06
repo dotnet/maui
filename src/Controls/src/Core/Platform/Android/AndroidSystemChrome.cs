@@ -36,10 +36,11 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateAppBarBackground(appBarLayout, background);
 			UpdateSystemBarAppearance(
 				chromeView.Context,
-				window: null,
+				GetActivityWindowForView(chromeView),
 				updateStatusBar: true,
 				updateNavigationBar: false,
-				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top));
+				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top),
+				resolveActivityWindow: false);
 		}
 
 		internal static void UpdateBottomChrome(AView? chromeView, Brush? background)
@@ -56,10 +57,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UpdateSystemBarAppearance(
 				chromeView.Context,
-				window: null,
+				GetActivityWindowForView(chromeView),
 				updateStatusBar: false,
 				updateNavigationBar: true,
-				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom));
+				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom),
+				resolveActivityWindow: false);
 		}
 
 		internal static void UpdateWindowChrome(
@@ -101,7 +103,8 @@ namespace Microsoft.Maui.Controls.Platform
 			bool updateStatusBar,
 			bool updateNavigationBar,
 			Color? statusBarBackgroundColor = null,
-			Color? navigationBarBackgroundColor = null)
+			Color? navigationBarBackgroundColor = null,
+			bool resolveActivityWindow = true)
 		{
 			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
 			{
@@ -109,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var activity = context?.GetActivity();
-			if (window is null)
+			if (window is null && resolveActivityWindow)
 			{
 				window = activity?.Window;
 			}
@@ -120,6 +123,19 @@ namespace Microsoft.Maui.Controls.Platform
 				updateNavigationBar,
 				statusBarBackgroundColor,
 				navigationBarBackgroundColor);
+		}
+
+		static AWindow? GetActivityWindowForView(AView view)
+		{
+			var activityWindow = view.Context?.GetActivity()?.Window;
+			if (activityWindow?.DecorView?.RootView is not { } activityRootView ||
+				view.RootView is not { } viewRootView ||
+				!viewRootView.Equals(activityRootView))
+			{
+				return null;
+			}
+
+			return activityWindow;
 		}
 
 		static void UpdateAppBarBackground(AppBarLayout? appBarLayout, Brush? background)

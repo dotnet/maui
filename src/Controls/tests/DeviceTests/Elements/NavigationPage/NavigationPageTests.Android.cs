@@ -119,6 +119,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors AppBar status bar area")]
 		public async Task BarBackgroundColorUpdatesAppBarStatusBarArea()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 
 			var firstColor = Colors.Orange;
@@ -147,6 +150,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android status bar on initial load")]
 		public async Task BarBackgroundColorUpdatesAndroidStatusBarOnInitialLoad()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 
 			var firstColor = Colors.Orange;
@@ -176,10 +182,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor respects Android system chrome opt-out")]
 		public async Task BarBackgroundColorDoesNotUpdateAndroidSystemChromeWhenRuntimeFeatureDisabled()
 		{
-			SetupBuilder();
+			if (RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
 
-			const string switchName = "Microsoft.Maui.RuntimeFeature.UseMauiAndroidSystemBarBackgrounds";
-			var hadOriginalSwitchValue = AppContext.TryGetSwitch(switchName, out var originalSwitchValue);
+			SetupBuilder();
 
 			var expectedSystemBarColor = Colors.Purple;
 			var barBackgroundColor = Colors.Orange;
@@ -188,45 +194,36 @@ namespace Microsoft.Maui.DeviceTests
 				BarTextColor = Colors.Black
 			};
 
-			try
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
-				AppContext.SetSwitch(switchName, false);
+				await OnLoadedAsync(navPage.CurrentPage);
 
-				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
-				{
-					await OnLoadedAsync(navPage.CurrentPage);
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
 
-					var platformToolbar = GetPlatformToolbar(handler.MauiContext);
-					var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
-					Assert.NotNull(appBar);
-
-					var platformWindow = handler.PlatformView.Window;
-					Assert.NotNull(platformWindow);
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
 
 #pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
-					var originalStatusBarColor = platformWindow.StatusBarColor;
+				var originalStatusBarColor = platformWindow.StatusBarColor;
 
-					try
-					{
-						var originalAppBarBackgroundColor = GetAppBarBackgroundColor(appBar);
-						platformWindow.SetStatusBarColor(expectedSystemBarColor.ToPlatform());
+				try
+				{
+					var originalAppBarBackgroundColor = GetAppBarBackgroundColor(appBar);
+					platformWindow.SetStatusBarColor(expectedSystemBarColor.ToPlatform());
 
-						navPage.BarBackgroundColor = barBackgroundColor;
+					navPage.BarBackgroundColor = barBackgroundColor;
 
-						Assert.Equal(originalAppBarBackgroundColor, GetAppBarBackgroundColor(appBar));
-						Assert.Equal(expectedSystemBarColor.ToPlatform().ToArgb(), platformWindow.StatusBarColor);
-					}
-					finally
-					{
-						platformWindow.SetStatusBarColor(new global::Android.Graphics.Color(originalStatusBarColor));
-					}
+					Assert.Equal(originalAppBarBackgroundColor, GetAppBarBackgroundColor(appBar));
+					Assert.Equal(expectedSystemBarColor.ToPlatform().ToArgb(), platformWindow.StatusBarColor);
+				}
+				finally
+				{
+					platformWindow.SetStatusBarColor(new global::Android.Graphics.Color(originalStatusBarColor));
+				}
 #pragma warning restore CA1422
-				});
-			}
-			finally
-			{
-				AppContext.SetSwitch(switchName, hadOriginalSwitchValue ? originalSwitchValue : true);
-			}
+			});
 		}
 
 		static int GetAppBarBackgroundColor(AppBarLayout appBar)

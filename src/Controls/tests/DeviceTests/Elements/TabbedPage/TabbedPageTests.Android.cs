@@ -35,6 +35,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("TabbedPage BarBackgroundColor should be applied to AppBar immediately after handler creation, before the fragment transaction completes")]
 		public async Task TopTabbedPageBarBackgroundColorAppliedOnInitialLoad()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 
 			// Set BarBackgroundColor before the handler is created to exercise the path where
@@ -241,6 +244,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Top TabbedPage BarBackgroundColor should color the AppBar status bar area")]
 		public async Task TopTabbedPageBarBackgroundColorColorsAppBarStatusBarArea()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 
 			var firstColor = Colors.Orange;
@@ -265,6 +271,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Top TabbedPage BarBackground should restore the native AppBar drawable when changing from gradient to solid color")]
 		public async Task TopTabbedPageBarBackgroundRestoresNativeDrawableWhenChangingFromGradientToSolid()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 
 			var solidColor = Colors.Blue;
@@ -300,6 +309,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Top TabbedPage BarBackgroundColor should still update after the active AppBar background drawable state is disposed")]
 		public async Task TopTabbedPageBarBackgroundColorUpdatesAfterAppBarBackgroundStateDisposed()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 
 			var firstColor = Colors.Orange;

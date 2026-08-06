@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 		const bool IsCssEnabledByDefault = true;
 		const bool IsWindowsCollectionView2HandlerEnabledByDefault = true;
 		const bool IsIncrementalHotReloadEnabledByDefault = false;
-		const bool UseMauiAndroidSystemBarBackgroundsByDefault = true;
+		const bool UseMauiAndroidSystemBarBackgroundsByDefault = false;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER

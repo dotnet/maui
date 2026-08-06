@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WindowSoftInputModeAdjust = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust;
 
 namespace Microsoft.Maui.DeviceTests
@@ -72,6 +73,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ModalWindowInheritsActivitySystemBarForegroundAppearance()
 		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
 			SetupBuilder();
 			var page = new ContentPage();
 			var modalPage = new NavigationPage(new ContentPage())
@@ -89,11 +93,14 @@ namespace Microsoft.Maui.DeviceTests
 
 					var originalLightStatusBars = activityWindowInsetsController.AppearanceLightStatusBars;
 					var originalLightNavigationBars = activityWindowInsetsController.AppearanceLightNavigationBars;
+#pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
+					var originalStatusBarColor = activityWindow.StatusBarColor;
 
 					try
 					{
 						activityWindowInsetsController.AppearanceLightStatusBars = true;
 						activityWindowInsetsController.AppearanceLightNavigationBars = true;
+						activityWindow.SetStatusBarColor(Colors.Red.ToPlatform());
 
 						await page.Navigation.PushModalAsync(modalPage, animated: false);
 						await OnLoadedAsync(modalPage.CurrentPage);
@@ -105,12 +112,21 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.NotNull(dialogWindowInsetsController);
 						Assert.True(dialogWindowInsetsController.AppearanceLightStatusBars);
 						Assert.True(dialogWindowInsetsController.AppearanceLightNavigationBars);
+						Assert.Equal(Colors.LightGreen.ToPlatform().ToArgb(), dialogWindow.StatusBarColor);
+						Assert.Equal(Colors.Red.ToPlatform().ToArgb(), activityWindow.StatusBarColor);
+
+						modalPage.BarBackgroundColor = Colors.Blue;
+
+						await AssertEventually(() => dialogWindow.StatusBarColor == Colors.Blue.ToPlatform().ToArgb());
+						Assert.Equal(Colors.Red.ToPlatform().ToArgb(), activityWindow.StatusBarColor);
 					}
 					finally
 					{
 						activityWindowInsetsController.AppearanceLightStatusBars = originalLightStatusBars;
 						activityWindowInsetsController.AppearanceLightNavigationBars = originalLightNavigationBars;
+						activityWindow.SetStatusBarColor(new global::Android.Graphics.Color(originalStatusBarColor));
 					}
+#pragma warning restore CA1422
 				});
 		}
 
