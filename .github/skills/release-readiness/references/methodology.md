@@ -463,7 +463,9 @@ to work accidentally.
    train.
 5. Probe every required manifest package.
 6. Probe representative Android, Apple (including tvOS), Emscripten, MAUI, and
-   runtime transport packs.
+   runtime transport packs. When a manifest pack uses `alias-to`, resolve the
+   current runtime identifier (or `any`) to the physical NuGet package ID before
+   probing it.
 7. Extract the JDK, Android SDK, Xcode, Apple SDK, and Windows App SDK
    prerequisites when present.
 8. Emit an isolated local NuGet configuration and exact install command only

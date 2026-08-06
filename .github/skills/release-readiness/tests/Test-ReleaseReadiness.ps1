@@ -9002,14 +9002,37 @@ $iiDependencies = [ordered]@{
 }
 $iiComponentManifest = [ordered]@{
     packs = [ordered]@{
-        'Microsoft.Android.Sdk.net11'                                  = @{ version = '37.0.0-preview.6.59' }
+        'Microsoft.Android.Sdk.net11'                                  = @{
+            version = '37.0.0-preview.6.59'
+            'alias-to' = @{
+                'linux-x64' = 'Microsoft.Android.Sdk.Linux'
+                'osx-arm64' = 'Microsoft.Android.Sdk.Darwin'
+                'win-x64' = 'Microsoft.Android.Sdk.Windows'
+            }
+        }
         'Microsoft.iOS.Sdk.net11.0_26.5'                               = @{ version = '26.5.11720-net11-p6' }
         'Microsoft.MacCatalyst.Sdk.net11.0_26.5'                       = @{ version = '26.5.11720-net11-p6' }
         'Microsoft.tvOS.Sdk.net11.0_26.5'                              = @{ version = '26.5.11720-net11-p6' }
-        'Microsoft.NET.Runtime.Emscripten.4.0.10.Sdk.linux-x64'        = @{ version = '11.0.0-preview.6.26359.118' }
-        'Microsoft.NETCore.App.Runtime.Mono.net11.android-arm64'       = @{ version = '11.0.0-preview.6.26359.118' }
-        'Microsoft.NETCore.App.Runtime.Mono.net11.ios-arm64'           = @{ version = '11.0.0-preview.6.26359.118' }
-        'Microsoft.NETCore.App.Runtime.Mono.net11.maccatalyst-arm64'   = @{ version = '11.0.0-preview.6.26359.118' }
+        'Microsoft.NET.Runtime.Emscripten.Sdk.net11'                   = @{
+            version = '11.0.0-preview.6.26359.118'
+            'alias-to' = @{
+                'linux-x64' = 'Microsoft.NET.Runtime.Emscripten.4.0.10.Sdk.linux-x64'
+                'osx-arm64' = 'Microsoft.NET.Runtime.Emscripten.4.0.10.Sdk.osx-arm64'
+                'win-x64' = 'Microsoft.NET.Runtime.Emscripten.4.0.10.Sdk.win-x64'
+            }
+        }
+        'Microsoft.NETCore.App.Runtime.Mono.net11.android-arm64'       = @{
+            version = '11.0.0-preview.6.26359.118'
+            'alias-to' = @{ any = 'Microsoft.NETCore.App.Runtime.Mono.android-arm64' }
+        }
+        'Microsoft.NETCore.App.Runtime.Mono.net11.ios-arm64'           = @{
+            version = '11.0.0-preview.6.26359.118'
+            'alias-to' = @{ any = 'Microsoft.NETCore.App.Runtime.Mono.ios-arm64' }
+        }
+        'Microsoft.NETCore.App.Runtime.Mono.net11.maccatalyst-arm64'   = @{
+            version = '11.0.0-preview.6.26359.118'
+            'alias-to' = @{ any = 'Microsoft.NETCore.App.Runtime.Mono.maccatalyst-arm64' }
+        }
         'Microsoft.Maui.Controls'                                      = @{ version = '11.0.0-preview.6.26360.8' }
     }
 }
@@ -9030,7 +9053,9 @@ $iiSourcePackages = @{
     )
     'dotnet11-workloads' = @(
         'microsoft.net.sdk.android.manifest-11.0.100-preview.6',
-        'microsoft.android.sdk.net11'
+        'microsoft.android.sdk.linux',
+        'microsoft.android.sdk.darwin',
+        'microsoft.android.sdk.windows'
     )
     'dotnet11' = @(
         'microsoft.net.sdk.ios.manifest-11.0.100-preview.6',
@@ -9043,13 +9068,15 @@ $iiSourcePackages = @{
         'microsoft.ios.sdk.net11.0_26.5',
         'microsoft.maccatalyst.sdk.net11.0_26.5',
         'microsoft.tvos.sdk.net11.0_26.5',
-        'microsoft.net.runtime.emscripten.4.0.10.sdk.linux-x64',
         'microsoft.maui.controls'
     )
     'dotnet11-transport' = @(
-        'microsoft.netcore.app.runtime.mono.net11.android-arm64',
-        'microsoft.netcore.app.runtime.mono.net11.ios-arm64',
-        'microsoft.netcore.app.runtime.mono.net11.maccatalyst-arm64'
+        'microsoft.net.runtime.emscripten.4.0.10.sdk.linux-x64',
+        'microsoft.net.runtime.emscripten.4.0.10.sdk.osx-arm64',
+        'microsoft.net.runtime.emscripten.4.0.10.sdk.win-x64',
+        'microsoft.netcore.app.runtime.mono.android-arm64',
+        'microsoft.netcore.app.runtime.mono.ios-arm64',
+        'microsoft.netcore.app.runtime.mono.maccatalyst-arm64'
     )
 }
 $iiFetcher = {
@@ -9097,6 +9124,22 @@ $iiFetcher = {
     }
     throw "Unexpected installability fixture URL: $Url"
 }.GetNewClosure()
+
+$iiLinuxPackRequests = @(Get-PreviewRepresentativePackRequests `
+    -ManifestEvidence @([PSCustomObject]@{ Manifest = $iiComponentManifest }) `
+    -Major 11 -RuntimeIdentifier 'linux-x64')
+Assert-Eq -Label "installability: Android logical pack alias resolves to the host-specific physical package" `
+    -Expected 'Microsoft.Android.Sdk.Linux' -Actual (
+        @($iiLinuxPackRequests | Where-Object Category -eq 'android-sdk')[0].PackageId
+    )
+Assert-Eq -Label "installability: Emscripten logical pack alias resolves to the host-specific physical package" `
+    -Expected 'Microsoft.NET.Runtime.Emscripten.4.0.10.Sdk.linux-x64' -Actual (
+        @($iiLinuxPackRequests | Where-Object Category -eq 'emscripten-sdk')[0].PackageId
+    )
+Assert-Eq -Label "installability: any-RID runtime alias resolves to its physical package" `
+    -Expected 'Microsoft.NETCore.App.Runtime.Mono.android-arm64' -Actual (
+        @($iiLinuxPackRequests | Where-Object Category -eq 'android-runtime')[0].PackageId
+    )
 
 $iiResult = Get-PreviewConsumerInstallability -Major 11 -Preview 6 -Pins $iiPins `
     -WorkloadSetCliVersion '11.0.100-preview.6.26363.2' -PublicSafe $false `
@@ -9182,9 +9225,10 @@ $iiInternalExactFetcher = {
         }
     }
     if ($Url -match '/flat2/microsoft\.net\.workloads\.11\.0\.100-preview\.6/index\.json$') {
-        return @{ versions = if ($Source.Name -eq 'internal_preview6') {
-            @('11.100.0-preview.6.26363.2')
-        } else { @() } }
+        if ($Source.Name -eq 'internal_preview6') {
+            return @{ versions = [string[]]@('11.100.0-preview.6.26363.2') }
+        }
+        return @{ versions = [string[]]@() }
     }
     return & $iiFetcher $Url $Source
 }.GetNewClosure()
@@ -9218,9 +9262,10 @@ $iiInternalDiscoveryFetcher = {
         }
     }
     if ($Url -match '/flat2/microsoft\.net\.workloads\.11\.0\.100-preview\.6/index\.json$') {
-        return @{ versions = if ($Source.Name -eq 'internal_preview6') {
-            @('11.100.0-preview.6.26363.2')
-        } else { @() } }
+        if ($Source.Name -eq 'internal_preview6') {
+            return @{ versions = [string[]]@('11.100.0-preview.6.26363.2') }
+        }
+        return @{ versions = [string[]]@() }
     }
     return & $iiFetcher $Url $Source
 }.GetNewClosure()
@@ -9349,6 +9394,20 @@ $iiMissing = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
     -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiMissingFetcher
 Assert-Eq -Label "installability: confirmed absence on accessible sources is missing" `
     -Expected 'missing' -Actual $iiMissing.Status
+
+$iiMalformedIndexFetcher = { param($Url, $Source) @{} }
+$iiMalformedIndex = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
+    -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiMalformedIndexFetcher
+Assert-Eq -Label "installability: successful package-index response without versions is unknown" `
+    -Expected 'unknown' -Actual $iiMalformedIndex.Status
+Assert-Eq -Label "installability: malformed package-index source is retained as unknown evidence" `
+    -Expected @('public') -Actual @($iiMalformedIndex.UnknownSources)
+
+$iiScalarVersionsFetcher = { param($Url, $Source) @{ versions = '1.0.0' } }
+$iiScalarVersions = Find-PreviewPackageLocation -ResolvedSources @($iiMissingSource) `
+    -PackageId 'Example.Package' -Version '1.0.0' -Fetcher $iiScalarVersionsFetcher
+Assert-Eq -Label "installability: package-index versions must be an array rather than a scalar" `
+    -Expected 'unknown' -Actual $iiScalarVersions.Status
 
 $iiUnavailablePublicSource = [PSCustomObject]@{
     Source = $iiMissingSource.Source
@@ -9599,6 +9658,12 @@ $iiConfirmedUnverifiedRun = Get-PreviewConsumerInstallability -Major 11 -Preview
     -Fetcher $iiFetcher -PackageReader $iiPackageReader
 Assert-Eq -Label "installability: 'unverified' pin blocks the coherent-candidate selection (status is not 'installable')" `
     -Expected $false -Actual ($iiConfirmedUnverifiedRun.Status -eq 'installable')
+Assert-Eq -Label "installability: confirmed candidate with only unavailable expected-pin evidence remains unknown" `
+    -Expected 'unknown' -Actual $iiConfirmedUnverifiedRun.Status
+$iiConfirmedUnverifiedCheck = ConvertTo-PreviewInstallabilityCheck -Result $iiConfirmedUnverifiedRun
+Assert-Eq -Label "installability: unverified component pin remediation requests missing pin evidence" `
+    -Expected 'Resolve the unavailable branch component pin evidence, then rerun without changing the supplied workload-set version.' `
+    -Actual $iiConfirmedUnverifiedCheck.NextAction
 
 # Fix: markdown table cells built from feed/source-supplied strings (NuGet
 # source names) must not be able to break table structure (a literal '|')

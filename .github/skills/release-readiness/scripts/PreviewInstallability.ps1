@@ -545,8 +545,37 @@ function Find-PreviewPackageLocation {
         $id = $PackageId.ToLowerInvariant()
         try {
             $index = Invoke-InstallabilityJson -Url "$($resolved.FlatUrl)/$id/index.json" -Source $resolved.Source -Fetcher $Fetcher
+            $versionsPayload = $null
+            $hasVersionsProperty = $false
+            if ($index -is [System.Collections.IDictionary]) {
+                foreach ($key in $index.Keys) {
+                    if ([string]$key -ieq 'versions') {
+                        $versionsPayload = $index[$key]
+                        $hasVersionsProperty = $true
+                        break
+                    }
+                }
+            } elseif ($null -ne $index -and $index.PSObject) {
+                $versionsProperty = $index.PSObject.Properties |
+                    Where-Object Name -ieq 'versions' |
+                    Select-Object -First 1
+                if ($versionsProperty) {
+                    $versionsPayload = $versionsProperty.Value
+                    $hasVersionsProperty = $true
+                }
+            }
+
+            if (-not $hasVersionsProperty -or
+                $null -eq $versionsPayload -or
+                $versionsPayload -is [string] -or
+                $versionsPayload -is [System.Collections.IDictionary] -or
+                $versionsPayload -isnot [System.Collections.IEnumerable]) {
+                [void]$unknownSources.Add($resolved.Source.Name)
+                continue
+            }
+
             $queriedSourceCount++
-            $versions = @(Get-InstallabilityProperty $index 'versions')
+            $versions = @($versionsPayload)
             if (@($versions | Where-Object { [string]$_ -ieq $Version }).Count -gt 0) {
                 return [PSCustomObject]@{
                     Status         = 'found'
@@ -575,6 +604,46 @@ function Find-PreviewPackageLocation {
         ResolvedSource = $null
         UnknownSources = @($unknownSources | Select-Object -Unique)
     }
+}
+
+function Get-PreviewRuntimeIdentifier {
+    $runtimeIdentifier = [System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier
+    if (-not [string]::IsNullOrWhiteSpace($runtimeIdentifier)) {
+        return $runtimeIdentifier
+    }
+
+    $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+        [System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        return "win-$architecture"
+    }
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+        [System.Runtime.InteropServices.OSPlatform]::OSX)) {
+        return "osx-$architecture"
+    }
+    return "linux-$architecture"
+}
+
+function Resolve-PreviewManifestPackId {
+    param(
+        [Parameter(Mandatory)][string]$LogicalPackageId,
+        [Parameter(Mandatory)]$Pack,
+        [Parameter(Mandatory)][string]$RuntimeIdentifier
+    )
+
+    $aliases = Get-InstallabilityProperty $Pack 'alias-to'
+    if ($null -eq $aliases) {
+        return $LogicalPackageId
+    }
+
+    $resolved = [string](Get-InstallabilityProperty $aliases $RuntimeIdentifier)
+    if ([string]::IsNullOrWhiteSpace($resolved)) {
+        $resolved = [string](Get-InstallabilityProperty $aliases 'any')
+    }
+    if ([string]::IsNullOrWhiteSpace($resolved)) {
+        return $null
+    }
+    return $resolved
 }
 
 function Get-PreviewPlatformRequirements {
@@ -644,7 +713,8 @@ function Get-PreviewPlatformRequirements {
 function Get-PreviewRepresentativePackRequests {
     param(
         [array]$ManifestEvidence,
-        [Parameter(Mandatory)][int]$Major
+        [Parameter(Mandatory)][int]$Major,
+        [string]$RuntimeIdentifier = (Get-PreviewRuntimeIdentifier)
     )
 
     $requests = [System.Collections.Generic.List[object]]::new()
@@ -653,7 +723,7 @@ function Get-PreviewRepresentativePackRequests {
         @{ Category = 'ios-sdk'; Pattern = "^Microsoft\.iOS\.Sdk\.net$Major\.0_" },
         @{ Category = 'maccatalyst-sdk'; Pattern = "^Microsoft\.MacCatalyst\.Sdk\.net$Major\.0_" },
         @{ Category = 'tvos-sdk'; Pattern = "^Microsoft\.tvOS\.Sdk\.net$Major\.0_" },
-        @{ Category = 'emscripten-sdk'; Pattern = '^Microsoft\.NET\.Runtime\.Emscripten\..+\.Sdk\.(?:linux|osx|win)-' },
+        @{ Category = 'emscripten-sdk'; Pattern = "^Microsoft\.NET\.Runtime\.Emscripten\.Sdk\.net$Major$" },
         @{ Category = 'android-runtime'; Pattern = "^Microsoft\.NETCore\.App\.Runtime\.Mono\.net$Major\.android-arm64$" },
         @{ Category = 'ios-runtime'; Pattern = "^Microsoft\.NETCore\.App\.Runtime\.Mono\.net$Major\.ios-arm64$" },
         @{ Category = 'maccatalyst-runtime'; Pattern = "^Microsoft\.NETCore\.App\.Runtime\.Mono\.net$Major\.maccatalyst-arm64$" },
@@ -683,12 +753,15 @@ function Get-PreviewRepresentativePackRequests {
             if (-not $representative) { continue }
             $version = [string](Get-InstallabilityProperty $entry.Value 'version')
             if ([string]::IsNullOrWhiteSpace($version)) { continue }
-            $key = "$($entry.Name.ToLowerInvariant())|$($version.ToLowerInvariant())"
+            $packageId = Resolve-PreviewManifestPackId -LogicalPackageId $entry.Name `
+                -Pack $entry.Value -RuntimeIdentifier $RuntimeIdentifier
+            if ([string]::IsNullOrWhiteSpace($packageId)) { continue }
+            $key = "$($packageId.ToLowerInvariant())|$($version.ToLowerInvariant())"
             if ($seen.ContainsKey($key)) { continue }
             $seen[$key] = $true
             [void]$requests.Add([PSCustomObject]@{
                 Category  = $representative.Category
-                PackageId = $entry.Name
+                PackageId = $packageId
                 Version   = $version
             })
         }
@@ -884,6 +957,8 @@ function ConvertTo-PreviewInstallabilityCheck {
         default {
             if ((Get-InstallabilityProperty $Result 'FailureKind') -eq 'sdk-pin-unresolved') {
                 'Restore access to the branch SDK pin, then rerun without changing the supplied workload-set version.'
+            } elseif ((Get-InstallabilityProperty $Result 'FailureKind') -eq 'component-pin-unverified') {
+                'Resolve the unavailable branch component pin evidence, then rerun without changing the supplied workload-set version.'
             } elseif (-not $Result.VersionConfirmed) {
                 'Supply the confirmed workload-set CLI version and any required authenticated package source, then rerun locally.'
             } else {
@@ -909,6 +984,7 @@ function Get-PreviewConsumerInstallability {
         [string]$ExpectedMauiManifestVersion,
         [string[]]$AdditionalPackageSource = @(),
         [bool]$PublicSafe = $true,
+        [string]$RuntimeIdentifier = (Get-PreviewRuntimeIdentifier),
         [scriptblock]$Fetcher,
         [scriptblock]$PackageReader
     )
@@ -1050,22 +1126,34 @@ function Get-PreviewConsumerInstallability {
         # not 'mismatched' -> BLOCKED: the newest public candidate not yet matching
         # branch pins is not evidence of a real installability problem when nothing has
         # been confirmed. Only a confirmed candidate's genuine pin mismatch is BLOCKED.
+        $hasPinMismatch = @($lastComparisons | Where-Object {
+            $_.Status -in @('mismatch', 'missing')
+        }).Count -gt 0
+        $hasUnverifiedPin = @($lastComparisons | Where-Object Status -eq 'unverified').Count -gt 0
         $status = if (-not $WorkloadSetCliVersion) {
             'unknown'
-        } elseif ($lastComparisons.Count -gt 0) {
+        } elseif ($hasPinMismatch) {
             'mismatched'
         } else {
             'unknown'
+        }
+        $failureKind = if ($hasUnverifiedPin -and -not $hasPinMismatch) {
+            'component-pin-unverified'
+        } else {
+            $null
         }
         $result = [PSCustomObject]@{
             Status = $status
             Summary = if ($status -eq 'mismatched') {
                 'Available workload-set candidates do not match the branch component pins.'
+            } elseif ($failureKind -eq 'component-pin-unverified') {
+                'The workload-set candidate could not be verified because expected branch component pin evidence is unavailable.'
             } elseif (-not $WorkloadSetCliVersion -and $lastComparisons.Count -gt 0) {
                 'No discovered workload-set candidate has branch-pin-coherent contents, and no release-owner-confirmed version was supplied to evaluate directly.'
             } else {
                 'The workload-set package was found, but its manifest could not be read.'
             }
+            FailureKind = $failureKind
             SdkVersion = $sdkVersion; SdkFeatureBand = $featureBand; PackageId = $package.Id
             CliVersion = $WorkloadSetCliVersion; NuGetVersion = $requestedNuGetVersion; VersionConfirmed = [bool]$WorkloadSetCliVersion
             VersionSourceIsSensitive = $versionSourceIsSensitive
@@ -1120,7 +1208,8 @@ function Get-PreviewConsumerInstallability {
         }
     }
 
-    $packRequests = @(Get-PreviewRepresentativePackRequests -ManifestEvidence $manifestEvidence -Major $Major)
+    $packRequests = @(Get-PreviewRepresentativePackRequests -ManifestEvidence $manifestEvidence `
+        -Major $Major -RuntimeIdentifier $RuntimeIdentifier)
     $packLocations = [System.Collections.Generic.List[object]]::new()
     foreach ($request in $packRequests) {
         if ([string]::IsNullOrWhiteSpace($request.PackageId) -or [string]::IsNullOrWhiteSpace($request.Version)) {
