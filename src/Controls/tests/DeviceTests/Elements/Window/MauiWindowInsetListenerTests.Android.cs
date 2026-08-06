@@ -149,6 +149,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ReapplyStaysOwedWhenTheAnimationEndsWithNoUsablePoster()
+		{
+			var container = await InvokeOnMainThreadAsync(() =>
+				new global::Android.Widget.LinearLayout(MauiContext.Context!));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await container.AttachAndRun(async () =>
+				{
+					var listener = new MauiWindowInsetListener();
+					var detached = new InsetRecordingView(MauiContext.Context!);
+					var attached = new InsetRecordingView(MauiContext.Context!);
+					var insets = CreateInsets();
+
+					container.AddView(attached);
+
+					try
+					{
+						// Only a detached view is known, so the animation has to end without
+						// being able to issue the re-apply it owes
+						listener.TrackView(detached);
+						listener.OnPrepare(CreateImeAnimation());
+						listener.OnApplyWindowInsets(detached, insets);
+						listener.OnEnd(CreateImeAnimation());
+						await NextLooperTurnAsync(container);
+
+						Assert.Equal(0, detached.RequestApplyInsetsCount);
+
+						// The settled insets are still owed, so the next animation that *can*
+						// reach an attached view must deliver them rather than the request
+						// having been silently dropped
+						listener.TrackView(attached);
+						listener.OnPrepare(CreateImeAnimation());
+						listener.OnEnd(CreateImeAnimation());
+						await NextLooperTurnAsync(container);
+
+						Assert.Equal(1, attached.RequestApplyInsetsCount);
+					}
+					finally
+					{
+						container.RemoveView(attached);
+					}
+				});
+			});
+		}
+
+		[Fact]
 		public async Task GatedDispatchesTriggerOneReapplyWhenTheAnimationEnds()
 		{
 			await InvokeOnMainThreadAsync(async () =>

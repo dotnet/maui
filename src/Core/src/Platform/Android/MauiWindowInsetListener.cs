@@ -38,6 +38,11 @@ namespace Microsoft.Maui.Platform
 		// single call on any attached view covers every gated view.
 		bool _reapplyInsetsWhenAnimationEnds;
 
+		// The most recent view whose dispatch was gated. _trackedViews only holds views that
+		// have had padding applied, so a gated view is often absent from it; this keeps a
+		// poster candidate for the end-of-animation re-apply. Cleared when the animation ends.
+		AView? _lastGatedView;
+
 		// Views that started using this listener while an IME animation was in flight.
 		// The IsImeAnimating gate exists to keep already-correct views stable during the
 		// animation; a view that just (re)attached has no valid safe-area padding yet, so it
@@ -265,6 +270,7 @@ namespace Microsoft.Maui.Platform
 				if (IsImeAnimating && v is not null)
 				{
 					_reapplyInsetsWhenAnimationEnds = true;
+					_lastGatedView = v;
 				}
 
 				return insets;
@@ -408,6 +414,11 @@ namespace Microsoft.Maui.Platform
 
 			_trackedViews.Remove(view);
 			_viewsAttachedDuringImeAnimation.Remove(view);
+
+			if (ReferenceEquals(_lastGatedView, view))
+			{
+				_lastGatedView = null;
+			}
 		}
 
 		public void ResetAllViews()
@@ -580,6 +591,14 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			// _trackedViews only holds views that actually had padding applied, and a view
+			// gated during this animation has by definition not applied any yet — so fall
+			// back to the gated view itself, which is what the pre-PR code posted through
+			if (_lastGatedView.IsAlive() && _lastGatedView.IsAttachedToWindow)
+			{
+				return _lastGatedView;
+			}
+
 			return null;
 		}
 
@@ -587,20 +606,23 @@ namespace Microsoft.Maui.Platform
 		{
 			IsImeAnimating = false;
 			_gateReleaseScheduled = false;
+			_viewsAttachedDuringImeAnimation.Clear();
+			_lastGatedView = null;
 
 			if (!_reapplyInsetsWhenAnimationEnds)
 			{
 				return;
 			}
 
-			_reapplyInsetsWhenAnimationEnds = false;
-
-			// The poster was captured a looper turn earlier, so it can have been disposed
-			// by a page teardown in the meantime
+			// IsAlive covers null as well as a peer disposed during the one-looper-turn delay.
+			// Leave the flag set when we cannot act on it: the re-apply is still owed, and
+			// consuming it here would drop the settled insets entirely.
 			if (!reapplyThrough.IsAlive())
 			{
 				return;
 			}
+
+			_reapplyInsetsWhenAnimationEnds = false;
 
 			// One call is enough: this reaches the ViewRootImpl and re-dispatches insets
 			// across the whole hierarchy, so every gated view gets its settled insets
