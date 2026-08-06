@@ -345,17 +345,23 @@ formatting separate:
    tie-breaker.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
-   - exact-HEAD completed/succeeded → `green`
-   - exact-HEAD failed, partially succeeded, or canceled → `red`
+   - current completed/succeeded → `green`
+   - current completed/partially succeeded → `partial-success`
+   - current failed or canceled → `red`
    - queued, not started, running, postponed, or canceling → `in-progress`
-   - build SHA different from branch HEAD → `stale`
+   - build SHA behind the newest trigger-eligible commit → `stale`
    - no build, malformed response, missing SHA/HEAD, or unknown result → `unknown`
    - GitHub Actions or unavailable internal authentication → `skipped`
-6. Bound each Azure CLI and GitHub branch query; a timeout becomes `unknown`
+6. Bound each Azure CLI, GitHub, and local Git query; a timeout becomes `unknown`
    evidence instead of hanging the local run.
-7. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
-   `in-progress` → `WATCH`, `unknown` → `UNKNOWN`; `skipped` is fail-open.
-8. In public-safe mode, omit the internal branch records and local table
+7. When branch HEAD is newer than the build, inspect the paths touched by every
+   intervening commit against `eng/pipelines/ci-official.yml`; excluded-only
+   advances remain current. Do not use an aggregate tip-to-tip diff because a
+   later revert can hide an earlier trigger-eligible change.
+8. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
+   `in-progress`/`partial-success` → `WATCH`, `unknown` → `UNKNOWN`; `skipped`
+   is fail-open.
+9. In public-safe mode, omit the internal branch records and local table
    completely. Never serialize build IDs, numbers, SHAs, URLs, raw Azure errors,
    account details, or internal branch evidence into public tracker output.
 

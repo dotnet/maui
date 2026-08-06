@@ -47,7 +47,8 @@ function Get-InternalOfficialBuildClassification {
     param(
         [AllowNull()]$Build,
         [Parameter(Mandatory = $true)][string]$ExpectedBranchRef,
-        [AllowNull()][string]$BranchHeadSha
+        [AllowNull()][string]$BranchHeadSha,
+        [AllowNull()][Nullable[bool]]$BuildCoversHead
     )
 
     if ($null -eq $Build) {
@@ -69,9 +70,11 @@ function Get-InternalOfficialBuildClassification {
     if ([string]::IsNullOrWhiteSpace($BranchHeadSha)) {
         return [PSCustomObject]@{ Classification = 'unknown'; Reason = 'missing-branch-head' }
     }
-    if (-not $sourceSha.Equals($BranchHeadSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+    $sourceMatchesHead = $sourceSha.Equals($BranchHeadSha, [System.StringComparison]::OrdinalIgnoreCase)
+    if (-not $sourceMatchesHead -and $BuildCoversHead -ne $true) {
         return [PSCustomObject]@{ Classification = 'stale'; Reason = 'source-sha-trails-head' }
     }
+    $triggerCurrentReasonSuffix = if ($sourceMatchesHead) { '' } else { '-after-trigger-excluded-changes' }
 
     switch ($status.ToLowerInvariant()) {
         { $_ -in @('inprogress', 'notstarted', 'postponed', 'cancelling') } {
@@ -80,9 +83,12 @@ function Get-InternalOfficialBuildClassification {
         'completed' {
             switch ($result.ToLowerInvariant()) {
                 'succeeded' {
-                    return [PSCustomObject]@{ Classification = 'green'; Reason = 'completed-succeeded' }
+                    return [PSCustomObject]@{ Classification = 'green'; Reason = "completed-succeeded$triggerCurrentReasonSuffix" }
                 }
-                { $_ -in @('failed', 'partiallysucceeded', 'canceled', 'cancelled') } {
+                'partiallysucceeded' {
+                    return [PSCustomObject]@{ Classification = 'partial-success'; Reason = "completed-partiallysucceeded$triggerCurrentReasonSuffix" }
+                }
+                { $_ -in @('failed', 'canceled', 'cancelled') } {
                     return [PSCustomObject]@{ Classification = 'red'; Reason = "completed-$($_)" }
                 }
                 default {
@@ -105,9 +111,10 @@ function Get-InternalOfficialBuildOverallClassification {
         'skipped'     = 0
         'green'       = 1
         'in-progress' = 2
-        'unknown'     = 3
-        'stale'       = 4
-        'red'         = 5
+        'partial-success' = 3
+        'unknown'     = 4
+        'stale'       = 5
+        'red'         = 6
     }
     $worst = 'skipped'
     foreach ($branch in $Branches) {
@@ -129,6 +136,38 @@ function ConvertTo-SafeInternalBuildNumber {
     }
 
     return 'invalid-build-number'
+}
+
+function Test-InternalOfficialBuildTriggerExcludedPath {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if ($Path.StartsWith('.github/', [System.StringComparison]::Ordinal)) {
+        return $true
+    }
+    if ($Path -cmatch '\Adocs/[^/]+\z') {
+        return $true
+    }
+    return $Path -cin @(
+        'CODE-OF-CONDUCT.md',
+        'CONTRIBUTING.md',
+        'LICENSE.TXT',
+        'PATENTS.TXT',
+        'README.md',
+        'THIRD-PARTY-NOTICES.TXT'
+    )
+}
+
+function Test-InternalOfficialBuildChangedPathsCoverHead {
+    param([AllowNull()][string[]]$Paths)
+
+    $changedPaths = @($Paths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($changedPaths.Count -eq 0) { return $false }
+    foreach ($path in $changedPaths) {
+        if (-not (Test-InternalOfficialBuildTriggerExcludedPath $path.Trim())) {
+            return $false
+        }
+    }
+    return $true
 }
 
 function Select-LatestInternalOfficialBuild {
@@ -192,13 +231,13 @@ function Invoke-InternalOfficialBuildProcess {
         $stderrTask = $process.StandardError.ReadToEndAsync()
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
             try { $process.Kill($true) } catch { }
-            $process.WaitForExit()
+            [void]$process.WaitForExit(5000)
             return [PSCustomObject]@{
                 Started = $true
                 TimedOut = $true
                 ExitCode = -1
-                Stdout = $stdoutTask.GetAwaiter().GetResult()
-                Stderr = $stderrTask.GetAwaiter().GetResult()
+                Stdout = if ($stdoutTask.IsCompletedSuccessfully) { $stdoutTask.GetAwaiter().GetResult() } else { '' }
+                Stderr = if ($stderrTask.IsCompletedSuccessfully) { $stderrTask.GetAwaiter().GetResult() } else { '' }
             }
         }
 
@@ -410,6 +449,60 @@ function New-GitHubBranchHeadFetcher {
     }.GetNewClosure()
 }
 
+function New-GitBuildCurrencyFetcher {
+    param(
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 30,
+        [AllowNull()][scriptblock]$ProcessInvoker
+    )
+
+    $timeout = $TimeoutSeconds
+    $checkCommandAvailability = $null -eq $ProcessInvoker
+    $invokeProcess = if ($ProcessInvoker) {
+        $ProcessInvoker
+    } else {
+        { param($FileName, $Arguments, $ProcessTimeout) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout }
+    }
+    return {
+        param([string]$BranchRef, [string]$BuildSourceSha, [string]$BranchHeadSha)
+
+        if ([string]::IsNullOrWhiteSpace($BuildSourceSha) -or
+            [string]::IsNullOrWhiteSpace($BranchHeadSha)) {
+            return $false
+        }
+        if ($BuildSourceSha.Equals($BranchHeadSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+        if ($checkCommandAvailability -and -not (Get-Command git -ErrorAction SilentlyContinue)) {
+            return $false
+        }
+
+        $ancestryResult = & $invokeProcess 'git' @('merge-base', '--is-ancestor', $BuildSourceSha, $BranchHeadSha) $timeout
+        if (-not [bool](Get-InternalBuildProperty $ancestryResult 'Started') -or
+            [bool](Get-InternalBuildProperty $ancestryResult 'TimedOut') -or
+            [int](Get-InternalBuildProperty $ancestryResult 'ExitCode') -ne 0) {
+            return $false
+        }
+
+        # Aggregate compare diffs can hide a trigger-eligible change that a
+        # later commit reverted, so inspect the paths touched by every commit.
+        $logResult = & $invokeProcess 'git' @(
+            'log',
+            '--format=',
+            '--name-only',
+            '--no-renames',
+            "$BuildSourceSha..$BranchHeadSha"
+        ) $timeout
+        if (-not [bool](Get-InternalBuildProperty $logResult 'Started') -or
+            [bool](Get-InternalBuildProperty $logResult 'TimedOut') -or
+            [int](Get-InternalBuildProperty $logResult 'ExitCode') -ne 0) {
+            return $false
+        }
+
+        $paths = @(([string](Get-InternalBuildProperty $logResult 'Stdout')) -split '\r?\n')
+        return Test-InternalOfficialBuildChangedPathsCoverHead $paths
+    }.GetNewClosure()
+}
+
 function Get-InternalOfficialBuildHealth {
     param(
         [Parameter(Mandatory = $true)][int]$MajorVersion,
@@ -417,6 +510,7 @@ function Get-InternalOfficialBuildHealth {
         [Parameter(Mandatory = $true)][bool]$ReleaseBranchExists,
         [Parameter(Mandatory = $true)][scriptblock]$BuildFetcher,
         [Parameter(Mandatory = $true)][scriptblock]$HeadFetcher,
+        [AllowNull()][scriptblock]$BuildCurrencyFetcher,
         [bool]$GitHubActions = (Test-IsGitHubActions)
     )
 
@@ -482,10 +576,20 @@ function Get-InternalOfficialBuildHealth {
 
         $build = Get-InternalBuildProperty $fetchResult 'Build'
         $headSha = try { [string](& $HeadFetcher $branchRef) } catch { $null }
+        $buildSourceSha = [string](Get-InternalBuildProperty $build 'sourceVersion')
+        $buildCoversHead = if ($BuildCurrencyFetcher -and
+            -not [string]::IsNullOrWhiteSpace($buildSourceSha) -and
+            -not [string]::IsNullOrWhiteSpace($headSha) -and
+            -not $buildSourceSha.Equals($headSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+            try { [bool](& $BuildCurrencyFetcher $branchRef $buildSourceSha $headSha) } catch { $false }
+        } else {
+            $null
+        }
         $classification = Get-InternalOfficialBuildClassification `
             -Build $build `
             -ExpectedBranchRef $branchRef `
-            -BranchHeadSha $headSha
+            -BranchHeadSha $headSha `
+            -BuildCoversHead $buildCoversHead
 
         $buildId = Get-InternalBuildProperty $build 'id'
         $buildUrl = if ($buildId) {
@@ -545,7 +649,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
         $status = switch ($overall) {
             'green' { 'READY' }
             { $_ -in @('red', 'stale') } { 'BLOCKED' }
-            'in-progress' { 'WATCH' }
+            { $_ -in @('in-progress', 'partial-success') } { 'WATCH' }
             default { 'UNKNOWN' }
         }
         $wasSkipped = $overall -eq 'skipped'
@@ -576,7 +680,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
         $status = switch ($classification) {
             'green' { 'READY' }
             { $_ -in @('red', 'stale') } { 'BLOCKED' }
-            'in-progress' { 'WATCH' }
+            { $_ -in @('in-progress', 'partial-success') } { 'WATCH' }
             default { 'UNKNOWN' }
         }
         $branchName = [string](Get-InternalBuildProperty $branch 'branch')
@@ -585,6 +689,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
             'red' { 'The latest official build did not succeed at current branch HEAD.' }
             'stale' { 'The latest official build does not match current branch HEAD.' }
             'in-progress' { 'The latest official build has not completed.' }
+            'partial-success' { 'The latest official build completed with issues and needs manual review.' }
             default { 'Official-build evidence could not be determined for this branch.' }
         }
 
@@ -597,6 +702,7 @@ function Convert-InternalOfficialBuildHealthToChecks {
                 'red' { 'Investigate and repair the failed official build before release.' }
                 'stale' { 'Run the official pipeline at current branch HEAD before judging readiness.' }
                 'in-progress' { 'Wait for the current official build to complete.' }
+                'partial-success' { 'Review the partially-succeeded official build legs before release.' }
                 default { 'Verify internal access and confirm the latest official build manually.' }
             }
         })
