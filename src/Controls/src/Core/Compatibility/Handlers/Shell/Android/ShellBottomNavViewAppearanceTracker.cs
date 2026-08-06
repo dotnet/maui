@@ -105,9 +105,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void RestoreBackground(BottomNavigationView bottomView)
 		{
-#pragma warning disable CS0618 // Obsolete
-			ViewCompat.SetBackground(bottomView, _originalBackground);
-#pragma warning restore CS0618 // Obsolete
+			bottomView.SetBackground(_originalBackground);
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)

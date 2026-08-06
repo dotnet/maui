@@ -764,11 +764,47 @@ namespace Microsoft.Maui.Controls
 			if (pivot is ShellContent || pivot is ShellSection || pivot is ContentPage)
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
-				Toolbar.BarTextColor = appearance?.TitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor;
-				Toolbar.IconColor = appearance?.ForegroundColor;
+
+				// On Android with Material2 (legacy), preserve the original hardcoded
+				// defaults so clearing an appearance color still falls back to the
+				// same theme-resolved value it always has. Material3 (and all other
+				// platforms) fall back to null so the platform/native default is used.
+				if (DeviceInfo.Platform == DevicePlatform.Android && !RuntimeFeature.IsMaterial3Enabled)
+				{
+					Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
+					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+					Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
+				}
+				else
+				{
+					Toolbar.BarTextColor = appearance?.TitleColor;
+					Toolbar.BarBackground = appearance?.BackgroundColor;
+					Toolbar.IconColor = appearance?.ForegroundColor;
+				}
 			}
 		}
+
+#if ANDROID
+		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
+		static Color DefaultForegroundColor => ResolveThemeColor(Colors.White, Colors.White);
+		static Color DefaultTitleColor => ResolveThemeColor(Colors.White, Colors.White);
+
+		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
+
+		static Color ResolveThemeColor(Color light, Color dark)
+		{
+			if (IsDarkTheme)
+			{
+				return dark;
+			}
+
+			return light;
+		}
+#else
+		static Color DefaultBackgroundColor => null;
+		static readonly Color DefaultForegroundColor = null;
+		static readonly Color DefaultTitleColor = null;
+#endif
 
 
 		void IShellController.AppearanceChanged(Element source, bool appearanceSet)

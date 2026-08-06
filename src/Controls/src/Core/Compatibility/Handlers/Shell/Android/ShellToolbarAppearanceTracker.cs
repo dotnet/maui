@@ -52,7 +52,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			shellToolbar.BarTextColor = title ?? defaultTitle;
 			shellToolbar.BarBackground = barBackground is null ? null : new SolidColorBrush(barBackground);
 			shellToolbar.IconColor = foreground ?? defaultForeground;
-			toolbarTracker.TintColor = foreground;
+
+			// Only sync the toolbar's menu-item/hamburger tint on Material3. On Material2 this
+			// must stay untouched: ResetAppearance passes the concrete M2 default foreground
+			// (not null), which would overwrite IShellToolbarTracker.TintColor's own White
+			// fallback and unexpectedly darken overflow/hamburger icons for the default
+			// (no custom appearance) M2 case.
+			if (RuntimeFeature.IsMaterial3Enabled)
+				toolbarTracker.TintColor = foreground;
 		}
 
 		#region IDisposable
