@@ -72,6 +72,11 @@ public class Issue36801 : ContentPage
 		var modeNoneButton = new Button { Text = "Mode None", AutomationId = "ModeNoneButton" };
 		modeNoneButton.Clicked += (sender, e) => SetMode(SafeAreaEdges.None);
 
+		// SafeAreaEdges.All also resolves to Never, but unlike None it makes MauiScrollView
+		// bake the safe area into ContentSize — the case ScrollableContentSize reasons about
+		var modeAllButton = new Button { Text = "Mode All", AutomationId = "ModeAllButton" };
+		modeAllButton.Clicked += (sender, e) => SetMode(SafeAreaEdges.All);
+
 		var modeContainerButton = new Button { Text = "Mode Container", AutomationId = "ModeContainerButton" };
 		// SafeAreaEdges.Container is internal, so build the same value from the public enum.
 		// SafeAreaEdges.All would not do: it is mapped to Never, not Always.
@@ -87,7 +92,7 @@ public class Issue36801 : ContentPage
 			VerticalOptions = LayoutOptions.Start,
 			Children =
 			{
-				modeDefaultButton, modeNoneButton, modeContainerButton,
+				modeDefaultButton, modeNoneButton, modeAllButton, modeContainerButton,
 				scrollToEndButton, scrollToTopButton, scrollToProbeButton,
 				_endResultLabel, _topResultLabel, _elementResultLabel, _deferredResultLabel
 			}
@@ -161,7 +166,7 @@ public class Issue36801 : ContentPage
 		var edges = _scrollView.SafeAreaEdges;
 		var expected =
 			edges.Equals(new SafeAreaEdges(SafeAreaRegions.Container)) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Always :
-			edges.Equals(SafeAreaEdges.None) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Never :
+			edges.Equals(SafeAreaEdges.None) || edges.Equals(SafeAreaEdges.All) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Never :
 			UIKit.UIScrollViewContentInsetAdjustmentBehavior.Automatic;
 
 		return nativeScrollView.ContentInsetAdjustmentBehavior == expected

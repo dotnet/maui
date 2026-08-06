@@ -74,6 +74,9 @@ public class Issue36801 : _IssuesUITest
 	[Category(UITestCategories.ScrollView)]
 	[TestCase("ModeDefaultButton", "Automatic")]
 	[TestCase("ModeNoneButton", "Never")]
+	// Also resolves to Never, but bakes the safe area into ContentSize, which None does not —
+	// so it is the case that actually exercises ScrollableContentSize's Never reasoning
+	[TestCase("ModeAllButton", "Never")]
 	[TestCase("ModeContainerButton", "Always")]
 	public void ScrollToExtremesInEachInsetMode(string modeButton, string expectedMode)
 	{

@@ -76,7 +76,10 @@ namespace Microsoft.Maui.Controls
 				// element's position inside the arranged content. Before the first layout pass
 				// Width/Height are still -1 and every content coordinate is 0, so the request
 				// has to wait; OnSizeAllocated and ContentSizeChanged retry it.
-				if (Width < 0 || Height < 0 || ContentSize.IsZero)
+				// ContentSize only matters when there is content to arrange — with no Content
+				// nothing ever raises ContentSizeChanged, so waiting on it would hang the
+				// caller's task forever.
+				if (Width < 0 || Height < 0 || (Content is not null && ContentSize.IsZero))
 				{
 					return;
 				}

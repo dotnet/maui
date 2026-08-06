@@ -70,10 +70,42 @@ public class ShellFlyoutHeaderScrollViewContent : TestShell
 		// direct native call that also runs during initial layout.
 		await _flyoutScroll.ScrollToAsync(0, 200, animated: false);
 		await Task.Delay(150);
+
+		// Assert the scrolled-away state too. The returned-to-top state alone is also what a
+		// header that never moved would report (_headerOffset starts at 0), so without this
+		// the test would pass even if the Scrolled wiring went dead entirely.
+		var scrolledAway = EvaluateHeaderScrolledAway();
+		if (!scrolledAway.StartsWith("Success", StringComparison.Ordinal))
+		{
+			_resultLabel.Text = scrolledAway;
+			return;
+		}
+
 		await _flyoutScroll.ScrollToAsync(0, 0, animated: false);
 		await Task.Delay(150);
 
 		_resultLabel.Text = EvaluateHeaderPosition();
+	}
+
+	// With FlyoutHeaderBehavior.Scroll the header must move up as the content scrolls down,
+	// which only happens if the ScrollView -> OnScrolled path actually ran
+	string EvaluateHeaderScrolledAway()
+	{
+#if IOS || MACCATALYST
+		if (_headerGrid.Handler?.PlatformView is not UIKit.UIView headerView ||
+			headerView.Superview is not UIKit.UIView headerContainer)
+		{
+			return "Fail: header views unavailable";
+		}
+
+		double headerY = headerContainer.Frame.Y;
+
+		return headerY < 0
+			? $"Success: scrolled headerY={headerY:F1}"
+			: $"Fail: header did not move up while scrolled (headerY={headerY:F1})";
+#else
+		return "Skipped: not applicable on this platform";
+#endif
 	}
 
 	string EvaluateHeaderPosition()
