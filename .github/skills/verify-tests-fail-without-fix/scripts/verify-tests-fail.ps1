@@ -432,7 +432,12 @@ function Invoke-TestRun {
             $testArgs = @(
                 "test", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal"
+                "--logger", "console;verbosity=normal",
+                "-p:IncludeAndroidTargetFrameworks=false",
+                "-p:IncludeIosTargetFrameworks=false",
+                "-p:IncludeMacCatalystTargetFrameworks=false",
+                "-p:IncludeWindowsTargetFrameworks=false",
+                "-p:IncludeTizenTargetFrameworks=false"
             )
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)

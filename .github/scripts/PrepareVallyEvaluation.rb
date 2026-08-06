@@ -21,8 +21,17 @@ REQUIRED_SKILL_INVOCATION_SPECS = %w[
   .github/skills/code-review/tests/eval.trim-aot.vally.yaml
   .github/skills/try-fix/tests/eval.restore.vally.yaml
   .github/skills/try-fix/tests/eval.vally.yaml
+  .github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml
   .github/skills/verify-tests-fail-without-fix/tests/eval.vally.yaml
 ].freeze
+DISALLOWED_SKILL_INVOCATION_STIMULI = {
+  ".github/skills/try-fix/tests/eval.vally.yaml" => %w[
+    negative-trigger-documentation-question
+  ],
+  ".github/skills/verify-tests-fail-without-fix/tests/eval.vally.yaml" => %w[
+    negative-trigger-general-test-question
+  ]
+}.freeze
 REQUIRED_SKILL_PATTERNS = {
   ".github/skills/code-review/tests/eval.producer-trace.vally.yaml" => {
     "producer-trace workflow step" => /^### Step 1\.5: Trace External Output Contracts \(Always Active\)$/,
@@ -123,7 +132,7 @@ FIXTURES = {
     ]
   },
   "verify-tests-fail-without-fix" => {
-    "eval.vally.yaml" => [
+    "eval.protocol.vally.yaml" => [
       {
         marker: "happy-path-full-verification-mode",
         fallback_ref: "a35eb7d99044ff2bba96a798c1ec81bac87c09e3",
@@ -135,7 +144,9 @@ FIXTURES = {
         fallback_ref: "0d560ac4f2599c17c2ee93e398ef86e9034b81cb",
         message: "Synthetic failure-only test verification fixture",
         files: VERIFY_FAILURE_ONLY_FILES
-      },
+      }
+    ],
+    "eval.vally.yaml" => [
       {
         marker: "regression-no-manual-git-revert",
         fallback_ref: "a35eb7d99044ff2bba96a798c1ec81bac87c09e3",
@@ -308,16 +319,14 @@ def validate_graders!(graders, location)
   end
 end
 
-def skill_invocation_targets?(grader, skill_name)
+def skill_invocation_targets?(grader, skill_name, polarity)
   return false unless grader.is_a?(Hash) && grader["type"] == "skill-invocation"
 
   config = grader["config"]
   return false unless config.is_a?(Hash)
 
-  %w[required disallowed].any? do |key|
-    values = config[key]
-    values.is_a?(Array) && values.include?(skill_name)
-  end
+  values = config[polarity]
+  values.is_a?(Array) && values.include?(skill_name)
 end
 
 def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
@@ -347,8 +356,18 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
     validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
     graders = Array(stimulus["graders"])
     validate_graders!(graders, "stimuli[#{index}].graders")
-    if require_skill_invocation && graders.none? { |grader| skill_invocation_targets?(grader, skill_name) }
-      fail!("stimuli[#{index}].graders must include skill-invocation targeting #{skill_name} for #{relative_spec_path}")
+    if require_skill_invocation
+      allowed_disallowed = Array(DISALLOWED_SKILL_INVOCATION_STIMULI[relative_spec_path])
+      if allowed_disallowed.include?(stimulus["name"])
+        unless graders.any? { |grader| skill_invocation_targets?(grader, skill_name, "disallowed") }
+          fail!("stimuli[#{index}].graders must include disallowed skill-invocation targeting #{skill_name} for #{relative_spec_path}")
+        end
+      elsif graders.none? { |grader| skill_invocation_targets?(grader, skill_name, "required") }
+        fail!("stimuli[#{index}].graders must include required skill-invocation targeting #{skill_name} for #{relative_spec_path}")
+      end
+      if stimulus.key?("supported_executors")
+        fail!("stimuli[#{index}] must not restrict supported_executors in mandatory invocation spec #{relative_spec_path}")
+      end
     end
     if required_first_action_skill
       first_action = "Your first action must be to invoke the `#{required_first_action_skill}` skill."

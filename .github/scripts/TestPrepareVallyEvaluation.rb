@@ -120,7 +120,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator(routing_tests_path)
 
     refute status.success?
-    assert_includes stderr, "must include skill-invocation targeting try-fix"
+    assert_includes stderr, "must include required skill-invocation targeting try-fix"
   end
 
   def test_rejects_decorative_skill_invocation_grader_for_routing_specs
@@ -146,7 +146,60 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator(routing_tests_path)
 
     refute status.success?
-    assert_includes stderr, "must include skill-invocation targeting try-fix"
+    assert_includes stderr, "must include required skill-invocation targeting try-fix"
+  end
+
+  def test_rejects_disallowed_grader_for_required_routing_scenario
+    routing_tests_path = File.join(@repo_root, ".github", "skills", "try-fix", "tests")
+    FileUtils.mkdir_p(routing_tests_path)
+    File.write(
+      File.join(routing_tests_path, "eval.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "routing-regression",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "disallowed" => ["try-fix"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(routing_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "must include required skill-invocation targeting try-fix"
+  end
+
+  def test_rejects_executor_restriction_for_mandatory_invocation_spec
+    routing_tests_path = File.join(@repo_root, ".github", "skills", "try-fix", "tests")
+    FileUtils.mkdir_p(routing_tests_path)
+    File.write(
+      File.join(routing_tests_path, "eval.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "routing-regression",
+            "supported_executors" => ["unsupported-executor"],
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["try-fix"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(routing_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "must not restrict supported_executors"
   end
 
   def test_requires_producer_trace_output_contract_in_skill_template

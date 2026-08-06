@@ -1,0 +1,105 @@
+# Must-pass operational protocol for verify-tests-fail-without-fix.
+#
+# These scenarios execute the real verification script against durable,
+# synthetic unit-test commits. Keeping them in a threshold-1 suite prevents
+# unrelated interpretation scenarios from averaging away a broken protocol.
+
+name: verify-tests-fail-without-fix-protocol
+description: >-
+  Must-pass operational verification that the prescribed script observes a
+  failing test without the fix and, when a fix exists, a passing test with it.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+environment:
+  skills:
+    - ..
+
+stimuli:
+  - name: happy-path-full-verification-mode
+    tags:
+      kind: workflow
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture adds a unit test and a fix. Verify that the test fails
+      on the parent commit and passes with the fix applied.
+
+      Run full verification against the local diff using PR number 900001 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Let the script
+      auto-detect the changed test and fix files.
+    environment:
+      git:
+        type: worktree
+        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: happy-path-full-verification-mode
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs the tests WITHOUT the fix first and confirms that they
+        fail because the synthetic assertion catches the bug.
+      - >-
+        The agent restores the fix, runs the tests again, and confirms that
+        they pass.
+      - >-
+        The agent uses the verify-tests-fail script rather than manually
+        running dotnet test.
+      - >-
+        The agent correctly reports fail-then-pass as verification success.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  - name: happy-path-verify-failure-only-mode
+    tags:
+      kind: workflow
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture adds a unit test but has no fix. Verify that the
+      test catches the bug by failing in failure-only mode.
+
+      Run against the local diff using PR number 900002 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Let the script
+      auto-detect the changed test file; do not require full verification.
+    environment:
+      git:
+        type: worktree
+        ref: 0d560ac4f2599c17c2ee93e398ef86e9034b81cb # fixture: happy-path-verify-failure-only-mode
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs the test in failure-only mode because no fix exists.
+      - >-
+        The agent confirms that the synthetic assertion fails and correctly
+        reports that failure as verification success.
+      - >-
+        The agent does not require fix files or pass RequireFullVerification.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+scoring:
+  threshold: 1.0

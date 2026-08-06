@@ -1401,6 +1401,16 @@ jobs:
                   tagAttr(openTag, 'value') === 'false';
               });
             }
+            function allStimuliRan(testsuite) {
+              const runText = suiteProp(testsuite, 'stimuliRun');
+              const totalText = suiteProp(testsuite, 'stimuliTotal');
+              const skippedText = suiteProp(testsuite, 'stimuliSkipped');
+              if (!/^\d+$/.test(runText || '') || !/^\d+$/.test(totalText || '')) return false;
+              const run = Number(runText);
+              const total = Number(totalText);
+              const skipped = skippedText === null ? 0 : Number(skippedText);
+              return total > 0 && run === total && Number.isInteger(skipped) && skipped === 0;
+            }
 
             // Regression fixtures cover equivalent JUnit property serialization
             // and ensure a self-closing child is not mistaken for its testcase.
@@ -1450,6 +1460,27 @@ jobs:
                 !suiteBoundaryBlocks[0].includes('safely]]></system-out></testcase></testsuite>')) {
               throw new Error('Internal JUnit parser failed the CDATA suite-boundary fixture.');
             }
+            const completedStimuliFixture = [
+              '<testsuite name="complete">',
+              '<properties>',
+              '<property name="stimuliRun" value="1"/>',
+              '<property name="stimuliTotal" value="1"/>',
+              '</properties>',
+              '</testsuite>',
+            ].join('');
+            const skippedStimuliFixture = [
+              '<testsuite name="skipped">',
+              '<properties>',
+              '<property name="passed" value="true"/>',
+              '<property name="stimuliRun" value="0"/>',
+              '<property name="stimuliSkipped" value="1"/>',
+              '<property name="stimuliTotal" value="1"/>',
+              '</properties>',
+              '</testsuite>',
+            ].join('');
+            if (!allStimuliRan(completedStimuliFixture) || allStimuliRan(skippedStimuliFixture)) {
+              throw new Error('Internal JUnit gate accepted skipped or incomplete stimuli.');
+            }
 
             const suites = [];
             let evalPassed = true;
@@ -1469,6 +1500,7 @@ jobs:
                   const score = suiteProp(block, 'overallScore');
                   const threshold = suiteProp(block, 'threshold');
                   const vallyPassed = suiteProp(block, 'passed') === 'true';
+                  const stimuliComplete = allStimuliRan(block);
                   let skillInvocationFailures = 0;
                   const suiteFailures = Number(tagAttr(openTag, 'failures') || 0);
                   const suiteErrors = Number(tagAttr(openTag, 'errors') || 0);
@@ -1495,7 +1527,13 @@ jobs:
                       });
                     }
                   }
-                  const passed = vallyPassed && skillInvocationFailures === 0;
+                  if (!stimuliComplete) {
+                    failures.set('(suite execution)', {
+                      kind: 'error',
+                      msg: 'not all configured stimuli ran, or one or more stimuli were skipped',
+                    });
+                  }
+                  const passed = vallyPassed && stimuliComplete && skillInvocationFailures === 0;
                   if (!passed) evalPassed = false;
                   suites.push({
                     scope,
@@ -1505,6 +1543,7 @@ jobs:
                     threshold,
                     passed,
                     vallyPassed,
+                    stimuliComplete,
                     skillInvocationFailures,
                     suiteFailures,
                     suiteErrors,
