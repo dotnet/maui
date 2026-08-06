@@ -1318,8 +1318,13 @@ jobs:
                 .replace(/&amp;/g, '&');
             }
             function suiteProp(block, key) {
-              const m = block.match(new RegExp('<property name="' + key + '" value="([^"]*)"'));
-              return m ? xmlDecode(m[1]) : null;
+              const testcaseStart = block.search(/<testcase\b/);
+              const suiteHeader = testcaseStart >= 0 ? block.slice(0, testcaseStart) : block;
+              for (const property of elementBlocks(suiteHeader, 'property')) {
+                const openTag = (property.match(/<property\b[^>]*?(?:>|\/>)/) || [''])[0];
+                if (tagAttr(openTag, 'name') === key) return tagAttr(openTag, 'value');
+              }
+              return null;
             }
             function tagAttr(tag, key) {
               const m = (tag || '').match(new RegExp("\\b" + key + "\\s*=\\s*([\"'])(.*?)\\1"));
@@ -1459,6 +1464,23 @@ jobs:
                 !hasFailedSkillInvocation(testcaseBlocks(suiteBoundaryBlocks[0])[0]) ||
                 !suiteBoundaryBlocks[0].includes('safely]]></system-out></testcase></testsuite>')) {
               throw new Error('Internal JUnit parser failed the CDATA suite-boundary fixture.');
+            }
+            const suitePropertyFixture = [
+              '<testsuite name="fallback-name">',
+              '<properties>',
+              "<property value='routing-suite' name='evalName' />",
+              '<property value="/tmp/eval.vally.yaml" name="evalFilePath"></property>',
+              "<property name = 'passed' value = 'true' />",
+              '</properties>',
+              '<testcase name="nested-property">',
+              '<properties><property name="passed" value="false"/></properties>',
+              '</testcase>',
+              '</testsuite>',
+            ].join('');
+            if (suiteProp(suitePropertyFixture, 'evalName') !== 'routing-suite' ||
+                suiteProp(suitePropertyFixture, 'evalFilePath') !== '/tmp/eval.vally.yaml' ||
+                suiteProp(suitePropertyFixture, 'passed') !== 'true') {
+              throw new Error('Internal JUnit parser failed a reordered suite-property fixture.');
             }
             const completedStimuliFixture = [
               '<testsuite name="complete">',
