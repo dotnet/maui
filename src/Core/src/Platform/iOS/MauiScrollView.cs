@@ -209,24 +209,30 @@ namespace Microsoft.Maui.Platform
 
 		SafeAreaEdges? _previousEdges;
 
-		UIEdgeInsets GetInset()
+		/// <summary>
+		/// Resolves the manual, per-edge inset to apply given a source set of raw insets.
+		/// Used both for the manual (mixed-edge) path, where <paramref name="sourceInsets"/> is
+		/// this view's SafeAreaInsets, and for the uniform-edge native path, where
+		/// <paramref name="sourceInsets"/> is <see cref="SystemAdjustedContentInset"/> — so both
+		/// paths get identical per-edge ancestor-blocking behavior and neither can double-apply
+		/// an inset a parent already handles (#33595, #32586, #34563).
+		/// </summary>
+		UIEdgeInsets GetInset(UIEdgeInsets sourceInsets)
 		{
 			var leftRegion = GetSafeAreaRegionForEdge(0);
 			var topRegion = GetSafeAreaRegionForEdge(1);
 			var rightRegion = GetSafeAreaRegionForEdge(2);
 			var bottomRegion = GetSafeAreaRegionForEdge(3);
 
-			var safeAreaInsets = SafeAreaInsets;
-
 			// Single ancestor walk resolves all 4 edges at once, cached until invalidated
 			// (see SafeAreaInsetsExtensions.ResolveParentBlockedEdges) to avoid re-walking on every layout pass.
 			var blockedEdges = this.ResolveParentBlockedEdges(_blockedEdgesCache, ref _blockedEdgesCacheValid);
 
 			var manualInset = new UIEdgeInsets(
-					top: GetManualInsetForEdge(topRegion, safeAreaInsets.Top, blockedEdges[1]),
-					left: GetManualInsetForEdge(leftRegion, safeAreaInsets.Left, blockedEdges[0]),
-					bottom: GetManualInsetForEdge(bottomRegion, safeAreaInsets.Bottom, blockedEdges[3]),
-					right: GetManualInsetForEdge(rightRegion, safeAreaInsets.Right, blockedEdges[2])
+					top: GetManualInsetForEdge(topRegion, sourceInsets.Top, blockedEdges[1]),
+					left: GetManualInsetForEdge(leftRegion, sourceInsets.Left, blockedEdges[0]),
+					bottom: GetManualInsetForEdge(bottomRegion, sourceInsets.Bottom, blockedEdges[3]),
+					right: GetManualInsetForEdge(rightRegion, sourceInsets.Right, blockedEdges[2])
 				);
 
 			return manualInset;
@@ -405,17 +411,16 @@ namespace Microsoft.Maui.Platform
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
-				_safeArea = GetInset().ToSafeAreaInsets();
+				_safeArea = GetInset(SafeAreaInsets).ToSafeAreaInsets();
 			else
-				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
+				_safeArea = GetInset(SystemAdjustedContentInset).ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			// Parent-edge blocking is now resolved per-edge inline while computing GetInset() above
-			// (see ResolveParentBlockedEdges/GetManualInsetForEdge), so _safeArea already reflects
-			// the net, post-ancestor-arbitration state for the manual (mixed-edge) path. For the
-			// uniform-edge path (SystemAdjustedContentInset), iOS's own native content-inset
-			// adjustment already avoids double-padding, so no separate whole-view parent check is
-			// needed either way.
+			// (see ResolveParentBlockedEdges/GetManualInsetForEdge) for BOTH the manual (mixed-edge)
+			// path and the uniform-edge native path (SystemAdjustedContentInset), so _safeArea
+			// already reflects the net, post-ancestor-arbitration state either way — no separate
+			// whole-view parent check is needed.
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
 
 			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
