@@ -21,6 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
 			{
+				await Task.Delay(1000);
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
 			});
