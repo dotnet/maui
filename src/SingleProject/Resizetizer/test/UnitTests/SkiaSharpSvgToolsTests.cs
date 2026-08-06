@@ -534,6 +534,46 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
+			public void FastestQualityAffectsCameraSvgUpscaling()
+			{
+				var dpiPath = new DpiPath("", 1);
+
+				var infoFastest = new ResizeImageInfo();
+				infoFastest.Filename = "images/camera.svg";
+				infoFastest.BaseSize = new SKSize(2000, 2000);
+				infoFastest.Quality = ResizeQuality.Fastest;
+				var toolsFastest = new SkiaSharpSvgTools(infoFastest, Logger);
+				toolsFastest.Resize(dpiPath, DestinationFilename);
+
+				var infoAuto = new ResizeImageInfo();
+				infoAuto.Filename = "images/camera.svg";
+				infoAuto.BaseSize = new SKSize(2000, 2000);
+				infoAuto.Quality = ResizeQuality.Auto;
+				var toolsAuto = new SkiaSharpSvgTools(infoAuto, Logger);
+				toolsAuto.Resize(dpiPath, DestinationFilename2);
+
+				using var bmpFastest = SKBitmap.Decode(DestinationFilename);
+				using var bmpAuto = SKBitmap.Decode(DestinationFilename2);
+
+				Assert.Equal(bmpFastest.Width, bmpAuto.Width);
+				Assert.Equal(bmpFastest.Height, bmpAuto.Height);
+
+				var fastestPixels = bmpFastest.Pixels;
+				var autoPixels = bmpAuto.Pixels;
+				Assert.Equal(fastestPixels.Length, autoPixels.Length);
+
+				var differentPixels = 0;
+				for (var i = 0; i < fastestPixels.Length; i++)
+				{
+					if (fastestPixels[i] != autoPixels[i])
+						differentPixels++;
+				}
+
+				Assert.True(differentPixels > 0,
+					$"SVG: Fastest and Auto should not produce byte-identical output when upscaling camera.svg. Differing pixels: {differentPixels} of {fastestPixels.Length}.");
+			}
+
+			[Fact]
 			public void BestQualityPreservesSvgVectorOutputWhenUpscaling()
 			{
 				var sourceFilename = Path.GetTempFileName();
