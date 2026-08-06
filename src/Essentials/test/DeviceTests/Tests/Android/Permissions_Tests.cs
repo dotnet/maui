@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Collection("AndroidPermissions")]
 	public class Android_Permissions_Tests
 	{
-		// PlatformUtils.NextRequestCode cycles through 999 values
-		// (12000 through 12998). 1000 iterations guarantee wrap-around.
+		// The pre-fix implementation allocates from a 999-value request-code cycle
+		// (12000 through 12998). 1000 failures guarantee wrap-around without the fix.
 		const int RequestCodeRange = 1000;
 
 		[Fact]
