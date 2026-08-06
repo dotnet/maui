@@ -2,9 +2,10 @@
 #Requires -Modules Pester
 
 BeforeAll {
+    $script:RecoverScriptPath = Join-Path $PSScriptRoot 'Recover-MissedReviewCommands.ps1'
     $previousErrorActionPreference = $ErrorActionPreference
     try {
-        . "$PSScriptRoot/Recover-MissedReviewCommands.ps1"
+        . $script:RecoverScriptPath
     } finally {
         $ErrorActionPreference = $previousErrorActionPreference
     }
@@ -27,6 +28,21 @@ BeforeAll {
             issue_url = "https://api.github.com/repos/dotnet/maui/issues/$PRNumber"
             user = [pscustomobject]@{ login = $Login }
         }
+    }
+}
+
+Describe 'recovery script initialization' {
+    It 'preserves custom repository parameters when importing shared command helpers' {
+        $state = & {
+            . $script:RecoverScriptPath -Owner 'example-owner' -Repo 'example-repo'
+            [pscustomobject]@{
+                Owner = $Owner
+                Repo = $Repo
+            }
+        }
+
+        $state.Owner | Should -Be 'example-owner'
+        $state.Repo | Should -Be 'example-repo'
     }
 }
 

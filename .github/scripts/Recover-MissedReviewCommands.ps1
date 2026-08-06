@@ -23,7 +23,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-. "$PSScriptRoot/Resolve-RerunEligibility.ps1"
+. "$PSScriptRoot/Resolve-RerunEligibility.ps1" -Owner $Owner -Repo $Repo
 
 $script:RecoveryMarker = 'rocket'
 $script:RecoveryMarkerActor = 'github-actions[bot]'
