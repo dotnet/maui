@@ -55,6 +55,11 @@ public class Issue37012PageA : ContentPage
 	{
 		if (!_captureArmed)
 		{
+#if ANDROID
+			// Clean up any tracker left behind by a scenario run that never completed
+			// (the HostApp process is shared across UI tests)
+			Issue37012ImeAnimationTracker.Uninstall();
+#endif
 			return;
 		}
 
@@ -72,6 +77,7 @@ public class Issue37012PageA : ContentPage
 		if (Handler?.PlatformView is not Android.Views.View platformView)
 		{
 			_resultLabel.Text = "Fail: platform view unavailable";
+			Issue37012ImeAnimationTracker.Uninstall();
 			return;
 		}
 
@@ -151,6 +157,11 @@ public class Issue37012PageA : ContentPage
 			{
 				_resultLabel.Text = $"Success: top={finalTop} bottom={finalBottom} firstBottom={firstDrawBottom}";
 			}
+		}
+		catch (Exception ex)
+		{
+			// async void: an unhandled exception would crash the shared HostApp process
+			_resultLabel.Text = $"Fail: {ex.Message}";
 		}
 		finally
 		{

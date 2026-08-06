@@ -269,9 +269,12 @@ namespace Microsoft.Maui.Platform
 
 			if (IsImeAnimating)
 			{
-				// v was exempted through the gate and may be applying transient animation-time
-				// IME insets (e.g. keyboard-height bottom padding mid hide-animation); keep it
-				// pending so the end of the animation re-applies the final insets
+				// The exemption is one-shot: it exists to give a freshly attached view its initial
+				// padding, and after this first successful apply the view is correct and gets gated
+				// like every other view for the rest of the animation. It also stays pending: the
+				// insets it just applied are animation-time values (e.g. keyboard-height bottom
+				// padding mid hide-animation), so the end of the animation re-applies final insets.
+				_viewsAttachedDuringImeAnimation.Remove(v);
 				_pendingViews.Add(v);
 			}
 			else
@@ -491,8 +494,16 @@ namespace Microsoft.Maui.Platform
 			return bounds;
 		}
 
+		// Set when OnEnd posts a gate release and cleared when an animation starts, so a
+		// release posted by a previous animation cannot open the gate mid-flight: with
+		// back-to-back animations (a hide immediately followed by a show) the new OnPrepare
+		// can arrive before the posted runnable executes.
+		bool _gateReleaseScheduled;
+
 		void StartImeAnimation()
 		{
+			_gateReleaseScheduled = false;
+
 			if (!IsImeAnimating)
 			{
 				IsImeAnimating = true;
@@ -549,7 +560,16 @@ namespace Microsoft.Maui.Platform
 
 			if (poster is not null)
 			{
-				poster.Post(EndImeAnimation);
+				_gateReleaseScheduled = true;
+				poster.Post(() =>
+				{
+					// StartImeAnimation clears the flag, so a new animation started before
+					// this ran means the release belongs to the old one and must be skipped
+					if (_gateReleaseScheduled)
+					{
+						EndImeAnimation();
+					}
+				});
 			}
 			else
 			{
@@ -563,6 +583,7 @@ namespace Microsoft.Maui.Platform
 		void EndImeAnimation()
 		{
 			IsImeAnimating = false;
+			_gateReleaseScheduled = false;
 
 			if (_pendingViews.Count == 0)
 			{
