@@ -45,6 +45,24 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"">
 					<Label x:Name=""label0""/>
 				</ContentView>";
+
+			// Deliberately shares the same x:Class across all Platforms/<Platform> variants, to
+			// mirror the common per-platform partial-page pattern from https://github.com/dotnet/maui/issues/36951.
+			public static readonly string TestPage = $@"
+				<ContentPage
+					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
+					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
+					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.TestPage"">
+					<Label x:Name=""label0""/>
+				</ContentPage>";
+
+			public static readonly string SharedPage = $@"
+				<ContentPage
+					xmlns=""{MicrosoftMauiControlsFormsDefaultNamespace}""
+					xmlns:x=""{MicrosoftMauiControlsFormsXNamespace}""
+					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.SharedPage"">
+					<Label x:Name=""label0""/>
+				</ContentPage>";
 		}
 
 		class Css
@@ -184,6 +202,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var itemGroup = NewElement("ItemGroup");
 			itemGroup.Add(NewElement(buildAction).WithAttribute("Include", name));
 			return itemGroup;
+		}
+
+		void WriteFile(string name, string contents)
+		{
+			var filePath = IOPath.Combine(tempDirectory, name.Replace('\\', IOPath.DirectorySeparatorChar).Replace('/', IOPath.DirectorySeparatorChar));
+			Directory.CreateDirectory(IOPath.GetDirectoryName(filePath));
+			File.WriteAllText(filePath, contents);
 		}
 
 		string Build(string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true)
@@ -612,6 +637,105 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.True(log.Contains("CodesignEntitlements = Custom/Entitlements.plist", StringComparison.Ordinal) ||
 						  log.Contains("CodesignEntitlements = Custom\\Entitlements.plist", StringComparison.Ordinal),
 				"Custom CodesignEntitlements property should be preserved and not overridden by default Entitlements.plist");
+		}
+
+		/// <summary>
+		/// Regression test for https://github.com/dotnet/maui/issues/36951.
+		///
+		/// MauiXaml has no ExcludeFromCurrentConfiguration gating like Compile does, so every
+		/// platform's *.xaml files under Platforms/&lt;Platform&gt; used to stay in the MauiXaml item
+		/// group for every inner build/TFM. The XAML SourceGen consumes MauiXaml as AdditionalFiles
+		/// regardless of platform, so files reusing the same class name across Platforms/Android,
+		/// Platforms/iOS, and Platforms/MacCatalyst (a common per-platform partial-page pattern)
+		/// produced duplicate InitializeComponent/attribute definitions (CS0579/CS0111) even though
+		/// only one of them should have participated in any given inner build.
+		///
+		/// Only the MauiXaml item belonging to the currently active platform (plus any
+		/// non-platform-folder shared xaml) should survive _MauiRemovePlatformCompileItems.
+		/// </summary>
+		[Theory]
+		[InlineData("android", "Android")]
+		[InlineData("ios", "iOS")]
+		[InlineData("maccatalyst", "MacCatalyst")]
+		public void SingleProject_RemovePlatformCompileItems_RemovesNonActivePlatformMauiXamlItems(string targetPlatformIdentifier, string activePlatformFolder)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("false"));
+			// Fake the active platform without requiring the real platform TFM/workload to be installed.
+			propertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue(targetPlatformIdentifier));
+			project.Add(propertyGroup);
+
+			var itemGroup = NewElement("ItemGroup");
+			foreach (var assembly in references)
+			{
+				var reference = NewElement("Reference").WithAttribute("Include", assembly);
+				if (assembly.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+				{
+					reference.Add(NewElement("HintPath").WithValue(IOPath.Combine("..", "..", assembly)));
+				}
+				itemGroup.Add(reference);
+			}
+			project.Add(itemGroup);
+
+			var beforeTargetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.Before.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", beforeTargetsPath));
+
+			project.Add(AddFile("Entry.cs", "Compile", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}"));
+
+			// Each platform's TestPage.xaml intentionally reuses the same x:Class so we can prove
+			// that only the active platform's file survives filtering (otherwise SourceGen would
+			// emit duplicate InitializeComponent/attribute definitions for the same type).
+			var platformFolders = new[] { "Android", "iOS", "MacCatalyst" };
+			var xamlItems = NewElement("ItemGroup");
+			foreach (var folder in platformFolders)
+			{
+				WriteFile($"Platforms\\{folder}\\TestPage.xaml", Xaml.TestPage);
+				xamlItems.Add(NewElement("MauiXaml").WithAttribute("Include", $"Platforms\\{folder}\\TestPage.xaml"));
+			}
+			WriteFile("SharedPage.xaml", Xaml.SharedPage);
+			xamlItems.Add(NewElement("MauiXaml").WithAttribute("Include", "SharedPage.xaml"));
+			project.Add(xamlItems);
+
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+
+			// Dump the post-filter MauiXaml item identities to the build log so we can assert on
+			// exactly what survived _MauiRemovePlatformCompileItems for this platform.
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpMauiXamlItems")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "MAUIXAML_ITEMS: @(MauiXaml->'%(Identity)', '|')"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile);
+
+			// Normalize separators since Identity may render with '/' or '\' depending on OS.
+			var itemsLine = log.Split('\n').FirstOrDefault(l => l.Contains("MAUIXAML_ITEMS:", StringComparison.OrdinalIgnoreCase)) ?? "";
+			var normalizedItemsLine = itemsLine.Replace('\\', '/');
+
+			Assert.Contains("SharedPage.xaml", normalizedItemsLine, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains($"Platforms/{activePlatformFolder}/TestPage.xaml", normalizedItemsLine, StringComparison.OrdinalIgnoreCase);
+
+			foreach (var folder in platformFolders.Where(f => !string.Equals(f, activePlatformFolder, StringComparison.OrdinalIgnoreCase)))
+			{
+				Assert.DoesNotContain($"Platforms/{folder}/TestPage.xaml", normalizedItemsLine, StringComparison.OrdinalIgnoreCase);
+			}
 		}
 
 		/// <summary>
