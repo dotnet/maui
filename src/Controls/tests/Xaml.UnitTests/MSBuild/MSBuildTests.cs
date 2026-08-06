@@ -738,6 +738,81 @@ public static class Entry
 			}
 		}
 
+		// Windows xaml is WinUI markup, not MAUI XAML, and is never consumed by the MAUI XAML
+		// SourceGen. Unlike Android/iOS/MacCatalyst/Tizen, Platforms/Windows/*.xaml is stripped
+		// from MauiXaml UNCONDITIONALLY by _MauiRemovePlatformCompileItems - even when Windows is
+		// the active platform - because that logic predates and is unrelated to issue #36951.
+		// This is a separate assertion (not a [Theory] case alongside android/ios/maccatalyst)
+		// because the expected behavior for Windows is fundamentally different: the active
+		// platform's own xaml is also expected to be absent from MauiXaml, not retained.
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_AlwaysRemovesWindowsMauiXamlItems()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("false"));
+			// Fake the active platform without requiring the real platform TFM/workload to be installed.
+			propertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue("windows"));
+			project.Add(propertyGroup);
+
+			var itemGroup = NewElement("ItemGroup");
+			foreach (var assembly in references)
+			{
+				var reference = NewElement("Reference").WithAttribute("Include", assembly);
+				if (assembly.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+				{
+					reference.Add(NewElement("HintPath").WithValue(IOPath.Combine("..", "..", assembly)));
+				}
+				itemGroup.Add(reference);
+			}
+			project.Add(itemGroup);
+
+			var beforeTargetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.Before.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", beforeTargetsPath));
+
+			project.Add(AddFile("Entry.cs", "Compile", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}"));
+
+			WriteFile("Platforms\\Windows\\WindowsPage.xaml", "<Page />");
+			WriteFile("SharedPage.xaml", Xaml.SharedPage);
+
+			var xamlItems = NewElement("ItemGroup");
+			xamlItems.Add(NewElement("MauiXaml").WithAttribute("Include", "Platforms\\Windows\\WindowsPage.xaml"));
+			xamlItems.Add(NewElement("MauiXaml").WithAttribute("Include", "SharedPage.xaml"));
+			project.Add(xamlItems);
+
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpMauiXamlItems")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "MAUIXAML_ITEMS: @(MauiXaml->'%(Identity)', '|')"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile);
+
+			var itemsLine = log.Split('\n').FirstOrDefault(l => l.Contains("MAUIXAML_ITEMS:", StringComparison.OrdinalIgnoreCase)) ?? "";
+			var normalizedItemsLine = itemsLine.Replace('\\', '/');
+
+			Assert.Contains("SharedPage.xaml", normalizedItemsLine, StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain("Platforms/Windows/WindowsPage.xaml", normalizedItemsLine, StringComparison.OrdinalIgnoreCase);
+		}
+
 		/// <summary>
 		/// Tests that the SingleProject Before targets use default Entitlements.plist when no custom CodesignEntitlements is set
 		/// </summary>
