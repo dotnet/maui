@@ -243,6 +243,37 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task DisconnectClearsFontImageLoadState()
+		{
+			var imageService = new CapturingFontImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFontImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var source = new FontImageSourceStub
+				{
+					Color = Colors.Green,
+					Font = Font.Default,
+					Glyph = "A"
+				};
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = Colors.Red,
+					Source = source
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				Assert.True(handler.IsFontIconLoadCurrent(source, Colors.Red));
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.False(handler.IsFontIconLoadCurrent(source, Colors.Red));
+			});
+		}
+
+		[Fact]
 		public async Task FontImageReloadsOnlyWhenResolvedTintChanges()
 		{
 			var imageService = new CapturingFontImageSourceService();
