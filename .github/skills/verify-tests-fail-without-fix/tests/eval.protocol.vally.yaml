@@ -40,7 +40,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: happy-path-full-verification-mode
+        ref: f90b1fd58608f8b8c2e40b707e7da9fa37642418 # fixture: happy-path-full-verification-mode
         source: .
     graders:
       - type: skill-invocation
@@ -93,7 +93,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: 0d560ac4f2599c17c2ee93e398ef86e9034b81cb # fixture: happy-path-verify-failure-only-mode
+        ref: be821017627217c0c30ddb9aab22be957f465fd6 # fixture: happy-path-verify-failure-only-mode
         source: .
     graders:
       - type: skill-invocation
@@ -143,7 +143,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: regression-no-manual-git-revert
+        ref: f90b1fd58608f8b8c2e40b707e7da9fa37642418 # fixture: regression-no-manual-git-revert
         source: .
     graders:
       - type: skill-invocation
@@ -192,7 +192,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: a35eb7d99044ff2bba96a798c1ec81bac87c09e3 # fixture: edge-case-require-full-verification-with-fix-files
+        ref: f90b1fd58608f8b8c2e40b707e7da9fa37642418 # fixture: edge-case-require-full-verification-with-fix-files
         source: .
     graders:
       - type: skill-invocation

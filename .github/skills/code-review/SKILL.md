@@ -127,6 +127,34 @@ A row that only confirms matching text, without comparing the two conditions, is
 
 These are the direct-execution form of the always-active Logic/Correctness and Regression Prevention CHECKs in `.github/agents/maui-expert-reviewer.md`. If the expert agent is unavailable in the current environment, apply these probes yourself rather than skipping them.
 
+### Step 1.6: Trace Trim and NativeAOT Reachability (When Applicable)
+
+When a change touches `RequiresUnreferencedCode`, `RequiresDynamicCode`,
+`DynamicallyAccessedMembers`, `FeatureGuard`, `FeatureSwitchDefinition`, or
+IL2026/IL3050 suppression:
+
+1. Trace the complete warning path from the guarded call through annotated
+   helpers and generic registration methods. Do not classify a warning as a
+   false positive without locating the annotation or dynamic-code operation
+   that produced it.
+2. Distinguish the property's ordinary runtime default from its trim-time
+   contract. A getter that defaults to `true` does not by itself prove that a
+   guarded branch remains reachable: `FeatureSwitchDefinition` can substitute
+   the property value, and `FeatureGuard` communicates the resulting
+   reachability to analysis. Verify the attributes and guard before deciding.
+3. Treat an annotated helper called only inside the verified feature guard as
+   structural isolation, not as warning suppression. The helper annotations
+   move the trim/AOT contract to the direct guarded call; they do not make an
+   unconditional call safe.
+4. Accept a pragma only when it suppresses the specific diagnostics around the
+   affected call, restores them immediately, and the supplied source proves the
+   call unreachable in the affected configuration. A documented
+   toolchain-specific analyzer limitation can justify that narrow exception.
+   Reject a broad, unexplained, or reachable suppression.
+5. Base the verdict on the actual guard and annotation chain. Do not infer
+   reachability solely from a default value, a comment, or the presence of a
+   pragma.
+
 ### Step 2: Delegate to Expert Reviewer
 
 Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent evaluation. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.

@@ -191,8 +191,9 @@ stimuli:
 
       Is this the right test type?
     graders:
-      - type: output-contains
-        config: { substring: "Test Type Appropriateness" }
+      - type: output-matches
+        config:
+          pattern: '(?is)test type(?: appropriateness)?.{0,240}\bunit test\b'
       - type: output-not-contains
         config: { substring: "UI test is appropriate here" }
       - type: prompt
