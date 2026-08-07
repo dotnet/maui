@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.OS;
+using Android.Text;
 using Android.Views;
+using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -85,8 +88,129 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
+		[Theory(DisplayName = "Long Selected Text Scrolls Horizontally And Remains Read Only")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task LongSelectedTextScrollsHorizontallyAndRemainsReadOnly(bool useMaterialPicker)
+		{
+			const int pickerWidth = 96;
+			const int pickerHeight = 80;
+			const string longSelectedItem = "This is a very long selected picker item that should scroll horizontally";
+
+			var picker = new PickerStub
+			{
+				Width = pickerWidth,
+				Height = pickerHeight,
+				Items = new[] { longSelectedItem },
+				SelectedIndex = 0
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformPicker = CreateNativePicker(picker, useMaterialPicker);
+
+				try
+				{
+					LayoutNativePicker(platformPicker, pickerWidth, pickerHeight);
+
+					Assert.Equal(longSelectedItem, platformPicker.Text);
+					AssertReadOnlyPicker(platformPicker);
+
+					var clickCount = 0;
+					platformPicker.Click += OnPickerClicked;
+
+					DispatchTap(platformPicker);
+
+					Assert.Equal(1, clickCount);
+
+					platformPicker.ScrollTo(0, platformPicker.ScrollY);
+					DispatchHorizontalDrag(platformPicker);
+
+					Assert.True(platformPicker.ScrollX > 0, $"Expected Picker ScrollX to be greater than 0 after a horizontal drag, but it was {platformPicker.ScrollX}.");
+					Assert.Equal(1, clickCount);
+
+					DispatchTap(platformPicker);
+					Assert.Equal(2, clickCount);
+					platformPicker.Click -= OnPickerClicked;
+
+					void OnPickerClicked(object sender, System.EventArgs e)
+					{
+						clickCount++;
+					}
+				}
+				finally
+				{
+					platformPicker.Dispose();
+				}
+			});
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
 			pickerHandler.PlatformView;
+
+		EditText CreateNativePicker(PickerStub picker, bool useMaterialPicker)
+		{
+			if (useMaterialPicker)
+			{
+				var platformPicker = new MauiMaterialPicker(MauiContext.Context);
+				platformPicker.UpdatePicker(picker);
+				return platformPicker;
+			}
+
+			var mauiPicker = new MauiPicker(MauiContext.Context);
+			mauiPicker.UpdatePicker(picker);
+			return mauiPicker;
+		}
+
+		static void LayoutNativePicker(EditText platformPicker, int width, int height)
+		{
+			platformPicker.Measure(
+				View.MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
+				View.MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+
+			platformPicker.Layout(0, 0, width, height);
+		}
+
+		static void AssertReadOnlyPicker(EditText platformPicker)
+		{
+			Assert.Equal(InputTypes.Null, platformPicker.InputType);
+			Assert.Null(platformPicker.KeyListener);
+			Assert.False(platformPicker.IsCursorVisible);
+			Assert.False(platformPicker.IsTextSelectable);
+			Assert.False(platformPicker.LongClickable);
+		}
+
+		static void DispatchHorizontalDrag(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var y = platformPicker.Height / 2f;
+			var startX = platformPicker.Width - 4f;
+			var midX = platformPicker.Width / 2f;
+			var endX = 4f;
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, y, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, midX, y, 0);
+			using var secondMove = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Move, endX, y, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 48, MotionEventActions.Up, endX, y, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(move);
+			platformPicker.DispatchTouchEvent(secondMove);
+			platformPicker.DispatchTouchEvent(up);
+		}
+
+		static void DispatchTap(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var x = platformPicker.Width / 2f;
+			var y = platformPicker.Height / 2f;
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, x, y, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 48, MotionEventActions.Up, x, y, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(up);
+		}
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;
