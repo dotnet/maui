@@ -178,6 +178,9 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Not -Match 'oidc_token=.*GITHUB_OUTPUT'
         $script:TriggerJob | Should -Not -Match 'azdo_token=.*GITHUB_OUTPUT'
         $script:TriggerJob | Should -Not -Match 'steps\.(oidc|token)\.outputs'
+        $script:TriggerJob | Should -Match '-H "Authorization: Bearer \$\{GH_TOKEN\}"'
+        $script:TriggerJob | Should -Match '-H "Authorization: Bearer \$\{AZDO_TOKEN\}"'
+        $script:TriggerJob | Should -Not -Match 'Authorization: \*{6}'
         $script:TriggerJob | Should -Match 'unset OIDC_TOKEN'
         $script:TriggerJob | Should -Match 'unset AZDO_TOKEN'
     }
