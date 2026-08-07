@@ -366,6 +366,30 @@ function Update-AgentOutcomeLabel {
 }
 
 # ============================================================
+# Clear-AgentOutcomeLabels
+# ============================================================
+function Clear-AgentOutcomeLabels {
+    <#
+    .SYNOPSIS
+        Removes all outcome labels when a completed report has no trustworthy
+        canonical recommendation.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $currentLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    foreach ($olName in $script:OutcomeLabels.Keys) {
+        if ($currentLabels -contains $olName) {
+            Write-Host "  🗑️  Removing stale outcome: $olName" -ForegroundColor Yellow
+            Remove-Label -PRNumber $PRNumber -LabelName $olName -Owner $Owner -Repo $Repo
+        }
+    }
+}
+
+# ============================================================
 # Update-AgentSignalLabels
 # ============================================================
 function Update-AgentSignalLabels {
@@ -514,17 +538,17 @@ function Get-OutcomeFromCodeReviewVerdict {
         completed but omitted its canonical "Final Recommendation:" line.
 
     .DESCRIPTION
-        The pre-flight phase writes the code-review Verdict
-        (LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION / SKIPPED) to pre-flight/code-review.md
-        (rendered as the "🔬 Code Review — Deep Analysis" section) and, as a summary,
-        to pre-flight/content.md. Map that verdict to an outcome label so a completed
-        review whose Report omitted the recommendation line is not mislabeled
-        review-incomplete. Returns 'review-incomplete' only when no usable verdict is
-        present. Matches both "**Verdict:** LGTM" and "### Verdict: NEEDS_CHANGES".
+        The current reviewer writes its code-review verdict to
+        expert-pr-eval/content.md. Older runs may instead have a verdict in
+        pre-flight/code-review.md. Map any usable verdict to an outcome label so a
+        completed review whose Report omitted the recommendation line is not
+        mislabeled review-incomplete. Returns null when no usable verdict is present
+        so callers can clear stale outcome labels without inventing a recommendation.
+        Matches both "**Verdict:** LGTM" and "### Verdict: NEEDS_CHANGES".
     #>
     param([Parameter(Mandatory)] [string]$BaseDir)
 
-    foreach ($rel in @('pre-flight/code-review.md', 'pre-flight/content.md')) {
+    foreach ($rel in @('expert-pr-eval/content.md', 'pre-flight/code-review.md')) {
         $f = Join-Path $BaseDir $rel
         if (-not (Test-Path $f)) { continue }
         $c = Get-Content $f -Raw -ErrorAction SilentlyContinue
@@ -536,7 +560,7 @@ function Get-OutcomeFromCodeReviewVerdict {
             }
         }
     }
-    return 'review-incomplete'
+    return $null
 }
 
 # ============================================================
@@ -566,7 +590,7 @@ function Parse-PhaseOutcomes {
 
     $baseDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
     $result = @{
-        Outcome    = $null  # 'approved', 'changes-requested', 'review-incomplete'
+        Outcome    = $null  # 'approved', 'changes-requested', 'review-incomplete', or null
         GateResult = $null  # 'passed', 'failed'
         FixResult  = $null  # 'win', 'lose'
     }
@@ -605,33 +629,40 @@ function Parse-PhaseOutcomes {
     #   isPRFix = $true  (winner is pr / pr-plus-reviewer)  => the PR fix was best        => 'lose'
     # A missing/invalid winner.json (e.g. review-incomplete) => $null (no fix signal label),
     # so we never guess a fix outcome the comparison did not actually produce.
+    $winnerName = $null
+    $winnerRequiresPRChanges = $false
     $winnerFile = Join-Path $baseDir "winner.json"
     if (Test-Path $winnerFile) {
         $winner = $null
         try { $winner = Get-Content $winnerFile -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop } catch { $winner = $null }
         if ($winner) {
             $winnerName = [string]$winner.winner
-            if ($null -ne $winner.isPRFix) {
-                $result.FixResult = if ($winner.isPRFix) { 'lose' } else { 'win' }
-            }
-            elseif ($winnerName -match '(?i)^try-fix') {
+            $winnerRequiresPRChanges =
+                ($winner.isPRFix -eq $false) -or
+                ($winnerName -match '(?i)^(pr-plus-reviewer|try-fix(?:-|$))')
+            if ($winnerName -match '(?i)^try-fix(?:-|$)') {
                 $result.FixResult = 'win'
             }
             elseif ($winnerName -match '(?i)^(pr|pr-plus-reviewer)$') {
                 $result.FixResult = 'lose'
             }
+            elseif ($null -ne $winner.isPRFix) {
+                $result.FixResult = if ($winner.isPRFix) { 'lose' } else { 'win' }
+            }
         }
     }
 
     # --- Parse report content.md for outcome ---
+    $reportCompleted = $false
     $reportFile = Join-Path $baseDir "report/content.md"
     if (Test-Path $reportFile) {
         $reportContent = Get-Content $reportFile -Raw -ErrorAction SilentlyContinue
-        if ($reportContent) {
-            if ($reportContent -match '(?i)Final\s+Recommendation:\s*APPROVE|✅\s*Final\s+Recommendation:\s*APPROVE') {
+        if (-not [string]::IsNullOrWhiteSpace($reportContent)) {
+            $reportCompleted = $true
+            if ($reportContent -match '(?im)^\s*(?:##\s*)?(?:✅\s*)?Final\s+Recommendation:\s*APPROVE\s*$') {
                 $result.Outcome = 'approved'
             }
-            elseif ($reportContent -match '(?i)Final\s+Recommendation:\s*REQUEST.CHANGES|⚠️\s*Final\s+Recommendation:\s*REQUEST.CHANGES') {
+            elseif ($reportContent -match '(?im)^\s*(?:##\s*)?(?:⚠️\s*)?Final\s+Recommendation:\s*REQUEST\s+CHANGES\s*$') {
                 $result.Outcome = 'changes-requested'
             }
             else {
@@ -640,9 +671,18 @@ function Parse-PhaseOutcomes {
                 # line — it sometimes emits only a "Winning candidate" comparative section
                 # (observed on PR #36541, build 14698057, which mislabeled a NEEDS_CHANGES
                 # review as review-incomplete). A completed report is NOT review-incomplete:
-                # fall back to the pre-flight code-review Verdict before giving up. Mirrors
-                # the Gate parser's authoritative-then-fallback approach above.
-                $result.Outcome = Get-OutcomeFromCodeReviewVerdict -BaseDir $baseDir
+                # A winning alternative or pr-plus-reviewer candidate means the submitted
+                # PR still needs changes, regardless of whether a prose verdict was emitted.
+                # Otherwise fall back to the expert/legacy code-review Verdict. If neither
+                # exists, leave Outcome null so stale outcome labels are removed instead of
+                # misclassifying a completed review.
+                $result.Outcome = if ($winnerRequiresPRChanges) {
+                    'changes-requested'
+                } elseif ($winnerName -match '(?i)^pr$') {
+                    Get-OutcomeFromCodeReviewVerdict -BaseDir $baseDir
+                } else {
+                    $null
+                }
             }
         } else {
             $result.Outcome = 'review-incomplete'
@@ -650,6 +690,19 @@ function Parse-PhaseOutcomes {
     } else {
         # No report means the agent didn't finish
         $result.Outcome = 'review-incomplete'
+    }
+
+    # The submitted PR still needs changes whenever a modified PR candidate or
+    # independent try-fix wins. This is authoritative even if the prose report
+    # accidentally emits APPROVE.
+    if ($reportCompleted -and $winnerRequiresPRChanges) {
+        $result.Outcome = 'changes-requested'
+    }
+
+    # Keep labels aligned with the trusted validation verdict. The summary posting path
+    # already vetoes APPROVE over a failed/timed-out Gate; labels must not contradict it.
+    if ($result.Outcome -eq 'approved' -and (($gateVerdict ?? '').Trim() -match '(?i)^(FAILED|TIMEDOUT)$')) {
+        $result.Outcome = 'changes-requested'
     }
 
     return $result
@@ -701,6 +754,11 @@ function Apply-AgentLabels {
         # 1. Apply outcome label (exactly one)
         if ($outcomes.Outcome) {
             Update-AgentOutcomeLabel -PRNumber $PRNumber -Outcome $outcomes.Outcome -Owner $Owner -Repo $Repo
+        } else {
+            # A non-empty report without a canonical recommendation completed all phases,
+            # but does not provide enough evidence for an outcome label. Remove stale labels
+            # from earlier runs rather than falsely applying review-incomplete.
+            Clear-AgentOutcomeLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
         }
 
         # 2. Apply signal labels

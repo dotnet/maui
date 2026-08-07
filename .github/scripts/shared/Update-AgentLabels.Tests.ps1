@@ -27,6 +27,7 @@ BeforeAll {
         'Get-AgentLabels',
         'Add-Label',
         'Remove-Label',
+        'Clear-AgentOutcomeLabels',
         'Get-OutcomeFromCodeReviewVerdict',
         'Parse-PhaseOutcomes',
         'Update-AgentSignalLabels'
@@ -39,6 +40,12 @@ BeforeAll {
         Invoke-Expression $fn.Extent.Text
     }
 
+    $script:OutcomeLabels = @{
+        's/agent-approved'          = @{}
+        's/agent-changes-requested' = @{}
+        's/agent-review-incomplete' = @{}
+    }
+
     # Helper: build a fake repo root with a PRAgent artifact dir and optional files.
     function New-FixtureRoot {
         param(
@@ -47,7 +54,8 @@ BeforeAll {
             [string]$GateResultTxt,
             [string]$GateContentMd,
             [string]$ReportMd,
-            [string]$CodeReviewMd
+            [string]$CodeReviewMd,
+            [string]$ExpertReviewMd
         )
         $root = Join-Path ([System.IO.Path]::GetTempPath()) ("agentlabels-" + [Guid]::NewGuid().ToString('N'))
         $agentDir = Join-Path $root "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
@@ -58,6 +66,7 @@ BeforeAll {
         if ($PSBoundParameters.ContainsKey('GateContentMd')) { $GateContentMd | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('ReportMd'))      { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'report') | Out-Null; $ReportMd | Set-Content (Join-Path $agentDir 'report/content.md') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('CodeReviewMd'))  { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'pre-flight') | Out-Null; $CodeReviewMd | Set-Content (Join-Path $agentDir 'pre-flight/code-review.md') -Encoding UTF8 }
+        if ($PSBoundParameters.ContainsKey('ExpertReviewMd')) { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'expert-pr-eval') | Out-Null; $ExpertReviewMd | Set-Content (Join-Path $agentDir 'expert-pr-eval/content.md') -Encoding UTF8 }
         return $root
     }
 }
@@ -84,6 +93,12 @@ Describe 'Parse-PhaseOutcomes — Fix result from winner.json' {
     It 'falls back to the winner name when isPRFix is absent (pr => lose)' {
         $root = New-FixtureRoot -WinnerJson '{ "winner": "pr" }'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).FixResult | Should -Be 'lose'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'trusts a try-fix winner name over a contradictory isPRFix=true value' {
+        $root = New-FixtureRoot -WinnerJson '{ "winner": "try-fix-1", "isPRFix": true }'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).FixResult | Should -Be 'win'
         Remove-Item -Recurse -Force $root
     }
 
@@ -190,6 +205,29 @@ Describe 'Update-AgentSignalLabels — stale signal cleanup' {
     }
 }
 
+Describe 'Clear-AgentOutcomeLabels — completed report without recommendation' {
+    BeforeEach {
+        Mock Get-AgentLabels {
+            @(
+                's/agent-approved',
+                's/agent-changes-requested',
+                's/agent-review-incomplete',
+                's/agent-reviewed'
+            )
+        }
+        Mock Remove-Label { $true }
+    }
+
+    It 'removes every stale outcome label while preserving non-outcome labels' {
+        Clear-AgentOutcomeLabels -PRNumber '1'
+
+        Should -Invoke Remove-Label -Times 3
+        Should -Invoke Remove-Label -Times 0 -ParameterFilter {
+            $LabelName -eq 's/agent-reviewed'
+        }
+    }
+}
+
 Describe 'Parse-PhaseOutcomes — PR #35986 regression scenario' {
     It 'labels a try-fix winner with a failed gate as fix-win + gate-failed' {
         # winner=try-fix-1 (isPRFix=false) and gate FAILED — exactly #35986.
@@ -223,10 +261,17 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
         Remove-Item -Recurse -Force $root
     }
 
+    It 'maps a whitespace-only report to review-incomplete' {
+        $root = New-FixtureRoot -ReportMd "  `n`t"
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'review-incomplete'
+        Remove-Item -Recurse -Force $root
+    }
+
     It 'falls back to code-review Verdict (NEEDS_CHANGES) when a completed report omits Final Recommendation' {
         # Report ran to completion (a "Winning candidate" comparative section) but the
         # LLM omitted the canonical Final Recommendation line — PR #36541 / build 14698057.
         $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr", "isPRFix": true }' `
             -ReportMd "## Comparative Report`n### Winning candidate`n**Winner:** ``pr-plus-reviewer``" `
             -CodeReviewMd '### Verdict: NEEDS_CHANGES'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
@@ -235,15 +280,74 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
 
     It 'falls back to code-review Verdict (LGTM) when a completed report omits Final Recommendation' {
         $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr", "isPRFix": true }' `
             -ReportMd "## Comparative Report`n### Winning candidate`n**Winner:** ``pr``" `
             -CodeReviewMd '**Verdict:** LGTM'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'approved'
         Remove-Item -Recurse -Force $root
     }
 
-    It 'stays review-incomplete when a report omits Final Recommendation and no code-review Verdict exists' {
+    It 'prefers the current expert-review Verdict when a completed report omits Final Recommendation' {
+        $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr", "isPRFix": true }' `
+            -ReportMd '## Comparative Report (no canonical recommendation)' `
+            -ExpertReviewMd '### Verdict: NEEDS_CHANGES' `
+            -CodeReviewMd '**Verdict:** LGTM'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'does not manufacture approval from a verdict when winner.json is missing' {
+        $root = New-FixtureRoot `
+            -ReportMd '## Comparative Report (no canonical recommendation)' `
+            -ExpertReviewMd '### Verdict: LGTM'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -BeNullOrEmpty
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'requests changes when pr-plus-reviewer wins but the completed report omits Final Recommendation' {
+        $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr-plus-reviewer", "isPRFix": true }' `
+            -ReportMd '## Comparative Report (no canonical recommendation)' `
+            -ExpertReviewMd '### Verdict: LGTM'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'vetoes a canonical APPROVE when a try-fix candidate wins' {
+        $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "try-fix-1", "isPRFix": true }' `
+            -ReportMd '## ✅ Final Recommendation: APPROVE'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'leaves outcome unset when a completed report omits Final Recommendation and no code-review Verdict exists' {
         $root = New-FixtureRoot -ReportMd '## Comparative Report (no recommendation, no verdict)'
-        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'review-incomplete'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -BeNullOrEmpty
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'vetoes APPROVE when the trusted Gate verdict is FAILED' {
+        $root = New-FixtureRoot -ReportMd '## ✅ Final Recommendation: APPROVE'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root -TrustedGateResult 'FAILED').Outcome |
+            Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'vetoes APPROVE when the trusted Gate verdict is TIMEDOUT' {
+        $root = New-FixtureRoot -ReportMd '## ✅ Final Recommendation: APPROVE'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root -TrustedGateResult 'TIMEDOUT').Outcome |
+            Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'vetoes APPROVE from the local Gate artifact when no trusted verdict is supplied' {
+        $root = New-FixtureRoot `
+            -GateResultTxt 'FAILED' `
+            -ReportMd '## ✅ Final Recommendation: APPROVE'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome |
+            Should -Be 'changes-requested'
         Remove-Item -Recurse -Force $root
     }
 

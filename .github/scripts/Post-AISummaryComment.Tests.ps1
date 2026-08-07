@@ -23,7 +23,7 @@ BeforeAll {
         'Get-GateStatus',
         'Get-AIReviewEvent',
         'Test-RunValidationFailed',
-        'Test-HasNonPRWinner',
+        'Test-WinnerRequiresPRChanges',
         'Get-AIReviewEventForRun',
         'Test-DeepUITestsHadNoSignal',
         'Add-MissingUITestResultsNote',
@@ -298,14 +298,37 @@ Describe 'Get-AIReviewEventForRun' {
             Should -Be 'REQUEST_CHANGES'
     }
 
-    It 'does not override an exact approve recommendation' {
+    It 'requests changes when pr-plus-reviewer wins and the report is otherwise comment-only' {
+        @{
+            winner = 'pr-plus-reviewer'
+            isPRFix = $true
+            candidateDiff = ''
+            summary = 'Expert feedback improves the submitted PR.'
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Report omitted its canonical recommendation.' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'vetoes an exact approve recommendation when a try-fix candidate wins' {
         @{
             winner = 'try-fix-1'
-            isPRFix = $false
+            isPRFix = $true
             candidateDiff = 'diff --git a/file.cs b/file.cs'
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
 
         Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'keeps an exact approve recommendation when the raw PR wins' {
+        @{
+            winner = 'pr'
+            isPRFix = $true
+            candidateDiff = ''
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
             Should -Be 'APPROVE'
     }
 

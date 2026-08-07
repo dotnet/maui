@@ -592,7 +592,7 @@ $truncatedNote
 "@
 }
 
-function Test-HasNonPRWinner {
+function Test-WinnerRequiresPRChanges {
     param(
         [Parameter(Mandatory = $true)][string]$PRAgentDir
     )
@@ -604,7 +604,12 @@ function Test-HasNonPRWinner {
 
     try {
         $winner = Get-Content -Raw -LiteralPath $winnerFile -Encoding UTF8 | ConvertFrom-Json
-        return ($winner.isPRFix -eq $false -and -not [string]::IsNullOrWhiteSpace([string]$winner.winner))
+        $winnerName = [string]$winner.winner
+        if ([string]::IsNullOrWhiteSpace($winnerName)) {
+            return $false
+        }
+
+        return ($winner.isPRFix -eq $false) -or ($winnerName -match '(?i)^(pr-plus-reviewer|try-fix(?:-|$))')
     } catch {
         return $false
     }
@@ -689,6 +694,12 @@ function Get-AIReviewEventForRun {
 
     $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
 
+    # A pr-plus-reviewer or try-fix winner means the submitted PR still needs the
+    # winning changes. This machine-readable result vetoes an accidental prose APPROVE.
+    if (Test-WinnerRequiresPRChanges -PRAgentDir $PRAgentDir) {
+        return 'REQUEST_CHANGES'
+    }
+
     # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
     # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
     if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir -TrustedGateResult $TrustedGateResult)) {
@@ -700,10 +711,6 @@ function Get-AIReviewEventForRun {
     # an infra flake rather than a PR regression, so REQUEST_CHANGES would be too harsh.
     if ($reviewEvent -eq 'APPROVE' -and (Test-DeepUITestsHadNoSignal -PRAgentDir $PRAgentDir)) {
         return 'COMMENT'
-    }
-
-    if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
-        return 'REQUEST_CHANGES'
     }
 
     return $reviewEvent

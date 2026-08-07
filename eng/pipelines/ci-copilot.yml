@@ -1754,9 +1754,14 @@ stages:
               }
 
               $gateResult = "$(trustedGateResult)"
-              if ($gateResult -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED')) {
+              if ([string]::IsNullOrWhiteSpace($gateResult)) {
+                # A Gate that actually ran always emits one of the fixed verdicts.
+                # Empty therefore means the task timed out/crashed before publishing.
+                $gateResult = 'TIMEDOUT'
+              } elseif ($gateResult -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT')) {
                 $gateResult = 'INCONCLUSIVE'
               }
+              Write-Host "##vso[task.setvariable variable=effectiveTrustedGateResult]$gateResult"
               $gateDir = Join-Path $target "PRState/${{ parameters.PRNumber }}/PRAgent/gate"
               New-Item -ItemType Directory -Force -Path $gateDir | Out-Null
               Set-Content -LiteralPath (Join-Path $gateDir "gate-result.txt") -Value $gateResult -Encoding utf8 -NoNewline
@@ -1783,7 +1788,7 @@ stages:
                 -PRNumber "${env:PARAM_PR_NUMBER}" `
                 -Platform "${{ parameters.Platform }}" `
                 -Phase Post `
-                -TrustedGateResult "$(trustedGateResult)" `
+                -TrustedGateResult "$(effectiveTrustedGateResult)" `
                 -TokenUsageOutputDir "$(Pipeline.Workspace)/CopilotLogs/copilot-token-usage/raw" `
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               if ($LASTEXITCODE -ne 0) {

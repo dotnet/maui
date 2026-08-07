@@ -80,6 +80,14 @@ Describe 'Copilot reviewer configuration' {
         $content | Should -Match 'STEP 5b: EXPERT REVIEW \+ COMPARE.*-MaxAiCredits 1500'
         $content | Should -Match 'Produce \*\*at most two candidates total\*\*'
         $content | Should -Match 'Do not launch cross-pollination'
+        $content | Should -Match ([regex]::Escape('## ✅ Final Recommendation: APPROVE'))
+        $content | Should -Match ([regex]::Escape('## ⚠️ Final Recommendation: REQUEST CHANGES'))
+        $content | Should -Match 'Use ``REQUEST CHANGES`` when ``pr-plus-reviewer`` or any ``try-fix-N`` wins'
+        $content | Should -Match '(?s)Apply-AgentLabels.*-TrustedGateResult \$trustedGateResultForPost'
+        $content | Should -Match ([regex]::Escape("[ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]"))
+        $pipelineContent | Should -Match '(?s)IsNullOrWhiteSpace\(\$gateResult\).*?\$gateResult = ''TIMEDOUT'''
+        $pipelineContent | Should -Match ([regex]::Escape("variable=effectiveTrustedGateResult]`$gateResult"))
+        $pipelineContent | Should -Match ([regex]::Escape('-TrustedGateResult "$(effectiveTrustedGateResult)"'))
     }
 
     It 'defaults the local test reviewer to GPT-5.6 Sol with long context' {

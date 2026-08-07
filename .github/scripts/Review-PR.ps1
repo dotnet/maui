@@ -78,7 +78,7 @@ param(
     # before the untrusted CopilotReview phase runs. Passed to post-ai-summary-comment.ps1 so
     # the APPROVE veto never trusts the agent-writable gate-result.txt in the worktree/artifact.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
     [string]$TrustedGateResult = '',
 
     # Fast test-run toggle for local/diagnostic runs. When set, the Gate phase skips
@@ -2250,6 +2250,7 @@ $gateStatusForPrompt = switch ($gateResult) {
     "PASSED" { "Gate ✅ PASSED — tests FAIL without fix, PASS with fix." }
     "SKIPPED" { "Gate ⚠️ SKIPPED — no tests detected in this PR. Consider suggesting the author add tests." }
     "INCONCLUSIVE" { "Gate ⚠️ INCONCLUSIVE — the tests could not be built/run (build or environment error), so the fix is UNVERIFIED. Do NOT treat this as a failing fix and do NOT request changes solely because of the gate; review the code on its merits." }
+    "TIMEDOUT" { "Gate ⏱️ TIMEDOUT — test verification did not finish, so the fix is UNVERIFIED and is not eligible for approval." }
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
@@ -2408,6 +2409,12 @@ Compare ALL candidates:
 - All ``try-fix-N`` candidates from STEP 5a
 Pick the single winning candidate. **Candidates that failed regression tests MUST be ranked lower than candidates that passed them.**
 Write the comparative analysis to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``.
+
+The report's first non-empty line MUST be exactly one of:
+- ``## ✅ Final Recommendation: APPROVE``
+- ``## ⚠️ Final Recommendation: REQUEST CHANGES``
+
+Do not substitute ``## Result``, ``**Winner:**``, or other wording for this required line. Use ``REQUEST CHANGES`` when ``pr-plus-reviewer`` or any ``try-fix-N`` wins because the submitted PR still needs the winning changes. Use ``APPROVE`` only when the raw ``pr`` candidate wins, the trusted Gate permits approval, and the expert review found no blocking errors or discussion items.
 
 ## Phase 3 — Winner manifest (REQUIRED)
 Write ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json`` with this exact schema:
@@ -2837,7 +2844,10 @@ $labelHelperPath = Join-Path $ScriptsDir "shared/Update-AgentLabels.ps1"
 if (Test-Path $labelHelperPath) {
     try {
         . $labelHelperPath
-        Apply-AgentLabels -PRNumber $PRNumber -RepoRoot $RepoRoot
+        Apply-AgentLabels `
+            -PRNumber $PRNumber `
+            -RepoRoot $RepoRoot `
+            -TrustedGateResult $trustedGateResultForPost
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
