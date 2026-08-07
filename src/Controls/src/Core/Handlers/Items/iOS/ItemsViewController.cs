@@ -973,7 +973,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Keep this cell around, we can transfer the contents to the actual cell when the UICollectionView creates it
 			if (_measurementCells != null)
-				_measurementCells[ItemsSource[indexPath]] = templatedCell;
+			{
+				var bindingContext = ItemsSource[indexPath];
+
+				// A layout re-constrain (bounds change, rotation, ConstrainTo) can request a
+				// measurement cell for an index path that already has one cached. Release the
+				// displaced cell's content before overwriting the cache entry, otherwise its
+				// bound view stays orphaned as a logical child of the ItemsView for as long as
+				// the ItemsView is alive - the same leak class this PR fixes.
+				if (_measurementCells.TryGetValue(bindingContext, out var previousMeasurementCell) &&
+					!ReferenceEquals(previousMeasurementCell, templatedCell))
+				{
+					previousMeasurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
+					previousMeasurementCell.UnbindAndDisconnect();
+				}
+
+				_measurementCells[bindingContext] = templatedCell;
+			}
 
 			return templatedCell;
 		}

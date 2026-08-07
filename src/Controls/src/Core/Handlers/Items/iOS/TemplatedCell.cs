@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// actually changed the size of the cell
 		Size _size;
 		bool _bound;
+		bool _disposed;
 
 		internal CGSize CurrentSize => _size.ToCGSize();
 
@@ -123,6 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			view?.DisconnectHandlers();
 			PlatformHandler = null;
 			CurrentTemplate = null;
+			_bound = false;
 		}
 
 		internal void UnbindAndDisconnect()
@@ -145,6 +147,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void Dispose(bool disposing)
 		{
+			// Guard against re-entrancy: Dispose() is a public entry point on this unsealed
+			// type, so it's legal for a caller to invoke it more than once. Without this guard,
+			// a second call would run ReleaseContent() -> ClearSubviews() against a ContentView
+			// whose native handle may already have been released by the first Dispose(true)
+			// call, risking an ObjectDisposedException.
+			if (_disposed)
+			{
+				base.Dispose(disposing);
+				return;
+			}
+
 			// Only run managed/native cleanup on the deterministic disposing path. When
 			// disposing == false (finalizer), touching the managed object graph
 			// (BindingContext, LogicalChildren, events) is unsafe: it can run on the
@@ -155,6 +168,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (disposing)
 			{
 				ReleaseContent();
+				_disposed = true;
 			}
 
 			base.Dispose(disposing);
@@ -352,6 +366,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UseContent(TemplatedCell measurementCell)
 		{
+			// Release any content this cell was already displaying (e.g. left over from being
+			// recycled by the UICollectionView reuse pool) before adopting the donor's content.
+			// Without this, the previous bound view stays orphaned as a logical child of the
+			// ItemsView, and its handler tree stays connected, for as long as the ItemsView is
+			// alive - the same leak class this PR fixes, just reached via the measurement-cell
+			// content-transfer path instead of Bind().
+			if (PlatformHandler is not null)
+			{
+				ReleaseContent();
+			}
+
 			// Copy all the content and values from the measurement cell 
 			ConstrainedDimension = measurementCell.ConstrainedDimension;
 			ConstrainedSize = measurementCell.ConstrainedSize;
