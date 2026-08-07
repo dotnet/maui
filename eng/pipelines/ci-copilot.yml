@@ -120,6 +120,34 @@ stages:
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
+          # Preserve the one helper needed by the final telemetry stage while
+          # the worktree is still the immutable pipeline revision. Publish it
+          # before any branch switch or PR-controlled code can run.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"
+              $targetDir = "$(Build.ArtifactStagingDirectory)/trusted-copilot-telemetry"
+
+              if (-not (Test-Path $source -PathType Leaf)) {
+                throw "Trusted telemetry helper missing: $source"
+              }
+
+              Remove-Item -Path $targetDir -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+              Copy-Item -Path $source -Destination $targetDir -Force
+            displayName: 'Stage trusted Copilot telemetry tool'
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish trusted Copilot telemetry tool'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/trusted-copilot-telemetry'
+              artifact: 'CopilotTelemetryTools'
+              publishLocation: 'pipeline'
+            # Telemetry is optional. Bound artifact-service stalls and tolerate
+            # stage reruns where this immutable artifact already exists.
+            timeoutInMinutes: 2
+            continueOnError: true
+
           # ─────────────────────────────────────────────────────────
           #  Fast-fail (clear, actionable) when the PR targets a base
           #  branch the reviewer cannot support (anything other than
@@ -4529,18 +4557,23 @@ stages:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
         timeoutInMinutes: 10
+        # Pure telemetry must not red-fail a completed review even if the hosted
+        # agent or artifact service is unavailable.
+        continueOnError: true
         steps:
-          # This job only runs Aggregate-CopilotTokenUsage.ps1 and processes
-          # downloaded artifacts — it needs no git history. A shallow checkout
-          # (fetchDepth 1, no tags) minimizes the clone's network/data exposure
-          # so a transient git-fetch hang (observed on build 14637181, where one
-          # job's checkout stalled to 5 min while others took ~0.8 min) can't
-          # blow this job's 10-minute timeout and red-fail an otherwise-green
-          # build. See also the CleanupReviewLock 'checkout: none' fix.
-          - checkout: self
-            fetchDepth: 1
-            fetchTags: false
-            persistCredentials: false
+          # Build 14904975 spent the entire 10-minute job timeout cloning this
+          # large repository and red-failed after the review and summary had
+          # completed. The trusted helper is captured before PR code runs and
+          # transferred as a tiny dedicated artifact instead.
+          - checkout: none
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download trusted Copilot telemetry tool'
+            inputs:
+              buildType: 'current'
+              artifactName: 'CopilotTelemetryTools'
+              targetPath: '$(Pipeline.Workspace)/CopilotTelemetryTools'
+            continueOnError: true
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -4561,8 +4594,11 @@ stages:
               # no token-usage artifact -> PublishPipelineArtifact failed -> build marked failed
               # even though the review posted its summary fine.)
               New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
-              $script = ".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"
-              if (-not (Test-Path $script)) { throw "$script missing" }
+              $script = Join-Path "$(Pipeline.Workspace)/CopilotTelemetryTools" "Aggregate-CopilotTokenUsage.ps1"
+              if (-not (Test-Path $script)) {
+                Write-Host "##[warning]Trusted Copilot telemetry tool was not downloaded; publishing an empty telemetry artifact."
+                exit 0
+              }
 
               & $script `
                 -InputRoot $inputRoot `

@@ -134,6 +134,38 @@ Describe 'Reviewer pipeline timeout containment' {
         $warmupBlock | Should -Not -Match '(?m)^\s*adb -s "\$DEVICE_ID"'
         $warmupBlock | Should -Match 'Emulator still not booted after ADB restart — skipping the remaining warmup'
     }
+
+    It 'runs optional token telemetry without cloning the full repository' {
+        $stageStart = $pipelineContent.IndexOf("- stage: AnalyzeCopilotTokenUsage")
+        $stageStart | Should -BeGreaterThan -1
+        $stageBlock = $pipelineContent.Substring($stageStart)
+        $jobStart = $stageBlock.IndexOf("- job: AnalyzeTokenUsage")
+        $stepsStart = $stageBlock.IndexOf("        steps:", $jobStart)
+        $jobHeader = $stageBlock.Substring($jobStart, $stepsStart - $jobStart)
+
+        $jobHeader | Should -Match 'continueOnError: true'
+        $stageBlock | Should -Match ([regex]::Escape('- checkout: none'))
+        $stageBlock | Should -Not -Match ([regex]::Escape('- checkout: self'))
+        $stageBlock | Should -Match ([regex]::Escape("artifactName: 'CopilotTelemetryTools'"))
+        $stageBlock | Should -Match ([regex]::Escape('$(Pipeline.Workspace)/CopilotTelemetryTools'))
+    }
+
+    It 'publishes the telemetry helper captured before PR-controlled code runs' {
+        $capture = $pipelineContent.IndexOf('$source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"')
+        $firstBranchSwitch = $pipelineContent.IndexOf('git checkout --detach')
+        $publishStart = $pipelineContent.IndexOf("- task: PublishPipelineArtifact@1", $capture)
+        $publishEnd = $pipelineContent.IndexOf("# ─────────────────────────────────────────────────────────", $publishStart)
+        $publishBlock = $pipelineContent.Substring($publishStart, $publishEnd - $publishStart)
+
+        $capture | Should -BeGreaterThan -1
+        $capture | Should -BeLessThan $firstBranchSwitch
+        $publishStart | Should -BeGreaterThan $capture
+        $publishStart | Should -BeLessThan $firstBranchSwitch
+        $pipelineContent | Should -Match ([regex]::Escape('".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"'))
+        $publishBlock | Should -Match ([regex]::Escape("artifact: 'CopilotTelemetryTools'"))
+        $publishBlock | Should -Match 'timeoutInMinutes: 2'
+        $publishBlock | Should -Match 'continueOnError: true'
+    }
 }
 
 Describe 'Copilot token usage helpers' {
