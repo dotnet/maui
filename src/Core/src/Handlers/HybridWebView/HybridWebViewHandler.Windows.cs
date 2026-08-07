@@ -98,7 +98,10 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 		{
-			MessageReceived(args.TryGetWebMessageAsString());
+			// The JS transport URL-encodes messages so embedded NUL characters survive WebView2's
+			// null-terminated string marshalling (TryGetWebMessageAsString returns an LPWSTR). Decode
+			// the payload before dispatching it.
+			MessageReceived(Uri.UnescapeDataString(args.TryGetWebMessageAsString()));
 		}
 
 		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)

@@ -271,6 +271,95 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ShellTitleReflectsCurrentPageTitleForTitleViewBindings()
+		{
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			var label = new Label();
+			var titleView = new VerticalStackLayout()
+			{
+				Children =
+				{
+					label
+				}
+			};
+
+			TestShell testShell = new TestShell(contentPage);
+			_ = new Window()
+			{
+				Page = testShell
+			};
+
+			label.SetBinding(Label.TextProperty, new Binding(nameof(Shell.Title), source: testShell));
+			Shell.SetTitleView(contentPage, titleView);
+
+			Assert.Empty(testShell.Toolbar.Title);
+			Assert.Equal("Test Title", testShell.Title);
+			Assert.Equal("Test Title", label.Text);
+
+			contentPage.Title = "Updated Test Title";
+
+			Assert.Equal("Updated Test Title", testShell.Title);
+			Assert.Equal("Updated Test Title", label.Text);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/36562
+		// PR #35800 made ShellToolbar mirror the current page's title into Shell.Title (via
+		// SetValueFromRenderer) so TitleView bindings like {Binding Title, Source={x:Reference Shell}}
+		// resolve correctly. That mirrored value leaked into the native window title
+		// (ITitledElement.Title), which previously stayed empty in this scenario, breaking Shell UI
+		// tests around title/flyout layout on macOS/Windows.
+		[Fact]
+		public void WindowNativeTitleDoesNotLeakToolbarMirroredPageTitle()
+		{
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			var titleView = new VerticalStackLayout();
+
+			TestShell testShell = new TestShell(contentPage);
+			var window = new Window()
+			{
+				Page = testShell
+			};
+
+			Shell.SetTitleView(contentPage, titleView);
+
+			// Shell.Title is mirrored from the page for TitleView binding purposes...
+			Assert.Equal("Test Title", testShell.Title);
+
+			// ...but that mirrored value must NOT leak into the native window title fallback.
+			Assert.Null(((ITitledElement)window).Title);
+
+			contentPage.Title = "Updated Test Title";
+			Assert.Equal("Updated Test Title", testShell.Title);
+			Assert.Null(((ITitledElement)window).Title);
+		}
+
+		[Fact]
+		public void ShellTitleBindingIsNotOverwrittenByCurrentPageTitle()
+		{
+			var contentPage = new ContentPage() { Title = "Page Title" };
+			var titleView = new VerticalStackLayout();
+			var viewModel = new TestShellViewModel() { Text = "App Title" };
+
+			TestShell testShell = new TestShell(contentPage);
+			_ = new Window()
+			{
+				Page = testShell
+			};
+
+			testShell.SetBinding(Shell.TitleProperty, new Binding(nameof(TestShellViewModel.Text), BindingMode.TwoWay, source: viewModel));
+			Shell.SetTitleView(contentPage, titleView);
+
+			Assert.Empty(testShell.Toolbar.Title);
+			Assert.Equal("App Title", testShell.Title);
+			Assert.Equal("App Title", viewModel.Text);
+
+			contentPage.Title = "Updated Page Title";
+
+			Assert.Equal("App Title", testShell.Title);
+			Assert.Equal("App Title", viewModel.Text);
+		}
+
+		[Fact]
 		public void ContentPageColorsPropagateToShellToolbar()
 		{
 			var contentPage = new ContentPage() { Title = "Test Title" };
