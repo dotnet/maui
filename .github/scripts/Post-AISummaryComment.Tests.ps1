@@ -215,6 +215,20 @@ Describe 'New-MissingAgentPhaseContent' {
             $content | Should -Match '/review'
         }
     }
+
+    It 'names the missing Try-Fix phase explicitly' {
+        New-MissingAgentPhaseContent -PhaseKey 'try-fix' |
+            Should -Match '\*\*Try-Fix did not produce output'
+    }
+}
+
+Describe 'Summary phase labels' {
+    It 'keeps the canonical Try-Fix and PR Finalize names visible in the review body' {
+        $script:ScriptSource | Should -Match 'Title = "🛠️ Try-Fix — Analysis & Comparison"'
+        $script:ScriptSource | Should -Match 'Title = "📝 PR Finalize — Recommended Title & Description"'
+        $script:ScriptSource | Should -Not -Match 'Title = "🛠️ Fix — Analysis & Comparison"'
+        $script:ScriptSource | Should -Not -Match 'Title = "📝 Recommended PR Title & Description"'
+    }
 }
 
 Describe 'Limit-MarkdownContent' {

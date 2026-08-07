@@ -94,8 +94,8 @@ if (-not (Test-Path $PRAgentDir)) {
 $phases = [ordered]@{
     "pre-flight"       = @{ Files = @("pre-flight/content.md");                                  Title = "📋 Pre-Flight — Context & Validation" }
     "code-review"      = @{ Files = @("expert-pr-eval/content.md", "pre-flight/code-review.md"); Title = "🔬 Code Review — Deep Analysis" }
-    "try-fix"          = @{ Files = @("try-fix/content.md");                                     Title = "🛠️ Fix — Analysis & Comparison" }
-    "pr-finalize"      = @{ Files = @("pr-finalize/content.md");                                 Title = "📝 Recommended PR Title & Description" }
+    "try-fix"          = @{ Files = @("try-fix/content.md");                                     Title = "🛠️ Try-Fix — Analysis & Comparison" }
+    "pr-finalize"      = @{ Files = @("pr-finalize/content.md");                                 Title = "📝 PR Finalize — Recommended Title & Description" }
     "report"           = @{ Files = @("report/content.md");                                      Title = "🏁 Report — Final Recommendation" }
     "regression-check" = @{ Files = @("regression-check/content.md");                            Title = "🔗 Regression Cross-Reference" }
     # Keep the potentially very large UI-test details last so they cannot hide the
@@ -158,7 +158,7 @@ function Test-PhaseContentIsNoOp {
         }
         "pr-finalize" {
             # Keep-as-is verdict: the PR's existing title/description are already good, so
-            # omit the "Recommended PR Title & Description" section entirely (no copy-paste
+            # omit the "PR Finalize — Recommended Title & Description" section entirely (no copy-paste
             # artifact is needed). Tolerant of an optional "**Assessment:**" prefix and any
             # trailing optional notes the agent may add.
             return (
@@ -181,7 +181,7 @@ function New-MissingAgentPhaseContent {
     $phaseName = switch ($PhaseKey) {
         'pre-flight' { 'Pre-Flight' }
         'code-review' { 'Code Review' }
-        'try-fix' { 'Fix / Try-Fix' }
+        'try-fix' { 'Try-Fix' }
         'report' { 'Report / Final Recommendation' }
     }
 
