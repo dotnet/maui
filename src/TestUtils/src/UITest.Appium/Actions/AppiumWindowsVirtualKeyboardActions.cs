@@ -23,7 +23,8 @@ namespace UITest.Appium
 				{
 					["actions"] = new[]
 					{
-						new Dictionary<string, object> { ["virtualKeyCode"] = 0x0D, ["down"]=false }, // Enter
+						new Dictionary<string, object> { ["virtualKeyCode"] = 0x0D, ["down"] = true },  // Enter KeyDown
+						new Dictionary<string, object> { ["virtualKeyCode"] = 0x0D, ["down"] = false }, // Enter KeyUp
 					}
 				});
 			}

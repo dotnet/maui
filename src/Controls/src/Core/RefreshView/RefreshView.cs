@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
 		public static readonly BindableProperty IsRefreshingProperty =
-			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), false, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
+			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), BooleanBoxes.FalseBox, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
 
 		static void OnIsRefreshingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value); }
+			set { SetValue(IsRefreshingProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsRefreshEnabled"/>.</summary>
 		public static readonly BindableProperty IsRefreshEnabledProperty =
-			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), true, 
+			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), BooleanBoxes.TrueBox,
 				propertyChanged: OnIsRefreshEnabledPropertyChanged, coerceValue: CoerceIsRefreshEnabledProperty);
 
 		bool _isRefreshEnabledExplicit = (bool)IsRefreshEnabledProperty.DefaultValue;
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRefreshEnabled
 		{
 			get { return (bool)GetValue(IsRefreshEnabledProperty); }
-			set { SetValue(IsRefreshEnabledProperty, value); }
+			set { SetValue(IsRefreshEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <inheritdoc/>
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls
 		object ICommandElement.CommandParameter => CommandParameter;
 
 		protected override bool IsEnabledCore => base.IsEnabledCore;
-		
+
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
 			if (IsRefreshing)
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 		bool IRefreshView.IsRefreshing
 		{
 			get => IsRefreshing;
-			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
+			set { SetValue(IsRefreshingProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler); }
 		}
 
 		private protected override string GetDebuggerDisplay()

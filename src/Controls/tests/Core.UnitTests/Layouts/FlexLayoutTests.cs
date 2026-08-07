@@ -399,5 +399,179 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(125, frame1.Width);
 			Assert.Equal(175, frame2.Width);
 		}
+
+		// Records the constraints passed to MeasureOverride so tests can compare them
+		// with the size the view is ultimately arranged at.
+		class ConstraintRecordingView : View
+		{
+			public double MeasuredWidthConstraint { get; private set; } = double.NaN;
+			public double MeasuredHeightConstraint { get; private set; } = double.NaN;
+
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				MeasuredWidthConstraint = widthConstraint;
+				MeasuredHeightConstraint = heightConstraint;
+				return new Size(Math.Min(100, widthConstraint), Math.Min(50, heightConstraint));
+			}
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520
+		// A stretched item with a margin must be measured at the width it will be arranged at
+		// (the container width minus its margins), not at the full container width. Otherwise
+		// wrapping content (e.g. Label text) wraps against a width the item never receives,
+		// and the overflow is cut off at arrange time.
+		[Fact]
+		public void StretchedItemWithMarginIsMeasuredAtArrangedWidth_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Column };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new ConstraintRecordingView { Margin = new Thickness(10) };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(400, 600);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 400, 600));
+
+			// The bounds the child is arranged at (its flex frame) must be the same width
+			// the child was measured with; otherwise wrapping content gets cut off.
+			// Before the fix the child was measured at the full container width (400),
+			// ignoring its own margins, but arranged 20 narrower.
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+			Assert.Equal(380, view.MeasuredWidthConstraint);
+			Assert.Equal(flexFrame.Width, view.MeasuredWidthConstraint);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520 (Row direction:
+		// the cross axis is vertical, so the height constraint is the one at risk).
+		[Fact]
+		public void StretchedItemWithMarginIsMeasuredAtArrangedHeight_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Row };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new ConstraintRecordingView { Margin = new Thickness(10) };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(600, 400);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 600, 400));
+
+			// The bounds the child is arranged at (its flex frame) must be the same height
+			// the child was measured with; otherwise wrapping content gets cut off.
+			// Before the fix the child was measured at the full container height (400),
+			// ignoring its own margins, but arranged 20 shorter.
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+			Assert.Equal(380, view.MeasuredHeightConstraint);
+			Assert.Equal(flexFrame.Height, view.MeasuredHeightConstraint);
+		}
+
+		// Companion to the #27520 fix: the main-axis value passed to the measure callback
+		// is the pre-flex basis (explicit size or 0), and grow/shrink can still change it
+		// before the item is arranged. It must NOT be used to clamp the measure constraint;
+		// a growing item would otherwise be measured at its basis (100) even though it is
+		// arranged at the grown size (300).
+		[Fact]
+		public void GrowingItemMainAxisMeasureConstraintIsNotClampedToBasis_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Row };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new ConstraintRecordingView { WidthRequest = 100 };
+
+			FlexLayout.SetGrow(view, 1);
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(300, 200);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 300, 200));
+
+			// The item grows to fill the 300px main axis...
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+			Assert.Equal(300, flexFrame.Width);
+
+			// ...so its measure constraint must not have been clamped to the 100px basis.
+			Assert.Equal(300, view.MeasuredWidthConstraint);
+		}
+
+		// Simulates content that greedily fills whatever width it is given (like wrapping text).
+		class GreedyWidthConstraintRecordingView : View
+		{
+			public double MeasuredWidthConstraint { get; private set; } = double.NaN;
+
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				MeasuredWidthConstraint = widthConstraint;
+				return new Size(double.IsPositiveInfinity(widthConstraint) ? 1000 : widthConstraint, Math.Min(50, heightConstraint));
+			}
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520 (Row main axis:
+		// an item with horizontal margins must not be measured at the full container width
+		// and then shrunk below it at arrange time; its margins bound the space it can get).
+		[Fact]
+		public void ShrunkRowItemWithMarginIsMeasuredAtArrangedWidth_Issue27520()
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = FlexDirection.Row };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+			var view = new GreedyWidthConstraintRecordingView { Margin = new Thickness(10, 0, 10, 0) };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(400, 200);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 400, 200));
+
+			var flexFrame = flexLayout.GetFlexFrame(view as IView);
+
+			Assert.Equal(380, flexFrame.Width);
+			Assert.Equal(flexFrame.Width, view.MeasuredWidthConstraint);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/27520, exercising the
+		// real production measure path: a plain View with a (mocked) handler goes through
+		// VisualElement.MeasureOverride -> LayoutExtensions.ComputeDesiredSize, which
+		// subtracts the margin from the constraint before the handler measures — and
+		// ComputeFrame subtracts the margin from the arrange bounds symmetrically. The
+		// width the platform (handler) measures at must equal the width of the frame the
+		// view ends up arranged into, or wrapping platform content gets cut off.
+		[Theory]
+		[InlineData(FlexDirection.Column)] // width is the cross axis (stretch path)
+		[InlineData(FlexDirection.Row)] // width is the main axis (margin/shrink path)
+		public void HandlerBackedItemWithMarginIsMeasuredAtArrangedWidth_Issue27520(FlexDirection direction)
+		{
+			var root = new Grid();
+			var controlsFlexLayout = new FlexLayout { Direction = direction };
+			var flexLayout = controlsFlexLayout as IFlexLayout;
+
+			double handlerMeasuredWidth = double.NaN;
+			var handler = Substitute.For<IViewHandler>();
+			handler.GetDesiredSize(Arg.Any<double>(), Arg.Any<double>())
+				.Returns(args =>
+				{
+					// Greedy, like wrapping text: consume whatever width is offered
+					handlerMeasuredWidth = args.ArgAt<double>(0);
+					return new Size(handlerMeasuredWidth, 50);
+				});
+
+			var view = new View { Margin = new Thickness(10), Handler = handler };
+
+			root.Add(controlsFlexLayout);
+			flexLayout.Add(view as IView);
+
+			_ = flexLayout.CrossPlatformMeasure(400, 600);
+			flexLayout.CrossPlatformArrange(new Rect(0, 0, 400, 600));
+
+			// The width the platform control is measured at must equal the width of the
+			// content frame it is arranged into. Both subtractions happen on both paths:
+			// measure = 400 - flex item margin (20) - ComputeDesiredSize margin (20) = 360;
+			// arrange = engine frame (380) - ComputeFrame margin (20) = 360.
+			Assert.Equal(view.Frame.Width, handlerMeasuredWidth);
+			Assert.Equal(360, handlerMeasuredWidth);
+		}
 	}
 }

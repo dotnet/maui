@@ -52,17 +52,25 @@ namespace Microsoft.Maui.Platform
 			bool isIOS26 = OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
 			platformStepper.SemanticContentAttribute = contentAttribute;
 
-			// Apply transform to stepper subviews on iOS 26+.
+			// Always walk subviews on iOS 26+: UIKit only realizes UIStepper's tappable
+			// increment/decrement buttons the first time Subviews is accessed, so skipping
+			// this for LTR breaks interactivity/UI tests. PerformWithoutAnimation avoids the
+			// implicit CoreAnimation retain from setting Transform (see #35985); the primary
+			// leak fix is platformView.Dispose() on disconnect in StepperHandler.iOS.cs.
 			if (isIOS26)
 			{
 				CGAffineTransform transform = GetCGAffineTransform(stepper);
-				platformStepper.Transform = transform;
 
-				foreach (var subview in platformStepper.Subviews)
+				UIView.PerformWithoutAnimation(() =>
 				{
-					subview.SemanticContentAttribute = contentAttribute;
-					subview.Transform = transform;
-				}
+					platformStepper.Transform = transform;
+
+					foreach (var subview in platformStepper.Subviews)
+					{
+						subview.SemanticContentAttribute = contentAttribute;
+						subview.Transform = transform;
+					}
+				});
 			}
 			else
 			{
