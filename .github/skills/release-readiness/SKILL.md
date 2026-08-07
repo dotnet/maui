@@ -4,7 +4,7 @@ description: Assesses ship-readiness for .NET MAUI release branches — Servicin
 metadata:
   author: dotnet-maui
   version: "2.0"
-compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. `az` CLI is optional but recommended for internal pipeline status. Run from a checkout of `dotnet/maui`.
+compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. `az` CLI is optional but recommended for internal pipeline status. Preview installability uses NuGet v3 feeds; an optional short-lived Azure DevOps PAT with Packaging Read scope may be needed for an authenticated shipping feed. Run from a checkout of `dotnet/maui`.
 ---
 
 # Release Readiness
@@ -29,13 +29,14 @@ This skill **reports**. It does **not** execute release operations against dotne
 
 ## Architecture
 
-This skill has **three** PowerShell entry points and one workflow:
+This skill has **three** PowerShell entry points, one Preview helper, and one workflow:
 
 | Script | Branch type | Purpose |
 |--------|-------------|---------|
 | [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | both | Detects active in-flight & candidate trackers (SR and Preview) across all active majors using a four-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
 | [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight, `-Candidate`, or `-Shipped`). `-Shipped` surveys the same branch with post-ship verdict, carry-forward, and hotfix-vs-next-SR guidance semantics. |
-| [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). |
+| [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`), including consumer-installability evidence. |
+| [`PreviewInstallability.ps1`](scripts/PreviewInstallability.ps1) | Preview helper | Resolves the workload-set package, validates branch-pin coherence, probes manifest and representative pack availability, extracts platform prerequisites, and emits an isolated NuGet configuration for local validation. |
 | [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Three-hourly daytime UTC schedule + event-driven refreshes + manual dispatch + PR validation. Non-PR triggers run `Find-Trackers -AllActiveMajors`, fan out a matrix job per tracker, and write idempotent `[Release Readiness]` issues; PR triggers validate outputs only. |
 
 Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
@@ -115,6 +116,11 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
 ```
 
+The unattended public survey does not know the release-owner-confirmed workload-set
+version or private shipping source. It therefore keeps **Consumer installability**
+`UNKNOWN` rather than guessing that the newest coherent package is the blessed one.
+Complete the local gate below before declaring a Preview ready.
+
 ### Preview: authoritative blessed-build source (.NET Release Tracker)
 
 For **Previews**, this skill's public survey (CI health + regression classification on `net<major>.0` or the preview branch) tells you whether the code is *ready*, but it **cannot on its own name which staged build is the official, blessed preview** — that designation lives in the private **.NET Release Tracker** plugin. So when answering *"run release readiness … is net11 preview6 ready?"* / *"which build is the official preview6?"*, consult that authoritative source **in addition to** running `Get-PreviewReadiness.ps1`:
@@ -137,6 +143,90 @@ The full tier table, the user-scope opt-in snippet, and the privacy guardrails l
 > **Blessed ≠ green.** The release tracker names the *official* build; it does **not** substitute for the ship-readiness judgment. A build can be blessed while this skill still reports open `regressed-in-*` blockers — surface both.
 
 **Don't maintain a standing "🏷️ Official (blessed) preview build" table in the tracker.** The deterministic CI body already owns the public build-pin handling: its **"🏷️ Preview N component build — branch pins + update paths"** section states the pins are explicitly *not* the blessed build, carries the drift-proof "verify locally" prompt, infers Android/macOS-iOS subscription health from the public PR trail, and identifies VMR as a local official-build reconciliation path. Because the blessed build number is embargoed (withheld from the public issue), a standing public table just renders "🔒 withheld" and duplicates that callout. So a local run with tracker access should **report the blessed SDK/runtime build in its conversational answer**, and only add a line to _Release Captain Notes_ when there's a **decision or exception worth persisting** — e.g. the blessed build differs from the branch pin, a promoted build was rejected, or an Android/macOS-iOS subscription is confirmed broken. Don't re-create the section the CI body already renders.
+
+### Preview: consumer-installability gate
+
+The branch being green is insufficient: a customer must be able to acquire the
+exact SDK workload set, its component manifests, and representative Android,
+Apple (including tvOS), Emscripten, MAUI, and runtime packs from a clean source
+configuration.
+
+Use the exact workload-set **CLI version** confirmed by the release owner. Do not
+substitute the branch SDK version, and do not assume the newest coherent package
+is blessed. Workload-set CLI and NuGet versions have different normalization:
+`11.0.100-preview.6.26363.2` maps to
+`11.100.0-preview.6.26363.2` for the NuGet package.
+
+If all assets are public, the confirmed version is enough:
+
+```bash
+pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+  -Branch release/11.0.1xx-preview6 \
+  -Mode in-flight \
+  -ConfirmedWorkloadSetVersion 11.0.100-preview.6.26363.2 \
+  '-PublicSafe:$false' \
+  -OutputDir CustomAgentLogsTmp/release-readiness/preview6-local
+```
+
+If an authenticated shipping feed is required:
+
+1. Create a short-lived PAT at
+   [`https://dev.azure.com/dnceng/_usersSettings/tokens`](https://dev.azure.com/dnceng/_usersSettings/tokens).
+   Select the `dnceng` organization and grant only **Packaging > Read**. Use the
+   shortest practical expiration. Never paste the PAT into a command argument,
+   NuGet.Config, report, issue, PR, chat transcript, or repository file.
+2. Put the credential in NuGet's standard environment variable. The suffix must
+   exactly match the source name passed to `-AdditionalPackageSource`.
+
+   ```bash
+   read -s -p "dnceng Packaging Read PAT: " DNCENG_PACKAGING_PAT; echo
+   export NuGetPackageSourceCredentials_internal_preview6="Username=release-readiness;Password=${DNCENG_PACKAGING_PAT};ValidAuthenticationTypes=Basic"
+   unset DNCENG_PACKAGING_PAT
+   ```
+
+3. Run the local report with the source in `name=https://...` form:
+
+   ```bash
+   pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+     -Branch release/11.0.1xx-preview6 \
+     -Mode in-flight \
+     -ConfirmedWorkloadSetVersion 11.0.100-preview.6.26363.2 \
+     -AdditionalPackageSource 'internal_preview6=<shipping-feed-v3-index-url>' \
+     '-PublicSafe:$false' \
+     -OutputDir CustomAgentLogsTmp/release-readiness/preview6-local
+   ```
+
+4. Use the generated local-only `<clear />` NuGet configuration and install
+   command from `preview-readiness.md`. Then remove the credential:
+
+   ```bash
+   unset NuGetPackageSourceCredentials_internal_preview6
+   ```
+
+`-PublicSafe $false` intentionally includes exact source URLs and installation
+instructions, so keep that output local. The default public-safe report removes
+the release-owner-confirmed workload-set version and any candidate version
+learned from an authenticated/internal source, including versions repeated in
+nested manifest and pack evidence. It also removes additional source names,
+URLs, nested source metadata, credentials, and the generated NuGet
+configuration. Unconfirmed candidates discovered entirely from public feeds
+remain visible as diagnostic evidence.
+
+The gate classifies evidence as follows:
+
+| Installability | Readiness | Meaning |
+|----------------|-----------|---------|
+| `installable` | `READY` | Confirmed CLI version, branch pins, required manifests, and representative packs all agree and resolve. |
+| `missing` | `BLOCKED` | A confirmed package or asset is absent from every accessible supplied source. |
+| `mismatched` | `BLOCKED` | The workload set disagrees with the branch SDK, Android, Apple, or runtime pins, or with the target MAUI Preview train. |
+| `unknown` | `UNKNOWN` | Version is unconfirmed, a source is inaccessible, or evidence could not be read. HTTP 401/403 is never treated as proof that a package is missing. |
+
+The isolated source set is deliberate: `dotnet-workloads` owns the workload-set
+package, `dotnet<major>-workloads` owns platform manifests/assets,
+`dotnet<major>` owns MAUI and Apple manifests/assets,
+`dotnet<major>-transport` owns runtime transport assets, and `dotnet-public`
+plus NuGet.org provide shared dependencies. Do not inherit stale feeds from a
+machine-wide NuGet.Config.
 
 ### Preview: is the branch actually plumbed? (subscription wiring + feed drift)
 
@@ -240,6 +330,8 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
 | `-IncludeInternal`, `-InternalBuildId` | No | — | Release-captain only — augments report with internal pipeline status when AzDO auth is available. |
 | `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON. |
+| `-ConfirmedWorkloadSetVersion` | No | — | Exact release-owner-confirmed workload-set CLI version. Required before Consumer installability can become `READY`. |
+| `-AdditionalPackageSource` | No | — | Repeatable `name=https://...` authenticated dnceng Azure Artifacts source without user information, query parameters, or fragments. Credentials come from `NuGetPackageSourceCredentials_<name>`, never from the argument, and must explicitly select `ValidAuthenticationTypes=Basic`. |
 
 ## Outputs
 
@@ -473,3 +565,4 @@ The harness covers:
 - **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
 - **Idempotent body hash** stability across re-runs — **SR trackers only** (the scheduled/event-driven workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker). Preview trackers carry no hash marker and are refreshed on every scheduled run.
 - **Nightly dogfood feed banner** (`NightlyFeed.ps1`) — offline unit coverage for the lane-label honest-labeling rule (`Format-NightlyFeedLaneLabel`), the `ci.inflight`-first / `ci.main`-false-green resolver, age→tier bucketing, the fail-open feed query (mocked `-Fetcher`), and the banner's fold into `Get-ReportSemanticHash` (tier change refreshes, same-tier day tick does not). All network-free via injected fixtures and explicit `-Now`.
+- **Preview consumer installability** (`PreviewInstallability.ps1`) — offline fixtures cover CLI/NuGet version conversion, workload-set discovery with MSI exclusion, branch-pin coherence, source-role resolution, real manifest `alias-to` resolution for Android/Emscripten/runtime representative packs, platform prerequisites, isolated `<clear />` configuration, malformed/401/403=`UNKNOWN` semantics, verdict mapping, and public-output redaction.
