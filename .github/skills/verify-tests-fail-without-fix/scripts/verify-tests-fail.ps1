@@ -569,6 +569,14 @@ function Invoke-TestRun {
             $deviceParams = @{
                 Project       = $deviceProject
                 Platform      = $devicePlatform
+                # Preserve XHarness/ADB crash diagnostics with the Gate artifact. The default
+                # `artifacts/log` directory is not published by this pipeline and is shared
+                # across A/B retries, so persistent APP_CRASH runs previously told maintainers
+                # to inspect adb-logcat/bugreport files that were both overwritten and absent
+                # from every artifact. LogFile is unique for each without-fix/with-fix attempt;
+                # writing its diagnostics beside it keeps every attempt under CustomAgentLogsTmp
+                # and therefore inside CopilotLogs.
+                OutputDirectory = "$LogFile.diagnostics"
                 # Build device tests in DEBUG, not Release. The gate only needs to verify test
                 # BEHAVIOUR (does it fail without the fix, pass with it) — not Release/AOT/trim.
                 # On iOS/MacCatalyst, Release does FULL ILLink trimming (links every assembly),
@@ -2108,7 +2116,7 @@ function Write-MarkdownReport {
         # file) keep the transient-flake "retry on a fresh agent" wording.
         $isAppCrash = $envExcerpt -and ($envExcerpt -match '(?i)APP_CRASH|crashed during test run|exit code 80')
         if ($isAppCrash) {
-            $failureClassification = "🩺 **Could not verify — the app under test crashed (APP_CRASH).** The app SIGABRT'd / exited before the test produced a pass/fail, so the gate could not record a real result. The gate already retried on a rebooted device up to 3×; if it still reports this, the crash **persisted across every attempt** — a plain ``/review`` retry is unlikely to change it. This is **not necessarily** a problem with your PR, but it is also **not** a transient flake: the crash is either in the runtime/native libraries the test exercises **or** in the code under test. Download the ``adb-logcat`` / ``adb-bugreport`` from the ``drop-deep-uitests``/gate artifact to see the native stack before retrying.$envExcerptLine"
+            $failureClassification = "🩺 **Could not verify — the app under test crashed (APP_CRASH).** The app SIGABRT'd / exited before the test produced a pass/fail, so the gate could not record a real result. The gate already retried on a rebooted device up to 3×; if it still reports this, the crash **persisted across every attempt** — a plain ``/review`` retry is unlikely to change it. This is **not necessarily** a problem with your PR, but it is also **not** a transient flake: the crash is either in the runtime/native libraries the test exercises **or** in the code under test. Download ``CopilotLogs`` and inspect the matching ``test-with*-*.log.diagnostics`` directory for the preserved ``adb-logcat`` / ``adb-bugreport`` native diagnostics before retrying.$envExcerptLine"
         } else {
             $failureClassification = "🩺 **Could not verify — environment/infrastructure error.** The gate ran the tests but hit an environment error (an emulator/simulator/Appium/XHarness flake, a device that would not boot, or an empty/invalid result file), so it could not record a real pass/fail. The ⚠️ ENV ERROR marks below are **infrastructure**, not test failures — this is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent.$envExcerptLine"
         }

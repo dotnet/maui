@@ -479,8 +479,18 @@ Describe 'Write-MarkdownReport — persisted APP_CRASH gets an honest (non-"just
         $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
         $report | Should -Match 'the app under test crashed \(APP_CRASH\)'
         $report | Should -Match 'persisted across every attempt'
+        $report | Should -Match ([regex]::Escape('Download `CopilotLogs`'))
+        $report | Should -Match 'log\.diagnostics'
         # Must NOT use the transient-flake "retry on a fresh agent" wording for a crash.
         $report | Should -Not -Match 'Comment ``/review`` to retry on a fresh agent'
+    }
+}
+
+Describe 'Invoke-TestRun — device diagnostics are retained with Gate logs' {
+    It 'routes each device-test attempt to a unique published diagnostics directory' {
+        $content = Get-Content -LiteralPath $scriptPath -Raw
+        $content | Should -Match 'OutputDirectory\s*=\s*"\$LogFile\.diagnostics"'
+        $content | Should -Match 'writing its diagnostics beside it keeps every attempt under CustomAgentLogsTmp'
     }
 }
 
