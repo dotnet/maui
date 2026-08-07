@@ -1299,63 +1299,84 @@ stages:
               fi
 
               echo "=== Emulator warmup before agent ==="
+              # No adb probe in this best-effort step may consume the AzDO task's
+              # six-minute hard timeout. A dead transport previously hung on a later
+              # `adb shell` after the explicit wait loop and made the whole review
+              # yellow (build 14887598), even though the Gate correctly owns recovery.
+              adb_safe() {
+                timeout 5 adb -s "$DEVICE_ID" "$@"
+              }
+              adb_server_safe() {
+                timeout 5 adb "$@"
+              }
+
               # Verify device is still connected
-              if ! adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+              if ! adb_safe shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
                 echo "Device not responding. Restarting ADB server..."
-                adb kill-server 2>/dev/null || true
+                adb_server_safe kill-server 2>/dev/null || true
                 sleep 2
-                adb start-server
+                if ! adb_server_safe start-server; then
+                  echo "##vso[task.logissue type=warning]ADB server did not restart during warmup — continuing to the Gate recovery path"
+                  exit 0
+                fi
                 sleep 2
                 # Best-effort: a stuck/slow emulator must NOT hard-abort the whole review via
                 # `set -e` (adb wait-for-device -> timeout exit 124). Warn and continue so the
                 # rest of the warmup sweep still runs; the downstream gate has its own emulator
                 # retry and reports INCONCLUSIVE on genuine infra failure.
-                timeout 90 adb wait-for-device || echo "##vso[task.logissue type=warning]adb wait-for-device timed out during warmup — emulator slow/stuck; continuing (gate will retry / report INCONCLUSIVE)"
+                timeout 90 adb -s "$DEVICE_ID" wait-for-device || echo "##vso[task.logissue type=warning]adb wait-for-device timed out during warmup — emulator slow/stuck; continuing (gate will retry / report INCONCLUSIVE)"
                 # Wait for boot to complete after ADB reconnect
-                waited=0
-                while [ "$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-                  sleep 5; waited=$((waited+5))
-                  [ $waited -ge 90 ] && { echo "##[warning]Emulator still not booted after ADB restart"; break; }
+                boot_deadline=$((SECONDS + 90))
+                while [ "$(adb_safe shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  if [ $SECONDS -ge $boot_deadline ]; then
+                    echo "##vso[task.logissue type=warning]Emulator still not booted after ADB restart — skipping the remaining warmup (gate will retry / report INCONCLUSIVE)"
+                    exit 0
+                  fi
+                  sleep 5
                 done
               fi
 
               # Dismiss ANR dialogs and wake screen — run twice for reliability
               for PASS in 1 2; do
                 echo "--- Warmup pass $PASS ---"
-                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
-                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_MENU 2>/dev/null || true
+                adb_safe shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+                adb_safe shell input keyevent KEYCODE_MENU 2>/dev/null || true
                 sleep 1
 
                 # Dismiss system dialogs (ANR, crash, etc.)
-                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
-                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_ENTER 2>/dev/null || true
-                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                adb_safe shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb_safe shell input keyevent KEYCODE_ENTER 2>/dev/null || true
+                adb_safe shell input keyevent KEYCODE_BACK 2>/dev/null || true
                 sleep 1
               done
 
               # Check for lingering ANR in window state
-              if adb -s "$DEVICE_ID" shell dumpsys window 2>/dev/null | grep -qi "Application Not Responding\|ANR"; then
+              if adb_safe shell dumpsys window 2>/dev/null | grep -qi "Application Not Responding\|ANR"; then
                 echo "⚠️  ANR dialog still present — force-dismissing with HOME + BACK"
-                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME 2>/dev/null || true
+                adb_safe shell input keyevent KEYCODE_HOME 2>/dev/null || true
                 sleep 2
-                adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
-                adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+                adb_safe shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                adb_safe shell input keyevent KEYCODE_BACK 2>/dev/null || true
                 sleep 1
               fi
 
               # Open and close Settings to exercise the system and confirm responsiveness
-              adb -s "$DEVICE_ID" shell am start -a android.settings.SETTINGS 2>/dev/null || true
+              adb_safe shell am start -a android.settings.SETTINGS 2>/dev/null || true
               sleep 3
-              adb -s "$DEVICE_ID" shell am force-stop com.android.settings 2>/dev/null || true
+              adb_safe shell am force-stop com.android.settings 2>/dev/null || true
 
               # Final dialog sweep
-              adb -s "$DEVICE_ID" shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
-              adb -s "$DEVICE_ID" shell input keyevent KEYCODE_BACK 2>/dev/null || true
+              adb_safe shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+              adb_safe shell input keyevent KEYCODE_BACK 2>/dev/null || true
 
               # Clear logcat so agent gets clean logs
-              adb -s "$DEVICE_ID" logcat -c 2>/dev/null || true
+              adb_safe logcat -c 2>/dev/null || true
 
-              echo "✅ Emulator warmed up and responsive"
+              if adb_safe shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                echo "✅ Emulator warmed up and responsive"
+              else
+                echo "##vso[task.logissue type=warning]Warmup finished without a responsive emulator — continuing to the Gate recovery path"
+              fi
             displayName: 'Warm Up Android Emulator'
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
             # Warmup is a best-effort keep-alive, never a gate: a slow/stuck emulator (exit 124

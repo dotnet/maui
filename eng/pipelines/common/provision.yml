@@ -390,7 +390,7 @@ steps:
       timeoutInMinutes: 45
 
 # Provision Additional Software
-- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
+- ${{ if and(or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)), ne(parameters.skipCertificates, true)) }}:
   # Prepare macOS
   - task: InstallAppleCertificate@2
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))

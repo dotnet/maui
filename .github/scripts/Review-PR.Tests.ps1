@@ -26,6 +26,7 @@ BeforeAll {
     $reviewScript = Join-Path $PSScriptRoot 'Review-PR.ps1'
     $content = Get-Content -Raw $reviewScript
     $pipelineContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml')
+    $provisionContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/common/provision.yml')
 
     function Get-FunctionBody {
         param([string]$ScriptText, [string]$FunctionName)
@@ -117,6 +118,21 @@ Describe 'Reviewer pipeline timeout containment' {
     It 'requires the adb transport state column to be device instead of matching metadata text' {
         $pipelineContent | Should -Not -Match 'adb devices \| grep ["'']emulator\.\*device'
         ([regex]::Matches($pipelineContent, [regex]::Escape('$2 == "device"'))).Count | Should -Be 4
+    }
+
+    It 'honors skipCertificates and bounds every best-effort Android warmup adb call' {
+        $provisionContent | Should -Match 'ne\(parameters\.skipCertificates, true\)'
+
+        $warmupStart = $pipelineContent.IndexOf('# Warm up the emulator right before the agent runs.')
+        $warmupEnd = $pipelineContent.IndexOf("#  Task 1 — SETUP", $warmupStart)
+        $warmupStart | Should -BeGreaterThan -1
+        $warmupEnd | Should -BeGreaterThan $warmupStart
+        $warmupBlock = $pipelineContent.Substring($warmupStart, $warmupEnd - $warmupStart)
+
+        $warmupBlock | Should -Match 'adb_safe\(\)'
+        $warmupBlock | Should -Match 'timeout 5 adb -s "\$DEVICE_ID"'
+        $warmupBlock | Should -Not -Match '(?m)^\s*adb -s "\$DEVICE_ID"'
+        $warmupBlock | Should -Match 'Emulator still not booted after ADB restart — skipping the remaining warmup'
     }
 }
 
