@@ -50,6 +50,19 @@ param(
 
 $ErrorActionPreference = 'Continue'
 
+function ConvertTo-UiFailureSafeConsoleText {
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    if ($null -eq $Text) {
+        return ''
+    }
+
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
 if (-not (Test-Path $ArtifactDir)) {
     Write-Host "No artifact dir ($ArtifactDir) — nothing to analyze."
     exit 0
@@ -95,7 +108,8 @@ if ($regularCount -eq 0) {
     exit 0
 }
 
-Write-Host "Found $regularCount regular UI test failure(s) across $($regular.Count) categor$(if ($regular.Count -eq 1) {'y'} else {'ies'}): $(( $regular.Keys) -join ', ')"
+$safeCategoryNames = ConvertTo-UiFailureSafeConsoleText (($regular.Keys) -join ', ')
+Write-Host "Found $regularCount regular UI test failure(s) across $($regular.Count) categor$(if ($regular.Count -eq 1) {'y'} else {'ies'}): $safeCategoryNames"
 
 # ── Build the data file (untrusted failure text goes to the FILE only) ──
 $sb = [System.Text.StringBuilder]::new()
