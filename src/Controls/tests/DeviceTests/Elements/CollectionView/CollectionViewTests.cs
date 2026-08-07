@@ -41,6 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();

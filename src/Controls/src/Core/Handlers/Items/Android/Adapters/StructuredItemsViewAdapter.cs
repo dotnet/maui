@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 				{
+					TrackBoundViewHolder(templatedItemViewHolder, position);
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Header);
 				}
 
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 				{
+					TrackBoundViewHolder(templatedItemViewHolder, position);
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Footer);
 				}
 
@@ -106,14 +108,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var itemViewType = templatedItemViewHolder.ItemViewType;
 			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && itemViewType != ItemViewType.Header && itemViewType != ItemViewType.Footer && itemViewType != ItemViewType.GroupHeader && itemViewType != ItemViewType.GroupFooter)
- 			{
- 				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
+			{
+				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
 
- 				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
- 				{
- 					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
+				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+				{
+					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
 				}
- 			}
+			}
 			else
 			{
 				base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);

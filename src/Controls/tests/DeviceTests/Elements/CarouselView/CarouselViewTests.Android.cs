@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -7,6 +8,7 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -52,6 +54,61 @@ namespace Microsoft.Maui.DeviceTests
 
 				var platformPosition = GetPlatformPosition(handler);
 				Assert.True(CheckPosition(platformPosition, position));
+			});
+		}
+
+		[Fact]
+		public async Task ClearingLoopingItemsSourceDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+			var carouselView = new CarouselView
+			{
+				ItemsSource = data,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
+				await AssertEventually(() =>
+					handler.PlatformView.GetAdapter().ItemCount == CarouselViewLoopManager.LoopScale);
+				await AssertEventually(() => carouselView.LogicalChildrenInternal.Count > 0);
+
+				var logicalChildren = carouselView.LogicalChildrenInternal.ToArray();
+
+				data.Clear();
+
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 0);
+				await AssertEventually(() => logicalChildren.All(logicalChild => logicalChild.BindingContext is null));
+			});
+		}
+
+		[Fact]
+		public async Task ClearingNonLoopingItemsSourceClearsBindingContexts()
+		{
+			SetupBuilder();
+
+			var data = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
+			var carouselView = new CarouselView
+			{
+				ItemsSource = data,
+				ItemTemplate = new DataTemplate(() => new Label()),
+				Loop = false
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
+				await AssertEventually(() => carouselView.LogicalChildrenInternal.Count > 0);
+
+				var logicalChildren = carouselView.LogicalChildrenInternal.ToArray();
+
+				data.Clear();
+
+				await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 0);
+				await AssertEventually(() => logicalChildren.All(logicalChild => logicalChild.BindingContext is null));
 			});
 		}
 
