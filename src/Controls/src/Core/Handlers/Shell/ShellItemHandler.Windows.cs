@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -268,7 +269,12 @@ namespace Microsoft.Maui.Controls.Handlers
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.Content = bsi.Title;
+
+					// Set DisabledForeground BEFORE IsEnabled so that when the IsEnabled setter
+					// calls UpdateForeground(), DisabledForeground is already available.
+					vm.DisabledForeground = _shellAppearanceElement?.EffectiveTabBarDisabledColor?.ToPlatform();
 					vm.IsEnabled = bsi.IsEnabled;
+
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
 					if (iconSource != null)
@@ -703,12 +709,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			var foregroundColor = _shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint();
 			var unselectedColor = _shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint();
 			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
+			var disabledColor = _shellAppearanceElement.EffectiveTabBarDisabledColor?.AsPaint();
 
 			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
 			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
 			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
 			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
 			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
+			mauiNavView.UpdateTopNavigationViewItemDisabledColor(disabledColor);
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
