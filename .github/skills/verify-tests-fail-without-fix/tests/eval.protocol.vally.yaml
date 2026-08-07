@@ -45,6 +45,18 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900001\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -86,6 +98,20 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900002\b)(?=[\s\S]*-BaseBranch\b)'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: 'verify-tests-fail\.ps1[\s\S]*-RequireFullVerification\b'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -122,6 +148,18 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900003\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -159,6 +197,18 @@ stimuli:
     graders:
       - type: skill-invocation
         config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900004\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
         config:
           scoring: scale_1_5

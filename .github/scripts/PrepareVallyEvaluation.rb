@@ -41,10 +41,6 @@ REQUIRED_SKILL_PATTERNS = {
     "External Output Contract output section" => /^### External Output Contract$/
   }
 }.freeze
-REQUIRED_FIRST_ACTION_SKILLS = {
-  ".github/skills/ci-fix/tests/eval.ownership.vally.yaml" => "ci-fix",
-  ".github/skills/code-review/tests/eval.producer-trace.vally.yaml" => "code-review"
-}.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
   /(?:\A|[;&|\r\n])\s*git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
@@ -347,7 +343,6 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
   if PER_GRADER_MUST_PASS_SPECS.include?(relative_spec_path) && document["scoring"] != {}
     fail!("#{relative_spec_path} must use an empty scoring map so every grader must pass its declared threshold")
   end
-  required_first_action_skill = REQUIRED_FIRST_ACTION_SKILLS[relative_spec_path]
   skill_name = File.basename(skill_root)
   Array(REQUIRED_SKILL_PATTERNS[relative_spec_path]).each do |description, pattern|
     skill_path = File.join(skill_root, "SKILL.md")
@@ -372,10 +367,6 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
       if stimulus.key?("supported_executors")
         fail!("stimuli[#{index}] must not restrict supported_executors in mandatory invocation spec #{relative_spec_path}")
       end
-    end
-    if required_first_action_skill
-      first_action = "Your first action must be to invoke the `#{required_first_action_skill}` skill."
-      fail!("stimuli[#{index}].prompt must require first-action #{required_first_action_skill} invocation") unless stimulus["prompt"].to_s.include?(first_action)
     end
   end
   validate_effective_git_destinations!(document, repo_root) if inspect_git_refs

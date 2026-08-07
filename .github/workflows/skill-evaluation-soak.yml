@@ -48,6 +48,20 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Setup credential-isolated Vally runtime
+        id: vally-runtime
+        run: >-
+          .github/scripts/SetupVallyRuntime.sh
+          "$RUNNER_TEMP/vally"
+          "$VALLY_VERSION"
+          "$GITHUB_OUTPUT"
+
+      - name: Validate live soak spec
+        run: >-
+          "${{ steps.vally-runtime.outputs.vally_bin }}" lint
+          --eval-spec .github/skills/code-review/tests/soak.capability.vally.yaml
+          --strict
+
       - name: Select Copilot token
         id: select-token
         env:
@@ -82,28 +96,22 @@ jobs:
           echo "::add-mask::${TOKENS[$IDX]}"
           echo "token=${TOKENS[$IDX]}" >> "$GITHUB_OUTPUT"
 
-      - name: Validate live soak spec
-        run: >-
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint
-          --eval-spec .github/skills/code-review/tests/soak.capability.vally.yaml
-          --strict
-
       - name: Run live soak
         id: soak
         env:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
-          # The soak runs trusted default-branch prompts only. Give the agent a
-          # read-only Actions token for the live PR/review surfaces under test;
-          # never expose the model-auth PAT through a name understood by `gh`.
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ github.token }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          # Live public-PR retrieval is anonymous by design. Do not give the
+          # Copilot process a GitHub API token.
           RUNS: ${{ github.event.inputs.runs || '1' }}
         run: |
           set -euo pipefail
           mkdir -p live-soak-results
 
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_BIN" eval \
             -e .github/skills/code-review/tests/soak.capability.vally.yaml \
             --skill-dir .github/skills \
             --output-dir live-soak-results \

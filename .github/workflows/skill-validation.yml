@@ -21,14 +21,18 @@
 #
 # Security model:
 #   - Workflow YAML: always from the default branch (enforced by both triggers)
-#   - Evaluator: @microsoft/vally-cli, pinned + run via npx from npm (trusted)
+#   - Evaluator: @microsoft/vally-cli, pinned and installed while tokenless by a
+#     workflow-SHA-pinned setup script; credentialed evals use that local binary.
 #   - Skill/test content: checked out from the PR (markdown/YAML data files;
 #     the evaluate job needs full history for frozen-worktree fixtures)
 #   - A workflow-SHA-pinned validator rejects PR-authored commands, process
 #     environment overrides, local MCP servers, executable graders, and escaping
 #     file overlays before model auth is selected. Synthetic git fixtures are
 #     prepared by that trusted script while the job is tokenless.
-#   - No PR code is compiled or executed.
+#   - Candidate skill instructions are evaluated, so their tool calls are
+#     untrusted. A trusted runtime wrapper passes Copilot's --secret-env-vars
+#     boundary, stripping every GitHub/model token from shell and MCP tools.
+#     No PR code is compiled or executed with credentials in scope.
 #   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
 #     (COPILOT_GITHUB_TOKEN, a name `gh` does not read) and NO GITHUB_TOKEN /
 #     GH_TOKEN, so it cannot recite documented fixes via the live GitHub API.
@@ -46,6 +50,7 @@ on:
       - '.github/plugin.json'
       - '.github/scripts/PrepareVallyEvaluation.rb'
       - '.github/scripts/TestPrepareVallyEvaluation.rb'
+      - '.github/scripts/SetupVallyRuntime.sh'
       - '.github/workflows/skill-validation.yml'
 
   issue_comment:
@@ -407,7 +412,7 @@ jobs:
               sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
             # Trusted evaluation-harness change => evaluate all skills with specs.
             HARNESS_CHANGES=$(echo "$CHANGED" \
-              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb)$' \
+              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb|scripts/SetupVallyRuntime\.sh)$' \
               || true)
             if [ -n "$HARNESS_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
           fi
@@ -546,6 +551,17 @@ jobs:
           git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
 
+      - name: Setup credential-isolated Vally runtime
+        id: vally-runtime
+        env:
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
+          git show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
+          chmod 700 "$SETUP"
+          "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
+
       # ── Select Copilot token (from the copilot-pat-pool PAT pool) ──
       - name: Select Copilot token
         id: select-token
@@ -612,6 +628,9 @@ jobs:
         continue-on-error: true
         env:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
@@ -720,7 +739,7 @@ jobs:
 
           # Advisory exit — the baseline number is informational; do not fail.
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_BIN" eval \
             "${SPECS[@]}" \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
@@ -784,6 +803,9 @@ jobs:
           # deliberately NO GITHUB_TOKEN / GH_TOKEN here — that env-level
           # open-book leak was the legacy harness's hermeticity defect.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           RESULTS_PATH: eval-results/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
@@ -822,7 +844,7 @@ jobs:
           # error. We capture it but DON'T propagate so every matrix artifact is
           # still uploaded and the aggregate report can explain the failure.
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval \
+          "$VALLY_BIN" eval \
             "${SPECS[@]}" \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
@@ -927,6 +949,17 @@ jobs:
           npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$HERMETICITY_SPEC" --strict
           echo "path=$HERMETICITY_SPEC" >> "$GITHUB_OUTPUT"
 
+      - name: Setup credential-isolated Vally runtime
+        id: vally-runtime
+        env:
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
+          git show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
+          chmod 700 "$SETUP"
+          "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
+
       - name: Select Copilot token
         id: select-token
         env:
@@ -963,6 +996,9 @@ jobs:
           # If a GitHub-shaped token leaks in, the rate limit is elevated and
           # the assertion FAILS → hermeticity not verified.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}
         run: |
           mkdir -p hermeticity-results
@@ -973,7 +1009,7 @@ jobs:
           fi
 
           set +e
-          npx -y "@microsoft/vally-cli@${VALLY_VERSION}" eval -e "$HERMETICITY_SPEC" \
+          "$VALLY_BIN" eval -e "$HERMETICITY_SPEC" \
             --skill-dir .github/skills \
             --output-dir hermeticity-results/out \
             --junit \
