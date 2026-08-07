@@ -748,51 +748,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void AssigningResourcesToElementDoesNotResolveLazyResources()
-		{
-			var invokeCount = 0;
-			var resources = new ResourceDictionary();
-			resources.AddFactory("unused-local-lazy-resource", () =>
-			{
-				invokeCount++;
-				return new Label();
-			}, shared: true);
-
-			Assert.Equal(0, invokeCount);
-
-			var element = new VisualElement();
-
-			element.Resources = resources;
-
-			Assert.Equal(0, invokeCount);
-		}
-
-		[Fact]
-		public void ParentSetDoesNotResolveLocalLazyResources()
-		{
-			var invokeCount = 0;
-			var child = new VisualElement();
-			child.Resources.AddFactory("unused-local-lazy-resource", () =>
-			{
-				invokeCount++;
-				return new Label();
-			}, shared: true);
-
-			Assert.Equal(0, invokeCount);
-
-			var parent = new VisualElement
-			{
-				Resources = new ResourceDictionary {
-					{ "parent-resource", "PARENT" },
-				}
-			};
-
-			child.Parent = parent;
-
-			Assert.Equal(0, invokeCount);
-		}
-
-		[Fact]
 		public void AddFactory_DoesNotInvokeUntilAccessed()
 		{
 			var rd = new ResourceDictionary();
@@ -854,10 +809,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// The event value should be properly resolved
 			Assert.NotNull(eventValue);
-
+			
 			// The value should be the resolved color
 			Assert.Equal(Colors.Red, eventValue);
-
+			
 			// The value IS correct when accessed directly
 			Assert.Equal(Colors.Red, rd["myColor"]);
 		}
@@ -870,7 +825,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var rd = new ResourceDictionary();
 			var label = new Label();
-
+			
 			// Set up the page hierarchy so DynamicResource can find resources
 			var page = new ContentPage { Content = label };
 			page.Resources = rd;

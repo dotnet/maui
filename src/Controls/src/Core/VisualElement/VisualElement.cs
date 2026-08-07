@@ -1191,7 +1191,7 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChangedKeys(value?.MergedResourcesKeys, key => value.TryGetValue(key, out var resource) ? resource : null);
+				OnResourcesChanged(value);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -1614,11 +1614,13 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			HashSet<string> changedKeys = null;
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
+			foreach (KeyValuePair<string, object> c in Resources)
+				innerKeys.Add(c.Key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
-				if (!Resources.ContainsKey(value.Key) && (changedKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(value.Key))
+				if (innerKeys.Add(value.Key))
 					changedResources.Add(value);
 				else if (value.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
 				{
@@ -1642,14 +1644,18 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			// Build a set of keys we already have in our resources (child takes precedence)
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (KeyValuePair<string, object> c in Resources)
+				innerKeys.Add(c.Key);
+
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			HashSet<string> filteredKeySet = null;
 
 			foreach (string key in keys)
 			{
-				if (!Resources.ContainsKey(key) && (filteredKeySet ??= new HashSet<string>(StringComparer.Ordinal)).Add(key))
+				if (innerKeys.Add(key))
 				{
 					// Key doesn't exist in our resources, include it
 					filteredKeys.Add(key);
@@ -1693,14 +1699,18 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			// Build a set of keys we already have in our resources (child takes precedence)
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (KeyValuePair<string, object> c in Resources)
+				innerKeys.Add(c.Key);
+
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			HashSet<string> filteredKeySet = null;
 
 			foreach (string key in keys)
 			{
-				if (!Resources.ContainsKey(key) && (filteredKeySet ??= new HashSet<string>(StringComparer.Ordinal)).Add(key))
+				if (innerKeys.Add(key))
 				{
 					// Key doesn't exist in our resources, include it
 					filteredKeys.Add(key);
