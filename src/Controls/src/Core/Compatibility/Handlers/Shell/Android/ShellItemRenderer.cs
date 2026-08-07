@@ -88,6 +88,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SetupMenu();
 
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
+
+			if (RuntimeFeature.IsMaterial3Enabled && _appearanceTracker is ShellBottomNavViewAppearanceTracker concreteAppearanceTracker)
+				concreteAppearanceTracker.CaptureNativeAppearance(_bottomView);
+
 			_bottomNavigationTracker = new BottomNavigationViewTracker();
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
 

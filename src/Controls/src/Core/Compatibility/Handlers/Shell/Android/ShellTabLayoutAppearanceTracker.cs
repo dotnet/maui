@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ColorStateList _originalTextColors;
 		Drawable _originalBackground;
 		int? _originalIndicatorColor;
+		int? _originalSelectedTextColorArgb;
+		int _originalNativeTextColor;
 		IShellContext _shellContext;
 
 		public ShellTabLayoutAppearanceTracker(IShellContext shellContext)
@@ -25,8 +27,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(TabLayout tabLayout)
 		{
-			CaptureNativeColors(tabLayout);
-
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				RestoreNativeColors(tabLayout);
@@ -52,33 +52,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetColors(TabLayout tabLayout, Color foreground, Color background, Color title, Color unselected)
 		{
-			CaptureNativeColors(tabLayout);
-
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				if (title is null && unselected is null)
-				{
-					tabLayout.TabTextColors = _originalTextColors;
-				}
-				else if (_originalTextColors is not null)
-				{
-					// Preserve the disabled-state color from the native/original ColorStateList
-					// instead of collapsing to a 2-state list, which would silently drop any
-					// disabled-state styling supplied by the native Material3 theme.
-					var materialTitleArgb = title?.ToPlatform().ToArgb()
-						?? _originalTextColors.GetColorForState(new[] { R.Attribute.StateSelected }, new global::Android.Graphics.Color(_originalTextColors.DefaultColor));
-					var materialUnselectedArgb = unselected?.ToPlatform().ToArgb() ?? _originalTextColors.DefaultColor;
-					var disabledArgb = _originalTextColors.GetColorForState(new[] { -R.Attribute.StateEnabled }, new global::Android.Graphics.Color(materialUnselectedArgb));
+				var materialTitleArgb = title?.ToPlatform().ToArgb() ?? _originalSelectedTextColorArgb ?? _originalNativeTextColor;
+				var materialUnselectedArgb = unselected?.ToPlatform().ToArgb() ?? _originalTextColors?.DefaultColor ?? _originalNativeTextColor;
 
-					tabLayout.TabTextColors = ColorStateListExtensions.CreateSwitch(disabledArgb, materialTitleArgb, materialUnselectedArgb);
-				}
-				else
-				{
-					var nativeTextColor = tabLayout.Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
-					tabLayout.SetTabTextColors(
-						unselected?.ToPlatform().ToArgb() ?? nativeTextColor,
-						title?.ToPlatform().ToArgb() ?? nativeTextColor);
-				}
+				tabLayout.SetTabTextColors(materialUnselectedArgb, materialTitleArgb);
 
 				if (background is null)
 					tabLayout.SetBackground(_originalBackground);
@@ -101,13 +80,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
 		}
 
-		void CaptureNativeColors(TabLayout tabLayout)
+		internal void CaptureNativeColors(TabLayout tabLayout)
 		{
 			if (_originalAppearanceCaptured)
 				return;
 
 			_originalTextColors = tabLayout.TabTextColors;
 			_originalBackground = tabLayout.Background;
+			_originalNativeTextColor = tabLayout.Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
+
+			// Pre-resolve the selected-state text color once. Its fallback (DefaultColor) is
+			// purely derived from the captured native ColorStateList, so it's safe to compute
+			// here instead of re-deriving it on every SetColors call.
+			_originalSelectedTextColorArgb = _originalTextColors?.GetColorForState(
+				new[] { R.Attribute.StateSelected }, new global::Android.Graphics.Color(_originalTextColors.DefaultColor));
 
 			using var styledAttributes = tabLayout.Context.Theme.ObtainStyledAttributes(
 				null,
@@ -150,6 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_disposed = true;
 			_originalBackground = null;
 			_originalTextColors = null;
+			_originalSelectedTextColorArgb = null;
 			_shellContext = null;
 		}
 

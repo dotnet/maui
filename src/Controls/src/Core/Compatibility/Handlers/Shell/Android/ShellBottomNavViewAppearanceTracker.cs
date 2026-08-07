@@ -44,8 +44,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
-			CaptureNativeAppearance(bottomView);
-
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				bottomView.ItemIconTintList = _originalItemIconTint;
@@ -62,8 +60,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
-			CaptureNativeAppearance(bottomView);
-
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
@@ -89,10 +85,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (backgroundColor is null && RuntimeFeature.IsMaterial3Enabled)
 				RestoreBackground(bottomView);
 			else
-				SetBackgroundColor(bottomView, backgroundColor ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor);
+				SetBackgroundColor(bottomView, backgroundColor);
 		}
 
-		void CaptureNativeAppearance(BottomNavigationView bottomView)
+		internal void CaptureNativeAppearance(BottomNavigationView bottomView)
 		{
 			if (_originalAppearanceCaptured)
 				return;

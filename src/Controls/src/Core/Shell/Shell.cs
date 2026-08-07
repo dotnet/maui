@@ -765,22 +765,9 @@ namespace Microsoft.Maui.Controls
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
 
-				// On Android with Material2 (legacy), preserve the original hardcoded
-				// defaults so clearing an appearance color still falls back to the
-				// same theme-resolved value it always has. Material3 (and all other
-				// platforms) fall back to null so the platform/native default is used.
-				if (DeviceInfo.Platform == DevicePlatform.Android && !RuntimeFeature.IsMaterial3Enabled)
-				{
-					Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
-					Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
-				}
-				else
-				{
-					Toolbar.BarTextColor = appearance?.TitleColor;
-					Toolbar.BarBackground = appearance?.BackgroundColor;
-					Toolbar.IconColor = appearance?.ForegroundColor;
-				}
+				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
+				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
 			}
 		}
 

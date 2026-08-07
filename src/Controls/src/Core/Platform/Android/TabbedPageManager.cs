@@ -154,14 +154,17 @@ public class TabbedPageManager
 
 			if (IsBottomTabPlacement)
 			{
-				_bottomNavigationView = new BottomNavigationView(_context.Context, null, Resource.Attribute.bottomNavigationViewStyle)
+				_bottomNavigationView = RuntimeFeature.IsMaterial3Enabled
+					? new BottomNavigationView(_context.Context, null, Resource.Attribute.bottomNavigationViewStyle)
+					: new BottomNavigationView(_context.Context);
+
+				_bottomNavigationView.LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 				{
-					LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
-					{
-						Gravity = (int)GravityFlags.Bottom
-					}
+					Gravity = (int)GravityFlags.Bottom
 				};
-				_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
+
+				if (RuntimeFeature.IsMaterial3Enabled)
+					_originalBottomNavigationViewBackground = _bottomNavigationView.Background;
 			}
 			else
 			{
@@ -611,9 +614,13 @@ public class TabbedPageManager
 			if (tintColor == null)
 			{
 				if (RuntimeFeature.IsMaterial3Enabled)
+				{
 					RestoreBottomNavigationViewBackground();
+				}
 				else
+				{
 					_bottomNavigationView.SetBackground(null);
+				}
 			}
 			else if (tintColor != null)
 				_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
