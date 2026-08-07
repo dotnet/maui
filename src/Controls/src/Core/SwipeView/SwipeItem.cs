@@ -50,9 +50,9 @@ namespace Microsoft.Maui.Controls
 		/// <see cref="TextColor"/>, then by a color contrasting <see cref="BackgroundColor"/>; image icons such as
 		/// PNG and SVG render with their original colors. When set, this property tints font icons and image icons on
 		/// Android, iOS, and MacCatalyst (including stream-based sources, since the resolved platform image is
-		/// tinted), and font, packaged file, and URI-based icons on Windows, and can be bound with
-		/// <see cref="AppThemeBinding"/> to follow the current theme. On Windows, packaged file and URI icons use
-		/// the color as a monochrome mask; rooted and stream-based image icons render with their original colors.
+		/// tinted), and font and packaged file icons on Windows, and can be bound with
+		/// <see cref="AppThemeBinding"/> to follow the current theme. On Windows, packaged file icons use
+		/// the color as a monochrome mask; URI, rooted, and stream-based image icons render with their original colors.
 		/// All icons on Tizen currently render with their original colors regardless of this property.
 		/// </remarks>
 		public Color IconColor

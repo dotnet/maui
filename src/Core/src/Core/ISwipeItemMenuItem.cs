@@ -31,8 +31,8 @@ namespace Microsoft.Maui
 		/// <see cref="ITextStyle.TextColor"/>, then by a color contrasting the item background;
 		/// image icons render with their original colors. When set, the color tints font icons and image
 		/// icons on Android, iOS, and MacCatalyst (including stream-based sources, since the resolved
-		/// platform image is tinted), and font, packaged file, and URI icons on Windows. On Windows,
-		/// packaged file and URI icons use the color as a monochrome mask; rooted and stream-based image
+		/// platform image is tinted), and font and packaged file icons on Windows. On Windows,
+		/// packaged file icons use the color as a monochrome mask; URI, rooted, and stream-based image
 		/// icons render with their original colors. All icons on Tizen currently render with their
 		/// original colors regardless of this property.
 		/// </remarks>

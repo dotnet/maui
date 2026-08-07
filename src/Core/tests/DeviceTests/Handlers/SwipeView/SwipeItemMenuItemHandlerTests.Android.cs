@@ -1,7 +1,11 @@
+using System.Threading;
 using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.Widget;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -43,10 +47,85 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task IconColorChangeReusesMutatedDrawable()
+		{
+			var imageService = new MutatingFileImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFileImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				item.Source = new FileImageSourceStub("custom.png");
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+
+				var drawable = GetTopDrawable(Assert.IsAssignableFrom<TextView>(handler.PlatformView));
+				Assert.Same(imageService.MutatedDrawable, drawable);
+				Assert.True(imageService.MutatedDrawable.BoundsSet);
+				Assert.Equal(1, imageService.LoadCount);
+
+				item.IconColor = Colors.Red;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				Assert.Equal(1, imageService.LoadCount);
+			});
+		}
+
 		static global::Android.Graphics.Drawables.Drawable GetTopDrawable(TextView textView)
 		{
 			var drawables = textView.GetCompoundDrawables();
 			return drawables.Length > 1 ? drawables[1] : null;
+		}
+
+		sealed class MutatingFileImageSourceService : IImageSourceService<IFileImageSource>
+		{
+			readonly MutatingDrawable _sourceDrawable = new();
+
+			public TrackingDrawable MutatedDrawable => _sourceDrawable.MutatedDrawable;
+
+			public int LoadCount { get; private set; }
+
+			public Task<IImageSourceServiceResult> LoadDrawableAsync(
+				IImageSource imageSource,
+				global::Android.Widget.ImageView imageView,
+				CancellationToken cancellationToken = default)
+			{
+				LoadCount++;
+				imageView.SetImageDrawable(_sourceDrawable);
+				return Task.FromResult<IImageSourceServiceResult>(
+					new ImageSourceServiceResult(_sourceDrawable));
+			}
+
+			public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(
+				IImageSource imageSource,
+				global::Android.Content.Context context,
+				CancellationToken cancellationToken = default)
+			{
+				LoadCount++;
+				return Task.FromResult<IImageSourceServiceResult<Drawable>>(
+					new ImageSourceServiceResult(_sourceDrawable));
+			}
+		}
+
+		sealed class MutatingDrawable : ColorDrawable
+		{
+			public TrackingDrawable MutatedDrawable { get; } = new();
+
+			public override Drawable Mutate() => MutatedDrawable;
+		}
+
+		sealed class TrackingDrawable : ColorDrawable
+		{
+			public bool BoundsSet { get; private set; }
+
+			public override void SetBounds(int left, int top, int right, int bottom)
+			{
+				BoundsSet = true;
+				base.SetBounds(left, top, right, bottom);
+			}
 		}
 	}
 }

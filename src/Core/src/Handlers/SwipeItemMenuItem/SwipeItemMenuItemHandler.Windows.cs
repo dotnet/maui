@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, WSwipeItem>
 	{
+		static readonly ConditionalWeakTable<ISwipeItemMenuItemHandler, HandlerState> s_externalHandlerStates = new();
+		int _iconLoadGeneration;
+
 		protected override WSwipeItem CreatePlatformElement()
 		{
 			return new WSwipeItem();
@@ -76,9 +80,9 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			// ImageIconSource renders the image as-is and ignores Foreground, so an explicit tint has to go
-			// through BitmapIconSource/FontIconSource instead, which honor Foreground (BitmapIconSource
-			// draws the bitmap as a monochrome mask by default).
+			// ImageIconSource renders the image as-is and ignores Foreground. Built-in packaged
+			// files can use BitmapIconSource's monochrome mask; font icons are rendered by their
+			// registered service with the resolved tint. Other source services keep their own colors.
 			var tintColor = (item as ISwipeItemMenuItemIconColor)?.IconColor;
 
 			try
@@ -88,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 				if (tintColor is not null)
 				{
 					var sourceService = imageSourceServiceProvider.GetRequiredImageSourceService(source);
-					var tintedIconSource = CreateTintedIconSource(source, sourceService, handler.MauiContext);
+					var tintedIconSource = CreateTintedIconSource(source, sourceService);
 
 					if (tintedIconSource is not null)
 					{
@@ -105,10 +109,13 @@ namespace Microsoft.Maui.Handlers
 
 				var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				IImageSource loadSource = source;
-				if (source is IFontImageSource { Color: null } fontImageSource &&
-					item.GetTextColor() is Color fallbackColor)
+				if (source is IFontImageSource fontImageSource)
 				{
-					loadSource = new TintedFontImageSource(fontImageSource, fallbackColor);
+					var resolvedFontColor = tintColor ??
+						(fontImageSource.Color is null ? item.GetTextColor() : null);
+
+					if (resolvedFontColor is Color fontColor)
+						loadSource = new TintedFontImageSource(fontImageSource, fontColor);
 				}
 
 				var service = imageSourceServiceProvider.GetRequiredImageSourceService(loadSource);
@@ -134,35 +141,89 @@ namespace Microsoft.Maui.Handlers
 
 		internal static IconSource? CreateTintedIconSource(
 			IImageSource source,
-			IImageSourceService imageSourceService,
-			IMauiContext mauiContext)
+			IImageSourceService imageSourceService)
 		{
-			if (source is IFileImageSource fileImageSource)
-			{
-				// The built-in Windows file service resolves relative paths from the flattened app
-				// package, matching BitmapIconSource. A custom service may resolve the same relative
-				// path from anywhere, so keep its service-based result rather than replacing it with
-				// an invalid ms-appx URI merely because a tint was requested.
-				if (imageSourceService.GetType() != typeof(FileImageSourceService))
-					return null;
-
-				var filename = fileImageSource.File;
-				if (string.IsNullOrEmpty(filename) || Path.IsPathRooted(filename))
-					return null;
-
-				return new BitmapIconSource
-				{
-					UriSource = new Uri("ms-appx:///" + Path.GetFileName(filename))
-				};
-			}
-
-			if (source is IUriImageSource &&
-				imageSourceService.GetType() != typeof(UriImageSourceService))
+			if (!CanCreateTintedIconSource(source, imageSourceService) ||
+				source is not IFileImageSource fileImageSource)
 			{
 				return null;
 			}
 
-			return source.ToIconSource(mauiContext);
+			return new BitmapIconSource
+			{
+				UriSource = new Uri("ms-appx:///" + Path.GetFileName(fileImageSource.File))
+			};
+		}
+
+		internal static bool CanCreateTintedIconSource(
+			IImageSource source,
+			IImageSourceService imageSourceService) =>
+			source is IFileImageSource { File: string filename } &&
+			imageSourceService.GetType() == typeof(FileImageSourceService) &&
+			!string.IsNullOrEmpty(filename) &&
+			!Path.IsPathRooted(filename);
+
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			var source = view.Source;
+			if (source is null)
+			{
+				handled = true;
+				return;
+			}
+
+			if (source is IFontImageSource)
+				return;
+
+			if (source is not IFileImageSource || handler.MauiContext is null)
+			{
+				handled = true;
+				return;
+			}
+
+			try
+			{
+				var provider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var service = provider.GetRequiredImageSourceService(source);
+				handled = !CanCreateTintedIconSource(source, service);
+			}
+			catch (InvalidOperationException)
+			{
+				// Let the normal source update preserve existing error logging.
+			}
+		}
+
+		internal static int BeginIconLoad(ISwipeItemMenuItemHandler handler)
+		{
+			if (handler is SwipeItemMenuItemHandler platformHandler)
+				return System.Threading.Interlocked.Increment(ref platformHandler._iconLoadGeneration);
+
+			var state = s_externalHandlerStates.GetValue(handler, static _ => new HandlerState());
+			return System.Threading.Interlocked.Increment(ref state.IconLoadGeneration);
+		}
+
+		internal static bool IsIconLoadCurrent(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem item,
+			object platformView,
+			int generation)
+		{
+			int currentGeneration = handler is SwipeItemMenuItemHandler platformHandler
+				? System.Threading.Volatile.Read(ref platformHandler._iconLoadGeneration)
+				: System.Threading.Volatile.Read(
+					ref s_externalHandlerStates.GetValue(handler, static _ => new HandlerState()).IconLoadGeneration);
+
+			return generation == currentGeneration &&
+				ReferenceEquals(handler.VirtualView, item) &&
+				ReferenceEquals(handler.PlatformView, platformView);
+		}
+
+		sealed class HandlerState
+		{
+			public int IconLoadGeneration;
 		}
 
 		sealed class TintedFontImageSource : IFontImageSource

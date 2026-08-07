@@ -1,7 +1,10 @@
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
@@ -87,6 +90,48 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() =>
 					handler.PlatformView.ImageForState(UIControlState.Normal)?.RenderingMode == UIImageRenderingMode.AlwaysOriginal);
 			});
+		}
+
+		[Fact]
+		public async Task IconColorChangeDoesNotReloadImageSource()
+		{
+			var imageService = new CountingFileImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFileImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				handler.PlatformView.Frame = new CGRect(0, 0, 100, 100);
+				item.Source = new FileImageSourceStub("custom.png");
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				Assert.Equal(1, imageService.LoadCount);
+
+				item.IconColor = Colors.Red;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				Assert.Equal(1, imageService.LoadCount);
+				Assert.Equal(Colors.Red, handler.PlatformView.TintColor.ToColor());
+			});
+		}
+
+		sealed class CountingFileImageSourceService : IImageSourceService<IFileImageSource>
+		{
+			readonly UIImage _image = UIImage.GetSystemImage("trash");
+
+			public int LoadCount { get; private set; }
+
+			public Task<IImageSourceServiceResult<UIImage>> GetImageAsync(
+				IImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default)
+			{
+				LoadCount++;
+				return Task.FromResult<IImageSourceServiceResult<UIImage>>(
+					new ImageSourceServiceResult(_image));
+			}
 		}
 	}
 }

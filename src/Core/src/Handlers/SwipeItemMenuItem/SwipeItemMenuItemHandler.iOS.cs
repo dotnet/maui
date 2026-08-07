@@ -95,6 +95,21 @@ namespace Microsoft.Maui.Handlers
 			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			if (handler.PlatformView is not UIButton button ||
+				handler.SourceLoader is not ImageSourcePartLoader loader)
+			{
+				return;
+			}
+
+			loader.Setter.SetImageSource(button.ImageForState(UIControlState.Normal));
+			handled = true;
+		}
+
 		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
 			public override void SetImageSource(UIImage? platformImage)

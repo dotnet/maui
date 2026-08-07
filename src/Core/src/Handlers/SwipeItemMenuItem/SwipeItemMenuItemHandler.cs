@@ -10,15 +10,12 @@ using PlatformView = Tizen.UIExtensions.NUI.Button;
 using PlatformView = System.Object;
 #endif
 
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler
 	{
-		static readonly ConditionalWeakTable<ISwipeItemMenuItemHandler, HandlerState> s_handlerStates = new();
-
 		public static IPropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> Mapper =
 			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ViewHandler.ElementMapper)
 			{
@@ -67,17 +64,12 @@ namespace Microsoft.Maui.Handlers
 			MapSourceAsync(handler, image).FireAndForget(handler);
 		}
 
-		// The tint is resolved while the icon is being applied to the platform view, so reloading the
-		// source is what re-evaluates it. This also guarantees a previously applied tint is cleared
-		// rather than left stale when IconColor changes (for example on an app theme switch).
-		// Route through UpdateValue so user mapper customizations for Source (AppendToMapping /
-		// PrependToMapping) are preserved instead of bypassed by a direct MapSource call.
 		public static void MapIconColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			if (handler.IsMappingProperties())
 				return;
 
-			handler.UpdateValue(nameof(IMenuElement.Source));
+			UpdateIconColor(handler, view);
 		}
 
 		internal static void UpdateBackgroundColorDependencies(ISwipeItemMenuItemHandler handler)
@@ -96,24 +88,27 @@ namespace Microsoft.Maui.Handlers
 				view is not ISwipeItemMenuItemIconColor { IconColor: not null } &&
 				view.Source is IFontImageSource { Color: null })
 			{
-				handler.UpdateValue(nameof(IMenuElement.Source));
+				UpdateIconColor(handler, view);
 			}
 		}
 
-		internal static HandlerState GetHandlerState(ISwipeItemMenuItemHandler handler) =>
-			s_handlerStates.GetValue(handler, static _ => new HandlerState());
-
-		internal static int BeginIconLoad(ISwipeItemMenuItemHandler handler) =>
-			System.Threading.Interlocked.Increment(ref GetHandlerState(handler).IconLoadGeneration);
-
-		internal static bool IsIconLoadCurrent(
+		static void UpdateIconColor(
 			ISwipeItemMenuItemHandler handler,
-			ISwipeItemMenuItem item,
-			object platformView,
-			int generation) =>
-			generation == System.Threading.Volatile.Read(ref GetHandlerState(handler).IconLoadGeneration) &&
-			ReferenceEquals(handler.VirtualView, item) &&
-			ReferenceEquals(handler.PlatformView, platformView);
+			ISwipeItemMenuItem view)
+		{
+			bool handled = false;
+			UpdateIconColorPlatform(handler, view, ref handled);
+
+			// Platforms that cannot safely reapply the attached native image must reload the
+			// source so the platform image type or rendered font color can be recomputed.
+			if (!handled)
+				handler.UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled);
 
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{
@@ -135,9 +130,5 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal sealed class HandlerState
-		{
-			public int IconLoadGeneration;
-		}
 	}
 }

@@ -54,8 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 				var icon = Assert.IsType<BitmapIconSource>(
 					SwipeItemMenuItemHandler.CreateTintedIconSource(
 						source,
-						service,
-						MauiContext));
+						service));
 
 				Assert.Equal(new Uri("ms-appx:///delete.png"), icon.UriSource);
 			});
@@ -72,8 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 					.GetRequiredImageSourceService(source);
 				var icon = SwipeItemMenuItemHandler.CreateTintedIconSource(
 					source,
-					service,
-					MauiContext);
+					service);
 
 				Assert.Null(icon);
 			});
@@ -104,6 +102,79 @@ namespace Microsoft.Maui.DeviceTests
 
 				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(image, icon.ImageSource);
+
+				item.IconColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				Assert.Empty(imageService.Requests);
+				Assert.Same(icon, handler.PlatformView.IconSource);
+			});
+		}
+
+		[Fact]
+		public async Task UriImageUsesRegisteredServiceWhenTintIsRequested()
+		{
+			var imageService = new DelayedUriImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IUriImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = Colors.Red,
+					Source = new UriImageSourceStub("https://example.com/delete.png")
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+
+				var load = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				var request = imageService.Requests.Dequeue();
+				var image = new BitmapImage();
+				request.SetResult(new ImageSourceServiceResult(image));
+
+				await load;
+
+				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
+				Assert.Same(image, icon.ImageSource);
+
+				item.IconColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				Assert.Empty(imageService.Requests);
+				Assert.Same(icon, handler.PlatformView.IconSource);
+			});
+		}
+
+		[Fact]
+		public async Task TintedFontImageUsesRegisteredService()
+		{
+			var imageService = new CapturingFontImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFontImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var source = new FontImageSourceStub
+				{
+					Color = Colors.Green,
+					Font = Font.Default,
+					Glyph = "A"
+				};
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = Colors.Red,
+					Source = source
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+
+				var loadedSource = Assert.IsAssignableFrom<IFontImageSource>(imageService.LastSource);
+				Assert.NotSame(source, loadedSource);
+				Assert.Equal(Colors.Red, loadedSource.Color);
+
+				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
+				Assert.Same(imageService.Image, icon.ImageSource);
 			});
 		}
 
@@ -156,6 +227,39 @@ namespace Microsoft.Maui.DeviceTests
 					TaskCreationOptions.RunContinuationsAsynchronously);
 				Requests.Enqueue(completion);
 				return completion.Task;
+			}
+		}
+
+		sealed class DelayedUriImageSourceService : IImageSourceService<IUriImageSource>
+		{
+			public Queue<TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>> Requests { get; } = new();
+
+			public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(
+				IImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default)
+			{
+				var completion = new TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>(
+					TaskCreationOptions.RunContinuationsAsynchronously);
+				Requests.Enqueue(completion);
+				return completion.Task;
+			}
+		}
+
+		sealed class CapturingFontImageSourceService : IImageSourceService<IFontImageSource>
+		{
+			public WImageSource Image { get; } = new BitmapImage();
+
+			public IImageSource? LastSource { get; private set; }
+
+			public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(
+				IImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default)
+			{
+				LastSource = imageSource;
+				return Task.FromResult<IImageSourceServiceResult<WImageSource>?>(
+					new ImageSourceServiceResult(Image));
 			}
 		}
 	}

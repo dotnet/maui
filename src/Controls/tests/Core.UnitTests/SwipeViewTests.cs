@@ -1002,30 +1002,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void NewerIconLoadInvalidatesOlderLoadForCustomHandler()
-		{
-			var swipeItem = new SwipeItem { IconImageSource = "icon.png" };
-			var platformView = new object();
-			var handler = Substitute.For<ISwipeItemMenuItemHandler>();
-			handler.VirtualView.Returns((ISwipeItemMenuItem)swipeItem);
-			handler.PlatformView.Returns(platformView);
-
-			var firstGeneration = SwipeItemMenuItemHandler.BeginIconLoad(handler);
-			var secondGeneration = SwipeItemMenuItemHandler.BeginIconLoad(handler);
-
-			Assert.False(SwipeItemMenuItemHandler.IsIconLoadCurrent(
-				handler,
-				(ISwipeItemMenuItem)swipeItem,
-				platformView,
-				firstGeneration));
-			Assert.True(SwipeItemMenuItemHandler.IsIconLoadCurrent(
-				handler,
-				(ISwipeItemMenuItem)swipeItem,
-				platformView,
-				secondGeneration));
-		}
-
-		[Fact]
 		public void SettingTextColorInvokesTextColorMapperOnce()
 		{
 			var swipeItem = new SwipeItem();

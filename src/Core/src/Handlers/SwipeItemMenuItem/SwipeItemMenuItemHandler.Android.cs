@@ -167,6 +167,22 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			if (handler.PlatformView is not TextView button ||
+				handler.SourceLoader is not ImageSourcePartLoader loader)
+			{
+				return;
+			}
+
+			var drawables = button.GetCompoundDrawables();
+			loader.Setter.SetImageSource(drawables.Length > 1 ? drawables[1] : null);
+			handled = true;
+		}
+
 		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
 			public override void SetImageSource(Drawable? platformImage)
@@ -177,6 +193,12 @@ namespace Microsoft.Maui.Handlers
 				if (platformImage is not null)
 				{
 					var iconSize = GetIconSize(Handler);
+
+					// File/resource image services can return drawables backed by a shared ConstantState.
+					// Mutate first because custom drawables may return a distinct instance whose bounds
+					// still need to be initialized before it is attached.
+					platformImage = platformImage.Mutate();
+
 					int drawableWidth = platformImage.IntrinsicWidth;
 					int drawableHeight = platformImage.IntrinsicHeight;
 
@@ -194,11 +216,6 @@ namespace Microsoft.Maui.Handlers
 					}
 
 					var tintColor = item.GetIconTintColor()?.ToPlatform();
-
-					// File/resource image services can return drawables backed by a shared ConstantState,
-					// so mutate before changing the color filter to avoid bleeding the tint between
-					// SwipeItems that use the same resource. Attach the now-uniquely-stateful drawable.
-					platformImage = platformImage.Mutate();
 
 					if (tintColor is not null)
 					{

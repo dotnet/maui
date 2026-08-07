@@ -61,6 +61,15 @@ namespace Microsoft.Maui.Handlers
 			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			// IconColor is not supported on Tizen, so a color-only change requires no image reload.
+			handled = true;
+		}
+
 		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
 			public override void SetImageSource(MauiImageSource? platformImage)
