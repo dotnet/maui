@@ -155,6 +155,17 @@ IL2026/IL3050 suppression:
    reachability solely from a default value, a comment, or the presence of a
    pragma.
 
+Before the verdict, include a **Trim/AOT Evidence Chain** table with these
+columns:
+
+| Link | Source evidence | Reachability implication |
+|---|---|---|
+
+When those sources are available, trace the build-time feature-switch value,
+the runtime property and its attributes, the changed helper or suppression,
+the generic registration annotations, and the annotated handler/dynamic
+operation. Do not omit a link merely because the final verdict seems obvious.
+
 ### Step 2: Delegate to Expert Reviewer
 
 Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent evaluation. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.

@@ -33,6 +33,8 @@ environment:
       dest: review-input/src/Core/src/Hosting/MauiHandlersCollectionExtensions.cs
     - src: fixtures/trim-aot/shared/src/Core/src/RuntimeFeature.cs
       dest: review-input/src/Core/src/RuntimeFeature.cs
+    - src: fixtures/trim-aot/shared/src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets
+      dest: review-input/src/Controls/src/Build.Tasks/nuget/buildTransitive/netstandard2.0/Microsoft.Maui.Controls.targets
 
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
@@ -58,10 +60,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format (Independent Assessment, Findings,
-      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark
-      each finding with a severity emoji and end with NEEDS_CHANGES,
-      NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Trim/AOT
+      Evidence Chain, Findings, Blast Radius or Failure-Mode Probing, Verdict,
+      and Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       files:
         - src: fixtures/trim-aot/case-a/change.diff
@@ -87,6 +89,8 @@ stimuli:
               pattern: 'MauiHandlersCollectionExtensions\.cs'
             - name: '^(bash|view|grep|rg)$'
               pattern: 'RuntimeFeature\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Microsoft\.Maui\.Controls\.targets'
           disallowed:
             - name: '^(bash|powershell)$'
               command: '\b(?:gh|curl|wget)\b'
@@ -105,10 +109,12 @@ stimuli:
         The agent traces the annotation chain across HybridWebViewHandler's
         RequiresUnreferencedCode/RequiresDynamicCode attributes, the
         DynamicallyAccessedMembers generic registration hop, and the
-        FeatureGuard annotations in src/Core/src/RuntimeFeature.cs. It scopes
-        the toolchain distinction called out in the candidate patch to Android
-        NativeAOT rather than claiming that a feature guard universally
-        suppresses every warning.
+        FeatureGuard annotations in src/Core/src/RuntimeFeature.cs, plus the
+        Microsoft.Maui.Controls.targets setting that substitutes the switch to
+        false for PublishAot or full trimming. It scopes the toolchain
+        distinction called out in the candidate patch to Android NativeAOT
+        rather than claiming that a feature guard universally suppresses every
+        warning.
       - >-
         The agent does not reject the pragma merely because it suppresses
         IL2026/IL3050. It distinguishes this proven exception from a broad
@@ -147,10 +153,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format (Independent Assessment, Findings,
-      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark
-      each finding with a severity emoji and end with NEEDS_CHANGES,
-      NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Trim/AOT
+      Evidence Chain, Findings, Blast Radius or Failure-Mode Probing, Verdict,
+      and Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       files:
         - src: fixtures/trim-aot/case-b/change.diff
@@ -176,6 +182,8 @@ stimuli:
               pattern: 'MauiHandlersCollectionExtensions\.cs'
             - name: '^(bash|view|grep|rg)$'
               pattern: 'RuntimeFeature\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Microsoft\.Maui\.Controls\.targets'
           disallowed:
             - name: '^(bash|powershell)$'
               command: '\b(?:gh|curl|wget)\b'
@@ -194,10 +202,11 @@ stimuli:
         call.
       - >-
         The agent traces HybridWebViewHandler's
-        RequiresUnreferencedCode/RequiresDynamicCode attributes and the
+        RequiresUnreferencedCode/RequiresDynamicCode attributes, the
         DynamicallyAccessedMembers generic registration hop that motivated the
-        structural separation, rather than treating the warning as
-        automatically false-positive.
+        structural separation, and the build target that makes the guarded
+        path unreachable for PublishAot/full trimming, rather than treating
+        the warning as automatically false-positive.
       - >-
         The agent recognizes the structural solution as an alternative to
         broad suppression or an expected-warning baseline, and does not invent
@@ -239,10 +248,10 @@ stimuli:
 
       Use only the materialized review input. Do not fetch a pull request,
       issue, external page, or repository history. Deliver a code review using
-      the skill's standard output format (Independent Assessment, Findings,
-      Blast Radius or Failure-Mode Probing, Verdict, and Confidence). Mark
-      each finding with a severity emoji and end with NEEDS_CHANGES,
-      NEEDS_DISCUSSION, or LGTM.
+      the skill's standard output format (Independent Assessment, Trim/AOT
+      Evidence Chain, Findings, Blast Radius or Failure-Mode Probing, Verdict,
+      and Confidence). Mark each finding with a severity emoji and end with
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       files:
         - src: fixtures/trim-aot/case-c/change.diff
@@ -268,6 +277,8 @@ stimuli:
               pattern: 'MauiHandlersCollectionExtensions\.cs'
             - name: '^(bash|view|grep|rg)$'
               pattern: 'RuntimeFeature\.cs'
+            - name: '^(bash|view|grep|rg)$'
+              pattern: 'Microsoft\.Maui\.Controls\.targets'
           disallowed:
             - name: '^(bash|powershell)$'
               command: '\b(?:gh|curl|wget)\b'

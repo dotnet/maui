@@ -51,6 +51,7 @@ stimuli:
           required:
             - name: '^(bash|powershell)$'
               pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900001\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+            - name: '^(bash|powershell|read_bash)$'
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
@@ -104,6 +105,7 @@ stimuli:
           required:
             - name: '^(bash|powershell)$'
               pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900002\b)(?=[\s\S]*-BaseBranch\b)'
+            - name: '^(bash|powershell|read_bash)$'
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
@@ -154,6 +156,7 @@ stimuli:
           required:
             - name: '^(bash|powershell)$'
               pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900003\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+            - name: '^(bash|powershell|read_bash)$'
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
@@ -203,6 +206,7 @@ stimuli:
           required:
             - name: '^(bash|powershell)$'
               pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900004\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+            - name: '^(bash|powershell|read_bash)$'
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
