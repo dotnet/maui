@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Handlers
 				var service = sourceService;
 				if (fontSource is not null)
 				{
-					if (resolvedFontColor is Color fontColor)
+					if (resolvedFontColor is Color fontColor && fontSource.Color != fontColor)
 					{
 						var tintedFontSource = new TintedFontImageSource(fontSource, fontColor);
 						var tintedService = imageSourceServiceProvider.GetRequiredImageSourceService(tintedFontSource);

@@ -180,6 +180,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task FontImageUsesOriginalSourceWhenResolvedTintMatchesSourceColor()
+		{
+			var imageService = new CapturingFontImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFontImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var sourceColor = new Color(0.2f, 0.4f, 0.6f);
+				var requestedColor = new Color(0.2f, 0.4f, 0.6f);
+				var source = new FontImageSourceStub
+				{
+					Color = sourceColor,
+					Font = Font.Default,
+					Glyph = "A"
+				};
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = requestedColor,
+					Source = source
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+
+				Assert.NotSame(sourceColor, requestedColor);
+				Assert.Equal(sourceColor, requestedColor);
+				Assert.Same(source, imageService.LastSource);
+				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
+				Assert.Same(imageService.Image, icon.ImageSource);
+			});
+		}
+
+		[Fact]
 		public async Task ConcreteCustomFontImageUsesRegisteredServiceWhenTintIsRequested()
 		{
 			var imageService = new CapturingCustomFontImageSourceService();
