@@ -36,6 +36,11 @@ If the prompt does not include a **problem to fix** and a **test command to veri
    array is non-empty, report `Blocked` before editing: added production files
    are not safely restorable. If the approach requires another tracked file,
    report `Blocked` instead of editing it.
+8. **Wait for command completion** - If a shell tool reports that a command is
+   still running and returns a `shellId`, call `read_bash` with that exact
+   `shellId` and wait for the completed result. Never proceed, report, or end
+   the session while baseline, test, artifact, self-review, or restore work is
+   still running.
 
 **Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
 
@@ -221,6 +226,10 @@ Manual git commands bypass all of this and WILL cause infinite loops in CI.
 ```powershell
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
+
+If this command continues in the background, wait for its matching `shellId`
+with `read_bash` until it completes. The baseline is not established merely
+because the initial shell invocation returned.
 
 **Verify baseline was established:**
 ```powershell
@@ -531,6 +540,10 @@ if ($missing.Count -gt 0) {
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
+
+If restore continues in the background, wait for its matching `shellId` with
+`read_bash` until it completes and confirms `Restored True`. Do not report the
+attempt or end the session before that result is observed.
 
 🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 
