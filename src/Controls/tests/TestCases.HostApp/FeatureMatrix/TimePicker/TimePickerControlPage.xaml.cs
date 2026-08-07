@@ -29,9 +29,9 @@ public partial class TimePickerControlMainPage : ContentPage
 		_timePicker = TimePickerControl;
 		_viewModel.PropertyChanged += (s, e) =>
 		{
-			if (e.PropertyName == nameof(TimePickerViewModel.Culture))
+			if (e.PropertyName is nameof(TimePickerViewModel.Culture) or nameof(TimePickerViewModel.Time))
 			{
-				DisplayCultureSpecificTime(_timePicker.Time, _viewModel.Culture);
+				DisplayCultureSpecificTime(_viewModel.Time, _viewModel.Culture);
 			}
 		};
 
@@ -49,7 +49,6 @@ public partial class TimePickerControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		_viewModel.ResetToDefaults();
-		ReInitializeTimePicker();
 		ResetEventState();
 		await Navigation.PushAsync(new TimePickerOptionsPage(_viewModel));
 	}
@@ -60,42 +59,6 @@ public partial class TimePickerControlMainPage : ContentPage
 		_closedCount = 0;
 		OpenedCountLabel.Text = "Opened: 0";
 		ClosedCountLabel.Text = "Closed: 0";
-	}
-
-	private void ReInitializeTimePicker()
-	{
-		TimePickerGrid.Children.Clear();
-		_timePicker = new TimePicker
-		{
-			AutomationId = "TimePickerControl"
-		};
-		var timePicker = _timePicker;
-		timePicker.SetBinding(TimePicker.CharacterSpacingProperty, new Binding(nameof(TimePickerViewModel.CharacterSpacing)));
-		timePicker.SetBinding(TimePicker.FlowDirectionProperty, new Binding(nameof(TimePickerViewModel.FlowDirection)));
-		timePicker.SetBinding(TimePicker.FormatProperty, new Binding(nameof(TimePickerViewModel.Format)));
-		timePicker.SetBinding(TimePicker.FontAttributesProperty, new Binding(nameof(TimePickerViewModel.FontAttributes)));
-		timePicker.SetBinding(TimePicker.FontAutoScalingEnabledProperty, new Binding(nameof(TimePickerViewModel.FontAutoScalingEnabled)));
-		timePicker.SetBinding(TimePicker.FontFamilyProperty, new Binding(nameof(TimePickerViewModel.FontFamily)));
-		timePicker.SetBinding(TimePicker.FontSizeProperty, new Binding(nameof(TimePickerViewModel.FontSize)));
-		timePicker.SetBinding(TimePicker.IsEnabledProperty, new Binding(nameof(TimePickerViewModel.IsEnabled)));
-		timePicker.SetBinding(TimePicker.IsOpenProperty, new Binding(nameof(TimePickerViewModel.IsOpen), mode: BindingMode.TwoWay));
-		timePicker.SetBinding(TimePicker.IsVisibleProperty, new Binding(nameof(TimePickerViewModel.IsVisible)));
-		timePicker.SetBinding(TimePicker.ShadowProperty, new Binding(nameof(TimePickerViewModel.Shadow)));
-		timePicker.SetBinding(TimePicker.TimeProperty, new Binding(nameof(TimePickerViewModel.Time), mode: BindingMode.TwoWay));
-		timePicker.Opened += TimePicker_Opened;
-		timePicker.Closed += TimePicker_Closed;
-		timePicker.TimeSelected += TimePicker_TimeSelected;
-		timePicker.SetBinding(TimePicker.TextColorProperty, new Binding(nameof(TimePickerViewModel.TextColor)));
-
-		// Add property changed handlers for culture/time updates
-		timePicker.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == nameof(TimePicker.Time))
-			{
-				DisplayCultureSpecificTime(timePicker.Time, _viewModel.Culture);
-			}
-		};
-		TimePickerGrid.Children.Add(timePicker);
 	}
 
 	private void DisplayCultureSpecificTime(TimeSpan? time, CultureInfo culture)

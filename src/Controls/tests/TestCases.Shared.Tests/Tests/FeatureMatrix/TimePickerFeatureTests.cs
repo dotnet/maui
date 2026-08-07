@@ -438,9 +438,32 @@ public class TimePickerFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
 	}
 
+
+	[Test, Order(24)]
+	public void TimePicker_ClearTimeThenSetTime_RoundTripsNullableTime()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ClearTimeButton");
+		App.Tap("ClearTimeButton");
+		App.WaitForElement("TimeEntry");
+		App.ClearText("TimeEntry");
+		App.EnterText("TimeEntry", "11:30");
+		App.WaitForElement("SetTimeButton");
+		App.Tap("SetTimeButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("11:30:00"));
+		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("<null>"));
+	}
+
 	[Test, Order(25)]
 	public void TimePicker_DisableFontAutoScaling_UpdatesBoundProperty()
 	{
+		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: True"));
+
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("FontAutoScalingFalseButton");
@@ -450,6 +473,14 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 
 		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: False"));
+
+		App.Tap("Options");
+		App.WaitForElement("FontAutoScalingTrueButton");
+		App.Tap("FontAutoScalingTrueButton");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: True"));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // IsOpen is not implemented on Mac Catalyst, and its label does not update on Windows when the TimePicker flyout opens via user interaction.
@@ -461,7 +492,6 @@ public class TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
-
 		App.WaitForElement("OpenTimePickerButton");
 		App.Tap("OpenTimePickerButton");
 
@@ -481,6 +511,24 @@ public class TimePickerFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("IsOpenStatusLabel").GetText(), Is.EqualTo("IsOpen: False"));
 		Assert.That(App.WaitForElement("OpenedCountLabel").GetText(), Is.EqualTo("Opened: 1"));
 		Assert.That(App.WaitForElement("ClosedCountLabel").GetText(), Is.EqualTo("Closed: 1"));
+		App.WaitForElement("OpenTimePickerButton");
+		App.Tap("OpenTimePickerButton");
+#if ANDROID
+		App.WaitForElement("OK");
+		App.Tap("OK");
+#elif IOS
+		App.WaitForElement("Done");
+		App.Tap("Done");
+#elif WINDOWS
+		App.WaitForElement("AcceptButton");
+		App.Tap("AcceptButton");
+#else
+		App.TapCoordinates(10, 10);
+#endif
+
+		Assert.That(App.WaitForElement("IsOpenStatusLabel").GetText(), Is.EqualTo("IsOpen: False"));
+		Assert.That(App.WaitForElement("OpenedCountLabel").GetText(), Is.EqualTo("Opened: 2"));
+		Assert.That(App.WaitForElement("ClosedCountLabel").GetText(), Is.EqualTo("Closed: 2"));
 	}
 #endif
 

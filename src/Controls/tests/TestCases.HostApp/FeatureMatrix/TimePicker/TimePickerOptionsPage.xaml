@@ -235,10 +235,18 @@
                      Grid.Column="0"
                      Text="FontAutoScalingEnabled:"
                      VerticalOptions="Center"/>
-              <RadioButton Grid.Row="12"
-                           Grid.Column="1"
-                           AutomationId="FontAutoScalingFalseButton"
-                           Content="False"
-                           CheckedChanged="OnFontAutoScalingRadioButtonCheckedChanged"/>
+              <HorizontalStackLayout Grid.Row="12"
+                                     Grid.Column="1"
+                                     Spacing="10"
+                                     VerticalOptions="Center">
+                     <RadioButton GroupName="FontAutoScaling"
+                                  AutomationId="FontAutoScalingTrueButton"
+                                  Content="True"
+                                  CheckedChanged="OnFontAutoScalingRadioButtonCheckedChanged"/>
+                     <RadioButton GroupName="FontAutoScaling"
+                                  AutomationId="FontAutoScalingFalseButton"
+                                  Content="False"
+                                  CheckedChanged="OnFontAutoScalingRadioButtonCheckedChanged"/>
+              </HorizontalStackLayout>
        </Grid>
 </ContentPage>

@@ -52,9 +52,9 @@ public partial class TimePickerOptionsPage : ContentPage
 
 	private void OnFontAutoScalingRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (e.Value)
+		if (e.Value && sender is RadioButton radioButton)
 		{
-			_viewModel.FontAutoScalingEnabled = false;
+			_viewModel.FontAutoScalingEnabled = radioButton.Content.ToString() == "True";
 		}
 	}
 
