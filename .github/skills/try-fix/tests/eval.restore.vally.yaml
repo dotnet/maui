@@ -54,7 +54,7 @@ stimuli:
       # restoration protocol; they do not reproduce the narrated product bug.
       git:
         type: worktree
-        ref: 6a06790fc0fa330082538018b0f51a80454cbd83 # fixture: restores-synthetic-fix-without-raw-git
+        ref: 451bd73351c20b49a03e43cafe54a1dfb31e3771 # fixture: restores-synthetic-fix-without-raw-git
         source: .
     graders:
       - type: skill-invocation

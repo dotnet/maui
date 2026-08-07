@@ -92,7 +92,7 @@ FIXTURES = {
     "eval.restore.vally.yaml" => [
       {
         marker: "restores-synthetic-fix-without-raw-git",
-        fallback_ref: "6a06790fc0fa330082538018b0f51a80454cbd83",
+        fallback_ref: "451bd73351c20b49a03e43cafe54a1dfb31e3771",
         message: "Synthetic WebView lifecycle restoration attempt",
         files: ["src/Core/src/Handlers/WebView/WebViewHandler.Android.cs"]
       }
@@ -140,25 +140,25 @@ FIXTURES = {
     "eval.protocol.vally.yaml" => [
       {
         marker: "happy-path-full-verification-mode",
-        fallback_ref: "f90b1fd58608f8b8c2e40b707e7da9fa37642418",
+        fallback_ref: "643d58e3d1bbe9dcccb0b13571689633ff5bc52a",
         message: "Synthetic full test verification fixture",
         files: VERIFY_FULL_FILES
       },
       {
         marker: "happy-path-verify-failure-only-mode",
-        fallback_ref: "95a5aba9eacf60c82f3a185d8bfad816d891c608",
+        fallback_ref: "7d5e02aace0ffd70fbc2559baa48cdf585bc24f5",
         message: "Synthetic failure-only test verification fixture",
         files: VERIFY_FAILURE_ONLY_FILES
       },
       {
         marker: "regression-no-manual-git-revert",
-        fallback_ref: "f90b1fd58608f8b8c2e40b707e7da9fa37642418",
+        fallback_ref: "643d58e3d1bbe9dcccb0b13571689633ff5bc52a",
         message: "Synthetic full test verification fixture",
         files: VERIFY_FULL_FILES
       },
       {
         marker: "edge-case-require-full-verification-with-fix-files",
-        fallback_ref: "f90b1fd58608f8b8c2e40b707e7da9fa37642418",
+        fallback_ref: "643d58e3d1bbe9dcccb0b13571689633ff5bc52a",
         message: "Synthetic full test verification fixture",
         files: VERIFY_FULL_FILES
       }
