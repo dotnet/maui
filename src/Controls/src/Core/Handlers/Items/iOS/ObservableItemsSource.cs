@@ -265,16 +265,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal static UIView FindHeaderFirstResponder(UICollectionView collectionView)
 		{
-			var subviews = collectionView.Subviews;
-			for (int n = 0; n < subviews.Length; n++)
-			{
-				if (subviews[n].Tag == ItemsViewSupplementaryView.HeaderTag)
-				{
-					return subviews[n].FindFirstResponder();
-				}
-			}
-
-			return null;
+			return collectionView.ViewWithTag(ItemsViewSupplementaryView.HeaderTag)?.FindFirstResponder();
 		}
 
 		internal static void RestoreFirstResponder(UIView firstResponder)

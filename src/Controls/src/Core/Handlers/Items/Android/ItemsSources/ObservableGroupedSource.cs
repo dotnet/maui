@@ -6,7 +6,7 @@ using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	internal class ObservableGroupedSource : IGroupableItemsViewSource, ICollectionChangedNotifier, ICollectionChangedNotifierWithCleanup, IObservableItemsViewSource
+	internal class ObservableGroupedSource : IGroupableItemsViewSource, ICollectionChangedNotifier, IObservableItemsViewSource
 	{
 		readonly GroupableItemsView _groupableItemsView;
 		readonly ICollectionChangedNotifier _notifier;
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
 			// The uint cast is being used as an optimization to handle both negative numbers and out-of-bounds indices in a single comparison
-			if ((uint)groupIndex >= (uint)_groups.Count)
+			if ((uint) groupIndex >= (uint) _groups.Count)
 			{
 				System.Diagnostics.Debug.WriteLine($"Invalid Group index: {groupIndex}, Group count: {_groups.Count}");
 				return null;
@@ -199,19 +199,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			localIndex = GetAbsolutePosition(group, localIndex);
 			_notifier.NotifyItemRangeRemoved(this, localIndex, count);
-		}
-
-		void ICollectionChangedNotifierWithCleanup.NotifyItemRangeRemovedAndUnbind(IItemsViewSource group, int localIndex, int count)
-		{
-			localIndex = GetAbsolutePosition(group, localIndex);
-			if (_notifier is ICollectionChangedNotifierWithCleanup notifierWithCleanup)
-			{
-				notifierWithCleanup.NotifyItemRangeRemovedAndUnbind(this, localIndex, count);
-			}
-			else
-			{
-				_notifier.NotifyItemRangeRemoved(this, localIndex, count);
-			}
 		}
 
 		public void NotifyItemRemoved(IItemsViewSource group, int localIndex)
@@ -274,13 +261,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			_groupableItemsView.Dispatcher.DispatchIfRequired(() =>
-			{
-				if (!_disposed)
-				{
-					CollectionChanged(args);
-				}
-			});
+			_groupableItemsView.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -300,39 +281,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					Reset();
+					Reload();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		void Reset()
-		{
-			var previousItemsCount = Count - (HasHeader ? 1 : 0) - (HasFooter ? 1 : 0);
-
-			UpdateGroupTracking();
-
-			var newItemsCount = Count - (HasHeader ? 1 : 0) - (HasFooter ? 1 : 0);
-			if (newItemsCount == 0)
-			{
-				if (previousItemsCount > 0)
-				{
-					var startIndex = HasHeader ? 1 : 0;
-					if (_notifier is ICollectionChangedNotifierWithCleanup notifierWithCleanup)
-					{
-						notifierWithCleanup.NotifyItemRangeRemovedAndUnbind(this, startIndex, previousItemsCount);
-					}
-					else
-					{
-						_notifier.NotifyItemRangeRemoved(this, startIndex, previousItemsCount);
-					}
-				}
-
-				return;
-			}
-
-			_notifier.NotifyDataSetChanged();
 		}
 
 		void Reload()

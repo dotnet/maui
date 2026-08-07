@@ -42,17 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			itemsView.RemoveLogicalChild(View);
 		}
 
-		internal void Unbind(ItemsView itemsView)
-		{
-			if (View == null)
-			{
-				return;
-			}
-
-			View.BindingContext = null;
-			itemsView.RemoveLogicalChild(View);
-		}
-
 		public void Bind(object itemBindingContext, ItemsView itemsView,
 			Action<Size> reportMeasure = null, Size? size = null)
 		{

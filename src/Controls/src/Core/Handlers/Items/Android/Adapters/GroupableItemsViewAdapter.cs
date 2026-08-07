@@ -59,7 +59,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (holder is TemplatedItemViewHolder templatedItemViewHolder &&
 				(ItemsSource.IsGroupFooter(position) || ItemsSource.IsGroupHeader(position)))
 			{
-				TrackBoundViewHolder(templatedItemViewHolder, position);
 				BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));
 				return;
 			}

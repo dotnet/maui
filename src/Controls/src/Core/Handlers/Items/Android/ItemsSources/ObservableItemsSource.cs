@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		readonly ICollectionChangedNotifier _notifier;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 		readonly NotifyCollectionChangedEventHandler _collectionChanged;
-		int _itemsCount;
 		bool _disposed;
 
 		~ObservableItemsSource() => _proxy.Unsubscribe();
@@ -25,7 +24,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_container = container;
 			_notifier = notifier;
 			_collectionChanged = CollectionChanged;
-			_itemsCount = ItemsCount();
 			_proxy.Subscribe((INotifyCollectionChanged)itemSource, _collectionChanged);
 		}
 
@@ -110,38 +108,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			var previousItemsCount = _itemsCount;
-			var newItemsCount = GetNewItemsCount(args);
-			_itemsCount = newItemsCount;
-
 			if (!ObserveChanges)
 			{
 				return;
 			}
 
-			_container.Dispatcher.DispatchIfRequired(() =>
-			{
-				if (!_disposed)
-				{
-					CollectionChanged(args, previousItemsCount, newItemsCount);
-				}
-			});
+			_container.Dispatcher.DispatchIfRequired(() => CollectionChanged(args));
 		}
 
-		int GetNewItemsCount(NotifyCollectionChangedEventArgs args)
-		{
-			return args.Action switch
-			{
-				NotifyCollectionChangedAction.Add => _itemsCount + args.NewItems.Count,
-				NotifyCollectionChangedAction.Remove => _itemsCount - args.OldItems.Count,
-				NotifyCollectionChangedAction.Replace => _itemsCount - args.OldItems.Count + args.NewItems.Count,
-				NotifyCollectionChangedAction.Move => _itemsCount,
-				NotifyCollectionChangedAction.Reset => ItemsCount(),
-				_ => throw new ArgumentOutOfRangeException()
-			};
-		}
-
-		void CollectionChanged(NotifyCollectionChangedEventArgs args, int previousItemsCount, int newItemsCount)
+		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
 			switch (args.Action)
 			{
@@ -158,49 +133,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					Reset(previousItemsCount, newItemsCount);
+					_notifier.NotifyDataSetChanged();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 			CollectionItemsSourceChanged?.Invoke(this, args);
-		}
-
-		void Reset(int previousItemsCount, int newItemsCount)
-		{
-			if (newItemsCount == 0)
-			{
-				if (_container is CarouselView { Loop: true })
-				{
-					if (_notifier is AdapterNotifier adapterNotifier)
-					{
-						adapterNotifier.NotifyDataSetChangedAndUnbind();
-					}
-					else
-					{
-						_notifier.NotifyDataSetChanged();
-					}
-
-					return;
-				}
-
-				if (previousItemsCount > 0)
-				{
-					var startIndex = AdjustPositionForHeader(0);
-					if (_notifier is ICollectionChangedNotifierWithCleanup notifierWithCleanup)
-					{
-						notifierWithCleanup.NotifyItemRangeRemovedAndUnbind(this, startIndex, previousItemsCount);
-					}
-					else
-					{
-						_notifier.NotifyItemRangeRemoved(this, startIndex, previousItemsCount);
-					}
-				}
-
-				return;
-			}
-
-			_notifier.NotifyDataSetChanged();
 		}
 
 		void Move(NotifyCollectionChangedEventArgs args)

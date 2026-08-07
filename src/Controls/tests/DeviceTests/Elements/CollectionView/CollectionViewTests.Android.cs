@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
 
@@ -161,268 +159,6 @@ namespace Microsoft.Maui.DeviceTests
 				count = ois.Count;
 				Assert.Equal(3, ois.Count);
 			});
-		}
-
-		[Fact]
-		public async Task ClearingObservableSourceNotifiesItemRangeRemoval()
-		{
-			SetupBuilder();
-
-			var source = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
-			var notifier = new MockCollectionChangedNotifier();
-			var observableSource = ItemsSourceFactory.Create(source, Application.Current, notifier);
-			observableSource.HasHeader = true;
-
-			await InvokeOnMainThreadAsync(source.Clear);
-
-			Assert.Equal(0, notifier.DataSetChangedCount);
-			Assert.Equal(1, notifier.RangeRemoveStart);
-			Assert.Equal(3, notifier.RangeRemoveCount);
-		}
-
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public async Task ClearingAndAddingItemsKeepsHeaderEntryFocused(bool isGrouped)
-		{
-			SetupBuilder();
-
-			IEnumerable<object> itemsSource;
-			Action clearItems;
-			Action addItems;
-
-			if (isGrouped)
-			{
-				var groups = new ObservableCollection<object>
-				{
-					new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" }
-				};
-				itemsSource = groups;
-				clearItems = groups.Clear;
-				addItems = () => groups.Add(new ObservableCollection<string> { "Item 4", "Item 5", "Item 6" });
-			}
-			else
-			{
-				var items = new ObservableCollection<object> { "Item 1", "Item 2", "Item 3" };
-				itemsSource = items;
-				clearItems = items.Clear;
-				addItems = () =>
-				{
-					items.Add("Item 4");
-					items.Add("Item 5");
-					items.Add("Item 6");
-				};
-			}
-
-			var entry = new Entry();
-			var header = new Grid();
-			header.Add(entry);
-
-			var collectionView = new CollectionView
-			{
-				Header = header,
-				IsGrouped = isGrouped,
-				ItemsSource = itemsSource,
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
-
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
-			{
-				await AssertEventually(() => entry.Handler?.PlatformView is AView { IsShown: true });
-
-				var platformEntry = (AView)entry.Handler.PlatformView;
-				var platformCollectionView = handler.PlatformView;
-				await AssertEventually(() => platformCollectionView.FindViewHolderForAdapterPosition(1) is not null);
-				Assert.True(platformEntry.RequestFocus());
-				await AssertEventually(() => platformEntry.HasFocus);
-
-				clearItems();
-				await AssertEventually(() => platformCollectionView.GetAdapter().ItemCount == 1
-					&& platformCollectionView.FindViewHolderForAdapterPosition(1) is null);
-
-				Assert.True(platformEntry.HasFocus);
-
-				addItems();
-				await AssertEventually(() => platformCollectionView.GetAdapter().ItemCount == 4
-					&& platformCollectionView.FindViewHolderForAdapterPosition(1) is not null);
-
-				Assert.True(platformEntry.HasFocus);
-			});
-		}
-
-		[Fact]
-		public async Task ClearingSourceUnbindsNoPositionItemHolderWithoutUnbindingHeader()
-		{
-			SetupBuilder();
-
-			var header = new object();
-			var item = new object();
-			var items = new ObservableCollection<object> { item };
-			var collectionView = new CollectionView
-			{
-				Header = header,
-				HeaderTemplate = new DataTemplate(() => new Label()),
-				ItemsSource = items,
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				var adapter = handler.PlatformView.GetAdapter();
-
-				var headerViewType = adapter.GetItemViewType(0);
-				var headerHolder = Assert.IsType<TemplatedItemViewHolder>(
-					adapter.OnCreateViewHolder(handler.PlatformView, headerViewType));
-				adapter.OnBindViewHolder(headerHolder, 0);
-
-				var itemViewType = adapter.GetItemViewType(1);
-				var itemHolder = Assert.IsType<TemplatedItemViewHolder>(
-					adapter.OnCreateViewHolder(handler.PlatformView, itemViewType));
-				adapter.OnBindViewHolder(itemHolder, 1);
-
-				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, headerHolder.BindingAdapterPosition);
-				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, itemHolder.BindingAdapterPosition);
-				Assert.Same(header, headerHolder.View.BindingContext);
-				Assert.Same(item, itemHolder.View.BindingContext);
-
-				items.Clear();
-
-				Assert.Same(header, headerHolder.View.BindingContext);
-				Assert.Null(itemHolder.View.BindingContext);
-			});
-		}
-
-		[Fact]
-		public async Task ClearingGroupDoesNotUnbindNoPositionHolderFromAnotherGroup()
-		{
-			SetupBuilder();
-
-			var firstItem = new object();
-			var secondItem = new object();
-			var firstGroup = new ObservableCollection<object> { firstItem };
-			var secondGroup = new ObservableCollection<object> { secondItem };
-			var groups = new ObservableCollection<object> { firstGroup, secondGroup };
-			var collectionView = new CollectionView
-			{
-				IsGrouped = true,
-				ItemsSource = groups,
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<CollectionViewHandler>(collectionView);
-				var adapter = handler.PlatformView.GetAdapter();
-
-				var firstHolder = Assert.IsType<TemplatedItemViewHolder>(
-					adapter.OnCreateViewHolder(handler.PlatformView, adapter.GetItemViewType(0)));
-				adapter.OnBindViewHolder(firstHolder, 0);
-
-				var secondHolder = Assert.IsType<TemplatedItemViewHolder>(
-					adapter.OnCreateViewHolder(handler.PlatformView, adapter.GetItemViewType(1)));
-				adapter.OnBindViewHolder(secondHolder, 1);
-
-				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, firstHolder.BindingAdapterPosition);
-				Assert.Equal(global::AndroidX.RecyclerView.Widget.RecyclerView.NoPosition, secondHolder.BindingAdapterPosition);
-
-				firstGroup.Clear();
-
-				Assert.Null(firstHolder.View.BindingContext);
-				Assert.Same(secondItem, secondHolder.View.BindingContext);
-			});
-		}
-
-		[Fact]
-		public async Task ClearingGroupedSourceClearsGroupHeaderBindingContext()
-		{
-			SetupBuilder();
-
-			var group = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
-			var groups = new ObservableCollection<object> { group };
-			var collectionView = new CollectionView
-			{
-				IsGrouped = true,
-				ItemsSource = groups,
-				GroupHeaderTemplate = new DataTemplate(() => new Label()),
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
-
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async _ =>
-			{
-				await AssertEventually(() =>
-					collectionView.LogicalChildrenInternal.Any(child => ReferenceEquals(child.BindingContext, group)));
-
-				var groupHeader = collectionView.LogicalChildrenInternal
-					.First(child => ReferenceEquals(child.BindingContext, group));
-
-				groups.Clear();
-
-				await AssertEventually(() => groupHeader.BindingContext is null);
-			});
-		}
-
-		[Fact]
-		public async Task DisposedItemsSourceIgnoresQueuedCollectionChanges()
-		{
-			SetupBuilder();
-
-			var items = new ObservableCollection<string>();
-			var notifier = new MockCollectionChangedNotifier();
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var observableSource = new ObservableItemsSource(items, Application.Current, notifier);
-				using var collectionChangedQueued = new System.Threading.ManualResetEventSlim();
-
-				var addItem = Task.Run(() =>
-				{
-					items.Add("Item 1");
-					collectionChangedQueued.Set();
-				});
-
-				Assert.True(collectionChangedQueued.Wait(TimeSpan.FromSeconds(5)));
-				addItem.GetAwaiter().GetResult();
-				observableSource.Dispose();
-			});
-
-			await InvokeOnMainThreadAsync(() => { });
-
-			Assert.Equal(0, notifier.InsertCount);
-		}
-
-		[Fact]
-		public async Task DisposedGroupedSourceIgnoresQueuedCollectionChanges()
-		{
-			SetupBuilder();
-
-			var groups = new ObservableCollection<object>();
-			var collectionView = new CollectionView
-			{
-				IsGrouped = true,
-				ItemsSource = groups
-			};
-			var notifier = new MockCollectionChangedNotifier();
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var observableSource = new ObservableGroupedSource(collectionView, notifier);
-				using var collectionChangedQueued = new System.Threading.ManualResetEventSlim();
-
-				var addGroup = Task.Run(() =>
-				{
-					groups.Add(new ObservableCollection<string> { "Item 1" });
-					collectionChangedQueued.Set();
-				});
-
-				Assert.True(collectionChangedQueued.Wait(TimeSpan.FromSeconds(5)));
-				addGroup.GetAwaiter().GetResult();
-				observableSource.Dispose();
-			});
-
-			await InvokeOnMainThreadAsync(() => { });
-
-			Assert.Equal(0, notifier.InsertCount);
 		}
 
 		[Fact(DisplayName = "CollectionView with SelectionMode None should not have click listeners")]
@@ -810,15 +546,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		class MockCollectionChangedNotifier : ICollectionChangedNotifier
 		{
-			public int DataSetChangedCount;
 			public int InsertCount;
-			public int RangeRemoveCount;
-			public int RangeRemoveStart = -1;
 			public int RemoveCount;
 
 			public void NotifyDataSetChanged()
 			{
-				DataSetChangedCount += 1;
 			}
 
 			public void NotifyItemChanged(IItemsViewSource source, int startIndex)
@@ -844,8 +576,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			public void NotifyItemRangeRemoved(IItemsViewSource source, int startIndex, int count)
 			{
-				RangeRemoveStart = startIndex;
-				RangeRemoveCount += count;
 			}
 
 			public void NotifyItemRemoved(IItemsViewSource source, int startIndex)

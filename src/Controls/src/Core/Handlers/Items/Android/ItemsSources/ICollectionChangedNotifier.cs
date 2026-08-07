@@ -13,9 +13,4 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void NotifyItemRangeRemoved(IItemsViewSource source, int startIndex, int count);
 		void NotifyItemRemoved(IItemsViewSource source, int startIndex);
 	}
-
-	internal interface ICollectionChangedNotifierWithCleanup
-	{
-		void NotifyItemRangeRemovedAndUnbind(IItemsViewSource source, int startIndex, int count);
-	}
 }

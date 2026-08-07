@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -53,69 +52,6 @@ namespace Microsoft.Maui.DeviceTests
 
 				var platformPosition = GetPlatformPosition(handler);
 				Assert.True(CheckPosition(platformPosition, position));
-			});
-		}
-
-		[Fact]
-		public async Task ClearingLoopingItemsSourceDoesNotCrash()
-		{
-			SetupBuilder();
-
-			var data = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
-			var carouselView = new CarouselView
-			{
-				ItemsSource = data,
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
-
-			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
-			{
-				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
-				await Task.Delay(100);
-
-				Assert.Equal(CarouselViewLoopManager.LoopScale, handler.PlatformView.GetAdapter().ItemCount);
-				var logicalChildren = carouselView.LogicalChildrenInternal.ToArray();
-				Assert.NotEmpty(logicalChildren);
-
-				data.Clear();
-				await Task.Delay(100);
-
-				Assert.Equal(0, handler.PlatformView.GetAdapter().ItemCount);
-				foreach (var logicalChild in logicalChildren)
-				{
-					Assert.Null(logicalChild.BindingContext);
-				}
-			});
-		}
-
-		[Fact]
-		public async Task ClearingNonLoopingItemsSourceClearsBindingContexts()
-		{
-			SetupBuilder();
-
-			var data = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" };
-			var carouselView = new CarouselView
-			{
-				ItemsSource = data,
-				ItemTemplate = new DataTemplate(() => new Label()),
-				Loop = false
-			};
-
-			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
-			{
-				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
-				await Task.Delay(100);
-
-				var logicalChildren = carouselView.LogicalChildrenInternal.ToArray();
-				Assert.NotEmpty(logicalChildren);
-
-				data.Clear();
-				await Task.Delay(100);
-
-				foreach (var logicalChild in logicalChildren)
-				{
-					Assert.Null(logicalChild.BindingContext);
-				}
 			});
 		}
 

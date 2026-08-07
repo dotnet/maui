@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					textViewHolder.TextView.Text = ItemsSource.GetItem(positionInList).ToString();
 					break;
 				case TemplatedItemViewHolder templatedItemViewHolder:
-					TrackBoundViewHolder(templatedItemViewHolder, position);
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(positionInList));
 					break;
 			}
