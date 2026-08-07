@@ -12,13 +12,15 @@ BeforeAll {
 
     $tokens = $null; $errors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($script:detectScript, [ref]$tokens, [ref]$errors)
-    $fn = $ast.Find({
-        param($n)
-        $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $n.Name -eq 'Test-PreparedReviewWorktreeSubject'
-    }, $true)
-    if (-not $fn) { throw "Test-PreparedReviewWorktreeSubject not found in $script:detectScript" }
-    Invoke-Expression $fn.Extent.Text
+    foreach ($fnName in @('Test-PreparedReviewWorktreeSubject', 'Test-UITestCategorySupportedOnPlatform')) {
+        $fn = $ast.Find({
+            param($n)
+            $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $n.Name -eq $fnName
+        }, $true)
+        if (-not $fn) { throw "$fnName not found in $script:detectScript" }
+        Invoke-Expression $fn.Extent.Text
+    }
 }
 
 Describe 'AI category parsing' {
@@ -63,5 +65,23 @@ Describe 'Test-PreparedReviewWorktreeSubject' {
         Test-PreparedReviewWorktreeSubject -HeadSubject '' -PrNumber '33192' | Should -BeFalse
         Test-PreparedReviewWorktreeSubject -HeadSubject 'PR #33192 squashed for review' -PrNumber '' | Should -BeFalse
         Test-PreparedReviewWorktreeSubject -HeadSubject $null -PrNumber $null | Should -BeFalse
+    }
+}
+
+Describe 'Test-UITestCategorySupportedOnPlatform' {
+    It 'keeps the Windows-only Essentials category on Windows' {
+        Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform 'windows' | Should -BeTrue
+    }
+
+    It 'removes the Windows-only Essentials category from non-Windows runs' {
+        Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform 'android' | Should -BeFalse
+        Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform 'ios' | Should -BeFalse
+        Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform 'maccatalyst' | Should -BeFalse
+        Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform 'catalyst' | Should -BeFalse
+    }
+
+    It 'does not filter cross-platform categories or platform-agnostic local runs' {
+        Test-UITestCategorySupportedOnPlatform -Category 'Button' -Platform 'android' | Should -BeTrue
+        Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform '' | Should -BeTrue
     }
 }

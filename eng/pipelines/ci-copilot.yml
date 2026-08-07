@@ -372,7 +372,7 @@ stages:
               }
               Write-Host "RunDetect using script: $detect"
               $cats = ""
-              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" 2>&1
+              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM" 2>&1
               $out | ForEach-Object { Write-Host "  $_" }
               foreach ($line in $out) {
                 if ($line.ToString() -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') { $cats = $Matches[1] }
@@ -387,6 +387,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # On Windows, common/provision.yml (above) installs the local .NET SDK
           # into ./.dotnet and prepends it to PATH. The cake "dotnet" target (a
@@ -2990,6 +2991,40 @@ stages:
                       }
                     }
                   }
+                }
+
+                # A successful process exit is not proof that a category exercised
+                # anything: VSTest emits a valid zero-test TRX when the category is
+                # unavailable on the selected platform. Build 14907169 selected the
+                # Windows-only Essentials category on Android, ran 0 tests, and left
+                # the Deep stage green. Count the final per-category TRX payload and
+                # make an empty or unparseable result non-vacuously amber.
+                $categoryTrxFiles = @(Get-ChildItem -Path $catDir -Filter '*.trx' -Recurse -ErrorAction SilentlyContinue)
+                $parsedTrxCount = 0
+                $categoryTestCount = 0
+                foreach ($categoryTrx in $categoryTrxFiles) {
+                  try {
+                    [xml]$trxDocument = Get-Content -Raw -LiteralPath $categoryTrx.FullName -Encoding UTF8
+                    $countersNode = $trxDocument.SelectSingleNode('//*[local-name()="ResultSummary"]/*[local-name()="Counters"]')
+                    if ($countersNode) {
+                      $categoryTestCount += [int]$countersNode.GetAttribute('total')
+                      $parsedTrxCount++
+                    }
+                  } catch {
+                    Write-Host "##[warning]Could not parse deep UI TRX '$($categoryTrx.FullName)': $_"
+                  }
+                }
+                if ($categoryTrxFiles.Count -eq 0) {
+                  Write-Host "##[warning]Deep UI category '$cat' produced no TRX result."
+                  $hadFailure = $true
+                } elseif ($parsedTrxCount -eq 0) {
+                  Write-Host "##[warning]Deep UI category '$cat' produced no parseable TRX counters."
+                  $hadFailure = $true
+                } elseif ($categoryTestCount -eq 0) {
+                  Write-Host "##[warning]Deep UI category '$cat' contains no runnable tests on platform '$platform'."
+                  $hadFailure = $true
+                } else {
+                  Write-Host "Deep UI category '$cat' reported $categoryTestCount test(s) across $parsedTrxCount TRX file(s)."
                 }
 
                 # Capture snapshot-diff PNGs that VisualRegressionTester writes

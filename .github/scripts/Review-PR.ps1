@@ -1524,7 +1524,7 @@ $uitestCategories = ""
 $detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
 if (Test-Path $detectScript) {
     try {
-        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
+        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Platform "$Platform" 2>&1
         $detectOutput | ForEach-Object { Write-Host "  $_" }
 
         foreach ($line in $detectOutput) {
@@ -2519,7 +2519,7 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
         $aiCategoriesArg = (Get-Content $aiCategoriesFile -Raw).Trim()
         if (-not [string]::IsNullOrWhiteSpace($aiCategoriesArg)) {
             Write-Host "  🔁 Refreshing UI category detection with AI tier..." -ForegroundColor Cyan
-            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -AiCategories $aiCategoriesArg 2>&1
+            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Platform "$Platform" -AiCategories $aiCategoriesArg 2>&1
             $refreshOutput | ForEach-Object { Write-Host "    $_" }
 
             $refreshedCategories = $uitestCategories

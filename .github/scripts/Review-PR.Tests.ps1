@@ -213,6 +213,20 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('$regularFailed failed$skippedSummary across $categoryText'))
         $pipelineContent | Should -Match ([regex]::Escape('$totalPassed + $totalFailed + $totalSkipped'))
     }
+
+    It 'passes the selected platform into every UI category detection pass' {
+        $pipelineContent | Should -Match ([regex]::Escape('-PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM"'))
+        $pipelineContent | Should -Match ([regex]::Escape('PARAM_PLATFORM: ${{ parameters.Platform }}'))
+        ([regex]::Matches($content, [regex]::Escape('-Platform "$Platform"'))).Count | Should -BeGreaterOrEqual 2
+    }
+
+    It 'marks a deep UI category with no runnable tests as succeeded with issues' {
+        $pipelineContent | Should -Match ([regex]::Escape('$categoryTestCount = 0'))
+        $pipelineContent | Should -Match ([regex]::Escape('local-name()="ResultSummary"'))
+        $pipelineContent | Should -Match ([regex]::Escape('elseif ($categoryTestCount -eq 0)'))
+        $pipelineContent | Should -Match ([regex]::Escape("contains no runnable tests on platform '`$platform'"))
+        $pipelineContent | Should -Match '(?s)elseif \(\$categoryTestCount -eq 0\).*?\$hadFailure = \$true'
+    }
 }
 
 Describe 'Copilot token usage helpers' {

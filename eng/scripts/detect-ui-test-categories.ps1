@@ -2,6 +2,7 @@
 param(
     [string]$TargetBranch,
     [string]$PrNumber,
+    [string]$Platform,
     [string]$Categories,
     [string]$AiCategories,
     [string]$TestRoot = "src/Controls/tests/TestCases.Shared.Tests"
@@ -39,6 +40,35 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 function Write-CategoryListOutput {
     param([string]$Value)
     Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$Value"
+}
+
+function Test-UITestCategorySupportedOnPlatform {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Category,
+
+        [string]$Platform
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Platform)) {
+        return $true
+    }
+
+    $normalizedPlatform = $Platform.Trim().ToLowerInvariant()
+    if ($normalizedPlatform -eq 'catalyst') {
+        $normalizedPlatform = 'maccatalyst'
+    }
+
+    # The only Essentials UI test is Issue32989.cs, compiled under #if WINDOWS.
+    # Selecting this category on Android/iOS/MacCatalyst creates a valid TRX with
+    # zero tests, which used to make the Deep stage look green without exercising
+    # anything (build 14907169). Remove it on unsupported platforms so Essentials
+    # product changes fall through to the bounded cross-platform smoke set.
+    if ($Category.Equals('Essentials', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $normalizedPlatform -eq 'windows'
+    }
+
+    return $true
 }
 
 # True when the current HEAD is already the prepared CI review worktree, i.e. the
@@ -546,6 +576,19 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
                 continue
             }
             $addedCategories.Add($c) | Out-Null
+        }
+    }
+}
+
+# Category names can be valid globally but compile to zero tests on the selected
+# platform. Filter the small set of known platform-only categories before the
+# final decision; if none remain, the existing product-code fallback below emits
+# the bounded Button/Label/Layout smoke set instead of a vacuous green run.
+if (-not [string]::IsNullOrWhiteSpace($Platform)) {
+    foreach ($category in @($addedCategories)) {
+        if (-not (Test-UITestCategorySupportedOnPlatform -Category $category -Platform $Platform)) {
+            $addedCategories.Remove($category) | Out-Null
+            Write-Host "Category '$category' has no runnable tests on platform '$Platform'; removing it from the Deep UI selection." -ForegroundColor Yellow
         }
     }
 }
