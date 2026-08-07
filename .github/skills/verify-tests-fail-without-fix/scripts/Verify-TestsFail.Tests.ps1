@@ -23,7 +23,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -37,6 +37,21 @@ BeforeAll {
         $f = Join-Path ([System.IO.Path]::GetTempPath()) ("verifylog-" + [Guid]::NewGuid().ToString('N') + ".log")
         $Content | Set-Content -LiteralPath $f -Encoding UTF8
         return $f
+    }
+}
+
+Describe 'Get-GateDeviceTestConfiguration — platform-safe packaging' {
+    It 'uses Release for Android so the standalone XHarness APK contains its managed payload' {
+        Get-GateDeviceTestConfiguration -DevicePlatform 'android' | Should -Be 'Release'
+    }
+
+    It 'uses Release for Windows' {
+        Get-GateDeviceTestConfiguration -DevicePlatform 'windows' | Should -Be 'Release'
+    }
+
+    It 'keeps Apple device-test Gates on Debug to avoid full ILLink trimming' {
+        Get-GateDeviceTestConfiguration -DevicePlatform 'ios' | Should -Be 'Debug'
+        Get-GateDeviceTestConfiguration -DevicePlatform 'maccatalyst' | Should -Be 'Debug'
     }
 }
 

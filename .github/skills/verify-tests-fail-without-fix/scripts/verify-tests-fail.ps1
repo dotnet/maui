@@ -298,6 +298,26 @@ $script:DeviceTestProjectMap = @{
     "MauiBlazorWebView.DeviceTests"    = "BlazorWebView"
 }
 
+function Get-GateDeviceTestConfiguration {
+    param([string]$DevicePlatform)
+
+    # Apple Release device-test builds run full ILLink trimming, making the A/B Gate much
+    # slower and vulnerable to unrelated IL1012 trimmer crashes. Keep those on Debug.
+    #
+    # Android is the opposite: XHarness installs the APK directly, without Visual Studio's
+    # fast-deployment side channel. A Debug APK can therefore launch with its managed payload
+    # unavailable and crash immediately at instrumentation startup ("shortMsg=Process
+    # crashed", no DOTNET log). Builds 14907169 and 14907191 reproduced this on every Debug
+    # A/B attempt, then passed the identical category/class command in Release on the same
+    # agent (276/276 Essentials and 16/16 Controls). Use the runner's proven Release default
+    # for Android and Windows while preserving the Apple-specific Debug workaround.
+    if ($DevicePlatform -in @("ios", "maccatalyst")) {
+        return "Debug"
+    }
+
+    return "Release"
+}
+
 function Get-TestTypeFromFiles {
     <#
     .SYNOPSIS
@@ -566,6 +586,7 @@ function Invoke-TestRun {
                 New-Item -ItemType Directory -Force -Path $testOutputDir | Out-Null
             }
 
+            $deviceConfiguration = Get-GateDeviceTestConfiguration -DevicePlatform $devicePlatform
             $deviceParams = @{
                 Project       = $deviceProject
                 Platform      = $devicePlatform
@@ -577,16 +598,9 @@ function Invoke-TestRun {
                 # writing its diagnostics beside it keeps every attempt under CustomAgentLogsTmp
                 # and therefore inside CopilotLogs.
                 OutputDirectory = "$LogFile.diagnostics"
-                # Build device tests in DEBUG, not Release. The gate only needs to verify test
-                # BEHAVIOUR (does it fail without the fix, pass with it) — not Release/AOT/trim.
-                # On iOS/MacCatalyst, Release does FULL ILLink trimming (links every assembly),
-                # which both massively slows the build (the gate builds twice per test) and
-                # maximizes the chance of hitting the ILLink "IL1012 IL Trimmer has encountered
-                # an unexpected error" crash — surfacing as an INCONCLUSIVE that has nothing to
-                # do with the PR (e.g. dotnet/maui#36328, #35892). Debug matches the UI-test /
-                # HostApp path above, which already builds --configuration Debug.
-                Configuration = "Debug"
+                Configuration = $deviceConfiguration
             }
+            Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray
 
             # Pass filter through — detection ensures it's Category= format
             if ($Filter) {
