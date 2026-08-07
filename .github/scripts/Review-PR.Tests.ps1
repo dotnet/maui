@@ -113,6 +113,29 @@ Describe 'Reviewer pipeline timeout containment' {
         $task3Block | Should -Match 'continueOnError: true'
     }
 
+    It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $cleanupStart = $pipelineContent.IndexOf("- stage: CleanupReviewLock")
+        $analyzeStart = $pipelineContent.IndexOf("- stage: AnalyzeCopilotTokenUsage")
+
+        $deepStart | Should -BeGreaterThan -1
+        $postStart | Should -BeGreaterThan $deepStart
+        $cleanupStart | Should -BeGreaterThan $postStart
+        $analyzeStart | Should -BeGreaterThan $cleanupStart
+
+        $deepBlock = $pipelineContent.Substring($deepStart, $postStart - $deepStart)
+        $postBlock = $pipelineContent.Substring($postStart, $cleanupStart - $postStart)
+        $cleanupBlock = $pipelineContent.Substring($cleanupStart, $analyzeStart - $cleanupStart)
+        $analyzeBlock = $pipelineContent.Substring($analyzeStart)
+
+        $deepBlock | Should -Match 'not\(canceled\(\)\)'
+        $deepBlock | Should -Not -Match "'Canceled'"
+        $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
+        $cleanupBlock | Should -Match 'condition: always\(\)'
+        $analyzeBlock | Should -Match 'condition: not\(canceled\(\)\)'
+    }
+
     It 'gives every Android emulator retry group enough time and keeps setup non-blocking' {
         $avdBlocks = [regex]::Matches(
             $pipelineContent,

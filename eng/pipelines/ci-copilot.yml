@@ -1947,7 +1947,8 @@ stages:
     # in-process results when no deep artifact exists).
     condition: >-
       and(
-        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'),
+        not(canceled()),
+        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), ''),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), 'NONE'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), 'ALL')
@@ -3151,7 +3152,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(not(canceled()), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
@@ -4605,7 +4606,7 @@ stages:
       - ReviewPR
       - RunDeepUITests
       - UpdateAISummaryComment
-    condition: always()
+    condition: not(canceled())
     variables:
       reviewPrResult: $[ dependencies.ReviewPR.result ]
       runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
