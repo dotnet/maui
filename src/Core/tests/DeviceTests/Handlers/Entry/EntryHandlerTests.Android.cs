@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View.Accessibility;
 using global::Android.Text;
 using global::Android.Text.Method;
 using global::Android.Views.InputMethods;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 using AColor = Android.Graphics.Color;
 
@@ -15,6 +17,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Fact(DisplayName = "Semantic description initializes accessibility content description")]
+		public async Task SemanticDescriptionInitializesAccessibilityContentDescription()
+		{
+			const string description = "Entry description";
+			const string text = "Entry text";
+			var entry = new EntryStub { Text = text };
+			entry.Semantics.Description = description;
+
+			var values = await GetValueAsync(entry, handler =>
+			{
+				using var info = AccessibilityNodeInfoCompat.Obtain();
+				handler.PlatformView.UpdateSemanticNodeInfo(entry, info);
+
+				return new
+				{
+					info.ContentDescription,
+					info.Text
+				};
+			});
+
+			Assert.Equal(description, values.ContentDescription);
+			Assert.Equal($"{description}, {text}", values.Text);
+		}
+
 		[Theory(DisplayName = "Validates Keyboard updates correctly using IsPassword")]
 		[InlineData(nameof(Keyboard.Text), false)]
 		[InlineData(nameof(Keyboard.Numeric), true)]
