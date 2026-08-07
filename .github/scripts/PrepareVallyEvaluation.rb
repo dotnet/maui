@@ -39,6 +39,12 @@ REQUIRED_SKILL_PATTERNS = {
   ".github/skills/code-review/tests/eval.producer-trace.vally.yaml" => {
     "producer-trace workflow step" => /^### Step 1\.5: Trace External Output Contracts \(Always Active\)$/,
     "External Output Contract output section" => /^### External Output Contract$/
+  },
+  ".github/skills/try-fix/tests/eval.restore.vally.yaml" => {
+    "mandatory baseline step" => /^### Step 2: Establish Baseline \(MANDATORY\)$/,
+    "mandatory restore step" => /^### Step 9: Restore Working Directory \(MANDATORY .+\)$/,
+    "trusted restore command" => /EstablishBrokenBaseline\.ps1 -Restore/,
+    "raw-git cleanup prohibition" => /not `git checkout`, `git restore`, or `git reset`/
   }
 }.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/

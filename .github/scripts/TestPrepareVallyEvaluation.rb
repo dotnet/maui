@@ -264,6 +264,34 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "requires External Output Contract output section"
   end
 
+  def test_requires_try_fix_restoration_contract_in_skill_template
+    try_fix_root = File.join(@repo_root, ".github", "skills", "try-fix")
+    try_fix_tests_path = File.join(try_fix_root, "tests")
+    FileUtils.mkdir_p(try_fix_tests_path)
+    File.write(File.join(try_fix_root, "SKILL.md"), "# Try Fix\n")
+    File.write(
+      File.join(try_fix_tests_path, "eval.restore.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "restore-protocol",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["try-fix"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(try_fix_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "requires mandatory baseline step"
+  end
+
   def test_rejects_vcs_metadata_destination
     write_fixture("fixture.txt")
     write_spec(

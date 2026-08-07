@@ -30,7 +30,8 @@
 #     file overlays before model auth is selected. Synthetic git fixtures are
 #     prepared by that trusted script while the job is tokenless.
 #   - Candidate skill instructions are evaluated, so their tool calls are
-#     untrusted. A trusted runtime wrapper passes Copilot's --secret-env-vars
+#     untrusted. Vally runs as a no-sudo OS user that cannot modify its root-owned
+#     runtime, while a trusted wrapper passes Copilot's --secret-env-vars
 #     boundary, stripping every GitHub/model token from shell and MCP tools.
 #     No PR code is compiled or executed with credentials in scope.
 #   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
@@ -631,6 +632,7 @@ jobs:
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
@@ -739,7 +741,7 @@ jobs:
 
           # Advisory exit — the baseline number is informational; do not fail.
           set +e
-          "$VALLY_BIN" eval \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval \
             "${SPECS[@]}" \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
@@ -806,6 +808,7 @@ jobs:
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           RESULTS_PATH: eval-results/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
@@ -844,7 +847,7 @@ jobs:
           # error. We capture it but DON'T propagate so every matrix artifact is
           # still uploaded and the aggregate report can explain the failure.
           set +e
-          "$VALLY_BIN" eval \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval \
             "${SPECS[@]}" \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
@@ -999,9 +1002,11 @@ jobs:
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}
         run: |
           mkdir -p hermeticity-results
+          chmod g+rwx hermeticity-results
           if [ ! -f "$HERMETICITY_SPEC" ]; then
             echo "::warning::trusted hermeticity spec not found"
             echo "inconclusive" > hermeticity-results/verdict.txt
@@ -1009,7 +1014,7 @@ jobs:
           fi
 
           set +e
-          "$VALLY_BIN" eval -e "$HERMETICITY_SPEC" \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval -e "$HERMETICITY_SPEC" \
             --skill-dir .github/skills \
             --output-dir hermeticity-results/out \
             --junit \

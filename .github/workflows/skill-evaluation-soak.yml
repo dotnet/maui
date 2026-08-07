@@ -103,15 +103,17 @@ jobs:
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           # Live public-PR retrieval is anonymous by design. Do not give the
           # Copilot process a GitHub API token.
           RUNS: ${{ github.event.inputs.runs || '1' }}
         run: |
           set -euo pipefail
           mkdir -p live-soak-results
+          chmod g+rwx live-soak-results
 
           set +e
-          "$VALLY_BIN" eval \
+          "$VALLY_RUNNER" "$VALLY_BIN" eval \
             -e .github/skills/code-review/tests/soak.capability.vally.yaml \
             --skill-dir .github/skills \
             --output-dir live-soak-results \
