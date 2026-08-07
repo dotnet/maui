@@ -1,4 +1,5 @@
-﻿using AndroidX.AppCompat.Widget;
+﻿using System;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
@@ -58,8 +59,8 @@ namespace Microsoft.Maui.Platform
 
 			mauiDrawable.SetBackground(radioButton.Background);
 			mauiDrawable.SetBorderBrush(new SolidPaint { Color = radioButton.StrokeColor });
-			mauiDrawable.SetBorderWidth(radioButton.StrokeThickness);
-			mauiDrawable.SetCornerRadius(radioButton.CornerRadius);
+			mauiDrawable.SetBorderWidth(Math.Max(0, radioButton.StrokeThickness));
+			mauiDrawable.SetCornerRadius(Math.Max(0, radioButton.CornerRadius));
 		}
 	}
 }
