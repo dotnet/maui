@@ -23,6 +23,7 @@
     <ApplicationTitle>Controls Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.controls.devicetests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
+    <MauiAndroidSystemBarsUseMauiChrome Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(MauiAndroidSystemBarsUseMauiChrome)' == ''">true</MauiAndroidSystemBarsUseMauiChrome>
   </PropertyGroup>
 
   <ItemGroup>
