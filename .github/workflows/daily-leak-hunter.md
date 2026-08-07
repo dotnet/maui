@@ -189,9 +189,36 @@ echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
 # package (where a merged-but-unshipped fix still reproduces), a dropped-out fix would be re-filed
 # once (then the OPEN-issue de-dup catches it), so warn loudly if we ever reach the ceiling.
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' \
-  --limit 1000 --json title -q '.[].title' > /tmp/gh-aw/agent/merged-leakfix-titles.txt
-if [ "$(awk 'END{print NR}' /tmp/gh-aw/agent/merged-leakfix-titles.txt)" -ge 1000 ]; then
+  --limit 1000 --json title,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
+if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-raw.json)" -ge 1000 ]; then
   echo "WARNING: fixed-on-main provenance hit the 1000 search-API ceiling; older merged [leak-fix] fixes may be TRUNCATED and their leaks could be re-filed once — switch to date-windowed enumeration."
+fi
+# A "[leak-fix]" PR being MERGED only proves the fix landed on ITS base branch — NOT necessarily
+# `main`. This workflow's safe-outputs always OPEN the fix PR against `main`, but a merge can
+# still land the SAME commit content on a forward-integration branch (e.g. `inflight/current`)
+# instead, either via a later retarget or a merge-queue rebase; #36370 is a concrete example
+# (title/label-matches this query, `mergedAt` is set, but its merge commit is on
+# `inflight/current`, not `main`). Trusting merge-state alone would suppress a leak that still
+# reproduces on `main`. Verify each merge commit is ACTUALLY an ancestor of `main` via the GitHub
+# compare API (`ahead_by == 0` ⇒ the merge commit is fully contained in `main`'s history) — the
+# SAME ancestry check the release-readiness skill uses (see
+# `.github/skills/release-readiness/references/methodology.md`) — instead of relying on
+# `--state merged` / `--base` alone (a local `fetch-depth: 50` checkout is too shallow to answer
+# this reliably with local git, and `--base` only reflects the PR's declared base, not where the
+# merge commit ultimately landed).
+: > /tmp/gh-aw/agent/merged-onmain.ndjson
+jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
+  sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
+  [ -z "$sha" ] && continue
+  ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || ahead=""
+  if [ "$ahead" = "0" ]; then
+    printf '%s\n' "$pr" >> /tmp/gh-aw/agent/merged-onmain.ndjson
+  fi
+done
+if [ -s /tmp/gh-aw/agent/merged-onmain.ndjson ]; then
+  jq -s -r '.[].title' /tmp/gh-aw/agent/merged-onmain.ndjson > /tmp/gh-aw/agent/merged-leakfix-titles.txt
+else
+  : > /tmp/gh-aw/agent/merged-leakfix-titles.txt
 fi
 # awk (not grep) as the leading filter: grep exits 1 when nothing matches, which under the
 # runner's `set -eo pipefail` would abort this step on the common "no merged [leak-fix] PRs yet"
