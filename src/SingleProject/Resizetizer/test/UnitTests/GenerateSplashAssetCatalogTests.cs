@@ -103,6 +103,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark@3x.png", 256, 256);
 		}
 
+		[Theory]
+		[InlineData("MauiSplashImage.png", "light")]
+		[InlineData("MauiSplashImageDark.png", "dark")]
+		public void ResizeQualityMetadataAffectsImageAsset(string filename, string appearance)
+		{
+			var fastestSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["BaseSize"] = "64",
+				["DarkFile"] = "images/camera.png",
+				["ResizeQuality"] = "Fastest",
+			});
+
+			var task = GetNewTask(fastestSplash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			var output = $"Assets.xcassets/MauiSplashImage.imageset/{filename}";
+			AssertFileSize(output, 64, 64);
+			var fastestPixels = ReadPixels(output);
+
+			var autoSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["BaseSize"] = "64",
+				["DarkFile"] = "images/camera.png",
+				["ResizeQuality"] = "Auto",
+			});
+
+			task = GetNewTask(autoSplash);
+			success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileSize(output, 64, 64);
+
+			var autoPixels = ReadPixels(output);
+			var differentPixels = AssertPixelsDiffer(fastestPixels, autoPixels,
+				$"Apple {appearance} splash output should honor ResizeQuality metadata during 1792-to-64 downscaling.");
+			Output.WriteLine($"Apple {appearance} Fastest vs Auto: {differentPixels} of {autoPixels.Length} pixels differ.");
+		}
+
 		[Fact]
 		public void NonPngRasterWithoutResizeUsesMatchingAssetFilenames()
 		{

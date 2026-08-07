@@ -363,7 +363,7 @@
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
             File="$(_ResizetizerInputsFile)"
-            Lines="PlatformType=$(ResizetizerPlatformType);@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile);MonochromeFile=%(MonochromeFile)')"
+            Lines="PlatformType=$(ResizetizerPlatformType);@(MauiImage->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);IsAppIcon=%(IsAppIcon);ForegroundScale=%(ForegroundScale);ForegroundFile=%(ForegroundFile);MonochromeFile=%(MonochromeFile);ResizeQuality=%(ResizeQuality)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
@@ -375,7 +375,7 @@
 
         <WriteLinesToFile
             File="$(_MauiSplashInputsFile)"
-            Lines="@(_MauiSplashScreenWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);DarkFile=%(DarkFile);DarkColor=%(DarkColor);DarkTintColor=%(DarkTintColor);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash);DarkFileHash=$(_MauiSplashDarkFileHash);SupportedOSPlatformVersion=$(SupportedOSPlatformVersion)')"
+            Lines="@(_MauiSplashScreenWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);DarkFile=%(DarkFile);DarkColor=%(DarkColor);DarkTintColor=%(DarkTintColor);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash);DarkFileHash=$(_MauiSplashDarkFileHash);SupportedOSPlatformVersion=$(SupportedOSPlatformVersion);ResizeQuality=%(ResizeQuality)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 

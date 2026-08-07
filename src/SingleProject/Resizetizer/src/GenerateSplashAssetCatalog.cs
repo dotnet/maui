@@ -75,6 +75,7 @@ namespace Microsoft.Maui.Resizetizer
 				Resize = info.Resize,
 				TintColor = info.TintColor,
 				Color = info.Color,
+				Quality = info.Quality,
 			};
 
 		private static string GetAssetExtension(ResizeImageInfo info) =>

@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				appIconName = appIconName.ToLowerInvariant();
 
-				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, this);
+				var adaptiveIconGen = new AndroidAdaptiveIconGenerator(img, appIconName, IntermediateOutputPath, InputsFile, this);
 				var iconsGenerated = adaptiveIconGen.Generate();
 
 				foreach (var iconGenerated in iconsGenerated)
@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				LogDebugMessage($"Windows Icon Generator");
 
-				var windowsIconGen = new WindowsIconGenerator(img, IntermediateOutputPath, this);
+				var windowsIconGen = new WindowsIconGenerator(img, IntermediateOutputPath, InputsFile, this);
 
 				resizedImages.Add(windowsIconGen.Generate());
 			}
@@ -207,6 +207,7 @@ namespace Microsoft.Maui.Resizetizer
 			LogDebugMessage($"Generating App Icon Bitmaps for DPIs");
 
 			var appTool = new SkiaSharpAppIconTools(img, this);
+			var appIconSourceFiles = GetAppIconSourceFiles(img);
 
 			LogDebugMessage($"App Icon: Intermediate Path " + IntermediateOutputPath);
 
@@ -216,14 +217,11 @@ namespace Microsoft.Maui.Resizetizer
 
 				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath)
 					.Replace("{name}", appIconName);
-				var (sourceExists, sourceModified) = Utils.FileExists(img.Filename);
-				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 
 				LogDebugMessage($"App Icon Destination: " + destination);
 
-				if (destinationModified > sourceModified)
+				if (Resizer.IsUpToDate(appIconSourceFiles, destination, InputsFile, Logger, img.ItemSpec))
 				{
-					Logger.Log($"Skipping `{img.Filename}` => `{destination}` file is up to date.");
 					resizedImages.Add(new ResizedImageInfo() { Dpi = dpi, Filename = destination });
 					continue;
 				}
@@ -232,6 +230,9 @@ namespace Microsoft.Maui.Resizetizer
 				resizedImages.Add(r);
 			}
 		}
+
+		static string[] GetAppIconSourceFiles(ResizeImageInfo img) =>
+			new[] { img.Filename, img.ForegroundFilename };
 
 		void ProcessImageResize(ResizeImageInfo img, DpiPath[] dpis, ConcurrentBag<ResizedImageInfo> resizedImages)
 		{
