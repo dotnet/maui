@@ -183,7 +183,8 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChanged(value);
+				if (value is not null)
+					OnResourcesChangedKeys(value.MergedResourcesKeys, key => value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -380,13 +381,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			HashSet<string>? changedKeys = null;
 			var changedResources = new List<KeyValuePair<string, object>>();
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
-				if (innerKeys.Add(value.Key))
+				if (!Resources.ContainsKey(value.Key) && (changedKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(value.Key))
 					changedResources.Add(value);
 			}
 			OnResourcesChanged(changedResources);

@@ -921,8 +921,6 @@ namespace Microsoft.Maui.Controls
 
 				// Only now do we look up the value - on demand
 				object value = resolver(key);
-				if (value == null)
-					continue;
 
 				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
 					OnResourceChanged(changedResource.Item1, value, changedResource.Item2);
