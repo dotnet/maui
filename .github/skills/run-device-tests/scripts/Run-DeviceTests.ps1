@@ -220,6 +220,15 @@ function Select-WindowsDeviceTestCategories {
     return @($AllCategories | Where-Object { $selected.Contains($_) })
 }
 
+function Test-WindowsDeviceTestCategoryDiscovery {
+    param(
+        [string]$Project,
+        [string]$TestFilter
+    )
+
+    return $Project -eq "Controls" -or -not [string]::IsNullOrWhiteSpace($TestFilter)
+}
+
 function Wait-ForPath {
     param(
         [Parameter(Mandatory = $true)]
@@ -519,18 +528,11 @@ function Invoke-WindowsDeviceTestApp {
     #     category instead of launching the entire app — which, for large suites like
     #     Core, can crash/exit before writing results and collapse the gate to an
     #     inconclusive "empty results" verdict (see PR #36577).
-    #
-    # Only the Controls device-test app registers the discovery-capable
-    # ControlsHeadlessTestRunner (MauiProgramDefaults.cs gates UseControlsHeadlessRunner on
-    # the Controls.DeviceTests assembly). Core/Essentials/Graphics/etc. use the generic
-    # HeadlessTestRunner, which has NO category discovery — so a discovery attempt there is
-    # guaranteed to time out after 120s AND leaves a half-written result file from the
-    # killed discovery process, before the inevitable full-suite fallback. Skip discovery
-    # entirely for those apps: go straight to a clean full run and scope the summary to the
-    # class(es) under test. Controls keeps strict discovery (throw on failure) because it
-    # has no full-suite runner to fall back to.
+    # Controls requires discovery because it has no full-suite runner. Other projects
+    # attempt discovery only for filtered runs and retain the clean full-suite fallback
+    # below for branches that predate the discovery-runner registration.
     $requireDiscovery = ($Project -eq "Controls")
-    $attemptDiscovery = $requireDiscovery
+    $attemptDiscovery = Test-WindowsDeviceTestCategoryDiscovery -Project $Project -TestFilter $TestFilter
     $useCategoryFiltering = $false
     if ($attemptDiscovery) {
         Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
@@ -546,8 +548,6 @@ function Invoke-WindowsDeviceTestApp {
             }
             Write-Warning "Windows '$Project' device test app did not produce a category list within 120s; falling back to a full device-test run."
         }
-    } elseif ($TestFilter) {
-        Write-Host "Windows '$Project' device test app has no category discovery; running the full suite and scoping results to the class(es) under test." -ForegroundColor Gray
     }
 
     if ($useCategoryFiltering) {

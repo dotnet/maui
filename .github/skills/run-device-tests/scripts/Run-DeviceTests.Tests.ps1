@@ -13,6 +13,7 @@ BeforeAll {
     foreach ($functionName in @(
         'Get-CategoryFiltersFromTestFilter',
         'Select-WindowsDeviceTestCategories',
+        'Test-WindowsDeviceTestCategoryDiscovery',
         'ConvertTo-DeviceTestCount',
         'Get-WindowsDeviceTestResultSummary'
     )) {
@@ -47,6 +48,21 @@ Describe 'Windows device test category filtering' {
             -AllCategories @('Button', 'Window') `
             -Filter '' |
             Should -Be @('Button', 'Window')
+    }
+
+    It 'always requires category discovery for Controls' {
+        Test-WindowsDeviceTestCategoryDiscovery -Project 'Controls' -TestFilter '' |
+            Should -BeTrue
+    }
+
+    It 'attempts category discovery for a filtered non-Controls project' {
+        Test-WindowsDeviceTestCategoryDiscovery -Project 'Core' -TestFilter 'Category=Window' |
+            Should -BeTrue
+    }
+
+    It 'uses the full-suite runner for an unfiltered non-Controls project' {
+        Test-WindowsDeviceTestCategoryDiscovery -Project 'Core' -TestFilter '' |
+            Should -BeFalse
     }
 }
 

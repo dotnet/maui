@@ -29,7 +29,7 @@ fi
 uid=$(id -u "$currentUser")
 
 runAsUser() {
-  launchctl asuser "$uid" sudo -u "$currentUser" "$@"
+  launchctl asuser "$uid" sudo -n -u "$currentUser" "$@"
 }
 
 echo "Dismissing Setup Assistant / Apple Account sign-in modal for console user '$currentUser'..."
@@ -42,12 +42,12 @@ for key in DidSeeCloudSetup DidSeeSiriSetup DidSeePrivacy DidSeeTrueTone \
   runAsUser defaults write com.apple.SetupAssistant "$key" -bool TRUE 2>/dev/null || true
 done
 runAsUser defaults write com.apple.SetupAssistant GestureMovieSeen none 2>/dev/null || true
-sudo defaults write /var/db/com.apple.SetupAssistant LastSeenCloudProductVersion "$(sw_vers -productVersion 2>/dev/null)" 2>/dev/null || true
-sudo defaults write /var/db/com.apple.SetupAssistant LastSeenBuddyBuildVersion "$(sw_vers -buildVersion 2>/dev/null)" 2>/dev/null || true
+sudo -n defaults write /var/db/com.apple.SetupAssistant LastSeenCloudProductVersion "$(sw_vers -productVersion 2>/dev/null)" 2>/dev/null || true
+sudo -n defaults write /var/db/com.apple.SetupAssistant LastSeenBuddyBuildVersion "$(sw_vers -buildVersion 2>/dev/null)" 2>/dev/null || true
 
 # (a) Dismiss any modal already on screen by killing its presenter.
 runAsUser killall "Setup Assistant" 2>/dev/null || true
-sudo killall "Setup Assistant" 2>/dev/null || true
+sudo -n killall "Setup Assistant" 2>/dev/null || true
 # accountsd re-checks Apple Account state; restarting it clears a stuck prompt
 # and it will re-read the "seen" flags above on relaunch. Harmless (auto-restarts).
 runAsUser killall accountsd 2>/dev/null || true
