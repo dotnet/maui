@@ -425,8 +425,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var headerFirstResponder = FindHeaderFirstResponder(collectionView);
 			OnCollectionViewUpdating(args);
 			update(collectionView);
-			OnCollectionViewUpdated(args);
 			RestoreFirstResponder(headerFirstResponder);
+			OnCollectionViewUpdated(args);
 		}
 
 		void OnCollectionViewUpdating(NotifyCollectionChangedEventArgs args)

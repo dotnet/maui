@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_collectionView.ReloadData();
 			}
 
-			if (collectionWasReset)
+			if (collectionWasReset && headerFirstResponder is null)
 			{
 				_collectionView.LayoutIfNeeded();
 			}
