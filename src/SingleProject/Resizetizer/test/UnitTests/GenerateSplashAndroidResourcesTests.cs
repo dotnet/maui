@@ -108,6 +108,40 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void ResizeQualityMetadataAffectsDarkNightImages()
+		{
+			var fastestSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["BaseSize"] = "64",
+				["DarkFile"] = "images/camera.png",
+				["ResizeQuality"] = "Fastest",
+			});
+
+			var task = GetNewTask(fastestSplash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileSize("drawable-night-mdpi/camera.png", 64, 64);
+			var fastestDarkPixels = ReadPixels("drawable-night-mdpi/camera.png");
+
+			var autoSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["BaseSize"] = "64",
+				["DarkFile"] = "images/camera.png",
+				["ResizeQuality"] = "Auto",
+			});
+
+			task = GetNewTask(autoSplash);
+			success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileSize("drawable-night-mdpi/camera.png", 64, 64);
+
+			var autoDarkPixels = ReadPixels("drawable-night-mdpi/camera.png");
+			var differentPixels = AssertPixelsDiffer(fastestDarkPixels, autoDarkPixels,
+				"Android dark/night splash output should honor ResizeQuality metadata during 1792-to-64 downscaling.");
+			Output.WriteLine($"Android dark/night Fastest vs Auto: {differentPixels} of {autoDarkPixels.Length} pixels differ.");
+		}
+
+		[Fact]
 		public void DarkTintColorOnlyGeneratesTintedNightImage()
 		{
 			var splash = new TaskItem("images/camera.svg", new Dictionary<string, string>

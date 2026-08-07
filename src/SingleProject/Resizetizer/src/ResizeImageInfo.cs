@@ -209,6 +209,7 @@ namespace Microsoft.Maui.Resizetizer
 				ForegroundFilename = ForegroundFilename,
 				ForegroundScale = ForegroundScale,
 				MonochromeFilename = MonochromeFilename,
+				Quality = Quality,
 			};
 		}
 	}
