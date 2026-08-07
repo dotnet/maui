@@ -111,5 +111,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			Assert.Throws<InvalidOperationException>(() => SolidColorBrush.Green.Parent = new Grid());
 		}
+
+		[Fact]
+		public void VallyFixtureDetectsFix()
+		{
+			var property = typeof(Brush).GetProperty(
+				"VallyFixtureIsFixed",
+				System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			Assert.NotNull(property);
+			Assert.True((bool)property.GetValue(null));
+		}
 	}
 }

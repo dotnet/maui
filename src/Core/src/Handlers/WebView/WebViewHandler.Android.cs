@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
-			// Synthetic fixture: model the current PR as owning WebView teardown.
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				if (platformView.WebViewClient is MauiWebViewClient webViewClient)
