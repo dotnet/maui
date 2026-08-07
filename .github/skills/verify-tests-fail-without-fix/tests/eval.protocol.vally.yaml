@@ -73,7 +73,10 @@ stimuli:
         The agent uses the verify-tests-fail script rather than manually
         running dotnet test.
       - >-
-        The agent correctly reports fail-then-pass as verification success.
+        The agent reports the observed outcome according to the skill contract:
+        fail-then-pass is verification success unless it also observes an error,
+        timeout, or unexpected worktree change, in which case reporting Blocked
+        with that evidence is correct. It must not manually clean the worktree.
     constraints:
       max_duration: 10m
       expect_skills:

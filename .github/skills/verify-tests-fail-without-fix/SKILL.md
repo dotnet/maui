@@ -47,6 +47,12 @@ NEVER say "verification passed" when tests PASS without the fix.
 
 ## Workflow
 
+### Interpretation-Only Requests
+
+If the caller asks how to read or report verification output, explain the result
+contract below without running the script. Do not turn a question about result
+semantics into a verification run.
+
 ### Step 1: Determine Mode
 - Check if fix files exist in the PR (non-test code changes detected by the script from the git diff)
 - If **fix files present** → Full Verification mode (`-RequireFullVerification`)
@@ -80,7 +86,18 @@ verification as Blocked with the observed status instead of cleaning it up.
 - Script outputs error/timeout → Report as Blocked
 
 ### Step 4: Report
-- Report the result to the invoking orchestrator
+- Always report the script's exact terminal marker and explain the observed
+  phase results:
+  - `VERIFICATION PASSED` in failure-only mode means the test failed without
+    the fix, proving that it catches the bug.
+  - `VERIFICATION PASSED` in full mode means the test failed without the fix
+    and passed with the fix.
+  - `VERIFICATION FAILED` because the test passed without the fix means the
+    test does not catch the bug.
+  - `VERIFICATION FAILED` because the test failed with the fix means the fix
+    did not resolve the tested behavior, or the test failed for another reason.
+  - An error, timeout, or unexpected worktree change is `Blocked`; report the
+    observed evidence without converting it into a pass or cleaning it up.
 
 ## Mode 1: Verify Failure Only (Test Creation)
 
