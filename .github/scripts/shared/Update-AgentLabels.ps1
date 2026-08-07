@@ -553,8 +553,15 @@ function Get-OutcomeFromCodeReviewVerdict {
         if (-not (Test-Path $f)) { continue }
         $c = Get-Content $f -Raw -ErrorAction SilentlyContinue
         if (-not $c) { continue }
+        $verdict = $null
         if ($c -match '(?im)Verdict:\s*\**\s*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)') {
-            switch -Regex ($matches[1]) {
+            $verdict = $matches[1]
+        }
+        elseif ($c -match '(?im)^[ \t]*#{1,6}[ \t]+(?:Initial[ \t]+)?Verdict[^\r\n]*(?:\r?\n[ \t]*)+\**[ \t]*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)\b') {
+            $verdict = $matches[1]
+        }
+        if ($verdict) {
+            switch -Regex ($verdict) {
                 '(?i)^(LGTM|APPROVE)' { return 'approved' }
                 default               { return 'changes-requested' }
             }

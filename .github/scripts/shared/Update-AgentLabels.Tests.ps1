@@ -297,6 +297,15 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
         Remove-Item -Recurse -Force $root
     }
 
+    It 'parses an Initial verdict heading followed by NEEDS_DISCUSSION' {
+        $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr", "isPRFix": true }' `
+            -ReportMd '## Comparative Report (no canonical recommendation)' `
+            -ExpertReviewMd "### Initial verdict`n`n**NEEDS_DISCUSSION — medium confidence.**"
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
     It 'does not manufacture approval from a verdict when winner.json is missing' {
         $root = New-FixtureRoot `
             -ReportMd '## Comparative Report (no canonical recommendation)' `
