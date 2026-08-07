@@ -423,6 +423,39 @@ Describe 'Write-MarkdownReport — new-snapshot-no-baseline does not double-mess
     }
 }
 
+Describe 'Write-MarkdownReport — NETSDK1178 host limitation is permanent and actionable' {
+    It 'reports INCONCLUSIVE without recommending another run on the same host (build 14907252 #37176)' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        $wo = @(@{
+            TestName = 'MSBuildTests'; TestType = 'XamlUnitTest'; Passed = $false
+            BuildError = $false; EnvError = $false; FilterMismatch = $false
+            Failed = 3; Error = ''
+        })
+        $w = @(@{
+            TestName = 'MSBuildTests'; TestType = 'XamlUnitTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            UnsupportedWorkloadPackFailure = $true; Failed = 0
+            Error = 'Gate host limitation: iOS and MacCatalyst SDK packs are unavailable (NETSDK1178).'
+        })
+        $tests = @([pscustomobject]@{ TestName = 'MSBuildTests'; Type = 'XamlUnitTest'; Filter = 'MSBuildTests' })
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $true -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Controls/src/Build.Tasks/Test.targets') -ReportNewFiles @()
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match 'Platform workload unavailable on this gate host'
+        $report | Should -Match 'Re-running on the same host cannot help'
+        $report | Should -Not -Match 'Comment ``/review`` to retry on a fresh agent'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: skip-permanent -->'
+    }
+}
+
 Describe 'Write-MarkdownReport — persisted APP_CRASH gets an honest (non-"just retry") message' {
     It 'shows the app-crash message, not the generic transient-flake retry wording (PR #36572 / build 14846070)' {
         $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
@@ -489,6 +522,69 @@ error NETSDK1147: the following workloads must be installed: android
         $r = Get-TestResultFromOutput -LogFile $log
         $r.BuildError | Should -BeTrue
         $r.EnvError | Should -Not -BeTrue
+    }
+}
+
+Describe 'Get-TestResultFromOutput — NETSDK1178 host-incompatible workload packs' {
+    It 'classifies all failed xUnit cases as environment when each one is NETSDK1178 (build 14907252 #37176)' {
+        $log = New-LogFile -Content @'
+[xUnit.net 00:00:17.70]     CrossPlatformBuild(target: "ios") [FAIL]
+[xUnit.net 00:00:17.70]       Output:
+[xUnit.net 00:00:17.70]         error NETSDK1178: The project depends on the following workload packs that do not exist in any of the workloads available in this installation: Microsoft.iOS.Sdk.net10.0_26.0
+[xUnit.net 00:00:21.56]     CrossPlatformBuild(target: "maccatalyst") [FAIL]
+[xUnit.net 00:00:21.56]       Output:
+[xUnit.net 00:00:21.56]         error NETSDK1178: The project depends on the following workload packs that do not exist in any of the workloads available in this installation: Microsoft.MacCatalyst.Sdk.net10.0_26.0
+  Failed CrossPlatformBuild(target: "ios") [1 s]
+  Error Message:
+   Assert.Equal() Failure
+  Standard Output Messages:
+ error NETSDK1178: The project depends on the following workload packs that do not exist in any of the workloads available in this installation: Microsoft.iOS.Sdk.net10.0_26.0
+  Failed CrossPlatformBuild(target: "maccatalyst") [1 s]
+  Error Message:
+   Assert.Equal() Failure
+  Standard Output Messages:
+ error NETSDK1178: The project depends on the following workload packs that do not exist in any of the workloads available in this installation: Microsoft.MacCatalyst.Sdk.net10.0_26.0
+Total tests: 22
+     Passed: 18
+     Failed: 2
+    Skipped: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -BeTrue
+        $r.UnsupportedWorkloadPackFailure | Should -BeTrue
+        $r.BuildError | Should -Not -BeTrue
+        $r.Failed | Should -Be 0
+        $r.Error | Should -Match 'NETSDK1178'
+        $r.Error | Should -Match 'Microsoft\.iOS\.Sdk'
+        $r.Error | Should -Match 'Microsoft\.MacCatalyst\.Sdk'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not mask a mixed run that also contains a genuine failed case' {
+        $log = New-LogFile -Content @'
+[xUnit.net 00:00:17.70]     CrossPlatformBuild(target: "ios") [FAIL]
+[xUnit.net 00:00:17.70]       Output:
+[xUnit.net 00:00:17.70]         error NETSDK1178: The project depends on workload packs that do not exist: Microsoft.iOS.Sdk.net10.0_26.0
+[xUnit.net 00:00:19.00]     CrossPlatformBuild(target: "android") [FAIL]
+[xUnit.net 00:00:19.00]       Assert.Equal() Failure: Values differ
+  Failed CrossPlatformBuild(target: "ios") [1 s]
+  Error Message:
+   Assert.Equal() Failure
+  Standard Output Messages:
+ error NETSDK1178: The project depends on workload packs that do not exist: Microsoft.iOS.Sdk.net10.0_26.0
+  Failed CrossPlatformBuild(target: "android") [1 s]
+  Error Message:
+   Assert.Equal() Failure: Expected 0, Actual 1
+Total tests: 20
+     Passed: 18
+     Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.UnsupportedWorkloadPackFailure | Should -Not -BeTrue
+        $r.Passed | Should -BeFalse
+        $r.Failed | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
     }
 }
 

@@ -655,11 +655,11 @@ function Invoke-TestRunWithRetry {
 
         $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
 
-        # A missing snapshot baseline is deterministic (the baseline PNG simply isn't in the
-        # repo yet) — retrying re-runs the whole test for the same guaranteed result. Return
-        # immediately so it flows straight to the INCONCLUSIVE classification without burning
-        # retry attempts (and device reboots).
-        if (-not $result.EnvError -or $result.SnapshotBaselineMissing) {
+        # Some environment outcomes are deterministic: a missing snapshot baseline cannot
+        # appear on retry, and NETSDK1178 means this operating system cannot provide the
+        # requested platform SDK pack. Return immediately so they flow to INCONCLUSIVE without
+        # burning repeated full test runs.
+        if (-not $result.EnvError -or $result.SnapshotBaselineMissing -or $result.UnsupportedWorkloadPackFailure) {
             return $result
         }
 
@@ -839,6 +839,46 @@ function Get-TestResultFromOutput {
         # If tests actually ran (passed > 0), trust the results over exit codes
         if ($devicePassCount -gt 0) {
             if ($deviceFailCount -gt 0) {
+                # Some host-based MSBuild/XAML test classes exercise multiple target
+                # platforms in one run. On a Linux/Android gate agent, the Android cases
+                # can run while iOS/MacCatalyst cases fail before their assertions because
+                # the corresponding SDK packs are unavailable on this OS (NETSDK1178:
+                # "workload packs that do not exist ... build on another operating
+                # system"). The aggregate still contains real pass/fail counts, so the
+                # generic parser below would otherwise trust "Failed: N" and falsely blame
+                # the fix.
+                #
+                # Downgrade ONLY when every failed xUnit case has its own NETSDK1178
+                # signature. If even one failed case has a normal assertion/compiler
+                # failure, preserve the genuine FAIL. Prefer xUnit's live [FAIL] blocks
+                # because their output is isolated per theory case; fall back to VSTest's
+                # final "Failed TestName [duration]" blocks for runners without live output.
+                # (build 14907252, PR #37176: the fix made the Android case pass, while the
+                # only two remaining failures were iOS/MacCatalyst NETSDK1178 on Linux.)
+                $xunitFailurePattern = '(?ms)^\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?\n.*?(?=^\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?$|^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
+                $failedCaseBlocks = @([regex]::Matches($content, $xunitFailurePattern))
+                if ($failedCaseBlocks.Count -eq 0) {
+                    $summaryFailurePattern = '(?ms)^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?\n.*?(?=^\s*(?:Failed|Passed|Skipped)\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
+                    $failedCaseBlocks = @([regex]::Matches($content, $summaryFailurePattern))
+                }
+                if ($failedCaseBlocks.Count -eq $deviceFailCount) {
+                    $unsupportedWorkloadFailures = @($failedCaseBlocks | Where-Object { $_.Value -match '(?i)\bNETSDK1178\b' })
+                    if ($unsupportedWorkloadFailures.Count -eq $deviceFailCount) {
+                        $unavailablePacks = @([regex]::Matches($content, '(?i)workload packs that do not exist[^:]*:\s*([^\[\r\n]+)') |
+                            ForEach-Object { $_.Groups[1].Value.Trim() } |
+                            Where-Object { $_ } |
+                            Sort-Object -Unique)
+                        $packSuffix = if ($unavailablePacks.Count -gt 0) { " (unavailable: $($unavailablePacks -join ', '))" } else { "" }
+                        Write-Host "  ⚠️  All $deviceFailCount failing test case(s) require platform workload packs unavailable on this gate host (NETSDK1178) — INCONCLUSIVE, not a fix failure" -ForegroundColor Yellow
+                        return @{
+                            Passed = $false; EnvError = $true; UnsupportedWorkloadPackFailure = $true
+                            Error = "Gate host limitation: all $deviceFailCount failing test case(s) require .NET workload SDK packs unavailable on this operating system$packSuffix (NETSDK1178). Those cases could not execute, so the fix is unverifiable here; run them on a compatible host."
+                            PassCount = $devicePassCount; FailCount = 0; Failed = 0
+                            Total = $deviceTotal; Skipped = 0
+                        }
+                    }
+                }
+
                 # A run can report real passes AND failures where EVERY failure is a brand-new
                 # VerifyScreenshot test whose baseline PNG isn't committed yet ("Baseline
                 # snapshot not yet created"). That is NOT a genuine failure — the gate simply
@@ -1568,13 +1608,13 @@ if ($DetectedFixFiles.Count -eq 0) {
             $lines += "</details>"
         }
         # Machine-readable retry class (consumed by Review-PR.ps1's gate retry loop). A
-        # missing snapshot baseline is DETERMINISTIC across retries on the same agent — the
-        # baseline PNG is added separately by a maintainer, so re-running it can never flip
-        # the outcome. Only TRANSIENT infra flakes (emulator/sim boot, ADB, Appium, XHarness
+        # missing snapshot baseline and an OS-incompatible NETSDK1178 workload pack are
+        # DETERMINISTIC across retries on the same agent, so re-running can never flip the
+        # outcome. Only TRANSIENT infra flakes (emulator/sim boot, ADB, Appium, XHarness
         # crash, install/timeout) are worth retrying. Emit skip-permanent ONLY when there is
         # at least one env error AND none of them are transient.
         $foEnv = @($Results | Where-Object { $_.EnvError })
-        $foTransient = @($foEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) })
+        $foTransient = @($foEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved -or $_.UnsupportedWorkloadPackFailure) })
         $foClass = if ($foEnv.Count -gt 0 -and $foTransient.Count -eq 0) { 'skip-permanent' } else { 'retryable' }
         $lines += ""
         $lines += "<!-- GATE-RETRY-CLASS: $foClass -->"
@@ -1931,6 +1971,7 @@ function Write-MarkdownReport {
     $snapshotBaselineMissing = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.SnapshotBaselineMissing }).Count -gt 0
     $snapshotEnvResidual = (@($WithFixResultsList) | Where-Object { $_.SnapshotEnvResidual }).Count -gt 0
     $snapshotBaselineUnresolved = (@($WithFixResultsList) | Where-Object { $_.SnapshotBaselineUnresolved }).Count -gt 0
+    $unsupportedWorkloadPackFailure = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.UnsupportedWorkloadPackFailure }).Count -gt 0
     # Whether ANY env error is a "real" infra error (app crash / Appium flake / empty result)
     # rather than a snapshot-class one that already has its own dedicated $snapshotNote below.
     # A pure new-snapshot-no-baseline / snapshot-residual run must NOT also print the generic
@@ -1938,13 +1979,18 @@ function Write-MarkdownReport {
     # creates the missing baseline, so that advice is wrong and makes an expected, non-failing
     # result look like an infra failure (PR #35491: new Shell.SetBackground API + a brand-new
     # VerifyScreenshot with no committed baseline → INCONCLUSIVE, correctly, but double-messaged).
-    $nonSnapshotEnvError = @($WithoutFixResultsList + $WithFixResultsList | Where-Object { $_.EnvError -and -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) }).Count -gt 0
+    $nonSnapshotEnvError = @($WithoutFixResultsList + $WithFixResultsList | Where-Object {
+        $_.EnvError -and -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved -or $_.UnsupportedWorkloadPackFailure)
+    }).Count -gt 0
     $snapshotNote = if ($snapshotBaselineMissing) {
         "📷 **New snapshot test — no baseline yet** — the test calls ``VerifyScreenshot`` but its baseline image is not committed (brand-new snapshot tests get their baseline added separately). The gate cannot validate a snapshot with nothing to compare against, so this is **inconclusive, not a fix failure**. Download the ``snapshots-diff`` artifact, confirm the rendering, and commit the baseline PNG."
     } elseif ($snapshotEnvResidual) {
         "📷 **Environmental snapshot residual — not a fix failure** — with the fix applied, the only remaining ``VerifyScreenshot`` differences are no larger than the WITHOUT-fix run (the fix worsened no snapshot and added no new failing one) and are all below ~1%. The fix resolves the bug's visual difference; the residual is a constant cross-agent baseline offset (anti-aliasing / font hinting differ between the machine that captured the baseline and this agent), so this is **inconclusive, not a fix failure**. Regenerate the affected baseline PNG(s) on the target agent."
     } elseif ($snapshotBaselineUnresolved) {
         "📷 **Snapshot baseline not reproducible on this agent — inconclusive** — with the fix applied, the only remaining ``VerifyScreenshot`` failure is a LARGE diff (tens of percent) that is essentially UNCHANGED from the WITHOUT-fix run — the fix moved the pixel difference by under 1 percentage point. That is the signature of a cross-machine baseline mismatch: the committed baseline PNG was captured on a different machine and this CI agent renders the control (commonly the macOS TitleBar / window chrome) differently, swamping any fix effect. The gate cannot tell an environmental mismatch from an ineffective fix, so this is **inconclusive, not a confirmed fix failure** — inspect the ``snapshots-diff`` artifact manually and, if the render is correct, regenerate the baseline PNG on the target agent."
+    } else { $null }
+    $unsupportedWorkloadNote = if ($unsupportedWorkloadPackFailure) {
+        "🧰 **Platform workload unavailable on this gate host — inconclusive** — every remaining failed test case stopped with ``NETSDK1178`` because it targets an SDK pack this operating system cannot provide (for example, iOS/MacCatalyst cases on the Linux Android gate). Those cases never executed their assertions, so this is **not a fix failure**. Re-running on the same host cannot help; verify the affected cases on a compatible platform agent."
     } else { $null }
 
     # A flaky GC memory-leak reclassification (with-fix leak FAIL→FAIL on a DoesNotLeak assert)
@@ -2084,6 +2130,10 @@ function Write-MarkdownReport {
     if ($snapshotNote) {
         $lines += ""
         $lines += $snapshotNote
+    }
+    if ($unsupportedWorkloadNote) {
+        $lines += ""
+        $lines += $unsupportedWorkloadNote
     }
     if ($leakNote) {
         $lines += ""
@@ -2278,16 +2328,17 @@ function Write-MarkdownReport {
     $lines += "</details>"
 
     # Machine-readable retry class (consumed by Review-PR.ps1's gate retry loop). A PERMANENT
-    # env error — missing snapshot baseline, cross-machine baseline residual/mismatch, or a fix
-    # that only touches a different platform — is DETERMINISTIC across retries on the same agent,
-    # so re-running it up to 3× just burns ~16min/attempt for the identical INCONCLUSIVE (Windows
+    # env error — missing snapshot baseline, cross-machine baseline residual/mismatch, an
+    # OS-incompatible workload pack, or a fix that only touches a different platform — is
+    # DETERMINISTIC across retries on the same agent, so re-running it up to 3× just burns
+    # ~16min/attempt for the identical INCONCLUSIVE (Windows
     # #36561/14687382 wasted ~48min retrying a "Baseline snapshot not yet created" 3×). Only
     # TRANSIENT infra flakes (emulator/sim boot, ADB, Appium, XHarness crash, install/timeout) are
     # worth retrying. Emit skip-permanent ONLY when there is a permanent signal AND no transient
     # infra env error remains to retry.
     $abEnv = @(@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.EnvError })
-    $abTransient = @($abEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved) })
-    $abPermanentSignal = $snapshotBaselineMissing -or $snapshotEnvResidual -or $snapshotBaselineUnresolved -or $fixPlatformMismatch
+    $abTransient = @($abEnv | Where-Object { -not ($_.SnapshotBaselineMissing -or $_.SnapshotEnvResidual -or $_.SnapshotBaselineUnresolved -or $_.UnsupportedWorkloadPackFailure) })
+    $abPermanentSignal = $snapshotBaselineMissing -or $snapshotEnvResidual -or $snapshotBaselineUnresolved -or $unsupportedWorkloadPackFailure -or $fixPlatformMismatch
     # NON-DIFFERENTIAL env failure: when the SAME test env-errors on BOTH the without-fix AND
     # with-fix runs (e.g. a device-test APP_CRASH that recurs identically on each side), the fix
     # cannot change the outcome — the gate is INCONCLUSIVE no matter what. Each side already
