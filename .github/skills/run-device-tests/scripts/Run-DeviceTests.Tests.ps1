@@ -67,6 +67,10 @@ Describe 'Windows device test category filtering' {
 }
 
 Describe 'Get-WindowsDeviceTestResultSummary' {
+    It 'clamps negative result counts to zero' {
+        ConvertTo-DeviceTestCount -Value '-1' | Should -Be 0
+    }
+
     BeforeEach {
         $script:testDir = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-results-$([guid]::NewGuid())"
         New-Item -ItemType Directory -Path $script:testDir -Force | Out-Null

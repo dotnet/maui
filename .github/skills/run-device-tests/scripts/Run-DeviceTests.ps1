@@ -278,7 +278,7 @@ function ConvertTo-DeviceTestCount {
     if ($null -eq $Value) { return 0 }
     if ($Value -is [System.Array]) { $Value = @($Value)[0] }
     $parsed = 0
-    if ([int]::TryParse([string]$Value, [ref]$parsed)) { return $parsed }
+    if ([int]::TryParse([string]$Value, [ref]$parsed)) { return [Math]::Max(0, $parsed) }
     return 0
 }
 

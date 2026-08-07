@@ -337,8 +337,12 @@ if ($Platform -eq "catalyst") {
     # fails with a WaitForElement timeout. Running it here (not just once at job
     # start) re-clears the screen before each category in the deep loop, in case
     # the modal re-appears between categories. Best-effort; never blocks the run.
-    $dismissDialog = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/dismiss-apple-account-dialog.sh"))
-    if (Test-Path $dismissDialog) {
+    $dismissDialogCandidates = @(
+        [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../eng-scripts/dismiss-apple-account-dialog.sh")),
+        [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/dismiss-apple-account-dialog.sh"))
+    )
+    $dismissDialog = $dismissDialogCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if ($dismissDialog -and (Test-Path $dismissDialog)) {
         try {
             & chmod +x $dismissDialog 2>$null
             & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
