@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Android.Views;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -12,6 +15,71 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
+		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
+		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
+		[Fact(DisplayName = "SwipeItem Command Executes Via Accessibility ACTION_CLICK")]
+		public async Task SwipeItemCommandExecutesViaAccessibilityActionClick()
+		{
+			SetupBuilder();
+
+			bool commandExecuted = false;
+			ICommand command = new Command(() => commandExecuted = true);
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.Red,
+				Command = command
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds the action-item container as a child dynamically when opened.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeItemView = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItemView);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
+#pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
+					ViewCompat.PerformAccessibilityAction(swipeItemView, actionClickId, null);
+#pragma warning restore CS0618
+				});
+
+				await AssertEventually(() => commandExecuted);
+				Assert.True(commandExecuted);
+			});
+		}
+
 		[Fact(DisplayName = "SwipeItem Size Initializes Correctly")]
 		public async Task SwipeItemSizeInitializesCorrectly()
 		{
