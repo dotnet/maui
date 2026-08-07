@@ -631,6 +631,7 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
@@ -739,6 +740,9 @@ jobs:
             [ -n "$RUNS_N" ] && RUNS_ARGS=(--runs "$RUNS_N")
           fi
 
+          mkdir -p "$RESULTS_PATH"
+          chmod g+rwx "$RESULTS_PATH"
+
           # Advisory exit — the baseline number is informational; do not fail.
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval \
@@ -807,6 +811,7 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           RESULTS_PATH: eval-results/${{ matrix.entry.name }}
@@ -843,6 +848,9 @@ jobs:
           fi
           [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
 
+          mkdir -p "$RESULTS_PATH"
+          chmod g+rwx "$RESULTS_PATH"
+
           # Advisory exit: vally sets exit 1 on threshold miss / execution
           # error. We capture it but DON'T propagate so every matrix artifact is
           # still uploaded and the aggregate report can explain the failure.
@@ -859,7 +867,6 @@ jobs:
           set -e
           echo "vally exit code: $EVAL_RC (advisory)"
           echo "eval_exit_code=$EVAL_RC" >> "$GITHUB_OUTPUT"
-          mkdir -p "$RESULTS_PATH"
           printf '%s\n' "$EVAL_RC" > "$RESULTS_PATH/eval-exit-code.txt"
 
           # The aggregate comment job consumes the uploaded artifacts and owns
@@ -949,6 +956,8 @@ jobs:
           TRUSTED_SPEC_DIR=$(mktemp -d "$RUNNER_TEMP/hermeticity-spec.XXXXXX")
           HERMETICITY_SPEC="$TRUSTED_SPEC_DIR/hermeticity.vally.yaml"
           git show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" > "$HERMETICITY_SPEC"
+          chmod a+rx "$TRUSTED_SPEC_DIR"
+          chmod a+r "$HERMETICITY_SPEC"
           npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$HERMETICITY_SPEC" --strict
           echo "path=$HERMETICITY_SPEC" >> "$GITHUB_OUTPUT"
 
@@ -1001,6 +1010,7 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}

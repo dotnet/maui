@@ -40,16 +40,11 @@ stimuli:
       any final workspace diff is attributable to the try-fix attempt.
       Target file: src/Core/src/Handlers/WebView/WebViewHandler.Android.cs
 
-      This is a frozen one-commit fixture. Establish its broken baseline with
-      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -BaseBranch "$(git rev-parse HEAD^)"`.
+      This is a frozen one-commit fixture whose broken base is `HEAD^`. Follow
+      the `try-fix` skill's mandatory baseline and restoration protocol.
 
       You may modify only that target file. If another tracked file is required,
       report the attempt as Blocked instead of editing it.
-
-      Cleanup constraint: after capturing the attempt artifacts, invoke
-      `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Do not use
-      `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash`
-      to clean the working tree.
     environment:
       # The immutable fallback is itself a verified one-commit fixture, so the
       # PR remains evaluatable by the current base workflow. Once this workflow

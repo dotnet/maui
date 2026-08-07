@@ -50,7 +50,11 @@ cat > "$copilot_wrapper" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 : "${TRUSTED_COPILOT_CLI_PATH:?TRUSTED_COPILOT_CLI_PATH is required}"
+: "${TRUSTED_COPILOT_HOME:?TRUSTED_COPILOT_HOME is required}"
+export COPILOT_HOME="$TRUSTED_COPILOT_HOME"
 exec "$TRUSTED_COPILOT_CLI_PATH" "$@" \
+	--experimental \
+	--sandbox \
 	--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN
 EOF
 chmod 700 "$copilot_wrapper"
@@ -67,9 +71,12 @@ EOF
 chmod 700 "$probe_runtime"
 RUNTIME_ARGUMENT_PROBE="$probe_output" \
 	TRUSTED_COPILOT_CLI_PATH="$probe_runtime" \
+	TRUSTED_COPILOT_HOME="$install_root/probe-home" \
 	"$copilot_wrapper" --headless --stdio
 grep -Fqx -- "--headless" "$probe_output"
 grep -Fqx -- "--stdio" "$probe_output"
+grep -Fqx -- "--experimental" "$probe_output"
+grep -Fqx -- "--sandbox" "$probe_output"
 grep -Fqx -- "--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN" "$probe_output"
 
 vally_runner="$install_root/run-vally"
@@ -78,22 +85,52 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	: "${RUNNER_TEMP:?RUNNER_TEMP is required on GitHub Actions}"
 	command -v sudo >/dev/null
 	command -v useradd >/dev/null
+	if ! command -v bwrap >/dev/null; then
+		sudo -n apt-get update -qq
+		sudo -n apt-get install -y -qq bubblewrap
+	fi
 
 	eval_user="vally$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
 	eval_home="$RUNNER_TEMP/${eval_user}-home"
-	workspace_gid=$(stat -c %g "$GITHUB_WORKSPACE")
-	sudo -n useradd --system --no-create-home --gid "$workspace_gid" \
+	trusted_copilot_home="$RUNNER_TEMP/${eval_user}-copilot-home"
+	sudo -n useradd --system --user-group --no-create-home \
 		--shell /usr/sbin/nologin "$eval_user"
-	sudo -n install -d -o "$eval_user" -g "$workspace_gid" -m 700 \
+	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
 		"$eval_home" "$eval_home/tmp"
 
 	# Vally creates synthetic worktrees and results under the checkout. Grant its
 	# no-sudo user write access there, while keeping the evaluator/runtime owned
 	# by root so agent tool calls cannot replace a later Copilot launch.
+	sudo -n chgrp -R "$eval_user" "$GITHUB_WORKSPACE"
 	sudo -n chmod -R g+rwX "$GITHUB_WORKSPACE"
 	find "$GITHUB_WORKSPACE" -type d -exec sudo -n chmod g+s {} +
 	sudo -n -u "$eval_user" env HOME="$eval_home" \
 		git config --global --add safe.directory "$GITHUB_WORKSPACE"
+	sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"
+	cat <<EOF | sudo -n tee "$trusted_copilot_home/settings.json" >/dev/null
+{
+  "sandbox": {
+    "enabled": true,
+    "allowBypass": false,
+    "gitAuth": false,
+    "ghAuth": false,
+    "sandboxMcpServers": true,
+    "sandboxLspServers": true,
+    "allowDevToolAccess": false,
+    "userPolicy": {
+      "filesystem": {
+        "deniedPaths": ["/proc", "$install_root"],
+        "clearPolicyOnExit": true
+      },
+      "network": {
+        "allowOutbound": true,
+        "allowLocalNetwork": false
+      }
+    }
+  }
+}
+EOF
+	sudo -n chmod 444 "$trusted_copilot_home/settings.json"
 
 	{
 		echo '#!/usr/bin/env bash'
@@ -104,14 +141,15 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 : "${COPILOT_GITHUB_TOKEN:?COPILOT_GITHUB_TOKEN is required}"
 : "${COPILOT_CLI_PATH:?COPILOT_CLI_PATH is required}"
 : "${TRUSTED_COPILOT_CLI_PATH:?TRUSTED_COPILOT_CLI_PATH is required}"
+: "${TRUSTED_COPILOT_HOME:?TRUSTED_COPILOT_HOME is required}"
 umask 0002
 child_env=(
 	"HOME=$eval_home"
 	"TMPDIR=$eval_home/tmp"
 	"PATH=$PATH"
-	"COPILOT_GITHUB_TOKEN=$COPILOT_GITHUB_TOKEN"
 	"COPILOT_CLI_PATH=$COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_CLI_PATH=$TRUSTED_COPILOT_CLI_PATH"
+	"TRUSTED_COPILOT_HOME=$TRUSTED_COPILOT_HOME"
 )
 for name in CI GITHUB_ACTIONS GITHUB_WORKSPACE RUNNER_TEMP \
 	HTTP_PROXY HTTPS_PROXY NO_PROXY NODE_EXTRA_CA_CERTS SSL_CERT_FILE; do
@@ -119,7 +157,9 @@ for name in CI GITHUB_ACTIONS GITHUB_WORKSPACE RUNNER_TEMP \
 		child_env+=("$name=${!name}")
 	fi
 done
-exec /usr/bin/sudo -n -u "$eval_user" -- /usr/bin/env "${child_env[@]}" "$@"
+exec /usr/bin/sudo -n \
+	--preserve-env=COPILOT_GITHUB_TOKEN \
+	-u "$eval_user" -- /usr/bin/env "${child_env[@]}" "$@"
 EOF
 	} > "$vally_runner"
 	chmod 700 "$vally_runner"
@@ -128,16 +168,54 @@ EOF
 		COPILOT_GITHUB_TOKEN=probe \
 			COPILOT_CLI_PATH="$copilot_wrapper" \
 			TRUSTED_COPILOT_CLI_PATH="${copilot_runtimes[0]}" \
+			TRUSTED_COPILOT_HOME="$trusted_copilot_home" \
 			"$vally_runner" /usr/bin/id -un
 	)
 	if [ "$test_user" != "$eval_user" ]; then
 		echo "Expected isolated Vally user $eval_user, found $test_user" >&2
 		exit 1
 	fi
+	if [ "$(sudo -n -u "$eval_user" /usr/bin/id -Gn)" != "$eval_user" ]; then
+		echo "Isolated Vally user unexpectedly belongs to another group" >&2
+		exit 1
+	fi
+	if sudo -n -u "$eval_user" /usr/bin/test -w "$(dirname "$install_root")"; then
+		echo "Isolated Vally user can replace the runtime directory" >&2
+		exit 1
+	fi
 
 	sudo -n chown -R root:root "$install_root"
 	sudo -n chmod -R a+rX,a-w "$install_root"
+	if sudo -n -u "$eval_user" /usr/bin/test -w "$copilot_wrapper"; then
+		echo "Isolated Vally user can modify the Copilot wrapper" >&2
+		exit 1
+	fi
 else
+	trusted_copilot_home="$install_root/copilot-home"
+	mkdir -p "$trusted_copilot_home"
+	cat > "$trusted_copilot_home/settings.json" <<EOF
+{
+  "sandbox": {
+    "enabled": true,
+    "allowBypass": false,
+    "gitAuth": false,
+    "ghAuth": false,
+    "sandboxMcpServers": true,
+    "sandboxLspServers": true,
+    "allowDevToolAccess": false,
+    "userPolicy": {
+      "filesystem": {
+        "deniedPaths": ["/proc", "$install_root"],
+        "clearPolicyOnExit": true
+      },
+      "network": {
+        "allowOutbound": true,
+        "allowLocalNetwork": false
+      }
+    }
+  }
+}
+EOF
 	cat > "$vally_runner" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -151,4 +229,5 @@ fi
 	echo "vally_runner=$vally_runner"
 	echo "copilot_wrapper=$copilot_wrapper"
 	echo "copilot_runtime=${copilot_runtimes[0]}"
+	echo "copilot_home=$trusted_copilot_home"
 } >> "$github_output"

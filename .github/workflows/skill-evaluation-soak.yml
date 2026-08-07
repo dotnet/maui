@@ -102,6 +102,7 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
           # Live public-PR retrieval is anonymous by design. Do not give the
