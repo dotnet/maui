@@ -42,6 +42,33 @@ param(
 
 $ErrorActionPreference = 'Continue'
 
+
+function ConvertTo-UiFailureSafeConsoleText {
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    if ($null -eq $Text) {
+        return ''
+    }
+
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
+function ConvertTo-UiFailureSafeMarkdownText {
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    if ($null -eq $Text) {
+        return ''
+    }
+
+    return $Text -replace '##(?=\[|vso\[)', '## '
+}
+
 if (-not (Test-Path $InputFile) -or [string]::IsNullOrWhiteSpace((Get-Content $InputFile -Raw))) {
     Write-Host "No analysis input at $InputFile — skipping UI failure analysis."
     exit 0
@@ -135,13 +162,13 @@ $copilotFailed = $false
 try {
     # Same invocation contract as the main review: JSON stream + secret
     # stripping. Copilot writes the analysis to $OutputFile itself; we only
-    # surface lightweight progress. Any line we echo is scrubbed of ##vso
-    # directives so untrusted text on the stream can't drive the agent
-    # (security rule 6).
+    # surface lightweight progress. Any line we echo is collapsed and scrubbed
+    # of AzDO logging-command prefixes so untrusted text on the stream can't
+    # drive the agent (security rule 7).
     & copilot -p $metaPrompt --allow-all --output-format json --model $Model --context long_context --effort max --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
         $line = ($_ | Out-String).Trim()
         if (-not $line) { return }
-        $safe = $line -replace '##vso\[[^]]*\]', ''
+        $safe = ConvertTo-UiFailureSafeConsoleText $line
         try {
             $event = $safe | ConvertFrom-Json -ErrorAction Stop
             switch ($event.type) {
@@ -154,17 +181,19 @@ try {
     }
     if ($LASTEXITCODE -ne 0) { $copilotFailed = $true }
 } catch {
-    Write-Host "##[warning]Copilot UI-failure analysis threw: $_"
+    Write-Host "$(ConvertTo-UiFailureSafeConsoleText "##[warning]Copilot UI-failure analysis threw: $_")"
     $copilotFailed = $true
 }
 
 if ((Test-Path $OutputFile) -and -not [string]::IsNullOrWhiteSpace((Get-Content $OutputFile -Raw))) {
-    # Defense in depth: strip any ##vso the model may have echoed into the file.
-    $clean = (Get-Content $OutputFile -Raw) -replace '##vso\[[^]]*\]', ''
+    # Defense in depth: defang any AzDO logging-command prefixes the model may
+    # have echoed into the file before later rendering/logging. Preserve Markdown
+    # line breaks in the artifact; console writes use ConvertTo-UiFailureSafeConsoleText.
+    $clean = ConvertTo-UiFailureSafeMarkdownText (Get-Content $OutputFile -Raw)
     $clean | Set-Content $OutputFile -Encoding UTF8
     Write-Host "UI failure analysis written ($((Get-Item $OutputFile).Length) bytes) to $OutputFile"
     exit 0
 }
 
-Write-Host "##[warning]Copilot produced no UI-failure analysis file (copilotFailed=$copilotFailed) — the summary will omit the section."
+Write-Host "$(ConvertTo-UiFailureSafeConsoleText "##[warning]Copilot produced no UI-failure analysis file (copilotFailed=$copilotFailed) — the summary will omit the section.")"
 exit 0

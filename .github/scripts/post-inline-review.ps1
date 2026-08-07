@@ -88,17 +88,30 @@ if (-not (Test-Path $FindingsFile)) {
 
 Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
 $rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
-$parsed = $rawJson | ConvertFrom-Json
 
-# Guard: an empty, whitespace-only, or literal-"null" findings file parses to
-# $null. The expert review writes the inline-findings.post.ok sentinel whenever
-# the PR fix won, even when it produced ZERO inline findings — so this block can
-# legitimately run against a null/empty findings file. Calling .GetType() or
-# .PSObject on $null throws "You cannot call a method on a null-valued
-# expression" (surfaced as a scary non-fatal error in the deferred-post catch).
-# Treat it as "no findings" and exit cleanly.
+# Guard: an empty or whitespace-only findings file means the expert review
+# produced ZERO inline findings. Check this before ConvertFrom-Json so malformed
+# non-empty JSON still surfaces as a parse error instead of being treated as no
+# findings.
+if ([string]::IsNullOrWhiteSpace($rawJson)) {
+    Write-Host "Findings file is empty — no inline findings to post." -ForegroundColor Green
+    exit 0
+}
+
+try {
+    $parsed = $rawJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    throw "Findings file '$FindingsFile' contains malformed JSON: $($_.Exception.Message)"
+}
+
+# Guard: a literal-"null" findings file parses to $null. The expert review writes
+# the inline-findings.post.ok sentinel whenever the PR fix won, even when it
+# produced ZERO inline findings — so this block can legitimately run against a
+# null findings file. Calling .GetType() or .PSObject on $null throws "You cannot
+# call a method on a null-valued expression" (surfaced as a scary non-fatal error
+# in the deferred-post catch). Treat it as "no findings" and exit cleanly.
 if ($null -eq $parsed) {
-    Write-Host "Findings file parsed to null (empty or 'null') — no inline findings to post." -ForegroundColor Green
+    Write-Host "Findings file parsed to null ('null') — no inline findings to post." -ForegroundColor Green
     exit 0
 }
 

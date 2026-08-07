@@ -15,6 +15,29 @@
 BeforeAll {
     $script:AnalyzeScript = Join-Path $PSScriptRoot 'Analyze-UITestFailures.ps1'
     $script:AnalyzeText   = Get-Content $script:AnalyzeScript -Raw
+    $tokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+        $script:AnalyzeScript,
+        [ref] $tokens,
+        [ref] $parseErrors)
+
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
+    }
+
+    foreach ($functionName in @('ConvertTo-UiFailureSafeConsoleText', 'ConvertTo-UiFailureSafeMarkdownText')) {
+        $function = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $functionName
+        }, $true)
+
+        if (-not $function) {
+            throw "$functionName not found"
+        }
+
+        Invoke-Expression $function.Extent.Text
+    }
 }
 
 Describe 'Analyze-UITestFailures input cap' {
@@ -51,5 +74,19 @@ Describe 'Analyze-UITestFailures input cap' {
             $capped = $inputContent.Substring(0, $maxInputChars)
         }
         $capped | Should -Be $inputContent
+    }
+
+    It 'defangs Copilot console output before fallback Write-Host rendering' {
+        $value = "before`r`n##vso[task.setvariable variable=x]spoof`n##[error]spoof"
+
+        ConvertTo-UiFailureSafeConsoleText $value |
+            Should -Be 'before ## vso[task.setvariable variable=x]spoof ## [error]spoof'
+    }
+
+    It 'defangs model-written Markdown without destroying formatting' {
+        $value = "line 1`n##vso[task.setvariable variable=x]spoof`n##[error]spoof"
+
+        ConvertTo-UiFailureSafeMarkdownText $value |
+            Should -Be "line 1`n## vso[task.setvariable variable=x]spoof`n## [error]spoof"
     }
 }
