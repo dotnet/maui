@@ -6,7 +6,7 @@
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
 #      Requires the COPILOT_PAT_* secret pool in the `copilot-pat-pool`
 #      environment (Copilot API access). Jobs that need model auth declare
-#      `environment: copilot-pat-pool` and randomly pick one populated PAT.
+#      `environment: copilot-pat-pool` and rotate across populated PATs.
 #      NOTE: keep `copilot-pat-pool` free of required-reviewer / wait-timer
 #      protection rules. These jobs run on `pull_request_target`, so such a
 #      rule would pause every auto-eval pending manual approval and hang the
@@ -85,8 +85,8 @@ permissions:
 
 env:
   # Vally CLI is run via npx from npm. Pinned for reproducibility.
-  # Vally 0.10 requires Node >=22, so we pin Node 22 on the runners.
-  VALLY_VERSION: "0.10.0"
+  # Vally 0.12 requires Node >=22, so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.12.0"
   NODE_VERSION: "22"
 
 jobs:
@@ -443,9 +443,9 @@ jobs:
             $testsDir = ".github/skills/$skill/tests"
             $specs = @()
             if (Test-Path $testsDir) {
-              # Capability suites only: eval*.vally.yaml. This deliberately
-              # EXCLUDES hermeticity.vally.yaml (the hermeticity gate),
-              # which is run by the dedicated hermeticity-gate job.
+              # Required deterministic suites only: eval*.vally.yaml. This
+              # deliberately EXCLUDES hermeticity.vally.yaml (its dedicated
+              # gate) and soak*.vally.yaml (scheduled/manual advisory runs).
               $specs = @(Get-ChildItem -Path $testsDir -Filter "eval*.vally.yaml" -File -ErrorAction SilentlyContinue)
             }
             if ($specs.Count -gt 0) {
@@ -561,14 +561,13 @@ jobs:
           TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
           TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
+          set -euo pipefail
           TOKENS=()
-          NAMES=()
           for i in 0 1 2 3 4 5 6 7 8 9; do
             var="TOKEN_$i"
-            val="${!var}"
+            val="${!var-}"
             if [ -n "$val" ]; then
               TOKENS+=("$val")
-              NAMES+=("COPILOT_PAT_$i")
             fi
           done
 
@@ -586,34 +585,10 @@ jobs:
           else
             IDX=$((RANDOM % ${#TOKENS[@]}))
           fi
-          echo "Selected ${NAMES[$IDX]} (1 of ${#TOKENS[@]} available PATs, job-index=${JOB_INDEX:-random})"
+          echo "Selected 1 of ${#TOKENS[@]} available PATs (job-index=${JOB_INDEX:-random})"
 
           echo "::add-mask::${TOKENS[$IDX]}"
-          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
-
-      - name: Wait for selected PAT API quota
-        env:
-          GH_TOKEN: ${{ steps.select-token.outputs.token }}
-        run: |
-          set -euo pipefail
-          minimum_remaining=500
-          read -r remaining reset_at < <(
-            gh api rate_limit --jq '.resources.core | [.remaining, .reset] | @tsv'
-          )
-          if [ "$remaining" -lt "$minimum_remaining" ]; then
-            now=$(date +%s)
-            wait_seconds=$((reset_at - now + 30))
-            if [ "$wait_seconds" -gt 0 ] && [ "$wait_seconds" -le 3900 ]; then
-              echo "Selected PAT has ${remaining} core requests remaining; waiting ${wait_seconds}s for reset."
-              sleep "$wait_seconds"
-            fi
-            remaining=$(gh api rate_limit --jq '.resources.core.remaining')
-          fi
-          if [ "$remaining" -lt "$minimum_remaining" ]; then
-            echo "::error::Selected PAT has only ${remaining} core requests remaining after quota preflight."
-            exit 1
-          fi
-          echo "Selected PAT has ${remaining} core requests available."
+          echo "token=${TOKENS[$IDX]}" >> "$GITHUB_OUTPUT"
 
       # ── Run LLM evaluation (Vally) ───────────────────────────────
       # ── Optional baseline (pre-PR) evaluation ────────────────────
@@ -816,7 +791,7 @@ jobs:
           # Collect this skill's capability specs. Pass every nonstandard
           # eval*.vally.yaml filename explicitly because Vally directory discovery
           # only recognizes eval.yaml/eval.yml. This EXCLUDES hermeticity.vally.yaml
-          # (run by its own gate job).
+          # (its own gate) and soak*.vally.yaml (advisory live evaluation).
           SPECS=()
           for f in "$TESTS_PATH"/eval*.vally.yaml; do
             [ -e "$f" ] || continue

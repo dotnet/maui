@@ -80,11 +80,6 @@ curl -fsSL -H 'Accept: application/vnd.github.patch' \
 curl -fsSL \
   'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/files?per_page=100'
 
-# PR narrative, reviews, inline comments, issue comments, and check runs:
-curl -fsSL https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>
-curl -fsSL 'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/reviews?per_page=100'
-curl -fsSL 'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/comments?per_page=100'
-curl -fsSL 'https://api.github.com/repos/dotnet/maui/issues/<PR_NUMBER>/comments?per_page=100'
 ```
 
 Equivalent `web_fetch` calls are acceptable. Use response `raw_url` values or
@@ -167,6 +162,16 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 1. Where your assessment disagrees with the author's claims, investigate further
 2. If the PR claims a bug fix, verify the root cause analysis matches the code
 3. Check existing review comments to avoid duplicating feedback
+
+If authenticated `gh` retrieval failed during Step 1, use the same anonymous
+read-only fallback for these narrative surfaces now:
+
+```bash
+curl -fsSL https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>
+curl -fsSL 'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/reviews?per_page=100'
+curl -fsSL 'https://api.github.com/repos/dotnet/maui/pulls/<PR_NUMBER>/comments?per_page=100'
+curl -fsSL 'https://api.github.com/repos/dotnet/maui/issues/<PR_NUMBER>/comments?per_page=100'
+```
 
 #### 🚨 Prior Review Reconciliation
 

@@ -275,7 +275,9 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 [Description of what you're changing and why]
 
-**Different from existing fix:** [How this differs from PR's current approach]
+**Prior approach avoided:** [Name every relevant existing/prior approach, their shared failure mechanism, and why they failed, or N/A]
+
+**Mechanism-level difference:** [Explain the full cause-to-effect chain showing why the new mechanism avoids that failure, not merely the code location]
 "@ | Set-Content "$OUTPUT_DIR/approach.md"
 ```
 
@@ -541,6 +543,10 @@ Provide structured output to the invoker:
 
 **Approach:** [Brief description of what was tried]
 
+**Prior Approach Avoided:** [Name every relevant existing/prior approach, their shared failure mechanism, and why they failed, or N/A]
+
+**Mechanism-Level Difference:** [Explain the full cause-to-effect chain showing why the new mechanism avoided that failure]
+
 **Files Changed:**
 - `path/to/file.cs` (+X/-Y lines)
 
@@ -557,6 +563,13 @@ Provide structured output to the invoker:
 **This Attempt's Status:** Done/NeedsRetry
 **Reasoning:** [Why this specific approach succeeded or failed]
 ```
+
+The two approach-comparison fields must be self-contained prose, not labels or
+fragments. When prior attempts share a root cause, explicitly name that shared
+failure mechanism. Then connect the new mechanism to the failure with a causal
+explanation (for example, “because X now happens after Y, Z is available
+directly, so the failing fallback is never consulted”). Do not rely on the
+contents of `approach.md` or `analysis.md` being visible to the invoker.
 
 **Determining Status:** Set `Done` when you've completed testing this approach (whether it passed or failed). Set `NeedsRetry` only if you hit a transient error (network timeout, flaky test) and want to retry the same approach.
 
