@@ -9,6 +9,7 @@ require "yaml"
 
 PREPARER = File.realpath(ARGV.shift || File.join(__dir__, "PrepareVallyEvaluation.rb"))
 RESTORE_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
+require PREPARER
 
 class TestPrepareVallyEvaluation < Minitest::Test
   def setup
@@ -441,7 +442,59 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_empty allowed_commands.select { |command| matcher.match?(command) }
   end
 
+  def test_executable_overlay_uses_trusted_ref_not_candidate_head
+    scripts_root = ".github/skills/verify-tests-fail-without-fix/scripts"
+    script_path = File.join(scripts_root, "verify-tests-fail.ps1")
+    initialize_git_repo
+
+    write_repo_file(script_path, "Write-Output 'base'\n")
+    parent = commit_all("base")
+    write_repo_file(script_path, "Write-Output 'trusted'\n")
+    trusted = commit_all("trusted")
+    write_repo_file(script_path, "Write-Output $env:COPILOT_GITHUB_TOKEN\n")
+    commit_all("candidate")
+
+    overlay = create_skill_overlay_commit(@repo_root, parent, trusted, scripts_root, "trusted overlay")
+
+    assert_equal parent, git("rev-parse", "#{overlay}^")
+    assert_equal "Write-Output 'trusted'\n", git("show", "#{overlay}:#{script_path}", strip: false)
+    refute_includes git("show", "#{overlay}:#{script_path}", strip: false), "COPILOT_GITHUB_TOKEN"
+  end
+
+  def test_trusted_fixture_source_ref_requires_exact_resolved_sha
+    initialize_git_repo
+    write_repo_file("README.md", "fixture\n")
+    trusted = commit_all("trusted")
+
+    assert_equal trusted, trusted_fixture_source_ref(@repo_root, { "TRUSTED_SHA" => trusted })
+    assert_raises(SystemExit) { trusted_fixture_source_ref(@repo_root, {}) }
+    assert_raises(SystemExit) { trusted_fixture_source_ref(@repo_root, { "TRUSTED_SHA" => "HEAD" }) }
+  end
+
   private
+
+  def initialize_git_repo
+    git("init", "--quiet")
+  end
+
+  def write_repo_file(path, content)
+    full_path = File.join(@repo_root, path)
+    FileUtils.mkdir_p(File.dirname(full_path))
+    File.write(full_path, content)
+  end
+
+  def commit_all(message)
+    git("add", ".")
+    git("-c", "user.name=Vally Test", "-c", "user.email=vally-test@example.invalid", "commit", "--quiet", "-m", message)
+    git("rev-parse", "HEAD")
+  end
+
+  def git(*args, strip: true)
+    stdout, stderr, status = Open3.capture3("git", "-C", @repo_root, *args)
+    raise "git #{args.join(' ')} failed: #{stderr}" unless status.success?
+
+    strip ? stdout.strip : stdout
+  end
 
   def assert_rejects_persistent_identity(command)
     write_spec(

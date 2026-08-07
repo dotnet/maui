@@ -1256,6 +1256,14 @@ jobs:
               }
               return null;
             }
+            function testcaseProp(testcase, key) {
+              const properties = (testcase.match(/<properties\b[^>]*>[\s\S]*?<\/properties>/) || [''])[0];
+              for (const property of elementBlocks(properties, 'property')) {
+                const openTag = (property.match(/<property\b[^>]*?(?:>|\/>)/) || [''])[0];
+                if (tagAttr(openTag, 'name') === key) return tagAttr(openTag, 'value');
+              }
+              return null;
+            }
             function tagAttr(tag, key) {
               const m = (tag || '').match(new RegExp("\\b" + key + "\\s*=\\s*([\"'])(.*?)\\1"));
               return m ? xmlDecode(m[2]) : null;
@@ -1329,12 +1337,7 @@ jobs:
               return elementBlocks(xml, 'testsuite');
             }
             function hasFailedSkillInvocation(testcase) {
-              const properties = (testcase.match(/<properties\b[^>]*>[\s\S]*?<\/properties>/) || [''])[0];
-              return elementBlocks(properties, 'property').some(property => {
-                const openTag = (property.match(/<property\b[^>]*>/) || [''])[0];
-                return tagAttr(openTag, 'name') === 'grader.skill-invocation.passed' &&
-                  tagAttr(openTag, 'value') === 'false';
-              });
+              return testcaseProp(testcase, 'grader.skill-invocation.passed') === 'false';
             }
             function allStimuliRan(testsuite) {
               const runText = suiteProp(testsuite, 'stimuliRun');
@@ -1345,6 +1348,42 @@ jobs:
               const total = Number(totalText);
               const skipped = skippedText === null ? 0 : Number(skippedText);
               return total > 0 && run === total && Number.isInteger(skipped) && skipped === 0;
+            }
+            function scenarioScoreFailures(testsuite, thresholdText) {
+              // Vally thresholds the suite average. Apply the same floor to
+              // each scenario so strong scenarios cannot hide a full regression.
+              if (thresholdText === null || thresholdText === '') return [];
+              const threshold = Number(thresholdText);
+              if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) {
+                return [{ name: '(suite score floor)', score: null, threshold }];
+              }
+
+              const scenarios = new Map();
+              for (const testcase of testcaseBlocks(testsuite)) {
+                const openTag = (testcase.match(/<testcase\b[^>]*?(?:>|\/>)/) || [''])[0];
+                const trialName = tagAttr(openTag, 'name') || '(stimulus)';
+                const name = trialName.replace(/ \(trial \d+\)$/, '');
+                const scoreText = testcaseProp(testcase, 'grader.score');
+                const score = Number(scoreText);
+                const current = scenarios.get(name) || { sum: 0, count: 0, invalid: false };
+                if (scoreText === null || scoreText === '' || !Number.isFinite(score) || score < 0 || score > 1) {
+                  current.invalid = true;
+                } else {
+                  current.sum += score;
+                  current.count += 1;
+                }
+                scenarios.set(name, current);
+              }
+
+              if (scenarios.size === 0) {
+                return [{ name: '(suite score floor)', score: null, threshold }];
+              }
+              return [...scenarios.entries()].flatMap(([name, value]) => {
+                const score = value.count > 0 ? value.sum / value.count : null;
+                return value.invalid || score === null || score < threshold
+                  ? [{ name, score, threshold }]
+                  : [];
+              });
             }
 
             // Regression fixtures cover equivalent JUnit property serialization
@@ -1433,6 +1472,49 @@ jobs:
             if (!allStimuliRan(completedStimuliFixture) || allStimuliRan(skippedStimuliFixture)) {
               throw new Error('Internal JUnit gate accepted skipped or incomplete stimuli.');
             }
+            const scenarioFloorFixture = [
+              '<testsuite name="scenario-floor">',
+              '<properties>',
+              '<property name="threshold" value="0.8"/>',
+              '<property name="overallScore" value="0.833"/>',
+              '<property name="passed" value="true"/>',
+              '</properties>',
+              '<testcase name="weak-scenario (trial 1)"><properties>',
+              '<property name="grader.score" value="0.5"/>',
+              '</properties></testcase>',
+              '<testcase name="weak-scenario (trial 2)"><properties>',
+              '<property name="grader.score" value="1"/>',
+              '</properties></testcase>',
+              '<testcase name="strong-scenario (trial 1)"><properties>',
+              '<property name="grader.score" value="1"/>',
+              '</properties></testcase>',
+              '</testsuite>',
+            ].join('');
+            const scenarioFloorFixtureFailures = scenarioScoreFailures(
+              scenarioFloorFixture,
+              suiteProp(scenarioFloorFixture, 'threshold')
+            );
+            if (scenarioFloorFixtureFailures.length !== 1 ||
+                scenarioFloorFixtureFailures[0].name !== 'weak-scenario' ||
+                scenarioFloorFixtureFailures[0].score !== 0.75 ||
+                scenarioScoreFailures(scenarioFloorFixture, null).length !== 0) {
+              throw new Error('Internal JUnit gate failed the per-scenario score-floor fixture.');
+            }
+            const missingScenarioScoreFixture = [
+              '<testsuite name="missing-scenario-score">',
+              '<properties><property name="threshold" value="0.8"/></properties>',
+              '<testcase name="unscored-scenario"><properties></properties></testcase>',
+              '</testsuite>',
+            ].join('');
+            const missingScenarioScoreFailures = scenarioScoreFailures(
+              missingScenarioScoreFixture,
+              suiteProp(missingScenarioScoreFixture, 'threshold')
+            );
+            if (missingScenarioScoreFailures.length !== 1 ||
+                missingScenarioScoreFailures[0].name !== 'unscored-scenario' ||
+                missingScenarioScoreFailures[0].score !== null) {
+              throw new Error('Internal JUnit gate accepted a missing scenario score.');
+            }
 
             const suites = [];
             let evalPassed = true;
@@ -1453,6 +1535,7 @@ jobs:
                   const threshold = suiteProp(block, 'threshold');
                   const vallyPassed = suiteProp(block, 'passed') === 'true';
                   const stimuliComplete = allStimuliRan(block);
+                  const scenarioFloorFailures = scenarioScoreFailures(block, threshold);
                   let skillInvocationFailures = 0;
                   const suiteFailures = Number(tagAttr(openTag, 'failures') || 0);
                   const suiteErrors = Number(tagAttr(openTag, 'errors') || 0);
@@ -1485,7 +1568,17 @@ jobs:
                       msg: 'not all configured stimuli ran, or one or more stimuli were skipped',
                     });
                   }
-                  const passed = vallyPassed && stimuliComplete && skillInvocationFailures === 0;
+                  for (const scenario of scenarioFloorFailures) {
+                    const scoreText = scenario.score === null ? 'missing' : scenario.score.toFixed(3);
+                    failures.set(scenario.name, {
+                      kind: 'score',
+                      msg: `scenario score ${scoreText} is below threshold ${scenario.threshold}`,
+                    });
+                  }
+                  const passed = vallyPassed &&
+                    stimuliComplete &&
+                    skillInvocationFailures === 0 &&
+                    scenarioFloorFailures.length === 0;
                   if (!passed) evalPassed = false;
                   suites.push({
                     scope,
@@ -1497,6 +1590,7 @@ jobs:
                     vallyPassed,
                     stimuliComplete,
                     skillInvocationFailures,
+                    scenarioScoreFailures: scenarioFloorFailures.length,
                     suiteFailures,
                     suiteErrors,
                     failures: [...failures.entries()],
@@ -1675,14 +1769,16 @@ jobs:
                 let v = '❌';
                 if (s.skillInvocationFailures > 0) {
                   v = `❌ ${s.skillInvocationFailures} skill invocation failure${s.skillInvocationFailures === 1 ? '' : 's'}`;
-                } else if (s.passed) {
-                  v = s.suiteFailures > 0
-                    ? `✅ aggregate; ${s.suiteFailures} trial failure${s.suiteFailures === 1 ? '' : 's'}`
-                    : '✅';
                 } else if (s.suiteErrors > 0) {
                   // Vally hard-fails a suite on any execution error even when
                   // its numeric aggregate still meets the score threshold.
                   v = `❌ ${s.suiteErrors} execution error${s.suiteErrors === 1 ? '' : 's'}`;
+                } else if (s.scenarioScoreFailures > 0) {
+                  v = `❌ ${s.scenarioScoreFailures} scenario score failure${s.scenarioScoreFailures === 1 ? '' : 's'}`;
+                } else if (s.passed) {
+                  v = s.suiteFailures > 0
+                    ? `✅ aggregate; ${s.suiteFailures} trial failure${s.suiteFailures === 1 ? '' : 's'}`
+                    : '✅';
                 } else if (s.suiteFailures > 0) {
                   v = `❌ ${s.suiteFailures} failed trial${s.suiteFailures === 1 ? '' : 's'}`;
                 }

@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
-		internal static bool VallyFixtureIsFixed => true;
-
 		public static implicit operator Brush(Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)

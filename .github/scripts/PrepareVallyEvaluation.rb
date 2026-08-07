@@ -385,20 +385,20 @@ def fixture_files(fixture)
   fixture[:files].is_a?(Hash) ? fixture[:files].keys : fixture[:files]
 end
 
-def create_skill_overlay_commit(repo_root, parent_ref, relative_root, message)
+def create_skill_overlay_commit(repo_root, parent_ref, source_ref, relative_root, message)
   Dir.mktmpdir("vally-skill-overlay-") do |temp_root|
     index_path = File.join(temp_root, "index")
     index_env = { "GIT_INDEX_FILE" => index_path }
     run_git(repo_root, "read-tree", parent_ref, env: index_env)
 
     parent_files = run_git(repo_root, "ls-tree", "-r", "--name-only", parent_ref, "--", relative_root).split("\n")
-    current_files = run_git(repo_root, "ls-tree", "-r", "--name-only", "HEAD", "--", relative_root).split("\n")
-    (parent_files - current_files).each do |path|
+    source_files = run_git(repo_root, "ls-tree", "-r", "--name-only", source_ref, "--", relative_root).split("\n")
+    (parent_files - source_files).each do |path|
       run_git(repo_root, "update-index", "--remove", "--", path, env: index_env)
     end
-    current_files.each do |path|
-      entry = run_git(repo_root, "ls-tree", "HEAD", "--", path).split
-      raise "Could not determine current tree entry for #{path}" unless entry.length >= 3
+    source_files.each do |path|
+      entry = run_git(repo_root, "ls-tree", source_ref, "--", path).split
+      raise "Could not determine trusted tree entry for #{path}" unless entry.length >= 3
 
       run_git(repo_root, "update-index", "--add", "--cacheinfo", entry[0], entry[2], path, env: index_env)
     end
@@ -412,6 +412,18 @@ def create_skill_overlay_commit(repo_root, parent_ref, relative_root, message)
       env: FIXTURE_COMMIT_ENV
     )
   end
+end
+
+def trusted_fixture_source_ref(repo_root, env = ENV)
+  # Fixture scripts execute in the credentialed Vally process, so source them
+  # only from the immutable workflow revision rather than candidate HEAD.
+  trusted_sha = env["TRUSTED_SHA"].to_s
+  fail!("TRUSTED_SHA is required to materialize executable fixture scripts") unless trusted_sha.match?(/\A[0-9a-f]{40}\z/)
+
+  resolved = run_git(repo_root, "rev-parse", "--verify", "#{trusted_sha}^{commit}")
+  fail!("TRUSTED_SHA did not resolve exactly: #{trusted_sha}") unless resolved == trusted_sha
+
+  trusted_sha
 end
 
 def create_fixture_commit(repo_root, fixture, parent_ref: BASE_REF)
@@ -464,52 +476,57 @@ def patch_fixture_ref!(spec_path, fixture, fixture_head)
   File.write(spec_path, content.sub(pattern, "\\1#{fixture_head}\\3"))
 end
 
-repo_root = File.realpath(File.expand_path(ARGV.fetch(0)))
-requested_tests_path = File.expand_path(ARGV.fetch(1), repo_root)
-validate_only = ARGV.include?("--validate-only")
-skills_root_relative = File.join(".github", "skills")
-validate_no_checkout_symlinks!(skills_root_relative, repo_root, "skills root")
-skills_root = File.realpath(File.join(repo_root, skills_root_relative))
-fail!("skills root escapes checkout: #{skills_root}") unless inside?(skills_root, repo_root)
-fail!("tests path does not exist: #{requested_tests_path}") unless Dir.exist?(requested_tests_path)
-tests_path = File.realpath(requested_tests_path)
-fail!("tests path escapes .github/skills") unless inside?(tests_path, skills_root)
+def main(argv = ARGV)
+  repo_root = File.realpath(File.expand_path(argv.fetch(0)))
+  requested_tests_path = File.expand_path(argv.fetch(1), repo_root)
+  validate_only = argv.include?("--validate-only")
+  skills_root_relative = File.join(".github", "skills")
+  validate_no_checkout_symlinks!(skills_root_relative, repo_root, "skills root")
+  skills_root = File.realpath(File.join(repo_root, skills_root_relative))
+  fail!("skills root escapes checkout: #{skills_root}") unless inside?(skills_root, repo_root)
+  fail!("tests path does not exist: #{requested_tests_path}") unless Dir.exist?(requested_tests_path)
+  tests_path = File.realpath(requested_tests_path)
+  fail!("tests path escapes .github/skills") unless inside?(tests_path, skills_root)
 
-spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
-fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
-skill_root = File.realpath(File.dirname(tests_path))
-spec_paths.each do |spec_path|
-  real_spec_path = File.realpath(spec_path)
-  fail!("spec path escapes #{tests_path}: #{spec_path}") unless inside?(real_spec_path, tests_path)
-  validate_spec!(real_spec_path, skill_root, repo_root, inspect_git_refs: !validate_only)
-end
-
-skill_fixtures = FIXTURES[File.basename(skill_root)]
-if !validate_only && skill_fixtures
-  fixture_parent = if File.basename(skill_root) == "verify-tests-fail-without-fix"
-                     scripts_root = Pathname.new(File.join(skill_root, "scripts"))
-                       .relative_path_from(Pathname.new(repo_root)).to_s
-                     create_skill_overlay_commit(
-                       repo_root,
-                       BASE_REF,
-                       scripts_root,
-                       "Synthetic verification skill baseline"
-                     )
-                   else
-                     BASE_REF
-                   end
-  skill_fixtures.each do |spec_name, fixtures|
-    spec_path = File.join(tests_path, spec_name)
-    fail!("missing fixture spec #{spec_path}") unless File.file?(spec_path)
-
-    fixtures.each do |fixture|
-      fixture_head = create_fixture_commit(repo_root, fixture, parent_ref: fixture_parent)
-      patch_fixture_ref!(spec_path, fixture, fixture_head)
-      puts "Prepared #{fixture[:marker]} at #{fixture_head}"
-    end
+  spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
+  fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
+  skill_root = File.realpath(File.dirname(tests_path))
+  spec_paths.each do |spec_path|
+    real_spec_path = File.realpath(spec_path)
+    fail!("spec path escapes #{tests_path}: #{spec_path}") unless inside?(real_spec_path, tests_path)
+    validate_spec!(real_spec_path, skill_root, repo_root, inspect_git_refs: !validate_only)
   end
 
-  spec_paths.each { |spec_path| validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs: true) }
+  skill_fixtures = FIXTURES[File.basename(skill_root)]
+  if !validate_only && skill_fixtures
+    fixture_parent = if File.basename(skill_root) == "verify-tests-fail-without-fix"
+                       scripts_root = Pathname.new(File.join(skill_root, "scripts"))
+                         .relative_path_from(Pathname.new(repo_root)).to_s
+                       create_skill_overlay_commit(
+                         repo_root,
+                         BASE_REF,
+                         trusted_fixture_source_ref(repo_root),
+                         scripts_root,
+                         "Synthetic verification skill baseline"
+                       )
+                     else
+                       BASE_REF
+                     end
+    skill_fixtures.each do |spec_name, fixtures|
+      spec_path = File.join(tests_path, spec_name)
+      fail!("missing fixture spec #{spec_path}") unless File.file?(spec_path)
+
+      fixtures.each do |fixture|
+        fixture_head = create_fixture_commit(repo_root, fixture, parent_ref: fixture_parent)
+        patch_fixture_ref!(spec_path, fixture, fixture_head)
+        puts "Prepared #{fixture[:marker]} at #{fixture_head}"
+      end
+    end
+
+    spec_paths.each { |spec_path| validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs: true) }
+  end
+
+  puts "Validated #{spec_paths.length} Vally eval spec(s) under #{tests_path}"
 end
 
-puts "Validated #{spec_paths.length} Vally eval spec(s) under #{tests_path}"
+main if __FILE__ == $PROGRAM_NAME
