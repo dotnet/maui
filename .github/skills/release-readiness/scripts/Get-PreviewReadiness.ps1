@@ -133,7 +133,7 @@ param(
     [string]$InternalBuildId,
 
     [Parameter(Mandatory = $false)]
-    [Nullable[bool]]$PublicSafe = $null,
+    [bool]$PublicSafe = $true,
 
     [Parameter(Mandatory = $false)]
     [string]$ConfirmedWorkloadSetVersion,
@@ -206,11 +206,7 @@ $isGitHubActions = if (Get-Command Test-IsGitHubActions -ErrorAction SilentlyCon
 } else {
     "$env:GITHUB_ACTIONS" -ieq 'true'
 }
-$effectivePublicSafe = if ($null -eq $PublicSafe) {
-    $true
-} else {
-    [bool]$PublicSafe
-}
+$effectivePublicSafe = $PublicSafe
 
 # In candidate mode, the preview branch hasn't been cut yet — survey the
 # source instead (caller passes net<major>.0 via -SurveyRef). In in-flight
@@ -2567,7 +2563,7 @@ $componentPins = if ($surveyExists) {
 $consumerInstallability = New-PreviewInstallabilityFallback `
     -Summary 'Consumer installability could not be evaluated.' `
     -CliVersion $ConfirmedWorkloadSetVersion `
-    -PublicSafe $PublicSafe
+    -PublicSafe $effectivePublicSafe
 if ($Script:PreviewInstallabilityHelperLoaded) {
     try {
         $consumerInstallability = Get-PreviewConsumerInstallability `
@@ -2576,14 +2572,14 @@ if ($Script:PreviewInstallabilityHelperLoaded) {
             -Pins $componentPins `
             -WorkloadSetCliVersion $ConfirmedWorkloadSetVersion `
             -AdditionalPackageSource $AdditionalPackageSource `
-            -PublicSafe $PublicSafe
+            -PublicSafe $effectivePublicSafe
     } catch {
-        $warningDetail = if ($PublicSafe) { '' } else { ": $($_.Exception.Message)" }
+        $warningDetail = if ($effectivePublicSafe) { '' } else { ": $($_.Exception.Message)" }
         Write-Warning "Consumer installability check failed (non-fatal)$warningDetail" -WarningAction Continue
         $consumerInstallability = New-PreviewInstallabilityFallback `
             -Summary 'Consumer installability evaluation failed; no readiness claim can be made.' `
             -CliVersion $ConfirmedWorkloadSetVersion `
-            -PublicSafe $PublicSafe
+            -PublicSafe $effectivePublicSafe
     }
 }
 
