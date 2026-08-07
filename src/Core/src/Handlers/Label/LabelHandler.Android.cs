@@ -93,7 +93,17 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapBackground(ILabelHandler handler, ILabel label)
 		{
-			handler.PlatformView?.UpdateBackground(label);
+			var platformView = handler.PlatformView;
+			if (platformView is null)
+				return;
+
+			if (label.Background.IsNullOrEmpty())
+			{
+				platformView.Background = null;
+				return;
+			}
+
+			platformView.UpdateBackground(label);
 		}
 
 		public static void MapText(ILabelHandler handler, ILabel label)
