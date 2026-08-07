@@ -99,15 +99,17 @@ network:
     - "*.blob.core.windows.net"
 
 safe-outputs:
-  # Job-enforced dry-run: when `dry_run` is true, gh-aw stages every safe-output below (writes
-  # nothing, only logs/records what WOULD have been emitted) regardless of what the agent does.
+  # Job-enforced dry-run: when `dry_run` is true, gh-aw stages every task safe-output below
+  # (only logs/records what WOULD have been emitted) regardless of what the agent does.
   # The per-step "Dry-run gate" prompt text further down is a courtesy for a clean run log, but
   # it is NOT what makes dry_run safe — an agent that emits close-issue/create-pull-request/etc.
   # anyway (ignoring the prompt) must still produce NO write. Making this an emitted-tool-call
   # decision inside the prompt (as it was before) leaves the actual guarantee entirely up to
-  # model compliance; `staged` moves the guarantee into the generated job itself, so a manual
-  # preview run (`dry_run: true`) can NEVER close an issue, open/push a PR, or add a comment. Keep
-  # this identical to the pattern already used by ci-status-main.md / ci-status-net11.md.
+  # model compliance; `staged` moves the task-output guarantee into the generated jobs, so a
+  # manual preview run (`dry_run: true`) cannot close an issue, open/push a PR, or add a comment.
+  # gh-aw's separate conclusion job may still report framework diagnostics when a run is
+  # incomplete or fails. Keep this identical to the pattern already used by
+  # ci-status-main.md / ci-status-net11.md.
   staged: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
   create-pull-request:
     # No fixed title-prefix: the agent writes the FULL title starting with "[leak-fix] "
@@ -237,11 +239,11 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
 - `issue_number` (optional): if set, SKIP Track C and target exactly that `[leak-scan]` issue
   (Track A). If blank (e.g. the scheduled run), do Track C first (Step R), then auto-pick a
   `[leak-scan]` target in Step 2.
-- `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no
+- `dry_run` (optional, default false): if `"true"`, do the full local work but **emit no task
   safe-output** — print what you *would* push/comment/open/close to the run log instead. This is
-  now backed by `safe-outputs.staged` in the frontmatter, so even an emitted safe-output call
-  writes nothing on a `dry_run` run — the printing above is for a clean, readable log, not the
-  enforcement mechanism.
+  backed by `safe-outputs.staged` in the frontmatter, so emitted PR/comment/issue-close task
+  outputs are staged on a `dry_run` run. The separate gh-aw conclusion job may still create a
+  framework diagnostic issue if the run is incomplete or fails.
 
 ```bash
 mkdir -p /tmp/gh-aw/agent
