@@ -2656,9 +2656,11 @@ function Restore-BaselineMutationFromHead {
         - Files the PR DELETED   -> re-removed (their HEAD state is "absent"; STEP 1
                                     restored them from the merge-base for the baseline)
         - PR-added files removed -> `git checkout HEAD -- <file>` (committed at HEAD)
-        Returns $true when every file was restored. With -BestEffort it never throws or
-        exits; it reports what failed and returns $false so a caller unwinding an `exit`
-        keeps the original exit code.
+        Never throws and never exits: it returns $true only when EVERY file was restored,
+        and $false (after logging each failure) otherwise, so the caller decides what a
+        partial restore means. STEP 3 treats $false as fatal (`exit 1`); the mutation-window
+        `finally` passes -BestEffort and only logs, so an unwinding `exit` keeps its original
+        exit code. -BestEffort therefore documents caller intent, not control flow.
     #>
     param(
         [string[]] $RevertableFiles = @(),
@@ -2668,6 +2670,9 @@ function Restore-BaselineMutationFromHead {
         [switch]   $BestEffort
     )
 
+    # A strict caller (STEP 3) turns any failure into `exit 1`; the mutation-window
+    # `finally` passes -BestEffort and only logs, so label the lines accordingly.
+    $sev = if ($BestEffort) { 'WARNING' } else { 'ERROR' }
     $ok = $true
     foreach ($file in @($RevertableFiles)) {
         if (@($DeletedByPrFiles) -contains $file) {
@@ -2678,14 +2683,14 @@ function Restore-BaselineMutationFromHead {
             $wtPath = if ($RepoRoot) { Join-Path $RepoRoot $file } else { $file }
             if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
             if (Test-Path $wtPath) {
-                Write-Log "  ERROR: Failed to re-remove PR-deleted file $file"
+                Write-Log "  ${sev}: Failed to re-remove PR-deleted file $file"
                 $ok = $false
             }
         } else {
             Write-Log "  Restoring: $file"
             $gitOutput = git checkout HEAD -- $file 2>&1
             if ($LASTEXITCODE -ne 0) {
-                Write-Log "  ERROR: Failed to restore $file from HEAD"
+                Write-Log "  ${sev}: Failed to restore $file from HEAD"
                 Write-Log "  Git output: $gitOutput"
                 $ok = $false
             }
@@ -2696,13 +2701,12 @@ function Restore-BaselineMutationFromHead {
         Write-Log "  Restoring (new in PR): $file"
         $gitOutput = git checkout HEAD -- $file 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Write-Log "  ERROR: Failed to restore new file $file from HEAD"
+            Write-Log "  ${sev}: Failed to restore new file $file from HEAD"
             Write-Log "  Git output: $gitOutput"
             $ok = $false
         }
     }
 
-    if (-not $ok -and -not $BestEffort) { return $false }
     return $ok
 }
 

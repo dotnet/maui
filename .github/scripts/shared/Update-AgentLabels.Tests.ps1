@@ -351,7 +351,8 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
         Remove-Item -Recurse -Force $root
     }
 
-    It 'leaves outcome unset when a completed report omits Final Recommendation and no code-review Verdict exists' {        $root = New-FixtureRoot -ReportMd '## Comparative Report (no recommendation, no verdict)'
+    It 'leaves outcome unset when a completed report omits Final Recommendation and no code-review Verdict exists' {
+        $root = New-FixtureRoot -ReportMd '## Comparative Report (no recommendation, no verdict)'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -BeNullOrEmpty
         Remove-Item -Recurse -Force $root
     }
