@@ -204,35 +204,20 @@ public class TimePickerViewModel : INotifyPropertyChanged
 
 	public void ResetToDefaults()
 	{
-		_characterSpacing = 0.0d;
-		_flowDirection = FlowDirection.MatchParent;
-		_fontAttributes = FontAttributes.None;
-		_fontFamily = null;
-		_fontSize = -1.0d;
-		_format = "hh:mm tt";
-		_fontAutoScalingEnabled = true;
-		_isEnabled = true;
-		_isOpen = false;
-		_isVisible = true;
-		_shadow = null;
-		_time = new TimeSpan(10, 0, 0);
-		_textColor = null;
-		_culture = new CultureInfo("en-US");
-
-		OnPropertyChanged(nameof(CharacterSpacing));
-		OnPropertyChanged(nameof(FlowDirection));
-		OnPropertyChanged(nameof(FontAttributes));
-		OnPropertyChanged(nameof(FontFamily));
-		OnPropertyChanged(nameof(FontSize));
-		OnPropertyChanged(nameof(Format));
-		OnPropertyChanged(nameof(FontAutoScalingEnabled));
-		OnPropertyChanged(nameof(IsEnabled));
-		OnPropertyChanged(nameof(IsOpen));
-		OnPropertyChanged(nameof(IsVisible));
-		OnPropertyChanged(nameof(Shadow));
-		OnPropertyChanged(nameof(Time));
-		OnPropertyChanged(nameof(TextColor));
-		OnPropertyChanged(nameof(Culture));
+		CharacterSpacing = 0.0d;
+		FlowDirection = FlowDirection.MatchParent;
+		FontAttributes = FontAttributes.None;
+		FontFamily = null;
+		FontSize = -1.0d;
+		Format = "hh:mm tt";
+		FontAutoScalingEnabled = true;
+		IsEnabled = true;
+		IsOpen = false;
+		IsVisible = true;
+		Shadow = null;
+		Time = new TimeSpan(10, 0, 0);
+		TextColor = null;
+		Culture = new CultureInfo("en-US");
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

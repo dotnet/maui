@@ -17,7 +17,6 @@ public class TimePickerControlPage : NavigationPage
 public partial class TimePickerControlMainPage : ContentPage
 {
 	private TimePickerViewModel _viewModel;
-	private TimePicker _timePicker;
 	private int _openedCount;
 	private int _closedCount;
 
@@ -26,7 +25,6 @@ public partial class TimePickerControlMainPage : ContentPage
 		InitializeComponent();
 		_viewModel = viewModel;
 		BindingContext = _viewModel;
-		_timePicker = TimePickerControl;
 		_viewModel.PropertyChanged += (s, e) =>
 		{
 			if (e.PropertyName is nameof(TimePickerViewModel.Culture) or nameof(TimePickerViewModel.Time))
@@ -105,11 +103,11 @@ public partial class TimePickerControlMainPage : ContentPage
 
 	private void FocusTimePickerButton_Clicked(object sender, EventArgs e)
 	{
-		_timePicker.Focus();
+		TimePickerControl.Focus();
 	}
 
 	private void UnfocusTimePickerButton_Clicked(object sender, EventArgs e)
 	{
-		_timePicker.Unfocus();
+		TimePickerControl.Unfocus();
 	}
 }
