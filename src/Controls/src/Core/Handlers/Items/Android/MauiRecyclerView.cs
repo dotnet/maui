@@ -710,10 +710,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
-#pragma warning disable CS0618 // Obsolete
-			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
-#pragma warning restore CS0618 // Obsolete
-
+			ClipBounds = new ARect(0, 0, Width, Height);
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
