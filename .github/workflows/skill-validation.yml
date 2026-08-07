@@ -497,6 +497,10 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
+      # A full harness run currently contains hundreds of executor trials plus
+      # judge calls. Run one skill leg at a time so the PAT pool sees only this
+      # leg's bounded Vally workers instead of every skill stampeding it at once.
+      max-parallel: 1
       matrix:
         entry: ${{ fromJson(needs.discover-eval.outputs.entries || '[]') }}
     steps:
@@ -2175,8 +2179,8 @@ jobs:
               STATE="failure"
               DESC="LLM evaluation failed"
             elif [[ "$EVAL" == "failure" ]]; then
-              STATE="failure"
-              DESC="LLM evaluation failed"
+              STATE="error"
+              DESC="Evaluation infrastructure failed"
             else
               STATE="error"
               DESC="Evaluation incomplete ($EVAL)"
@@ -2227,7 +2231,7 @@ jobs:
               title = 'LLM evaluation failed';
             } else if (evalResult === 'failure') {
               conclusion = 'failure';
-              title = 'LLM evaluation failed';
+              title = 'Evaluation infrastructure failed';
             } else {
               conclusion = 'failure';
               title = `Evaluation incomplete: ${evalResult}`;
