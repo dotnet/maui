@@ -146,7 +146,7 @@ FIXTURES = {
       },
       {
         marker: "happy-path-verify-failure-only-mode",
-        fallback_ref: "be821017627217c0c30ddb9aab22be957f465fd6",
+        fallback_ref: "95a5aba9eacf60c82f3a185d8bfad816d891c608",
         message: "Synthetic failure-only test verification fixture",
         files: VERIFY_FAILURE_ONLY_FILES
       },

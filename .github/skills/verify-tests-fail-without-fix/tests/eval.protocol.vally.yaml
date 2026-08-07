@@ -93,7 +93,7 @@ stimuli:
     environment:
       git:
         type: worktree
-        ref: be821017627217c0c30ddb9aab22be957f465fd6 # fixture: happy-path-verify-failure-only-mode
+        ref: 95a5aba9eacf60c82f3a185d8bfad816d891c608 # fixture: happy-path-verify-failure-only-mode
         source: .
     graders:
       - type: skill-invocation
