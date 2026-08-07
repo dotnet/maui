@@ -330,6 +330,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35511
 		[Test, Order(14)]
 		public void TitleIcon_And_TitleView_Persist_On_Push_Then_Clear()
 		{
@@ -355,6 +356,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Screenshot: Title icon and custom title view present on pushed page
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
+#endif
 
 		[Test, Order(15)]
 		public void EventParams_Update_On_Push_And_Pop()

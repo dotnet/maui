@@ -18,6 +18,7 @@ public class Issue32219 : _IssuesUITest
 	{
 		App.WaitForElement("homePageLabel");
 		App.TapShellFlyoutIcon();
+		App.WaitForElement("Login Page");
 		App.Tap("Login Page");
 		App.WaitForElement("loginButton");
 		App.Tap("loginButton");

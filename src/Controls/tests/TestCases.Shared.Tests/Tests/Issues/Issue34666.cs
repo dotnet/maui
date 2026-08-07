@@ -20,6 +20,7 @@ public class Issue34666 : _IssuesUITest
 		App.WaitForElement("Baboon");
 		App.ScrollDown("CollectionView");
 		App.ScrollDown("CollectionView");
+		App.ScrollDown("CollectionView");
 		App.WaitForElement("Gelada");
 	}
 }

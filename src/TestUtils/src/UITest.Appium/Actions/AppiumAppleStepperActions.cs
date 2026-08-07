@@ -53,7 +53,14 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 
 		if (buttons is not null && buttons.Count > 1)
 		{
-			var increaseButton = buttons.LastOrDefault();
+			// On Mac Catalyst, Appium's identifier attribute for the stepper's private UIButton
+			// subviews is populated lazily and its readiness is timing-sensitive, which made
+			// identifier-based matching flaky in CI. Sort by X position instead: the increase
+			// (+) button is always the rightmost button.
+			var increaseButton = _appiumApp is AppiumCatalystApp
+				? OrderButtonsByPosition(buttons).LastOrDefault()
+				: buttons.LastOrDefault();
+
 			increaseButton?.Tap();
 		}
 
@@ -77,11 +84,32 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 
 		if (buttons is not null && buttons.Count > 1)
 		{
-			var decreaseButton = buttons.FirstOrDefault();
+			// On Mac Catalyst, Appium's identifier attribute for the stepper's private UIButton
+			// subviews is populated lazily and its readiness is timing-sensitive, which made
+			// identifier-based matching flaky in CI. Sort by X position instead: the decrease
+			// (-) button is always the leftmost button.
+			var decreaseButton = _appiumApp is AppiumCatalystApp
+				? OrderButtonsByPosition(buttons).FirstOrDefault()
+				: buttons.FirstOrDefault();
+
 			decreaseButton?.Tap();
 		}
 
 		return CommandResponse.SuccessEmptyResponse;
+	}
+
+	// Sorts stepper buttons left-to-right by their X position. Falls back to the
+	// original order if reading element geometry fails for any reason.
+	static List<IUIElement> OrderButtonsByPosition(IReadOnlyCollection<IUIElement> buttons)
+	{
+		try
+		{
+			return buttons.OrderBy(b => GetAppiumElement(b)?.Rect.X ?? 0).ToList();
+		}
+		catch
+		{
+			return buttons.ToList();
+		}
 	}
 
 	static AppiumElement? GetAppiumElement(object element) =>

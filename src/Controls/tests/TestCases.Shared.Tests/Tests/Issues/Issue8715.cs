@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapShellFlyoutIcon();
 			App.WaitForElement("CollectionView");
 			App.Tap("CollectionView");
+			App.WaitForElement("Toggle");
 			App.Tap("Toggle");
 			App.WaitForElement("Toggle");
 			App.Tap("Toggle");

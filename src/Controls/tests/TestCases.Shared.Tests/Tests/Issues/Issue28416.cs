@@ -21,7 +21,7 @@ public class Issue28416 : _IssuesUITest
 	{
 		App.WaitForElement("InstructionsLabel");
 		App.DragAndDrop("DragObject", "DragTarget");
-		App.WaitForElement("DropResult");
+		App.WaitForElementTillPageNavigationSettled("DropResult");
 		App.WaitForElement("DropCompletedResult");
 	}
 }

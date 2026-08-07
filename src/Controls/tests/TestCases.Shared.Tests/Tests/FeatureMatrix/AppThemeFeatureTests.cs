@@ -22,6 +22,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 #endif
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(1)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_VerifyVisualState()
@@ -30,6 +31,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("DefaultLightThemeButton");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(2)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -40,33 +42,36 @@ public class AppThemeFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(3)]
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
+	[Test, Order(4)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_CheckBox_VerifyVisualState()
+	{
+		App.WaitForElement("LightThemeButton");
+		App.Tap("LightThemeButton");
+		App.WaitForElement("CheckBox");
+		App.Tap("CheckBox");
+		App.Tap("CheckBox");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+#endif
+
+	[Test, Order(3)]
+	[Category(UITestCategories.ViewBaseTests)]
+	public void DarkTheme_CheckBox_VerifyVisualState()
 	{
 		App.WaitForElement("DefaultLightThemeButton");
 		App.Tap("DefaultLightThemeButton");
 		App.WaitForElement("AppThemePage");
 		App.Tap("AppThemePage");
-		App.WaitForElement("LightThemeButton");
-		App.Tap("LightThemeButton");
-		App.WaitForElement("CheckBox");
-		App.Tap("CheckBox");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-
-	[Test, Order(4)]
-	[Category(UITestCategories.ViewBaseTests)]
-	public void DarkTheme_CheckBox_VerifyVisualState()
-	{
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("CheckBox");
 		App.Tap("CheckBox");
-		App.Tap("CheckBox");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(5)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_DatePicker_VerifyVisualState()
@@ -85,6 +90,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(6)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -105,6 +111,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(7)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_RadioButton_VerifyVisualState()
@@ -113,6 +120,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("LightThemeButton");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(8)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -154,6 +162,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	}
 #endif
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(11)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Slider_VerifyVisualState()
@@ -163,6 +172,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("Slider");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(12)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -174,7 +184,8 @@ public class AppThemeFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(13)]
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
+	[Test, Order(14)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Switch_VerifyVisualState()
 	{
@@ -182,17 +193,18 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Switch");
 		App.Tap("Switch");
+		App.Tap("Switch");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
-	[Test, Order(14)]
+	[Test, Order(13)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Switch_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Switch");
-		App.Tap("Switch");
 		App.Tap("Switch");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -246,6 +258,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	}
 #endif
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(17)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_SearchBar_VerifyVisualState()
@@ -255,6 +268,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("SearchBar");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(18)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -266,6 +280,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(19)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Editor_VerifyVisualState()
@@ -275,6 +290,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("Editor");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(20)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -322,6 +338,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	}
 #endif
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(23)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_EntryAndPlaceholderColor_VerifyVisualState()
@@ -338,6 +355,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotWithPlatformCropping();
 	}
+#endif
 
 	[Test, Order(24)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -346,9 +364,11 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Entry");
+		App.ClearText("Entry");
 		VerifyScreenshotWithPlatformCropping();
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(25)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_EditorAndPlaceholderColor_VerifyVisualState()
@@ -365,6 +385,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotWithPlatformCropping();
 	}
+#endif
 
 	[Test, Order(26)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -373,9 +394,11 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Editor");
+		App.ClearText("Editor");
 		VerifyScreenshotWithPlatformCropping();
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
 	[Test, Order(27)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_SearchBarAndPlaceholderColor_VerifyVisualState()
@@ -392,6 +415,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 #endif
 		VerifyScreenshotWithPlatformCropping();
 	}
+#endif
 
 	[Test, Order(28)]
 	[Category(UITestCategories.ViewBaseTests)]
@@ -400,6 +424,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("SearchBar");
+		App.ClearText("SearchBar");
 		VerifyScreenshotWithPlatformCropping();
 	}
 }

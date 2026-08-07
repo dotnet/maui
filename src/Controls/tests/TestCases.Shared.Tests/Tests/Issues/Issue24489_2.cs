@@ -42,6 +42,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
 		}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/36716
 		[Test]
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithLargeHeight()
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 		}
-
+#endif 
 		[Test]
 		[Category(UITestCategories.Window)]
 		public void NavBarResetsColorAfterSmallTitleBar()

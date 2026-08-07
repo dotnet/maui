@@ -20,12 +20,12 @@ public class Issue28201 : _IssuesUITest
 		string popButton = "popButton";
 		for (int i = 0; i < 3; i++)
 		{
-			App.WaitForElement(pushButton);
+			App.WaitForElementTillPageNavigationSettled(pushButton);
 			App.Tap(pushButton);
-			App.WaitForElement(popButton);
+			App.WaitForElementTillPageNavigationSettled(popButton);
 			App.Tap(popButton);
 		}
-		var label = App.WaitForElement("label");
+		var label = App.WaitForElementTillPageNavigationSettled("label");
 		App.Tap("checkStatusButton");
 		Assert.That(label.GetText(), Is.EqualTo("Page Destroyed"));
 	}

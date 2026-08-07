@@ -83,9 +83,9 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	void TapContent1()
 	{
 #if WINDOWS
-      App.TapTab("Content");
-      App.WaitForElement("Content1");
-      App.Tap("Content1");
+		App.TapTab("Content");
+		App.WaitForElement("Content1");
+		App.Tap("Content1");
 #else
 		App.TapTab("Content1");
 #endif
@@ -94,9 +94,9 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	void TapContent2()
 	{
 #if WINDOWS
-      App.TapTab("Content");
-      App.WaitForElement("Content2");
-      App.Tap("Content2");
+		App.TapTab("Content");
+		App.WaitForElement("Content2");
+		App.Tap("Content2");
 #else
 		App.TapTab("Content2");
 #endif
@@ -952,8 +952,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("Reset");
 	}
 
-	// BackButtonBehavior.IsEnabled=false keeps the back button visible but ignores taps.
-	[Test, Order(52)]
+	[Test, Order(50)]
 	public void BackButtonBehavior_IsEnabled_False_BackButtonDoesNotNavigate()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -970,7 +969,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("IsEnabledButton").GetText(), Is.EqualTo("IsEnabled: True"));
 		NavigateToDetail1AndWait();
 		TapShellBackArrow("ShellNavigation");
-		App.WaitForElement("MainPageIdentityLabel");
+		App.WaitForElementTillPageNavigationSettled("MainPageIdentityLabel");
 		App.Tap("Reset");
 	}
 

@@ -23,8 +23,6 @@ public class Issue33331 : _IssuesUITest
 
         App.Tap("OpenPickerButton");
         App.ClosePicker(windowsTapx: 50, windowsTapy: 50);
-        App.WaitForElement("IsOpenLabel");
-        var closedLabel = App.FindElement("IsOpenLabel").GetText();
-        Assert.That(closedLabel, Is.EqualTo("IsOpen: False"));
+        Assert.That(App.WaitForTextToBePresentInElement("IsOpenLabel", "IsOpen: False"), Is.True);
     }
 }
