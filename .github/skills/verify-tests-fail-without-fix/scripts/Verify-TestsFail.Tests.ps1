@@ -23,7 +23,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Convert-WindowsBaselineNoResultsToFailure', 'Invoke-TestRunWithRetry')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -37,6 +37,10 @@ BeforeAll {
         $f = Join-Path ([System.IO.Path]::GetTempPath()) ("verifylog-" + [Guid]::NewGuid().ToString('N') + ".log")
         $Content | Set-Content -LiteralPath $f -Encoding UTF8
         return $f
+    }
+
+    function Invoke-TestRun {
+        throw 'Invoke-TestRun must be mocked by tests that exercise retry orchestration.'
     }
 }
 
@@ -511,6 +515,182 @@ Describe 'Invoke-TestRun — device diagnostics are retained with Gate logs' {
     It 'rebuilds the full device-test graph after each baseline/fix source swap' {
         Get-Content -LiteralPath $scriptPath -Raw |
             Should -Match '(?s)\$deviceParams\s*=\s*@\{.*?Rebuild\s*=\s*\$true'
+    }
+
+    It 'retries marked Windows no-result exits and correlates persistent baseline exits with a clean fix run' {
+        $content = Get-Content -LiteralPath $scriptPath -Raw
+        $content | Should -Match 'Test-IsWindowsDeviceNoResultsError'
+        $content | Should -Match 'WindowsDeviceNoResults\s*=\s*\$true'
+        $content | Should -Match 'RetriesExhausted\s*=\s*\$true'
+        $content | Should -Match 'Convert-WindowsBaselineNoResultsToFailure'
+    }
+}
+
+Describe 'Windows baseline no-result correlation' {
+    It 'recognizes only the trusted Windows device-test no-results marker' {
+        $entry = @{ Type = 'DeviceTest' }
+        Test-IsWindowsDeviceNoResultsError `
+            -RunPlatform 'windows' `
+            -TestEntry $entry `
+            -Message 'WINDOWS_DEVICE_TEST_NO_RESULTS: Windows device test result file x is empty or not valid XML.' |
+            Should -BeTrue
+
+        Test-IsWindowsDeviceNoResultsError `
+            -RunPlatform 'android' `
+            -TestEntry $entry `
+            -Message 'WINDOWS_DEVICE_TEST_NO_RESULTS: Windows device test result file x is empty or not valid XML.' |
+            Should -BeFalse
+
+        Test-IsWindowsDeviceNoResultsError `
+            -RunPlatform 'windows' `
+            -TestEntry $entry `
+            -Message 'Windows device test category Map did not create results within 3600s.' |
+            Should -BeFalse
+    }
+
+    It 'credits a persistent baseline app exit only after the scoped with-fix test passes' {
+        $without = @{
+            Passed = $false
+            EnvError = $true
+            WindowsDeviceNoResults = $true
+            RetriesExhausted = $true
+            AttemptCount = 3
+            WindowsDeviceNoResultAttemptCount = 3
+            Error = 'WINDOWS_DEVICE_TEST_NO_RESULTS: empty XML'
+            Failed = 0
+            Total = 0
+        }
+        $with = @{
+            Passed = $true
+            EnvError = $false
+            BuildError = $false
+            FilterMismatch = $false
+        }
+
+        Convert-WindowsBaselineNoResultsToFailure `
+            -WithoutFixResult $without `
+            -WithFixResult $with `
+            -RunPlatform 'windows' `
+            -TestType 'DeviceTest' |
+            Should -BeTrue
+
+        $without.EnvError | Should -BeFalse
+        $without.Passed | Should -BeFalse
+        $without.Failed | Should -Be 1
+        $without.Total | Should -Be 1
+        $without.WindowsBaselineAppExit | Should -BeTrue
+        $without.FailureReason | Should -Match 'all 3 baseline attempts'
+    }
+
+    It 'remains inconclusive when retries were not exhausted or the fix did not pass' {
+        foreach ($case in @(
+            @{
+                Without = @{ Passed = $false; EnvError = $true; WindowsDeviceNoResults = $true; RetriesExhausted = $true; AttemptCount = 2 }
+                With = @{ Passed = $true; EnvError = $false; BuildError = $false; FilterMismatch = $false }
+            },
+            @{
+                Without = @{ Passed = $false; EnvError = $true; WindowsDeviceNoResults = $true; RetriesExhausted = $true; AttemptCount = 3 }
+                With = @{ Passed = $false; EnvError = $false; BuildError = $false; FilterMismatch = $false }
+            }
+        )) {
+            Convert-WindowsBaselineNoResultsToFailure `
+                -WithoutFixResult $case.Without `
+                -WithFixResult $case.With `
+                -RunPlatform 'windows' `
+                -TestType 'DeviceTest' |
+                Should -BeFalse
+            $case.Without.EnvError | Should -BeTrue
+        }
+    }
+}
+
+Describe 'Invoke-TestRunWithRetry — Windows no-result exits' {
+    BeforeEach {
+        $script:Platform = 'windows'
+        $script:RepoRoot = $TestDrive
+        Mock Start-Sleep {}
+    }
+
+    It 'retries the trusted no-results marker three times and returns durable evidence' {
+        Mock Invoke-TestRun {
+            throw 'WINDOWS_DEVICE_TEST_NO_RESULTS: Windows device test result file x is empty or not valid XML.'
+        }
+
+        $entry = @{
+            Type = 'DeviceTest'
+            Filter = 'Category=Map'
+            ClassFilter = 'Microsoft.Maui.DeviceTests.MapTests'
+            Methods = @('RemovingMapFromVisualTreeDoesNotCrash')
+            Project = 'Controls'
+            ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        }
+        $log = Join-Path $TestDrive 'windows-no-results.log'
+
+        $result = Invoke-TestRunWithRetry -TestEntry $entry -LogFile $log -MaxRetries 3
+
+        $result.EnvError | Should -BeTrue
+        $result.WindowsDeviceNoResults | Should -BeTrue
+        $result.RetriesExhausted | Should -BeTrue
+        $result.AttemptCount | Should -Be 3
+        $result.WindowsDeviceNoResultAttemptCount | Should -Be 3
+        Should -Invoke Invoke-TestRun -Times 3 -Exactly
+        (Get-Content -LiteralPath $log -Raw) | Should -Match '^WINDOWS_DEVICE_TEST_NO_RESULTS:'
+    }
+
+    It 'records mixed environment attempts without claiming all retries were app exits' {
+        $script:retryInvocation = 0
+        $unrelatedLog = Join-Path $TestDrive 'unrelated-env.log'
+        'XHarness exit code: 83' | Set-Content -LiteralPath $unrelatedLog -Encoding UTF8
+
+        Mock Invoke-TestRun {
+            $script:retryInvocation++
+            if ($script:retryInvocation -in @(1, 3)) {
+                throw 'WINDOWS_DEVICE_TEST_NO_RESULTS: Windows device test result file x is empty or not valid XML.'
+            }
+            return $unrelatedLog
+        }
+
+        $entry = @{
+            Type = 'DeviceTest'
+            Filter = 'Category=Map'
+            ClassFilter = 'Microsoft.Maui.DeviceTests.MapTests'
+            Methods = @('RemovingMapFromVisualTreeDoesNotCrash')
+            Project = 'Controls'
+            ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        }
+
+        $result = Invoke-TestRunWithRetry `
+            -TestEntry $entry `
+            -LogFile (Join-Path $TestDrive 'mixed-no-results.log') `
+            -MaxRetries 3
+
+        $result.AttemptCount | Should -Be 3
+        $result.WindowsDeviceNoResultAttemptCount | Should -Be 2
+
+        $with = @{ Passed = $true; EnvError = $false; BuildError = $false; FilterMismatch = $false }
+        Convert-WindowsBaselineNoResultsToFailure `
+            -WithoutFixResult $result `
+            -WithFixResult $with `
+            -RunPlatform 'windows' `
+            -TestType 'DeviceTest' |
+            Should -BeFalse
+    }
+
+    It 'does not swallow an unrelated device-test exception' {
+        Mock Invoke-TestRun { throw 'unrelated runner failure' }
+
+        $entry = @{
+            Type = 'DeviceTest'
+            Filter = 'Category=Map'
+            ClassFilter = 'Microsoft.Maui.DeviceTests.MapTests'
+            Methods = @()
+            Project = 'Controls'
+            ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        }
+
+        { Invoke-TestRunWithRetry -TestEntry $entry -LogFile (Join-Path $TestDrive 'other.log') -MaxRetries 3 } |
+            Should -Throw -ExpectedMessage '*unrelated runner failure*'
+        Should -Invoke Invoke-TestRun -Times 1 -Exactly
     }
 }
 

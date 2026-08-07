@@ -649,6 +649,52 @@ function Invoke-TestRun {
 # ============================================================
 # Run test with retry on environment errors
 # ============================================================
+function Test-IsWindowsDeviceNoResultsError {
+    param(
+        [string]$RunPlatform,
+        [hashtable]$TestEntry,
+        [string]$Message
+    )
+
+    return (
+        $RunPlatform -eq 'windows' -and
+        $TestEntry.Type -eq 'DeviceTest' -and
+        -not [string]::IsNullOrWhiteSpace($Message) -and
+        $Message.StartsWith('WINDOWS_DEVICE_TEST_NO_RESULTS:', [System.StringComparison]::Ordinal)
+    )
+}
+
+function Convert-WindowsBaselineNoResultsToFailure {
+    param(
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult,
+        [string]$RunPlatform,
+        [string]$TestType
+    )
+
+    if ($RunPlatform -ne 'windows' -or $TestType -ne 'DeviceTest') { return $false }
+    if (-not $WithoutFixResult.EnvError -or -not $WithoutFixResult.WindowsDeviceNoResults) { return $false }
+    $attemptCount = [int]$WithoutFixResult.AttemptCount
+    $noResultAttemptCount = [int]$WithoutFixResult.WindowsDeviceNoResultAttemptCount
+    if (-not $WithoutFixResult.RetriesExhausted -or $attemptCount -lt 3) { return $false }
+    if ($noResultAttemptCount -ne $attemptCount) { return $false }
+    if ($WithFixResult.EnvError -or $WithFixResult.BuildError -or $WithFixResult.FilterMismatch -or -not $WithFixResult.Passed) { return $false }
+
+    $evidence = $WithoutFixResult.Error
+    $WithoutFixResult.EnvError = $false
+    $WithoutFixResult.Passed = $false
+    $WithoutFixResult.PassCount = 0
+    $WithoutFixResult.FailCount = 1
+    $WithoutFixResult.Failed = 1
+    $WithoutFixResult.Total = 1
+    $WithoutFixResult.Skipped = 0
+    $WithoutFixResult.Error = $null
+    $WithoutFixResult.WindowsBaselineAppExit = $true
+    $WithoutFixResult.FailureReason = "Windows device-test app repeatedly exited before writing valid results in all $attemptCount baseline attempts; the same scoped test passed with the fix."
+    $WithoutFixResult.FailureMessage = $evidence
+    return $true
+}
+
 function Invoke-TestRunWithRetry {
     param(
         [hashtable]$TestEntry,
@@ -656,6 +702,7 @@ function Invoke-TestRunWithRetry {
         [int]$MaxRetries = 3
     )
 
+    $windowsDeviceNoResultAttemptCount = 0
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         $logFileAttempt = if ($attempt -gt 1) { "$LogFile.attempt$attempt" } else { $LogFile }
 
@@ -670,16 +717,37 @@ function Invoke-TestRunWithRetry {
             if (Test-Path $stale) { Remove-Item $stale -Force }
         }
 
-        $testOutputLog = Invoke-TestRun `
-            -DetectedTestType $TestEntry.Type `
-            -Filter $TestEntry.Filter `
-            -ClassFilter $TestEntry.ClassFilter `
-            -Methods $TestEntry.Methods `
-            -DetectedProject $TestEntry.Project `
-            -DetectedProjectPath $TestEntry.ProjectPath `
-            -LogFile $logFileAttempt
+        try {
+            $testOutputLog = Invoke-TestRun `
+                -DetectedTestType $TestEntry.Type `
+                -Filter $TestEntry.Filter `
+                -ClassFilter $TestEntry.ClassFilter `
+                -Methods $TestEntry.Methods `
+                -DetectedProject $TestEntry.Project `
+                -DetectedProjectPath $TestEntry.ProjectPath `
+                -LogFile $logFileAttempt
 
-        $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
+            $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
+        } catch {
+            $message = $_.Exception.Message
+            if (-not (Test-IsWindowsDeviceNoResultsError -RunPlatform $Platform -TestEntry $TestEntry -Message $message)) {
+                throw
+            }
+
+            $windowsDeviceNoResultAttemptCount++
+            $message |
+                Add-Content -LiteralPath $logFileAttempt -Encoding UTF8
+            $result = @{
+                Passed = $false
+                EnvError = $true
+                WindowsDeviceNoResults = $true
+                Error = $message
+                FailCount = 0
+                Failed = 0
+                Total = 0
+                Skipped = 0
+            }
+        }
 
         # Some environment outcomes are deterministic: a missing snapshot baseline cannot
         # appear on retry, and NETSDK1178 means this operating system cannot provide the
@@ -720,6 +788,9 @@ function Invoke-TestRunWithRetry {
 
             Start-Sleep -Seconds 30
         } else {
+            $result.AttemptCount = $attempt
+            $result.RetriesExhausted = $true
+            $result.WindowsDeviceNoResultAttemptCount = $windowsDeviceNoResultAttemptCount
             Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
             return $result
         }
@@ -3171,6 +3242,25 @@ $withFixResult = @{
 }
 
 $withFixResults | ForEach-Object { "[$($_.TestType)] $($_.TestName): Passed=$($_.Passed) Failed=$($_.Failed)" } | Out-File $WithFixLog -Append
+
+# A Windows crash-regression test can terminate the unpackaged device-test app before
+# xUnit flushes XML. That is normally inconclusive. When the no-result marker persists
+# through all three baseline retries and the identical scoped test then passes cleanly
+# with the fix on the same agent, however, the source swap is the only changed variable:
+# credit the repeated baseline app exit as the expected failure repro.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    if (Convert-WindowsBaselineNoResultsToFailure `
+            -WithoutFixResult $wo `
+            -WithFixResult $w `
+            -RunPlatform $Platform `
+            -TestType $t.Type) {
+        Write-Host "  ✅ $($t.TestName): baseline app exit reproduced in all $($wo.AttemptCount) attempts and the scoped with-fix run passed — crediting FAIL → PASS" -ForegroundColor Green
+        Write-Log "  [$($t.Type)] $($t.TestName): persistent Windows baseline app exit → with-fix PASS; credited as a verified repro"
+    }
+}
 
 # Step 5: Evaluate results
 Write-Host ""

@@ -166,6 +166,8 @@ $WindowsDeviceTestPackageIds = @{
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
 }
 
+$WindowsDeviceNoResultsMarker = "WINDOWS_DEVICE_TEST_NO_RESULTS:"
+
 function Get-CategoryFiltersFromTestFilter {
     param([string]$Filter)
 
@@ -488,6 +490,7 @@ function Get-DeviceTestResultSummary {
     $diagClassMatchCount = 0
     $diagSampleClasses = [System.Collections.Generic.List[string]]::new()
     $matchedClassNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    $matchedMethodNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     $unexpectedTestCount = 0
     $unexpectedClasses = [System.Collections.Generic.List[string]]::new()
 
@@ -523,7 +526,10 @@ function Get-DeviceTestResultSummary {
         }
 
         if ($null -eq $xml) {
-            throw "Windows device test result file '$file' is empty or not valid XML (the device-test app likely crashed or exited before writing results)."
+            # Consumed by verify-tests-fail.ps1. Keep the marker stable: after three
+            # baseline-only occurrences followed by a clean with-fix pass, the Gate can
+            # safely treat the source-dependent app exit as the expected failing repro.
+            throw "$WindowsDeviceNoResultsMarker Windows device test result file '$file' is empty or not valid XML (the device-test app likely crashed or exited before writing results)."
         }
 
         if ($classList.Count -gt 0) {
@@ -594,6 +600,7 @@ function Get-DeviceTestResultSummary {
                         if ($probe -and $probe.Contains('.')) { $testMethod = $probe.Substring($probe.LastIndexOf('.') + 1) }
                     }
                     if ($methodList -notcontains $testMethod) { continue }
+                    $null = $matchedMethodNames.Add($testMethod)
                 }
 
                 $summary.Total++
@@ -640,6 +647,16 @@ function Get-DeviceTestResultSummary {
         }
     }
 
+    if ($methodList.Count -gt 0 -and $diagClassMatchCount -gt 0) {
+        $missingMethods = @($methodList | Where-Object { -not $matchedMethodNames.Contains($_) })
+        if ($missingMethods.Count -eq $methodList.Count) {
+            throw "Device test result file(s) contained the class(es) '$IncludeClasses' ($diagClassMatchCount test(s)) but none of the target method(s) '$IncludeMethods' ran (the target tests did not run)."
+        }
+        if ($missingMethods.Count -gt 0) {
+            throw "Device test result file(s) did not contain every requested method. Missing: $($missingMethods -join ', '); matched: $($matchedMethodNames -join ', ') (the target tests did not all run)."
+        }
+    }
+
     if ($classList.Count -gt 0 -and $summary.Total -eq 0) {
         # The class(es) under test produced no results in the suite output — treat this as
         # an environment/harness error (INCONCLUSIVE) rather than silently reporting a
@@ -648,12 +665,6 @@ function Get-DeviceTestResultSummary {
         #   * total <test> nodes = 0  -> the app produced no results (crash/early exit)
         #   * total > 0 but no match  -> results exist under classes we didn't expect
         #     (namespace/name-format mismatch, or the target class was not in this suite).
-        if ($methodList.Count -gt 0 -and $diagClassMatchCount -gt 0) {
-            # The class WAS present, but none of the target methods ran — the PR's specific
-            # methods didn't execute (renamed/removed method, or a method-name mismatch),
-            # which the gate cannot verify. Distinct from "class absent".
-            throw "Device test result file(s) contained the class(es) '$IncludeClasses' ($diagClassMatchCount test(s)) but none of the target method(s) '$IncludeMethods' ran (the target tests did not run)."
-        }
         $sample = if ($diagSampleClasses.Count -gt 0) { " Sample classes present: " + ($diagSampleClasses -join '; ') + '.' } else { '' }
         throw "Device test result file(s) contained no tests for class(es) '$IncludeClasses' (the target tests did not run). Total tests found in result file(s): $diagTotalTests.$sample"
     }
@@ -762,10 +773,13 @@ function Invoke-WindowsDeviceTestApp {
             Write-Host "Running Windows device test category '$category' (index $categoryIndex)..." -ForegroundColor Gray
             $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, [string]$categoryIndex) -PassThru
             if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
-                if ($process -and -not $process.HasExited) {
+                if ($process -and $process.HasExited) {
+                    throw "$WindowsDeviceNoResultsMarker Windows device test category '$category' exited without creating $categoryResultFile."
+                }
+                if ($process) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-                throw "Windows device test category '$category' did not create $categoryResultFile"
+                throw "Windows device test category '$category' did not create $categoryResultFile within ${timeoutSeconds}s."
             }
 
             $resultFiles += $categoryResultFile
@@ -794,21 +808,18 @@ function Invoke-WindowsDeviceTestApp {
             throw "Windows device test app did not exit within ${timeoutSeconds}s while running the full suite."
         }
         if (-not (Test-Path $resultFile)) {
-            throw "Windows device test app exited without creating $resultFile"
+            throw "$WindowsDeviceNoResultsMarker Windows device test app exited without creating $resultFile."
         }
 
         $resultFiles += $resultFile
     }
 
-    # When a full-suite fallback ran (no per-category isolation available for this app —
-    # e.g. a Core/Essentials/Graphics app built from a PR tree that predates the
-    # discovery-runner registration), the result file holds EVERY test in the suite, not
-    # just the changed area. Narrow the pass/fail summary to the class(es) under test so
-    # the gate's A/B verdict reflects only the tests the PR actually changed instead of
-    # being polluted (or falsely reddened) by unrelated/flaky suite tests. Category-
-    # isolated runs already scope the result file, so they keep the whole-file aggregate.
-    $summaryClassFilter = if (-not $useCategoryFiltering) { $IncludeClasses } else { $null }
-    $summaryMethodFilter = if (-not $useCategoryFiltering) { $IncludeMethods } else { $null }
+    # Always narrow the pass/fail summary to the requested class/method when supplied.
+    # Category isolation limits the run to (for example) Map, but that category can still
+    # contain sibling classes/methods. Accepting its whole-file aggregate would let an
+    # unrelated passing sibling hide that the target method never ran.
+    $summaryClassFilter = $IncludeClasses
+    $summaryMethodFilter = $IncludeMethods
     $summary = Get-DeviceTestResultSummary -ResultFiles $resultFiles -IncludeClasses $summaryClassFilter -IncludeMethods $summaryMethodFilter
     $script:WindowsDeviceTestSummary = $summary
     $script:WindowsDeviceTestResultFiles = $resultFiles

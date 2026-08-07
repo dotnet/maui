@@ -3,6 +3,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Run-DeviceTests.ps1'
+    $script:WindowsDeviceNoResultsMarker = 'WINDOWS_DEVICE_TEST_NO_RESULTS:'
 
     $tokens = $null
     $parseErrors = $null
@@ -40,6 +41,13 @@ Describe 'Build isolation options' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match '\[switch\]\$Rebuild'
         $content | Should -Match '(?s)if \(\$Rebuild\)\s*\{\s*\$buildArgs \+= "-t:Rebuild"\s*\}'
+    }
+
+    It 'keeps Windows category results scoped to the requested class and methods' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '\$summaryClassFilter\s*=\s*\$IncludeClasses'
+        $content | Should -Match '\$summaryMethodFilter\s*=\s*\$IncludeMethods'
+        $content | Should -Not -Match '\$summaryClassFilter\s*=\s*if\s*\(-not\s+\$useCategoryFiltering\)'
     }
 }
 
@@ -237,7 +245,7 @@ Describe 'Get-DeviceTestResultSummary' {
         New-Item -ItemType File -Path $emptyFile -Force | Out-Null
 
         { Get-DeviceTestResultSummary -ResultFiles @($emptyFile) } |
-            Should -Throw -ExpectedMessage '*empty or not valid XML*'
+            Should -Throw -ExpectedMessage 'WINDOWS_DEVICE_TEST_NO_RESULTS:*empty or not valid XML*'
     }
 
     It 'throws a descriptive error (not a null-ref) when a result file is malformed' {
@@ -245,7 +253,7 @@ Describe 'Get-DeviceTestResultSummary' {
         '<assemblies><assembly total="1"' | Set-Content $badFile -Encoding UTF8
 
         { Get-DeviceTestResultSummary -ResultFiles @($badFile) } |
-            Should -Throw -ExpectedMessage '*empty or not valid XML*'
+            Should -Throw -ExpectedMessage 'WINDOWS_DEVICE_TEST_NO_RESULTS:*empty or not valid XML*'
     }
 
     It 'counts only tests of the requested class when -IncludeClasses is set (matches on the xUnit type attribute)' {
@@ -658,5 +666,26 @@ Describe 'Get-DeviceTestResultSummary' {
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
                 -IncludeMethods 'CompletedFiresOnRealEnterKeyPress' } |
             Should -Throw -ExpectedMessage '*contained the class(es)*but none of the target method(s)*CompletedFiresOnRealEnterKeyPress*did not run*'
+    }
+
+    It 'rejects a partial method match instead of passing when one requested method never ran' {
+        $file = Join-Path $script:testDir 'TestResults-PartialMethods.xml'
+
+        @'
+<assemblies>
+  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Target A" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="CompletedFiresOnRealEnterKeyPress" result="Pass" />
+      <test name="Unrelated sibling" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="SomeOtherEntryTest" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+                -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter' } |
+            Should -Throw -ExpectedMessage '*did not contain every requested method*Missing: CompletedDoesNotFireOnIMECandidateEnter*'
     }
 }
