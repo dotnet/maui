@@ -47,6 +47,25 @@
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
 	</ItemGroup>
 
+	<!--
+		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		Set MauiEnableFullReadyToRunPublishing to true to use full R2R, which increases
+		app download size but can improve runtime performance.
+		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
+		_MauiUseDefaultReadyToRunPgoFiles is an internal property that controls inclusion
+		of the default PGO profiles.
+	-->
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<MauiEnableFullReadyToRunPublishing Condition="'$(MauiEnableFullReadyToRunPublishing)' == ''">false</MauiEnableFullReadyToRunPublishing>
+		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(MauiEnableFullReadyToRunPublishing)' != 'true'">$(PublishReadyToRunCrossgen2ExtraArgs);--partial</PublishReadyToRunCrossgen2ExtraArgs>
+		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+		<!-- Include any default Android PGO profiles under the mibc\android directory. -->
+		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
+	</ItemGroup>
+
 	<!-- Check Tasks ABI and other validations -->
 	<PropertyGroup>
 		<_MauiTargetsImportedAgain Condition="'$(_MauiTargetsImported)'=='True'">True</_MauiTargetsImportedAgain>
