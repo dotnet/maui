@@ -16,7 +16,7 @@ BeforeAll {
         param(
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
-            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample scenario test|sample scenario assertion failed|windows'
         )
 
         @"
@@ -31,7 +31,7 @@ Recurring sample failure.
 
 ## Error Message
 ``````
-Assertion failed
+Sample scenario assertion failed
 ``````
 "@
     }
@@ -40,13 +40,13 @@ Assertion failed
         param(
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
-            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows',
+            [string]$Fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample scenario test|sample scenario assertion failed|windows',
             [string]$Disposition = 'filed',
             [string]$Title = 'Sample test fails on Windows',
             [string]$SkipReason = '',
             [Int64]$IssueNumber = 0,
             [Int64[]]$SourceLogIds = @(1001),
-            [string]$MatchPattern = 'Assertion failed',
+            [string]$MatchPattern = 'Sample scenario assertion failed',
             [string]$Body = ''
         )
 
@@ -160,7 +160,7 @@ Assertion failed
             [string]$Pipeline = 'maui-pr',
             [Int64]$BuildId = 123456,
             [Int64]$LogId = 1001,
-            [string[]]$Lines = @('Assertion failed', 'Assertion failed'),
+            [string[]]$Lines = @('Sample scenario assertion failed', 'Sample scenario assertion failed'),
             [string]$SegmentKind = 'azdo-log',
             [string]$SegmentSource = ''
         )
@@ -199,7 +199,7 @@ Assertion failed
         )
 
         $root = Join-Path $TestDrive ('evidence-' + [guid]::NewGuid().ToString('n'))
-        $lines = @('Assertion failed', 'Assertion failed') + $ExtraLines
+        $lines = @('Sample scenario assertion failed', 'Sample scenario assertion failed') + $ExtraLines
         foreach ($logId in $MainLogIds) {
             New-TestEvidence -Root $root -Pipeline 'maui-pr' -BuildId 123456 -LogId $logId -Lines $lines
         }
@@ -1045,7 +1045,7 @@ Describe 'CI scanner issue payload gate' {
             -TrustedEvidencePath $evidenceRoot
 
         $plan.issues[0].MatchCount | Should -Be 2
-        $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Assertion failed'
+        $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Sample scenario assertion failed'
         $plan.issues[0].EvidenceKey | Should -Match '^sha256:[0-9a-f]{64}$'
         @($plan.issues[0].EvidenceLineHashes).Count | Should -Be 1
     }
@@ -1071,10 +1071,10 @@ Describe 'CI scanner issue payload gate' {
 
     It 'accepts a real raw evidence line and binds it to a trusted evidence key' {
         $evidenceRoot = Join-Path $TestDrive 'raw-line-evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @('Unique raw failure line')
-        $body = "$(New-TestBody)`nUnique raw failure line"
+        New-TestEvidence -Root $evidenceRoot -Lines @('Unique transport failure line')
+        $body = "$(New-TestBody)`nUnique transport failure line"
         $manifest = New-CompleteManifest -MainSignatures @(
-            (New-TestSignature -MatchPattern 'Unique raw failure' -Body $body)
+            (New-TestSignature -MatchPattern 'Unique transport failure' -Body $body)
         )
 
         $plan = Test-CiScanManifest `
@@ -1083,7 +1083,7 @@ Describe 'CI scanner issue payload gate' {
             -TrustedEvidencePath $evidenceRoot
 
         $plan.issues[0].MatchCount | Should -Be 1
-        $plan.issues[0].Body | Should -Match '(?m)^Unique raw failure line$'
+        $plan.issues[0].Body | Should -Match '(?m)^Unique transport failure line$'
         $plan.issues[0].Body | Should -Match '(?m)^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$'
     }
 
@@ -1181,7 +1181,7 @@ Describe 'CI scanner issue payload gate' {
         $trustedLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
         $bodyLine = '##[error]Path does not exist: artifacts/bin'
         New-TestEvidence -Root $evidenceRoot -Lines @($trustedLine)
-        $body = (New-TestBody).Replace('Assertion failed', $bodyLine)
+        $body = (New-TestBody).Replace('Sample scenario assertion failed', $bodyLine)
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -MatchPattern 'Path does not exist' -Body $body)
         )
@@ -1243,8 +1243,8 @@ Describe 'CI scanner issue payload gate' {
         # The agent cannot supply a count at all any more; whatever the body says in
         # prose, the injected marker must equal the trusted recount.
         $evidenceRoot = Join-Path $TestDrive 'single-hit-evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @('Assertion failed')
-        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Sample scenario assertion failed')
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample scenario test|sample scenario assertion failed|windows'
         $body = "$(New-TestBody -Fingerprint $fingerprint)`
 Observed 99 times according to the agent."
         $manifest = New-CompleteManifest -MainSignatures @(
@@ -1304,9 +1304,9 @@ Observed 99 times according to the agent."
 
     It 'injects an evidence-verified match pattern omitted from the body' {
         $evidenceRoot = Join-Path $TestDrive 'omitted-pattern-evidence'
-        New-TestEvidence -Root $evidenceRoot -Lines @('Different failure')
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different transport failure')
         $manifest = New-CompleteManifest -MainSignatures @(
-            (New-TestSignature -MatchPattern 'Different failure')
+            (New-TestSignature -MatchPattern 'Different transport failure')
         )
 
         $plan = Test-CiScanManifest `
@@ -1314,7 +1314,97 @@ Observed 99 times according to the agent."
             -TrustedEvidencePath $evidenceRoot
 
         $plan.issues[0].Body |
-            Should -Match '(?ms)## Trusted Match Pattern\r?\n\r?\n    Different failure$'
+            Should -Match '(?ms)## Error Message\r?\n\r?\n    Different transport failure$'
+    }
+
+    It 'does not treat trusted state inside Error Message as historical failure evidence' {
+        $pattern = '- **Pipeline**: maui-pr-devicetests'
+        $body = "## Error Message`n$pattern"
+
+        (Test-HistoricalErrorPattern -Body $body -MatchPattern $pattern) |
+            Should -BeFalse
+    }
+
+    It 'treats case-variant state-like text as ordinary historical evidence' {
+        $pattern = '- **pipeline**: maui-pr-devicetests'
+        $body = "## Error Message`n$pattern"
+
+        (Test-HistoricalErrorPattern -Body $body -MatchPattern $pattern) |
+            Should -BeTrue
+    }
+
+    It 'requires a distinctive fingerprint before creating a canonical issue' {
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|test|failure|windows'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Fingerprint $fingerprint)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw "*Fingerprint '$fingerprint' has no distinctive identity or failure-category tokens*"
+    }
+
+    It 'rejects a generic filed recurrence pattern before creating a canonical issue' {
+        $pattern = 'Build FAILED.'
+        $body = "$(New-TestBody)`n`n## Error Message`n`n    $pattern"
+        $evidenceRoot = Join-Path $TestDrive 'generic-filed-pattern'
+        New-TestEvidence -Root $evidenceRoot -Lines @($pattern)
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern $pattern -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath $evidenceRoot } |
+            Should -Throw '*must contain at least two distinctive tokens or one token of at least 16 characters*'
+    }
+
+    It 'rejects a single common token as a filed recurrence pattern' {
+        $fingerprint = 'ci-scan|main|maui-pr-devicetests|carouselviewdoesnotleakwithdefaultitemslayout|reference to microsoft.maui.controls.carouselview is still alive|maccatalyst'
+        $pattern = 'CarouselView'
+        $body = (New-TestBody -Pipeline 'maui-pr-devicetests' -Fingerprint $fingerprint).
+            Replace('Sample scenario assertion failed', $pattern)
+        $evidenceRoot = Join-Path $TestDrive 'single-token-filed-pattern'
+        New-TestEvidence `
+            -Root $evidenceRoot `
+            -Pipeline 'maui-pr-devicetests' `
+            -Lines @($pattern)
+        $manifest = [pscustomobject]@{
+            pipelines = @(
+                (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -BuildId 123456)
+                (New-TestPipeline -Name 'maui-pr-devicetests' -DefinitionId 314 -BuildId 123456 -Signatures @(
+                        (New-TestSignature `
+                                -Pipeline 'maui-pr-devicetests' `
+                                -Fingerprint $fingerprint `
+                                -MatchPattern $pattern `
+                                -Body $body)
+                    ))
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 123458)
+            )
+        }
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath $evidenceRoot `
+                -ScannerId 'ci-scan' } |
+            Should -Throw '*must contain at least two distinctive tokens or one token of at least 16 characters*'
+    }
+
+    It 'accepts one long distinctive token as a filed recurrence pattern' {
+        $pattern = 'ArtifactAlreadyExists'
+        $body = (New-TestBody).Replace('Sample scenario assertion failed', $pattern)
+        $evidenceRoot = Join-Path $TestDrive 'long-token-filed-pattern'
+        New-TestEvidence -Root $evidenceRoot -Lines @($pattern)
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern $pattern -Body $body)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.pipelines[0].signatures[0].match_pattern | Should -BeExactly $pattern
     }
 
     It 'repairs the exact main production body and match_pattern mismatch' {
@@ -1351,12 +1441,12 @@ Observed 99 times according to the agent."
             -ScannerId 'ci-scan'
 
         $plan.issues[0].Body |
-            Should -Match "(?ms)## Trusted Match Pattern\r?\n\r?\n    $([regex]::Escape($matchPattern))$"
+            Should -Match "(?ms)## Error Message\r?\n\r?\n    $([regex]::Escape($matchPattern))$"
         $plan.issues[0].MatchCount | Should -Be 1
     }
 
     It 'rejects trusted match-pattern injection that would exceed the body limit' {
-        $body = (New-TestBody).Replace('Assertion failed', 'Different failure')
+        $body = (New-TestBody).Replace('Sample scenario assertion failed', 'Different transport failure')
         $body += 'a' * (59000 - $body.Length)
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -Body $body)
@@ -1517,6 +1607,19 @@ Describe 'CI scanner terminal dispositions' {
         $plan.pipelines[0].signatures[0].issue_number | Should -Be 36827
     }
 
+    It 'rejects a non-distinctive recurrence pattern on an existing issue' {
+        $pattern = 'Build FAILED.'
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature `
+                    -Disposition 'existing' `
+                    -IssueNumber 36827 `
+                    -MatchPattern $pattern)
+        )
+
+        { Test-CiScanManifest -Manifest $manifest } |
+            Should -Throw '*must contain at least two distinctive tokens or one token of at least 16 characters*'
+    }
+
     It 'accepts an existing issue only when its pattern occurs in frozen evidence' {
         $evidenceRoot = Join-Path $TestDrive 'existing-evidence'
         New-TestEvidence -Root $evidenceRoot
@@ -1529,7 +1632,7 @@ Describe 'CI scanner terminal dispositions' {
             -ExpectedBuilds (New-ExpectedBuilds) `
             -TrustedEvidencePath $evidenceRoot
 
-        $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Assertion failed'
+        $plan.pipelines[0].signatures[0].match_pattern | Should -Be 'Sample scenario assertion failed'
         $plan.pipelines[0].signatures[0].match_count | Should -Be 2
     }
 
@@ -1743,7 +1846,7 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
         $workflowSource |
             Should -Match 'trusted validator alone normalizes a recognized leading AzDO\s+transport timestamp'
         $workflowSource |
-            Should -Match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt if the agent omitted it'
+            Should -Match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt under `## Error Message` if the agent omitted it there'
     }
 
     It 'defines cap exhaustion across the complete manifest rather than traversal order' {
@@ -1917,7 +2020,7 @@ Describe 'CI scanner skip disposition evidence proof' {
             (New-TestSignature `
                     -Disposition 'skipped' `
                     -SkipReason 'infrastructure-noise' `
-                    -MatchPattern 'Assertion failed')
+                    -MatchPattern 'Sample scenario assertion failed')
         )
 
         $plan = Test-CiScanManifest `
@@ -1936,7 +2039,7 @@ Describe 'CI scanner skip disposition evidence proof' {
             (New-TestSignature `
                     -Disposition 'skipped' `
                     -SkipReason 'signature-not-in-fetched-log' `
-                    -MatchPattern 'Assertion failed')
+                    -MatchPattern 'Sample scenario assertion failed')
         )
 
         { Test-CiScanManifest `

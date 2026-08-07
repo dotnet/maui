@@ -553,6 +553,12 @@ function Assert-CanonicalPublishedBody {
     if (-not $publishedEvidence.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
         throw "Published body for '$Fingerprint' must contain match_pattern exactly."
     }
+    Assert-CanonicalRecurrencePattern `
+        -Fingerprint $Fingerprint `
+        -MatchPattern $MatchPattern
+    if (-not (Test-HistoricalErrorPattern -Body $Body -MatchPattern $MatchPattern)) {
+        throw "Published body for '$Fingerprint' must contain match_pattern in an Error Message section."
+    }
     $publishedEvidenceLineHashes = [System.Collections.Generic.HashSet[string]]::new(
         [System.StringComparer]::Ordinal
     )
@@ -660,23 +666,112 @@ function Get-ValidatedMatchPattern {
     return $matchPattern
 }
 
-function Add-TrustedMatchPatternExcerpt {
+function Get-DistinctiveTextTokens {
+    param([Parameter(Mandatory = $true)][string]$Text)
+
+    $genericTokens = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal
+    )
+    foreach ($token in @(
+            'assertion', 'build', 'error', 'errors', 'exception', 'failed',
+            'failure', 'test', 'tests', 'unexpected', 'unknown'
+        )) {
+        [void]$genericTokens.Add($token)
+    }
+
+    $distinctiveTokens = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal
+    )
+    foreach ($token in ([regex]::Split($Text.ToLowerInvariant(), '[^a-z0-9]+'))) {
+        if ($token.Length -ge 4 -and -not $genericTokens.Contains($token)) {
+            [void]$distinctiveTokens.Add($token)
+        }
+    }
+
+    return @($distinctiveTokens | Sort-Object)
+}
+
+function Get-DistinctiveFingerprintTokens {
+    param([Parameter(Mandatory = $true)][string]$Fingerprint)
+
+    $parts = @($Fingerprint.Split('|'))
+    if ($parts.Count -ne 6) {
+        return @()
+    }
+
+    return @(Get-DistinctiveTextTokens -Text "$($parts[3]) $($parts[4])")
+}
+
+function Assert-CanonicalRecurrencePattern {
+    param(
+        [Parameter(Mandatory = $true)][string]$Fingerprint,
+        [Parameter(Mandatory = $true)][string]$MatchPattern
+    )
+
+    $distinctiveTokens = @(Get-DistinctiveFingerprintTokens -Fingerprint $Fingerprint)
+    if ($distinctiveTokens.Count -eq 0) {
+        throw "Fingerprint '$Fingerprint' has no distinctive identity or failure-category tokens for recurrence."
+    }
+
+    $patternTokens = @(Get-DistinctiveTextTokens -Text $MatchPattern)
+    if ($patternTokens.Count -lt 2 -and
+        -not @($patternTokens | Where-Object { $_.Length -ge 16 }).Count) {
+        throw ("match_pattern for '$Fingerprint' must contain at least two distinctive " +
+            'tokens or one token of at least 16 characters.')
+    }
+}
+
+function Test-TrustedStateLine {
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Line)
+
+    $trimmed = $Line.TrimStart()
+    return $trimmed -cmatch '^<!-- ci-scan-(?:fingerprint|match-count|evidence-key):' -or
+        $trimmed -cmatch '^- \*\*(?:Pipeline|Build ID|Branch)\*\*:'
+}
+
+function Test-HistoricalErrorPattern {
     param(
         [Parameter(Mandatory = $true)][string]$Body,
         [Parameter(Mandatory = $true)][string]$MatchPattern
     )
 
     $visibleBody = $Body.Replace([string][char]0x200B, '')
-    if ($visibleBody.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+    $inErrorMessage = $false
+    foreach ($line in ($visibleBody -split '\r?\n')) {
+        $trimmed = $line.Trim()
+        if ($trimmed -ceq '## Error Message') {
+            $inErrorMessage = $true
+            continue
+        }
+        if ($trimmed -match '^##\s+') {
+            $inErrorMessage = $false
+        }
+        if ($inErrorMessage -and
+            -not (Test-TrustedStateLine -Line $line) -and
+            $line.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Add-TrustedMatchPatternExcerpt {
+    param(
+        [Parameter(Mandatory = $true)][string]$Body,
+        [Parameter(Mandatory = $true)][string]$MatchPattern
+    )
+
+    if (Test-HistoricalErrorPattern -Body $Body -MatchPattern $MatchPattern) {
         return $Body
     }
 
     # The pattern is agent-selected but reaches this point only after the trusted
     # evidence recount proved it exists in every claimed source log. Put that bounded,
-    # single-line value in an indented code block so issue-body correctness does not
-    # depend on the model copying the same field into two separate JSON properties.
+    # single-line value in a canonical Error Message section so both creation and
+    # later recurrence use the same historical-evidence contract.
     $safeMatchPattern = ConvertTo-SafeIssueBody -Body $MatchPattern
-    return "$Body`n`n## Trusted Match Pattern`n`n    $safeMatchPattern"
+    return "$Body`n`n## Error Message`n`n    $safeMatchPattern"
 }
 
 function Get-Sha256Hex {
@@ -1188,6 +1283,9 @@ function Test-CiScanManifest {
                     $matchPattern = Get-ValidatedMatchPattern `
                         -Signature $signature `
                         -Fingerprint $fingerprint
+                    Assert-CanonicalRecurrencePattern `
+                        -Fingerprint $fingerprint `
+                        -MatchPattern $matchPattern
                     if ($TrustedEvidencePath) {
                         $trustedEvidenceProof = Get-TrustedEvidenceMatchProof `
                             -MatchPattern $matchPattern `

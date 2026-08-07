@@ -289,6 +289,53 @@ safe-outputs:
                     (parsed.groups.definition === undefined ||
                       Number(parsed.groups.definition) === pipelineDefinitionIds[pipeline]);
                 });
+              const genericRecurrenceTokens = new Set([
+                'assertion', 'build', 'error', 'errors', 'exception', 'failed',
+                'failure', 'test', 'tests', 'unexpected', 'unknown',
+              ]);
+              const hasDistinctiveRecurrencePattern = entry => {
+                const fingerprintParts = String(entry.fingerprint ?? '').split('|');
+                if (fingerprintParts.length !== 6) {
+                  return false;
+                }
+                const fingerprintTokens = fingerprintParts.slice(3, 5)
+                  .join(' ')
+                  .toLowerCase()
+                  .split(/[^a-z0-9]+/)
+                  .filter(token => token.length >= 4 && !genericRecurrenceTokens.has(token));
+                if (fingerprintTokens.length === 0) {
+                  return false;
+                }
+                const patternTokens = [...new Set(String(entry.match_pattern ?? '')
+                  .toLowerCase()
+                  .split(/[^a-z0-9]+/)
+                  .filter(token => token.length >= 4 && !genericRecurrenceTokens.has(token)))];
+                return patternTokens.length >= 2 ||
+                  patternTokens.some(token => token.length >= 16);
+              };
+              const hasHistoricalErrorPattern = (body, pattern) => {
+                const needle = String(pattern ?? '');
+                if (!needle) {
+                  return false;
+                }
+                let inErrorMessage = false;
+                for (const line of String(body ?? '').split(/\r?\n/)) {
+                  const trimmed = line.trim();
+                  if (trimmed === '## Error Message') {
+                    inErrorMessage = true;
+                    continue;
+                  }
+                  if (/^##\s+/.test(trimmed)) {
+                    inErrorMessage = false;
+                  }
+                  if (inErrorMessage &&
+                      !isTrustedStateLine(line) &&
+                      line.replace(/\u200B/g, '').includes(needle)) {
+                    return true;
+                  }
+                }
+                return false;
+              };
 
               // The plan is produced by the trusted validator checked out at the frozen
               // publisher SHA, and this job's identity comes from the compiled workflow.
@@ -383,23 +430,35 @@ safe-outputs:
                 }
 
                 const body = response.data.body || '';
-                const evidenceProof = getEvidenceProof(entry);
-                if (!hasTrustedEvidenceLine(body, evidenceProof.hashes)) {
-                  throw new Error(`Existing issue #${entry.issue_number} does not contain a full current trusted evidence line.`);
-                }
+                // Revalidate the current proof structure at the write boundary. The
+                // trusted validator already bound these hashes to this run's frozen
+                // evidence; the issue body retains the historical proof from the run
+                // that created it, so its evidence key must not be compared byte-for-byte.
+                getEvidenceProof(entry);
                 const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
-                const exactEvidenceKey =
-                  `${evidenceKeyPrefix} ${evidenceProof.evidenceKey} -->`;
                 const markerCount = body.split(markerPrefix).length - 1;
                 if (markerCount > 0) {
                   const lines = body.split(/\r?\n/);
+                  const countMarkers = lines.filter(line =>
+                    /^<!-- ci-scan-match-count: [1-9]\d* hits in failure\.log -->$/.test(line));
+                  const evidenceKeyMarkers = lines.filter(line =>
+                    /^<!-- ci-scan-evidence-key: sha256:[0-9a-f]{64} -->$/.test(line));
                   if (markerCount !== 1 ||
                       !lines.includes(exactMarker) ||
+                      body.split(matchCountPrefix).length - 1 !== 1 ||
+                      countMarkers.length !== 1 ||
                       body.split(evidenceKeyPrefix).length - 1 !== 1 ||
-                      !lines.includes(exactEvidenceKey)) {
+                      evidenceKeyMarkers.length !== 1 ||
+                      !hasPipelineLine(body, entry.pipeline)) {
                     throw new Error(`Existing issue #${entry.issue_number} has different or malformed trusted markers.`);
                   }
-                  entry.coverage_proof = 'canonical-fingerprint-and-evidence-key';
+                  if (!hasDistinctiveRecurrencePattern(entry)) {
+                    throw new Error(`Existing issue #${entry.issue_number} uses a recurrence pattern that is not distinctive enough.`);
+                  }
+                  if (!hasHistoricalErrorPattern(body, entry.match_pattern)) {
+                    throw new Error(`Existing issue #${entry.issue_number} does not contain the current recurrence pattern in its historical Error Message evidence.`);
+                  }
+                  entry.coverage_proof = 'canonical-fingerprint-and-distinctive-current-evidence';
                 } else {
                   const matches = legacyEvidenceMatcher(entry, entry.pipeline);
                   if (matches(response.data)) {
@@ -417,6 +476,17 @@ safe-outputs:
                 per_page: 100,
                 request: requestOptions(),
               });
+              for (const entry of existingEntries) {
+                const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
+                const markerMatches = openTrackingIssues.filter(candidate =>
+                  !candidate.pull_request &&
+                  String(candidate.body || '').split(/\r?\n/).includes(exactMarker));
+                if (markerMatches.length !== 1 ||
+                    Number(markerMatches[0].number) !== Number(entry.issue_number)) {
+                  const matches = markerMatches.map(candidate => `#${candidate.number}`).join(', ') || 'none';
+                  throw new Error(`Existing fingerprint ${entry.fingerprint} does not uniquely resolve to #${entry.issue_number}; open marker matches: ${matches}.`);
+                }
+              }
               const issuesToCreate = [];
               for (const issue of plan.issues) {
                 const exactMarker = `<!-- ci-scan-fingerprint: ${issue.Fingerprint} -->`;
@@ -1112,10 +1182,19 @@ reason is rejected for logs in `failed_leaf_log_ids`.
 Disposition-specific fields:
 - `filed` — also include `title` and the complete `body`.
 - `existing` — also include the positive integer `issue_number`. The referenced
-  issue must already carry the exact publisher-owned fingerprint marker for this
-  signature. Select a `match_pattern` that occurs in both the current frozen
-  evidence and the referenced issue body. If the matching issue is markerless,
-  use `filed` so the publisher creates bounded canonical coverage instead.
+  issue must already carry the exact publisher-owned fingerprint marker and one
+  well-formed historical match-count/evidence-key marker block for this signature.
+  Its evidence key binds the run that created the issue and is not expected to
+  equal this run's evidence key. The trusted validator independently proves the
+  recurrence against this run's frozen evidence. Select a `match_pattern` that
+  occurs in both the current frozen evidence and the referenced issue's
+  `## Error Message` section, not only in its trusted match-pattern excerpt. The
+  normalized identity/failure-category fields must contain a non-generic token,
+  and the pattern itself must contain at least two distinctive tokens or one
+  token of at least 16 characters; generic text such as `Build FAILED.` is not
+  sufficient. Use these same rules for `filed` entries so the canonical issue
+  remains reusable. If the matching issue is markerless, use `filed` so the
+  publisher creates bounded canonical coverage instead.
 - `skipped` — also include exactly one `skip_reason`:
   `not-recurring`, `not-actionable`, `infrastructure-noise`,
   `signature-not-in-fetched-log`, or `cap-reached`. For every reason except
@@ -1178,8 +1257,8 @@ Concretely:
    (8-500 characters) and include it as the filed signature's `match_pattern`.
    The complete issue body must also contain that exact substring. The trusted
    publisher verifies it against frozen evidence and appends a canonical
-   match-pattern excerpt if the agent omitted it; this repair does not replace the
-   full-evidence-line requirement below.
+   match-pattern excerpt under `## Error Message` if the agent omitted it there;
+   this repair does not replace the full-evidence-line requirement below.
 3. Copy at least one **entire matching line** from a frozen evidence file into
    the issue body verbatim. Include every prefix, path, timestamp, job ID, test
    argument, and suffix present on that line; do not summarize it or replace
@@ -1265,10 +1344,10 @@ the entire run to authorize publication. Example manifest file shape:
       "build_id": 123456,
       "signatures": [
         {
-          "fingerprint": "ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows",
+          "fingerprint": "ci-scan-net11|net11.0|maui-pr|sample scenario test|sample scenario assertion failed|windows",
           "disposition": "existing",
           "source_log_ids": [42, 57],
-          "match_pattern": "Assertion failed",
+          "match_pattern": "Sample scenario assertion failed",
           "issue_number": 12345
         }
       ]
