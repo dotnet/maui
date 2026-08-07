@@ -168,7 +168,16 @@ operation. Do not omit a link merely because the final verdict seems obvious.
 
 ### Step 2: Delegate to Expert Reviewer
 
-Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent evaluation. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.
+For a materialized `review_input`, do **not** delegate or invoke a sub-agent.
+The supplied snapshot is the complete evidence boundary, and the main reviewer
+must read every supporting file and apply the applicable
+`.github/agents/maui-expert-reviewer.md` dimension checks directly. Continue at
+Step 3 after those checks.
+
+For a live `pr_number`, delegate to the `maui-expert-reviewer` agent
+(`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent
+evaluation. The agent's sole output is `inline-findings.json` — file:line
+comments in GitHub Review API format.
 
 **After the agent finishes:**
 
