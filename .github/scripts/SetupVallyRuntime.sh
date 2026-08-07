@@ -93,19 +93,74 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	eval_user="vally$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
 	eval_home="$RUNNER_TEMP/${eval_user}-home"
 	trusted_copilot_home="$RUNNER_TEMP/${eval_user}-copilot-home"
+	trusted_git_root="$RUNNER_TEMP/${eval_user}-trusted-git"
+	trusted_git_config="$trusted_git_root/config"
+	trusted_git_hooks="$trusted_git_root/hooks"
 	sudo -n useradd --system --user-group --no-create-home \
 		--shell /usr/sbin/nologin "$eval_user"
 	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
 		"$eval_home" "$eval_home/tmp"
 
 	# Vally creates synthetic worktrees and results under the checkout. Grant its
-	# no-sudo user write access there, while keeping the evaluator/runtime owned
-	# by root so agent tool calls cannot replace a later Copilot launch.
+	# no-sudo user write access to the worktree, but keep the common Git directory
+	# immutable except for Git's private worktree metadata. Otherwise a candidate
+	# can install a replacement ref or repository config that a later trusted Git
+	# command would honor.
+	git_dir="$GITHUB_WORKSPACE/.git"
+	if [ ! -d "$git_dir" ]; then
+		echo "Expected a standalone Git directory at $git_dir" >&2
+		exit 1
+	fi
+	workspace_owner=$(stat -c '%U' "$GITHUB_WORKSPACE")
+	git_group=$(stat -c '%G' "$git_dir")
 	sudo -n chgrp -R "$eval_user" "$GITHUB_WORKSPACE"
 	sudo -n chmod -R g+rwX "$GITHUB_WORKSPACE"
 	find "$GITHUB_WORKSPACE" -type d -exec sudo -n chmod g+s {} +
-	sudo -n -u "$eval_user" env HOME="$eval_home" \
-		git config --global --add safe.directory "$GITHUB_WORKSPACE"
+	sudo -n chmod +t "$GITHUB_WORKSPACE"
+	sudo -n chgrp -R "$git_group" "$git_dir"
+	sudo -n chmod -R go-w "$git_dir"
+	sudo -n install -d -o "$workspace_owner" -g "$eval_user" -m 2770 \
+		"$git_dir/worktrees"
+	sudo -n install -d -o root -g root -m 755 "$trusted_git_root"
+	sudo -n install -d -o root -g root -m 555 "$trusted_git_hooks"
+	sudo -n install -o root -g root -m 600 /dev/null "$trusted_git_config"
+	sudo -n git config --file "$trusted_git_config" --add \
+		safe.directory "$GITHUB_WORKSPACE"
+	sudo -n git config --file "$trusted_git_config" \
+		core.hooksPath "$trusted_git_hooks"
+	sudo -n chmod 444 "$trusted_git_config"
+	for protected_path in \
+		"$git_dir/HEAD" \
+		"$git_dir/config" \
+		"$git_dir/objects" \
+		"$git_dir/refs"; do
+		if [ -e "$protected_path" ] &&
+			sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
+			echo "Isolated Vally user can modify protected Git path $protected_path" >&2
+			exit 1
+		fi
+	done
+	worktree_probe="$eval_home/worktree-probe"
+	sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$GITHUB_WORKSPACE" worktree add --detach "$worktree_probe" HEAD
+	sudo -n -u "$eval_user" env \
+		HOME="$eval_home" \
+		GIT_CONFIG_GLOBAL="$trusted_git_config" \
+		GIT_CONFIG_NOSYSTEM=1 \
+		git -C "$GITHUB_WORKSPACE" worktree remove --force "$worktree_probe"
+	if [ "$(
+		sudo -n -u "$eval_user" env \
+			HOME="$eval_home" \
+			GIT_CONFIG_GLOBAL="$trusted_git_config" \
+			GIT_CONFIG_NOSYSTEM=1 \
+			git config --global --get core.hooksPath
+	)" != "$trusted_git_hooks" ]; then
+		echo "Isolated Vally user is not using the trusted Git configuration" >&2
+		exit 1
+	fi
 	sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"
 	cat <<EOF | sudo -n tee "$trusted_copilot_home/settings.json" >/dev/null
 {
@@ -137,6 +192,7 @@ EOF
 		echo 'set -euo pipefail'
 		printf 'eval_user=%q\n' "$eval_user"
 		printf 'eval_home=%q\n' "$eval_home"
+		printf 'trusted_git_config=%q\n' "$trusted_git_config"
 		cat <<'EOF'
 : "${COPILOT_GITHUB_TOKEN:?COPILOT_GITHUB_TOKEN is required}"
 : "${COPILOT_CLI_PATH:?COPILOT_CLI_PATH is required}"
@@ -150,6 +206,8 @@ child_env=(
 	"COPILOT_CLI_PATH=$COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_CLI_PATH=$TRUSTED_COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_HOME=$TRUSTED_COPILOT_HOME"
+	"GIT_CONFIG_GLOBAL=$trusted_git_config"
+	"GIT_CONFIG_NOSYSTEM=1"
 )
 for name in CI GITHUB_ACTIONS GITHUB_WORKSPACE RUNNER_TEMP \
 	HTTP_PROXY HTTPS_PROXY NO_PROXY NODE_EXTRA_CA_CERTS SSL_CERT_FILE; do

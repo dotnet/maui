@@ -270,9 +270,9 @@ jobs:
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
           RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
-          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
-          git show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
-          git show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
           ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC"
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
@@ -549,7 +549,7 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
-          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
 
       - name: Setup credential-isolated Vally runtime
@@ -559,7 +559,7 @@ jobs:
         run: |
           set -euo pipefail
           SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
-          git show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
           chmod 700 "$SETUP"
           "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
 
@@ -733,11 +733,11 @@ jobs:
           echo "Reverting ${#INSTR[@]} instruction file(s) under ${SKILL_DIR} to base ${BASE_SHA} for the baseline run"
           # Always restore PR content when this step exits, even on error, so the
           # authoritative "after" run below never sees base content.
-          restore() { git restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
+          restore() { git --no-replace-objects restore --staged --worktree --source=HEAD -- "$SKILL_DIR"; }
           trap restore EXIT
           for f in "${INSTR[@]}"; do
             if git cat-file -e "${BASE_SHA}:${f}" 2>/dev/null; then
-              git checkout "$BASE_SHA" -- "$f"
+              git --no-replace-objects checkout "$BASE_SHA" -- "$f"
             else
               # File was added by the PR; it did not exist pre-change.
               rm -f "$f"
@@ -806,7 +806,7 @@ jobs:
       # the authoritative run, regardless of how the baseline step exited.
       - name: Restore PR skill content
         if: always()
-        run: git restore --staged --worktree --source=HEAD -- .github/skills
+        run: git --no-replace-objects restore --staged --worktree --source=HEAD -- .github/skills
 
       - name: Revalidate specs and restore trusted fixtures
         env:
@@ -817,7 +817,7 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
-          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
 
       - name: Run Vally evaluation
@@ -972,11 +972,11 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
-          git show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" ".github/skills/code-review/tests" --validate-only
           TRUSTED_SPEC_DIR=$(mktemp -d "$RUNNER_TEMP/hermeticity-spec.XXXXXX")
           HERMETICITY_SPEC="$TRUSTED_SPEC_DIR/hermeticity.vally.yaml"
-          git show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" > "$HERMETICITY_SPEC"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/code-review/tests/hermeticity.vally.yaml" > "$HERMETICITY_SPEC"
           chmod a+rx "$TRUSTED_SPEC_DIR"
           chmod a+r "$HERMETICITY_SPEC"
           npx -y "@microsoft/vally-cli@${VALLY_VERSION}" lint --eval-spec "$HERMETICITY_SPEC" --strict
@@ -989,7 +989,7 @@ jobs:
         run: |
           set -euo pipefail
           SETUP="$RUNNER_TEMP/SetupVallyRuntime.sh"
-          git show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP"
           chmod 700 "$SETUP"
           "$SETUP" "$RUNNER_TEMP/vally" "$VALLY_VERSION" "$GITHUB_OUTPUT"
 
