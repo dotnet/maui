@@ -616,11 +616,11 @@ function Invoke-TestRun {
                 Write-Host "   Include class: $ClassFilter" -ForegroundColor Gray
             }
 
-            # Additive method-level narrowing (Windows full-suite scoping). When the gate
-            # knows the PR's specific methods, scope the post-hoc Windows pass/fail tally to
-            # exactly those methods within the class — so a pre-existing/flaky failure in an
-            # unrelated sibling method of the same class cannot falsely redden the A/B
-            # verdict. Empty (or on category-isolated runs) leaves behaviour unchanged.
+            # Additive method-level narrowing. When the gate knows the PR's specific methods,
+            # scope the post-hoc Windows/XHarness pass/fail tally to exactly those methods
+            # within the class — so a pre-existing/flaky failure in an unrelated sibling
+            # method cannot falsely redden the A/B verdict. Empty (or on a Windows
+            # category-isolated run) leaves behaviour unchanged.
             if ($Methods -and $Methods.Count -gt 0) {
                 $deviceParams.IncludeMethods = ($Methods -join ';')
                 Write-Host "   Include method(s): $($Methods -join ', ')" -ForegroundColor Gray

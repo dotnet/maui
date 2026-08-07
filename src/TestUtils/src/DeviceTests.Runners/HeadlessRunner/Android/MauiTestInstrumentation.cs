@@ -62,7 +62,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			Services = IPlatformApplication.Current?.Services ?? throw new InvalidOperationException("Unable to find Application Services");
 			Options = Services.GetRequiredService<TestOptions>();
-			Options.ApplyIncludeClassFilter(Arguments?.GetString("IncludeClasses"));
 			RunnerOptions = Services.GetRequiredService<HeadlessRunnerOptions>();
 
 			var resultsFilename = Arguments?.GetString("results-file-name");

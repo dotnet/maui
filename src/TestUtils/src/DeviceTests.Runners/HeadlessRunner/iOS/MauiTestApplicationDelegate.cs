@@ -59,17 +59,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			}
 		}
 
-		static string? GetProcessEnvironmentVariable(string name)
-		{
-			foreach (var environmentVariable in NSProcessInfo.ProcessInfo.Environment)
-			{
-				if (string.Equals($"{environmentVariable.Key}", name, StringComparison.Ordinal))
-					return $"{environmentVariable.Value}";
-			}
-
-			return null;
-		}
-
 		public static bool IsHeadlessRunner(string[] args)
 		{
 			// usually means this is from xharness
@@ -116,7 +105,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			SetEnvironmentVariables();
 
 			Options = Services.GetRequiredService<TestOptions>();
-			Options.ApplyIncludeClassFilter(GetProcessEnvironmentVariable("IncludeClasses"));
 			RunnerOptions = Services.GetRequiredService<HeadlessRunnerOptions>();
 
 			return true;

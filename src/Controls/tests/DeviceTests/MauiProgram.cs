@@ -27,8 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						typeof(MauiProgram).Assembly
 					},
-					SkipCategories = typeof(TestCategory).GetExcludedTestCategories(),
-					IncludeClassNames = typeof(TestCategory).GetIncludedTestClasses()
+					SkipCategories = typeof(TestCategory).GetExcludedTestCategories()
 				};
 
 				return options;

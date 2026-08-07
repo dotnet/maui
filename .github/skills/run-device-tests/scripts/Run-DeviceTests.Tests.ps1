@@ -3,15 +3,6 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Run-DeviceTests.ps1'
-    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../../../..')
-    $testOptionsPath = Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/TestOptions.cs'
-    $androidInstrumentationPath = Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/Android/MauiTestInstrumentation.cs'
-    $appleDelegatePath = Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/iOS/MauiTestApplicationDelegate.cs'
-
-    Add-Type -Path $testOptionsPath
-    $applyIncludeClassFilter = [Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions].GetMethod(
-        'ApplyIncludeClassFilter',
-        [System.Reflection.BindingFlags]'Instance,NonPublic')
 
     $tokens = $null
     $parseErrors = $null
@@ -22,10 +13,14 @@ BeforeAll {
 
     foreach ($functionName in @(
         'Get-CategoryFiltersFromTestFilter',
+        'ConvertTo-DeviceTestClassFilterValue',
+        'New-AndroidDeviceTestClassFilterInjection',
+        'Get-XHarnessTestResultSnapshot',
+        'Get-FreshXHarnessTestResultFiles',
         'Select-WindowsDeviceTestCategories',
         'Test-WindowsDeviceTestCategoryDiscovery',
         'ConvertTo-DeviceTestCount',
-        'Get-WindowsDeviceTestResultSummary'
+        'Get-DeviceTestResultSummary'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -41,38 +36,116 @@ BeforeAll {
 }
 
 Describe 'Cross-platform device test class filtering' {
-    It 'parses comma/semicolon-separated class names without duplicating existing values' {
-        $options = [Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions]::new()
-        $options.IncludeClassNames.Add('Microsoft.Maui.DeviceTests.ExistingTests')
-
-        $applyIncludeClassFilter.Invoke(
-            $options,
-            @(' Microsoft.Maui.DeviceTests.NewTests;Microsoft.Maui.DeviceTests.ExistingTests, Microsoft.Maui.DeviceTests.OtherTests ')) | Out-Null
-
-        $options.IncludeClassNames | Should -Be @(
-            'Microsoft.Maui.DeviceTests.ExistingTests'
-            'Microsoft.Maui.DeviceTests.NewTests'
-            'Microsoft.Maui.DeviceTests.OtherTests'
-        )
+    It 'normalizes comma/semicolon-separated class names for the XHarness include variable' {
+        ConvertTo-DeviceTestClassFilterValue `
+            -Value ' Microsoft.Maui.DeviceTests.NewTests;Microsoft.Maui.DeviceTests.ExistingTests, Microsoft.Maui.DeviceTests.NewTests ' |
+            Should -Be 'Microsoft.Maui.DeviceTests.NewTests,Microsoft.Maui.DeviceTests.ExistingTests'
     }
 
     It 'preserves normal execution when the host class filter is empty' {
-        $options = [Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions]::new()
-        $options.IncludeClassNames.Add('Microsoft.Maui.DeviceTests.ExistingTests')
-
-        $applyIncludeClassFilter.Invoke($options, @('  ')) | Out-Null
-
-        $options.IncludeClassNames | Should -Be @('Microsoft.Maui.DeviceTests.ExistingTests')
+        ConvertTo-DeviceTestClassFilterValue -Value '  ' | Should -BeNullOrEmpty
     }
 
-    It 'applies Android instrumentation arguments after every device-test app is created' {
-        Get-Content $androidInstrumentationPath -Raw |
-            Should -Match 'Options\.ApplyIncludeClassFilter\(Arguments\?\.GetString\("IncludeClasses"\)\)'
+    It 'rejects control characters before using a PR-derived class filter' {
+        { ConvertTo-DeviceTestClassFilterValue -Value "Microsoft.Maui.Tests.Valid`nInjected" } |
+            Should -Throw -ExpectedMessage '*control character*'
     }
 
-    It 'applies iOS and MacCatalyst environment values after every device-test app is created' {
-        Get-Content $appleDelegatePath -Raw |
-            Should -Match 'Options\.ApplyIncludeClassFilter\(GetProcessEnvironmentVariable\("IncludeClasses"\)\)'
+    It 'encodes Android class names instead of embedding PR-derived text as C# source' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "android-class-filter-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $filter = 'Microsoft.Maui.Tests.Safe"; throw new System.Exception(); //'
+            $injection = New-AndroidDeviceTestClassFilterInjection -IncludeClasses $filter -TempRoot $tempRoot
+            $source = Get-Content $injection.SourcePath -Raw
+            $targets = Get-Content $injection.TargetsPath -Raw
+
+            $source | Should -Not -Match ([regex]::Escape($filter))
+            $source | Should -Match 'FromBase64String'
+            $source | Should -Match 'NUNIT_SKIPPED_CLASSES'
+            $targets | Should -Match ([regex]::Escape("'`$(MSBuildProjectName)' == '`$(MauiCopilotClassFilterTargetProject)'"))
+            $injection.TargetProject | Should -Be 'TestUtils.DeviceTests.Runners'
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'injects the class filter into the referenced shared runner before XHarness reads options' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "android-class-filter-build-$([guid]::NewGuid())"
+        $runnerDir = Join-Path $tempRoot 'Runner'
+        $appDir = Join-Path $tempRoot 'App'
+        New-Item -ItemType Directory -Path $runnerDir, $appDir -Force | Out-Null
+
+        try {
+            @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+</Project>
+'@ | Set-Content (Join-Path $runnerDir 'TestUtils.DeviceTests.Runners.csproj') -Encoding UTF8
+            'namespace Runner; public sealed class Marker { }' |
+                Set-Content (Join-Path $runnerDir 'Marker.cs') -Encoding UTF8
+
+            @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Runner/TestUtils.DeviceTests.Runners.csproj" />
+  </ItemGroup>
+</Project>
+'@ | Set-Content (Join-Path $appDir 'App.csproj') -Encoding UTF8
+            @'
+_ = new Runner.Marker();
+System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPED_CLASSES"));
+'@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding UTF8
+
+            $classFilter = 'Microsoft.Maui.Tests.One,Microsoft.Maui.Tests.Two'
+            $injection = New-AndroidDeviceTestClassFilterInjection -IncludeClasses $classFilter -TempRoot $tempRoot
+            $buildOutput = & dotnet build (Join-Path $appDir 'App.csproj') --nologo --verbosity quiet `
+                "/p:CustomAfterMicrosoftCSharpTargets=$($injection.TargetsPath)" `
+                "/p:MauiCopilotClassFilterSourcePath=$($injection.SourcePath)" `
+                "/p:MauiCopilotClassFilterTargetProject=$($injection.TargetProject)" 2>&1
+
+            $LASTEXITCODE | Should -Be 0 -Because ($buildOutput -join [Environment]::NewLine)
+
+            $runOutput = & dotnet (Join-Path $appDir 'bin/Debug/net8.0/App.dll') 2>&1
+            $LASTEXITCODE | Should -Be 0 -Because ($runOutput -join [Environment]::NewLine)
+            ($runOutput -join [Environment]::NewLine) |
+                Should -Match '\[Maui Copilot Gate\] XHarness class filter: Microsoft\.Maui\.Tests\.One,Microsoft\.Maui\.Tests\.Two'
+            @($runOutput)[-1] | Should -Be $classFilter
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'uses the built-in XHarness class include variable for Apple runs' {
+        Get-Content $scriptPath -Raw |
+            Should -Match '--set-env=NUNIT_SKIPPED_CLASSES=\$IncludeClasses'
+    }
+
+    It 'does not reuse a stale XHarness result file when the current run produces none' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-results-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $resultFile = Join-Path $tempRoot 'testResults.xml'
+            '<assemblies />' | Set-Content $resultFile -Encoding UTF8
+            $snapshot = Get-XHarnessTestResultSnapshot -OutputDirectory $tempRoot
+
+            @(Get-FreshXHarnessTestResultFiles -OutputDirectory $tempRoot -BeforeSnapshot $snapshot).Count |
+                Should -Be 0
+
+            '<assemblies><assembly /></assemblies>' | Set-Content $resultFile -Encoding UTF8
+            @(Get-FreshXHarnessTestResultFiles -OutputDirectory $tempRoot -BeforeSnapshot $snapshot) |
+                Should -Be @($resultFile)
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
@@ -112,7 +185,7 @@ Describe 'Windows device test category filtering' {
     }
 }
 
-Describe 'Get-WindowsDeviceTestResultSummary' {
+Describe 'Get-DeviceTestResultSummary' {
     It 'clamps negative result counts to zero' {
         ConvertTo-DeviceTestCount -Value '-1' | Should -Be 0
     }
@@ -142,7 +215,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file2 -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary -ResultFiles @($file1, $file2)
+        $summary = Get-DeviceTestResultSummary -ResultFiles @($file1, $file2)
 
         $summary.Total | Should -Be 5
         $summary.Passed | Should -Be 3
@@ -155,7 +228,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $emptyFile = Join-Path $script:testDir 'TestResults-Empty.xml'
         New-Item -ItemType File -Path $emptyFile -Force | Out-Null
 
-        { Get-WindowsDeviceTestResultSummary -ResultFiles @($emptyFile) } |
+        { Get-DeviceTestResultSummary -ResultFiles @($emptyFile) } |
             Should -Throw -ExpectedMessage '*empty or not valid XML*'
     }
 
@@ -163,7 +236,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
         $badFile = Join-Path $script:testDir 'TestResults-Bad.xml'
         '<assemblies><assembly total="1"' | Set-Content $badFile -Encoding UTF8
 
-        { Get-WindowsDeviceTestResultSummary -ResultFiles @($badFile) } |
+        { Get-DeviceTestResultSummary -ResultFiles @($badFile) } |
             Should -Throw -ExpectedMessage '*empty or not valid XML*'
     }
 
@@ -186,7 +259,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
 
@@ -214,7 +287,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
 
@@ -237,7 +310,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
 
@@ -260,7 +333,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
 
@@ -283,12 +356,96 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests;Microsoft.Maui.DeviceTests.LabelHandlerTests'
 
         $summary.Total | Should -Be 2
         $summary.Passed | Should -Be 2
+    }
+
+    It 'rejects a broad XHarness suite when class isolation was required' {
+        $file = Join-Path $script:testDir 'TestResults-Unfiltered.xml'
+
+        @'
+<assemblies>
+  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Target" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Target" result="Pass" />
+      <test name="Unrelated" type="Microsoft.Maui.DeviceTests.LabelHandlerTests" method="Unrelated" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+                -RequireClassIsolation } |
+            Should -Throw -ExpectedMessage '*class filter was not enforced*1 test(s) outside*LabelHandlerTests*'
+    }
+
+    It 'requires an exact xUnit type match when validating class isolation' {
+        $file = Join-Path $script:testDir 'TestResults-ClassPrefix.xml'
+
+        @'
+<assemblies>
+  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="Nested" type="Microsoft.Maui.DeviceTests.EntryHandlerTests.Nested" method="Nested" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+                -RequireClassIsolation } |
+            Should -Throw -ExpectedMessage '*class filter was not enforced*'
+    }
+
+    It 'accepts an XHarness result containing only the requested classes' {
+        $file = Join-Path $script:testDir 'TestResults-Isolated.xml'
+
+        @'
+<assemblies>
+  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="One" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="One" result="Pass" />
+      <test name="Two" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Two" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+            -RequireClassIsolation
+
+        $summary.Total | Should -Be 2
+        $summary.Passed | Should -Be 2
+    }
+
+    It 'does not accept an all-skipped class-filtered run as verification evidence' {
+        $file = Join-Path $script:testDir 'TestResults-Skipped.xml'
+
+        @'
+<assemblies>
+  <assembly total="1" passed="0" failed="0" skipped="1" errors="0">
+    <collection>
+      <test name="Target" type="Microsoft.Maui.DeviceTests.EntryHandlerTests" method="Target" result="Skip" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
+                -RequireClassIsolation } |
+            Should -Throw -ExpectedMessage '*only skipped tests*did not execute*'
     }
 
     It 'throws (not a false pass) when the requested class produced no tests, with diagnostics naming the classes present' {
@@ -306,7 +463,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 
         # The throw must distinguish "target class absent" from "no results at all": it
         # reports the total tests found and a sample of the CLASSES present for diagnosis.
-        { Get-WindowsDeviceTestResultSummary `
+        { Get-DeviceTestResultSummary `
                 -ResultFiles @($file) `
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
             Should -Throw -ExpectedMessage '*did not run*Total tests found in result file(s): 1*Sample classes present*LabelHandlerTests*'
@@ -323,7 +480,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        { Get-WindowsDeviceTestResultSummary `
+        { Get-DeviceTestResultSummary `
                 -ResultFiles @($file) `
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' } |
             Should -Throw -ExpectedMessage '*Total tests found in result file(s): 0*'
@@ -351,7 +508,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
             -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter'
@@ -378,13 +535,13 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 '@ | Set-Content $file -Encoding UTF8
 
         # Sanity: class-only scoping DOES see the sibling failure (the false FAILED we fix).
-        $classOnly = Get-WindowsDeviceTestResultSummary `
+        $classOnly = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests'
         $classOnly.Failed | Should -Be 1
 
         # Method-scoping ignores the unrelated sibling -> clean PASSED.
-        $scoped = Get-WindowsDeviceTestResultSummary `
+        $scoped = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
             -IncludeMethods 'CompletedFiresOnRealEnterKeyPress'
@@ -410,7 +567,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
             -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter'
@@ -438,7 +595,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
             -IncludeMethods 'UpdatingFont'
@@ -462,7 +619,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        $summary = Get-WindowsDeviceTestResultSummary `
+        $summary = Get-DeviceTestResultSummary `
             -ResultFiles @($file) `
             -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
             -IncludeMethods 'CompletedFiresOnRealEnterKeyPress'
@@ -488,7 +645,7 @@ Describe 'Get-WindowsDeviceTestResultSummary' {
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        { Get-WindowsDeviceTestResultSummary `
+        { Get-DeviceTestResultSummary `
                 -ResultFiles @($file) `
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
                 -IncludeMethods 'CompletedFiresOnRealEnterKeyPress' } |
