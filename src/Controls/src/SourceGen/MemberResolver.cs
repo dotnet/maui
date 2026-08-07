@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -12,19 +15,19 @@ internal enum MemberLocation
 {
 	/// <summary>Member exists only on the page/view type (this).</summary>
 	This,
-	
+
 	/// <summary>Member exists only on the x:DataType type (BindingContext).</summary>
 	DataType,
-	
+
 	/// <summary>Member exists on both types - ambiguous, requires explicit prefix.</summary>
 	Both,
-	
+
 	/// <summary>Member not found on either type.</summary>
 	Neither,
-	
+
 	/// <summary>Explicitly prefixed with 'this.' - forced to local.</summary>
 	ForcedThis,
-	
+
 	/// <summary>Explicitly prefixed with '.' or 'BindingContext.' - forced to binding.</summary>
 	ForcedDataType,
 }
@@ -35,24 +38,28 @@ internal enum MemberLocation
 internal readonly struct MemberResolutionResult
 {
 	public MemberLocation Location { get; }
-	
+
 	/// <summary>The expression with prefix stripped (if any).</summary>
 	public string Expression { get; }
-	
+
 	/// <summary>The first identifier in the expression (for member lookup).</summary>
 	public string RootIdentifier { get; }
-	
+
 	/// <summary>True if the root identifier matches a well-known static type name.</summary>
 	public bool ConflictsWithStaticType { get; }
-	
-	public MemberResolutionResult(MemberLocation location, string expression, string rootIdentifier, bool conflictsWithStaticType = false)
+
+	/// <summary>True if the expression starts with a resolvable static type reference.</summary>
+	public bool ResolvesToStaticType { get; }
+
+	public MemberResolutionResult(MemberLocation location, string expression, string rootIdentifier, bool conflictsWithStaticType = false, bool resolvesToStaticType = false)
 	{
 		Location = location;
 		Expression = expression;
 		RootIdentifier = rootIdentifier;
 		ConflictsWithStaticType = conflictsWithStaticType;
+		ResolvesToStaticType = resolvesToStaticType;
 	}
-	
+
 	public bool IsBinding => Location == MemberLocation.DataType || Location == MemberLocation.ForcedDataType;
 	public bool IsLocal => Location == MemberLocation.This || Location == MemberLocation.ForcedThis;
 	public bool IsAmbiguous => Location == MemberLocation.Both;
@@ -67,6 +74,7 @@ internal static class MemberResolver
 	private const string ThisPrefix = "this.";
 	private const string BindingContextPrefix = "BindingContext.";
 	private const string DotPrefix = ".";
+	private static readonly ConditionalWeakTable<Compilation, HashSet<string>> GlobalUsingNamespaces = new();
 
 	/// <summary>
 	/// Resolves a member expression to determine its location.
@@ -82,7 +90,7 @@ internal static class MemberResolver
 			return new MemberResolutionResult(MemberLocation.Neither, expression, string.Empty);
 
 		var trimmed = expression.Trim();
-		
+
 		// Check for explicit prefixes first
 		if (trimmed.StartsWith(ThisPrefix, StringComparison.Ordinal))
 		{
@@ -90,14 +98,14 @@ internal static class MemberResolver
 			var root = GetRootIdentifier(stripped);
 			return new MemberResolutionResult(MemberLocation.ForcedThis, stripped, root);
 		}
-		
+
 		if (trimmed.StartsWith(BindingContextPrefix, StringComparison.Ordinal))
 		{
 			var stripped = trimmed.Substring(BindingContextPrefix.Length);
 			var root = GetRootIdentifier(stripped);
 			return new MemberResolutionResult(MemberLocation.ForcedDataType, stripped, root);
 		}
-		
+
 		// "." prefix means BindingContext (shorthand)
 		if (trimmed.StartsWith(DotPrefix, StringComparison.Ordinal) && trimmed.Length > 1 && char.IsLetter(trimmed[1]))
 		{
@@ -113,11 +121,19 @@ internal static class MemberResolver
 
 		var onThis = thisType != null && HasMember(thisType, rootIdentifier);
 		var onDataType = dataType != null && HasMember(dataType, rootIdentifier);
-		
-		// Check if root identifier also resolves to a type in the compilation
-		var conflictsWithStatic = (onThis || onDataType) && 
-			compilation != null && 
-			ResolvesToType(compilation, rootIdentifier);
+
+		// Check if root identifier also resolves to a type in the compilation.
+		// Only resolve the full leading type chain for not-found expressions because
+		// member matches are handled by this/x:DataType and only need the root conflict check.
+		var resolvesToStaticType = false;
+		var conflictsWithStatic = false;
+		if (compilation != null)
+		{
+			if (onThis || onDataType)
+				conflictsWithStatic = ResolvesToType(compilation, rootIdentifier);
+			else
+				resolvesToStaticType = StartsWithTypeReference(compilation, trimmed);
+		}
 
 		MemberLocation location;
 		if (onThis && onDataType)
@@ -129,47 +145,119 @@ internal static class MemberResolver
 		else
 			location = MemberLocation.Neither;
 
-		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic);
+		return new MemberResolutionResult(location, trimmed, rootIdentifier, conflictsWithStatic, resolvesToStaticType);
 	}
-	
+
 	/// <summary>
-	/// Checks if an identifier resolves to a type in the compilation (including via global usings).
+	/// Checks whether an expression starts with a resolvable static type reference.
+	/// This supports both unqualified type names via global usings (e.g. DateTime.Now)
+	/// and fully qualified references (e.g. System.DateTime.Now).
+	/// </summary>
+	private static bool StartsWithTypeReference(Compilation compilation, string expression)
+	{
+		if (string.IsNullOrWhiteSpace(expression))
+			return false;
+
+		var leadingIdentifiers = GetLeadingIdentifierChain(expression);
+		for (var length = leadingIdentifiers.Count; length >= 1; length--)
+		{
+			var candidate = string.Join(".", leadingIdentifiers.Take(length));
+			if (ResolvesToType(compilation, candidate))
+				return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Checks if an identifier or fully-qualified type name resolves to a type in the compilation
+	/// (including via global usings).
 	/// </summary>
 	private static bool ResolvesToType(Compilation compilation, string identifier)
 	{
-		// Collect all global using namespaces from the compilation's syntax trees
-		var globalNamespaces = new HashSet<string>();
-		
+		if (string.IsNullOrWhiteSpace(identifier))
+			return false;
+
+		identifier = StripGlobalQualifier(identifier);
+
+		// Fully-qualified type names can be checked directly.
+		if (compilation.GetTypeByMetadataName(identifier) != null)
+			return true;
+
+		// Check if the identifier resolves to a type in any of the global namespaces.
+		foreach (var ns in GetGlobalUsingNamespaces(compilation))
+		{
+			var fullName = $"{ns}.{identifier}";
+			if (compilation.GetTypeByMetadataName(fullName) != null)
+				return true;
+		}
+
+		return false;
+	}
+
+	private static HashSet<string> GetGlobalUsingNamespaces(Compilation compilation)
+	{
+		return GlobalUsingNamespaces.GetValue(compilation, CreateGlobalUsingNamespaces);
+	}
+
+	private static HashSet<string> CreateGlobalUsingNamespaces(Compilation compilation)
+	{
+		var globalNamespaces = new HashSet<string>(StringComparer.Ordinal);
 		foreach (var tree in compilation.SyntaxTrees)
 		{
 			var root = tree.GetRoot();
-			foreach (var usingDirective in root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.UsingDirectiveSyntax>())
+			foreach (var usingDirective in root.DescendantNodes().OfType<UsingDirectiveSyntax>())
 			{
-				// Check for global usings (global using System;)
-				if (usingDirective.GlobalKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.GlobalKeyword))
-				{
-					var namespaceName = usingDirective.Name?.ToString();
-					if (!string.IsNullOrEmpty(namespaceName))
-						globalNamespaces.Add(namespaceName!);
-				}
+				if (!usingDirective.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword) ||
+					usingDirective.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))
+					continue;
+
+				var namespaceName = StripGlobalQualifier(usingDirective.Name?.ToString() ?? string.Empty);
+				if (!string.IsNullOrEmpty(namespaceName))
+					globalNamespaces.Add(namespaceName);
 			}
 		}
-		
-		// Check if the identifier resolves to a type in any of the global namespaces
-		foreach (var ns in globalNamespaces)
+
+		return globalNamespaces;
+	}
+
+	private static List<string> GetLeadingIdentifierChain(string expression)
+	{
+		var identifiers = new List<string>();
+		var trimmed = expression.TrimStart();
+		var i = 0;
+
+		if (trimmed.StartsWith("global::", StringComparison.Ordinal))
+			i = "global::".Length;
+
+		while (i < trimmed.Length)
 		{
-			var fullName = $"{ns}.{identifier}";
-			var type = compilation.GetTypeByMetadataName(fullName);
-			if (type != null)
-				return true;
+			if (!char.IsLetter(trimmed[i]) && trimmed[i] != '_')
+				break;
+
+			var start = i;
+			i++;
+
+			while (i < trimmed.Length && (char.IsLetterOrDigit(trimmed[i]) || trimmed[i] == '_'))
+				i++;
+
+			identifiers.Add(trimmed.Substring(start, i - start));
+
+			if (i >= trimmed.Length || trimmed[i] != '.')
+				break;
+
+			i++;
 		}
-		
-		// Also check in the global namespace itself
-		var globalType = compilation.GetTypeByMetadataName(identifier);
-		if (globalType != null)
-			return true;
-		
-		return false;
+
+		return identifiers;
+	}
+
+	private static string StripGlobalQualifier(string identifier)
+	{
+		const string globalQualifier = "global::";
+		return identifier.StartsWith(globalQualifier, StringComparison.Ordinal)
+			? identifier.Substring(globalQualifier.Length)
+			: identifier;
 	}
 
 	/// <summary>
@@ -217,14 +305,14 @@ internal static class MemberResolver
 			return false;
 
 		var trimmed = expression.Trim();
-		
+
 		// Simple identifier: letters, digits, underscores only (and dots for member access)
 		foreach (char c in trimmed)
 		{
 			if (!char.IsLetterOrDigit(c) && c != '_' && c != '.')
 				return false;
 		}
-		
+
 		// Must start with letter or underscore
 		return char.IsLetter(trimmed[0]) || trimmed[0] == '_';
 	}
