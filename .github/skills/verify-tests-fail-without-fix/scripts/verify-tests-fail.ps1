@@ -2636,11 +2636,86 @@ $skipFixRows
     exit 3
 }
 
+# ── Baseline mutation window ──────────────────────────────────────────────────
+# STEP 1 mutates BOTH the worktree and the index (reverted files, removed PR-added
+# files) and STEP 3 puts everything back. Any phase in between can terminate the whole
+# script with `exit` (e.g. a device boot failure -> `exit 3`), and PowerShell's `exit`
+# bypasses the surrounding per-test `catch` — so without a `finally` the process could
+# leave the tree missing this PR's changes for the review phases that run afterwards in
+# the same job. Restore-BaselineMutationFromHead is the single restore implementation,
+# used by STEP 3 (strict: a failure is fatal) and by the mutation-window `finally`
+# (best effort: it must never mask the original exit code).
+$script:BaselineMutationActive = $false
+
+function Restore-BaselineMutationFromHead {
+    <#
+    .SYNOPSIS
+        Restores every file STEP 1 mutated back to its HEAD (with-fix) state.
+    .DESCRIPTION
+        - Reverted product files -> `git checkout HEAD -- <file>`
+        - Files the PR DELETED   -> re-removed (their HEAD state is "absent"; STEP 1
+                                    restored them from the merge-base for the baseline)
+        - PR-added files removed -> `git checkout HEAD -- <file>` (committed at HEAD)
+        Returns $true when every file was restored. With -BestEffort it never throws or
+        exits; it reports what failed and returns $false so a caller unwinding an `exit`
+        keeps the original exit code.
+    #>
+    param(
+        [string[]] $RevertableFiles = @(),
+        [string[]] $DeletedByPrFiles = @(),
+        [string[]] $NewFiles = @(),
+        [string]   $RepoRoot,
+        [switch]   $BestEffort
+    )
+
+    $ok = $true
+    foreach ($file in @($RevertableFiles)) {
+        if (@($DeletedByPrFiles) -contains $file) {
+            # The PR deleted this file; its with-fix state is "absent", and
+            # `git checkout HEAD -- $file` would fail because HEAD has no copy.
+            Write-Log "  Re-removing (deleted by PR): $file"
+            git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+            $wtPath = if ($RepoRoot) { Join-Path $RepoRoot $file } else { $file }
+            if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
+            if (Test-Path $wtPath) {
+                Write-Log "  ERROR: Failed to re-remove PR-deleted file $file"
+                $ok = $false
+            }
+        } else {
+            Write-Log "  Restoring: $file"
+            $gitOutput = git checkout HEAD -- $file 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Log "  ERROR: Failed to restore $file from HEAD"
+                Write-Log "  Git output: $gitOutput"
+                $ok = $false
+            }
+        }
+    }
+
+    foreach ($file in @($NewFiles)) {
+        Write-Log "  Restoring (new in PR): $file"
+        $gitOutput = git checkout HEAD -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "  ERROR: Failed to restore new file $file from HEAD"
+            Write-Log "  Git output: $gitOutput"
+            $ok = $false
+        }
+    }
+
+    if (-not $ok -and -not $BestEffort) { return $false }
+    return $ok
+}
+
 # Step 1: Revert fix files to merge-base state
 Write-Log ""
 Write-Log "=========================================="
 Write-Log "STEP 1: Reverting fix files to merge-base ($($MergeBase.Substring(0, 8)))"
 Write-Log "=========================================="
+
+# Everything from here until STEP 3 completes runs inside the mutation window; the
+# `finally` at its end guarantees restoration even when a nested phase calls `exit`.
+$script:BaselineMutationActive = $true
+try {
 
 foreach ($file in $RevertableFiles) {
     Write-Log "  Reverting: $file"
@@ -2670,9 +2745,21 @@ if ($NewFiles.Count -gt 0) {
     Write-Log "  Removing $($NewFiles.Count) PR-added file(s) so the baseline matches the pre-fix tree:"
     foreach ($file in $NewFiles) {
         Write-Log "    Removing (new in PR): $file"
-        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+        $rmOutput = git rm -f --ignore-unmatch -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            # --ignore-unmatch already returns 0 for an untracked path, so a non-zero
+            # code is a real index failure. Fall through to the worktree removal and
+            # only fail the gate when the file is still on disk afterwards (a stale
+            # copy would silently poison the "without-fix" baseline build).
+            Write-Log "    WARNING: git rm failed for $file — falling back to worktree removal"
+            Write-Log "    Git output: $rmOutput"
+        }
         $wtPath = Join-Path $RepoRoot $file
         if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
+        if (Test-Path $wtPath) {
+            Write-Log "  ERROR: Failed to remove PR-added file $file for the baseline"
+            exit 1
+        }
     }
     Write-Log "  ✓ $($NewFiles.Count) PR-added file(s) removed for the baseline"
 }
@@ -2898,44 +2985,49 @@ Write-Log "=========================================="
 Write-Log "STEP 3: Restoring fix files from HEAD"
 Write-Log "=========================================="
 
-foreach ($file in $RevertableFiles) {
-    if ($DeletedByPrFiles -contains $file) {
-        # The PR deleted this file; its with-fix state is "absent". STEP 1
-        # restored it from the merge-base for the baseline run, so re-delete it
-        # (worktree + index) to match HEAD — `git checkout HEAD -- $file` would
-        # fail here because HEAD has no copy of a PR-deleted file.
-        Write-Log "  Re-removing (deleted by PR): $file"
-        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
-        $wtPath = Join-Path $RepoRoot $file
-        if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
-    } else {
-        Write-Log "  Restoring: $file"
-        $gitOutput = git checkout HEAD -- $file 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log "  ERROR: Failed to restore $file from HEAD"
-            Write-Log "  Git output: $gitOutput"
-            exit 1
-        }
-    }
+$restored = Restore-BaselineMutationFromHead `
+    -RevertableFiles $RevertableFiles `
+    -DeletedByPrFiles $DeletedByPrFiles `
+    -NewFiles $NewFiles `
+    -RepoRoot $RepoRoot
+if (-not $restored) {
+    Write-Log "  ERROR: Failed to restore the with-fix tree from HEAD"
+    exit 1
 }
 
 Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
-
-# Restore the PR-added files STEP 1 removed to form the baseline. They are
-# committed at HEAD (they came from `git diff MergeBase HEAD`), so a plain
-# checkout brings them back for the with-fix run.
 if ($NewFiles.Count -gt 0) {
-    Write-Log "  Restoring $($NewFiles.Count) PR-added file(s) for the with-fix run:"
-    foreach ($file in $NewFiles) {
-        Write-Log "    Restoring (new in PR): $file"
-        $gitOutput = git checkout HEAD -- $file 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log "  ERROR: Failed to restore new file $file from HEAD"
-            Write-Log "  Git output: $gitOutput"
-            exit 1
-        }
-    }
     Write-Log "  ✓ $($NewFiles.Count) PR-added file(s) restored from HEAD"
+}
+
+# The tree matches HEAD again — the window is closed, so the `finally` below is a no-op.
+$script:BaselineMutationActive = $false
+
+} finally {
+    # Reached on EVERY exit path out of the mutation window, including a nested `exit`
+    # from a phase between STEP 1 and STEP 3 (PowerShell runs `finally` on `exit` and
+    # preserves the exit code). Best effort: never throw here, so the original exit
+    # code / error is what the caller sees.
+    if ($script:BaselineMutationActive) {
+        Write-Log ""
+        Write-Log "⚠️  Verification ended inside the baseline mutation window — restoring the with-fix tree from HEAD"
+        try {
+            $emergencyRestored = Restore-BaselineMutationFromHead `
+                -RevertableFiles $RevertableFiles `
+                -DeletedByPrFiles $DeletedByPrFiles `
+                -NewFiles $NewFiles `
+                -RepoRoot $RepoRoot `
+                -BestEffort
+            if ($emergencyRestored) {
+                Write-Log "  ✓ Worktree/index restored to HEAD"
+            } else {
+                Write-Log "  ⚠️  Emergency restore did not fully succeed — later phases may see a mutated tree"
+            }
+        } catch {
+            Write-Log "  ⚠️  Emergency restore threw: $($_.Exception.Message)"
+        }
+        $script:BaselineMutationActive = $false
+    }
 }
 
 # Step 4: Run ALL tests WITH fix

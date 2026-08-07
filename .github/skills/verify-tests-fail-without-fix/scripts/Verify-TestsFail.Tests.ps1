@@ -670,3 +670,132 @@ Describe 'Get-TestResultFromOutput — native-lib load failure flag (feeds with-
         Remove-Item -LiteralPath $log -Force
     }
 }
+
+Describe 'Baseline mutation window — guaranteed restoration' {
+    BeforeAll {
+        $script:GateSource = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'verify-tests-fail.ps1')
+        $gateTokens = $null
+        $gateErrors = $null
+        $script:GateAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot 'verify-tests-fail.ps1'), [ref]$gateTokens, [ref]$gateErrors)
+
+        $fn = $script:GateAst.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Restore-BaselineMutationFromHead'
+        }, $true)
+        if (-not $fn) { throw "Function 'Restore-BaselineMutationFromHead' not found" }
+        Invoke-Expression $fn.Extent.Text
+
+        function Write-Log { param([Parameter(ValueFromPipeline)][string]$Message) }
+
+        function New-GateRepo {
+            # A tiny repo with: modified.txt (changed by the "PR"), added.txt (added by the
+            # "PR") and deleted.txt (deleted by the "PR"). Returns the repo root + merge base.
+            $root = Join-Path ([System.IO.Path]::GetTempPath()) ("gaterepo-" + [Guid]::NewGuid().ToString('N'))
+            New-Item -ItemType Directory -Path $root -Force | Out-Null
+            Push-Location $root
+            try {
+                git init -q 2>&1 | Out-Null
+                git config user.email t@t.t; git config user.name t
+                'base' | Set-Content (Join-Path $root 'modified.txt') -Encoding UTF8
+                'gone' | Set-Content (Join-Path $root 'deleted.txt') -Encoding UTF8
+                git add -A 2>&1 | Out-Null
+                git commit -q -m base 2>&1 | Out-Null
+                $mergeBase = (git rev-parse HEAD).Trim()
+
+                'fixed' | Set-Content (Join-Path $root 'modified.txt') -Encoding UTF8
+                'new'   | Set-Content (Join-Path $root 'added.txt') -Encoding UTF8
+                Remove-Item (Join-Path $root 'deleted.txt') -Force
+                git add -A 2>&1 | Out-Null
+                git commit -q -m fix 2>&1 | Out-Null
+            } finally { Pop-Location }
+            return @{ Root = $root; MergeBase = $mergeBase }
+        }
+
+        function Invoke-BaselineMutation {
+            param([string]$Root, [string]$MergeBase)
+            Push-Location $Root
+            try {
+                git checkout $MergeBase -- modified.txt 2>&1 | Out-Null
+                git checkout $MergeBase -- deleted.txt 2>&1 | Out-Null
+                git rm -f --ignore-unmatch -- added.txt 2>&1 | Out-Null
+                if (Test-Path (Join-Path $Root 'added.txt')) { Remove-Item (Join-Path $Root 'added.txt') -Force }
+            } finally { Pop-Location }
+        }
+    }
+
+    It 'restores reverted, PR-deleted and PR-added files back to their HEAD state' {
+        $repo = New-GateRepo
+        try {
+            Invoke-BaselineMutation -Root $repo.Root -MergeBase $repo.MergeBase
+            # Sanity: the tree really is mutated away from HEAD.
+            (Get-Content (Join-Path $repo.Root 'modified.txt') -Raw).Trim() | Should -Be 'base'
+            Test-Path (Join-Path $repo.Root 'added.txt') | Should -BeFalse
+            Test-Path (Join-Path $repo.Root 'deleted.txt') | Should -BeTrue
+
+            Push-Location $repo.Root
+            try {
+                $ok = Restore-BaselineMutationFromHead `
+                    -RevertableFiles @('modified.txt', 'deleted.txt') `
+                    -DeletedByPrFiles @('deleted.txt') `
+                    -NewFiles @('added.txt') `
+                    -RepoRoot $repo.Root
+                $ok | Should -BeTrue
+                # Worktree AND index must match HEAD again.
+                (git status --porcelain | Out-String).Trim() | Should -BeNullOrEmpty
+            } finally { Pop-Location }
+
+            (Get-Content (Join-Path $repo.Root 'modified.txt') -Raw).Trim() | Should -Be 'fixed'
+            (Get-Content (Join-Path $repo.Root 'added.txt') -Raw).Trim() | Should -Be 'new'
+            Test-Path (Join-Path $repo.Root 'deleted.txt') | Should -BeFalse
+        } finally {
+            Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'reports failure (never throws) in BestEffort mode so it cannot mask an in-flight exit code' {
+        $repo = New-GateRepo
+        try {
+            Push-Location $repo.Root
+            try {
+                { Restore-BaselineMutationFromHead `
+                    -RevertableFiles @('does/not/exist.txt') `
+                    -RepoRoot $repo.Root -BestEffort } | Should -Not -Throw
+                Restore-BaselineMutationFromHead `
+                    -RevertableFiles @('does/not/exist.txt') `
+                    -RepoRoot $repo.Root -BestEffort | Should -BeFalse
+            } finally { Pop-Location }
+        } finally {
+            Remove-Item -LiteralPath $repo.Root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'runs the WITHOUT-fix phase inside a try whose finally restores the tree' {
+        # A nested `exit` (e.g. device boot failure -> exit 3) bypasses the per-test catch, so
+        # the mutation window must be closed by a finally rather than by STEP 3 alone.
+        $tryStatements = $script:GateAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.TryStatementAst]
+        }, $true)
+
+        $guarded = @($tryStatements | Where-Object {
+            $_.Finally -and
+            $_.Finally.Extent.Text -match 'Restore-BaselineMutationFromHead' -and
+            $_.Body.Extent.Text -match 'STEP 2: Running tests WITHOUT fix' -and
+            $_.Body.Extent.Text -match 'STEP 3: Restoring fix files from HEAD'
+        })
+
+        $guarded.Count | Should -Be 1
+    }
+
+    It 'only skips the emergency restore once STEP 3 has closed the window' {
+        $script:GateSource | Should -Match '\$script:BaselineMutationActive\s*=\s*\$true'
+        $script:GateSource | Should -Match 'if\s*\(\$script:BaselineMutationActive\)'
+    }
+
+    It 'fails the gate when a PR-added file cannot be removed for the baseline' {
+        # `git rm` used to be fire-and-forget; a stale copy left on disk silently poisons the
+        # without-fix baseline build.
+        $script:GateSource | Should -Match 'WARNING: git rm failed for \$file'
+        $script:GateSource | Should -Match 'ERROR: Failed to remove PR-added file \$file for the baseline'
+    }
+}

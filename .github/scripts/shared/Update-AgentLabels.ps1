@@ -712,6 +712,13 @@ function Parse-PhaseOutcomes {
         $result.Outcome = 'changes-requested'
     }
 
+    # Same alignment for the expert code-review verdict: the summary path vetoes an APPROVE
+    # over a blocking expert verdict (Test-ExpertReviewIsBlocking in post-ai-summary-comment.ps1),
+    # so an 'approved' label over the same artifact would contradict the posted review event.
+    if ($result.Outcome -eq 'approved' -and (Get-OutcomeFromCodeReviewVerdict -BaseDir $baseDir) -eq 'changes-requested') {
+        $result.Outcome = 'changes-requested'
+    }
+
     return $result
 }
 

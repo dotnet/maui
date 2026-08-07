@@ -25,6 +25,7 @@ BeforeAll {
         'Test-RunValidationFailed',
         'Test-WinnerRequiresPRChanges',
         'Get-AIReviewEventForRun',
+        'Test-ExpertReviewIsBlocking',
         'Test-DeepUITestsHadNoSignal',
         'Add-MissingUITestResultsNote',
         'New-FutureActionSection',
@@ -401,6 +402,59 @@ Describe 'Get-AIReviewEventForRun' {
 
     It 'keeps APPROVE when the trusted gate verdict is INCONCLUSIVE (build/env error must not block)' {
         Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'INCONCLUSIVE' |
+            Should -Be 'APPROVE'
+    }
+
+    It 'vetoes APPROVE when the expert review verdict is blocking (contradictory artifacts)' {
+        # Contradictory artifacts: the raw PR wins, validation is green, and the report LLM
+        # emitted APPROVE — but the expert code-review section rendered into the SAME summary
+        # says NEEDS_CHANGES. Approving would post a visibly self-contradictory review.
+        @{ winner = 'pr'; isPRFix = $true; candidateDiff = '' } |
+            ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        "### Findings`n### Verdict: NEEDS_CHANGES" |
+            Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'vetoes APPROVE on a NEEDS_DISCUSSION expert verdict written under an Initial verdict heading' {
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        "### Initial verdict`n`n**NEEDS_DISCUSSION — medium confidence.**" |
+            Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'vetoes APPROVE on a blocking legacy code-review verdict when no expert artifact exists' {
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'pre-flight') -Force | Out-Null
+        '**Verdict:** NEEDS_CHANGES' |
+            Set-Content (Join-Path $script:testDir 'pre-flight/code-review.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'keeps APPROVE when the current expert verdict is LGTM even if a stale legacy verdict is blocking' {
+        # Precedence must match Get-OutcomeFromCodeReviewVerdict: the current artifact wins,
+        # so a stale pre-flight verdict cannot veto an up-to-date LGTM.
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'pre-flight') -Force | Out-Null
+        '### Verdict: LGTM' | Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+        '**Verdict:** NEEDS_CHANGES' | Set-Content (Join-Path $script:testDir 'pre-flight/code-review.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'APPROVE'
+    }
+
+    It 'keeps APPROVE when no expert verdict is present at all' {
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        '### Findings`n_No blocking issues._' |
+            Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
             Should -Be 'APPROVE'
     }
 

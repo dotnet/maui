@@ -366,6 +366,7 @@ if (-not (Test-Path $sharedPatternsScript)) {
 }
 . $sharedPatternsScript
 $envErrorPatterns = Get-EnvErrorPatterns
+$ambiguousStartupPatterns = Get-AmbiguousStartupPatterns
 
 # ── Step 1: pre-boot the device once (same as Gate's Invoke-TestRun) ──────
 $bootedUdid = $DeviceUdid
@@ -531,6 +532,19 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $joined = ($lastOutput | ForEach-Object { "$_" }) -join "`n"
     foreach ($p in $envErrorPatterns) {
         if ($joined -match $p) { $envHit = $p; break }
+    }
+    # Ambiguous HostApp-startup signatures mean EITHER a broken emulator OR a PR that
+    # deterministically breaks startup. One recovery attempt (device reboot + fresh
+    # rebuild/reinstall) settles it: if the SAME signature survives that clean-device
+    # recovery, it is reproducible and must be reported as a real failure instead of
+    # consuming the remaining retry budget and landing as INCONCLUSIVE.
+    if ($envHit -and ($ambiguousStartupPatterns -contains $envHit) -and ($envErrorHistory -contains $envHit)) {
+        Write-Host "⚠️ Ambiguous startup failure '$envHit' recurred after device recovery — treating as a deterministic (PR-caused) failure, not infrastructure." -ForegroundColor Yellow
+        # Keep the signature in the ordered history (the deep classifier uses it to tell a
+        # crash-driven run from a plain slow one), but clear EnvErrorHit so the caller
+        # classifies this as a genuine failure.
+        [void]$envErrorHistory.Add($envHit)
+        $envHit = $null
     }
     if (-not $envHit) {
         # Real (non-env) failure — surface the captured build/test output so the

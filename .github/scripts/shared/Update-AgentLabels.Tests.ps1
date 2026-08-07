@@ -331,8 +331,27 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
         Remove-Item -Recurse -Force $root
     }
 
-    It 'leaves outcome unset when a completed report omits Final Recommendation and no code-review Verdict exists' {
-        $root = New-FixtureRoot -ReportMd '## Comparative Report (no recommendation, no verdict)'
+    It 'aligns labels with the summary veto: a blocking expert verdict beats a canonical APPROVE' {
+        # post-ai-summary-comment.ps1 vetoes APPROVE -> REQUEST_CHANGES over a blocking expert
+        # verdict; the outcome label must not contradict the posted review event.
+        $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr", "isPRFix": true }' `
+            -ReportMd '## ✅ Final Recommendation: APPROVE' `
+            -ExpertReviewMd '### Verdict: NEEDS_CHANGES'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'keeps approved when the current expert verdict is LGTM and the report approves' {
+        $root = New-FixtureRoot `
+            -WinnerJson '{ "winner": "pr", "isPRFix": true }' `
+            -ReportMd '## ✅ Final Recommendation: APPROVE' `
+            -ExpertReviewMd '### Verdict: LGTM'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'approved'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'leaves outcome unset when a completed report omits Final Recommendation and no code-review Verdict exists' {        $root = New-FixtureRoot -ReportMd '## Comparative Report (no recommendation, no verdict)'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -BeNullOrEmpty
         Remove-Item -Recurse -Force $root
     }
@@ -360,12 +379,22 @@ Describe 'Parse-PhaseOutcomes — Outcome from report' {
         Remove-Item -Recurse -Force $root
     }
 
-    It 'prefers the report Final Recommendation over the code-review Verdict when both exist' {
-        # The Report's own recommendation is authoritative (it weighs the fix comparison);
-        # the code-review Verdict is only a fallback. APPROVE must win over NEEDS_CHANGES.
+    It 'lets a blocking code-review Verdict veto the report Final Recommendation when both exist' {
+        # The code-review Verdict used to be a fallback only, so a report APPROVE won over a
+        # NEEDS_CHANGES verdict. That produced a self-contradictory review (blocking findings
+        # rendered into the same summary, formal approval granted), so the summary path now
+        # vetoes APPROVE over a blocking verdict and the label must agree.
         $root = New-FixtureRoot `
             -ReportMd '✅ Final Recommendation: APPROVE' `
             -CodeReviewMd '### Verdict: NEEDS_CHANGES'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'changes-requested'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'keeps the report Final Recommendation when the code-review Verdict is not blocking' {
+        $root = New-FixtureRoot `
+            -ReportMd '✅ Final Recommendation: APPROVE' `
+            -CodeReviewMd '### Verdict: LGTM'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).Outcome | Should -Be 'approved'
         Remove-Item -Recurse -Force $root
     }

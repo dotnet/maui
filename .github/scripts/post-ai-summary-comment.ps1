@@ -704,6 +704,44 @@ function Test-DeepUITestsHadNoSignal {
             $uiContent -notmatch '(?im)\b[1-9]\d*\s+failed\b')
 }
 
+function Test-ExpertReviewIsBlocking {
+    <#
+    .SYNOPSIS
+        True when the expert code-review artifact carries a blocking verdict.
+    .DESCRIPTION
+        The expert reviewer writes its verdict to expert-pr-eval/content.md (older runs
+        used pre-flight/code-review.md). That verdict is now rendered into the posted
+        summary, so a formal APPROVE over a NEEDS_CHANGES/NEEDS_DISCUSSION expert verdict
+        makes the review visibly self-contradictory. Only the FIRST artifact that carries a
+        usable verdict is consulted (current wins over legacy), matching the precedence in
+        Get-OutcomeFromCodeReviewVerdict (Update-AgentLabels.ps1) so the review event and
+        the derived outcome label can never disagree. Any read/parse issue returns $false so
+        a missing/garbled artifact never invents a blocking verdict.
+    #>
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    foreach ($rel in @('expert-pr-eval/content.md', 'pre-flight/code-review.md')) {
+        $file = Join-Path $PRAgentDir $rel
+        if (-not (Test-Path -LiteralPath $file)) { continue }
+        $content = $null
+        try { $content = Get-Content -Raw -LiteralPath $file -Encoding UTF8 -ErrorAction Stop } catch { continue }
+        if ([string]::IsNullOrWhiteSpace($content)) { continue }
+
+        $verdict = $null
+        if ($content -match '(?im)Verdict:\s*\**\s*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)') {
+            $verdict = $Matches[1]
+        }
+        elseif ($content -match '(?im)^[ \t]*#{1,6}[ \t]+(?:Initial[ \t]+)?Verdict[^\r\n]*(?:\r?\n[ \t]*)+\**[ \t]*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)\b') {
+            $verdict = $Matches[1]
+        }
+        if ($verdict) {
+            return ($verdict -notmatch '(?i)^(LGTM|APPROVE)')
+        }
+    }
+
+    return $false
+}
+
 function Get-AIReviewEventForRun {
     param(
         [string]$ReportContent,
@@ -732,6 +770,14 @@ function Get-AIReviewEventForRun {
     # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
     # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
     if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir -TrustedGateResult $TrustedGateResult)) {
+        return 'REQUEST_CHANGES'
+    }
+
+    # Expert-verdict veto: the expert code-review section is rendered into the same summary, so
+    # approving over a NEEDS_CHANGES/NEEDS_DISCUSSION expert verdict posts a self-contradictory
+    # review (blocking findings shown, formal approval granted). The expert verdict is the more
+    # specific signal, so it wins over the Report LLM's prose recommendation.
+    if ($reviewEvent -eq 'APPROVE' -and (Test-ExpertReviewIsBlocking -PRAgentDir $PRAgentDir)) {
         return 'REQUEST_CHANGES'
     }
 
