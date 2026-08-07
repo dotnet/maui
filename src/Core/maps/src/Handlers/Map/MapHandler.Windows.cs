@@ -10,8 +10,6 @@ using Windows.Devices.Geolocation;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	// TODO: For .NET 11, refactor setup/cleanup into ConnectHandler/DisconnectHandler overrides
-	// to match the iOS/Android handler pattern. Avoided for now to prevent new PublicAPI entries.
 	/// <summary>
 	/// Handler for the Map control on Windows using the WinUI 3 MapControl backed by Azure Maps.
 	/// </summary>
@@ -46,6 +44,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		MapControl? _mapControl;
 		WebView2? _webView;
 		bool _webViewReady;
+		bool _setupCompleted;
 		MapElementsLayer? _pinsLayer;
 		MapElementsLayer? _mapElementsLayer;
 		readonly List<MapIcon> _mapIcons = new();
@@ -66,7 +65,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapControl.InteractiveControlsVisible = true;
 
 			_mapControl.Loaded += OnMapControlLoaded;
-			_mapControl.Unloaded += OnMapControlUnloaded;
 
 			_pinsLayer = new MapElementsLayer();
 			_pinsLayer.MapElementClick += OnPinLayerElementClick;
@@ -80,12 +78,16 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapControlLoaded(object sender, RoutedEventArgs e)
 		{
-			if (_mapControl == null)
+			if (_mapControl == null || _setupCompleted)
 				return;
 
 			_mapControl.Loaded -= OnMapControlLoaded;
 
-			if (!TryDiscoverWebView())
+			if (TryDiscoverWebView())
+			{
+				_setupCompleted = true;
+			}
+			else
 			{
 				// WebView2 child may not be available yet during complex initialization.
 				// Retry on LayoutUpdated until found.
@@ -98,6 +100,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (TryDiscoverWebView() && _mapControl != null)
 			{
 				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
+				_setupCompleted = true;
 			}
 		}
 
@@ -211,38 +214,35 @@ namespace Microsoft.Maui.Maps.Handlers
 			return Math.Clamp(Math.Min(zoomLat, zoomLon), 0, 24);
 		}
 
-		void OnMapControlUnloaded(object sender, RoutedEventArgs e)
+		/// <inheritdoc/>
+		protected override void DisconnectHandler(FrameworkElement platformView)
 		{
 			if (_mapControl != null)
 			{
 				_mapControl.Loaded -= OnMapControlLoaded;
 				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
-				_mapControl.Unloaded -= OnMapControlUnloaded;
-
-				if (_pinsLayer != null)
-				{
-					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
-					_mapControl.Layers.Remove(_pinsLayer);
-					_pinsLayer = null;
-				}
-
-				if (_mapElementsLayer != null)
-				{
-					_mapControl.Layers.Remove(_mapElementsLayer);
-					_mapElementsLayer = null;
-				}
 			}
 
-			_mapIcons.Clear();
-			_pendingSpan = null;
+			if (_pinsLayer != null)
+			{
+				_pinsLayer.MapElementClick -= OnPinLayerElementClick;
+			}
 
 			if (_webView != null)
 			{
 				_webView.NavigationCompleted -= OnWebViewNavigationCompleted;
 			}
 
+			_pinsLayer = null;
+			_mapElementsLayer = null;
 			_webView = null;
 			_webViewReady = false;
+			_setupCompleted = false;
+			_mapIcons.Clear();
+			_pendingSpan = null;
+			_mapControl = null;
+
+			base.DisconnectHandler(platformView);
 		}
 
 		void OnPinLayerElementClick(MapElementsLayer sender, MapElementClickEventArgs args)
