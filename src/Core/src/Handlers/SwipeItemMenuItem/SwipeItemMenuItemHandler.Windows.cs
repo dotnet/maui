@@ -98,10 +98,10 @@ namespace Microsoft.Maui.Handlers
 			try
 			{
 				var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var sourceService = imageSourceServiceProvider.GetRequiredImageSourceService(source);
 
 				if (tintColor is not null)
 				{
-					var sourceService = imageSourceServiceProvider.GetRequiredImageSourceService(source);
 					var tintedIconSource = CreateTintedIconSource(source, sourceService);
 
 					if (tintedIconSource is not null)
@@ -119,13 +119,25 @@ namespace Microsoft.Maui.Handlers
 
 				var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				IImageSource loadSource = source;
+				var service = sourceService;
 				if (fontSource is not null)
 				{
 					if (resolvedFontColor is Color fontColor)
-						loadSource = new TintedFontImageSource(fontSource, fontColor);
+					{
+						var tintedFontSource = new TintedFontImageSource(fontSource, fontColor);
+						var tintedService = imageSourceServiceProvider.GetRequiredImageSourceService(tintedFontSource);
+
+						// Preserve a concrete custom source registration. Interface-level services,
+						// including the built-in font service, resolve both source types to the same
+						// singleton and can safely receive the color-carrying wrapper.
+						if (ReferenceEquals(sourceService, tintedService))
+						{
+							loadSource = tintedFontSource;
+							service = tintedService;
+						}
+					}
 				}
 
-				var service = imageSourceServiceProvider.GetRequiredImageSourceService(loadSource);
 				// Do not use ConfigureAwait(false): WinUI DependencyProperty writes require the UI thread.
 				var result = await service.GetImageSourceAsync(loadSource, scale);
 

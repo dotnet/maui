@@ -180,6 +180,35 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ConcreteCustomFontImageUsesRegisteredServiceWhenTintIsRequested()
+		{
+			var imageService = new CapturingCustomFontImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<CustomFontImageSourceStub>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var source = new CustomFontImageSourceStub
+				{
+					Font = Font.Default,
+					Glyph = "A"
+				};
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = Colors.Red,
+					Source = source
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+
+				Assert.Same(source, imageService.LastSource);
+				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
+				Assert.Same(imageService.Image, icon.ImageSource);
+			});
+		}
+
+		[Fact]
 		public async Task FontImageReloadsOnlyWhenResolvedTintChanges()
 		{
 			var imageService = new CapturingFontImageSourceService();
@@ -278,6 +307,27 @@ namespace Microsoft.Maui.DeviceTests
 					TaskCreationOptions.RunContinuationsAsynchronously);
 				Requests.Enqueue(completion);
 				return completion.Task;
+			}
+		}
+
+		sealed class CustomFontImageSourceStub : FontImageSourceStub
+		{
+		}
+
+		sealed class CapturingCustomFontImageSourceService : IImageSourceService<CustomFontImageSourceStub>
+		{
+			public WImageSource Image { get; } = new BitmapImage();
+
+			public IImageSource? LastSource { get; private set; }
+
+			public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(
+				IImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default)
+			{
+				LastSource = imageSource;
+				return Task.FromResult<IImageSourceServiceResult<WImageSource>?>(
+					new ImageSourceServiceResult(Image));
 			}
 		}
 
