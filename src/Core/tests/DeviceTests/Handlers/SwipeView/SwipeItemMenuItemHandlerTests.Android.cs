@@ -48,7 +48,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task IconColorChangeReusesMutatedDrawable()
+		public async Task IconColorLoadsSourceWhenPlatformImageIsMissing()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				var button = Assert.IsAssignableFrom<TextView>(handler.PlatformView);
+
+				item.Source = new FileImageSourceStub("red.png");
+				item.IconColor = Colors.Red;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				await AssertEventually(() => GetTopDrawable(button)?.ColorFilter is not null);
+			});
+		}
+
+		[Fact]
+		public async Task IconColorChangeMutatesAttachedDrawableWithoutReloading()
 		{
 			var imageService = new MutatingFileImageSourceService();
 			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
@@ -63,13 +80,17 @@ namespace Microsoft.Maui.DeviceTests
 				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
 
 				var drawable = GetTopDrawable(Assert.IsAssignableFrom<TextView>(handler.PlatformView));
-				Assert.Same(imageService.MutatedDrawable, drawable);
-				Assert.True(imageService.MutatedDrawable.BoundsSet);
+				Assert.Same(imageService.SourceDrawable, drawable);
+				Assert.Equal(0, imageService.SourceDrawable.MutateCount);
 				Assert.Equal(1, imageService.LoadCount);
 
 				item.IconColor = Colors.Red;
 				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 
+				drawable = GetTopDrawable(Assert.IsAssignableFrom<TextView>(handler.PlatformView));
+				Assert.Same(imageService.MutatedDrawable, drawable);
+				Assert.True(imageService.MutatedDrawable.BoundsSet);
+				Assert.Equal(1, imageService.SourceDrawable.MutateCount);
 				Assert.Equal(1, imageService.LoadCount);
 			});
 		}
@@ -83,6 +104,8 @@ namespace Microsoft.Maui.DeviceTests
 		sealed class MutatingFileImageSourceService : IImageSourceService<IFileImageSource>
 		{
 			readonly MutatingDrawable _sourceDrawable = new();
+
+			public MutatingDrawable SourceDrawable => _sourceDrawable;
 
 			public TrackingDrawable MutatedDrawable => _sourceDrawable.MutatedDrawable;
 
@@ -114,7 +137,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public TrackingDrawable MutatedDrawable { get; } = new();
 
-			public override Drawable Mutate() => MutatedDrawable;
+			public int MutateCount { get; private set; }
+
+			public override Drawable Mutate()
+			{
+				MutateCount++;
+				return MutatedDrawable;
+			}
 		}
 
 		sealed class TrackingDrawable : ColorDrawable

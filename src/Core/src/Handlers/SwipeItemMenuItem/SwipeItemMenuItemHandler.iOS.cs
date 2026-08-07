@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, UIButton>
 	{
 		readonly SwipeItemButtonProxy _proxy = new();
+		UIColor? _defaultTitleColor;
 
 		protected override UIButton CreatePlatformElement()
 		{
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
+			_defaultTitleColor = platformView.CurrentTitleColor;
 			base.ConnectHandler(platformView);
 
 			if (platformView is SwipeItemButton swipeItemButton)
@@ -51,12 +53,17 @@ namespace Microsoft.Maui.Handlers
 
 			if (platformView is SwipeItemButton swipeItemButton)
 				_proxy.Disconnect(swipeItemButton);
+
+			_defaultTitleColor = null;
 		}
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var color = view.GetTextColor();
-			handler.PlatformView.SetTitleColor(color?.ToPlatform(), UIControlState.Normal);
+			var color = view.GetTextColor()?.ToPlatform();
+			if (color is null && handler is SwipeItemMenuItemHandler platformHandler)
+				color = platformHandler._defaultTitleColor;
+
+			handler.PlatformView.SetTitleColor(color, UIControlState.Normal);
 			UpdateTextColorIconDependency(handler, view);
 		}
 
@@ -106,7 +113,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			loader.Setter.SetImageSource(button.ImageForState(UIControlState.Normal));
+			var current = button.ImageForState(UIControlState.Normal);
+			if (current is null)
+				return;
+
+			loader.Setter.SetImageSource(current);
 			handled = true;
 		}
 
@@ -158,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 				var sourceSize = sourceImage.Size;
 				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
-				if (maxResizeFactor > 1)
+				if (maxResizeFactor >= 1)
 				{
 					return sourceImage;
 				}

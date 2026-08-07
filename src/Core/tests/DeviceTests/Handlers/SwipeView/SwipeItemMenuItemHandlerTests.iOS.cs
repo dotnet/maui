@@ -21,17 +21,20 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var item = new SwipeItemMenuItemStub
 				{
-					Text = "Delete",
-					TextColor = Colors.Red
+					Text = "Delete"
 				};
 				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				var defaultTitleColor = handler.PlatformView.CurrentTitleColor.ToColor();
+
+				item.TextColor = Colors.Red;
+				handler.UpdateValue(nameof(ITextStyle.TextColor));
 
 				Assert.Equal(Colors.Red, handler.PlatformView.CurrentTitleColor.ToColor());
 
 				item.TextColor = null;
 				handler.UpdateValue(nameof(ITextStyle.TextColor));
 
-				Assert.NotEqual(Colors.Red, handler.PlatformView.CurrentTitleColor.ToColor());
+				Assert.Equal(defaultTitleColor, handler.PlatformView.CurrentTitleColor.ToColor());
 			});
 		}
 
@@ -89,6 +92,25 @@ namespace Microsoft.Maui.DeviceTests
 				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 				await AssertEventually(() =>
 					handler.PlatformView.ImageForState(UIControlState.Normal)?.RenderingMode == UIImageRenderingMode.AlwaysOriginal);
+			});
+		}
+
+		[Fact]
+		public async Task IconColorLoadsSourceWhenPlatformImageIsMissing()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				handler.PlatformView.Frame = new CGRect(0, 0, 100, 100);
+
+				item.Source = new FileImageSourceStub("red.png");
+				item.IconColor = Colors.Blue;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				await AssertEventually(() =>
+					handler.PlatformView.ImageForState(UIControlState.Normal) is not null &&
+					handler.PlatformView.TintColor?.ToColor() == Colors.Blue);
 			});
 		}
 

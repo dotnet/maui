@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		static readonly ConditionalWeakTable<ISwipeItemMenuItemHandler, HandlerState> s_externalHandlerStates = new();
 		int _iconLoadGeneration;
+		IFontImageSource? _fontIconLoadSource;
+		Color? _fontIconLoadColor;
+		int _fontIconLoadGeneration;
 
 		protected override WSwipeItem CreatePlatformElement()
 		{
@@ -74,6 +77,13 @@ namespace Microsoft.Maui.Handlers
 			int generation = BeginIconLoad(handler);
 
 			var source = item.Source;
+			var fontSource = source as IFontImageSource;
+			var resolvedFontColor = fontSource is null ? null : item.GetIconTintColor();
+			bool fontIconApplied = false;
+			var platformHandler = handler as SwipeItemMenuItemHandler;
+
+			platformHandler?.SetFontIconLoad(fontSource, resolvedFontColor, generation);
+
 			if (source is null)
 			{
 				swipeItem.IconSource = null;
@@ -109,13 +119,10 @@ namespace Microsoft.Maui.Handlers
 
 				var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				IImageSource loadSource = source;
-				if (source is IFontImageSource fontImageSource)
+				if (fontSource is not null)
 				{
-					var resolvedFontColor = tintColor ??
-						(fontImageSource.Color is null ? item.GetTextColor() : null);
-
 					if (resolvedFontColor is Color fontColor)
-						loadSource = new TintedFontImageSource(fontImageSource, fontColor);
+						loadSource = new TintedFontImageSource(fontSource, fontColor);
 				}
 
 				var service = imageSourceServiceProvider.GetRequiredImageSourceService(loadSource);
@@ -130,12 +137,23 @@ namespace Microsoft.Maui.Handlers
 
 				if (ReferenceEquals(item.Source, source))
 				{
-					swipeItem.IconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
+					var iconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
+					swipeItem.IconSource = iconSource;
+					fontIconApplied = fontSource is not null && iconSource is not null;
 				}
 			}
 			catch (System.Exception ex)
 			{
 				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(LogLevel.Warning, new EventId(), "Cannot load SwipeItem Icon", ex, static (state, _) => state);
+			}
+			finally
+			{
+				if (fontSource is not null &&
+					!fontIconApplied &&
+					platformHandler is not null)
+				{
+					platformHandler.ClearFontIconLoad(generation);
+				}
 			}
 		}
 
@@ -151,7 +169,8 @@ namespace Microsoft.Maui.Handlers
 
 			return new BitmapIconSource
 			{
-				UriSource = new Uri("ms-appx:///" + Path.GetFileName(fileImageSource.File))
+				UriSource = new Uri("ms-appx:///" + Path.GetFileName(fileImageSource.File)),
+				ShowAsMonochrome = true
 			};
 		}
 
@@ -175,8 +194,16 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (source is IFontImageSource)
+			if (source is IFontImageSource fontSource)
+			{
+				if (handler is SwipeItemMenuItemHandler platformHandler &&
+					platformHandler.IsFontIconLoadCurrent(fontSource, view.GetIconTintColor()))
+				{
+					handled = true;
+				}
+
 				return;
+			}
 
 			if (source is not IFileImageSource || handler.MauiContext is null)
 			{
@@ -211,15 +238,44 @@ namespace Microsoft.Maui.Handlers
 			object platformView,
 			int generation)
 		{
-			int currentGeneration = handler is SwipeItemMenuItemHandler platformHandler
-				? System.Threading.Volatile.Read(ref platformHandler._iconLoadGeneration)
-				: System.Threading.Volatile.Read(
-					ref s_externalHandlerStates.GetValue(handler, static _ => new HandlerState()).IconLoadGeneration);
+			int currentGeneration;
+			if (handler is SwipeItemMenuItemHandler platformHandler)
+			{
+				currentGeneration = System.Threading.Volatile.Read(ref platformHandler._iconLoadGeneration);
+			}
+			else if (s_externalHandlerStates.TryGetValue(handler, out var state))
+			{
+				currentGeneration = System.Threading.Volatile.Read(ref state.IconLoadGeneration);
+			}
+			else
+			{
+				return false;
+			}
 
 			return generation == currentGeneration &&
 				ReferenceEquals(handler.VirtualView, item) &&
 				ReferenceEquals(handler.PlatformView, platformView);
 		}
+
+		void SetFontIconLoad(IFontImageSource? source, Color? color, int generation)
+		{
+			_fontIconLoadSource = source;
+			_fontIconLoadColor = color;
+			_fontIconLoadGeneration = generation;
+		}
+
+		void ClearFontIconLoad(int generation)
+		{
+			if (_fontIconLoadGeneration != generation)
+				return;
+
+			_fontIconLoadSource = null;
+			_fontIconLoadColor = null;
+		}
+
+		bool IsFontIconLoadCurrent(IFontImageSource source, Color? color) =>
+			ReferenceEquals(_fontIconLoadSource, source) &&
+			Equals(_fontIconLoadColor, color);
 
 		sealed class HandlerState
 		{

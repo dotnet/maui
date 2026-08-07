@@ -57,6 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 						service));
 
 				Assert.Equal(new Uri("ms-appx:///delete.png"), icon.UriSource);
+				Assert.True(icon.ShowAsMonochrome);
 			});
 		}
 
@@ -179,6 +180,40 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task FontImageReloadsOnlyWhenResolvedTintChanges()
+		{
+			var imageService = new CapturingFontImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFontImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub
+				{
+					TextColor = Colors.Blue
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				item.Source = new FontImageSourceStub
+				{
+					Font = Font.Default,
+					Glyph = "A"
+				};
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				Assert.Equal(1, imageService.LoadCount);
+
+				handler.UpdateValue(nameof(ITextStyle.TextColor));
+				Assert.Equal(1, imageService.LoadCount);
+
+				item.TextColor = Colors.Red;
+				handler.UpdateValue(nameof(ITextStyle.TextColor));
+
+				Assert.Equal(2, imageService.LoadCount);
+				Assert.Equal(Colors.Red, Assert.IsAssignableFrom<IFontImageSource>(imageService.LastSource).Color);
+			});
+		}
+
+		[Fact]
 		public async Task StaleSameSourceLoadCannotOverwriteNewerTintChange()
 		{
 			var imageService = new DelayedFileImageSourceService();
@@ -252,11 +287,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			public IImageSource? LastSource { get; private set; }
 
+			public int LoadCount { get; private set; }
+
 			public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(
 				IImageSource imageSource,
 				float scale = 1,
 				CancellationToken cancellationToken = default)
 			{
+				LoadCount++;
 				LastSource = imageSource;
 				return Task.FromResult<IImageSourceServiceResult<WImageSource>?>(
 					new ImageSourceServiceResult(Image));

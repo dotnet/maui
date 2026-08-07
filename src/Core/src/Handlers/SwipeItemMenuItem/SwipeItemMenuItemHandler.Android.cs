@@ -179,7 +179,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var drawables = button.GetCompoundDrawables();
-			loader.Setter.SetImageSource(drawables.Length > 1 ? drawables[1] : null);
+			var current = drawables.Length > 1 ? drawables[1] : null;
+			if (current is null)
+				return;
+
+			loader.Setter.SetImageSource(current);
 			handled = true;
 		}
 
@@ -193,11 +197,15 @@ namespace Microsoft.Maui.Handlers
 				if (platformImage is not null)
 				{
 					var iconSize = GetIconSize(Handler);
+					var tintColor = item.GetIconTintColor()?.ToPlatform();
+					bool clearTint = tintColor is null && platformImage.ColorFilter is not null;
 
-					// File/resource image services can return drawables backed by a shared ConstantState.
-					// Mutate first because custom drawables may return a distinct instance whose bounds
-					// still need to be initialized before it is attached.
-					platformImage = platformImage.Mutate();
+					if (tintColor is not null || clearTint)
+					{
+						// File/resource image services can return drawables backed by a shared
+						// ConstantState. Mutate only before changing its color filter.
+						platformImage = platformImage.Mutate();
+					}
 
 					int drawableWidth = platformImage.IntrinsicWidth;
 					int drawableHeight = platformImage.IntrinsicHeight;
@@ -215,15 +223,12 @@ namespace Microsoft.Maui.Handlers
 						platformImage.SetBounds(0, 0, iconWidth, iconHeight);
 					}
 
-					var tintColor = item.GetIconTintColor()?.ToPlatform();
-
 					if (tintColor is not null)
 					{
 						platformImage.SetColorFilter(tintColor.Value, FilterMode.SrcAtop);
 					}
-					else
+					else if (clearTint)
 					{
-						// Drawables can be cached and reused, so an earlier tint has to be cleared explicitly.
 						platformImage.ClearColorFilter();
 					}
 				}
