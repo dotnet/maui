@@ -115,6 +115,22 @@ BeforeAll {
         -MatchPattern $matchPattern'
             Replace = '    $body = $body'
         }
+        # Canonical issues can again be created with patterns that cannot safely
+        # prove a later recurrence.
+        'no-recurrence-specificity' = @{
+            Find    = '    Assert-CanonicalRecurrencePattern `
+        -Fingerprint $Fingerprint `
+        -MatchPattern $MatchPattern'
+            Replace = ''
+        }
+        # The trusted existing disposition no longer enforces the same recurrence
+        # specificity contract as newly filed issues.
+        'no-existing-recurrence-specificity' = @{
+            Find    = '                    Assert-CanonicalRecurrencePattern `
+                        -Fingerprint $fingerprint `
+                        -MatchPattern $matchPattern'
+            Replace = ''
+        }
     }
 
     function New-MutatedValidator {
@@ -209,8 +225,8 @@ BeforeAll {
     function Test-MatchPatternRepairPrompt {
         param([Parameter(Mandatory = $true)][string]$Source)
 
-        return $Source -match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt if the agent omitted it' -and
-            $Source -match 'does not replace\s+the\s+full-evidence-line requirement'
+        return $Source -match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt under `## Error Message` if the agent omitted it there' -and
+            $Source -match 'does not replace the full-evidence-line requirement'
     }
 
     function Test-OrderIndependentCapPrompt {
@@ -220,6 +236,19 @@ BeforeAll {
             $Source -match 'may appear before or after the fifth filed entry in fixed traversal order' -and
             $Source -match 'Use a substantive\s+skip reason whenever it applies, even after the cap is reached' -and
             $Source -match 'do not replace\s+it with `cap-reached` merely because of its position'
+    }
+
+    function Test-CanonicalRecurrencePrompt {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source.Contains('well-formed historical match-count/evidence-key marker block') -and
+            $Source.Contains('is not expected to') -and
+            $Source.Contains('The trusted validator independently proves the') -and
+            $Source.Contains('`## Error Message` section') -and
+            $Source.Contains('not only in its trusted match-pattern excerpt') -and
+            $Source.Contains('normalized identity/failure-category fields must contain a non-generic token') -and
+            $Source.Contains('and the pattern itself must contain at least two distinctive tokens or one') -and
+            $Source.Contains('generic text such as `Build FAILED.` is not')
     }
 
     function Get-CompiledThreatDetectionPrompt {
@@ -241,11 +270,30 @@ BeforeAll {
         param(
             [string]$Path,
             [string]$Body,
-            [string]$MatchPattern = 'Assertion failed',
-            [string]$Title = 'Sample test fails on Windows'
+            [string]$MatchPattern = 'Sample scenario assertion failed',
+            [string]$Title = 'Sample test fails on Windows',
+            [ValidateSet('filed', 'existing')][string]$Disposition = 'filed'
         )
 
-        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
+        $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample scenario test|sample scenario assertion failed|windows'
+        $signature = if ($Disposition -eq 'filed') {
+            [pscustomobject]@{
+                fingerprint    = $fingerprint
+                disposition    = 'filed'
+                source_log_ids = @(1001)
+                title          = $Title
+                match_pattern  = $MatchPattern
+                body           = $Body
+            }
+        } else {
+            [pscustomobject]@{
+                fingerprint    = $fingerprint
+                disposition    = 'existing'
+                source_log_ids = @(1001)
+                issue_number   = 36827
+                match_pattern  = $MatchPattern
+            }
+        }
         $manifest = [pscustomobject]@{
             pipelines = @(
                 [pscustomobject]@{
@@ -253,16 +301,7 @@ BeforeAll {
                     definition_id = 302
                     status        = 'scanned'
                     build_id      = 123456
-                    signatures    = @(
-                        [pscustomobject]@{
-                            fingerprint    = $fingerprint
-                            disposition    = 'filed'
-                            source_log_ids = @(1001)
-                            title          = $Title
-                            match_pattern  = $MatchPattern
-                            body           = $Body
-                        }
-                    )
+                    signatures    = @($signature)
                 }
                 [pscustomobject]@{ name = 'maui-pr-devicetests'; definition_id = 314; status = 'scanned'; build_id = 123457; signatures = @() }
                 [pscustomobject]@{ name = 'maui-pr-uitests'; definition_id = 313; status = 'scanned'; build_id = 123458; signatures = @() }
@@ -304,10 +343,11 @@ BeforeAll {
     function Invoke-ValidatorProbe {
         param(
             [string[]]$Mutation = @(),
-            [string]$Body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed",
-            [string]$MatchPattern = 'Assertion failed',
-            [string[]]$EvidenceLines = @('Assertion failed', 'Assertion failed'),
-            [string]$Title = 'Sample test fails on Windows'
+            [string]$Body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nSample scenario assertion failed",
+            [string]$MatchPattern = 'Sample scenario assertion failed',
+            [string[]]$EvidenceLines = @('Sample scenario assertion failed', 'Sample scenario assertion failed'),
+            [string]$Title = 'Sample test fails on Windows',
+            [ValidateSet('filed', 'existing')][string]$Disposition = 'filed'
         )
 
         $work = Join-Path $TestDrive ('mutation-' + [guid]::NewGuid().ToString('n'))
@@ -325,7 +365,8 @@ BeforeAll {
             -Path (Join-Path $work 'manifest.json') `
             -Body $Body `
             -MatchPattern $MatchPattern `
-            -Title $Title
+            -Title $Title `
+            -Disposition $Disposition
         $evidencePath = New-ProbeEvidence `
             -Root (Join-Path $work 'evidence') `
             -Lines $EvidenceLines
@@ -357,7 +398,7 @@ try {
         return ("$line".Substring(7) | ConvertFrom-Json)
     }
 
-    $script:CanonicalMarker = '<!-- ci-scan-fingerprint: ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows -->'
+    $script:CanonicalMarker = '<!-- ci-scan-fingerprint: ci-scan-net11|net11.0|maui-pr|sample scenario test|sample scenario assertion failed|windows -->'
 }
 
 Describe 'CI scanner marker mutation coverage' {
@@ -399,9 +440,44 @@ Describe 'CI scanner marker mutation coverage' {
             -EvidenceLines @($pattern)
 
         $baseline.ok | Should -BeTrue
-        $baseline.body | Should -Match '(?ms)## Trusted Match Pattern\r?\n\r?\n    XHarness exit code: 1 \(TESTS_FAILED\)$'
+        $baseline.body | Should -Match '(?ms)## Error Message\r?\n\r?\n    XHarness exit code: 1 \(TESTS_FAILED\)$'
         $mutated.ok | Should -BeFalse
         $mutated.error | Should -Match 'must contain match_pattern exactly'
+    }
+
+    It 'mutation "no-recurrence-specificity": generic canonical issues become publishable' {
+        $pattern = 'Build FAILED.'
+        $body = "## Summary`nGeneric failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n$pattern"
+        $baseline = Invoke-ValidatorProbe `
+            -Body $body `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern)
+        $mutated = Invoke-ValidatorProbe `
+            -Mutation @('no-recurrence-specificity') `
+            -Body $body `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern)
+
+        $baseline.ok | Should -BeFalse
+        $baseline.error | Should -Match 'must contain at least two distinctive tokens'
+        $mutated.ok | Should -BeTrue
+    }
+
+    It 'mutation "no-existing-recurrence-specificity": generic existing coverage becomes trusted' {
+        $pattern = 'Build FAILED.'
+        $baseline = Invoke-ValidatorProbe `
+            -Disposition 'existing' `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern)
+        $mutated = Invoke-ValidatorProbe `
+            -Mutation @('no-existing-recurrence-specificity') `
+            -Disposition 'existing' `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern)
+
+        $baseline.ok | Should -BeFalse
+        $baseline.error | Should -Match 'must contain at least two distinctive tokens'
+        $mutated.ok | Should -BeTrue
     }
 
     It 'mutation "no-injection": removing injection cannot produce a marked issue' {
@@ -510,7 +586,7 @@ Describe 'CI scanner marker mutation coverage' {
         $header = '===== AzDO log 123456/1001 ====='
         $result = Invoke-ValidatorProbe `
             -Mutation @('synthetic-framing-counted') `
-            -MatchPattern '===== AzDO log' `
+            -MatchPattern 'AzDO log 123456' `
             -EvidenceLines @('Different raw failure') `
             -Body "## Summary`nHeader replay.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`n$header"
 
@@ -640,6 +716,11 @@ Describe 'CI scanner twin discovery mutation coverage' {
 
         It 'baseline: both twins describe cap exhaustion independent of traversal order' {
             @($script:WorkflowSources | Where-Object { Test-OrderIndependentCapPrompt -Source $_ }).Count |
+                Should -Be 2
+        }
+
+        It 'baseline: both twins separate canonical issue history from current recurrence proof' {
+            @($script:WorkflowSources | Where-Object { Test-CanonicalRecurrencePrompt -Source $_ }).Count |
                 Should -Be 2
         }
 
@@ -785,11 +866,53 @@ Describe 'CI scanner twin discovery mutation coverage' {
             foreach ($source in $script:WorkflowSources) {
                 $mutated = [regex]::Replace(
                     $source,
-                    '(?ms) The trusted\r?\n   publisher verifies it against frozen evidence and appends a canonical\r?\n   match-pattern excerpt if the agent omitted it; this repair does not replace the\r?\n   full-evidence-line requirement below\.',
+                    '(?ms) The trusted\r?\n   publisher verifies it against frozen evidence and appends a canonical\r?\n   match-pattern excerpt under `## Error Message` if the agent omitted it there;\r?\n   this repair does not replace the full-evidence-line requirement below\.',
                     '')
 
                 $mutated | Should -Not -BeExactly $source
                 (Test-MatchPatternRepairPrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "current-key-must-match-history": restoring cross-run key equality fails the recurrence invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'is not expected to',
+                    'must')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-CanonicalRecurrencePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "trusted-excerpt-is-history": widening recurrence beyond Error Message evidence fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms)referenced issue''s\r?\n  `## Error Message` section, not only in its trusted match-pattern excerpt\.',
+                    'referenced issue body.')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-CanonicalRecurrencePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "generic-recurrence-allowed": dropping recurrence specificity fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $start = $source.IndexOf(
+                    'normalized identity/failure-category fields must contain a non-generic token,',
+                    [System.StringComparison]::Ordinal)
+                $endToken = 'sufficient.'
+                $end = $source.IndexOf(
+                    $endToken,
+                    $start,
+                    [System.StringComparison]::Ordinal)
+                $start | Should -BeGreaterOrEqual 0
+                $end | Should -BeGreaterOrEqual $start
+                $mutated = $source.Remove($start, ($end + $endToken.Length) - $start)
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-CanonicalRecurrencePrompt -Source $mutated) | Should -BeFalse
             }
         }
     }

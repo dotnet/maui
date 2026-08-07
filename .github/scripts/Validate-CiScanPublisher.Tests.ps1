@@ -727,11 +727,20 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
     It 'keeps the fail-closed dedup, cap, and provenance guards' {
         $script:TwinLock | Should -Match 'ambiguously matches open issues'
         $script:TwinLock | Should -Match 'markerless issues are not authoritative coverage'
+        $script:TwinLock | Should -Match 'does not uniquely resolve'
         $script:TwinLock | Should -Not -Match 'legacy_dedup'
         $script:TwinLock | Should -Match 'hasTrustedEvidenceLine'
         $script:TwinLock | Should -Match 'exceeds the issue cap'
         $script:TwinLock | Should -Match 'is not an open \$\{expectedLabel\} tracking issue'
         $script:TwinLock | Should -Match 'retry_reused: true'
+    }
+
+    It 'separates historical issue evidence from current frozen recurrence proof' {
+        $script:TwinLock | Should -Match 'historical proof from the run'
+        $script:TwinLock | Should -Match 'canonical-fingerprint-and-distinctive-current-evidence'
+        $script:TwinLock | Should -Match 'hasDistinctiveRecurrencePattern'
+        $script:TwinLock | Should -Match 'hasHistoricalErrorPattern'
+        $script:TwinLock | Should -Not -Match 'does not contain a full current trusted evidence line'
     }
 
     It 'keeps custom publisher staging identical to framework staging' {
@@ -760,6 +769,9 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
                 [switch]$TamperCreatedBody,
                 [switch]$AllowMarkerlessCoverage,
                 [switch]$AllowMarkerlessAutoAdoption,
+                [switch]$RequireCurrentEvidenceInExistingBody,
+                [switch]$AllowGenericExistingPattern,
+                [switch]$AllowPatternOutsideHistoricalEvidence,
                 [string]$ScannerIdOverride,
                 [string]$BranchOverride,
                 [string]$LabelOverride
@@ -773,8 +785,13 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
             $harnessPath = Join-Path $work 'harness.js'
 
             Set-Content -LiteralPath $planPath -Value ($Plan | ConvertTo-Json -Depth 12)
+            $effectiveOpenIssues = if (@($OpenIssues).Count -gt 0) {
+                @($OpenIssues)
+            } else {
+                @($ExistingIssues.Values)
+            }
             Set-Content -LiteralPath $stubsPath -Value ((@{
-                        openIssues     = @($OpenIssues)
+                        openIssues     = @($effectiveOpenIssues)
                         existingIssues = $ExistingIssues
                         tamper         = [bool]$TamperCreatedBody
                     }) | ConvertTo-Json -Depth 12)
@@ -786,6 +803,34 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
                 $publisherSource = $publisherSource.Replace(
                     $needle,
                     "entry.coverage_proof = 'legacy-pipeline-and-trusted-evidence-line'; return;")
+                $uniquenessPattern = '(?m)^(?<indent>\s*)if \(markerMatches\.length !== 1 \|\|\r?\n' +
+                    '\k<indent>    Number\(markerMatches\[0\]\.number\) !== Number\(entry\.issue_number\)\) \{'
+                [regex]::Matches($publisherSource, $uniquenessPattern).Count | Should -Be 1
+                $publisherSource = [regex]::Replace(
+                    $publisherSource,
+                    $uniquenessPattern,
+                    { param($match)
+                        $indent = $match.Groups['indent'].Value
+                        return @(
+                            "${indent}if (entry.coverage_proof !== 'legacy-pipeline-and-trusted-evidence-line' &&"
+                            "${indent}    (markerMatches.length !== 1 ||"
+                            "${indent}      Number(markerMatches[0].number) !== Number(entry.issue_number))) {"
+                        ) -join "`n"
+                    })
+            }
+            if ($AllowGenericExistingPattern) {
+                $needle = 'if (!hasDistinctiveRecurrencePattern(entry)) {'
+                $publisherSource.Contains($needle) | Should -BeTrue
+                $publisherSource = $publisherSource.Replace(
+                    $needle,
+                    'if (false && !hasDistinctiveRecurrencePattern(entry)) {')
+            }
+            if ($AllowPatternOutsideHistoricalEvidence) {
+                $needle = 'if (!hasHistoricalErrorPattern(body, entry.match_pattern)) {'
+                $publisherSource.Contains($needle) | Should -BeTrue
+                $publisherSource = $publisherSource.Replace(
+                    $needle,
+                    'if (!body.includes(String(entry.match_pattern ?? ''''))) {')
             }
             if ($AllowMarkerlessAutoAdoption) {
                 $needle = 'issuesToCreate.push(issue);'
@@ -801,6 +846,24 @@ if (legacyMatch) {
 issuesToCreate.push(issue);
 '@
                 $publisherSource = $publisherSource.Replace($needle, $replacement)
+            }
+            if ($RequireCurrentEvidenceInExistingBody) {
+                $pattern = '(?m)^(?<indent>\s*)getEvidenceProof\(entry\);\r?\n' +
+                    '\k<indent>const exactMarker = `<!-- ci-scan-fingerprint: \$\{entry\.fingerprint\} -->`;'
+                [regex]::Matches($publisherSource, $pattern).Count | Should -Be 1
+                $publisherSource = [regex]::Replace(
+                    $publisherSource,
+                    $pattern,
+                    { param($match)
+                        $indent = $match.Groups['indent'].Value
+                        return @(
+                            "${indent}const currentEvidenceProof = getEvidenceProof(entry);"
+                            "${indent}if (!hasTrustedEvidenceLine(body, currentEvidenceProof.hashes)) {"
+                            "${indent}  throw new Error(``Existing issue #`${entry.issue_number} does not contain a full current trusted evidence line.``);"
+                            "${indent}}"
+                            "${indent}const exactMarker = ``<!-- ci-scan-fingerprint: `${entry.fingerprint} -->``;"
+                        ) -join "`n"
+                    })
             }
 
             $harness = @"
@@ -931,18 +994,22 @@ $publisherSource
             param(
                 [int]$IssueNumber = 40001,
                 [string]$EvidenceLine = 'Unique current raw failure line',
-                [string]$FingerprintIdentity = 'sample test'
+                [string]$FingerprintIdentity = 'sample test',
+                [string]$Pipeline = 'maui-pr',
+                [string]$FailureCategory = 'assertion failed',
+                [string]$Platform = 'windows',
+                [string]$MatchPattern = 'Unique current'
             )
 
             $proof = New-EvidenceProof -Line $EvidenceLine
-            $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|maui-pr|$FingerprintIdentity|assertion failed|windows"
+            $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|$Pipeline|$FingerprintIdentity|$FailureCategory|$Platform"
             $plan = New-Plan
-            $plan.pipelines[0].signatures = @(
+            ($plan.pipelines | Where-Object name -EQ $Pipeline).signatures = @(
                 [pscustomobject]@{
                     fingerprint          = $fingerprint
                     disposition          = 'existing'
                     issue_number         = $IssueNumber
-                    match_pattern        = 'Unique current'
+                    match_pattern        = $MatchPattern
                     evidence_key         = $proof.EvidenceKey
                     evidence_line_hashes = $proof.EvidenceLineHashes
                 }
@@ -1118,12 +1185,17 @@ $publisherSource
     It 'reuses canonical recurrence across different AzDO transport timestamps' {
         $currentLine = '2026-07-20T18:34:13.9100750Z ##[error]Path does not exist: artifacts/bin'
         $storedLine = '2026-07-29T03:04:05.1234567Z ##[error]Path does not exist: artifacts/bin'
-        $plan = New-ExistingPlan -EvidenceLine $currentLine
+        $plan = New-ExistingPlan `
+            -EvidenceLine $currentLine `
+            -FingerprintIdentity 'path lookup' `
+            -MatchPattern 'Path does not exist'
         $entry = $plan.pipelines[0].signatures[0]
         $existing = New-ExistingIssueStub -Body @"
 <!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
 <!-- ci-scan-evidence-key: $($entry.evidence_key) -->
 - **Pipeline**: maui-pr
+## Error Message
 $storedLine
 "@
 
@@ -1132,6 +1204,75 @@ $storedLine
             -ExistingIssues @{ '40001' = $existing }
 
         $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'reuses the canonical issue when exact production evidence changes between runs' {
+        $creationLine = '2026-08-06T22:31:38.2231430Z ##[error]Artifact uitest-snapshot-results-ios-ios_ui_tests_coreclr-Shell-1 already exists for build 1543322.'
+        $currentLine = '2026-08-07T10:08:19.9871390Z ##[error]Artifact uitest-snapshot-results-ios-ios_ui_tests_coreclr-Shell-1 already exists for build 1544086.'
+        $pattern = 'Artifact uitest-snapshot-results-ios-ios_ui_tests_coreclr-Shell-1 already exists for build'
+        $creationProof = New-EvidenceProof -Line $creationLine
+        $plan = New-ExistingPlan `
+            -IssueNumber 37168 `
+            -EvidenceLine $currentLine `
+            -FingerprintIdentity 'publish ios snapshot diffs' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'artifact already exists' `
+            -Platform 'ios' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $existing = New-ExistingIssueStub -Number 37168 -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($creationProof.EvidenceKey) -->
+
+## Build Information
+- **Pipeline**: maui-pr-uitests
+- **Build ID**: 1543322
+
+## Error Message
+$creationLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37168' = $existing }
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+        $result.error | Should -BeNullOrEmpty
+    }
+
+    It 'mutation "current-evidence-required-in-history": reproduces the production recurrence failure' {
+        $creationLine = '2026-08-06T22:31:38.2231430Z ##[error]Artifact uitest-snapshot-results-ios-ios_ui_tests_coreclr-Shell-1 already exists for build 1543322.'
+        $currentLine = '2026-08-07T10:08:19.9871390Z ##[error]Artifact uitest-snapshot-results-ios-ios_ui_tests_coreclr-Shell-1 already exists for build 1544086.'
+        $pattern = 'Artifact uitest-snapshot-results-ios-ios_ui_tests_coreclr-Shell-1 already exists for build'
+        $creationProof = New-EvidenceProof -Line $creationLine
+        $plan = New-ExistingPlan `
+            -IssueNumber 37168 `
+            -EvidenceLine $currentLine `
+            -FingerprintIdentity 'publish ios snapshot diffs' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'artifact already exists' `
+            -Platform 'ios' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $existing = New-ExistingIssueStub -Number 37168 -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($creationProof.EvidenceKey) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+$creationLine
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '37168' = $existing } `
+            -RequireCurrentEvidenceInExistingBody
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*does not contain a full current trusted evidence line*'
         @($result.created).Count | Should -Be 0
     }
 
@@ -1214,10 +1355,11 @@ $storedLine
     }
 
     It 'rejects unrelated issue replay through trusted marker and state lines with no writes' {
-        $plan = New-ExistingPlan
+        $plan = New-ExistingPlan -FingerprintIdentity 'unique current'
         $entry = $plan.pipelines[0].signatures[0]
         $existing = New-ExistingIssueStub -Body @"
 <!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
 <!-- ci-scan-evidence-key: $($entry.evidence_key) -->
 - **Pipeline**: maui-pr
 - **Build ID**: 123456
@@ -1228,18 +1370,19 @@ $storedLine
             -ExistingIssues @{ '40001' = $existing }
 
         $result.ok | Should -BeFalse
-        $result.error | Should -BeLike '*does not contain a full current trusted evidence line*'
+        $result.error | Should -BeLike '*historical Error Message evidence*'
         @($result.created).Count | Should -Be 0
     }
 
-    It 'rejects a copied canonical fingerprint whose trusted evidence key is unrelated' {
+    It 'rejects a canonical fingerprint whose historical evidence marker is malformed' {
         $plan = New-ExistingPlan
         $entry = $plan.pipelines[0].signatures[0]
-        $wrongProof = New-EvidenceProof -Line 'Different unrelated raw failure line'
         $existing = New-ExistingIssueStub -Body @"
 <!-- ci-scan-fingerprint: $($entry.fingerprint) -->
-<!-- ci-scan-evidence-key: $($wrongProof.EvidenceKey) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: sha256:1234 -->
 - **Pipeline**: maui-pr
+## Error Message
 Unique current raw failure line
 "@
 
@@ -1249,6 +1392,164 @@ Unique current raw failure line
 
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*different or malformed trusted markers*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'fails closed when canonical recurrence has duplicate open marker owners' {
+        $plan = New-ExistingPlan -FingerprintIdentity 'unique current'
+        $entry = $plan.pipelines[0].signatures[0]
+        $body = @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+## Error Message
+Unique current raw failure line
+"@
+        $existing = New-ExistingIssueStub -Number 40001 -Body $body
+        $duplicate = New-ExistingIssueStub -Number 40002 -Body $body
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing } `
+            -OpenIssues @($existing, $duplicate)
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*does not uniquely resolve to #40001*#40001, #40002*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects generic historical text that is not bound to the canonical fingerprint' {
+        $line = 'Build FAILED.'
+        $plan = New-ExistingPlan `
+            -EvidenceLine $line `
+            -FingerprintIdentity 'sample test' `
+            -MatchPattern $line
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+## Error Message
+$line
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*recurrence pattern that is not distinctive enough*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'mutation "generic-pattern-allowed": shared boilerplate suppresses a distinct failure' {
+        $line = 'Build FAILED.'
+        $plan = New-ExistingPlan `
+            -EvidenceLine $line `
+            -FingerprintIdentity 'sample test' `
+            -MatchPattern $line
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+## Error Message
+$line
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing } `
+            -AllowGenericExistingPattern
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects a recurrence pattern with only one common semantic token' {
+        $line = 'CarouselView'
+        $plan = New-ExistingPlan `
+            -EvidenceLine $line `
+            -FingerprintIdentity 'carouselview does not leak with default items layout' `
+            -FailureCategory 'reference to carouselview is still alive' `
+            -MatchPattern $line
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+## Error Message
+$line
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*recurrence pattern that is not distinctive enough*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects a recurrence pattern found only in the trusted excerpt section' {
+        $pattern = 'Sample widget failure'
+        $plan = New-ExistingPlan `
+            -EvidenceLine $pattern `
+            -FingerprintIdentity 'sample widget' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+## Error Message
+Different historical failure
+
+## Trusted Match Pattern
+
+    $pattern
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*historical Error Message evidence*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'mutation "excerpt-counted-as-history": injected pattern text suppresses a distinct failure' {
+        $pattern = 'Sample widget failure'
+        $plan = New-ExistingPlan `
+            -EvidenceLine $pattern `
+            -FingerprintIdentity 'sample widget' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[0].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr
+## Error Message
+Different historical failure
+
+## Trusted Match Pattern
+
+    $pattern
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing } `
+            -AllowPatternOutsideHistoricalEvidence
+
+        $result.ok | Should -BeTrue
         @($result.created).Count | Should -Be 0
     }
 }
