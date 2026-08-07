@@ -39,8 +39,10 @@ environment:
 stimuli:
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 1 — A documented Android ILC limitation permits a narrowly
-  # scoped suppression only after the reviewer verifies the guard and
-  # annotation chain. Source: PR #34868.
+  # scoped suppression only after the reviewer verifies the build-time
+  # substitution, guard, and annotation chain. Adapted from PR #34868 with a
+  # forced-off switch so the positive fixture establishes unreachability as an
+  # invariant rather than relying on the production target's default.
   # ───────────────────────────────────────────────────────────────────────
   - name: scoped-suppression-requires-annotation-chain-proof
     tags:
@@ -110,8 +112,8 @@ stimuli:
         RequiresUnreferencedCode/RequiresDynamicCode attributes, the
         DynamicallyAccessedMembers generic registration hop, and the
         FeatureGuard annotations in src/Core/src/RuntimeFeature.cs, plus the
-        Microsoft.Maui.Controls.targets setting that substitutes the switch to
-        false for PublishAot or full trimming. It scopes the toolchain
+        Microsoft.Maui.Controls.targets setting that forces and substitutes
+        the switch to false for PublishAot or full trimming. It scopes the toolchain
         distinction called out in the candidate patch to Android NativeAOT
         rather than claiming that a feature guard universally suppresses every
         warning.
@@ -134,7 +136,8 @@ stimuli:
 
   # ───────────────────────────────────────────────────────────────────────
   # Scenario 2 — An annotated helper structurally isolates dynamic
-  # registration from the default path. Source: PR #34958.
+  # registration from the default path. Adapted from PR #34958 under the same
+  # forced-off AOT/full-trim switch contract as the positive suppression case.
   # ───────────────────────────────────────────────────────────────────────
   - name: annotated-helper-structurally-isolates-dynamic-registration
     tags:

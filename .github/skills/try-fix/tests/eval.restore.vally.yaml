@@ -67,9 +67,11 @@ stimuli:
           required:
             - name: '^(bash|powershell)$'
               command: 'EstablishBrokenBaseline\.ps1\b(?![^\r\n;&|]*\s+-Restore\b)'
+            - name: '^(bash|powershell|read_bash)$'
               result: 'Success\s+True'
             - name: '^(bash|powershell)$'
               command: 'EstablishBrokenBaseline\.ps1\s+-Restore\b'
+            - name: '^(bash|powershell|read_bash)$'
               result: 'Restored\s+True'
           disallowed:
             - name: '^(bash|powershell)$'
