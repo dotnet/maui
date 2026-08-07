@@ -42,6 +42,7 @@ if: |
 permissions:
   contents: read
   issues: read
+  pull-requests: read
 
 model: gpt-5.6-sol
 engine:
@@ -65,6 +66,107 @@ tools:
 
 checkout:
   fetch-depth: 50
+
+# Deterministic pre-pass (runs BEFORE the agent/MCP gateway starts, same job/runner, so its
+# /tmp/gh-aw writes are visible to the agent's later bash calls — /tmp/gh-aw is bind-mounted
+# read-write into the agent's sandbox container). This is a GENUINE job-enforced gate: `set -e`
+# means a `gh` failure here fails this GH Actions step (and therefore the whole job) BEFORE the
+# agent ever starts — unlike the equivalent fetch previously run as an in-prompt bash tool call,
+# where a nonzero exit is only reported to the agent as a tool error and does not by itself stop
+# the agent from continuing and still emitting a `create-issue` safe-output.
+pre-agent-steps:
+  - name: Fetch leak de-dup context (fail-closed)
+    shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+    run: |
+      set -euo pipefail
+      mkdir -p /tmp/gh-aw/agent
+
+      # This workflow's own open [leak-scan] issues (filed with the agentic-workflows label).
+      gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
+        --state open --label agentic-workflows --limit 200 --json number,title,body \
+        > /tmp/gh-aw/agent/my-open-leakscan.json
+      jq -r '.[].title | gsub("[\r\n]+";" ")' /tmp/gh-aw/agent/my-open-leakscan.json \
+        | sed -E 's/^\[leak-scan\] *//' \
+        | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }' \
+        | sort -u \
+        > /tmp/gh-aw/agent/already-filed-apis.txt
+      echo "already-filed rooting APIs:"
+      cat /tmp/gh-aw/agent/already-filed-apis.txt
+
+      # Exact [leak-fix] PRs already MERGED to main/inflight/current.
+      gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
+        --search '"[leak-fix]" in:title' \
+        --json number,title,body,baseRefName,mergedAt,url \
+        > /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json
+      # `gh pr list --search` goes through GitHub's Search API, which caps best-match results
+      # at 1000 regardless of --limit. This scanner is a permanent scheduled guard, so an
+      # exact historical [leak-fix] PR can eventually fall outside a 1000-row result set while
+      # the command still exits 0 with a merely-truncated (not empty) list — the earlier
+      # "did the fetch fail" check can't catch that. Fail closed instead of silently scanning
+      # an incomplete merged-fix history.
+      MERGED_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json)
+      if test "$MERGED_RAW_COUNT" -ge 1000; then
+        echo "ERROR: 'gh pr list --state merged [leak-fix]' returned $MERGED_RAW_COUNT rows — at/above the GitHub Search API's 1000-result ceiling. The merged-fix history may be truncated (an older [leak-fix] PR could be missing from de-dup), so re-filing risk is real — aborting (fail-closed) instead of scanning a possibly-incomplete set. Narrow the query (e.g. partition by merge-date range) before the next run." >&2
+        exit 1
+      fi
+      jq '[.[] |
+          select(.mergedAt != null) |
+          select(.title | startswith("[leak-fix] ")) |
+          select(.baseRefName == "main" or .baseRefName == "inflight/current")]' \
+        /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json \
+        > /tmp/gh-aw/agent/merged-leak-fix-prs.json
+
+      jq -r '.[] | [.number, .title, .baseRefName, .url] | @tsv' \
+        /tmp/gh-aw/agent/merged-leak-fix-prs.json \
+        | while IFS=$'\t' read -r PR TITLE BASE URL; do
+            API=$(printf '%s\n' "$TITLE" \
+              | sed -E 's/^\[leak-fix\] *//' \
+              | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+            if test -n "$API"; then
+              printf '%s\t%s\t%s\t%s\t%s\n' "$API" "$PR" "$BASE" "$URL" "$TITLE"
+            fi
+          done \
+        | sort -u \
+        > /tmp/gh-aw/agent/already-merged-fix-apis.tsv
+      cut -f1 /tmp/gh-aw/agent/already-merged-fix-apis.tsv | sort -u \
+        > /tmp/gh-aw/agent/already-merged-fix-apis.txt
+      echo "already-merged fix APIs:"
+      cat /tmp/gh-aw/agent/already-merged-fix-apis.tsv
+
+      # A merged [leak-fix] PR is not permanent proof the fix is still active — it may since
+      # have been reverted (e.g. it broke something else), in which case the shipped package
+      # will still reproduce the ORIGINAL leak and skipping the API forever would be wrong.
+      # GitHub's "Revert" button always creates a PR whose body contains an exact
+      # "Reverts <owner>/<repo>#<N>" line pointing at the original PR — cross-reference that
+      # against every already-merged-fix PR# and drop any that were reverted from the
+      # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
+      gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
+        --search '"Revert" in:title' --json number,title,body,mergedAt \
+        > /tmp/gh-aw/agent/revert-prs-raw.json
+      jq '[.[] | select(.mergedAt != null)]' /tmp/gh-aw/agent/revert-prs-raw.json \
+        > /tmp/gh-aw/agent/merged-revert-prs.json
+      REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
+      : > /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
+      while IFS=$'\t' read -r API PR BASE URL TITLE; do
+        if jq -e --arg repo "$REPO_RE" --arg n "$PR" \
+            '[.[] | select((.body // "") | test("(^|\n)[ \t]*Reverts *"+$repo+"#"+$n+"\\b"))] | length > 0' \
+            /tmp/gh-aw/agent/merged-revert-prs.json > /dev/null; then
+          echo "$PR" >> /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
+        fi
+      done < /tmp/gh-aw/agent/already-merged-fix-apis.tsv
+      if test -s /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt; then
+        echo "excluding reverted merged-fix PRs from the permanent-proof set:"
+        cat /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
+        awk -F '\t' 'NR==FNR{rev[$1]=1; next} !($2 in rev)' \
+          /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
+          > /tmp/gh-aw/agent/already-merged-fix-apis.filtered.tsv
+        mv /tmp/gh-aw/agent/already-merged-fix-apis.filtered.tsv /tmp/gh-aw/agent/already-merged-fix-apis.tsv
+        cut -f1 /tmp/gh-aw/agent/already-merged-fix-apis.tsv | sort -u \
+          > /tmp/gh-aw/agent/already-merged-fix-apis.txt
+      fi
 
 network:
   allowed:
@@ -119,11 +221,12 @@ Never push, never open a PR, never comment, never edit product or test code in t
    device tests and are out of scope.
 4. **Skip weak-proxied code.** If the suspect uses `WeakEventManager`,
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
-5. **De-dup against THIS SCANNER's own OPEN issues.** Before filing, fetch this workflow's open
-   `[leak-scan]` issues and skip a leak already covered by one (same rooting API / retention
-   path). Do NOT suppress a candidate because AdamEssenmacher (or anyone else) has a repro/issue
-   for it — duplicating those is fine. A
-   candidate whose only prior issue from this scanner is CLOSED may be re-filed.
+5. **De-dup against open scanner issues AND merged fixes.** Before testing or filing, skip a
+   leak already covered by this workflow's open `[leak-scan]` issue (same rooting API /
+   retention path), or by an exact `[leak-fix]` PR already merged to `main` or
+   `inflight/current`. Do NOT suppress a candidate merely because AdamEssenmacher (or anyone
+   else) has a repro/issue for it — duplicating those is fine. A candidate whose only prior
+   scanner issue is CLOSED may be re-filed only when no supported-branch merged fix exists.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
    `[ActiveIssue]`/skip/mute existing tests, never push.
@@ -137,41 +240,58 @@ Never push, never open a PR, never comment, never edit product or test code in t
    candidate with a **standalone** test that references the **shipped `Microsoft.Maui.Controls`
    NuGet package** from nuget.org (Step 4) — no source build, no workload, no emulator.
 
-## Step 2 — Fetch this scanner's own OPEN issues (de-dup)
+## Step 2 — Fetch open scanner issues and merged fixes (de-dup)
 
-The only de-dup that matters is not posting a second OPEN copy of a leak THIS workflow already
-filed. You do **not** care about AdamEssenmacher's repro branches or anyone else's issues —
-duplicating those is explicitly fine.
+Two de-dup sources matter:
 
-Fetch this scanner's own open `[leak-scan]` issues (they are filed with the `agentic-workflows`
-label) and extract the **rooting API** each one already covers:
+1. this workflow's own open `[leak-scan]` issues; and
+2. exact `[leak-fix]` PRs already merged to `main` or `inflight/current`.
 
-```
-gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
-  --state open --label agentic-workflows --limit 200 --json number,title,body \
-  > /tmp/gh-aw/agent/my-open-leakscan.json
-# The rooting API is the "Type.Member" the title names. Titles SHOULD lead with it (Step 6),
-# but real runs have produced off-contract titles like "Shell BackButtonBehavior.Command …"
-# (#36345) vs "BackButtonBehavior.Command: …" (#36354). A prefix-only cut keys those on
-# "Shell" vs "BackButtonBehavior.Command" and re-files a duplicate. Extract the LAST dotted
-# Type.Member pair of the first identifier chain: for a fully-qualified title like
-# "Microsoft.Maui.Controls.Picker.ItemsSource" this yields "Picker.ItemsSource" (not the
-# namespace head "Microsoft.Maui", which would over-collapse distinct leaks to one key).
-jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
-  | sed -E 's/^\[leak-scan\] *//' \
-  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } else print }' \
-  | sort -u \
-  > /tmp/gh-aw/agent/already-filed-apis.txt
+You do **not** care about AdamEssenmacher's repro branches or anyone else's issues by
+themselves — duplicating those is explicitly fine. A merged generated fix is different: the
+shipped package may still reproduce the old leak even though the fix has already landed in the
+active source flow, so filing it again would only create another redundant fix PR.
+
+**This de-dup context was already gathered for you, before you started, by a deterministic
+`pre-agent-steps` job step** (not a bash tool call you invoke) — see the workflow frontmatter.
+That step runs on the plain runner (not through your sandbox) with `set -euo pipefail`, so a
+`gh` failure or a Search-API 1000-result truncation fails the GitHub Actions step itself — and
+therefore the whole job, before you are ever started — rather than merely returning an error
+you could choose to route around. Its output already sits under `/tmp/gh-aw/agent/` (that path
+is shared with your sandbox), so you only need to READ it:
+
+```bash
 echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
+echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.tsv
 ```
+
+- `already-filed-apis.txt` — the rooting `Type.Member` of every currently-open `[leak-scan]`
+  issue this workflow filed (one per line).
+- `already-merged-fix-apis.tsv` / `.txt` — `Type.Member <TAB> PR# <TAB> baseRefName <TAB> URL
+  <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
+  `.txt` is just the first column, deduplicated). A merged PR that was **later reverted** (via
+  GitHub's Revert button, detected from the standard `Reverts <owner>/<repo>#<N>` line it
+  writes into the revert PR body) is already excluded from both files — it is treated as a
+  re-filable candidate again, not permanent proof the fix is still active.
 
 - A candidate is **OUT** if its rooting `Type.Member` (e.g. `SwipeItemView.Command`,
   `Picker.ItemsSource`) is already in `already-filed-apis.txt`, OR an open `[leak-scan]` issue
-  otherwise covers the same rooting API / retention path. **Check this for EVERY candidate
-  before you write its test** — re-filing a leak this scanner already has open (even with
-  different title wording) is the #1 failure mode, so be strict about matching the `Type.Member`.
+  otherwise covers the same rooting API / retention path, OR it appears in
+  `already-merged-fix-apis.txt`. **Check this for EVERY candidate before you write its test.**
+- Normalize each candidate with the same last-`Type.Member` extraction convention (LAST dotted
+  `Type.Member` pair of the first identifier chain in the title/name — e.g. a fully-qualified
+  `Microsoft.Maui.Controls.Picker.ItemsSource` yields `Picker.ItemsSource`), then use
+  `grep -Fxq "$API" /tmp/gh-aw/agent/already-merged-fix-apis.txt`; do not use substring
+  matching.
+- For a merged-fix match, print the matching row(s) from
+  `already-merged-fix-apis.tsv` and record
+  `skipped: equivalent fix already merged via #<PR> to <baseRefName>`.
+- Re-filing a leak this scanner already has open or that already has a merged fix (even with
+  different issue wording/number) is the primary failure mode, so be strict about the
+  canonical `Type.Member`.
 
-A candidate whose only prior issue from this scanner is CLOSED may be re-filed.
+A candidate whose only prior scanner issue is CLOSED may be re-filed only when its API is
+absent from `already-merged-fix-apis.txt`.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -224,10 +344,11 @@ transient object (page / view / view-model / handler) with no teardown**, e.g.:
 
 For each candidate, write down the precise retention path
 `root -> ... -> transient` with file:line citations, then cross-check Step 2. **Collect EVERY
-distinct candidate** across all focus areas that is not already an open `[leak-scan]` issue —
-build a candidate list (aim for several). Rank them strongest-first, then confirm as many as
-you can in Step 4/5. If — after a genuine sweep — there is no convincing candidate at all, stop
-and create nothing (a quiet run is fine — there is no coverage-gap fallback).
+distinct candidate** across all focus areas that is not already an open `[leak-scan]` issue and
+does not already have a supported-branch merged `[leak-fix]` PR — build a candidate list (aim
+for several). Rank them strongest-first, then confirm as many as you can in Step 4/5. If —
+after a genuine sweep — there is no convincing candidate at all, stop and create nothing (a
+quiet run is fine — there is no coverage-gap fallback).
 
 ## Step 4 — Write a standalone control/leaky/mitigation test (shipped package)
 
@@ -292,12 +413,13 @@ no MAUI source build, no emulator.
 ## Step 6 — File the issues (Pass A — one per confirmed leak)
 
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
-issue per distinct leak. De-dup each against open `[leak-scan]` issues AND against the other
-issues you're filing this run (no two issues for the same rooting API). Each title MUST be of the
-form **`[leak-scan] <Type>.<Member> — <short mechanism>`** — it MUST **lead with the canonical
-rooting `Type.Member`** immediately after the tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak
-ICommand.CanExecuteChanged retains the control`). De-dup (Step 2) matches on that leading
-`Type.Member`, so keep it stable and canonical — do not reword it run-to-run.
+issue per distinct leak. De-dup each against open `[leak-scan]` issues, supported-branch merged
+`[leak-fix]` PRs, AND the other issues you're filing this run (no two issues for the same
+rooting API). Each title MUST be of the form **`[leak-scan] <Type>.<Member> — <short
+mechanism>`** — it MUST **lead with the canonical rooting `Type.Member`** immediately after the
+tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak ICommand.CanExecuteChanged retains the
+control`). De-dup (Step 2) matches on that leading `Type.Member`, so keep it stable and
+canonical — do not reword it run-to-run.
 Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
