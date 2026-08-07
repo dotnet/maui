@@ -1,3 +1,5 @@
+#if ANDROID || IOS  // SafeAreaEdges not supported on Catalyst and Windows
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -94,3 +96,4 @@ public class Issue32275 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif

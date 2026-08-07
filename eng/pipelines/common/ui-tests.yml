@@ -33,7 +33,10 @@ parameters:
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'
-    - 'Shadow' # SafeAreaEdges moved to separate stage
+    # SafeAreaEdges runs on the common lanes, except on Android where it is excluded and runs
+    # in a dedicated notch-device (Pixel 3 XL) stage instead.
+    - 'SafeAreaEdges'
+    - 'Shadow'
     - 'ScrollView'
     - 'SearchBar,Shape,Slider'
     - 'SoftInput,Stepper,Switch,SwipeView'
@@ -150,9 +153,11 @@ stages:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
                   matrix:
+                    # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -194,9 +199,11 @@ stages:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
                 strategy:
                   matrix:
+                    # SafeAreaEdges is excluded here; it runs on a dedicated Pixel 3 XL (notch) stage on Android
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if ne(categoryGroup, 'SafeAreaEdges') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
