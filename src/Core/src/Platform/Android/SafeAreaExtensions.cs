@@ -39,6 +39,30 @@ internal static class SafeAreaExtensions
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
 	}
 
+	internal static bool HasSafeAreaRegions(ICrossPlatformLayout? crossPlatformLayout)
+	{
+		if (crossPlatformLayout is null)
+		{
+			return false;
+		}
+
+		var safeAreaView2 = GetSafeAreaView2(crossPlatformLayout);
+		if (safeAreaView2 is not null)
+		{
+			for (var edge = 0; edge < 4; edge++)
+			{
+				if (safeAreaView2.GetSafeAreaRegionsForEdge(edge) != SafeAreaRegions.None)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return GetSafeAreaView(crossPlatformLayout)?.IgnoreSafeArea == false;
+	}
+
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(
 		WindowInsetsCompat windowInsets,
 		ICrossPlatformLayout crossPlatformLayout,
