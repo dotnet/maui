@@ -3,7 +3,7 @@ name: run-device-tests
 description: "Build and run .NET MAUI device tests locally with category filtering. Supports iOS, MacCatalyst, Android on macOS; Android, Windows on Windows. Use TestFilter to run specific test categories."
 metadata:
   author: dotnet-maui
-  version: "2.1"
+  version: "2.2"
 compatibility: Requires xharness CLI (for iOS/MacCatalyst/Android), Xcode (for Apple platforms), Android SDK (for Android), and .NET SDK with platform workloads.
 ---
 
@@ -90,6 +90,14 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Blazor
 
 ```bash
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -BuildOnly
+```
+
+### Force a Full Rebuild
+
+Use `-Rebuild` when source files changed after an earlier build in the same worktree, such as an A/B verification run:
+
+```bash
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -Rebuild
 ```
 
 ### List Available Simulators/Emulators

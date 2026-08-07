@@ -507,6 +507,11 @@ Describe 'Invoke-TestRun — device diagnostics are retained with Gate logs' {
         $content | Should -Match 'OutputDirectory\s*=\s*"\$LogFile\.diagnostics"'
         $content | Should -Match 'writing its diagnostics beside it keeps every attempt under CustomAgentLogsTmp'
     }
+
+    It 'rebuilds the full device-test graph after each baseline/fix source swap' {
+        Get-Content -LiteralPath $scriptPath -Raw |
+            Should -Match '(?s)\$deviceParams\s*=\s*@\{.*?Rebuild\s*=\s*\$true'
+    }
 }
 
 
@@ -521,6 +526,32 @@ MSBuild server unavailable: could not connect to the server within the timeout w
         $r.EnvError | Should -BeTrue
         $r.BuildError | Should -Not -BeTrue
         $r.Error | Should -Match 'Gate infrastructure'
+    }
+
+    It 'keeps compiler errors authoritative when the build server falls back in-process' {
+        $log = New-LogFile -Content @"
+MSBuild server unavailable: could not connect to the server within the timeout window; the server may have failed to start. Falling back to an in-process build.
+D:\a\1\s\src\Core\tests\DeviceTests\Stubs\SwipeItemMenuItemStub.cs(5,72): error CS0246: The type or namespace name 'ISwipeItemMenuItemIconColor' could not be found
+Build FAILED.
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.BuildError | Should -BeTrue
+        $r.Error | Should -Match 'CS0246'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not let the BuildTasks message mask a coded compiler error from the same build' {
+        $log = New-LogFile -Content @"
+D:\a\1\s\src\Maui.InTree.targets(34,5): error : We have detected that the required MSBuild tasks are not yet built or they are out of date.
+D:\a\1\s\src\Core\tests\DeviceTests\Stubs\SwipeItemMenuItemStub.cs(5,72): error CS0246: The type or namespace name 'ISwipeItemMenuItemIconColor' could not be found
+Build FAILED.
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.BuildError | Should -BeTrue
+        $r.Error | Should -Match 'CS0246'
+        Remove-Item -LiteralPath $log -Force
     }
 }
 

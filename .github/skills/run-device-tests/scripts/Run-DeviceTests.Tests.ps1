@@ -35,6 +35,14 @@ BeforeAll {
     }
 }
 
+Describe 'Build isolation options' {
+    It 'supports rebuilding the full project graph for A/B Gate runs' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '\[switch\]\$Rebuild'
+        $content | Should -Match '(?s)if \(\$Rebuild\)\s*\{\s*\$buildArgs \+= "-t:Rebuild"\s*\}'
+    }
+}
+
 Describe 'Cross-platform device test class filtering' {
     It 'normalizes comma/semicolon-separated class names for the XHarness include variable' {
         ConvertTo-DeviceTestClassFilterValue `

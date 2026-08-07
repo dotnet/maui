@@ -599,6 +599,10 @@ function Invoke-TestRun {
                 # and therefore inside CopilotLogs.
                 OutputDirectory = "$LogFile.diagnostics"
                 Configuration = $deviceConfiguration
+                # Gate swaps the worktree from merge-base to PR HEAD while sharing one
+                # artifacts/obj tree. Always rebuild the full P2P graph so a dependency
+                # compiled for the baseline cannot be reused for the with-fix run.
+                Rebuild = $true
             }
             Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray
 
@@ -1061,19 +1065,21 @@ function Get-TestResultFromOutput {
 
     # A build failure caused by the in-repo MSBuild BuildTasks up-to-date check misfiring is a
     # GATE INFRASTRUCTURE flake, NOT a code error, so it must be checked BEFORE the generic
-    # build-error branch below. It happens when the MSBuild build-server daemon is unavailable
-    # (the build falls back to an in-process build) or when the gate's own git revert/restore/
-    # merge changes file timestamps, so Maui.InTree.targets wrongly reports "required MSBuild
-    # tasks are not yet built or they are out of date" even though the Build MSBuild Tasks step
-    # succeeded. The PR's code was never actually compiled — on a healthy agent it builds fine.
-    # Classify as ENV ERROR (INCONCLUSIVE, retryable), never a code BUILD ERROR / FAILED.
-    # (build 14821162, PR #36572: "MSBuild server unavailable ... Falling back to an in-process
-    # build" → InTree.targets "required MSBuild tasks are not yet built or they are out of date".)
-    if ($content -match '(?i)required MSBuild tasks are not yet built or they are out of date' -or
-        $content -match '(?i)MSBuild server unavailable') {
+    # build-error branch below. The gate's own git revert/restore cycle can change timestamps
+    # and make Maui.InTree.targets report "required MSBuild tasks are not yet built or they are
+    # out of date" even though the Build MSBuild Tasks step succeeded.
+    #
+    # Do NOT classify the standalone "MSBuild server unavailable ... falling back to an
+    # in-process build" message as infrastructure. That fallback is benign and the in-process
+    # build can still produce authoritative compiler errors or test results. Broad-matching it
+    # hid real CS/WMC errors in build 14910465 and prevented the Gate from diagnosing stale
+    # baseline outputs.
+    $hasCodedBuildError = $content -match '(?im)\berror\s+[A-Z]{2,}\d+\b'
+    if ($content -match '(?i)required MSBuild tasks are not yet built or they are out of date' -and
+        -not $hasCodedBuildError) {
         return @{
             Passed = $false; EnvError = $true
-            Error = "Gate infrastructure: the MSBuild build server was unavailable / the in-repo BuildTasks up-to-date check (Maui.InTree.targets) misfired, so the PR's code was never actually compiled. This is NOT a code build error — retry on a fresh agent."
+            Error = "Gate infrastructure: the in-repo BuildTasks up-to-date check (Maui.InTree.targets) misfired, so the PR's code was never actually compiled. This is NOT a code build error — retry on a fresh agent."
             FailCount = 0; Failed = 0; Total = 0; Skipped = 0
         }
     }

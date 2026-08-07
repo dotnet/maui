@@ -25,6 +25,9 @@
 .PARAMETER Configuration
     Build configuration. Defaults to "Release".
 
+.PARAMETER Rebuild
+    Rebuilds the full project-reference graph instead of using incremental outputs.
+
 .PARAMETER TestFilter
     Optional test filter to run specific tests (e.g., "Category=Button").
 
@@ -77,6 +80,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$Configuration = "Release",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$Rebuild,
 
     [Parameter(Mandatory = $false)]
     [string]$TestFilter,
@@ -969,6 +975,10 @@ try {
         "-f", $platformConfig.Tfm
         "/p:TreatWarningsAsErrors=false"
     )
+
+    if ($Rebuild) {
+        $buildArgs += "-t:Rebuild"
+    }
 
     if ($classFilterInjection) {
         $buildArgs += "/p:CustomAfterMicrosoftCSharpTargets=$($classFilterInjection.TargetsPath)"
