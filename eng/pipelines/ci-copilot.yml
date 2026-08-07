@@ -3582,7 +3582,7 @@ stages:
               if ($byCat -and $byCat.Count -gt 0) {
 
               # Render the new STEP 3 section.
-              $totalPassed = 0; $totalFailed = 0
+              $totalPassed = 0; $totalFailed = 0; $totalSkipped = 0
               $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0; $appCrashCategories = 0
               $baselineNotCreatedTests = 0
               $sb = [System.Text.StringBuilder]::new()
@@ -3599,9 +3599,11 @@ stages:
                 $b = $byCat[$k]
                 $totalPassed += [int]$b.Passed
                 $totalFailed += [int]$b.Failed
+                $totalSkipped += [int]$b.Skipped
                 $tCount = [int]$b.Total
                 $tPass  = [int]$b.Passed
                 $tFail  = [int]$b.Failed
+                $tSkip  = [int]$b.Skipped
                 $isSetupFailure = ($b.ContainsKey('SetupFailure') -and [bool]$b.SetupFailure)
                 $isAppCrash = ($b.ContainsKey('SetupFailureIsAppCrash') -and [bool]$b.SetupFailureIsAppCrash)
                 if ($isSetupFailure) {
@@ -3628,12 +3630,14 @@ stages:
                 }
                 $baselineNotCreatedTests += $catBaselineCount
                 $catRealFail = $tFail - $catBaselineCount
+                $skipDetail = if ($tSkip -gt 0) { ", $tSkip skipped" } else { '' }
                 $col = if ($tCount -eq 0) { '0 tests' }
-                       elseif ($isSetupFailure -and $isAppCrash) { "$tPass/$tCount (app crashed; $tFail couldn't complete)" }
-                       elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed)" }
-                       elseif ($catRealFail -gt 0 -and $catBaselineCount -gt 0) { "$tPass/$tCount ($catRealFail ❌, $catBaselineCount ⚠ new baseline)" }
-                       elseif ($catRealFail -gt 0) { "$tPass/$tCount ($catRealFail ❌)" }
-                       elseif ($catBaselineCount -gt 0) { "$tPass/$tCount ($catBaselineCount ⚠ new baseline)" }
+                       elseif ($isSetupFailure -and $isAppCrash) { "$tPass/$tCount (app crashed; $tFail couldn't complete$skipDetail)" }
+                       elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed$skipDetail)" }
+                       elseif ($catRealFail -gt 0 -and $catBaselineCount -gt 0) { "$tPass/$tCount ($catRealFail ❌, $catBaselineCount ⚠ new baseline$skipDetail)" }
+                       elseif ($catRealFail -gt 0) { "$tPass/$tCount ($catRealFail ❌$skipDetail)" }
+                       elseif ($catBaselineCount -gt 0) { "$tPass/$tCount ($catBaselineCount ⚠ new baseline$skipDetail)" }
+                       elseif ($tSkip -gt 0) { "$tPass/$tCount ($tSkip skipped) ✓" }
                        else { "$tPass/$tCount ✓" }
                 # Count snapshot-diff PNGs we shipped in this artifact subdir
                 $catDir = Join-Path $artDir $b.ArtifactName
@@ -4137,6 +4141,7 @@ stages:
 
               $categoryText = if ($byCat.Count -eq 1) { '1 category' } else { "$($byCat.Count) categories" }
               $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests - $baselineNotCreatedTests)
+              $skippedSummary = if ($totalSkipped -gt 0) { ", $totalSkipped skipped" } else { '' }
               # A fixture / OneTimeSetUp ("category setup") failure means the tests
               # could NOT be run — a harness/infra problem on the platform-pool
               # agent (e.g. "Timed out waiting for Go To Test button" in
@@ -4158,7 +4163,7 @@ stages:
               if ($setupFailureCategories -gt 0) {
                 $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category' } else { "$setupFailureCategories categories" }
                 $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 test' } else { "$setupImpactedTests tests" }
-                $passNote = if ($totalPassed -gt 0) { "$totalPassed passed; " } else { '' }
+                $passNote = if ($totalPassed -gt 0 -or $totalSkipped -gt 0) { "$totalPassed passed$skippedSummary; " } else { '' }
                 if ($appCrashCategories -gt 0) {
                   # The app crashed mid-run. This is genuinely ambiguous between
                   # an emulator/infra flake and a regression introduced by the
@@ -4167,15 +4172,15 @@ stages:
                   if ($regularFailed -eq 0) {
                     $headerLine = "$resultIcon **Deep UI tests** — ${passNote}the HostApp crashed mid-run, so $setupImpactedText could not complete. An app crash can be an infrastructure flake OR a regression introduced by this PR — review the screenshots + logcat in the ``drop-deep-uitests`` artifact before concluding."
                   } else {
-                    $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus the HostApp crashed mid-run ($setupImpactedText could not complete — infra flake or possible PR regression; see screenshots + logcat in the artifact)."
+                    $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed$skippedSummary; plus the HostApp crashed mid-run ($setupImpactedText could not complete — infra flake or possible PR regression; see screenshots + logcat in the artifact)."
                   }
                 } elseif ($regularFailed -eq 0) {
                   $headerLine = "$resultIcon **Deep UI tests** — ${passNote}$setupCategoryText ($setupImpactedText) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure (replaces in-process counts above)."
                 } else {
-                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus $setupCategoryText ($setupImpactedText) could not run (fixture/OneTimeSetUp setup failure — infrastructure) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed$skippedSummary; plus $setupCategoryText ($setupImpactedText) could not run (fixture/OneTimeSetUp setup failure — infrastructure) across $categoryText on platform-pool agent (replaces in-process counts above)."
                 }
               } else {
-                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
+                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed$skippedSummary across $categoryText on platform-pool agent (replaces in-process counts above)."
               }
               if ($baselineNotCreatedTests -gt 0) {
                 # New VerifyScreenshot tests with no committed baseline yet are
@@ -4488,7 +4493,7 @@ stages:
                 $tmp = New-TemporaryFile
                 @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
                 gh api -X PATCH "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
-                Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+                Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed + $totalSkipped))"
               }
             displayName: 'Post AI summary review'
             env:

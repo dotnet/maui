@@ -205,6 +205,14 @@ Describe 'Reviewer pipeline timeout containment' {
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
     }
+
+    It 'reports skipped deep UI tests in category rows, the headline, and the total' {
+        $pipelineContent | Should -Match ([regex]::Escape('$totalPassed = 0; $totalFailed = 0; $totalSkipped = 0'))
+        $pipelineContent | Should -Match ([regex]::Escape('$totalSkipped += [int]$b.Skipped'))
+        $pipelineContent | Should -Match ([regex]::Escape('elseif ($tSkip -gt 0) { "$tPass/$tCount ($tSkip skipped) ✓" }'))
+        $pipelineContent | Should -Match ([regex]::Escape('$regularFailed failed$skippedSummary across $categoryText'))
+        $pipelineContent | Should -Match ([regex]::Escape('$totalPassed + $totalFailed + $totalSkipped'))
+    }
 }
 
 Describe 'Copilot token usage helpers' {
