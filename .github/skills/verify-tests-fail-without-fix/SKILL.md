@@ -62,6 +62,7 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ### Step 3: Interpret Results
 ⚠️ Remember: test outcomes are INVERTED from normal!
+- If the command continues in the background and returns a shell/session ID, wait for it with the matching result-read tool until it completes. Never report or end the turn while verification is still running.
 - Script outputs `VERIFICATION PASSED` → Tests catch the bug ✅
 - Script outputs `VERIFICATION FAILED` → Tests don't catch the bug ❌
 - Script outputs error/timeout → Report as Blocked
