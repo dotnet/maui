@@ -1,0 +1,164 @@
+name: Live Skill Evaluation Soak
+
+on:
+  schedule:
+    - cron: '0 5 * * 0'
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Trials per live stimulus"
+        required: false
+        default: "1"
+        type: choice
+        options:
+          - "1"
+          - "3"
+
+concurrency:
+  group: live-skill-evaluation-soak
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+  checks: read
+  statuses: read
+
+env:
+  VALLY_VERSION: "0.12.0"
+  NODE_VERSION: "22"
+
+jobs:
+  code-review:
+    name: code-review live soak (advisory)
+    runs-on: ubuntu-latest
+    environment: copilot-pat-pool
+    timeout-minutes: 90
+    steps:
+      - name: Checkout trusted default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup credential-isolated Vally runtime
+        id: vally-runtime
+        run: >-
+          .github/scripts/SetupVallyRuntime.sh
+          "$RUNNER_TEMP/vally"
+          "$VALLY_VERSION"
+          "$GITHUB_OUTPUT"
+
+      - name: Validate live soak spec
+        run: >-
+          "${{ steps.vally-runtime.outputs.vally_bin }}" lint
+          --eval-spec .github/skills/code-review/tests/soak.capability.vally.yaml
+          --strict
+
+      - name: Select Copilot token
+        id: select-token
+        env:
+          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
+          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
+          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
+          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
+          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
+          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
+          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
+          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
+          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
+          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
+        run: |
+          set -euo pipefail
+          TOKENS=()
+          for i in 0 1 2 3 4 5 6 7 8 9; do
+            var="TOKEN_$i"
+            val="${!var-}"
+            if [ -n "$val" ]; then
+              TOKENS+=("$val")
+            fi
+          done
+
+          if [ ${#TOKENS[@]} -eq 0 ]; then
+            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
+            exit 1
+          fi
+
+          IDX=$((GITHUB_RUN_ID % ${#TOKENS[@]}))
+          echo "Selected 1 of ${#TOKENS[@]} available PATs"
+          echo "::add-mask::${TOKENS[$IDX]}"
+          echo "token=${TOKENS[$IDX]}" >> "$GITHUB_OUTPUT"
+
+      - name: Run live soak
+        id: soak
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
+          VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          # Live public-PR retrieval is anonymous by design. Do not give the
+          # Copilot process a GitHub API token.
+          RUNS: ${{ github.event.inputs.runs || '1' }}
+        run: |
+          set -euo pipefail
+          mkdir -p live-soak-results
+          chmod g+rwx live-soak-results
+
+          set +e
+          "$VALLY_RUNNER" "$VALLY_BIN" eval \
+            -e .github/skills/code-review/tests/soak.capability.vally.yaml \
+            --skill-dir .github/skills \
+            --output-dir live-soak-results \
+            --junit \
+            --runs "$RUNS" \
+            --workers 3 \
+            --verbose
+          rc=$?
+          set -e
+
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$rc" > live-soak-results/eval-exit-code.txt
+
+          junit=$(find live-soak-results -name eval-results.junit.xml -type f | head -1 || true)
+          {
+            echo "## Code-review live soak"
+            echo
+            echo "This evaluation is advisory. Live GitHub state, network latency, and nested-agent runtime must not block pull requests."
+            echo
+            echo "- Vally exit code: \`$rc\`"
+            echo "- Trials per stimulus: \`$RUNS\`"
+            if [ -n "$junit" ]; then
+              score=$(sed -nE 's/.*name="overallScore" value="([^"]+)".*/\1/p' "$junit" | head -1)
+              passed=$(sed -nE 's/.*name="passed" value="([^"]+)".*/\1/p' "$junit" | head -1)
+              root=$(grep -m1 '<testsuites' "$junit" || true)
+              failures=$(printf '%s' "$root" | sed -nE 's/.*failures="([0-9]+)".*/\1/p')
+              errors=$(printf '%s' "$root" | sed -nE 's/.*errors="([0-9]+)".*/\1/p')
+              echo "- Suite score: \`${score:-unavailable}\`"
+              echo "- Suite verdict: \`${passed:-unavailable}\`"
+              echo "- Trial failures/errors: \`${failures:-0}/${errors:-0}\`"
+            else
+              echo "- Suite result: \`incomplete (no JUnit report)\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Advisory by design: retain the real Vally exit code in artifacts and
+          # the summary, but do not turn live-service variance into a PR gate.
+          exit 0
+
+      - name: Upload live soak results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-review-live-soak-results
+          path: live-soak-results/
+          include-hidden-files: true
+          retention-days: 30

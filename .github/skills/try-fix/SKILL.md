@@ -25,8 +25,30 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
+6. **Script-only restoration** - The ONLY permitted cleanup command is
+   `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Never use
+   `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash` to
+   revert or clean changes, including after artifacts have been captured.
+7. **Baseline-file boundary** - After Step 2, modify ONLY files listed in
+   `.github/.baseline-state.json` under `RevertedFiles`. The restore script
+   tracks only those original fix files; editing any other tracked file makes
+   restoration incomplete. If the state file is absent, or its `NewFiles`
+   array is non-empty, report `Blocked` before editing: added production files
+   are not safely restorable. If the approach requires another tracked file,
+   report `Blocked` instead of editing it.
+8. **Wait for command completion** - If a shell tool reports that a command is
+   still running and returns a `shellId`, call `read_bash` with that exact
+   `shellId` and wait for the completed result. Never proceed, report, or end
+   the session while baseline, test, artifact, self-review, or restore work is
+   still running.
+9. **Contain attempt artifacts** - Create every log, snapshot, state marker, and
+   scratch file under `$OUTPUT_DIR`. Never persist `$OUTPUT_DIR` or other shell
+   state in `.github/`, the repository root, or another workspace path. Shell
+   variables do not persist between tool calls, so redeclare the same literal
+   `$OUTPUT_DIR` at the start of each later shell command instead of writing a
+   repository marker file.
 
-**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
+**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
@@ -53,7 +75,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 |-------|----------|-------------|
 | Problem | Yes | Description of the bug/issue to fix |
 | Test command | Yes | **Repository-specific script** to build and test. Use `BuildAndRunHostApp.ps1` for UI tests, `Run-DeviceTests.ps1` for device tests, or `dotnet test` for unit tests. The correct command is determined by the test type detected in the PR. **ALWAYS use the appropriate script - NEVER manually build/compile.** |
-| Target files | Yes | Files to investigate for the fix |
+| Target files | Yes | Files to investigate; any file absent from the baseline state's `RevertedFiles` is read-only |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
@@ -90,6 +112,17 @@ New-Item -ItemType Directory -Path $OUTPUT_DIR -Force | Out-Null
 
 Write-Host "Output directory: $OUTPUT_DIR"
 ```
+
+Keep this path from the command output and redeclare it in each subsequent
+shell invocation, for example:
+
+```powershell
+$OUTPUT_DIR = "CustomAgentLogsTmp/PRState/<ISSUE_OR_PR_NUMBER>/PRAgent/try-fix/attempt-1"
+```
+
+Do not create `.github/.try-fix-output-dir`, `.try-fix-output-dir`, or any
+equivalent repository marker. The only attempt artifacts belong under
+`$OUTPUT_DIR`.
 
 **Required files to create in `$OUTPUT_DIR`:**
 
@@ -211,10 +244,21 @@ Manual git commands bypass all of this and WILL cause infinite loops in CI.
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
+If this command continues in the background, wait for its matching `shellId`
+with `read_bash` until it completes. The baseline is not established merely
+because the initial shell invocation returned.
+
 **Verify baseline was established:**
 ```powershell
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
+
+Read `.github/.baseline-state.json` after this command. Its `RevertedFiles`
+array is the complete modification allow-list for the attempt. Target files
+outside that array may be inspected but MUST NOT be edited. If the state file
+was not created, or `NewFiles` contains any path, report `Blocked` immediately
+and proceed to Step 9 without modifying tracked files; the restore script does
+not safely restore added production files.
 
 **If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 
@@ -257,7 +301,9 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 [Description of what you're changing and why]
 
-**Different from existing fix:** [How this differs from PR's current approach]
+**Prior approach avoided:** [Name every relevant existing/prior approach, their shared failure mechanism, and why they failed, or N/A]
+
+**Mechanism-level difference:** [Explain the full cause-to-effect chain showing why the new mechanism avoids that failure, not merely the code location]
 "@ | Set-Content "$OUTPUT_DIR/approach.md"
 ```
 
@@ -512,6 +558,10 @@ if ($missing.Count -gt 0) {
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
+If restore continues in the background, wait for its matching `shellId` with
+`read_bash` until it completes and confirms `Restored True`. Do not report the
+attempt or end the session before that result is observed.
+
 🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 
 ### Step 10: Report Results
@@ -522,6 +572,10 @@ Provide structured output to the invoker:
 ## Try-Fix Result
 
 **Approach:** [Brief description of what was tried]
+
+**Prior Approach Avoided:** [Name every relevant existing/prior approach, their shared failure mechanism, and why they failed, or N/A]
+
+**Mechanism-Level Difference:** [Explain the full cause-to-effect chain showing why the new mechanism avoided that failure]
 
 **Files Changed:**
 - `path/to/file.cs` (+X/-Y lines)
@@ -539,6 +593,13 @@ Provide structured output to the invoker:
 **This Attempt's Status:** Done/NeedsRetry
 **Reasoning:** [Why this specific approach succeeded or failed]
 ```
+
+The two approach-comparison fields must be self-contained prose, not labels or
+fragments. When prior attempts share a root cause, explicitly name that shared
+failure mechanism. Then connect the new mechanism to the failure with a causal
+explanation (for example, “because X now happens after Y, Z is available
+directly, so the failing fallback is never consulted”). Do not rely on the
+contents of `approach.md` or `analysis.md` being visible to the invoker.
 
 **Determining Status:** Set `Done` when you've completed testing this approach (whether it passed or failed). Set `NeedsRetry` only if you hit a transient error (network timeout, flaky test) and want to retry the same approach.
 
@@ -571,5 +632,3 @@ Provide structured output to the invoker:
 ---
 
 See [references/example-invocation.md](references/example-invocation.md) for a complete example with sample inputs.
-
-

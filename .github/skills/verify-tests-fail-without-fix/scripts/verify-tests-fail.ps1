@@ -184,6 +184,7 @@ Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
+$ExplicitBaseBranch = $BaseBranch
 . $BaselineScript
 
 # Import the shared test detection script
@@ -431,7 +432,12 @@ function Invoke-TestRun {
             $testArgs = @(
                 "test", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal"
+                "--logger", "console;verbosity=normal",
+                "-p:IncludeAndroidTargetFrameworks=false",
+                "-p:IncludeIosTargetFrameworks=false",
+                "-p:IncludeMacCatalystTargetFrameworks=false",
+                "-p:IncludeWindowsTargetFrameworks=false",
+                "-p:IncludeTizenTargetFrameworks=false"
             )
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
@@ -840,10 +846,9 @@ function Get-AutoDetectedTests {
 
     $params = @{}
 
-    # Prefer PR number (GitHub API gives exact PR files, not polluted by branch diff)
-    if ($PRNumber) {
-        $params.PRNumber = $PRNumber
-    } elseif ($MergeBase) {
+    # An explicit base identifies a local/frozen worktree. Prefer its immutable
+    # diff over PR metadata so an unrelated real PR number cannot change the run.
+    if ($MergeBase -and $ExplicitBaseBranch) {
         $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
         if (-not $changedFiles -or $changedFiles.Count -eq 0) {
             $changedFiles = git diff --name-only 2>$null
@@ -854,10 +859,18 @@ function Get-AutoDetectedTests {
         if ($changedFiles) {
             $params.ChangedFiles = $changedFiles
         }
+    } elseif ($PRNumber) {
+        # GitHub API gives the exact PR files for ordinary PR-backed runs.
+        $params.PRNumber = $PRNumber
+    } elseif ($MergeBase) {
+        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+        if ($changedFiles) {
+            $params.ChangedFiles = $changedFiles
+        }
     }
 
     # Fall back to PR number if no changed files from git diff
-    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber) {
+    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber -and -not $ExplicitBaseBranch) {
         $params.PRNumber = $PRNumber
     }
 
@@ -924,7 +937,7 @@ function Get-TestResultFromLog {
 Write-Host ""
 Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
 
-$baseInfo = Find-MergeBase -ExplicitBaseBranch $BaseBranch
+$baseInfo = Find-MergeBase -ExplicitBaseBranch $ExplicitBaseBranch
 
 if (-not $baseInfo) {
     Write-Host ""

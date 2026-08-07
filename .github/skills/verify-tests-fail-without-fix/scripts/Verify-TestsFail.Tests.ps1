@@ -30,6 +30,13 @@ BeforeAll {
     if (-not $function) { throw "Function 'Get-TestResultFromOutput' not found" }
     Invoke-Expression $function.Extent.Text
 
+    $autoDetectionFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-AutoDetectedTests'
+    }, $true)
+    if (-not $autoDetectionFunction) { throw "Function 'Get-AutoDetectedTests' not found" }
+    Invoke-Expression $autoDetectionFunction.Extent.Text
+
     function New-LogFile {
         param([string]$Content)
         $f = Join-Path ([System.IO.Path]::GetTempPath()) ("verifylog-" + [Guid]::NewGuid().ToString('N') + ".log")
@@ -91,5 +98,49 @@ Build succeeded.
         $r.BuildError | Should -Not -BeTrue
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Get-AutoDetectedTests — frozen worktree isolation' {
+    It 'prefers the explicit-base local diff over PR metadata' {
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
+        $detector = Join-Path $repo 'detect.ps1'
+        try {
+            New-Item -ItemType Directory -Path $repo | Out-Null
+            git -C $repo init --quiet
+            'base' | Set-Content -LiteralPath (Join-Path $repo 'README.md')
+            git -C $repo add README.md
+            git -C $repo -c user.name='Vally Test' -c user.email='vally-test@example.invalid' commit --quiet -m base
+            $base = git -C $repo rev-parse HEAD
+
+            $testPath = 'src/Controls/tests/Core.UnitTests/VallyFixtureTests.cs'
+            New-Item -ItemType Directory -Path (Split-Path (Join-Path $repo $testPath)) -Force | Out-Null
+            'fixture' | Set-Content -LiteralPath (Join-Path $repo $testPath)
+            git -C $repo add $testPath
+            git -C $repo -c user.name='Vally Test' -c user.email='vally-test@example.invalid' commit --quiet -m fixture
+
+            @(
+                'param([string]$PRNumber, [string[]]$ChangedFiles)'
+                '[pscustomobject]@{'
+                '    PRNumber = $PRNumber'
+                '    ChangedFiles = @($ChangedFiles)'
+                '}'
+            ) | Set-Content -LiteralPath $detector
+
+            $script:PRNumber = '33134'
+            $script:ExplicitBaseBranch = $base
+            $script:DetectTestsScript = $detector
+            Push-Location $repo
+            try {
+                $result = Get-AutoDetectedTests -MergeBase $base
+            } finally {
+                Pop-Location
+            }
+
+            $result.PRNumber | Should -BeNullOrEmpty
+            @($result.ChangedFiles) | Should -Contain $testPath
+        } finally {
+            Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
