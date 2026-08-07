@@ -14,7 +14,8 @@
     Content is auto-loaded from PRAgent phase files:
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/gate/content.md          (always shown first, open)
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
-    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/expert-pr-eval/content.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md (legacy fallback)
 
     Gate is included as a section inside this unified review body — the script may
     be called by Review-PR.ps1 twice per run: once after the gate completes
@@ -91,15 +92,42 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "📋 Pre-Flight — Context & Validation" }
-    "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "🔬 Code Review — Deep Analysis" }
-    "try-fix"          = @{ File = "try-fix/content.md";            Title = "🛠️ Fix — Analysis & Comparison" }
-    "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "📝 Recommended PR Title & Description" }
-    "report"           = @{ File = "report/content.md";             Title = "🏁 Report — Final Recommendation" }
-    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔗 Regression Cross-Reference" }
+    "pre-flight"       = @{ Files = @("pre-flight/content.md");                                  Title = "📋 Pre-Flight — Context & Validation" }
+    "code-review"      = @{ Files = @("expert-pr-eval/content.md", "pre-flight/code-review.md"); Title = "🔬 Code Review — Deep Analysis" }
+    "try-fix"          = @{ Files = @("try-fix/content.md");                                     Title = "🛠️ Fix — Analysis & Comparison" }
+    "pr-finalize"      = @{ Files = @("pr-finalize/content.md");                                 Title = "📝 Recommended PR Title & Description" }
+    "report"           = @{ Files = @("report/content.md");                                      Title = "🏁 Report — Final Recommendation" }
+    "regression-check" = @{ Files = @("regression-check/content.md");                            Title = "🔗 Regression Cross-Reference" }
     # Keep the potentially very large UI-test details last so they cannot hide the
     # expert-review sections if a final defensive truncation is ever needed.
-    "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
+    "uitests"          = @{ Files = @("uitests/content.md");                                     Title = "📱 UI Tests" }
+}
+
+function Get-FirstPhaseContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Root,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$RelativePaths
+    )
+
+    foreach ($relativePath in $RelativePaths) {
+        $filePath = Join-Path $Root $relativePath
+        if (-not (Test-Path -LiteralPath $filePath)) {
+            continue
+        }
+
+        $content = Get-Content -LiteralPath $filePath -Raw -Encoding UTF8
+        if (-not [string]::IsNullOrWhiteSpace($content)) {
+            return [pscustomobject]@{
+                Path    = $filePath
+                Content = $content
+            }
+        }
+    }
+
+    return $null
 }
 
 function Test-PhaseContentIsNoOp {
@@ -791,35 +819,32 @@ $phaseTitleByKey = @{}
 
 foreach ($key in $phases.Keys) {
     $phase = $phases[$key]
-    $filePath = Join-Path $PRAgentDir $phase.File
+    $phaseContent = Get-FirstPhaseContent -Root $PRAgentDir -RelativePaths $phase.Files
 
-    if (Test-Path $filePath) {
-        $content = Get-Content $filePath -Raw -Encoding UTF8
-        if (-not [string]::IsNullOrWhiteSpace($content)) {
-            if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) {
-                Write-Host "  ⏭️  $key (no actionable content)" -ForegroundColor Gray
-                continue
-            }
-
-            # For uitests, annotate the "detected categories but no results" placeholder so an
-            # empty section explains itself instead of showing only the detected categories.
-            if ($key -eq "uitests") {
-                $content = Add-MissingUITestResultsNote -Content $content
-            }
-            $phaseContentByKey[$key] = $content
-            Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
-            # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
-            $phaseTitle = $phase.Title
-            if ($key -eq "uitests") {
-                $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`{1,2}([^`]+)`{1,2}')
-                if ($catMatch.Success) {
-                    $phaseTitle = "$($phase.Title) — $($catMatch.Groups[1].Value)"
-                }
-            }
-            $phaseTitleByKey[$key] = $phaseTitle
-        } else {
-            Write-Host "  ⏭️  $key (empty)" -ForegroundColor Gray
+    if ($phaseContent) {
+        $filePath = $phaseContent.Path
+        $content = $phaseContent.Content
+        if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) {
+            Write-Host "  ⏭️  $key (no actionable content)" -ForegroundColor Gray
+            continue
         }
+
+        # For uitests, annotate the "detected categories but no results" placeholder so an
+        # empty section explains itself instead of showing only the detected categories.
+        if ($key -eq "uitests") {
+            $content = Add-MissingUITestResultsNote -Content $content
+        }
+        $phaseContentByKey[$key] = $content
+        Write-Host "  ✅ $key ($((Get-Item -LiteralPath $filePath).Length) bytes)" -ForegroundColor Green
+        # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
+        $phaseTitle = $phase.Title
+        if ($key -eq "uitests") {
+            $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`{1,2}([^`]+)`{1,2}')
+            if ($catMatch.Success) {
+                $phaseTitle = "$($phase.Title) — $($catMatch.Groups[1].Value)"
+            }
+        }
+        $phaseTitleByKey[$key] = $phaseTitle
     } else {
         Write-Host "  ⏭️  $key (not found)" -ForegroundColor Gray
     }

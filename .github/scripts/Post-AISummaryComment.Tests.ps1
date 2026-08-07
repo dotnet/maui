@@ -30,7 +30,8 @@ BeforeAll {
         'New-FutureActionSection',
         'New-MissingAgentPhaseContent',
         'Get-AuthoritativeGateContent',
-        'Limit-MarkdownContent'
+        'Limit-MarkdownContent',
+        'Get-FirstPhaseContent'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -42,6 +43,45 @@ BeforeAll {
         }
 
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Get-FirstPhaseContent' {
+    BeforeEach {
+        $script:phaseRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Force -Path (Join-Path $script:phaseRoot 'expert-pr-eval') | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $script:phaseRoot 'pre-flight') | Out-Null
+    }
+
+    It 'prefers the current expert-review artifact over the legacy path' {
+        'current expert review' | Set-Content (Join-Path $script:phaseRoot 'expert-pr-eval/content.md') -Encoding UTF8
+        'legacy code review' | Set-Content (Join-Path $script:phaseRoot 'pre-flight/code-review.md') -Encoding UTF8
+
+        $result = Get-FirstPhaseContent `
+            -Root $script:phaseRoot `
+            -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md')
+
+        $result.Path | Should -Be (Join-Path $script:phaseRoot 'expert-pr-eval/content.md')
+        $result.Content.Trim() | Should -BeExactly 'current expert review'
+    }
+
+    It 'falls back to the legacy artifact when the current file is empty' {
+        '' | Set-Content (Join-Path $script:phaseRoot 'expert-pr-eval/content.md') -Encoding UTF8
+        'legacy code review' | Set-Content (Join-Path $script:phaseRoot 'pre-flight/code-review.md') -Encoding UTF8
+
+        $result = Get-FirstPhaseContent `
+            -Root $script:phaseRoot `
+            -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md')
+
+        $result.Path | Should -Be (Join-Path $script:phaseRoot 'pre-flight/code-review.md')
+        $result.Content.Trim() | Should -BeExactly 'legacy code review'
+    }
+
+    It 'returns null when no candidate contains usable content' {
+        Get-FirstPhaseContent `
+            -Root $script:phaseRoot `
+            -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md') |
+            Should -BeNullOrEmpty
     }
 }
 
