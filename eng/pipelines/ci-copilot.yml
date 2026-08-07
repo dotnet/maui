@@ -347,7 +347,7 @@ stages:
               $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" 2>&1
               $out | ForEach-Object { Write-Host "  $_" }
               foreach ($line in $out) {
-                if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') { $cats = $Matches[1] }
+                if ($line.ToString() -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') { $cats = $Matches[1] }
               }
               $catsForOutput = if ($cats -eq 'NONE') { 'NONE' } elseif ([string]::IsNullOrWhiteSpace($cats)) { 'ALL' } else { $cats }
               Write-Host "Early-detected categories (RunDetect): '$catsForOutput'"
@@ -2670,7 +2670,7 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Continue'
-              $cats = "$(detectedCategories)"
+              $cats = $env:DETECTED_CATEGORIES
               $platform = "$env:PARAM_PLATFORM"
               Write-Host "Detected categories from ReviewPR stage: $cats"
               Write-Host "Platform: $platform"
@@ -3038,6 +3038,7 @@ stages:
               # the platform via $env:PARAM_PLATFORM keeps the block a plain literal
               # with no length limit (mirrors the Post-AI-summary task's pattern).
               PARAM_PLATFORM: ${{ parameters.Platform }}
+              DETECTED_CATEGORIES: $(detectedCategories)
 
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
@@ -3239,7 +3240,12 @@ stages:
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "$env:PARAM_PR_NUMBER"
-              $reviewId = "$(aiSummaryReviewId)"
+              $reviewId = $env:AI_SUMMARY_REVIEW_ID
+              if (-not [string]::IsNullOrWhiteSpace($reviewId) -and
+                  $reviewId -ne 'DEFERRED' -and
+                  $reviewId -notmatch '^[1-9][0-9]*$') {
+                throw "Unexpected AI summary review ID."
+              }
               $isDeferred = ([string]::IsNullOrWhiteSpace($reviewId) -or $reviewId -eq 'DEFERRED')
 
               # Diagnostic logging for Stage 3 debugging
@@ -4443,6 +4449,7 @@ stages:
             displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+              AI_SUMMARY_REVIEW_ID: $(aiSummaryReviewId)
               # Contents:write PAT for hosting snapshot-diff PNGs on the shared
               # review-tests-assets branch. GH_COMMENT_TOKEN (Contents:read) 404s and
               # COPILOT_TOKEN (fine-grained PAT) 403s on git-object writes. Provision

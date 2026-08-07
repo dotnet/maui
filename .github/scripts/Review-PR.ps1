@@ -1533,7 +1533,7 @@ if (Test-Path $detectScript) {
             # the explicit "run all" sentinel emitted by the run-all returns in
             # detect-ui-test-categories.ps1; treating it as "marker not seen"
             # would lose that distinction.
-            if ($lineStr -match 'UITestCategoryList;isOutput=true\](.*)$') {
+            if ($lineStr -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') {
                 $uitestCategories = $Matches[1]
             }
         }
@@ -2524,7 +2524,7 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
 
             $refreshedCategories = $uitestCategories
             foreach ($line in $refreshOutput) {
-                if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') {
+                if ($line.ToString() -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') {
                     $refreshedCategories = $Matches[1]
                 }
             }
@@ -2754,13 +2754,14 @@ if (Test-Path $winnerFile) {
         # Validation
         $allowed = @('pr','pr-plus-reviewer','try-fix-1','try-fix-2','try-fix-3','try-fix-4')
         if (-not $winner.winner -or $allowed -notcontains $winner.winner) {
-            Write-Host "  ⚠️ winner.json has invalid 'winner' value: $($winner.winner) — falling back to PR-fix path" -ForegroundColor Yellow
+            $invalidWinner = ConvertTo-AzdoSafeConsole ([string]$winner.winner)
+            Write-Host "  ⚠️ winner.json has invalid 'winner' value: $invalidWinner — falling back to PR-fix path" -ForegroundColor Yellow
             $winner = $null
         } elseif ($winner.winner -in @('pr','pr-plus-reviewer') -and $winner.isPRFix -ne $true) {
-            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=true — overriding" -ForegroundColor Yellow
+            Write-Host "  ⚠️ winner.json: '$(ConvertTo-AzdoSafeConsole ([string]$winner.winner))' must have isPRFix=true — overriding" -ForegroundColor Yellow
             $winner.isPRFix = $true
         } elseif ($winner.winner -like 'try-fix-*' -and $winner.isPRFix -ne $false) {
-            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=false — overriding" -ForegroundColor Yellow
+            Write-Host "  ⚠️ winner.json: '$(ConvertTo-AzdoSafeConsole ([string]$winner.winner))' must have isPRFix=false — overriding" -ForegroundColor Yellow
             $winner.isPRFix = $false
         }
         if ($winner -and $winner.isPRFix -eq $false -and [string]::IsNullOrWhiteSpace($winner.candidateDiff)) {
@@ -2768,7 +2769,7 @@ if (Test-Path $winnerFile) {
             $winner = $null
         }
         if ($winner) {
-            Write-Host "  🏆 Winning candidate: $($winner.winner) (isPRFix=$($winner.isPRFix))" -ForegroundColor Cyan
+            Write-Host "  🏆 Winning candidate: $(ConvertTo-AzdoSafeConsole ([string]$winner.winner)) (isPRFix=$($winner.isPRFix))" -ForegroundColor Cyan
         }
     } catch {
         Write-Host "  ⚠️ Failed to parse winner.json (non-fatal): $_ — falling back to PR-fix path" -ForegroundColor Yellow

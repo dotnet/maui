@@ -8,6 +8,7 @@
 BeforeAll {
     $script:detectScript = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'detect-ui-test-categories.ps1'
     $script:detectScript = (Resolve-Path $script:detectScript).Path
+    $script:detectContent = Get-Content -Raw $script:detectScript
 
     $tokens = $null; $errors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($script:detectScript, [ref]$tokens, [ref]$errors)
@@ -18,6 +19,18 @@ BeforeAll {
     }, $true)
     if (-not $fn) { throw "Test-PreparedReviewWorktreeSubject not found in $script:detectScript" }
     Invoke-Expression $fn.Extent.Text
+}
+
+Describe 'AI category parsing' {
+    It 'splits comma, CR, and LF delimiters before category processing' {
+        $script:detectContent | Should -Match ([regex]::Escape("-split '[,\r\n]'"))
+
+        $categories = @("ButtonTests`r##vso[task.setvariable variable=x]spoof" -split '[,\r\n]' |
+            Where-Object { $_ })
+        $categories.Count | Should -Be 2
+        $categories[0] | Should -Be 'ButtonTests'
+        $categories[1] | Should -Be '##vso[task.setvariable variable=x]spoof'
+    }
 }
 
 Describe 'Test-PreparedReviewWorktreeSubject' {

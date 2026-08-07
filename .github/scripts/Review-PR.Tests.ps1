@@ -532,3 +532,32 @@ Describe 'ConvertTo-AzdoSafeConsole' {
         ConvertTo-AzdoSafeConsole 'Reading file src/Foo.cs (## of total)' | Should -Be 'Reading file src/Foo.cs (## of total)'
     }
 }
+
+Describe 'AI summary review ID handoff' {
+    It 'passes the cross-job value as environment data instead of inline PowerShell source' {
+        $pipelineContent | Should -Match ([regex]::Escape('$reviewId = $env:AI_SUMMARY_REVIEW_ID'))
+        $pipelineContent | Should -Match ([regex]::Escape('AI_SUMMARY_REVIEW_ID: $(aiSummaryReviewId)'))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('$reviewId = "$(aiSummaryReviewId)"'))
+    }
+
+    It 'accepts only DEFERRED or a positive numeric review ID' {
+        $pipelineContent | Should -Match ([regex]::Escape('$reviewId -ne ''DEFERRED'''))
+        $pipelineContent | Should -Match ([regex]::Escape('$reviewId -notmatch ''^[1-9][0-9]*$'''))
+    }
+}
+
+Describe 'Detected UI category handoff' {
+    It 'passes detected categories as environment data instead of inline PowerShell source' {
+        $pipelineContent | Should -Match ([regex]::Escape('$cats = $env:DETECTED_CATEGORIES'))
+        $pipelineContent | Should -Match ([regex]::Escape('DETECTED_CATEGORIES: $(detectedCategories)'))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('$cats = "$(detectedCategories)"'))
+    }
+
+    It 'reads only the exact category output marker' {
+        $expectedPattern = '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$'
+        ([regex]::Matches($content, [regex]::Escape($expectedPattern))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape($expectedPattern))).Count | Should -Be 1
+        $content | Should -Not -Match ([regex]::Escape("-match 'UITestCategoryList;isOutput=true"))
+        $pipelineContent | Should -Not -Match ([regex]::Escape("-match 'UITestCategoryList;isOutput=true"))
+    }
+}

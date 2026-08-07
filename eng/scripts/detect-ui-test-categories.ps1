@@ -525,7 +525,7 @@ if ($tier2Categories.Count -gt 0) {
 # ============================================================================
 
 if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
-    $aiCatList = @($AiCategories -split '[,\n]' | ForEach-Object { ($_ -replace '\s*[-—].*$', '').Trim() } | Where-Object { $_ -and $_ -ne 'NONE' })
+    $aiCatList = @($AiCategories -split '[,\r\n]' | ForEach-Object { ($_ -replace '\s*[-—].*$', '').Trim() } | Where-Object { $_ -and $_ -ne 'NONE' })
     if ($aiCatList.Count -gt 0) {
         # Build a set of valid categories from UITestCategories.cs so we can drop AI hallucinations.
         # An invalid category would otherwise create a matrix job that runs zero tests.
