@@ -4,11 +4,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue12345 : _IssuesUITest
+	public class Issue37180 : _IssuesUITest
 	{
-		public Issue12345(TestDevice testDevice) : base(testDevice) { }
+		public Issue37180(TestDevice testDevice) : base(testDevice) { }
 
-		public override string Issue => "Label background remains visible after being set to null on Android";
+		public override string Issue => "Label background remains visible after being set to null";
 
 		[Test]
 		[Category(UITestCategories.Label)]

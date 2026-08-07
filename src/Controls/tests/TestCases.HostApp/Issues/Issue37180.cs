@@ -1,10 +1,10 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 12345, "Label background remains visible after being set to null on Android",
+	[Issue(IssueTracker.Github, 37180, "Label background remains visible after being set to null",
 		PlatformAffected.Android | PlatformAffected.iOS)]
-	public class Issue12345 : ContentPage
+	public class Issue37180 : ContentPage
 	{
-		public Issue12345()
+		public Issue37180()
 		{
 			var label = new Label
 			{
