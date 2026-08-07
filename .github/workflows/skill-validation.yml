@@ -584,6 +584,7 @@ jobs:
             var="TOKEN_$i"
             val="${!var-}"
             if [ -n "$val" ]; then
+              echo "::add-mask::$val"
               TOKENS+=("$val")
             fi
           done
@@ -593,19 +594,39 @@ jobs:
             exit 1
           fi
 
+          # A populated secret can still be unusable when its GitHub API quota
+          # is exhausted. The Copilot runtime calls /user while creating every
+          # session, so probe that exact endpoint and rotate to the next healthy
+          # pool entry instead of turning infrastructure exhaustion into a
+          # zero-score skill result.
           JOB_INDEX="${{ strategy.job-index }}"
           RUN_ID="${{ github.run_id }}"
-          if [ -n "$JOB_INDEX" ] && [ ${#TOKENS[@]} -gt 1 ]; then
-            IDX=$(( (JOB_INDEX + RUN_ID) % ${#TOKENS[@]} ))
-          elif [ -n "$JOB_INDEX" ]; then
-            IDX=0
-          else
-            IDX=$((RANDOM % ${#TOKENS[@]}))
+          START_IDX=$(( (${JOB_INDEX:-0} + RUN_ID) % ${#TOKENS[@]} ))
+          SELECTED_TOKEN=""
+          for ((offset = 0; offset < ${#TOKENS[@]}; offset++)); do
+            IDX=$(( (START_IDX + offset) % ${#TOKENS[@]} ))
+            AUTH_HEADER="Authorization: Bearer ${TOKENS[$IDX]}"
+            STATUS=$(curl --silent --show-error --connect-timeout 10 --max-time 20 \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              --header "$AUTH_HEADER" \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/user || true)
+            unset AUTH_HEADER
+            if [ "$STATUS" = "200" ]; then
+              SELECTED_TOKEN="${TOKENS[$IDX]}"
+              echo "Selected healthy PAT slot $IDX of ${#TOKENS[@]} (job-index=${JOB_INDEX:-0})"
+              break
+            fi
+            echo "::warning::Skipping unavailable Copilot PAT slot $IDX (GitHub /user returned HTTP $STATUS)"
+          done
+          if [ -z "$SELECTED_TOKEN" ]; then
+            echo "::error::Every configured COPILOT_PAT_* secret is unavailable or rate-limited"
+            exit 1
           fi
-          echo "Selected 1 of ${#TOKENS[@]} available PATs (job-index=${JOB_INDEX:-random})"
 
-          echo "::add-mask::${TOKENS[$IDX]}"
-          echo "token=${TOKENS[$IDX]}" >> "$GITHUB_OUTPUT"
+          echo "token=$SELECTED_TOKEN" >> "$GITHUB_OUTPUT"
 
       # ── Run LLM evaluation (Vally) ───────────────────────────────
       # ── Optional baseline (pre-PR) evaluation ────────────────────
@@ -986,19 +1007,45 @@ jobs:
           TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
           TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
+          set -euo pipefail
           TOKENS=()
           for i in 0 1 2 3 4 5 6 7 8 9; do
             var="TOKEN_$i"
             val="${!var}"
-            [ -n "$val" ] && TOKENS+=("$val")
+            if [ -n "$val" ]; then
+              echo "::add-mask::$val"
+              TOKENS+=("$val")
+            fi
           done
           if [ ${#TOKENS[@]} -eq 0 ]; then
             echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
             exit 1
           fi
-          IDX=$((RANDOM % ${#TOKENS[@]}))
-          echo "::add-mask::${TOKENS[$IDX]}"
-          echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
+          START_IDX=$((RANDOM % ${#TOKENS[@]}))
+          SELECTED_TOKEN=""
+          for ((offset = 0; offset < ${#TOKENS[@]}; offset++)); do
+            IDX=$(( (START_IDX + offset) % ${#TOKENS[@]} ))
+            AUTH_HEADER="Authorization: Bearer ${TOKENS[$IDX]}"
+            STATUS=$(curl --silent --show-error --connect-timeout 10 --max-time 20 \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              --header "$AUTH_HEADER" \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/user || true)
+            unset AUTH_HEADER
+            if [ "$STATUS" = "200" ]; then
+              SELECTED_TOKEN="${TOKENS[$IDX]}"
+              echo "Selected healthy PAT slot $IDX of ${#TOKENS[@]}"
+              break
+            fi
+            echo "::warning::Skipping unavailable Copilot PAT slot $IDX (GitHub /user returned HTTP $STATUS)"
+          done
+          if [ -z "$SELECTED_TOKEN" ]; then
+            echo "::error::Every configured COPILOT_PAT_* secret is unavailable or rate-limited"
+            exit 1
+          fi
+          echo "token=$SELECTED_TOKEN" >> "$GITHUB_OUTPUT"
 
       - name: Run hermeticity control
         id: herm
