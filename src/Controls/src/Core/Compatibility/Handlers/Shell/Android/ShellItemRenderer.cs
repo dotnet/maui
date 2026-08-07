@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
@@ -14,6 +15,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -64,6 +66,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IMenuItem _updateMenuItemTitle;
 		IMenuItem _updateMenuItemIcon;
 		ShellSection _updateMenuItemSource;
+		readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+		readonly List<IMenuItem> _registeredMenuItems = new List<IMenuItem>();
+		readonly List<(ShellSection Owner, AView View)> _moreItemViews = new List<(ShellSection, AView)>();
+		int _tabRegistrationGeneration;
 
 		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
@@ -84,6 +91,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellItem.CurrentItem is null)
 				throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
 
+			_nativeTabRegistrations.Register(
+				ShellItem,
+				_bottomView,
+				NativeElementRoles.ShellTab,
+				NativeElementDiscriminators.TabBar);
 			HookEvents(ShellItem);
 			SetupMenu();
 
@@ -97,6 +109,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void Destroy()
 		{
+			_tabRegistrationGeneration++;
+			_nativeMoreRegistrations.Clear();
+			_nativeTabRegistrations.Clear();
+			_registeredMenuItems.Clear();
+
 			if (ShellItem is not null)
 				UnhookEvents(ShellItem);
 
@@ -108,6 +125,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bottomSheetDialog?.Dispose();
 				_bottomSheetDialog = null;
 			}
+			DisposeMoreItemViews();
 
 			_navigationArea?.Dispose();
 			_appearanceTracker?.Dispose();
@@ -190,85 +208,83 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var closure_i = i;
 				var shellContent = items[i];
+				var innerLayout = new LinearLayout(Context);
+				innerLayout.SetClipToOutline(true);
+				innerLayout.SetBackground(
+					RuntimeFeature.IsMaterial3Enabled
+						? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
+						: CreateItemBackgroundDrawable());
+				innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
+				innerLayout.Orientation = Orientation.Horizontal;
+				using (var param = new LP(LP.MatchParent, LP.WrapContent))
+					innerLayout.LayoutParameters = param;
 
-				using (var innerLayout = new LinearLayout(Context))
+				// technically the unhook isn't needed
+				// we dont even unhook the events that dont fire
+				void clickCallback(object s, EventArgs e)
 				{
-					innerLayout.SetClipToOutline(true);
-					innerLayout.SetBackground(
+					selectCallback(closure_i, bottomSheetDialog);
+					if (!innerLayout.IsDisposed())
+						innerLayout.Click -= clickCallback;
+				}
+
+				innerLayout.Click += clickCallback;
+
+				var image = new ImageView(Context);
+				var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(32), (int)Context.ToPixels(32))
+				{
+					LeftMargin = (int)Context.ToPixels(20),
+					RightMargin = (int)Context.ToPixels(20),
+					TopMargin = (int)Context.ToPixels(6),
+					BottomMargin = (int)Context.ToPixels(6),
+					Gravity = GravityFlags.Center
+				};
+				image.LayoutParameters = lp;
+				lp.Dispose();
+
+				var services = MauiContext.Services;
+				var provider = services.GetRequiredService<IImageSourceServiceProvider>();
+				var icon = shellContent.Icon;
+
+				shellContent.Icon.LoadImage(
+					MauiContext,
+					(result) =>
+					{
+						image.SetImageDrawable(result?.Value);
+						if (result?.Value is not null)
+						{
+							var color = RuntimeFeature.IsMaterial3Enabled
+								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
+								: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
+							result.Value.SetTint(color);
+						}
+					});
+
+				innerLayout.AddView(image);
+
+				using (var text = new TextView(Context))
+				{
+					text.Typeface = services.GetRequiredService<IFontManager>()
+						.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
+
+					text.SetTextColor(
 						RuntimeFeature.IsMaterial3Enabled
-							? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
-							: CreateItemBackgroundDrawable());
-					innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
-					innerLayout.Orientation = Orientation.Horizontal;
-					using (var param = new LP(LP.MatchParent, LP.WrapContent))
-						innerLayout.LayoutParameters = param;
-
-					// technically the unhook isn't needed
-					// we dont even unhook the events that dont fire
-					void clickCallback(object s, EventArgs e)
+							? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
+							: AColor.Black);
+					text.Text = shellContent.Title;
+					lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 					{
-						selectCallback(closure_i, bottomSheetDialog);
-						if (!innerLayout.IsDisposed())
-							innerLayout.Click -= clickCallback;
-					}
-
-					innerLayout.Click += clickCallback;
-
-					var image = new ImageView(Context);
-					var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(32), (int)Context.ToPixels(32))
-					{
-						LeftMargin = (int)Context.ToPixels(20),
-						RightMargin = (int)Context.ToPixels(20),
-						TopMargin = (int)Context.ToPixels(6),
-						BottomMargin = (int)Context.ToPixels(6),
-						Gravity = GravityFlags.Center
+						Gravity = GravityFlags.Center,
+						Weight = 1
 					};
-					image.LayoutParameters = lp;
+					text.LayoutParameters = lp;
 					lp.Dispose();
 
-					var services = MauiContext.Services;
-					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-					var icon = shellContent.Icon;
-
-					shellContent.Icon.LoadImage(
-						MauiContext,
-						(result) =>
-						{
-							image.SetImageDrawable(result?.Value);
-							if (result?.Value is not null)
-							{
-								var color = RuntimeFeature.IsMaterial3Enabled
-									? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
-									: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
-								result.Value.SetTint(color);
-							}
-						});
-
-					innerLayout.AddView(image);
-
-					using (var text = new TextView(Context))
-					{
-						text.Typeface = services.GetRequiredService<IFontManager>()
-							.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
-
-						text.SetTextColor(
-							RuntimeFeature.IsMaterial3Enabled
-								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
-								: AColor.Black);
-						text.Text = shellContent.Title;
-						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
-						{
-							Gravity = GravityFlags.Center,
-							Weight = 1
-						};
-						text.LayoutParameters = lp;
-						lp.Dispose();
-
-						innerLayout.AddView(text);
-					}
-
-					bottomSheetLayout.AddView(innerLayout);
+					innerLayout.AddView(text);
 				}
+
+				bottomSheetLayout.AddView(innerLayout);
+				_moreItemViews.Add((shellContent, innerLayout));
 			}
 
 			bottomSheetDialog.SetContentView(bottomSheetLayout);
@@ -289,8 +305,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				index = Math.Min(index, menu.Size() - 1);
 				if (index < 0)
 					return;
-				using (var menuItem = menu.GetItem(index))
+				if (index < _registeredMenuItems.Count)
+					_registeredMenuItems[index].SetChecked(true);
+				else
+				{
+					using var menuItem = menu.GetItem(index);
 					menuItem.SetChecked(true);
+				}
 			}
 		}
 
@@ -298,11 +319,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDisplayedPageChanged(newPage, oldPage);
 
-			if (oldPage is not null)
-				oldPage.PropertyChanged -= OnDisplayedElementPropertyChanged;
+			oldPage?.PropertyChanged -= OnDisplayedElementPropertyChanged;
 
-			if (newPage is not null)
-				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
+			newPage?.PropertyChanged += OnDisplayedElementPropertyChanged;
 
 			if (newPage is not null && !_menuSetup)
 			{
@@ -317,10 +336,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var id = item.ItemId;
 			if (id == MoreTabId)
 			{
-				var items = CreateTabList(ShellItem);
-				_bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, MauiContext, items, _bottomView.MaxItemCount);
+				_nativeMoreRegistrations.Clear();
+				DisposeMoreItemViews();
+				_bottomSheetDialog = CreateMoreBottomSheet(
+					(Action<int, BottomSheetDialog>)OnMoreItemSelected);
 				_bottomSheetDialog.Show();
 				_bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
+				if (_bottomSheetDialog.Window?.DecorView is AView dialogView)
+				{
+					_nativeMoreRegistrations.Register(
+						ShellItem,
+						dialogView,
+						NativeElementRoles.ShellTabOverflow,
+						NativeElementDiscriminators.RealizedView);
+				}
+				foreach (var (owner, view) in _moreItemViews)
+				{
+					_nativeMoreRegistrations.Register(
+						owner,
+						view,
+						NativeElementRoles.ShellTabOverflow,
+						NativeElementDiscriminators.OverflowRow);
+				}
 			}
 			else
 			{
@@ -368,6 +405,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
 		{
 			OnShellSectionChanged();
+			_nativeMoreRegistrations.Clear();
 
 			if (_bottomSheetDialog is not null)
 			{
@@ -375,10 +413,49 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bottomSheetDialog.Dispose();
 				_bottomSheetDialog = null;
 			}
+			DisposeMoreItemViews();
+		}
+
+		void DisposeMoreItemViews()
+		{
+			foreach (var (_, view) in _moreItemViews)
+				view.Dispose();
+			_moreItemViews.Clear();
 		}
 
 		protected override void OnShellItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			_tabRegistrationGeneration++;
+			_nativeMoreRegistrations.Clear();
+			DisposeMoreItemViews();
+			if (_bottomSheetDialog is not null)
+			{
+				_bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
+				if (_bottomSheetDialog.IsShowing)
+					_bottomSheetDialog.Dismiss();
+				_bottomSheetDialog.Dispose();
+				_bottomSheetDialog = null;
+			}
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				_nativeTabRegistrations.Clear();
+				_registeredMenuItems.Clear();
+				if (_bottomView is not null)
+				{
+					_nativeTabRegistrations.Register(
+						ShellItem,
+						_bottomView,
+						NativeElementRoles.ShellTab,
+						NativeElementDiscriminators.TabBar);
+				}
+			}
+			else if (e.OldItems is not null)
+			{
+				foreach (ShellSection oldItem in e.OldItems)
+					_nativeTabRegistrations.UnregisterOwner(oldItem);
+			}
+
 			base.OnShellItemsChanged(sender, e);
 
 			SetupMenu();
@@ -489,10 +566,70 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					items,
 					currentIndex,
 					_bottomView,
-					MauiContext);
+					MauiContext,
+					RegisterBottomMenuItems);
 			}
 
 			UpdateTabBarVisibility();
+		}
+
+		void RegisterBottomMenuItems(IReadOnlyList<IMenuItem> menuItems)
+		{
+			var shellSections = ShellItemController.GetItems();
+			foreach (var previousMenuItem in _registeredMenuItems)
+			{
+				if (!menuItems.Any(current => ReferenceEquals(current, previousMenuItem)))
+					_nativeTabRegistrations.Unregister(previousMenuItem);
+			}
+
+			_registeredMenuItems.Clear();
+			_registeredMenuItems.AddRange(menuItems);
+
+			foreach (var menuItem in menuItems)
+			{
+				var isMoreItem = menuItem.ItemId == MoreTabId;
+				object owner = isMoreItem
+					? ShellItem
+					: shellSections[menuItem.ItemId];
+				_nativeTabRegistrations.Register(
+					owner,
+					menuItem,
+					isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.LogicalModel);
+			}
+
+			var registrationGeneration = ++_tabRegistrationGeneration;
+			_bottomView.Post(() =>
+			{
+				if (registrationGeneration != _tabRegistrationGeneration)
+					return;
+
+				var retainedElements = new List<object> { _bottomView };
+				retainedElements.AddRange(menuItems.Cast<object>());
+				if (_bottomView?.GetChildAt(0) is ViewGroup menuView)
+				{
+					var count = Math.Min(menuView.ChildCount, menuItems.Count);
+					for (int index = 0; index < count; index++)
+					{
+						var menuItem = menuItems[index];
+						var isMoreItem = menuItem.ItemId == MoreTabId;
+						object owner = isMoreItem
+							? ShellItem
+							: shellSections[menuItem.ItemId];
+						if (menuView.GetChildAt(index) is AView itemView)
+						{
+							retainedElements.Add(itemView);
+							_nativeTabRegistrations.RegisterExclusive(
+								owner,
+								itemView,
+								isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+								NativeElementDiscriminators.RealizedView);
+						}
+					}
+				}
+
+				_nativeTabRegistrations.Retain(retainedElements);
+			});
 		}
 
 		protected virtual void UpdateShellSectionIcon(ShellSection shellSection, IMenuItem menuItem)
