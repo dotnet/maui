@@ -83,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 		/// This is used by the Copilot review gate to verify only a PR's specific test class
 		/// instead of its whole <c>Category</c> (which can be blocked by unrelated crashes).
 		/// </summary>
-		public static List<String> GetIncludedTestClasses(this Type testCategoryType)
+		public static List<String> GetIncludedTestClasses(this Type _)
 		{
 			string? includeValue = null;
 
