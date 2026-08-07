@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IScrollOffsetReceiver, IContentView, ISafeAreaElement, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -561,6 +561,14 @@ namespace Microsoft.Maui.Controls
 					SetScrolledPosition(ScrollX, value);
 				}
 			}
+		}
+
+		void IScrollOffsetReceiver.UpdateScrollOffsets(double horizontalOffset, double verticalOffset)
+		{
+			// The reported offsets moved because the platform insets did, not because anything
+			// scrolled: keep ScrollX/ScrollY (and their bindings) current without raising Scrolled
+			ScrollX = horizontalOffset;
+			ScrollY = verticalOffset;
 		}
 
 		void IScrollView.RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant)

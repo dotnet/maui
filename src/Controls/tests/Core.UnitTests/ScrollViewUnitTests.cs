@@ -452,6 +452,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(310, scrollView.GetScrollPositionForElement(item, ScrollToPosition.MakeVisible).Y);
 		}
 
+		[Fact]
+		public void InsetRefreshUpdatesOffsetsWithoutRaisingScrolled()
+		{
+			var scrollView = new ScrollView();
+			var scrolledCount = 0;
+			scrollView.Scrolled += (_, _) => scrolledCount++;
+
+			// An inset-only change moves the derived offsets without any scroll: the values
+			// (and their bindings) must refresh, but no Scrolled event may be manufactured
+			((IScrollOffsetReceiver)scrollView).UpdateScrollOffsets(5, 40);
+
+			Assert.Equal(5, scrollView.ScrollX);
+			Assert.Equal(40, scrollView.ScrollY);
+			Assert.Equal(0, scrolledCount);
+
+			// An actual scroll notification still raises Scrolled
+			((IScrollView)scrollView).VerticalOffset = 60;
+
+			Assert.Equal(60, scrollView.ScrollY);
+			Assert.Equal(1, scrolledCount);
+		}
+
 		// IScrollViewportProvider is internal to Core, which NSubstitute cannot proxy, so the
 		// viewport contract is stubbed by hand here.
 		class ViewportProviderHandlerStub : IViewHandler, Microsoft.Maui.Handlers.IScrollViewportProvider

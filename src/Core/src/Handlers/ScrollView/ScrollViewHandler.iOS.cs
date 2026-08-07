@@ -324,9 +324,23 @@ namespace Microsoft.Maui.Handlers
 
 		void IScrollViewportProvider.NotifyInsetsChanged()
 		{
-			if (PlatformView is { } platformView)
+			if (PlatformView is not { } platformView || VirtualView is not { } virtualView)
 			{
-				PublishScrollOffsets(VirtualView, platformView);
+				return;
+			}
+
+			var (horizontalOffset, verticalOffset) = GetContentCoordinateOffsets(platformView);
+
+			// Nothing scrolled — the derived offsets moved because the inset did — so refresh
+			// the values without letting the view raise a scrolled notification for it
+			if (virtualView is IScrollOffsetReceiver receiver)
+			{
+				receiver.UpdateScrollOffsets(horizontalOffset, verticalOffset);
+			}
+			else
+			{
+				virtualView.HorizontalOffset = horizontalOffset;
+				virtualView.VerticalOffset = verticalOffset;
 			}
 		}
 
@@ -340,9 +354,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			(virtualView.HorizontalOffset, virtualView.VerticalOffset) = GetContentCoordinateOffsets(platformView);
+		}
+
+		static (double HorizontalOffset, double VerticalOffset) GetContentCoordinateOffsets(UIScrollView platformView)
+		{
 			var adjustedInset = platformView.AdjustedContentInset;
-			virtualView.HorizontalOffset = platformView.ContentOffset.X + adjustedInset.Left;
-			virtualView.VerticalOffset = platformView.ContentOffset.Y + adjustedInset.Top;
+			return (platformView.ContentOffset.X + adjustedInset.Left, platformView.ContentOffset.Y + adjustedInset.Top);
 		}
 	}
 }

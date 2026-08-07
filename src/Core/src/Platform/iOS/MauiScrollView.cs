@@ -420,38 +420,66 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// The content extent to clamp scrolling against: <see cref="UIScrollView.ContentSize"/>
-		/// minus any safe-area padding that <see cref="CrossPlatformArrange"/> baked into it while
-		/// UIKit is *also* compensating for the same safe area through
-		/// <see cref="UIScrollView.AdjustedContentInset"/>.
+		/// The content extent to clamp scrolling against: the trailing edge of the rect
+		/// <see cref="CrossPlatformArrange"/> actually arranged the content into, plus any
+		/// trailing safe-area padding it baked into the content coordinate space
+		/// (see <see cref="SafeAreaBakedIntoContent"/>).
 		/// </summary>
 		/// <remarks>
-		/// That double counting only happens with <see cref="UIScrollViewContentInsetAdjustmentBehavior.Always"/>.
-		/// With <see cref="UIScrollViewContentInsetAdjustmentBehavior.Never"/> the padding stands in
-		/// for an inset UIKit does not apply, and with
-		/// <see cref="UIScrollViewContentInsetAdjustmentBehavior.Automatic"/> no padding is added at
-		/// all — so in both of those the content size is already the scrollable extent. Kept here so
-		/// the rule lives with the arrange logic that produces it rather than being restated by the
-		/// handler (issue #36801).
+		/// Measured from the recorded arrange rather than reconstructed from
+		/// <see cref="UIScrollView.ContentSize"/>, because that value is not authoritative:
+		/// depending on the inset mode the arrange pass pads it with a safe area UIKit is also
+		/// compensating through <see cref="UIScrollView.AdjustedContentInset"/>, inflates it to
+		/// keep UIKit in scrollable mode, or omits a non-zero safe-area origin the content was
+		/// arranged at. The arranged rect is correct in every mode (issue #36801).
 		/// </remarks>
 		internal CGSize ScrollableContentSize
 		{
 			get
 			{
-				var contentSize = ContentSize;
+				var arranged = _arrangedContentRect;
 
-				if (ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Always)
+				// Content has not been arranged through CrossPlatformArrange (e.g. ContentSize
+				// was mapped directly), so the content size is the only extent available
+				if (arranged == CGRect.Empty)
 				{
-					return contentSize;
+					return ContentSize;
 				}
 
-				var duplicated = SystemAdjustedContentInset;
+				var baked = SafeAreaBakedIntoContent;
+				var width = (double)arranged.Right + baked.Right;
+				var height = (double)arranged.Bottom + baked.Bottom;
 
-				return new CGSize(
-					contentSize.Width - duplicated.Left - duplicated.Right,
-					contentSize.Height - duplicated.Top - duplicated.Bottom);
+				// Mirror the orientation clamp LayoutSubviews applies to ContentSize: an axis the
+				// ScrollView doesn't scroll must not become reachable just because the arranged
+				// content overflows it
+				if (View is IScrollView scrollView)
+				{
+					var frameSize = Bounds.Size;
+					var orientation = scrollView.Orientation;
+
+					if (orientation is ScrollOrientation.Vertical && width > frameSize.Width)
+					{
+						width = frameSize.Width;
+					}
+
+					if (orientation is ScrollOrientation.Horizontal && height > frameSize.Height)
+					{
+						height = frameSize.Height;
+					}
+				}
+
+				return new CGSize(width, height);
 			}
 		}
+
+		/// <summary>
+		/// The rect the last <see cref="CrossPlatformArrange"/> placed the content into:
+		/// origin is the (possibly safe-area-inset) position the content was arranged at and
+		/// size is the arranged content size before any <see cref="UIScrollView.ContentSize"/>
+		/// padding or scrollable-mode inflation is applied.
+		/// </summary>
+		CGRect _arrangedContentRect;
 
 		/// <summary>
 		/// The safe area <see cref="CrossPlatformArrange"/> baked into the content's coordinate
@@ -465,8 +493,8 @@ namespace Microsoft.Maui.Platform
 		/// <c>_appliesSafeAreaAdjustments</c>, and the inset origin is kept only when UIKit
 		/// contributes nothing (<see cref="UIScrollViewContentInsetAdjustmentBehavior.Never"/>,
 		/// or a zero system inset). In the remaining case (<see cref="UIScrollViewContentInsetAdjustmentBehavior.Always"/>)
-		/// the content is re-based at the origin and UIKit's inset owns the compensation, which
-		/// <see cref="ScrollableContentSize"/> already reasons about (issue #36801).
+		/// the content is re-based at the origin and UIKit's inset owns the compensation, so the
+		/// arranged rect <see cref="ScrollableContentSize"/> measures naturally excludes it (issue #36801).
 		/// </remarks>
 		internal SafeAreaPadding SafeAreaBakedIntoContent =>
 			_appliesSafeAreaAdjustments &&
@@ -507,12 +535,13 @@ namespace Microsoft.Maui.Platform
 
 			Size contentSize;
 
-
+			CGPoint contentOrigin;
 			double width;
 			double height;
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+				contentOrigin = bounds.Location;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
@@ -520,10 +549,15 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+				contentOrigin = CGPoint.Empty;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
 			}
+
+			// Record where the content was actually arranged, before the ContentSize adjustments
+			// below: ScrollableContentSize measures the scrollable extent from this rect
+			_arrangedContentRect = new CGRect(contentOrigin, contentSize.ToCGSize());
 
 
 			// When using ContentInsetAdjustmentBehavior.Automatic, UIKit dynamically decides whether to apply 
