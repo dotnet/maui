@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using ObjCRuntime;
 using UIKit;
 
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IPlatformViewHandler _renderer;
 		object _bindingContext;
+		readonly NativeElementRegistrationSet _nativeElementRegistrations = new NativeElementRegistrationSet();
 
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
 		internal NSIndexPath IndexPath { get; set; }
@@ -47,6 +49,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;
+			if (context is Element owner)
+			{
+				_nativeElementRegistrations.Register(
+					owner,
+					this,
+					NativeElementRoles.ShellFlyout,
+					NativeElementDiscriminators.RealizedView);
+			}
 
 			if (BindingContext is BaseShellItem bsi)
 				bsi.AddLogicalChild(View);
@@ -73,6 +83,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect(Shell shell = null, bool keepRenderer = false)
 		{
+			_nativeElementRegistrations.Clear();
+			if (View is null)
+				return;
+
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
