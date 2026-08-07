@@ -1,13 +1,13 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 99999, "Shell flyout footer unsubscribes MeasureInvalidated when replaced", PlatformAffected.iOS | PlatformAffected.macOS)]
-public class Issue99999 : Shell
+[Issue(IssueTracker.Github, 37187, "Shell flyout footer unsubscribes MeasureInvalidated when replaced", PlatformAffected.iOS | PlatformAffected.macOS)]
+public class Issue37187 : Shell
 {
     readonly Label _statusLabel;
     MeasureProbeView _oldFooter;
     MeasureProbeView _currentFooter;
 
-    public Issue99999()
+    public Issue37187()
     {
         _statusLabel = new Label
         {
