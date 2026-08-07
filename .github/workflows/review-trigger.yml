@@ -468,7 +468,7 @@ jobs:
           # the commenter gets no feedback. Validate the branch exists first and record a
           # specific reason so the failure-feedback step can tell them exactly what to fix.
           BRANCH_HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: ******" -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${GH_REPO}/branches/${PIPELINE_REF}")
           if [ "${BRANCH_HTTP}" != "200" ]; then
             echo "fail_reason=branch-missing" >> "$GITHUB_OUTPUT"
@@ -490,7 +490,7 @@ jobs:
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
-            -H "Authorization: ******" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "${PAYLOAD}")
           unset AZDO_TOKEN
