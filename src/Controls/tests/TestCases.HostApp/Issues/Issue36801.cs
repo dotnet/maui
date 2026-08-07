@@ -257,13 +257,20 @@ public class Issue36801 : ContentPage
 
 		// Independent geometric oracle: after ScrollToAsync(probe, End) the probe's bottom edge
 		// must sit exactly at the bottom of the unobscured viewport, in window coordinates.
+		// In the mode where MauiScrollView applies the safe area itself (SafeAreaEdges.All maps
+		// to Never with the safe area baked into the content) the obscured bottom never appears
+		// in AdjustedContentInset; the view-level SafeAreaInsets is what the platform view baked
+		// in, so it obscures the viewport all the same.
+		double bakedBottom = _scrollView.SafeAreaEdges.Equals(SafeAreaEdges.All)
+			? (double)nativeScrollView.SafeAreaInsets.Bottom
+			: 0;
 		var probeInWindow = probeView.ConvertRectToView(probeView.Bounds, null);
 		var scrollInWindow = nativeScrollView.ConvertRectToView(nativeScrollView.Bounds, null);
-		double visibleBottom = (double)(scrollInWindow.Bottom - adjustedInset.Bottom);
+		double visibleBottom = (double)(scrollInWindow.Bottom - adjustedInset.Bottom) - bakedBottom;
 		double actual = (double)probeInWindow.Bottom;
 
 		return Math.Abs(actual - visibleBottom) <= 1.5
-			? $"Success (element): bottom={actual:F1}"
+			? $"Success (element): mode={nativeScrollView.ContentInsetAdjustmentBehavior} bottom={actual:F1}"
 			: $"Fail (element): actual={actual:F1} expected={visibleBottom:F1}";
 #else
 		return "Skipped (element): not applicable on this platform";

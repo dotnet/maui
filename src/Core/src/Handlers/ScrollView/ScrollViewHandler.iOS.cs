@@ -22,10 +22,34 @@ namespace Microsoft.Maui.Handlers
 					return default;
 				}
 
+				// The safe area MauiScrollView bakes into the content obscures the viewport just
+				// like a UIKit inset but never appears in AdjustedContentInset (issue #36801)
 				var inset = platformView.AdjustedContentInset;
-				return new Thickness(inset.Left, inset.Top, inset.Right, inset.Bottom);
+				var baked = GetSafeAreaBakedIntoContent(platformView);
+				return new Thickness(
+					inset.Left + baked.Left,
+					inset.Top + baked.Top,
+					inset.Right + baked.Right,
+					inset.Bottom + baked.Bottom);
 			}
 		}
+
+		Thickness IScrollViewportProvider.ContentCoordinateInsets
+		{
+			get
+			{
+				if (PlatformView is not { } platformView)
+				{
+					return default;
+				}
+
+				var baked = GetSafeAreaBakedIntoContent(platformView);
+				return new Thickness(baked.Left, baked.Top, baked.Right, baked.Bottom);
+			}
+		}
+
+		static SafeAreaPadding GetSafeAreaBakedIntoContent(UIScrollView platformView) =>
+			(platformView as MauiScrollView)?.SafeAreaBakedIntoContent ?? SafeAreaPadding.Empty;
 
 		protected override UIScrollView CreatePlatformView()
 		{
@@ -136,7 +160,14 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				var target = GetTargetContentOffset(uiScrollView, request);
-				bool alreadyAtTarget = uiScrollView.ContentOffset == target;
+
+				// Compare at device-pixel resolution: UIKit rounds resting offsets to physical
+				// pixels while the inset-derived target is fractional, so an exact comparison can
+				// miss by a sub-pixel amount — and an animated SetContentOffset for a sub-pixel
+				// delta may never raise ScrollAnimationEnded, leaving the caller's task pending
+				// forever (there is no timeout anywhere in that chain).
+				var pixelTolerance = 1 / (uiScrollView.Window?.Screen ?? UIScreen.MainScreen).Scale;
+				bool alreadyAtTarget = uiScrollView.ContentOffset.IsCloseTo(target, pixelTolerance);
 
 				if (!alreadyAtTarget)
 				{

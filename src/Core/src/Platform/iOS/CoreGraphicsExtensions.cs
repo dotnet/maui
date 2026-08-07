@@ -38,5 +38,10 @@ namespace Microsoft.Maui.Platform
 			var diff = size0 - size1;
 			return Math.Abs(diff.Width) < tolerance && Math.Abs(diff.Height) < tolerance;
 		}
+
+		internal static bool IsCloseTo(this CGPoint point0, CGPoint point1, nfloat tolerance)
+		{
+			return Math.Abs(point0.X - point1.X) < tolerance && Math.Abs(point0.Y - point1.Y) < tolerance;
+		}
 	}
 }

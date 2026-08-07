@@ -336,6 +336,153 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(task.IsCompleted);
 		}
 
+		[Fact]
+		public void DeferredElementScrollDispatchesOnceContentIsArranged()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// No geometry yet, so the request must still be held
+			Assert.Empty(handler.ScrollToRequests);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			// The element target resolves against the arranged position, not the zeros it had
+			// when the request was queued
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(450, request.VerticalOffset);
+
+			// The replay must complete the task the original caller is still awaiting, not a
+			// fresh completion source
+			Assert.False(task.IsCompleted);
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DirectRequestSupersedesDeferredElementRequest()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			_ = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// A direct request while the element request is still held must win
+			var task = scrollView.ScrollToAsync(0, 100, false);
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(100, request.VerticalOffset);
+
+			// Layout completing later must not dispatch the stale element target on top of it
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			Assert.Single(handler.ScrollToRequests);
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DeferredElementScrollCompletesWhenContentArrangesToZero()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// Everything arranges to zero (a collapsed container). "Arranged to nothing" is a
+			// settled state: the request must dispatch and clamp instead of waiting for a
+			// content size that will never become non-zero.
+			item.Layout(new Graphics.Rect(0, 0, 0, 0));
+			layout.Layout(new Graphics.Rect(0, 0, 0, 0));
+			scrollView.Layout(new Graphics.Rect(0, 0, 0, 0));
+
+			Assert.Single(handler.ScrollToRequests);
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void ElementTargetsAccountForViewportAndContentCoordinateInsets()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			// Total obscured insets shrink the viewport; the content-coordinate part is padding
+			// the platform baked into the content, which element positions already include
+			var handler = new ViewportProviderHandlerStub
+			{
+				ViewportInsets = new Thickness(0, 70, 0, 50),
+				ContentCoordinateInsets = new Thickness(0, 10, 0, 10),
+			};
+			scrollView.Handler = handler;
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 300));
+
+			// Start aligns the element with the visible viewport top: the 10 of baked padding in
+			// its coordinates must be shifted back out
+			Assert.Equal(440, scrollView.GetScrollPositionForElement(item, ScrollToPosition.Start).Y);
+
+			// End: 450 - (300 - 70 - 50) + 50 = 320, shifted by the baked 10
+			Assert.Equal(310, scrollView.GetScrollPositionForElement(item, ScrollToPosition.End).Y);
+
+			// Center: 450 - 180 / 2 + 25 = 385, shifted by the baked 10
+			Assert.Equal(375, scrollView.GetScrollPositionForElement(item, ScrollToPosition.Center).Y);
+
+			// The element is below the visible window, so MakeVisible resolves to End
+			Assert.Equal(310, scrollView.GetScrollPositionForElement(item, ScrollToPosition.MakeVisible).Y);
+		}
+
+		// IScrollViewportProvider is internal to Core, which NSubstitute cannot proxy, so the
+		// viewport contract is stubbed by hand here.
+		class ViewportProviderHandlerStub : IViewHandler, Microsoft.Maui.Handlers.IScrollViewportProvider
+		{
+			public System.Collections.Generic.List<ScrollToRequest> ScrollToRequests { get; } = new();
+
+			public Thickness ViewportInsets { get; set; }
+			public Thickness ContentCoordinateInsets { get; set; }
+			public void NotifyInsetsChanged() { }
+
+			public bool HasContainer { get; set; }
+			public object ContainerView => null;
+			public IView VirtualView { get; private set; }
+			IElement IElementHandler.VirtualView => VirtualView;
+			public object PlatformView => null;
+			public IMauiContext MauiContext => null;
+
+			public Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint) => Graphics.Size.Zero;
+			public void PlatformArrange(Graphics.Rect frame) { }
+			public void SetMauiContext(IMauiContext mauiContext) { }
+			public void SetVirtualView(IElement view) => VirtualView = (IView)view;
+			public void UpdateValue(string property) { }
+			public void DisconnectHandler() { }
+
+			public void Invoke(string command, object args = null)
+			{
+				if (command == nameof(IScrollView.RequestScrollTo) && args is ScrollToRequest request)
+					ScrollToRequests.Add(request);
+			}
+		}
+
 		void AssertInvalidated(IViewHandler handler)
 		{
 			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());

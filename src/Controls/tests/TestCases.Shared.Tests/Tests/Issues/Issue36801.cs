@@ -94,5 +94,30 @@ public class Issue36801 : _IssuesUITest
 		var topText = App.FindElement("TopResultLabel").GetText();
 		Assert.That(topSuccess, Is.True, $"[{expectedMode}] scroll to top did not land on the rest position: {topText}");
 	}
+
+	// Element targets resolve against the effective viewport, and each inset mode obscures it
+	// differently: Automatic/Always through AdjustedContentInset, SafeAreaEdges.All by baking
+	// the safe area into the content where AdjustedContentInset never reports it. The page's
+	// oracle measures the probe's bottom edge against the unobscured viewport bottom in window
+	// coordinates, so the mode where MAUI itself obscures the viewport is proven too.
+	[Test]
+	[Category(UITestCategories.ScrollView)]
+	[TestCase("ModeDefaultButton", "Automatic")]
+	[TestCase("ModeNoneButton", "Never")]
+	// Also resolves to Never, but bakes the safe area into the content — the case where the
+	// viewport shrink comes from MAUI's own arrange instead of a UIKit inset
+	[TestCase("ModeAllButton", "Never")]
+	[TestCase("ModeContainerButton", "Always")]
+	public void ScrollToElementEndInEachInsetMode(string modeButton, string expectedMode)
+	{
+		App.WaitForElement(modeButton);
+		App.Tap(modeButton);
+
+		App.Tap("ScrollToProbeButton");
+		var elementSuccess = App.WaitForTextToBePresentInElement("ElementResultLabel", "Success", timeout: TimeSpan.FromSeconds(10));
+		var elementText = App.FindElement("ElementResultLabel").GetText();
+		Assert.That(elementSuccess, Is.True, $"[{expectedMode}] ScrollToAsync(element, End) did not align the element with the visible viewport bottom: {elementText}");
+		Assert.That(elementText, Does.Contain($"mode={expectedMode}"), $"[{expectedMode}] resolved to a different inset mode: {elementText}");
+	}
 }
 #endif

@@ -14,9 +14,20 @@ namespace Microsoft.Maui.Handlers
 	internal interface IScrollViewportProvider
 	{
 		/// <summary>
-		/// The insets obscuring the scrollable viewport, in cross-platform units.
+		/// The total insets obscuring the scrollable viewport, in cross-platform units:
+		/// the platform-applied content insets plus any safe area the platform view baked
+		/// into the content itself (see <see cref="ContentCoordinateInsets"/>).
 		/// </summary>
 		Thickness ViewportInsets { get; }
+
+		/// <summary>
+		/// The portion of <see cref="ViewportInsets"/> the platform view baked into the
+		/// content as padding instead of applying it as a platform inset. Element positions
+		/// read from the content tree already include it, so element-relative targets must
+		/// shift by it; platform insets instead sit outside the content coordinate space and
+		/// are compensated when the request is translated to a native offset.
+		/// </summary>
+		Thickness ContentCoordinateInsets { get; }
 
 		/// <summary>
 		/// Notifies the handler that the platform view's insets changed. The reported scroll

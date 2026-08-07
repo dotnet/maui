@@ -74,12 +74,13 @@ namespace Microsoft.Maui.Controls
 			{
 				// An element target is resolved against this ScrollView's geometry and the
 				// element's position inside the arranged content. Before the first layout pass
-				// Width/Height are still -1 and every content coordinate is 0, so the request
-				// has to wait; OnSizeAllocated and ContentSizeChanged retry it.
-				// ContentSize only matters when there is content to arrange — with no Content
-				// nothing ever raises ContentSizeChanged, so waiting on it would hang the
-				// caller's task forever.
-				if (Width < 0 || Height < 0 || (Content is not null && ContentSize.IsZero))
+				// Width/Height are still -1 (the never-arranged sentinel, for the content too),
+				// so the request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
+				// The content check must be "not yet arranged" rather than "arranged to nothing":
+				// content can legitimately arrange to a zero size (a collapsed container), and
+				// that raises no further callbacks — gating on the size would hang the caller's
+				// task forever, while dispatching just clamps the target to the origin.
+				if (Width < 0 || Height < 0 || Content is { Width: < 0 } or { Height: < 0 })
 				{
 					return;
 				}
@@ -126,26 +127,32 @@ namespace Microsoft.Maui.Controls
 			// insets (safe area, ContentInset) obscure part of the frame and (0,0) in scroll
 			// coordinates is the inset rest position. Compute element targets against the effective
 			// viewport so End/Center/MakeVisible land the element fully inside the visible region.
+			// Part of those insets can be baked into the content itself (the platform arranged the
+			// content inside safe-area-inset bounds): element coordinates already include that
+			// padding, so targets shift back by it — the platform-inset part is instead
+			// compensated when the request is translated to a native offset.
 			var viewportInsets = GetVisibleViewportInsets();
+			var contentInsets = GetContentCoordinateInsets();
 			double viewportWidth = Math.Max(0, Width - viewportInsets.HorizontalThickness);
 			double viewportHeight = Math.Max(0, Height - viewportInsets.VerticalThickness);
 
 			if (position == ScrollToPosition.MakeVisible)
 			{
-				var scrollBounds = new Rect(ScrollX, ScrollY, viewportWidth, viewportHeight);
+				// In content coordinates the visible window starts past the baked padding
+				var scrollBounds = new Rect(ScrollX + contentInsets.Left, ScrollY + contentInsets.Top, viewportWidth, viewportHeight);
 				var itemBounds = new Rect(x, y, item.Width, item.Height);
 				if (scrollBounds.Contains(itemBounds))
 					return new Point(ScrollX, ScrollY);
 				switch (Orientation)
 				{
 					case ScrollOrientation.Vertical:
-						position = y > ScrollY ? ScrollToPosition.End : ScrollToPosition.Start;
+						position = y > scrollBounds.Y ? ScrollToPosition.End : ScrollToPosition.Start;
 						break;
 					case ScrollOrientation.Horizontal:
-						position = x > ScrollX ? ScrollToPosition.End : ScrollToPosition.Start;
+						position = x > scrollBounds.X ? ScrollToPosition.End : ScrollToPosition.Start;
 						break;
 					case ScrollOrientation.Both:
-						position = x > ScrollX || y > ScrollY ? ScrollToPosition.End : ScrollToPosition.Start;
+						position = x > scrollBounds.X || y > scrollBounds.Y ? ScrollToPosition.End : ScrollToPosition.Start;
 						break;
 				}
 			}
@@ -160,7 +167,7 @@ namespace Microsoft.Maui.Controls
 					x = x - viewportWidth + item.Width;
 					break;
 			}
-			return new Point(x, y);
+			return new Point(x - contentInsets.Left, y - contentInsets.Top);
 		}
 
 		// The scrollable viewport can be smaller than the frame: on iOS the adjusted content
@@ -168,6 +175,9 @@ namespace Microsoft.Maui.Controls
 		// it here; handlers whose viewport always equals the frame don't implement the contract.
 		Thickness GetVisibleViewportInsets() =>
 			(Handler as IScrollViewportProvider)?.ViewportInsets ?? default;
+
+		Thickness GetContentCoordinateInsets() =>
+			(Handler as IScrollViewportProvider)?.ContentCoordinateInsets ?? default;
 
 		/// <summary>
 		/// Sends the scroll finished notification.
