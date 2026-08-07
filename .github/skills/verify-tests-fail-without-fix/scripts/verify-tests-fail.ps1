@@ -37,6 +37,11 @@
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
     If not provided, auto-detects from test files in the git diff.
 
+.PARAMETER TestProject
+    Required with an explicit TestFilter for UnitTest and DeviceTest. For UnitTest, pass a key from the unit
+    test project map (for example, Controls.Core.UnitTests) or a repo-relative .csproj path. For DeviceTest,
+    pass the Run-DeviceTests project name (Controls, Core, Essentials, Graphics, or BlazorWebView).
+
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
@@ -55,7 +60,7 @@
 
 .EXAMPLE
     # Verify unit tests (no platform needed)
-    ./verify-tests-fail.ps1 -TestType UnitTest -TestFilter "Maui12345"
+    ./verify-tests-fail.ps1 -TestType UnitTest -TestProject Controls.Core.UnitTests -TestFilter "Maui12345"
 
 .EXAMPLE
     # Verify XAML unit tests
@@ -78,6 +83,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$TestFilter,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestProject,
 
     [Parameter(Mandatory = $false)]
     [string[]]$FixFiles,
@@ -222,6 +230,108 @@ $script:DeviceTestProjectMap = @{
     "Essentials.DeviceTests"           = "Essentials"
     "Graphics.DeviceTests"             = "Graphics"
     "MauiBlazorWebView.DeviceTests"    = "BlazorWebView"
+}
+
+function Resolve-ExplicitTestProject {
+    param(
+        [Parameter(Mandatory)][string]$TestType,
+        [string]$TestProject,
+        [Parameter(Mandatory)][string]$RepoRoot
+    )
+
+    switch ($TestType) {
+        "UnitTest" {
+            if (-not $TestProject) {
+                throw "UnitTest with an explicit TestFilter requires -TestProject (project key or repo-relative .csproj path)."
+            }
+
+            if ($script:UnitTestProjectMap.ContainsKey($TestProject)) {
+                return @{
+                    Project = $TestProject
+                    ProjectPath = $script:UnitTestProjectMap[$TestProject]
+                }
+            }
+
+            if ([System.IO.Path]::IsPathRooted($TestProject)) {
+                throw "UnitTest project paths must be repo-relative, not absolute: '$TestProject'."
+            }
+
+            $repoFullPath = [System.IO.Path]::GetFullPath($RepoRoot).TrimEnd(
+                [System.IO.Path]::DirectorySeparatorChar,
+                [System.IO.Path]::AltDirectorySeparatorChar)
+            $repoPrefix = $repoFullPath + [System.IO.Path]::DirectorySeparatorChar
+            $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $repoFullPath $TestProject))
+            $pathComparison = if ([OperatingSystem]::IsWindows()) {
+                [StringComparison]::OrdinalIgnoreCase
+            } else {
+                [StringComparison]::Ordinal
+            }
+
+            if (-not $candidatePath.StartsWith($repoPrefix, $pathComparison)) {
+                throw "UnitTest project path escapes the repository root: '$TestProject'."
+            }
+
+            if ($TestProject.EndsWith(".csproj", [StringComparison]::OrdinalIgnoreCase) -and
+                (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+                $relativeProjectPath = ([System.IO.Path]::GetRelativePath(
+                    $repoFullPath,
+                    $candidatePath)).Replace('\', '/')
+                return @{
+                    Project = [System.IO.Path]::GetFileNameWithoutExtension($TestProject)
+                    ProjectPath = $relativeProjectPath
+                }
+            }
+
+            throw "Unknown UnitTest project '$TestProject'. Use a known project key or repo-relative .csproj path."
+        }
+        "DeviceTest" {
+            if (-not $TestProject) {
+                throw "DeviceTest with an explicit TestFilter requires -TestProject."
+            }
+
+            $knownProjects = @($script:DeviceTestProjectMap.Values)
+            if ($knownProjects -notcontains $TestProject) {
+                throw "Unknown DeviceTest project '$TestProject'. Expected one of: $($knownProjects -join ', ')."
+            }
+
+            return @{
+                Project = $TestProject
+                ProjectPath = $null
+            }
+        }
+        default {
+            return @{
+                Project = $null
+                ProjectPath = $null
+            }
+        }
+    }
+}
+
+function New-ExplicitTestEntry {
+    param(
+        [Parameter(Mandatory)][string]$TestType,
+        [Parameter(Mandatory)][string]$TestFilter,
+        [string]$TestProject,
+        [Parameter(Mandatory)][string]$RepoRoot
+    )
+
+    $resolvedProject = Resolve-ExplicitTestProject -TestType $TestType `
+        -TestProject $TestProject -RepoRoot $RepoRoot
+
+    return @{
+        Type = $TestType
+        TestName = $TestFilter
+        Filter = $TestFilter
+        Project = $resolvedProject.Project
+        ProjectPath = $resolvedProject.ProjectPath
+        Runner = switch ($TestType) {
+            "UITest" { "BuildAndRunHostApp" }
+            "DeviceTest" { "Run-DeviceTests" }
+            default { "dotnet-test" }
+        }
+        NeedsPlatform = ($TestType -in @("UITest", "DeviceTest"))
+    }
 }
 
 function Get-TestTypeFromFiles {
@@ -1034,13 +1144,13 @@ if ($DetectedFixFiles.Count -eq 0) {
         }
     } else {
         $effectiveType = if ($TestType) { $TestType } else { "UITest" }
-        $AllDetectedTests = @(@{
-            Type = $effectiveType
-            TestName = $TestFilter
-            Filter = $TestFilter
-            Project = $null
-            ProjectPath = $null
-        })
+        try {
+            $AllDetectedTests = @(New-ExplicitTestEntry -TestType $effectiveType `
+                -TestFilter $TestFilter -TestProject $TestProject -RepoRoot $RepoRoot)
+        } catch {
+            Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
+            exit 1
+        }
     }
 
     # Create output directory
@@ -1179,19 +1289,13 @@ if (-not $TestFilter) {
 } else {
     # Explicit filter provided — use single test entry with given/detected type
     $effectiveType = if ($TestType) { $TestType } else { "UITest" }
-    $AllDetectedTests = @(@{
-        Type = $effectiveType
-        TestName = $TestFilter
-        Filter = $TestFilter
-        Project = $null
-        ProjectPath = $null
-        Runner = switch ($effectiveType) {
-            "UITest" { "BuildAndRunHostApp" }
-            "DeviceTest" { "Run-DeviceTests" }
-            default { "dotnet-test" }
-        }
-        NeedsPlatform = ($effectiveType -in @("UITest", "DeviceTest"))
-    })
+    try {
+        $AllDetectedTests = @(New-ExplicitTestEntry -TestType $effectiveType `
+            -TestFilter $TestFilter -TestProject $TestProject -RepoRoot $RepoRoot)
+    } catch {
+        Write-Host "❌ $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # Create output directory
@@ -1485,14 +1589,15 @@ function Write-MarkdownReport {
     # ── Fix files (collapsible) ──
     $lines += ""
     $lines += "<details>"
-    $lines += "<summary>📁 Fix files reverted ($($ReportRevertableFiles.Count) files)</summary>"
+    $totalFixFiles = $ReportRevertableFiles.Count + $ReportNewFiles.Count
+    $lines += "<summary>📁 Fix files toggled ($totalFixFiles files)</summary>"
     $lines += ""
     foreach ($f in $ReportRevertableFiles) {
         $lines += "- ``$f``"
     }
     if ($ReportNewFiles.Count -gt 0) {
         $lines += ""
-        $lines += "**New files (not reverted):**"
+        $lines += "**New files (removed for without-fix run):**"
         foreach ($f in $ReportNewFiles) {
             $lines += "- ``$f``"
         }
@@ -1522,9 +1627,69 @@ Write-Log "BaseBranch: $BaseBranchName"
 Write-Log "MergeBase: $MergeBase"
 Write-Log ""
 
+function Set-WithoutFixFileState {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][string]$MergeBase,
+        [string[]]$RevertableFiles = @(),
+        [string[]]$NewFiles = @()
+    )
+
+    foreach ($file in $RevertableFiles) {
+        Write-Log "  Reverting: $file"
+        $gitOutput = git checkout $MergeBase -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to revert $file from $MergeBase`: $gitOutput"
+        }
+    }
+
+    foreach ($file in $NewFiles) {
+        Write-Log "  Removing new fix file for baseline: $file"
+        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+        $wtPath = Join-Path $RepoRoot $file
+        if (Test-Path $wtPath) {
+            Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+function Set-WithFixFileState {
+    param(
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [string[]]$RevertableFiles = @(),
+        [string[]]$DeletedByPrFiles = @(),
+        [string[]]$NewFiles = @()
+    )
+
+    foreach ($file in $RevertableFiles) {
+        if ($DeletedByPrFiles -contains $file) {
+            Write-Log "  Re-removing (deleted by PR): $file"
+            git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+            $wtPath = Join-Path $RepoRoot $file
+            if (Test-Path $wtPath) {
+                Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            Write-Log "  Restoring: $file"
+            $gitOutput = git checkout HEAD -- $file 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to restore $file from HEAD: $gitOutput"
+            }
+        }
+    }
+
+    foreach ($file in $NewFiles) {
+        Write-Log "  Restoring new fix file: $file"
+        $gitOutput = git checkout HEAD -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to restore new fix file $file from HEAD: $gitOutput"
+        }
+    }
+}
+
 # Verify each fix file is usable. A PR can MODIFY, ADD, or DELETE a fix file:
 #   - modified → exists on disk (HEAD) and at merge-base
-#   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (not reverted)
+#   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (removed for baseline)
 #   - deleted  → does NOT exist on disk (HEAD), exists at merge-base
 # A PR-deleted file legitimately does not exist in the with-fix worktree, so a
 # plain Test-Path is NOT a valid existence gate — it wrongly aborted (→ infra
@@ -1572,21 +1737,17 @@ foreach ($file in $FixFiles) {
         }
     } else {
         $NewFiles += $file
-        Write-Log "  ○ $file (new file - skipping revert)"
+        Write-Log "  ✓ $file (new file - will remove for baseline and restore from HEAD)"
     }
 }
 
-if ($RevertableFiles.Count -eq 0) {
-    Write-Host "❌ No revertable fix files found. All fix files are new." -ForegroundColor Red
-    Write-Host "   Cannot verify test behavior without files to revert." -ForegroundColor Yellow
-    exit 1
-}
-
-# Check for uncommitted changes ONLY on files we will revert
+# Check for uncommitted changes on every fix file. Full verification restores
+# the with-fix state from HEAD, so modified, added, and deleted fix files must
+# all be committed.
 Write-Log ""
-Write-Log "Checking for uncommitted changes on revertable files..."
+Write-Log "Checking for uncommitted changes on fix files..."
 $uncommittedFiles = @()
-foreach ($file in $RevertableFiles) {
+foreach ($file in $FixFiles) {
     # Check if file has uncommitted changes (staged or unstaged)
     $status = git status --porcelain -- $file 2>$null
     if ($status) {
@@ -1599,8 +1760,8 @@ if ($uncommittedFiles.Count -gt 0) {
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
     Write-Host "║  ERROR: Uncommitted changes detected in fix files         ║" -ForegroundColor Red
     Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-    Write-Host "║  This script requires revertable fix files to be          ║" -ForegroundColor Red
-    Write-Host "║  committed so they can be restored via git checkout HEAD. ║" -ForegroundColor Red
+    Write-Host "║  This script requires all fix files to be committed       ║" -ForegroundColor Red
+    Write-Host "║  so the with-fix state can be restored from HEAD.         ║" -ForegroundColor Red
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
     Write-Host ""
     Write-Host "Uncommitted files:" -ForegroundColor Yellow
@@ -1612,7 +1773,7 @@ if ($uncommittedFiles.Count -gt 0) {
     exit 1
 }
 
-Write-Log "  ✓ All revertable fix files are committed"
+Write-Log "  ✓ All fix files are committed"
 
 # Step 1: Revert fix files to merge-base state
 Write-Log ""
@@ -1620,17 +1781,15 @@ Write-Log "=========================================="
 Write-Log "STEP 1: Reverting fix files to merge-base ($($MergeBase.Substring(0, 8)))"
 Write-Log "=========================================="
 
-foreach ($file in $RevertableFiles) {
-    Write-Log "  Reverting: $file"
-    $gitOutput = git checkout $MergeBase -- $file 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Log "  ERROR: Failed to revert $file from $MergeBase"
-        Write-Log "  Git output: $gitOutput"
-        exit 1
-    }
+try {
+    Set-WithoutFixFileState -RepoRoot $RepoRoot -MergeBase $MergeBase `
+        -RevertableFiles $RevertableFiles -NewFiles $NewFiles
+} catch {
+    Write-Log "  ERROR: Failed to form without-fix state: $($_.Exception.Message)"
+    exit 1
 }
 
-Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) reverted to merge-base state"
+Write-Log "  ✓ Baseline formed: $($RevertableFiles.Count) reverted, $($NewFiles.Count) new file(s) removed"
 
 # Step 2: Run ALL tests WITHOUT fix
 Write-Host ""
@@ -1708,28 +1867,15 @@ Write-Log "=========================================="
 Write-Log "STEP 3: Restoring fix files from HEAD"
 Write-Log "=========================================="
 
-foreach ($file in $RevertableFiles) {
-    if ($DeletedByPrFiles -contains $file) {
-        # The PR deleted this file; its with-fix state is "absent". STEP 1
-        # restored it from the merge-base for the baseline run, so re-delete it
-        # (worktree + index) to match HEAD — `git checkout HEAD -- $file` would
-        # fail here because HEAD has no copy of a PR-deleted file.
-        Write-Log "  Re-removing (deleted by PR): $file"
-        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
-        $wtPath = Join-Path $RepoRoot $file
-        if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
-    } else {
-        Write-Log "  Restoring: $file"
-        $gitOutput = git checkout HEAD -- $file 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log "  ERROR: Failed to restore $file from HEAD"
-            Write-Log "  Git output: $gitOutput"
-            exit 1
-        }
-    }
+try {
+    Set-WithFixFileState -RepoRoot $RepoRoot -RevertableFiles $RevertableFiles `
+        -DeletedByPrFiles $DeletedByPrFiles -NewFiles $NewFiles
+} catch {
+    Write-Log "  ERROR: Failed to restore with-fix state: $($_.Exception.Message)"
+    exit 1
 }
 
-Write-Log "  ✓ $($RevertableFiles.Count) fix file(s) restored from HEAD"
+Write-Log "  ✓ With-fix state restored: $($RevertableFiles.Count) existing, $($NewFiles.Count) new file(s)"
 
 # Step 4: Run ALL tests WITH fix
 Write-Host ""

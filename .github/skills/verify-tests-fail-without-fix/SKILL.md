@@ -71,6 +71,11 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 
 ## Mode 1: Verify Failure Only (Test Creation)
 
+When supplying `-TestFilter` with `-TestType UnitTest` or `DeviceTest` in either mode, also pass
+`-TestProject`. Unit tests accept a known project key (for example, `Controls.Core.UnitTests`) or a
+repo-relative `.csproj`; device tests accept the `Run-DeviceTests.ps1` project name (`Controls`, `Core`,
+`Essentials`, `Graphics`, or `BlazorWebView`). The script fails explicitly rather than guessing a project.
+
 Use when **creating tests before writing a fix**:
 - Runs tests to verify they **FAIL** (proving they catch the bug)
 - No fix files required
@@ -81,7 +86,7 @@ Use when **creating tests before writing a fix**:
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android
 
 # Explicit test type + filter
-pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -Platform android -TestType UnitTest -TestFilter "Maui12345"
+pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -TestType UnitTest -TestProject Controls.Core.UnitTests -TestFilter "Maui12345"
 ```
 
 ## Mode 2: Full Verification (Fix Validation)
@@ -99,6 +104,11 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
 ```
 
 **Note:** `-RequireFullVerification` ensures the script errors if no fix files are detected, preventing silent fallback to failure-only mode.
+
+Full verification requires the with-fix state to be committed in the worktree so it can be restored from
+`HEAD`. Explicit `-FixFiles` may include modified, deleted, or newly added product files; new files are removed
+for the without-fix run and restored from `HEAD` for the with-fix run. This makes disposable issue-mode
+candidate commits valid inputs as well as ordinary PR commits.
 
 ## Requirements
 
