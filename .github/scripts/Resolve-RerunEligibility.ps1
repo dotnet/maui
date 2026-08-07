@@ -626,6 +626,96 @@ function New-RerunContextMarkdown {
     return ($lines -join "`n")
 }
 
+function Resolve-AutonomousRerunEligibility {
+    <#
+    .SYNOPSIS
+        Deterministically decides whether an already-AI-reviewed PR should be
+        auto-marked ready for rerun WITHOUT a `/review rerun` comment.
+
+    .DESCRIPTION
+        This is the autonomous counterpart of Resolve-RerunEligibility used by
+        the PR Review Queue workflow. It applies the SAME deterministic signal —
+        genuinely new PR-author activity (a new non-command author comment, a new
+        commit, or a head SHA that differs from the last reviewed SHA) since the
+        latest AI Summary — but is not gated on a maintainer's `/review rerun`
+        comment. No AI is used and untrusted text is never inspected
+        semantically. A prior MauiBot AI Summary is REQUIRED: PRs that were never
+        AI-reviewed do not qualify.
+    #>
+    param(
+        [object[]]$Comments,
+        [object[]]$Commits,
+        [string]$CurrentHeadSha,
+        [string]$PRAuthorLogin,
+        [object[]]$CurrentLabels = @(),
+        # ISO-8601 timestamp of the most recent time s/agent-ready-for-rerun was
+        # REMOVED from this PR (a scanner `skip`, or a manual removal). When it is
+        # newer than the latest AI Summary it advances the eligibility checkpoint so
+        # the same declined state is not re-labelled on every daily run (anti-flap).
+        # A removal that preceded a completed review is naturally superseded by that
+        # review's newer AI Summary, so it has no effect in the trigger path.
+        [string]$LastDeclinedAt
+    )
+
+    if (@($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0) {
+        return [pscustomobject]@{ Eligible = $false; Reason = 'review-in-progress'; Label = $ReadyForRerunLabel }
+    }
+
+    $latestSummary = Get-LatestAISummaryComment -Comments $Comments
+    if (-not $latestSummary) {
+        return [pscustomobject]@{ Eligible = $false; Reason = 'no-ai-summary'; Label = $ReadyForRerunLabel }
+    }
+
+    if (@($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'label-already-present'; Label = $ReadyForRerunLabel }
+    }
+
+    $summaryCreatedAt = Get-ObjectDate $latestSummary 'created_at'
+    $latestReviewedSha = Get-LatestReviewedSha -AISummaryBody $latestSummary.body
+
+    # Anti-flap checkpoint: if the ready label was removed (a scanner `skip`) more
+    # recently than the latest AI Summary, the scanner already declined the current
+    # state. Re-labelling must then require genuinely NEW activity AFTER that decline,
+    # not merely activity after the summary — otherwise the daily queue re-applies the
+    # label on the same unchanged state the scanner just declined and it flaps on/off
+    # forever without a review ever running.
+    $effectiveCheckpoint = $summaryCreatedAt
+    $declinedAt = $null
+    if (-not [string]::IsNullOrWhiteSpace($LastDeclinedAt)) {
+        try { $declinedAt = ConvertTo-DateTimeOffset $LastDeclinedAt } catch { $declinedAt = $null }
+        if ($declinedAt -and $declinedAt -gt $effectiveCheckpoint) {
+            $effectiveCheckpoint = $declinedAt
+        }
+    }
+    $isDeclineGated = [bool]($declinedAt -and $declinedAt -gt $summaryCreatedAt)
+
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    $hasNewComment = Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $effectiveCheckpoint -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin
+    $hasNewCommit = Test-HasCommitAfter -Commits $Commits -Checkpoint $effectiveCheckpoint
+    $headDiffers = Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha
+
+    # A head SHA that differs from the last-reviewed SHA only re-qualifies when it is
+    # backed by a commit that landed after the checkpoint. Absent a decline this is
+    # always true (the differing head IS that post-summary push), so behaviour is
+    # unchanged; once a decline advances the checkpoint, a head that merely still
+    # differs from the summary's SHA (the exact state the scanner declined) no longer
+    # counts — only a fresh push after the decline does.
+    if ($headDiffers -and (-not $isDeclineGated -or $hasNewCommit)) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
+    }
+
+    if ($hasNewComment) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-author-comment-after-ai-summary'; Label = $ReadyForRerunLabel }
+    }
+
+    if ($hasNewCommit) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-commit-after-ai-summary'; Label = $ReadyForRerunLabel }
+    }
+
+    $noNewReason = if ($isDeclineGated) { 'declined-state-unchanged' } else { 'no-new-comments-or-commits' }
+    return [pscustomobject]@{ Eligible = $false; Reason = $noNewReason; Label = $ReadyForRerunLabel }
+}
+
 function Resolve-RerunEligibility {
     param(
         [object[]]$Comments,
@@ -756,10 +846,16 @@ if ($env:GITHUB_OUTPUT) {
 
 if ($ApplyLabel -and $result.Eligible) {
     . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
+    # Derive the label description/color from the shared canonical definition (same pattern as
+    # Query-AutoRerunCandidates.ps1) so this script and Update-AgentLabels.ps1 can't drift and
+    # repeatedly re-PATCH each other's metadata back and forth depending on which ran last.
+    $rerunLabelDef = $AllLabelDefs[$ReadyForRerunLabel]
+    $rerunLabelDescription = if ($rerunLabelDef) { $rerunLabelDef.Description } else { $ReadyForRerunLabelDescription }
+    $rerunLabelColor = if ($rerunLabelDef) { $rerunLabelDef.Color } else { $ReadyForRerunLabelColor }
     Ensure-LabelExists `
         -LabelName $ReadyForRerunLabel `
-        -Description $ReadyForRerunLabelDescription `
-        -Color $ReadyForRerunLabelColor `
+        -Description $rerunLabelDescription `
+        -Color $rerunLabelColor `
         -Owner $Owner `
         -Repo $Repo
 
@@ -768,10 +864,17 @@ if ($ApplyLabel -and $result.Eligible) {
         Write-Host "  ✅ Already present: $ReadyForRerunLabel" -ForegroundColor Green
     } else {
         $addSucceeded = Add-Label -PRNumber $PRNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
-        $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null)
-        $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+        # Best-effort re-read to confirm. Surface gh's stderr (no 2>$null) and check the exit
+        # code so a rate-limited/unauthorized/transient verification failure isn't misread as
+        # "label absent" — that would throw a misleading "Failed to apply label" even though
+        # Add-Label may have succeeded.
+        $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name')
+        $verificationSucceeded = ($LASTEXITCODE -eq 0)
+        $labelIsPresent = $verificationSucceeded -and (@($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0)
         if ($addSucceeded -or $labelIsPresent) {
             Write-Host "  ✅ Applied: $ReadyForRerunLabel" -ForegroundColor Green
+        } elseif (-not $verificationSucceeded) {
+            throw "Could not verify label '$ReadyForRerunLabel' after applying it (gh api re-read exited $LASTEXITCODE)."
         } else {
             throw "Failed to apply label: $ReadyForRerunLabel"
         }
