@@ -80,6 +80,7 @@ grep -Fqx -- "--sandbox" "$probe_output"
 grep -Fqx -- "--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN" "$probe_output"
 
 vally_runner="$install_root/run-vally"
+eval_results_root="$install_root/results"
 if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	: "${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required on GitHub Actions}"
 	: "${RUNNER_TEMP:?RUNNER_TEMP is required on GitHub Actions}"
@@ -96,30 +97,27 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	trusted_git_root="$RUNNER_TEMP/${eval_user}-trusted-git"
 	trusted_git_config="$trusted_git_root/config"
 	trusted_git_hooks="$trusted_git_root/hooks"
+	eval_results_root="$RUNNER_TEMP/${eval_user}-results"
 	sudo -n useradd --system --user-group --no-create-home \
 		--shell /usr/sbin/nologin "$eval_user"
 	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
 		"$eval_home" "$eval_home/tmp"
+	sudo -n install -d -o "$(id -un)" -g "$eval_user" -m 2770 \
+		"$eval_results_root"
 
-	# Vally creates synthetic worktrees and results under the checkout. Grant its
-	# no-sudo user write access to the worktree, but keep the common Git directory
-	# immutable except for Git's private worktree metadata. Otherwise a candidate
-	# can install a replacement ref or repository config that a later trusted Git
-	# command would honor.
+	# Vally creates detached worktrees outside the checkout. Grant its no-sudo
+	# user write access only to Git's private worktree metadata and the dedicated
+	# results root outside the checkout. Keep candidate content and the rest of
+	# the common Git directory read-only to the evaluator.
 	git_dir="$GITHUB_WORKSPACE/.git"
 	if [ ! -d "$git_dir" ]; then
 		echo "Expected a standalone Git directory at $git_dir" >&2
 		exit 1
 	fi
-	workspace_owner=$(stat -c '%U' "$GITHUB_WORKSPACE")
 	git_group=$(stat -c '%G' "$git_dir")
-	sudo -n chgrp -R "$eval_user" "$GITHUB_WORKSPACE"
-	sudo -n chmod -R g+rwX "$GITHUB_WORKSPACE"
-	find "$GITHUB_WORKSPACE" -type d -exec sudo -n chmod g+s {} +
-	sudo -n chmod +t "$GITHUB_WORKSPACE"
 	sudo -n chgrp -R "$git_group" "$git_dir"
 	sudo -n chmod -R go-w "$git_dir"
-	sudo -n install -d -o "$workspace_owner" -g "$eval_user" -m 2770 \
+	sudo -n install -d -o "$(stat -c '%U' "$git_dir")" -g "$eval_user" -m 2770 \
 		"$git_dir/worktrees"
 	sudo -n install -d -o root -g root -m 755 "$trusted_git_root"
 	sudo -n install -d -o root -g root -m 555 "$trusted_git_hooks"
@@ -137,6 +135,18 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		if [ -e "$protected_path" ] &&
 			sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
 			echo "Isolated Vally user can modify protected Git path $protected_path" >&2
+			exit 1
+		fi
+	done
+	for protected_path in \
+		"$GITHUB_WORKSPACE" \
+		"$GITHUB_WORKSPACE/.github" \
+		"$GITHUB_WORKSPACE/.github/scripts" \
+		"$GITHUB_WORKSPACE/.github/skills" \
+		"$GITHUB_WORKSPACE/.github/workflows"; do
+		if [ -e "$protected_path" ] &&
+			sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
+			echo "Isolated Vally user can modify protected workspace path $protected_path" >&2
 			exit 1
 		fi
 	done
@@ -251,6 +261,7 @@ EOF
 else
 	trusted_copilot_home="$install_root/copilot-home"
 	mkdir -p "$trusted_copilot_home"
+	mkdir -p "$eval_results_root"
 	cat > "$trusted_copilot_home/settings.json" <<EOF
 {
   "sandbox": {
@@ -288,4 +299,5 @@ fi
 	echo "copilot_wrapper=$copilot_wrapper"
 	echo "copilot_runtime=${copilot_runtimes[0]}"
 	echo "copilot_home=$trusted_copilot_home"
+	echo "results_root=$eval_results_root"
 } >> "$github_output"

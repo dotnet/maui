@@ -659,7 +659,7 @@ jobs:
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
-          RESULTS_PATH: eval-results-baseline/${{ matrix.entry.name }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/eval-results-baseline/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
           BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
@@ -766,7 +766,7 @@ jobs:
           fi
 
           mkdir -p "$RESULTS_PATH"
-          chmod g+rwx "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
 
           # Advisory exit — the baseline number is informational; do not fail.
           set +e
@@ -839,7 +839,7 @@ jobs:
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
-          RESULTS_PATH: eval-results/${{ matrix.entry.name }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/eval-results/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           RUNS: ${{ github.event.inputs.runs }}
         run: |
@@ -874,7 +874,7 @@ jobs:
           [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
 
           mkdir -p "$RESULTS_PATH"
-          chmod g+rwx "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
 
           # Advisory exit: vally sets exit 1 on threshold miss / execution
           # error. We capture it but DON'T propagate so every matrix artifact is
@@ -917,7 +917,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skill-eval-results-${{ matrix.entry.name }}
-          path: eval-results/${{ matrix.entry.name }}/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/eval-results/${{ matrix.entry.name }}/
           include-hidden-files: true
           retention-days: 14
 
@@ -926,7 +926,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skill-eval-baseline-${{ matrix.entry.name }}
-          path: eval-results-baseline/${{ matrix.entry.name }}/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/eval-results-baseline/${{ matrix.entry.name }}/
           include-hidden-files: true
           retention-days: 14
 
@@ -1064,20 +1064,21 @@ jobs:
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/hermeticity-results
           HERMETICITY_SPEC: ${{ steps.trusted-spec.outputs.path }}
         run: |
-          mkdir -p hermeticity-results
-          chmod g+rwx hermeticity-results
+          mkdir -p "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
           if [ ! -f "$HERMETICITY_SPEC" ]; then
             echo "::warning::trusted hermeticity spec not found"
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             exit 0
           fi
 
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval -e "$HERMETICITY_SPEC" \
             --skill-dir .github/skills \
-            --output-dir hermeticity-results/out \
+            --output-dir "$RESULTS_PATH/out" \
             --junit \
             --runs 1 \
             --workers 1 \
@@ -1086,17 +1087,17 @@ jobs:
           set -e
           echo "vally exit code: $EVAL_RC (advisory)"
 
-          JUNIT=$(find hermeticity-results/out -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
+          JUNIT=$(find "$RESULTS_PATH/out" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -z "$JUNIT" ]; then
             echo "::warning::no JUnit produced by hermeticity run"
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             exit 0
           fi
 
           ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
           if [ -z "$ROOT" ]; then
             echo "::warning::Hermeticity JUnit contains no <testsuites> element"
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             exit 0
           fi
           FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
@@ -1112,17 +1113,17 @@ jobs:
             # Guard: if Vally exited non-zero but JUnit shows no failures,
             # an execution error may have been swallowed (partial output).
             if [ "$EVAL_RC" -ne 0 ]; then
-              echo "inconclusive" > hermeticity-results/verdict.txt
+              echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
               echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as inconclusive (possible partial output)"
             else
-              echo "hermetic" > hermeticity-results/verdict.txt
+              echo "hermetic" > "$RESULTS_PATH/verdict.txt"
               echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
             fi
           elif [ "$ERRS" -ge 1 ]; then
-            echo "inconclusive" > hermeticity-results/verdict.txt
+            echo "inconclusive" > "$RESULTS_PATH/verdict.txt"
             echo "::warning::Hermeticity inconclusive (execution error in hermeticity control)."
           else
-            echo "broken" > hermeticity-results/verdict.txt
+            echo "broken" > "$RESULTS_PATH/verdict.txt"
             echo "::warning::Hermeticity BROKEN: agent did not report anonymous rate limit. A GitHub token may have leaked into the eval env. Non-blocking for now."
           fi
           # Non-blocking: never fail this job.
@@ -1133,7 +1134,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hermeticity-results
-          path: hermeticity-results/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/hermeticity-results/
           include-hidden-files: true
           retention-days: 14
 
