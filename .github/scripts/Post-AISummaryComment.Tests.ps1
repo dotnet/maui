@@ -420,6 +420,15 @@ Describe 'Get-AIReviewEventForRun' {
             Should -Be 'COMMENT'
     }
 
+    It 'softens APPROVE to COMMENT when the selected deep category ran zero tests' {
+        $uiDir = Join-Path $script:testDir 'uitests'
+        New-Item -ItemType Directory -Path $uiDir -Force | Out-Null
+        '⚠️ **Deep UI tests** — 0 passed, 0 failed across 1 category on platform-pool agent. 1 category reported 0 tests.' |
+            Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'COMMENT'
+    }
+
     It 'throws when the trusted gate verdict is not supplied (fail closed)' {
         { Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir } |
             Should -Throw '*TrustedGateResult is required*'
@@ -479,6 +488,18 @@ Describe 'Test-DeepUITestsHadNoSignal' {
         '⚠️ **Deep UI tests** — the HostApp crashed mid-run, so 8 tests could not complete. An app crash can be an infrastructure flake OR a regression introduced by this PR — review the screenshots + logcat in the drop-deep-uitests artifact before concluding.' |
             Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
         Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
+    }
+
+    It 'is true for a selected category that reported zero runnable tests' {
+        '⚠️ **Deep UI tests** — 0 passed, 0 failed across 1 category on platform-pool agent. 1 category reported 0 tests.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
+    }
+
+    It 'is false when another category passed even if one category reported zero tests' {
+        '⚠️ **Deep UI tests** — 5 passed, 0 failed across 2 categories on platform-pool agent. 1 category reported 0 tests.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeFalse
     }
 
     It 'is false for an app crash that still had passes' {

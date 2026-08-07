@@ -226,6 +226,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('elseif ($categoryTestCount -eq 0)'))
         $pipelineContent | Should -Match ([regex]::Escape("contains no runnable tests on platform '`$platform'"))
         $pipelineContent | Should -Match '(?s)elseif \(\$categoryTestCount -eq 0\).*?\$hadFailure = \$true'
+        $pipelineContent | Should -Match '(?s)elseif \(\$emptyCategories -gt 0\).*?\$resultIcon = ''⚠️'''
     }
 }
 

@@ -4190,6 +4190,10 @@ stages:
                 $resultIcon = '⚠️'
               } elseif ($baselineNotCreatedTests -gt 0) {
                 $resultIcon = '⚠️'
+              } elseif ($emptyCategories -gt 0) {
+                # A category that selected zero runnable tests is missing
+                # validation, not an intentional "no UI tests needed" skip.
+                $resultIcon = '⚠️'
               } elseif ($totalPassed -gt 0) {
                 $resultIcon = '✅'
               } else {
