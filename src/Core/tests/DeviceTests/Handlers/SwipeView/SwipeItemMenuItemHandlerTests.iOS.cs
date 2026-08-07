@@ -59,5 +59,34 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => handler.PlatformView.TintColor?.ToColor() == Colors.Red);
 			});
 		}
+
+		[Fact]
+		public async Task IconTintCanBeChangedAndCleared()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = Colors.Blue
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				handler.PlatformView.Frame = new CGRect(0, 0, 100, 100);
+				item.Source = new FileImageSourceStub("red.png");
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				await AssertEventually(() =>
+					handler.PlatformView.ImageForState(UIControlState.Normal)?.RenderingMode == UIImageRenderingMode.AlwaysTemplate &&
+					handler.PlatformView.TintColor?.ToColor() == Colors.Blue);
+
+				item.IconColor = Colors.Red;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+				await AssertEventually(() => handler.PlatformView.TintColor?.ToColor() == Colors.Red);
+
+				item.IconColor = null;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+				await AssertEventually(() =>
+					handler.PlatformView.ImageForState(UIControlState.Normal)?.RenderingMode == UIImageRenderingMode.AlwaysOriginal);
+			});
+		}
 	}
 }

@@ -83,9 +83,12 @@ namespace Microsoft.Maui.Handlers
 
 			try
 			{
+				var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+
 				if (tintColor is not null)
 				{
-					var tintedIconSource = CreateTintedIconSource(source, handler.MauiContext);
+					var sourceService = imageSourceServiceProvider.GetRequiredImageSourceService(source);
+					var tintedIconSource = CreateTintedIconSource(source, sourceService, handler.MauiContext);
 
 					if (tintedIconSource is not null)
 					{
@@ -100,7 +103,6 @@ namespace Microsoft.Maui.Handlers
 					}
 				}
 
-				var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 				var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				IImageSource loadSource = source;
 				if (source is IFontImageSource { Color: null } fontImageSource &&
@@ -130,10 +132,20 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal static IconSource? CreateTintedIconSource(IImageSource source, IMauiContext mauiContext)
+		internal static IconSource? CreateTintedIconSource(
+			IImageSource source,
+			IImageSourceService imageSourceService,
+			IMauiContext mauiContext)
 		{
 			if (source is IFileImageSource fileImageSource)
 			{
+				// The built-in Windows file service resolves relative paths from the flattened app
+				// package, matching BitmapIconSource. A custom service may resolve the same relative
+				// path from anywhere, so keep its service-based result rather than replacing it with
+				// an invalid ms-appx URI merely because a tint was requested.
+				if (imageSourceService.GetType() != typeof(FileImageSourceService))
+					return null;
+
 				var filename = fileImageSource.File;
 				if (string.IsNullOrEmpty(filename) || Path.IsPathRooted(filename))
 					return null;
@@ -142,6 +154,12 @@ namespace Microsoft.Maui.Handlers
 				{
 					UriSource = new Uri("ms-appx:///" + Path.GetFileName(filename))
 				};
+			}
+
+			if (source is IUriImageSource &&
+				imageSourceService.GetType() != typeof(UriImageSourceService))
+			{
+				return null;
 			}
 
 			return source.ToIconSource(mauiContext);
