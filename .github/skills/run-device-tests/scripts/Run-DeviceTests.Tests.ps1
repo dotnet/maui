@@ -3,6 +3,16 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Run-DeviceTests.ps1'
+    $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../../../..')
+    $testOptionsPath = Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/TestOptions.cs'
+    $androidInstrumentationPath = Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/Android/MauiTestInstrumentation.cs'
+    $appleDelegatePath = Join-Path $repoRoot 'src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/iOS/MauiTestApplicationDelegate.cs'
+
+    Add-Type -Path $testOptionsPath
+    $applyIncludeClassFilter = [Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions].GetMethod(
+        'ApplyIncludeClassFilter',
+        [System.Reflection.BindingFlags]'Instance,NonPublic')
+
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -27,6 +37,42 @@ BeforeAll {
         }
 
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Cross-platform device test class filtering' {
+    It 'parses comma/semicolon-separated class names without duplicating existing values' {
+        $options = [Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions]::new()
+        $options.IncludeClassNames.Add('Microsoft.Maui.DeviceTests.ExistingTests')
+
+        $applyIncludeClassFilter.Invoke(
+            $options,
+            @(' Microsoft.Maui.DeviceTests.NewTests;Microsoft.Maui.DeviceTests.ExistingTests, Microsoft.Maui.DeviceTests.OtherTests ')) | Out-Null
+
+        $options.IncludeClassNames | Should -Be @(
+            'Microsoft.Maui.DeviceTests.ExistingTests'
+            'Microsoft.Maui.DeviceTests.NewTests'
+            'Microsoft.Maui.DeviceTests.OtherTests'
+        )
+    }
+
+    It 'preserves normal execution when the host class filter is empty' {
+        $options = [Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions]::new()
+        $options.IncludeClassNames.Add('Microsoft.Maui.DeviceTests.ExistingTests')
+
+        $applyIncludeClassFilter.Invoke($options, @('  ')) | Out-Null
+
+        $options.IncludeClassNames | Should -Be @('Microsoft.Maui.DeviceTests.ExistingTests')
+    }
+
+    It 'applies Android instrumentation arguments after every device-test app is created' {
+        Get-Content $androidInstrumentationPath -Raw |
+            Should -Match 'Options\.ApplyIncludeClassFilter\(Arguments\?\.GetString\("IncludeClasses"\)\)'
+    }
+
+    It 'applies iOS and MacCatalyst environment values after every device-test app is created' {
+        Get-Content $appleDelegatePath -Raw |
+            Should -Match 'Options\.ApplyIncludeClassFilter\(GetProcessEnvironmentVariable\("IncludeClasses"\)\)'
     }
 }
 

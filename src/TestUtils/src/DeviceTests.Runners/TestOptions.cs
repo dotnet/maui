@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -25,5 +26,20 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		/// the rest of its category. Empty by default, so normal runs are unaffected.
 		/// </summary>
 		public List<string> IncludeClassNames { get; set; } = new List<string>();
+
+		internal void ApplyIncludeClassFilter(string? includeClasses)
+		{
+			if (string.IsNullOrWhiteSpace(includeClasses))
+				return;
+
+			var existingClassNames = new HashSet<string>(IncludeClassNames, StringComparer.Ordinal);
+
+			foreach (var className in includeClasses.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+			{
+				var trimmedClassName = className.Trim();
+				if (trimmedClassName.Length > 0 && existingClassNames.Add(trimmedClassName))
+					IncludeClassNames.Add(trimmedClassName);
+			}
+		}
 	}
 }
