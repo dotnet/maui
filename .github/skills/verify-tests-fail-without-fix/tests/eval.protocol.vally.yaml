@@ -55,7 +55,7 @@ stimuli:
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
               command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
@@ -111,7 +111,7 @@ stimuli:
             - name: '^(bash|powershell)$'
               command: 'verify-tests-fail\.ps1[\s\S]*-RequireFullVerification\b'
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
               command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
@@ -140,8 +140,8 @@ stimuli:
       This frozen one-commit fixture has both a unit test and a fix. Run full
       verification against the local diff using PR number 900003 and
       `$(git rev-parse HEAD^)` as the explicit base branch. Let the prescribed
-      script handle reverting and restoring the fix; do not manually run git
-      checkout, git restore, or git stash.
+      script handle reverting and restoring the fix; do not manually mutate or
+      clean the worktree with git commands, including reverse-applying a patch.
     environment:
       git:
         type: worktree
@@ -160,7 +160,7 @@ stimuli:
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
               command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt
@@ -172,8 +172,8 @@ stimuli:
         The agent uses the verify-tests-fail.ps1 script, which handles
         file revert/restore automatically.
       - >-
-        The agent does not manually use git checkout, git restore, or git
-        stash to revert fix files.
+        The agent does not manually mutate or clean the worktree to revert fix
+        files, including with git apply --reverse or git apply -R.
       - >-
         The agent interprets the script output correctly to determine
         whether verification passed or failed.
@@ -210,7 +210,7 @@ stimuli:
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:checkout|restore|stash)\b'
+              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
               command: '(?:^|[;&|]\s*)dotnet\s+test\b'
       - type: prompt

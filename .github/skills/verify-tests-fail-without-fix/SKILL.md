@@ -60,9 +60,21 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
   [-RequireFullVerification]  # Only if fix files exist
 ```
 
+Run the prescribed script once and let it own every fix-file transition and
+cleanup step. Do not manually mutate the worktree before or after it with
+`git checkout`, `git clean`, `git restore`, `git reset`, `git stash`,
+`git apply --reverse`/`git apply -R`, or an equivalent file-reversion command.
+If the script leaves an unexpected tracked or untracked change, report the
+verification as Blocked with the observed status instead of cleaning it up.
+
 ### Step 3: Interpret Results
 ⚠️ Remember: test outcomes are INVERTED from normal!
-- If the command continues in the background and returns a shell/session ID, wait for it with the matching result-read tool until it completes. Never report or end the turn while verification is still running.
+- If the command continues in the background and returns a shell/session ID,
+  call the matching result-read tool with that exact ID. If it is still
+  running, keep waiting on the same ID until it completes. Never report,
+  summarize partial output, or end the turn before observing the completed
+  result and its `VERIFICATION PASSED`, `VERIFICATION FAILED`, or error/timeout
+  outcome.
 - Script outputs `VERIFICATION PASSED` → Tests catch the bug ✅
 - Script outputs `VERIFICATION FAILED` → Tests don't catch the bug ❌
 - Script outputs error/timeout → Report as Blocked
