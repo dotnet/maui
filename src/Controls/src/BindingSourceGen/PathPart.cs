@@ -61,7 +61,12 @@ public record MemberAccess(
 	}
 }
 
-public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false) : IPathPart
+/// <param name="IsArrayElement">
+/// <see langword="true"/> when this indexes an array. Array element access yields a variable, so a
+/// value-type element can be assigned through directly. An indexer property instead returns a copy,
+/// which is an rvalue and cannot be assigned through (CS1612) - see <see cref="Setter"/>.
+/// </param>
+public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false, bool IsArrayElement = false) : IPathPart
 {
 	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
 
@@ -70,7 +75,8 @@ public sealed record IndexAccess(string DefaultMemberName, object Index, bool Is
 		return other is IndexAccess indexAccess
 			&& DefaultMemberName == indexAccess.DefaultMemberName
 			&& Index.Equals(indexAccess.Index)
-			&& IsValueType == indexAccess.IsValueType;
+			&& IsValueType == indexAccess.IsValueType
+			&& IsArrayElement == indexAccess.IsArrayElement;
 	}
 }
 

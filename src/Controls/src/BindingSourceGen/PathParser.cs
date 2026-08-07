@@ -256,7 +256,9 @@ internal class PathParser
 
 		var name = elementAccessSymbol.GetIndexerName();
 		var isReferenceType = typeSymbol?.IsReferenceType ?? false;
-		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType);
+		// Indexers are always property symbols; anything else here is array element access.
+		var isArrayElement = elementAccessSymbol is not IPropertySymbol;
+		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType, IsArrayElement: isArrayElement);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
 	}

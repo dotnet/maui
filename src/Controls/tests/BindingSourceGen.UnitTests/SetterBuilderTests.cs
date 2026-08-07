@@ -161,4 +161,47 @@ public class SetterBuilderTests
 		Assert.Equal("source.FooStruct is {} p0", setter.PatternMatchingExpressions[0]);
 		Assert.Equal("p0.Bar.Value = value;", setter.AssignmentStatement);
 	}
+
+	[Fact]
+	public void GeneratesSetterCapturingValueTypeIndexerResult()
+	{
+		// An indexer returns a copy, so its value-type result is an rvalue and must be captured
+		// into a local - assigning a member of it inline would not compile (CS1612).
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new IndexAccess("Item", 0, IsValueType: true),
+				new MemberAccess("Name")]);
+
+		Assert.Single(setter.PatternMatchingExpressions);
+		Assert.Equal("source.Items[0] is {} p0", setter.PatternMatchingExpressions[0]);
+		Assert.Equal("p0.Name = value;", setter.AssignmentStatement);
+	}
+
+	[Fact]
+	public void GeneratesSetterCapturingValueTypeIndexerResultBehindConditionalAccess()
+	{
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new ConditionalAccess(new IndexAccess("Item", 0, IsValueType: true)),
+				new MemberAccess("Name")]);
+
+		Assert.Equal(2, setter.PatternMatchingExpressions.Length);
+		Assert.Equal("source.Items is {} p0", setter.PatternMatchingExpressions[0]);
+		Assert.Equal("p0[0] is {} p1", setter.PatternMatchingExpressions[1]);
+		Assert.Equal("p1.Name = value;", setter.AssignmentStatement);
+	}
+
+	[Fact]
+	public void GeneratesSetterWithoutCapturingValueTypeArrayElement()
+	{
+		// Array element access yields a variable, so the member can be assigned in place.
+		// Capturing would write to a copy and silently drop the value.
+		var setter = Setter.From([
+				new MemberAccess("Items"),
+				new IndexAccess("", 0, IsValueType: true, IsArrayElement: true),
+				new MemberAccess("Name")]);
+
+		Assert.Empty(setter.PatternMatchingExpressions);
+		Assert.Equal("source.Items[0].Name = value;", setter.AssignmentStatement);
+	}
 }
