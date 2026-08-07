@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IScrollOffsetReceiver, IContentView, ISafeAreaElement, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -45,12 +46,72 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
-			if (Handler is not null && _pendingScrollToRequested is not null)
+			if (Handler is null)
 			{
-				OnScrollToRequested(_pendingScrollToRequested);
-				_pendingScrollToRequested = null;
+				// The handler went away with a request still queued, so nothing will ever
+				// dispatch it. Release the caller rather than leaving its task pending
+				// forever; Core does the same for its own pending request on disconnect.
+				if (_pendingScrollToRequested is not null)
+				{
+					_pendingScrollToRequested = null;
+					SendScrollFinished();
+				}
+
+				return;
 			}
+
+			DispatchPendingScrollToRequest();
 		}
+
+		void DispatchPendingScrollToRequest()
+		{
+			if (Handler is null || _pendingScrollToRequested is not { } pending)
+			{
+				return;
+			}
+
+			if (pending.Mode == ScrollToMode.Element)
+			{
+				// An element target is resolved against this ScrollView's geometry and the
+				// element's position inside the arranged content. Before the first layout pass
+				// Width/Height are still -1 (the never-arranged sentinel, for the content too),
+				// so the request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
+				// The content check must be "not yet arranged" rather than "arranged to nothing":
+				// content can legitimately arrange to a zero size (a collapsed container), and
+				// that raises no further callbacks — gating on the size would hang the caller's
+				// task forever, while dispatching just clamps the target to the origin.
+				if (Width < 0 || Height < 0 || Content is { Width: < 0 } or { Height: < 0 })
+				{
+					return;
+				}
+
+				// Those callbacks run while the pass that produced the sizes is still arranging
+				// children, so resolve on the next tick, once positions are final. Posting on
+				// every retry is deliberate: SendPendingScrollToRequest is a no-op once the
+				// request has been sent or superseded, so a dropped callback cannot wedge the
+				// request the way an "already queued" flag would.
+				Dispatcher.Dispatch(SendPendingScrollToRequest);
+				return;
+			}
+
+			SendPendingScrollToRequest();
+		}
+
+		void SendPendingScrollToRequest()
+		{
+			if (Handler is null || _pendingScrollToRequested is not { } pending)
+			{
+				return;
+			}
+
+			_pendingScrollToRequested = null;
+
+			// Replay without going through OnScrollToRequested: that would reset the
+			// completion source and orphan the task the original caller is still awaiting
+			ScrollToRequested?.Invoke(this, pending);
+			Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());
+		}
+
 
 		/// <summary>
 		/// Gets the scroll position for the specified element.
@@ -62,38 +123,61 @@ namespace Microsoft.Maui.Controls
 			double y = GetCoordinate(item, "Y", 0);
 			double x = GetCoordinate(item, "X", 0);
 
+			// The scrollable viewport can be smaller than this ScrollView's frame: on iOS, content
+			// insets (safe area, ContentInset) obscure part of the frame and (0,0) in scroll
+			// coordinates is the inset rest position. Compute element targets against the effective
+			// viewport so End/Center/MakeVisible land the element fully inside the visible region.
+			// Part of those insets can be baked into the content itself (the platform arranged the
+			// content inside safe-area-inset bounds): element coordinates already include that
+			// padding, so targets shift back by it — the platform-inset part is instead
+			// compensated when the request is translated to a native offset.
+			var viewportInsets = GetVisibleViewportInsets();
+			var contentInsets = GetContentCoordinateInsets();
+			double viewportWidth = Math.Max(0, Width - viewportInsets.HorizontalThickness);
+			double viewportHeight = Math.Max(0, Height - viewportInsets.VerticalThickness);
+
 			if (position == ScrollToPosition.MakeVisible)
 			{
-				var scrollBounds = new Rect(ScrollX, ScrollY, Width, Height);
+				// In content coordinates the visible window starts past the baked padding
+				var scrollBounds = new Rect(ScrollX + contentInsets.Left, ScrollY + contentInsets.Top, viewportWidth, viewportHeight);
 				var itemBounds = new Rect(x, y, item.Width, item.Height);
 				if (scrollBounds.Contains(itemBounds))
 					return new Point(ScrollX, ScrollY);
 				switch (Orientation)
 				{
 					case ScrollOrientation.Vertical:
-						position = y > ScrollY ? ScrollToPosition.End : ScrollToPosition.Start;
+						position = y > scrollBounds.Y ? ScrollToPosition.End : ScrollToPosition.Start;
 						break;
 					case ScrollOrientation.Horizontal:
-						position = x > ScrollX ? ScrollToPosition.End : ScrollToPosition.Start;
+						position = x > scrollBounds.X ? ScrollToPosition.End : ScrollToPosition.Start;
 						break;
 					case ScrollOrientation.Both:
-						position = x > ScrollX || y > ScrollY ? ScrollToPosition.End : ScrollToPosition.Start;
+						position = x > scrollBounds.X || y > scrollBounds.Y ? ScrollToPosition.End : ScrollToPosition.Start;
 						break;
 				}
 			}
 			switch (position)
 			{
 				case ScrollToPosition.Center:
-					y = y - Height / 2 + item.Height / 2;
-					x = x - Width / 2 + item.Width / 2;
+					y = y - viewportHeight / 2 + item.Height / 2;
+					x = x - viewportWidth / 2 + item.Width / 2;
 					break;
 				case ScrollToPosition.End:
-					y = y - Height + item.Height;
-					x = x - Width + item.Width;
+					y = y - viewportHeight + item.Height;
+					x = x - viewportWidth + item.Width;
 					break;
 			}
-			return new Point(x, y);
+			return new Point(x - contentInsets.Left, y - contentInsets.Top);
 		}
+
+		// The scrollable viewport can be smaller than the frame: on iOS the adjusted content
+		// insets obscure part of it. The handler owns that coordinate convention and reports
+		// it here; handlers whose viewport always equals the frame don't implement the contract.
+		Thickness GetVisibleViewportInsets() =>
+			(Handler as IScrollViewportProvider)?.ViewportInsets ?? default;
+
+		Thickness GetContentCoordinateInsets() =>
+			(Handler as IScrollViewportProvider)?.ContentCoordinateInsets ?? default;
 
 		/// <summary>
 		/// Sends the scroll finished notification.
@@ -231,6 +315,10 @@ namespace Microsoft.Maui.Controls
 			// The ContentSize includes the margins for the content
 			ContentSize = new Size(frameSize.Width + margin.HorizontalThickness,
 				frameSize.Height + margin.VerticalThickness);
+
+			// The content has been arranged, so an element target can now be resolved: its
+			// position is read from the content tree, which is only meaningful once laid out
+			DispatchPendingScrollToRequest();
 		}
 
 		/// <summary>
@@ -426,6 +514,11 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				// This request supersedes anything still queued: a deferred element request
+				// whose dispatch is already scheduled must not run afterwards and restore the
+				// older target (latest request wins).
+				_pendingScrollToRequested = null;
+
 				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 			}
 		}
@@ -468,6 +561,14 @@ namespace Microsoft.Maui.Controls
 					SetScrolledPosition(ScrollX, value);
 				}
 			}
+		}
+
+		void IScrollOffsetReceiver.UpdateScrollOffsets(double horizontalOffset, double verticalOffset)
+		{
+			// The reported offsets moved because the platform insets did, not because anything
+			// scrolled: keep ScrollX/ScrollY (and their bindings) current without raising Scrolled
+			ScrollX = horizontalOffset;
+			ScrollY = verticalOffset;
 		}
 
 		void IScrollView.RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant)
@@ -533,6 +634,10 @@ namespace Microsoft.Maui.Controls
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			base.OnSizeAllocated(width, height);
+
+			// Geometry is now known, so an element-mode request held back at handler-attach
+			// can be resolved
+			DispatchPendingScrollToRequest();
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
