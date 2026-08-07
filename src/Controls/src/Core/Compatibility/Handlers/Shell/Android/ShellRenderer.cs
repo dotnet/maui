@@ -2,11 +2,11 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.ApplicationModel;
@@ -14,6 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -111,6 +112,71 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			return light;
 		}
+
+		// Material 3 defines these color roles as theme attributes on Theme.Material3.DayNight,
+		// so reading them straight from the Context automatically tracks light/dark and any
+		// app-level M3 theme customization instead of duplicating hardcoded hex values here.
+		internal static Color GetM3BackgroundColor(Context context) =>
+			ReadThemeColor(context, Resource.Attribute.colorSurface, DefaultBackgroundColor);
+		internal static Color GetM3ForegroundColor(Context context) =>
+			// colorOnSurface (not colorPrimary — that resolves to Material Purple on stock M3 themes).
+			// Matches the previously hardcoded M3 foreground of #1D1B20 / #E6E0E9.
+			ReadThemeColor(context, Resource.Attribute.colorOnSurface, DefaultForegroundColor);
+		internal static Color GetM3TitleColor(Context context) =>
+			ReadThemeColor(context, Resource.Attribute.colorOnSurface, DefaultTitleColor);
+		internal static Color GetM3UnselectedColor(Context context) =>
+			ReadThemeColor(context, Resource.Attribute.colorOnSurfaceVariant, DefaultUnselectedColor);
+		// M3 bottom nav sits on a slightly-elevated surface (colorSurfaceContainer), not colorSurface.
+		internal static Color GetM3BottomNavBackgroundColor(Context context) =>
+			ReadThemeColor(context, Resource.Attribute.colorSurfaceContainer, DefaultBottomNavigationViewBackgroundColor);
+
+		// Material 2 — MAUI's Maui.MainTheme.Base already declares colorPrimary/colorPrimaryDark/
+		// actionMenuTextColor with the same values previously hardcoded here. Reading them through
+		// the theme means an app that overrides <color name="colorPrimary"/> in its colors.xml
+		// gets a consistent answer from both the native drawables and the C# ResetAppearance path.
+		// android:textColorPrimary and android:colorBackground come from the platform DayNight
+		// parent so they swap correctly in dark mode without extra branching.
+		internal static Color GetM2BackgroundColor(Context context) =>
+			ReadThemeColor(context,
+				IsDarkTheme ? Resource.Attribute.colorPrimaryDark : Resource.Attribute.colorPrimary,
+				DefaultBackgroundColor);
+
+		internal static Color GetM2ForegroundColor(Context context) =>
+			ReadThemeColor(context, global::Android.Resource.Attribute.TextColorPrimary, DefaultForegroundColor);
+		internal static Color GetM2TitleColor(Context context) =>
+			ReadThemeColor(context, Resource.Attribute.actionMenuTextColor, DefaultTitleColor);
+		internal static Color GetM2UnselectedColor(Context context) =>
+			GetM2TitleColor(context).MultiplyAlpha(180f / 255f);
+		internal static Color GetM2BottomNavBackgroundColor(Context context) =>
+			ReadThemeColor(context,
+				IsDarkTheme ? Resource.Attribute.colorPrimaryDark : global::Android.Resource.Attribute.ColorBackground,
+				DefaultBottomNavigationViewBackgroundColor);
+
+		// Reads a color from a theme attribute. Returns the supplied fallback only when the
+		// attribute isn't declared on the current theme (checked via the existing
+		// TryResolveAttribute helper), which would otherwise paint Shell chrome invisible on
+		// non-MAUI base themes — a legitimate transparent theme color is no longer confused with
+		// a failed resolution. We always read the live theme attribute (no UiMode-vs-IsDarkTheme
+		// guard) so a runtime AppTheme flip picks up the resolved color as soon as Android applies
+		// the configuration change, rather than getting stuck on a hardcoded fallback with no
+		// further trigger to refresh it.
+		static Color ReadThemeColor(Context context, int attr, Color fallback) =>
+			context.TryResolveAttribute(attr) ? new AColor(context.GetThemeAttrColor(attr)).ToColor() : fallback;
+
+		// Context-aware accessors used by the appearance trackers: resolve from the M3 theme
+		// attributes above when Material 3 is enabled, otherwise resolve from the M2 attributes
+		// (declared on MAUI's default Android theme). Either way the value comes from the
+		// Android theme, not a hardcoded hex, so there is only ever one source of truth.
+		internal static Color GetBackgroundColor(Context context) =>
+			RuntimeFeature.IsMaterial3Enabled ? GetM3BackgroundColor(context) : GetM2BackgroundColor(context);
+		internal static Color GetForegroundColor(Context context) =>
+			RuntimeFeature.IsMaterial3Enabled ? GetM3ForegroundColor(context) : GetM2ForegroundColor(context);
+		internal static Color GetTitleColor(Context context) =>
+			RuntimeFeature.IsMaterial3Enabled ? GetM3TitleColor(context) : GetM2TitleColor(context);
+		internal static Color GetUnselectedColor(Context context) =>
+			RuntimeFeature.IsMaterial3Enabled ? GetM3UnselectedColor(context) : GetM2UnselectedColor(context);
+		internal static Color GetBottomNavigationViewBackgroundColor(Context context) =>
+			RuntimeFeature.IsMaterial3Enabled ? GetM3BottomNavBackgroundColor(context) : GetM2BottomNavBackgroundColor(context);
 
 		IShellFlyoutRenderer _flyoutView;
 		FrameLayout _frameLayout;

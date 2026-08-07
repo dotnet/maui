@@ -20,8 +20,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IShellContext _shellContext;
 		ShellItem _shellItem;
-		static ColorStateList _defaultListLight;
-		static ColorStateList _defaultListDark;
+		// Instance fields (not static): each tracker is already scoped to one _shellContext/
+		// window (see ShellRenderer.CreateBottomNavViewAppearanceTracker), so caching per-instance
+		// avoids reusing colors resolved from another window/Activity's theme overlay, without
+		// needing any extra key-by-context bookkeeping.
+		ColorStateList _defaultListLight;
+		ColorStateList _defaultListDark;
 
 		bool _disposed;
 		ColorStateList _itemTextColor;
@@ -33,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = shellContext;
 		}
 
-		static ColorStateList GetDefaultTabColorList(Context context) =>
+		ColorStateList GetDefaultTabColorList(Context context) =>
 			ShellRenderer.IsDarkTheme ?
 			_defaultListDark ??= MakeDefaultColorStateList(context)
 			: _defaultListLight ??= MakeDefaultColorStateList(context);
@@ -82,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			AColor newColor;
 
 			if (color == null)
-				newColor = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+				newColor = ShellRenderer.GetBottomNavigationViewBackgroundColor(_shellContext.AndroidContext).ToPlatform();
 			else
 				newColor = color.ToPlatform();
 
@@ -131,11 +135,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return null;
 
 			var baseCSL = AppCompatResources.GetColorStateList(context, mTypedValue.ResourceId);
-			var colorPrimary = (ShellRenderer.IsDarkTheme) ? AColor.White : RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#625B71").ToPlatform() : ShellRenderer.DefaultBackgroundColor.ToPlatform();
-			int defaultColor = baseCSL.DefaultColor;
+
+			int selectedColor;
+			int unselectedColor;
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				// M3 already accounts for light/dark via theme attributes, so no need to branch on IsDarkTheme.
+				selectedColor = ShellRenderer.GetM3TitleColor(context).ToPlatform();
+				unselectedColor = ShellRenderer.GetM3UnselectedColor(context).ToPlatform();
+			}
+			else
+			{
+				selectedColor = ShellRenderer.IsDarkTheme ? AColor.White : ShellRenderer.GetM2BackgroundColor(context).ToPlatform();
+				unselectedColor = baseCSL.DefaultColor;
+			}
+
 			var disabledcolor = baseCSL.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray);
 
-			return MakeColorStateList(colorPrimary, disabledcolor, defaultColor);
+			return MakeColorStateList(selectedColor, disabledcolor, unselectedColor);
 		}
 
 		ColorStateList MakeColorStateList(Color titleColor, Color disabledColor, Color unselectedColor)
@@ -180,11 +198,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_itemTextColor?.Dispose();
 				_itemIconTint?.Dispose();
+				_defaultListLight?.Dispose();
+				_defaultListDark?.Dispose();
 
 				_itemIconTint = null;
 				_shellItem = null;
 				_shellContext = null;
 				_itemTextColor = null;
+				_defaultListLight = null;
+				_defaultListDark = null;
 			}
 		}
 
