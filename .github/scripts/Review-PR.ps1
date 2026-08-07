@@ -2612,35 +2612,9 @@ $trustedGateResultForPost = if (-not [string]::IsNullOrWhiteSpace($TrustedGateRe
 # The standalone post-gate-comment.ps1 was removed in 67b1a9a316e ("Merge gate
 # result into the unified AI Summary comment"): the gate verdict is now rendered
 # directly into the AI Summary review (see "### Gate Result:" blocks above) and
-# reflected via the s/agent-gate-* labels below. No separate gate comment is posted.
-
-# Apply gate result label
-$gatePassLabel = "s/agent-gate-passed"
-$gateFaillabel = "s/agent-gate-failed"
-$gateSkipLabel = "s/agent-gate-skipped"
-$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
-
-$addLabel = switch ($gateResult) {
-    "PASSED"  { $gatePassLabel }
-    "SKIPPED" { $gateSkipLabel }
-    "INCONCLUSIVE" { $gateSkipLabel }  # build/env error — gate could not verify; do NOT apply gate-failed
-    default   { $gateFaillabel }
-}
-$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
-
-if (-not $DryRun) {
-    foreach ($lbl in $removeLabels) {
-        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
-    }
-    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
-    } else {
-        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
-}
+# reflected by the single Apply-AgentLabels call in STEP 7. That shared helper
+# owns all mutually-exclusive label transitions and uses the REST API, avoiding
+# duplicate GraphQL mutations and stale skipped-gate labels.
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 5.5: Apply the Phase 4 (pr-finalize) title/description recommendation

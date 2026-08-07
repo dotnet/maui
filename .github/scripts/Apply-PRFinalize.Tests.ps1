@@ -10,6 +10,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'apply-pr-finalize.ps1'
+    $script:ScriptText = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -38,6 +39,7 @@ BeforeAll {
         'Get-FinalizeRecommendation',
         'Merge-PreservedTitlePrefix',
         'Merge-PreservedBodyPreamble',
+        'New-PullRequestUpdatePayload',
         'New-ExclusiveTempFile'
     )) {
         $function = $ast.Find({
@@ -223,6 +225,37 @@ Old description.
 
     It 'handles an empty current body' {
         Merge-PreservedBodyPreamble -CurrentBody '' -RecommendedBody '### New' | Should -Be '### New'
+    }
+}
+
+Describe 'New-PullRequestUpdatePayload' {
+    It 'includes only the title when only the title changed' {
+        $payload = New-PullRequestUpdatePayload `
+            -TitleChanged $true `
+            -Title '[Android] RadioButton: Clear reset borders' `
+            -BodyChanged $false `
+            -Body 'unchanged'
+
+        @($payload.Keys) | Should -Be @('title')
+        $payload.title | Should -Be '[Android] RadioButton: Clear reset borders'
+    }
+
+    It 'includes only the body when only the body changed' {
+        $payload = New-PullRequestUpdatePayload `
+            -TitleChanged $false `
+            -Title 'unchanged' `
+            -BodyChanged $true `
+            -Body "### Change`n`nUpdated details."
+
+        @($payload.Keys) | Should -Be @('body')
+        $payload.body | Should -Be "### Change`n`nUpdated details."
+    }
+
+    It 'uses the REST pull-request endpoint for reads and writes' {
+        $script:ScriptText | Should -Match ([regex]::Escape('$prOutput = @(& gh api "repos/$Repo/pulls/$PRNumber"'))
+        $script:ScriptText | Should -Match ([regex]::Escape('$ghArgs = @(''api'', "repos/$Repo/pulls/$PRNumber", ''--method'', ''PATCH'', ''--input'', $payloadFile, ''--silent'')'))
+        $script:ScriptText | Should -Not -Match '\bgh\s+pr\s+(?:view|edit)\b'
+        $script:ScriptText | Should -Not -Match ([regex]::Escape("@('pr', 'edit'"))
     }
 }
 

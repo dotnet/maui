@@ -19,6 +19,9 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
+scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$scriptDir/run-as-console-user.sh"
+
 currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' )
 
 if [ -z "$currentUser" ] || [ "$currentUser" = "loginwindow" ]; then
@@ -28,10 +31,6 @@ fi
 
 uid=$(id -u "$currentUser")
 
-runAsUser() {
-  launchctl asuser "$uid" sudo -n -u "$currentUser" "$@"
-}
-
 echo "Dismissing Setup Assistant / Apple Account sign-in modal for console user '$currentUser'..."
 
 # (b) Prevent recurrence FIRST: mark the Setup Assistant panes as already seen so
@@ -39,18 +38,18 @@ echo "Dismissing Setup Assistant / Apple Account sign-in modal for console user 
 # re-present it.
 for key in DidSeeCloudSetup DidSeeSiriSetup DidSeePrivacy DidSeeTrueTone \
            DidSeeAppearanceSetup DidSeeSyncSetup2 DidSeeAppleIDSetup; do
-  runAsUser defaults write com.apple.SetupAssistant "$key" -bool TRUE 2>/dev/null || true
+  run_as_console_user "$currentUser" "$uid" defaults write com.apple.SetupAssistant "$key" -bool TRUE 2>/dev/null || true
 done
-runAsUser defaults write com.apple.SetupAssistant GestureMovieSeen none 2>/dev/null || true
+run_as_console_user "$currentUser" "$uid" defaults write com.apple.SetupAssistant GestureMovieSeen none 2>/dev/null || true
 sudo -n defaults write /var/db/com.apple.SetupAssistant LastSeenCloudProductVersion "$(sw_vers -productVersion 2>/dev/null)" 2>/dev/null || true
 sudo -n defaults write /var/db/com.apple.SetupAssistant LastSeenBuddyBuildVersion "$(sw_vers -buildVersion 2>/dev/null)" 2>/dev/null || true
 
 # (a) Dismiss any modal already on screen by killing its presenter.
-runAsUser killall "Setup Assistant" 2>/dev/null || true
+run_as_console_user "$currentUser" "$uid" killall "Setup Assistant" 2>/dev/null || true
 sudo -n killall "Setup Assistant" 2>/dev/null || true
 # accountsd re-checks Apple Account state; restarting it clears a stuck prompt
 # and it will re-read the "seen" flags above on relaunch. Harmless (auto-restarts).
-runAsUser killall accountsd 2>/dev/null || true
+run_as_console_user "$currentUser" "$uid" killall accountsd 2>/dev/null || true
 
 echo "Apple Account dialog dismissal complete (best-effort)."
 exit 0

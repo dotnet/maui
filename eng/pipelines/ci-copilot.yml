@@ -1975,16 +1975,12 @@ stages:
             fetchDepth: 0
             persistCredentials: false
 
-          # Switch the worktree to the PR's base branch before installing
-          # workloads and merging the PR for deep UI tests — same rationale as
-          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
-          # band + conflict-free squash-merge regardless of the pipeline branch).
+          # Capture trusted helpers exactly once while the worktree is still at
+          # $(Build.SourceVersion). This must remain outside the retried branch-
+          # resolution task below: a retry can start after that task checked out
+          # the PR head, and recapturing here would bless PR-controlled scripts.
           - bash: |
               set -e
-              # Capture trusted scripts from the pipeline ref (self) BEFORE switching to the
-              # base branch, so the deep-UI test runner can be restored to the reviewed
-              # pipeline-branch scripts (branch-aware TFM selection) rather than the base
-              # branch's copies after the checkout below (security rule 3 + correctness).
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
               chmod -R u+w "$TRUSTED" 2>/dev/null || true
               rm -rf "$TRUSTED" 2>/dev/null || true
@@ -1993,8 +1989,16 @@ stages:
               cp -r .github/skills  "$TRUSTED/skills"
               cp -r eng/scripts     "$TRUSTED/eng-scripts"
               chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts copied to $TRUSTED"
+              echo "Trusted scripts copied from $(Build.SourceVersion) to $TRUSTED"
+            displayName: 'Capture trusted scripts for deep UI tests'
+            timeoutInMinutes: 5
 
+          # Switch the worktree to the PR's base branch before installing
+          # workloads and merging the PR for deep UI tests — same rationale as
+          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
+          # band + conflict-free squash-merge regardless of the pipeline branch).
+          - bash: |
+              set -e
               if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
                 echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
                 exit 1
@@ -2384,8 +2388,12 @@ stages:
           # (intercepts UI interactions) and macOS text autocorrect.
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
             - bash: |
-                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
-                $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+                SCRIPT="$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/disable-notification-center.sh"
+                if [ ! -f "$SCRIPT" ]; then
+                  echo "##vso[task.logissue type=warning]Trusted Notification Center disable script is missing; continuing."
+                  exit 0
+                fi
+                /bin/sh "$SCRIPT"
               displayName: 'Disable Notification Center'
               continueOnError: true
               timeoutInMinutes: 5
@@ -2397,8 +2405,12 @@ stages:
             # on CollectionView, each tear-down screenshot showing the sign-in
             # pane). Killing the presenter + setting the "seen" flags clears it.
             - bash: |
-                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/dismiss-apple-account-dialog.sh
-                $(System.DefaultWorkingDirectory)/eng/scripts/dismiss-apple-account-dialog.sh
+                SCRIPT="$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/dismiss-apple-account-dialog.sh"
+                if [ ! -f "$SCRIPT" ]; then
+                  echo "##vso[task.logissue type=warning]Trusted Apple Account dialog script is missing; continuing."
+                  exit 0
+                fi
+                /bin/sh "$SCRIPT"
               displayName: 'Dismiss Apple Account sign-in dialog'
               continueOnError: true
               timeoutInMinutes: 5
@@ -3071,10 +3083,14 @@ stages:
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
             - bash: |
-                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
-                $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+                SCRIPT="$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/enable-notification-center.sh"
+                if [ ! -f "$SCRIPT" ]; then
+                  echo "##vso[task.logissue type=warning]Trusted Notification Center enable script is missing; continuing."
+                  exit 0
+                fi
+                /bin/sh "$SCRIPT"
               displayName: 'Re-enable Notification Center'
-              condition: succeededOrFailed()
+              condition: always()
               continueOnError: true
               timeoutInMinutes: 5
 

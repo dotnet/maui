@@ -12,8 +12,8 @@
 
     Until now that recommendation was only *rendered* in the AI Summary comment, so a
     human had to copy it across by hand. This script closes that last mile: it parses
-    the recommendation and applies it with `gh pr edit`, which makes it the squash-merge
-    commit message.
+    the recommendation and applies it through the GitHub REST API, which makes it the
+    squash-merge commit message without requiring GraphQL-only token scopes.
 
     Deliberately conservative — it does nothing unless Phase 4 explicitly recommended an
     update, and it never discards author signal:
@@ -37,7 +37,7 @@
     Target repo in owner/name form. Defaults to dotnet/maui.
 
 .PARAMETER DryRun
-    Print what would be applied without calling `gh pr edit`.
+    Print what would be applied without updating the pull request.
 
 .EXAMPLE
     ./apply-pr-finalize.ps1 -PRNumber 36769
@@ -254,6 +254,33 @@ function Merge-PreservedBodyPreamble {
     return "$preamble`n`n$RecommendedBody"
 }
 
+function New-PullRequestUpdatePayload {
+    <#
+    .SYNOPSIS
+        Builds the minimal REST payload for the changed PR metadata fields.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [bool]$TitleChanged,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$BodyChanged,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Body
+    )
+
+    $payload = [ordered]@{}
+    if ($TitleChanged) { $payload['title'] = $Title }
+    if ($BodyChanged) { $payload['body'] = $Body }
+    return $payload
+}
+
 function New-ExclusiveTempFile {
     <#
     .SYNOPSIS
@@ -353,14 +380,19 @@ if (-not $recommendation) {
 # re-attach, so we would silently strip the repo's required testing note.
 $prJson = $null
 try {
-    $prJson = gh pr view $PRNumber --repo $Repo --json title,body 2>$null | ConvertFrom-Json
+    $prOutput = @(& gh api "repos/$Repo/pulls/$PRNumber" 2>$null)
+    $readExitCode = $LASTEXITCODE
+    if ($readExitCode -ne 0) {
+        throw "gh api exited with code $readExitCode."
+    }
+    $prJson = ($prOutput -join "`n") | ConvertFrom-Json
 } catch {
     Write-Host "     ⚠️  Could not read the current PR metadata ($(ConvertTo-AzdoSafeConsole "$_")) — skipping to avoid clobbering it." -ForegroundColor Yellow
     exit 0
 }
 
 if (-not $prJson) {
-    Write-Host "     ⚠️  'gh pr view' returned no metadata for #$PRNumber — skipping to avoid clobbering it." -ForegroundColor Yellow
+    Write-Host "     ⚠️  GitHub REST API returned no metadata for #$PRNumber — skipping to avoid clobbering it." -ForegroundColor Yellow
     exit 0
 }
 
@@ -402,31 +434,33 @@ if ($DryRun) {
         }
         Write-Host "     --- end preview ---" -ForegroundColor DarkGray
     }
-    Write-Host "     🔍 DryRun — would apply the above (no gh pr edit issued)." -ForegroundColor Yellow
+    Write-Host "     🔍 DryRun — would apply the above (no pull request update issued)." -ForegroundColor Yellow
     exit 0
 }
 
-$bodyFile = $null
+$payloadFile = $null
 try {
-    $bodyFile = New-ExclusiveTempFile -Prefix "pr-finalize-body-$PRNumber"
-    $newBody | Set-Content -LiteralPath $bodyFile -Encoding UTF8
+    $payload = New-PullRequestUpdatePayload `
+        -TitleChanged $titleChanged `
+        -Title $newTitle `
+        -BodyChanged $bodyChanged `
+        -Body $newBody
+    $payloadFile = New-ExclusiveTempFile -Prefix "pr-finalize-payload-$PRNumber"
+    $payload | ConvertTo-Json -Compress | Set-Content -LiteralPath $payloadFile -Encoding UTF8 -NoNewline
 
-    $ghArgs = @('pr', 'edit', "$PRNumber", '--repo', $Repo)
-    if ($titleChanged) { $ghArgs += @('--title', $newTitle) }
-    if ($bodyChanged) { $ghArgs += @('--body-file', $bodyFile) }
-
+    $ghArgs = @('api', "repos/$Repo/pulls/$PRNumber", '--method', 'PATCH', '--input', $payloadFile, '--silent')
     $output = & gh @ghArgs 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "     ✅ Applied the recommended PR title/description." -ForegroundColor Green
     } else {
         # Non-fatal: the review comment still carries the recommendation for a human.
-        # gh echoes back the title/body it was given, so this is PR-derived too.
-        Write-Host "     ⚠️  gh pr edit failed (non-fatal): $(ConvertTo-AzdoSafeConsole ($output -join ' '))" -ForegroundColor Yellow
+        # The API error may quote title/body validation details, so sanitize it too.
+        Write-Host "     ⚠️  GitHub REST update failed (non-fatal): $(ConvertTo-AzdoSafeConsole ($output -join ' '))" -ForegroundColor Yellow
     }
 } catch {
     Write-Host "     ⚠️  Failed to apply the PR finalize recommendation (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
 } finally {
-    if ($bodyFile) { Remove-Item -LiteralPath $bodyFile -Force -ErrorAction SilentlyContinue }
+    if ($payloadFile) { Remove-Item -LiteralPath $payloadFile -Force -ErrorAction SilentlyContinue }
 }
 
 exit 0

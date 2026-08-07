@@ -96,6 +96,12 @@ Describe 'Copilot reviewer configuration' {
         $reviewTests | Should -Match ([regex]::Escape('else { "gpt-5.6-sol" }'))
         $reviewTests | Should -Match ([regex]::Escape('"--context", "long_context"'))
     }
+
+    It 'delegates Post label transitions to the shared REST helper' {
+        $content | Should -Not -Match '(?m)^\s*gh\s+pr\s+edit\b'
+        $content | Should -Not -Match ([regex]::Escape('s/agent-gate-skipped'))
+        $content | Should -Match '(?s)Apply-AgentLabels.*-TrustedGateResult \$trustedGateResultForPost'
+    }
 }
 
 Describe 'Reviewer pipeline timeout containment' {
@@ -165,6 +171,39 @@ Describe 'Reviewer pipeline timeout containment' {
         $publishBlock | Should -Match ([regex]::Escape("artifact: 'CopilotTelemetryTools'"))
         $publishBlock | Should -Match 'timeoutInMinutes: 2'
         $publishBlock | Should -Match 'continueOnError: true'
+    }
+
+    It 'runs Catalyst desktop setup and cleanup from trusted scripts' {
+        $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/disable-notification-center.sh'))
+        $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/dismiss-apple-account-dialog.sh'))
+        $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/enable-notification-center.sh'))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh'))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/dismiss-apple-account-dialog.sh'))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh'))
+
+        $cleanupStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf("displayName: 'Re-enable Notification Center'"))
+        $cleanupEnd = $pipelineContent.IndexOf("- task: PublishPipelineArtifact@1", $cleanupStart)
+        $cleanupBlock = $pipelineContent.Substring($cleanupStart, $cleanupEnd - $cleanupStart)
+        $cleanupBlock | Should -Match 'condition: always\(\)'
+    }
+
+    It 'captures trusted deep-test scripts outside the retried branch-resolution task' {
+        $captureName = "displayName: 'Capture trusted scripts for deep UI tests'"
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $captureStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf($captureName))
+        $captureEnd = $pipelineContent.IndexOf($resolveName, $captureStart)
+        $resolveStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf($resolveName, $captureStart))
+        $resolveEnd = $pipelineContent.IndexOf("- template: common/provision.yml", $resolveStart)
+        $captureBlock = $pipelineContent.Substring($captureStart, $captureEnd - $captureStart)
+        $resolveBlock = $pipelineContent.Substring($resolveStart, $resolveEnd - $resolveStart)
+
+        $captureStart | Should -BeGreaterThan -1
+        $captureStart | Should -BeLessThan $resolveStart
+        $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r eng/scripts     "$TRUSTED/eng-scripts"'))
+        $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
+        $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
+        $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
     }
 }
 

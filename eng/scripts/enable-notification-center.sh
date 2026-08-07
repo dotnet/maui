@@ -1,21 +1,23 @@
-#!/bin/sh 
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin 
+#!/bin/sh
 
-currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' ) 
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-if [ -z "$currentUser" -o "$currentUser" = "loginwindow" ]; then 
-  echo "no user logged in, cannot proceed" 
-  exit 1  
-fi 
+scriptDir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$scriptDir/run-as-console-user.sh"
 
-uid=$(id -u "$currentUser")  
+currentUser=$(echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }')
 
-runAsUser() {   
-  if [ "$currentUser" != "loginwindow" ]; then 
-    launchctl asuser "$uid" sudo -u "$currentUser" "$@" 
-  else 
-    echo "no user logged in" 
-  fi 
-} 
+if [ -z "$currentUser" ] || [ "$currentUser" = "loginwindow" ]; then
+  echo "No console user logged in — Notification Center enable is not needed."
+  exit 0
+fi
 
-runAsUser launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 
+uid=$(id -u "$currentUser")
+
+if run_as_console_user "$currentUser" "$uid" launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist; then
+  echo "Notification Center enabled for '$currentUser'."
+else
+  echo "Could not re-enable Notification Center for '$currentUser' — continuing."
+fi
+
+exit 0
