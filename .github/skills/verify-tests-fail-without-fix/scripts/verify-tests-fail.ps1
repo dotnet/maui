@@ -2007,6 +2007,7 @@ function Test-BuildErrorIsInDetectedTest {
     param([array]$Results, [array]$Tests)
     $errText = (@($Results) | Where-Object { $_.BuildError } | ForEach-Object { "$($_.FailureMessage) $($_.Error)" }) -join "`n"
     if (-not $errText -or -not $Tests) { return $false }
+    $normalizedErrText = $errText -replace '\\', '/'
     foreach ($t in $Tests) {
         $base = (($t.TestName -split ' \(')[0]).Trim()
         if ($base -and $errText -match [regex]::Escape($base)) { return $true }
@@ -2014,12 +2015,12 @@ function Test-BuildErrorIsInDetectedTest {
         # Device-test class names can carry a platform prefix that their source
         # files do not (for example Android_MediaPicker_Tests is declared in
         # MediaPicker_Tests.cs). Detect-TestsInDiff already provides the exact
-        # changed test file, so matching its leaf name safely establishes that
-        # the compile error came from the PR's own detected test.
+        # changed test file, so matching its repository-relative path safely
+        # establishes that the compile error came from the PR's own detected test.
         foreach ($testFile in @($t.Files)) {
             if ([string]::IsNullOrWhiteSpace([string]$testFile)) { continue }
-            $testFileLeaf = [IO.Path]::GetFileName(([string]$testFile -replace '\\', '/'))
-            if ($testFileLeaf -and $errText -match [regex]::Escape($testFileLeaf)) {
+            $normalizedTestFile = ([string]$testFile -replace '\\', '/').TrimStart('/')
+            if ($normalizedTestFile -and $normalizedErrText -match [regex]::Escape($normalizedTestFile)) {
                 return $true
             }
         }

@@ -435,11 +435,11 @@ Describe 'Test-BuildErrorIsInDetectedTest — platform-prefixed device classes' 
         Test-BuildErrorIsInDetectedTest -Results $results -Tests $tests | Should -BeTrue
     }
 
-    It 'does not credit an unrelated production-file compile error' {
+    It 'does not credit the same filename from a different source path' {
         $results = @(
             @{
                 BuildError = $true
-                FailureMessage = "/s/src/Essentials/src/MediaPicker/MediaPicker.android.cs(43,54): error CS0117: 'MediaPickerImplementation' does not contain a definition for 'ProcessImage'"
+                FailureMessage = "/s/src/OtherTests/Android/MediaPicker_Tests.cs(43,54): error CS0117: 'MediaPickerImplementation' does not contain a definition for 'ProcessImage'"
                 Error = ''
             }
         )
