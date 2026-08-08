@@ -13,11 +13,92 @@ if [ -z "$currentUser" ] || [ "$currentUser" = "loginwindow" ]; then
 fi
 
 uid=$(id -u "$currentUser")
+servicePlist="/System/Library/LaunchAgents/com.apple.notificationcenterui.plist"
+serviceDomain="gui/$uid"
 
-if run_as_console_user "$currentUser" "$uid" launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist; then
-  echo "Notification Center disabled for '$currentUser'."
+if [ ! -r "$servicePlist" ]; then
+  echo "##vso[task.logissue type=warning]Could not read the Notification Center launch agent plist; continuing without changing host state."
+  exit 0
+fi
+
+serviceLabel=$(/usr/libexec/PlistBuddy -c 'Print :Label' "$servicePlist" 2>/dev/null)
+serviceLabelStatus=$?
+serviceProgram=$(/usr/libexec/PlistBuddy -c 'Print :Program' "$servicePlist" 2>/dev/null)
+serviceProgramStatus=$?
+if [ "$serviceProgramStatus" -ne 0 ] || [ -z "$serviceProgram" ]; then
+  serviceProgram=$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$servicePlist" 2>/dev/null)
+  serviceProgramStatus=$?
+fi
+serviceProcess=$(basename "$serviceProgram")
+
+if [ "$serviceLabelStatus" -ne 0 ] ||
+    [ "$serviceProgramStatus" -ne 0 ] ||
+    [ -z "$serviceLabel" ] ||
+    [ -z "$serviceProcess" ]; then
+  echo "##vso[task.logissue type=warning]Could not resolve the Notification Center launch agent identity; continuing without changing host state."
+  exit 0
+fi
+
+serviceTarget="$serviceDomain/$serviceLabel"
+diagnosticLog=$(mktemp "${TMPDIR:-/tmp}/maui-notification-center-disable.XXXXXX")
+if [ -z "$diagnosticLog" ]; then
+  echo "##vso[task.logissue type=warning]Could not create a Notification Center diagnostics file; continuing without changing host state."
+  exit 0
+fi
+trap 'rm -f "$diagnosticLog"' EXIT HUP INT TERM
+
+is_service_disabled() {
+  printf '%s\n' "$1" | awk -v label="$serviceLabel" '
+    index($0, "\"" label "\"") && ($NF == "disabled" || $NF == "true") { found = 1 }
+    END { exit found ? 0 : 1 }
+  '
+}
+
+if ! run_as_console_user "$currentUser" "$uid" launchctl disable "$serviceTarget" >"$diagnosticLog" 2>&1; then
+  echo "##vso[task.logissue type=warning]Could not disable the Notification Center launch agent for '$currentUser'."
+  sed 's/^/  /' "$diagnosticLog"
+  exit 0
+fi
+
+# Legacy plist unloading is deprecated and can print an I/O error while
+# returning success. Disable the service in the user's GUI domain, then remove
+# the running instance. If bootout cannot remove a protected Apple job,
+# terminate only the exact process IDs still present; the disabled state
+# prevents relaunch.
+run_as_console_user "$currentUser" "$uid" launchctl bootout "$serviceTarget" >>"$diagnosticLog" 2>&1 || true
+
+attempt=0
+while [ "$attempt" -lt 5 ]; do
+  runningPids=$(/usr/bin/pgrep -u "$uid" -x "$serviceProcess" 2>>"$diagnosticLog")
+  processCheckStatus=$?
+  if [ "$processCheckStatus" -gt 1 ] || [ -z "$runningPids" ]; then
+    break
+  fi
+
+  for pid in $runningPids; do
+    case "$pid" in
+      *[!0-9]*|'') continue ;;
+    esac
+    run_as_console_user "$currentUser" "$uid" kill "$pid" >>"$diagnosticLog" 2>&1 || true
+  done
+
+  attempt=$((attempt + 1))
+  sleep 1
+done
+
+disabledState=$(run_as_console_user "$currentUser" "$uid" launchctl print-disabled "$serviceDomain" 2>>"$diagnosticLog")
+disabledStateStatus=$?
+runningPids=$(/usr/bin/pgrep -u "$uid" -x "$serviceProcess" 2>>"$diagnosticLog")
+processCheckStatus=$?
+
+if [ "$disabledStateStatus" -eq 0 ] &&
+    [ "$processCheckStatus" -le 1 ] &&
+    is_service_disabled "$disabledState" &&
+    [ -z "$runningPids" ]; then
+  echo "Notification Center disabled for '$currentUser' (verified)."
 else
-  echo "Could not disable Notification Center for '$currentUser' — continuing."
+  echo "##vso[task.logissue type=warning]Could not verify that Notification Center stopped for '$currentUser'; Catalyst UI tests may be obstructed."
+  sed 's/^/  /' "$diagnosticLog"
 fi
 
 exit 0

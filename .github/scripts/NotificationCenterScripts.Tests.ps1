@@ -2,9 +2,11 @@
 #Requires -Modules Pester
 
 BeforeAll {
+    $disableScript = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'disable-notification-center.sh'
+    $enableScript = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'enable-notification-center.sh'
     $lifecycleScripts = @(
-        Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'disable-notification-center.sh'
-        Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'enable-notification-center.sh'
+        $disableScript
+        $enableScript
         Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'dismiss-apple-account-dialog.sh'
     )
     $helper = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'run-as-console-user.sh'
@@ -27,6 +29,38 @@ Describe 'Notification Center script safety' {
         $helperContent = Get-Content -Raw -LiteralPath $helper
         $helperContent | Should -Match '\bsudo\s+-n(?:\s|$)'
         $helperContent | Should -Match ([regex]::Escape('if [ "$caller_uid" = "$target_uid" ]; then'))
+    }
+
+    It 'uses modern launchctl controls and verifies the plist-defined service state' {
+        $disableContent = Get-Content -Raw -LiteralPath $disableScript
+        $enableContent = Get-Content -Raw -LiteralPath $enableScript
+
+        $disableContent | Should -Match 'PlistBuddy.*Print :Label'
+        $disableContent | Should -Match 'PlistBuddy.*Print :Program'
+        $disableContent | Should -Match '\[ ! -r "\$servicePlist" \]'
+        $disableContent | Should -Match '\$serviceLabelStatus" -ne 0'
+        $disableContent | Should -Match '\$serviceProgramStatus" -ne 0'
+        $disableContent | Should -Match 'launchctl disable "\$serviceTarget"'
+        $disableContent | Should -Match 'launchctl bootout "\$serviceTarget"'
+        $disableContent | Should -Match 'launchctl print-disabled "\$serviceDomain"'
+        $disableContent | Should -Match '/usr/bin/pgrep -u "\$uid" -x "\$serviceProcess"'
+        $disableContent | Should -Match '\$processCheckStatus" -le 1'
+        $disableContent | Should -Not -Match 'pgrep .*2>/dev/null \|\| true'
+        $disableContent | Should -Match 'kill "\$pid"'
+        $disableContent | Should -Match '\$NF == "disabled"'
+        $disableContent | Should -Match 'Notification Center disabled.*\(verified\)'
+        $disableContent | Should -Not -Match 'run_as_console_user.*launchctl unload'
+
+        $enableContent | Should -Match 'PlistBuddy.*Print :Label'
+        $enableContent | Should -Match '\[ ! -r "\$servicePlist" \]'
+        $enableContent | Should -Match '\$serviceLabelStatus" -ne 0'
+        $enableContent | Should -Match 'launchctl enable "\$serviceTarget"'
+        $enableContent | Should -Match 'launchctl bootstrap "\$serviceDomain" "\$servicePlist"'
+        $enableContent | Should -Match 'launchctl print-disabled "\$serviceDomain"'
+        $enableContent | Should -Match 'launchctl print "\$serviceTarget"'
+        $enableContent | Should -Match '\$NF == "disabled"'
+        $enableContent | Should -Match 'Notification Center enabled.*\(verified\)'
+        $enableContent | Should -Not -Match 'run_as_console_user.*launchctl load'
     }
 
     It 'runs commands directly when the agent already is the console user' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
