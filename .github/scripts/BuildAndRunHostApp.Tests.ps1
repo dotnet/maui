@@ -81,3 +81,24 @@ Describe 'MacCatalyst Apple Account dialog dismissal' {
         $scriptContent.IndexOf($trustedPath) | Should -BeLessThan $scriptContent.IndexOf($fallbackPath)
     }
 }
+
+Describe 'MacCatalyst Retina screenshot cropping' {
+    BeforeAll {
+        $uiTestPath = Join-Path $PSScriptRoot '..' '..' 'src' 'Controls' 'tests' 'TestCases.Shared.Tests' 'UITest.cs'
+        $script:UiTestContent = Get-Content $uiTestPath -Raw
+    }
+
+    It 'maps logical Appium window bounds to physical screenshot pixels' {
+        $script:UiTestContent | Should -Match 'CGDisplayBounds\(CGMainDisplayID\(\)\)'
+        $script:UiTestContent | Should -Match 'double scaleX = image\.Width / displayBounds\.Size\.Width'
+        $script:UiTestContent | Should -Match 'double scaleY = image\.Height / displayBounds\.Size\.Height'
+        $script:UiTestContent | Should -Match 'surface\.Composite\(image, -pixelX, -pixelY, CompositeOperator\.SrcAtop\)'
+    }
+
+    It 'normalizes the physical crop back to logical snapshot dimensions' {
+        $script:UiTestContent | Should -Match 'new MagickGeometry\(\(uint\)width, \(uint\)height\)'
+        $script:UiTestContent | Should -Match 'IgnoreAspectRatio = true'
+        $script:UiTestContent | Should -Match 'surface\.Resize\(logicalSize\)'
+        $script:UiTestContent | Should -Not -Match 'int scaleFactor = \(int\)Math\.Round'
+    }
+}
