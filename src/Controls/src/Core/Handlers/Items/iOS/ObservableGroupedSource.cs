@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		List<ObservableItemsSource> _groups = new List<ObservableItemsSource>();
 
+		internal event NotifyCollectionChangedEventHandler CollectionViewUpdating;
+
 		public ObservableGroupedSource(IEnumerable groupSource, UICollectionViewController collectionViewController)
 		{
 			_collectionViewController = new(collectionViewController);
@@ -210,6 +212,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ResetGroupTracking();
 
 			_groupCount = GroupsCount();
+
+			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+			CollectionViewUpdating?.Invoke(this, args);
 
 			_collectionView.ReloadData();
 			if (collectionWasReset)
