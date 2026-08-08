@@ -199,6 +199,26 @@ stages:
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
+          # Capture trusted test infrastructure exactly once while the worktree
+          # is still at $(Build.SourceVersion). Keep this outside the retried
+          # branch-resolution task: a retry may begin after that task switched
+          # to PR-controlled content.
+          - bash: |
+              set -e
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              chmod -R u+w "$TRUSTED" 2>/dev/null || true
+              rm -rf "$TRUSTED" 2>/dev/null || true
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              mkdir -p "$TRUSTED/source-overrides"
+              cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
+              chmod -R a-w "$TRUSTED"
+              echo "Trusted scripts and source overrides copied to $TRUSTED"
+            displayName: 'Capture trusted test infrastructure'
+            timeoutInMinutes: 5
+
           # ─────────────────────────────────────────────────────────
           #  Resolve the PR's target (base) branch and switch the
           #  worktree to it BEFORE installing workloads or merging.
@@ -214,25 +234,11 @@ stages:
           #  squash-merge conflicts. Switching to the PR's base fixes both,
           #  so ONE pipeline branch handles main- and net11-targeting PRs.
           #
-          #  Trusted scripts are captured HERE (from the pipeline ref,
-          #  before the base-branch checkout) so later tasks keep running
-          #  the reviewed pipeline-branch .github/scripts even though the
-          #  worktree is swapped to the base branch (security rule 3).
+          #  The previous non-retried step captured trusted infrastructure
+          #  from the pipeline ref, before this branch switch.
           # ─────────────────────────────────────────────────────────
           - bash: |
               set -e
-
-              # Capture trusted scripts from the pipeline ref (self) BEFORE
-              # switching branches — later tasks invoke from $TRUSTED only.
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-              chmod -R u+w "$TRUSTED" 2>/dev/null || true
-              rm -rf "$TRUSTED" 2>/dev/null || true
-              mkdir -p "$TRUSTED"
-              cp -r .github/scripts "$TRUSTED/scripts"
-              cp -r .github/skills  "$TRUSTED/skills"
-              cp -r eng/scripts     "$TRUSTED/eng-scripts"
-              chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts copied to $TRUSTED"
 
               # PRNumber is validated upstream ('Validate Parameters'); re-guard
               # before use in a gh call.
@@ -2004,8 +2010,10 @@ stages:
               cp -r .github/scripts "$TRUSTED/scripts"
               cp -r .github/skills  "$TRUSTED/skills"
               cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              mkdir -p "$TRUSTED/source-overrides"
+              cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
               chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts copied from $(Build.SourceVersion) to $TRUSTED"
+              echo "Trusted scripts and source overrides copied from $(Build.SourceVersion) to $TRUSTED"
             displayName: 'Capture trusted scripts for deep UI tests'
             timeoutInMinutes: 5
 
@@ -2678,11 +2686,9 @@ stages:
               git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
             displayName: 'Merge PR for testing'
 
-          # Run the deep-UI orchestration from the reviewed pipeline-branch scripts, not the
-          # base+PR worktree copies. Restores self's .github/scripts, .github/skills and
-          # eng/scripts (captured in 'Resolve PR base branch') over the worktree so the
-          # per-category loop's BuildAndRunHostApp.ps1 is branch-aware (builds the net11 TFM)
-          # and trusted (security rule 3). The src/ tree stays base + PR.
+          # Run the deep-UI orchestration from the reviewed pipeline-branch infrastructure,
+          # not the base+PR worktree copies. Restore self's scripts and the narrow Catalyst
+          # screenshot-harness patch captured before the branch switch.
           - bash: |
               set -e
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
@@ -2697,7 +2703,24 @@ stages:
                 echo "##vso[task.logissue type=error]Trusted scripts not found at $TRUSTED/scripts — cannot run deep UI tests"
                 exit 1
               fi
-            displayName: 'Restore trusted scripts for deep UI tests'
+
+              if [ "${{ parameters.Platform }}" = "catalyst" ]; then
+                PATCH="$TRUSTED/source-overrides/catalyst-retina-screenshot.patch"
+                if [ ! -f "$PATCH" ]; then
+                  echo "##vso[task.logissue type=error]Trusted Catalyst screenshot override is missing: $PATCH"
+                  exit 1
+                fi
+                if git apply --reverse --check --whitespace=nowarn -- "$PATCH" 2>/dev/null; then
+                  echo "Trusted Catalyst screenshot override is already present"
+                elif git apply --check --whitespace=nowarn -- "$PATCH"; then
+                  git apply --whitespace=nowarn -- "$PATCH"
+                  echo "Applied trusted Catalyst Retina screenshot override"
+                else
+                  echo "##vso[task.logissue type=error]Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs"
+                  exit 1
+                fi
+              fi
+            displayName: 'Restore trusted test infrastructure for deep UI tests'
 
           # Bypass the iOS/MacCatalyst SDK's strict Xcode-version check.
           # Same patch the CopilotReview job performs (see lines ~571-580

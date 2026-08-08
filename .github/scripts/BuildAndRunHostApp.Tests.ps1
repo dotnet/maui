@@ -86,6 +86,7 @@ Describe 'MacCatalyst Retina screenshot cropping' {
     BeforeAll {
         $uiTestPath = Join-Path $PSScriptRoot '..' '..' 'src' 'Controls' 'tests' 'TestCases.Shared.Tests' 'UITest.cs'
         $script:UiTestContent = Get-Content $uiTestPath -Raw
+        $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
     }
 
     It 'maps logical Appium window bounds to physical screenshot pixels' {
@@ -100,5 +101,16 @@ Describe 'MacCatalyst Retina screenshot cropping' {
         $script:UiTestContent | Should -Match 'IgnoreAspectRatio = true'
         $script:UiTestContent | Should -Match 'surface\.Resize\(logicalSize\)'
         $script:UiTestContent | Should -Not -Match 'int scaleFactor = \(int\)Math\.Round'
+    }
+
+    It 'keeps the trusted post-merge source patch synchronized with the harness' {
+        $patchPath = Join-Path $script:RepoRoot '.github/patches/catalyst-retina-screenshot.patch'
+        Push-Location $script:RepoRoot
+        try {
+            git apply --reverse --check --whitespace=nowarn -- $patchPath
+            $LASTEXITCODE | Should -Be 0
+        } finally {
+            Pop-Location
+        }
     }
 }

@@ -562,15 +562,16 @@ if ($Phase -eq 'Setup') {
     exit 0
 }
 
-# Overlay the trusted, branch-aware infra scripts over the worktree. The gate's
+# Overlay the trusted, branch-aware test infrastructure over the worktree. The gate's
 # verify-tests-fail.ps1 (and try-fix candidate validation) invoke the WORKTREE's
 # Run-DeviceTests.ps1 / BuildAndRunHostApp.ps1 — they resolve their own RepoRoot from .git, so
 # they must physically live in the worktree. Without this overlay they would be the PR branch's
 # possibly-stale copies: e.g. a net11 PR whose branch still hardcodes net10.0-android would build
 # the wrong TFM and fail NETSDK1005. Mirrors the deep-UI-test stage's "Restore trusted scripts"
 # step and enforces security rule 3 (no PR-controlled infra .ps1 runs with tokens in scope).
-# MUST be re-applied after every `git reset --hard`, which would otherwise revert it. The src/
-# tree stays base + PR. No-op outside CI (when -TrustedScriptsDir is not supplied).
+# MUST be re-applied after every `git reset --hard`, which would otherwise revert it. Catalyst
+# additionally receives a narrow trusted source patch for the screenshot harness: ordinary
+# reviewer-branch src/ edits are discarded when Setup switches to the PR base. No-op outside CI.
 function Restore-TrustedScripts {
     param([string]$TrustedScriptsDir, [string]$RepoRoot)
     if (-not $TrustedScriptsDir) { return }
@@ -589,6 +590,34 @@ function Restore-TrustedScripts {
     }
     if ($restored) {
         Write-Host "  🔒 Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree (branch-aware + trusted infra)" -ForegroundColor Cyan
+    }
+
+    if ($Platform -in @('catalyst', 'maccatalyst')) {
+        $sourceOverride = Join-Path $TrustedScriptsDir 'source-overrides/catalyst-retina-screenshot.patch'
+        if (-not (Test-Path $sourceOverride -PathType Leaf)) {
+            throw "Trusted Catalyst screenshot override is missing: $sourceOverride"
+        }
+
+        Push-Location $RepoRoot
+        try {
+            git apply --reverse --check --whitespace=nowarn -- $sourceOverride 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "  🔒 Trusted Catalyst screenshot override is already present" -ForegroundColor Cyan
+            } else {
+                git apply --check --whitespace=nowarn -- $sourceOverride
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."
+                }
+
+                git apply --whitespace=nowarn -- $sourceOverride
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Failed to apply trusted Catalyst screenshot override."
+                }
+                Write-Host "  🔒 Applied trusted Catalyst Retina screenshot override" -ForegroundColor Cyan
+            }
+        } finally {
+            Pop-Location
+        }
     }
 }
 

@@ -275,9 +275,43 @@ Describe 'Reviewer pipeline timeout containment' {
         $captureStart | Should -BeLessThan $resolveStart
         $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
         $captureBlock | Should -Match ([regex]::Escape('cp -r eng/scripts     "$TRUSTED/eng-scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
+    }
+
+    It 'captures trusted review infrastructure outside the retried branch-resolution task' {
+        $captureName = "displayName: 'Capture trusted test infrastructure'"
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $captureStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf($captureName))
+        $captureEnd = $pipelineContent.IndexOf($resolveName, $captureStart)
+        $resolveStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf($resolveName, $captureStart))
+        $resolveEnd = $pipelineContent.IndexOf("- template: common/enable-kvm.yml", $resolveStart)
+        $captureBlock = $pipelineContent.Substring($captureStart, $captureEnd - $captureStart)
+        $resolveBlock = $pipelineContent.Substring($resolveStart, $resolveEnd - $resolveStart)
+
+        $captureStart | Should -BeGreaterThan -1
+        $captureStart | Should -BeLessThan $resolveStart
+        $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
+        $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
+        $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
+        $resolveBlock | Should -Not -Match 'source-overrides'
+    }
+
+    It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {
+        ([regex]::Matches(
+            $pipelineContent,
+            [regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"')
+        )).Count | Should -Be 2
+
+        $content | Should -Match ([regex]::Escape("source-overrides/catalyst-retina-screenshot.patch"))
+        $content | Should -Match ([regex]::Escape('git apply --reverse --check --whitespace=nowarn'))
+        $pipelineContent | Should -Match ([regex]::Escape('Applied trusted Catalyst Retina screenshot override'))
+        $pipelineContent | Should -Match 'the PR or target branch changed UITest\.cs'
+        $pipelineContent | Should -Match ([regex]::Escape("displayName: 'Restore trusted test infrastructure for deep UI tests'"))
     }
 
     It 'reports skipped deep UI tests in category rows, the headline, and the total' {
