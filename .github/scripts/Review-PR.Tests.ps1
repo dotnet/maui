@@ -260,6 +260,29 @@ Describe 'Reviewer pipeline timeout containment' {
     }
 }
 
+Describe 'Snapshot diff asset publishing' {
+    It 'publishes through the orphan asset-only branch with a contention fallback' {
+        $assetStart = $pipelineContent.IndexOf("`$assetBranch = 'review-tests-assets-v2'")
+        $assetEnd = $pipelineContent.IndexOf('# 3) render the collapsible baseline|actual|diff image section', $assetStart)
+
+        $assetStart | Should -BeGreaterThan -1
+        $assetEnd | Should -BeGreaterThan $assetStart
+        $assetBlock = $pipelineContent.Substring($assetStart, $assetEnd - $assetStart)
+
+        $assetBlock | Should -Match ([regex]::Escape('$assetPrefix = "pr-$prNumber/azdo-review/$(Build.BuildId)"'))
+        $assetBlock | Should -Match ([regex]::Escape("parents = @()"))
+        $assetBlock | Should -Match ([regex]::Escape("path = '.review-tests-assets'"))
+        $assetBlock | Should -Match ([regex]::Escape("'^pr-[1-9][0-9]*$'"))
+        $assetBlock | Should -Match ([regex]::Escape("'HTTP (?:401|403|404)"))
+        $assetBlock | Should -Match ([regex]::Escape('$maxFf = 6'))
+        $assetBlock | Should -Match 'asset ref update permanently rejected'
+        $assetBlock | Should -Match ([regex]::Escape('$buildRef = "$assetBranch-b$(Build.BuildId)"'))
+        $assetBlock | Should -Match 'unique asset ref publish failed'
+        $assetBlock | Should -Not -Match ([regex]::Escape("`$assetBranch = 'review-tests-assets'"))
+        $assetBlock | Should -Not -Match 'heavy concurrency'
+    }
+}
+
 Describe 'Copilot token usage helpers' {
     It 'normalizes known token fields while preserving raw token field paths' {
         $usage = [pscustomobject]@{
