@@ -301,7 +301,10 @@ internal static class MauiCopilotClassFilter_$typeSuffix
 }
 
 function Get-XHarnessTestResultSnapshot {
-    param([string]$OutputDirectory)
+    param(
+        [string]$OutputDirectory,
+        [string]$ResultFileName = "testResults.xml"
+    )
 
     $snapshot = @{}
     if (-not (Test-Path $OutputDirectory -PathType Container)) {
@@ -309,7 +312,7 @@ function Get-XHarnessTestResultSnapshot {
     }
 
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq "testResults.xml" })) {
+            Where-Object { $_.Name -ieq $ResultFileName })) {
         $snapshot[$file.FullName] = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
     }
 
@@ -319,7 +322,8 @@ function Get-XHarnessTestResultSnapshot {
 function Get-FreshXHarnessTestResultFiles {
     param(
         [string]$OutputDirectory,
-        [hashtable]$BeforeSnapshot
+        [hashtable]$BeforeSnapshot,
+        [string]$ResultFileName = "testResults.xml"
     )
 
     if (-not (Test-Path $OutputDirectory -PathType Container)) {
@@ -328,7 +332,7 @@ function Get-FreshXHarnessTestResultFiles {
 
     $freshFiles = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq "testResults.xml" })) {
+            Where-Object { $_.Name -ieq $ResultFileName })) {
         $fingerprint = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
         if (-not $BeforeSnapshot.ContainsKey($file.FullName) -or $BeforeSnapshot[$file.FullName] -ne $fingerprint) {
             $freshFiles.Add($file.FullName)
@@ -336,6 +340,26 @@ function Get-FreshXHarnessTestResultFiles {
     }
 
     return @($freshFiles)
+}
+
+function New-XHarnessRunOutputDirectory {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OutputDirectory
+    )
+
+    $root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputDirectory)
+    if (-not (Test-Path $root -PathType Container)) {
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+    }
+
+    # Gate retries intentionally reuse their top-level diagnostics directory. XHarness
+    # also stores its own logs there and can rediscover a prior instrumentation result
+    # path when a later launch produces no result. Keep every invocation isolated so
+    # neither old logs nor old XML can masquerade as evidence from the current run.
+    $runDirectory = Join-Path $root "xharness-run-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $runDirectory -Force -ErrorAction Stop | Out-Null
+    return $runDirectory
 }
 
 function Select-WindowsDeviceTestCategories {
@@ -1279,11 +1303,25 @@ try {
     $testExitCode = 0
     $script:XHarnessDeviceTestSummary = $null
     $script:XHarnessDeviceTestResultFiles = @()
+    $testOutputDirectory = $OutputDirectory
+    $xharnessResultFileName = "testResults.xml"
 
     if ($platformConfig.UsesXHarness) {
         # ═══════════════════════════════════════════════════════════
         # XHARNESS TEST EXECUTION (iOS, MacCatalyst, Android)
         # ═══════════════════════════════════════════════════════════
+
+        if ($IncludeClasses) {
+            $testOutputDirectory = New-XHarnessRunOutputDirectory -OutputDirectory $OutputDirectory
+            Write-Host "XHarness run output: $testOutputDirectory" -ForegroundColor Gray
+
+            if ($Platform -eq "android") {
+                # The Gate can retry into the same emulator after a timed-out launch.
+                # Give the Android runner a trusted per-invocation filename so a stale
+                # device-side result from an earlier run cannot satisfy this run.
+                $xharnessResultFileName = "testResults-$([guid]::NewGuid().ToString('N')).xml"
+            }
+        }
         
         # Determine target
         $target = $platformConfig.XHarnessTarget
@@ -1304,7 +1342,7 @@ try {
                     "--app", $appPath
                     "--target", $target
                     "--device", $deviceUdidToUse
-                    "-o", $OutputDirectory
+                    "-o", $testOutputDirectory
                     "--timeout", $Timeout
                     "-v"
                 )
@@ -1314,7 +1352,7 @@ try {
                     "apple", "test"
                     "--app", $appPath
                     "--target", "maccatalyst"
-                    "-o", $OutputDirectory
+                    "-o", $testOutputDirectory
                     "--timeout", $Timeout
                     "-v"
                 )
@@ -1326,7 +1364,7 @@ try {
                     "--app", $appPath
                     "--package-name", $androidPackageName
                     "--device-id", $deviceUdidToUse
-                    "-o", $OutputDirectory
+                    "-o", $testOutputDirectory
                     "--timeout", $Timeout
                     "-v"
                 )
@@ -1341,6 +1379,10 @@ try {
                 # iOS/MacCatalyst uses --set-env
                 $xharnessArgs += "--set-env=TestFilter=$TestFilter"
             }
+        }
+
+        if ($IncludeClasses -and $Platform -eq "android") {
+            $xharnessArgs += "--arg", "results-file-name=$xharnessResultFileName"
         }
 
         if ($IncludeClasses -and $Platform -ne "android") {
@@ -1362,7 +1404,9 @@ try {
         Write-Host ""
 
         $xharnessResultSnapshot = if ($IncludeClasses) {
-            Get-XHarnessTestResultSnapshot -OutputDirectory $OutputDirectory
+            Get-XHarnessTestResultSnapshot `
+                -OutputDirectory $testOutputDirectory `
+                -ResultFileName $xharnessResultFileName
         } else {
             $null
         }
@@ -1378,10 +1422,11 @@ try {
 
         if ($IncludeClasses) {
             $xharnessResultFiles = @(Get-FreshXHarnessTestResultFiles `
-                -OutputDirectory $OutputDirectory `
-                -BeforeSnapshot $xharnessResultSnapshot)
+                -OutputDirectory $testOutputDirectory `
+                -BeforeSnapshot $xharnessResultSnapshot `
+                -ResultFileName $xharnessResultFileName)
             if ($xharnessResultFiles.Count -eq 0) {
-                throw "XHarness did not produce a fresh testResults.xml for requested class(es) '$IncludeClasses' (the target tests did not run)."
+                throw "XHarness did not produce the expected fresh result '$xharnessResultFileName' for requested class(es) '$IncludeClasses' (the target tests did not run)."
             }
 
             $script:XHarnessDeviceTestSummary = Get-DeviceTestResultSummary `
@@ -1445,7 +1490,7 @@ try {
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
 
     # Try to find and parse the log file
-    $logFile = Get-ChildItem -Path $OutputDirectory -Filter "$appName.log" -ErrorAction SilentlyContinue | Select-Object -First 1
+    $logFile = Get-ChildItem -Path $testOutputDirectory -Filter "$appName.log" -ErrorAction SilentlyContinue | Select-Object -First 1
     
     if ($script:XHarnessDeviceTestSummary) {
         Write-Host ""

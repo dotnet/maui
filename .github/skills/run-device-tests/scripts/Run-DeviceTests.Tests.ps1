@@ -18,6 +18,7 @@ BeforeAll {
         'New-AndroidDeviceTestClassFilterInjection',
         'Get-XHarnessTestResultSnapshot',
         'Get-FreshXHarnessTestResultFiles',
+        'New-XHarnessRunOutputDirectory',
         'Select-WindowsDeviceTestCategories',
         'Test-WindowsDeviceTestCategoryDiscovery',
         'Start-WindowsDeviceTestProcess',
@@ -165,6 +166,63 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         } finally {
             Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
+    }
+
+    It 'isolates repeated class-filtered XHarness invocations under the diagnostics root' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-run-root-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            '<assemblies />' | Set-Content (Join-Path $tempRoot 'testResults.xml') -Encoding UTF8
+
+            $first = New-XHarnessRunOutputDirectory -OutputDirectory $tempRoot
+            $second = New-XHarnessRunOutputDirectory -OutputDirectory $tempRoot
+
+            $first | Should -Not -Be $second
+            Test-Path -LiteralPath $first -PathType Container | Should -BeTrue
+            Test-Path -LiteralPath $second -PathType Container | Should -BeTrue
+            @(Get-ChildItem -LiteralPath $first -Force).Count | Should -Be 0
+            @(Get-ChildItem -LiteralPath $second -Force).Count | Should -Be 0
+            Test-Path -LiteralPath (Join-Path $tempRoot 'testResults.xml') | Should -BeTrue
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'requires the trusted per-run XHarness result filename' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-result-name-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $expectedName = "testResults-$([guid]::NewGuid().ToString('N')).xml"
+            '<assemblies />' | Set-Content (Join-Path $tempRoot 'testResults.xml') -Encoding UTF8
+            $snapshot = Get-XHarnessTestResultSnapshot `
+                -OutputDirectory $tempRoot `
+                -ResultFileName $expectedName
+
+            @(Get-FreshXHarnessTestResultFiles `
+                -OutputDirectory $tempRoot `
+                -BeforeSnapshot $snapshot `
+                -ResultFileName $expectedName).Count | Should -Be 0
+
+            $expectedFile = Join-Path $tempRoot $expectedName
+            '<assemblies><assembly /></assemblies>' | Set-Content $expectedFile -Encoding UTF8
+            @(Get-FreshXHarnessTestResultFiles `
+                -OutputDirectory $tempRoot `
+                -BeforeSnapshot $snapshot `
+                -ResultFileName $expectedName) | Should -Be @($expectedFile)
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'uses the isolated XHarness directory for execution and fresh-result discovery' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match 'New-XHarnessRunOutputDirectory -OutputDirectory \$OutputDirectory'
+        $content | Should -Match '"-o", \$testOutputDirectory'
+        $content | Should -Match 'results-file-name=\$xharnessResultFileName'
+        $content | Should -Match '(?s)Get-XHarnessTestResultSnapshot\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-ResultFileName \$xharnessResultFileName'
+        $content | Should -Match '(?s)Get-FreshXHarnessTestResultFiles\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-BeforeSnapshot \$xharnessResultSnapshot\s+`\s*-ResultFileName \$xharnessResultFileName'
     }
 }
 

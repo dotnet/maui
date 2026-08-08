@@ -611,7 +611,7 @@ function Invoke-TestRun {
                 $deviceParams.TestFilter = $Filter
             }
 
-            # Additive class-level include narrowing (Android/iOS/MacCatalyst). When the gate
+            # Additive class-level include narrowing (Android/iOS/MacCatalyst/Windows). When the gate
             # knows the PR's specific test class, run only that class instead of the whole
             # Category — so an unrelated crashing sibling test in the same category can't turn
             # the verdict INCONCLUSIVE. Empty on the main pipeline, so behaviour is unchanged.
