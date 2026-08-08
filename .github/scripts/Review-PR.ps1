@@ -132,6 +132,33 @@ function Test-PhaseRequiresReviewWorktree {
     return $PhaseName -in @('Gate', 'CopilotReview')
 }
 
+function Get-GateReportRetryClass {
+    param([string]$ReportContent)
+
+    if ([string]::IsNullOrWhiteSpace($ReportContent)) {
+        return ''
+    }
+
+    $match = [regex]::Match(
+        $ReportContent,
+        '<!-- GATE-RETRY-CLASS:\s*(definitive-failure|skip-permanent|retryable)\s*-->\s*$',
+        [System.Text.RegularExpressions.RegexOptions]::Singleline
+    )
+    return $(if ($match.Success) { $match.Groups[1].Value } else { '' })
+}
+
+function Test-GateReportIsRetryableEnvironmentError {
+    param([string]$ReportContent)
+
+    if ([string]::IsNullOrWhiteSpace($ReportContent)) {
+        return $false
+    }
+    if ((Get-GateReportRetryClass -ReportContent $ReportContent) -eq 'definitive-failure') {
+        return $false
+    }
+    return $ReportContent -match 'ENV ERROR'
+}
+
 # Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
 # otherwise use the repo's own .github/ directory (local dev).
 $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' }     else { $PSScriptRoot }
@@ -1892,7 +1919,7 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     } elseif ($gateExitCode -ne 0) {
         if (Test-Path $gateContentFile) {
             $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
-            if ($gateContent -match 'ENV ERROR') {
+            if (Test-GateReportIsRetryableEnvironmentError -ReportContent $gateContent) {
                 $isEnvError = $true
                 Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
             }
@@ -1919,8 +1946,8 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # ($isEnvError stays true → $gateExitCode = 3 below). Only TRANSIENT infra flakes fall
     # through to the retry path.
     if (Test-Path $gateContentFile) {
-        $gateRetryClass = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
-        if ($gateRetryClass -match 'GATE-RETRY-CLASS:\s*skip-permanent') {
+        $gateRetryClass = Get-GateReportRetryClass -ReportContent (Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue)
+        if ($gateRetryClass -eq 'skip-permanent') {
             $permElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
             Write-Host ("  ⏭️ Env error is deterministic/permanent (e.g. missing snapshot baseline, or an identical crash on both the without-fix and with-fix runs) — not retrying; another attempt would waste ~{0:N0}m for the identical INCONCLUSIVE. Reporting INCONCLUSIVE." -f ($permElapsedMin / $gateAttempt)) -ForegroundColor Yellow
             break

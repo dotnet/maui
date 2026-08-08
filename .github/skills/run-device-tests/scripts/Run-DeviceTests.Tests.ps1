@@ -23,6 +23,7 @@ BeforeAll {
         'Select-WindowsDeviceTestCategories',
         'Test-WindowsDeviceTestCategoryDiscovery',
         'Start-WindowsDeviceTestProcess',
+        'Wait-ForPath',
         'ConvertTo-DeviceTestCount',
         'Get-DeviceTestResultSummary',
         'Invoke-WindowsDeviceTestApp'
@@ -387,6 +388,42 @@ exec sleep 30
                     -IncludeMethods 'TargetMethod' `
                     -Timeout '00:00:01'
             } | Should -Throw -ExpectedMessage '*WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:*within 1s*WindowHandlerTests*TargetMethod*'
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'bounds a scoped Controls category run and emits the trusted target-timeout marker' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-controls-timeout-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $app = Join-Path $tempRoot 'device-tests.sh'
+            @'
+#!/bin/sh
+if [ "$2" = "-1" ]; then
+    printf '%s\n' 'Window' > "$(dirname "$1")/devicetestcategories.txt"
+    exit 0
+fi
+exec sleep 30
+'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
+            & chmod +x $app
+
+            $script:WindowsDeviceTestPackageIds = @{
+                Controls = 'com.microsoft.maui.controls.devicetests'
+            }
+
+            {
+                Invoke-WindowsDeviceTestApp `
+                    -AppPath $app `
+                    -Project 'Controls' `
+                    -AppName 'Controls.DeviceTests' `
+                    -OutputDirectory (Join-Path $tempRoot 'results') `
+                    -TestFilter 'Category=Window' `
+                    -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' `
+                    -IncludeMethods 'TargetMethod' `
+                    -Timeout '00:00:01'
+            } | Should -Throw -ExpectedMessage '*WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:*within 1s*ButtonTests*TargetMethod*'
         } finally {
             Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
         }

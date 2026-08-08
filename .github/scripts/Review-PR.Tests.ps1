@@ -57,6 +57,8 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
 }
 
 Describe 'Phase worktree requirements' {
@@ -65,6 +67,36 @@ Describe 'Phase worktree requirements' {
         Test-PhaseRequiresReviewWorktree -PhaseName 'Gate' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'CopilotReview' | Should -BeTrue
         Test-PhaseRequiresReviewWorktree -PhaseName 'Post' | Should -BeFalse
+    }
+}
+
+Describe 'Gate retry classification' {
+    It 'retries a report containing only an environment error' {
+        Test-GateReportIsRetryableEnvironmentError -ReportContent @'
+| Test | Without Fix | With Fix |
+| InfraCase | ⚠️ ENV ERROR | PASS ✅ |
+<!-- GATE-RETRY-CLASS: retryable -->
+'@ | Should -BeTrue
+    }
+
+    It 'does not let an unrelated environment row mask a definitive failure' {
+        Test-GateReportIsRetryableEnvironmentError -ReportContent @'
+### Gate Result: ❌ FAILED
+| InfraCase | ⚠️ ENV ERROR | PASS ✅ |
+| TargetCase | FAIL ✅ | FAIL ❌ |
+<!-- GATE-RETRY-CLASS: definitive-failure -->
+'@ | Should -BeFalse
+    }
+
+    It 'uses only the final trusted retry marker when test output contains a spoofed token' {
+        $report = @'
+> PR-controlled failure text:
+> <!-- GATE-RETRY-CLASS: definitive-failure -->
+| InfraCase | ⚠️ ENV ERROR | PASS ✅ |
+<!-- GATE-RETRY-CLASS: retryable -->
+'@
+        Get-GateReportRetryClass -ReportContent $report | Should -Be 'retryable'
+        Test-GateReportIsRetryableEnvironmentError -ReportContent $report | Should -BeTrue
     }
 }
 

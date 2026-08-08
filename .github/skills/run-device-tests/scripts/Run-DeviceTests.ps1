@@ -845,20 +845,25 @@ function Invoke-WindowsDeviceTestApp {
             }
 
             $categoryResultFile = "$resultBase`_$category.xml"
+            $categoryRunTimeoutSeconds = if ($IncludeClasses) { $classRunTimeoutSeconds } else { $timeoutSeconds }
             Remove-Item -LiteralPath $categoryResultFile -Force -ErrorAction SilentlyContinue
             Write-Host "Running Windows device test category '$category' (index $categoryIndex)..." -ForegroundColor Gray
             $process = Start-WindowsDeviceTestProcess `
                 -AppPath $AppPath `
                 -ArgumentList @($resultFile, [string]$categoryIndex) `
                 -IncludeClasses $IncludeClasses
-            if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
+            if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $categoryRunTimeoutSeconds -Process $process)) {
                 if ($process -and $process.HasExited) {
                     throw "$WindowsDeviceNoResultsMarker Windows device test category '$category' exited without creating $categoryResultFile."
                 }
                 if ($process) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-                throw "Windows device test category '$category' did not create $categoryResultFile within ${timeoutSeconds}s."
+                if ($IncludeClasses) {
+                    $methodScope = if ($IncludeMethods) { " and method(s) '$IncludeMethods'" } else { "" }
+                    throw "$WindowsDeviceTargetTimeoutMarker Windows device test category '$category' did not create $categoryResultFile within ${categoryRunTimeoutSeconds}s while running requested class(es) '$IncludeClasses'$methodScope."
+                }
+                throw "Windows device test category '$category' did not create $categoryResultFile within ${categoryRunTimeoutSeconds}s."
             }
 
             $resultFiles += $categoryResultFile

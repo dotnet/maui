@@ -734,7 +734,8 @@ function Convert-WindowsTargetTimeoutToFailure {
         if (-not $CounterpartResult -or
             $CounterpartResult.EnvError -or
             $CounterpartResult.BuildError -or
-            $CounterpartResult.FilterMismatch) {
+            $CounterpartResult.FilterMismatch -or
+            [int]$CounterpartResult.Total -le 0) {
             return $false
         }
     }
@@ -752,6 +753,21 @@ function Convert-WindowsTargetTimeoutToFailure {
     $Result.FailureReason = "Windows scoped target timed out in all $attemptCount attempts during the $Phase phase."
     $Result.FailureMessage = $evidence
     return $true
+}
+
+function Test-GateHasDefinitiveFailure {
+    param(
+        [int]$WithFixGenuineFailCount,
+        [bool]$WithFixBuildError,
+        [bool]$BaselineBuildError,
+        [bool]$PrTestBuildError
+    )
+
+    return (
+        $WithFixGenuineFailCount -gt 0 -or
+        ($WithFixBuildError -and -not $BaselineBuildError) -or
+        $PrTestBuildError
+    )
 }
 
 function Invoke-TestRunWithRetry {
@@ -2107,14 +2123,21 @@ function Write-MarkdownReport {
     # failure remains with the fix, so a real FAIL→FAIL in another detected test is never masked
     # by an unrelated filter mismatch.
     $hasFilterMismatch = (@($WithoutFixResultsList) + @($WithFixResultsList) | Where-Object { $_.FilterMismatch }).Count -gt 0
-    $reportWithFixGenuineFail = $false
+    $reportWithFixGenuineFailCount = 0
     foreach ($gt in $Tests) {
         $woG = $WithoutFixResultsList | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
         $wG  = $WithFixResultsList    | Where-Object { $_.TestName -eq $gt.TestName } | Select-Object -First 1
         if (-not $woG -or -not $wG) { continue }
         $wGInc = $wG.EnvError -or $wG.BuildError -or $wG.FilterMismatch
-        if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFail = $true }
+        if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFailCount++ }
     }
+    $reportWithFixGenuineFail = $reportWithFixGenuineFailCount -gt 0
+    $reportWithFixBuildError = @($WithFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
+    $reportDefinitiveFailure = Test-GateHasDefinitiveFailure `
+        -WithFixGenuineFailCount $reportWithFixGenuineFailCount `
+        -WithFixBuildError $reportWithFixBuildError `
+        -BaselineBuildError $baselineBuildError `
+        -PrTestBuildError $prTestBuildError
 
     # Platform-affinity FALSE-FAILED guard (mirror of the exit-code $fixPlatformMismatch):
     # when every changed code file targets a DIFFERENT platform than this gate, the fix is a
@@ -2122,7 +2145,7 @@ function Write-MarkdownReport {
     $fixFilesForPlatform = @($ReportRevertableFiles) + @($ReportNewFiles)
     $fixPlatformMismatch = (-not $reportWithFixGenuineFail) -and (Test-FixIrrelevantToPlatform -FixFiles $fixFilesForPlatform -Platform $ReportPlatform)
 
-    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($CompileCoupledVerified) { "✅ PASSED" } elseif ($prTestBuildError) { "❌ FAILED" } elseif ($hasEnvError -or ($baselineBuildError -and -not $reportWithFixGenuineFail) -or ($hasFilterMismatch -and -not $reportWithFixGenuineFail) -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($CompileCoupledVerified) { "✅ PASSED" } elseif ($reportDefinitiveFailure) { "❌ FAILED" } elseif ($hasEnvError -or $baselineBuildError -or $hasFilterMismatch -or $fixPlatformMismatch) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # When the gate PASSED under the relaxed "at least one test reproduces the bug, none
@@ -2200,13 +2223,14 @@ function Write-MarkdownReport {
     #   (was misclassified as ENV ERROR or as a generic FAIL because zero
     #   tests ran but exit code was non-zero).
     $failureClassification = $null
-    if (-not $hasEnvError -and -not $VerificationPassed -and -not $CompileCoupledVerified -and -not $fixPlatformMismatch -and $WithoutFixResultsList -and $WithFixResultsList) {
+    if (($reportDefinitiveFailure -or -not $hasEnvError) -and -not $VerificationPassed -and -not $CompileCoupledVerified -and -not $fixPlatformMismatch -and $WithoutFixResultsList -and $WithFixResultsList) {
         # Build error in the with-fix run trumps every other classification — if
         # the fix doesn't compile, no per-test outcome is meaningful.
         $wBuildError    = @($WithFixResultsList    | Where-Object { $_.BuildError })
         $woBuildError   = @($WithoutFixResultsList | Where-Object { $_.BuildError })
         $wFilterMiss    = @($WithFixResultsList    | Where-Object { $_.FilterMismatch })
         $woFilterMiss   = @($WithoutFixResultsList | Where-Object { $_.FilterMismatch })
+        $confirmedTargetTimeout = @($WithFixResultsList | Where-Object { $_.WindowsDeviceTargetTimeoutConfirmed }).Count -gt 0
 
         $woStates = @($WithoutFixResultsList | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
         $wStates  = @($WithFixResultsList    | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
@@ -2220,11 +2244,15 @@ function Write-MarkdownReport {
             if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "FAIL") { $hasRegression = $true }
         }
         $hasFixedTest = $false
+        $hasPassToFail = $false
         for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
             if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "PASS") { $hasFixedTest = $true }
+            if ($woStates[$i] -eq "PASS" -and $wStates[$i] -eq "FAIL") { $hasPassToFail = $true }
         }
 
-        if ($woBuildError.Count -gt 0) {
+        if ($confirmedTargetTimeout) {
+            $failureClassification = "🩺 **Fix does not complete the targeted Windows tests** — the scoped target timed out in every retry with the fix applied. This is deterministic blocking evidence even if another detected test hit an unrelated environment error."
+        } elseif ($woBuildError.Count -gt 0) {
             # Baseline (without-fix / merge-base) does not build. The gate cannot establish a
             # working "before" state, so it can NEVER attribute the failure to the PR's fix —
             # even when the with-fix build ALSO errors (which is the common case: the SAME
@@ -2252,6 +2280,8 @@ function Write-MarkdownReport {
             $missing = ($wFilterMiss + $woFilterMiss | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
             $hint = if ($missing) { " — filter ``$missing`` matched 0 tests" } else { "" }
             $failureClassification = "🩺 **Test filter mismatch**$hint. The test runner produced zero results because no test class or method matched the filter. Common causes: the gate filter was derived from the file name but the actual test class is named differently, or the test was renamed/moved without updating the auto-detection. Verify the test class name matches what the gate is searching for."
+        } elseif ($hasPassToFail) {
+            $failureClassification = "🩺 **Fix introduces a regression** — at least one targeted test passes without the fix but fails with it. Unrelated environment errors in other detected tests do not make that PASS→FAIL result inconclusive."
         } elseif ($allWoPass) {
             $failureClassification = "🩺 **Test does not reproduce the bug** — ran the same in both states (PASS without fix, PASS with fix). The repro test is not exercising the issue. Strengthen the test before reviewing the fix."
         } elseif ($allWoFail -and $allWFail) {
@@ -2260,6 +2290,8 @@ function Write-MarkdownReport {
             $failureClassification = "🩺 **Regression in another test** — at least one test goes FAIL→PASS (fix works there), but another test FAILs both with and without the fix. The fix breaks a pre-existing or sibling test."
         } elseif ($hasRegression -and -not $hasFixedTest) {
             $failureClassification = "🩺 **Fix breaks tests** — one or more tests fail with the fix applied, and none of the failures are resolved by the fix."
+        } elseif ($reportWithFixGenuineFail) {
+            $failureClassification = "🩺 **Fix does not pass all targeted tests** — at least one with-fix run produced a genuine test failure. Unrelated environment errors in other detected tests do not make that blocking failure inconclusive."
         }
         # else: leave $failureClassification unset; the per-test table + Failure Details below tell the story.
     }
@@ -2537,7 +2569,7 @@ function Write-MarkdownReport {
         elseif ($woE -or $wE) { $abOneSidedEnv = $true }
     }
     $abNonDifferential = $abBothSidesEnv -and (-not $abOneSidedEnv)
-    $abClass = if (($abPermanentSignal -and $abTransient.Count -eq 0) -or $abNonDifferential) { 'skip-permanent' } else { 'retryable' }
+    $abClass = if ($status -eq "❌ FAILED") { 'definitive-failure' } elseif (($abPermanentSignal -and $abTransient.Count -eq 0) -or $abNonDifferential) { 'skip-permanent' } else { 'retryable' }
     $lines += ""
     $lines += "<!-- GATE-RETRY-CLASS: $abClass -->"
 
@@ -3622,7 +3654,18 @@ $fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevant
 # it is the ONLY thing preventing a clean PASS (no genuine with-fix failure remains), the gate
 # verified nothing → INCONCLUSIVE (exit 3), never a false FAILED. (PR #36653: a PR whose only
 # detected test is an image/rasterization class that can't load libSkiaSharp on the gate agent.)
-$gateInfraError     = $anyEnvError -or ($anyFilterMismatch -and $withFixGenuineFailCount -eq 0) -or ($baselineBuildError -and -not $prTestBuildError -and -not $compileCoupledVerified -and $withFixGenuineFailCount -eq 0) -or ($bothNativeLibCount -gt 0 -and $withFixGenuineFailCount -eq 0) -or $fixPlatformMismatch
+$hasDefinitiveGateFailure = Test-GateHasDefinitiveFailure `
+    -WithFixGenuineFailCount $withFixGenuineFailCount `
+    -WithFixBuildError $withFixBuildError `
+    -BaselineBuildError $baselineBuildError `
+    -PrTestBuildError $prTestBuildError
+$gateInfraError = (-not $hasDefinitiveGateFailure) -and (
+    $anyEnvError -or
+    $anyFilterMismatch -or
+    ($baselineBuildError -and -not $prTestBuildError -and -not $compileCoupledVerified) -or
+    ($bothNativeLibCount -gt 0) -or
+    $fixPlatformMismatch
+)
 
 Write-Log ""
 Write-Log "Summary:"

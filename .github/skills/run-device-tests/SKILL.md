@@ -209,8 +209,9 @@ The Copilot Gate combines `-TestFilter` with `-IncludeClasses` when it knows the
 test class. On Windows, Controls still requires category discovery, while Core,
 Essentials, Graphics, and BlazorWebView bypass discovery and use XHarness's native class
 include. The result parser rejects output containing any unrelated class. Exact-class
-Windows runs are capped at 10 minutes per attempt; the Gate retries a timeout three times
-before treating repeated target-only timeouts as deterministic evidence.
+Windows runs, including scoped Controls category runs, are capped at 10 minutes per
+attempt; the Gate retries a timeout three times before treating repeated target-only
+timeouts as deterministic evidence.
 
 ### Available Test Categories
 

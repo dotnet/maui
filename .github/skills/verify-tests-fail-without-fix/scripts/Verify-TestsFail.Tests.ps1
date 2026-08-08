@@ -23,7 +23,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -505,6 +505,73 @@ Describe 'Write-MarkdownReport — persisted APP_CRASH gets an honest (non-"just
     }
 }
 
+Describe 'Write-MarkdownReport — genuine failures outrank unrelated environment errors' {
+    It 'persists FAILED and a definitive retry class for a confirmed with-fix target timeout' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        $wo = @(
+            @{ TestName = 'InfraCase'; TestType = 'DeviceTest'; Passed = $false; BuildError = $false; EnvError = $true; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'ENV ERROR: emulator unavailable' },
+            @{ TestName = 'TargetCase'; TestType = 'DeviceTest'; Passed = $false; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 1; Error = '' }
+        )
+        $w = @(
+            @{ TestName = 'InfraCase'; TestType = 'DeviceTest'; Passed = $true; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 0; Error = '' },
+            @{ TestName = 'TargetCase'; TestType = 'DeviceTest'; Passed = $false; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 1; Error = ''; WindowsDeviceTargetTimeoutConfirmed = $true; FailureMessage = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: scoped target timed out' }
+        )
+        $tests = @(
+            [pscustomobject]@{ TestName = 'InfraCase'; Type = 'DeviceTest'; Filter = 'InfraCase' },
+            [pscustomobject]@{ TestName = 'TargetCase'; Type = 'DeviceTest'; Filter = 'TargetCase' }
+        )
+
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $true -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'windows' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Core/src/Test.cs') -ReportNewFiles @()
+
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ❌ FAILED'
+        $report | Should -Match '⚠️ ENV ERROR'
+        $report | Should -Match 'Fix does not complete the targeted Windows tests'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: definitive-failure -->'
+        $report | Should -Not -Match 'Could not verify — environment/infrastructure error'
+    }
+
+    It 'describes PASS-to-FAIL as a regression instead of claiming both states passed' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        $wo = @(
+            @{ TestName = 'InfraCase'; TestType = 'DeviceTest'; Passed = $true; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 0; Error = '' },
+            @{ TestName = 'RegressionCase'; TestType = 'DeviceTest'; Passed = $true; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 0; Error = '' }
+        )
+        $w = @(
+            @{ TestName = 'InfraCase'; TestType = 'DeviceTest'; Passed = $false; BuildError = $false; EnvError = $true; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'ENV ERROR: emulator unavailable' },
+            @{ TestName = 'RegressionCase'; TestType = 'DeviceTest'; Passed = $false; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 1; Error = ''; FailureMessage = 'assertion failed' }
+        )
+        $tests = @(
+            [pscustomobject]@{ TestName = 'InfraCase'; Type = 'DeviceTest'; Filter = 'InfraCase' },
+            [pscustomobject]@{ TestName = 'RegressionCase'; Type = 'DeviceTest'; Filter = 'RegressionCase' }
+        )
+
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $false -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'windows' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Core/src/Test.cs') -ReportNewFiles @()
+
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ❌ FAILED'
+        $report | Should -Match 'Fix introduces a regression'
+        $report | Should -Not -Match 'PASS without fix, PASS with fix'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: definitive-failure -->'
+    }
+}
+
 Describe 'Invoke-TestRun — device diagnostics are retained with Gate logs' {
     It 'routes each device-test attempt to a unique published diagnostics directory' {
         $content = Get-Content -LiteralPath $scriptPath -Raw
@@ -606,7 +673,7 @@ Describe 'Windows baseline no-result correlation' {
 
             Convert-WindowsTargetTimeoutToFailure `
                 -Result $baseline `
-                -CounterpartResult @{ Passed = $true; EnvError = $false; BuildError = $false; FilterMismatch = $false } `
+                -CounterpartResult @{ Passed = $true; EnvError = $false; BuildError = $false; FilterMismatch = $false; Total = 1; Failed = 0 } `
                 -Phase WithoutFix `
                 -RunPlatform windows `
                 -TestType DeviceTest |
@@ -614,6 +681,31 @@ Describe 'Windows baseline no-result correlation' {
 
             $baseline.EnvError | Should -BeFalse
             $baseline.Failed | Should -Be 1
+        }
+
+        It 'keeps a baseline target timeout inconclusive when the counterpart ran zero tests' {
+            $baseline = @{
+                Passed = $false
+                EnvError = $true
+                WindowsDeviceTargetTimeout = $true
+                RetriesExhausted = $true
+                AttemptCount = 3
+                WindowsDeviceTargetTimeoutAttemptCount = 3
+                Error = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: exact class timed out'
+                Failed = 0
+                Total = 0
+            }
+
+            Convert-WindowsTargetTimeoutToFailure `
+                -Result $baseline `
+                -CounterpartResult @{ Passed = $true; EnvError = $false; BuildError = $false; FilterMismatch = $false; Total = 0; Failed = 0 } `
+                -Phase WithoutFix `
+                -RunPlatform windows `
+                -TestType DeviceTest |
+                Should -BeFalse
+
+            $baseline.EnvError | Should -BeTrue
+            $baseline.Failed | Should -Be 0
         }
 
         It 'rejects mixed timeout evidence' {
@@ -689,6 +781,26 @@ Describe 'Windows baseline no-result correlation' {
                 Should -BeFalse
             $case.Without.EnvError | Should -BeTrue
         }
+    }
+}
+
+Describe 'Gate failure precedence' {
+    It 'does not classify a mixed environment error and genuine with-fix failure as infrastructure-only' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 1 `
+            -WithFixBuildError:$false `
+            -BaselineBuildError:$false `
+            -PrTestBuildError:$false |
+            Should -BeTrue
+    }
+
+    It 'keeps an environment-only result non-definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixBuildError:$false `
+            -BaselineBuildError:$false `
+            -PrTestBuildError:$false |
+            Should -BeFalse
     }
 }
 
