@@ -253,7 +253,9 @@ The review automation analyzes untrusted PR code and untrusted comments. The wor
 Important safeguards:
 
 - `/review` requires repository write-level permissions and queues a trusted AzDO pipeline.
-- `/review tests` is comment-only and uses gh-aw safe outputs for PR comments.
+- `/review tests` is comment-only, uses gh-aw safe outputs for PR comments, and reads
+  its skill, CI facts, and gathered context only from root-owned read-only copies
+  sealed from the trusted base checkout before the PR branch is checked out.
 - Automatic reruns require deterministic new PR-author activity before the queue label is applied.
 - The full review pipeline keeps PR-controlled code separated from trusted scripts where possible.
 - Review comments should be treated as assistant-generated evidence, not as a substitute for human review.
