@@ -157,6 +157,24 @@ Describe 'Reviewer pipeline timeout containment' {
         $task3Block | Should -Match 'continueOnError: true'
     }
 
+    It 'prepares one isolated pr-plus-reviewer sandbox with current build tasks' {
+        $content | Should -Match ([regex]::Escape('Join-Path $prPlusSandboxBase "pr-$PRNumber-pr-plus-reviewer"'))
+        $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree add --detach $prPlusSandboxRoot HEAD'))
+        $content | Should -Match ([regex]::Escape("Join-Path `$RepoRoot '.buildtasks'"))
+        $content | Should -Match ([regex]::Escape('Copy-Item -LiteralPath $rawBuildTasks -Destination $candidateBuildTasks -Recurse -Force'))
+        $content | Should -Match 'READY_WITH_BUILDTASKS'
+        $content | Should -Match ([regex]::Escape('Exact persistent candidate artifact root: ``$prPlusArtifactRoot``'))
+        $content | Should -Match ([regex]::Escape('Use this exact candidate worktree. Do not create another worktree or sandbox'))
+        $content | Should -Match ([regex]::Escape('git -C "$prPlusSandboxRoot" rev-parse --show-toplevel'))
+        $content | Should -Match ([regex]::Escape('An output path rooted at ``$RepoRoot`` proves the raw PR ran'))
+        $content | Should -Match ([regex]::Escape('git -C "$prPlusSandboxRoot" diff --check'))
+        $content | Should -Match ([regex]::Escape('$prPlusArtifactRoot/reviewer.patch'))
+        $content | Should -Match ([regex]::Escape('$prPlusArtifactRoot/candidate.patch'))
+        $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot'))
+        $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree prune --expire now'))
+        $content | Should -Match 'The sandbox is temporary and must not be copied into review artifacts'
+    }
+
     It 'applies PR metadata only from the trusted Stage 3 checkout credential' {
         $runPostStart = $pipelineContent.IndexOf("displayName: 'Task 4: Post (comments + labels)'")
         $runPostBlock = $pipelineContent.Substring($runPostStart, [Math]::Min(800, $pipelineContent.Length - $runPostStart))

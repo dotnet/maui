@@ -2470,6 +2470,67 @@ if (-not $prCurrentTitle -or -not $prCurrentBody) {
 if (-not $prCurrentTitle) { $prCurrentTitle = '(unknown — could not fetch; do not assume it is missing)' }
 if (-not $prCurrentBody) { $prCurrentBody = '(could not fetch description — evaluate against the diff; do not assume the PR has no description)' }
 if ($prCurrentBody.Length -gt 4000) { $prCurrentBody = $prCurrentBody.Substring(0, 4000) + "`n...(description truncated for prompt)..." }
+
+# Provision the single reviewer-refinement sandbox before invoking Copilot.
+# Live build 14916232 proved that leaving this to the agent can validate the raw
+# PR worktree by mistake, while builds 14916232/14916250 both proved that a
+# detached candidate without .buildtasks fails before its code is compiled.
+$prPlusSandboxBase = if (-not [string]::IsNullOrWhiteSpace($env:AGENT_TEMPDIRECTORY)) {
+    $env:AGENT_TEMPDIRECTORY
+} else {
+    [IO.Path]::GetTempPath()
+}
+$prPlusSandboxRoot = Join-Path $prPlusSandboxBase "pr-$PRNumber-pr-plus-reviewer"
+$prPlusArtifactRoot = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer"
+$prPlusSandboxCreated = $false
+$prPlusBuildTasksReady = $false
+$prPlusSandboxStatus = 'UNAVAILABLE'
+
+try {
+    & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
+    if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+        Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction Stop
+    }
+    & git -C $RepoRoot worktree prune --expire now | Out-Null
+    & git -C $RepoRoot worktree add --detach $prPlusSandboxRoot HEAD
+    if ($LASTEXITCODE -ne 0) {
+        throw "git worktree add exited with code $LASTEXITCODE"
+    }
+    $prPlusSandboxCreated = $true
+    New-Item -ItemType Directory -Path $prPlusArtifactRoot -Force | Out-Null
+
+    $rawBuildTasks = Join-Path $RepoRoot '.buildtasks'
+    $candidateBuildTasks = Join-Path $prPlusSandboxRoot '.buildtasks'
+    if (Test-Path -LiteralPath $rawBuildTasks) {
+        try {
+            Copy-Item -LiteralPath $rawBuildTasks -Destination $candidateBuildTasks -Recurse -Force -ErrorAction Stop
+            $prPlusBuildTasksReady =
+                (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Controls.Build.Tasks.dll')) -and
+                (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Resizetizer.dll'))
+        } catch {
+            Write-Host "  ⚠️ Could not seed candidate .buildtasks; candidate setup must rebuild them if needed: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
+
+    $prPlusSandboxStatus = if ($prPlusBuildTasksReady) {
+        'READY_WITH_BUILDTASKS'
+    } else {
+        'READY_WITHOUT_BUILDTASKS'
+    }
+    Write-Host "  ✅ Prepared pr-plus-reviewer sandbox: $prPlusSandboxRoot ($prPlusSandboxStatus)" -ForegroundColor Green
+} catch {
+    $prPlusSandboxStatus = "UNAVAILABLE: $($_.Exception.Message)"
+    Write-Host "  ⚠️ Could not prepare pr-plus-reviewer sandbox: $($_.Exception.Message)" -ForegroundColor Yellow
+    if ($prPlusSandboxCreated) {
+        & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
+        if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+            Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        & git -C $RepoRoot worktree prune --expire now | Out-Null
+        $prPlusSandboxCreated = $false
+    }
+}
+
 $step5bPrompt = @"
 Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 5a.
 
@@ -2484,6 +2545,20 @@ Read context from:
 - If reviewer feedback can improve the PR, apply at most one consolidated ``pr-plus-reviewer`` patch and run each required targeted validation command once. Do not enter an iterative repair/retest loop and do not run a full suite unless it is the explicitly required test command.
 - Whether validation passes, fails, or is blocked, proceed immediately to the comparative report. Record uncertainty instead of repeatedly refining the candidate.
 - Always write ``report/content.md``, ``winner.json``, and ``pr-finalize/content.md`` before optional investigation. Required output files take priority over additional testing.
+
+## REQUIRED pr-plus-reviewer sandbox
+
+- Raw PR worktree (read-only for candidate refinement): ``$RepoRoot``
+- Exact pre-created candidate worktree: ``$prPlusSandboxRoot``
+- Exact persistent candidate artifact root: ``$prPlusArtifactRoot``
+- Sandbox status: ``$prPlusSandboxStatus``
+- Use this exact candidate worktree. Do not create another worktree or sandbox, and never create one under ``CustomAgentLogsTmp``.
+- Before editing or validating, run ``git -C "$prPlusSandboxRoot" rev-parse --show-toplevel`` and require the resolved path to equal ``$prPlusSandboxRoot``. If the sandbox is unavailable or identity does not match, record ``pr-plus-reviewer`` as blocked; never modify or validate against the raw PR worktree.
+- Run every candidate command from the candidate root with ``Push-Location "$prPlusSandboxRoot"`` / ``Pop-Location`` (or an equivalent explicit working-directory option). Invoke scripts from that same root. An output path rooted at ``$RepoRoot`` proves the raw PR ran and MUST NOT be counted as candidate validation.
+- The pipeline copied its already-built ``.buildtasks`` into the candidate when the status is ``READY_WITH_BUILDTASKS``. If the status is ``READY_WITHOUT_BUILDTASKS`` and a required validation needs MAUI build tasks, build ``Microsoft.Maui.BuildTasks.slnf`` once in the candidate before the validation command. If the candidate itself changes build-task sources, rebuild that solution once even when copied tasks exist.
+- Before validation, require ``git -C "$prPlusSandboxRoot" diff --check``. Persist the reviewer-only diff as ``$prPlusArtifactRoot/reviewer.patch`` and the complete candidate diff against the PR base as ``$prPlusArtifactRoot/candidate.patch``.
+- Write every candidate summary and validation log by its absolute path under ``$prPlusArtifactRoot``. Do not write persistent output using a relative ``CustomAgentLogsTmp`` path while the current directory is the sandbox, because that output will be deleted with the sandbox.
+- Persist only candidate diffs, focused validation logs, and the candidate summary under ``CustomAgentLogsTmp``. The sandbox is temporary and must not be copied into review artifacts.
 
 ## Phase 1 — Expert reviewer evaluation of the PR fix
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
@@ -2558,7 +2633,18 @@ Do NOT re-run gate verification.
 # The expert reviewer delegates relevant dimensions internally. The former
 # 70-credit cap stopped that child after only six tool calls, before it could
 # write findings. Keep a finite cap, but size it for one complete expert pass.
-Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt -MaxAiCredits 1500 | Out-Null
+try {
+    Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt -MaxAiCredits 1500 | Out-Null
+} finally {
+    if ($prPlusSandboxCreated) {
+        & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
+        if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+            Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        & git -C $RepoRoot worktree prune --expire now | Out-Null
+        Write-Host "  🧹 Removed pr-plus-reviewer sandbox: $prPlusSandboxRoot" -ForegroundColor DarkGray
+    }
+}
 
 # Diagnostic: check what STEP 5b produced
 Write-Host ""
