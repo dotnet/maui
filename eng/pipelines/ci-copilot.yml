@@ -1484,6 +1484,19 @@ stages:
               SETUP_EXIT=$?
               set -e
 
+              SETUP_RESULT="FAILED"
+              SETUP_OUTCOME_FILE="$(Build.ArtifactStagingDirectory)/setup-outcome.txt"
+              if [ -f "$SETUP_OUTCOME_FILE" ]; then
+                RAW_SETUP_RESULT=$(tr -d '\r\n' < "$SETUP_OUTCOME_FILE" | tr '[:lower:]' '[:upper:]')
+                case "$RAW_SETUP_RESULT" in
+                  COMPLETED|MERGE_CONFLICT) SETUP_RESULT="$RAW_SETUP_RESULT" ;;
+                esac
+              elif [ $SETUP_EXIT -eq 0 ] && [ -f "$(Build.ArtifactStagingDirectory)/setup-complete" ]; then
+                SETUP_RESULT="COMPLETED"
+              fi
+              echo "Trusted setup result: $SETUP_RESULT"
+              echo "##vso[task.setvariable variable=setupResult;isOutput=true]$SETUP_RESULT"
+
               if [ $SETUP_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
@@ -1766,6 +1779,7 @@ stages:
         timeoutInMinutes: 30
         variables:
           trustedGateResult: $[ dependencies.CopilotReview.outputs['RunGate.gateResult'] ]
+          trustedSetupResult: $[ dependencies.CopilotReview.outputs['RunSetup.setupResult'] ]
         steps:
           - checkout: self
             fetchDepth: 1
@@ -1896,7 +1910,7 @@ stages:
               fi
               rm -f "$BODY_FILE"
             displayName: 'Post review-incomplete notice (no review produced)'
-            condition: and(always(), eq(variables['RunPost.aiSummaryReviewId'], ''))
+            condition: and(always(), eq(variables['RunPost.aiSummaryReviewId'], ''), ne(variables['trustedSetupResult'], 'MERGE_CONFLICT'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -3152,7 +3166,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(not(canceled()), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(not(canceled()), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'

@@ -137,6 +137,16 @@ Describe 'Copilot reviewer configuration' {
 }
 
 Describe 'Reviewer pipeline timeout containment' {
+    It 'preserves the authoritative merge-conflict notice instead of posting a generic retry warning' {
+        ([regex]::Matches($content, [regex]::Escape("Set-SetupOutcome -Outcome 'MERGE_CONFLICT'"))).Count |
+            Should -Be 2
+        $content | Should -Match ([regex]::Escape("Set-SetupOutcome -Outcome 'COMPLETED'"))
+        $pipelineContent | Should -Match ([regex]::Escape('variable=setupResult;isOutput=true'))
+        $pipelineContent | Should -Match ([regex]::Escape("trustedSetupResult: `$[ dependencies.CopilotReview.outputs['RunSetup.setupResult'] ]"))
+        $pipelineContent | Should -Match ([regex]::Escape("ne(variables['trustedSetupResult'], 'MERGE_CONFLICT')"))
+        $pipelineContent | Should -Match ([regex]::Escape("ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT')"))
+    }
+
     It 'treats the Task 3 safety timeout as non-blocking' {
         $task3Start = $pipelineContent.IndexOf("displayName: 'Task 3: Copilot Review (expert review + try-fix)'")
         $task3Start | Should -BeGreaterThan -1

@@ -165,6 +165,30 @@ $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts
 $SkillsDir     = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' }      else { Join-Path $PSScriptRoot '../skills' }
 $EngScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'eng-scripts' } else { Join-Path $PSScriptRoot '../../eng/scripts' }
 
+function Get-SetupOutcomePath {
+    $outcomeDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    New-Item -ItemType Directory -Force -Path $outcomeDir | Out-Null
+    return (Join-Path $outcomeDir 'setup-outcome.txt')
+}
+
+function Set-SetupOutcome {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('COMPLETED', 'MERGE_CONFLICT')]
+        [string]$Outcome
+    )
+
+    $Outcome | Set-Content -LiteralPath (Get-SetupOutcomePath) -Encoding UTF8 -NoNewline
+}
+
+if ($runSetup) {
+    Remove-Item -LiteralPath (Get-SetupOutcomePath) -Force -ErrorAction SilentlyContinue
+}
+
 $commentCleanupScript = Join-Path $ScriptsDir "shared/Remove-StaleMauiBotComments.ps1"
 if (Test-Path $commentCleanupScript) {
     . $commentCleanupScript
@@ -404,6 +428,7 @@ if ($DryRun) {
 ⚠️ **Merge Conflict Detected** — This PR conflicts with its target branch ``$baseRefName``. Please rebase onto the target branch and resolve the conflicts.
 "@
             try { gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null } catch { }
+            Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
             Write-Error "Merge conflicts between PR #$PRNumber head and latest '$baseRefName'. Review cannot proceed until conflicts are resolved."
             exit 1
         }
@@ -487,6 +512,7 @@ if ($DryRun) {
             Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
         }
 
+        Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
         Write-Error "Merge conflicts for PR #$PRNumber. Review cannot proceed until conflicts are resolved."
         exit 1
     }
@@ -514,6 +540,7 @@ if ($Phase -eq 'Setup') {
         $d
     }
     "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
+    Set-SetupOutcome -Outcome 'COMPLETED'
     # Persist PR metadata so the CopilotReview phase can evaluate the existing title/
     # description for the pr-finalize (Phase 4) step. `gh pr view` is unreliable in the
     # CopilotReview phase after the squash-merge checkout, and $prInfo is only populated
