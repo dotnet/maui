@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, AView>
 	{
+		const int IconDrawableSlot = 1;
+
+		Drawable? _appliedIconTintDrawable;
+
 		protected override void ConnectHandler(AView platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -26,8 +30,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AView platformView)
 		{
-			base.DisconnectHandler(platformView);
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
+			_appliedIconTintDrawable = null;
+			base.DisconnectHandler(platformView);
 		}
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view)
@@ -154,10 +159,9 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView is TextView textView)
 			{
 				lineHeight = !string.IsNullOrEmpty(textView.Text) ? (int)textView.LineHeight : 0;
-				var icons = textView.GetCompoundDrawables();
-				if (icons.Length > 1 && icons[1] != null)
+				if (GetIconDrawable(textView) is Drawable icon)
 				{
-					SourceLoader.Setter.SetImageSource(icons[1]);
+					SourceLoader.Setter.SetImageSource(icon);
 				}
 			}
 
@@ -178,27 +182,42 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var drawables = button.GetCompoundDrawables();
-			var current = drawables.Length > 1 ? drawables[1] : null;
-			if (current is null)
+			if (GetIconDrawable(button) is not Drawable current)
 				return;
 
 			loader.Setter.SetImageSource(current);
 			handled = true;
 		}
 
+		static Drawable? GetIconDrawable(TextView textView)
+		{
+			var drawables = textView.GetCompoundDrawables();
+			return drawables.Length > IconDrawableSlot ? drawables[IconDrawableSlot] : null;
+		}
+
+		static void SetIconDrawable(TextView textView, Drawable? drawable)
+		{
+			textView.SetCompoundDrawables(null, drawable, null, null);
+		}
+
 		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
 			public override void SetImageSource(Drawable? platformImage)
 			{
-				if (Handler?.PlatformView is not TextView button || Handler?.VirtualView is not ISwipeItemMenuItem item)
+				if (Handler is not SwipeItemMenuItemHandler platformHandler ||
+					Handler.PlatformView is not TextView button ||
+					Handler.VirtualView is not ISwipeItemMenuItem item)
 					return;
+
+				var tintColor = item.GetIconTintColor()?.ToPlatform();
 
 				if (platformImage is not null)
 				{
 					var iconSize = GetIconSize(Handler);
-					var tintColor = item.GetIconTintColor()?.ToPlatform();
-					bool clearTint = tintColor is null && platformImage.ColorFilter is not null;
+					// Drawable.ColorFilter is not authoritative because the base Android
+					// Drawable implementation always returns null.
+					bool clearTint = tintColor is null &&
+						ReferenceEquals(platformImage, platformHandler._appliedIconTintDrawable);
 
 					if (tintColor is not null || clearTint)
 					{
@@ -233,7 +252,9 @@ namespace Microsoft.Maui.Handlers
 					}
 				}
 
-				button.SetCompoundDrawables(null, platformImage, null, null);
+				platformHandler._appliedIconTintDrawable =
+					tintColor is not null ? platformImage : null;
+				SetIconDrawable(button, platformImage);
 			}
 		}
 	}

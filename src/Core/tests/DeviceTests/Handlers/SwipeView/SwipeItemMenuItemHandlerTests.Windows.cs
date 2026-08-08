@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -18,6 +18,8 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SwipeView)]
 	public class SwipeItemMenuItemHandlerTests : CoreHandlerTestBase
 	{
+		static readonly TimeSpan ImageLoadTimeout = TimeSpan.FromSeconds(5);
+
 		[Fact]
 		public Task TextColorCanBeCleared()
 		{
@@ -96,11 +98,11 @@ namespace Microsoft.Maui.DeviceTests
 				item.Source = new FileImageSourceStub("custom-relative-path.png");
 
 				var load = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
-				var request = imageService.Requests.Dequeue();
+				var request = await imageService.Requests.DequeueAsync();
 				var image = new BitmapImage();
 				request.SetResult(new ImageSourceServiceResult(image));
 
-				await load;
+				await load.WaitAsync(ImageLoadTimeout);
 
 				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(image, icon.ImageSource);
@@ -108,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 				item.IconColor = Colors.Blue;
 				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 
-				Assert.Empty(imageService.Requests);
+				Assert.True(imageService.Requests.IsEmpty);
 				Assert.Same(icon, handler.PlatformView.IconSource);
 			});
 		}
@@ -124,17 +126,18 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var item = new SwipeItemMenuItemStub
 				{
-					IconColor = Colors.Red,
-					Source = new UriImageSourceStub("https://example.com/delete.png")
+					IconColor = Colors.Red
 				};
 				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				// Keep the explicit map below as the only pending delayed load.
+				item.Source = new UriImageSourceStub("https://example.com/delete.png");
 
 				var load = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
-				var request = imageService.Requests.Dequeue();
+				var request = await imageService.Requests.DequeueAsync();
 				var image = new BitmapImage();
 				request.SetResult(new ImageSourceServiceResult(image));
 
-				await load;
+				await load.WaitAsync(ImageLoadTimeout);
 
 				var icon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(image, icon.ImageSource);
@@ -142,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 				item.IconColor = Colors.Blue;
 				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 
-				Assert.Empty(imageService.Requests);
+				Assert.True(imageService.Requests.IsEmpty);
 				Assert.Same(icon, handler.PlatformView.IconSource);
 			});
 		}
@@ -351,21 +354,21 @@ namespace Microsoft.Maui.DeviceTests
 				item.Source = source;
 
 				var staleLoad = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
-				var initialRequest = imageService.Requests.Dequeue();
+				var initialRequest = await imageService.Requests.DequeueAsync();
 
 				item.IconColor = Colors.Blue;
 				var newerLoad = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
-				var newerRequest = imageService.Requests.Dequeue();
+				var newerRequest = await imageService.Requests.DequeueAsync();
 				var newerImage = new BitmapImage();
 				newerRequest.SetResult(new ImageSourceServiceResult(newerImage));
-				await newerLoad;
+				await newerLoad.WaitAsync(ImageLoadTimeout);
 
 				var currentIcon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(newerImage, currentIcon.ImageSource);
 
 				var staleImage = new BitmapImage();
 				initialRequest.SetResult(new ImageSourceServiceResult(staleImage));
-				await staleLoad;
+				await staleLoad.WaitAsync(ImageLoadTimeout);
 
 				currentIcon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(newerImage, currentIcon.ImageSource);
@@ -374,7 +377,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class DelayedFileImageSourceService : IImageSourceService<IFileImageSource>
 		{
-			public Queue<TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>> Requests { get; } = new();
+			public ImageLoadRequests Requests { get; } = new();
 
 			public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(
 				IImageSource imageSource,
@@ -390,7 +393,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		sealed class DelayedUriImageSourceService : IImageSourceService<IUriImageSource>
 		{
-			public Queue<TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>> Requests { get; } = new();
+			public ImageLoadRequests Requests { get; } = new();
 
 			public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(
 				IImageSource imageSource,
@@ -402,6 +405,23 @@ namespace Microsoft.Maui.DeviceTests
 				Requests.Enqueue(completion);
 				return completion.Task;
 			}
+		}
+
+		sealed class ImageLoadRequests
+		{
+			readonly Channel<TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>> _requests =
+				Channel.CreateUnbounded<TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>>();
+
+			public bool IsEmpty => !_requests.Reader.TryPeek(out _);
+
+			public void Enqueue(TaskCompletionSource<IImageSourceServiceResult<WImageSource>?> request)
+			{
+				if (!_requests.Writer.TryWrite(request))
+					throw new InvalidOperationException("Unable to enqueue the pending image load.");
+			}
+
+			public Task<TaskCompletionSource<IImageSourceServiceResult<WImageSource>?>> DequeueAsync() =>
+				_requests.Reader.ReadAsync().AsTask().WaitAsync(ImageLoadTimeout);
 		}
 
 		sealed class CustomFontImageSourceStub : FontImageSourceStub

@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,36 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertEventually(() => GetTopDrawable(tintedButton) is not null &&
 					GetTopDrawable(tintedButton).ColorFilter is null);
+			});
+		}
+
+		[Fact]
+		public async Task IconTintCanBeClearedWhenDrawableDoesNotReportColorFilter()
+		{
+			var imageService = new NonReportingFileImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFileImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub
+				{
+					IconColor = Colors.Blue
+				};
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				item.Source = new FileImageSourceStub("custom.png");
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+
+				var drawable = GetTopDrawable(Assert.IsAssignableFrom<TextView>(handler.PlatformView));
+				Assert.Same(imageService.Drawable, drawable);
+				Assert.Null(drawable.ColorFilter);
+				Assert.NotNull(imageService.Drawable.AppliedColorFilter);
+
+				item.IconColor = null;
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+
+				Assert.Null(imageService.Drawable.AppliedColorFilter);
 			});
 		}
 
@@ -130,6 +161,50 @@ namespace Microsoft.Maui.DeviceTests
 				LoadCount++;
 				return Task.FromResult<IImageSourceServiceResult<Drawable>>(
 					new ImageSourceServiceResult(_sourceDrawable));
+			}
+		}
+
+		sealed class NonReportingFileImageSourceService : IImageSourceService<IFileImageSource>
+		{
+			public NonReportingColorFilterDrawable Drawable { get; } = new();
+
+			public Task<IImageSourceServiceResult> LoadDrawableAsync(
+				IImageSource imageSource,
+				global::Android.Widget.ImageView imageView,
+				CancellationToken cancellationToken = default)
+			{
+				imageView.SetImageDrawable(Drawable);
+				return Task.FromResult<IImageSourceServiceResult>(
+					new ImageSourceServiceResult(Drawable));
+			}
+
+			public Task<IImageSourceServiceResult<Drawable>> GetDrawableAsync(
+				IImageSource imageSource,
+				global::Android.Content.Context context,
+				CancellationToken cancellationToken = default)
+			{
+				return Task.FromResult<IImageSourceServiceResult<Drawable>>(
+					new ImageSourceServiceResult(Drawable));
+			}
+		}
+
+		sealed class NonReportingColorFilterDrawable : Drawable
+		{
+			public ColorFilter? AppliedColorFilter { get; private set; }
+
+			public override int Opacity => (int)Format.Translucent;
+
+			public override void Draw(Canvas canvas)
+			{
+			}
+
+			public override void SetAlpha(int alpha)
+			{
+			}
+
+			public override void SetColorFilter(ColorFilter? colorFilter)
+			{
+				AppliedColorFilter = colorFilter;
 			}
 		}
 
