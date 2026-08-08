@@ -416,6 +416,44 @@ Describe 'Write-MarkdownReport — compile-coupled new-API verification' {
     }
 }
 
+Describe 'Test-BuildErrorIsInDetectedTest — platform-prefixed device classes' {
+    It 'matches the exact detected test file when the class has an Android prefix' {
+        $results = @(
+            @{
+                BuildError = $true
+                FailureMessage = "/s/src/Essentials/test/DeviceTests/Tests/Android/MediaPicker_Tests.cs(43,54): error CS0117: 'MediaPickerImplementation' does not contain a definition for 'ProcessImage'"
+                Error = ''
+            }
+        )
+        $tests = @(
+            [pscustomobject]@{
+                TestName = 'Android_MediaPicker_Tests (ProcessImage_Rotation_DoesNotModifySource_And_WritesSingleCacheFile)'
+                Files = @('src/Essentials/test/DeviceTests/Tests/Android/MediaPicker_Tests.cs')
+            }
+        )
+
+        Test-BuildErrorIsInDetectedTest -Results $results -Tests $tests | Should -BeTrue
+    }
+
+    It 'does not credit an unrelated production-file compile error' {
+        $results = @(
+            @{
+                BuildError = $true
+                FailureMessage = "/s/src/Essentials/src/MediaPicker/MediaPicker.android.cs(43,54): error CS0117: 'MediaPickerImplementation' does not contain a definition for 'ProcessImage'"
+                Error = ''
+            }
+        )
+        $tests = @(
+            [pscustomobject]@{
+                TestName = 'Android_MediaPicker_Tests (ProcessImage_Rotation_DoesNotModifySource_And_WritesSingleCacheFile)'
+                Files = @('src/Essentials/test/DeviceTests/Tests/Android/MediaPicker_Tests.cs')
+            }
+        )
+
+        Test-BuildErrorIsInDetectedTest -Results $results -Tests $tests | Should -BeFalse
+    }
+}
+
 Describe 'Write-MarkdownReport — new-snapshot-no-baseline does not double-message as infra error' {
     It 'shows the snapshot note but NOT the generic env-error/retry message (PR #35491 pattern)' {
         $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")

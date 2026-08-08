@@ -2010,6 +2010,19 @@ function Test-BuildErrorIsInDetectedTest {
     foreach ($t in $Tests) {
         $base = (($t.TestName -split ' \(')[0]).Trim()
         if ($base -and $errText -match [regex]::Escape($base)) { return $true }
+
+        # Device-test class names can carry a platform prefix that their source
+        # files do not (for example Android_MediaPicker_Tests is declared in
+        # MediaPicker_Tests.cs). Detect-TestsInDiff already provides the exact
+        # changed test file, so matching its leaf name safely establishes that
+        # the compile error came from the PR's own detected test.
+        foreach ($testFile in @($t.Files)) {
+            if ([string]::IsNullOrWhiteSpace([string]$testFile)) { continue }
+            $testFileLeaf = [IO.Path]::GetFileName(([string]$testFile -replace '\\', '/'))
+            if ($testFileLeaf -and $errText -match [regex]::Escape($testFileLeaf)) {
+                return $true
+            }
+        }
     }
     return $false
 }
