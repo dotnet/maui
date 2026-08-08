@@ -76,12 +76,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			{
 				// A bare string result is double-encoded: the page JSON.stringify's it and the platform
 				// bridge serializes it again when read back, so a single deserialize leaves a wrapping
-				// layer of quotes. Peel any remaining JSON-string layers so callers get the raw value.
+				// layer of quotes. Peel that one bridge-added layer so callers get the raw value.
 				if (value is string str)
 				{
-					while (TryDeserialize<string>(str, out var peeled) && peeled is not null && peeled != str)
-						str = peeled;
-					return (T)(object)str;
+					if (TryDeserialize<string>(str, out var peeled) && peeled is not null)
+						return (T)(object)peeled;
 				}
 				return value;
 			}

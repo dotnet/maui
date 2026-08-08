@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// caching). Returning <see langword="null"/> or an empty string from the callback for a given request also
 		/// falls back to the default for that request. The callback may be invoked on a background thread, so it
 		/// must not access UI state directly. If the callback throws, the exception is logged and the request falls
-		/// back to the default header.
+		/// back to the default header. Cache entries remain subject to platform limits, expiration, and eviction.
 		/// </summary>
 		Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider => null;
 

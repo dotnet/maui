@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
@@ -73,8 +73,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <para>
 		/// By default no callback is set and all served content uses <c>no-cache, max-age=0, must-revalidate,
 		/// no-store</c>, which disables WebView caching. Provide a callback to opt specific resources into caching,
-		/// for example to stop images from flickering when navigating between pages. Return <see langword="null"/>
-		/// or an empty string from the callback to keep the default behavior for a given request.
+		/// which can avoid repeated file reads and reduce image reload flicker when navigating between pages.
+		/// Return <see langword="null"/> or an empty string from the callback to keep the default behavior for a
+		/// given request. Cache entries remain subject to platform limits, expiration, and eviction.
 		/// </para>
 		/// <para>
 		/// The callback is invoked from the platform's request handling, which may run on a background thread, so it

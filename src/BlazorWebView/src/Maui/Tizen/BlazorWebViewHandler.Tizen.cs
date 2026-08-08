@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		static private Dictionary<string, WeakReference<BlazorWebViewHandler>> s_webviewHandlerTable = new(StringComparer.Ordinal);
 
 		private TizenWebViewManager? _webviewManager;
+		private readonly StaticContentResponseCache _staticContentResponseCache = new();
 
 		private ILogger? _logger;
 		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
@@ -85,6 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			platformView.PageLoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(platformView);
 			s_webviewHandlerTable.Remove(GetHashCode().ToString());
+			_staticContentResponseCache.Clear();
 		}
 
 
@@ -126,6 +128,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var url = interceptor.Url;
 			if (url.StartsWith(AppOrigin))
 			{
+				var cacheRequestBehavior = StaticContentResponseCachePolicy.GetRequestBehavior(interceptor.Method, interceptor.Headers);
+				if (_staticContentResponseCache.TryGet(url, out var cachedResponse))
+				{
+					if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Default)
+					{
+						var cachedRequestUri = QueryStringHelper.RemovePossibleQueryString(url);
+						Logger.HandlingWebRequest(cachedRequestUri);
+						Logger.ResponseContentBeingSent(cachedRequestUri, cachedResponse.StatusCode);
+						interceptor.SetResponse(GetHeaderString(cachedResponse), cachedResponse.Content);
+						return;
+					}
+
+					if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Refresh)
+					{
+						_staticContentResponseCache.Remove(url);
+					}
+				}
+
 				var allowFallbackOnHostPage = url.EndsWith("/");
 				var originalUrl = url;
 				url = QueryStringHelper.RemovePossibleQueryString(url);
@@ -142,19 +162,47 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						headers["Cache-Control"] = cacheControlOverride;
 					}
 
-					var header = $"HTTP/1.0 200 OK\r\n";
-					foreach (var item in headers)
+					using var memstream = new MemoryStream();
+					using (content)
 					{
-						header += $"{item.Key}:{item.Value}\r\n";
+						content.CopyTo(memstream);
 					}
-					header += "\r\n";
-					MemoryStream memstream = new MemoryStream();
-					content.CopyTo(memstream);
-					interceptor.SetResponse(header, memstream.ToArray());
+					var contentBytes = memstream.ToArray();
+					if (statusCode == 200 &&
+						cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled &&
+						contentBytes.Length <= StaticContentResponseCache.MaxEntrySize &&
+						headers.TryGetValue("Cache-Control", out var cacheControl) &&
+						StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out var cacheLifetime))
+					{
+						_staticContentResponseCache.Set(new StaticContentResponse(
+							originalUrl,
+							contentType,
+							statusCode,
+							statusMessage,
+							headers,
+							contentBytes,
+							StaticContentResponseCachePolicy.GetExpiration(cacheLifetime)));
+					}
+
+					interceptor.SetResponse(GetHeaderString(statusCode, statusMessage, headers), contentBytes);
 					return;
 				}
 			}
 			interceptor.Ignore();
+		}
+
+		private static string GetHeaderString(StaticContentResponse response)
+			=> GetHeaderString(response.StatusCode, response.StatusMessage, response.Headers);
+
+		private static string GetHeaderString(int statusCode, string statusMessage, IDictionary<string, string> headers)
+		{
+			var header = $"HTTP/1.0 {statusCode} {statusMessage}\r\n";
+			foreach (var item in headers)
+			{
+				header += $"{item.Key}:{item.Value}\r\n";
+			}
+
+			return header + "\r\n";
 		}
 
 		private void StartWebViewCoreIfPossible()
