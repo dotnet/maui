@@ -133,6 +133,13 @@ Describe 'Reviewer pipeline timeout containment' {
         $deepBlock | Should -Not -Match "'Canceled'"
         $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
         $cleanupBlock | Should -Match 'condition: always\(\)'
+        $cleanupBlock | Should -Match 'SYSTEM_ACCESSTOKEN: \$\(System\.AccessToken\)'
+        $cleanupBlock | Should -Match '--oauth2-bearer "\$\{SYSTEM_ACCESSTOKEN\}"'
+        $cleanupBlock | Should -Not -Match 'Authorization:\s+\*+'
+        $cleanupBlock | Should -Match '\.templateParameters\.PRNumber'
+        $cleanupBlock | Should -Match '\.id != \$current and \.status != "completed"'
+        $cleanupBlock | Should -Match 'Preserving s/agent-review-in-progress'
+        $cleanupBlock.IndexOf('OTHER_ACTIVE=') | Should -BeLessThan $cleanupBlock.IndexOf('repos/dotnet/maui/issues/${PR_NUM}/labels')
         $analyzeBlock | Should -Match 'condition: not\(canceled\(\)\)'
     }
 

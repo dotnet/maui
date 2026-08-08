@@ -4572,8 +4572,7 @@ stages:
           vmImage: ubuntu-22.04
         timeoutInMinutes: 5
         steps:
-          # This job only calls `gh api` (which targets repos/dotnet/maui via
-          # GH_TOKEN, not the local git repo), so it needs no source checkout.
+          # This job only calls trusted GitHub/AzDO APIs, so it needs no source checkout.
           # The implicit `checkout: self` of the multi-GB dotnet/maui repo used
           # to take >5 min on a cold hosted agent, blowing this job's 5-minute
           # timeout and marking the WHOLE build `failed` even when the review
@@ -4591,6 +4590,50 @@ stages:
                 exit 0
               fi
 
+              CURRENT_BUILD="${BUILD_BUILDID}"
+              DEFINITION_ID="${SYSTEM_DEFINITIONID}"
+              if ! [[ "${CURRENT_BUILD}" =~ ^[1-9][0-9]*$ ]] ||
+                 ! [[ "${DEFINITION_ID}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=warning]Preserving review lock because build identity is invalid."
+                exit 0
+              fi
+
+              if [ -z "${SYSTEM_ACCESSTOKEN:-}" ] ||
+                 [ -z "${SYSTEM_COLLECTIONURI:-}" ] ||
+                 [ -z "${SYSTEM_TEAMPROJECT:-}" ]; then
+                echo "##vso[task.logissue type=warning]Preserving review lock because active-build ownership could not be checked."
+                exit 0
+              fi
+
+              COLLECTION_URI="${SYSTEM_COLLECTIONURI%/}"
+              BUILDS_URL="${COLLECTION_URI}/${SYSTEM_TEAMPROJECT}/_apis/build/builds?definitions=${DEFINITION_ID}&%24top=100&queryOrder=queueTimeDescending&api-version=7.1"
+              if ! BUILDS_JSON=$(curl --fail --silent --show-error --location \
+                --oauth2-bearer "${SYSTEM_ACCESSTOKEN}" \
+                -H "Accept: application/json" \
+                "${BUILDS_URL}"); then
+                echo "##vso[task.logissue type=warning]Preserving review lock because the active-build query failed."
+                exit 0
+              fi
+
+              if ! OTHER_ACTIVE=$(printf '%s' "${BUILDS_JSON}" | jq -r \
+                --arg pr "${PR_NUM}" \
+                --argjson current "${CURRENT_BUILD}" \
+                '.value[] |
+                 select(.id != $current and .status != "completed") |
+                 select(((.templateParameters.PRNumber // "") | tostring) == $pr) |
+                 [.id, .status, .queueTime] | @tsv'); then
+                echo "##vso[task.logissue type=warning]Preserving review lock because the active-build response was invalid."
+                exit 0
+              fi
+
+              if [ -n "${OTHER_ACTIVE}" ]; then
+                echo "Preserving s/agent-review-in-progress on PR #${PR_NUM}; another review build is still active:"
+                while IFS=$'\t' read -r build_id build_status queue_time; do
+                  echo "  build ${build_id}: ${build_status} (queued ${queue_time})"
+                done <<<"${OTHER_ACTIVE}"
+                exit 0
+              fi
+
               echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
               gh api \
                 --method DELETE \
@@ -4598,6 +4641,11 @@ stages:
             displayName: 'Remove in-progress label'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              SYSTEM_COLLECTIONURI: $(System.CollectionUri)
+              SYSTEM_TEAMPROJECT: $(System.TeamProject)
+              SYSTEM_DEFINITIONID: $(System.DefinitionId)
+              BUILD_BUILDID: $(Build.BuildId)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
   - stage: AnalyzeCopilotTokenUsage
