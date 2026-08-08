@@ -275,9 +275,11 @@ Describe 'Reviewer pipeline timeout containment' {
     It 'runs Catalyst desktop setup and cleanup from trusted scripts' {
         $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/disable-notification-center.sh'))
         $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/dismiss-apple-account-dialog.sh'))
+        $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/dismiss-maccatalyst-app-recovery-dialog.sh'))
         $pipelineContent | Should -Match ([regex]::Escape('$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/enable-notification-center.sh'))
         $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh'))
         $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/dismiss-apple-account-dialog.sh'))
+        $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/dismiss-maccatalyst-app-recovery-dialog.sh'))
         $pipelineContent | Should -Not -Match ([regex]::Escape('$(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh'))
 
         $cleanupStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf("displayName: 'Re-enable Notification Center'"))

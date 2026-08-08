@@ -331,23 +331,30 @@ $testStartTime = Get-Date
 # The app has built-in file logging that writes directly to MAUI_LOG_FILE path
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
-    # Dismiss the macOS "Sign in to your Apple Account" Setup Assistant modal
-    # before launching the app. On CI mac agents this pane is presented over the
-    # app under test, so Appium's mac2 driver sees no elements and EVERY test
-    # fails with a WaitForElement timeout. Running it here (not just once at job
-    # start) re-clears the screen before each category in the deep loop, in case
-    # the modal re-appears between categories. Best-effort; never blocks the run.
-    $dismissDialogCandidates = @(
-        [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../eng-scripts/dismiss-apple-account-dialog.sh")),
-        [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/dismiss-apple-account-dialog.sh"))
+    # Clear macOS-owned dialogs before every category, not just once at job
+    # startup. Both dialogs hide the HostApp's accessibility tree and otherwise
+    # turn every remaining fixture into the same WaitForElement timeout:
+    # - Setup Assistant's Apple Account sign-in pane can reappear mid-job.
+    # - A force-killed HostApp can leave the AppKit "unexpectedly quit while
+    #   reopening windows" alert, which also contaminates later categories.
+    # Trusted staged paths come first; repository paths are local-run fallbacks.
+    $dialogDismissals = @(
+        @{ FileName = "dismiss-apple-account-dialog.sh"; Label = "Apple Account dialog" },
+        @{ FileName = "dismiss-maccatalyst-app-recovery-dialog.sh"; Label = "MacCatalyst app recovery dialog" }
     )
-    $dismissDialog = $dismissDialogCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if ($dismissDialog -and (Test-Path $dismissDialog)) {
-        try {
-            & chmod +x $dismissDialog 2>$null
-            & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
-        } catch {
-            Write-Warn "Apple Account dialog dismissal failed (non-fatal): $_"
+    foreach ($dialog in $dialogDismissals) {
+        $dismissDialogCandidates = @(
+            [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../eng-scripts/$($dialog.FileName)")),
+            [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/$($dialog.FileName)"))
+        )
+        $dismissDialog = $dismissDialogCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($dismissDialog -and (Test-Path $dismissDialog)) {
+            try {
+                & chmod +x $dismissDialog 2>$null
+                & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
+            } catch {
+                Write-Warn "$($dialog.Label) dismissal failed (non-fatal): $_"
+            }
         }
     }
 

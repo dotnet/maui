@@ -72,13 +72,37 @@ Describe 'Android flaky-retry new-baseline exclusion' {
     }
 }
 
-Describe 'MacCatalyst Apple Account dialog dismissal' {
-    It 'prefers the trusted staged script location before the repository fallback' {
+Describe 'MacCatalyst blocking-dialog dismissal' {
+    It 'prefers trusted staged scripts before repository fallbacks' {
         $scriptContent = Get-Content (Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1') -Raw
-        $trustedPath = '../eng-scripts/dismiss-apple-account-dialog.sh'
-        $fallbackPath = '../../eng/scripts/dismiss-apple-account-dialog.sh'
 
+        foreach ($scriptName in @(
+            'dismiss-apple-account-dialog.sh',
+            'dismiss-maccatalyst-app-recovery-dialog.sh'
+        )) {
+            $scriptContent | Should -Match ([regex]::Escape("FileName = `"$scriptName`""))
+        }
+
+        $trustedPath = '../eng-scripts/$($dialog.FileName)'
+        $fallbackPath = '../../eng/scripts/$($dialog.FileName)'
+        $scriptContent.IndexOf($trustedPath) | Should -BeGreaterOrEqual 0
         $scriptContent.IndexOf($trustedPath) | Should -BeLessThan $scriptContent.IndexOf($fallbackPath)
+    }
+
+    It 'prevents and dismisses the HostApp reopen-windows recovery alert' {
+        $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
+        $recoveryScript = Get-Content (Join-Path $repoRoot 'eng/scripts/dismiss-maccatalyst-app-recovery-dialog.sh') -Raw
+
+        $recoveryScript | Should -Match 'com\.microsoft\.maui\.uitests'
+        $recoveryScript | Should -Match 'ApplePersistenceIgnoreState'
+        $recoveryScript | Should -Match 'NSQuitAlwaysKeepsWindows'
+        $recoveryScript | Should -Match 'unexpectedly quit'
+        $recoveryScript | Should -Match "Don['’]t Reopen"
+        $recoveryScript | Should -Match 'Saved Application State'
+        $recoveryScript | Should -Match 'pgrep -f "\$processPattern"'
+        $recoveryScript | Should -Match 'ps -p "\$processId" -o command='
+        $recoveryScript | Should -Match 'kill "\$processId"'
+        $recoveryScript | Should -Not -Match '\b(?:pkill|killall)\b'
     }
 }
 

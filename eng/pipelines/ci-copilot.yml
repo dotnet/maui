@@ -2443,6 +2443,22 @@ stages:
               continueOnError: true
               timeoutInMinutes: 5
 
+            # Prevent and dismiss AppKit's "unexpectedly quit while reopening
+            # windows" alert for the Catalyst HostApp. A force-kill after one
+            # Appium hang can otherwise leave this alert above the app; Appium
+            # still reports the process foregrounded but sees none of the test
+            # elements, so every later fixture and category falsely fails.
+            - bash: |
+                SCRIPT="$(Build.ArtifactStagingDirectory)/trusted-github/eng-scripts/dismiss-maccatalyst-app-recovery-dialog.sh"
+                if [ ! -f "$SCRIPT" ]; then
+                  echo "##vso[task.logissue type=warning]Trusted MacCatalyst recovery dialog script is missing; continuing."
+                  exit 0
+                fi
+                /bin/sh "$SCRIPT"
+              displayName: 'Dismiss MacCatalyst app recovery dialog'
+              continueOnError: true
+              timeoutInMinutes: 5
+
           # Disable macOS text autocorrect for iOS and Catalyst (mirrors main CI).
           # Autocapitalize/spellcheck can interfere with Appium text entry tests.
           - ${{ if or(eq(parameters.Platform, 'ios'), eq(parameters.Platform, 'catalyst')) }}:
