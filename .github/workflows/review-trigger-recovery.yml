@@ -1,0 +1,45 @@
+# Recover authorized /review comments whose issue_comment webhook was not
+# delivered by GitHub Actions. This is deterministic polling, not an agentic
+# workflow: no untrusted PR code is checked out or executed.
+
+name: Review Trigger Recovery
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+
+permissions: {}
+
+concurrency:
+  group: review-trigger-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      vars.REVIEW_TRIGGER_RECOVERY_DISABLED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      # Scheduled workflows execute from the default branch; pin the checked-out
+      # recovery script to trusted main as an additional guard.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Recover missed /review commands
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ./.github/scripts/Recover-MissedReviewCommands.ps1 `
+            -LookbackHours 24 `
+            -MinimumAgeMinutes 25 `
+            -MaxRecoveries 5
