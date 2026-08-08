@@ -2798,6 +2798,13 @@ stages:
               $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
               New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 
+              # Keep text diagnostics useful without publishing multi-gigabyte
+              # artifacts when Appium emits an unusually large per-category log.
+              # The helper copies small files exactly and retains a bounded tail
+              # for large logs, where the terminal failure context lives.
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              $maxDiagnosticLogBytes = 16MB
+
               # Dot-source the shared retry wrapper so Stage 2 gets the same
               # env-error detection, device recovery, and retry logic as Stage 1.
               $retryScript = ".github/scripts/shared/Invoke-UITestWithRetry.ps1"
@@ -3133,9 +3140,29 @@ stages:
                 if (Test-Path $uiDiagSrc) {
                   $uiDiagDest = Join-Path $catDir "ui-diagnostics"
                   New-Item -ItemType Directory -Force -Path $uiDiagDest | Out-Null
-                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -ErrorAction SilentlyContinue |
-                    Where-Object { $_.Extension -in '.png', '.xml' -or $_.Name -in 'appium.log', 'android-device.log', 'test-output.log' } |
-                    ForEach-Object { Copy-Item $_.FullName $uiDiagDest -Force -ErrorAction SilentlyContinue }
+                  $diagFiles = @(Get-ChildItem -Path $uiDiagSrc -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object {
+                      -not ($_.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -and
+                      ($_.Extension -in '.png', '.xml' -or $_.Name -in 'appium.log', 'android-device.log', 'test-output.log')
+                    })
+                  foreach ($diagFile in $diagFiles) {
+                    $diagDest = Join-Path $uiDiagDest $diagFile.Name
+                    if ($diagFile.Name -in 'appium.log', 'android-device.log', 'test-output.log') {
+                      try {
+                        $copyResult = Copy-BoundedDiagnosticFile `
+                          -Source $diagFile.FullName `
+                          -Destination $diagDest `
+                          -MaxBytes $maxDiagnosticLogBytes
+                        if ($copyResult.Truncated) {
+                          Write-Host "Truncated $($diagFile.Name) from $($copyResult.SourceBytes) to $($copyResult.CopiedBytes) bytes for the artifact."
+                        }
+                      } catch {
+                        Write-Host "Could not capture bounded diagnostic '$($diagFile.Name)': $_" -ForegroundColor Yellow
+                      }
+                    } else {
+                      Copy-Item -LiteralPath $diagFile.FullName -Destination $diagDest -Force -ErrorAction SilentlyContinue
+                    }
+                  }
                   $diagCount = @(Get-ChildItem -Path $uiDiagDest -File -ErrorAction SilentlyContinue).Count
                   Write-Host "Captured $diagCount UI-test diagnostic file(s) (screenshots/page-source/logs) into $uiDiagDest"
                   # Clear per-test screenshots/page-source so the next category's

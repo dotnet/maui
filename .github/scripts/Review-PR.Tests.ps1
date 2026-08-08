@@ -393,6 +393,14 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('$totalPassed + $totalFailed + $totalSkipped'))
     }
 
+    It 'bounds copied deep UI diagnostic logs while preserving screenshots and page source' {
+        $pipelineContent | Should -Match ([regex]::Escape('. ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"'))
+        $pipelineContent | Should -Match ([regex]::Escape('$maxDiagnosticLogBytes = 16MB'))
+        $pipelineContent | Should -Match ([regex]::Escape('Copy-BoundedDiagnosticFile `'))
+        $pipelineContent | Should -Match ([regex]::Escape('-MaxBytes $maxDiagnosticLogBytes'))
+        $pipelineContent | Should -Match ([regex]::Escape("-not (`$_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)"))
+    }
+
     It 'passes the selected platform into every UI category detection pass' {
         $pipelineContent | Should -Match ([regex]::Escape('-PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM"'))
         $pipelineContent | Should -Match ([regex]::Escape('PARAM_PLATFORM: ${{ parameters.Platform }}'))
