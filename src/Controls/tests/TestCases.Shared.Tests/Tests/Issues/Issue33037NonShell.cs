@@ -21,6 +21,8 @@ public class Issue33037NonShell : _IssuesUITest
 	[TestCase("Issue33037DynamicContentViewGridScrollViewButton", "Issue33037DynamicContentViewGridScrollViewScroller", "Issue33037 Dynamic", "Item 40", "DynamicContentViewGridScrollView", null)]
 	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List", "Item 40", "ListView", null)]
 	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection", "Item 40", "CollectionView", null)]
+	[TestCase("Issue33037TableViewButton", "Issue33037TableViewScroller", "Issue33037 Table", "Item 40", null, null)]
+	[TestCase("Issue33037CandidateSelectionButton", "Issue33037CandidateSelectionScroller", "Issue33037 Candidates", "Item 40", null, null)]
 	[TestCase("Issue33037FixedHeaderCollectionViewButton", "Issue33037FixedHeaderCollectionViewScroller", "Issue33037 Fixed Header", "Item 40", "FixedHeaderCollectionView", "Issue33037FixedHeader")]
 	[TestCase("Issue33037ShortFixedHeaderCollectionViewButton", "Issue33037ShortFixedHeaderCollectionViewScroller", "Issue33037 Short Header", "Item 16", null, "Issue33037ShortFixedHeader")]
 	public void LargeTitleCollapsesToVisibleStandardTitle(string buttonId, string scrollerId, string title, string targetItem, string scenarioName, string fixedHeaderId)
@@ -72,6 +74,33 @@ public class Issue33037NonShell : _IssuesUITest
 					tolerance: fixedHeaderId is null ? 0.5 : 1.5,
 					retryTimeout: TimeSpan.FromSeconds(2));
 			}
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void ProgrammaticWebViewScrollCollapsesLargeTitle()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037WebViewButton").Click();
+
+		try
+		{
+			App.WaitForElement("Ready");
+			var expandedTitleRect = App.WaitForElement("Issue33037 Web").GetRect();
+
+			App.WaitForElement("Issue33037WebViewScrollButton").Click();
+			App.WaitForElement("Scrolled");
+
+			var collapsedTitleRect = App.WaitForElement("Issue33037 Web").GetRect();
+			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
+				"The navigation title should be shorter after the wrapped WebView scrolls.");
+			Assert.That(collapsedTitleRect.Height, Is.LessThan(60),
+				"The navigation title should collapse after the wrapped WebView scrolls.");
 		}
 		finally
 		{

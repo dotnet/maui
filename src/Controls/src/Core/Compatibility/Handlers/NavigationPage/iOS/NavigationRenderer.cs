@@ -16,6 +16,7 @@ using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
+using WebKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
@@ -1720,15 +1721,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				var presentedContent = (Child as IContentView)?.PresentedContent;
-				if (presentedContent is null || IsScrollableView(presentedContent))
+				if (presentedContent is null)
 				{
 					TearDownLargeTitleProxyScrollView();
 					return;
 				}
 
-				var scrollable = FindScrollableDescendant(presentedContent);
-				var scrollView = ResolvePlatformScrollView(scrollable);
+				if (_largeTitleObservedScrollView is UIScrollView observedScrollView &&
+					observedScrollView.IsDescendantOfView(View) &&
+					IsEligiblePlatformScrollView(observedScrollView))
+				{
+					if (_largeTitleProxyScrollView is not null)
+						UpdateLargeTitleProxyState(observedScrollView);
+					else if (!_largeTitleProxyScrollObservationArmed)
+						_largeTitleInitialContentOffset = observedScrollView.ContentOffset;
+
+					return;
+				}
+
+				var scrollable = FindPrimaryScrollableDescendant(presentedContent, View, out var scrollView);
 				if (scrollView is null)
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (ReferenceEquals(presentedContent, scrollable) &&
+					ReferenceEquals(scrollable.Handler?.PlatformView, scrollView))
 				{
 					TearDownLargeTitleProxyScrollView();
 					return;
@@ -1862,32 +1881,64 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				View.InsertSubview(_largeTitleProxyScrollView, 0);
 			}
 
-			static IView FindScrollableDescendant(IView view)
+			static IView FindPrimaryScrollableDescendant(IView view, UIView container, out UIScrollView scrollView)
 			{
-				if (view is null)
-					return null;
+				var candidates = new List<IView>();
+				CollectScrollableDescendants(view, candidates);
 
-				if (IsScrollableView(view))
-					return view;
+				IView primaryScrollable = null;
+				UIScrollView primaryScrollView = null;
+				nfloat primaryTop = nfloat.MaxValue;
+
+				for (int i = 0; i < candidates.Count; i++)
+				{
+					var candidateScrollView = ResolvePlatformScrollView(candidates[i]);
+					if (!IsEligiblePlatformScrollView(candidateScrollView))
+						continue;
+
+					var frame = candidateScrollView.ConvertRectToView(candidateScrollView.Bounds, container);
+					if (frame.GetMinY() >= primaryTop)
+						continue;
+
+					primaryScrollable = candidates[i];
+					primaryScrollView = candidateScrollView;
+					primaryTop = frame.GetMinY();
+				}
+
+				scrollView = primaryScrollView;
+				return primaryScrollable;
+			}
+
+			static void CollectScrollableDescendants(IView view, List<IView> candidates)
+			{
+				if (view is null ||
+					view.Visibility != Visibility.Visible ||
+					view.Opacity <= 0.01)
+				{
+					return;
+				}
+
+				if (IsScrollableView(view) && CanScrollVertically(view))
+					candidates.Add(view);
 
 				if (view is IContentView contentView && contentView.PresentedContent is IView content)
-					return FindScrollableDescendant(content);
+					CollectScrollableDescendants(content, candidates);
 
 				if (view is Microsoft.Maui.Controls.Layout layout)
 				{
 					for (int i = 0; i < layout.Count; i++)
-					{
-						var found = FindScrollableDescendant(layout[i]);
-						if (found is not null)
-							return found;
-					}
+						CollectScrollableDescendants(layout[i], candidates);
 				}
-
-				return null;
 			}
 
 			static UIScrollView ResolvePlatformScrollView(IView view)
 			{
+				if (view is WebView &&
+					view.Handler?.PlatformView is WKWebView webView)
+				{
+					return webView.ScrollView;
+				}
+
 				if (view?.Handler?.PlatformView is UIScrollView scrollView)
 					return scrollView;
 
@@ -1913,10 +1964,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return null;
 			}
 
+			static bool IsEligiblePlatformScrollView(UIScrollView scrollView)
+			{
+				if (scrollView is null ||
+					scrollView.Hidden ||
+					scrollView.Alpha <= 0.01)
+				{
+					return false;
+				}
+
+				return true;
+			}
+
+			static bool CanScrollVertically(IView view)
+			{
+				if (view is ScrollView scrollView)
+					return scrollView.Orientation is ScrollOrientation.Vertical or ScrollOrientation.Both;
+
+				if (view is CarouselView carouselView)
+					return carouselView.ItemsLayout?.Orientation == ItemsLayoutOrientation.Vertical;
+
+				if (view is StructuredItemsView structuredItemsView)
+				{
+					return structuredItemsView.ItemsLayout is not ItemsLayout itemsLayout ||
+						itemsLayout.Orientation != ItemsLayoutOrientation.Horizontal;
+				}
+
+				return true;
+			}
+
 			static bool IsScrollableView(IView view)
 			{
 #pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
-				return view is ScrollView or ListView or ItemsView;
+				return view is ScrollView or ListView or ItemsView or TableView or WebView;
 #pragma warning restore CS0618
 			}
 

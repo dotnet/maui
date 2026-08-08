@@ -37,6 +37,9 @@ public class Issue33037NonShellRootPage : ContentPage
 				CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
 				CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
 				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage()),
+				CreateButton("Issue33037TableViewButton", "Grid wrapping TableView", () => new Issue33037NonShellTableViewPage()),
+				CreateButton("Issue33037WebViewButton", "Grid wrapping WebView", () => new Issue33037NonShellWebViewPage()),
+				CreateButton("Issue33037CandidateSelectionButton", "Hidden and horizontal scrollers before vertical content", () => new Issue33037NonShellCandidateSelectionPage()),
 				CreateButton("Issue33037FixedHeaderCollectionViewButton", "Fixed header with CollectionView", () => new Issue33037NonShellFixedHeaderCollectionViewPage()),
 				CreateButton("Issue33037ShortFixedHeaderCollectionViewButton", "Short fixed header with CollectionView", () => new Issue33037NonShellShortFixedHeaderCollectionViewPage()),
 				CreateButton("Issue33037ProgrammaticCollectionViewButton", "Programmatic CollectionView scroll", () => new Issue33037NonShellProgrammaticCollectionViewPage()),
@@ -238,6 +241,154 @@ class Issue33037NonShellCollectionViewPage : Issue33037NonShellScenarioPage
 				label.SetBinding(Label.TextProperty, ".");
 				return label;
 			})
+		};
+	}
+}
+
+class Issue33037NonShellTableViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellTableViewPage() : base("Issue33037 Table")
+	{
+		var section = new TableSection();
+		for (int i = 0; i < 60; i++)
+			section.Add(new TextCell { Text = $"Item {i}" });
+
+		Content = new Grid
+		{
+			Children =
+			{
+				new TableView
+				{
+					AutomationId = "Issue33037TableViewScroller",
+					Root = new TableRoot { section }
+				}
+			}
+		};
+	}
+}
+
+class Issue33037NonShellWebViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellWebViewPage() : base("Issue33037 Web")
+	{
+		var readyLabel = new Label
+		{
+			AutomationId = "Issue33037WebViewReady",
+			Text = "Loading"
+		};
+
+		var webView = new WebView
+		{
+			AutomationId = "Issue33037WebViewScroller",
+			Source = new HtmlWebViewSource
+			{
+				Html = """
+					<!doctype html>
+					<html>
+					<head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+					<body style="margin: 0; font: 20px sans-serif;">
+						<div style="height: 3000px; padding: 16px;">Scrollable WebView content</div>
+					</body>
+					</html>
+					"""
+			}
+		};
+		webView.Navigated += (_, _) => readyLabel.Text = "Ready";
+
+		var scrollButton = new Button
+		{
+			AutomationId = "Issue33037WebViewScrollButton",
+			Text = "Scroll WebView"
+		};
+		scrollButton.Clicked += async (_, _) =>
+		{
+			await webView.EvaluateJavaScriptAsync("window.scrollTo(0, 1200)");
+			await Task.Delay(500);
+			readyLabel.Text = "Scrolled";
+		};
+
+		Grid.SetRow(webView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				new HorizontalStackLayout
+				{
+					Children =
+					{
+						scrollButton,
+						readyLabel
+					}
+				},
+				webView
+			}
+		};
+	}
+}
+
+class Issue33037NonShellCandidateSelectionPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellCandidateSelectionPage() : base("Issue33037 Candidates")
+	{
+		var horizontalCollectionView = new CollectionView
+		{
+			AutomationId = "Issue33037HorizontalCollectionView",
+			HeightRequest = 80,
+			ItemsSource = CreateItems(10),
+			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					WidthRequest = 100,
+					Padding = 8
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		var verticalCollectionView = new CollectionView
+		{
+			AutomationId = "Issue33037CandidateSelectionScroller",
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		Grid.SetRow(verticalCollectionView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				new ScrollView
+				{
+					AutomationId = "Issue33037HiddenScrollView",
+					IsVisible = false,
+					Content = CreateStackContent("Issue33037HiddenCandidate")
+				},
+				horizontalCollectionView,
+				verticalCollectionView
+			}
 		};
 	}
 }
