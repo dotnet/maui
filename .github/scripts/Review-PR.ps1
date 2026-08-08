@@ -421,7 +421,11 @@ if ($DryRun) {
             git branch -D $reviewBranch 2>$null
             git branch -D $tempBranch 2>$null
             if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
-                Remove-StaleMauiBotIssueComments -PRNumber $PRNumber -IncludeMergeConflict -Reason "stale merge-conflict notice"
+                Remove-StaleMauiBotIssueComments `
+                    -PRNumber $PRNumber `
+                    -IncludeMergeConflict `
+                    -IncludeReviewIncomplete `
+                    -Reason "stale merge-conflict or review-incomplete notice"
             }
             $conflictBody = @"
 <!-- MAUI_BOT_MERGE_CONFLICT -->
@@ -497,7 +501,8 @@ if ($DryRun) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
                 -IncludeMergeConflict `
-                -Reason "stale merge-conflict notice"
+                -IncludeReviewIncomplete `
+                -Reason "stale merge-conflict or review-incomplete notice"
         }
 
         # Post a comment on the PR about merge conflicts

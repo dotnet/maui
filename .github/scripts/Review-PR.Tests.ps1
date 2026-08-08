@@ -141,6 +141,8 @@ Describe 'Reviewer pipeline timeout containment' {
         ([regex]::Matches($content, [regex]::Escape("Set-SetupOutcome -Outcome 'MERGE_CONFLICT'"))).Count |
             Should -Be 2
         $content | Should -Match ([regex]::Escape("Set-SetupOutcome -Outcome 'COMPLETED'"))
+        ([regex]::Matches($content, [regex]::Escape('-IncludeReviewIncomplete'))).Count |
+            Should -BeGreaterOrEqual 2
         $pipelineContent | Should -Match ([regex]::Escape('variable=setupResult;isOutput=true'))
         $pipelineContent | Should -Match ([regex]::Escape("trustedSetupResult: `$[ dependencies.CopilotReview.outputs['RunSetup.setupResult'] ]"))
         $pipelineContent | Should -Match ([regex]::Escape("ne(variables['trustedSetupResult'], 'MERGE_CONFLICT')"))
