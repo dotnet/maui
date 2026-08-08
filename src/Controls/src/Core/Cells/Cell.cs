@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>The default height of cells.</summary>
 		public const int DefaultCellHeight = 40;
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
+		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(Cell), BooleanBoxes.TrueBox, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
 		List<MenuItem> _currentContextActions;
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets the height of the rendered cell on the device.</summary>
