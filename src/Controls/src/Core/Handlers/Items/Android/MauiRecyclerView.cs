@@ -387,7 +387,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);
 
-
 		protected virtual void UpdateSnapBehavior()
 		{
 			_snapManager = GetSnapManager();
