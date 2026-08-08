@@ -1160,7 +1160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
 					UpdateNavigationBarVisibility(true);
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
-					UpdateTitle(Child.Title);
+					NavigationItem.Title = Child.Title;
 				else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
 					UpdateHasBackButton();
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
@@ -1266,16 +1266,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
 
-			void UpdateTitle(string title)
-			{
-				Title = title;
-				NavigationItem.Title = title;
-			}
-
 			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
-					UpdateTitle(title);
+					NavigationItem.Title = title;
 
 				if (backButtonTitle != null)
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.

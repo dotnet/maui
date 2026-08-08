@@ -16,7 +16,6 @@ using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
-using MauiLayout = Microsoft.Maui.Controls.Layout;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
@@ -548,7 +547,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
 				UpdateBarBackground();
-				UpdateCurrentPageLargeTitleSafeArea();
 			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName
 				  || e.PropertyName == StatusBarTextColorModeProperty.PropertyName)
@@ -569,7 +567,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
 				UpdateTranslucent();
-				UpdateCurrentPageLargeTitleSafeArea();
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
@@ -579,7 +576,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 			{
 				UpdateUseLargeTitles();
-				UpdateCurrentPageLargeTitleSafeArea();
+				UpdateCurrentPageLargeTitleProxy();
 			}
 			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
@@ -682,9 +679,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
 		}
 
-		void UpdateCurrentPageLargeTitleSafeArea()
+		void UpdateCurrentPageLargeTitleProxy()
 		{
-			(TopViewController as ParentingViewController)?.UpdateLargeTitleSafeArea();
+			(TopViewController as ParentingViewController)?.UpdateLargeTitleProxyScrollView();
 		}
 
 		void UpdateTranslucent()
@@ -1395,14 +1392,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			readonly WeakReference<NavigationRenderer> _navigation;
 
 			WeakReference<Page> _child;
-			WeakReference<MauiLayout> _largeTitleSafeAreaRootLayout;
-			bool _largeTitleSafeAreaApplied;
-			bool _updatingLargeTitleSafeArea;
-			static readonly SafeAreaEdges LargeTitleRootLayoutSafeAreaEdges = new(SafeAreaRegions.Container, SafeAreaRegions.None, SafeAreaRegions.Container, SafeAreaRegions.Container);
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
 			bool _toolbarUpdatePending = false;
+
+			UIScrollView _largeTitleProxyScrollView;
+			UIScrollView _largeTitleObservedScrollView;
+			IDisposable _largeTitleContentOffsetObserver;
+			PointF _largeTitleInitialContentOffset;
+			bool _largeTitleProxyScrollObservationArmed;
+			bool _isAppeared;
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
@@ -1424,9 +1424,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (child is not null)
 					{
-						RestoreLargeTitleSafeArea();
-						child.DescendantAdded -= HandleChildDescendantChanged;
-						child.DescendantRemoved -= HandleChildDescendantChanged;
+						TearDownLargeTitleProxyScrollView();
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1434,11 +1432,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					{
 						_child = new(value);
 						value.PropertyChanged += HandleChildPropertyChanged;
-						if (NeedsLargeTitleSafeAreaTracking())
-						{
-							value.DescendantAdded += HandleChildDescendantChanged;
-							value.DescendantRemoved += HandleChildDescendantChanged;
-						}
 					}
 					else
 					{
@@ -1469,11 +1462,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewDidAppear(animated);
 
 				Appearing?.Invoke(this, EventArgs.Empty);
+				_isAppeared = true;
+				ScheduleLargeTitleProxyScrollObservation();
 			}
 
 			public override void ViewDidDisappear(bool animated)
 			{
 				base.ViewDidDisappear(animated);
+				_isAppeared = false;
+				_largeTitleProxyScrollObservationArmed = false;
 
 				// force a redraw for right toolbar items by resetting TintColor to prevent
 				// toolbar items being grayed out when canceling swipe to a previous page
@@ -1535,6 +1532,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidLayoutSubviews();
 				UpdateFrames();
+				UpdateLargeTitleProxyScrollView();
 			}
 
 			public override void ViewDidLoad()
@@ -1570,7 +1568,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_navigation.TryGetTarget(out n))
 					isTranslucent = n.NavigationBar.Translucent;
 				EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
-				UpdateLargeTitleSafeArea();
 
 				base.ViewWillAppear(animated);
 			}
@@ -1585,11 +1582,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
 
+				TearDownLargeTitleProxyScrollView();
+
 				if (Child is Page child)
 				{
 					child.SendDisappearing();
-					child.DescendantAdded -= HandleChildDescendantChanged;
-					child.DescendantRemoved -= HandleChildDescendantChanged;
 					child.PropertyChanged -= HandleChildPropertyChanged;
 					Child = null;
 				}
@@ -1662,9 +1659,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+				{
 					UpdateNavigationBarVisibility(true);
+					UpdateLargeTitleProxyScrollView();
+				}
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
-					UpdateTitle(Child.Title);
+					NavigationItem.Title = Child.Title;
 				else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
 					UpdateHasBackButton();
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
@@ -1672,6 +1672,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
 				{
 					UpdateLargeTitles();
+					UpdateLargeTitleProxyScrollView();
 				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
@@ -1681,43 +1682,242 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
 				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
-					UpdateLargeTitleSafeArea();
+					RestartLargeTitleProxyScrollView();
 			}
 
-			void HandleChildDescendantChanged(object sender, ElementEventArgs e)
+			bool NeedsLargeTitleProxyScrollView()
 			{
-				if (!CanAffectLargeTitleSafeArea(e.Element))
-					return;
-
-				UpdateLargeTitleSafeArea();
-			}
-
-			static bool NeedsLargeTitleSafeAreaTracking()
-			{
-				return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
-			}
-
-			static bool CanAffectLargeTitleSafeArea(Element element)
-			{
-				if (element is null || HasScrollableAncestor(element))
+				if (!OperatingSystem.IsIOSVersionAtLeast(26) || Child is null)
 					return false;
 
-#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
-				return element is MauiLayout or IContentView or ScrollView or ListView or ItemsView;
-#pragma warning restore CS0618
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return false;
+
+				if (navigationRenderer.NavigationBarHidden || !NavigationPage.GetHasNavigationBar(Child))
+					return false;
+
+				if (!navigationRenderer.NavigationBar.Translucent || !navigationRenderer.NavigationBar.PrefersLargeTitles)
+					return false;
+
+				if (NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+					return false;
+
+				return true;
 			}
 
-			static bool HasScrollableAncestor(Element element)
+			void RestartLargeTitleProxyScrollView()
 			{
-				for (var parent = element.RealParent; parent is not null; parent = parent.RealParent)
+				TearDownLargeTitleProxyScrollView();
+				UpdateLargeTitleProxyScrollView();
+			}
+
+			internal void UpdateLargeTitleProxyScrollView()
+			{
+				if (!NeedsLargeTitleProxyScrollView() || !IsViewLoaded)
 				{
-#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
-					if (parent is ScrollView or ListView or ItemsView)
-						return true;
-#pragma warning restore CS0618
+					TearDownLargeTitleProxyScrollView();
+					return;
 				}
 
-				return false;
+				var presentedContent = (Child as IContentView)?.PresentedContent;
+				if (presentedContent is null || IsScrollableView(presentedContent))
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				var scrollable = FindScrollableDescendant(presentedContent);
+				var scrollView = ResolvePlatformScrollView(scrollable);
+				if (scrollView is null)
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (!ReferenceEquals(_largeTitleObservedScrollView, scrollView))
+				{
+					TearDownLargeTitleProxyScrollView();
+					SetUpLargeTitleProxyScrollView(scrollView);
+				}
+
+				if (_largeTitleProxyScrollView is not null)
+					UpdateLargeTitleProxyState(scrollView);
+				else if (!_largeTitleProxyScrollObservationArmed)
+					_largeTitleInitialContentOffset = scrollView.ContentOffset;
+			}
+
+			void SetUpLargeTitleProxyScrollView(UIScrollView scrollView)
+			{
+				_largeTitleObservedScrollView = scrollView;
+				_largeTitleInitialContentOffset = scrollView.ContentOffset;
+				_largeTitleProxyScrollObservationArmed = false;
+				_largeTitleContentOffsetObserver = scrollView.AddObserver(
+					"contentOffset",
+					NSKeyValueObservingOptions.New,
+					OnLargeTitleObservedScrollViewChanged);
+
+				if (_isAppeared)
+					ScheduleLargeTitleProxyScrollObservation();
+			}
+
+			void TearDownLargeTitleProxyScrollView()
+			{
+				_largeTitleContentOffsetObserver?.Dispose();
+				_largeTitleContentOffsetObserver = null;
+				_largeTitleObservedScrollView = null;
+				_largeTitleProxyScrollObservationArmed = false;
+				RemoveLargeTitleProxyScrollView();
+			}
+
+			void RemoveLargeTitleProxyScrollView()
+			{
+				if (_largeTitleProxyScrollView is not null)
+				{
+					_largeTitleProxyScrollView.RemoveFromSuperview();
+					_largeTitleProxyScrollView.Dispose();
+					_largeTitleProxyScrollView = null;
+				}
+			}
+
+			void OnLargeTitleObservedScrollViewChanged(NSObservedChange change)
+			{
+				if (_largeTitleObservedScrollView is UIScrollView scrollView)
+				{
+					if (!_largeTitleProxyScrollObservationArmed)
+					{
+						if (_largeTitleProxyScrollView is null)
+							_largeTitleInitialContentOffset = scrollView.ContentOffset;
+
+						return;
+					}
+
+					UpdateLargeTitleProxyState(scrollView);
+				}
+			}
+
+			void ScheduleLargeTitleProxyScrollObservation()
+			{
+				var scrollView = _largeTitleObservedScrollView;
+				if (scrollView is null)
+					return;
+
+				BeginInvokeOnMainThread(() =>
+				{
+					if (!_isAppeared ||
+						!ReferenceEquals(_largeTitleObservedScrollView, scrollView))
+					{
+						return;
+					}
+
+					if (_largeTitleProxyScrollView is null)
+					{
+						var adjustedContentInset = scrollView.AdjustedContentInset;
+						_largeTitleInitialContentOffset = new PointF(
+							-(float)adjustedContentInset.Left,
+							-(float)adjustedContentInset.Top);
+					}
+
+					_largeTitleProxyScrollObservationArmed = true;
+					UpdateLargeTitleProxyState(scrollView);
+				});
+			}
+
+			void UpdateLargeTitleProxyState(UIScrollView scrollView)
+			{
+				if (scrollView.ContentOffset.Y <= _largeTitleInitialContentOffset.Y + 0.5)
+				{
+					RemoveLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (_largeTitleProxyScrollView is null)
+					CreateLargeTitleProxyScrollView();
+
+				_largeTitleProxyScrollView.Frame = View.Bounds;
+				_largeTitleProxyScrollView.ContentSize = new SizeF(
+					Math.Max(0, scrollView.ContentSize.Width + _largeTitleProxyScrollView.Bounds.Width - scrollView.Bounds.Width),
+					Math.Max(0, scrollView.ContentSize.Height + _largeTitleProxyScrollView.Bounds.Height - scrollView.Bounds.Height));
+				_largeTitleProxyScrollView.ContentInset = scrollView.AdjustedContentInset;
+				_largeTitleProxyScrollView.ContentOffset = scrollView.ContentOffset;
+			}
+
+			void CreateLargeTitleProxyScrollView()
+			{
+				// UIKit only observes a direct, visible UIScrollView for large-title collapse.
+				// Mirror wrapped scrollers into a transparent view behind the real content.
+				_largeTitleProxyScrollView = new UIScrollView(View.Bounds)
+				{
+					AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+					BackgroundColor = UIColor.Clear,
+					Opaque = false,
+					UserInteractionEnabled = false,
+					ScrollsToTop = false,
+					ShowsHorizontalScrollIndicator = false,
+					ShowsVerticalScrollIndicator = false,
+					AccessibilityElementsHidden = true,
+					IsAccessibilityElement = false,
+					ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never,
+				};
+
+				View.InsertSubview(_largeTitleProxyScrollView, 0);
+			}
+
+			static IView FindScrollableDescendant(IView view)
+			{
+				if (view is null)
+					return null;
+
+				if (IsScrollableView(view))
+					return view;
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+					return FindScrollableDescendant(content);
+
+				if (view is Microsoft.Maui.Controls.Layout layout)
+				{
+					for (int i = 0; i < layout.Count; i++)
+					{
+						var found = FindScrollableDescendant(layout[i]);
+						if (found is not null)
+							return found;
+					}
+				}
+
+				return null;
+			}
+
+			static UIScrollView ResolvePlatformScrollView(IView view)
+			{
+				if (view?.Handler?.PlatformView is UIScrollView scrollView)
+					return scrollView;
+
+				if (view?.Handler?.PlatformView is UIView platformView)
+					return FindPlatformScrollView(platformView);
+
+				return null;
+			}
+
+			static UIScrollView FindPlatformScrollView(UIView view)
+			{
+				var subviews = view.Subviews;
+				for (int i = 0; i < subviews.Length; i++)
+				{
+					if (subviews[i] is UIScrollView scrollView)
+						return scrollView;
+
+					var nestedScrollView = FindPlatformScrollView(subviews[i]);
+					if (nestedScrollView is not null)
+						return nestedScrollView;
+				}
+
+				return null;
+			}
+
+			static bool IsScrollableView(IView view)
+			{
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+				return view is ScrollView or ListView or ItemsView;
+#pragma warning restore CS0618
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()
@@ -1867,16 +2067,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
 
-			void UpdateTitle(string title)
-			{
-				Title = title;
-				NavigationItem.Title = title;
-			}
-
 			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
 			{
 				if (!string.IsNullOrWhiteSpace(title))
-					UpdateTitle(title);
+					NavigationItem.Title = title;
 
 				if (backButtonTitle != null)
 					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
@@ -2186,210 +2380,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
 							break;
 					}
-				}
-
-				UpdateLargeTitleSafeArea();
-			}
-
-			internal void UpdateLargeTitleSafeArea()
-			{
-				if (_updatingLargeTitleSafeArea)
-					return;
-
-				_updatingLargeTitleSafeArea = true;
-				try
-				{
-					UpdateLargeTitleSafeAreaCore();
-				}
-				finally
-				{
-					_updatingLargeTitleSafeArea = false;
-				}
-			}
-
-			void UpdateLargeTitleSafeAreaCore()
-			{
-				var rootLayout = GetRootLayout();
-
-				if (!IsTrackedRootLayout(rootLayout))
-					RestoreLargeTitleSafeArea();
-
-				if (rootLayout is null)
-					return;
-
-				if (!ShouldExtendRootLayoutUnderNavigationBar(rootLayout))
-				{
-					RestoreLargeTitleSafeArea();
-					return;
-				}
-
-				TrackLargeTitleSafeAreaRootLayout(rootLayout);
-
-				if (HasUserSafeAreaEdges(rootLayout))
-				{
-					ClearLargeTitleSafeAreaOverride(rootLayout);
-					return;
-				}
-
-				if (_largeTitleSafeAreaApplied && rootLayout.SafeAreaEdges != LargeTitleRootLayoutSafeAreaEdges)
-					_largeTitleSafeAreaApplied = false;
-
-				if (!_largeTitleSafeAreaApplied)
-				{
-					rootLayout.SetValueFromRenderer(MauiLayout.SafeAreaEdgesProperty, LargeTitleRootLayoutSafeAreaEdges);
-					InvalidateSafeArea(rootLayout);
-					_largeTitleSafeAreaApplied = true;
-				}
-			}
-
-			void RestoreLargeTitleSafeArea()
-			{
-				if (_largeTitleSafeAreaRootLayout?.TryGetTarget(out var rootLayout) == true)
-				{
-					rootLayout.PropertyChanged -= HandleLargeTitleRootLayoutPropertyChanged;
-					ClearLargeTitleSafeAreaOverride(rootLayout);
-				}
-
-				_largeTitleSafeAreaRootLayout = null;
-				_largeTitleSafeAreaApplied = false;
-			}
-
-			void TrackLargeTitleSafeAreaRootLayout(MauiLayout rootLayout)
-			{
-				if (IsTrackedRootLayout(rootLayout))
-					return;
-
-				rootLayout.PropertyChanged += HandleLargeTitleRootLayoutPropertyChanged;
-				_largeTitleSafeAreaRootLayout = new(rootLayout);
-			}
-
-			void ClearLargeTitleSafeAreaOverride(MauiLayout rootLayout)
-			{
-				if (!_largeTitleSafeAreaApplied)
-					return;
-
-				rootLayout.ClearValue(MauiLayout.SafeAreaEdgesProperty, SetterSpecificity.FromHandler);
-				InvalidateSafeArea(rootLayout);
-				_largeTitleSafeAreaApplied = false;
-			}
-
-			void HandleLargeTitleRootLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
-			{
-				if (e.PropertyName == MauiLayout.SafeAreaEdgesProperty.PropertyName)
-					UpdateLargeTitleSafeArea();
-			}
-
-			bool HasUserSafeAreaEdges(MauiLayout rootLayout)
-			{
-				if (rootLayout is not ISafeAreaView2 safeAreaView || !safeAreaView.HasExplicitSafeAreaEdges)
-					return false;
-
-				if (_largeTitleSafeAreaApplied && rootLayout.SafeAreaEdges == LargeTitleRootLayoutSafeAreaEdges)
-					return false;
-
-				return true;
-			}
-
-			bool IsTrackedRootLayout(MauiLayout rootLayout)
-			{
-				return rootLayout is not null &&
-					_largeTitleSafeAreaRootLayout?.TryGetTarget(out var trackedRootLayout) == true &&
-					ReferenceEquals(rootLayout, trackedRootLayout);
-			}
-
-			MauiLayout GetRootLayout()
-			{
-				if (Child is not IContentView contentView)
-					return null;
-
-				return GetRootLayout(contentView.PresentedContent);
-			}
-
-			MauiLayout GetRootLayout(IView view)
-			{
-				if (view is MauiLayout layout)
-					return layout;
-
-				if (view is IContentView contentView && contentView.PresentedContent is IView content)
-				{
-					if (view is ISafeAreaView2 safeAreaView && safeAreaView.HasExplicitSafeAreaEdges)
-						return null;
-
-					return GetRootLayout(content);
-				}
-
-				return null;
-			}
-
-			bool ShouldExtendRootLayoutUnderNavigationBar(MauiLayout rootLayout)
-			{
-				if (!NeedsLargeTitleSafeAreaTracking())
-					return false;
-
-				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
-					return false;
-
-				if (!navigationRenderer.NavigationBar.Translucent || !navigationRenderer.NavigationBar.PrefersLargeTitles)
-					return false;
-
-				if (NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
-					return false;
-
-				if (rootLayout is not ISafeAreaView2 safeAreaView)
-					return false;
-
-				if (!HasScrollableContent(rootLayout))
-					return false;
-
-				return true;
-			}
-
-			bool HasScrollableContent(IView view)
-			{
-#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
-				if (view is ScrollView or ListView or ItemsView)
-					return true;
-#pragma warning restore CS0618
-
-				if (view is MauiLayout layout)
-				{
-					for (int i = 0; i < layout.Count; i++)
-					{
-						if (HasScrollableContent(layout[i]))
-							return true;
-					}
-				}
-
-				if (view is IContentView contentView && contentView.PresentedContent is IView content)
-				{
-					return HasScrollableContent(content);
-				}
-
-				return false;
-			}
-
-			void InvalidateSafeArea(IView view)
-			{
-				if (view.Handler?.PlatformView is MauiView mauiView)
-				{
-					mauiView.InvalidateSafeArea();
-				}
-				else if (view.Handler?.PlatformView is MauiScrollView scrollView)
-				{
-					scrollView.InvalidateSafeArea();
-				}
-
-				if (view is MauiLayout layout)
-				{
-					for (int i = 0; i < layout.Count; i++)
-					{
-						InvalidateSafeArea(layout[i]);
-					}
-				}
-
-				if (view is IContentView contentView && contentView.PresentedContent is IView content)
-				{
-					InvalidateSafeArea(content);
 				}
 			}
 

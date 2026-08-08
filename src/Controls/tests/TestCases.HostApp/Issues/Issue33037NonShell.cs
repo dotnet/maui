@@ -36,7 +36,12 @@ public class Issue33037NonShellRootPage : ContentPage
 				CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
 				CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
 				CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
-				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage())
+				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage()),
+				CreateButton("Issue33037FixedHeaderCollectionViewButton", "Fixed header with CollectionView", () => new Issue33037NonShellFixedHeaderCollectionViewPage()),
+				CreateButton("Issue33037ShortFixedHeaderCollectionViewButton", "Short fixed header with CollectionView", () => new Issue33037NonShellShortFixedHeaderCollectionViewPage()),
+				CreateButton("Issue33037ProgrammaticCollectionViewButton", "Programmatic CollectionView scroll", () => new Issue33037NonShellProgrammaticCollectionViewPage()),
+				CreateButton("Issue33037AppearingCollectionViewButton", "OnAppearing CollectionView scroll", () => new Issue33037NonShellAppearingCollectionViewPage()),
+				CreateButton("Issue33037HiddenNavigationBarButton", "Hidden navigation bar", () => new Issue33037NonShellHiddenNavigationBarPage())
 			}
 		};
 	}
@@ -91,10 +96,10 @@ abstract class Issue33037NonShellScenarioPage : ContentPage
 		return stack;
 	}
 
-	protected static IList<string> CreateItems()
+	protected static IList<string> CreateItems(int count = 60)
 	{
 		var items = new List<string>();
-		for (int i = 0; i < 60; i++)
+		for (int i = 0; i < count; i++)
 		{
 			items.Add($"Item {i}");
 		}
@@ -233,6 +238,237 @@ class Issue33037NonShellCollectionViewPage : Issue33037NonShellScenarioPage
 				label.SetBinding(Label.TextProperty, ".");
 				return label;
 			})
+		};
+	}
+}
+
+class Issue33037NonShellFixedHeaderCollectionViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellFixedHeaderCollectionViewPage() : base("Issue33037 Fixed Header")
+	{
+		var header = new Label
+		{
+			AutomationId = "Issue33037FixedHeader",
+			Text = "Fixed header must remain below the navigation bar",
+			BackgroundColor = Colors.LightBlue,
+			FontAttributes = FontAttributes.Bold,
+			Padding = 12
+		};
+
+		var collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037FixedHeaderCollectionViewScroller",
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		Grid.SetRow(collectionView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				header,
+				collectionView
+			}
+		};
+	}
+}
+
+class Issue33037NonShellShortFixedHeaderCollectionViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellShortFixedHeaderCollectionViewPage() : base("Issue33037 Short Header")
+	{
+		var header = new Label
+		{
+			AutomationId = "Issue33037ShortFixedHeader",
+			Text = "Short content must still collapse the title",
+			BackgroundColor = Colors.LightBlue,
+			FontAttributes = FontAttributes.Bold,
+			Padding = 12
+		};
+
+		var collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037ShortFixedHeaderCollectionViewScroller",
+			ItemsSource = CreateItems(17),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					HeightRequest = 50,
+					Padding = new Thickness(16, 0),
+					VerticalTextAlignment = TextAlignment.Center
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		Grid.SetRow(collectionView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				header,
+				collectionView
+			}
+		};
+	}
+}
+
+class Issue33037NonShellProgrammaticCollectionViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellProgrammaticCollectionViewPage() : base("Issue33037 Programmatic")
+	{
+		var collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037ProgrammaticCollectionViewScroller",
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		var scrollButton = new Button
+		{
+			AutomationId = "Issue33037ProgrammaticScrollButton",
+			Text = "Scroll to item 50"
+		};
+		scrollButton.Clicked += (_, _) => collectionView.ScrollTo(50, position: ScrollToPosition.Start, animate: false);
+
+		Grid.SetRow(collectionView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				scrollButton,
+				collectionView
+			}
+		};
+	}
+}
+
+class Issue33037NonShellAppearingCollectionViewPage : Issue33037NonShellScenarioPage
+{
+	readonly CollectionView _collectionView;
+	bool _scrolled;
+
+	public Issue33037NonShellAppearingCollectionViewPage() : base("Issue33037 Appearing")
+	{
+		_collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037AppearingCollectionViewScroller",
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		Content = new Grid
+		{
+			Children =
+			{
+				_collectionView
+			}
+		};
+	}
+
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		if (_scrolled)
+			return;
+
+		_scrolled = true;
+		await Task.Yield();
+		_collectionView.ScrollTo(50, position: ScrollToPosition.Start, animate: false);
+	}
+}
+
+class Issue33037NonShellHiddenNavigationBarPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellHiddenNavigationBarPage() : base("Issue33037 Hidden Navigation")
+	{
+		NavigationPage.SetHasNavigationBar(this, false);
+
+		var topMarker = new Label
+		{
+			AutomationId = "Issue33037HiddenNavigationBarTopMarker",
+			Text = "This content must remain below the status bar.",
+			BackgroundColor = Colors.LightGreen,
+			FontAttributes = FontAttributes.Bold,
+			Padding = 12
+		};
+
+		var backButton = new Button
+		{
+			AutomationId = "Issue33037HiddenNavigationBarBackButton",
+			Text = "Back"
+		};
+		backButton.Clicked += async (_, _) => await Navigation.PopAsync();
+
+		var scrollView = new ScrollView
+		{
+			AutomationId = "Issue33037HiddenNavigationBarScroller",
+			Content = CreateStackContent("Issue33037HiddenNavigationBar")
+		};
+
+		Grid.SetRow(backButton, 1);
+		Grid.SetRow(scrollView, 2);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				topMarker,
+				backButton,
+				scrollView
+			}
 		};
 	}
 }
