@@ -705,7 +705,21 @@ $issueComments = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/comments?per_page
 $reviews = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/reviews?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review' })
 $reviewComments = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review-comment' })
 $comments = @($issueComments + $reviews + $reviewComments)
-$pr = gh api "repos/$Owner/$Repo/pulls/$PRNumber" | ConvertFrom-Json
+# Fetch the PR object defensively. This script runs directly in the pipeline to resolve
+# rerun eligibility; a transient gh-api HTML error page (rate-limit / 5xx) would otherwise
+# make ConvertFrom-Json fail and leave $pr null, producing the misleading "PR is not open
+# (state: )" throw below. Retry a few times and validate the payload is a JSON object.
+$pr = $null
+for ($prAttempt = 1; $prAttempt -le 3; $prAttempt++) {
+    $prRaw = (gh api "repos/$Owner/$Repo/pulls/$PRNumber" 2>$null | Out-String).Trim()
+    if ($prRaw.StartsWith('{')) {
+        try { $pr = $prRaw | ConvertFrom-Json; break } catch { $pr = $null }
+    }
+    if ($prAttempt -lt 3) { Start-Sleep -Seconds ($prAttempt * 2) }
+}
+if (-not $pr) {
+    throw "Could not fetch PR #$PRNumber from GitHub API after 3 attempts (transient API error?)."
+}
 $commits = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
 $labels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null)
 

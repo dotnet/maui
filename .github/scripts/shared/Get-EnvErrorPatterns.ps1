@@ -22,6 +22,46 @@ function Get-EnvErrorPatterns {
         'device offline',
         'Could not connect to device',
         'Failed to launch the application',
-        'cmd: Failure'
+        'cmd: Failure',
+        # Wholesale HostApp launch/render failure. When the app installs but its
+        # first page never renders, EVERY test in a fixture fails at OneTimeSetup
+        # with "Timed out waiting for Go To Test button to appear (the app did not
+        # recover after crash-recovery attempts)" (UtilExtensions.NavigateToGallery
+        # -> WaitForGoToTestButtonWithRecovery). This is USUALLY an intermittent infra
+        # flake (emulator/app cold-start slowness), NOT a code failure — proven by the
+        # same HostApp head passing on a different agent (e.g. #36575 IndicatorView 41/41
+        # while #34637 Shape / #30875 / #35640 Material3 hit all-setup-failed). The
+        # test's own crash-recovery only force-stops+relaunches the app; a pipeline
+        # retry additionally `adb reboot`s and rebuilds/reinstalls the app fresh,
+        # which clears the stuck emulator state. Without these patterns the category
+        # returned "N marked failed (setup failed)" after ONE attempt with no retry.
+        #
+        # ⚠️ AMBIGUOUS: the SAME text is emitted when the PR itself deterministically
+        # breaks HostApp startup. They are therefore also listed in
+        # Get-AmbiguousStartupPatterns, which callers use to allow exactly ONE recovery
+        # retry and then treat a recurrence as a deterministic (PR-caused) failure
+        # instead of burning the whole retry budget and reporting INCONCLUSIVE.
+        'did not recover after crash-recovery attempts',
+        'Timed out waiting for Go To Test button'
+    )
+}
+
+function Get-AmbiguousStartupPatterns {
+    <#
+    .SYNOPSIS
+        Env-error patterns whose producer emits identical text for a transient
+        emulator problem AND for a deterministic PR-caused HostApp startup crash.
+    .DESCRIPTION
+        These are a SUBSET of Get-EnvErrorPatterns. Because the signature alone cannot
+        tell the two causes apart, callers grant exactly one recovery attempt (device
+        reboot + fresh rebuild/reinstall). If the very same signature reappears after
+        that recovery, the failure is reproducible across a clean device state and must
+        be reported as a real failure rather than retried as infrastructure — otherwise a
+        PR that breaks HostApp startup consumes every category's retry budget and lands
+        as INCONCLUSIVE instead of surfacing the regression.
+    #>
+    return @(
+        'did not recover after crash-recovery attempts',
+        'Timed out waiting for Go To Test button'
     )
 }

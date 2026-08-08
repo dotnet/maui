@@ -23,11 +23,16 @@ BeforeAll {
         'Get-GateStatus',
         'Get-AIReviewEvent',
         'Test-RunValidationFailed',
-        'Test-HasNonPRWinner',
+        'Test-WinnerRequiresPRChanges',
         'Get-AIReviewEventForRun',
+        'Test-ExpertReviewIsBlocking',
         'Test-DeepUITestsHadNoSignal',
         'Add-MissingUITestResultsNote',
-        'New-FutureActionSection'
+        'New-FutureActionSection',
+        'New-MissingAgentPhaseContent',
+        'Get-AuthoritativeGateContent',
+        'Limit-MarkdownContent',
+        'Get-FirstPhaseContent'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -39,6 +44,45 @@ BeforeAll {
         }
 
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Get-FirstPhaseContent' {
+    BeforeEach {
+        $script:phaseRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Force -Path (Join-Path $script:phaseRoot 'expert-pr-eval') | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $script:phaseRoot 'pre-flight') | Out-Null
+    }
+
+    It 'prefers the current expert-review artifact over the legacy path' {
+        'current expert review' | Set-Content (Join-Path $script:phaseRoot 'expert-pr-eval/content.md') -Encoding UTF8
+        'legacy code review' | Set-Content (Join-Path $script:phaseRoot 'pre-flight/code-review.md') -Encoding UTF8
+
+        $result = Get-FirstPhaseContent `
+            -Root $script:phaseRoot `
+            -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md')
+
+        $result.Path | Should -Be (Join-Path $script:phaseRoot 'expert-pr-eval/content.md')
+        $result.Content.Trim() | Should -BeExactly 'current expert review'
+    }
+
+    It 'falls back to the legacy artifact when the current file is empty' {
+        '' | Set-Content (Join-Path $script:phaseRoot 'expert-pr-eval/content.md') -Encoding UTF8
+        'legacy code review' | Set-Content (Join-Path $script:phaseRoot 'pre-flight/code-review.md') -Encoding UTF8
+
+        $result = Get-FirstPhaseContent `
+            -Root $script:phaseRoot `
+            -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md')
+
+        $result.Path | Should -Be (Join-Path $script:phaseRoot 'pre-flight/code-review.md')
+        $result.Content.Trim() | Should -BeExactly 'legacy code review'
+    }
+
+    It 'returns null when no candidate contains usable content' {
+        Get-FirstPhaseContent `
+            -Root $script:phaseRoot `
+            -RelativePaths @('expert-pr-eval/content.md', 'pre-flight/code-review.md') |
+            Should -BeNullOrEmpty
     }
 }
 
@@ -162,6 +206,49 @@ Describe 'Add-MissingUITestResultsNote' {
     }
 }
 
+Describe 'New-MissingAgentPhaseContent' {
+    It 'renders an explicit incomplete placeholder for every required expert phase' {
+        foreach ($phase in @('pre-flight', 'code-review', 'try-fix', 'report')) {
+            $content = New-MissingAgentPhaseContent -PhaseKey $phase
+            $content | Should -Match 'did not produce output'
+            $content | Should -Match 'review is \*\*incomplete\*\*'
+            $content | Should -Match '/review'
+        }
+    }
+
+    It 'names the missing Try-Fix phase explicitly' {
+        New-MissingAgentPhaseContent -PhaseKey 'try-fix' |
+            Should -Match '\*\*Try-Fix did not produce output'
+    }
+}
+
+Describe 'Summary phase labels' {
+    It 'keeps the canonical Try-Fix and PR Finalize names visible in the review body' {
+        $script:ScriptSource | Should -Match 'Title = "🛠️ Try-Fix — Analysis & Comparison"'
+        $script:ScriptSource | Should -Match 'Title = "📝 PR Finalize — Recommended Title & Description"'
+        $script:ScriptSource | Should -Not -Match 'Title = "🛠️ Fix — Analysis & Comparison"'
+        $script:ScriptSource | Should -Not -Match 'Title = "📝 Recommended PR Title & Description"'
+    }
+}
+
+Describe 'Limit-MarkdownContent' {
+    It 'keeps short content unchanged' {
+        Limit-MarkdownContent -Content 'short content' -MaxChars 512 -SectionName 'test' |
+            Should -Be 'short content'
+    }
+
+    It 'shortens oversized content, balances markdown blocks, and stays within budget' {
+        $content = "<details>`n```text`n" + ('x' * 2000)
+        $result = Limit-MarkdownContent -Content $content -MaxChars 700 -SectionName 'UI Tests'
+
+        $result.Length | Should -BeLessOrEqual 700
+        $result | Should -Match 'was shortened to keep every required review section visible'
+        ([regex]::Matches($result, '(?m)^```')).Count % 2 | Should -Be 0
+        ([regex]::Matches($result, '(?i)<details(?:\s|>)')).Count |
+            Should -Be ([regex]::Matches($result, '(?i)</details>')).Count
+    }
+}
+
 Describe 'Get-GateStatus' {
     It 'maps a passed gate to Passed' {
         Get-GateStatus -GateContent '### Gate Result: ✅ PASSED' | Should -Be 'Passed'
@@ -189,8 +276,41 @@ Describe 'Get-GateStatus' {
             Should -Be 'Inconclusive'
     }
 
+    It 'maps a TIMEDOUT gate (synthesized section) to Timed Out' {
+        Get-GateStatus -GateContent "### Gate Result: TIMEDOUT — test verification did not finish`n`nThe automated test-verification gate did not complete on this run." |
+            Should -Be 'Timed Out'
+    }
+
+    It 'maps prose describing a timed-out gate to Timed Out' {
+        Get-GateStatus -GateContent 'The gate timed out before it could finish.' | Should -Be 'Timed Out'
+    }
+
     It 'returns Unknown for empty gate content' {
         Get-GateStatus -GateContent '' | Should -Be 'Unknown'
+    }
+}
+
+Describe 'Get-AuthoritativeGateContent' {
+    It 'overrides partial FAILED content when the trusted Gate verdict is TIMEDOUT' {
+        $partial = @'
+### Gate Result: ❌ FAILED
+
+The fix does not pass the tests.
+'@
+
+        $result = Get-AuthoritativeGateContent -GateContent $partial -TrustedGateResult 'TIMEDOUT'
+
+        $result | Should -Match 'Gate Result: TIMEDOUT'
+        $result | Should -Match 'test verification did not finish'
+        $result | Should -Not -Match 'Gate Result: ❌ FAILED'
+        $result | Should -Not -Match 'fix does not pass'
+    }
+
+    It 'preserves completed Gate content for non-timeout verdicts' {
+        $content = '### Gate Result: ✅ PASSED'
+
+        Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'PASSED' |
+            Should -Be $content
     }
 }
 
@@ -233,14 +353,37 @@ Describe 'Get-AIReviewEventForRun' {
             Should -Be 'REQUEST_CHANGES'
     }
 
-    It 'does not override an exact approve recommendation' {
+    It 'requests changes when pr-plus-reviewer wins and the report is otherwise comment-only' {
+        @{
+            winner = 'pr-plus-reviewer'
+            isPRFix = $true
+            candidateDiff = ''
+            summary = 'Expert feedback improves the submitted PR.'
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Report omitted its canonical recommendation.' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'vetoes an exact approve recommendation when a try-fix candidate wins' {
         @{
             winner = 'try-fix-1'
-            isPRFix = $false
+            isPRFix = $true
             candidateDiff = 'diff --git a/file.cs b/file.cs'
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
 
         Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'keeps an exact approve recommendation when the raw PR wins' {
+        @{
+            winner = 'pr'
+            isPRFix = $true
+            candidateDiff = ''
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
             Should -Be 'APPROVE'
     }
 
@@ -276,10 +419,79 @@ Describe 'Get-AIReviewEventForRun' {
             Should -Be 'APPROVE'
     }
 
+    It 'vetoes APPROVE when the expert review verdict is blocking (contradictory artifacts)' {
+        # Contradictory artifacts: the raw PR wins, validation is green, and the report LLM
+        # emitted APPROVE — but the expert code-review section rendered into the SAME summary
+        # says NEEDS_CHANGES. Approving would post a visibly self-contradictory review.
+        @{ winner = 'pr'; isPRFix = $true; candidateDiff = '' } |
+            ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        "### Findings`n### Verdict: NEEDS_CHANGES" |
+            Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'vetoes APPROVE on a NEEDS_DISCUSSION expert verdict written under an Initial verdict heading' {
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        "### Initial verdict`n`n**NEEDS_DISCUSSION — medium confidence.**" |
+            Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'vetoes APPROVE on a blocking legacy code-review verdict when no expert artifact exists' {
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'pre-flight') -Force | Out-Null
+        '**Verdict:** NEEDS_CHANGES' |
+            Set-Content (Join-Path $script:testDir 'pre-flight/code-review.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'keeps APPROVE when the current expert verdict is LGTM even if a stale legacy verdict is blocking' {
+        # Precedence must match Get-OutcomeFromCodeReviewVerdict: the current artifact wins,
+        # so a stale pre-flight verdict cannot veto an up-to-date LGTM.
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'pre-flight') -Force | Out-Null
+        '### Verdict: LGTM' | Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+        '**Verdict:** NEEDS_CHANGES' | Set-Content (Join-Path $script:testDir 'pre-flight/code-review.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'APPROVE'
+    }
+
+    It 'keeps APPROVE when no expert verdict is present at all' {
+        New-Item -ItemType Directory -Path (Join-Path $script:testDir 'expert-pr-eval') -Force | Out-Null
+        '### Findings`n_No blocking issues._' |
+            Set-Content (Join-Path $script:testDir 'expert-pr-eval/content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'APPROVE'
+    }
+
+    It 'vetoes APPROVE to REQUEST_CHANGES when the trusted gate verdict is TIMEDOUT (fix unverified)' {
+        # A gate that never finished (hang-safety timeout / no verdict) leaves the fix unverified,
+        # so an APPROVE recommendation must be vetoed just like a FAILED gate.
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'TIMEDOUT' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
     It 'softens APPROVE to COMMENT when the deep-UI run had no passing signal (all setup-failed)' {
         $uiDir = Join-Path $script:testDir 'uitests'
         New-Item -ItemType Directory -Path $uiDir -Force | Out-Null
         '⚠️ **Deep UI tests** — 2 categories (8 tests) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure.' |
+            Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'COMMENT'
+    }
+
+    It 'softens APPROVE to COMMENT when the selected deep category ran zero tests' {
+        $uiDir = Join-Path $script:testDir 'uitests'
+        New-Item -ItemType Directory -Path $uiDir -Force | Out-Null
+        '⚠️ **Deep UI tests** — 0 passed, 0 failed across 1 category on platform-pool agent. 1 category reported 0 tests.' |
             Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
         Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
             Should -Be 'COMMENT'
@@ -346,6 +558,18 @@ Describe 'Test-DeepUITestsHadNoSignal' {
         Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
     }
 
+    It 'is true for a selected category that reported zero runnable tests' {
+        '⚠️ **Deep UI tests** — 0 passed, 0 failed across 1 category on platform-pool agent. 1 category reported 0 tests.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
+    }
+
+    It 'is false when another category passed even if one category reported zero tests' {
+        '⚠️ **Deep UI tests** — 5 passed, 0 failed across 2 categories on platform-pool agent. 1 category reported 0 tests.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeFalse
+    }
+
     It 'is false for an app crash that still had passes' {
         '⚠️ **Deep UI tests** — 5 passed; the HostApp crashed mid-run, so 3 tests could not complete.' |
             Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
@@ -394,5 +618,22 @@ Describe 'New-FutureActionSection' {
         $section | Should -Match 'try-fix-2'
         $section | Should -Match 'Candidate avoids the regression'
         $section | Should -Match 'diff --git a/file.cs b/file.cs'
+    }
+
+    It 'renders an explicit patch-required action when pr-plus-reviewer wins' {
+        @{
+            winner = 'pr-plus-reviewer'
+            isPRFix = $true
+            summary = 'The reviewer patch closes a correctness gap.'
+            candidateDiff = ''
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        $section = New-FutureActionSection -PRAgentDir $script:testDir
+
+        $section | Should -Match 'reviewer patch required'
+        $section | Should -Match 'submitted PR still needs those changes'
+        $section | Should -Match 'PRAgent/pr-plus-reviewer/reviewer.patch'
+        $section | Should -Match 'The reviewer patch closes a correctness gap'
+        $section | Should -Not -Match 'No alternative fix was selected'
     }
 }

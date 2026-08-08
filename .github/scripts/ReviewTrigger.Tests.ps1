@@ -22,6 +22,7 @@ BeforeAll {
 
     $script:Workflow = $workflow
     $script:MatchJob = $matchJob.Value
+    $script:TriggerReviewJob = $workflow.Substring($matchJob.Index + $matchJob.Length)
     $script:TriggerJobPattern = $triggerJobPattern
     $script:TriggerJob = $triggerJob.Value
 }
@@ -116,16 +117,55 @@ Describe '/review command matching' {
     }
 }
 
+Describe '/review trigger setup' {
+    It 'downloads only the trusted label helper instead of cloning the repository' {
+        $script:TriggerReviewJob | Should -Not -Match 'actions/checkout@'
+        $script:TriggerReviewJob | Should -Match 'name: Download trusted label helper'
+        $script:TriggerReviewJob | Should -Match ([regex]::Escape(
+            'contents/.github/scripts/shared/Update-AgentLabels.ps1?ref=${GITHUB_SHA}'))
+        $script:TriggerReviewJob | Should -Match 'timeout-minutes: 2'
+        $script:TriggerReviewJob | Should -Match 'for attempt in 1 2 3'
+    }
+
+    It 'sources the downloaded helper for both lock operations' {
+        $script:TriggerReviewJob | Should -Match 'id: label_helper'
+        $script:TriggerReviewJob | Should -Match 'path=\$\{HELPER_PATH\}'
+
+        $helperSources = [regex]::Matches(
+            $script:TriggerReviewJob,
+            '(?m)^\s*LABEL_HELPER_PATH: \$\{\{ steps\.label_helper\.outputs\.path \}\}\s*$')
+        $dotSources = [regex]::Matches(
+            $script:TriggerReviewJob,
+            '(?m)^\s*\. \$env:LABEL_HELPER_PATH\s*$')
+
+        $helperSources.Count | Should -Be 2
+        $dotSources.Count | Should -Be 2
+    }
+}
+
 Describe 'review trigger hardening' {
     It 'authorizes in the pre-flight job before provisioning trigger-review' {
         $script:MatchJob | Should -Match '(?m)^      proceed: \$\{\{ steps\.gate\.outputs\.proceed \}\}$'
         $script:MatchJob | Should -Match '(?m)^      - name: Check actor permission$'
         $script:MatchJob | Should -Match 'ACTOR: \$\{\{ github\.actor \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \}\}'
         $script:MatchJob | Should -Match 'REPO: \$\{\{ github\.repository \}\}'
         $script:MatchJob | Should -Match 'Permission lookup failed.*treating the caller as unauthorized'
         $script:MatchJob | Should -Match 'PERMISSION="none"'
         $script:TriggerJob | Should -Match "(?m)^    if: needs\.match\.outputs\.proceed == 'true'$"
         $script:TriggerJob | Should -Not -Match '(?m)^        id: auth$'
+    }
+
+    It 'skips delayed webhook deliveries already handled by recovery' {
+        $script:MatchJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions\?per_page=100'
+        $script:MatchJob | Should -Match 'gh api --paginate --slurp'
+        $script:MatchJob | Should -Match "jq -e '\.\[\]\[\] \| select"
+        $script:MatchJob | Should -Match '\.content == "rocket" and \.user\.login == "github-actions\[bot\]"'
+        $script:MatchJob | Should -Match 'already recovered; skipping delayed duplicate delivery'
+        $script:MatchJob | Should -Match 'IssueComment\{isMinimized\}'
+        $script:MatchJob | Should -Match 'already minimized by recovery; skipping delayed duplicate delivery'
+        $script:MatchJob | Should -Match '(?m)^          for attempt in 1 2 3; do$'
     }
 
     It 'stops trigger-review extraction at the next top-level job' {
@@ -151,6 +191,9 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Not -Match 'oidc_token=.*GITHUB_OUTPUT'
         $script:TriggerJob | Should -Not -Match 'azdo_token=.*GITHUB_OUTPUT'
         $script:TriggerJob | Should -Not -Match 'steps\.(oidc|token)\.outputs'
+        $script:TriggerJob | Should -Match '-H "Authorization: Bearer \$\{GH_TOKEN\}"'
+        $script:TriggerJob | Should -Match '-H "Authorization: Bearer \$\{AZDO_TOKEN\}"'
+        $script:TriggerJob | Should -Not -Match 'Authorization: \*{6}'
         $script:TriggerJob | Should -Match 'unset OIDC_TOKEN'
         $script:TriggerJob | Should -Match 'unset AZDO_TOKEN'
     }
@@ -158,5 +201,26 @@ Describe 'review trigger hardening' {
     It 'only hides commands after the pre-flight authorization gate succeeded' {
         $script:TriggerJob | Should -Not -Match 'steps\.auth'
         $script:TriggerJob | Should -Match "(?m)^        if: \$\{\{ !cancelled\(\) && github\.event_name == 'issue_comment' \}\}$"
+        $script:TriggerJob | Should -Match '(?m)^      - name: Acknowledge and hide the /review command comment$'
+        $script:TriggerJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions'
+        $script:TriggerJob | Should -Match "-f content='rocket'"
+    }
+
+    It 'posts a visible start notice only after AzDO returns a valid build id' {
+        $script:TriggerJob | Should -Match 'if ! \[\[ "\$\{RUN_ID\}" =~ \^\[1-9\]\[0-9\]\*\$ \]\]'
+        $script:TriggerJob | Should -Match 'echo "run_id=\$\{RUN_ID\}" >> "\$GITHUB_OUTPUT"'
+        $script:TriggerJob | Should -Match '(?m)^      - name: Report /review start to the PR$'
+        $script:TriggerJob | Should -Match "(?m)^        if: steps\.review_lock\.outputs\.locked == 'false' && steps\.trigger_azdo\.outcome == 'success'$"
+        $script:TriggerJob | Should -Match 'RUN_ID: \$\{\{ steps\.trigger_azdo\.outputs\.run_id \}\}'
+        $script:TriggerJob | Should -Match '<!-- copilot-review-started:\$\{RUN_ID\} -->'
+        $script:TriggerJob | Should -Match 'AzDO build \*\*\$\{RUN_ID\}\*\*'
+        $script:TriggerJob | Should -Match 's/agent-review-in-progress'
+        $script:TriggerJob | Should -Match 'outcome labels are posted only after Gate, expert review, and Deep UI tests finish'
+
+        $triggerIndex = $script:TriggerJob.IndexOf('- name: Trigger maui-copilot pipeline')
+        $noticeIndex = $script:TriggerJob.IndexOf('- name: Report /review start to the PR')
+        $hideIndex = $script:TriggerJob.IndexOf('- name: Acknowledge and hide the /review command comment')
+        $noticeIndex | Should -BeGreaterThan $triggerIndex
+        $hideIndex | Should -BeGreaterThan $noticeIndex
     }
 }

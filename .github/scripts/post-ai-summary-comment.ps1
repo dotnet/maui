@@ -14,7 +14,8 @@
     Content is auto-loaded from PRAgent phase files:
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/gate/content.md          (always shown first, open)
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
-    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/expert-pr-eval/content.md
+    CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md (legacy fallback)
 
     Gate is included as a section inside this unified review body — the script may
     be called by Review-PR.ps1 twice per run: once after the gate completes
@@ -48,8 +49,20 @@ param(
     # review over a FAILED gate. Empty/omitted (local/manual runs that never post
     # APPROVE) is treated as the non-blocking 'SKIPPED' sentinel.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
-    [string]$TrustedGateResult = ''
+    # TIMEDOUT is a pipeline-supplied sentinel meaning the Gate task itself did not finish
+    # (stopped by its 150-min hang-safety timeout, or it produced no verdict). It renders an
+    # honest "gate did not complete" section and vetoes APPROVE (the fix was not verified).
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+    [string]$TrustedGateResult = '',
+
+    # Optional review/deep-run platform supplied by the pipeline (${{ parameters.Platform }}).
+    # Used ONLY as a fallback for the Platform status chip when the summary content carries no
+    # "**Platform:**" line — e.g. a deep-only re-run with no code-review phase, where the
+    # deep clearly ran on a platform but nothing in the text names it (dotnet/maui#35606 rendered
+    # "Platform Unknown"). A full review still prefers the code-review-derived platform. Empty for
+    # local/manual runs → behaves exactly as before.
+    [Parameter(Mandatory = $false)]
+    [string]$Platform = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -79,13 +92,42 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
-    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔗 Regression Cross-Reference" }
-    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "📋 Pre-Flight — Context & Validation" }
-    "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "🔬 Code Review — Deep Analysis" }
-    "try-fix"          = @{ File = "try-fix/content.md";            Title = "🛠️ Fix — Analysis & Comparison" }
-    "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "📝 Recommended PR Title & Description" }
-    "report"           = @{ File = "report/content.md";             Title = "🏁 Report — Final Recommendation" }
+    "pre-flight"       = @{ Files = @("pre-flight/content.md");                                  Title = "📋 Pre-Flight — Context & Validation" }
+    "code-review"      = @{ Files = @("expert-pr-eval/content.md", "pre-flight/code-review.md"); Title = "🔬 Code Review — Deep Analysis" }
+    "try-fix"          = @{ Files = @("try-fix/content.md");                                     Title = "🛠️ Try-Fix — Analysis & Comparison" }
+    "pr-finalize"      = @{ Files = @("pr-finalize/content.md");                                 Title = "📝 PR Finalize — Recommended Title & Description" }
+    "report"           = @{ Files = @("report/content.md");                                      Title = "🏁 Report — Final Recommendation" }
+    "regression-check" = @{ Files = @("regression-check/content.md");                            Title = "🔗 Regression Cross-Reference" }
+    # Keep the potentially very large UI-test details last so they cannot hide the
+    # expert-review sections if a final defensive truncation is ever needed.
+    "uitests"          = @{ Files = @("uitests/content.md");                                     Title = "📱 UI Tests" }
+}
+
+function Get-FirstPhaseContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Root,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$RelativePaths
+    )
+
+    foreach ($relativePath in $RelativePaths) {
+        $filePath = Join-Path $Root $relativePath
+        if (-not (Test-Path -LiteralPath $filePath)) {
+            continue
+        }
+
+        $content = Get-Content -LiteralPath $filePath -Raw -Encoding UTF8
+        if (-not [string]::IsNullOrWhiteSpace($content)) {
+            return [pscustomobject]@{
+                Path    = $filePath
+                Content = $content
+            }
+        }
+    }
+
+    return $null
 }
 
 function Test-PhaseContentIsNoOp {
@@ -106,6 +148,7 @@ function Test-PhaseContentIsNoOp {
                 $normalized -match '^Full UI test matrix will run \(no specific categories detected from PR changes\)\.?$'
             )
         }
+
         "regression-check" {
             $withoutHeading = ($normalized -replace '(?m)^##\s+.*Regression Cross-Reference\s*\n+', '').Trim()
             return (
@@ -115,7 +158,7 @@ function Test-PhaseContentIsNoOp {
         }
         "pr-finalize" {
             # Keep-as-is verdict: the PR's existing title/description are already good, so
-            # omit the "Recommended PR Title & Description" section entirely (no copy-paste
+            # omit the "PR Finalize — Recommended Title & Description" section entirely (no copy-paste
             # artifact is needed). Tolerant of an optional "**Assessment:**" prefix and any
             # trailing optional notes the agent may add.
             return (
@@ -125,6 +168,113 @@ function Test-PhaseContentIsNoOp {
         default {
             return $false
         }
+    }
+}
+
+function New-MissingAgentPhaseContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('pre-flight', 'code-review', 'try-fix', 'report')]
+        [string]$PhaseKey
+    )
+
+    $phaseName = switch ($PhaseKey) {
+        'pre-flight' { 'Pre-Flight' }
+        'code-review' { 'Code Review' }
+        'try-fix' { 'Try-Fix' }
+        'report' { 'Report / Final Recommendation' }
+    }
+
+    return @"
+⚠️ **$phaseName did not produce output on this run.**
+
+The Copilot expert-review task ended before this phase was persisted, usually because the review-stage time budget expired or the CI agent encountered a transient authentication/runtime problem. Earlier completed sections remain valid, but this review is **incomplete** without this phase.
+
+**Next step:** re-comment ``/review`` to retry on a fresh agent. If this repeats across runs, a maintainer should inspect the reviewer token and Task 3 logs.
+"@
+}
+
+function Get-AuthoritativeGateContent {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [string]$GateContent = '',
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [string]$TrustedGateResult = ''
+    )
+
+    # A TIMEDOUT verdict means the Gate task was killed before its trusted wrapper could
+    # publish a result. Any gate/content.md left behind is necessarily partial or stale and
+    # must not override that pipeline fact. Build 14878396 / PR #36698 retained partial
+    # FAILED-looking A/B content after the 150-minute task timeout, which made the summary
+    # falsely say the fix failed even though the Gate never completed.
+    if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') {
+        return @'
+### Gate Result: TIMEDOUT — test verification did not finish
+
+The automated **test-verification gate** did not complete on this run. It was stopped by the pipeline's **hang-safety timeout** (the gate is capped at 150 min to catch an emulator/simulator boot or an Appium hang that would otherwise run to the job limit), or it could not produce a verdict.
+
+- This is almost always a transient **infrastructure** issue on the CI agent — **not** a problem with your PR.
+- Because the gate could not finish, **the fix was not verified by tests** on this run, so this review is **not eligible for APPROVE**.
+- The rest of the review below (expert analysis and findings) ran as usual.
+
+**Next step:** re-comment `/review` to retry the gate on a fresh agent.
+'@
+    }
+
+    return $GateContent
+}
+
+function Limit-MarkdownContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Content,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(512, 65500)]
+        [int]$MaxChars,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SectionName
+    )
+
+    if ($Content.Length -le $MaxChars) {
+        return $Content
+    }
+
+    $notice = "`n`n_This $SectionName section was shortened to keep every required review section visible. Full details remain available in the pipeline build artifacts._"
+    $keep = [Math]::Max(0, $MaxChars - $notice.Length - 256)
+
+    while ($true) {
+        $candidate = $Content.Substring(0, [Math]::Min($keep, $Content.Length)).TrimEnd()
+        $lastNewline = $candidate.LastIndexOf("`n")
+        if ($lastNewline -gt [Math]::Floor($candidate.Length * 0.8)) {
+            $candidate = $candidate.Substring(0, $lastNewline).TrimEnd()
+        }
+
+        $suffix = ""
+        if ((([regex]::Matches($candidate, '(?m)^```')).Count % 2) -ne 0) {
+            $codeFence = [string][char]96 * 3
+            $suffix += "`n$codeFence"
+        }
+
+        $openDetails = ([regex]::Matches($candidate, '(?i)<details(?:\s|>)')).Count
+        $closedDetails = ([regex]::Matches($candidate, '(?i)</details>')).Count
+        $unclosedDetails = [Math]::Max(0, $openDetails - $closedDetails)
+
+        $result = $candidate + $suffix + $notice
+        if ($unclosedDetails -gt 0) {
+            $result += "`n" + (("</details>`n" * $unclosedDetails).TrimEnd())
+        }
+
+        if ($result.Length -le $MaxChars -or $keep -eq 0) {
+            return $result
+        }
+
+        $keep = [Math]::Max(0, $keep - ($result.Length - $MaxChars) - 64)
     }
 }
 
@@ -166,7 +316,25 @@ function Add-MissingUITestResultsNote {
         return $Content
     }
 
-    $note = @'
+    # Tailor the guidance to the ACTUAL gate outcome (already present in $Content)
+    # instead of always blaming "the PR build failed (see the Gate section)". Only a
+    # FAILED gate means the PR build is the likely blocker. A gate that PASSED, was
+    # SKIPPED (no tests), or was INCONCLUSIVE means the PR build itself was fine — so
+    # the deep UI stage produced nothing because it was skipped or died on
+    # INFRASTRUCTURE (the merge-for-testing step, emulator/simulator boot, or an
+    # Appium hang), NOT because of this PR's code. Pointing the author at "fix the
+    # build/gate" in that case sends them down the wrong path (e.g. PR #36544, whose
+    # gate was SKIPPED and whose deep stage failed at the Windows autocrlf merge step).
+    # A FAILED gate — or an unknown/absent gate outcome — falls back to the neutral
+    # "fix the build/gate and push again" guidance; only an explicit non-FAILED gate
+    # (PASSED/SKIPPED/INCONCLUSIVE) points at infrastructure.
+    $gateState = ''
+    if ($Content -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+        $gateState = $Matches[1].ToUpperInvariant()
+    }
+
+    if ($gateState -eq 'FAILED' -or $gateState -eq '') {
+        $note = @'
 
 > [!WARNING]
 > **No UI test results were produced for the detected categories.** The platform-pool run
@@ -174,6 +342,17 @@ function Add-MissingUITestResultsNote {
 > the deep UI test stage was skipped. Fix the build/gate issues and push again; the review
 > re-runs on new commits (a maintainer can also re-run it).
 '@
+    } else {
+        # PASSED / SKIPPED / INCONCLUSIVE / unknown → the PR build was not the blocker.
+        $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The PR build itself was
+> fine — the deep UI stage was skipped or interrupted on **infrastructure** (the
+> merge-for-testing step, emulator/simulator boot, or an Appium hang), not by this PR's code.
+> This is usually transient; the review re-runs on new commits (a maintainer can also re-run it).
+'@
+    }
     return ($Content.TrimEnd() + [Environment]::NewLine + $note)
 }
 
@@ -188,7 +367,7 @@ function ConvertTo-TitleCase {
     switch -Regex ($trimmed) {
         '(?i)^android$' { return 'Android' }
         '(?i)^ios$' { return 'iOS' }
-        '(?i)^maccatalyst$' { return 'MacCatalyst' }
+        '(?i)^(mac)?catalyst$' { return 'MacCatalyst' }
         '(?i)^windows$' { return 'Windows' }
         '(?i)^all$' { return 'All' }
     }
@@ -229,19 +408,24 @@ function Get-GateStatus {
     # the bug" = passes with and without the fix). Surface those as 'Partial' rather than a
     # flat 'Failed'. A SKIPPED gate means no runnable tests were detected → 'No Tests'.
     # INCONCLUSIVE means the tests could not be built/run (build or env error) → 'Inconclusive'.
+    # TIMEDOUT means the gate task itself was stopped by its hang-safety timeout (or produced no
+    # verdict at all) → 'Timed Out': the fix was NOT verified, but this is an infra outcome, not a
+    # real test failure, so it renders teal like Inconclusive rather than red.
     $isPartial = ($GateContent -match '(?i)Regression in another test' -or
                   $GateContent -match '(?i)Test does not reproduce the bug')
 
-    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
+    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE|TIMEDOUT)') {
         switch ($Matches[1].ToUpperInvariant()) {
             'PASSED'       { return 'Passed' }
             'SKIPPED'      { return 'No Tests' }
             'INCONCLUSIVE' { return 'Inconclusive' }
+            'TIMEDOUT'     { return 'Timed Out' }
             'FAILED'       { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
         }
     }
 
     if ($GateContent -match '(?i)\binconclusive\b') { return 'Inconclusive' }
+    if ($GateContent -match '(?i)\btimed[\s-]?out\b') { return 'Timed Out' }
     if ($isPartial) { return 'Partial' }
     if ($GateContent -match '(?i)\bfailed\b') { return 'Failed' }
     if ($GateContent -match '(?i)\bpassed\b') { return 'Passed' }
@@ -298,9 +482,11 @@ function New-StatusChipRow {
         'Passed'       { '1a7f37' }   # green
         'Partial'      { 'bf8700' }   # amber — mixed/inconclusive
         'Inconclusive' { '0e7490' }   # teal — could not build/run (infra), not a real fail (avoid purple ~ GitHub "merged")
+        'Timed Out'    { '0e7490' }   # teal — gate stopped by its hang-safety timeout (infra), fix unverified
         'No Tests'     { '57606a' }   # neutral gray — nothing to verify
+        'Unknown'      { '57606a' }   # neutral gray — gate did not run / no verdict (deep-only rerun); absence of data, NOT a failure
         'Failed'       { 'd1242f' }   # red
-        default        { 'd1242f' }
+        default        { '57606a' }   # any unrecognized status renders neutral gray — red is reserved for a confirmed Failed gate only
     }
     $confidenceColor = switch ($Confidence) {
         'High' { '0969da' }
@@ -359,7 +545,8 @@ The workflow could not parse the fix-selection result. Review the session findin
 "@
     }
 
-    if ($winner.isPRFix -eq $true -or [string]::IsNullOrWhiteSpace([string]$winner.winner)) {
+    $selected = [string]$winner.winner
+    if ([string]::IsNullOrWhiteSpace($selected) -or $selected -eq 'pr') {
         return @"
 ---
 
@@ -373,8 +560,28 @@ No alternative fix was selected for this run. Review the session findings and CI
 "@
     }
 
-    $selected = [string]$winner.winner
     $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
+
+    if ($selected -eq 'pr-plus-reviewer') {
+        return @"
+---
+
+<details>
+<summary><strong>🧭 Next Steps</strong> — reviewer patch required (<code>pr-plus-reviewer</code>)</summary>
+<br/>
+
+**The reviewer-enhanced candidate won, so the submitted PR still needs those changes.**
+
+**Why:** $rationale
+
+Apply <code>PRAgent/pr-plus-reviewer/reviewer.patch</code> from the <code>CopilotLogs</code>
+artifact (or follow the report's **Required submitted-PR change**), push the update, and run
+the review again.
+
+</details>
+"@
+    }
+
     $diff = [string]$winner.candidateDiff
     $truncated = $false
 
@@ -434,7 +641,7 @@ $truncatedNote
 "@
 }
 
-function Test-HasNonPRWinner {
+function Test-WinnerRequiresPRChanges {
     param(
         [Parameter(Mandatory = $true)][string]$PRAgentDir
     )
@@ -446,7 +653,12 @@ function Test-HasNonPRWinner {
 
     try {
         $winner = Get-Content -Raw -LiteralPath $winnerFile -Encoding UTF8 | ConvertFrom-Json
-        return ($winner.isPRFix -eq $false -and -not [string]::IsNullOrWhiteSpace([string]$winner.winner))
+        $winnerName = [string]$winner.winner
+        if ([string]::IsNullOrWhiteSpace($winnerName)) {
+            return $false
+        }
+
+        return ($winner.isPRFix -eq $false) -or ($winnerName -match '(?i)^(pr-plus-reviewer|try-fix(?:-|$))')
     } catch {
         return $false
     }
@@ -464,7 +676,9 @@ function Test-RunValidationFailed {
     # gate/gate-result.txt or gate/content.md from $PRAgentDir — both live in the agent-writable
     # worktree/artifact, so a prompt-injected review agent could overwrite a real FAILED gate
     # with "PASSED" before this trusted posting step and bypass the APPROVE veto.
-    if ($TrustedGateResult -match '(?im)^\s*FAILED\s*$') { return $true }
+    # FAILED = a real test regression; TIMEDOUT = the gate never finished (fix unverified) —
+    # both must veto an APPROVE. INCONCLUSIVE/SKIPPED stay non-blocking sentinels.
+    if ($TrustedGateResult -match '(?im)^\s*(FAILED|TIMEDOUT)\s*$') { return $true }
 
     # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
     # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
@@ -496,18 +710,57 @@ function Test-DeepUITestsHadNoSignal {
     $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
     if ([string]::IsNullOrWhiteSpace($uiContent)) { return $false }
 
-    # Match either "no-signal" render the pipeline emits when regularFailed==0 and nothing
-    # passed: the OneTimeSetUp/fixture setup-failure header, OR the app-crash header
-    # (ci-copilot.yml ~1906: "the HostApp crashed mid-run, so N … could not complete").
-    # appCrashCategories takes priority over setup failures in the render, so the crash header
-    # — the originally-flagged escape — must be matched explicitly.
+    # Match every "no-signal" render the pipeline emits when regularFailed==0 and nothing
+    # passed: fixture setup failure, HostApp crash, or a selected category with zero runnable
+    # tests. appCrashCategories takes priority over setup failures in the render, so the crash
+    # header — the originally-flagged escape — must be matched explicitly.
     $noSignalHeader = ($uiContent -match '(?im)could not run:\s*OneTimeSetUp/fixture setup failure') -or
-                      ($uiContent -match '(?im)the HostApp crashed mid-run, so .*could not complete')
-    # Require no completed-test signal at all (no "N passed", no non-zero "N failed"); the
-    # with-passes crash header includes "N passed" and so is correctly excluded.
+                      ($uiContent -match '(?im)the HostApp crashed mid-run, so .*could not complete') -or
+                      ($uiContent -match '(?im)\b(?:category|categories) reported 0 tests\.')
+    # Require no completed-test signal at all (no positive "N passed", no non-zero
+    # "N failed"). A zero-test headline legitimately says "0 passed, 0 failed";
+    # those zero counts must not masquerade as positive execution signal.
     return ($noSignalHeader -and
-            $uiContent -notmatch '(?im)\b\d+\s+passed\b' -and
+            $uiContent -notmatch '(?im)\b[1-9]\d*\s+passed\b' -and
             $uiContent -notmatch '(?im)\b[1-9]\d*\s+failed\b')
+}
+
+function Test-ExpertReviewIsBlocking {
+    <#
+    .SYNOPSIS
+        True when the expert code-review artifact carries a blocking verdict.
+    .DESCRIPTION
+        The expert reviewer writes its verdict to expert-pr-eval/content.md (older runs
+        used pre-flight/code-review.md). That verdict is now rendered into the posted
+        summary, so a formal APPROVE over a NEEDS_CHANGES/NEEDS_DISCUSSION expert verdict
+        makes the review visibly self-contradictory. Only the FIRST artifact that carries a
+        usable verdict is consulted (current wins over legacy), matching the precedence in
+        Get-OutcomeFromCodeReviewVerdict (Update-AgentLabels.ps1) so the review event and
+        the derived outcome label can never disagree. Any read/parse issue returns $false so
+        a missing/garbled artifact never invents a blocking verdict.
+    #>
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    foreach ($rel in @('expert-pr-eval/content.md', 'pre-flight/code-review.md')) {
+        $file = Join-Path $PRAgentDir $rel
+        if (-not (Test-Path -LiteralPath $file)) { continue }
+        $content = $null
+        try { $content = Get-Content -Raw -LiteralPath $file -Encoding UTF8 -ErrorAction Stop } catch { continue }
+        if ([string]::IsNullOrWhiteSpace($content)) { continue }
+
+        $verdict = $null
+        if ($content -match '(?im)Verdict:\s*\**\s*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)') {
+            $verdict = $Matches[1]
+        }
+        elseif ($content -match '(?im)^[ \t]*#{1,6}[ \t]+(?:Initial[ \t]+)?Verdict[^\r\n]*(?:\r?\n[ \t]*)+\**[ \t]*(LGTM|APPROVE|NEEDS[ _]?CHANGES|NEEDS[ _]?DISCUSSION|REQUEST[ _]?CHANGES)\b') {
+            $verdict = $Matches[1]
+        }
+        if ($verdict) {
+            return ($verdict -notmatch '(?i)^(LGTM|APPROVE)')
+        }
+    }
+
+    return $false
 }
 
 function Get-AIReviewEventForRun {
@@ -529,9 +782,23 @@ function Get-AIReviewEventForRun {
 
     $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
 
+    # A pr-plus-reviewer or try-fix winner means the submitted PR still needs the
+    # winning changes. This machine-readable result vetoes an accidental prose APPROVE.
+    if (Test-WinnerRequiresPRChanges -PRAgentDir $PRAgentDir) {
+        return 'REQUEST_CHANGES'
+    }
+
     # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
     # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
     if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir -TrustedGateResult $TrustedGateResult)) {
+        return 'REQUEST_CHANGES'
+    }
+
+    # Expert-verdict veto: the expert code-review section is rendered into the same summary, so
+    # approving over a NEEDS_CHANGES/NEEDS_DISCUSSION expert verdict posts a self-contradictory
+    # review (blocking findings shown, formal approval granted). The expert verdict is the more
+    # specific signal, so it wins over the Report LLM's prose recommendation.
+    if ($reviewEvent -eq 'APPROVE' -and (Test-ExpertReviewIsBlocking -PRAgentDir $PRAgentDir)) {
         return 'REQUEST_CHANGES'
     }
 
@@ -540,10 +807,6 @@ function Get-AIReviewEventForRun {
     # an infra flake rather than a PR regression, so REQUEST_CHANGES would be too harsh.
     if ($reviewEvent -eq 'APPROVE' -and (Test-DeepUITestsHadNoSignal -PRAgentDir $PRAgentDir)) {
         return 'COMMENT'
-    }
-
-    if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
-        return 'REQUEST_CHANGES'
     }
 
     return $reviewEvent
@@ -587,15 +850,6 @@ if (Test-Path $gateFilePath) {
     $gateContent = Get-Content $gateFilePath -Raw -Encoding UTF8
     if (-not [string]::IsNullOrWhiteSpace($gateContent)) {
         Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
-        $gateSection = @"
-<details>
-<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
-<br/>
-
-$gateContent
-
-</details>
-"@
     } else {
         Write-Host "  ⏭️  gate (empty)" -ForegroundColor Gray
     }
@@ -603,55 +857,133 @@ $gateContent
     Write-Host "  ⏭️  gate (not found)" -ForegroundColor Gray
 }
 
-$phaseSections = @()
-$phaseContentByKey = @{}
+$hadPersistedGateContent = -not [string]::IsNullOrWhiteSpace($gateContent)
+$gateContent = Get-AuthoritativeGateContent -GateContent $gateContent -TrustedGateResult $TrustedGateResult
 
-foreach ($key in $phases.Keys) {
-    $phase = $phases[$key]
-    $filePath = Join-Path $PRAgentDir $phase.File
+if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') {
+    if ($hadPersistedGateContent) {
+        Write-Host "  ⏱️  gate (discarded partial content; trusted verdict is TIMEDOUT)" -ForegroundColor Yellow
+    } else {
+        Write-Host "  ⏱️  gate (synthesized TIMEDOUT section — gate did not complete)" -ForegroundColor Yellow
+    }
+}
 
-    if (Test-Path $filePath) {
-        $content = Get-Content $filePath -Raw -Encoding UTF8
-        if (-not [string]::IsNullOrWhiteSpace($content)) {
-            if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) {
-                Write-Host "  ⏭️  $key (no actionable content)" -ForegroundColor Gray
-                continue
-            }
-
-            # For uitests, annotate the "detected categories but no results" placeholder so an
-            # empty section explains itself instead of showing only the detected categories.
-            if ($key -eq "uitests") {
-                $content = Add-MissingUITestResultsNote -Content $content
-            }
-            $phaseContentByKey[$key] = $content
-            Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
-            # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
-            $phaseTitle = $phase.Title
-            if ($key -eq "uitests") {
-                $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`{1,2}([^`]+)`{1,2}')
-                if ($catMatch.Success) {
-                    $phaseTitle = "$($phase.Title) — $($catMatch.Groups[1].Value)"
-                }
-            }
-            $phaseSections += @"
-<details>
-<summary><strong>$phaseTitle</strong></summary>
+if (-not [string]::IsNullOrWhiteSpace($gateContent)) {
+    $gateOpen = if ($TrustedGateResult -match '(?i)^\s*TIMEDOUT\s*$') { ' open' } else { '' }
+    $gateSection = @"
+<details$gateOpen>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
 <br/>
 
-$content
+$gateContent
 
 </details>
 "@
-        } else {
-            Write-Host "  ⏭️  $key (empty)" -ForegroundColor Gray
+}
+
+$phaseSections = @()
+$phaseContentByKey = [ordered]@{}
+$phaseTitleByKey = @{}
+
+foreach ($key in $phases.Keys) {
+    $phase = $phases[$key]
+    $phaseContent = Get-FirstPhaseContent -Root $PRAgentDir -RelativePaths $phase.Files
+
+    if ($phaseContent) {
+        $filePath = $phaseContent.Path
+        $content = $phaseContent.Content
+        if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) {
+            Write-Host "  ⏭️  $key (no actionable content)" -ForegroundColor Gray
+            continue
         }
+
+        # For uitests, annotate the "detected categories but no results" placeholder so an
+        # empty section explains itself instead of showing only the detected categories.
+        if ($key -eq "uitests") {
+            $content = Add-MissingUITestResultsNote -Content $content
+        }
+        $phaseContentByKey[$key] = $content
+        Write-Host "  ✅ $key ($((Get-Item -LiteralPath $filePath).Length) bytes)" -ForegroundColor Green
+        # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
+        $phaseTitle = $phase.Title
+        if ($key -eq "uitests") {
+            $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`{1,2}([^`]+)`{1,2}')
+            if ($catMatch.Success) {
+                $phaseTitle = "$($phase.Title) — $($catMatch.Groups[1].Value)"
+            }
+        }
+        $phaseTitleByKey[$key] = $phaseTitle
     } else {
         Write-Host "  ⏭️  $key (not found)" -ForegroundColor Gray
     }
 }
 
-if (-not $gateSection -and $phaseSections.Count -eq 0) {
-    throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
+# Keep every expected expert-review section visible. Task 3 can persist pre-flight,
+# code-review, and try-fix output but still hit its time budget before report/content.md;
+# previously that silently removed the Report section and made a partial review look complete.
+$hadActualPhaseContent = $phaseContentByKey.Count -gt 0
+$agentPhaseKeys = @('pre-flight', 'code-review', 'try-fix', 'report')
+foreach ($key in $agentPhaseKeys) {
+    if (-not $phaseContentByKey.Contains($key)) {
+        $phaseContentByKey[$key] = New-MissingAgentPhaseContent -PhaseKey $key
+        $phaseTitleByKey[$key] = $phases[$key].Title
+        Write-Host "  ℹ️ Added explicit $key placeholder (phase output missing)" -ForegroundColor Yellow
+    }
+}
+
+foreach ($key in $phases.Keys) {
+    if (-not $phaseContentByKey.Contains($key)) {
+        continue
+    }
+
+    $phaseSections += @"
+<details>
+<summary><strong>$($phaseTitleByKey[$key])</strong></summary>
+<br/>
+
+$($phaseContentByKey[$key])
+
+</details>
+"@
+}
+
+if (-not $gateSection) {
+    # Reliability guard: in the deferred Stage-3 deep-results post, the PRAgent phase content
+    # (gate/content.md, code-review/content.md, …) can be absent even though the pipeline DID
+    # run and handed us a real trusted gate verdict — e.g. the content dir was not carried into
+    # the Stage-3 job, or the earlier review phase produced no files. Previously this hard-threw
+    # (exit 1), which FAILED the Post stage AND posted nothing: the Task-4 fallback notice never
+    # fires because Task-4 already deferred (aiSummaryReviewId='DEFERRED', not empty), so the PR
+    # got no summary at all (build 14829982, PR #36657: TRX deep results present, gate verdict
+    # INCONCLUSIVE, but every phase file "not found"). Rather than crash, synthesize a minimal
+    # gate section from the trusted verdict so the PR ALWAYS gets a summary (deep results are
+    # folded in below as usual). Only hard-throw when there is genuinely nothing — no phase
+    # content AND no trusted verdict (a local/manual misconfiguration).
+    if (-not [string]::IsNullOrWhiteSpace($TrustedGateResult)) {
+        $verdictUpper = $TrustedGateResult.ToUpperInvariant()
+        Write-Host "  ⚠️  No phase content found, but a trusted gate verdict ('$verdictUpper') was supplied — synthesizing a minimal gate section so the PR still gets a summary." -ForegroundColor Yellow
+        $gateContent = @"
+### Gate Result: $verdictUpper — detailed report unavailable
+
+The automated **test-verification gate** produced a **$verdictUpper** verdict, but its detailed per-test report could not be attached to this summary on this run (the review's phase content was not available when the deep results were posted). This is an **infrastructure** hiccup in assembling the report — **not** a problem with your PR.
+
+- The trusted gate verdict above is authoritative for the review decision.
+- Any deep UI test results for this run are shown below.
+
+**Next step:** re-comment ``/review`` to get a full report on a fresh agent.
+"@
+        $gateSection = @"
+<details open>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
+<br/>
+
+$gateContent
+
+</details>
+"@
+    } elseif (-not $hadActualPhaseContent) {
+        throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
+    }
 }
 
 # The trusted gate verdict comes from the pipeline (Gate task output variable). For
@@ -746,10 +1078,17 @@ if ($prAuthor) {
 }
 
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
+$resolvedPlatform = Get-PlatformStatus -Contents $summaryContent
+# Fall back to the pipeline-supplied review/deep platform when the content names none
+# (e.g. a deep-only rerun with no code-review phase) so the chip shows the real platform
+# instead of a misleading "Unknown" (dotnet/maui#35606).
+if ($resolvedPlatform -eq 'Unknown' -and -not [string]::IsNullOrWhiteSpace($Platform)) {
+    $resolvedPlatform = ConvertTo-TitleCase $Platform
+}
 $statusChipRow = New-StatusChipRow `
     -GateStatus (Get-GateStatus -GateContent $gateContent) `
     -Confidence (Get-ConfidenceStatus -Contents $summaryContent) `
-    -Platform (Get-PlatformStatus -Contents $summaryContent)
+    -Platform $resolvedPlatform
 $futureActionSection = New-FutureActionSection -PRAgentDir $PRAgentDir
 
 $commentBody = @"
@@ -773,6 +1112,111 @@ $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 
 Write-Host "  ✅ Built review body ($($commentBody.Length) chars)" -ForegroundColor Green
 
+# GitHub caps both PR-review bodies AND issue-comment bodies at 65,536 characters. A body over
+# that limit makes every POST path fail with HTTP 422 "Body is too long". Rebuild oversized
+# summaries with per-section budgets first so Gate, every expert phase, applicable UI Tests, and
+# Next Steps all remain present. The final substring fallback below is only a last-resort guard.
+$githubBodyMaxChars = 65500
+if ($commentBody.Length -gt $githubBodyMaxChars) {
+    Write-Host "  ℹ Review body exceeded $githubBodyMaxChars chars; compacting large sections while preserving all headings." -ForegroundColor Yellow
+
+    $compactBudgets = @{
+        'pre-flight'       = 4000
+        'code-review'      = 6500
+        'try-fix'          = 5000
+        'pr-finalize'      = 3000
+        'report'           = 4000
+        'regression-check' = 2500
+        'uitests'          = 12000
+    }
+
+    $compactSessionParts = @()
+    if ($gateSection) {
+        $compactGateContent = Limit-MarkdownContent -Content $gateContent -MaxChars 7000 -SectionName 'Gate'
+        $compactGateOpen = if ($gateContent -match '(?i)TIMEDOUT|detailed report unavailable') { ' open' } else { '' }
+        $compactSessionParts += @"
+<details$compactGateOpen>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
+<br/>
+
+$compactGateContent
+
+</details>
+"@
+    }
+
+    $compactPhaseSections = @()
+    foreach ($key in $phases.Keys) {
+        if (-not $phaseContentByKey.Contains($key)) {
+            continue
+        }
+
+        $compactContent = Limit-MarkdownContent `
+            -Content $phaseContentByKey[$key] `
+            -MaxChars $compactBudgets[$key] `
+            -SectionName $key
+
+        $compactPhaseSections += @"
+<details>
+<summary><strong>$($phaseTitleByKey[$key])</strong></summary>
+<br/>
+
+$compactContent
+
+</details>
+"@
+    }
+
+    if ($compactPhaseSections.Count -gt 0) {
+        $compactSessionParts += ($compactPhaseSections -join "`n`n---`n`n")
+    }
+
+    $compactPhaseContent = $compactSessionParts -join "`n`n---`n`n"
+    $compactSessionBlock = @"
+$sessionMarkerStart
+<details>
+<summary><strong>🗂️ Review Sessions</strong> — click to expand</summary>
+<br/>
+
+$compactPhaseContent
+
+</details>
+$sessionMarkerEnd
+"@
+    $compactFutureActionSection = Limit-MarkdownContent -Content $futureActionSection -MaxChars 4000 -SectionName 'Next Steps'
+    $commentBody = @"
+$MARKER
+
+## AI Review Summary
+
+$authorPing
+
+$statusChipRow
+
+---
+
+$compactSessionBlock
+
+$compactFutureActionSection
+"@
+    $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
+    Write-Host "  ✅ Compacted review body to $($commentBody.Length) chars with all required sections preserved." -ForegroundColor Green
+}
+
+if ($commentBody.Length -gt $githubBodyMaxChars) {
+    $truncationNotice = "`n`n---`n`nℹ **Summary truncated** — this report exceeded GitHub's 65,536-character limit. See the full deep-test results and analysis in the pipeline build artifacts."
+    $keep = $githubBodyMaxChars - $truncationNotice.Length
+    if ($keep -lt 0) { $keep = 0 }
+    $commentBody = $commentBody.Substring(0, $keep)
+    # If truncation left an unbalanced fenced code block open, close it so markdown stays valid.
+    $codeFence = [string][char]96 * 3
+    if ((([regex]::Matches($commentBody, '(?m)^```')).Count % 2) -ne 0) {
+        $commentBody += "`n" + $codeFence
+    }
+    $commentBody += $truncationNotice
+    Write-Host "  ℹ Review body exceeded $githubBodyMaxChars chars; truncated to $($commentBody.Length) chars." -ForegroundColor Yellow
+}
+
 # ============================================================================
 # DRY RUN
 # ============================================================================
@@ -790,37 +1234,100 @@ if ($DryRun) {
 # HIDE STALE GENERATED ARTIFACTS, THEN POST REVIEW
 # ============================================================================
 
-if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
-    Hide-StaleMauiBotIssueComments `
-        -PRNumber $PRNumber `
-        -IncludeAISummary `
-        -IncludeLegacyGate `
-        -IncludeMergeConflict `
-        -IncludeTryFix `
-        -Reason "stale generated PR review artifact"
-}
-
-if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
-    Hide-StaleMauiBotPullRequestReviews `
-        -PRNumber $PRNumber `
-        -IncludeAISummary `
-        -IncludeTryFix `
-        -Reason "stale generated PR review" `
-        -DismissFormalReviews
-}
-
-Write-Host "Creating new AI Summary PR review ($reviewEvent)..." -ForegroundColor Yellow
+# ============================================================================
+# HIDE STALE GENERATED ARTIFACTS, THEN POST
+# ============================================================================
+#
+# The pipeline's posting token (GH_COMMENT_TOKEN, a GitHub App token) can CREATE PR
+# reviews but CANNOT update / dismiss / minimize them (PUT + dismiss both return HTTP 404
+# in-pipeline, though they succeed with a full-permission PAT), so posting the AI Summary
+# as a REVIEW every build stacks them indefinitely (observed 40+ on one PR). Issue
+# comments, by contrast, ARE editable by this token. So for the common COMMENT verdict
+# (no formal veto) we post/UPDATE a single AI-Summary ISSUE COMMENT in place — it never
+# stacks. Formal APPROVE / CHANGES_REQUESTED verdicts still post a review (they carry the
+# review state and are far less frequent). Any failure in the comment path falls back to
+# posting a review, so the worst case is the previous behavior.
+$review = $null
 $postedEvent = $reviewEvent
-try {
-    $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
-} catch {
-    if ($postedEvent -eq 'COMMENT') {
-        throw
+
+if ($reviewEvent -eq 'COMMENT') {
+    # "Mark the previous one as outdated, then post a new summary." MauiBot's token CAN
+    # minimizeComment (collapse as outdated) but CANNOT unminimizeComment (FORBIDDEN — proven
+    # in-pipeline: "MauiBot does not have the correct permissions to execute UnminimizeComment").
+    # So we must NOT reuse+PATCH a comment that a prior sweep may have collapsed (we could never
+    # un-hide it → the fresh summary would stay invisible). Instead: collapse EVERY prior
+    # AI-Summary issue comment (and stale notices) as outdated, then post a brand-new comment.
+    # This only uses the permission MauiBot has, and gives one visible summary above a stack of
+    # collapsed "outdated" ones — the behavior maintainers expect.
+    if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotIssueComments `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeLegacyGate `
+            -IncludeMergeConflict `
+            -IncludeTryFix `
+            -IncludeReviewIncomplete `
+            -Reason "superseded by a newer AI Summary"
+    }
+    # Best-effort collapse of any stale AI-Summary REVIEWS (from before the issue-comment design).
+    if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -IncludeAISummary -IncludeTryFix -Reason "superseded by a newer AI Summary" -DismissFormalReviews
     }
 
-    Write-Host "⚠️ Formal $postedEvent review was rejected; retrying as COMMENT: $_" -ForegroundColor Yellow
-    $postedEvent = 'COMMENT'
-    $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+    try {
+        $bodyTmp = New-TemporaryFile
+        @{ body = $commentBody } | ConvertTo-Json -Depth 6 | Set-Content $bodyTmp.FullName -Encoding UTF8
+        Write-Host "Posting a new AI Summary issue comment (previous ones collapsed as outdated)..." -ForegroundColor Yellow
+        $cRaw = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $bodyTmp.FullName 2>&1
+        Remove-Item $bodyTmp.FullName -ErrorAction SilentlyContinue
+        if ($LASTEXITCODE -eq 0) {
+            $review = $cRaw | ConvertFrom-Json
+            $postedEvent = 'COMMENT'
+            Write-Host "✅ New AI Summary issue comment posted (ID: $($review.id))" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️ Issue-comment post failed; falling back to a review. $cRaw" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "⚠️ Issue-comment path threw; falling back to a review: $_" -ForegroundColor Yellow
+    }
+}
+
+if (-not $review) {
+    # Formal verdict (APPROVE / CHANGES_REQUESTED) OR the issue-comment path failed:
+    # post a PR review (the previous behavior).
+    if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotIssueComments `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeLegacyGate `
+            -IncludeMergeConflict `
+            -IncludeTryFix `
+            -IncludeReviewIncomplete `
+            -Reason "stale generated PR review artifact"
+    }
+
+    if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
+        Hide-StaleMauiBotPullRequestReviews `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeTryFix `
+            -Reason "stale generated PR review" `
+            -DismissFormalReviews
+    }
+
+    Write-Host "Creating new AI Summary PR review ($reviewEvent)..." -ForegroundColor Yellow
+    $postedEvent = $reviewEvent
+    try {
+        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+    } catch {
+        if ($postedEvent -eq 'COMMENT') {
+            throw
+        }
+
+        Write-Host "⚠️ Formal $postedEvent review was rejected; retrying as COMMENT: $_" -ForegroundColor Yellow
+        $postedEvent = 'COMMENT'
+        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+    }
 }
 
 $reviewId = [string]$review.id

@@ -72,12 +72,46 @@ if (-not (Test-Path $ProjectPath)) {
 
 $projectName = (Get-Item $ProjectPath).BaseName
 
+# The deep/gate builds compile the MAUI product (Core, Controls, ...) FROM SOURCE via
+# project references — unlike the main maui-pr-uitests pipeline, which builds the
+# HostApp against pre-built product PACKAGES. Building from source re-runs the
+# product's analyzers, and Directory.Build.props sets TreatWarningsAsErrors=true
+# repo-wide, so ANY PublicAPI bookkeeping gap in the PR — a public symbol missing from
+# PublicAPI.Unshipped.txt, or even a trivial 'IView' vs 'IView!' nullability mismatch —
+# surfaces as RS0016/RS0017: a *warning* elevated to a build-breaking *error*. The
+# HostApp then never builds, the UI tests can't run, and the review reports "no UI test
+# results" (observed on PR #34883 net10.0-windows: WindowsLifecycle.OnAppInstanceActivated
+# not in Core's PublicAPI.Unshipped.txt; and PR #36130: IView vs IView!). Main maui-pr
+# passes on the same commit because it never recompiles the product with the analyzer.
+# A PublicAPI declaration gap is bookkeeping, not a functional/runtime defect, and it is
+# already enforced as a REQUIRED check by the main maui-pr build — so for a UI-test build
+# whose only job is to run the app, we stop treating warnings as errors. Genuine compile
+# ERRORS (CS-level, a truly broken app) still fail the build; only warnings (including
+# the PublicAPI analyzer) stop blocking the app from building and running.
+$hostAppBuildProps = @("-p:TreatWarningsAsErrors=false")
+
 if ($Platform -eq "android") {
     #region Android Build and Deploy
     
     Write-Step "Building and deploying $projectName for Android..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run")
+    # EmbedAssembliesIntoApk=true is REQUIRED for Appium-driven UI test runs. A Debug
+    # Android build defaults to Fast Deployment (EmbedAssembliesIntoApk=false), which keeps
+    # the managed assemblies OUTSIDE the .apk and pushes them to the app's private
+    # `.__override__/<abi>` directory during the MSBuild deploy. That works for a single
+    # `-t:Run` launch, but Appium (and UITestBase's crash-recovery) re-install / re-launch
+    # the app on its own — WITHOUT re-pushing the override assemblies — so monodroid finds
+    # `.__override__/x86_64` empty and hard-aborts on startup:
+    #   F monodroid: No assemblies found in '.../files/.__override__/x86_64'. Assuming this
+    #               is part of Fast Deployment. Exiting...
+    #   xamarin::android::Helpers::abort_application -> Force finishing MainActivity -> died
+    # The app never shows its home screen, UITestBase.OneTimeSetup times out "waiting for
+    # Go To Test button", and the WHOLE fixture is marked failed -> "setup failed; N marked
+    # failed" (observed on PR #34637 Shape 61/61 and PR #35640 Material3 338/338, and the
+    # root of many android "no UI test results" reports). Embedding the assemblies into the
+    # APK makes it self-contained so any install/relaunch works — this is exactly what the
+    # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -169,7 +203,30 @@ if ($Platform -eq "android") {
     $simArch = if ($hostArch -eq "x64") { "x64" } else { "arm64" }
     Write-Info "Host architecture: $hostArch, RuntimeIdentifier: $runtimeId"
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId)
+    # Build the iOS HostApp using the SAME proven recipe the MAIN maui-pr-uitests
+    # pipeline uses (eng/devices/ios.cake -> ExecuteBuildUITestApp), so the deep
+    # stage builds byte-for-byte the way the shipping UI-test lane does:
+    #
+    #     dotnet build <HostApp> -c Debug -f net-ios \
+    #        -p:BuildIpa=true -p:_UseNativeAot=false -r iossimulator-<arch>
+    #
+    #  * BuildIpa=true — runs the FULL iOS app-packaging pipeline, which is what
+    #    compiles + links the native launcher stub that provides the executable's
+    #    `main` symbol. This is the load-bearing flag.
+    #  * _UseNativeAot=false — Debug simulator uses Mono (NativeAOT is Release-only
+    #    for UI tests); mirrors the cake recipe's USE_NATIVE_AOT=false default.
+    #  * ValidateXcodeVersion=false — harmless extra guard that skips the SDK's
+    #    early Xcode-version gate on heterogeneous agents (the Tahoe image demand
+    #    already pins a current-Xcode agent, so ILLink's own SDK check passes).
+    #
+    # DO NOT set _MustTrim=false here. It was tried (commit a00af5df24) to dodge an
+    # intermittent MT0180 from ILLink's Xcode SetupStep, but it ALSO short-circuits
+    # the app-packaging path that emits `main`, so the native link then hard-fails
+    # with `Undefined symbols for architecture arm64: "_main"` (build 14662537 —
+    # managed .dll built fine, then clang++ ld error, ZERO results EVERY run). The
+    # main pipeline never sets _MustTrim and does not hit MT0180 on the Tahoe pool,
+    # so matching its recipe fixes the link failure without reintroducing MT0180.
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:BuildIpa=true", "-p:_UseNativeAot=false", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -290,7 +347,19 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for MacCatalyst..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    # Build the MacCatalyst HostApp with the SAME proven recipe the MAIN pipeline
+    # uses (eng/devices/catalyst.cake): dotnet build -c Debug -f net-maccatalyst
+    #   -p:BuildIpa=true -r maccatalyst-<arch>
+    # BuildIpa=true runs the full app-packaging pipeline that emits the native
+    # launcher `main` symbol — see the iOS block above: omitting it caused an
+    # "Undefined symbols for architecture arm64: _main" hard link failure. The
+    # ValidateXcodeVersion=false guard harmlessly skips the SDK's early Xcode gate
+    # on heterogeneous agents. Do NOT set _MustTrim=false: it short-circuits the
+    # very packaging step that produces `main`, so the native link would fail.
+    $macArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
+    $macRid = if ($macArch -eq "x64") { "maccatalyst-x64" } else { "maccatalyst-arm64" }
+    Write-Info "MacCatalyst RuntimeIdentifier: $macRid"
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $macRid, "-p:BuildIpa=true", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -322,7 +391,7 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for Windows..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration)
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration) + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }

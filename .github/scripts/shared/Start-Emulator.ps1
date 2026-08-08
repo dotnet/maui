@@ -190,6 +190,28 @@ if ($Platform -eq "android") {
                 }
             }
             
+            # Guard against launching a SECOND emulator for an AVD that is already
+            # booting. The stage-level "Create AVD and Boot Android Emulator" task
+            # (or a prior gate test run in the same job) may have already started
+            # $selectedAvd while it is still *offline* mid cold-boot — a state the
+            # online-only "adb devices ... device" probe above does not match. Two
+            # emulators sharing one AVD abort with FATAL "Running multiple emulators
+            # with the same AVD", leaving every instance offline until the timeout
+            # and failing the gate with a false INCONCLUSIVE. If a process for this
+            # AVD already exists, reuse it and skip straight to the wait loop.
+            $emulatorLog = Join-Path ([System.IO.Path]::GetTempPath()) "emulator-$selectedAvd.log"
+            if ($IsWindows) {
+                $existingAvdProc = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
+                    Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id -join "`n"
+            } else {
+                $existingAvdProc = bash -c "pgrep -f 'qemu.*$selectedAvd' || pgrep -f 'emulator.*$selectedAvd' || true" 2>&1
+            }
+            $reuseExistingEmulator = -not [string]::IsNullOrWhiteSpace($existingAvdProc)
+
+            if ($reuseExistingEmulator) {
+                Write-Info "Emulator for AVD '$selectedAvd' is already running (PIDs: $existingAvdProc). Reusing it instead of starting a duplicate (avoids the same-AVD FATAL conflict)."
+            }
+            else {
             Write-Info "Starting emulator: $selectedAvd"
             Write-Info "This may take 1-2 minutes..."
             
@@ -237,12 +259,19 @@ if ($Platform -eq "android") {
                 exit 1
             }
             Write-Info "Emulator process started (PIDs: $emulatorProcs)"
+            }
             
             # Wait for device to appear with timeout
-            # Timeout of 120s (2 min) - if the emulator hasn't registered an ADB device by then, it's not going to
+            # 240s (4 min): CI agents here have only 2 CPU cores (the emulator log
+            # warns "will run more smoothly with 4 CPU cores"), so a cold
+            # -no-snapshot boot can take well over 2 minutes to register an ADB
+            # device. A too-short timeout turns a slow-but-healthy boot into a
+            # false gate INCONCLUSIVE.
             Write-Info "Waiting for emulator device to appear..."
-            $deviceTimeout = 120
+            $deviceTimeout = 240
             $deviceWaited = 0
+            $offlineStreak = 0
+            $wedgedRecoveryDone = $false
             
             while ($deviceWaited -lt $deviceTimeout) {
                 # Match any emulator device line
@@ -257,6 +286,60 @@ if ($Platform -eq "android") {
                 $offlineDevices = adb devices | Select-String "^emulator-\d+\s+offline"
                 if ($offlineDevices.Count -gt 0) {
                     Write-Info "Device found but offline, waiting..."
+                    $offlineStreak += 5
+                    # A booted emulator can drop to 'offline' when the ADB channel
+                    # stalls under CPU pressure (2-core agents building the app).
+                    # This is the exact state that used to trip the duplicate-AVD
+                    # FATAL. Actively nudge adb to reconnect the offline transport
+                    # (cheap, non-destructive) instead of only waiting — this often
+                    # recovers the existing emulator without a kill+reboot cycle.
+                    if ($deviceWaited % 30 -eq 0) {
+                        adb reconnect offline 2>&1 | ForEach-Object { Write-Info "  adb reconnect: $_" }
+                    }
+                    # WEDGED-EMULATOR RECOVERY (build 14689943, #36586 android: a prior
+                    # 'Warm Up' step launched Emulator_30 but the process wedged
+                    # 'offline' permanently — adb only ever saw it reconnecting. The
+                    # reuse path above trusted the live process and waited the full
+                    # 240s on ALL 3 gate retries -> false INCONCLUSIVE). adb reconnect
+                    # cannot revive a truly wedged emulator, so ONCE, after a long
+                    # *continuous* offline streak on a REUSED emulator (which already
+                    # had the warmup's head-start to boot, so a 150s+ offline streak
+                    # means wedged, not merely slow), hard-kill it by PID and cold-boot
+                    # a fresh instance, then restart the wait clock. Single-shot
+                    # (guarded) so it can never loop; if the fresh boot also fails we
+                    # fall through to the same timeout/exit 1 as before -> never worse
+                    # than today. Gated on $reuseExistingEmulator so a fresh (possibly
+                    # just-slow) cold boot is never killed prematurely.
+                    if ((-not $wedgedRecoveryDone) -and $reuseExistingEmulator -and ($offlineStreak -ge 150)) {
+                        Write-Info "Reused emulator '$selectedAvd' stuck offline ${offlineStreak}s despite adb reconnect — killing it by PID and cold-booting a fresh instance (one-time recovery)."
+                        if ($IsWindows) {
+                            $wedgedPids = (Get-Process -Name "emulator*","qemu*" -ErrorAction SilentlyContinue |
+                                Where-Object { $_.CommandLine -match [regex]::Escape($selectedAvd) }).Id
+                            foreach ($wp in $wedgedPids) { Stop-Process -Id $wp -Force -ErrorAction SilentlyContinue }
+                        } else {
+                            bash -c "pgrep -f 'qemu.*$selectedAvd' | xargs -r kill -9; pgrep -f 'emulator.*$selectedAvd' | xargs -r kill -9; true" 2>&1 | Out-Null
+                        }
+                        Start-Sleep -Seconds 5
+                        adb kill-server 2>&1 | Out-Null
+                        adb start-server 2>&1 | Out-Null
+                        $useHeadless = $Headless -or $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS
+                        if ($IsWindows) {
+                            $windowStyle = if ($useHeadless) { "Hidden" } else { "Normal" }
+                            Start-Process $emulatorBin -ArgumentList "-avd", $selectedAvd, "-no-snapshot", "-no-boot-anim", "-gpu", "swiftshader_indirect" -WindowStyle $windowStyle
+                        } else {
+                            $windowFlag = if ($useHeadless) { "-no-window" } else { "" }
+                            bash -c "nohup '$emulatorBin' -avd '$selectedAvd' $windowFlag -no-snapshot -no-audio -no-boot-anim -gpu swiftshader_indirect > '$emulatorLog' 2>&1 &"
+                        }
+                        Write-Info "Fresh emulator cold-boot issued after wedged recovery; resetting wait clock (up to $deviceTimeout s)."
+                        $wedgedRecoveryDone = $true
+                        $offlineStreak = 0
+                        $deviceWaited = 0
+                        Start-Sleep -Seconds 5
+                        continue
+                    }
+                }
+                else {
+                    $offlineStreak = 0
                 }
                 
                 Start-Sleep -Seconds 5
@@ -272,8 +355,42 @@ if ($Platform -eq "android") {
                 }
             }
             
+            # LAST-RESORT TRANSPORT RECOVERY before declaring failure (build 14699254,
+            # #36655 android): a reused emulator can time out this 240s wait yet be
+            # fully booted moments later — the very next Start-Emulator invocation's
+            # top-of-script pre-check found the SAME emulator 'device'-ready right after
+            # this loop had given up. The in-loop 'adb reconnect offline' only nudges a
+            # transport already seen as 'offline'; if the transport is ABSENT from
+            # 'adb devices' entirely (process alive but adb never enumerated it) nothing
+            # recovers it and we waste a false 'Failed to boot' INCONCLUSIVE. A full adb
+            # server restart re-enumerates ALL transports and revives both the stuck-
+            # offline and absent cases. Try it once + a short grace re-poll. Strictly
+            # additive: if the device is genuinely dead the grace loop times out and we
+            # exit 1 exactly as before (never worse than today).
             if (-not $DeviceUdid) {
-                Write-Error "Emulator failed to start within $deviceTimeout seconds. Please try starting it manually."
+                Write-Info "Device wait timed out after ${deviceTimeout}s — attempting a full adb server restart (forceful transport re-enumeration) before giving up..."
+                adb kill-server 2>&1 | Out-Null
+                Start-Sleep -Seconds 2
+                adb start-server 2>&1 | Out-Null
+                Start-Sleep -Seconds 3
+                $graceWaited = 0
+                $graceTimeout = 60
+                while ($graceWaited -lt $graceTimeout) {
+                    $graceDevices = adb devices | Select-String "^emulator-\d+\s+device"
+                    if ($graceDevices.Count -gt 0) {
+                        $DeviceUdid = ($graceDevices[0].Line -split '\s+')[0]
+                        Write-Success "Emulator transport recovered after adb server restart: $DeviceUdid (grace ${graceWaited}s)"
+                        break
+                    }
+                    # Also nudge any transport that re-appeared as 'offline'.
+                    adb reconnect offline 2>&1 | Out-Null
+                    Start-Sleep -Seconds 5
+                    $graceWaited += 5
+                }
+            }
+            
+            if (-not $DeviceUdid) {
+                Write-Error "Emulator failed to start within $deviceTimeout seconds (and did not recover after an adb server restart). Please try starting it manually."
                 Write-Info "Current adb devices:"
                 adb devices -l
                 if (Test-Path $emulatorLog) {
@@ -366,16 +483,30 @@ if ($Platform -eq "android") {
         # Preferred iOS versions in order — match main CI ui-tests pipeline (defaultiOSVersion: '26.0')
         # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
         # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
-        $preferredVersions = @("iOS-26", "iOS-18", "iOS-17")
-        # Preferred devices per iOS version to match CI configuration:
-        #   iOS 26.x → iPhone Xs / iPhone 16 Pro (snapshots in /ios-26 baseline are device-agnostic per UITest.cs:367)
-        #   iOS 18.x → iPhone Xs (matches /ios baseline default)
-        #   iOS 17.x → iPhone Xs (fallback)
+        #
+        # iOS-26-4 is pinned FIRST (ahead of the generic iOS-26): the deep stage's
+        # "Install iOS simulator runtimes" step installs the runtime matching the
+        # build SDK (26.5) so actool can compile — but that ALSO makes the generic
+        # "iOS-26" tier's descending sort prefer 26.5. The ios-26 visual baselines
+        # were captured on iOS 26.4 (PR #35061), so rendering on 26.5 would produce
+        # spurious pixel diffs. Selecting 26.4 explicitly keeps the RUN on the
+        # baseline OS while the build still uses the 26.5 SDK. Falls back to the
+        # newest iOS-26 (then 18/17) if 26.4 is ever absent.
+        $preferredVersions = @("iOS-26-4", "iOS-26", "iOS-18", "iOS-17")
+        # Preferred devices per iOS version. Every iOS UI-test snapshot baseline
+        # (both snapshots/ios and snapshots/ios-26) was captured at 1124x2286 —
+        # a 375pt-wide device (iPhone Xs / iPhone 11 Pro, 1125x2436). The baselines
+        # are NOT device-agnostic: a 393pt (iPhone 15/16) or 402pt (iPhone 16 Pro)
+        # simulator renders 1179/1206-wide screenshots and EVERY visual test then
+        # fails with a size mismatch. So only 375pt devices are eligible here; when
+        # none is pre-installed the create-fallback below makes an iPhone 11 Pro /
+        # iPhone Xs. (Do NOT add larger devices — that reintroduces the run-wide
+        # "actual 1206x2472 vs baseline 1124x2286" failure the deep UI-test stage hit.)
         $preferredDevicesPerVersion = @{
-            # iPhone 11 Pro first for iOS-26: baselines captured at 1124x1126 resolution
-            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro")
-            "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
+            "iOS-26-4" = @("iPhone 11 Pro", "iPhone Xs")
+            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs")
+            "iOS-18" = @("iPhone Xs", "iPhone 11 Pro")
+            "iOS-17" = @("iPhone Xs", "iPhone 11 Pro")
         }
         
         $selectedDevice = $null
@@ -429,67 +560,121 @@ if ($Platform -eq "android") {
                 if (-not $selectedDevice) {
                     $createDevice = $null
                     $createDeviceTypeId = $null
-                    if ($version -eq "iOS-26") {
+                    # Match by version PREFIX, not exact equality: the
+                    # $preferredVersions list leads with a minor-qualified entry
+                    # ("iOS-26-4") so the highest installed runtime wins. An exact
+                    # `-eq "iOS-26"` test never matches "iOS-26-4", which skipped
+                    # the create step and fell back to a wrong-size device (e.g.
+                    # iPhone 17 Pro -> 1206x2472 screenshots, breaking every visual
+                    # snapshot test with "size differs"). Prefix-match so every
+                    # iOS-26* runtime maps to iPhone 11 Pro and iOS-18*/iOS-17* to
+                    # iPhone Xs.
+                    if ($version -match '^iOS-26') {
                         $createDevice = "iPhone 11 Pro"
                         $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
                     }
-                    elseif ($version -eq "iOS-18" -or $version -eq "iOS-17") {
+                    elseif ($version -match '^iOS-18' -or $version -match '^iOS-17') {
                         $createDevice = "iPhone Xs"
                         $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-Xs"
                     }
 
-                    if ($createDevice -and $matchingRuntimes) {
-                        $createRuntime = $matchingRuntimes[0].Name
-                        Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
-                        $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
-                        if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
-                            $newUdid = $createOutput.Trim()
-                            Write-Info "Created $createDevice : $newUdid"
-                            # Re-query so we have the full device object
-                            $simList = xcrun simctl list devices available --json | ConvertFrom-Json
-                            $found = $null
-                            foreach ($rtProp in $simList.devices.PSObject.Properties) {
-                                if ($rtProp.Name -eq $createRuntime) {
-                                    $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
-                                    if ($found) {
-                                        $selectedDevice = $found
-                                        $selectedVersion = $rtProp.Name
-                                        break
+                    if ($createDevice) {
+                        # Resolve the create-runtime from `simctl list runtimes
+                        # available` (actually-INSTALLED runtimes) rather than the
+                        # device-list bucket keys used for detection above. The
+                        # device list can surface a runtime bucket (observed in CI:
+                        # com.apple.CoreSimulator.SimRuntime.iOS-26-5) that is NOT an
+                        # installed runtime, so `simctl create <device> <type>
+                        # <that-runtime>` fails with "Invalid runtime" and we fall
+                        # through to a wrong-size device (e.g. iPhone 17 Pro ->
+                        # 1206px screenshots, which breaks every visual snapshot
+                        # test with "size differs"). This mirrors the gate stage's
+                        # proven boot logic (eng/pipelines/ci-copilot.yml), which
+                        # selects its runtime from `list runtimes available`.
+                        $createRuntimeIds = @()
+                        try {
+                            $rtList = xcrun simctl list runtimes available --json | ConvertFrom-Json
+                            $createRuntimeIds = @(
+                                $rtList.runtimes |
+                                    Where-Object { $_.isAvailable -eq $true -and $_.identifier -match $version } |
+                                    Sort-Object { $_.version } -Descending |
+                                    ForEach-Object { $_.identifier }
+                            )
+                        } catch {
+                            Write-Info "Could not enumerate installed runtimes: $_"
+                        }
+                        # Fail-safe: if the runtimes query yielded nothing, fall back
+                        # to the device-bucket runtimes so behaviour is never worse
+                        # than before.
+                        if ($createRuntimeIds.Count -eq 0) {
+                            $createRuntimeIds = @($matchingRuntimes | ForEach-Object { $_.Name })
+                        }
+
+                        # Try to create the right-size device on each installed
+                        # runtime (highest first) until one succeeds — an "Invalid
+                        # runtime" (or any transient failure) on one candidate then
+                        # falls through to the next installed runtime instead of
+                        # giving up and booting a wrong-size device.
+                        foreach ($createRuntime in $createRuntimeIds) {
+                            if ($selectedDevice) { break }
+                            Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
+                            $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
+                            if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
+                                $newUdid = $createOutput.Trim()
+                                Write-Info "Created $createDevice : $newUdid on $createRuntime"
+                                # Re-query so we have the full device object
+                                $simList = xcrun simctl list devices available --json | ConvertFrom-Json
+                                foreach ($rtProp in $simList.devices.PSObject.Properties) {
+                                    if ($rtProp.Name -eq $createRuntime) {
+                                        $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                                        if ($found) {
+                                            $selectedDevice = $found
+                                            $selectedVersion = $rtProp.Name
+                                            break
+                                        }
                                     }
                                 }
                             }
-                        }
-                        else {
-                            Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                            else {
+                                Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                            }
                         }
                     }
                 }
 
-                # Last-resort: take first available iPhone (visual tests will likely
-                # report 'size differs' but at least non-visual tests can run)
+                # Last-resort: prefer a device whose logical size matches the
+                # snapshot baselines (375pt-wide @3x = 1125x2436 -> 1124x2286
+                # screenshots) so visual tests still get correct-size coverage even
+                # when the create step above could not run. Only if no correct-size
+                # device exists do we take an arbitrary iPhone (visual tests will
+                # then report 'size differs', but non-visual tests can still run).
                 if (-not $selectedDevice) {
-                    $anyiPhone = $null
-                    $iphoneRuntime = $null
+                    # Correct-size existing device matching the baselines (375pt-wide
+                    # @3x = 1125x2436 -> 1124x2286 screenshots). Do NOT fall back to a
+                    # wrong-size iPhone in this per-version block — doing so would lock
+                    # in e.g. iPhone 17 Pro during the FIRST (highest) runtime
+                    # iteration and `break` out before the create step runs for the
+                    # remaining preferred versions. The outer last-resort block (after
+                    # this foreach) takes an arbitrary iPhone only once every preferred
+                    # version's create attempt has been exhausted.
+                    $preferredSizeNames = @("iPhone 11 Pro", "iPhone Xs", "iPhone X", "iPhone 13 mini", "iPhone 12 mini")
                     foreach ($rt in $matchingRuntimes) {
-                        $found = $rt.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | Select-Object -First 1
+                        $found = $rt.Value | Where-Object { $_.isAvailable -eq $true -and $preferredSizeNames -contains $_.name } | Select-Object -First 1
                         if ($found) {
-                            $anyiPhone = $found
-                            $iphoneRuntime = $rt.Name
+                            $selectedDevice = $found
+                            $selectedVersion = $rt.Name
+                            Write-Info "Using correct-size iPhone matching baselines: $($found.name) on $selectedVersion"
                             break
                         }
-                    }
-                    
-                    if ($anyiPhone) {
-                        $selectedDevice = $anyiPhone
-                        $selectedVersion = $iphoneRuntime
-                        Write-Info "Using available iPhone (resolution may not match snapshot baselines): $($anyiPhone.name) on $selectedVersion"
                     }
                 }
             }
         }
         
-        # Last resort: find ANY available iPhone simulator
+        # Last resort: find ANY available iPhone simulator, still preferring a
+        # correct-size device (matching snapshot baselines) over an arbitrary one.
         if (-not $selectedDevice) {
+            $preferredSizeNames = @("iPhone 11 Pro", "iPhone Xs", "iPhone X", "iPhone 13 mini", "iPhone 12 mini")
             $allDevices = $simList.devices.PSObject.Properties | ForEach-Object { 
                 $runtime = $_.Name
                 $_.Value | Where-Object { $_.name -match "iPhone" -and $_.isAvailable -eq $true } | 
@@ -497,12 +682,287 @@ if ($Platform -eq "android") {
             }
             
             if ($allDevices) {
-                $selectedDevice = $allDevices | Select-Object -First 1
+                $selectedDevice = ($allDevices | Where-Object { $preferredSizeNames -contains $_.name } | Select-Object -First 1)
+                if (-not $selectedDevice) {
+                    $selectedDevice = $allDevices | Select-Object -First 1
+                }
                 $selectedVersion = $selectedDevice.runtime
                 Write-Info "Fallback: Using $($selectedDevice.name) on $selectedVersion"
             }
         }
         
+        # LAST-RESORT recovery — parity with the deep stage's "THIRD RECOVERY" in
+        # eng/pipelines/ci-copilot.yml. When every runtime from `simctl list runtimes
+        # available` rejected `simctl create` with "Invalid runtime" and no usable device
+        # exists, the agent may still have a runtime DISK IMAGE that is "Ready" but not yet
+        # enrolled in the legacy simruntime registry. The newer `simctl runtime list` shows
+        # it, and `simctl create` accepts its runtimeIdentifier and mounts it on demand — so
+        # recover a bootable sim here instead of dead-ending at "No iPhone simulator found"
+        # and degrading the gate to INCONCLUSIVE. Without this, the GATE iOS boot fails while
+        # the DEEP stage boots fine on the SAME agent (the gate boots via this script; the
+        # deep stage had its own recovery). If no runtime image is Ready this yields empty and
+        # the existing fatal below still fires — strictly additive, no happy-path change.
+        # (PR #35706 build 14680958: all runtimes "Invalid", gate went INCONCLUSIVE.)
+        #
+        # Enumerate ALL Ready iOS runtime disk images (newest first), not just the newest
+        # one, and try `simctl create` on each until one succeeds. Observed in CI (PR #35706
+        # build 14689719): the agent has iOS 26.3.1 (23D8133) AND iOS 26.5 (23F77) both
+        # "Ready", but `simctl create` on the NEWEST (iOS-26-5) can fail "Invalid runtime"
+        # while the OLDER, stable iOS-26-3-1 is create-usable. Try every Ready runtime
+        # (highest version first, to keep the iOS-26 snapshot-baseline size when possible).
+        # Factored into a function so the ENROLLMENT-RECOVERY retry below can re-run the
+        # exact same logic after a CoreSimulatorService restart without duplicating it.
+        # Returns [PSCustomObject]@{ Device; Version } on success, or $null.
+        function Invoke-IosReadyRuntimeRescue {
+            $readyRuntimeIds = @()
+            try {
+                $rtImages = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                $readyRuntimeIds = @(
+                    $rtImages.PSObject.Properties.Value |
+                        Where-Object { $_.state -eq 'Ready' -and $_.runtimeIdentifier -match 'iOS' } |
+                        Sort-Object { $_.version } -Descending |
+                        ForEach-Object { $_.runtimeIdentifier }
+                )
+            } catch {
+                Write-Info "Could not enumerate runtime disk images: $_"
+            }
+            if ($readyRuntimeIds.Count -eq 0) { return $null }
+            Write-Info "Recovered $($readyRuntimeIds.Count) Ready (unenrolled) iOS runtime disk image(s): $($readyRuntimeIds -join ', ') - attempting to create a device on each (newest first) until one succeeds..."
+            foreach ($readyRuntimeId in $readyRuntimeIds) {
+                foreach ($rescueType in @(
+                    @{ Name = 'iPhone 11 Pro'; Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro' },
+                    @{ Name = 'iPhone Xs';     Id = 'com.apple.CoreSimulator.SimDeviceType.iPhone-Xs' })) {
+                    $createOutput = & xcrun simctl create $rescueType.Name $rescueType.Id $readyRuntimeId 2>&1
+                    $udidLine = ("$createOutput" -split "`n" |
+                        Where-Object { $_ -match '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$' } |
+                        Select-Object -Last 1)
+                    if ($LASTEXITCODE -eq 0 -and $udidLine) {
+                        $newUdid = $udidLine.Trim()
+                        Write-Info "Created $($rescueType.Name) : $newUdid on $readyRuntimeId"
+                        # The device may not surface under `list devices available` until its
+                        # runtime is enrolled, but `simctl boot <udid>` mounts it on demand, so
+                        # use the UDID directly (re-query only for a nicer display object).
+                        $reList = xcrun simctl list devices --json 2>$null | ConvertFrom-Json
+                        $found = $reList.devices.PSObject.Properties.Value | ForEach-Object { $_ } |
+                            Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                        $dev = if ($found) { $found } else { [PSCustomObject]@{ udid = $newUdid; name = $rescueType.Name } }
+                        return [PSCustomObject]@{ Device = $dev; Version = $readyRuntimeId }
+                    }
+                    else {
+                        Write-Info "Failed to create $($rescueType.Name) on $readyRuntimeId`: $createOutput"
+                    }
+                }
+            }
+            return $null
+        }
+
+        # DIAGNOSE why a "Ready" runtime is not create-usable. A freshly downloaded iOS
+        # runtime can be "Ready" on disk yet isAvailable=false (not staged/verified/mounted
+        # into CoreSimulator), so `simctl create` rejects it "Invalid runtime" and `simctl
+        # list runtimes available` is empty (PR #35706 build 14695557: gate INCONCLUSIVE with
+        # iOS-26-5/26-3 both "Ready" on disk). The existing CoreSimulatorService restart alone
+        # does NOT enroll them. Logging availabilityError + signature/mount state pinpoints the
+        # real reason (not mounted vs signature vs incompatible Xcode) instead of guessing.
+        function Write-IosRuntimeDiag([string]$Label) {
+            Write-Info "==== iOS runtime diagnostics ($Label) ===="
+            Write-Info ("  xcode-select -p: " + ((& xcode-select -p 2>&1) -join ' '))
+            Write-Info ("  xcrun -f simctl:  " + ((& xcrun -f simctl 2>&1) -join ' '))
+            # Human-readable runtime list annotates the exact reason a runtime is unusable
+            # e.g. "(unavailable, runtime not mounted)" / "(invalid)" — the single most useful
+            # signal, and it prints even when the JSON enumeration is empty.
+            $rtText = (& xcrun simctl runtime list 2>&1) -join "`n"
+            $rtLines = @(($rtText -split "`n") | Where-Object { $_ -match 'iOS' })
+            Write-Info ("  simctl runtime list: {0} iOS line(s)" -f $rtLines.Count)
+            foreach ($ln in ($rtLines | Select-Object -First 12)) { Write-Info "    $($ln.Trim())" }
+            # CoreSimulator's enrolled runtimes + per-runtime availabilityError.
+            try {
+                $rts = xcrun simctl list runtimes -j 2>$null | ConvertFrom-Json
+                $iosRts = @($rts.runtimes | Where-Object { $_.identifier -match 'iOS' })
+                Write-Info ("  simctl list runtimes -j: {0} iOS runtime(s) enrolled" -f $iosRts.Count)
+                foreach ($rt in $iosRts) {
+                    $err = if ($rt.availabilityError) { $rt.availabilityError } else { 'none' }
+                    Write-Info ("    {0} v{1} isAvailable={2} err={3}" -f $rt.identifier, $rt.version, $rt.isAvailable, $err)
+                }
+            } catch { Write-Info "    (could not parse simctl list runtimes -j: $_)" }
+            # Runtime disk images (Xcode 15+ subsystem): state / signature / mount / path.
+            # A null .path explains why 'simctl runtime add' below would be a no-op.
+            try {
+                $imgs = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                $iosImgs = @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' })
+                Write-Info ("  simctl runtime list --json: {0} iOS image(s) on disk" -f $iosImgs.Count)
+                foreach ($img in $iosImgs) {
+                    Write-Info ("    {0} state={1} sig={2} mounted={3} path={4}" -f $img.runtimeIdentifier, $img.state, $img.signatureState, [bool]$img.mountPath, $img.path)
+                }
+            } catch { Write-Info "    (could not parse simctl runtime list --json: $_)" }
+            Write-Info "==== end diagnostics ($Label) ===="
+        }
+        # ENROLL Ready-but-unavailable runtimes: `simctl runtime add <path>` stages, verifies,
+        # and mounts a runtime disk image — the step CoreSimulator skips when the image is
+        # "Ready" on disk but unenrolled. Best-effort and only over runtimes NOT already in the
+        # available list, so healthy runtimes are never re-added. Returns $true if it attempted
+        # any enrollment (so the caller can re-scan + retry create).
+        function Invoke-IosRuntimeEnroll {
+            $attempted = $false
+            try {
+                # MULTI-XCODE HYPOTHESIS: CoreSimulator is Xcode-version-specific. If a NEWER
+                # Xcode downloaded/enrolled the runtimes but `simctl` here runs under an OLDER
+                # xcode-select path, the runtimes look "Ready" on disk yet "Invalid" to create.
+                # Point xcode-select at the newest installed Xcode before enrolling (best-effort).
+                $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
+                if ($newestXcode) {
+                    $curDev = (& xcode-select -p 2>$null)
+                    if ($curDev -notlike "$newestXcode*") {
+                        Write-Info "Enroll: switching xcode-select to newest Xcode ($newestXcode) before enrolling..."
+                        & sudo -n xcode-select -s "$newestXcode/Contents/Developer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    }
+                }
+                $rts = xcrun simctl list runtimes -j 2>$null | ConvertFrom-Json
+                $availableIds = @($rts.runtimes | Where-Object { $_.isAvailable -eq $true } | ForEach-Object { $_.identifier })
+                $imgs = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                $readyImgs = @($imgs.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' })
+                Write-Info ("Enroll: {0} Ready iOS image(s) on disk, {1} already available/enrolled" -f $readyImgs.Count, $availableIds.Count)
+                foreach ($img in $readyImgs) {
+                    if ($availableIds -contains $img.runtimeIdentifier) { continue }
+                    if (-not $img.path) {
+                        Write-Info "  $($img.runtimeIdentifier): no .path field on this Xcode - cannot 'simctl runtime add'; skipping"
+                        continue
+                    }
+                    Write-Info "Re-staging Ready-but-unavailable runtime $($img.runtimeIdentifier) via 'simctl runtime add' ($($img.path))..."
+                    & sudo -n xcrun simctl runtime add "$($img.path)" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    if ($LASTEXITCODE -ne 0) { & xcrun simctl runtime add "$($img.path)" 2>&1 | ForEach-Object { Write-Info "  $_" } }
+                    $attempted = $true
+                }
+            } catch { Write-Info "Runtime enroll attempt error: $_" }
+            return $attempted
+        }
+        # DOWNLOAD an iOS runtime when the agent has NONE on disk. The rescue + enroll paths
+        # above can only recover a runtime already present as a "Ready" disk image; when
+        # `simctl runtime list --json` shows 0 iOS images the agent was provisioned WITHOUT any
+        # iOS runtime, so there is literally nothing to enroll and both recover to $null (build
+        # 14699070, PR #27153: "0 iOS image(s) on disk" -> gate degraded to INCONCLUSIVE while
+        # asserting iOS "must work"). The ONLY recovery is to FETCH one — exactly as the deep
+        # stage's "Install iOS simulator runtimes" step does (eng/pipelines/ci-copilot.yml):
+        # `xcodebuild -downloadPlatform iOS -buildVersion <SDK>`. The gate stage
+        # (ReviewPR/CopilotReview) has NO such install step, so the gate boot must self-provision
+        # here or the iOS gate can never run on a runtime-less agent. Heavy (multi-GB, minutes)
+        # but only reached as the final resort before dead-ending — strictly additive, never on
+        # the healthy path. Returns $true if a download was attempted (caller re-scans + retries).
+        function Invoke-IosRuntimeDownload {
+            $attempted = $false
+            try {
+                # CoreSimulator/runtime downloads are Xcode-version-specific — select the newest
+                # installed Xcode first so the SDK probe + download target the version the build
+                # will actually use (mirrors the deep stage's install step).
+                $newestXcode = & bash -c 'ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1'
+                if ($newestXcode) {
+                    $curDev = (& xcode-select -p 2>$null)
+                    if ($curDev -notlike "$newestXcode*") {
+                        Write-Info "Download: switching xcode-select to newest Xcode ($newestXcode)..."
+                        & sudo -n xcode-select -s "$newestXcode/Contents/Developer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    }
+                }
+                # Probe the selected Xcode's iphonesimulator SDK version and download EXACTLY that
+                # runtime (future-proof as agents move to newer Xcodes); fall back to the generic
+                # latest-for-this-Xcode download if the probe or the versioned fetch fails.
+                $sdkVer = (& xcrun --sdk iphonesimulator --show-sdk-version 2>$null | Select-Object -First 1)
+                if ($sdkVer) {
+                    Write-Info "Download: no iOS runtime on disk - fetching iOS $sdkVer simulator runtime via 'xcodebuild -downloadPlatform iOS -buildVersion $sdkVer' (can take several minutes)..."
+                    & sudo -n xcodebuild -downloadPlatform iOS -buildVersion "$sdkVer" 2>&1 | ForEach-Object { Write-Info "  $_" }
+                }
+                else {
+                    Write-Info "Download: could not probe iphonesimulator SDK version - fetching generic 'xcodebuild -downloadPlatform iOS' (can take several minutes)..."
+                    & sudo -n xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
+                }
+                # Fall back to the generic (unversioned) download, then to non-sudo, if the
+                # preferred path was refused (sudo -n with no cached credential) or errored.
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Info "Download: retrying generic 'xcodebuild -downloadPlatform iOS'..."
+                    & sudo -n xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Info "Download: sudo path failed - retrying without sudo..."
+                        & xcodebuild -downloadPlatform iOS 2>&1 | ForEach-Object { Write-Info "  $_" }
+                    }
+                }
+                $attempted = $true
+            } catch { Write-Info "Runtime download attempt error: $_" }
+            return $attempted
+        }
+
+        if (-not $selectedDevice) {
+            # First pass: try to create on any Ready runtime as-is.
+            $rescueResult = Invoke-IosReadyRuntimeRescue
+
+            # ENROLLMENT RECOVERY (parity with eng/pipelines/ci-copilot.yml ed34ffa; PR
+            # #35706 build 14694271): the GATE boots iOS via THIS script, but the
+            # CoreSimulatorService-restart enrollment fix only landed in ci-copilot.yml (the
+            # deep stage's boot), so the gate kept dead-ending at INCONCLUSIVE while the deep
+            # stage recovered on the SAME agent. When every create above failed "Invalid
+            # runtime", the Ready iOS images are on disk but NOT enrolled in CoreSimulator's
+            # registry (`simctl list runtimes available` is empty); restarting
+            # CoreSimulatorService forces a re-scan that enrolls them. Retry the create loop
+            # once afterward. Only runs when the first pass produced no device, so the healthy
+            # path is untouched; non-destructive (the daemon auto-relaunches on the next
+            # simctl call). sudo -n avoids any password prompt hang; falls back to non-sudo.
+            if (-not $rescueResult) {
+                Write-Info "All Ready-runtime create attempts failed 'Invalid runtime' - restarting CoreSimulatorService to enroll Ready-but-unenrolled runtimes and retrying once..."
+                Write-IosRuntimeDiag "before restart/enroll"
+                & sudo -n killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>$null
+                if ($LASTEXITCODE -ne 0) { & killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>$null }
+                Start-Sleep -Seconds 8
+                # Nudge CoreSimulator to relaunch and re-scan the on-disk runtime images.
+                xcrun simctl list runtimes *> $null
+                Start-Sleep -Seconds 4
+                # A restart alone often does NOT make Ready images create-usable (PR #35706
+                # build 14695557: still "Invalid runtime" after restart). Explicitly re-stage /
+                # verify / mount each unavailable Ready runtime via `simctl runtime add`, then
+                # re-scan before the final create retry.
+                if (Invoke-IosRuntimeEnroll) {
+                    xcrun simctl list runtimes *> $null
+                    Start-Sleep -Seconds 4
+                }
+                Write-IosRuntimeDiag "after restart/enroll"
+                $rescueResult = Invoke-IosReadyRuntimeRescue
+            }
+
+            # DOWNLOAD RECOVERY (build 14699070, PR #27153: "0 iOS image(s) on disk"; build
+            # 14690025, PR #36427: on-disk iOS-26-5 image "Invalid runtime" uncreatable even
+            # after restart/enroll — both dead-ended the iOS gate at INCONCLUSIVE). The rescue +
+            # enroll passes only recover a runtime that is BOTH present as a Ready disk image AND
+            # enrollable; this final resort fires whenever they still produced no bootable device
+            # and DOWNLOADS a fresh SDK-matching runtime (as the deep stage's install step does),
+            # then retries the create loop once. It is reached only after every preferred-device
+            # create, the multi-runtime rescue, the CoreSimulatorService restart, and the
+            # `simctl runtime add` enroll have all failed — i.e. the agent is genuinely broken —
+            # so the multi-GB/minutes cost is never paid on a healthy or merely-slow boot. We log
+            # the on-disk image count for diagnostics but do NOT gate on it: "0 images" (must
+            # fetch) and "images present but all Invalid" (re-fetch a clean, SDK-matching copy)
+            # both need the same download. Honours the directive that the iOS gate must run.
+            if (-not $rescueResult) {
+                $readyImgCount = 0
+                try {
+                    $imgsNow = xcrun simctl runtime list --json 2>$null | ConvertFrom-Json
+                    $readyImgCount = @($imgsNow.PSObject.Properties.Value | Where-Object { $_.runtimeIdentifier -match 'iOS' -and $_.state -eq 'Ready' }).Count
+                } catch { }
+                Write-Info "No bootable iOS simulator after rescue+restart+enroll ($readyImgCount Ready image(s) on disk, all unusable) - attempting a runtime DOWNLOAD before giving up (iOS gate must run)..."
+                if (Invoke-IosRuntimeDownload) {
+                    xcrun simctl list runtimes *> $null
+                    Start-Sleep -Seconds 4
+                    # A freshly downloaded runtime can land "Ready" but unenrolled — enroll then retry.
+                    if (Invoke-IosRuntimeEnroll) {
+                        xcrun simctl list runtimes *> $null
+                        Start-Sleep -Seconds 4
+                    }
+                    Write-IosRuntimeDiag "after download"
+                    $rescueResult = Invoke-IosReadyRuntimeRescue
+                }
+            }
+
+            if ($rescueResult) {
+                $selectedDevice = $rescueResult.Device
+                $selectedVersion = $rescueResult.Version
+            }
+        }
+
         if (-not $selectedDevice) {
             Write-Error "No iPhone simulator found. Please create one in Xcode."
             Write-Info "Available simulators:"
@@ -541,22 +1001,48 @@ if ($Platform -eq "android") {
         }
     }
 
-    # Boot simulator if not already booted
+    # Boot simulator if not already booted.
+    #
+    # Robustness: `simctl boot` transitions the device Booting -> Booted
+    # asynchronously. The previous code queried state ONCE immediately after
+    # `simctl boot` and did `exit 1` if it was not yet "Booted", which could
+    # spuriously fail the deep iOS UI-test stage on a slow/loaded CI agent (an
+    # infrastructure failure with no retry). Boot inside a bounded retry loop
+    # that waits for the device to actually reach the Booted state; on the happy
+    # path (already Booted) this returns on the first iteration with no
+    # behavioural change.
     Write-Info "Booting simulator (if not already running)..."
+    $bootDeadlineSeconds = 90
+    $bootWaited = 0
+    $device = $null
     xcrun simctl boot $DeviceUdid 2>$null
-    
-    # Verify booted
-    $simState = xcrun simctl list devices --json | ConvertFrom-Json
-    $device = $simState.devices.PSObject.Properties.Value | 
-        ForEach-Object { $_ } | 
-        Where-Object { $_.udid -eq $DeviceUdid } | 
-        Select-Object -First 1
-    
-    if ($device.state -ne "Booted") {
-        Write-Error "Simulator failed to boot. Current state: $($device.state)"
+    while ($bootWaited -lt $bootDeadlineSeconds) {
+        $simState = xcrun simctl list devices --json | ConvertFrom-Json
+        $device = $simState.devices.PSObject.Properties.Value |
+            ForEach-Object { $_ } |
+            Where-Object { $_.udid -eq $DeviceUdid } |
+            Select-Object -First 1
+        if ($device -and $device.state -eq "Booted") { break }
+        Start-Sleep -Seconds 3
+        $bootWaited += 3
+        # Re-issue boot periodically in case the device slipped back to Shutdown
+        # (a transient CoreSimulator hiccup) rather than progressing to Booted.
+        if ($bootWaited % 15 -eq 0) {
+            Write-Info "Simulator still not Booted after ${bootWaited}s (state: $($device.state)); re-issuing boot..."
+            xcrun simctl boot $DeviceUdid 2>$null
+        }
+    }
+
+    if (-not $device -or $device.state -ne "Booted") {
+        Write-Error "Simulator failed to boot within ${bootDeadlineSeconds}s. Current state: $($device.state)"
         exit 1
     }
-    
+
+    # The device reaches the Booted state a few seconds before SpringBoard /
+    # CoreSimulator services are fully up; give them a brief settle so Appium /
+    # WebDriverAgent can attach on the first try instead of erroring out.
+    Start-Sleep -Seconds 5
+
     Write-Success "Simulator is booted and ready: $deviceName"
     
     #endregion

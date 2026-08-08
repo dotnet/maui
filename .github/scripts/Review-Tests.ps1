@@ -740,14 +740,17 @@ Rules:
 
 Set-Content -Path $PromptPath -Value $prompt -Encoding UTF8
 
-$model = if ($env:COPILOT_REVIEW_TESTS_MODEL) { $env:COPILOT_REVIEW_TESTS_MODEL } else { "gpt-5.5" }
+$model = if ($env:COPILOT_REVIEW_TESTS_MODEL) { $env:COPILOT_REVIEW_TESTS_MODEL } else { "gpt-5.6-sol" }
 Write-Host "Invoking Copilot CLI with model $model..."
 if ($AllowAllTools) {
     Write-Host "AllowAllTools enabled: Copilot CLI will run with --allow-all against untrusted PR/log evidence." -ForegroundColor Yellow
 }
 
 $outputLines = New-Object System.Collections.Generic.List[string]
-$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model)
+# --secret-env-vars: defense-in-depth (ci-copilot-pipeline-security rule 1) — strips
+# the named tokens from copilot's model/tool/shell context even if they are present in
+# this process's environment, matching Review-PR.ps1 / Analyze-UITestFailures.ps1.
+$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model, "--context", "long_context", "--effort", "max", "--secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN")
 if ($AllowAllTools) {
     $copilotArgs += "--allow-all"
 }

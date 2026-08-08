@@ -50,6 +50,13 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if (-not (Get-Command ConvertTo-AzdoSafeConsole -CommandType Function -ErrorAction SilentlyContinue)) {
+    function ConvertTo-AzdoSafeConsole {
+        param([string]$Text)
+        return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+    }
+}
+
 # ============================================================================
 # RESOLVE FILE PATHS
 # ============================================================================
@@ -81,12 +88,38 @@ if (-not (Test-Path $FindingsFile)) {
 
 Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
 $rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
-$parsed = $rawJson | ConvertFrom-Json
+
+# Guard: an empty or whitespace-only findings file means the expert review
+# produced ZERO inline findings. Check this before ConvertFrom-Json so malformed
+# non-empty JSON still surfaces as a parse error instead of being treated as no
+# findings.
+if ([string]::IsNullOrWhiteSpace($rawJson)) {
+    Write-Host "Findings file is empty — no inline findings to post." -ForegroundColor Green
+    exit 0
+}
+
+try {
+    $parsed = $rawJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    throw "Findings file '$FindingsFile' contains malformed JSON: $($_.Exception.Message)"
+}
+
+# Guard: a literal-"null" findings file parses to $null. The expert review writes
+# the inline-findings.post.ok sentinel whenever the PR fix won, even when it
+# produced ZERO inline findings — so this block can legitimately run against a
+# null findings file. Calling .GetType() or .PSObject on $null throws "You cannot
+# call a method on a null-valued expression" (surfaced as a scary non-fatal error
+# in the deferred-post catch). Treat it as "no findings" and exit cleanly.
+if ($null -eq $parsed) {
+    Write-Host "Findings file parsed to null ('null') — no inline findings to post." -ForegroundColor Green
+    exit 0
+}
 
 # Diagnostic: log what the parser sees
 Write-Host "  Parsed type: $($parsed.GetType().FullName)" -ForegroundColor Gray
 if ($parsed -is [System.Management.Automation.PSCustomObject]) {
-    Write-Host "  Object properties: $(($parsed.PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
+    $propertyNames = ($parsed.PSObject.Properties | ForEach-Object { $_.Name }) -join ', '
+    Write-Host "  Object properties: $(ConvertTo-AzdoSafeConsole $propertyNames)" -ForegroundColor Gray
 }
 
 # The agent may produce:
@@ -110,7 +143,8 @@ if ($parsed -is [System.Collections.IEnumerable] -and $parsed -isnot [string]) {
     $findings = @($parsed)
 } else {
     Write-Host "  ⚠️ Unrecognized findings format — dumping first 200 chars:" -ForegroundColor Yellow
-    Write-Host "  $($rawJson.Substring(0, [Math]::Min(200, $rawJson.Length)))" -ForegroundColor Gray
+    $rawPreview = $rawJson.Substring(0, [Math]::Min(200, $rawJson.Length))
+    Write-Host "  $(ConvertTo-AzdoSafeConsole $rawPreview)" -ForegroundColor Gray
 }
 
 if (-not $findings -or $findings.Count -eq 0) {
@@ -119,7 +153,8 @@ if (-not $findings -or $findings.Count -eq 0) {
 }
 
 Write-Host "  Found $($findings.Count) inline findings" -ForegroundColor Gray
-Write-Host "  First finding keys: $(($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
+$findingKeys = ($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', '
+Write-Host "  First finding keys: $(ConvertTo-AzdoSafeConsole $findingKeys)" -ForegroundColor Gray
 
 # Load summary if available
 $summaryBody = ""
@@ -160,7 +195,7 @@ foreach ($f in $findings) {
         $p.Contains('\') -or
         $p -match '[\x00-\x1F]' -or
         $p -match '^[A-Za-z]:') {
-        Write-Host "  ⚠️ Skipping finding with suspicious path: '$p'" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Skipping finding with suspicious path: '$(ConvertTo-AzdoSafeConsole $p)'" -ForegroundColor Yellow
         continue
     }
 
@@ -186,7 +221,8 @@ foreach ($f in $findings) {
 Write-Host "Fetching PR diff for line validation..." -ForegroundColor Cyan
 $filesJson = gh api --paginate "repos/dotnet/maui/pulls/$PRNumber/files" 2>&1
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ⚠️ Could not fetch PR files for validation: $filesJson" -ForegroundColor Yellow
+    $filesError = ($filesJson | Out-String).Trim()
+    Write-Host "  ⚠️ Could not fetch PR files for validation: $(ConvertTo-AzdoSafeConsole $filesError)" -ForegroundColor Yellow
     Write-Host "  Posting all findings without pre-validation." -ForegroundColor Yellow
 } else {
     $files = $filesJson | ConvertFrom-Json
@@ -229,7 +265,7 @@ if ($LASTEXITCODE -ne 0) {
     if ($dropped.Count -gt 0) {
         Write-Host "  ⚠️ Dropping $($dropped.Count) finding(s) whose lines aren't in the PR diff:" -ForegroundColor Yellow
         foreach ($d in $dropped) {
-            Write-Host "      $($d.path):$($d.line)" -ForegroundColor Gray
+            Write-Host "      $(ConvertTo-AzdoSafeConsole ([string]$d.path)):$($d.line)" -ForegroundColor Gray
         }
     }
     Write-Host "  ✅ $($kept.Count) of $($comments.Count) findings target lines in the diff" -ForegroundColor Gray

@@ -1,4 +1,4 @@
-# Pester regression gate for `.github/scripts/**`.
+# Pester regression gate for reviewer scripts and their coupled pipeline assets.
 #
 # Why this exists: the automation under `.github/scripts` ships a large Pester
 # suite (transport gating, safe-output expectation reconciliation, milestone
@@ -19,7 +19,13 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
-      - '.github/workflows/powershell-script-tests.yml'
+      - '.github/patches/**'
+      - '.github/workflows/**'
+      - 'eng/scripts/**'
+      - 'eng/pipelines/ci-copilot.yml'
+      - 'eng/pipelines/common/provision.yml'
+      - 'eng/pipelines/common/ui-tests-steps.yml'
+      - 'src/Controls/tests/TestCases.Shared.Tests/UITest.cs'
   workflow_dispatch:
 
 concurrency:

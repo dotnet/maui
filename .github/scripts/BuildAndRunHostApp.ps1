@@ -67,6 +67,107 @@ param(
     [switch]$Rebuild
 )
 
+function Merge-RetryTrxResults {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OriginalTrxPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RetryTrxPath,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$FailedNames
+    )
+
+    [xml]$origXml = Get-Content -LiteralPath $OriginalTrxPath -Raw -Encoding UTF8
+    [xml]$retryXml = Get-Content -LiteralPath $RetryTrxPath -Raw -Encoding UTF8
+    $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
+    $nsMgr = New-Object System.Xml.XmlNamespaceManager($origXml.NameTable)
+    $nsMgr.AddNamespace('t', $nsUri)
+    $retryNsMgr = New-Object System.Xml.XmlNamespaceManager($retryXml.NameTable)
+    $retryNsMgr.AddNamespace('t', $nsUri)
+
+    $retryByName = @{}
+    foreach ($retryResult in $retryXml.SelectNodes('//t:UnitTestResult', $retryNsMgr)) {
+        $retryByName[$retryResult.GetAttribute('testName')] = $retryResult
+    }
+
+    # A contains filter can rerun passing parameterizations with the same method
+    # name. Replace only entries that actually failed in the original run.
+    $failedNameSet = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($failedName in $FailedNames) {
+        [void]$failedNameSet.Add($failedName)
+    }
+
+    $replaced = 0
+    foreach ($origResult in $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)) {
+        $testName = $origResult.GetAttribute('testName')
+        if ($failedNameSet.Contains($testName) -and $retryByName.ContainsKey($testName)) {
+            $imported = $origXml.ImportNode($retryByName[$testName], $true)
+            $origResult.ParentNode.ReplaceChild($imported, $origResult) | Out-Null
+            $replaced++
+        }
+    }
+
+    $allResults = @($origXml.SelectNodes('//t:UnitTestResult', $nsMgr))
+    $outcomes = @($allResults | ForEach-Object { $_.GetAttribute('outcome') })
+    $mergedTotal = $allResults.Count
+    $mergedPassed = @($outcomes | Where-Object { $_ -eq 'Passed' }).Count
+    $mergedNotExecuted = @($outcomes | Where-Object { $_ -eq 'NotExecuted' }).Count
+    $mergedInconclusive = @($outcomes | Where-Object { $_ -eq 'Inconclusive' }).Count
+    $mergedSkipped = $mergedNotExecuted + $mergedInconclusive
+    $mergedFailed = $mergedTotal - $mergedPassed - $mergedSkipped
+    $mergedExecuted = $mergedPassed + $mergedFailed
+
+    $resultSummary = $origXml.SelectSingleNode('//t:ResultSummary', $nsMgr)
+    if (-not $resultSummary) {
+        throw "Original TRX has no ResultSummary node."
+    }
+
+    $finalOutcome = if ($mergedFailed -gt 0) { 'Failed' } else { 'Completed' }
+    $resultSummary.SetAttribute('outcome', $finalOutcome)
+
+    $counters = $resultSummary.SelectSingleNode('t:Counters', $nsMgr)
+    if (-not $counters) {
+        throw "Original TRX has no ResultSummary/Counters node."
+    }
+    $counters.SetAttribute('total', $mergedTotal)
+    $counters.SetAttribute('executed', $mergedExecuted)
+    $counters.SetAttribute('passed', $mergedPassed)
+    $counters.SetAttribute('failed', $mergedFailed)
+    $counters.SetAttribute('notExecuted', $mergedNotExecuted)
+    $counters.SetAttribute('inconclusive', $mergedInconclusive)
+
+    # The original Output describes the failed first attempt. Replace it with an
+    # explicit final summary; detailed first-run and retry diagnostics remain in
+    # build-output.log and each UnitTestResult's ErrorInfo.
+    $output = $resultSummary.SelectSingleNode('t:Output', $nsMgr)
+    if (-not $output) {
+        $output = $origXml.CreateElement('Output', $nsUri)
+        $resultSummary.AppendChild($output) | Out-Null
+    }
+    $output.InnerText = @"
+MAUI Android retry merge replaced $replaced originally-failed result(s).
+Final merged result: $finalOutcome
+Total tests: $mergedTotal
+Passed: $mergedPassed
+Failed: $mergedFailed
+Skipped: $mergedSkipped
+"@
+
+    $origXml.Save($OriginalTrxPath)
+
+    return [PSCustomObject]@{
+        Total    = $mergedTotal
+        Passed   = $mergedPassed
+        Failed   = $mergedFailed
+        Skipped  = $mergedSkipped
+        Replaced = $replaced
+        Outcome  = $finalOutcome
+    }
+}
+
 # Script configuration
 $ErrorActionPreference = "Stop"
 $RepoRoot = Resolve-Path "$PSScriptRoot/../.."
@@ -263,6 +364,14 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
+    # Re-assert ANR/crash-dialog suppression right before dotnet test. The emulator-setup
+    # step sets `hide_error_dialogs` at boot, but the deep stage runs many categories on one
+    # emulator and a mid-run "System UI isn't responding" ANR overlaying the HostApp is the
+    # top "produced no results" cause — this global flag is idempotent, so re-assert it here.
+    if ($settingsReady) {
+        & adb -s $DeviceUdid shell settings put global hide_error_dialogs 1 2>$null
+    }
+
     # Warm up the emulator / SystemUI right before launching the app for tests.
     # On the deep-UI-test (platform-pool) stage the emulator may have sat idle
     # for ~15-20 min during workload install + the app build, after which SystemUI
@@ -323,6 +432,33 @@ $testStartTime = Get-Date
 # The app has built-in file logging that writes directly to MAUI_LOG_FILE path
 $catalystAppProcess = $null
 if ($Platform -eq "catalyst") {
+    # Clear macOS-owned dialogs before every category, not just once at job
+    # startup. Both dialogs hide the HostApp's accessibility tree and otherwise
+    # turn every remaining fixture into the same WaitForElement timeout:
+    # - Setup Assistant's Apple Account sign-in pane can reappear mid-job.
+    # - A force-killed HostApp can leave the AppKit "unexpectedly quit while
+    #   reopening windows" alert, which also contaminates later categories.
+    # Trusted staged paths come first; repository paths are local-run fallbacks.
+    $dialogDismissals = @(
+        @{ FileName = "dismiss-apple-account-dialog.sh"; Label = "Apple Account dialog" },
+        @{ FileName = "dismiss-maccatalyst-app-recovery-dialog.sh"; Label = "MacCatalyst app recovery dialog" }
+    )
+    foreach ($dialog in $dialogDismissals) {
+        $dismissDialogCandidates = @(
+            [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../eng-scripts/$($dialog.FileName)")),
+            [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../eng/scripts/$($dialog.FileName)"))
+        )
+        $dismissDialog = $dismissDialogCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($dismissDialog -and (Test-Path $dismissDialog)) {
+            try {
+                & chmod +x $dismissDialog 2>$null
+                & bash $dismissDialog 2>&1 | ForEach-Object { Write-Host $_ }
+            } catch {
+                Write-Warn "$($dialog.Label) dismissal failed (non-fatal): $_"
+            }
+        }
+    }
+
     # Determine runtime identifier
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
@@ -343,6 +479,32 @@ if ($Platform -eq "catalyst") {
         # Set MAC_APP_PATH so Appium mac2 driver can launch the app directly
         $env:MAC_APP_PATH = $appPath
         Write-Success "MacCatalyst app prepared (MAC_APP_PATH=$appPath)"
+
+        # Register the freshly-built .app with LaunchServices so the Appium
+        # mac2 driver can resolve it by bundle ID. WebDriverAgentMac looks the
+        # app up via LaunchServices (NSWorkspace) using the bundleId capability;
+        # a newly-built, unregistered Catalyst app is not in the LaunchServices
+        # database, so OneTimeSetUp fails for EVERY test with
+        # "The app representing com.microsoft.maui.uitests could not be found"
+        # (0 passed / all errored). Setting MAC_APP_PATH / options.App alone is
+        # NOT sufficient — the driver still resolves via bundleId. `lsregister -f`
+        # force-registers this exact bundle so the lookup succeeds.
+        # Probe multiple known lsregister locations (the short symlinked path and
+        # the canonical Versions/A path) so a differing framework symlink layout
+        # on any agent macOS version can't silently skip registration and leave
+        # every catalyst test failing.
+        $lsregisterCandidates = @(
+            "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        )
+        $lsregister = $lsregisterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($lsregister) {
+            Write-Info "Registering app with LaunchServices (lsregister -f) via $lsregister ..."
+            & $lsregister -f $appPath 2>&1 | Out-Null
+            Write-Success "Registered MacCatalyst app with LaunchServices"
+        } else {
+            Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
+        }
     } else {
         Write-Warn "MacCatalyst app not found at: $appPath"
         Write-Warn "Test may use wrong app bundle if another version is registered"
@@ -426,14 +588,22 @@ try {
         $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
     }
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
-    $testOutput = & dotnet test @testArgs 2>&1
-    
+    # Stream each line to this script's output stream *as it is produced* (via
+    # Tee-Object pass-through) while still capturing every line into $testOutput.
+    # Streaming live is essential: the deep per-category loop runs this script
+    # under a bounded runner that detects hangs by watching the child's stdout
+    # for growth. `dotnet test` (which includes the multi-minute HostApp build)
+    # emits nothing until it finishes when its output is captured silently, so a
+    # slow-but-healthy build on a saturated agent looked identical to a hang and
+    # got idle-killed mid-build (observed: catalyst CollectionView killed 3x at
+    # ~26 min, whole category falsely failed). Tee gives the idle detector a real
+    # progress signal, keeps $testOutput for the TRX/marker logic below, and — via
+    # the success stream — still reaches gate callers that capture with `2>&1`.
+    # (Do NOT revert to a silent `$testOutput = & dotnet test ... 2>&1` capture.)
+    & dotnet test @testArgs 2>&1 | Tee-Object -Variable testOutput
+
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
-    
-    # Output test results to the output stream so callers can capture them
-    # (Write-Host goes to the Information stream which is not captured by 2>&1)
-    $testOutput | ForEach-Object { Write-Output $_ }
 
     # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
     # and Review-PR.ps1) can locate the authoritative results file regardless
@@ -464,7 +634,24 @@ try {
         . "$PSScriptRoot/shared/Get-TrxResults.ps1"
         $firstRun = Get-TrxResults -TrxPath $trxFilePath
         if ($firstRun -and [int]$firstRun.Failed -gt 0 -and [int]$firstRun.Passed -gt 0) {
-            $failedNames = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' } | ForEach-Object { $_.name })
+            # "Baseline snapshot not yet created" failures are brand-new VerifyScreenshot
+            # tests with no committed baseline — deterministic new-baseline results, not
+            # emulator flake. Retrying them wastes a full re-run (they can never pass
+            # without a committed baseline) and can exhaust the deep category time budget
+            # on snapshot-heavy PRs. Exclude them from the flaky-retry set; the downstream
+            # summary reclassifies them as "new baseline".
+            $failedResults = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' })
+            $baselineFailures = @($failedResults | Where-Object { ($_.error -as [string]) -match '(?i)Baseline snapshot not yet created' })
+            $failedNames = @($failedResults |
+                Where-Object { ($_.error -as [string]) -notmatch '(?i)Baseline snapshot not yet created' } |
+                ForEach-Object { $_.name })
+            if ($baselineFailures.Count -gt 0) {
+                Write-Info "  ⚠ $($baselineFailures.Count) new-baseline failure(s) (no committed snapshot) excluded from flaky-retry — deterministic, not emulator flake."
+            }
+            if ($failedNames.Count -eq 0) {
+                Write-Info "  No flaky (non-baseline) failures to retry — skipping Android retry."
+            }
+            else {
             Write-Host ""
             Write-Warn "🔄 Retrying $($failedNames.Count) failed test(s) on Android..."
             
@@ -485,7 +672,6 @@ try {
             Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"
             $retryOutput = & dotnet test @retryArgs 2>&1
             $retryOutput | ForEach-Object { Write-Output $_ }
-            $retryExitCode = $LASTEXITCODE
             
             # Parse retry TRX and count how many passed on retry
             $retryTrxPath = Join-Path $trxResultsDir "retry-$trxFileName"
@@ -495,76 +681,35 @@ try {
                     $retryPassed = @($retryResults.Results | Where-Object { $_.status -eq 'Passed' }).Count
                     $retryFailed = @($retryResults.Results | Where-Object { $_.status -eq 'Failed' }).Count
                     Write-Host "  Retry results: $retryPassed passed, $retryFailed failed (of $($failedNames.Count) retried)" -ForegroundColor Cyan
-                    
-                    if ($retryFailed -eq 0) {
-                        Write-Success "All $retryPassed flaky test(s) passed on retry!"
-                        $testExitCode = 0
-                    } else {
-                        Write-Warn "$retryFailed test(s) still failing after retry (real failures)"
-                    }
+
                     # Merge retry results into the original TRX: replace only the
                     # retried test entries in the original with their retry outcomes,
                     # preserving all tests that passed on the first run. This avoids
                     # the prior bug where Copy-Item overwrote the full TRX with the
                     # retry-only TRX, losing the first-run passing tests entirely.
                     try {
-                        [xml]$origXml = Get-Content -Path $trxFilePath -Raw -Encoding UTF8
-                        [xml]$retryXml = Get-Content -Path $retryTrxPath -Raw -Encoding UTF8
-                        $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
-                        $nsMgr = New-Object System.Xml.XmlNamespaceManager($origXml.NameTable)
-                        $nsMgr.AddNamespace('t', $nsUri)
-                        $retryNsMgr = New-Object System.Xml.XmlNamespaceManager($retryXml.NameTable)
-                        $retryNsMgr.AddNamespace('t', $nsUri)
+                        $merged = Merge-RetryTrxResults `
+                            -OriginalTrxPath $trxFilePath `
+                            -RetryTrxPath $retryTrxPath `
+                            -FailedNames $failedNames
 
-                        # Build a lookup of retry results by testName
-                        $retryByName = @{}
-                        foreach ($rr in $retryXml.SelectNodes('//t:UnitTestResult', $retryNsMgr)) {
-                            $retryByName[$rr.GetAttribute('testName')] = $rr
+                        Write-Info "Merged retry results into original TRX ($($merged.Total) total, $($merged.Passed) passed, $($merged.Failed) failed)"
+                        if ($merged.Failed -eq 0) {
+                            Write-Success "All originally failing tests passed on retry!"
+                            $testExitCode = 0
+                        } else {
+                            Write-Warn "$($merged.Failed) test(s) still failing in the merged result"
                         }
-
-                        # Only replace entries that were in the original failed set.
-                        # The retry filter uses substring matching (~) so the retry TRX
-                        # may contain tests that passed on the first run (e.g. other
-                        # parameterizations of the same method). We must NOT overwrite
-                        # those — only replace originally-failed entries.
-                        $failedNameSet = New-Object 'System.Collections.Generic.HashSet[string]'
-                        foreach ($fn in $failedNames) { [void]$failedNameSet.Add($fn) }
-
-                        foreach ($origResult in $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)) {
-                            $tName = $origResult.GetAttribute('testName')
-                            if ($failedNameSet.Contains($tName) -and $retryByName.ContainsKey($tName)) {
-                                $imported = $origXml.ImportNode($retryByName[$tName], $true)
-                                $origResult.ParentNode.ReplaceChild($imported, $origResult) | Out-Null
-                            }
-                        }
-
-                        # Update counters to reflect merged results. Count outcomes
-                        # using the same logic as Get-TrxResults: Passed stays Passed,
-                        # NotExecuted/Inconclusive are Skipped, everything else is Failed.
-                        $allResults = $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)
-                        $mergedTotal = $allResults.Count
-                        $mergedPassed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
-                        $skippedOutcomes = @('NotExecuted', 'Inconclusive')
-                        $mergedSkipped = @($allResults | Where-Object { $_.GetAttribute('outcome') -in $skippedOutcomes }).Count
-                        $mergedFailed = $mergedTotal - $mergedPassed - $mergedSkipped
-                        $mergedExecuted = $mergedPassed + $mergedFailed
-                        $counters = $origXml.SelectSingleNode('//t:ResultSummary/t:Counters', $nsMgr)
-                        if ($counters) {
-                            $counters.SetAttribute('total', $mergedTotal)
-                            $counters.SetAttribute('executed', $mergedExecuted)
-                            $counters.SetAttribute('passed', $mergedPassed)
-                            $counters.SetAttribute('failed', $mergedFailed)
-                        }
-
-                        $origXml.Save($trxFilePath)
-                        Write-Info "Merged retry results into original TRX ($mergedTotal total, $mergedPassed passed, $mergedFailed failed)"
                     } catch {
-                        Write-Warn "Failed to merge TRX — falling back to retry-only TRX: $_"
-                        Copy-Item $retryTrxPath $trxFilePath -Force
+                        # Keep the original failing TRX and nonzero exit code. A
+                        # retry-only success file is not a valid replacement because
+                        # it omits first-run passes and any failures excluded from retry.
+                        Write-Warn "Failed to merge retry TRX; preserving the original failing result: $_"
                     }
                     # Remove the retry TRX to prevent double-counting by downstream aggregators
                     Remove-Item $retryTrxPath -Force -ErrorAction SilentlyContinue
                 }
+            }
             }
         }
     }
@@ -625,6 +770,38 @@ Write-Info "Test artifacts collected: $screenshotCount screenshot(s), $pageSourc
 
 #region Capture Device Logs
 
+# Run a diagnostic command with a hard timeout so a wedged tool (notably
+# `xcrun simctl spawn booted log show`, which can hang indefinitely when the
+# simulator is left in a bad state after a test-host crash) cannot consume the
+# whole per-category time budget. Observed live: an iOS CollectionView run hit
+# MSBUILD MSB4166 (test-host node crash) mid-run, then `log show` hung for ~48
+# min until the loop's 50-min hard-kill, wasting the category. The command runs
+# in a child pwsh (so any redirection inside $Command still works) and the whole
+# process tree is killed on timeout. Returns $true if it finished in time.
+function Invoke-ScriptWithTimeout {
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [int]$TimeoutSec = 120
+    )
+    $pwshExe = (Get-Process -Id $PID -ErrorAction SilentlyContinue).Path
+    if (-not $pwshExe) { $pwshExe = 'pwsh' }
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $pwshExe
+    $psi.ArgumentList.Add('-NoProfile')
+    $psi.ArgumentList.Add('-NonInteractive')
+    $psi.ArgumentList.Add('-Command')
+    $psi.ArgumentList.Add($Command)
+    $psi.UseShellExecute = $false
+    $proc = [System.Diagnostics.Process]::Start($psi)
+    if (-not $proc.WaitForExit($TimeoutSec * 1000)) {
+        # Kill the entire tree (child pwsh + xcrun + log). Fall back to a plain
+        # kill if the tree overload is unavailable.
+        try { $proc.Kill($true) } catch { try { $proc.Kill() } catch { <# best effort #> } }
+        return $false
+    }
+    return $true
+}
+
 Write-Step "Capturing device logs..."
 
 if ($Platform -eq "android") {
@@ -649,9 +826,11 @@ if ($Platform -eq "android") {
     
     $iosLogCommand = "xcrun simctl spawn booted log show --predicate 'processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
     
-    Invoke-Expression "$iosLogCommand > `"$deviceLogFile`" 2>&1"
-    
-    Write-Info "iOS logs saved to: $deviceLogFile"
+    if (Invoke-ScriptWithTimeout -Command "$iosLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120) {
+        Write-Info "iOS logs saved to: $deviceLogFile"
+    } else {
+        Write-Warn "iOS log capture (log show) exceeded 120s and was killed — continuing without full device logs"
+    }
 } elseif ($Platform -eq "catalyst") {
     # App writes directly to $deviceLogFile via MAUI_LOG_FILE env var
     # Just verify the file exists and has content
@@ -662,7 +841,9 @@ if ($Platform -eq "android") {
         Write-Info "File logging output was minimal, using os_log fallback..."
         $logStartTimeStr = $testStartTime.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm:ss")
         $catalystLogCommand = "log show --level debug --predicate 'process contains `"Controls.TestCases.HostApp`" OR processImagePath contains `"Controls.TestCases.HostApp`"' --start `"$logStartTimeStr`" --style compact"
-        Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
+        if (-not (Invoke-ScriptWithTimeout -Command "$catalystLogCommand > `"$deviceLogFile`" 2>&1" -TimeoutSec 120)) {
+            Write-Warn "MacCatalyst os_log capture exceeded 120s and was killed — continuing"
+        }
     }
     
     Write-Info "MacCatalyst logs saved to: $deviceLogFile"
