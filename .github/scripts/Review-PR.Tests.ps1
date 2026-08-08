@@ -157,6 +157,31 @@ Describe 'Reviewer pipeline timeout containment' {
         $task3Block | Should -Match 'continueOnError: true'
     }
 
+    It 'applies PR metadata only from the trusted Stage 3 checkout credential' {
+        $runPostStart = $pipelineContent.IndexOf("displayName: 'Task 4: Post (comments + labels)'")
+        $runPostBlock = $pipelineContent.Substring($runPostStart, [Math]::Min(800, $pipelineContent.Length - $runPostStart))
+        $applyName = "displayName: 'Apply PR title/description'"
+        $applyNameIndex = $pipelineContent.IndexOf($applyName)
+        $applyStart = $pipelineContent.LastIndexOf("- pwsh:", $applyNameIndex)
+        $applyEnd = $pipelineContent.IndexOf("- task: DownloadPipelineArtifact@2", $applyNameIndex)
+        $downloadLogs = $pipelineContent.IndexOf("displayName: 'Download CopilotLogs'", $pipelineContent.IndexOf("- stage: UpdateAISummaryComment"))
+
+        $runPostStart | Should -BeGreaterThan -1
+        $runPostBlock | Should -Match ([regex]::Escape('SKIP_PR_FINALIZE_APPLY: "true"'))
+        $applyNameIndex | Should -BeGreaterThan $downloadLogs
+        $applyStart | Should -BeGreaterThan -1
+        $applyEnd | Should -BeGreaterThan $applyStart
+
+        $applyBlock = $pipelineContent.Substring($applyStart, $applyEnd - $applyStart)
+        $applyBlock | Should -Match ([regex]::Escape("git config --get-regexp 'http\..*\.extraheader'"))
+        $applyBlock | Should -Match ([regex]::Escape('./.github/scripts/apply-pr-finalize.ps1'))
+        $applyBlock | Should -Match ([regex]::Escape('Remove-Item Env:GH_TOKEN'))
+        $applyBlock | Should -Match 'timeoutInMinutes: 5'
+        $applyBlock | Should -Match 'continueOnError: true'
+        $applyBlock | Should -Not -Match ([regex]::Escape('$(GH_COMMENT_TOKEN)'))
+        $applyBlock | Should -Not -Match 'COPILOT_GITHUB_TOKEN'
+    }
+
     It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
