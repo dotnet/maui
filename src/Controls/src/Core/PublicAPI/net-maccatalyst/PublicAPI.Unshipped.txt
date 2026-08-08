@@ -111,6 +111,7 @@ override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryCellTableViewCell.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.AddSubview(UIKit.UIView! view) -> void
+override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.Dispose(bool disposing) -> void
