@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,29 @@ public partial class BlazorWebViewTests
 		// response: the provider must have run for the requested resource.
 		Assert.True(providerInvokedForTarget, "The provider was not invoked for the requested resource - the response was likely served from the WebView cache.");
 		Assert.Equal("max-age=3600", cacheControl);
+	}
+
+	[Fact]
+	public async Task StaticContentCacheControlProviderAllowsRepeatedRequestToUseWebViewCache()
+	{
+		var nonce = Guid.NewGuid().ToString("N");
+		var providerInvocationCount = 0;
+
+		var cacheControl = await GetServedCacheControlHeaderAsync(
+			request =>
+			{
+				if (request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal))
+				{
+					Interlocked.Increment(ref providerInvocationCount);
+					return "public, max-age=3600";
+				}
+				return null;
+			},
+			fetchQueryString: $"?test=repeated-request&nonce={nonce}",
+			fetchCount: 2);
+
+		Assert.Equal("public, max-age=3600", cacheControl);
+		Assert.Equal(1, providerInvocationCount);
 	}
 
 	[Fact]
@@ -161,7 +185,11 @@ public partial class BlazorWebViewTests
 		Assert.Contains("v=2", observedUri.Query, StringComparison.Ordinal);
 	}
 
-	private async Task<string> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string> provider, string fetchPath = CacheControlTestFilePath, string fetchQueryString = "")
+	private async Task<string> GetServedCacheControlHeaderAsync(
+		Func<BlazorWebViewStaticContentRequest, string> provider,
+		string fetchPath = CacheControlTestFilePath,
+		string fetchQueryString = "",
+		int fetchCount = 1)
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -197,8 +225,13 @@ public partial class BlazorWebViewTests
 
 			cacheControl = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<string>(platformWebView,
 				$$"""
-				const response = await fetch('/{{fetchPath}}{{fetchQueryString}}');
-				return response.headers.get('cache-control');
+				let cacheControl = null;
+				for (let requestIndex = 0; requestIndex < {{fetchCount}}; requestIndex++) {
+					const response = await fetch('/{{fetchPath}}{{fetchQueryString}}');
+					cacheControl = response.headers.get('cache-control');
+					await response.text();
+				}
+				return cacheControl;
 				""");
 		});
 
