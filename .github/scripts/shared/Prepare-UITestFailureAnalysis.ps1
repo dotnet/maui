@@ -19,11 +19,11 @@
     Security: this script only reads TRX text and calls `gh` for PR metadata —
     it never runs PR-controlled code and never invokes Copilot, so it is safe
     to hold GH_TOKEN (see ci-copilot-pipeline-security.instructions.md rule 1
-    and the rule-4 exception for gh-metadata-only scripts). It intentionally
+    and the rule-5 exception for gh-metadata-only scripts). It intentionally
     writes all untrusted failure/diff text to a FILE and keeps its own stdout
     limited to counts + sanitized category names, so the `hasUIFailures`
     ##vso directive it emits can never be spoofed by a malicious test name
-    (rule 6).
+    (rule 7).
 
 .PARAMETER ArtifactDir
     Root of the downloaded drop-deep-uitests artifact.
@@ -33,7 +33,7 @@
 
 .PARAMETER OutputFile
     Path to write the analysis input markdown. Must live under
-    $(Agent.TempDirectory) (rule 5). Written only when regular failures exist.
+    $(Agent.TempDirectory) (rule 6). Written only when regular failures exist.
 
 .PARAMETER MaxDiffLines
     Truncate the unified diff to this many lines (default 800) to bound prompt

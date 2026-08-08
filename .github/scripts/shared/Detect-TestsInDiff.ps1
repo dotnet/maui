@@ -469,7 +469,11 @@ foreach ($key in @($testGroups.Keys)) {
     # also breaks ConvertFrom-Json. Fetch defensively: --slurp yields one well-formed array
     # of pages, validate it's JSON, flatten one level, and swallow any error (degrading to
     # no method-name display; the category-based filter is unaffected).
-    if ($PRNumber -and -not $script:_cachedPRFiles) {
+    # `$script:_cachedPRFiles` alone cannot gate the fetch: an empty result is `@()`,
+    # and `-not @()` is `$true`, so every later device-test group would retry the same
+    # failing call. Track the fetch attempt with a separate sentinel.
+    if ($PRNumber -and -not $script:_prFilesFetchAttempted) {
+        $script:_prFilesFetchAttempted = $true
         try {
             $rawPRFiles = (gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
             if ($rawPRFiles.StartsWith('[')) {

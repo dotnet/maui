@@ -42,6 +42,28 @@ function Write-CategoryListOutput {
     Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$Value"
 }
 
+# `-AiCategories` is reviewer-derived text and the category constants it is validated
+# against live in a PR-controlled file, so any category string is untrusted. Azure
+# Pipelines honors `##vso[...]` / `##[...]` anywhere on a log line, so neutralize the
+# marker (and fold newlines) before echoing a category to the console.
+function ConvertTo-SafeConsoleCategoryText {
+    param([AllowNull()][string]$Text)
+
+    if ([string]::IsNullOrEmpty($Text)) {
+        return ''
+    }
+
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
+# Category names are plain identifiers; anything else is either a hallucination or an
+# injection attempt, and must never reach the matrix or a `task.setvariable` value.
+function Test-CategoryNameIsWellFormed {
+    param([AllowNull()][string]$Category)
+
+    return ($Category -match '^[A-Za-z0-9 _\.\-]+$')
+}
+
 function Test-UITestCategorySupportedOnPlatform {
     param(
         [Parameter(Mandatory = $true)]
@@ -569,10 +591,15 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
             }
         }
 
-        Write-Host "Tier 3 (AI reasoning): $([string]::Join(', ', $aiCatList))" -ForegroundColor Green
+        Write-Host "Tier 3 (AI reasoning): $(ConvertTo-SafeConsoleCategoryText ([string]::Join(', ', $aiCatList)))" -ForegroundColor Green
         foreach ($c in $aiCatList) {
+            $safeCategory = ConvertTo-SafeConsoleCategoryText $c
+            if (-not (Test-CategoryNameIsWellFormed $c)) {
+                Write-Host "##[warning]AI suggested category '$safeCategory' is not a well-formed category name. Skipping."
+                continue
+            }
             if ($validCategories.Count -gt 0 -and -not $validCategories.Contains($c)) {
-                Write-Host "##[warning]AI suggested category '$c' is not defined in UITestCategories.cs. Skipping to avoid creating an empty matrix job."
+                Write-Host "##[warning]AI suggested category '$safeCategory' is not defined in UITestCategories.cs. Skipping to avoid creating an empty matrix job."
                 continue
             }
             $addedCategories.Add($c) | Out-Null
@@ -588,7 +615,7 @@ if (-not [string]::IsNullOrWhiteSpace($Platform)) {
     foreach ($category in @($addedCategories)) {
         if (-not (Test-UITestCategorySupportedOnPlatform -Category $category -Platform $Platform)) {
             $addedCategories.Remove($category) | Out-Null
-            Write-Host "Category '$category' has no runnable tests on platform '$Platform'; removing it from the Deep UI selection." -ForegroundColor Yellow
+            Write-Host "Category '$(ConvertTo-SafeConsoleCategoryText $category)' has no runnable tests on platform '$Platform'; removing it from the Deep UI selection." -ForegroundColor Yellow
         }
     }
 }
@@ -643,7 +670,7 @@ if ($addedCategories.Count -eq 0) {
     }
 }
 
-Write-Host "Detected categories from PR changes: $([string]::Join(', ', $addedCategories))" -ForegroundColor Green
+Write-Host "Detected categories from PR changes: $(ConvertTo-SafeConsoleCategoryText ([string]::Join(', ', $addedCategories)))" -ForegroundColor Green
 
 # Build matrix JSON expected by Azure Pipelines strategy matrix (CATEGORYGROUP values)
 $matrix = [ordered]@{}

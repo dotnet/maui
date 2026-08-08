@@ -632,8 +632,12 @@ function Parse-PhaseOutcomes {
 
     # --- Fix result (authoritative: winner.json) ---
     # winner.json is the machine-readable comparison verdict written by the Report phase.
-    #   isPRFix = $false (winner is a try-fix-* candidate) => an alternative beat the PR => 'win'
-    #   isPRFix = $true  (winner is pr / pr-plus-reviewer)  => the PR fix was best        => 'lose'
+    #   winner = try-fix-* (isPRFix = $false) => an alternative beat the PR      => 'win'
+    #   winner = pr-plus-reviewer             => the agent improved the PR fix   => 'win'
+    #   winner = pr (isPRFix = $true)         => the submitted PR fix was best   => 'lose'
+    # pr-plus-reviewer must NOT map to 'lose': that label ("AI could not beat the
+    # PR fix") would contradict the report contract, which treats a
+    # pr-plus-reviewer win as "the submitted PR still needs the winning changes".
     # A missing/invalid winner.json (e.g. review-incomplete) => $null (no fix signal label),
     # so we never guess a fix outcome the comparison did not actually produce.
     $winnerName = $null
@@ -647,10 +651,10 @@ function Parse-PhaseOutcomes {
             $winnerRequiresPRChanges =
                 ($winner.isPRFix -eq $false) -or
                 ($winnerName -match '(?i)^(pr-plus-reviewer|try-fix(?:-|$))')
-            if ($winnerName -match '(?i)^try-fix(?:-|$)') {
+            if ($winnerName -match '(?i)^(try-fix(?:-|$)|pr-plus-reviewer$)') {
                 $result.FixResult = 'win'
             }
-            elseif ($winnerName -match '(?i)^(pr|pr-plus-reviewer)$') {
+            elseif ($winnerName -match '(?i)^pr$') {
                 $result.FixResult = 'lose'
             }
             elseif ($null -ne $winner.isPRFix) {

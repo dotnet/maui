@@ -25,16 +25,6 @@ Describe 'Android flaky-retry new-baseline exclusion' {
                 ForEach-Object { $_.name })
         }
 
-        Describe 'MacCatalyst Apple Account dialog dismissal' {
-            It 'prefers the trusted staged script location before the repository fallback' {
-                $scriptContent = Get-Content (Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1') -Raw
-                $trustedPath = '../eng-scripts/dismiss-apple-account-dialog.sh'
-                $fallbackPath = '../../eng/scripts/dismiss-apple-account-dialog.sh'
-
-                $scriptContent.IndexOf($trustedPath) | Should -BeLessThan $scriptContent.IndexOf($fallbackPath)
-            }
-        }
-
         function Get-BaselineCount {
             param([object[]]$Results)
             @($Results | Where-Object {
@@ -79,5 +69,15 @@ Describe 'Android flaky-retry new-baseline exclusion' {
             [pscustomobject]@{ status='Failed'; name='NoErrText'; error=$null }
         )
         (Get-RetryNames -Results $results) | Should -Contain 'NoErrText'
+    }
+}
+
+Describe 'MacCatalyst Apple Account dialog dismissal' {
+    It 'prefers the trusted staged script location before the repository fallback' {
+        $scriptContent = Get-Content (Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1') -Raw
+        $trustedPath = '../eng-scripts/dismiss-apple-account-dialog.sh'
+        $fallbackPath = '../../eng/scripts/dismiss-apple-account-dialog.sh'
+
+        $scriptContent.IndexOf($trustedPath) | Should -BeLessThan $scriptContent.IndexOf($fallbackPath)
     }
 }

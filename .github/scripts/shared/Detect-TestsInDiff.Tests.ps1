@@ -84,3 +84,13 @@ Describe 'Detect-TestsInDiff platform-specific methods' {
             Should -BeTrue
     }
 }
+Describe 'Detect-TestsInDiff PR files cache' {
+    It 'gates the fetch on a fetch-attempted sentinel, not on the (possibly empty) cache' {
+        $scriptContent = Get-Content (Join-Path $PSScriptRoot 'Detect-TestsInDiff.ps1') -Raw
+
+        # `-not @()` is $true, so guarding on the cache alone re-runs `gh api` for every
+        # device-test group after a failed or empty fetch.
+        $scriptContent | Should -Match '\$PRNumber -and -not \$script:_prFilesFetchAttempted'
+        $scriptContent | Should -Not -Match '\$PRNumber -and -not \$script:_cachedPRFiles'
+    }
+}

@@ -12,7 +12,7 @@ BeforeAll {
 
     $tokens = $null; $errors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($script:detectScript, [ref]$tokens, [ref]$errors)
-    foreach ($fnName in @('Test-PreparedReviewWorktreeSubject', 'Test-UITestCategorySupportedOnPlatform')) {
+    foreach ($fnName in @('Test-PreparedReviewWorktreeSubject', 'Test-UITestCategorySupportedOnPlatform', 'ConvertTo-SafeConsoleCategoryText', 'Test-CategoryNameIsWellFormed')) {
         $fn = $ast.Find({
             param($n)
             $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -83,5 +83,38 @@ Describe 'Test-UITestCategorySupportedOnPlatform' {
     It 'does not filter cross-platform categories or platform-agnostic local runs' {
         Test-UITestCategorySupportedOnPlatform -Category 'Button' -Platform 'android' | Should -BeTrue
         Test-UITestCategorySupportedOnPlatform -Category 'Essentials' -Platform '' | Should -BeTrue
+    }
+}
+
+Describe 'Untrusted category console safety' {
+    It 'neutralizes AzDO logging commands and folds newlines' {
+        $safe = ConvertTo-SafeConsoleCategoryText "ButtonTests`r`n##vso[task.setvariable variable=x]spoof, ##[error]spoof"
+        $safe | Should -Not -Match '##vso\['
+        $safe | Should -Not -Match '##\['
+        $safe | Should -Not -Match '[\r\n]'
+        $safe | Should -Match 'ButtonTests'
+    }
+
+    It 'returns an empty string for null/empty input' {
+        ConvertTo-SafeConsoleCategoryText $null | Should -Be ''
+        ConvertTo-SafeConsoleCategoryText '' | Should -Be ''
+    }
+
+    It 'rejects category names that are not plain identifiers' {
+        Test-CategoryNameIsWellFormed 'Button' | Should -BeTrue
+        Test-CategoryNameIsWellFormed 'CollectionView Tests' | Should -BeTrue
+        Test-CategoryNameIsWellFormed 'Shell.Navigation-2' | Should -BeTrue
+        Test-CategoryNameIsWellFormed '##vso[task.setvariable variable=x]spoof' | Should -BeFalse
+        Test-CategoryNameIsWellFormed "Button`nEvil" | Should -BeFalse
+        Test-CategoryNameIsWellFormed '' | Should -BeFalse
+    }
+
+    It 'sanitizes every console sink that echoes a category name' {
+        foreach ($pattern in @(
+            'Tier 3 \(AI reasoning\): \$\(ConvertTo-SafeConsoleCategoryText',
+            'Detected categories from PR changes: \$\(ConvertTo-SafeConsoleCategoryText')) {
+            $script:detectContent | Should -Match $pattern
+        }
+        $script:detectContent | Should -Match ([regex]::Escape("AI suggested category '`$safeCategory'"))
     }
 }

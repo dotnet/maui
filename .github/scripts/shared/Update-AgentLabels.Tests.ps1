@@ -78,8 +78,14 @@ Describe 'Parse-PhaseOutcomes — Fix result from winner.json' {
         Remove-Item -Recurse -Force $root
     }
 
-    It 'maps isPRFix=true (PR fix best) to lose => s/agent-fix-pr-picked' {
+    It 'maps a pr-plus-reviewer win to win => s/agent-fix-win (the agent improved the PR fix)' {
         $root = New-FixtureRoot -WinnerJson '{ "winner": "pr-plus-reviewer", "isPRFix": true }'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).FixResult | Should -Be 'win'
+        Remove-Item -Recurse -Force $root
+    }
+
+    It 'maps isPRFix=true with the raw pr winner to lose => s/agent-fix-pr-picked' {
+        $root = New-FixtureRoot -WinnerJson '{ "winner": "pr", "isPRFix": true }'
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).FixResult | Should -Be 'lose'
         Remove-Item -Recurse -Force $root
     }
