@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,11 +9,18 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.Header = string.IsNullOrEmpty(picker.Title) ? null : picker;
+			nativeComboBox.PlaceholderText = picker.Title ?? string.Empty;
+			nativeComboBox.ApplyCharacterSpacingWhenLoaded();
+		}
 
-			nativeComboBox.HeaderTemplate = string.IsNullOrEmpty(picker.Title) ? null :
-				(UI.Xaml.DataTemplate)UI.Xaml.Application.Current.Resources["ComboBoxHeader"];
+		public static void UpdateTitleColor(this ComboBox nativeComboBox, IPicker picker)
+		{
+			if (picker.TitleColor is null)
+				nativeComboBox.ClearValue(ComboBox.PlaceholderForegroundProperty);
+			else
+				nativeComboBox.PlaceholderForeground = picker.TitleColor.ToPlatform();
 
+			nativeComboBox.RefreshThemeResources();
 		}
 
 		public static void UpdateBackground(this ComboBox nativeComboBox, IPicker picker)
@@ -75,20 +81,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this ComboBox nativeComboBox, IPicker picker)
 		{
-			var characterSpacing = picker.CharacterSpacing.ToEm();
-			nativeComboBox.CharacterSpacing = characterSpacing;
-
-			// Apply directly to the selected item's TextBlock so the closed picker reflects spacing.
-			// If the control isn't loaded yet, defer until Loaded so the visual tree exists.
-			if (nativeComboBox.IsLoaded)
-			{
-				ApplyCharacterSpacingToSelectedItem(nativeComboBox, characterSpacing);
-			}
-			else
-			{
-				nativeComboBox.OnLoaded(() =>
-					ApplyCharacterSpacingToSelectedItem(nativeComboBox, nativeComboBox.CharacterSpacing));
-			}
+			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
+			nativeComboBox.ApplyCharacterSpacingWhenLoaded();
 		}
 
 		internal static void ApplyCharacterSpacingToSelectedItem(this ComboBox nativeComboBox, int characterSpacing)
@@ -99,6 +93,33 @@ namespace Microsoft.Maui.Platform
 			if (textBlock is not null)
 			{
 				textBlock.CharacterSpacing = characterSpacing;
+			}
+		}
+
+		static void ApplyCharacterSpacingWhenLoaded(this ComboBox nativeComboBox)
+		{
+			if (nativeComboBox.IsLoaded)
+			{
+				ApplyCharacterSpacingToTemplateParts(nativeComboBox);
+			}
+			else
+			{
+				nativeComboBox.OnLoaded(() => ApplyCharacterSpacingToTemplateParts(nativeComboBox));
+			}
+		}
+
+		static void ApplyCharacterSpacingToTemplateParts(ComboBox nativeComboBox)
+		{
+			var characterSpacing = nativeComboBox.CharacterSpacing;
+
+			nativeComboBox.ApplyCharacterSpacingToSelectedItem(characterSpacing);
+
+			var placeholderTextBlock = nativeComboBox.GetDescendantByName<TextBlock>("PlaceholderTextBlock");
+
+			if (placeholderTextBlock is not null)
+			{
+				placeholderTextBlock.CharacterSpacing = characterSpacing;
+				placeholderTextBlock.RefreshThemeResources();
 			}
 		}
 

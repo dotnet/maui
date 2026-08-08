@@ -37,6 +37,7 @@ virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
+static Microsoft.Maui.Platform.PickerExtensions.UpdateTitleColor(this Microsoft.UI.Xaml.Controls.ComboBox! nativeComboBox, Microsoft.Maui.IPicker! picker) -> void
 Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer
 Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer.MauiPasswordTextBoxAutomationPeer(Microsoft.Maui.Platform.MauiPasswordTextBox! owner) -> void
 override Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer.IsPasswordCore() -> bool
