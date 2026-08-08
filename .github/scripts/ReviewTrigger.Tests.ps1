@@ -205,4 +205,22 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions'
         $script:TriggerJob | Should -Match "-f content='rocket'"
     }
+
+    It 'posts a visible start notice only after AzDO returns a valid build id' {
+        $script:TriggerJob | Should -Match 'if ! \[\[ "\$\{RUN_ID\}" =~ \^\[1-9\]\[0-9\]\*\$ \]\]'
+        $script:TriggerJob | Should -Match 'echo "run_id=\$\{RUN_ID\}" >> "\$GITHUB_OUTPUT"'
+        $script:TriggerJob | Should -Match '(?m)^      - name: Report /review start to the PR$'
+        $script:TriggerJob | Should -Match "(?m)^        if: steps\.review_lock\.outputs\.locked == 'false' && steps\.trigger_azdo\.outcome == 'success'$"
+        $script:TriggerJob | Should -Match 'RUN_ID: \$\{\{ steps\.trigger_azdo\.outputs\.run_id \}\}'
+        $script:TriggerJob | Should -Match '<!-- copilot-review-started:\$\{RUN_ID\} -->'
+        $script:TriggerJob | Should -Match 'AzDO build \*\*\$\{RUN_ID\}\*\*'
+        $script:TriggerJob | Should -Match 's/agent-review-in-progress'
+        $script:TriggerJob | Should -Match 'outcome labels are posted only after Gate, expert review, and Deep UI tests finish'
+
+        $triggerIndex = $script:TriggerJob.IndexOf('- name: Trigger maui-copilot pipeline')
+        $noticeIndex = $script:TriggerJob.IndexOf('- name: Report /review start to the PR')
+        $hideIndex = $script:TriggerJob.IndexOf('- name: Acknowledge and hide the /review command comment')
+        $noticeIndex | Should -BeGreaterThan $triggerIndex
+        $hideIndex | Should -BeGreaterThan $noticeIndex
+    }
 }

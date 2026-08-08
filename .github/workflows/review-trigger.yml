@@ -552,6 +552,12 @@ jobs:
           if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
             RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
             PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            if ! [[ "${RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
+              echo "fail_reason=api-error" >> "$GITHUB_OUTPUT"
+              echo "::error::Pipeline trigger returned an invalid run id: '${RUN_ID}'"
+              exit 1
+            fi
+            echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
             echo "Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
             echo "View: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
           else
@@ -559,6 +565,40 @@ jobs:
             echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
+          fi
+
+      # A successful command used to leave only two subtle signals: a label and a rocket
+      # reaction on a comment that was immediately minimized. On busy PRs that looked like
+      # the command vanished, prompting duplicate /review comments while the first run was
+      # already active. Post one durable start notice with the exact AzDO build instead.
+      - name: Report /review start to the PR
+        if: steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PLATFORM: ${{ steps.infer.outputs.platform }}
+          RUN_ID: ${{ steps.trigger_azdo.outputs.run_id }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if ! [[ "${RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::warning::Could not post /review start notice because the AzDO run id is invalid."
+            exit 0
+          fi
+
+          BODY_FILE=$(mktemp)
+          trap 'rm -f "${BODY_FILE}"' EXIT
+          cat > "${BODY_FILE}" <<EOF
+          <!-- copilot-review-started:${RUN_ID} -->
+          > [!NOTE]
+          > ### 🔍 \`/review\` started
+          >
+          > [AzDO build **${RUN_ID}**](https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}) is running for **${PLATFORM}**.
+          >
+          > The \`s/agent-review-in-progress\` label stays on this PR while the run is active. The final recommendation and outcome labels are posted only after Gate, expert review, and Deep UI tests finish.
+          EOF
+
+          if ! gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body-file "${BODY_FILE}"; then
+            echo "::warning::Could not post the /review start notice for AzDO build ${RUN_ID}."
           fi
 
       # Never let a /review fail silently: when the trigger step failed (bad branch or a
