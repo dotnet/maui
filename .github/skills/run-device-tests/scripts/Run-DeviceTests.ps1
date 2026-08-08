@@ -89,7 +89,7 @@ param(
 
     [Parameter(Mandatory = $false)]
     # Comma/semicolon-separated fully-qualified test class names to run exclusively
-    # (Android/iOS/MacCatalyst only). Additive include filter used by the Copilot review
+    # (Android/iOS/MacCatalyst/Windows). Additive include filter used by the Copilot review
     # gate to narrow a run to a PR's specific test class instead of its whole Category.
     [string]$IncludeClasses,
 

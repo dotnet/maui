@@ -80,6 +80,9 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 # Run with test filter
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -TestFilter "Category=Button"
 
+# Run one exact Core test class on Windows
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -Platform windows -IncludeClasses "Microsoft.Maui.DeviceTests.WindowHandlerTests"
+
 # Run other test projects
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Essentials -Platform android
 pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Graphics -Platform maccatalyst
@@ -199,6 +202,12 @@ Test filtering is implemented in `src/Core/tests/DeviceTests.Shared/DeviceTestSh
 | **iOS/MacCatalyst** | `--set-env=TestFilter=...` | `NSProcessInfo.ProcessInfo.Environment["TestFilter"]` |
 | **Android** | `--arg TestFilter=...` | `MauiTestInstrumentation.Current.Arguments.GetString("TestFilter")` |
 | **Windows Controls** | App argument selects discovered category index | `ControlsHeadlessTestRunner` category loop |
+| **Windows non-Controls class filter** | Per-child `NUNIT_SKIPPED_CLASSES` plus the normal runner | XHarness `ApplicationOptions` class include |
+
+The Copilot Gate combines `-TestFilter` with `-IncludeClasses` when it knows the exact
+test class. On Windows, Controls still requires category discovery, while Core,
+Essentials, Graphics, and BlazorWebView bypass discovery and use XHarness's native class
+include. The result parser rejects output containing any unrelated class.
 
 ### Available Test Categories
 
