@@ -175,6 +175,19 @@ Describe 'Reviewer pipeline timeout containment' {
         $content | Should -Match 'The sandbox is temporary and must not be copied into review artifacts'
     }
 
+    It 'runs regression tests through trusted scripts overlaid into the review worktree' {
+        $regressionStart = $content.IndexOf('# --- Regression Test Execution (part of STEP 3) ---')
+        $regressionEnd = $content.IndexOf('#  STEP 4: Gate - Test Before and After Fix', $regressionStart)
+        $regressionStart | Should -BeGreaterThan -1
+        $regressionEnd | Should -BeGreaterThan $regressionStart
+
+        $regressionBlock = $content.Substring($regressionStart, $regressionEnd - $regressionStart)
+        $regressionBlock | Should -Match ([regex]::Escape('$uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"'))
+        $regressionBlock | Should -Match ([regex]::Escape('$deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"'))
+        $regressionBlock | Should -Not -Match ([regex]::Escape('$uiTestRunner = Join-Path $ScriptsDir'))
+        $regressionBlock | Should -Not -Match ([regex]::Escape('$deviceTestRunner = Join-Path $SkillsDir'))
+    }
+
     It 'applies PR metadata only from the trusted Stage 3 checkout credential' {
         $runPostStart = $pipelineContent.IndexOf("displayName: 'Task 4: Post (comments + labels)'")
         $runPostBlock = $pipelineContent.Substring($runPostStart, [Math]::Min(800, $pipelineContent.Length - $runPostStart))

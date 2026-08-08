@@ -1753,8 +1753,11 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
         $regrTestDetails = @()
 
         $regrPlatform = if ($Platform) { $Platform } else { "android" }
-        $uiTestRunner = Join-Path $ScriptsDir "BuildAndRunHostApp.ps1"
-        $deviceTestRunner = Join-Path $SkillsDir "run-device-tests/scripts/Run-DeviceTests.ps1"
+        # Invoke the trusted copies overlaid into the review worktree, not the staging
+        # directory. Both runners resolve RepoRoot from $PSScriptRoot and therefore
+        # cannot build the PR when launched from the trusted-scripts staging tree.
+        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
 
         foreach ($t in $regressionTests) {
             Write-Host ""
