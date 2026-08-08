@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			return itemGroup;
 		}
 
-		string Build(string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true)
+		string Build(string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true, string command = "build")
 		{
 			var builder = new StringBuilder();
 			void onData(object s, DataReceivedEventArgs e)
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var psi = new ProcessStartInfo
 			{
 				FileName = dotnet,
-				Arguments = $"build -v:{verbosity} -nologo {projectFile} -t:{target} -bl {additionalArgs}",
+				Arguments = $"{command} -v:{verbosity} -nologo {projectFile} -t:{target} -bl {additionalArgs}",
 				CreateNoWindow = true,
 				WindowStyle = ProcessWindowStyle.Hidden,
 				UseShellExecute = false,
@@ -361,6 +361,56 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
 			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
 			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+		}
+
+		[Theory]
+		[InlineData(null, true)]
+		[InlineData("false", true)]
+		[InlineData("true", false)]
+		public void MauiEnableFullReadyToRunControlsPartialR2RAndPgo(string enableFullReadyToRun, bool expectPartialReadyToRun)
+		{
+			SetUp();
+
+			var targetsDirectory = IOPath.Combine(tempDirectory, "targets");
+			var targetsPath = IOPath.Combine(targetsDirectory, "Microsoft.Maui.Controls.targets");
+			Directory.CreateDirectory(IOPath.Combine(targetsDirectory, "mibc", "android"));
+			File.Copy(
+				AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.targets")),
+				targetsPath);
+			File.WriteAllText(IOPath.Combine(targetsDirectory, "mibc", "android", "test.mibc"), "");
+
+			var project = NewElement("Project");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue("android"));
+			propertyGroup.Add(NewElement("UseMonoRuntime").WithValue("false"));
+			propertyGroup.Add(NewElement("Configuration").WithValue("Release"));
+			propertyGroup.Add(NewElement("PublishReadyToRun").WithValue("true"));
+			propertyGroup.Add(NewElement("PublishReadyToRunCrossgen2ExtraArgs").WithValue("existing"));
+			if (enableFullReadyToRun is not null)
+				propertyGroup.Add(NewElement("MauiEnableFullReadyToRun").WithValue(enableFullReadyToRun));
+			project.Add(propertyGroup);
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+
+			var reportTarget = NewElement("Target").WithAttribute("Name", "ReportReadyToRun");
+			reportTarget.Add(NewElement("Message").WithAttribute("Importance", "High").WithAttribute("Text", "R2R_ARGS=$(PublishReadyToRunCrossgen2ExtraArgs)"));
+			reportTarget.Add(NewElement("Message").WithAttribute("Importance", "High").WithAttribute("Text", "R2R_PGO=@(_ReadyToRunPgoFiles)"));
+			project.Add(reportTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.proj");
+			project.Save(projectFile);
+			var log = Build(projectFile, target: "ReportReadyToRun", command: "msbuild");
+
+			if (expectPartialReadyToRun)
+			{
+				Assert.Contains("R2R_ARGS=existing;--partial", log, StringComparison.Ordinal);
+				Assert.Contains("test.mibc", log, StringComparison.Ordinal);
+			}
+			else
+			{
+				Assert.Contains("R2R_ARGS=existing", log, StringComparison.Ordinal);
+				Assert.DoesNotContain("--partial", log, StringComparison.Ordinal);
+				Assert.DoesNotContain("test.mibc", log, StringComparison.Ordinal);
+			}
 		}
 
 		[Theory]
