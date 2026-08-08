@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Handlers
 			ISwipeItemMenuItem view,
 			ref bool handled)
 		{
-			// IconColor is not supported on Tizen, so a color-only change requires no image reload.
+			// SwipeItemMenuItemImageSourcePartSetter.SetImageSource only assigns ResourceUrl and
+			// does not apply GetIconTintColor(); update both paths together if Tizen adds tinting.
 			handled = true;
 		}
 

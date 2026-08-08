@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Xunit;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
+using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -274,6 +275,34 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public Task ExternalHandlerUsesGenerationTracking()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = new ExternalSwipeItemMenuItemHandler();
+				handler.SetMauiContext(MauiContext);
+				handler.SetVirtualView(item);
+
+				var staleGeneration = SwipeItemMenuItemHandler.BeginIconLoad(handler);
+				var currentGeneration = SwipeItemMenuItemHandler.BeginIconLoad(handler);
+
+				Assert.False(SwipeItemMenuItemHandler.IsIconLoadCurrent(
+					handler,
+					item,
+					handler.PlatformView,
+					staleGeneration));
+				Assert.True(SwipeItemMenuItemHandler.IsIconLoadCurrent(
+					handler,
+					item,
+					handler.PlatformView,
+					currentGeneration));
+
+				((IElementHandler)handler).DisconnectHandler();
+			});
+		}
+
+		[Fact]
 		public async Task FontImageReloadsOnlyWhenResolvedTintChanges()
 		{
 			var imageService = new CapturingFontImageSourceService();
@@ -414,6 +443,16 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult<IImageSourceServiceResult<WImageSource>?>(
 					new ImageSourceServiceResult(Image));
 			}
+		}
+
+		sealed class ExternalSwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, WSwipeItem>, ISwipeItemMenuItemHandler
+		{
+			public ExternalSwipeItemMenuItemHandler()
+				: base(new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>())
+			{
+			}
+
+			protected override WSwipeItem CreatePlatformElement() => new();
 		}
 	}
 }

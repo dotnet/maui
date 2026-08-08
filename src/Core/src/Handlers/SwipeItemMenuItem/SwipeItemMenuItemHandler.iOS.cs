@@ -169,6 +169,8 @@ namespace Microsoft.Maui.Handlers
 				var sourceSize = sourceImage.Size;
 				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
+				// Color-only updates feed the already-sized native image back through this setter.
+				// Keep an image that exactly fits the bounds instead of redrawing it.
 				if (maxResizeFactor >= 1)
 				{
 					return sourceImage;

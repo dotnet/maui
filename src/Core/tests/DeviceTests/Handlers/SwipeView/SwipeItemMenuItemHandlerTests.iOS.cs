@@ -130,12 +130,14 @@ namespace Microsoft.Maui.DeviceTests
 
 				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
 				Assert.Equal(1, imageService.LoadCount);
+				var originalSize = handler.PlatformView.ImageForState(UIControlState.Normal).Size;
 
 				item.IconColor = Colors.Red;
 				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 
 				Assert.Equal(1, imageService.LoadCount);
 				Assert.Equal(Colors.Red, handler.PlatformView.TintColor.ToColor());
+				Assert.Equal(originalSize, handler.PlatformView.ImageForState(UIControlState.Normal).Size);
 			});
 		}
 

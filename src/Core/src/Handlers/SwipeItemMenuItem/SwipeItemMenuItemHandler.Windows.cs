@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(WSwipeItem platformView)
 		{
 			System.Threading.Interlocked.Increment(ref _iconLoadGeneration);
-			ClearFontIconLoad(_fontIconLoadGeneration);
+			ResetFontIconLoad();
 			base.DisconnectHandler(platformView);
 			platformView.Invoked -= OnSwipeItemInvoked;
 		}
@@ -283,8 +283,14 @@ namespace Microsoft.Maui.Handlers
 			if (_fontIconLoadGeneration != generation)
 				return;
 
+			ResetFontIconLoad();
+		}
+
+		void ResetFontIconLoad()
+		{
 			_fontIconLoadSource = null;
 			_fontIconLoadColor = null;
+			_fontIconLoadGeneration = 0;
 		}
 
 		internal bool IsFontIconLoadCurrent(IFontImageSource source, Color? color) =>
