@@ -3301,6 +3301,9 @@ stages:
                 exit 0
               }
 
+              $prAgentDir = Split-Path -Parent (Split-Path -Parent $contentFile.FullName)
+              $winnerFile = Join-Path $prAgentDir 'winner.json'
+
               $checkoutToken = $null
               foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
                 if ($line -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') {
@@ -3323,7 +3326,8 @@ stages:
                 $env:GH_TOKEN = $checkoutToken
                 & pwsh -NoProfile -File ./.github/scripts/apply-pr-finalize.ps1 `
                   -PRNumber $prNumber `
-                  -ContentFile $contentFile.FullName
+                  -ContentFile $contentFile.FullName `
+                  -WinnerFile $winnerFile
                 if ($LASTEXITCODE -ne 0) {
                   throw "apply-pr-finalize.ps1 exited with code $LASTEXITCODE."
                 }

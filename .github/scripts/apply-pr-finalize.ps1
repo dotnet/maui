@@ -16,9 +16,11 @@
     squash-merge commit message without requiring GraphQL-only token scopes.
 
     Deliberately conservative — it does nothing unless Phase 4 explicitly recommended an
-    update, and it never discards author signal:
+    update, the raw submitted PR won the candidate comparison, and it never discards author
+    signal:
 
       * Keep-as-is verdict  -> no-op (Phase 4 said the current metadata is already good).
+      * Candidate won       -> no-op (candidate-only behavior is not on the PR branch yet).
       * Unparseable content -> no-op (never guess at a replacement).
       * No net change       -> no-op (avoids edit churn / notification spam).
       * Triage prefixes     -> preserved ([WIP], [inflight regression], [net11.0], ...).
@@ -32,6 +34,11 @@
 
 .PARAMETER ContentFile
     Path to pr-finalize/content.md. Auto-discovered from PRNumber when omitted.
+
+.PARAMETER WinnerFile
+    Path to PRAgent/winner.json. Auto-discovered next to the pr-finalize directory when
+    omitted. Automatic edits are allowed only when the manifest names the raw `pr`
+    candidate as the winner.
 
 .PARAMETER Repo
     Target repo in owner/name form. Defaults to dotnet/maui.
@@ -52,6 +59,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$ContentFile,
+
+    [Parameter(Mandatory = $false)]
+    [string]$WinnerFile,
 
     [Parameter(Mandatory = $false)]
     [string]$Repo = "dotnet/maui",
@@ -115,6 +125,88 @@ function Test-FinalizeIsNoOp {
     # Mirrors Test-PhaseContentIsNoOp("pr-finalize") in post-ai-summary-comment.ps1 so the
     # comment and the apply step agree on what "no change recommended" looks like.
     return [bool]($normalized -match '✅\s*Current title and description accurately reflect the change\s*[—-]\s*recommend keeping as-is')
+}
+
+function Get-FinalizeApplyDecision {
+    <#
+    .SYNOPSIS
+        Decides whether the recommendation may be applied to the live PR.
+    .DESCRIPTION
+        Phase 4 runs after candidate comparison. A pr-plus-reviewer or try-fix winner may
+        describe code that exists only in a temporary sandbox, so applying its metadata
+        would make the PR claim unsubmitted behavior and tests. Fail closed unless the
+        machine-readable manifest explicitly says the raw `pr` candidate won.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$WinnerFile
+    )
+
+    if ([string]::IsNullOrWhiteSpace($WinnerFile)) {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'No winner manifest path was provided.'
+        }
+    }
+
+    if (-not (Test-Path -LiteralPath $WinnerFile)) {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'The winner manifest is missing.'
+        }
+    }
+
+    try {
+        $manifest = Get-Content -Raw -LiteralPath $WinnerFile -Encoding UTF8 -ErrorAction Stop |
+            ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'The winner manifest could not be parsed.'
+        }
+    }
+
+    if ($null -eq $manifest) {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'The winner manifest is empty.'
+        }
+    }
+
+    $winner = if ($manifest.PSObject.Properties['winner']) {
+        ([string]$manifest.winner).Trim()
+    } else {
+        ''
+    }
+
+    if ($winner -eq 'pr' -and
+        $manifest.PSObject.Properties['isPRFix'] -and
+        $manifest.isPRFix -eq $true) {
+        return [pscustomobject]@{
+            ShouldApply = $true
+            Winner      = $winner
+            Reason      = 'The raw submitted PR won.'
+        }
+    }
+
+    $reason = if ($winner -match '^(?:pr-plus-reviewer|try-fix-\d+)$') {
+        "Candidate '$winner' won; its changes are not on the PR branch."
+    } elseif ($winner -eq 'pr') {
+        "The winner manifest is inconsistent for the raw PR candidate."
+    } else {
+        "The winner manifest contains an unsupported winner."
+    }
+
+    return [pscustomobject]@{
+        ShouldApply = $false
+        Winner      = $winner
+        Reason      = $reason
+    }
 }
 
 function Get-FinalizeRecommendation {
@@ -359,6 +451,18 @@ Write-Host "  📝 PR finalize — applying recommended title/description..." -F
 
 if (-not (Test-Path -LiteralPath $ContentFile)) {
     Write-Host "     ℹ️  No pr-finalize content at '$(ConvertTo-AzdoSafeConsole $ContentFile)' — nothing to apply." -ForegroundColor Gray
+    exit 0
+}
+
+if ([string]::IsNullOrWhiteSpace($WinnerFile)) {
+    $finalizeDir = Split-Path -Parent $ContentFile
+    $prAgentDir = Split-Path -Parent $finalizeDir
+    $WinnerFile = Join-Path $prAgentDir 'winner.json'
+}
+
+$applyDecision = Get-FinalizeApplyDecision -WinnerFile $WinnerFile
+if (-not $applyDecision.ShouldApply) {
+    Write-Host "     ⏭️  Leaving PR metadata unchanged: $(ConvertTo-AzdoSafeConsole $applyDecision.Reason)" -ForegroundColor Gray
     exit 0
 }
 

@@ -36,6 +36,7 @@ BeforeAll {
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
         'Test-FinalizeIsNoOp',
+        'Get-FinalizeApplyDecision',
         'Get-FinalizeRecommendation',
         'Merge-PreservedTitlePrefix',
         'Merge-PreservedBodyPreamble',
@@ -88,6 +89,56 @@ Describe 'Test-FinalizeIsNoOp' {
 
     It 'is false when an update is recommended' {
         Test-FinalizeIsNoOp -Content $script:RecommendContent | Should -BeFalse
+    }
+}
+
+Describe 'Get-FinalizeApplyDecision' {
+    It 'allows automatic metadata edits only when the raw submitted PR won' {
+        $winnerFile = Join-Path $TestDrive 'raw-pr-winner.json'
+        @{ winner = 'pr'; isPRFix = $true } |
+            ConvertTo-Json | Set-Content -LiteralPath $winnerFile -Encoding UTF8
+
+        $decision = Get-FinalizeApplyDecision -WinnerFile $winnerFile
+
+        $decision.ShouldApply | Should -BeTrue
+        $decision.Winner | Should -BeExactly 'pr'
+    }
+
+    It 'blocks a pr-plus-reviewer winner even though isPRFix is true' {
+        $winnerFile = Join-Path $TestDrive 'reviewer-winner.json'
+        @{ winner = 'pr-plus-reviewer'; isPRFix = $true } |
+            ConvertTo-Json | Set-Content -LiteralPath $winnerFile -Encoding UTF8
+
+        $decision = Get-FinalizeApplyDecision -WinnerFile $winnerFile
+
+        $decision.ShouldApply | Should -BeFalse
+        $decision.Reason | Should -Match 'not on the PR branch'
+    }
+
+    It 'blocks a try-fix winner' {
+        $winnerFile = Join-Path $TestDrive 'try-fix-winner.json'
+        @{ winner = 'try-fix-2'; isPRFix = $false } |
+            ConvertTo-Json | Set-Content -LiteralPath $winnerFile -Encoding UTF8
+
+        (Get-FinalizeApplyDecision -WinnerFile $winnerFile).ShouldApply | Should -BeFalse
+    }
+
+    It 'fails closed when the manifest is missing, malformed, or inconsistent' {
+        (Get-FinalizeApplyDecision -WinnerFile (Join-Path $TestDrive 'missing.json')).ShouldApply |
+            Should -BeFalse
+
+        $malformed = Join-Path $TestDrive 'malformed.json'
+        'not json' | Set-Content -LiteralPath $malformed -Encoding UTF8
+        (Get-FinalizeApplyDecision -WinnerFile $malformed).ShouldApply | Should -BeFalse
+
+        $empty = Join-Path $TestDrive 'empty.json'
+        'null' | Set-Content -LiteralPath $empty -Encoding UTF8
+        (Get-FinalizeApplyDecision -WinnerFile $empty).ShouldApply | Should -BeFalse
+
+        $inconsistent = Join-Path $TestDrive 'inconsistent.json'
+        @{ winner = 'pr'; isPRFix = $false } |
+            ConvertTo-Json | Set-Content -LiteralPath $inconsistent -Encoding UTF8
+        (Get-FinalizeApplyDecision -WinnerFile $inconsistent).ShouldApply | Should -BeFalse
     }
 }
 

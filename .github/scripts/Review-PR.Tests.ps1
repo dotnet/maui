@@ -116,6 +116,9 @@ Describe 'Copilot reviewer configuration' {
         $content | Should -Match ([regex]::Escape('## ✅ Final Recommendation: APPROVE'))
         $content | Should -Match ([regex]::Escape('## ⚠️ Final Recommendation: REQUEST CHANGES'))
         $content | Should -Match 'Use ``REQUEST CHANGES`` when ``pr-plus-reviewer`` or any ``try-fix-N`` wins'
+        $content | Should -Match 'Compare the CURRENT title and description above against the raw submitted PR diff only'
+        $content | Should -Match 'Never describe\s+``pr-plus-reviewer`` or ``try-fix-\*`` behavior'
+        $content | Should -Match 'changes already present in the submitted PR HEAD'
         $content | Should -Match '(?s)Apply-AgentLabels.*-TrustedGateResult \$trustedGateResultForPost'
         $content | Should -Match ([regex]::Escape("[ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]"))
         $pipelineContent | Should -Match '(?s)IsNullOrWhiteSpace\(\$gateResult\).*?\$gateResult = ''TIMEDOUT'''
@@ -214,6 +217,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $applyBlock = $pipelineContent.Substring($applyStart, $applyEnd - $applyStart)
         $applyBlock | Should -Match ([regex]::Escape("git config --get-regexp 'http\..*\.extraheader'"))
         $applyBlock | Should -Match ([regex]::Escape('./.github/scripts/apply-pr-finalize.ps1'))
+        $applyBlock | Should -Match ([regex]::Escape('$winnerFile = Join-Path $prAgentDir ''winner.json'''))
+        $applyBlock | Should -Match ([regex]::Escape('-WinnerFile $winnerFile'))
         $applyBlock | Should -Match ([regex]::Escape('Remove-Item Env:GH_TOKEN'))
         $applyBlock | Should -Match 'timeoutInMinutes: 5'
         $applyBlock | Should -Match 'continueOnError: true'

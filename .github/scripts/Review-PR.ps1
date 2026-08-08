@@ -2643,7 +2643,10 @@ PR #$PRNumber's CURRENT description:
 $prCurrentBody
 
 Steps:
-1. Compare the CURRENT title and description above against the actual diff and the winning fix.
+1. Compare the CURRENT title and description above against the raw submitted PR diff only.
+   The winning candidate may exist only in a temporary sandbox. Never describe
+   ``pr-plus-reviewer`` or ``try-fix-*`` behavior, tests, test counts, cleanup, or files
+   unless those changes are already present in the submitted PR HEAD.
 2. Judge quality: is the title specific (platform prefix + component + what changed) and is the description accurate and complete (what changed and why, key files, platform notes, dependency/issue links)?
 3. Write your result to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``:
    - **If the current title AND description already accurately and completely describe the change**, do NOT invent a replacement and do NOT add optional notes — this whole section is omitted when the metadata is already good. Write EXACTLY this single line and nothing else: ``✅ Current title and description accurately reflect the change — recommend keeping as-is.``
@@ -2659,7 +2662,9 @@ Steps:
 <improved description — preserve good existing content, fix/extend as needed; omit the repo testing-note boilerplate>
 ``````
 
-Base everything strictly on the real changes (do not invent features). Keep this file focused on the title + description assessment only.
+Base everything strictly on changes already present in the submitted PR HEAD (do not invent
+features or advertise an unsubmitted candidate). Keep this file focused on the title +
+description assessment only.
 
 $platformInstruction
 $autonomousRules
@@ -2858,7 +2863,12 @@ if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
             # Resolve content.md from $RepoRoot rather than letting the script fall back to
             # the current directory — the Post phase's cwd is not guaranteed to be the repo.
             $finalizeContent = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md"
-            $applyArgs = @{ PRNumber = $PRNumber; ContentFile = $finalizeContent }
+            $finalizeWinner = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
+            $applyArgs = @{
+                PRNumber = $PRNumber
+                ContentFile = $finalizeContent
+                WinnerFile = $finalizeWinner
+            }
             if ($DryRun) { $applyArgs.DryRun = $true }
             & $applyFinalizeScript @applyArgs
         } catch {

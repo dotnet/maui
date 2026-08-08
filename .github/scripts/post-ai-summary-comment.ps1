@@ -545,7 +545,8 @@ The workflow could not parse the fix-selection result. Review the session findin
 "@
     }
 
-    if ($winner.isPRFix -eq $true -or [string]::IsNullOrWhiteSpace([string]$winner.winner)) {
+    $selected = [string]$winner.winner
+    if ([string]::IsNullOrWhiteSpace($selected) -or $selected -eq 'pr') {
         return @"
 ---
 
@@ -559,8 +560,28 @@ No alternative fix was selected for this run. Review the session findings and CI
 "@
     }
 
-    $selected = [string]$winner.winner
     $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
+
+    if ($selected -eq 'pr-plus-reviewer') {
+        return @"
+---
+
+<details>
+<summary><strong>🧭 Next Steps</strong> — reviewer patch required (<code>pr-plus-reviewer</code>)</summary>
+<br/>
+
+**The reviewer-enhanced candidate won, so the submitted PR still needs those changes.**
+
+**Why:** $rationale
+
+Apply <code>PRAgent/pr-plus-reviewer/reviewer.patch</code> from the <code>CopilotLogs</code>
+artifact (or follow the report's **Required submitted-PR change**), push the update, and run
+the review again.
+
+</details>
+"@
+    }
+
     $diff = [string]$winner.candidateDiff
     $truncated = $false
 

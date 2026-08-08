@@ -619,4 +619,21 @@ Describe 'New-FutureActionSection' {
         $section | Should -Match 'Candidate avoids the regression'
         $section | Should -Match 'diff --git a/file.cs b/file.cs'
     }
+
+    It 'renders an explicit patch-required action when pr-plus-reviewer wins' {
+        @{
+            winner = 'pr-plus-reviewer'
+            isPRFix = $true
+            summary = 'The reviewer patch closes a correctness gap.'
+            candidateDiff = ''
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        $section = New-FutureActionSection -PRAgentDir $script:testDir
+
+        $section | Should -Match 'reviewer patch required'
+        $section | Should -Match 'submitted PR still needs those changes'
+        $section | Should -Match 'PRAgent/pr-plus-reviewer/reviewer.patch'
+        $section | Should -Match 'The reviewer patch closes a correctness gap'
+        $section | Should -Not -Match 'No alternative fix was selected'
+    }
 }
