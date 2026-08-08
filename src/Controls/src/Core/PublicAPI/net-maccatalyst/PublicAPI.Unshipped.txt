@@ -5,6 +5,7 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.EntryCellRenderer.EntryC
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.AddSubview(UIKit.UIView! view) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.Dispose(bool disposing) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(UIKit.UIView platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.NumberOfSections(UIKit.UICollectionView collectionView) -> nint
