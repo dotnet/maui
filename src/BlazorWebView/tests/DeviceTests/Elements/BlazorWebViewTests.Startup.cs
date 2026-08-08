@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests.Components;
 using Xunit;
 #if ANDROID
@@ -20,16 +22,39 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements;
 
 public partial class BlazorWebViewTests
 {
-	async Task RunBlazorStartupTest(Func<PlatformWebView, Task> test)
+	Task RunBlazorStartupTest(
+		Func<PlatformWebView, Task> test,
+		TestLoggerProvider? testLoggerProvider = null,
+		Type? componentType = null,
+		string? indexHtml = null,
+		Func<PlatformWebView, Task>? waitForReady = null)
 	{
-		await RunBlazorStartupTest((_, platformWebView) => test(platformWebView));
+		return RunBlazorStartupTest(
+			(_, platformWebView) => test(platformWebView),
+			testLoggerProvider,
+			componentType,
+			indexHtml,
+			waitForReady);
 	}
 
-	async Task RunBlazorStartupTest(Func<BlazorWebViewHandler, PlatformWebView, Task> test)
+	async Task RunBlazorStartupTest(
+		Func<BlazorWebViewHandler, PlatformWebView, Task> test,
+		TestLoggerProvider? testLoggerProvider = null,
+		Type? componentType = null,
+		string? indexHtml = null,
+		Func<PlatformWebView, Task>? waitForReady = null)
 	{
 		EnsureHandlerCreated(additionalCreationActions: appBuilder =>
 		{
 			appBuilder.Services.AddMauiBlazorWebView();
+			if (testLoggerProvider is not null)
+			{
+				appBuilder.Services.AddLogging(logging =>
+				{
+					logging.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace);
+					logging.AddProvider(testLoggerProvider);
+				});
+			}
 		});
 
 		var bwv = new BlazorWebViewWithCustomFiles
@@ -37,17 +62,24 @@ public partial class BlazorWebViewTests
 			HostPage = "wwwroot/index.html",
 			CustomFiles = new Dictionary<string, string>
 			{
-				{ "index.html", TestStaticFilesContents.DefaultMauiIndexHtmlContent },
+				{ "index.html", indexHtml ?? TestStaticFilesContents.DefaultMauiIndexHtmlContent },
 			},
 		};
-		bwv.RootComponents.Add(new RootComponent { ComponentType = typeof(NoOpComponent), Selector = "#app", });
+		bwv.RootComponents.Add(new RootComponent { ComponentType = componentType ?? typeof(NoOpComponent), Selector = "#app", });
 
 		await InvokeOnMainThreadAsync(async () =>
 		{
 			var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
 			var platformWebView = bwvHandler.PlatformView;
-			await WebViewHelpers.WaitForWebViewReady(platformWebView);
-			await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "Static");
+			if (waitForReady is null)
+			{
+				await WebViewHelpers.WaitForWebViewReady(platformWebView);
+				await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "Static");
+			}
+			else
+			{
+				await waitForReady(platformWebView);
+			}
 
 			await test(bwvHandler, platformWebView);
 		});
@@ -87,24 +119,81 @@ public partial class BlazorWebViewTests
 	});
 
 	[Fact]
-	public Task BlazorStartupScriptIsIdempotent() => RunBlazorStartupTest(async (bwvHandler, platformWebView) =>
+	public Task BlazorStartupScriptIsIdempotent()
 	{
-		// Store the original native port reference
-		await WebViewHelpers.ExecuteScriptAsync(platformWebView, "window.__originalNativePort = window.__nativePort");
+		var testLoggerProvider = new TestLoggerProvider();
+		return RunBlazorStartupTest(async (bwvHandler, platformWebView) =>
+		{
+			var setupEventsBefore = testLoggerProvider.GetEvents().Count(
+				logEvent => logEvent.EventId.Id == 40 && logEvent.EventId.Name == "BlazorStartupScriptsSubmitted");
+			Assert.Equal(1, setupEventsBefore);
 
-		var webViewClient = typeof(BlazorWebViewHandler)
-			.GetField("_webViewClient", BindingFlags.Instance | BindingFlags.NonPublic)!
-			.GetValue(bwvHandler) as global::Android.Webkit.WebViewClient;
+			// Store the original native port reference
+			await WebViewHelpers.ExecuteScriptAsync(platformWebView, "window.__originalNativePort = window.__nativePort");
 
-		Assert.NotNull(webViewClient);
+			var webViewClientField = typeof(BlazorWebViewHandler)
+				.GetField("_webViewClient", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(webViewClientField);
 
-		// Simulate a duplicate OnPageFinished callback so the production startup path runs again.
-		webViewClient.OnPageFinished(platformWebView, platformWebView.Url);
+			var webViewClient = webViewClientField.GetValue(bwvHandler) as global::Android.Webkit.WebViewClient;
+			Assert.NotNull(webViewClient);
 
-		// Verify the native port is still the same reference
-		var portUnchanged = await WebViewHelpers.ExecuteScriptAsync(platformWebView, "window.__nativePort === window.__originalNativePort");
-		Assert.Equal("true", portUnchanged);
-	});
+			// Simulate a duplicate OnPageFinished callback so the production startup path runs again.
+			webViewClient.OnPageFinished(platformWebView, platformWebView.Url);
+			await WebViewHelpers.ExecuteScriptAsync(platformWebView, "true");
+
+			// Verify the native port is still the same reference and no second channel setup was submitted.
+			var portUnchanged = await WebViewHelpers.ExecuteScriptAsync(platformWebView, "window.__nativePort === window.__originalNativePort");
+			Assert.Equal("true", portUnchanged);
+
+			var setupEventsAfter = testLoggerProvider.GetEvents().Count(
+				logEvent => logEvent.EventId.Id == 40 && logEvent.EventId.Name == "BlazorStartupScriptsSubmitted");
+			Assert.Equal(setupEventsBefore, setupEventsAfter);
+		}, testLoggerProvider);
+	}
+
+	[Fact]
+	public Task BlazorStartupRejectionPreservesLiveBridge()
+	{
+		var rejectingIndexHtml = TestStaticFilesContents.DefaultMauiIndexHtmlContent.Replace(
+			"</body>",
+			"""
+			    <script>
+			        (function () {
+			            const originalStart = Blazor.start.bind(Blazor);
+			            Blazor.start = function (options) {
+			                return originalStart(options).then(function (value) {
+			                    window.__wrappedBlazorStartRejected = true;
+			                    throw new Error('Deliberate post-start rejection');
+			                });
+			            };
+			        })();
+			    </script>
+			</body>
+			""",
+			StringComparison.Ordinal);
+
+		return RunBlazorStartupTest(
+			async platformWebView =>
+			{
+				var nativePortPresent = await WebViewHelpers.ExecuteScriptAsync(
+					platformWebView,
+					"window.__nativePort !== null && window.__nativePort !== undefined");
+				Assert.Equal("true", nativePortPresent);
+
+				await WebViewHelpers.ExecuteScriptAsync(
+					platformWebView,
+					"document.getElementById('incrementButton').click()");
+				await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "1");
+			},
+			componentType: typeof(TestComponent1),
+			indexHtml: rejectingIndexHtml,
+			waitForReady: async platformWebView =>
+			{
+				await WebViewHelpers.WaitForCondition(platformWebView, "window.__wrappedBlazorStartRejected === true");
+				await WebViewHelpers.WaitForControlDiv(platformWebView, controlValueToWaitFor: "0");
+			});
+	}
 
 	[Fact]
 	public Task BlazorMessageDispatchOnlyProcessesNativeSourceMessages() => RunBlazorStartupTest(async platformWebView =>

@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		//  - Calls Blazor.start() only after the native port is captured, ensuring window.external.sendMessage
 		//    has a live port before Blazor sends any messages.
 		//  - Sets window.__BlazorStarted after the Blazor.start() Promise resolves (used by test helpers as a readiness signal).
+		//  - Logs startup failures without discarding the captured native port because Blazor may already be attached.
 		//  - Dispatches native→JS messages (arriving via PostWebMessage) directly to window.external.__callback.
 		//  - Validates message origin: only processes messages from the native PostWebMessage API
 		//    (event.source === null), skipping messages from subframes or other JS contexts.
@@ -64,9 +65,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 								window.__BlazorStarted = true;
 							}, function (err) {
 								console.error('Blazor.start() failed:', err);
-								window.__nativePort = null;
-								window.__BlazorStarted = false;
-								window.__BlazorStarting = false;
 							});
 						}
 						return;
