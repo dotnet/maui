@@ -18,12 +18,20 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	{
 	}
 
+	void OpenTimePickerDialog()
+	{
+		App.WaitForElement("TimePickerControl");
+		var endIcon = AppiumQuery.ByAccessibilityId("Open time picker");
+		App.WaitForElement(endIcon);
+		App.Tap(endIcon);
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("TimePickerControl");
-		App.Tap("TimePickerControl");
+		OpenTimePickerDialog();
+		App.WaitForElement("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -31,6 +39,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetTimeAndCharacterSpacing_VerifyVisualState()
 	{
+		OpenTimePickerDialog();
 		App.WaitForElement("OK");
 		App.Tap("OK");
 		App.WaitForElement("Options");

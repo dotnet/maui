@@ -43,6 +43,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
+        platformView.ConnectClickListener();
     }
 
     protected override void DisconnectHandler(MauiMaterialTimePicker platformView)
@@ -63,9 +64,9 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         _positiveButtonClickListener = null;
         _dismissListener?.Dispose();
         _dismissListener = null;
-
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
+        platformView.DisconnectClickListener();
 
         base.DisconnectHandler(platformView);
     }
@@ -90,6 +91,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
     {
         if (_dialog is null)
         {
+            PlatformView?.InputEditText?.ClearFocus();
             UpdateIsOpenState(false);
             return;
         }
@@ -102,6 +104,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         }
 
         _dialog = null;
+        PlatformView?.InputEditText?.ClearFocus();
         UpdateIsOpenState(false);
     }
 
@@ -148,6 +151,10 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
         _dialog.Show(fragmentManager, "MaterialTimePicker");
 
+        // Focus the field so the outlined layout shows its highlighted (focused) state while the
+        // dialog is open. This also covers opens triggered programmatically via IsOpen.
+        PlatformView?.InputEditText?.RequestFocus();
+
         UpdateIsOpenState(true);
     }
 
@@ -191,34 +198,34 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
 
     public static void MapTime(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateTime(picker);
+        handler.PlatformView?.InputEditText?.UpdateTime(picker);
     }
 
     public static void MapTextColor(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateTextColor(picker);
+        handler.PlatformView?.InputEditText?.UpdateTextColor(picker);
     }
 
     public static void MapFormat(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateFormat(picker);
+        handler.PlatformView?.InputEditText?.UpdateFormat(picker);
     }
 
     public static void MapFont(TimePickerHandler2 handler, ITimePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
-        handler.PlatformView?.UpdateFont(picker, fontManager);
+        handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
     }
 
     public static void MapCharacterSpacing(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateCharacterSpacing(picker);
+        handler.PlatformView?.InputEditText?.UpdateCharacterSpacing(picker);
     }
 
     protected override MauiMaterialTimePicker CreatePlatformView()
     {
-        return new MauiMaterialTimePicker(Context);
+        return new MauiMaterialTimePicker(MauiMaterialContextThemeWrapper.Create(Context));
     }
 
     internal void UpdateIsOpenState(bool isOpen)
@@ -280,7 +287,7 @@ public class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterf
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
-
+        handler.PlatformView?.InputEditText?.ClearFocus();
         handler.UpdateIsOpenState(false);
     }
 }

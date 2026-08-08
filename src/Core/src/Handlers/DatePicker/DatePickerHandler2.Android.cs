@@ -37,7 +37,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     protected override MauiMaterialDatePicker CreatePlatformView()
     {
-        return new MauiMaterialDatePicker(Context);
+        return new MauiMaterialDatePicker(MauiMaterialContextThemeWrapper.Create(Context));
     }
 
     protected override void ConnectHandler(MauiMaterialDatePicker platformView)
@@ -49,6 +49,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
+        platformView.ConnectClickListener();
     }
 
     protected override void DisconnectHandler(MauiMaterialDatePicker platformView)
@@ -72,6 +73,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
+        platformView.DisconnectClickListener();
 
         base.DisconnectHandler(platformView);
     }
@@ -98,7 +100,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     static void MapTextColor(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateTextColor(picker);
+        handler.PlatformView?.InputEditText?.UpdateTextColor(picker);
     }
 
     // Material3 MaterialDatePicker uses immutable CalendarConstraints.
@@ -116,24 +118,24 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     static void MapFormat(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateFormat(picker);
+        handler.PlatformView?.InputEditText?.UpdateFormat(picker);
     }
 
     static void MapFont(DatePickerHandler2 handler, IDatePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
-        handler.PlatformView?.UpdateFont(picker, fontManager);
+        handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
     }
 
     static void MapDate(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateDate(picker);
+        handler.PlatformView?.InputEditText?.UpdateDate(picker);
     }
 
     static void MapCharacterSpacing(DatePickerHandler2 handler, IDatePicker picker)
     {
-        handler.PlatformView?.UpdateCharacterSpacing(picker);
+        handler.PlatformView?.InputEditText?.UpdateCharacterSpacing(picker);
     }
 
     protected virtual MaterialDatePicker? CreateDatePickerDialog(int year, int month, int day)
@@ -244,6 +246,10 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         _dialog = CreateDatePickerDialog(year, month, day);
         _dialog?.Show(fragmentManager, "MaterialDatePicker");
 
+        // Focus the field so the outlined layout shows its highlighted (focused) state while the
+        // dialog is open. This also covers opens triggered programmatically via IsOpen.
+        PlatformView?.InputEditText?.RequestFocus();
+
         UpdateIsOpenState(true);
     }
 
@@ -251,6 +257,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
     {
         if (_dialog is null)
         {
+            PlatformView?.InputEditText?.ClearFocus();
             UpdateIsOpenState(false);
             return;
         }
@@ -263,6 +270,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         }
 
         _dialog = null;
+        PlatformView?.InputEditText?.ClearFocus();
         UpdateIsOpenState(false);
     }
 
@@ -343,6 +351,7 @@ public class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterf
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
+        handler.PlatformView?.InputEditText?.ClearFocus();
         handler.UpdateIsOpenState(false);
     }
 }

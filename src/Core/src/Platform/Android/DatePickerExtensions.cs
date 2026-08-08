@@ -80,30 +80,45 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateDate(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.SetText(datePicker);
+			platformDatePicker.InputEditText?.UpdateDate(datePicker);
+		}
+
+		internal static void UpdateDate(this MauiMaterialEditText editText, IDatePicker datePicker)
+		{
+			editText.SetText(datePicker);
 		}
 
 		public static void UpdateFormat(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.SetText(datePicker);
+			platformDatePicker.InputEditText?.UpdateFormat(datePicker);
+		}
+
+		internal static void UpdateFormat(this MauiMaterialEditText editText, IDatePicker datePicker)
+		{
+			editText.SetText(datePicker);
 		}
 
 		public static void UpdateTextColor(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.InputEditText?.UpdateTextColor(datePicker);
+		}
+
+		internal static void UpdateTextColor(this MauiMaterialEditText editText, IDatePicker datePicker)
 		{
 			var textColor = datePicker.TextColor;
 
 			if (textColor is not null)
 			{
-				if (PlatformInterop.CreateEditTextColorStateList(platformDatePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
 				{
-					platformDatePicker.SetTextColor(c);
+					editText.SetTextColor(c);
 				}
 			}
 		}
 
-		internal static void SetText(this MauiMaterialDatePicker platformDatePicker, IDatePicker datePicker)
+		internal static void SetText(this MauiMaterialEditText editText, IDatePicker datePicker)
 		{
-			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
+			editText.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
 		}
 	}
 }

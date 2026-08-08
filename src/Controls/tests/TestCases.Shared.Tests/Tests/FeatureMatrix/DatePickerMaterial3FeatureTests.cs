@@ -13,12 +13,19 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	{
 	}
 
+	void OpenDatePickerDialog()
+	{
+		App.WaitForElement("DatePickerControl");
+		var endIcon = AppiumQuery.ByAccessibilityId("Open date picker");
+		App.WaitForElement(endIcon);
+		App.Tap(endIcon);
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("OK");
 		App.Tap("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -28,8 +35,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_ModifyOldDateAndNewDate_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.Tap("26");
 		App.WaitForElement("OK");
 		App.Tap("OK");
@@ -40,14 +46,12 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_OldDateAndNewDate_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("26");
 		App.Tap("26");
 		App.WaitForElement("OK");
 		App.Tap("OK");
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("28");
 		App.Tap("28");
 		App.WaitForElement("Cancel");
