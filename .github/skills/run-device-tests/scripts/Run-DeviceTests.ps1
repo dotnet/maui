@@ -378,10 +378,54 @@ function Select-WindowsDeviceTestCategories {
 function Test-WindowsDeviceTestCategoryDiscovery {
     param(
         [string]$Project,
-        [string]$TestFilter
+        [string]$TestFilter,
+        [string]$IncludeClasses
     )
 
-    return $Project -eq "Controls" -or -not [string]::IsNullOrWhiteSpace($TestFilter)
+    # Controls registers only the discovery/index runner on Windows. Other projects
+    # also register the normal full-suite runner, which XHarness can class-filter
+    # directly through NUNIT_SKIPPED_CLASSES. Prefer that reliable path whenever the
+    # Gate supplied an exact class, and retain category discovery only for standalone
+    # filtered runs that lack class metadata.
+    return $Project -eq "Controls" -or (
+        [string]::IsNullOrWhiteSpace($IncludeClasses) -and
+        -not [string]::IsNullOrWhiteSpace($TestFilter))
+}
+
+function Start-WindowsDeviceTestProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AppPath,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$ArgumentList,
+
+        [string]$IncludeClasses
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = [System.IO.Path]::GetFullPath($AppPath)
+    $startInfo.WorkingDirectory = [System.IO.Path]::GetDirectoryName($startInfo.FileName)
+    $startInfo.UseShellExecute = $false
+
+    foreach ($argument in $ArgumentList) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($IncludeClasses)) {
+        # XHarness treats NUNIT_SKIPPED_CLASSES as an include list and disables
+        # RunAllTestsByDefault when it contains at least one class.
+        $startInfo.Environment["NUNIT_SKIPPED_CLASSES"] = $IncludeClasses
+    } else {
+        [void]$startInfo.Environment.Remove("NUNIT_SKIPPED_CLASSES")
+    }
+
+    $process = [System.Diagnostics.Process]::Start($startInfo)
+    if (-not $process) {
+        throw "Failed to start Windows device test app '$AppPath'."
+    }
+
+    return $process
 }
 
 function Wait-ForPath {
@@ -704,6 +748,10 @@ function Invoke-WindowsDeviceTestApp {
         $timeoutSeconds = 3600
     }
 
+    # The app must run from its executable directory, but OutputDirectory is commonly
+    # supplied as a repo-relative path. Canonicalize it before passing result paths to
+    # the child so the app and this process always observe the same files.
+    $OutputDirectory = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputDirectory)
     if (-not (Test-Path $OutputDirectory)) {
         New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     }
@@ -725,21 +773,23 @@ function Invoke-WindowsDeviceTestApp {
     # single full-suite launch:
     #   - Controls: ALWAYS. Its Windows app registers only the discovery/index runner, so
     #     a plain full launch has no runner and exits without results.
-    #   - Core/Essentials/Graphics/BlazorWebView: only when a filter is supplied. Their
-    #     apps gained the discovery/index runner once AppHostBuilderExtensions
-    #     .UseHeadlessRunner registers it on Windows, so we can now run ONLY the changed
-    #     category instead of launching the entire app — which, for large suites like
-    #     Core, can crash/exit before writing results and collapse the gate to an
-    #     inconclusive "empty results" verdict (see PR #36577).
-    # Controls requires discovery because it has no full-suite runner. Other projects
-    # attempt discovery only for filtered runs and retain the clean full-suite fallback
-    # below for branches that predate the discovery-runner registration.
+    #   - Core/Essentials/Graphics/BlazorWebView: use their normal runner with the exact
+    #     XHarness class include whenever the Gate supplied one. Their discovery/index
+    #     path can stall before producing devicetestcategories.txt; falling back from
+    #     that stall to an unfiltered full suite consumed an hour on PR #36884.
+    #   - A standalone filtered run without class metadata still attempts discovery.
     $requireDiscovery = ($Project -eq "Controls")
-    $attemptDiscovery = Test-WindowsDeviceTestCategoryDiscovery -Project $Project -TestFilter $TestFilter
+    $attemptDiscovery = Test-WindowsDeviceTestCategoryDiscovery `
+        -Project $Project `
+        -TestFilter $TestFilter `
+        -IncludeClasses $IncludeClasses
     $useCategoryFiltering = $false
     if ($attemptDiscovery) {
         Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
-        $discoveryProcess = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, "-1") -PassThru
+        $discoveryProcess = Start-WindowsDeviceTestProcess `
+            -AppPath $AppPath `
+            -ArgumentList @($resultFile, "-1") `
+            -IncludeClasses $IncludeClasses
         if (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess) {
             $useCategoryFiltering = $true
         } else {
@@ -771,7 +821,10 @@ function Invoke-WindowsDeviceTestApp {
             $categoryResultFile = "$resultBase`_$category.xml"
             Remove-Item -LiteralPath $categoryResultFile -Force -ErrorAction SilentlyContinue
             Write-Host "Running Windows device test category '$category' (index $categoryIndex)..." -ForegroundColor Gray
-            $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile, [string]$categoryIndex) -PassThru
+            $process = Start-WindowsDeviceTestProcess `
+                -AppPath $AppPath `
+                -ArgumentList @($resultFile, [string]$categoryIndex) `
+                -IncludeClasses $IncludeClasses
             if (-not (Wait-ForPath -Path $categoryResultFile -TimeoutSeconds $timeoutSeconds -Process $process)) {
                 if ($process -and $process.HasExited) {
                     throw "$WindowsDeviceNoResultsMarker Windows device test category '$category' exited without creating $categoryResultFile."
@@ -785,13 +838,20 @@ function Invoke-WindowsDeviceTestApp {
             $resultFiles += $categoryResultFile
         }
     } else {
-        # Full-suite run: either no filter was requested, or category discovery was not
-        # available for this app. Remove any partial result file a failed discovery
-        # attempt may have left behind so the summary reflects only this run.
+        # Normal runner: this is a true full suite only when IncludeClasses is empty.
+        # Otherwise Start-WindowsDeviceTestProcess passes XHarness's exact class include,
+        # so the app executes only the requested class without category discovery.
         Remove-Item -LiteralPath $resultFile -Force -ErrorAction SilentlyContinue
 
-        Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
-        $process = Start-Process -FilePath $AppPath -ArgumentList @($resultFile) -PassThru
+        if ($IncludeClasses) {
+            Write-Host "Running Windows device test app with class isolation: $IncludeClasses" -ForegroundColor Gray
+        } else {
+            Write-Host "Running Windows device test app directly..." -ForegroundColor Gray
+        }
+        $process = Start-WindowsDeviceTestProcess `
+            -AppPath $AppPath `
+            -ArgumentList @($resultFile) `
+            -IncludeClasses $IncludeClasses
 
         # A full-suite app creates its single results file and finalizes it only when the
         # whole run completes, so waiting for the file to merely APPEAR (as the per-category
@@ -820,7 +880,11 @@ function Invoke-WindowsDeviceTestApp {
     # unrelated passing sibling hide that the target method never ran.
     $summaryClassFilter = $IncludeClasses
     $summaryMethodFilter = $IncludeMethods
-    $summary = Get-DeviceTestResultSummary -ResultFiles $resultFiles -IncludeClasses $summaryClassFilter -IncludeMethods $summaryMethodFilter
+    $summary = Get-DeviceTestResultSummary `
+        -ResultFiles $resultFiles `
+        -IncludeClasses $summaryClassFilter `
+        -IncludeMethods $summaryMethodFilter `
+        -RequireClassIsolation:(-not [string]::IsNullOrWhiteSpace($IncludeClasses))
     $script:WindowsDeviceTestSummary = $summary
     $script:WindowsDeviceTestResultFiles = $resultFiles
 

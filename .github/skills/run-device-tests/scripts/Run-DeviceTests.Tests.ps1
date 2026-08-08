@@ -20,8 +20,10 @@ BeforeAll {
         'Get-FreshXHarnessTestResultFiles',
         'Select-WindowsDeviceTestCategories',
         'Test-WindowsDeviceTestCategoryDiscovery',
+        'Start-WindowsDeviceTestProcess',
         'ConvertTo-DeviceTestCount',
-        'Get-DeviceTestResultSummary'
+        'Get-DeviceTestResultSummary',
+        'Invoke-WindowsDeviceTestApp'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -47,6 +49,7 @@ Describe 'Build isolation options' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match '\$summaryClassFilter\s*=\s*\$IncludeClasses'
         $content | Should -Match '\$summaryMethodFilter\s*=\s*\$IncludeMethods'
+        $content | Should -Match '-RequireClassIsolation:\(-not \[string\]::IsNullOrWhiteSpace\(\$IncludeClasses\)\)'
         $content | Should -Not -Match '\$summaryClassFilter\s*=\s*if\s*\(-not\s+\$useCategoryFiltering\)'
     }
 }
@@ -186,18 +189,116 @@ Describe 'Windows device test category filtering' {
     }
 
     It 'always requires category discovery for Controls' {
-        Test-WindowsDeviceTestCategoryDiscovery -Project 'Controls' -TestFilter '' |
+        Test-WindowsDeviceTestCategoryDiscovery `
+            -Project 'Controls' `
+            -TestFilter '' `
+            -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' |
             Should -BeTrue
     }
 
-    It 'attempts category discovery for a filtered non-Controls project' {
-        Test-WindowsDeviceTestCategoryDiscovery -Project 'Core' -TestFilter 'Category=Window' |
+    It 'attempts category discovery for a filtered non-Controls project without class metadata' {
+        Test-WindowsDeviceTestCategoryDiscovery `
+            -Project 'Core' `
+            -TestFilter 'Category=Window' `
+            -IncludeClasses '' |
             Should -BeTrue
+    }
+
+    It 'uses the class-filtered normal runner for a non-Controls Gate test' {
+        Test-WindowsDeviceTestCategoryDiscovery `
+            -Project 'Core' `
+            -TestFilter 'Category=Window' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' |
+            Should -BeFalse
     }
 
     It 'uses the full-suite runner for an unfiltered non-Controls project' {
-        Test-WindowsDeviceTestCategoryDiscovery -Project 'Core' -TestFilter '' |
+        Test-WindowsDeviceTestCategoryDiscovery `
+            -Project 'Core' `
+            -TestFilter '' `
+            -IncludeClasses '' |
             Should -BeFalse
+    }
+
+    It 'passes the exact class filter and app working directory to the Windows child process' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-process-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $script = Join-Path $tempRoot 'capture.sh'
+            $output = Join-Path $tempRoot 'process-output.txt'
+            @'
+#!/bin/sh
+printf '%s\n%s\n%s\n' "$PWD" "$NUNIT_SKIPPED_CLASSES" "$2" > "$1"
+'@ | Set-Content -LiteralPath $script -Encoding utf8 -NoNewline
+            & chmod +x $script
+
+            $classFilter = 'Microsoft.Maui.DeviceTests.WindowHandlerTests'
+            $process = Start-WindowsDeviceTestProcess `
+                -AppPath $script `
+                -ArgumentList @($output, 'argument with spaces') `
+                -IncludeClasses $classFilter
+            $process.WaitForExit()
+
+            $process.ExitCode | Should -Be 0
+            $lines = @(Get-Content -LiteralPath $output)
+            [System.IO.Path]::GetFileName($lines[0]) |
+                Should -Be ([System.IO.Path]::GetFileName($tempRoot))
+            $lines[1] | Should -Be $classFilter
+            $lines[2] | Should -Be 'argument with spaces'
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'resolves a relative result directory before launching from the app directory' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-results-$([guid]::NewGuid())"
+        $appDirectory = Join-Path $tempRoot 'app'
+        $invocationDirectory = Join-Path $tempRoot 'invocation'
+        New-Item -ItemType Directory -Path $appDirectory, $invocationDirectory -Force | Out-Null
+
+        try {
+            $app = Join-Path $appDirectory 'device-tests.sh'
+            @'
+#!/bin/sh
+cat > "$1" <<'EOF'
+<assemblies>
+  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.WindowHandlerTests" method="Runs" name="Microsoft.Maui.DeviceTests.WindowHandlerTests.Runs" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+EOF
+'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
+            & chmod +x $app
+
+            $script:WindowsDeviceTestPackageIds = @{
+                Core = 'com.microsoft.maui.core.devicetests'
+            }
+            Push-Location $invocationDirectory
+            try {
+                $exitCode = Invoke-WindowsDeviceTestApp `
+                    -AppPath $app `
+                    -Project 'Core' `
+                    -AppName 'Core.DeviceTests' `
+                    -OutputDirectory 'relative-results' `
+                    -TestFilter 'Category=Window' `
+                    -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' `
+                    -IncludeMethods 'Runs' `
+                    -Timeout '00:00:10'
+            } finally {
+                Pop-Location
+            }
+
+            $expectedResult = Join-Path $invocationDirectory 'relative-results/TestResults-com_microsoft_maui_core_devicetests.xml'
+            Test-Path -LiteralPath $expectedResult | Should -BeTrue
+            $exitCode | Should -Be 0
+            $script:WindowsDeviceTestSummary.Total | Should -Be 1
+            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 
