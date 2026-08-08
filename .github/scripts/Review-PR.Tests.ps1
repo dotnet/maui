@@ -175,6 +175,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $content | Should -Match ([regex]::Escape('git -C "$prPlusSandboxRoot" diff --binary "$prPlusCandidateBaseCommit"'))
         $content | Should -Match ([regex]::Escape('$prPlusArtifactRoot/reviewer.patch'))
         $content | Should -Match ([regex]::Escape('$prPlusArtifactRoot/candidate.patch'))
+        $content | Should -Match ([regex]::Escape('"CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer-sandbox"'))
+        $content | Should -Match 'Removed legacy candidate sandbox from review artifacts'
         $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot'))
         $content | Should -Match ([regex]::Escape('git -C $RepoRoot worktree prune --expire now'))
         $content | Should -Match 'Could not fully remove pr-plus-reviewer sandbox'

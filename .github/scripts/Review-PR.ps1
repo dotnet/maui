@@ -2485,6 +2485,7 @@ $prPlusSandboxBase = if (-not [string]::IsNullOrWhiteSpace($env:AGENT_TEMPDIRECT
 }
 $prPlusSandboxRoot = Join-Path $prPlusSandboxBase "pr-$PRNumber-pr-plus-reviewer"
 $prPlusArtifactRoot = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer"
+$legacyPrPlusSandboxArtifact = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer-sandbox"
 $prPlusSandboxCreated = $false
 $prPlusBuildTasksReady = $false
 $prPlusCandidateBaseCommit = ''
@@ -2528,6 +2529,9 @@ try {
 
     if (Test-Path -LiteralPath $prPlusArtifactRoot) {
         Remove-Item -LiteralPath $prPlusArtifactRoot -Recurse -Force -ErrorAction Stop
+    }
+    if (Test-Path -LiteralPath $legacyPrPlusSandboxArtifact) {
+        Remove-Item -LiteralPath $legacyPrPlusSandboxArtifact -Recurse -Force -ErrorAction Stop
     }
     New-Item -ItemType Directory -Path $prPlusArtifactRoot -Force | Out-Null
 
@@ -2670,6 +2674,10 @@ Do NOT re-run gate verification.
 try {
     Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt -MaxAiCredits 1500 | Out-Null
 } finally {
+    if (Test-Path -LiteralPath $legacyPrPlusSandboxArtifact) {
+        Remove-Item -LiteralPath $legacyPrPlusSandboxArtifact -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "  🧹 Removed legacy candidate sandbox from review artifacts" -ForegroundColor DarkGray
+    }
     if ($prPlusSandboxCreated) {
         & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
         if (Test-Path -LiteralPath $prPlusSandboxRoot) {
