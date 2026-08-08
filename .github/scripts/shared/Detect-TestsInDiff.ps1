@@ -298,6 +298,63 @@ function Test-CsFileHasTestMethods {
     return $true
 }
 
+function Get-AddedDeviceTestMethodsFromPatch {
+    <#
+    .SYNOPSIS
+        Returns only added methods that are explicitly marked as tests.
+    .DESCRIPTION
+        Device-test files often add public helper methods alongside [Fact]/[Test]
+        methods. Treating every added public void/Task as a test makes result
+        validation demand helpers that the runner will never execute, turning a
+        clean with-fix run into a false environment error.
+    #>
+    param([string]$Patch)
+
+    if ([string]::IsNullOrWhiteSpace($Patch)) {
+        return @()
+    }
+
+    $methods = [System.Collections.Generic.List[string]]::new()
+    $pendingTestAttribute = $false
+
+    foreach ($rawLine in ($Patch -split "`n")) {
+        if ($rawLine -notmatch '^\+(?!\+\+)') {
+            continue
+        }
+
+        $line = $rawLine.Substring(1).TrimEnd("`r")
+        if ($line -match '\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b') {
+            $pendingTestAttribute = $true
+        }
+
+        # Attribute-only, comment, preprocessor, and blank lines may legitimately
+        # sit between the test attribute and method declaration.
+        $declaration = $line -replace '^\s*(?:\[[^\]]+\]\s*)+', ''
+        if ([string]::IsNullOrWhiteSpace($declaration) -or
+            $declaration -match '^\s*(?://|/\*|\*|#)') {
+            continue
+        }
+
+        if ($pendingTestAttribute -and
+            $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
+            $methodName = $matches[1]
+            if ($methods -notcontains $methodName) {
+                $methods.Add($methodName)
+            }
+            $pendingTestAttribute = $false
+            continue
+        }
+
+        # A non-attribute declaration consumed the pending marker without defining
+        # a test method; do not let it leak to a later public helper.
+        if ($pendingTestAttribute -and $declaration -notmatch '^\s*\[') {
+            $pendingTestAttribute = $false
+        }
+    }
+
+    return @($methods)
+}
+
 foreach ($file in $ChangedFiles) {
     # Skip non-code files
     if ($file -notmatch "\.(cs|xaml)$") { continue }
@@ -450,18 +507,19 @@ foreach ($key in @($testGroups.Keys)) {
 
 # ============================================================
 # Step 4: For device tests, extract specific test method names from the diff
-#         for display purposes, but keep the category-based filter
+#         for display and result scoping, but keep the category-based filter
 # ============================================================
 
 foreach ($key in @($testGroups.Keys)) {
     $group = $testGroups[$key]
     if ($group.Type -ne "DeviceTest") { continue }
 
-    # Try to find added [Fact] or [Test] methods from the diff
+    # Find added test methods from the diff. Never include public helpers: a
+    # missing helper result is otherwise misclassified as an environment error
+    # after all real tests pass.
     $addedMethods = @()
     # Cache PR files API response once before the inner loop.
-    # This block is display-only (it extracts added test-method names for nicer output);
-    # a failure here must NEVER abort the gate. The script runs under
+    # A failure here must NEVER abort the gate. The script runs under
     # $ErrorActionPreference='Stop', so an unguarded parse error is terminating: `gh api`
     # can return an HTML error page (rate-limit / transient 5xx) — as seen on PR #36572,
     # where "ConvertFrom-Json: parsing value: <" crashed the gate to exit 3 / INCONCLUSIVE —
@@ -502,15 +560,9 @@ foreach ($key in @($testGroups.Keys)) {
         }
 
         if ($patch) {
-            $addedLines = $patch -split "`n" | Where-Object { $_ -match "^\+" }
-            foreach ($line in $addedLines) {
-                if ($line -match "public\s+async\s+Task\s+(\w+)\s*\(" -or
-                    $line -match "public\s+void\s+(\w+)\s*\(") {
-                    $methodName = $matches[1]
-                    if ($methodName -ne "Dispose" -and $methodName -ne "Setup" -and
-                        $addedMethods -notcontains $methodName) {
-                        $addedMethods += $methodName
-                    }
+            foreach ($methodName in @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch)) {
+                if ($addedMethods -notcontains $methodName) {
+                    $addedMethods += $methodName
                 }
             }
         }

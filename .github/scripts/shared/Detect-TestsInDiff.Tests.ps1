@@ -17,6 +17,15 @@ BeforeAll {
         throw "Function 'Test-DeviceTestFileAppliesToPlatform' not found"
     }
     Invoke-Expression $platformFunction.Extent.Text
+
+    $methodFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-AddedDeviceTestMethodsFromPatch'
+    }, $true)
+    if (-not $methodFunction) {
+        throw "Function 'Get-AddedDeviceTestMethodsFromPatch' not found"
+    }
+    Invoke-Expression $methodFunction.Extent.Text
 }
 
 Describe 'Detect-TestsInDiff device-test filtering' {
@@ -84,6 +93,69 @@ Describe 'Detect-TestsInDiff platform-specific methods' {
             Should -BeTrue
     }
 }
+
+Describe 'Detect-TestsInDiff added device-test methods' {
+    It 'includes attributed Task and async Task methods but excludes public helpers' {
+        $patch = @'
+@@ -0,0 +1,30 @@
++[Fact]
++public Task TextColorCanBeCleared()
++{
++    return Task.CompletedTask;
++}
++
++[Theory]
++[InlineData("red")]
++public async Task IconColorUpdates(string color)
++{
++    await Task.Yield();
++}
++
++public void Enqueue(object request)
++{
++}
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('TextColorCanBeCleared', 'IconColorUpdates')
+    }
+
+    It 'supports namespaced test attributes and attributes on the declaration line' {
+        $patch = @'
+@@ -0,0 +1,10 @@
++[Xunit.Fact] public void RunsInline()
++{
++}
++
++[NUnit.Framework.Test]
++[Category("Device")]
++public virtual ValueTask RunsWithValueTask()
++{
++    return ValueTask.CompletedTask;
++}
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('RunsInline', 'RunsWithValueTask')
+    }
+
+    It 'returns no methods when the patch adds only helpers' {
+        $patch = @'
+@@ -0,0 +1,8 @@
++public async Task WaitForRequest()
++{
++    await Task.Yield();
++}
++
++public void Enqueue(object request)
++{
++}
+'@
+
+        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Detect-TestsInDiff PR files cache' {
     It 'gates the fetch on a fetch-attempted sentinel, not on the (possibly empty) cache' {
         $scriptContent = Get-Content (Join-Path $PSScriptRoot 'Detect-TestsInDiff.ps1') -Raw
