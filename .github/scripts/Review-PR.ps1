@@ -2487,6 +2487,7 @@ $prPlusSandboxRoot = Join-Path $prPlusSandboxBase "pr-$PRNumber-pr-plus-reviewer
 $prPlusArtifactRoot = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer"
 $prPlusSandboxCreated = $false
 $prPlusBuildTasksReady = $false
+$prPlusCandidateBaseCommit = ''
 $prPlusSandboxStatus = 'UNAVAILABLE'
 
 try {
@@ -2500,6 +2501,34 @@ try {
         throw "git worktree add exited with code $LASTEXITCODE"
     }
     $prPlusSandboxCreated = $true
+
+    # Inflight review branches receive current reviewer infrastructure as an
+    # uncommitted overlay after resetting to the PR head. Reapply that overlay
+    # to the detached candidate and checkpoint it so subsequent diffs contain
+    # only the expert reviewer's product/test changes.
+    Restore-TrustedScripts -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $prPlusSandboxRoot
+    $trustedOverlayChanges = @(git -C $prPlusSandboxRoot status --porcelain 2>$null)
+    if ($trustedOverlayChanges.Count -gt 0) {
+        & git -C $prPlusSandboxRoot add -A
+        if ($LASTEXITCODE -ne 0) {
+            throw "failed to stage the trusted candidate overlay"
+        }
+        & git -C $prPlusSandboxRoot `
+            -c user.email=copilot@github.com `
+            -c user.name=Copilot `
+            commit -m "Trusted reviewer infrastructure overlay" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "failed to checkpoint the trusted candidate overlay"
+        }
+    }
+    $prPlusCandidateBaseCommit = (& git -C $prPlusSandboxRoot rev-parse HEAD 2>$null).Trim()
+    if ([string]::IsNullOrWhiteSpace($prPlusCandidateBaseCommit)) {
+        throw "could not resolve the candidate baseline commit"
+    }
+
+    if (Test-Path -LiteralPath $prPlusArtifactRoot) {
+        Remove-Item -LiteralPath $prPlusArtifactRoot -Recurse -Force -ErrorAction Stop
+    }
     New-Item -ItemType Directory -Path $prPlusArtifactRoot -Force | Out-Null
 
     $rawBuildTasks = Join-Path $RepoRoot '.buildtasks'
@@ -2553,13 +2582,15 @@ Read context from:
 
 - Raw PR worktree (read-only for candidate refinement): ``$RepoRoot``
 - Exact pre-created candidate worktree: ``$prPlusSandboxRoot``
+- Candidate baseline commit after trusted infrastructure overlay: ``$prPlusCandidateBaseCommit``
 - Exact persistent candidate artifact root: ``$prPlusArtifactRoot``
 - Sandbox status: ``$prPlusSandboxStatus``
 - Use this exact candidate worktree. Do not create another worktree or sandbox, and never create one under ``CustomAgentLogsTmp``.
 - Before editing or validating, run ``git -C "$prPlusSandboxRoot" rev-parse --show-toplevel`` and require the resolved path to equal ``$prPlusSandboxRoot``. If the sandbox is unavailable or identity does not match, record ``pr-plus-reviewer`` as blocked; never modify or validate against the raw PR worktree.
+- Treat ``$prPlusCandidateBaseCommit`` as the immutable candidate baseline and do not commit reviewer changes. It already includes any trusted script/source overlay needed to validate main, netN.0, and inflight-targeted PRs.
 - Run every candidate command from the candidate root with ``Push-Location "$prPlusSandboxRoot"`` / ``Pop-Location`` (or an equivalent explicit working-directory option). Invoke scripts from that same root. An output path rooted at ``$RepoRoot`` proves the raw PR ran and MUST NOT be counted as candidate validation.
 - The pipeline copied its already-built ``.buildtasks`` into the candidate when the status is ``READY_WITH_BUILDTASKS``. If the status is ``READY_WITHOUT_BUILDTASKS`` and a required validation needs MAUI build tasks, build ``Microsoft.Maui.BuildTasks.slnf`` once in the candidate before the validation command. If the candidate itself changes build-task sources, rebuild that solution once even when copied tasks exist.
-- Before validation, require ``git -C "$prPlusSandboxRoot" diff --check``. Persist the reviewer-only diff as ``$prPlusArtifactRoot/reviewer.patch`` and the complete candidate diff against the PR base as ``$prPlusArtifactRoot/candidate.patch``.
+- Before validation, require ``git -C "$prPlusSandboxRoot" diff --check "$prPlusCandidateBaseCommit"``. Persist ``git -C "$prPlusSandboxRoot" diff --binary "$prPlusCandidateBaseCommit"`` as ``$prPlusArtifactRoot/reviewer.patch`` and the complete candidate diff against the PR base as ``$prPlusArtifactRoot/candidate.patch``.
 - Write every candidate summary and validation log by its absolute path under ``$prPlusArtifactRoot``. Do not write persistent output using a relative ``CustomAgentLogsTmp`` path while the current directory is the sandbox, because that output will be deleted with the sandbox.
 - Persist only candidate diffs, focused validation logs, and the candidate summary under ``CustomAgentLogsTmp``. The sandbox is temporary and must not be copied into review artifacts.
 
@@ -2645,7 +2676,11 @@ try {
             Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
         & git -C $RepoRoot worktree prune --expire now | Out-Null
-        Write-Host "  🧹 Removed pr-plus-reviewer sandbox: $prPlusSandboxRoot" -ForegroundColor DarkGray
+        if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+            Write-Host "  ⚠️ Could not fully remove pr-plus-reviewer sandbox: $prPlusSandboxRoot" -ForegroundColor Yellow
+        } else {
+            Write-Host "  🧹 Removed pr-plus-reviewer sandbox: $prPlusSandboxRoot" -ForegroundColor DarkGray
+        }
     }
 }
 
