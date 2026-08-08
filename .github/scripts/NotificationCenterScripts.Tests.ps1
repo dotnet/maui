@@ -11,6 +11,7 @@ BeforeAll {
     )
     $helper = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'run-as-console-user.sh'
     $uiTestsPipeline = Join-Path $PSScriptRoot '..' '..' 'eng' 'pipelines' 'common' 'ui-tests-steps.yml'
+    $pesterWorkflow = Join-Path $PSScriptRoot '..' 'workflows' 'powershell-script-tests.yml'
     $shellCommand = Get-Command sh -ErrorAction SilentlyContinue
     $shell = if ($shellCommand) { $shellCommand.Path } else { $null }
 }
@@ -83,6 +84,19 @@ Describe 'Notification Center script safety' {
         $enableBlock = $pipelineContent.Substring($enableStart, $enableEnd - $enableStart)
 
         $enableBlock | Should -Match 'condition:\s+always\(\)'
+    }
+
+    It 'runs the Pester workflow when any coupled trusted asset changes' {
+        $workflowContent = Get-Content -Raw -LiteralPath $pesterWorkflow
+
+        foreach ($path in @(
+            ".github/workflows/**",
+            "eng/scripts/**",
+            "eng/pipelines/common/provision.yml",
+            "eng/pipelines/common/ui-tests-steps.yml"
+        )) {
+            $workflowContent | Should -Match ([regex]::Escape("- '$path'"))
+        }
     }
 
     It 'runs commands directly when the agent already is the console user' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {

@@ -89,4 +89,14 @@ Describe 'Analyze-UITestFailures input cap' {
         ConvertTo-UiFailureSafeMarkdownText $value |
             Should -Be "line 1`n## vso[task.setvariable variable=x]spoof`n## [error]spoof"
     }
+
+    It 'preserves trusted warning prefixes while sanitizing only dynamic text' {
+        $script:AnalyzeText | Should -Match ([regex]::Escape(
+            '$safeException = ConvertTo-UiFailureSafeConsoleText $_.Exception.Message'))
+        $script:AnalyzeText | Should -Match ([regex]::Escape(
+            'Write-Host "##[warning]Copilot UI-failure analysis threw: $safeException"'))
+        $script:AnalyzeText | Should -Match ([regex]::Escape(
+            'Write-Host "##[warning]Copilot produced no UI-failure analysis file (copilotFailed=$copilotFailed)'))
+        $script:AnalyzeText | Should -Not -Match 'ConvertTo-UiFailureSafeConsoleText "##\[warning\]'
+    }
 }

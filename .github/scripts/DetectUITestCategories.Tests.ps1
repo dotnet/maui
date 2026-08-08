@@ -109,12 +109,15 @@ Describe 'Untrusted category console safety' {
         Test-CategoryNameIsWellFormed '' | Should -BeFalse
     }
 
-    It 'sanitizes every console sink that echoes a category name' {
+    It 'sanitizes every console sink that echoes untrusted selection text' {
         foreach ($pattern in @(
             'Tier 3 \(AI reasoning\): \$\(ConvertTo-SafeConsoleCategoryText',
             'Detected categories from PR changes: \$\(ConvertTo-SafeConsoleCategoryText')) {
             $script:detectContent | Should -Match $pattern
         }
         $script:detectContent | Should -Match ([regex]::Escape("AI suggested category '`$safeCategory'"))
+        $script:detectContent | Should -Match ([regex]::Escape('$safePlatform = ConvertTo-SafeConsoleCategoryText $Platform'))
+        $script:detectContent | Should -Match ([regex]::Escape("platform '`$safePlatform'"))
+        $script:detectContent | Should -Not -Match ([regex]::Escape("platform '`$Platform'"))
     }
 }

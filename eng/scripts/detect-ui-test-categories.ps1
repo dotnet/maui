@@ -612,10 +612,11 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 # final decision; if none remain, the existing product-code fallback below emits
 # the bounded Button/Label/Layout smoke set instead of a vacuous green run.
 if (-not [string]::IsNullOrWhiteSpace($Platform)) {
+    $safePlatform = ConvertTo-SafeConsoleCategoryText $Platform
     foreach ($category in @($addedCategories)) {
         if (-not (Test-UITestCategorySupportedOnPlatform -Category $category -Platform $Platform)) {
             $addedCategories.Remove($category) | Out-Null
-            Write-Host "Category '$(ConvertTo-SafeConsoleCategoryText $category)' has no runnable tests on platform '$Platform'; removing it from the Deep UI selection." -ForegroundColor Yellow
+            Write-Host "Category '$(ConvertTo-SafeConsoleCategoryText $category)' has no runnable tests on platform '$safePlatform'; removing it from the Deep UI selection." -ForegroundColor Yellow
         }
     }
 }

@@ -20,8 +20,11 @@ on:
     paths:
       - '.github/scripts/**'
       - '.github/patches/**'
-      - '.github/workflows/powershell-script-tests.yml'
+      - '.github/workflows/**'
+      - 'eng/scripts/**'
       - 'eng/pipelines/ci-copilot.yml'
+      - 'eng/pipelines/common/provision.yml'
+      - 'eng/pipelines/common/ui-tests-steps.yml'
       - 'src/Controls/tests/TestCases.Shared.Tests/UITest.cs'
   workflow_dispatch:
 

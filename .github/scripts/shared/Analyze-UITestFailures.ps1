@@ -181,7 +181,8 @@ try {
     }
     if ($LASTEXITCODE -ne 0) { $copilotFailed = $true }
 } catch {
-    Write-Host "$(ConvertTo-UiFailureSafeConsoleText "##[warning]Copilot UI-failure analysis threw: $_")"
+    $safeException = ConvertTo-UiFailureSafeConsoleText $_.Exception.Message
+    Write-Host "##[warning]Copilot UI-failure analysis threw: $safeException"
     $copilotFailed = $true
 }
 
@@ -195,5 +196,5 @@ if ((Test-Path $OutputFile) -and -not [string]::IsNullOrWhiteSpace((Get-Content 
     exit 0
 }
 
-Write-Host "$(ConvertTo-UiFailureSafeConsoleText "##[warning]Copilot produced no UI-failure analysis file (copilotFailed=$copilotFailed) — the summary will omit the section.")"
+Write-Host "##[warning]Copilot produced no UI-failure analysis file (copilotFailed=$copilotFailed) — the summary will omit the section."
 exit 0
