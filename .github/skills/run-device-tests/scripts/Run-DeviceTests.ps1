@@ -167,6 +167,7 @@ $WindowsDeviceTestPackageIds = @{
 }
 
 $WindowsDeviceNoResultsMarker = "WINDOWS_DEVICE_TEST_NO_RESULTS:"
+$WindowsDeviceTargetTimeoutMarker = "WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:"
 
 function Get-CategoryFiltersFromTestFilter {
     param([string]$Filter)
@@ -771,6 +772,7 @@ function Invoke-WindowsDeviceTestApp {
     if ($timeoutSeconds -le 0) {
         $timeoutSeconds = 3600
     }
+    $classRunTimeoutSeconds = [Math]::Min($timeoutSeconds, 600)
 
     # The app must run from its executable directory, but OutputDirectory is commonly
     # supplied as a repo-relative path. Canonicalize it before passing result paths to
@@ -885,11 +887,36 @@ function Invoke-WindowsDeviceTestApp {
         # Core Windows full run was read at 247s while it was still executing). Wait for the
         # process to EXIT instead, mirroring how eng/devices/windows.cake launches the
         # unpackaged app with a blocking StartProcess and only then checks the result file.
-        if (-not $process.WaitForExit($timeoutSeconds * 1000)) {
+        $processTimeoutSeconds = if ($IncludeClasses) { $classRunTimeoutSeconds } else { $timeoutSeconds }
+        $exitedInTime = $process.WaitForExit($processTimeoutSeconds * 1000)
+        if (-not $exitedInTime -and $process.HasExited) {
+            $exitedInTime = $true
+        }
+        if (-not $exitedInTime) {
             if (-not $process.HasExited) {
                 Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
             }
-            throw "Windows device test app did not exit within ${timeoutSeconds}s while running the full suite."
+            if ($IncludeClasses) {
+                if (Test-Path -LiteralPath $resultFile) {
+                    try {
+                        $completedSummary = Get-DeviceTestResultSummary `
+                            -ResultFiles @($resultFile) `
+                            -IncludeClasses $IncludeClasses `
+                            -IncludeMethods $IncludeMethods `
+                            -RequireClassIsolation
+                        $script:WindowsDeviceTestSummary = $completedSummary
+                        $script:WindowsDeviceTestResultFiles = @($resultFile)
+                        Write-Warning "Windows device test process exceeded ${processTimeoutSeconds}s after writing complete scoped results; using the verified target-test result."
+                        return $(if (($completedSummary.Failed + $completedSummary.Errors) -eq 0) { 0 } else { 1 })
+                    } catch {
+                        $resultEvidenceError = $_.Exception.Message
+                        Write-Warning "Timed-out Windows target process did not leave complete scoped results: $resultEvidenceError"
+                    }
+                }
+                $methodScope = if ($IncludeMethods) { " and method(s) '$IncludeMethods'" } else { "" }
+                throw "$WindowsDeviceTargetTimeoutMarker Windows device test app did not exit within ${processTimeoutSeconds}s while running requested class(es) '$IncludeClasses'$methodScope."
+            }
+            throw "Windows device test app did not exit within ${processTimeoutSeconds}s while running the full suite."
         }
         if (-not (Test-Path $resultFile)) {
             throw "$WindowsDeviceNoResultsMarker Windows device test app exited without creating $resultFile."

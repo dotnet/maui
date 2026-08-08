@@ -19,6 +19,10 @@
 .PARAMETER ChangedFiles
     Explicit list of changed file paths (skips PR/git detection).
 
+.PARAMETER Platform
+    Optional device-test platform used to exclude methods from partial files that do not
+    compile for that target (for example, Android methods from a Windows Gate run).
+
 .OUTPUTS
     Array of hashtables, each with:
     - Type:        UITest | UnitTest | XamlUnitTest | DeviceTest
@@ -51,10 +55,62 @@ param(
     [string]$BaseBranch,
 
     [Parameter(Mandatory = $false)]
-    [string[]]$ChangedFiles
+    [string[]]$ChangedFiles,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Platform
 )
 
 $ErrorActionPreference = "Stop"
+
+function Test-DeviceTestFileAppliesToPlatform {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [string]$TargetPlatform
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TargetPlatform)) {
+        return $true
+    }
+
+    $normalizedPlatform = $TargetPlatform.Trim().ToLowerInvariant()
+    if ($normalizedPlatform -eq 'catalyst') {
+        $normalizedPlatform = 'maccatalyst'
+    } elseif ($normalizedPlatform -in @('win', 'winui')) {
+        $normalizedPlatform = 'windows'
+    }
+
+    $normalizedPath = $Path.Replace('\', '/')
+    $fileName = [System.IO.Path]::GetFileName($normalizedPath)
+
+    if ($fileName -match '(?i)\.android\.cs$') {
+        return $normalizedPlatform -eq 'android'
+    }
+    if ($fileName -match '(?i)\.windows\.cs$') {
+        return $normalizedPlatform -eq 'windows'
+    }
+    if ($fileName -match '(?i)\.ios\.cs$') {
+        return $normalizedPlatform -in @('ios', 'maccatalyst')
+    }
+    if ($fileName -match '(?i)\.maccatalyst\.cs$') {
+        return $normalizedPlatform -eq 'maccatalyst'
+    }
+
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?Android/') {
+        return $normalizedPlatform -eq 'android'
+    }
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?Windows/') {
+        return $normalizedPlatform -eq 'windows'
+    }
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?iOS/') {
+        return $normalizedPlatform -in @('ios', 'maccatalyst')
+    }
+    if ($normalizedPath -match '(?i)/(?:Platforms?/)?MacCatalyst/') {
+        return $normalizedPlatform -eq 'maccatalyst'
+    }
+
+    return $true
+}
 
 # ============================================================
 # Test type classification patterns (ordered by specificity)
@@ -427,6 +483,10 @@ foreach ($key in @($testGroups.Keys)) {
     }
     $effectiveMergeBase = if ($mergeBase) { $mergeBase } else { "HEAD~1" }
     foreach ($file in $group.Files) {
+        if (-not (Test-DeviceTestFileAppliesToPlatform -Path $file -TargetPlatform $Platform)) {
+            continue
+        }
+
         $patch = $null
         if ($PRNumber -and $script:_cachedPRFiles) {
             # Look up patch from cached API response

@@ -4,6 +4,7 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Run-DeviceTests.ps1'
     $script:WindowsDeviceNoResultsMarker = 'WINDOWS_DEVICE_TEST_NO_RESULTS:'
+    $script:WindowsDeviceTargetTimeoutMarker = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:'
 
     $tokens = $null
     $parseErrors = $null
@@ -354,6 +355,81 @@ EOF
             $exitCode | Should -Be 0
             $script:WindowsDeviceTestSummary.Total | Should -Be 1
             $script:WindowsDeviceTestSummary.Passed | Should -Be 1
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'bounds an exact-class run and identifies the requested target in the timeout' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-timeout-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $app = Join-Path $tempRoot 'device-tests.sh'
+            @'
+#!/bin/sh
+exec sleep 30
+'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
+            & chmod +x $app
+
+            $script:WindowsDeviceTestPackageIds = @{
+                Core = 'com.microsoft.maui.core.devicetests'
+            }
+
+            {
+                Invoke-WindowsDeviceTestApp `
+                    -AppPath $app `
+                    -Project 'Core' `
+                    -AppName 'Core.DeviceTests' `
+                    -OutputDirectory (Join-Path $tempRoot 'results') `
+                    -TestFilter 'Category=Window' `
+                    -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' `
+                    -IncludeMethods 'TargetMethod' `
+                    -Timeout '00:00:01'
+            } | Should -Throw -ExpectedMessage '*WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:*within 1s*WindowHandlerTests*TargetMethod*'
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'trusts complete scoped XML when only Windows process teardown times out' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "windows-device-teardown-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $app = Join-Path $tempRoot 'device-tests.sh'
+            @'
+#!/bin/sh
+cat > "$1" <<'EOF'
+<assemblies>
+  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.WindowHandlerTests" method="TargetMethod" name="TargetMethod" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+EOF
+exec sleep 30
+'@ | Set-Content -LiteralPath $app -Encoding utf8 -NoNewline
+            & chmod +x $app
+
+            $script:WindowsDeviceTestPackageIds = @{
+                Core = 'com.microsoft.maui.core.devicetests'
+            }
+
+            $exitCode = Invoke-WindowsDeviceTestApp `
+                -AppPath $app `
+                -Project 'Core' `
+                -AppName 'Core.DeviceTests' `
+                -OutputDirectory (Join-Path $tempRoot 'results') `
+                -TestFilter 'Category=Window' `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.WindowHandlerTests' `
+                -IncludeMethods 'TargetMethod' `
+                -Timeout '00:00:01'
+
+            $exitCode | Should -Be 0
+            $script:WindowsDeviceTestSummary.Passed | Should -Be 1
+            $script:WindowsDeviceTestSummary.Failed | Should -Be 0
         } finally {
             Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
         }

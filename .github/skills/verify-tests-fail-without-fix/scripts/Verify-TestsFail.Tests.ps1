@@ -23,7 +23,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Convert-WindowsBaselineNoResultsToFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Invoke-TestRunWithRetry')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -520,7 +520,7 @@ Describe 'Invoke-TestRun — device diagnostics are retained with Gate logs' {
     It 'retries marked Windows no-result exits and correlates persistent baseline exits with a clean fix run' {
         $content = Get-Content -LiteralPath $scriptPath -Raw
         $content | Should -Match 'Test-IsWindowsDeviceNoResultsError'
-        $content | Should -Match 'WindowsDeviceNoResults\s*=\s*\$true'
+        $content | Should -Match 'WindowsDeviceNoResults\s*=\s*\$isWindowsNoResults'
         $content | Should -Match 'RetriesExhausted\s*=\s*\$true'
         $content | Should -Match 'Convert-WindowsBaselineNoResultsToFailure'
     }
@@ -546,6 +546,94 @@ Describe 'Windows baseline no-result correlation' {
             -TestEntry $entry `
             -Message 'Windows device test category Map did not create results within 3600s.' |
             Should -BeFalse
+    }
+
+    Describe 'Windows scoped target timeout correlation' {
+        It 'recognizes only the trusted exact-target timeout marker' {
+            $entry = @{ Type = 'DeviceTest' }
+            Test-IsWindowsDeviceTargetTimeoutError `
+                -RunPlatform windows `
+                -TestEntry $entry `
+                -Message 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: exact class timed out' |
+                Should -BeTrue
+
+            Test-IsWindowsDeviceTargetTimeoutError `
+                -RunPlatform android `
+                -TestEntry $entry `
+                -Message 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: exact class timed out' |
+                Should -BeFalse
+        }
+
+        It 'converts three repeated with-fix target timeouts to a deterministic failure' {
+            $result = @{
+                Passed = $false
+                EnvError = $true
+                WindowsDeviceTargetTimeout = $true
+                RetriesExhausted = $true
+                AttemptCount = 3
+                WindowsDeviceTargetTimeoutAttemptCount = 3
+                Error = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: exact class timed out'
+                Failed = 0
+                Total = 0
+            }
+
+            Convert-WindowsTargetTimeoutToFailure `
+                -Result $result `
+                -CounterpartResult @{ Passed = $false; BuildError = $true } `
+                -Phase WithFix `
+                -RunPlatform windows `
+                -TestType DeviceTest |
+                Should -BeTrue
+
+            $result.EnvError | Should -BeFalse
+            $result.Passed | Should -BeFalse
+            $result.Failed | Should -Be 1
+            $result.WindowsDeviceTargetTimeoutConfirmed | Should -BeTrue
+        }
+
+        It 'credits repeated baseline target timeouts only after a definitive with-fix result' {
+            $baseline = @{
+                Passed = $false
+                EnvError = $true
+                WindowsDeviceTargetTimeout = $true
+                RetriesExhausted = $true
+                AttemptCount = 3
+                WindowsDeviceTargetTimeoutAttemptCount = 3
+                Error = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: exact class timed out'
+                Failed = 0
+                Total = 0
+            }
+
+            Convert-WindowsTargetTimeoutToFailure `
+                -Result $baseline `
+                -CounterpartResult @{ Passed = $true; EnvError = $false; BuildError = $false; FilterMismatch = $false } `
+                -Phase WithoutFix `
+                -RunPlatform windows `
+                -TestType DeviceTest |
+                Should -BeTrue
+
+            $baseline.EnvError | Should -BeFalse
+            $baseline.Failed | Should -Be 1
+        }
+
+        It 'rejects mixed timeout evidence' {
+            $result = @{
+                Passed = $false
+                EnvError = $true
+                WindowsDeviceTargetTimeout = $true
+                RetriesExhausted = $true
+                AttemptCount = 3
+                WindowsDeviceTargetTimeoutAttemptCount = 2
+            }
+
+            Convert-WindowsTargetTimeoutToFailure `
+                -Result $result `
+                -CounterpartResult @{ Passed = $true } `
+                -Phase WithFix `
+                -RunPlatform windows `
+                -TestType DeviceTest |
+                Should -BeFalse
+        }
     }
 
     It 'credits a persistent baseline app exit only after the scoped with-fix test passes' {
@@ -691,6 +779,33 @@ Describe 'Invoke-TestRunWithRetry — Windows no-result exits' {
         { Invoke-TestRunWithRetry -TestEntry $entry -LogFile (Join-Path $TestDrive 'other.log') -MaxRetries 3 } |
             Should -Throw -ExpectedMessage '*unrelated runner failure*'
         Should -Invoke Invoke-TestRun -Times 1 -Exactly
+    }
+
+    It 'retries a trusted exact-target timeout three times and records durable evidence' {
+        Mock Invoke-TestRun {
+            throw 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT: exact class timed out'
+        }
+
+        $entry = @{
+            Type = 'DeviceTest'
+            Filter = 'Category=Window'
+            ClassFilter = 'Microsoft.Maui.DeviceTests.WindowHandlerTests'
+            Methods = @('TargetMethod')
+            Project = 'Core'
+            ProjectPath = 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj'
+        }
+
+        $result = Invoke-TestRunWithRetry `
+            -TestEntry $entry `
+            -LogFile (Join-Path $TestDrive 'windows-target-timeout.log') `
+            -MaxRetries 3
+
+        $result.EnvError | Should -BeTrue
+        $result.WindowsDeviceTargetTimeout | Should -BeTrue
+        $result.RetriesExhausted | Should -BeTrue
+        $result.AttemptCount | Should -Be 3
+        $result.WindowsDeviceTargetTimeoutAttemptCount | Should -Be 3
+        Should -Invoke Invoke-TestRun -Times 3 -Exactly
     }
 }
 

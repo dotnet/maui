@@ -1802,19 +1802,19 @@ Write-Host "╚═════════════════════�
 $gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
 New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
-# Detect tests in PR
+# Determine platform for gate
+$gatePlatform = if ($Platform) { $Platform } else { "android" }
+Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
+
+# Detect tests in PR using the same platform scope that the Gate will execute.
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
 $testDetectScript = Join-Path $ScriptsDir "shared/Detect-TestsInDiff.ps1"
 if (Test-Path $testDetectScript) {
     $testDetectScript = (Resolve-Path $testDetectScript).Path
-    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber -Platform $gatePlatform 2>&1 | ForEach-Object { Write-Host "    $_" }
 } else {
     Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
 }
-
-# Determine platform for gate
-$gatePlatform = if ($Platform) { $Platform } else { "android" }
-Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
 $verifyScript = [System.IO.Path]::GetFullPath((Join-Path $SkillsDir "verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {

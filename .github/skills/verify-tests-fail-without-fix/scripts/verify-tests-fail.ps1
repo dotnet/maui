@@ -664,6 +664,21 @@ function Test-IsWindowsDeviceNoResultsError {
     )
 }
 
+function Test-IsWindowsDeviceTargetTimeoutError {
+    param(
+        [string]$RunPlatform,
+        [hashtable]$TestEntry,
+        [string]$Message
+    )
+
+    return (
+        $RunPlatform -eq 'windows' -and
+        $TestEntry.Type -eq 'DeviceTest' -and
+        -not [string]::IsNullOrWhiteSpace($Message) -and
+        $Message.StartsWith('WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:', [System.StringComparison]::Ordinal)
+    )
+}
+
 function Convert-WindowsBaselineNoResultsToFailure {
     param(
         [hashtable]$WithoutFixResult,
@@ -695,6 +710,50 @@ function Convert-WindowsBaselineNoResultsToFailure {
     return $true
 }
 
+function Convert-WindowsTargetTimeoutToFailure {
+    param(
+        [hashtable]$Result,
+        [hashtable]$CounterpartResult,
+        [ValidateSet('WithoutFix', 'WithFix')][string]$Phase,
+        [string]$RunPlatform,
+        [string]$TestType
+    )
+
+    if ($RunPlatform -ne 'windows' -or $TestType -ne 'DeviceTest') { return $false }
+    if (-not $Result.EnvError -or -not $Result.WindowsDeviceTargetTimeout) { return $false }
+
+    $attemptCount = [int]$Result.AttemptCount
+    $timeoutAttemptCount = [int]$Result.WindowsDeviceTargetTimeoutAttemptCount
+    if (-not $Result.RetriesExhausted -or $attemptCount -lt 3) { return $false }
+    if ($timeoutAttemptCount -ne $attemptCount) { return $false }
+
+    # A repeated baseline timeout is trustworthy only after the same scoped target produces
+    # a definitive with-fix result on the same agent. A repeated with-fix timeout is itself a
+    # definitive failure: the Gate contract requires the target tests to complete and pass.
+    if ($Phase -eq 'WithoutFix') {
+        if (-not $CounterpartResult -or
+            $CounterpartResult.EnvError -or
+            $CounterpartResult.BuildError -or
+            $CounterpartResult.FilterMismatch) {
+            return $false
+        }
+    }
+
+    $evidence = $Result.Error
+    $Result.EnvError = $false
+    $Result.Passed = $false
+    $Result.PassCount = 0
+    $Result.FailCount = 1
+    $Result.Failed = 1
+    $Result.Total = 1
+    $Result.Skipped = 0
+    $Result.Error = $null
+    $Result.WindowsDeviceTargetTimeoutConfirmed = $true
+    $Result.FailureReason = "Windows scoped target timed out in all $attemptCount attempts during the $Phase phase."
+    $Result.FailureMessage = $evidence
+    return $true
+}
+
 function Invoke-TestRunWithRetry {
     param(
         [hashtable]$TestEntry,
@@ -703,6 +762,7 @@ function Invoke-TestRunWithRetry {
     )
 
     $windowsDeviceNoResultAttemptCount = 0
+    $windowsDeviceTargetTimeoutAttemptCount = 0
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         $logFileAttempt = if ($attempt -gt 1) { "$LogFile.attempt$attempt" } else { $LogFile }
 
@@ -730,17 +790,32 @@ function Invoke-TestRunWithRetry {
             $result = Get-TestResultFromOutput -LogFile $testOutputLog -TestFilter $TestEntry.Filter
         } catch {
             $message = $_.Exception.Message
-            if (-not (Test-IsWindowsDeviceNoResultsError -RunPlatform $Platform -TestEntry $TestEntry -Message $message)) {
+            $isWindowsNoResults = Test-IsWindowsDeviceNoResultsError `
+                -RunPlatform $Platform `
+                -TestEntry $TestEntry `
+                -Message $message
+            $isWindowsTargetTimeout = Test-IsWindowsDeviceTargetTimeoutError `
+                -RunPlatform $Platform `
+                -TestEntry $TestEntry `
+                -Message $message
+
+            if (-not $isWindowsNoResults -and -not $isWindowsTargetTimeout) {
                 throw
             }
 
-            $windowsDeviceNoResultAttemptCount++
+            if ($isWindowsNoResults) {
+                $windowsDeviceNoResultAttemptCount++
+            }
+            if ($isWindowsTargetTimeout) {
+                $windowsDeviceTargetTimeoutAttemptCount++
+            }
             $message |
                 Add-Content -LiteralPath $logFileAttempt -Encoding UTF8
             $result = @{
                 Passed = $false
                 EnvError = $true
-                WindowsDeviceNoResults = $true
+                WindowsDeviceNoResults = $isWindowsNoResults
+                WindowsDeviceTargetTimeout = $isWindowsTargetTimeout
                 Error = $message
                 FailCount = 0
                 Failed = 0
@@ -791,6 +866,7 @@ function Invoke-TestRunWithRetry {
             $result.AttemptCount = $attempt
             $result.RetriesExhausted = $true
             $result.WindowsDeviceNoResultAttemptCount = $windowsDeviceNoResultAttemptCount
+            $result.WindowsDeviceTargetTimeoutAttemptCount = $windowsDeviceTargetTimeoutAttemptCount
             Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
             return $result
         }
@@ -1440,6 +1516,10 @@ function Get-AutoDetectedTests {
     # Fall back to PR number if no changed files from git diff
     if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber) {
         $params.PRNumber = $PRNumber
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($Platform)) {
+        $params.Platform = $Platform
     }
 
     $results = & $DetectTestsScript @params 6>$null
@@ -3260,6 +3340,56 @@ foreach ($t in $AllDetectedTests) {
         Write-Host "  ✅ $($t.TestName): baseline app exit reproduced in all $($wo.AttemptCount) attempts and the scoped with-fix run passed — crediting FAIL → PASS" -ForegroundColor Green
         Write-Log "  [$($t.Type)] $($t.TestName): persistent Windows baseline app exit → with-fix PASS; credited as a verified repro"
     }
+}
+
+# Exact Windows class runs have a shorter bounded timeout than broad suites. A single timeout
+# remains environmental, but the retry layer gives us three separate attempts. Convert only
+# all-timeout evidence: with-fix timeouts are a deterministic failure to satisfy the Gate
+# contract; baseline timeouts become the expected repro after the same target produces any
+# definitive with-fix result.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+
+    if (Convert-WindowsTargetTimeoutToFailure `
+            -Result $w `
+            -CounterpartResult $wo `
+            -Phase WithFix `
+            -RunPlatform $Platform `
+            -TestType $t.Type) {
+        Write-Host "  ❌ $($t.TestName): scoped with-fix run timed out in all $($w.AttemptCount) attempts — treating as a deterministic target failure" -ForegroundColor Red
+        Write-Log "  [$($t.Type)] $($t.TestName): repeated Windows with-fix target timeout → definitive failure"
+    }
+
+    if (Convert-WindowsTargetTimeoutToFailure `
+            -Result $wo `
+            -CounterpartResult $w `
+            -Phase WithoutFix `
+            -RunPlatform $Platform `
+            -TestType $t.Type) {
+        Write-Host "  ✅ $($t.TestName): baseline target timed out in all $($wo.AttemptCount) attempts and the scoped with-fix run was definitive — crediting the baseline failure" -ForegroundColor Green
+        Write-Log "  [$($t.Type)] $($t.TestName): repeated Windows baseline target timeout → verified failure repro"
+    }
+}
+
+# Refresh the aggregate objects after trusted Windows evidence conversion mutates the
+# per-test results. These aggregates feed the persisted Markdown report.
+$withoutFixResult = @{
+    Passed = ($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
+    FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
+    Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
+    Skipped = ($withoutFixResults | Measure-Object -Property Skipped -Sum).Sum
+    Total = ($withoutFixResults | Measure-Object -Property Total -Sum).Sum
+}
+$withFixResult = @{
+    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
+    FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
+    Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
+    Skipped = ($withFixResults | Measure-Object -Property Skipped -Sum).Sum
+    Total = ($withFixResults | Measure-Object -Property Total -Sum).Sum
 }
 
 # Step 5: Evaluate results
