@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,13 +16,15 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
-		readonly ISecureStorageImplementation _secureStorage;
+		ISecureStorageImplementation _secureStorage = null!;
 
-		public SecureStorageImplementation()
+		partial void InitializePlatform()
 		{
 			_secureStorage = AppInfoUtils.IsPackagedApp
-				? new PackagedSecureStorageImplementation()
-				: new UnpackagedSecureStorageImplementation();
+				? new PackagedSecureStorageImplementation(Alias)
+				: new UnpackagedSecureStorageImplementation(
+					UnpackagedAppDataDirectory ?? FileSystem.AppDataDirectory,
+					NamespaceUnpackagedStorageByAlias ? Alias : null);
 		}
 
 		async Task<string> PlatformGetAsync(string key)
@@ -40,6 +43,7 @@ namespace Microsoft.Maui.Storage
 
 		async Task PlatformSetAsync(string key, string data)
 		{
+			var writePath = _secureStorage.CaptureWritePath();
 			var bytes = Encoding.UTF8.GetBytes(data);
 
 			// LOCAL=user and LOCAL=machine do not require enterprise auth capability
@@ -49,7 +53,7 @@ namespace Microsoft.Maui.Storage
 
 			var encBytes = buffer.ToArray();
 
-			await _secureStorage.SetAsync(key, encBytes);
+			await _secureStorage.SetAsync(key, encBytes, writePath);
 		}
 
 		bool PlatformRemove(string key) =>
@@ -61,9 +65,15 @@ namespace Microsoft.Maui.Storage
 
 	interface ISecureStorageImplementation
 	{
+		// Returns the file path a write should target, or null for packaged apps, which persist via
+		// ApplicationData settings and have no path. Callers must treat the result as optional: the
+		// packaged SetAsync ignores writePath, while the unpackaged implementation always returns a
+		// non-null path and rejects a null one.
+		string CaptureWritePath();
+
 		Task<byte[]> GetAsync(string key);
 
-		Task SetAsync(string key, byte[] value);
+		Task SetAsync(string key, byte[] value, string writePath);
 
 		bool Remove(string key);
 
@@ -72,29 +82,39 @@ namespace Microsoft.Maui.Storage
 
 	class PackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
+		readonly string _alias;
+
+		public PackagedSecureStorageImplementation(string alias)
+		{
+			_alias = alias;
+		}
+
+		// Packaged apps persist via ApplicationData settings, so there is no file path to capture.
+		public string CaptureWritePath() => null;
+
 		public Task<byte[]> GetAsync(string key)
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			var encBytes = settings.Values[key] as byte[];
 			return Task.FromResult(encBytes);
 		}
 
-		public Task SetAsync(string key, byte[] data)
+		public Task SetAsync(string key, byte[] data, string writePath)
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			settings.Values[key] = data;
 			return Task.CompletedTask;
 		}
 
 		public bool Remove(string key)
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			return settings.Values.Remove(key);
 		}
 
 		public void RemoveAll()
 		{
-			var settings = GetSettings(SecureStorageImplementation.Alias);
+			var settings = GetSettings(_alias);
 			settings.Values.Clear();
 		}
 
@@ -109,75 +129,173 @@ namespace Microsoft.Maui.Storage
 
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
-		static readonly string AppSecureStoragePath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
-
-		readonly SecureStorageDictionary _secureStorage = new();
+		static readonly object Sync = new();
+		static SecureStorageDictionary _secureStorage;
+		static string _secureStoragePath;
+		readonly string _path;
+		readonly string _legacyPath;
 
 		public UnpackagedSecureStorageImplementation()
+			: this(FileSystem.AppDataDirectory, alias: null)
 		{
-			Load();
 		}
 
-		void Load()
+		internal UnpackagedSecureStorageImplementation(
+			string appDataDirectory,
+			string alias = null)
 		{
-			if (!File.Exists(AppSecureStoragePath))
-				return;
+			if (appDataDirectory is null)
+				throw new ArgumentNullException(nameof(appDataDirectory));
+
+			var settingsDirectory = Path.Combine(appDataDirectory, "..", "Settings");
+			_legacyPath = Path.Combine(settingsDirectory, "securestorage.dat");
+			_path = alias is null
+				? _legacyPath
+				: Path.Combine(settingsDirectory, GetAliasPathSegment(alias), "securestorage.dat");
+		}
+
+		public string CaptureWritePath() => _path;
+
+		static string GetAliasPathSegment(string alias) =>
+			Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(alias)));
+
+		// Caller must hold Sync. A failed Load leaves the fields unchanged so a later call can retry.
+		SecureStorageDictionary GetSecureStorage(out string path)
+		{
+			path = _path;
+			return GetSecureStorage(
+				path,
+				string.Equals(path, _legacyPath, StringComparison.OrdinalIgnoreCase)
+					? null
+					: _legacyPath);
+		}
+
+		// Caller must hold Sync. Unpackaged FileSystem paths already include publisher/package
+		// identity, so the captured path is also the storage namespace for this operation.
+		static SecureStorageDictionary GetSecureStorage(
+			string path,
+			string fallbackPath = null)
+		{
+			if (_secureStorage is null ||
+				!string.Equals(_secureStoragePath, path, StringComparison.OrdinalIgnoreCase))
+			{
+				var pathExists = File.Exists(path);
+				var migrateFallback =
+					!pathExists &&
+					fallbackPath is not null &&
+					File.Exists(fallbackPath);
+				// Copy legacy shared data forward on first alias-scoped access. Keep the legacy
+				// file intact so unbridged/default callers preserve their historical store.
+				var secureStorage = Load(migrateFallback ? fallbackPath : path);
+				if (migrateFallback)
+					Save(path, secureStorage);
+
+				_secureStorage = secureStorage;
+				_secureStoragePath = path;
+			}
+
+			return _secureStorage;
+		}
+
+		static SecureStorageDictionary Load(string path)
+		{
+			var secureStorage = new SecureStorageDictionary();
+			if (!File.Exists(path))
+				return secureStorage;
 
 			try
 			{
-				using var stream = File.OpenRead(AppSecureStoragePath);
+				using var stream = File.OpenRead(path);
 
 				SecureStorageDictionary readPreferences = JsonSerializer.Deserialize(stream, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 
 				if (readPreferences != null)
 				{
-					_secureStorage.Clear();
 					foreach (var pair in readPreferences)
-						_secureStorage.TryAdd(pair.Key, pair.Value);
+						secureStorage.TryAdd(pair.Key, pair.Value);
 				}
 			}
 			catch (JsonException)
 			{
 				// if deserialization fails proceed with empty settings
 			}
+
+			return secureStorage;
 		}
 
-		void Save()
+		static void Save(string path, SecureStorageDictionary secureStorage)
 		{
-			var dir = Path.GetDirectoryName(AppSecureStoragePath);
+			var dir = Path.GetDirectoryName(path);
 			Directory.CreateDirectory(dir);
 
-			using var stream = File.Create(AppSecureStoragePath);
-			JsonSerializer.Serialize(stream, _secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+			var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+			try
+			{
+				using (var stream = File.Create(temporaryPath))
+					JsonSerializer.Serialize(stream, secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+
+				File.Move(temporaryPath, path, overwrite: true);
+			}
+			finally
+			{
+				if (File.Exists(temporaryPath))
+					File.Delete(temporaryPath);
+			}
 		}
 
 		public Task<byte[]> GetAsync(string key)
 		{
-			_secureStorage.TryGetValue(key, out var value);
-			return Task.FromResult(value);
+			lock (Sync)
+			{
+				var secureStorage = GetSecureStorage(out _);
+				secureStorage.TryGetValue(key, out var value);
+				return Task.FromResult(value);
+			}
 		}
 
-		public Task SetAsync(string key, byte[] value)
+		public Task SetAsync(string key, byte[] value) =>
+			SetAsync(key, value, CaptureWritePath());
+
+		public Task SetAsync(string key, byte[] value, string writePath)
 		{
-			if (value is null)
-				_secureStorage.TryRemove(key, out _);
-			else
-				_secureStorage[key] = value;
-			Save();
-			return Task.CompletedTask;
+			if (writePath is null)
+				throw new ArgumentNullException(nameof(writePath));
+
+			lock (Sync)
+			{
+				var secureStorage = GetSecureStorage(
+					writePath,
+					string.Equals(writePath, _path, StringComparison.OrdinalIgnoreCase)
+						? _legacyPath
+						: null);
+				if (value is null)
+					secureStorage.TryRemove(key, out _);
+				else
+					secureStorage[key] = value;
+				Save(writePath, secureStorage);
+				return Task.CompletedTask;
+			}
 		}
 
 		public bool Remove(string key)
 		{
-			var result = _secureStorage.TryRemove(key, out _);
-			Save();
-			return result;
+			lock (Sync)
+			{
+				var secureStorage = GetSecureStorage(out var path);
+				var result = secureStorage.TryRemove(key, out _);
+				Save(path, secureStorage);
+				return result;
+			}
 		}
 
 		public void RemoveAll()
 		{
-			_secureStorage.Clear();
-			Save();
+			lock (Sync)
+			{
+				var secureStorage = GetSecureStorage(out var path);
+				secureStorage.Clear();
+				Save(path, secureStorage);
+			}
 		}
 	}
 }
