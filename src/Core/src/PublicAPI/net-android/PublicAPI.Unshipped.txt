@@ -354,6 +354,9 @@ override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageStarted(Android.W
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
 override Microsoft.Maui.Platform.MauiWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextAlignment(this Microsoft.Maui.Platform.MauiTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void

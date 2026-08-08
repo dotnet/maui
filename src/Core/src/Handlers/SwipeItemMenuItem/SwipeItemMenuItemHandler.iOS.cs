@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, UIButton>
 	{
 		readonly SwipeItemButtonProxy _proxy = new();
+		UIColor? _defaultTitleColor;
 
 		protected override UIButton CreatePlatformElement()
 		{
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
+			_defaultTitleColor = platformView.CurrentTitleColor;
 			base.ConnectHandler(platformView);
 
 			if (platformView is SwipeItemButton swipeItemButton)
@@ -51,14 +53,18 @@ namespace Microsoft.Maui.Handlers
 
 			if (platformView is SwipeItemButton swipeItemButton)
 				_proxy.Disconnect(swipeItemButton);
+
+			_defaultTitleColor = null;
 		}
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var color = view.GetTextColor();
+			var color = view.GetTextColor()?.ToPlatform();
+			if (color is null && handler is SwipeItemMenuItemHandler platformHandler)
+				color = platformHandler._defaultTitleColor;
 
-			if (color != null)
-				handler.PlatformView.SetTitleColor(color.ToPlatform(), UIControlState.Normal);
+			handler.PlatformView.SetTitleColor(color, UIControlState.Normal);
+			UpdateTextColorIconDependency(handler, view);
 		}
 
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)
@@ -82,6 +88,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.UpdateBackground(view.Background);
+			UpdateBackgroundColorDependencies(handler);
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -93,6 +100,25 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateVisibility(view.Visibility);
 
 			swipeView?.UpdateIsVisibleSwipeItem(view);
+		}
+
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			if (handler.PlatformView is not UIButton button ||
+				handler.SourceLoader is not ImageSourcePartLoader loader)
+			{
+				return;
+			}
+
+			var current = button.ImageForState(UIControlState.Normal);
+			if (current is null)
+				return;
+
+			loader.Setter.SetImageSource(current);
+			handled = true;
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter
@@ -119,31 +145,16 @@ namespace Microsoft.Maui.Handlers
 
 					try
 					{
-						// Font glyphs are single-color vectors so template rendering + tint makes sense.
-						// Regular raster images should use AlwaysOriginal to preserve their own colors.
-						var fontImageSource = item.Source as IFontImageSource;
-						var renderingMode = fontImageSource is not null ? UIImageRenderingMode.AlwaysTemplate : UIImageRenderingMode.AlwaysOriginal;
-						button.SetImage(resizedImage.ImageWithRenderingMode(renderingMode), UIControlState.Normal);
+						// A tinted icon has to be rendered as a template so the tint actually takes effect.
+						// Without a tint the image keeps its own colors via AlwaysOriginal.
+						var tintColor = item.GetIconTintColor();
+						var renderingMode =
+							item.Source is IFontImageSource || tintColor is not null
+								? UIImageRenderingMode.AlwaysTemplate
+								: UIImageRenderingMode.AlwaysOriginal;
 
-						if (fontImageSource is not null)
-						{
-							if (fontImageSource.Color is not null)
-							{
-								button.TintColor = fontImageSource.Color.ToPlatform();
-							}
-							else
-							{
-								var tintColor = item.GetTextColor();
-								if (tintColor is not null)
-								{
-									button.TintColor = tintColor.ToPlatform();
-								}
-							}
-						}
-						else
-						{
-							button.TintColor = null;
-						}
+						button.SetImage(resizedImage.ImageWithRenderingMode(renderingMode), UIControlState.Normal);
+						button.TintColor = tintColor?.ToPlatform();
 					}
 					catch (Exception)
 					{
@@ -158,7 +169,9 @@ namespace Microsoft.Maui.Handlers
 				var sourceSize = sourceImage.Size;
 				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
-				if (maxResizeFactor > 1)
+				// Color-only updates feed the already-sized native image back through this setter.
+				// Keep an image that exactly fits the bounds instead of redrawing it.
+				if (maxResizeFactor >= 1)
 				{
 					return sourceImage;
 				}

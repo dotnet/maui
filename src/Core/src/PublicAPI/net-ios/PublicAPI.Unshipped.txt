@@ -41,6 +41,9 @@ static Microsoft.Maui.Handlers.EntryHandler.MapBackground(Microsoft.Maui.Handler
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapBackground(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 static Microsoft.Maui.Handlers.WindowHandler.MapStatusBarTheme(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
 Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void

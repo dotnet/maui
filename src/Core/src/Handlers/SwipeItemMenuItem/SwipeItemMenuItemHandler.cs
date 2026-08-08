@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(ITextStyle.CharacterSpacing)] = MapCharacterSpacing,
 				[nameof(ITextStyle.Font)] = MapFont,
 				[nameof(IMenuElement.Source)] = MapSource,
+				[nameof(ISwipeItemMenuItemIconColor.IconColor)] = MapIconColor,
 			};
 
 		public static CommandMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> CommandMapper =
@@ -58,8 +59,56 @@ namespace Microsoft.Maui.Handlers
 		public virtual ImageSourcePartLoader SourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(new SwipeItemMenuItemImageSourcePartSetter(this));
 
-		public static void MapSource(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image) =>
+		public static void MapSource(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
+		{
 			MapSourceAsync(handler, image).FireAndForget(handler);
+		}
+
+		public static void MapIconColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		{
+			if (handler.IsMappingProperties())
+				return;
+
+			UpdateIconColor(handler, view);
+		}
+
+		internal static void UpdateBackgroundColorDependencies(ISwipeItemMenuItemHandler handler)
+		{
+			if (handler.IsMappingProperties())
+				return;
+
+			handler.UpdateValue(nameof(ITextStyle.TextColor));
+		}
+
+		internal static void UpdateTextColorIconDependency(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view)
+		{
+			if (!handler.IsMappingProperties() &&
+				view is not ISwipeItemMenuItemIconColor { IconColor: not null } &&
+				view.Source is IFontImageSource { Color: null })
+			{
+				UpdateIconColor(handler, view);
+			}
+		}
+
+		static void UpdateIconColor(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view)
+		{
+			bool handled = false;
+			UpdateIconColorPlatform(handler, view, ref handled);
+
+			// Platforms that cannot safely reapply the attached native image must reload the
+			// source so the platform image type or rendered font color can be recomputed.
+			if (!handled)
+				handler.UpdateValue(nameof(IMenuElement.Source));
+		}
+
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled);
 
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{
@@ -80,5 +129,6 @@ namespace Microsoft.Maui.Handlers
 			{
 			}
 		}
+
 	}
 }
