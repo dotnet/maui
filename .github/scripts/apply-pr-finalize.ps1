@@ -229,12 +229,14 @@ function Get-FinalizeRecommendation {
     $normalized = $Content -replace "`r`n", "`n"
 
     # Each recommendation is a "**Recommended <field>**" label followed by a fenced block.
-    # Fence length varies (the Phase 4 prompt nests fences), so match 3+ backticks and
-    # require the closing fence to be at least as long as the opening one.
-    $pattern = '(?im)^\s*\*\*Recommended\s+{0}\*\*\s*\n+(?<fence>`{{3,}})[^\n]*\n(?<value>.*?)\n?\k<fence>\s*(?:\n|$)'
+    # The description can itself contain same-length fenced examples. Its outer closing
+    # fence must therefore be the final non-whitespace content, rather than the first fence
+    # matching the opening length.
+    $titlePattern = '(?im)^\s*\*\*Recommended\s+title\*\*\s*\n+(?<fence>`{3,})[^\n]*\n(?<value>.*?)\n\k<fence>[ \t]*(?:\n|$)'
+    $bodyPattern = '(?im)^\s*\*\*Recommended\s+description\*\*\s*\n+(?<fence>`{3,})[^\n]*\n(?<value>.*?)\n\k<fence>[ \t]*(?:\n[ \t]*)*\z'
 
-    $titleMatch = [regex]::Match($normalized, ($pattern -f 'title'), [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    $bodyMatch = [regex]::Match($normalized, ($pattern -f 'description'), [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    $titleMatch = [regex]::Match($normalized, $titlePattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    $bodyMatch = [regex]::Match($normalized, $bodyPattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
 
     if (-not $titleMatch.Success -or -not $bodyMatch.Success) { return $null }
 

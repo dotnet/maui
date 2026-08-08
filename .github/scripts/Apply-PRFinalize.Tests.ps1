@@ -186,6 +186,34 @@ var x = 1;
         $result | Should -Not -BeNullOrEmpty
         $result.Body | Should -Match 'var x = 1;'
     }
+
+    It 'does not truncate at a same-length fenced example inside the description' {
+        $nested = @'
+**Recommended title**
+```text
+[Android] FlyoutPage: Fix teardown
+```
+
+**Recommended description**
+```text
+### What this fixes
+
+The process crashed with:
+
+```
+java.lang.IllegalArgumentException: No view found for id
+```
+
+### Validation
+
+- FlyoutPage: 15/15 pass.
+```
+'@
+        $result = Get-FinalizeRecommendation -Content $nested
+        $result | Should -Not -BeNullOrEmpty
+        $result.Body | Should -Match 'java\.lang\.IllegalArgumentException'
+        $result.Body | Should -Match 'FlyoutPage: 15/15 pass\.'
+    }
 }
 
 Describe 'Merge-PreservedTitlePrefix' {
