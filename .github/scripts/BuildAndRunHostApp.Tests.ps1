@@ -138,3 +138,146 @@ Describe 'MacCatalyst Retina screenshot cropping' {
         }
     }
 }
+
+Describe 'Android retry TRX merging' {
+        BeforeAll {
+            $script:BuildAndRunHostAppPath = Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1'
+            $script:BuildAndRunHostAppContent = Get-Content -Raw -LiteralPath $script:BuildAndRunHostAppPath
+
+            $tokens = $null
+            $parseErrors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+                $script:BuildAndRunHostAppContent,
+                [ref]$tokens,
+                [ref]$parseErrors)
+            if ($parseErrors.Count -gt 0) {
+                throw "Could not parse BuildAndRunHostApp.ps1: $($parseErrors[0].Message)"
+            }
+
+            $functionAst = $ast.Find(
+                {
+                    param($node)
+                    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                        $node.Name -eq 'Merge-RetryTrxResults'
+                },
+                $true)
+            if (-not $functionAst) {
+                throw "Merge-RetryTrxResults was not found."
+            }
+            Invoke-Expression $functionAst.Extent.Text
+        }
+
+        BeforeEach {
+            $script:RetryFixtureDir = Join-Path ([IO.Path]::GetTempPath()) "retry-trx-$(New-Guid)"
+            New-Item -ItemType Directory -Path $script:RetryFixtureDir -Force | Out-Null
+            $script:OriginalTrxPath = Join-Path $script:RetryFixtureDir 'original.trx'
+            $script:RetryTrxPath = Join-Path $script:RetryFixtureDir 'retry.trx'
+        }
+
+        AfterEach {
+            Remove-Item -LiteralPath $script:RetryFixtureDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+
+        It 'writes a coherent completed TRX when all original failures pass on retry' {
+            @'
+    <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+      <Results>
+        <UnitTestResult testName="Case(a)" outcome="Failed" />
+        <UnitTestResult testName="Case(b)" outcome="Passed" />
+      </Results>
+      <ResultSummary outcome="Failed">
+        <Counters total="2" executed="2" passed="1" failed="1" notExecuted="0" inconclusive="0" />
+        <Output>Test Run Failed.</Output>
+      </ResultSummary>
+    </TestRun>
+'@ | Set-Content -LiteralPath $script:OriginalTrxPath -Encoding UTF8
+
+            @'
+    <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+      <Results>
+        <UnitTestResult testName="Case(a)" outcome="Passed" />
+        <UnitTestResult testName="Case(b)" outcome="Failed" />
+      </Results>
+      <ResultSummary outcome="Failed">
+        <Counters total="2" executed="2" passed="1" failed="1" />
+      </ResultSummary>
+    </TestRun>
+'@ | Set-Content -LiteralPath $script:RetryTrxPath -Encoding UTF8
+
+            $merged = Merge-RetryTrxResults `
+                -OriginalTrxPath $script:OriginalTrxPath `
+                -RetryTrxPath $script:RetryTrxPath `
+                -FailedNames @('Case(a)')
+
+            $merged.Total | Should -Be 2
+            $merged.Passed | Should -Be 2
+            $merged.Failed | Should -Be 0
+            $merged.Replaced | Should -Be 1
+            $merged.Outcome | Should -Be 'Completed'
+
+            [xml]$xml = Get-Content -Raw -LiteralPath $script:OriginalTrxPath
+            $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+            $ns.AddNamespace('t', 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010')
+            $summary = $xml.SelectSingleNode('//t:ResultSummary', $ns)
+            $summary.outcome | Should -Be 'Completed'
+            $summary.Counters.total | Should -Be '2'
+            $summary.Counters.passed | Should -Be '2'
+            $summary.Counters.failed | Should -Be '0'
+            $summaryOutput = $summary.SelectSingleNode('t:Output', $ns).InnerText
+            $summaryOutput | Should -Match 'Final merged result: Completed'
+            $summaryOutput | Should -Not -Match 'Test Run Failed'
+
+            $results = @($xml.SelectNodes('//t:UnitTestResult', $ns))
+            ($results | Where-Object testName -eq 'Case(a)').outcome | Should -Be 'Passed'
+            ($results | Where-Object testName -eq 'Case(b)').outcome | Should -Be 'Passed'
+        }
+
+        It 'keeps the merged TRX failed when an original failure is absent from the retry' {
+            @'
+    <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+      <Results>
+        <UnitTestResult testName="Retried" outcome="Failed" />
+        <UnitTestResult testName="NotRetried" outcome="Failed" />
+      </Results>
+      <ResultSummary outcome="Failed">
+        <Counters total="2" executed="2" passed="0" failed="2" />
+      </ResultSummary>
+    </TestRun>
+'@ | Set-Content -LiteralPath $script:OriginalTrxPath -Encoding UTF8
+
+            @'
+    <TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+      <Results>
+        <UnitTestResult testName="Retried" outcome="Passed" />
+      </Results>
+      <ResultSummary outcome="Completed">
+        <Counters total="1" executed="1" passed="1" failed="0" />
+      </ResultSummary>
+    </TestRun>
+'@ | Set-Content -LiteralPath $script:RetryTrxPath -Encoding UTF8
+
+            $merged = Merge-RetryTrxResults `
+                -OriginalTrxPath $script:OriginalTrxPath `
+                -RetryTrxPath $script:RetryTrxPath `
+                -FailedNames @('Retried', 'NotRetried')
+
+            $merged.Passed | Should -Be 1
+            $merged.Failed | Should -Be 1
+            $merged.Replaced | Should -Be 1
+            $merged.Outcome | Should -Be 'Failed'
+
+            [xml]$xml = Get-Content -Raw -LiteralPath $script:OriginalTrxPath
+            $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+            $ns.AddNamespace('t', 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010')
+            $summary = $xml.SelectSingleNode('//t:ResultSummary', $ns)
+            $summary.outcome | Should -Be 'Failed'
+            $summary.Counters.failed | Should -Be '1'
+            $summary.SelectSingleNode('t:Output', $ns).InnerText | Should -Match 'Final merged result: Failed'
+        }
+
+        It 'does not replace a failed full TRX with a retry-only TRX' {
+            $script:BuildAndRunHostAppContent | Should -Not -Match ([regex]::Escape('Copy-Item $retryTrxPath $trxFilePath'))
+            $script:BuildAndRunHostAppContent | Should -Match 'preserving the original failing result'
+            $script:BuildAndRunHostAppContent | Should -Match ([regex]::Escape('if ($merged.Failed -eq 0)'))
+        }
+}
