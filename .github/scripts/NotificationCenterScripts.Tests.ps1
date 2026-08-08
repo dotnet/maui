@@ -10,6 +10,7 @@ BeforeAll {
         Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'dismiss-apple-account-dialog.sh'
     )
     $helper = Join-Path $PSScriptRoot '..' '..' 'eng' 'scripts' 'run-as-console-user.sh'
+    $uiTestsPipeline = Join-Path $PSScriptRoot '..' '..' 'eng' 'pipelines' 'common' 'ui-tests-steps.yml'
     $shellCommand = Get-Command sh -ErrorAction SilentlyContinue
     $shell = if ($shellCommand) { $shellCommand.Path } else { $null }
 }
@@ -47,13 +48,24 @@ Describe 'Notification Center script safety' {
         $disableContent | Should -Match '\$processCheckStatus" -le 1'
         $disableContent | Should -Not -Match 'pgrep .*2>/dev/null \|\| true'
         $disableContent | Should -Match 'kill "\$pid"'
+        $disableContent | Should -Match 'kill -CONT "\$pid"'
+        $disableContent | Should -Match 'kill -STOP "\$pid"'
+        $disableContent | Should -Match '/bin/ps -o state= -p "\$pid"'
+        $disableContent | Should -Match '\[ "\$runningPids" = "\$verifiedPids" \]'
+        $disableContent | Should -Match '(?s)\[ -z "\$runningPids" \].*launchctl print-disabled' -Because 'a process that exits before suspension must be re-verified through launchd'
         $disableContent | Should -Match '\$NF == "disabled"'
         $disableContent | Should -Match 'Notification Center disabled.*\(verified\)'
+        $disableContent | Should -Match 'Notification Center suspended.*verified SIP fallback'
         $disableContent | Should -Not -Match 'run_as_console_user.*launchctl unload'
+        $disableContent.IndexOf('kill -CONT "$pid"') | Should -BeLessThan $disableContent.IndexOf('launchctl disable "$serviceTarget"')
 
         $enableContent | Should -Match 'PlistBuddy.*Print :Label'
+        $enableContent | Should -Match 'PlistBuddy.*Print :Program'
         $enableContent | Should -Match '\[ ! -r "\$servicePlist" \]'
         $enableContent | Should -Match '\$serviceLabelStatus" -ne 0'
+        $enableContent | Should -Match '\$serviceProgramStatus" -ne 0'
+        $enableContent | Should -Match 'kill -CONT "\$pid"'
+        $enableContent | Should -Match '/bin/ps -o state= -p "\$1"'
         $enableContent | Should -Match 'launchctl enable "\$serviceTarget"'
         $enableContent | Should -Match 'launchctl bootstrap "\$serviceDomain" "\$servicePlist"'
         $enableContent | Should -Match 'launchctl print-disabled "\$serviceDomain"'
@@ -61,6 +73,16 @@ Describe 'Notification Center script safety' {
         $enableContent | Should -Match '\$NF == "disabled"'
         $enableContent | Should -Match 'Notification Center enabled.*\(verified\)'
         $enableContent | Should -Not -Match 'run_as_console_user.*launchctl load'
+        $enableContent.IndexOf('kill -CONT "$pid"') | Should -BeLessThan $enableContent.IndexOf('launchctl enable "$serviceTarget"')
+    }
+
+    It 'always restores Notification Center after shared Catalyst UI tests' {
+        $pipelineContent = Get-Content -Raw -LiteralPath $uiTestsPipeline
+        $enableStart = $pipelineContent.LastIndexOf("- bash:", $pipelineContent.IndexOf("displayName: 'Enable Notification Center'"))
+        $enableEnd = $pipelineContent.IndexOf("timeoutInMinutes:", $enableStart)
+        $enableBlock = $pipelineContent.Substring($enableStart, $enableEnd - $enableStart)
+
+        $enableBlock | Should -Match 'condition:\s+always\(\)'
     }
 
     It 'runs commands directly when the agent already is the console user' -Skip:(-not (Get-Command sh -ErrorAction SilentlyContinue)) {
