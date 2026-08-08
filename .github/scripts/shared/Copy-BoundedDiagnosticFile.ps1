@@ -89,3 +89,205 @@ function Copy-BoundedDiagnosticFile {
         Truncated   = $true
     }
 }
+
+function Copy-BoundedDiagnosticFileSet {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [System.IO.FileInfo[]]$Files,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(256, [long]::MaxValue)]
+        [long]$MaxTotalBytes = 96MB,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(256, [long]::MaxValue)]
+        [long]$MaxTextFileBytes = 16MB,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(256, [long]::MaxValue)]
+        [long]$MaxBinaryFileBytes = 16MB,
+
+        [Parameter(Mandatory = $false)]
+        [string[]]$TextFileNames = @('appium.log', 'android-device.log', 'test-output.log')
+    )
+
+    New-Item -ItemType Directory -Path $DestinationDirectory -Force | Out-Null
+    $destinationRoot = [System.IO.Path]::GetFullPath($DestinationDirectory)
+
+    $textNames = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($name in $TextFileNames) {
+        if (-not [string]::IsNullOrWhiteSpace($name)) {
+            [void]$textNames.Add($name)
+        }
+    }
+
+    $safeFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
+    $manifestLines = [System.Collections.Generic.List[string]]::new()
+    $unsafeCount = 0
+    foreach ($file in @($Files)) {
+        if ($null -eq $file) {
+            continue
+        }
+
+        try {
+            $item = Get-Item -LiteralPath $file.FullName -ErrorAction Stop
+            if ($item.PSIsContainer -or
+                ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+                $unsafeCount++
+                $safeName = $item.Name -replace '[\r\n]', ' '
+                [void]$manifestLines.Add("UNSAFE`t$safeName")
+                continue
+            }
+
+            [void]$safeFiles.Add($item)
+        } catch {
+            $unsafeCount++
+            $safeName = $file.Name -replace '[\r\n]', ' '
+            [void]$manifestLines.Add("UNREADABLE`t$safeName")
+        }
+    }
+
+    $textFiles = @($safeFiles |
+        Where-Object { $textNames.Contains($_.Name) } |
+        Sort-Object Name, FullName)
+    $orderedBinaryFiles = @($safeFiles |
+        Where-Object { -not $textNames.Contains($_.Name) } |
+        Sort-Object LastWriteTimeUtc, FullName)
+
+    # Preserve evidence from both ends of a long failure cascade: the oldest
+    # files normally show the initiating failure, while the newest show the
+    # terminal state. Exact duplicates are represented by one payload plus a
+    # manifest entry naming the retained file.
+    $binaryFiles = [System.Collections.Generic.List[System.IO.FileInfo]]::new()
+    $left = 0
+    $right = $orderedBinaryFiles.Count - 1
+    while ($left -le $right) {
+        [void]$binaryFiles.Add($orderedBinaryFiles[$left])
+        $left++
+        if ($left -le $right) {
+            [void]$binaryFiles.Add($orderedBinaryFiles[$right])
+            $right--
+        }
+    }
+
+    $copiedFiles = 0
+    $copiedBytes = 0L
+    $truncatedTextFiles = 0
+    $duplicateFiles = 0
+    $budgetFiles = 0
+    $oversizedFiles = 0
+    $failedFiles = 0
+    $retainedByHash = [System.Collections.Generic.Dictionary[string, string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase)
+
+    foreach ($file in $textFiles) {
+        $remainingBytes = $MaxTotalBytes - $copiedBytes
+        if ($remainingBytes -lt 256) {
+            $budgetFiles++
+            $safeName = $file.Name -replace '[\r\n]', ' '
+            [void]$manifestLines.Add("BUDGET`t$safeName`t$($file.Length)")
+            continue
+        }
+
+        $fileLimit = [long][Math]::Min($MaxTextFileBytes, $remainingBytes)
+        $destination = Join-Path $destinationRoot $file.Name
+        try {
+            $copyResult = Copy-BoundedDiagnosticFile `
+                -Source $file.FullName `
+                -Destination $destination `
+                -MaxBytes $fileLimit
+            $copiedFiles++
+            $copiedBytes += [long]$copyResult.CopiedBytes
+            if ($copyResult.Truncated) {
+                $truncatedTextFiles++
+            }
+        } catch {
+            $failedFiles++
+            $safeName = $file.Name -replace '[\r\n]', ' '
+            [void]$manifestLines.Add("FAILED`t$safeName")
+        }
+    }
+
+    foreach ($file in $binaryFiles) {
+        $safeName = $file.Name -replace '[\r\n]', ' '
+        if ($file.Length -gt $MaxBinaryFileBytes) {
+            $oversizedFiles++
+            [void]$manifestLines.Add("OVERSIZED`t$safeName`t$($file.Length)")
+            continue
+        }
+
+        try {
+            $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256 -ErrorAction Stop).Hash
+        } catch {
+            $failedFiles++
+            [void]$manifestLines.Add("FAILED-HASH`t$safeName")
+            continue
+        }
+
+        if ($retainedByHash.ContainsKey($hash)) {
+            $duplicateFiles++
+            [void]$manifestLines.Add("DUPLICATE`t$safeName`t$($retainedByHash[$hash])")
+            continue
+        }
+
+        if (($copiedBytes + $file.Length) -gt $MaxTotalBytes) {
+            $budgetFiles++
+            [void]$manifestLines.Add("BUDGET`t$safeName`t$($file.Length)")
+            continue
+        }
+
+        $destinationName = $file.Name
+        $destination = Join-Path $destinationRoot $destinationName
+        $collision = 1
+        while (Test-Path -LiteralPath $destination) {
+            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+            $extension = [System.IO.Path]::GetExtension($file.Name)
+            $destinationName = "$baseName-$collision$extension"
+            $destination = Join-Path $destinationRoot $destinationName
+            $collision++
+        }
+
+        try {
+            Copy-Item -LiteralPath $file.FullName -Destination $destination -Force -ErrorAction Stop
+            $copiedFiles++
+            $copiedBytes += [long]$file.Length
+            $retainedByHash[$hash] = $destinationName
+        } catch {
+            $failedFiles++
+            [void]$manifestLines.Add("FAILED-COPY`t$safeName")
+        }
+    }
+
+    $manifestPath = $null
+    if ($manifestLines.Count -gt 0) {
+        $manifestPath = Join-Path $destinationRoot 'diagnostic-capture-manifest.txt'
+        $header = @(
+            '# Bounded UI-test diagnostic capture'
+            "MaxPayloadBytes`t$MaxTotalBytes"
+            "CopiedPayloadBytes`t$copiedBytes"
+            "Reason`tSource`tRetained-or-bytes"
+        )
+        @($header + $manifestLines) |
+            Set-Content -LiteralPath $manifestPath -Encoding UTF8
+    }
+
+    return [pscustomobject]@{
+        SourceFiles        = @($Files).Count
+        SourceBytes        = [long](($safeFiles | Measure-Object Length -Sum).Sum)
+        CopiedFiles        = $copiedFiles
+        CopiedBytes        = [long]$copiedBytes
+        TruncatedTextFiles = $truncatedTextFiles
+        DuplicateFiles     = $duplicateFiles
+        BudgetFiles        = $budgetFiles
+        OversizedFiles     = $oversizedFiles
+        UnsafeFiles        = $unsafeCount
+        FailedFiles        = $failedFiles
+        ManifestPath       = $manifestPath
+    }
+}

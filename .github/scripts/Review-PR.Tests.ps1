@@ -393,11 +393,16 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match ([regex]::Escape('$totalPassed + $totalFailed + $totalSkipped'))
     }
 
-    It 'bounds copied deep UI diagnostic logs while preserving screenshots and page source' {
+    It 'bounds and deduplicates deep UI diagnostics without duplicating canonical snapshots' {
         $pipelineContent | Should -Match ([regex]::Escape('. ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"'))
         $pipelineContent | Should -Match ([regex]::Escape('$maxDiagnosticLogBytes = 16MB'))
-        $pipelineContent | Should -Match ([regex]::Escape('Copy-BoundedDiagnosticFile `'))
-        $pipelineContent | Should -Match ([regex]::Escape('-MaxBytes $maxDiagnosticLogBytes'))
+        $pipelineContent | Should -Match ([regex]::Escape('$maxDiagnosticArtifactBytes = 96MB'))
+        $pipelineContent | Should -Match ([regex]::Escape('Copy-BoundedDiagnosticFileSet `'))
+        $pipelineContent | Should -Match ([regex]::Escape('-MaxTotalBytes $maxDiagnosticArtifactBytes'))
+        $pipelineContent | Should -Match ([regex]::Escape('-MaxTextFileBytes $maxDiagnosticLogBytes'))
+        $pipelineContent | Should -Match ([regex]::Escape('-MaxBinaryFileBytes $maxDiagnosticFileBytes'))
+        $pipelineContent | Should -Match 'screen\.\?shot'
+        $pipelineContent | Should -Match 'PageSource'
         $pipelineContent | Should -Match ([regex]::Escape("-not (`$_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)"))
     }
 

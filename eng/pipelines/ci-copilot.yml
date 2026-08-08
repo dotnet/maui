@@ -2801,9 +2801,14 @@ stages:
               # Keep text diagnostics useful without publishing multi-gigabyte
               # artifacts when Appium emits an unusually large per-category log.
               # The helper copies small files exactly and retains a bounded tail
-              # for large logs, where the terminal failure context lives.
+              # for large logs, where the terminal failure context lives. It also
+              # deduplicates repeated teardown screenshots and caps the aggregate
+              # diagnostic payload for one category; canonical snapshot diffs are
+              # published separately and are never subject to this cap.
               . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
               $maxDiagnosticLogBytes = 16MB
+              $maxDiagnosticFileBytes = 16MB
+              $maxDiagnosticArtifactBytes = 96MB
 
               # Dot-source the shared retry wrapper so Stage 2 gets the same
               # env-error detection, device recovery, and retry logic as Stage 1.
@@ -3143,31 +3148,44 @@ stages:
                   $diagFiles = @(Get-ChildItem -Path $uiDiagSrc -Recurse -File -ErrorAction SilentlyContinue |
                     Where-Object {
                       -not ($_.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -and
-                      ($_.Extension -in '.png', '.xml' -or $_.Name -in 'appium.log', 'android-device.log', 'test-output.log')
+                      (
+                        ($_.Extension -eq '.png' -and $_.Name -match '(?i)screen.?shot') -or
+                        $_.Extension -eq '.xml' -or
+                        ($_.Extension -eq '.txt' -and $_.Name -match '(?i)PageSource') -or
+                        $_.Name -in 'appium.log', 'android-device.log', 'test-output.log'
+                      )
                     })
-                  foreach ($diagFile in $diagFiles) {
-                    $diagDest = Join-Path $uiDiagDest $diagFile.Name
-                    if ($diagFile.Name -in 'appium.log', 'android-device.log', 'test-output.log') {
-                      try {
-                        $copyResult = Copy-BoundedDiagnosticFile `
-                          -Source $diagFile.FullName `
-                          -Destination $diagDest `
-                          -MaxBytes $maxDiagnosticLogBytes
-                        if ($copyResult.Truncated) {
-                          Write-Host "Truncated $($diagFile.Name) from $($copyResult.SourceBytes) to $($copyResult.CopiedBytes) bytes for the artifact."
-                        }
-                      } catch {
-                        Write-Host "Could not capture bounded diagnostic '$($diagFile.Name)': $_" -ForegroundColor Yellow
-                      }
-                    } else {
-                      Copy-Item -LiteralPath $diagFile.FullName -Destination $diagDest -Force -ErrorAction SilentlyContinue
+                  try {
+                    $captureResult = Copy-BoundedDiagnosticFileSet `
+                      -Files $diagFiles `
+                      -DestinationDirectory $uiDiagDest `
+                      -MaxTotalBytes $maxDiagnosticArtifactBytes `
+                      -MaxTextFileBytes $maxDiagnosticLogBytes `
+                      -MaxBinaryFileBytes $maxDiagnosticFileBytes
+                    $capturedMiB = [math]::Round($captureResult.CopiedBytes / 1MB, 1)
+                    Write-Host "Captured $($captureResult.CopiedFiles) of $($captureResult.SourceFiles) UI-test diagnostic payload(s) ($capturedMiB MiB) into $uiDiagDest."
+                    if ($captureResult.TruncatedTextFiles -gt 0 -or
+                        $captureResult.DuplicateFiles -gt 0 -or
+                        $captureResult.BudgetFiles -gt 0 -or
+                        $captureResult.OversizedFiles -gt 0) {
+                      Write-Host "Diagnostic bounding: $($captureResult.TruncatedTextFiles) text log(s) truncated, $($captureResult.DuplicateFiles) exact duplicate(s) represented by the manifest, $($captureResult.BudgetFiles) file(s) omitted by the aggregate cap, $($captureResult.OversizedFiles) oversized file(s) omitted."
                     }
+                  } catch {
+                    Write-Host "Could not capture bounded UI-test diagnostics: $_" -ForegroundColor Yellow
                   }
-                  $diagCount = @(Get-ChildItem -Path $uiDiagDest -File -ErrorAction SilentlyContinue).Count
-                  Write-Host "Captured $diagCount UI-test diagnostic file(s) (screenshots/page-source/logs) into $uiDiagDest"
                   # Clear per-test screenshots/page-source so the next category's
-                  # diagnostics don't accumulate into this one.
-                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -Include '*.png', '*.xml' -ErrorAction SilentlyContinue |
+                  # diagnostics don't accumulate into this one. Use the same
+                  # eligibility rules as the capture filter so an unexpected PNG
+                  # naming convention is never silently deleted without capture.
+                  # Visual snapshot PNGs intentionally remain here; their canonical
+                  # copies already moved to this category's snapshots-diff folder,
+                  # and the agent workspace is discarded after the job.
+                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object {
+                      ($_.Extension -eq '.png' -and $_.Name -match '(?i)screen.?shot') -or
+                      $_.Extension -eq '.xml' -or
+                      ($_.Extension -eq '.txt' -and $_.Name -match '(?i)PageSource')
+                    } |
                     Remove-Item -Force -ErrorAction SilentlyContinue
                 }
               }
