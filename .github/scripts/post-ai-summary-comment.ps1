@@ -62,7 +62,14 @@ param(
     # "Platform Unknown"). A full review still prefers the code-review-derived platform. Empty for
     # local/manual runs → behaves exactly as before.
     [Parameter(Mandatory = $false)]
-    [string]$Platform = ''
+    [string]$Platform = '',
+
+    # Immutable PR head captured by the trusted Setup task. When the live PR
+    # advances during a run, the summary remains bound to this reviewed commit
+    # and is downgraded to an informational COMMENT.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ReviewedCommit = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -822,12 +829,20 @@ function Invoke-PostPullRequestReview {
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('APPROVE', 'REQUEST_CHANGES', 'COMMENT')]
-        [string]$Event
+        [string]$Event,
+
+        [Parameter(Mandatory = $false)]
+        [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+        [string]$CommitSha = ''
     )
 
     $tempFile = [System.IO.Path]::GetTempFileName()
     try {
-        @{ body = $Body; event = $Event } |
+        $payload = [ordered]@{ body = $Body; event = $Event }
+        if (-not [string]::IsNullOrWhiteSpace($CommitSha)) {
+            $payload['commit_id'] = $CommitSha
+        }
+        $payload |
             ConvertTo-Json -Depth 10 |
             Set-Content -Path $tempFile -Encoding UTF8
 
@@ -991,25 +1006,43 @@ $gateContent
 # sentinel so the veto is a no-op rather than reading any agent-writable worktree file.
 $effectiveGateResult = if ([string]::IsNullOrWhiteSpace($TrustedGateResult)) { 'SKIPPED' } else { $TrustedGateResult }
 $reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir -TrustedGateResult $effectiveGateResult
-Write-Host "  🧾 PR review event: $reviewEvent (trusted gate: $effectiveGateResult)" -ForegroundColor Cyan
 
 # ============================================================================
 # FETCH PR METADATA (commit + author)
 # ============================================================================
 
 try {
-    $commitJson = gh api "repos/dotnet/maui/pulls/$PRNumber/commits" --jq '.[-1] | {message: .commit.message, sha: .sha}' 2>$null | ConvertFrom-Json
+    $prMetadata = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '{author: .user.login, head: .head.sha}' 2>$null | ConvertFrom-Json
 } catch {
-    Write-Host "⚠️ Failed to fetch commit info: $_" -ForegroundColor Yellow
-    $commitJson = $null
+    Write-Host "⚠️ Failed to fetch current PR metadata: $_" -ForegroundColor Yellow
+    $prMetadata = $null
 }
-$commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
-$commitFull = if ($commitJson) { $commitJson.sha } else { "" }
-$commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
+$currentHeadSha = if ($prMetadata) { [string]$prMetadata.head } else { '' }
+$commitFull = if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) { $ReviewedCommit } else { $currentHeadSha }
+$commitSha7 = if ($commitFull.Length -ge 7) { $commitFull.Substring(0, 7) } else { "unknown" }
+$commitUrl = if ($commitFull) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
+$prAuthor = if ($prMetadata) { [string]$prMetadata.author } else { $null }
 
-try {
-    $prAuthor = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '.user.login' 2>$null
-} catch { $prAuthor = $null }
+$snapshotNotice = $null
+if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
+    if ([string]::IsNullOrWhiteSpace($currentHeadSha)) {
+        $reviewEvent = 'COMMENT'
+        $snapshotNotice = @"
+> [!WARNING]
+> This run reviewed commit [``$commitSha7``]($commitUrl), but the current PR head could not be verified while posting. The result is informational and no current-head approval or change request was applied.
+"@
+    } elseif (-not $currentHeadSha.Equals($ReviewedCommit, [StringComparison]::OrdinalIgnoreCase)) {
+        $currentHeadSha7 = $currentHeadSha.Substring(0, [Math]::Min(7, $currentHeadSha.Length))
+        $currentHeadUrl = "https://github.com/dotnet/maui/commit/$currentHeadSha"
+        $reviewEvent = 'COMMENT'
+        $snapshotNotice = @"
+> [!WARNING]
+> This run reviewed commit [``$commitSha7``]($commitUrl), but the PR advanced to [``$currentHeadSha7``]($currentHeadUrl) while it was running. These results are informational; re-run ``/review`` for the current head.
+"@
+    }
+}
+$reviewCommitForApi = if ($snapshotNotice) { '' } else { $commitFull }
+Write-Host "  🧾 PR review event: $reviewEvent (trusted gate: $effectiveGateResult; reviewed commit: $commitSha7)" -ForegroundColor Cyan
 
 $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
 
@@ -1020,6 +1053,7 @@ $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
 # Combine gate (always first) with phases (collapsed). When only one
 # kind of content is available, the session still renders cleanly.
 $sessionParts = @()
+if ($snapshotNotice)          { $sessionParts += $snapshotNotice }
 if ($gateSection)            { $sessionParts += $gateSection }
 if ($phaseSections.Count -gt 0) { $sessionParts += ($phaseSections -join "`n`n---`n`n") }
 $phaseContent = $sessionParts -join "`n`n---`n`n"
@@ -1074,7 +1108,7 @@ if ($existingRaw) {
 
 $authorPing = ""
 if ($prAuthor) {
-    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
+    $authorPing = "> @$prAuthor — new AI review results are available based on commit <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
 }
 
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
@@ -1318,7 +1352,7 @@ if (-not $review) {
     Write-Host "Creating new AI Summary PR review ($reviewEvent)..." -ForegroundColor Yellow
     $postedEvent = $reviewEvent
     try {
-        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent -CommitSha $reviewCommitForApi
     } catch {
         if ($postedEvent -eq 'COMMENT') {
             throw
@@ -1326,7 +1360,7 @@ if (-not $review) {
 
         Write-Host "⚠️ Formal $postedEvent review was rejected; retrying as COMMENT: $_" -ForegroundColor Yellow
         $postedEvent = 'COMMENT'
-        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+        $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent -CommitSha $reviewCommitForApi
     }
 }
 

@@ -81,6 +81,13 @@ param(
     [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
     [string]$TrustedGateResult = '',
 
+    # Immutable PR head captured by the trusted Setup task. Post uses this to bind
+    # review artifacts to the commit that Gate and CopilotReview actually evaluated,
+    # and to avoid applying labels or metadata to a newer live PR head.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ReviewedCommit = '',
+
     # Fast test-run toggle for local/diagnostic runs. When set, the Gate phase skips
     # STEP 2-4 (UI-category detection, regression tests, and the device/UI test
     # verification) and reports SKIPPED, so no emulator/simulator is required.
@@ -363,6 +370,7 @@ if ($DryRun) {
         $baseSha = git rev-parse --short HEAD 2>$null
         Write-Host "  📌 Review base: main @ $baseSha" -ForegroundColor Cyan
     }
+    $reviewedBaseSha = ([string](git rev-parse HEAD 2>$null)).Trim()
 
     # Create review branch
     Write-Host "  🔀 Creating review branch: $reviewBranch" -ForegroundColor Cyan
@@ -395,6 +403,11 @@ if ($DryRun) {
             exit 1
         }
     }
+    $reviewedPrHeadSha = ([string](git rev-parse $tempBranch 2>$null)).Trim()
+    if ($reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "Could not resolve the immutable PR head for review."
+        exit 1
+    }
 
     # ── Merge PR commits (squash) ──
     # For inflight-targeted PRs, DON'T squash-merge onto the pipeline base — reset the
@@ -412,6 +425,7 @@ if ($DryRun) {
         # are included (e.g. #36787 fixed the inflight/current build breaks after #36776 was cut).
         # Otherwise the gate rebuilds the stale/broken base and the gate + UI tests never run.
         git fetch origin $baseRefName 2>&1 | Out-Null
+        $reviewedBaseSha = ([string](git rev-parse "origin/$baseRefName" 2>$null)).Trim()
         git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/$baseRefName" 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
             # Genuine conflict between the PR head and the latest inflight base — the PR must
@@ -530,6 +544,7 @@ if ($DryRun) {
     Write-Host "  ✅ Review branch ready: $reviewBranch" -ForegroundColor Green
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
     }
+    $reviewedTreeSha = ([string](git rev-parse HEAD 2>$null)).Trim()
 }
 
 } # end if ($runSetup)
@@ -544,6 +559,20 @@ if ($Phase -eq 'Setup') {
         New-Item -ItemType Directory -Force -Path $d | Out-Null
         $d
     }
+    if ($baseRefName -notmatch '^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
+        $reviewedBaseSha -notmatch '^[0-9a-fA-F]{40}$' -or
+        $reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$' -or
+        $reviewedTreeSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "Setup could not persist a validated immutable review snapshot."
+        exit 1
+    }
+    ([ordered]@{
+        baseRefName = $baseRefName
+        baseSha = $reviewedBaseSha
+        prHeadSha = $reviewedPrHeadSha
+        reviewTreeSha = $reviewedTreeSha
+    } | ConvertTo-Json -Depth 4) |
+        Set-Content (Join-Path $sentinelDir "review-snapshot.json") -Encoding UTF8
     "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
     Set-SetupOutcome -Outcome 'COMPLETED'
     # Persist PR metadata so the CopilotReview phase can evaluate the existing title/
@@ -2862,6 +2891,7 @@ if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
                 PRNumber = $PRNumber
                 ContentFile = $finalizeContent
                 WinnerFile = $finalizeWinner
+                ExpectedHeadSha = $ReviewedCommit
             }
             if ($DryRun) { $applyArgs.DryRun = $true }
             & $applyFinalizeScript @applyArgs
@@ -2905,9 +2935,9 @@ if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
         if ($DryRun) {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -DryRun
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit -DryRun
         } else {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit
         }
         # Capture review ID from script output (format: AI_SUMMARY_REVIEW_ID=<id>)
         $idLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_ID=' } | Select-Object -Last 1
@@ -3007,7 +3037,7 @@ if ($isPRWinner) {
             $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
             if (Test-Path $inlineScript) {
                 Write-Host "  📝 [DryRun] Previewing deferred inline review..." -ForegroundColor Cyan
-                try { & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun }
+                try { & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -ReviewedCommit $ReviewedCommit -DryRun }
                 catch { Write-Host "  ⚠️ Inline preview failed (non-fatal): $_" -ForegroundColor Yellow }
             }
         } else {
@@ -3040,13 +3070,16 @@ Write-Host "║  STEP 7: APPLY LABELS                                     ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $ScriptsDir "shared/Update-AgentLabels.ps1"
-if (Test-Path $labelHelperPath) {
+if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
+    Write-Host "  ⏭️ Label application deferred to Stage 3 with the final snapshot-bound summary" -ForegroundColor Gray
+} elseif (Test-Path $labelHelperPath) {
     try {
         . $labelHelperPath
         Apply-AgentLabels `
             -PRNumber $PRNumber `
             -RepoRoot $RepoRoot `
-            -TrustedGateResult $trustedGateResultForPost
+            -TrustedGateResult $trustedGateResultForPost `
+            -ExpectedHeadSha $ReviewedCommit
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow

@@ -45,6 +45,10 @@ param(
     [string]$SummaryFile,
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ReviewedCommit = '',
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun
 )
 
@@ -172,11 +176,21 @@ if (Test-Path $SummaryFile) {
 Write-Host "Fetching PR #$PRNumber head commit..." -ForegroundColor Cyan
 $prJson = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '{sha: .head.sha}' 2>&1
 if ($LASTEXITCODE -ne 0) {
+    if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
+        Write-Host "Could not verify the current PR head; skipping snapshot-bound inline findings." -ForegroundColor Yellow
+        exit 0
+    }
     throw "Failed to fetch PR #${PRNumber}: $prJson"
 }
 $prData = $prJson | ConvertFrom-Json
-$commitSha = $prData.sha
-Write-Host "  HEAD: $commitSha" -ForegroundColor Gray
+$currentHeadSha = [string]$prData.sha
+$commitSha = if ([string]::IsNullOrWhiteSpace($ReviewedCommit)) { $currentHeadSha } else { $ReviewedCommit }
+if (-not [string]::IsNullOrWhiteSpace($currentHeadSha) -and
+    -not $currentHeadSha.Equals($commitSha, [StringComparison]::OrdinalIgnoreCase)) {
+    Write-Host "PR advanced after the review snapshot; skipping stale inline findings." -ForegroundColor Yellow
+    exit 0
+}
+Write-Host "  Reviewed commit: $commitSha" -ForegroundColor Gray
 
 # ============================================================================
 # BUILD REVIEW PAYLOAD

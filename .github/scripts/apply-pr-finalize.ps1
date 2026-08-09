@@ -69,6 +69,10 @@ param(
     [string]$Repo = "dotnet/maui",
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ExpectedHeadSha = '',
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun
 )
 
@@ -108,6 +112,23 @@ function ConvertTo-AzdoSafeConsole {
     # Collapse CR/LF/FF/VT so PR-influenceable text can't fabricate a fresh column-0 line,
     # then defang the AzDO logging-command prefixes.
     return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
+function Test-ExpectedHeadMatches {
+    param(
+        [AllowEmptyString()]
+        [string]$CurrentHeadSha,
+
+        [AllowEmptyString()]
+        [string]$ExpectedHeadSha
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedHeadSha)) {
+        return $true
+    }
+
+    return -not [string]::IsNullOrWhiteSpace($CurrentHeadSha) -and
+        $CurrentHeadSha.Equals($ExpectedHeadSha, [StringComparison]::OrdinalIgnoreCase)
 }
 
 function Test-FinalizeIsNoOp {
@@ -524,6 +545,13 @@ try {
 
 if (-not $prJson) {
     Write-Host "     ⚠️  GitHub REST API returned no metadata for #$PRNumber — skipping to avoid clobbering it." -ForegroundColor Yellow
+    exit 0
+}
+
+$currentHeadSha = if ($prJson.PSObject.Properties['head'] -and $prJson.head -and
+    $prJson.head.PSObject.Properties['sha']) { [string]$prJson.head.sha } else { '' }
+if (-not (Test-ExpectedHeadMatches -CurrentHeadSha $currentHeadSha -ExpectedHeadSha $ExpectedHeadSha)) {
+    Write-Host "     ⏭️  Leaving PR metadata unchanged because the PR head advanced after this review snapshot." -ForegroundColor Yellow
     exit 0
 }
 

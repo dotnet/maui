@@ -1500,8 +1500,36 @@ stages:
               elif [ $SETUP_EXIT -eq 0 ] && [ -f "$(Build.ArtifactStagingDirectory)/setup-complete" ]; then
                 SETUP_RESULT="COMPLETED"
               fi
+
+              REVIEWED_PR_HEAD_SHA=""
+              REVIEWED_BASE_SHA=""
+              REVIEWED_BASE_REF=""
+              SNAPSHOT_FILE="$(Build.ArtifactStagingDirectory)/review-snapshot.json"
+              if [ "$SETUP_RESULT" = "COMPLETED" ] && [ -f "$SNAPSHOT_FILE" ]; then
+                SNAPSHOT_VALUES=$(SNAPSHOT_FILE="$SNAPSHOT_FILE" pwsh -NoProfile -Command '
+                  $snapshot = Get-Content -Raw -LiteralPath $env:SNAPSHOT_FILE | ConvertFrom-Json
+                  "{0}|{1}|{2}" -f $snapshot.prHeadSha, $snapshot.baseSha, $snapshot.baseRefName
+                ' 2>/dev/null | tr -d '\r\n' || true)
+                IFS='|' read -r REVIEWED_PR_HEAD_SHA REVIEWED_BASE_SHA REVIEWED_BASE_REF <<< "$SNAPSHOT_VALUES"
+              fi
+              if [ "$SETUP_RESULT" = "COMPLETED" ] && {
+                ! [[ "$REVIEWED_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                ! [[ "$REVIEWED_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
+              }; then
+                echo "##vso[task.logissue type=error]Setup completed without a valid immutable review snapshot."
+                SETUP_RESULT="FAILED"
+                SETUP_EXIT=1
+                REVIEWED_PR_HEAD_SHA=""
+                REVIEWED_BASE_SHA=""
+                REVIEWED_BASE_REF=""
+              fi
+
               echo "Trusted setup result: $SETUP_RESULT"
               echo "##vso[task.setvariable variable=setupResult;isOutput=true]$SETUP_RESULT"
+              echo "##vso[task.setvariable variable=reviewedPrHeadSha;isOutput=true]$REVIEWED_PR_HEAD_SHA"
+              echo "##vso[task.setvariable variable=reviewedBaseSha;isOutput=true]$REVIEWED_BASE_SHA"
+              echo "##vso[task.setvariable variable=reviewedBaseRef;isOutput=true]$REVIEWED_BASE_REF"
 
               if [ $SETUP_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
@@ -1786,6 +1814,7 @@ stages:
         variables:
           trustedGateResult: $[ dependencies.CopilotReview.outputs['RunGate.gateResult'] ]
           trustedSetupResult: $[ dependencies.CopilotReview.outputs['RunSetup.setupResult'] ]
+          trustedReviewedPrHeadSha: $[ dependencies.CopilotReview.outputs['RunSetup.reviewedPrHeadSha'] ]
         steps:
           - checkout: self
             fetchDepth: 1
@@ -1859,6 +1888,7 @@ stages:
                 -Platform "${{ parameters.Platform }}" `
                 -Phase Post `
                 -TrustedGateResult "$(effectiveTrustedGateResult)" `
+                -ReviewedCommit "$(trustedReviewedPrHeadSha)" `
                 -TokenUsageOutputDir "$(Pipeline.Workspace)/CopilotLogs/copilot-token-usage/raw" `
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               if ($LASTEXITCODE -ne 0) {
@@ -1982,6 +2012,9 @@ stages:
         displayName: 'Run detected UI test categories'
         variables:
           detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
+          reviewedPrHeadSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunSetup.reviewedPrHeadSha'] ]
+          reviewedBaseSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunSetup.reviewedBaseSha'] ]
+          reviewedBaseRef: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunSetup.reviewedBaseRef'] ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
@@ -2031,49 +2064,64 @@ stages:
                 echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
                 exit 1
               fi
-              # Prefer gh; fall back to REST (gh isn't pre-installed on macOS agents this early).
-              if command -v gh >/dev/null 2>&1; then
-                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
-              else
-                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
-                [ -z "$REPO" ] && REPO="dotnet/maui"
-                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
-                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
-              fi
+              # Resolve the exact immutable snapshot captured by trusted Setup.
+              BASE_REF="${REVIEWED_BASE_REF}"
+              BASE_SHA="${REVIEWED_BASE_SHA}"
+              PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
               if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
-                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
+                echo "##vso[task.logissue type=error]Trusted Setup output did not contain a valid PR base branch."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] || ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Trusted Setup output did not contain valid immutable commit SHAs."
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} immutable snapshot: base ${BASE_REF}@${BASE_SHA:0:7}, head ${PR_HEAD_SHA:0:7}"
+
+              git fetch origin "${BASE_REF}" --no-tags
+              if git fetch origin "pull/${PARAM_PR_NUMBER}/head" --no-tags; then
+                LIVE_PR_HEAD=$(git rev-parse FETCH_HEAD)
+                if [ "${LIVE_PR_HEAD}" != "${PR_HEAD_SHA}" ]; then
+                  echo "##vso[task.logissue type=warning]PR head advanced after Setup; Deep UI will use the immutable reviewed commit ${PR_HEAD_SHA:0:7}, not live head ${LIVE_PR_HEAD:0:7}."
+                fi
+              else
+                echo "##vso[task.logissue type=warning]Could not fetch the live PR ref; Deep UI will continue only if immutable commit ${PR_HEAD_SHA:0:7} is fetchable."
+              fi
+
+              for REQUIRED_SHA in "${BASE_SHA}" "${PR_HEAD_SHA}"; do
+                if ! git cat-file -e "${REQUIRED_SHA}^{commit}" 2>/dev/null; then
+                  git fetch origin "${REQUIRED_SHA}" --no-tags
+                fi
+                if ! git cat-file -e "${REQUIRED_SHA}^{commit}" 2>/dev/null; then
+                  echo "##vso[task.logissue type=error]The immutable review snapshot commit ${REQUIRED_SHA:0:7} is no longer fetchable."
+                  exit 1
+                fi
+              done
               # inflight/* targets are reviewed on the PR head as-is (see the
               # CopilotReview-stage ResolveBaseBranch for the rationale); build/resolve
               # the PR head so the deep stage compiles the PR's actual code.
               if [[ "${BASE_REF}" == inflight/* ]]; then
-                git fetch origin "pull/${PARAM_PR_NUMBER}/head" --no-tags
-                git checkout --detach FETCH_HEAD
-                # Merge the CURRENT inflight base (see the CopilotReview-stage ResolveBaseBranch)
-                # so the deep stage compiles the PR on top of the LATEST base and picks up
-                # base-branch fixes that landed after the PR branched. Best-effort: keep PR head
-                # as-is on conflict.
-                git fetch origin "${BASE_REF}" --no-tags
-                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/${BASE_REF}"; then
-                  echo "Merged latest origin/${BASE_REF} into PR head for an up-to-date deep build"
+                git checkout --detach "${PR_HEAD_SHA}"
+                # Reproduce the exact inflight base merge performed by trusted Setup.
+                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "${BASE_SHA}"; then
+                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
                 else
-                  echo "##vso[task.logissue type=warning]Could not merge origin/${BASE_REF} into PR #${PARAM_PR_NUMBER} head (conflict) — using PR head as-is for the deep build."
+                  echo "##vso[task.logissue type=error]Could not reproduce the trusted Setup merge for the immutable inflight snapshot."
                   git merge --abort 2>/dev/null || true
+                  exit 1
                 fi
                 echo "Worktree now at $(git rev-parse --short HEAD) (PR #${PARAM_PR_NUMBER} head + ${BASE_REF})"
               else
-                git fetch origin "${BASE_REF}" --no-tags
-                git checkout --detach "origin/${BASE_REF}"
-                echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF})"
+                git checkout --detach "${BASE_SHA}"
+                echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} snapshot)"
               fi
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
             env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
+              REVIEWED_BASE_SHA: $(reviewedBaseSha)
+              REVIEWED_BASE_REF: $(reviewedBaseRef)
 
           # Bring in .NET + workloads + tasks DLL — same prerequisites the
           # CopilotReview job used. Reusing the install-dotnet template
@@ -2679,32 +2727,27 @@ stages:
               git config core.autocrlf false
               git config core.eol lf
               git checkout -- . 2>/dev/null || true
-              # Merge the PR head commit so we run tests against the same
+              PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
+              if ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! git cat-file -e "${PR_HEAD_SHA}^{commit}" 2>/dev/null; then
+                echo "##vso[task.logissue type=error]Immutable reviewed PR head is unavailable."
+                exit 1
+              fi
+              # Merge the immutable PR head commit so we run tests against the same
               # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
-              # logic (squash-merge, fall back to head checkout on conflict).
-              # The deep stage runs INDEPENDENTLY of the ReviewPR stage, so we
-              # DO reach this fallback when a PR conflicts with base even though
-              # ReviewPR also failed (build 14670203, #36274: 8 conflicting
-              # files incl. Picker.cs + PublicAPI.Unshipped.txt). Testing the PR
-              # head alone is the correct degradation there.
-              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
+              # logic (squash-merge). Setup already proved that these exact base
+              # and PR commits merge cleanly; a conflict here means the immutable
+              # snapshot could not be reproduced and must fail closed.
               git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
-              git merge --squash pr-${{ parameters.PRNumber }} || {
-                echo "Squash merge had conflicts — falling back to direct head checkout"
-                # NOTE: `git merge --abort` does NOT work after a conflicted
-                # `git merge --squash` — squash merges never set MERGE_HEAD, so
-                # the abort fails silently and the conflicted index REMAINS,
-                # making the fallback `git checkout` die with "you need to
-                # resolve your current index first" (build 14670203, #36274:
-                # this exact failure blocked the entire android deep stage).
-                # `git reset --hard` is the correct cleanup for a squash-merge
-                # conflict; `-f` on the checkout then discards any residual
-                # untracked add/add conflict files so we land cleanly on PR head.
+              git merge --squash "${PR_HEAD_SHA}" || {
                 git reset --hard HEAD
-                git checkout -f pr-${{ parameters.PRNumber }}
+                echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
+                exit 1
               }
               git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
             displayName: 'Merge PR for testing'
+            env:
+              REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
 
           # Run the deep-UI orchestration from the reviewed pipeline-branch infrastructure,
           # not the base+PR worktree copies. Restore self's scripts and the narrow Catalyst
@@ -3267,6 +3310,7 @@ stages:
           # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
           # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
           trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
+          reviewedPrHeadSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunSetup.reviewedPrHeadSha'] ]
           # Categories the deep stage would run — the SAME coalesce the
           # RunDeepUITests stage condition uses (RunReview refined, else RunGate).
           # We gate the deep-artifact download on THIS (below), not on the deep
@@ -3372,7 +3416,8 @@ stages:
                 & pwsh -NoProfile -File ./.github/scripts/apply-pr-finalize.ps1 `
                   -PRNumber $prNumber `
                   -ContentFile $contentFile.FullName `
-                  -WinnerFile $winnerFile
+                  -WinnerFile $winnerFile `
+                  -ExpectedHeadSha "$(reviewedPrHeadSha)"
                 if ($LASTEXITCODE -ne 0) {
                   throw "apply-pr-finalize.ps1 exited with code $LASTEXITCODE."
                 }
@@ -4647,7 +4692,7 @@ stages:
                   if ($shouldPostInline -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
                     try {
                       Write-Host "Posting expert inline review (before the AI summary)..."
-                      & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings
+                      & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
                       Write-Host "✅ Expert inline review posted"
                     } catch {
                       Write-Host "⚠️ Expert inline review posting failed (non-fatal): $_"
@@ -4677,7 +4722,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM"
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }
@@ -4690,7 +4735,8 @@ stages:
                       Apply-AgentLabels `
                         -PRNumber $prNumber `
                         -RepoRoot (Get-Location).Path `
-                        -TrustedGateResult $trustedGate
+                        -TrustedGateResult $trustedGate `
+                        -ExpectedHeadSha "$(reviewedPrHeadSha)"
                       Write-Host "✅ Labels applied"
                     } catch {
                       Write-Host "⚠️ Label application failed: $_"
@@ -4763,6 +4809,10 @@ stages:
       - RunDeepUITests
       - UpdateAISummaryComment
     condition: always()
+    variables:
+      cleanupSetupResult: $[ dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'] ]
+      cleanupReviewedPrHeadSha: $[ dependencies.ReviewPR.outputs['CopilotReview.RunSetup.reviewedPrHeadSha'] ]
+      cleanupSummaryResult: $[ dependencies.UpdateAISummaryComment.result ]
     jobs:
       - job: CleanupReviewLock
         displayName: 'Remove PR review in-progress label'
@@ -4833,6 +4883,41 @@ stages:
                 exit 0
               fi
 
+              # If the final summary stage could not run (most notably a Deep job
+              # timeout yielding Canceled), preserve an honest label outcome for the
+              # exact reviewed commit. Never mutate labels when the live PR advanced.
+              if [ "${TRUSTED_SETUP_RESULT}" = "COMPLETED" ] &&
+                 [ "${UPDATE_SUMMARY_RESULT}" != "Succeeded" ] &&
+                 [ "${UPDATE_SUMMARY_RESULT}" != "SucceededWithIssues" ]; then
+                EXPECTED_HEAD="${REVIEWED_PR_HEAD_SHA}"
+                if [[ "${EXPECTED_HEAD}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                  CURRENT_HEAD=$(gh api "repos/dotnet/maui/pulls/${PR_NUM}" --jq '.head.sha' 2>/dev/null || true)
+                  if [ "${CURRENT_HEAD}" = "${EXPECTED_HEAD}" ]; then
+                    echo "Final summary stage result was '${UPDATE_SUMMARY_RESULT:-unknown}'; marking the immutable reviewed head incomplete."
+                    for LABEL in \
+                      s%2Fagent-approved \
+                      s%2Fagent-changes-requested \
+                      s%2Fagent-gate-passed \
+                      s%2Fagent-gate-failed \
+                      s%2Fagent-fix-win \
+                      s%2Fagent-fix-pr-picked \
+                      s%2Fagent-reviewed; do
+                      gh api --method DELETE "repos/dotnet/maui/issues/${PR_NUM}/labels/${LABEL}" >/dev/null 2>&1 || true
+                    done
+                    LABEL_PAYLOAD=$(mktemp)
+                    printf '%s' '{"labels":["s/agent-review-incomplete","s/agent-reviewed"]}' > "${LABEL_PAYLOAD}"
+                    if ! gh api --method POST "repos/dotnet/maui/issues/${PR_NUM}/labels" --input "${LABEL_PAYLOAD}" >/dev/null; then
+                      echo "##vso[task.logissue type=warning]Could not apply the review-incomplete fallback labels."
+                    fi
+                    rm -f "${LABEL_PAYLOAD}"
+                  elif [ -n "${CURRENT_HEAD}" ]; then
+                    echo "PR head advanced after the immutable review snapshot; skipping fallback result labels."
+                  else
+                    echo "##vso[task.logissue type=warning]Could not verify the PR head; skipping fallback result labels."
+                  fi
+                fi
+              fi
+
               echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
               gh api \
                 --method DELETE \
@@ -4846,6 +4931,9 @@ stages:
               SYSTEM_DEFINITIONID: $(System.DefinitionId)
               BUILD_BUILDID: $(Build.BuildId)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              TRUSTED_SETUP_RESULT: $(cleanupSetupResult)
+              REVIEWED_PR_HEAD_SHA: $(cleanupReviewedPrHeadSha)
+              UPDATE_SUMMARY_RESULT: $(cleanupSummaryResult)
 
   - stage: AnalyzeCopilotTokenUsage
     displayName: 'Analyze Copilot token usage'

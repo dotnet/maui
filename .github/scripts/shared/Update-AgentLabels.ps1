@@ -729,6 +729,37 @@ function Parse-PhaseOutcomes {
 # ============================================================
 # Apply-AgentLabels — main entry point
 # ============================================================
+function Test-AgentLabelHeadMatches {
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$ExpectedHeadSha = '',
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedHeadSha)) {
+        return $true
+    }
+
+    if ($ExpectedHeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Host "  ⚠️  Refusing to apply labels because the reviewed commit is invalid." -ForegroundColor Yellow
+        return $false
+    }
+
+    $currentHeadSha = gh api "repos/$Owner/$Repo/pulls/$PRNumber" --jq '.head.sha' 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($currentHeadSha)) {
+        Write-Host "  ⚠️  Could not verify the current PR head; leaving review labels unchanged." -ForegroundColor Yellow
+        return $false
+    }
+
+    if (-not ([string]$currentHeadSha).Trim().Equals($ExpectedHeadSha, [StringComparison]::OrdinalIgnoreCase)) {
+        Write-Host "  ⏭️  PR head advanced after this review snapshot; leaving review labels unchanged." -ForegroundColor Yellow
+        return $false
+    }
+
+    return $true
+}
+
 function Apply-AgentLabels {
     <#
     .SYNOPSIS
@@ -751,12 +782,21 @@ function Apply-AgentLabels {
         [string]$RepoRoot = (git rev-parse --show-toplevel 2>$null),
         [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
         [string]$TrustedGateResult = '',
+        [string]$ExpectedHeadSha = '',
         [string]$Owner = 'dotnet',
         [string]$Repo = 'maui'
     )
 
     Write-Host ""
     Write-Host "🏷️  Applying agent labels to PR #$PRNumber..." -ForegroundColor Cyan
+
+    if (-not (Test-AgentLabelHeadMatches `
+        -PRNumber $PRNumber `
+        -ExpectedHeadSha $ExpectedHeadSha `
+        -Owner $Owner `
+        -Repo $Repo)) {
+        return
+    }
 
     # Parse phase outcomes from content.md files
     $outcomes = Parse-PhaseOutcomes `

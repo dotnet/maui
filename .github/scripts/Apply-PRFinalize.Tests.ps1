@@ -35,6 +35,7 @@ BeforeAll {
 
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
+        'Test-ExpectedHeadMatches',
         'Test-FinalizeIsNoOp',
         'Get-FinalizeApplyDecision',
         'Get-FinalizeRecommendation',
@@ -75,6 +76,26 @@ Something broke.
 Fixed it.
 ```
 '@
+}
+
+Describe 'Test-ExpectedHeadMatches' {
+    It 'allows callers without a pinned snapshot' {
+        Test-ExpectedHeadMatches -CurrentHeadSha '' -ExpectedHeadSha '' | Should -BeTrue
+    }
+
+    It 'matches the immutable reviewed head case-insensitively' {
+        Test-ExpectedHeadMatches `
+            -CurrentHeadSha 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeTrue
+    }
+
+    It 'rejects a PR head that advanced after the review snapshot' {
+        Test-ExpectedHeadMatches `
+            -CurrentHeadSha 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeFalse
+    }
 }
 
 Describe 'Test-FinalizeIsNoOp' {

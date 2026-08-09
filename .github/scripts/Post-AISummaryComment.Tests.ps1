@@ -47,6 +47,15 @@ BeforeAll {
     }
 }
 
+Describe 'Immutable review snapshot posting' {
+    It 'binds formal reviews to the reviewed commit and downgrades stale runs' {
+        $script:ScriptSource | Should -Match ([regex]::Escape("[string]`$ReviewedCommit = ''"))
+        $script:ScriptSource | Should -Match ([regex]::Escape("`$payload['commit_id'] = `$CommitSha"))
+        $script:ScriptSource | Should -Match '(?s)currentHeadSha.*ReviewedCommit.*reviewEvent = ''COMMENT'''
+        $script:ScriptSource | Should -Match 'PR advanced to.*while it was running'
+    }
+}
+
 Describe 'Get-FirstPhaseContent' {
     BeforeEach {
         $script:phaseRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))

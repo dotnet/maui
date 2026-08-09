@@ -226,6 +226,26 @@ Describe 'Reviewer pipeline timeout containment' {
         $applyBlock | Should -Not -Match 'COPILOT_GITHUB_TOKEN'
     }
 
+    It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
+        $content | Should -Match ([regex]::Escape('"review-snapshot.json"'))
+        $content | Should -Match ([regex]::Escape('prHeadSha = $reviewedPrHeadSha'))
+        $content | Should -Match ([regex]::Escape('baseSha = $reviewedBaseSha'))
+        $content | Should -Match ([regex]::Escape('-ExpectedHeadSha $ReviewedCommit'))
+        $content | Should -Match 'Label application deferred to Stage 3'
+
+        $pipelineContent | Should -Match ([regex]::Escape('variable=reviewedPrHeadSha;isOutput=true'))
+        $pipelineContent | Should -Match ([regex]::Escape('variable=reviewedBaseSha;isOutput=true'))
+        $pipelineContent | Should -Match ([regex]::Escape('variable=reviewedBaseRef;isOutput=true'))
+        $pipelineContent | Should -Match ([regex]::Escape("reviewedPrHeadSha: `$[ stageDependencies.ReviewPR.CopilotReview.outputs['RunSetup.reviewedPrHeadSha'] ]"))
+        $pipelineContent | Should -Match ([regex]::Escape('git merge --squash "${PR_HEAD_SHA}"'))
+        $pipelineContent | Should -Match ([regex]::Escape('-ReviewedCommit "$(trustedReviewedPrHeadSha)"'))
+        $pipelineContent | Should -Match ([regex]::Escape('-ReviewedCommit "$(reviewedPrHeadSha)"'))
+        $pipelineContent | Should -Match ([regex]::Escape('-ExpectedHeadSha "$(reviewedPrHeadSha)"'))
+        $pipelineContent | Should -Match ([regex]::Escape("cleanupReviewedPrHeadSha: `$[ dependencies.ReviewPR.outputs['CopilotReview.RunSetup.reviewedPrHeadSha'] ]"))
+        $pipelineContent | Should -Match 'marking the immutable reviewed head incomplete'
+        $pipelineContent | Should -Match '(?s)CURRENT_HEAD.*EXPECTED_HEAD.*s/agent-review-incomplete'
+    }
+
     It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")

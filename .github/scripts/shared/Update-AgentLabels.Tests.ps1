@@ -30,7 +30,8 @@ BeforeAll {
         'Clear-AgentOutcomeLabels',
         'Get-OutcomeFromCodeReviewVerdict',
         'Parse-PhaseOutcomes',
-        'Update-AgentSignalLabels'
+        'Update-AgentSignalLabels',
+        'Test-AgentLabelHeadMatches'
     )) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -68,6 +69,44 @@ BeforeAll {
         if ($PSBoundParameters.ContainsKey('CodeReviewMd'))  { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'pre-flight') | Out-Null; $CodeReviewMd | Set-Content (Join-Path $agentDir 'pre-flight/code-review.md') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('ExpertReviewMd')) { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'expert-pr-eval') | Out-Null; $ExpertReviewMd | Set-Content (Join-Path $agentDir 'expert-pr-eval/content.md') -Encoding UTF8 }
         return $root
+    }
+}
+
+Describe 'Test-AgentLabelHeadMatches' {
+    It 'allows local callers without a pinned snapshot' {
+        Test-AgentLabelHeadMatches -PRNumber '1' | Should -BeTrue
+    }
+
+    It 'allows labels only when the live head matches the reviewed commit' {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            return 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        }
+
+        Test-AgentLabelHeadMatches `
+            -PRNumber '1' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeTrue
+    }
+
+    It 'fails closed when the PR advanced or GitHub cannot be queried' {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            return 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        }
+        Test-AgentLabelHeadMatches `
+            -PRNumber '1' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeFalse
+
+        Mock gh {
+            $global:LASTEXITCODE = 1
+            return ''
+        }
+        Test-AgentLabelHeadMatches `
+            -PRNumber '1' `
+            -ExpectedHeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' |
+            Should -BeFalse
     }
 }
 
