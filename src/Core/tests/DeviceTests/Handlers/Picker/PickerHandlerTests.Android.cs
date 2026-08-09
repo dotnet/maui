@@ -137,6 +137,13 @@ namespace Microsoft.Maui.DeviceTests
 							$"Expected Picker ScrollX to be greater than 0 after a horizontal drag, but it was {platformPicker.ScrollX}.");
 						Assert.Equal(1, clickCount);
 
+						platformPicker.ScrollTo(0, platformPicker.ScrollY);
+						DispatchHorizontalDrag(platformPicker, diagonally: true);
+						await WaitForPostedCallbacks(platformPicker);
+
+						Assert.True(platformPicker.ScrollX > 0);
+						Assert.Equal(1, clickCount);
+
 						DispatchTap(platformPicker);
 						await WaitForPostedCallbacks(platformPicker);
 						Assert.Equal(2, clickCount);
@@ -188,18 +195,20 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(platformPicker.IsTextSelectable);
 		}
 
-		static void DispatchHorizontalDrag(EditText platformPicker)
+		static void DispatchHorizontalDrag(EditText platformPicker, bool diagonally = false)
 		{
 			var downTime = SystemClock.UptimeMillis();
-			var y = platformPicker.Height / 2f;
 			var startX = platformPicker.Width - 4f;
-			var midX = platformPicker.Width / 2f;
-			var endX = 4f;
+			var endX = diagonally ? platformPicker.Width / 2f : 4f;
+			var midX = (startX + endX) / 2f;
+			var startY = diagonally ? 4f : platformPicker.Height / 2f;
+			var midY = diagonally ? platformPicker.Height / 2f : startY;
+			var endY = diagonally ? platformPicker.Height - 4f : startY;
 
-			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, y, 0);
-			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, midX, y, 0);
-			using var secondMove = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Move, endX, y, 0);
-			using var up = MotionEvent.Obtain(downTime, downTime + 48, MotionEventActions.Up, endX, y, 0);
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, startY, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, midX, midY, 0);
+			using var secondMove = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Move, endX, endY, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 48, MotionEventActions.Up, endX, endY, 0);
 
 			platformPicker.DispatchTouchEvent(down);
 			platformPicker.DispatchTouchEvent(move);

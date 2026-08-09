@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Platform;
 sealed class PickerScrollingMovementMethod : ScrollingMovementMethod
 {
 	float _downX;
-	float _downY;
 	int _touchSlop;
 	bool _isDragging;
 
@@ -23,14 +22,12 @@ sealed class PickerScrollingMovementMethod : ScrollingMovementMethod
 		{
 			case MotionEventActions.Down:
 				_downX = e.GetX();
-				_downY = e.GetY();
 				_touchSlop = ViewConfiguration.Get(widget.Context!)!.ScaledTouchSlop;
 				_isDragging = false;
 				break;
 			case MotionEventActions.Move:
 				var deltaX = global::System.Math.Abs(e.GetX() - _downX);
-				var deltaY = global::System.Math.Abs(e.GetY() - _downY);
-				_isDragging |= deltaX > _touchSlop && deltaX > deltaY;
+				_isDragging |= deltaX > _touchSlop;
 
 				if (_isDragging)
 				{
