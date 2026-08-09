@@ -252,6 +252,34 @@ Describe 'Merge-PreservedTitlePrefix' {
             Should -Be '[net11.0][iOS] UserInteraction: Respect InputTransparent'
     }
 
+    It 'does not preserve a component prefix already represented by the recommendation' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[BlazorWebView] Simplify Android Blazor startup scripts' `
+            -RecommendedTitle '[Android] BlazorWebView: Simplify Blazor startup scripts' |
+            Should -Be '[Android] BlazorWebView: Simplify Blazor startup scripts'
+    }
+
+    It 'preserves workflow tags while dropping component tags' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[WIP][BlazorWebView][Android] Simplify startup scripts' `
+            -RecommendedTitle '[Android] BlazorWebView: Simplify startup scripts' |
+            Should -Be '[WIP][Android] BlazorWebView: Simplify startup scripts'
+    }
+
+    It 'preserves known automation and revert markers' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[automated][Revert][Windows] Update generated assets' `
+            -RecommendedTitle '[Windows] Assets: Revert generated update' |
+            Should -Be '[automated][Revert][Windows] Assets: Revert generated update'
+    }
+
+    It 'drops an unknown area prefix' {
+        Merge-PreservedTitlePrefix `
+            -CurrentTitle '[Testing][Windows] Update test infrastructure' `
+            -RecommendedTitle '[Windows] Tests: Update infrastructure' |
+            Should -Be '[Windows] Tests: Update infrastructure'
+    }
+
     It 'returns the recommendation unchanged when there is no prefix' {
         Merge-PreservedTitlePrefix `
             -CurrentTitle 'Fix grouped CollectionView section removal' `

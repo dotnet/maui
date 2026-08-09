@@ -23,8 +23,10 @@
       * Candidate won       -> no-op (candidate-only behavior is not on the PR branch yet).
       * Unparseable content -> no-op (never guess at a replacement).
       * No net change       -> no-op (avoids edit churn / notification spam).
-      * Triage prefixes     -> preserved ([WIP], [inflight regression], [net11.0], ...).
-                              Un-WIP-ing a PR is the author's call, not the bot's.
+      * Triage prefixes     -> known workflow/branch tags are preserved
+                              ([WIP], [inflight regression], [net11.0], ...).
+                              Component tags are replaced by the recommendation so titles
+                              do not become "[Component][Platform] Component: ...".
       * Testing-note block  -> preserved. Phase 4 is told to omit the repo's required
                               "test the resulting artifacts" note from its recommendation,
                               so applying the body verbatim would silently delete it.
@@ -75,7 +77,8 @@ $ErrorActionPreference = 'Stop'
 
 # Platform tags are owned by the recommendation itself (the pr-finalize title formula is
 # "[Platform] Component: What changed"), so they are never re-prepended from the old title.
-# Everything else in a leading [bracket] run is author/triage signal and is preserved.
+# Only known workflow/branch tags in a leading [bracket] run are preserved. Generic
+# component tags are owned by the recommendation and must not be prepended again.
 #
 # Deliberately excludes "net": a "[net11.0]" tag marks a backport target branch, not a
 # platform, and dropping it would erase real triage signal.
@@ -259,8 +262,8 @@ function Merge-PreservedTitlePrefix {
     .DESCRIPTION
         Phase 4 writes a clean "[Platform] Component: What changed" title, which can drop
         tags that carry real workflow meaning — [WIP], [inflight regression], [net11.0].
-        Those are restored in their original order. Platform tags are skipped (the
-        recommendation supplies its own), as is any tag already present.
+        Those are restored in their original order. Platform and component tags are skipped
+        (the recommendation supplies those), as is any tag already present.
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -291,6 +294,28 @@ function Merge-PreservedTitlePrefix {
         # (e.g. "iOS18" -> "ios") so versioned platform tags still match.
         $firstWord = ($tag -split '[\s/]')[0].TrimEnd('0123456789.')
         if ($script:PlatformPrefixes -contains $firstWord.ToLowerInvariant()) { continue }
+
+        # Preserve only well-known workflow or branch markers. Treating every syntactically
+        # safe bracket as triage signal also preserved component tags such as
+        # "[BlazorWebView]", producing titles like
+        # "[BlazorWebView][Android] BlazorWebView: ...".
+        $normalizedTag = $tag.ToLowerInvariant()
+        $isKnownStatusTag = $normalizedTag -in @(
+            'wip',
+            'draft',
+            'dnm',
+            'do not merge',
+            'automated',
+            'revert',
+            'main',
+            'servicing'
+        )
+        $isKnownBranchTag =
+            $normalizedTag -match '^inflight(?:$|[ /-])' -or
+            $normalizedTag -match '^release/' -or
+            $normalizedTag -match '^backport(?:$|[ /-])' -or
+            $normalizedTag -match '^net\s*\d+(?:\.\d+)*(?:[ /-][a-z0-9][a-z0-9._/-]*)?$'
+        if (-not ($isKnownStatusTag -or $isKnownBranchTag)) { continue }
 
         # Already carried over by the recommendation (in any position)?
         if ($RecommendedTitle -match ('(?i)\[\s*' + [regex]::Escape($tag) + '\s*\]')) { continue }
