@@ -27,6 +27,8 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 // TODO: Material3 - make it public in .net 11
 internal class MauiMaterialPickerBase : TextInputEditText
 {
+	PickerScrollingMovementMethod? _movementMethod;
+
 	public MauiMaterialPickerBase(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
 	{
 		if (Background is not null)
@@ -35,7 +37,7 @@ internal class MauiMaterialPickerBase : TextInputEditText
 		}
 	}
 
-	// MovementMethod handles cursor positioning, scrolling, and text selection (per Android docs).
-	// Since text is readonly, we disable it to avoid unnecessary cursor navigation during keyboard input.
-	protected override IMovementMethod? DefaultMovementMethod => null;
+	// Allow overflow text to scroll without enabling EditText cursor movement.
+	protected override IMovementMethod? DefaultMovementMethod =>
+		_movementMethod ??= new PickerScrollingMovementMethod();
 }

@@ -27,14 +27,16 @@ namespace Microsoft.Maui.Platform
 
 	public class MauiPickerBase : AppCompatEditText
 	{
+		PickerScrollingMovementMethod? _movementMethod;
+
 		public MauiPickerBase(Context context) : base(context)
 		{
 			if (Background != null)
 				DrawableCompat.Wrap(Background);
 		}
 
-		// MovementMethod handles cursor positioning, scrolling, and text selection (per Android docs).
-		// Since text is readonly, we disable it to avoid unnecessary cursor navigation during keyboard input.
-		protected override IMovementMethod? DefaultMovementMethod => null;
+		// Allow overflow text to scroll without enabling EditText cursor movement.
+		protected override IMovementMethod? DefaultMovementMethod =>
+			_movementMethod ??= new PickerScrollingMovementMethod();
 	}
 }
