@@ -135,7 +135,7 @@ jobs:
 if: |
   github.repository == 'dotnet/maui'
 
-model: claude-opus-4.8
+model: gpt-5.6-sol
 engine:
   id: copilot
   env:

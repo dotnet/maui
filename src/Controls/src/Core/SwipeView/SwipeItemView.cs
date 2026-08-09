@@ -52,6 +52,8 @@ namespace Microsoft.Maui.Controls
 			Invoked?.Invoke(this, EventArgs.Empty);
 		}
 
+		WeakCommandSubscription _commandSubscription;
+
 		void OnCommandChanged()
 		{
 			IsEnabled = Command?.CanExecute(CommandParameter) ?? true;
@@ -59,15 +61,13 @@ namespace Microsoft.Maui.Controls
 			if (Command == null)
 				return;
 
-			Command.CanExecuteChanged += OnCommandCanExecuteChanged;
+			_commandSubscription = new WeakCommandSubscription(this, Command, OnCommandCanExecuteChanged);
 		}
 
 		void OnCommandChanging()
 		{
-			if (Command == null)
-				return;
-
-			Command.CanExecuteChanged -= OnCommandCanExecuteChanged;
+			_commandSubscription?.Dispose();
+			_commandSubscription = null;
 		}
 
 		void OnCommandParameterChanged()

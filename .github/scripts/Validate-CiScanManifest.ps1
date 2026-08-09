@@ -5,10 +5,11 @@
 
 .DESCRIPTION
     This script is the fail-closed boundary between a scanner agent and GitHub
-    issue writes. It does not call GitHub. It validates the single batched
-    safe-output payload against a trusted build inventory, recomputes filed-issue
-    match counts from frozen CI evidence, injects the canonical scanner markers
-    itself, and writes a normalized plan for the downstream GitHub API step.
+    issue writes. It does not call GitHub. It validates the single fixed-path
+    manifest from the same-run agent artifact against a trusted build inventory,
+    recomputes filed-issue match counts from frozen CI evidence, injects the
+    canonical scanner markers itself, and writes a normalized plan for the
+    downstream GitHub API step.
 
     The agent never supplies the markers. gh-aw strips literal HTML comments out
     of the compiled prompt, so any design that asks the agent to emit
@@ -73,6 +74,19 @@ function ConvertTo-TrimmedString {
     }
 
     return ([string]$Value).Trim()
+}
+
+function ConvertTo-CanonicalIssueTitle {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    # Models commonly use typographic dashes as prose separators even when prompted
+    # for ASCII. Titles are not evidence-bearing content, so normalize only these two
+    # visible, unambiguous punctuation variants at the trusted boundary. The printable
+    # ASCII gate below still rejects every other non-ASCII or control character.
+    return $Value.
+        Replace([char]0x2013, [char]0x002D).
+        Replace([char]0x2014, [char]0x002D).
+        Trim()
 }
 
 function ConvertTo-SafeLogValue {
@@ -173,34 +187,61 @@ function ConvertTo-PositiveIntegerArray {
     return $normalized.ToArray()
 }
 
-function Get-ScannerManifestFromAgentOutput {
+function Assert-ScannerSubmissionFromAgentOutput {
     param([Parameter(Mandatory = $true)][string]$Path)
 
-    if (-not (Test-Path -LiteralPath $Path)) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         throw "Agent output '$Path' does not exist."
     }
 
-    $payload = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $rawOutput = Get-Content -Raw -LiteralPath $Path
+    if ([string]::IsNullOrWhiteSpace($rawOutput) -or $rawOutput.Length -gt 100000) {
+        throw 'Agent output is empty or exceeds the 100000 character limit.'
+    }
+
+    $payload = $rawOutput | ConvertFrom-Json
+
+    # gh-aw's safe-output collector diverts every rejected, malformed, or
+    # over-max submission attempt into a sibling `.errors` array rather than
+    # `.items`. A duplicate or argument-carrying `submit_ci_scan` therefore
+    # disappears from `.items` while the run still looks successful. Any
+    # collector error means the agent tried to submit more (or differently)
+    # than the exact-once contract allows, so fail closed on a non-empty set.
+    $collectorErrors = @($payload.errors | Where-Object { $null -ne $_ })
+    if ($collectorErrors.Count -ne 0) {
+        throw "Agent output collector reported $($collectorErrors.Count) rejected submission attempt(s); the exact-once contract forbids any collector errors."
+    }
+
     $items = @($payload.items | Where-Object { $null -ne $_ })
     if ($items.Count -ne 1 -or $items[0].type -ne 'submit_ci_scan') {
         throw "Agent output must contain exactly one item of type submit_ci_scan and no alternate outputs."
     }
 
-    $rawManifest = Get-RequiredProperty -Object $items[0] -Name 'manifest' -Context 'submit_ci_scan item'
-    # The safe-output tool declares `manifest` as a string, but agent_output.json is
-    # agent-controlled and this is the fail-closed boundary, so the contract is enforced
-    # rather than assumed. Accepting an already-decoded object would hand back a payload
-    # that never passed the emptiness and size limits below.
-    if ($rawManifest -isnot [string]) {
-        throw 'submit_ci_scan manifest must be a JSON string.'
+    $itemProperties = @($items[0].PSObject.Properties.Name)
+    if ($itemProperties.Count -ne 1 -or $itemProperties[0] -cne 'type') {
+        throw 'submit_ci_scan is authorization-only and must not contain manifest data or a path.'
     }
-    if ([string]::IsNullOrWhiteSpace($rawManifest)) {
-        throw 'submit_ci_scan manifest is empty.'
-    }
-    if ($rawManifest.Length -gt 500000) {
-        throw 'submit_ci_scan manifest exceeds the 500000 character limit.'
+}
+
+function Get-ScannerManifestFromFile {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Fixed scanner manifest '$Path' does not exist."
     }
 
+    $manifestFile = Get-Item -LiteralPath $Path
+    if (($manifestFile.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw 'Fixed scanner manifest must not be a symbolic link.'
+    }
+    if ($manifestFile.Length -eq 0 -or $manifestFile.Length -gt 500000) {
+        throw 'Fixed scanner manifest is empty or exceeds the 500000 byte limit.'
+    }
+
+    $rawManifest = Get-Content -Raw -LiteralPath $manifestFile.FullName
+    if ([string]::IsNullOrWhiteSpace($rawManifest)) {
+        throw 'Fixed scanner manifest is empty.'
+    }
     return $rawManifest | ConvertFrom-Json
 }
 
@@ -230,7 +271,19 @@ function Test-MarkerLikeContent {
     # HTML-entity evasion that would re-emerge as a real marker once GitHub
     # renders the body. Folding to alphanumerics collapses every one of those
     # spellings onto the same token, so the gate cannot be spelled around.
-    $normalized = $Value.Normalize([System.Text.NormalizationForm]::FormKC)
+    # NFKC normalization throws on invalid Unicode -- an unpaired surrogate or a
+    # noncharacter (U+xFFFE/U+xFFFF, U+FDD0-FDEF). Such input can never fold into a
+    # valid marker, and every code point that makes Normalize throw is itself
+    # rejected by the downstream Test-HiddenOrControlContent gate (surrogates and
+    # noncharacters alike), so falling back to the raw value here is a sound
+    # backstop rather than a fail-open: a marker smuggled alongside a throw-inducing
+    # code point is still rejected before publication.
+    try {
+        $normalized = $Value.Normalize([System.Text.NormalizationForm]::FormKC)
+    }
+    catch {
+        $normalized = $Value
+    }
     $builder = [System.Text.StringBuilder]::new()
     foreach ($character in $normalized.ToCharArray()) {
         $mapped = switch ([int]$character) {
@@ -269,6 +322,145 @@ function Test-MarkerLikeContent {
     return $folded.Contains('ciscanfingerprint') -or
         $folded.Contains('ciscanmatchcount') -or
         $folded.Contains('ciscanevidencekey')
+}
+
+function Test-HiddenOrControlContent {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    # The manifest body is derived from untrusted CI logs and, since it moved to a
+    # file artifact, no longer flows through gh-aw's sanitizeContent pass. It is
+    # published verbatim into an issue body, so this trusted boundary fails closed
+    # on the classes of content that never appear in a real CI evidence line yet
+    # let an attacker smuggle hidden, spoofed, or terminal-escape payloads:
+    #   * C0 control characters other than tab/newline/carriage-return, and DEL.
+    #   * The C1 control range (0x80-0x9F).
+    #   * Bidirectional, invisible, and steganographic format/mark characters --
+    #     soft hyphen, Arabic letter mark, Mongolian vowel/free variation selectors,
+    #     the zero-width/joiner/bidi ranges, line/paragraph separators, the variation
+    #     selectors and their supplement, the combining grapheme joiner, the Khmer
+    #     inherent vowels, the Hangul fillers, the reserved default-ignorable Specials
+    #     (U+FFF0-FFF8), the entire default-ignorable tag/variation-supplement plane
+    #     (U+E0000-E0FFF, including its unassigned-but-invisible reserved slots), and
+    #     -- via a whole-category match on Unicode Format (Cf) -- the musical,
+    #     interlinear annotation, and shorthand format controls. These reorder or hide
+    #     rendered text, or smuggle data invisibly (Trojan-Source / ASCII-smuggling
+    #     attacks). Enumerated ranges cover the invisible Mn/Lo/reserved code points
+    #     (so a blanket category reject cannot swallow legitimate accents or CJK); the
+    #     category match closes the rest of the Format class in one shot. Several of
+    #     these live in the supplementary plane, so the body is walked by Unicode scalar
+    #     value (decoding surrogate pairs) rather than by UTF-16 code unit; an unpaired
+    #     surrogate is itself rejected.
+    #   * Unicode noncharacters (U+xFFFE/U+xFFFF per plane and U+FDD0-FDEF), which are
+    #     reserved and never appear in real evidence; the U+xFFFE/xFFFF pair also makes
+    #     NFKC normalization throw.
+    #   * HTML comment sequences, which are how the trusted publisher's own markers
+    #     are spelled -- the agent body must never carry one.
+    # It rejects rather than strips: evidence lines are hash-verified against frozen
+    # CI evidence, so silently mutating the body would corrupt a legitimate match.
+    $length = $Value.Length
+    $previousCode = -1
+    for ($index = 0; $index -lt $length; $index++) {
+        $unit = $Value[$index]
+        if ([char]::IsHighSurrogate($unit)) {
+            if ($index + 1 -lt $length -and [char]::IsLowSurrogate($Value[$index + 1])) {
+                $code = [char]::ConvertToUtf32($unit, $Value[$index + 1])
+                $index++
+            }
+            else {
+                return "an unpaired high surrogate (U+$(([int]$unit).ToString('X4')))"
+            }
+        }
+        elseif ([char]::IsLowSurrogate($unit)) {
+            return "an unpaired low surrogate (U+$(([int]$unit).ToString('X4')))"
+        }
+        else {
+            $code = [int]$unit
+        }
+
+        if ($code -le 0x1F -and $code -ne 0x09 -and $code -ne 0x0A -and $code -ne 0x0D) {
+            return "a C0 control character (U+$($code.ToString('X4')))"
+        }
+        if ($code -eq 0x7F) {
+            return 'a DEL control character (U+007F)'
+        }
+        if ($code -ge 0x80 -and $code -le 0x9F) {
+            return "a C1 control character (U+$($code.ToString('X4')))"
+        }
+
+        # VS15/VS16 visibly select text or emoji presentation for a preceding emoji
+        # base. Permit only common CI status/callout bases; accepting every Unicode
+        # Symbol would let ignored selectors after arbitrary symbols encode hidden bits.
+        if ($code -eq 0xFE0E -or $code -eq 0xFE0F) {
+            $isEmojiVariationBase = $previousCode -in @(
+                0x203C, # double exclamation
+                0x2049, # exclamation question
+                0x2139, # information
+                0x2611, # ballot box with check
+                0x26A0, # warning
+                0x2705, # check mark button
+                0x2714, # heavy check mark
+                0x274C, # cross mark
+                0x274E, # negative squared cross
+                0x2753, # question mark
+                0x2754, # white question mark
+                0x2755, # white exclamation mark
+                0x2757, # heavy exclamation mark
+                0x2763, # heart exclamation
+                0x2764, # heart
+                0x1F6E0 # hammer and wrench
+            )
+            if (-not $isEmojiVariationBase) {
+                return "an isolated emoji presentation selector (U+$($code.ToString('X4')))"
+            }
+        }
+
+        if ($code -eq 0x00AD -or
+            $code -eq 0x034F -or
+            $code -eq 0x061C -or
+            ($code -ge 0x115F -and $code -le 0x1160) -or
+            ($code -ge 0x17B4 -and $code -le 0x17B5) -or
+            ($code -ge 0x180B -and $code -le 0x180F) -or
+            ($code -ge 0x200B -and $code -le 0x200F) -or
+            ($code -ge 0x2028 -and $code -le 0x202E) -or
+            ($code -ge 0x2060 -and $code -le 0x206F) -or
+            $code -eq 0x3164 -or
+            ($code -ge 0xFE00 -and $code -le 0xFE0D) -or
+            $code -eq 0xFEFF -or
+            $code -eq 0xFFA0 -or
+            ($code -ge 0xFFF0 -and $code -le 0xFFF8) -or
+            ($code -ge 0xE0000 -and $code -le 0xE0FFF)) {
+            return "a bidirectional or invisible format character (U+$($code.ToString('X4')))"
+        }
+        # Unicode noncharacters (the U+xFFFE/U+xFFFF pair in every plane and the
+        # U+FDD0-FDEF block) are permanently reserved and never appear in real CI
+        # evidence. The U+xFFFE/xFFFF pair is also a normalization hazard --
+        # NormalizationForm.FormKC throws on it (the U+FDD0-FDEF block normalizes
+        # without throwing but is rejected here all the same) -- which is how a marker
+        # spelled with compatibility characters could slip past Test-MarkerLikeContent's
+        # folding via its raw-value fallback. Rejecting every noncharacter here keeps
+        # this gate the sound backstop for that fallback.
+        if (($code -band 0xFFFE) -eq 0xFFFE -or ($code -ge 0xFDD0 -and $code -le 0xFDEF)) {
+            return "a Unicode noncharacter (U+$($code.ToString('X4')))"
+        }
+        # Any remaining Unicode Format (Cf) scalar -- e.g. the musical, interlinear
+        # annotation, and shorthand format controls not enumerated above -- is
+        # invisible or reorders text and never belongs in a CI evidence line. Matching
+        # the whole category closes the class instead of chasing one range at a time,
+        # while the explicit lists above cover the invisible marks/fillers that are
+        # Mn/Lo rather than Cf (so a blanket category reject cannot swallow legitimate
+        # accents or CJK text).
+        if ([System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($code) -eq [System.Globalization.UnicodeCategory]::Format) {
+            return "a Unicode format character (U+$($code.ToString('X4')))"
+        }
+
+        $previousCode = $code
+    }
+
+    if ($Value.Contains('<!--') -or $Value.Contains('-->')) {
+        return 'an HTML comment sequence'
+    }
+
+    return ''
 }
 
 function New-CanonicalMarkerBlock {
@@ -406,11 +598,14 @@ function Assert-ValidFingerprint {
     if ($Fingerprint.Length -gt 512) {
         throw 'Fingerprint exceeds 512 characters.'
     }
-    if ($Fingerprint -cnotmatch '^[a-z0-9][a-z0-9 ._:/+()\-|]*$') {
-        throw "Fingerprint contains non-normalized or unsafe characters."
+    if ($Fingerprint -cnotmatch '^[A-Za-z0-9][A-Za-z0-9 ._:/+()\-|]*$') {
+        throw "Fingerprint contains unsafe characters."
     }
 
-    $parts = @($Fingerprint.Split('|'))
+    # Casing is not a trust decision. Canonicalize the accepted ASCII alphabet at
+    # the trusted boundary so prompt compliance cannot determine marker identity.
+    $canonicalFingerprint = $Fingerprint.ToLowerInvariant()
+    $parts = @($canonicalFingerprint.Split('|'))
     if ($parts.Count -ne 6 -or @($parts | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -gt 0) {
         throw 'Fingerprint must contain exactly six non-empty pipe-delimited fields.'
     }
@@ -421,7 +616,7 @@ function Assert-ValidFingerprint {
             "and pipeline '$PipelineName'.")
     }
 
-    # The fingerprint is injected verbatim into the canonical
+    # The canonical fingerprint is injected verbatim into the
     # `<!-- ci-scan-fingerprint: ... -->` marker. Downstream consumers (the fixer, the
     # lock sweep, and this publisher's own dedup path) match that marker against issue
     # bodies that have been through `ConvertTo-SafeIssueBody`, so a fingerprint that
@@ -429,12 +624,14 @@ function Assert-ValidFingerprint {
     # reachable (`@` and `#` are already outside the allowed charset), but asserting the
     # round-trip rather than enumerating URL shapes keeps this check correct for free if
     # a neutralization rule is ever added or widened.
-    if (-not [string]::Equals((ConvertTo-SafeIssueBody -Body $Fingerprint), $Fingerprint,
+    if (-not [string]::Equals((ConvertTo-SafeIssueBody -Body $canonicalFingerprint), $canonicalFingerprint,
             [System.StringComparison]::Ordinal)) {
         throw ('Fingerprint would be rewritten by notification neutralization ' +
             '(it contains a GitHub issue/PR URL, @mention, or #reference). ' +
             'Normalize it in the scanner before filing.')
     }
+
+    return $canonicalFingerprint
 }
 
 function Get-ValidatedMatchPattern {
@@ -455,8 +652,31 @@ function Get-ValidatedMatchPattern {
     if (Test-MarkerLikeContent -Value $matchPattern) {
         throw "match_pattern for '$Fingerprint' must not contain scanner marker content."
     }
+    $hiddenReason = Test-HiddenOrControlContent -Value $matchPattern
+    if ($hiddenReason) {
+        throw "match_pattern for '$Fingerprint' must not contain $hiddenReason."
+    }
 
     return $matchPattern
+}
+
+function Add-TrustedMatchPatternExcerpt {
+    param(
+        [Parameter(Mandatory = $true)][string]$Body,
+        [Parameter(Mandatory = $true)][string]$MatchPattern
+    )
+
+    $visibleBody = $Body.Replace([string][char]0x200B, '')
+    if ($visibleBody.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+        return $Body
+    }
+
+    # The pattern is agent-selected but reaches this point only after the trusted
+    # evidence recount proved it exists in every claimed source log. Put that bounded,
+    # single-line value in an indented code block so issue-body correctness does not
+    # depend on the model copying the same field into two separate JSON properties.
+    $safeMatchPattern = ConvertTo-SafeIssueBody -Body $MatchPattern
+    return "$Body`n`n## Trusted Match Pattern`n`n    $safeMatchPattern"
 }
 
 function Get-Sha256Hex {
@@ -651,7 +871,7 @@ function Assert-ValidIssuePayload {
     if ($rawTitle -isnot [string]) {
         throw "Title for '$Fingerprint' must be a JSON string."
     }
-    $title = ConvertTo-TrimmedString $rawTitle
+    $title = ConvertTo-CanonicalIssueTitle $rawTitle
     if ($title.Length -lt 10 -or $title.Length -gt 180) {
         throw "Title for '$Fingerprint' must be 10-180 characters."
     }
@@ -690,6 +910,13 @@ function Assert-ValidIssuePayload {
         throw ("Body for '$Fingerprint' must not contain scanner marker content; " +
             'the trusted publisher injects the canonical markers.')
     }
+    # The manifest body no longer passes through gh-aw's sanitizeContent step, so
+    # reject hidden control, bidirectional/invisible, or HTML-comment content that
+    # untrusted CI log text should never carry before it is published verbatim.
+    $hiddenReason = Test-HiddenOrControlContent -Value $rawBody
+    if ($hiddenReason) {
+        throw "Body for '$Fingerprint' must not contain $hiddenReason."
+    }
 
     $body = ConvertTo-SafeIssueBody -Body $rawBody
     if ($body.Length -lt 20 -or $body.Length -gt 59000) {
@@ -700,13 +927,6 @@ function Assert-ValidIssuePayload {
     }
 
     $matchPattern = Get-ValidatedMatchPattern -Signature $Signature -Fingerprint $Fingerprint
-    # Pre-injection evidence check on the neutralized body. Assert-CanonicalPublishedBody
-    # repeats it on the published payload; both matter, because this one blames the agent
-    # body while the post-injection one proves the payload GitHub receives still carries
-    # the counted line.
-    if (-not $body.Replace([string]$zeroWidthSpace, '').Contains($matchPattern, [System.StringComparison]::Ordinal)) {
-        throw "Body for '$Fingerprint' must contain match_pattern exactly."
-    }
     # A filed payload's match count comes from frozen evidence, so a filed payload
     # without frozen evidence has no trusted count to inject. Fail closed rather than
     # inventing one or letting the agent supply it.
@@ -720,6 +940,13 @@ function Assert-ValidIssuePayload {
         -Fingerprint $Fingerprint `
         -SourceLogIds $SourceLogIds `
         -TrustedEvidencePath $TrustedEvidencePath
+
+    $body = Add-TrustedMatchPatternExcerpt `
+        -Body $body `
+        -MatchPattern $matchPattern
+    if ($body.Length -gt 59000) {
+        throw "Body for '$Fingerprint' exceeds 59000 characters after trusted match_pattern injection."
+    }
 
     # Injection. The fingerprint comes only from validated manifest structure that
     # Assert-ValidFingerprint already bound to this scanner, branch, and pipeline; the
@@ -898,11 +1125,11 @@ function Test-CiScanManifest {
 
             $signature = $signatures[$signatureIndex]
             $signatureContext = "$context signature[$signatureIndex]"
-            $fingerprint = ConvertTo-TrimmedString (
+            $rawFingerprint = ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $signature -Name 'fingerprint' -Context $signatureContext
             )
-            Assert-ValidFingerprint `
-                -Fingerprint $fingerprint `
+            $fingerprint = Assert-ValidFingerprint `
+                -Fingerprint $rawFingerprint `
                 -PipelineName $name `
                 -ScannerConfig $scannerConfig
             if (-not $fingerprints.Add($fingerprint)) {
@@ -922,10 +1149,6 @@ function Test-CiScanManifest {
             $disposition = (ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $signature -Name 'disposition' -Context $signatureContext
             )).ToLowerInvariant()
-            if ($filedCount -eq $script:IssueCap -and $disposition -ne 'skipped') {
-                throw "$signatureContext must be skipped with cap-reached because the issue cap was already reached."
-            }
-
             $normalized = [ordered]@{
                 fingerprint    = $fingerprint
                 disposition    = $disposition
@@ -991,12 +1214,7 @@ function Test-CiScanManifest {
                         throw "$signatureContext has invalid skip_reason '$skipReason'."
                     }
                     if ($skipReason -eq 'cap-reached') {
-                        if ($filedCount -ne $script:IssueCap) {
-                            throw "$signatureContext cannot use cap-reached before exactly $($script:IssueCap) issues are filed."
-                        }
                         $hasCapSkip = $true
-                    } elseif ($filedCount -eq $script:IssueCap) {
-                        throw "$signatureContext must use cap-reached because the issue cap was already reached."
                     }
 
                     # A skip still consumes terminal coverage for its source logs, so it
@@ -1119,6 +1337,9 @@ if ($MyInvocation.InvocationName -eq '.') {
 if (-not $env:GH_AW_AGENT_OUTPUT) {
     throw 'GH_AW_AGENT_OUTPUT is required.'
 }
+if (-not $env:CI_SCAN_MANIFEST_PATH) {
+    throw 'CI_SCAN_MANIFEST_PATH is required.'
+}
 if (-not $env:CI_SCAN_SCANNER_ID) {
     throw 'CI_SCAN_SCANNER_ID is required.'
 }
@@ -1133,7 +1354,8 @@ if (-not $env:CI_SCAN_TRUSTED_EVIDENCE_PATH) {
 }
 
 try {
-    $manifest = Get-ScannerManifestFromAgentOutput -Path $env:GH_AW_AGENT_OUTPUT
+    Assert-ScannerSubmissionFromAgentOutput -Path $env:GH_AW_AGENT_OUTPUT
+    $manifest = Get-ScannerManifestFromFile -Path $env:CI_SCAN_MANIFEST_PATH
     $expectedBuilds = Get-CiScanExpectedBuilds -Path $env:CI_SCAN_EXPECTED_BUILDS_PATH
     $plan = Test-CiScanManifest `
         -Manifest $manifest `

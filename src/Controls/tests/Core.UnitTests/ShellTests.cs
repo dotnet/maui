@@ -1668,6 +1668,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Shell Title", (window as IWindow).Title);
 		}
 
+		// When a Shell page has a title but no TitleView, the page title must appear
+		// in the in-app navigation bar (Toolbar.Title) but must NOT propagate to
+		// Shell.Title — which would cause it to appear in the native window/status bar
+		// via Window.ITitledElement.Title (= Window.Title ?? Shell.Title).
+		[Fact]
+		public void ShellPageTitleDoesNotPropagateToWindowTitleBar()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Page Title";
+
+			TestShell testShell = new TestShell(shellContent);
+
+			Window window = new Window { Page = testShell };
+
+			// In-app navigation bar shows the page title
+			Assert.Equal("Page Title", testShell.Toolbar.Title);
+
+			// Shell.Title must NOT be updated by the renderer — keeps the
+			// native window title bar / status bar free of the page title
+			Assert.Null(testShell.Title);
+			Assert.Null((window as IWindow).Title);
+		}
+
+		// The same invariant must hold after navigating to a pushed page.
+		[Fact]
+		public async Task ShellPageTitleDoesNotPropagateToWindowTitleBarOnNavigation()
+		{
+			var shellContent = CreateShellContent();
+			shellContent.Title = "Page One";
+
+			TestShell testShell = new TestShell(shellContent);
+
+			Window window = new Window { Page = testShell };
+
+			Assert.Equal("Page One", testShell.Toolbar.Title);
+			Assert.Null(testShell.Title);
+			Assert.Null((window as IWindow).Title);
+
+			await testShell.Navigation.PushAsync(new ContentPage { Title = "Page Two" });
+
+			Assert.Equal("Page Two", testShell.Toolbar.Title);
+
+			// Shell.Title must still NOT be updated by the renderer after navigation
+			Assert.Null(testShell.Title);
+			Assert.Null((window as IWindow).Title);
+		}
+
 		[Fact]
 		public void FlyoutIsPresentedRemainsTrueAfterShellIsInitialized()
 		{
