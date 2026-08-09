@@ -8,7 +8,7 @@ public class App : Application
 	{
 		var colors = new AppColors();
 		Resources.MergedDictionaries.Add(colors);
-		Resources.MergedDictionaries.Add(new AppStyles(colors));
+		Resources.MergedDictionaries.Add(new AppStyles(colors, this));
 	}
 
 	protected override Window CreateWindow(IActivationState? activationState)

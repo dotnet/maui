@@ -1,21 +1,19 @@
 namespace MauiApp._1.Resources.Styles;
 
-using System.Reflection;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Shapes;
 
 public class AppStyles : ResourceDictionary
 {
-	// AppThemeBinding is internal; reflect once to construct it from code.
-	private static readonly Type s_appThemeBindingType =
-		typeof(Application).Assembly.GetType("Microsoft.Maui.Controls.AppThemeBinding", throwOnError: true)!;
-	private static readonly PropertyInfo s_lightProperty = s_appThemeBindingType.GetProperty("Light")!;
-	private static readonly PropertyInfo s_darkProperty = s_appThemeBindingType.GetProperty("Dark")!;
-
-	public AppStyles() : this(new AppColors())
+	public AppStyles() : this(new AppColors(), Application.Current)
 	{
 	}
 
-	public AppStyles(AppColors colors)
+	public AppStyles(AppColors colors) : this(colors, Application.Current)
+	{
+	}
+
+	public AppStyles(AppColors colors, Application? application)
 	{
 		var primary = (Color)colors["Primary"];
 		var primaryDark = (Color)colors["PrimaryDark"];
@@ -36,13 +34,8 @@ public class AppStyles : ResourceDictionary
 		var gray900 = (Color)colors["Gray900"];
 		var gray950 = (Color)colors["Gray950"];
 
-		static BindingBase Theme(object light, object dark)
-		{
-			var binding = (BindingBase)Activator.CreateInstance(s_appThemeBindingType, nonPublic: true)!;
-			s_lightProperty.SetValue(binding, light);
-			s_darkProperty.SetValue(binding, dark);
-			return binding;
-		}
+		BindingBase Theme(object light, object dark) =>
+			Binding.Create(static (AppThemeValue source) => source.Value, source: new AppThemeValue(application, light, dark));
 
 		static Setter Set(BindableProperty property, object value) => new() { Property = property, Value = value };
 
@@ -350,5 +343,37 @@ public class AppStyles : ResourceDictionary
 			Set(TabbedPage.BarTextColorProperty, Theme(magenta, white)),
 			Set(TabbedPage.UnselectedTabColorProperty, Theme(gray200, gray950)),
 			Set(TabbedPage.SelectedTabColorProperty, Theme(gray950, gray200))));
+	}
+
+	internal sealed class AppThemeValue : BindableObject
+	{
+		public static readonly BindableProperty ValueProperty =
+			BindableProperty.Create(nameof(Value), typeof(object), typeof(AppThemeValue));
+
+		readonly object _light;
+		readonly object _dark;
+
+		public AppThemeValue(Application? application, object light, object dark)
+		{
+			_light = light;
+			_dark = dark;
+			Value = GetValueForTheme(application?.RequestedTheme ?? AppTheme.Unspecified);
+
+			if (application is not null)
+				application.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		public object Value
+		{
+			get => GetValue(ValueProperty);
+			private set => SetValue(ValueProperty, value);
+		}
+
+		void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
+		{
+			Value = GetValueForTheme(e.RequestedTheme);
+		}
+
+		object GetValueForTheme(AppTheme theme) => theme == AppTheme.Dark ? _dark : _light;
 	}
 }

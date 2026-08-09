@@ -4,7 +4,7 @@ public class AppShell : Shell
 {
 	public AppShell()
 	{
-		Title = "Home";
+		Title = "MauiApp._1";
 
 		Items.Add(new ShellContent
 		{

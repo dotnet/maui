@@ -65,7 +65,7 @@
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
             "args": {
-                "files": "2;3"
+                "files": "0;1"
             },
             "continueOnError": true
         },
@@ -76,7 +76,7 @@
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
             "args": {
-                "files": "4"
+                "files": "0"
             },
             "continueOnError": true
         },
@@ -284,7 +284,7 @@
         },
         "EnableSampleContent": {
             "type": "computed",
-            "value": "(IncludeSampleContent && !UseCSharpUI)"
+            "value": "(!UseCSharpUI && IncludeSampleContent)"
         },
         "skipRestore": {
             "type": "parameter",

@@ -76,6 +76,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml.cs")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
+		Assert.True(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "Colors.cs")));
+		Assert.True(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "Styles.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "Colors.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "Styles.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "Colors-CSharp.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "Styles-CSharp.cs")));
 
 		var buildProps = BuildProps;
 
