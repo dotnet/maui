@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.OS;
 using Android.Text;
 using Android.Views;
@@ -89,9 +91,78 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Long Selected Text Scrolls Horizontally And Remains Read Only")]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task LongSelectedTextScrollsHorizontallyAndRemainsReadOnly(bool useMaterialPicker, bool delayPressedState)
+		{
+			await RunPickerGestureTest(useMaterialPicker, delayPressedState, async (platformPicker, getClickCount) =>
+			{
+				DispatchTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(1, getClickCount());
+
+				platformPicker.ScrollTo(0, platformPicker.ScrollY);
+				DispatchHorizontalDrag(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+
+				Assert.True(
+					platformPicker.ScrollX > 0,
+					$"Expected Picker ScrollX to be greater than 0 after a horizontal drag, but it was {platformPicker.ScrollX}.");
+				Assert.Equal(1, getClickCount());
+
+				DispatchTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(2, getClickCount());
+			});
+		}
+
+		[Theory(DisplayName = "Picker Tap Jitter Clicks But Fast Swipe Does Not")]
 		[InlineData(false)]
 		[InlineData(true)]
-		public async Task LongSelectedTextScrollsHorizontallyAndRemainsReadOnly(bool useMaterialPicker)
+		public async Task TapJitterClicksButFastSwipeDoesNot(bool useMaterialPicker)
+		{
+			await RunPickerGestureTest(useMaterialPicker, delayPressedState: false, async (platformPicker, getClickCount) =>
+			{
+				DispatchJitteredTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(1, getClickCount());
+
+				DispatchSwipeWithoutMove(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(1, getClickCount());
+
+				DispatchTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(2, getClickCount());
+			});
+		}
+
+		[Theory(DisplayName = "Picker Vertical Drag Does Not Click")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task VerticalDragDoesNotClick(bool useMaterialPicker)
+		{
+			await RunPickerGestureTest(useMaterialPicker, delayPressedState: false, async (platformPicker, getClickCount) =>
+			{
+				DispatchVerticalDrag(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(0, getClickCount());
+
+				DispatchTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(1, getClickCount());
+			});
+		}
+
+		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
+			pickerHandler.PlatformView;
+
+		async Task RunPickerGestureTest(
+			bool useMaterialPicker,
+			bool delayPressedState,
+			Func<EditText, Func<int>, Task> test)
 		{
 			const double pickerWidth = 96;
 			const double pickerHeight = 80;
@@ -112,10 +183,18 @@ namespace Microsoft.Maui.DeviceTests
 				var width = (int)context.ToPixels(pickerWidth);
 				var height = (int)context.ToPixels(pickerHeight);
 
-				LayoutNativePicker(platformPicker, width, height);
+				using var host = delayPressedState
+					? new DelayedPressedFrameLayout(context)
+					: new FrameLayout(context);
 
-				await platformPicker.AttachAndRun(async () =>
+				host.AddView(platformPicker, new FrameLayout.LayoutParams(width, height)
 				{
+					Gravity = GravityFlags.Center
+				});
+
+				await host.AttachAndRun(async () =>
+				{
+					LayoutNativePicker(platformPicker, width, height);
 					Assert.Equal(longSelectedItem, platformPicker.Text);
 					AssertReadOnlyPicker(platformPicker);
 
@@ -124,29 +203,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					try
 					{
-						DispatchTap(platformPicker);
-						await WaitForPostedCallbacks(platformPicker);
-						Assert.Equal(1, clickCount);
-
-						platformPicker.ScrollTo(0, platformPicker.ScrollY);
-						DispatchHorizontalDrag(platformPicker);
-						await WaitForPostedCallbacks(platformPicker);
-
-						Assert.True(
-							platformPicker.ScrollX > 0,
-							$"Expected Picker ScrollX to be greater than 0 after a horizontal drag, but it was {platformPicker.ScrollX}.");
-						Assert.Equal(1, clickCount);
-
-						platformPicker.ScrollTo(0, platformPicker.ScrollY);
-						DispatchHorizontalDrag(platformPicker, diagonally: true);
-						await WaitForPostedCallbacks(platformPicker);
-
-						Assert.True(platformPicker.ScrollX > 0);
-						Assert.Equal(1, clickCount);
-
-						DispatchTap(platformPicker);
-						await WaitForPostedCallbacks(platformPicker);
-						Assert.Equal(2, clickCount);
+						await test(platformPicker, () => clickCount);
 					}
 					finally
 					{
@@ -160,9 +217,6 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-
-		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			pickerHandler.PlatformView;
 
 		EditText CreateNativePicker(PickerStub picker, bool useMaterialPicker)
 		{
@@ -191,28 +245,73 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Assert.Equal(InputTypes.Null, platformPicker.InputType);
 			Assert.Null(platformPicker.KeyListener);
+			Assert.True(platformPicker.Focusable);
 			Assert.False(platformPicker.FocusableInTouchMode);
 			Assert.False(platformPicker.IsTextSelectable);
+			Assert.False(platformPicker.LongClickable);
 		}
 
-		static void DispatchHorizontalDrag(EditText platformPicker, bool diagonally = false)
+		static void DispatchHorizontalDrag(EditText platformPicker)
 		{
 			var downTime = SystemClock.UptimeMillis();
 			var startX = platformPicker.Width - 4f;
-			var endX = diagonally ? platformPicker.Width / 2f : 4f;
-			var midX = (startX + endX) / 2f;
-			var startY = diagonally ? 4f : platformPicker.Height / 2f;
-			var midY = diagonally ? platformPicker.Height / 2f : startY;
-			var endY = diagonally ? platformPicker.Height - 4f : startY;
+			var midX = platformPicker.Width / 2f;
+			var endX = 4f;
+			var y = platformPicker.Height / 2f;
 
-			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, startY, 0);
-			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, midX, midY, 0);
-			using var secondMove = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Move, endX, endY, 0);
-			using var up = MotionEvent.Obtain(downTime, downTime + 48, MotionEventActions.Up, endX, endY, 0);
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, y, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, midX, y, 0);
+			using var secondMove = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Move, endX, y, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 48, MotionEventActions.Up, endX, y, 0);
 
 			platformPicker.DispatchTouchEvent(down);
 			platformPicker.DispatchTouchEvent(move);
 			platformPicker.DispatchTouchEvent(secondMove);
+			platformPicker.DispatchTouchEvent(up);
+		}
+
+		static void DispatchVerticalDrag(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var x = platformPicker.Width / 2f;
+			var startY = 4f;
+			var endY = platformPicker.Height - 4f;
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, x, startY, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, x + 1, endY, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Up, x + 1, endY, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(move);
+			platformPicker.DispatchTouchEvent(up);
+		}
+
+		static void DispatchSwipeWithoutMove(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var y = platformPicker.Height / 2f;
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, platformPicker.Width - 4f, y, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Up, 4f, y, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(up);
+		}
+
+		static void DispatchJitteredTap(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var x = platformPicker.Width / 2f;
+			var y = platformPicker.Height / 2f;
+			var touchSlop = ViewConfiguration.Get(platformPicker.Context)?.ScaledTouchSlop ?? 0;
+			var jitter = global::System.Math.Max(1, touchSlop / 2f);
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, x, y, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, x + jitter, y + jitter, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Up, x + jitter, y + jitter, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(move);
 			platformPicker.DispatchTouchEvent(up);
 		}
 
@@ -234,6 +333,16 @@ namespace Microsoft.Maui.DeviceTests
 			var completionSource = new TaskCompletionSource<bool>();
 			view.Post(new Java.Lang.Runnable(() => completionSource.SetResult(true)));
 			return completionSource.Task;
+		}
+
+		sealed class DelayedPressedFrameLayout : FrameLayout
+		{
+			public DelayedPressedFrameLayout(Context context)
+				: base(context)
+			{
+			}
+
+			public override bool ShouldDelayChildPressedState() => true;
 		}
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>

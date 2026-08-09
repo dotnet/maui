@@ -40,4 +40,12 @@ internal class MauiMaterialPickerBase : TextInputEditText
 	// Allow overflow text to scroll without enabling EditText cursor movement.
 	protected override IMovementMethod? DefaultMovementMethod =>
 		_movementMethod ??= new PickerScrollingMovementMethod();
+
+	public override bool PerformClick()
+	{
+		if (_movementMethod?.ConsumeClick() == true)
+			return false;
+
+		return base.PerformClick();
+	}
 }
