@@ -31,7 +31,24 @@ namespace Microsoft.Maui.Platform
 		readonly HashSet<AView> _trackedViews = [];
 		bool IsImeAnimating { get; set; }
 
-		AView? _pendingView;
+		// Set when a dispatch was gated (or an exempted view applied animation-time insets)
+		// while an IME animation was in flight, so the end of the animation re-applies the
+		// settled insets. RequestApplyInsets is not per-view: it walks up to the ViewRootImpl
+		// and re-dispatches insets across the whole hierarchy on the next traversal, so a
+		// single call on any attached view covers every gated view.
+		bool _reapplyInsetsWhenAnimationEnds;
+
+		// The most recent view whose dispatch was gated. _trackedViews only holds views that
+		// have had padding applied, so a gated view is often absent from it; this keeps a
+		// poster candidate for the end-of-animation re-apply. Cleared when the animation ends.
+		AView? _lastGatedView;
+
+		// Views that started using this listener while an IME animation was in flight.
+		// The IsImeAnimating gate exists to keep already-correct views stable during the
+		// animation; a view that just (re)attached has no valid safe-area padding yet, so it
+		// must bypass the gate or it stays without padding until the animation ends (#37012).
+		// Cleared when an animation ends or a new one starts.
+		readonly HashSet<AView> _viewsAttachedDuringImeAnimation = [];
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -230,19 +247,45 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		/// <summary>
+		/// Notifies this listener that a view has (re)attached to the window and started using it.
+		/// Views attached while an IME animation is in flight are exempted from the IsImeAnimating
+		/// gate for the remainder of that animation so they can obtain their safe-area padding.
+		/// Must be called on UI thread.
+		/// </summary>
+		/// <param name="view">The view that attached</param>
+		internal void NotifyViewAttached(AView view)
+		{
+			if (IsImeAnimating)
+			{
+				_viewsAttachedDuringImeAnimation.Add(view);
+			}
+		}
+
 		public virtual WindowInsetsCompat? OnApplyWindowInsets(AView? v, WindowInsetsCompat? insets)
 		{
-			if (insets is null || !insets.HasInsets || v is null || IsImeAnimating)
+			if (insets is null || !insets.HasInsets || v is null ||
+				(IsImeAnimating && !_viewsAttachedDuringImeAnimation.Contains(v)))
 			{
-				if (IsImeAnimating)
+				if (IsImeAnimating && v is not null)
 				{
-					_pendingView = v;
+					_reapplyInsetsWhenAnimationEnds = true;
+					_lastGatedView = v;
 				}
 
 				return insets;
 			}
 
-			_pendingView = null;
+			if (IsImeAnimating)
+			{
+				// The exemption is one-shot: it exists to give a freshly attached view its initial
+				// padding, and after this first successful apply the view is correct and gets gated
+				// like every other view for the rest of the animation. The insets it just applied
+				// are animation-time values (e.g. keyboard-height bottom padding mid
+				// hide-animation), so the end of the animation must re-apply the settled ones.
+				_viewsAttachedDuringImeAnimation.Remove(v);
+				_reapplyInsetsWhenAnimationEnds = true;
+			}
 
 			// Handle custom inset views first
 			if (v is IHandleWindowInsets customHandler)
@@ -370,6 +413,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_trackedViews.Remove(view);
+			_viewsAttachedDuringImeAnimation.Remove(view);
+
+			if (ReferenceEquals(_lastGatedView, view))
+			{
+				_lastGatedView = null;
+			}
 		}
 
 		public void ResetAllViews()
@@ -429,6 +478,7 @@ namespace Microsoft.Maui.Platform
 			if (disposing)
 			{
 				ResetAllViews();
+				_viewsAttachedDuringImeAnimation.Clear();
 			}
 			base.Dispose(disposing);
 		}
@@ -438,7 +488,7 @@ namespace Microsoft.Maui.Platform
 			base.OnPrepare(animation);
 			if (IsImeAnimation(animation))
 			{
-				IsImeAnimating = true;
+				StartImeAnimation();
 			}
 		}
 
@@ -446,10 +496,29 @@ namespace Microsoft.Maui.Platform
 		{
 			if (IsImeAnimation(animation))
 			{
-				IsImeAnimating = true;
+				StartImeAnimation();
 			}
 
 			return bounds;
+		}
+
+		// Set when OnEnd posts a gate release and cleared when an animation starts, so a
+		// release posted by a previous animation cannot open the gate mid-flight: with
+		// back-to-back animations (a hide immediately followed by a show) the new OnPrepare
+		// can arrive before the posted runnable executes.
+		bool _gateReleaseScheduled;
+
+		void StartImeAnimation()
+		{
+			_gateReleaseScheduled = false;
+
+			if (!IsImeAnimating)
+			{
+				IsImeAnimating = true;
+
+				// Exemptions only apply to the animation during which the view attached
+				_viewsAttachedDuringImeAnimation.Clear();
+			}
 		}
 
 		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
@@ -476,22 +545,88 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnEnd(animation);
 
-			if (IsImeAnimation(animation))
+			if (!IsImeAnimation(animation))
 			{
-				if (_pendingView is AView view)
+				return;
+			}
+
+			_viewsAttachedDuringImeAnimation.Clear();
+
+			// Keep the gate up for one more main-looper turn: the system's deferred
+			// post-animation inset dispatches can still carry animation-time IME insets.
+			// The release must be posted through an *attached* view — a detached view's Post
+			// only runs if that view re-attaches, which would leave the gate closed for every
+			// view sharing this listener.
+			var poster = FindAttachedTrackedView();
+
+			if (poster is not null)
+			{
+				_gateReleaseScheduled = true;
+				poster.Post(() =>
 				{
-					_pendingView = null;
-					view.Post(() =>
+					// StartImeAnimation clears the flag, so a new animation started before
+					// this ran means the release belongs to the old one and must be skipped
+					if (_gateReleaseScheduled)
 					{
-						IsImeAnimating = false;
-						ViewCompat.RequestApplyInsets(view);
-					});
-				}
-				else
+						EndImeAnimation(poster);
+					}
+				});
+			}
+			else
+			{
+				// No attached view to post through; release synchronously rather than
+				// leaving the gate stuck
+				EndImeAnimation(null);
+			}
+		}
+
+		AView? FindAttachedTrackedView()
+		{
+			foreach (var view in _trackedViews)
+			{
+				// A view can be disposed while still tracked when a cleanup path is skipped
+				if (view.IsAlive() && view.IsAttachedToWindow)
 				{
-					IsImeAnimating = false;
+					return view;
 				}
 			}
+
+			// _trackedViews only holds views that actually had padding applied, and a view
+			// gated during this animation has by definition not applied any yet — so fall
+			// back to the gated view itself, which is what the pre-PR code posted through
+			if (_lastGatedView.IsAlive() && _lastGatedView.IsAttachedToWindow)
+			{
+				return _lastGatedView;
+			}
+
+			return null;
+		}
+
+		void EndImeAnimation(AView? reapplyThrough)
+		{
+			IsImeAnimating = false;
+			_gateReleaseScheduled = false;
+			_viewsAttachedDuringImeAnimation.Clear();
+			_lastGatedView = null;
+
+			if (!_reapplyInsetsWhenAnimationEnds)
+			{
+				return;
+			}
+
+			// IsAlive covers null as well as a peer disposed during the one-looper-turn delay.
+			// Leave the flag set when we cannot act on it: the re-apply is still owed, and
+			// consuming it here would drop the settled insets entirely.
+			if (!reapplyThrough.IsAlive())
+			{
+				return;
+			}
+
+			_reapplyInsetsWhenAnimationEnds = false;
+
+			// One call is enough: this reaches the ViewRootImpl and re-dispatches insets
+			// across the whole hierarchy, so every gated view gets its settled insets
+			ViewCompat.RequestApplyInsets(reapplyThrough);
 		}
 
 		/// <summary>
@@ -521,6 +656,7 @@ internal static class MauiWindowInsetListenerExtensions
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
+			localListener.NotifyViewAttached(view);
 			return true;
 		}
 
@@ -550,6 +686,14 @@ internal static class MauiWindowInsetListenerExtensions
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
+			// Deliberately no NotifyViewAttached here: this is a SafeAreaEdges configuration
+			// change, which for an already-listening view means it is already padded and must
+			// stay subject to the IME gate (it gets its updated insets at the end of any
+			// in-flight animation), whereas the exemption is for fresh attaches.
+			// Caveat: a view transitioning from ineligible to eligible (e.g. SafeAreaEdges
+			// None -> All) has no padding yet, so if that lands mid-animation it stays
+			// unpadded until the animation ends. Closing that would mean threading the
+			// callers' _isInsetListenerSet state through this method.
 			return true;
 		}
 
