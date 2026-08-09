@@ -71,6 +71,10 @@ namespace Microsoft.Maui.Platform
 			{
 				platformControl.LineHeight = label.LineHeight * platformControl.FontSize;
 			}
+			else
+			{
+				platformControl.ClearValue(TextBlock.LineHeightProperty);
+			}
 		}
 
 		public static void UpdateHorizontalTextAlignment(this TextBlock platformControl, ILabel label)

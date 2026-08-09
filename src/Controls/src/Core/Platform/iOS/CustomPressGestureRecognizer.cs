@@ -4,7 +4,6 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls;
-using PreserveAttribute = Microsoft.Maui.Controls.Internals.PreserveAttribute;
 
 namespace Microsoft.Maui.Controls.Platform.iOS;
 
@@ -33,7 +32,7 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 	/// </summary>
 	public UIEvent CurrentEvent => _currentEvent;
 
-	[Register("__UIGestureRecognizer")]
+	[Register("Microsoft_Maui_Controls_Platform_iOS_CustomPressGestureRecognizer_Callback")]
 	class Callback : Token
 	{
 		Action<UIGestureRecognizer> action;
@@ -44,7 +43,6 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 		}
 
 		[Export("target:")]
-		[Preserve(Conditional = true)]
 		public void Activated(UIGestureRecognizer sender)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13))

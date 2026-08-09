@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Common;
 using System.Linq;
@@ -7,7 +8,9 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
+using Microsoft.Maui.Maps.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -410,6 +413,82 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
+		[Fact]
+		public void MapElementIsVisibleDefaultIsTrue()
+		{
+			var polygon = new Polygon();
+			Assert.True(polygon.IsVisible);
+		}
+
+		[Fact]
+		public void MapElementIsVisibleCanBeSet()
+		{
+			var polygon = new Polygon();
+			polygon.IsVisible = false;
+			Assert.False(polygon.IsVisible);
+		}
+
+		[Fact]
+		public void MapElementZIndexDefaultIsZero()
+		{
+			var polyline = new Polyline();
+			Assert.Equal(0, polyline.ZIndex);
+		}
+
+		[Fact]
+		public void MapElementZIndexCanBeSet()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(0, 0),
+				Radius = new Distance(100)
+			};
+			circle.ZIndex = 5;
+			Assert.Equal(5, circle.ZIndex);
+		}
+
+		[Fact]
+		public void MapElementIsVisibleWorksOnAllTypes()
+		{
+			var polygon = new Polygon { IsVisible = false };
+			var polyline = new Polyline { IsVisible = false };
+			var circle = new Circle
+			{
+				Center = new Location(0, 0),
+				Radius = new Distance(100),
+				IsVisible = false
+			};
+
+			Assert.False(polygon.IsVisible);
+			Assert.False(polyline.IsVisible);
+			Assert.False(circle.IsVisible);
+		}
+
+		[Fact]
+		public void MapStyleDefaultIsNull()
+		{
+			var map = new Map();
+			Assert.Null(map.MapStyle);
+		}
+
+		[Fact]
+		public void MapStyleCanBeSet()
+		{
+			var map = new Map();
+			var style = "[{\"featureType\":\"water\",\"stylers\":[{\"color\":\"#00ff00\"}]}]";
+			map.MapStyle = style;
+			Assert.Equal(style, map.MapStyle);
+		}
+
+		[Fact]
+		public void MapStyleCanBeCleared()
+		{
+			var map = new Map();
+			map.MapStyle = "[{\"featureType\":\"water\",\"stylers\":[{\"color\":\"#00ff00\"}]}]";
+			map.MapStyle = null;
+			Assert.Null(map.MapStyle);
+		}
+
 		// Checks if for every item in the items source there's a corresponding pin
 		static bool IsMapWithItemsSource(IEnumerable itemsSource, Map map)
 		{
@@ -477,5 +556,1072 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Items = itemsSource;
 			}
 		}
+
+		[Fact]
+		public void CircleClickedEventFires()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(37.79752, -122.40183),
+				Radius = new Distance(200),
+			};
+
+			bool eventFired = false;
+			circle.CircleClicked += (s, e) => eventFired = true;
+
+			((IMapElement)circle).Clicked();
+
+			Assert.True(eventFired);
+		}
+
+		[Fact]
+		public void PolygonClickedEventFires()
+		{
+			var polygon = new Polygon();
+			polygon.Geopath.Add(new Location(37.7997, -122.4050));
+			polygon.Geopath.Add(new Location(37.7997, -122.3980));
+			polygon.Geopath.Add(new Location(37.7950, -122.4015));
+
+			bool eventFired = false;
+			polygon.PolygonClicked += (s, e) => eventFired = true;
+
+			((IMapElement)polygon).Clicked();
+
+			Assert.True(eventFired);
+		}
+
+		[Fact]
+		public void PolylineClickedEventFires()
+		{
+			var polyline = new Polyline();
+			polyline.Geopath.Add(new Location(37.7930, -122.4100));
+			polyline.Geopath.Add(new Location(37.7940, -122.4050));
+
+			bool eventFired = false;
+			polyline.PolylineClicked += (s, e) => eventFired = true;
+
+			((IMapElement)polyline).Clicked();
+
+			Assert.True(eventFired);
+		}
+
+		[Fact]
+		public void CircleClickedEventSenderIsCircle()
+		{
+			var circle = new Circle
+			{
+				Center = new Location(37.79752, -122.40183),
+				Radius = new Distance(200),
+			};
+
+			object sender = null;
+			circle.CircleClicked += (s, e) => sender = s;
+
+			((IMapElement)circle).Clicked();
+
+			Assert.Same(circle, sender);
+		}
+
+		[Fact]
+		public void PolygonClickedEventSenderIsPolygon()
+		{
+			var polygon = new Polygon();
+
+			object sender = null;
+			polygon.PolygonClicked += (s, e) => sender = s;
+
+			((IMapElement)polygon).Clicked();
+
+			Assert.Same(polygon, sender);
+		}
+
+		[Fact]
+		public void PolylineClickedEventSenderIsPolyline()
+		{
+			var polyline = new Polyline();
+
+			object sender = null;
+			polyline.PolylineClicked += (s, e) => sender = s;
+
+			((IMapElement)polyline).Clicked();
+
+			Assert.Same(polyline, sender);
+		}
+
+		[Fact]
+		public void MoveToRegionThrowsOnNull()
+		{
+			var map = new Map();
+			Assert.Throws<ArgumentNullException>(() => map.MoveToRegion(null!));
+		}
+
+		[Fact]
+		public void MoveToRegionAnimatedThrowsOnNull()
+		{
+			var map = new Map();
+			Assert.Throws<ArgumentNullException>(() => map.MoveToRegion(null!, true));
+		}
+
+		[Fact]
+		public void MoveToRegionAnimatedOverloadExists()
+		{
+			var map = new Map();
+			var span = new MapSpan(new Location(0, 0), 1, 1);
+
+			// Should not throw - verifies the overload exists and is callable
+			map.MoveToRegion(span, false);
+			map.MoveToRegion(span, true);
+		}
+
+		[Fact]
+		public void MoveToRegionRequestProperties()
+		{
+			var span = new MapSpan(new Location(10, 20), 1, 1);
+			var request = new MoveToRegionRequest(span, true);
+
+			Assert.Same(span, request.Region);
+			Assert.True(request.Animated);
+
+			var request2 = new MoveToRegionRequest(null, false);
+			Assert.Null(request2.Region);
+			Assert.False(request2.Animated);
+		}
+
+		[Fact]
+		public void ShowInfoWindowDoesNotThrowWhenPinHasNoParent()
+		{
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(0, 0)
+			};
+
+			// Should not throw even without a parent map
+			pin.ShowInfoWindow();
+		}
+
+		[Fact]
+		public void HideInfoWindowDoesNotThrowWhenPinHasNoParent()
+		{
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(0, 0)
+			};
+
+			// Should not throw even without a parent map
+			pin.HideInfoWindow();
+		}
+
+		[Fact]
+		public void ShowInfoWindowOnPinAddedToMap()
+		{
+			var map = new Map();
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(47.6, -122.3)
+			};
+			map.Pins.Add(pin);
+
+			// Pin has a parent now; without a handler it's a no-op but should not throw
+			pin.ShowInfoWindow();
+		}
+
+		[Fact]
+		public void HideInfoWindowOnPinAddedToMap()
+		{
+			var map = new Map();
+			var pin = new Pin
+			{
+				Label = "Test",
+				Location = new Location(47.6, -122.3)
+			};
+			map.Pins.Add(pin);
+
+			// Pin has a parent now; without a handler it's a no-op but should not throw
+			pin.HideInfoWindow();
+		}
+
+		[Fact]
+		public void MapLongClickedEventFires()
+		{
+			var map = new Map();
+			var expectedLocation = new Location(37.79752, -122.40183);
+
+			bool eventFired = false;
+			Location receivedLocation = null;
+			map.MapLongClicked += (s, e) =>
+			{
+				eventFired = true;
+				receivedLocation = e.Location;
+			};
+
+			((IMap)map).LongClicked(expectedLocation);
+
+			Assert.True(eventFired);
+			Assert.Equal(expectedLocation.Latitude, receivedLocation.Latitude);
+			Assert.Equal(expectedLocation.Longitude, receivedLocation.Longitude);
+		}
+
+		[Fact]
+		public void MapLongClickedEventSenderIsMap()
+		{
+			var map = new Map();
+
+			object sender = null;
+			map.MapLongClicked += (s, e) => sender = s;
+
+			((IMap)map).LongClicked(new Location(37.79752, -122.40183));
+
+			Assert.Same(map, sender);
+		}
+
+		[Fact]
+		public void MapLongClickedEventArgsContainsLocation()
+		{
+			var map = new Map();
+			var expectedLocation = new Location(47.6062, -122.3321);
+
+			MapClickedEventArgs eventArgs = null;
+			map.MapLongClicked += (s, e) => eventArgs = e;
+
+			((IMap)map).LongClicked(expectedLocation);
+
+			Assert.NotNull(eventArgs);
+			Assert.NotNull(eventArgs.Location);
+			Assert.Equal(expectedLocation.Latitude, eventArgs.Location.Latitude);
+			Assert.Equal(expectedLocation.Longitude, eventArgs.Location.Longitude);
+		}
+
+		[Fact]
+		public void IsClusteringEnabledDefaultValue()
+		{
+			var map = new Map();
+			Assert.False(map.IsClusteringEnabled);
+		}
+
+		[Fact]
+		public void IsClusteringEnabledCanBeSet()
+		{
+			var map = new Map();
+			map.IsClusteringEnabled = true;
+			Assert.True(map.IsClusteringEnabled);
+		}
+
+		[Fact]
+		public void ClusteringIdentifierDefaultValue()
+		{
+			var pin = new Pin { Label = "Test" };
+			Assert.Equal(Pin.DefaultClusteringIdentifier, pin.ClusteringIdentifier);
+			Assert.Equal("maui_default_cluster", pin.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void ClusteringIdentifierCanBeSet()
+		{
+			var pin = new Pin { Label = "Test", ClusteringIdentifier = "restaurants" };
+			Assert.Equal("restaurants", pin.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void ClusterClickedEventRaises()
+		{
+			var map = new Map();
+			bool eventRaised = false;
+			ClusterClickedEventArgs receivedArgs = null;
+
+			map.ClusterClicked += (sender, args) =>
+			{
+				eventRaised = true;
+				receivedArgs = args;
+			};
+
+			// Simulate cluster click via IMap interface
+			var pins = new List<Pin>
+			{
+				new Pin { Label = "Pin 1", Location = new Location(0, 0) },
+				new Pin { Label = "Pin 2", Location = new Location(0.1, 0.1) }
+			};
+			var location = new Location(0.05, 0.05);
+
+			var handled = ((IMap)map).ClusterClicked(pins.Cast<IMapPin>().ToList(), location);
+
+			Assert.True(eventRaised);
+			Assert.NotNull(receivedArgs);
+			Assert.Equal(2, receivedArgs.Pins.Count);
+			Assert.Equal(location, receivedArgs.Location);
+			Assert.False(handled); // Default is not handled
+		}
+
+		[Fact]
+		public void ClusterClickedEventCanBeHandled()
+		{
+			var map = new Map();
+			map.ClusterClicked += (sender, args) =>
+			{
+				args.Handled = true;
+			};
+
+			var pins = new List<Pin>
+			{
+				new Pin { Label = "Pin 1", Location = new Location(0, 0) }
+			};
+			var location = new Location(0.05, 0.05);
+
+			var handled = ((IMap)map).ClusterClicked(pins.Cast<IMapPin>().ToList(), location);
+
+			Assert.True(handled);
+		}
+
+		[Fact]
+		public void ClusterClickedEventArgsContainsCorrectData()
+		{
+			var pins = new List<Pin>
+			{
+				new Pin { Label = "Pin 1", Location = new Location(1, 2), Address = "Address 1" },
+				new Pin { Label = "Pin 2", Location = new Location(3, 4), Address = "Address 2" },
+				new Pin { Label = "Pin 3", Location = new Location(5, 6), Address = "Address 3" }
+			};
+			var location = new Location(2, 3);
+
+			var args = new ClusterClickedEventArgs(pins, location);
+
+			Assert.Equal(3, args.Pins.Count);
+			Assert.Equal("Pin 1", args.Pins[0].Label);
+			Assert.Equal("Pin 2", args.Pins[1].Label);
+			Assert.Equal("Pin 3", args.Pins[2].Label);
+			Assert.Equal(2, args.Location.Latitude);
+			Assert.Equal(3, args.Location.Longitude);
+			Assert.False(args.Handled);
+		}
+
+		[Fact]
+		public void PinClusteringIdentifierImplementsIMapPin()
+		{
+			var pin = new Pin { Label = "Test", ClusteringIdentifier = "custom_cluster" };
+			IMapPin mapPin = pin;
+			Assert.Equal("custom_cluster", mapPin.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void MapClickedAndLongClickedCanCoexist()
+		{
+			var map = new Map();
+			var clickLocation = new Location(37.7749, -122.4194);
+			var longClickLocation = new Location(47.6062, -122.3321);
+
+			bool clickFired = false;
+			bool longClickFired = false;
+			map.MapClicked += (s, e) => clickFired = true;
+			map.MapLongClicked += (s, e) => longClickFired = true;
+
+			// Fire click - only click handler should respond
+			((IMap)map).Clicked(clickLocation);
+			Assert.True(clickFired);
+			Assert.False(longClickFired);
+
+			// Reset and fire long click - only long click handler should respond
+			clickFired = false;
+			((IMap)map).LongClicked(longClickLocation);
+			Assert.False(clickFired);
+			Assert.True(longClickFired);
+		}
+
+		[Fact]
+		public void MapLongClickedDoesNotFireWithoutHandler()
+		{
+			var map = new Map();
+
+			// Should not throw when no handler is attached
+			var exception = Record.Exception(() => ((IMap)map).LongClicked(new Location(37.7749, -122.4194)));
+
+			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void MapLongClickedMultipleHandlersAllFire()
+		{
+			var map = new Map();
+			var location = new Location(37.7749, -122.4194);
+
+			int handler1Count = 0;
+			int handler2Count = 0;
+			map.MapLongClicked += (s, e) => handler1Count++;
+			map.MapLongClicked += (s, e) => handler2Count++;
+
+			((IMap)map).LongClicked(location);
+
+			Assert.Equal(1, handler1Count);
+			Assert.Equal(1, handler2Count);
+		}
+
+		[Fact]
+		public void MapLongClickedHandlerCanBeRemoved()
+		{
+			var map = new Map();
+			var location = new Location(37.7749, -122.4194);
+
+			int fireCount = 0;
+			EventHandler<MapClickedEventArgs> handler = (s, e) => fireCount++;
+
+			map.MapLongClicked += handler;
+			((IMap)map).LongClicked(location);
+			Assert.Equal(1, fireCount);
+
+			map.MapLongClicked -= handler;
+			((IMap)map).LongClicked(location);
+			Assert.Equal(1, fireCount); // Should still be 1, not 2
+		}
+
+		#region UserLocationChanged Tests
+
+		[Fact]
+		public void UserLocationChanged_EventRaisedOnLocationUpdate()
+		{
+			// Arrange
+			var map = new Map();
+			var eventRaised = false;
+			Location receivedLocation = null;
+			map.UserLocationChanged += (sender, args) =>
+			{
+				eventRaised = true;
+				receivedLocation = args.Location;
+			};
+
+			var testLocation = new Location(37.7749, -122.4194); // San Francisco
+
+			// Act
+			((IMap)map).UserLocationUpdated(testLocation);
+
+			// Assert
+			Assert.True(eventRaised);
+			Assert.NotNull(receivedLocation);
+			Assert.Equal(37.7749, receivedLocation.Latitude);
+			Assert.Equal(-122.4194, receivedLocation.Longitude);
+		}
+
+		[Fact]
+		public void UserLocationChanged_SenderIsMap()
+		{
+			// Arrange
+			var map = new Map();
+			object sender = null;
+			map.UserLocationChanged += (s, args) => sender = s;
+
+			// Act
+			((IMap)map).UserLocationUpdated(new Location(0, 0));
+
+			// Assert
+			Assert.Same(map, sender);
+		}
+
+		[Fact]
+		public void LastUserLocation_IsNullByDefault()
+		{
+			// Arrange & Act
+			var map = new Map();
+
+			// Assert
+			Assert.Null(map.LastUserLocation);
+		}
+
+		[Fact]
+		public void LastUserLocation_UpdatedOnLocationUpdate()
+		{
+			// Arrange
+			var map = new Map();
+			var testLocation = new Location(51.5074, -0.1278); // London
+
+			// Act
+			((IMap)map).UserLocationUpdated(testLocation);
+
+			// Assert
+			Assert.NotNull(map.LastUserLocation);
+			Assert.Equal(51.5074, map.LastUserLocation.Latitude);
+			Assert.Equal(-0.1278, map.LastUserLocation.Longitude);
+		}
+
+		[Fact]
+		public void LastUserLocation_UpdatedWithLatestLocation()
+		{
+			// Arrange
+			var map = new Map();
+			var firstLocation = new Location(40.7128, -74.0060); // NYC
+			var secondLocation = new Location(34.0522, -118.2437); // LA
+
+			// Act
+			((IMap)map).UserLocationUpdated(firstLocation);
+			((IMap)map).UserLocationUpdated(secondLocation);
+
+			// Assert
+			Assert.NotNull(map.LastUserLocation);
+			Assert.Equal(34.0522, map.LastUserLocation.Latitude);
+			Assert.Equal(-118.2437, map.LastUserLocation.Longitude);
+		}
+
+		[Fact]
+		public void UserLocationChanged_MultipleSubscribers()
+		{
+			// Arrange
+			var map = new Map();
+			int eventCount = 0;
+			map.UserLocationChanged += (s, e) => eventCount++;
+			map.UserLocationChanged += (s, e) => eventCount++;
+
+			// Act
+			((IMap)map).UserLocationUpdated(new Location(0, 0));
+
+			// Assert
+			Assert.Equal(2, eventCount);
+		}
+
+		[Fact]
+		public void IMap_LastUserLocation_ReturnsMapLastUserLocation()
+		{
+			// Arrange
+			var map = new Map();
+			var testLocation = new Location(48.8566, 2.3522); // Paris
+
+			// Act
+			((IMap)map).UserLocationUpdated(testLocation);
+			var iMapLocation = ((IMap)map).LastUserLocation;
+
+			// Assert
+			Assert.NotNull(iMapLocation);
+			Assert.Equal(map.LastUserLocation, iMapLocation);
+		}
+
+		#endregion
+
+		[Fact]
+		public void FromLocationsHandlesAntimeridianCrossing()
+		{
+			// Points near the antimeridian (179° and -179° should result in a small span, not 358°)
+			var locations = new[]
+			{
+				new Location(0, 179),
+				new Location(0, -179)
+			};
+
+			var span = MapSpan.FromLocations(locations);
+
+			// The span should be small (around 2-3 degrees), not 358 degrees
+			Assert.True(span.LongitudeDegrees < 10, $"Expected small longitude span for antimeridian crossing, got {span.LongitudeDegrees}");
+		}
+
+		[Fact]
+		public void ClickedDoesNotThrowWithNoElements()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/34910
+			// When tapping a Map with no MapElements (overlays), the iOS handler
+			// would throw NullReferenceException because MKMapView.Overlays returns null
+			var map = new Map();
+
+			var exception = Record.Exception(() => ((IMap)map).Clicked(new Location(37.7749, -122.4194)));
+
+			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void ClickedFiresEventWithNoElements()
+		{
+			// Verify MapClicked event fires correctly even with no map elements
+			var map = new Map();
+			var location = new Location(37.7749, -122.4194);
+			MapClickedEventArgs eventArgs = null!;
+			map.MapClicked += (s, e) => eventArgs = e;
+
+			((IMap)map).Clicked(location);
+
+			Assert.NotNull(eventArgs);
+			Assert.Equal(location.Latitude, eventArgs.Location.Latitude);
+			Assert.Equal(location.Longitude, eventArgs.Location.Longitude);
+		}
+
+		[Fact]
+		public void ClusterInfoExposesConstructorValues()
+		{
+			var pins = new List<Pin> { new Pin { Label = "A" }, new Pin { Label = "B" } };
+			var location = new Location(1.0, 2.0);
+
+			var info = new ClusterInfo(2, "restaurants", pins, location);
+
+			Assert.Equal(2, info.Count);
+			Assert.Equal("restaurants", info.ClusteringIdentifier);
+			Assert.Same(pins, info.Pins);
+			Assert.Equal(location, info.Location);
+		}
+
+		[Fact]
+		public void ClusterImageSourceDefaultIsNull()
+		{
+			var map = new Map();
+			Assert.Null(map.ClusterImageSource);
+		}
+
+		[Fact]
+		public void ClusterImageSourceCanBeSet()
+		{
+			var map = new Map();
+			var image = ImageSource.FromFile("cluster.png");
+			map.ClusterImageSource = image;
+			Assert.Same(image, map.ClusterImageSource);
+		}
+
+		[Fact]
+		public void ClusterImageProviderDefaultIsNull()
+		{
+			var map = new Map();
+			Assert.Null(map.ClusterImageProvider);
+		}
+
+		[Fact]
+		public void ClusterImageProviderCanBeSet()
+		{
+			var map = new Map();
+#nullable enable
+			Func<ClusterInfo, ImageSource?> provider = _ => null;
+#nullable restore
+			map.ClusterImageProvider = provider;
+			Assert.Same(provider, map.ClusterImageProvider);
+			Assert.IsAssignableFrom<IMapClusterImageProvider>(map);
+			Assert.True(((IMapClusterImageProvider)map).ClusterImageVersion > 0);
+		}
+
+		[Fact]
+		public void GetClusterImagePrefersProviderOverStatic()
+		{
+			var map = new Map();
+			var providerImage = ImageSource.FromFile("provider.png");
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+			map.ClusterImageProvider = _ => providerImage;
+
+			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
+			var result = ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+
+			Assert.Same(providerImage, result);
+		}
+
+		[Fact]
+		public void GetClusterImageFallsBackToStaticWhenProviderNullOrAbsent()
+		{
+			var map = new Map();
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+			// no provider
+			var pins = new List<IMapPin> { new Pin { Label = "A" } };
+			Assert.Same(staticImage, ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+
+			// provider that returns null also falls back
+			map.ClusterImageProvider = _ => null;
+			Assert.Same(staticImage, ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+		}
+
+		[Fact]
+		public void GetClusterImageReturnsNullWhenNothingConfigured()
+		{
+			var map = new Map();
+			var pins = new List<IMapPin> { new Pin { Label = "A" } };
+			Assert.Null(((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+		}
+
+		[Fact]
+		public void GetClusterImagePassesClusterInfoToProvider()
+		{
+			var map = new Map();
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var pins = new List<IMapPin>
+			{
+				new Pin { Label = "A", ClusteringIdentifier = "cafes" },
+				new Pin { Label = "B", ClusteringIdentifier = "cafes" }
+			};
+			((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(10, 20));
+
+			Assert.NotNull(captured);
+			Assert.Equal(2, captured!.Count);
+			Assert.Equal("cafes", captured.ClusteringIdentifier);
+			Assert.Equal(2, captured.Pins.Count);
+			Assert.Equal(new Location(10, 20), captured.Location);
+		}
+
+		[Fact]
+		public void GetClusterImageWithEmptyPinsUsesDefaultIdentifierAndFallsBackToStatic()
+		{
+			var map = new Map();
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var result = ((IMapClusterImageProvider)map).GetClusterImage(new List<IMapPin>(), 0, new Location(1, 2));
+
+			Assert.NotNull(captured);
+			Assert.Equal(0, captured!.Count);
+			Assert.Equal(Pin.DefaultClusteringIdentifier, captured.ClusteringIdentifier);
+			Assert.Empty(captured.Pins);
+			Assert.Same(staticImage, result);
+		}
+
+		[Fact]
+		public void GetClusterImageUsesAuthoritativeCountIndependentOfResolvedPins()
+		{
+			// Regresses an iOS scenario: MKClusterAnnotation.MemberAnnotations.Length is the true
+			// cluster size, but GetPinForAnnotation can resolve fewer pins into the passed list
+			// (e.g. a lookup miss). Count must reflect the true size, not pins.Count.
+			var map = new Map();
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var pins = new List<IMapPin> { new Pin { Label = "A" } };
+			((IMapClusterImageProvider)map).GetClusterImage(pins, 5, new Location(1, 2));
+
+			Assert.NotNull(captured);
+			Assert.Equal(5, captured!.Count);
+			Assert.Single(captured.Pins);
+		}
+
+		[Fact]
+		public void SettingClusterImageSourceRebuildsPins()
+		{
+			var map = new Map { IsClusteringEnabled = true };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageSource = ImageSource.FromFile("cluster.png");
+
+			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void SettingClusterImageProviderRebuildsPins()
+		{
+			var map = new Map { IsClusteringEnabled = true };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageProvider = _ => null;
+
+			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void ChangingClusterImageSourceContentsRebuildsPins()
+		{
+			var map = new Map { IsClusteringEnabled = true };
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			var source = new FileImageSource { File = "first.png" };
+			map.ClusterImageSource = source;
+			handler.UpdatedProperties.Clear();
+
+			source.File = "second.png";
+
+			Assert.Contains(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void ClusterImageSourceInheritsBindingContext()
+		{
+			var map = new Map();
+			var source = new FileImageSource();
+			map.ClusterImageSource = source;
+
+			var bindingContext = new object();
+			map.BindingContext = bindingContext;
+
+			Assert.Same(bindingContext, source.BindingContext);
+			Assert.Same(map, source.Parent);
+		}
+
+		[Fact]
+		public void SettingClusterImageSourceDoesNotRebuildPinsWhenClusteringDisabled()
+		{
+			// Cluster images are only consumed while clustering is on, so there is nothing to
+			// rebuild - enabling clustering later re-runs the pins mapper anyway.
+			var map = new Map();
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageSource = ImageSource.FromFile("cluster.png");
+
+			Assert.DoesNotContain(nameof(IMap.Pins), handler.UpdatedProperties);
+		}
+
+		[Fact]
+		public void SettingSameClusterImageProviderMethodGroupDoesNotRebuildPins()
+		{
+			// Delegate.Equals compares target+method, so re-assigning the same method group
+			// (e.g. from OnAppearing on every navigation) must short-circuit.
+			var map = new Map { IsClusteringEnabled = true };
+			map.ClusterImageProvider = StaticProvider;
+			var handler = new UpdateValueTrackingHandlerStub();
+			map.Handler = handler;
+			handler.UpdatedProperties.Clear();
+
+			map.ClusterImageProvider = StaticProvider;
+
+			Assert.DoesNotContain(nameof(IMap.Pins), handler.UpdatedProperties);
+
+			static ImageSource StaticProvider(ClusterInfo info) => null;
+		}
+
+		[Fact]
+		public void GetClusterImageFallsBackToStaticWhenProviderThrows()
+		{
+			var map = new Map();
+			var staticImage = ImageSource.FromFile("static.png");
+			map.ClusterImageSource = staticImage;
+			map.ClusterImageProvider = _ => throw new InvalidOperationException("boom");
+
+			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
+
+			var exception = Record.Exception(() => ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+
+			Assert.Null(exception);
+			var result = ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+			Assert.Same(staticImage, result);
+		}
+
+		[Fact]
+		public void GetClusterImageReturnsNullWhenProviderThrowsAndNoStatic()
+		{
+			var map = new Map();
+			map.ClusterImageProvider = _ => throw new InvalidOperationException("boom");
+
+			var pins = new List<IMapPin> { new Pin { Label = "A", ClusteringIdentifier = "cafes" } };
+
+			IImageSource result = null;
+			var exception = Record.Exception(() => result = ((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2)));
+
+			Assert.Null(exception);
+			Assert.Null(result);
+		}
+
+		[Fact]
+		public void GetClusterImagePassesDefaultIdentifierWhenPinIdentifierIsNull()
+		{
+			var map = new Map();
+#nullable enable
+			ClusterInfo? captured = null;
+			map.ClusterImageProvider = info => { captured = info; return null; };
+#nullable restore
+
+			var pin = new Pin { Label = "A" };
+			pin.ClusteringIdentifier = null;
+
+			var pins = new List<IMapPin> { pin };
+			((IMapClusterImageProvider)map).GetClusterImage(pins, pins.Count, new Location(1, 2));
+
+			Assert.NotNull(captured);
+			Assert.Equal(Pin.DefaultClusteringIdentifier, captured!.ClusteringIdentifier);
+		}
+
+		[Fact]
+		public void ClusterInfoConstructorThrowsOnNullArguments()
+		{
+			var pins = new List<Pin> { new Pin { Label = "A" } };
+			var location = new Location(1, 2);
+
+			Assert.Throws<ArgumentNullException>(() => new ClusterInfo(1, null, pins, location));
+			Assert.Throws<ArgumentNullException>(() => new ClusterInfo(1, "cafes", null, location));
+			Assert.Throws<ArgumentNullException>(() => new ClusterInfo(1, "cafes", pins, null));
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFileImageSourceIsStableAcrossInstances()
+		{
+			var first = new FileImageSource { File = "icon.png" };
+			var second = new FileImageSource { File = "icon.png" };
+
+			var firstKey = MapHandler.GetClusterIconCacheKey(first);
+			var secondKey = MapHandler.GetClusterIconCacheKey(second);
+
+			Assert.NotNull(firstKey);
+			Assert.StartsWith("file:", firstKey, StringComparison.Ordinal);
+			Assert.Equal(firstKey, secondKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForUriImageSourceDependsOnCachingEnabled()
+		{
+			var uri = new Uri("https://example.com/icon.png");
+
+			var cachingEnabled = new UriImageSource { Uri = uri, CachingEnabled = true };
+			var cachingDisabled = new UriImageSource { Uri = uri, CachingEnabled = false };
+
+			var enabledKey = MapHandler.GetClusterIconCacheKey(cachingEnabled);
+			var disabledKey = MapHandler.GetClusterIconCacheKey(cachingDisabled);
+
+			Assert.NotNull(enabledKey);
+			Assert.StartsWith("uri:", enabledKey, StringComparison.Ordinal);
+			Assert.Null(disabledKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForUriImageSourceRequiresPositiveValidity()
+		{
+			var source = new UriImageSource
+			{
+				Uri = new Uri("https://example.com/icon.png"),
+				CachingEnabled = true,
+				CacheValidity = TimeSpan.Zero
+			};
+
+			Assert.Null(MapHandler.GetClusterIconCacheKey(source));
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFontImageSourceContainsGlyph()
+		{
+			var font = new FontImageSource { Glyph = "A", FontFamily = "F", Size = 24, Color = Colors.White };
+
+			var key = MapHandler.GetClusterIconCacheKey(font);
+
+			Assert.NotNull(key);
+			Assert.Contains("A", key, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFontImageSourceDistinguishesWeight()
+		{
+			var regular = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24).WithWeight(FontWeight.Regular)
+			};
+			var bold = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24).WithWeight(FontWeight.Bold)
+			};
+
+			var regularKey = MapHandler.GetClusterIconCacheKey(regular);
+			var boldKey = MapHandler.GetClusterIconCacheKey(bold);
+
+			Assert.NotNull(regularKey);
+			Assert.NotNull(boldKey);
+			Assert.NotEqual(regularKey, boldKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyForFontImageSourceDistinguishesAutoScaling()
+		{
+			var scalingEnabled = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24, enableScaling: true)
+			};
+			var scalingDisabled = new FakeFontImageSource
+			{
+				Glyph = "A",
+				Color = Colors.White,
+				Font = Font.OfSize("F", 24, enableScaling: false)
+			};
+
+			var enabledKey = MapHandler.GetClusterIconCacheKey(scalingEnabled);
+			var disabledKey = MapHandler.GetClusterIconCacheKey(scalingDisabled);
+
+			Assert.NotNull(enabledKey);
+			Assert.NotNull(disabledKey);
+			Assert.NotEqual(enabledKey, disabledKey);
+		}
+
+		[Fact]
+		public void GetClusterIconCacheKeyIsNullForStreamOrMissingSource()
+		{
+			var stream = new StreamImageSource();
+
+			Assert.Null(MapHandler.GetClusterIconCacheKey(stream));
+			Assert.Null(MapHandler.GetClusterIconCacheKey(null));
+		}
+
+		[Fact]
+		public async Task ClusterIconCacheCoalescesConcurrentLoads()
+		{
+			var cache = new ClusterIconCache<object>(2);
+			var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var loadCount = 0;
+
+			Task<object> Load()
+			{
+				loadCount++;
+				return release.Task.ContinueWith(_ => new object(), TaskScheduler.Default);
+			}
+
+			var first = cache.GetOrCreateAsync("shared", Load, () => DateTime.MaxValue);
+			var second = cache.GetOrCreateAsync("shared", Load, () => DateTime.MaxValue);
+			release.SetResult(true);
+
+			var results = await Task.WhenAll(first, second);
+
+			Assert.Equal(1, loadCount);
+			Assert.Same(results[0], results[1]);
+		}
+
+		[Fact]
+		public async Task ClusterIconCacheEvictsLeastRecentlyUsedEntry()
+		{
+			var cache = new ClusterIconCache<object>(2);
+			var first = new object();
+			var second = new object();
+			var third = new object();
+
+			await cache.GetOrCreateAsync("first", () => Task.FromResult(first), () => DateTime.MaxValue);
+			await cache.GetOrCreateAsync("second", () => Task.FromResult(second), () => DateTime.MaxValue);
+			Assert.True(cache.TryGet("first", out _));
+			await cache.GetOrCreateAsync("third", () => Task.FromResult(third), () => DateTime.MaxValue);
+
+			Assert.True(cache.TryGet("first", out var cachedFirst));
+			Assert.False(cache.TryGet("second", out _));
+			Assert.True(cache.TryGet("third", out var cachedThird));
+			Assert.Same(first, cachedFirst);
+			Assert.Same(third, cachedThird);
+		}
+
+		class FakeFontImageSource : IFontImageSource
+		{
+			public Color Color { get; set; }
+			public Font Font { get; set; }
+			public string Glyph { get; set; }
+			public bool IsEmpty => string.IsNullOrEmpty(Glyph);
+		}
 	}
+
+#nullable enable
+	class UpdateValueTrackingHandlerStub : IViewHandler
+	{
+		public List<string> UpdatedProperties { get; } = new();
+
+		public void SetMauiContext(IMauiContext mauiContext) { }
+		public void SetVirtualView(IElement view) { }
+		public void UpdateValue(string property) => UpdatedProperties.Add(property);
+		public void Invoke(string command, object? args = null) { }
+		public void DisconnectHandler() { }
+		public object? PlatformView => null;
+		public IElement? VirtualView { get; set; }
+		IView? IViewHandler.VirtualView => VirtualView as IView;
+		public IMauiContext? MauiContext => null;
+		public bool HasContainer { get; set; }
+		public object? ContainerView => null;
+		public Microsoft.Maui.Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint) => default;
+		public void PlatformArrange(Microsoft.Maui.Graphics.Rect frame) { }
+	}
+#nullable restore
 }

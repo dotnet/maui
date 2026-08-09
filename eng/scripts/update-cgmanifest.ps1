@@ -59,6 +59,10 @@ $packageVersionMappings = @{
     'Microsoft.Data.Sqlite.Core' = 'MicrosoftDataSqliteCorePackageVersion'
     'SQLitePCLRaw.bundle_e_sqlite3' = 'SQLitePCLRawBundleESqlite3PackageVersion'
     'CommunityToolkit.Mvvm' = 'CommunityToolkitMvvmPackageVersion'
+
+    # Avalonia.Controls.Maui (referenced by the maui-mobile template when --with-avalonia is used)
+    'Avalonia.Controls.Maui' = 'AvaloniaControlsMauiPackageVersion'
+    'Avalonia.Controls.Maui.Desktop' = 'AvaloniaControlsMauiPackageVersion'
 }
 
 # Initialize new registrations list

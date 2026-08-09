@@ -18,7 +18,6 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 using TabbedRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
 

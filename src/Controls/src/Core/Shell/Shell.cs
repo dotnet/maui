@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -479,6 +480,13 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
+		/// Defines the background brush for the Shell toolbar. Supports gradient brushes.
+		/// </summary>
+		public static readonly new BindableProperty BackgroundProperty =
+			BindableProperty.CreateAttached("Background", typeof(Brush), typeof(Shell), Brush.Default,
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		/// <summary>
 		/// The backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
@@ -662,6 +670,20 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The brushed used in the backdrop of the flyout.</param>
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
+		/// <summary>
+		/// Gets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object from which to get the background brush.</param>
+		/// <returns>The background brush for the Shell toolbar.</returns>
+		public static Brush GetBackground(BindableObject obj) => (Brush)obj.GetValue(BackgroundProperty);
+
+		/// <summary>
+		/// Sets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object on which to set the background brush.</param>
+		/// <param name="value">The brush to use as the Shell toolbar background.</param>
+		public static void SetBackground(BindableObject obj, Brush value) => obj.SetValue(BackgroundProperty, value);
+
 		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
@@ -765,7 +787,14 @@ namespace Microsoft.Maui.Controls
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
 				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				if (!Brush.IsNullOrEmpty(appearance?.Background))
+				{
+					Toolbar.BarBackground = appearance.Background;
+				}
+				else
+				{
+					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				}
 				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
 			}
 		}
@@ -775,7 +804,7 @@ namespace Microsoft.Maui.Controls
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
 		static Color DefaultForegroundColor => ResolveThemeColor(
-			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black,
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 		static Color DefaultTitleColor => ResolveThemeColor(
 			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
@@ -1264,6 +1293,15 @@ namespace Microsoft.Maui.Controls
 		NavigationType _pendingNavigationType;
 
 		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
+		// Preserve MenuShellItem which is reached through event-driven and interface-dispatch
+		// code paths that the trimmer cannot statically trace.
+		// The IL2026/IL2111/IL3050 diagnostics originate from the TypeConverter base class hierarchy
+		// (ShellItemConverter : TypeConverter) whose inherited members like GetProperties/GetEditor
+		// carry RequiresUnreferencedCode. These base methods are never called by MAUI.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2111:ReflectionToDynamicallyAccessedMembers", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
 		public Shell()
 		{
 			Toolbar = new ShellToolbar(this);
@@ -1385,7 +1423,7 @@ namespace Microsoft.Maui.Controls
 					}
 					catch (Exception exc)
 					{
-						Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "If you're using hot reload add a route to everything in your shell file");
+						MauiLogger<Shell>.Log(LogLevel.Warning, exc, "If you're using hot reload add a route to everything in your shell file");
 					}
 				}
 
@@ -1681,7 +1719,7 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (Exception exc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Shell>()?.LogWarning(exc, "Failed to Navigate Back");
+					MauiLogger<Shell>.Log(LogLevel.Warning, exc, "Failed to Navigate Back");
 				}
 			}
 		}
@@ -1796,8 +1834,8 @@ namespace Microsoft.Maui.Controls
 				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
 			}
-      
-      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+
+			// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
 			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;

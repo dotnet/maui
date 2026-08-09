@@ -189,8 +189,149 @@ public class XamlGenerator : IIncrementalGenerator
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, xmlnsCache, compilation))
 					return;
 
+				// Incremental Hot Reload: compute the diff and update state BEFORE generating IC.
+				string? ucCode = null;
+				// Resolve the root type once. UpdateComponent() must be present on EVERY generation
+				// (first compile, no-op edits, unchanged rebuilds), so a XIHR type never gains or loses
+				// the method across generations — that member churn is what crashes Roslyn's EnC tracking.
+				INamedTypeSymbol? ucRootType = null;
+				string ucAccessModifier = "public";
+				bool canEmitUC = xamlItem.ProjectItem.EnableIncrementalHotReload
+					&& xamlItem.Xaml is not null
+					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out ucRootType, out ucAccessModifier)
+					&& ucRootType != null;
+				bool parseErrorOccurred = false;
+				var assemblyName = compilation.AssemblyName ?? string.Empty;
+				var targetFramework = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
+				// Key the incremental-HR patch-chain state on the XAML file's absolute path (not its
+				// project-relative path) via ProjectItem.HotReloadStateKey. Roslyn source generators
+				// live in a long-lived VBCSCompiler process shared across many project builds; keying on
+				// (AssemblyName, TFM, RelativePath) lets a patch chain leak between two projects that
+				// merely share an assembly name and a file name. A leaked patch can even reference a type
+				// the other project doesn't reference (e.g. a BlazorWebView from a Blazor app bleeding
+				// into a plain app), producing uncompilable generated code.
+				var stateKey = xamlItem.ProjectItem.HotReloadStateKey;
+				string? previousXaml = null;
+				SGRootNode? previousRoot = null;
+				Dictionary<ElementNode, string>? previousNodeIds = null;
+				int previousNextId = 0;
+				int previousVersion = 0;
+				var hadPreviousEntry = xamlItem.ProjectItem.EnableIncrementalHotReload
+					&& xamlItem.Xaml is not null
+					&& XamlHotReloadState.TryGetPrevious(assemblyName, targetFramework, stateKey, out previousXaml, out previousRoot, out previousNodeIds, out previousNextId, out previousVersion);
+				if (hadPreviousEntry
+					&& previousXaml != xamlItem.Xaml
+					&& canEmitUC)
+				{
+					var rootType = ucRootType!;
+					var accessModifier = ucAccessModifier;
+					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
+						previousRoot,
+						previousNodeIds,
+						previousNextId,
+						previousXaml!,
+						xamlItem.Xaml!,
+						fromVersion: previousVersion,
+						toVersion: previousVersion + 1,
+						rootType,
+						compilation,
+						xmlnsCache,
+						typeCache,
+						sourceProductionContext,
+						xamlItem.ProjectItem,
+						out var parsedNewRoot,
+						out var effectiveNewIds,
+						out var newNextNodeId,
+						out var parseError,
+						out var emptyDiff);
+
+					if (parseError)
+					{
+						// New XAML is invalid — keep last-good state untouched. IC generation below
+						// will re-attempt parsing the same broken XAML, throw, and the outer catch
+						// will emit the parse-error diagnostic. No UC update for this iteration.
+						parseErrorOccurred = true;
+					}
+					else if (patchBody != null)
+					{
+						// Emit ONLY the single previous->current patch. Patch property-sets are absolute
+						// (they assign target values, not relative deltas), so applying this one patch brings
+						// any live instance to the current state regardless of the edit it was last at. Do NOT
+						// accumulate a version chain: accumulation retained stale/invalid intermediate patches
+						// and produced non-deterministic, sometimes-uncompilable output when an edit was
+						// reverted (the invalid value lingered forever). See the XIHR versioning fix.
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion + 1);
+						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, patchBody);
+					}
+					else if (emptyDiff)
+					{
+						// Semantically empty diff (revert to the previous state, or a formatting/comment-only
+						// edit). Refresh the cached XAML text + parsed tree, and emit an EMPTY UpdateComponent()
+						// so the method stays present across generations (a disappearing UC looks like a
+						// type-removal delta and crashes Roslyn's EnC tracking).
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, effectiveNewIds, newNextNodeId, previousVersion);
+						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
+					}
+					else
+					{
+						// Structural change: reset state to the new XAML with fresh IDs. Fresh instances get
+						// the new InitializeComponent; live instances can't be patched incrementally across a
+						// structural change, so UpdateComponent() is emitted empty (but still present).
+						Dictionary<ElementNode, string>? freshIds = null;
+						int freshNextId = 0;
+						if (parsedNewRoot != null)
+						{
+							freshIds = NodeIdHelper.AssignIds(parsedNewRoot, 0, out freshNextId);
+						}
+						XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml!, parsedNewRoot, freshIds, freshNextId, 0);
+						ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, (string?)null);
+					}
+				}
+				else if (!hadPreviousEntry && xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
+				{
+					// First run for this file (no cache entry): seed the cache with parsed tree and fresh IDs.
+					// IMPORTANT: this branch must NOT fire when the cache already exists with the same XAML —
+					// doing so would reset the cached state and re-diff the next edit against the wrong baseline.
+					SGRootNode? seedRoot = null;
+					Dictionary<ElementNode, string>? seedIds = null;
+					int seedNextId = 0;
+					try
+					{
+						seedRoot = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache);
+						if (seedRoot != null)
+						{
+							seedIds = NodeIdHelper.AssignIds(seedRoot, 0, out seedNextId);
+						}
+					}
+					catch (Exception)
+					{
+						// Best-effort seed only: if the initial XAML can't be parsed, seed with a null
+						// tree so state still exists at version 0. IC generation below re-parses the same
+						// XAML and the outer catch surfaces the real parse-error diagnostic — swallowing
+						// here just avoids reporting it twice.
+					}
+					XamlHotReloadState.Update(assemblyName, targetFramework, stateKey, xamlItem.Xaml, seedRoot, seedIds, seedNextId, 0);
+				}
+				// else: cache exists and XAML unchanged (or rootType lookup failed). Leave state untouched.
+
+				// Always-emit: if a UC was not produced above (first compile, no-op edit, or unchanged
+				// rebuild) but this is a XIHR-enabled type whose root resolved, emit an EMPTY
+				// UpdateComponent() so the method is present from the very first generation and never
+				// appears/disappears across generations (Roslyn EnC member-stability requirement).
+				if (ucCode == null && canEmitUC && !parseErrorOccurred)
+				{
+					ucCode = UpdateComponentCodeWriter.GenerateUpdateComponent(ucRootType!, ucAccessModifier, (string?)null);
+				}
+
+				// Generate IC — reads latest version from XamlHotReloadState
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+
+				// Emit UC source if a diff was computed
+				if (ucCode != null)
+				{
+					sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "uc.xsg"), ucCode);
+				}
 			}
 			catch (Exception e)
 			{
@@ -238,10 +379,6 @@ $"""
 
 [assembly: global::Microsoft.Maui.Controls.XmlnsDefinition("{XamlParser.MauiGlobalUri}", "{XamlParser.MauiUri}")]
 [assembly: global::Microsoft.Maui.Controls.XmlnsPrefix("{XamlParser.MauiGlobalUri}", "global")]
-
-#if MauiAllowImplicitXmlnsDeclaration
-[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]
-#endif
 """
 			, Encoding.UTF8));
 		});

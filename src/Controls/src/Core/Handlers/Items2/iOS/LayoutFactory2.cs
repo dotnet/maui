@@ -683,6 +683,43 @@ internal static class LayoutFactory2
 			var contentOffset = CollectionView.ContentOffset;
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
 
+			var carouselController = (CollectionView.Delegate as CarouselViewDelegator2)?.ViewController;
+			if (carouselController?.DragStartPosition is >= 0)
+			{
+				var currentIndexPath = carouselController.GetScrollToIndexPath(carouselController.DragStartPosition);
+				var itemCount = (int)CollectionView.NumberOfItemsInSection(currentIndexPath.Section);
+				if (itemCount > 0)
+				{
+					var velocity = Configuration.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+						? scrollingVelocity.X
+						: scrollingVelocity.Y;
+
+					if (velocity != 0)
+					{
+						var targetItem = (int)currentIndexPath.Item;
+
+						if (velocity > 0)
+							targetItem++;
+						else
+							targetItem--;
+
+						targetItem = Math.Clamp(targetItem, 0, itemCount - 1);
+						var targetIndexPath = NSIndexPath.FromItemSection(targetItem, currentIndexPath.Section);
+						var targetItemAttributes = LayoutAttributesForItem(targetIndexPath);
+
+						if (targetItemAttributes is not null)
+						{
+							return Items.SnapHelpers.AdjustContentOffset(
+								CollectionView.ContentOffset,
+								targetItemAttributes.Frame,
+								viewport,
+								alignment,
+								Configuration.ScrollDirection);
+						}
+					}
+				}
+			}
+
 			// Find the spot in the viewport we're trying to align with
 			var alignmentTarget = Items.SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, Configuration.ScrollDirection);
 

@@ -95,12 +95,11 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 				handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 				handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 				handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
 				handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 				handlers.AddHandler<Page, PageHandler>();
 				handlers.AddHandler<Controls.Window, WindowHandlerStub>();

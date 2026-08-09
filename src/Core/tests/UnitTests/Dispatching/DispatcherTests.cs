@@ -10,6 +10,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	// Technically these tests are useless because they cannot test shipping code as they are
 	// none of the platforms. However, they sort of do test the test dispatcher...
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
+	[Collection(nameof(DispatcherProviderTestCollection))]
 	public class DispatcherTests : IDisposable
 	{
 		DispatcherProviderStub _dispatcherProvider;
@@ -60,10 +61,22 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 
 				await Task.Run(() =>
 				{
-					DispatcherProviderStubOptions.SkipDispatcherCreation = true;
+					// SkipDispatcherCreation is [ThreadStatic] and this delegate runs on a pooled
+					// thread. Reset it in a finally so the thread is returned to the pool clean.
+					// Otherwise the leaked flag makes Dispatcher.GetForCurrentThread() return null
+					// for a later test whose async continuation happens to resume on this same
+					// pooled thread, producing an intermittent NullReferenceException.
+					try
+					{
+						DispatcherProviderStubOptions.SkipDispatcherCreation = true;
 
-					var dispatcher = Dispatcher.GetForCurrentThread();
-					Assert.Null(dispatcher);
+						var dispatcher = Dispatcher.GetForCurrentThread();
+						Assert.Null(dispatcher);
+					}
+					finally
+					{
+						DispatcherProviderStubOptions.SkipDispatcherCreation = false;
+					}
 				});
 			});
 

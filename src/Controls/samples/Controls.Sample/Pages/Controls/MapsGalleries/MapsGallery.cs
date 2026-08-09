@@ -17,8 +17,18 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 						GalleryBuilder.NavButton("Map Type", () => new MapTypeGallery(), Navigation),
 						GalleryBuilder.NavButton("Map Pins", () => new MapPinsGallery(), Navigation),
 						GalleryBuilder.NavButton("Pins ItemsSource", () => new PinItemsSourceGallery(), Navigation),
+						GalleryBuilder.NavButton("Pin Clustering", () => new ClusteringGallery(), Navigation),
+
+						GalleryBuilder.NavButton("Custom Pin Icons", () => new CustomPinIconGallery(), Navigation),
 						GalleryBuilder.NavButton("Circle", () => new CircleGallery(), Navigation),
 						GalleryBuilder.NavButton("Polygon", () => new PolygonsGallery(), Navigation),
+						GalleryBuilder.NavButton("Element Visibility & ZIndex", () => new MapElementVisibilityGallery(), Navigation),
+						GalleryBuilder.NavButton("MapElement Click Events", () => new MapElementClickGallery(), Navigation),
+						GalleryBuilder.NavButton("Map Long Click", () => new MapLongClickGallery(), Navigation),
+						GalleryBuilder.NavButton("Info Window", () => new InfoWindowGallery(), Navigation),
+						GalleryBuilder.NavButton("User Location", () => new UserLocationGallery(), Navigation),
+						GalleryBuilder.NavButton("Camera & Zoom", () => new CameraZoomGallery(), Navigation),
+						GalleryBuilder.NavButton("Map Style", () => new MapStyleGallery(), Navigation),
 					}
 				}
 			};

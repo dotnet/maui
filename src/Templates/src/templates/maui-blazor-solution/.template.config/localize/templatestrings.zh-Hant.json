@@ -24,7 +24,7 @@
   "symbols/InteractivityPlatform/choices/Auto/description": "下載 WebAssembly 資產時使用伺服器，然後使用 WebAssembly",
   "symbols/IncludeSampleContent/displayName": "包含範例頁面(_I)",
   "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和樣式，以示範基本使用模式。",
-  "symbols/Empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。",
+  "symbols/empty/description": "設定是否要省略範例頁面和樣式，其示範基本使用模式。",
   "symbols/AllInteractive/displayName": "_啟用整個網站的全域互動式轉譯",
   "symbols/AllInteractive/description": "設定是否要在最高層級應用互動式轉譯模式，讓每一頁都能互動。若為 False，則頁面預設會使用靜態伺服器轉譯，而且可以按照頁面或按照元件標示為互動式。",
   "symbols/NoHttps/description": "是否要關閉 HTTPS。此選項僅適用於個人未用於 --auth 時。",

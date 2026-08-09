@@ -98,6 +98,11 @@ namespace Microsoft.Maui.Media
 			}
 			else
 			{
+				if (!pickExisting && options?.SaveToGallery == true)
+				{
+					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
+				}
+
 				var sourceType = pickExisting
 					? UIImagePickerControllerSourceType.PhotoLibrary
 					: UIImagePickerControllerSourceType.Camera;
@@ -164,6 +169,12 @@ namespace Microsoft.Maui.Media
 			PickerRef?.Dispose();
 			PickerRef = null;
 
+			// Save captured media to the photo gallery if requested
+			if (!pickExisting && result is not null && options?.SaveToGallery == true)
+			{
+				await SaveToPhotoLibraryAsync(result);
+			}
+
 			return result;
 		}
 
@@ -195,7 +206,7 @@ namespace Microsoft.Maui.Media
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 			var tcs = new TaskCompletionSource<List<FileResult>>();
 
-			if (pickExisting)
+			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
 				var config = new PHPickerConfiguration
 				{
@@ -475,6 +486,88 @@ namespace Microsoft.Maui.Media
 				return original;
 			}
 		}
+		
+		/// <summary>
+		/// Saves the captured media file to the device's photo library using PHPhotoLibrary.
+		/// </summary>
+		static async Task SaveToPhotoLibraryAsync(FileResult fileResult)
+		{
+			string tempPath = null;
+
+			try
+			{
+				using var stream = await fileResult.OpenReadAsync();
+				var extension = System.IO.Path.GetExtension(fileResult.FileName);
+				tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
+				using (var fileStream = File.Create(tempPath))
+				{
+					if (stream.CanSeek)
+					{
+						stream.Position = 0;
+					}
+
+					await stream.CopyToAsync(fileStream);
+				}
+
+				using var url = NSUrl.FromFilename(tempPath);
+
+				await PerformPhotoLibraryChangesAsync(() =>
+				{
+					if (IsImageFile(fileResult.FileName))
+					{
+						PHAssetChangeRequest.FromImage(url);
+					}
+					else
+					{
+						PHAssetChangeRequest.FromVideo(url);
+					}
+				});
+			}
+			finally
+			{
+				DeleteTemporaryPhotoLibraryFile(tempPath);
+			}
+		}
+
+		static Task PerformPhotoLibraryChangesAsync(Action changeHandler)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			PHPhotoLibrary.SharedPhotoLibrary.PerformChanges(changeHandler, (success, error) =>
+			{
+				if (success)
+				{
+					tcs.TrySetResult(true);
+				}
+				else if (error is not null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+				}
+				else
+				{
+					tcs.TrySetException(new InvalidOperationException("Unable to save the captured media to the photo library."));
+				}
+			});
+
+			return tcs.Task;
+		}
+
+		static void DeleteTemporaryPhotoLibraryFile(string tempPath)
+		{
+			if (string.IsNullOrEmpty(tempPath))
+			{
+				return;
+			}
+
+			try
+			{
+				File.Delete(tempPath);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to delete temporary photo library file: {ex.Message}");
+			}
+		}
 
 		class PhotoPickerDelegate : UIImagePickerControllerDelegate
 		{
@@ -637,11 +730,16 @@ namespace Microsoft.Maui.Media
 
 				if (newSize.Width != originalSize.Width || newSize.Height != originalSize.Height)
 				{
-					// Resize the image
-					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
-					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
-					workingImage = UIGraphics.GetImageFromCurrentImageContext();
-					UIGraphics.EndImageContext();
+					// Resize the image. UIGraphicsImageRenderer (iOS 10+) replaces the
+					// UIGraphics.BeginImageContext* APIs that are unsupported on iOS 17+.
+					var rendererFormat = new UIGraphicsImageRendererFormat
+					{
+						Opaque = false,
+						Scale = normalizedImage.CurrentScale,
+					};
+					var renderer = new UIGraphicsImageRenderer(newSize, rendererFormat);
+					workingImage = renderer.CreateImage(_ =>
+						normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize)));
 				}
 
 				// Then determine output format and apply compression

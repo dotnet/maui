@@ -289,12 +289,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this scroll view.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.Default (platform-specific).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the scroll view should obey safe area insets.
-		/// Use SafeAreaEdges.None for edge-to-edge content, SafeAreaEdges.All to obey all safe area insets, 
-		/// SafeAreaEdges.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaEdges.SoftInput for keyboard-aware behavior.
+		/// Use SafeAreaEdges.None for edge-to-edge content or SafeAreaEdges.Container for content that flows under keyboard but stays out of bars/notch.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{

@@ -30,6 +30,7 @@ namespace Samples.ViewModel
 		int pickerMaximumHeight = 0;
 		bool pickerRotateImage = false;
 		bool pickerPreserveMetaData = true;
+		bool pickerSaveToGallery = false;
 		long imageByteLength = 0;
 		string imageDimensions = "";
 		private ObservableCollection<PhotoInfo> photoList = [];
@@ -86,6 +87,12 @@ namespace Samples.ViewModel
 		{
 			get => pickerPreserveMetaData;
 			set => SetProperty(ref pickerPreserveMetaData, value);
+		}
+
+		public bool PickerSaveToGallery
+		{
+			get => pickerSaveToGallery;
+			set => SetProperty(ref pickerSaveToGallery, value);
 		}
 
 		public long ImageByteLength
@@ -160,7 +167,8 @@ namespace Samples.ViewModel
 					MaximumWidth = PickerMaximumWidth > 0 ? PickerMaximumWidth : null,
 					MaximumHeight = PickerMaximumHeight > 0 ? PickerMaximumHeight : null,
 					RotateImage = PickerRotateImage,
-					PreserveMetaData = PickerPreserveMetaData
+					PreserveMetaData = PickerPreserveMetaData,
+					SaveToGallery = PickerSaveToGallery
 				});
 
 				await LoadPhotoAsync(photo);
@@ -204,7 +212,10 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var video = await MediaPicker.CaptureVideoAsync();
+				var video = await MediaPicker.CaptureVideoAsync(new MediaPickerOptions
+				{
+					SaveToGallery = PickerSaveToGallery
+				});
 
 				ShowPhoto = false;
 				ShowMultiplePhotos = false;

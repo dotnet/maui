@@ -145,6 +145,10 @@
         Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
     />
     <PackageReference
+        Update="Microsoft.Windows.CsWin32"
+        Version="$(MicrosoftWindowsCsWin32PackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"
@@ -157,6 +161,10 @@
     <PackageReference
         Update="Microsoft.Windows.SDK.BuildTools"
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
+        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
@@ -197,6 +205,14 @@
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+        Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.EntityFrameworkCore.Sqlite"
+        Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
@@ -320,7 +336,12 @@
     />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
-    <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
+    <!-- WiX 6 packages -->
+    <PackageReference Update="Microsoft.Wix" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixVersion)" />
     <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
