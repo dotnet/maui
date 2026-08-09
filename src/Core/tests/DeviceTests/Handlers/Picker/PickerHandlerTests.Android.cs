@@ -173,6 +173,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Picker Pointer Replacement Without Movement Remains A Tap")]
+		public async Task PointerReplacementWithoutMovementRemainsATap()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				using var platformPicker = new MauiPicker(MauiContext.Context);
+				var filter = new PickerDragGestureFilter();
+				var downTime = SystemClock.UptimeMillis();
+
+				using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, 10f, 10f, 0);
+				using var pointerDown = CreateMultiPointerEvent(
+					downTime,
+					downTime + 16,
+					(MotionEventActions)((int)MotionEventActions.PointerDown | (1 << 8)),
+					[0, 1],
+					[(10f, 10f), (50f, 10f)]);
+				using var pointerUp = CreateMultiPointerEvent(
+					downTime,
+					downTime + 32,
+					MotionEventActions.PointerUp,
+					[0, 1],
+					[(10f, 10f), (50f, 10f)]);
+				using var up = CreateMultiPointerEvent(
+					downTime,
+					downTime + 48,
+					MotionEventActions.Up,
+					[1],
+					[(50f, 10f)]);
+
+				Assert.False(filter.ShouldCancelClick(platformPicker, down));
+				Assert.False(filter.ShouldCancelClick(platformPicker, pointerDown));
+				Assert.False(filter.ShouldCancelClick(platformPicker, pointerUp));
+				Assert.False(filter.ShouldCancelClick(platformPicker, up));
+			});
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
 			pickerHandler.PlatformView;
 
@@ -315,6 +351,50 @@ namespace Microsoft.Maui.DeviceTests
 			platformPicker.DispatchTouchEvent(down);
 			platformPicker.DispatchTouchEvent(move);
 			platformPicker.DispatchTouchEvent(cancel);
+		}
+
+		static MotionEvent CreateMultiPointerEvent(
+			long downTime,
+			long eventTime,
+			MotionEventActions action,
+			int[] pointerIds,
+			(float X, float Y)[] points)
+		{
+			var pointerCoords = new MotionEvent.PointerCoords[points.Length];
+			var pointerProperties = new MotionEvent.PointerProperties[points.Length];
+
+			for (var i = 0; i < points.Length; i++)
+			{
+				pointerProperties[i] = new MotionEvent.PointerProperties
+				{
+					Id = pointerIds[i],
+					ToolType = MotionEventToolType.Finger
+				};
+
+				pointerCoords[i] = new MotionEvent.PointerCoords
+				{
+					X = points[i].X,
+					Y = points[i].Y,
+					Pressure = 1,
+					Size = 1
+				};
+			}
+
+			return MotionEvent.Obtain(
+				downTime,
+				eventTime,
+				action,
+				pointerIds.Length,
+				pointerProperties,
+				pointerCoords,
+				MetaKeyStates.None,
+				(MotionEventButtonState)0,
+				1,
+				1,
+				0,
+				(Edge)0,
+				InputSourceType.Touchscreen,
+				MotionEventFlags.None)!;
 		}
 
 		static void DispatchSwipeWithoutMove(EditText platformPicker)
