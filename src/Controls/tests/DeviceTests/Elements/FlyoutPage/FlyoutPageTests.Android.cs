@@ -43,5 +43,27 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(appbarLayout.GetChildAt(1) is global::Android.Widget.FrameLayout, "The second child of the view group should be a FrameLayout");
 			});
 		}
+
+		[Fact]
+		public async Task SwappingDetailThenReplacingWindowRootDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var flyoutPage = CreateFlyoutPage(
+				typeof(FlyoutPage),
+				new NavigationPage(new ContentPage { Title = "Initial Detail" }),
+				new ContentPage { Title = "Flyout" });
+			var window = new Controls.Window(flyoutPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async _ =>
+			{
+				flyoutPage.Detail = new NavigationPage(new ContentPage { Title = "Replacement Detail" });
+
+				var replacementRoot = new ContentPage { Title = "Replacement Root" };
+				window.Page = replacementRoot;
+				await OnLoadedAsync(replacementRoot);
+				Assert.Same(replacementRoot, window.Page);
+			});
+		}
 	}
 }

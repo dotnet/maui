@@ -175,6 +175,54 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if ANDROID
+		[Fact(DisplayName = "Replaced FlyoutPage Root Clears Old ContainerView")]
+		public async Task ReplacedFlyoutPageRootClearsOldContainerView()
+		{
+			SetupBuilder();
+
+			var rootPage = CreateFlyoutRoot();
+			var window = new Window(rootPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var oldRootView = Assert.IsType<ContainerView>(rootManager.RootView);
+
+				Assert.Same(rootPage, oldRootView.CurrentView);
+				Assert.NotNull(oldRootView.MainView);
+
+				var replacementPage = new ContentPage
+				{
+					Content = new Label { Text = "Replacement page" }
+				};
+
+				window.Page = replacementPage;
+				await OnLoadedAsync(replacementPage);
+
+				Assert.Null(oldRootView.CurrentView);
+				Assert.Null(oldRootView.MainView);
+				Assert.NotSame(oldRootView, rootManager.RootView);
+			});
+		}
+
+		static FlyoutPage CreateFlyoutRoot()
+		{
+			var flyoutPage = new ContentPage { Title = "Flyout" };
+			var detailPage = new ContentPage
+			{
+				Title = "Detail",
+				Content = new Label { Text = "Detail page" }
+			};
+			var detailNavigationPage = new NavigationPage(detailPage) { Title = "Detail" };
+			return new FlyoutPage
+			{
+				Flyout = flyoutPage,
+				Detail = detailNavigationPage
+			};
+		}
+#endif
+
 #if !IOS && !MACCATALYST
 		// Automated Shell tests are currently broken via xharness
 		[Fact(DisplayName = "Toolbar Items Update when swapping out Main Page on Handler")]
@@ -264,12 +312,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window1, (h) =>
 			{
-				app.OpenWindow(window1);	
+				app.OpenWindow(window1);
 				Assert.True(window1.IsActivated);
 				Assert.False(window2.IsActivated);
 			});
 
-			
+
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window2, (h) =>
 			{
 				app.OpenWindow(window2);
@@ -280,7 +328,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			app.CloseWindow(window2);
 			app.CloseWindow(window1);
-			
+
 			Assert.False(window1.IsActivated);
 			Assert.False(window2.IsActivated);
 		}

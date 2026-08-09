@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Android.App.Roles;
-using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
@@ -9,7 +8,8 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
-using AndroidX.Lifecycle;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -20,13 +20,7 @@ namespace Microsoft.Maui.Handlers
 		View? _navigationRoot;
 		LinearLayoutCompat? _sideBySideView;
 		DrawerLayout DrawerLayout => (DrawerLayout)PlatformView;
-		FlyoutDetailFragment? _detailHostFragment;
-		FragmentManager? _detailHostFragmentManager;
-		View? _detailHostNavigationRoot;
-		Context? _detailHostContext;
-		bool _detailHostAddCommitted;
-
-		ScopedFragment? DetailViewFragment => _detailHostFragment?.DetailFragment;
+		ScopedFragment? _detailViewFragment;
 
 		protected override View CreatePlatformView()
 		{
@@ -59,194 +53,124 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		bool _releasing;
-		IDisposable? _pendingFragment;
-
-		void CancelPendingFragment()
-		{
-			_pendingFragment?.Dispose();
-			_pendingFragment = null;
-			_detailHostFragment?.CancelPendingDetail();
-		}
 
 		void UpdateDetailsFragmentView()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
+			if (_detailViewFragment is not null &&
+				_detailViewFragment.DetailView == VirtualView.Detail &&
+				!_detailViewFragment.IsDestroyed)
+			{
+				return;
+			}
+
 			var context = MauiContext.Context;
 			if (context is null)
 				return;
 
-			var detailHost = EnsureDetailHost(context);
-			if (detailHost is null)
+			var detailContainer = _navigationRoot?.FindViewById(Resource.Id.navigationlayout_content);
+			var activeDetailContainer = MauiContext.Services
+				.GetService<NavigationRootManager>()
+				?.RootView
+				?.FindViewById(Resource.Id.navigationlayout_content);
+			if (detailContainer is null || !ReferenceEquals(detailContainer, activeDetailContainer))
 				return;
 
-			var currentDetailFragment = detailHost.DetailFragment;
+			var fragmentManager = GetFragmentManager(context);
+			if (fragmentManager is null || fragmentManager.IsDestroyed(context))
+			{
+				_detailViewFragment = null;
+				return;
+			}
 
-			if (currentDetailFragment?.DetailView is IView previousDetail &&
-				detailHost.RequestedDetailView == previousDetail &&
+			if (_detailViewFragment?.DetailView is IView previousDetail &&
 				previousDetail != VirtualView.Detail)
 			{
 				previousDetail.Handler?.DisconnectHandler();
 			}
 
-			// The detail page is hosted in the FlyoutDetailFragment's ChildFragmentManager rather
-			// than the activity FragmentManager, so a queued detail swap can't orphan against the
-			// activity when the FlyoutView is torn down. See FlyoutDetailFragment for the rationale.
-			detailHost.SetDetail(VirtualView.Detail, MauiContext);
-		}
-
-		// Adds the long-lived detail host fragment to navigationlayout_content exactly once.
-		FlyoutDetailFragment? EnsureDetailHost(Context context)
-		{
-			var fragmentManager = MauiContext?.GetFragmentManager();
-			if (fragmentManager is null || fragmentManager.IsDestroyed(context))
-				return null;
-
-			if (_detailHostFragment is not null &&
-				ReferenceEquals(_detailHostFragmentManager, fragmentManager) &&
-				ReferenceEquals(_detailHostNavigationRoot, _navigationRoot))
+			if (VirtualView.Detail is null)
 			{
-				if (_detailHostAddCommitted)
+				if (_detailViewFragment is not null)
 				{
-					// A reconnect supersedes a removal deferred while the manager had saved state.
-					_pendingFragment?.Dispose();
-					_pendingFragment = null;
-				}
-				else if (_pendingFragment is null)
-				{
-					ScheduleDetailHostAdd(_detailHostFragment, fragmentManager, context);
-				}
-
-				return _detailHostFragment;
-			}
-
-			ReleaseStaleDetailHost();
-
-			var detailHost = new FlyoutDetailFragment();
-			_detailHostFragment = detailHost;
-			_detailHostFragmentManager = fragmentManager;
-			_detailHostNavigationRoot = _navigationRoot;
-			_detailHostContext = context;
-			_detailHostAddCommitted = false;
-
-			ScheduleDetailHostAdd(detailHost, fragmentManager, context);
-
-			return detailHost;
-		}
-
-		void ScheduleDetailHostAdd(FlyoutDetailFragment detailHost, FragmentManager fragmentManager, Context context)
-		{
-			_pendingFragment =
-				fragmentManager
-					.RunOrWaitForResume(context, (fm) =>
+					var fragmentToRemove = _detailViewFragment;
+					try
 					{
-						if (!ReferenceEquals(_detailHostFragment, detailHost) ||
-							!ReferenceEquals(_detailHostFragmentManager, fragmentManager))
-						{
-							return;
-						}
-
-						fm
+						fragmentManager
 							.BeginTransactionEx()
-							.ReplaceEx(Resource.Id.navigationlayout_content, detailHost)
+							.RemoveEx(fragmentToRemove)
 							.SetReorderingAllowed(true)
-							.Commit();
+							.CommitNowAllowingStateLoss();
 
-						_detailHostAddCommitted = true;
-						_pendingFragment = null;
-					});
+						_detailViewFragment = null;
+					}
+					catch (Java.Lang.IllegalStateException)
+					{
+						PlatformView.Post(UpdateDetailsFragmentView);
+					}
+				}
+			}
+			else
+			{
+				var detailFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+				try
+				{
+					fragmentManager
+						.BeginTransactionEx()
+						.ReplaceEx(Resource.Id.navigationlayout_content, detailFragment)
+						.SetReorderingAllowed(true)
+						.CommitNowAllowingStateLoss();
+
+					_detailViewFragment = detailFragment;
+				}
+				catch (Java.Lang.IllegalStateException)
+				{
+					detailFragment.Dispose();
+					PlatformView.Post(UpdateDetailsFragmentView);
+				}
+			}
 		}
 
-		// Removes the detail host (and with it the ChildFragmentManager hosting the detail page) when
-		// the FlyoutView is disconnected, so the detail graph is released and no host fragment is
-		// left orphaned in the activity FragmentManager.
-		//
-		// If the host add was committed but has not executed, the reorder-allowed Remove is queued
-		// without relying on FindFragmentById so FragmentManager can collapse the pending Add+Remove.
-		// RunOrWaitForResume defers cleanup while state is saved instead of abandoning the host.
-		void RemoveDetailHost()
+		FragmentManager? GetFragmentManager(global::Android.Content.Context context) =>
+			MauiContext?.Services.GetService<FragmentManager>() ?? context.GetFragmentManager();
+
+		void RemoveDetailFragment()
 		{
-			var detailHost = _detailHostFragment;
-			if (detailHost is null)
+			var detailFragment = _detailViewFragment;
+			_detailViewFragment = null;
+			if (detailFragment is null)
 				return;
 
-			_pendingFragment?.Dispose();
-			_pendingFragment = null;
-			detailHost.CancelPendingDetail();
+			detailFragment.DetailView?.Handler?.DisconnectHandler();
 
-			var fragmentManager = _detailHostFragmentManager;
-			var context = _detailHostContext;
-			if (!_detailHostAddCommitted ||
-				fragmentManager is null ||
-				context is null ||
+			var context = MauiContext?.Context;
+			if (context is null)
+				return;
+
+			var fragmentManager = GetFragmentManager(context);
+			if (fragmentManager is null ||
 				fragmentManager.IsDestroyed(context))
 			{
-				ClearDetailHost(detailHost);
 				return;
 			}
 
-			var pendingFragment = fragmentManager.RunOrWaitForResume(context, fm =>
+			try
 			{
-				fm
+				fragmentManager
 					.BeginTransactionEx()
-					.RemoveEx(detailHost)
+					.RemoveEx(detailFragment)
 					.SetReorderingAllowed(true)
-					.Commit();
-
-				ClearDetailHost(detailHost);
-				_pendingFragment = null;
-			});
-
-			_pendingFragment = pendingFragment;
-			if (pendingFragment is null)
-				ClearDetailHost(detailHost);
-		}
-
-		void ReleaseStaleDetailHost()
-		{
-			var detailHost = _detailHostFragment;
-			if (detailHost is null)
-				return;
-
-			var fragmentManager = _detailHostFragmentManager;
-			var context = _detailHostContext;
-			var removeCommittedHost =
-				_detailHostAddCommitted &&
-				fragmentManager is not null &&
-				context is not null &&
-				!fragmentManager.IsDestroyed(context);
-
-			_pendingFragment?.Dispose();
-			_pendingFragment = null;
-			detailHost.CancelPendingDetail();
-			detailHost.DetailFragment?.DetailView.Handler?.DisconnectHandler();
-			ClearDetailHost(detailHost);
-
-			if (removeCommittedHost)
-			{
-				// This cleanup belongs to the old manager and must not be cancelled when the new host
-				// starts using the handler's pending-operation slot.
-				_ = fragmentManager!.RunOrWaitForResume(context!, fm =>
-				{
-					fm
-						.BeginTransactionEx()
-						.RemoveEx(detailHost)
-						.SetReorderingAllowed(true)
-						.Commit();
-				});
+					.CommitNowAllowingStateLoss();
 			}
-		}
-
-		void ClearDetailHost(FlyoutDetailFragment detailHost)
-		{
-			if (!ReferenceEquals(_detailHostFragment, detailHost))
-				return;
-
-			_detailHostFragment = null;
-			_detailHostFragmentManager = null;
-			_detailHostNavigationRoot = null;
-			_detailHostContext = null;
-			_detailHostAddCommitted = false;
+			catch (Java.Lang.IllegalStateException)
+			{
+				fragmentManager
+					.BeginTransactionEx()
+					.RemoveEx(detailFragment)
+					.SetReorderingAllowed(true)
+					.CommitAllowingStateLossEx();
+			}
 		}
 
 		void UpdateDetail()
@@ -408,7 +332,7 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyoutBehavior()
 		{
 			var behavior = VirtualView.FlyoutBehavior;
-			if (DetailViewFragment?.DetailView?.Handler?.PlatformView == null)
+			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
 				return;
 
 			// Important to create the layout views before setting the lock mode
@@ -445,8 +369,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
-			CancelPendingFragment();
-			RemoveDetailHost();
+			RemoveDetailFragment();
 
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
@@ -489,8 +412,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
-			CancelPendingFragment();
 
 			// PlatformView may be null when the handler has not yet been connected;
 			// the is-pattern serves as a null guard here.
