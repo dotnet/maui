@@ -5,15 +5,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 public class AppStyles : ResourceDictionary
 {
-	public AppStyles() : this(new AppColors(), Application.Current)
-	{
-	}
-
-	public AppStyles(AppColors colors) : this(colors, Application.Current)
-	{
-	}
-
-	public AppStyles(AppColors colors, Application? application)
+	internal AppStyles(AppColors colors, Application application)
 	{
 		var primary = (Color)colors["Primary"];
 		var primaryDark = (Color)colors["PrimaryDark"];
@@ -246,19 +238,6 @@ public class AppStyles : ResourceDictionary
 				State("Disabled",
 					Set(SearchBar.TextColorProperty, Theme(gray300, gray600)),
 					Set(SearchBar.PlaceholderColorProperty, Theme(gray300, gray600))))));
-
-		// SearchHandler
-		Add(Style(typeof(SearchHandler),
-			Set(SearchHandler.TextColorProperty, Theme(gray900, white)),
-			Set(SearchHandler.PlaceholderColorProperty, gray500),
-			Set(SearchHandler.BackgroundColorProperty, Colors.Transparent),
-			Set(SearchHandler.FontFamilyProperty, "OpenSansRegular"),
-			Set(SearchHandler.FontSizeProperty, 14.0),
-			CommonStates(
-				State("Normal"),
-				State("Disabled",
-					Set(SearchHandler.TextColorProperty, Theme(gray300, gray600)),
-					Set(SearchHandler.PlaceholderColorProperty, Theme(gray300, gray600))))));
 
 		// Shadow
 		Add(Style(typeof(Shadow),

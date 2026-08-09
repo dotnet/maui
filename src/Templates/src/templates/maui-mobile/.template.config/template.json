@@ -277,7 +277,6 @@
         "IncludeSampleContent": {
             "type": "parameter",
             "datatype": "bool",
-            "isEnabled": "(UI == \"xaml\")",
             "defaultValue": "false",
             "displayName": "_Include sample content",
             "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."

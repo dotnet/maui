@@ -23,16 +23,16 @@ public class MainPage : ContentPage
 
 		var headline = new Label
 		{
-			Text = "Hello, World!",
-			Style = (Style)Application.Current!.Resources["Headline"]
+			Text = "Hello, World!"
 		};
+		headline.SetDynamicResource(VisualElement.StyleProperty, "Headline");
 		SemanticProperties.SetHeadingLevel(headline, SemanticHeadingLevel.Level1);
 
 		var subtitle = new Label
 		{
-			Text = "Welcome to \n.NET Multi-platform App UI",
-			Style = (Style)Application.Current!.Resources["SubHeadline"]
+			Text = "Welcome to \n.NET Multi-platform App UI"
 		};
+		subtitle.SetDynamicResource(VisualElement.StyleProperty, "SubHeadline");
 		SemanticProperties.SetHeadingLevel(subtitle, SemanticHeadingLevel.Level2);
 		SemanticProperties.SetDescription(subtitle, "Welcome to dot net Multi platform App U I");
 

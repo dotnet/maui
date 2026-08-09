@@ -95,6 +95,23 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData("xaml", true)]
+	[InlineData("csharp", false)]
+	public void MauiUIOptionControlsSampleContent(string ui, bool includesSampleContent)
+	{
+		SetTestIdentifier(ui, includesSampleContent);
+		var projectDir = TestDirectory;
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, $"--ui {ui} --sample-content --no-restore", output: _output),
+			$"Unable to create template maui with --ui {ui} --sample-content. Check test output for errors.");
+
+		Assert.Equal(includesSampleContent, File.Exists(Path.Combine(projectDir, "Pages", "MainPage.xaml")));
+		Assert.Equal(includesSampleContent, File.Exists(Path.Combine(projectDir, "Services", "IErrorHandler.cs")));
+		Assert.Equal(ui == "csharp", File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+	}
+
+	[Theory]
 	[InlineData("maui")]
 	[InlineData("maui-blazor")]
 	[InlineData("mauilib")]
