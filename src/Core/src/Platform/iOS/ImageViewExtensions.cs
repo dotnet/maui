@@ -104,8 +104,16 @@ namespace Microsoft.Maui.Platform
 				// Compute the raw (uncapped) ratio for each axis. When an axis constraint is +Infinity
 				// (i.e. unconstrained, as happens on the cross axis of a StackLayout), its ratio is also
 				// +Infinity, meaning it never limits the scale factor - only the other (finite/explicit) axis does.
-				var widthRatio = widthConstraint / imageWidth;
-				var heightRatio = heightConstraint / imageHeight;
+				var widthRatio =
+					double.IsPositiveInfinity(widthConstraint)
+						? double.PositiveInfinity
+						: widthConstraint / imageWidth;
+
+				var heightRatio =
+					double.IsPositiveInfinity(heightConstraint)
+						? double.PositiveInfinity
+						: heightConstraint / imageHeight;
+
 				var scaleFactor = Math.Min(widthRatio, heightRatio);
 
 				// Only when NEITHER axis constraint came from an explicit request (WidthRequest/HeightRequest) -
