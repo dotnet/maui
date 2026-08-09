@@ -358,6 +358,9 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
 
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
+    if stimulus.key?("attachments")
+      fail!("stimuli[#{index}].attachments is forbidden in credentialed evaluation specs")
+    end
     validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
     graders = Array(stimulus["graders"])
     validate_graders!(graders, "stimuli[#{index}].graders")

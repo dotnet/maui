@@ -52,6 +52,7 @@ set -euo pipefail
 : "${TRUSTED_COPILOT_CLI_PATH:?TRUSTED_COPILOT_CLI_PATH is required}"
 : "${TRUSTED_COPILOT_HOME:?TRUSTED_COPILOT_HOME is required}"
 export COPILOT_HOME="$TRUSTED_COPILOT_HOME"
+export EVALUATE_USE_HOST_COPILOT_HOME=1
 exec "$TRUSTED_COPILOT_CLI_PATH" "$@" \
 	--experimental \
 	--sandbox \
@@ -78,6 +79,27 @@ grep -Fqx -- "--stdio" "$probe_output"
 grep -Fqx -- "--experimental" "$probe_output"
 grep -Fqx -- "--sandbox" "$probe_output"
 grep -Fqx -- "--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN" "$probe_output"
+
+# Vally 0.12 normally creates an empty per-run Copilot home and passes it as the
+# session configDirectory, which takes precedence over COPILOT_HOME. Confirm the
+# pinned executor honors the opt-out before any model credential enters the job.
+copilot_home_module="$install_root/node_modules/@microsoft/vally/dist/executor/copilot-home.js"
+if [ ! -f "$copilot_home_module" ]; then
+	echo "Expected Vally Copilot-home resolver at $copilot_home_module" >&2
+	exit 1
+fi
+EVALUATE_USE_HOST_COPILOT_HOME=1 node --input-type=module - "$copilot_home_module" <<'EOF'
+import { pathToFileURL } from "node:url";
+
+const modulePath = process.argv[2];
+const { createIsolatedCopilotHome } = await import(pathToFileURL(modulePath));
+const resolved = createIsolatedCopilotHome(process.env, () => {
+	throw new Error("Vally attempted to create an isolated Copilot home");
+});
+if (resolved !== undefined) {
+	throw new Error(`Expected host Copilot home opt-out, received ${resolved}`);
+}
+EOF
 
 vally_runner="$install_root/run-vally"
 eval_results_root="$install_root/results"
@@ -216,6 +238,7 @@ child_env=(
 	"COPILOT_CLI_PATH=$COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_CLI_PATH=$TRUSTED_COPILOT_CLI_PATH"
 	"TRUSTED_COPILOT_HOME=$TRUSTED_COPILOT_HOME"
+	"EVALUATE_USE_HOST_COPILOT_HOME=1"
 	"GIT_CONFIG_GLOBAL=$trusted_git_config"
 	"GIT_CONFIG_NOSYSTEM=1"
 )
@@ -241,6 +264,17 @@ EOF
 	)
 	if [ "$test_user" != "$eval_user" ]; then
 		echo "Expected isolated Vally user $eval_user, found $test_user" >&2
+		exit 1
+	fi
+	test_use_host_copilot_home=$(
+		COPILOT_GITHUB_TOKEN=probe \
+			COPILOT_CLI_PATH="$copilot_wrapper" \
+			TRUSTED_COPILOT_CLI_PATH="${copilot_runtimes[0]}" \
+			TRUSTED_COPILOT_HOME="$trusted_copilot_home" \
+			"$vally_runner" /usr/bin/printenv EVALUATE_USE_HOST_COPILOT_HOME
+	)
+	if [ "$test_use_host_copilot_home" != "1" ]; then
+		echo "Isolated Vally process is not using the trusted Copilot home" >&2
 		exit 1
 	fi
 	if [ "$(sudo -n -u "$eval_user" /usr/bin/id -Gn)" != "$eval_user" ]; then
@@ -288,10 +322,36 @@ EOF
 	cat > "$vally_runner" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+export EVALUATE_USE_HOST_COPILOT_HOME=1
 exec "$@"
 EOF
 	chmod 700 "$vally_runner"
 fi
+
+# The selected home must contain the complete fail-closed policy that Vally and
+# every spawned Copilot session will read.
+node - "$trusted_copilot_home/settings.json" "$install_root" <<'EOF'
+const fs = require("node:fs");
+
+const settingsPath = process.argv[2];
+const installRoot = process.argv[3];
+const settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+const sandbox = settings.sandbox;
+if (!sandbox?.enabled ||
+    sandbox.allowBypass !== false ||
+    sandbox.gitAuth !== false ||
+    sandbox.ghAuth !== false ||
+    sandbox.sandboxMcpServers !== true ||
+    sandbox.sandboxLspServers !== true ||
+    sandbox.allowDevToolAccess !== false ||
+    sandbox.userPolicy?.network?.allowLocalNetwork !== false) {
+	throw new Error("Trusted Copilot sandbox policy is incomplete");
+}
+const denied = sandbox.userPolicy?.filesystem?.deniedPaths;
+if (!Array.isArray(denied) || !denied.includes("/proc") || !denied.includes(installRoot)) {
+	throw new Error("Trusted Copilot filesystem policy is incomplete");
+}
+EOF
 
 {
 	echo "vally_bin=$vally_bin"

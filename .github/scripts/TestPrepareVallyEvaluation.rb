@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "fileutils"
+require "json"
 require "minitest/autorun"
 require "open3"
 require "pathname"
@@ -9,6 +10,7 @@ require "yaml"
 
 PREPARER = File.realpath(ARGV.shift || File.join(__dir__, "PrepareVallyEvaluation.rb"))
 RESTORE_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
+VERIFICATION_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 require PREPARER
 
 class TestPrepareVallyEvaluation < Minitest::Test
@@ -79,6 +81,39 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "uses forbidden grader run-command"
+  end
+
+  def test_rejects_absolute_prompt_attachment
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "sensitive-attachment",
+          "attachments" => ["/proc/self/environ"]
+        }
+      ]
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].attachments is forbidden"
+  end
+
+  def test_rejects_relative_prompt_attachment
+    write_fixture("attachment.txt")
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "fixture-attachment",
+          "attachments" => ["attachment.txt"]
+        }
+      ]
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].attachments is forbidden"
   end
 
   def test_rejects_named_skill_invocation_grader
@@ -435,6 +470,64 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_empty allowed_commands.select { |command| matcher.match?(command) }
   end
 
+  def test_verification_command_guard_matcher_boundaries
+    skip "verification spec not provided" unless VERIFICATION_SPEC
+
+    document = YAML.safe_load_file(VERIFICATION_SPEC, aliases: true)
+    tool_graders = document.fetch("stimuli").flat_map do |stimulus|
+      stimulus.fetch("graders").select { |item| item["type"] == "tool-calls" }
+    end
+    disallowed_git = [
+      "git checkout -- file",
+      "cd /repo\ngit restore --worktree .",
+      "echo setup\n/usr/bin/git reset --hard",
+      "git \\\nrestore --worktree .",
+      "FOO=bar env git clean -fd",
+      "env -C /repo git restore --worktree .",
+      "FOO=bar env -C /repo git reset --hard",
+      "timeout 60 git reset --hard",
+      "timeout 60 bash -c \"git restore file\"",
+      "pwsh -Command \"git restore --worktree .\"",
+      "\"git\" restore --worktree .",
+      "'/usr/bin/git' reset --hard",
+      "sudo git stash",
+      "sh -c 'git restore file'",
+      "git apply --reverse fix.patch",
+      "git apply -R fix.patch"
+    ]
+    allowed_git = [
+      "git rev-parse HEAD^",
+      "git diff --quiet",
+      "git status --short"
+    ]
+    disallowed_dotnet = [
+      "dotnet test project.csproj",
+      "echo setup\ndotnet test project.csproj",
+      "dotnet \\\ntest project.csproj",
+      "/usr/local/bin/dotnet test project.csproj",
+      "env FOO=bar dotnet --roll-forward LatestMajor test project.csproj",
+      "env -C /repo dotnet test project.csproj",
+      "timeout 60 dotnet test project.csproj",
+      "env -C /repo bash -c \"dotnet test project.csproj\"",
+      "eval \"dotnet test project.csproj\"",
+      "\"dotnet\" test project.csproj",
+      "bash -c 'dotnet test project.csproj'"
+    ]
+    allowed_dotnet = [
+      "dotnet build project.csproj"
+    ]
+
+    tool_graders.each_with_index do |grader, index|
+      patterns = grader.fetch("config").fetch("disallowed").map { |entry| entry.fetch("command") }
+      git_patterns = patterns.select { |pattern| pattern.include?("checkout|clean|restore|reset|stash") }
+      dotnet_patterns = patterns.select { |pattern| pattern.include?("dotnet") }
+      refute_empty git_patterns, "grader #{index} has no Git cleanup guard"
+      refute_empty dotnet_patterns, "grader #{index} has no raw dotnet test guard"
+      assert_javascript_matcher_boundaries(git_patterns, disallowed_git, allowed_git)
+      assert_javascript_matcher_boundaries(dotnet_patterns, disallowed_dotnet, allowed_dotnet)
+    end
+  end
+
   def test_executable_overlay_uses_trusted_ref_not_candidate_head
     scripts_root = ".github/skills/verify-tests-fail-without-fix/scripts"
     script_path = File.join(scripts_root, "verify-tests-fail.ps1")
@@ -503,6 +596,31 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "persistently writes Git identity"
+  end
+
+  def assert_javascript_matcher_boundaries(patterns, disallowed, allowed)
+    script = <<~'JS'
+      const patterns = JSON.parse(process.argv[1]);
+      const disallowed = JSON.parse(process.argv[2]);
+      const allowed = JSON.parse(process.argv[3]);
+      const matchers = patterns.map(pattern => new RegExp(pattern));
+      const matches = command => matchers.some(matcher => matcher.test(command));
+      const missed = disallowed.filter(command => !matches(command));
+      const falsePositives = allowed.filter(command => matches(command));
+      if (missed.length || falsePositives.length) {
+        console.error(JSON.stringify({ missed, falsePositives }));
+        process.exit(1);
+      }
+    JS
+    _stdout, stderr, status = Open3.capture3(
+      "node",
+      "-e",
+      script,
+      JSON.dump(patterns),
+      JSON.dump(disallowed),
+      JSON.dump(allowed)
+    )
+    assert status.success?, stderr
   end
 
   def write_spec(document)

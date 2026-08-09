@@ -105,19 +105,20 @@ jobs:
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           VALLY_BIN: ${{ steps.vally-runtime.outputs.vally_bin }}
           VALLY_RUNNER: ${{ steps.vally-runtime.outputs.vally_runner }}
+          RESULTS_PATH: ${{ steps.vally-runtime.outputs.results_root }}/live-soak-results
           # Live public-PR retrieval is anonymous by design. Do not give the
           # Copilot process a GitHub API token.
           RUNS: ${{ github.event.inputs.runs || '1' }}
         run: |
           set -euo pipefail
-          mkdir -p live-soak-results
-          chmod g+rwx live-soak-results
+          mkdir -p "$RESULTS_PATH"
+          chmod 2770 "$RESULTS_PATH"
 
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval \
             -e .github/skills/code-review/tests/soak.capability.vally.yaml \
             --skill-dir .github/skills \
-            --output-dir live-soak-results \
+            --output-dir "$RESULTS_PATH" \
             --junit \
             --runs "$RUNS" \
             --workers 3 \
@@ -126,9 +127,9 @@ jobs:
           set -e
 
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
-          printf '%s\n' "$rc" > live-soak-results/eval-exit-code.txt
+          printf '%s\n' "$rc" > "$RESULTS_PATH/eval-exit-code.txt"
 
-          junit=$(find live-soak-results -name eval-results.junit.xml -type f | head -1 || true)
+          junit=$(find "$RESULTS_PATH" -name eval-results.junit.xml -type f | head -1 || true)
           {
             echo "## Code-review live soak"
             echo
@@ -146,6 +147,7 @@ jobs:
               echo "- Suite verdict: \`${passed:-unavailable}\`"
               echo "- Trial failures/errors: \`${failures:-0}/${errors:-0}\`"
             else
+              echo "::warning::Live soak produced no JUnit report under $RESULTS_PATH"
               echo "- Suite result: \`incomplete (no JUnit report)\`"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
@@ -159,6 +161,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: code-review-live-soak-results
-          path: live-soak-results/
+          path: ${{ steps.vally-runtime.outputs.results_root }}/live-soak-results/
           include-hidden-files: true
           retention-days: 30

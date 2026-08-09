@@ -55,9 +55,9 @@ stimuli:
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -114,9 +114,9 @@ stimuli:
             - name: '^(bash|powershell)$'
               command: 'verify-tests-fail\.ps1[\s\S]*-RequireFullVerification\b'
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -163,9 +163,9 @@ stimuli:
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
@@ -213,9 +213,9 @@ stimuli:
               result: 'VERIFICATION PASSED'
           disallowed:
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)git\s+(?:(?:-C|-c)\s+\S+\s+)*(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
             - name: '^(bash|powershell)$'
-              command: '(?:^|[;&|]\s*)dotnet\s+test\b'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
       - type: prompt
         config:
           scoring: scale_1_5
