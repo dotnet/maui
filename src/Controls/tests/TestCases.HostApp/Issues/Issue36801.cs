@@ -167,7 +167,10 @@ public class Issue36801 : ContentPage
 		var expected =
 			edges.Equals(new SafeAreaEdges(SafeAreaRegions.Container)) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Always :
 			edges.Equals(SafeAreaEdges.None) || edges.Equals(SafeAreaEdges.All) ? UIKit.UIScrollViewContentInsetAdjustmentBehavior.Never :
-			UIKit.UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+			// Default on a vertical scroll view resolves to Never since the landscape-notch
+			// fix (#35533): MAUI owns all edges there, and Automatic remains in use only for
+			// horizontal scroll views
+			UIKit.UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 		return nativeScrollView.ContentInsetAdjustmentBehavior == expected
 			? null

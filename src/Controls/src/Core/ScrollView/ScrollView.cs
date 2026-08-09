@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
 
 		ScrollToRequestedEventArgs _pendingScrollToRequested;
+		bool _replayPendingScrollToRequestedEvent;
 
 		private protected override void OnHandlerChangedCore()
 		{
@@ -72,16 +73,9 @@ namespace Microsoft.Maui.Controls
 
 			if (pending.Mode == ScrollToMode.Element)
 			{
-				// An element target is resolved against this ScrollView's geometry and the
-				// element's position inside the arranged content. Before the first layout pass
-				// Width/Height are still -1 (the never-arranged sentinel, for the content too),
-				// so the request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
-				// The content check must be "not yet arranged" rather than "arranged to nothing":
-				// content can legitimately arrange to a zero size (a collapsed container), and
-				// that raises no further callbacks — gating on the size would hang the caller's
-				// task forever, while dispatching just clamps the target to the origin.
-				if (Width < 0 || Height < 0 || Content is { Width: < 0 } or { Height: < 0 })
+				if (!IsElementTargetGeometryReady())
 				{
+					// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
 					return;
 				}
 
@@ -97,6 +91,16 @@ namespace Microsoft.Maui.Controls
 			SendPendingScrollToRequest();
 		}
 
+		// An element target is resolved against this ScrollView's geometry and the element's
+		// position inside the arranged content. Before the first layout pass Width/Height are
+		// still -1 (the never-arranged sentinel, for the content too), so a target computed
+		// then is garbage. The content check must be "not yet arranged" rather than "arranged
+		// to nothing": content can legitimately arrange to a zero size (a collapsed container),
+		// and that raises no further callbacks — gating on the size would hang the caller's
+		// task forever, while dispatching just clamps the target to the origin.
+		bool IsElementTargetGeometryReady() =>
+			Width >= 0 && Height >= 0 && Content is not ({ Width: < 0 } or { Height: < 0 });
+
 		void SendPendingScrollToRequest()
 		{
 			if (Handler is null || _pendingScrollToRequested is not { } pending)
@@ -107,8 +111,18 @@ namespace Microsoft.Maui.Controls
 			_pendingScrollToRequested = null;
 
 			// Replay without going through OnScrollToRequested: that would reset the
-			// completion source and orphan the task the original caller is still awaiting
-			ScrollToRequested?.Invoke(this, pending);
+			// completion source and orphan the task the original caller is still awaiting.
+			// The event is re-raised only for requests parked before the handler attached:
+			// compatibility renderers subscribe to ScrollToRequested at attach and perform the
+			// scroll from it, so they would otherwise never see the request. A request parked
+			// with the handler present (waiting for element geometry) already notified its
+			// subscribers at request time, and re-raising would double-notify them.
+			if (_replayPendingScrollToRequestedEvent)
+			{
+				_replayPendingScrollToRequestedEvent = false;
+				ScrollToRequested?.Invoke(this, pending);
+			}
+
 			Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(pending).ToRequest());
 		}
 
@@ -511,6 +525,16 @@ namespace Microsoft.Maui.Controls
 			if (Handler is null)
 			{
 				_pendingScrollToRequested = e;
+				_replayPendingScrollToRequestedEvent = true;
+			}
+			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
+			{
+				// The handler exists but layout has not run yet (e.g. ScrollToAsync from
+				// OnAppearing): resolving the element target now would compute against the -1
+				// never-arranged sentinels. Park it for the layout callbacks instead — the
+				// subscribers were already notified above, so the replay must not re-raise.
+				_pendingScrollToRequested = e;
+				_replayPendingScrollToRequestedEvent = false;
 			}
 			else
 			{

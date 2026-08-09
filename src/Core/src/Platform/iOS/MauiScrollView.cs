@@ -467,11 +467,11 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				var arranged = _arrangedContentRect;
-
 				// Content has not been arranged through CrossPlatformArrange (e.g. ContentSize
-				// was mapped directly), so the content size is the only extent available
-				if (arranged == CGRect.Empty)
+				// was mapped directly), so the content size is the only extent available. The
+				// nullable keeps this distinct from content legitimately arranged to a zero
+				// size at the origin, whose extent really is empty.
+				if (_arrangedContentRect is not { } arranged)
 				{
 					return ContentSize;
 				}
@@ -507,9 +507,9 @@ namespace Microsoft.Maui.Platform
 		/// The rect the last <see cref="CrossPlatformArrange"/> placed the content into:
 		/// origin is the (possibly safe-area-inset) position the content was arranged at and
 		/// size is the arranged content size before any <see cref="UIScrollView.ContentSize"/>
-		/// padding or scrollable-mode inflation is applied.
+		/// padding or scrollable-mode inflation is applied. Null until the first arrange runs.
 		/// </summary>
-		CGRect _arrangedContentRect;
+		CGRect? _arrangedContentRect;
 
 		/// <summary>
 		/// The safe area <see cref="CrossPlatformArrange"/> baked into the content's coordinate

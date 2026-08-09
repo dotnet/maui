@@ -453,6 +453,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ElementRequestWithHandlerAttachedWaitsForArrange()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var eventCount = 0;
+			((IScrollViewController)scrollView).ScrollToRequested += (_, _) => eventCount++;
+
+			// The handler exists but nothing is arranged yet (Width/Height are the -1
+			// never-arranged sentinels): resolving the element target now would compute
+			// against garbage geometry, so the request must wait for layout
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
+			Assert.Empty(handler.ScrollToRequests);
+			Assert.Equal(1, eventCount);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			// Dispatched once with a target computed from real geometry: 450 - 100/2 + 50/2.
+			// The public event must not be raised a second time on the replay — subscribers
+			// were already notified when the request was made.
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(425, request.VerticalOffset);
+			Assert.Equal(1, eventCount);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DeferredRequestReplaysEventForSubscribersAttachedWithTheHandler()
+		{
+			var scrollView = new ScrollView();
+			var task = scrollView.ScrollToAsync(10, 20, false);
+
+			// Compatibility renderers subscribe to ScrollToRequested when they attach —
+			// after the request above was parked — and perform the scroll from the event,
+			// so the replay must re-raise it for them
+			var eventCount = 0;
+			((IScrollViewController)scrollView).ScrollToRequested += (_, _) => eventCount++;
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			Assert.Equal(1, eventCount);
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(20, request.VerticalOffset);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
 		public void InsetRefreshUpdatesOffsetsWithoutRaisingScrolled()
 		{
 			var scrollView = new ScrollView();
