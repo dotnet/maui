@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiPickerBase : AppCompatEditText
 	{
 		readonly PickerDragGestureFilter _dragGestureFilter = new();
+		readonly PickerScrollingMovementMethod _movementMethod = new();
 
 		public MauiPickerBase(Context context) : base(context)
 		{
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Allow overflow text to scroll without enabling EditText cursor movement.
-		protected override IMovementMethod? DefaultMovementMethod => ScrollingMovementMethod.Instance;
+		protected override IMovementMethod? DefaultMovementMethod => _movementMethod;
 
 		public override bool OnTouchEvent(MotionEvent? e)
 		{

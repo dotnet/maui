@@ -30,6 +30,7 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 internal class MauiMaterialPickerBase : TextInputEditText
 {
 	readonly PickerDragGestureFilter _dragGestureFilter = new();
+	readonly PickerScrollingMovementMethod _movementMethod = new();
 
 	public MauiMaterialPickerBase(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
 	{
@@ -40,7 +41,7 @@ internal class MauiMaterialPickerBase : TextInputEditText
 	}
 
 	// Allow overflow text to scroll without enabling EditText cursor movement.
-	protected override IMovementMethod? DefaultMovementMethod => ScrollingMovementMethod.Instance;
+	protected override IMovementMethod? DefaultMovementMethod => _movementMethod;
 
 	public override bool OnTouchEvent(MotionEvent? e)
 	{
