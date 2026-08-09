@@ -19,5 +19,10 @@ namespace Microsoft.Maui.Controls
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
 			SearchBarHandler.MapFormatting(handler, searchBar);
 		}
+
+		internal static void MapUserInteraction(ISearchBarHandler handler, SearchBar searchBar)
+		{
+			handler.PlatformView.UserInteractionEnabled = searchBar.IsEnabled && !searchBar.IsReadOnly && !searchBar.InputTransparent;
+		}
 	}
 }

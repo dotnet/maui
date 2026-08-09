@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Microsoft.Maui.Storage;
+using AndroidUri = Android.Net.Uri;
 
 namespace Microsoft.Maui.ApplicationModel.DataTransfer
 {
@@ -44,7 +46,19 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 
 		Task PlatformRequestAsync(ShareMultipleFilesRequest request)
 		{
-			// load the data we need
+			var intent = CreateShareFileIntent(request);
+
+			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
+			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask | ActivityFlags.GrantReadUriPermission;
+			chooserIntent.SetFlags(flags);
+			Application.Context.StartActivity(chooserIntent);
+
+			return Task.CompletedTask;
+		}
+
+		// Extracted for testability — verifiable without launching an Activity.
+		internal static Intent CreateShareFileIntent(ShareMultipleFilesRequest request)
+		{
 			var contentUris = new List<IParcelable>(request.Files.Count);
 			var contentType = default(string);
 			foreach (var file in request.Files)
@@ -66,19 +80,46 @@ namespace Microsoft.Maui.ApplicationModel.DataTransfer
 			intent.SetFlags(ActivityFlags.GrantReadUriPermission);
 
 			if (contentUris.Count > 1)
+			{
 				intent.PutParcelableArrayListExtra(Intent.ExtraStream, contentUris);
+
+				// Set ClipData so the system grants URI read permission to the receiving app.
+				// Without this, Android 10+ logs a SecurityException when the share sheet
+				// or target app tries to read the FileProvider content URI.
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					var clipData = new ClipData(
+						request.Title ?? string.Empty,
+						new[] { contentType },
+						new ClipData.Item((AndroidUri)contentUris[0]));
+
+					for (int i = 1; i < contentUris.Count; i++)
+					{
+						clipData.AddItem(new ClipData.Item((AndroidUri)contentUris[i]));
+					}
+
+					intent.ClipData = clipData;
+				}
+			}
 			else if (contentUris.Count == 1)
+			{
 				intent.PutExtra(Intent.ExtraStream, contentUris[0]);
 
+				// Set ClipData so the system grants URI read permission to the receiving app.
+				// Without this, Android 10+ logs a SecurityException when the share sheet
+				// or target app tries to read the FileProvider content URI.
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+				{
+					intent.ClipData = ClipData.NewRawUri(request.Title ?? string.Empty, (AndroidUri)contentUris[0]);
+				}
+			}
+
 			if (!string.IsNullOrEmpty(request.Title))
+			{
 				intent.PutExtra(Intent.ExtraTitle, request.Title);
+			}
 
-			var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
-			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
-			chooserIntent.SetFlags(flags);
-			Application.Context.StartActivity(chooserIntent);
-
-			return Task.CompletedTask;
+			return intent;
 		}
 	}
 }

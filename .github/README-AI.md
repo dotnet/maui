@@ -204,15 +204,17 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 - **`pr-review/pr-preflight.md`** - Phase 1: Context gathering (phase doc, not a standalone skill)
 - **`pr-review/pr-gate.md`** - Phase 2: Test verification (phase doc, not a standalone skill)
 - **`pr-review/pr-report.md`** - Phase 4: Final recommendation (phase doc, not a standalone skill)
-- **`agents/sandbox-agent.md`** - Sandbox agent for testing and experimentation
-- **`agents/write-tests-agent.md`** - Test writing agent (dispatches to skills like write-ui-tests)
+- **`agents/sandbox-agent.agent.md`** - Sandbox agent for testing and experimentation
+- **`agents/write-tests-agent.agent.md`** - Test writing agent (dispatches to skills like write-ui-tests)
+- **`agents/learn-from-pr.agent.md`** - Extracts lessons from PRs and applies improvements
 
 ### Agent Files
 
 Agent files in the `.github/agents/` directory:
 
-- **`agents/sandbox-agent.md`** - Sandbox app testing and experimentation
-- **`agents/write-tests-agent.md`** - Test writing (invokes skills like write-ui-tests)
+- **`agents/sandbox-agent.agent.md`** - Sandbox app testing and experimentation
+- **`agents/write-tests-agent.agent.md`** - Test writing (invokes skills like write-ui-tests)
+- **`agents/learn-from-pr.agent.md`** - Extracts PR lessons and applies repo improvements
 
 ### Shared Instruction Files
 
@@ -364,8 +366,8 @@ For issues or questions about the AI agent instructions:
 ## Metrics
 
 **Agent Files**:
-- 4 agent files (pr-review skill.md, sandbox-agent.md, write-tests-agent.md)
-- 5 skills (pr-review, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator) + 3 phase docs (pr-preflight, pr-gate, pr-report)
+- 3 agent files (sandbox-agent.agent.md, write-tests-agent.agent.md, learn-from-pr.agent.md)
+- 15 skills (pr-review, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator, code-review, evaluate-pr-tests, find-reviewable-pr, issue-triage, learn-from-pr, pr-finalize, run-device-tests, run-helix-tests, run-integration-tests) + 3 phase docs (pr-preflight, pr-gate, pr-report)
 - All validated and consistent with consolidated structure
 
 **Automation**:

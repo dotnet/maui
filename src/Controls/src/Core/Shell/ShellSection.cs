@@ -524,9 +524,9 @@ namespace Microsoft.Maui.Controls
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
-					await OnPopAsync(animate ?? false);
+					await OnPopAsync(animate ?? true);
 				else
-					await OnPopToRootAsync(animate ?? false);
+					await OnPopToRootAsync(animate ?? true);
 
 				return;
 			}
@@ -972,7 +972,6 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
-			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove
@@ -1062,6 +1061,7 @@ namespace Microsoft.Maui.Controls
 		void RemovePage(Page page)
 		{
 			RemoveLogicalChild(page);
+			page?.DisconnectHandlers();
 		}
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);

@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			// This handler is done with the MKMapView; we can put it in the pool
 			// for other rendererers to use in the future
+			platformView.PrepareForReuse();
 			MapPool.Add(platformView);
 		}
 

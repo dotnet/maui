@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
@@ -11,6 +12,11 @@ namespace Microsoft.Maui.Platform
 	{
 		Canvas? _backgroundLayer;
 		public bool ClipsToBounds { get; set; }
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new MauiLayoutAutomationPeer(this);
+		}
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.LayoutVirtualView
 		// If you make changes here please review if those changes should also

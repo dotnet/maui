@@ -363,16 +363,19 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred iOS versions in order (stable preferred, beta fallback)
-        $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
+        # Preferred iOS versions in order — match main CI ui-tests pipeline (defaultiOSVersion: '26.0')
+        # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
+        # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
+        $preferredVersions = @("iOS-26", "iOS-18", "iOS-17")
         # Preferred devices per iOS version to match CI configuration:
-        #   iOS 18.x → iPhone Xs (matches CI default in UITest.cs)
-        #   iOS 26.x → iPhone 11 Pro (matches CI visual test requirement)
+        #   iOS 26.x → iPhone Xs / iPhone 16 Pro (snapshots in /ios-26 baseline are device-agnostic per UITest.cs:367)
+        #   iOS 18.x → iPhone Xs (matches /ios baseline default)
         #   iOS 17.x → iPhone Xs (fallback)
         $preferredDevicesPerVersion = @{
+            # iPhone 11 Pro first for iOS-26: baselines captured at 1124x1126 resolution
+            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro")
             "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
             "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-26" = @("iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro")
         }
         
         $selectedDevice = $null
@@ -382,8 +385,11 @@ if ($Platform -eq "android") {
         foreach ($version in $preferredVersions) {
             if ($selectedDevice) { break }
             
-            # Get all runtimes matching this version prefix, sorted by version descending
-            # so the latest minor version is preferred (e.g., iOS-18-5 before iOS-18-3)
+            # Get all runtimes matching this version prefix.
+            # Sort descending so the HIGHEST minor version wins (e.g. iOS-26-4
+            # over iOS-26-0). AcesShared agents ship iOS 26.4 pre-installed and
+            # PR #35061 resaved ios-26 baselines for 26.4 — using an older
+            # runtime (26.0) causes pixel-diff failures on every visual test.
             $matchingRuntimes = $simList.devices.PSObject.Properties | 
                 Where-Object { $_.Name -match $version } |
                 Sort-Object { $_.Name } -Descending
@@ -411,7 +417,56 @@ if ($Platform -eq "android") {
                     }
                 }
                 
-                # If no preferred device found, take first available iPhone
+                # If no preferred device found, attempt to CREATE the right-size
+                # device for visual snapshot tests instead of falling back to a
+                # random iPhone (which would have wrong screen dimensions and
+                # cause every visual test to fail with "size differs").
+                #
+                # Resolution mapping (must match snapshots/<env>/ baselines):
+                #   iOS-26 baselines: 1124x1126 → iPhone 11 Pro / iPhone Xs (1125x2436 device)
+                #   iOS-18 baselines: matches iPhone Xs default
+                #   iOS-17 baselines: matches iPhone Xs
+                if (-not $selectedDevice) {
+                    $createDevice = $null
+                    $createDeviceTypeId = $null
+                    if ($version -eq "iOS-26") {
+                        $createDevice = "iPhone 11 Pro"
+                        $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
+                    }
+                    elseif ($version -eq "iOS-18" -or $version -eq "iOS-17") {
+                        $createDevice = "iPhone Xs"
+                        $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-Xs"
+                    }
+
+                    if ($createDevice -and $matchingRuntimes) {
+                        $createRuntime = $matchingRuntimes[0].Name
+                        Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
+                        $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
+                        if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
+                            $newUdid = $createOutput.Trim()
+                            Write-Info "Created $createDevice : $newUdid"
+                            # Re-query so we have the full device object
+                            $simList = xcrun simctl list devices available --json | ConvertFrom-Json
+                            $found = $null
+                            foreach ($rtProp in $simList.devices.PSObject.Properties) {
+                                if ($rtProp.Name -eq $createRuntime) {
+                                    $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                                    if ($found) {
+                                        $selectedDevice = $found
+                                        $selectedVersion = $rtProp.Name
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                        }
+                    }
+                }
+
+                # Last-resort: take first available iPhone (visual tests will likely
+                # report 'size differs' but at least non-visual tests can run)
                 if (-not $selectedDevice) {
                     $anyiPhone = $null
                     $iphoneRuntime = $null
@@ -427,7 +482,7 @@ if ($Platform -eq "android") {
                     if ($anyiPhone) {
                         $selectedDevice = $anyiPhone
                         $selectedVersion = $iphoneRuntime
-                        Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
+                        Write-Info "Using available iPhone (resolution may not match snapshot baselines): $($anyiPhone.name) on $selectedVersion"
                     }
                 }
             }
@@ -510,6 +565,9 @@ if ($Platform -eq "android") {
 # Export device UDID as environment variable
 $env:DEVICE_UDID = $DeviceUdid
 Write-Success "DEVICE_UDID environment variable set: $DeviceUdid"
+
+# Ensure clean exit code (adb commands above may leave $LASTEXITCODE non-zero)
+$global:LASTEXITCODE = 0
 
 # Return UDID for callers
 return $DeviceUdid

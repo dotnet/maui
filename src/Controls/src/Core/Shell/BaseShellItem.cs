@@ -271,7 +271,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (me == null || me.Parent == null)
 				return;
-
 			Propagate(property, me.Parent, me, false);
 		}
 

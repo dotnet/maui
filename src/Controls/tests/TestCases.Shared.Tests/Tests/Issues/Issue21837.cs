@@ -23,7 +23,13 @@ public class Issue21837 : _IssuesUITest
 		_ = App.WaitForElement("label1");
 
 		for (int i = 0; i < numberOfTappableLabels; i++)
-			App.Click($"label{i + 1}");
+        {
+            var labelRect = App.WaitForElement($"label{i + 1}").GetRect();
+ 
+            // Tap near the leading text edge to avoid missing span-only hit regions
+            // when label width is wider than the rendered text.
+            App.TapCoordinates(labelRect.X + 5, labelRect.Y + 5);
+        }
 
 		var resultText = App.FindElement("resultLabel").GetText();
 		Assert.That(resultText, Is.EqualTo($"Number of recognized taps: {numberOfTappableLabels}"));

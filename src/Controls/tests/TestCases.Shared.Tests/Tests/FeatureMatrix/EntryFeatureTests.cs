@@ -93,6 +93,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+#if MACCATALYST
+		// Wait for the Focused event to fire before taking the screenshot
+		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
+#endif
 		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent");
 		App.WaitForElement("TestEntry");
 		App.ClearText("TestEntry");
@@ -114,6 +118,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
+#if MACCATALYST
+		// Wait for the Focused event to fire before taking the screenshot
+		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
+#endif
 		VerifyScreenshotWithKeyboardHandling();
 	}
 

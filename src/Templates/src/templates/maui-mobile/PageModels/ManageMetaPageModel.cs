@@ -14,10 +14,10 @@ public partial class ManageMetaPageModel : ObservableObject
     private readonly SeedDataService _seedDataService;
 
 	[ObservableProperty]
-	private ObservableCollection<Category> _categories = [];
+	public partial ObservableCollection<Category> Categories { get; set; } = [];
 
 	[ObservableProperty]
-	private ObservableCollection<Tag> _tags = [];
+	public partial ObservableCollection<Tag> Tags { get; set; } = [];
 
 	public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository, SeedDataService seedDataService)
 	{

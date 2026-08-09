@@ -108,6 +108,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				if ((returnTypeName == null || returnTypeName == typeInfo.typeName) //only return multiple types if they share the same name. avoid returning both BindingExtension and Binding
 					&& (type = refFromTypeInfo(typeInfo)) != null)
 				{
+					// If this is an Extension-suffix match but the type is static (cannot implement
+					// IMarkupExtension), skip it and continue to try the exact name. This prevents
+					// a static helper class like MyEnumExtension from shadowing MyEnum. (#34021)
+					if (returnTypeName == null
+						&& typeInfo.typeName.EndsWith("Extension", StringComparison.Ordinal)
+						&& typeInfo.typeName != elementName
+						&& type is System.Type runtimeType
+						&& runtimeType.IsAbstract && runtimeType.IsSealed) // static in reflection: abstract+sealed
+						continue;
 					returnTypeName = typeInfo.typeName;
 					yield return type;
 				}

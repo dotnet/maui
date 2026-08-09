@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using Android.Text;
 using Android.Widget;
 using AndroidX.Core.Widget;
@@ -56,9 +57,35 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (oldText != newText)
 			{
-				// This update is happening while inputting text into the EditText, so we want to avoid 
-				// resettting the cursor position and selection
-				editText.SetTextKeepState(newText);
+				// Use Editable.Replace() instead of SetTextKeepState() to avoid re-entering setText()
+				// inside afterTextChanged.
+				// SetTextKeepState() causes EmojiTextWatcher to crash with stale span positions
+				// when a StringFormat binding updates the text programmatically.
+				// https://github.com/dotnet/maui/issues/25728
+				var editable = editText.EditableText;
+
+				if (editable is not null)
+				{
+					// Preserve cursor position across the replace (matches SetTextKeepState behavior)
+					int selStart = editText.SelectionStart;
+					int selEnd = editText.SelectionEnd;
+
+					editable.Replace(0, editable.Length(), newText);
+
+					// Clamp selection to new text length before restoring
+					int len = editText.Text?.Length ?? 0;
+					selStart = Math.Min(selStart, len);
+					selEnd = Math.Min(selEnd, len);
+
+					if (selStart >= 0 && selEnd >= selStart)
+					{
+						editText.SetSelection(selStart, selEnd);
+					}
+				}
+				else
+				{
+					editText.SetTextKeepState(newText);
+				}
 			}
 		}
 	}

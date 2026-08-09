@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+﻿using System.Numerics;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 #if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -89,6 +90,14 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				_canvas.Session = args.DrawingSession;
 				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
+
+				if (FlowDirection == FlowDirection.RightToLeft)
+				{
+					_canvas.ConcatenateTransform(
+						Matrix3x2.CreateScale(-1, 1) *
+						Matrix3x2.CreateTranslation(_dirty.Width, 0));
+				}
+
 				_drawable.Draw(_canvas, _dirty);
 			}
 			finally

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Media;
@@ -10,6 +11,98 @@ namespace Tests
 		[Fact]
 		public async Task TextToSpeech_Speak_Fail_On_NetStandard() =>
 			await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => TextToSpeech.SpeakAsync("Xamarin Essentials!"));
+
+		// NormalizeRate tests — use arbitrary platform constants to verify math
+		const float PlatMin = 0.0f;
+		const float PlatMax = 1.0f;
+		const float PlatNormal = 0.5f;
+
+		[Fact]
+		public void NormalizeRate_MinRate_ReturnsPlatformMin()
+		{
+			var result = TextToSpeechImplementation.NormalizeRate(0.1f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(PlatMin, result);
+		}
+
+		[Fact]
+		public void NormalizeRate_BelowMinRate_ReturnsPlatformMin()
+		{
+			var result = TextToSpeechImplementation.NormalizeRate(0.05f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(PlatMin, result);
+		}
+
+		[Fact]
+		public void NormalizeRate_MaxRate_ReturnsPlatformMax()
+		{
+			var result = TextToSpeechImplementation.NormalizeRate(2.0f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(PlatMax, result);
+		}
+
+		[Fact]
+		public void NormalizeRate_AboveMaxRate_ReturnsPlatformMax()
+		{
+			var result = TextToSpeechImplementation.NormalizeRate(3.0f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(PlatMax, result);
+		}
+
+		[Fact]
+		public void NormalizeRate_DefaultRate_ReturnsPlatformNormal()
+		{
+			var result = TextToSpeechImplementation.NormalizeRate(1.0f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(PlatNormal, result, precision: 5);
+		}
+
+		[Fact]
+		public void NormalizeRate_MidLow_InterpolatesCorrectly()
+		{
+			// 0.55 is halfway between 0.1 and 1.0 → should be halfway between PlatMin and PlatNormal
+			var result = TextToSpeechImplementation.NormalizeRate(0.55f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(0.25f, result, precision: 5);
+		}
+
+		[Fact]
+		public void NormalizeRate_MidHigh_InterpolatesCorrectly()
+		{
+			// 1.5 is halfway between 1.0 and 2.0 → should be halfway between PlatNormal and PlatMax
+			var result = TextToSpeechImplementation.NormalizeRate(1.5f, PlatMin, PlatMax, PlatNormal);
+			Assert.Equal(0.75f, result, precision: 5);
+		}
+
+		[Fact]
+		public void NormalizeRate_IsContinuousAtNormal()
+		{
+			// Values just below and above 1.0 should produce results close to PlatNormal
+			var belowNormal = TextToSpeechImplementation.NormalizeRate(0.999f, PlatMin, PlatMax, PlatNormal);
+			var aboveNormal = TextToSpeechImplementation.NormalizeRate(1.001f, PlatMin, PlatMax, PlatNormal);
+			Assert.True(Math.Abs(belowNormal - aboveNormal) < 0.01f,
+				$"Discontinuity at normal: below={belowNormal}, above={aboveNormal}");
+		}
+
+		// ProsodyRate tests
+		[Theory]
+		[InlineData(0.1f, "x-slow")]
+		[InlineData(0.25f, "x-slow")]
+		[InlineData(0.26f, "slow")]
+		[InlineData(0.5f, "slow")]
+		[InlineData(0.75f, "slow")]
+		[InlineData(0.76f, "medium")]
+		[InlineData(1.0f, "medium")]
+		[InlineData(1.25f, "medium")]
+		[InlineData(1.26f, "fast")]
+		[InlineData(1.5f, "fast")]
+		[InlineData(1.75f, "fast")]
+		[InlineData(1.76f, "x-fast")]
+		[InlineData(2.0f, "x-fast")]
+		public void ProsodyRate_MapsCorrectly(float rate, string expected)
+		{
+			Assert.Equal(expected, TextToSpeechImplementation.ProsodyRate(rate));
+		}
+
+		[Fact]
+		public void ProsodyRate_DefaultRate_ReturnsMedium()
+		{
+			Assert.Equal("medium", TextToSpeechImplementation.ProsodyRate(1.0f));
+		}
 
 		[Fact]
 		public void TextToSpeech_Slit_Text()

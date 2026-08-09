@@ -730,7 +730,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			if (itemsSource == null)
 			{
-				return layout.InternalChildren.Count() == 0;
+				return layout.InternalChildren.Count == 0;
 			}
 
 			int i = 0;

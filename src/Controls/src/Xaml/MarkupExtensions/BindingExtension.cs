@@ -95,7 +95,17 @@ namespace Microsoft.Maui.Controls.Xaml
 					UpdateSourceEventName = UpdateSourceEventName,
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,
-					DataType = bindingXDataType,
+					// When Source is set to a concrete element reference (e.g. x:Reference), the
+					// DataType from IXamlDataTypeProvider reflects the DataTemplate item type, not
+					// the explicit source type. Assigning that mismatched DataType causes
+					// BindingExpression.Apply to null-out the binding source when
+					// IsXamlCBindingWithSourceCompilationEnabled is true (.NET 10 default for
+					// AOT/trimmed builds). See https://github.com/dotnet/maui/issues/33291.
+					//
+					// RelativeBindingSource is excluded: the developer likely set x:DataType on
+					// the binding to describe the expected type of the resolved ancestor, and
+					// that validation should be preserved.
+					DataType = (Source is null || Source is RelativeBindingSource) ? bindingXDataType : null,
 				};
 			}
 		}

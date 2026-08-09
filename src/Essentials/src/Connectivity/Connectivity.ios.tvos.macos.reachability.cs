@@ -7,6 +7,7 @@ using CoreTelephony;
 #endif
 using CoreFoundation;
 using Network;
+using SystemConfiguration;
 
 namespace Microsoft.Maui.Networking
 {
@@ -108,6 +109,8 @@ namespace Microsoft.Maui.Networking
 		const int ConnectionStatusChangeDelayMs = 100;
 
 		NWPathMonitor pathMonitor;
+		CancellationTokenSource cts = new CancellationTokenSource();
+		int pendingCallbacks;
 
 		internal ReachabilityListener()
 		{
@@ -129,6 +132,10 @@ namespace Microsoft.Maui.Networking
 
 		internal void Dispose()
 		{
+			cts?.Cancel();
+			cts?.Dispose();
+			cts = null;
+
 			if (pathMonitor != null)
 			{
 				pathMonitor.SnapshotHandler = null;
@@ -166,5 +173,48 @@ namespace Microsoft.Maui.Networking
 		}
 #pragma warning restore BI1234
 #endif
+
+		async void OnChange(NetworkReachabilityFlags flags)
+		{
+			// Deduplicate: both watchers may fire for the same network change.
+			// Only the first callback runs the polling loop; subsequent ones are no-ops.
+			if (Interlocked.Increment(ref pendingCallbacks) > 1)
+				return;
+
+			var token = cts?.Token ?? default;
+			if (token.IsCancellationRequested)
+				return;
+
+			// This function waits up to 1 second, checking the device's network status every 100 milliseconds.
+			// If the network status changes, it immediately triggers the ReachabilityChanged event.
+			var initialAccess = Connectivity.NetworkAccess;
+			const int pollingIntervalMs = 100;
+			const int maxWaitTimeMs = 1000;
+			int elapsedTime = 0;
+
+			try
+			{
+				while (elapsedTime < maxWaitTimeMs)
+				{
+					await Task.Delay(pollingIntervalMs, token);
+					elapsedTime += pollingIntervalMs;
+					var currentAccess = Connectivity.NetworkAccess;
+					if (currentAccess != initialAccess)
+					{
+						ReachabilityChanged?.Invoke();
+						return;
+					}
+				}
+				ReachabilityChanged?.Invoke();
+			}
+			catch (OperationCanceledException)
+			{
+				// Listener was disposed during polling, don't fire event
+			}
+			finally
+			{
+				Interlocked.Exchange(ref pendingCallbacks, 0);
+			}
+		}
 	}
 }
