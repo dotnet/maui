@@ -19,6 +19,10 @@
 .PARAMETER ChangedFiles
     Explicit list of changed file paths (skips PR/git detection).
 
+.PARAMETER DiffBase
+    Commit used as the local diff base. When provided, changed files and added
+    device-test methods are read from DiffBase..HEAD instead of the live PR.
+
 .PARAMETER Platform
     Optional device-test platform used to exclude methods from partial files that do not
     compile for that target (for example, Android methods from a Windows Gate run).
@@ -58,10 +62,21 @@ param(
     [string[]]$ChangedFiles,
 
     [Parameter(Mandatory = $false)]
+    [string]$DiffBase,
+
+    [Parameter(Mandatory = $false)]
     [string]$Platform
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not [string]::IsNullOrWhiteSpace($DiffBase)) {
+    $resolvedDiffBase = git rev-parse --verify "$DiffBase^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($resolvedDiffBase)) {
+        throw "Diff base '$DiffBase' is not a valid commit."
+    }
+    $DiffBase = $resolvedDiffBase.Trim()
+}
 
 function Test-DeviceTestFileAppliesToPlatform {
     param(
@@ -183,8 +198,13 @@ $UnitTestProjectPaths = @{
 # Step 1: Get changed files
 # ============================================================
 
+$mergeBase = $null
 if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
-    if ($PRNumber) {
+    if ($DiffBase) {
+        # The review worktree is a committed snapshot. Prefer its exact diff so a
+        # force-push or new PR commit during a Gate retry cannot change selection.
+        $ChangedFiles = git diff $DiffBase HEAD --name-only 2>$null
+    } elseif ($PRNumber) {
         # Fetch from GitHub
         # Use paginated API to handle PRs with >30 changed files
         $prFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --jq '.[].filename' 2>$null
@@ -530,7 +550,7 @@ foreach ($key in @($testGroups.Keys)) {
     # `$script:_cachedPRFiles` alone cannot gate the fetch: an empty result is `@()`,
     # and `-not @()` is `$true`, so every later device-test group would retry the same
     # failing call. Track the fetch attempt with a separate sentinel.
-    if ($PRNumber -and -not $script:_prFilesFetchAttempted) {
+    if ($PRNumber -and -not $DiffBase -and -not $script:_prFilesFetchAttempted) {
         $script:_prFilesFetchAttempted = $true
         try {
             $rawPRFiles = (gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
@@ -543,20 +563,22 @@ foreach ($key in @($testGroups.Keys)) {
         }
         if (-not $script:_cachedPRFiles) { $script:_cachedPRFiles = @() }
     }
-    $effectiveMergeBase = if ($mergeBase) { $mergeBase } else { "HEAD~1" }
+    $effectiveMergeBase = if ($DiffBase) { $DiffBase } elseif ($mergeBase) { $mergeBase } else { "HEAD~1" }
     foreach ($file in $group.Files) {
         if (-not (Test-DeviceTestFileAppliesToPlatform -Path $file -TargetPlatform $Platform)) {
             continue
         }
 
         $patch = $null
-        if ($PRNumber -and $script:_cachedPRFiles) {
+        if ($DiffBase) {
+            $patch = ((git diff $effectiveMergeBase HEAD -- $file 2>$null) -join "`n")
+        } elseif ($PRNumber -and $script:_cachedPRFiles) {
             # Look up patch from cached API response
             $fileEntry = $script:_cachedPRFiles | Where-Object { $_.filename -eq $file } | Select-Object -First 1
             $patch = if ($fileEntry) { $fileEntry.patch } else { $null }
         } elseif (-not $PRNumber) {
             # Try from git diff
-            $patch = git diff $effectiveMergeBase HEAD -- $file 2>$null
+            $patch = ((git diff $effectiveMergeBase HEAD -- $file 2>$null) -join "`n")
         }
 
         if ($patch) {

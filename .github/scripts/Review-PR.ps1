@@ -1897,15 +1897,9 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
-# Detect tests in PR using the same platform scope that the Gate will execute.
-Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$testDetectScript = Join-Path $ScriptsDir "shared/Detect-TestsInDiff.ps1"
-if (Test-Path $testDetectScript) {
-    $testDetectScript = (Resolve-Path $testDetectScript).Path
-    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber -Platform $gatePlatform 2>&1 | ForEach-Object { Write-Host "    $_" }
-} else {
-    Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
-}
+# The verifier detects tests from the committed review snapshot. Do not query
+# the live PR here: a new commit during a retry must not change Gate selection.
+Write-Host "  🔍 Test detection is pinned to the prepared review snapshot." -ForegroundColor Cyan
 
 $verifyScript = [System.IO.Path]::GetFullPath((Join-Path $SkillsDir "verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {
@@ -1964,9 +1958,9 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # and reports whether the new tests fail without any fix. Passing the flag
     # would force the script to error out for those PRs.
     # Note: NOT wrapped in Invoke-WithoutGhTokens here — verify-tests-fail.ps1
-    # itself needs GH_TOKEN to invoke Detect-TestsInDiff.ps1 (which calls `gh api`
-    # to enumerate PR files). The script wraps its OWN dotnet/host-app/device-test
-    # subprocess invocations internally to strip the token before PR code runs.
+    # may need GH_TOKEN to resolve PR base metadata when no pinned local snapshot
+    # is available. Test selection itself uses merge-base..HEAD in this review
+    # worktree. The script strips tokens around every PR-controlled subprocess.
     $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }

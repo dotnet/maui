@@ -23,7 +23,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-GateTestDetectionParameters', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -56,6 +56,40 @@ Describe 'Get-GateDeviceTestConfiguration — platform-safe packaging' {
     It 'keeps Apple device-test Gates on Debug to avoid full ILLink trimming' {
         Get-GateDeviceTestConfiguration -DevicePlatform 'ios' | Should -Be 'Debug'
         Get-GateDeviceTestConfiguration -DevicePlatform 'maccatalyst' | Should -Be 'Debug'
+    }
+}
+
+Describe 'Gate test detection snapshot pinning' {
+    It 'prefers committed snapshot files over the live PR number' {
+        $params = Get-GateTestDetectionParameters `
+            -MergeBase '0123456789abcdef' `
+            -ChangedFiles @('src/Core/tests/DeviceTests/PickerTests.cs') `
+            -PullRequestNumber '37232'
+
+        $params.DiffBase | Should -Be '0123456789abcdef'
+        @($params.ChangedFiles) | Should -Be @('src/Core/tests/DeviceTests/PickerTests.cs')
+        $params.ContainsKey('PRNumber') | Should -BeFalse
+    }
+
+    It 'falls back to live PR metadata only without a usable local snapshot' {
+        $params = Get-GateTestDetectionParameters `
+            -MergeBase '' `
+            -ChangedFiles @() `
+            -PullRequestNumber '37232'
+
+        $params.PRNumber | Should -Be '37232'
+        $params.ContainsKey('DiffBase') | Should -BeFalse
+    }
+
+    It 'keeps an empty committed snapshot authoritative' {
+        $params = Get-GateTestDetectionParameters `
+            -MergeBase '0123456789abcdef' `
+            -ChangedFiles @() `
+            -PullRequestNumber '37232'
+
+        $params.DiffBase | Should -Be '0123456789abcdef'
+        @($params.ChangedFiles).Count | Should -Be 0
+        $params.ContainsKey('PRNumber') | Should -BeFalse
     }
 }
 

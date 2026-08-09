@@ -154,15 +154,90 @@ Describe 'Detect-TestsInDiff added device-test methods' {
 
         @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) | Should -BeNullOrEmpty
     }
+
+    It 'keeps method selection pinned to DiffBase..HEAD when the worktree changes later' {
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-tests-" + [Guid]::NewGuid().ToString('N'))
+        $relativeFile = 'src/Core/tests/DeviceTests/Handlers/Picker/PickerHandlerTests.Android.cs'
+        $testFile = Join-Path $root $relativeFile
+        $classFile = Join-Path $root 'src/Core/tests/DeviceTests/Handlers/Picker/PickerHandlerTests.cs'
+
+        try {
+            New-Item -ItemType Directory -Force -Path (Split-Path $testFile -Parent) | Out-Null
+            @'
+namespace Microsoft.Maui.DeviceTests;
+
+[Category(TestCategory.Picker)]
+public partial class PickerHandlerTests
+{
+}
+'@ | Set-Content $classFile -Encoding UTF8
+            @'
+namespace Microsoft.Maui.DeviceTests;
+
+public partial class PickerHandlerTests
+{
+}
+'@ | Set-Content $testFile -Encoding UTF8
+
+            Push-Location $root
+            try {
+                git init -q
+                git config user.email tests@example.com
+                git config user.name Tests
+                git add .
+                git commit -q -m base
+                $base = (git rev-parse HEAD).Trim()
+
+                @'
+namespace Microsoft.Maui.DeviceTests;
+
+public partial class PickerHandlerTests
+{
+    [Theory]
+    [InlineData(false)]
+    public async Task SnapshotMethod(bool useMaterialPicker)
+    {
+        await Task.Yield();
+    }
+}
+'@ | Set-Content $testFile -Encoding UTF8
+                git add .
+                git commit -q -m snapshot
+
+                # Simulate a newer live PR/worktree change that is not part of the
+                # committed review snapshot selected by the Gate.
+                @'
+
+[Theory]
+public async Task LaterMethod()
+{
+    await Task.Yield();
+}
+'@ | Add-Content $testFile -Encoding UTF8
+
+                $tests = @(& $scriptPath `
+                    -ChangedFiles $relativeFile `
+                    -DiffBase $base `
+                    -Platform android)
+            } finally {
+                Pop-Location
+            }
+
+            $test = $tests | Where-Object { $_.Type -eq 'DeviceTest' } | Select-Object -First 1
+            @($test.Methods) | Should -Be @('SnapshotMethod')
+        } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 Describe 'Detect-TestsInDiff PR files cache' {
-    It 'gates the fetch on a fetch-attempted sentinel, not on the (possibly empty) cache' {
+    It 'gates the fetch on the pinned diff and fetch-attempted sentinel, not on the cache' {
         $scriptContent = Get-Content (Join-Path $PSScriptRoot 'Detect-TestsInDiff.ps1') -Raw
 
         # `-not @()` is $true, so guarding on the cache alone re-runs `gh api` for every
         # device-test group after a failed or empty fetch.
-        $scriptContent | Should -Match '\$PRNumber -and -not \$script:_prFilesFetchAttempted'
+        $scriptContent | Should -Match '\$PRNumber -and -not \$DiffBase -and -not \$script:_prFilesFetchAttempted'
         $scriptContent | Should -Not -Match '\$PRNumber -and -not \$script:_cachedPRFiles'
     }
 }

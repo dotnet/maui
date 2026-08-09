@@ -1502,6 +1502,28 @@ function Limit-ExpensiveGateTests {
     return @($cheap + $keptDevice + $keptUi)
 }
 
+function Get-GateTestDetectionParameters {
+    param(
+        [string]$MergeBase,
+        [string[]]$ChangedFiles,
+        [string]$PullRequestNumber
+    )
+
+    $params = @{}
+    if (-not [string]::IsNullOrWhiteSpace($MergeBase)) {
+        # Gate retries reset to the same committed review branch. Keep selection
+        # pinned to that snapshot even if its diff is empty or the live PR
+        # receives another commit.
+        $params.ChangedFiles = @($ChangedFiles)
+        $params.DiffBase = $MergeBase
+    } elseif (-not [string]::IsNullOrWhiteSpace($PullRequestNumber)) {
+        # Local/non-review callers may not have a usable committed snapshot.
+        $params.PRNumber = $PullRequestNumber
+    }
+
+    return $params
+}
+
 function Get-AutoDetectedTests {
     <#
     .SYNOPSIS
@@ -1511,28 +1533,21 @@ function Get-AutoDetectedTests {
     #>
     param([string]$MergeBase)
 
-    $params = @{}
-
-    # Prefer PR number (GitHub API gives exact PR files, not polluted by branch diff)
-    if ($PRNumber) {
-        $params.PRNumber = $PRNumber
-    } elseif ($MergeBase) {
-        $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
+    $changedFiles = @()
+    if ($MergeBase) {
+        $changedFiles = @(git diff $MergeBase HEAD --name-only 2>$null | Where-Object { $_ })
         if (-not $changedFiles -or $changedFiles.Count -eq 0) {
-            $changedFiles = git diff --name-only 2>$null
+            $changedFiles = @(git diff --name-only 2>$null | Where-Object { $_ })
             if (-not $changedFiles -or $changedFiles.Count -eq 0) {
-                $changedFiles = git diff --cached --name-only 2>$null
+                $changedFiles = @(git diff --cached --name-only 2>$null | Where-Object { $_ })
             }
         }
-        if ($changedFiles) {
-            $params.ChangedFiles = $changedFiles
-        }
     }
 
-    # Fall back to PR number if no changed files from git diff
-    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber) {
-        $params.PRNumber = $PRNumber
-    }
+    $params = Get-GateTestDetectionParameters `
+        -MergeBase $MergeBase `
+        -ChangedFiles $changedFiles `
+        -PullRequestNumber $PRNumber
 
     if (-not [string]::IsNullOrWhiteSpace($Platform)) {
         $params.Platform = $Platform
