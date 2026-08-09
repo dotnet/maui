@@ -1,3 +1,21 @@
+---
+name: find-regression-risk
+description: >-
+  Detects potential regression risks in a PR by cross-referencing lines the PR
+  REMOVES against lines ADDED by recent labeled bug-fix PRs (`i/regression`,
+  `t/bug`, `p/0`, `p/1`) touching the same files. Purely mechanical — no AI/LLM.
+  Emits a CLEAN / OVERLAP / REVERT verdict plus structured findings. Triggers on:
+  "does this PR revert a previous fix", "check PR for regression risk",
+  "find regression risks in PR", "is this change reverting a bug fix".
+  Do NOT use for: assessing ship-readiness of a release branch (use
+  release-readiness), investigating CI failures (use azdo-build-investigator),
+  or general code review (use code-review).
+metadata:
+  author: dotnet-maui
+  version: "1.0"
+compatibility: Requires PowerShell (pwsh), git, and GitHub CLI (gh) authenticated against the target repository.
+---
+
 # find-regression-risk
 
 Detects potential regression risks in a PR by cross-referencing removed lines against lines added by recent labeled bug-fix PRs.
@@ -49,7 +67,7 @@ When `-OutputDir` is specified:
 
 ## Integration
 
-The script runs as **STEP 4** in `Review-PR.ps1` (Regression Cross-Reference, after UI test detection and before the Gate step). Its `content.md` is assembled into the AI summary comment by `post-ai-summary-comment.ps1`.
+The script runs as **STEP 4** in `Review-PR.ps1` (Regression Cross-Reference, after UI test detection and before the Gate step). Its `content.md` is assembled into the AI summary review by `post-ai-summary-comment.ps1`.
 
 When REVERT risks are detected, the regression tests from the reverted fix PRs are executed:
 - **UI tests** → `BuildAndRunHostApp.ps1 -Platform <plat> -TestFilter <filter>`

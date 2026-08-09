@@ -175,56 +175,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if ANDROID
-		[Fact(DisplayName = "Replaced FlyoutPage Root Clears Old ContainerView")]
-		public async Task ReplacedFlyoutPageRootClearsOldContainerView()
-		{
-			SetupBuilder();
-
-			var rootPage = CreateFlyoutRoot();
-			var window = new Window(rootPage);
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
-			{
-				var rootManager = handler.MauiContext.GetNavigationRootManager();
-				var oldRootView = Assert.IsType<ContainerView>(rootManager.RootView);
-
-				Assert.Same(rootPage, oldRootView.CurrentView);
-				Assert.NotNull(oldRootView.MainView);
-
-				var replacementPage = new ContentPage
-				{
-					Content = new Label { Text = "Replacement page" }
-				};
-
-				window.Page = replacementPage;
-				await OnLoadedAsync(replacementPage);
-
-				Assert.Null(oldRootView.CurrentView);
-				Assert.Null(oldRootView.MainView);
-				Assert.NotSame(oldRootView, rootManager.RootView);
-			});
-		}
-
-		static FlyoutPage CreateFlyoutRoot()
-		{
-			var flyoutPage = new ContentPage { Title = "Flyout" };
-			var detailPage = new ContentPage
-			{
-				Title = "Detail",
-				Content = new Label { Text = "Detail page" }
-			};
-			var detailNavigationPage = new NavigationPage(detailPage) { Title = "Detail" };
-			var rootPage = new FlyoutPage
-			{
-				Flyout = flyoutPage,
-				Detail = detailNavigationPage
-			};
-
-			return rootPage;
-		}
-#endif
-
 #if !IOS && !MACCATALYST
 		// Automated Shell tests are currently broken via xharness
 		[Fact(DisplayName = "Toolbar Items Update when swapping out Main Page on Handler")]

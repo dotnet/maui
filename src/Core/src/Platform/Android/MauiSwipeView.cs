@@ -133,6 +133,11 @@ namespace Microsoft.Maui.Platform
 			if (_contentView is null || _initialPoint is null)
 				return false;
 
+			if (_contentView is AWebView contentWebView)
+			{
+				return ShouldInterceptWebViewTouch(contentWebView, swipeDirection);
+			}
+
 			var viewGroup = _contentView as ViewGroup;
 
 			if (viewGroup is not null)
@@ -165,6 +170,17 @@ namespace Microsoft.Maui.Platform
 
 			return true;
 		}
+
+		// Determines whether the SwipeView should intercept touch events when the content is a WebView, based on the WebView's scroll position and the swipe direction.
+		static bool ShouldInterceptWebViewTouch(AWebView webView, SwipeDirection swipeDirection) =>
+			swipeDirection switch
+			{
+				SwipeDirection.Right => !webView.CanScrollHorizontally(-1), // at left edge
+				SwipeDirection.Left => !webView.CanScrollHorizontally(1),   // at right edge
+				SwipeDirection.Down => !webView.CanScrollVertically(-1),    // at top
+				SwipeDirection.Up => !webView.CanScrollVertically(1),       // at bottom
+				_ => true,
+			};
 
 		static bool ShouldInterceptScrollChildrenTouch(ViewGroup scrollView, bool isHorizontal)
 		{

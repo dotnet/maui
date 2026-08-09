@@ -152,9 +152,6 @@ namespace Microsoft.Maui.Platform
 		{
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
-			if (_rootView is ContainerView containerView)
-				containerView.CurrentView = null;
-
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;

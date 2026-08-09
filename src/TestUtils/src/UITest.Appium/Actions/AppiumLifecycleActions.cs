@@ -13,6 +13,7 @@ namespace UITest.Appium
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string ForceCloseAppCommand = "forceCloseApp";
+		const string RecoverFromCrashCommand = "recoverFromCrash";
 		const string BackCommand = "back";
 		const string RefreshCommand = "refresh";
 
@@ -26,6 +27,7 @@ namespace UITest.Appium
 			ResetAppCommand,
 			CloseAppCommand,
 			ForceCloseAppCommand,
+			RecoverFromCrashCommand,
 			BackCommand,
 			RefreshCommand
 		};
@@ -50,6 +52,7 @@ namespace UITest.Appium
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
 				ForceCloseAppCommand => ForceCloseApp(parameters),
+				RecoverFromCrashCommand => RecoverFromCrash(parameters),
 				BackCommand => Back(parameters),
 				RefreshCommand => Refresh(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
@@ -300,6 +303,108 @@ namespace UITest.Appium
 			}
 
 			return CommandResponse.FailedEmptyResponse;
+		}
+
+		/// <summary>
+		/// Attempts to recover from a HostApp crash so a single crash doesn't cascade into
+		/// every following fixture failing OneTimeSetUp. On Android a crash can leave the
+		/// system showing an "App keeps stopping" / "isn't responding" dialog that blocks the
+		/// relaunched activity (so every subsequent "Go To Test button" wait times out).
+		/// This dismisses that dialog, force-stops the app, optionally clears its data
+		/// ("hard" — breaks a corrupt-state startup crash loop), then relaunches it.
+		/// </summary>
+		CommandResponse RecoverFromCrash(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			var hard = parameters.TryGetValue("hard", out var h) && h is bool hb && hb;
+
+			// Only Android exhibits the system "keeps stopping" dialog that blocks relaunch.
+			// For other platforms a force-close + relaunch is the best available recovery.
+			if (_app.GetTestDevice() != TestDevice.Android)
+			{
+				ForceCloseApp(parameters);
+				try { LaunchApp(parameters); } catch (Exception ex) { Debug.WriteLine($">>>>> RecoverFromCrash relaunch failed: {ex.Message}"); }
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			var appId = _app.GetAppId();
+			try
+			{
+				// 1. Dismiss any Android system crash/ANR dialog so it can't block the
+				//    relaunched activity (BACK closes the dialog, HOME clears the surface).
+				RunAdb("shell", "input", "keyevent", "KEYCODE_BACK");
+				RunAdb("shell", "input", "keyevent", "KEYCODE_HOME");
+
+				// 2. Force-stop the crashed/looping app to clear its pending-crash state.
+				RunAdb("shell", "am", "force-stop", appId);
+
+				// 3. On a hard recovery, clear app data to break a corrupt-state startup
+				//    crash loop — the app then starts completely fresh on the next launch.
+				if (hard)
+					RunAdb("shell", "pm", "clear", appId);
+
+				// 4. Relaunch the app's main activity. Prefer Appium; fall back to adb in
+				//    case the driver session is wedged from the crash.
+				try
+				{
+					_app.Driver.ActivateApp(appId);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($">>>>> RecoverFromCrash ActivateApp failed, falling back to monkey: {ex.Message}");
+					RunAdb("shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1");
+				}
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($">>>>> RecoverFromCrash failed: {ex.Message}");
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		/// <summary>
+		/// Runs an <c>adb</c> command with a hard timeout so a wedged emulator can't hang the
+		/// test run. Best-effort: failures are logged and swallowed.
+		/// </summary>
+		static void RunAdb(params string[] args)
+		{
+			try
+			{
+				var psi = new ProcessStartInfo
+				{
+					FileName = "adb",
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					UseShellExecute = false,
+				};
+				foreach (var a in args)
+					psi.ArgumentList.Add(a);
+
+				using var process = Process.Start(psi);
+				if (process is not null)
+				{
+					// Drain stdout/stderr so a chatty command (e.g. `adb shell monkey`) can't fill
+					// the pipe buffer and deadlock WaitForExit. The output is unused, so discard it.
+					process.OutputDataReceived += static (_, _) => { };
+					process.ErrorDataReceived += static (_, _) => { };
+					process.BeginOutputReadLine();
+					process.BeginErrorReadLine();
+					if (!process.WaitForExit(15000))
+					{
+						Debug.WriteLine($">>>>> RunAdb timed out: adb {string.Join(' ', args)}");
+						try { process.Kill(); } catch { /* best effort */ }
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($">>>>> RunAdb failed (adb {string.Join(' ', args)}): {ex.Message}");
+			}
 		}
 
 		CommandResponse Back(IDictionary<string, object> parameters)

@@ -15,6 +15,15 @@ variables:
   value: 26.0.1
 - name: POWERSHELL_VERSION
   value: 7.4.0
+# Workaround for PowerShell/PowerShell#20802 (open since Nov 2023):
+# pwsh 7.4.x intermittently aborts at startup on macOS with
+#   'Call to procargs failed with errno 5'
+# because AttemptExecPwshLogin() races on sysctl(KERN_PROCARGS2).
+# Setting __PWSH_LOGIN_CHECKED makes pwsh short-circuit the login-shell
+# detection that triggers the racy syscall (see Program.cs in PowerShell repo).
+# Hit on internal dnceng dotnet-maui build 2990586 (release/11.0.1xx-preview5).
+- name: __PWSH_LOGIN_CHECKED
+  value: '1'
 # Localization variables
 - name: LocBranchPrefix
   value: 'loc-hb'
