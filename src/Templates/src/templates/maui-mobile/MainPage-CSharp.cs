@@ -21,17 +21,14 @@ public class MainPage : ContentPage
 		var headline = new Label
 		{
 			Text = "Hello, World!",
-			FontSize = 32,
-			FontAttributes = FontAttributes.Bold,
-			HorizontalTextAlignment = TextAlignment.Center
+			Style = (Style)Application.Current!.Resources["Headline"]
 		};
 		SemanticProperties.SetHeadingLevel(headline, SemanticHeadingLevel.Level1);
 
 		var subtitle = new Label
 		{
 			Text = "Welcome to \n.NET Multi-platform App UI",
-			FontSize = 18,
-			HorizontalTextAlignment = TextAlignment.Center
+			Style = (Style)Application.Current!.Resources["SubHeadline"]
 		};
 		SemanticProperties.SetHeadingLevel(subtitle, SemanticHeadingLevel.Level2);
 		SemanticProperties.SetDescription(subtitle, "Welcome to dot net Multi platform App U I");

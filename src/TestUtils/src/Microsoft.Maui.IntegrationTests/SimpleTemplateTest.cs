@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -114,43 +115,56 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
-	[InlineData(DotNetCurrent, "Debug", "")]
-	[InlineData(DotNetCurrent, "Release", "TrimMode=partial")]
-	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetBuildParams)
+	[InlineData(DotNetCurrent, "Debug", "--sample-content", "")]
+	[InlineData(DotNetCurrent, "Release", "", "TrimMode=partial")]
+	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetNewParams, string additionalDotNetBuildParams)
 	{
-		SetTestIdentifier(framework, config, additionalDotNetBuildParams);
+		SetTestIdentifier(framework, config, additionalDotNetNewParams, additionalDotNetBuildParams);
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New("maui", projectDir, framework, "--ui csharp --no-restore", output: _output),
+		var dotnetNewParams = $"--ui csharp --no-restore {additionalDotNetNewParams}".TrimEnd();
+		Assert.True(DotnetInternal.New("maui", projectDir, framework, dotnetNewParams, output: _output),
 			"Unable to create template maui with --ui csharp. Check test output for errors.");
 
 		var mainPageFile = Path.Combine(projectDir, "MainPage.cs");
 		var appFile = Path.Combine(projectDir, "App.cs");
 		var appXamlFile = Path.Combine(projectDir, "App.xaml");
+		var appShellFile = Path.Combine(projectDir, "AppShell.cs");
 		Assert.True(File.Exists(appFile));
-		Assert.True(File.Exists(Path.Combine(projectDir, "AppShell.cs")));
+		Assert.True(File.Exists(appShellFile));
 		Assert.True(File.Exists(mainPageFile));
 		Assert.True(File.Exists(appXamlFile));
+		Assert.True(File.Exists(Path.Combine(projectDir, "Resources", "Images", "dotnet_bot.png")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml.cs")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml.cs")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "AppStyles.xaml")));
+		Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
 
 		var mainPageContent = File.ReadAllText(mainPageFile);
 		var appContent = File.ReadAllText(appFile);
+		var appShellContent = File.ReadAllText(appShellFile);
 		var appXamlContent = File.ReadAllText(appXamlFile);
 		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		var projectContent = File.ReadAllText(projectFile);
 		AssertContains("HorizontalOptions = LayoutOptions.Center", mainPageContent);
-		AssertContains("HorizontalTextAlignment = TextAlignment.Center", mainPageContent);
+		AssertContains("Resources[\"Headline\"]", mainPageContent);
+		AssertContains("Resources[\"SubHeadline\"]", mainPageContent);
+		AssertDoesNotContain("FontSize = 18", mainPageContent);
+		AssertDoesNotContain("FontAttributes = FontAttributes.Bold", mainPageContent);
 		AssertContains("HorizontalOptions = LayoutOptions.Fill", mainPageContent);
 		AssertContains("InitializeComponent();", appContent);
+		AssertContains($"Title = \"{Path.GetFileName(projectDir)}\";", appShellContent);
 		AssertContains("Resources/Styles/Colors.xaml", appXamlContent);
 		AssertContains("Resources/Styles/Styles.xaml", appXamlContent);
-		AssertDoesNotContain("CommunityToolkit.Maui.Markup", projectContent);
-		AssertDoesNotContain("UseMauiCommunityToolkitMarkup", mauiProgramContent);
+		AssertDoesNotContain("CommunityToolkit.Maui", projectContent);
+		AssertDoesNotContain("CommunityToolkit.Mvvm", projectContent);
+		AssertDoesNotContain("Syncfusion.Maui.Toolkit", projectContent);
+		AssertDoesNotContain("UseMauiCommunityToolkit", mauiProgramContent);
+		AssertDoesNotContain("ConfigureSyncfusionToolkit", mauiProgramContent);
 
 		var buildProps = BuildProps;
 
@@ -161,6 +175,29 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Fact]
+	public void MauiTemplateEditorPostActionsUseFilteredPrimaryOutputIndexes()
+	{
+		var templateConfigFile = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			"src",
+			"Templates",
+			"src",
+			"templates",
+			"maui-mobile",
+			".template.config",
+			"template.json");
+
+		using var templateConfig = JsonDocument.Parse(File.ReadAllText(templateConfigFile));
+		var postActions = templateConfig.RootElement
+			.GetProperty("postActions")
+			.EnumerateArray()
+			.ToDictionary(action => action.GetProperty("id").GetString()!);
+
+		Assert.Equal("0;1", postActions["openInEditorSampleXaml"].GetProperty("args").GetProperty("files").GetString());
+		Assert.Equal("0", postActions["openInEditorCSharp"].GetProperty("args").GetProperty("files").GetString());
 	}
 
 	[Theory]
