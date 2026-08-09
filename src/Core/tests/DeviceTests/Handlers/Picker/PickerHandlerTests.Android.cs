@@ -209,21 +209,14 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "Picker Movement Method Does Not Handle DPad Keys")]
+		[Theory(DisplayName = "Picker Movement Method Remains Disabled")]
 		[InlineData(false)]
 		[InlineData(true)]
-		public async Task MovementMethodDoesNotHandleDPadKeys(bool useMaterialPicker)
+		public async Task MovementMethodRemainsDisabled(bool useMaterialPicker)
 		{
 			await RunPickerGestureTest(useMaterialPicker, delayPressedState: false, (platformPicker, _) =>
 			{
-				using var keyEvent = new KeyEvent(KeyEventActions.Down, Keycode.DpadRight);
-
-				Assert.False(platformPicker.MovementMethod?.OnKeyDown(
-					platformPicker,
-					platformPicker.EditableText,
-					Keycode.DpadRight,
-					keyEvent));
-
+				Assert.Null(platformPicker.MovementMethod);
 				return Task.CompletedTask;
 			});
 		}

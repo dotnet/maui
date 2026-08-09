@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Runtime;
+using Android.Text;
 using Android.Text.Method;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
@@ -14,6 +15,9 @@ namespace Microsoft.Maui.Platform
 		public MauiPicker(Context context) : base(context)
 		{
 			PickerManager.Init(this);
+			Focusable = true;
+			FocusableInTouchMode = false;
+			Clickable = true;
 			LongClickable = false;
 		}
 
@@ -29,7 +33,6 @@ namespace Microsoft.Maui.Platform
 	public class MauiPickerBase : AppCompatEditText
 	{
 		readonly PickerDragGestureFilter _dragGestureFilter = new();
-		readonly PickerScrollingMovementMethod _movementMethod = new();
 
 		public MauiPickerBase(Context context) : base(context)
 		{
@@ -37,15 +40,19 @@ namespace Microsoft.Maui.Platform
 				DrawableCompat.Wrap(Background);
 		}
 
-		// Allow overflow text to scroll without enabling EditText cursor movement.
-		protected override IMovementMethod? DefaultMovementMethod => _movementMethod;
+		protected override IMovementMethod? DefaultMovementMethod => null;
 
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			if (_dragGestureFilter.ShouldCancelClick(this, e))
 				DispatchCancelToBase(e!);
 
-			return base.OnTouchEvent(e);
+			var handled = base.OnTouchEvent(e);
+
+			if (e is null || !Enabled || Layout is null || MovementMethod is not null || EditableText is not ISpannable buffer)
+				return handled;
+
+			return ScrollingMovementMethod.Instance?.OnTouchEvent(this, buffer, e) == true || handled;
 		}
 
 		void DispatchCancelToBase(MotionEvent e)
