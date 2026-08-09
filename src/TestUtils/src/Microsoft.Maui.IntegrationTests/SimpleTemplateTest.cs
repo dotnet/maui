@@ -126,30 +126,31 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"Unable to create template maui with --ui csharp. Check test output for errors.");
 
 		var mainPageFile = Path.Combine(projectDir, "MainPage.cs");
-		var mainPageContent = File.ReadAllText(mainPageFile);
-		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
-		Assert.True(File.Exists(Path.Combine(projectDir, "App.cs")));
+		var appFile = Path.Combine(projectDir, "App.cs");
+		var appXamlFile = Path.Combine(projectDir, "App.xaml");
+		Assert.True(File.Exists(appFile));
 		Assert.True(File.Exists(Path.Combine(projectDir, "AppShell.cs")));
 		Assert.True(File.Exists(mainPageFile));
-		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml")));
+		Assert.True(File.Exists(appXamlFile));
 		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml.cs")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml.cs")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
 		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
 
-		AssertContains("using CommunityToolkit.Maui.Markup;", mainPageContent);
-		Assert.True(mainPageContent.Contains(".CenterHorizontal()", StringComparison.Ordinal),
-			"Expected generated markup UI to use CommunityToolkit layout extensions.");
-		Assert.True(mainPageContent.Contains(".TextCenter()", StringComparison.Ordinal) || mainPageContent.Contains(".TextCenterHorizontal()", StringComparison.Ordinal),
-			"Expected generated markup UI to use CommunityToolkit text-centering extensions.");
-		Assert.True(mainPageContent.Contains(".Fill()", StringComparison.Ordinal) || mainPageContent.Contains(".FillHorizontal()", StringComparison.Ordinal),
-			"Expected generated markup UI to use CommunityToolkit fill extensions.");
-		AssertContains(".UseMauiCommunityToolkitMarkup()", mauiProgramContent);
-
-		var projectDoc = XDocument.Load(projectFile);
-		Assert.Contains(projectDoc.Descendants("PackageReference"),
-			packageReference => packageReference.Attribute("Include")?.Value == "CommunityToolkit.Maui.Markup");
+		var mainPageContent = File.ReadAllText(mainPageFile);
+		var appContent = File.ReadAllText(appFile);
+		var appXamlContent = File.ReadAllText(appXamlFile);
+		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		var projectContent = File.ReadAllText(projectFile);
+		AssertContains("HorizontalOptions = LayoutOptions.Center", mainPageContent);
+		AssertContains("HorizontalTextAlignment = TextAlignment.Center", mainPageContent);
+		AssertContains("HorizontalOptions = LayoutOptions.Fill", mainPageContent);
+		AssertContains("InitializeComponent();", appContent);
+		AssertContains("Resources/Styles/Colors.xaml", appXamlContent);
+		AssertContains("Resources/Styles/Styles.xaml", appXamlContent);
+		AssertDoesNotContain("CommunityToolkit.Maui.Markup", projectContent);
+		AssertDoesNotContain("UseMauiCommunityToolkitMarkup", mauiProgramContent);
 
 		var buildProps = BuildProps;
 

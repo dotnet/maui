@@ -8,7 +8,8 @@
       "longName": "framework"
     },
     "UI": {
-      "longName": "ui"
+      "longName": "ui",
+      "shortName": ""
     },
     "IncludeSampleContent": {
       "longName": "sample-content",

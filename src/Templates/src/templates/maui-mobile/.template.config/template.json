@@ -177,7 +177,7 @@
         "type": "parameter",
         "datatype": "choice",
         "displayName": "_UI",
-        "description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code using CommunityToolkit.Maui.Markup.",
+        "description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage with built-in .NET MAUI APIs.",
         "choices": [
           {
             "choice": "xaml",
@@ -185,7 +185,7 @@
           },
           {
             "choice": "csharp",
-            "description": "Create the app UI with fluent C# Markup."
+            "description": "Create the app UI with C#."
           }
         ],
         "defaultValue": "xaml"

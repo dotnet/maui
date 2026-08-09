@@ -1,5 +1,3 @@
-using CommunityToolkit.Maui.Markup;
-
 namespace MauiApp._1;
 
 public class MainPage : ContentPage
@@ -11,29 +9,38 @@ public class MainPage : ContentPage
 	{
 		Title = "Home";
 
-		var logo = new Image()
-			.Source("dotnet_bot.png")
-			.Height(185)
-			.Aspect(Aspect.AspectFit)
-			.CenterHorizontal();
+		var logo = new Image
+		{
+			Source = "dotnet_bot.png",
+			HeightRequest = 185,
+			Aspect = Aspect.AspectFit,
+			HorizontalOptions = LayoutOptions.Center
+		};
 		SemanticProperties.SetDescription(logo, "dot net bot in a submarine number ten");
 
-		var headline = new Label()
-			.Text("Hello, World!")
-			.Font(size: 32, bold: true)
-			.TextCenter();
+		var headline = new Label
+		{
+			Text = "Hello, World!",
+			FontSize = 32,
+			FontAttributes = FontAttributes.Bold,
+			HorizontalTextAlignment = TextAlignment.Center
+		};
 		SemanticProperties.SetHeadingLevel(headline, SemanticHeadingLevel.Level1);
 
-		var subtitle = new Label()
-			.Text("Welcome to \n.NET Multi-platform App UI")
-			.FontSize(18)
-			.TextCenter();
+		var subtitle = new Label
+		{
+			Text = "Welcome to \n.NET Multi-platform App UI",
+			FontSize = 18,
+			HorizontalTextAlignment = TextAlignment.Center
+		};
 		SemanticProperties.SetHeadingLevel(subtitle, SemanticHeadingLevel.Level2);
 		SemanticProperties.SetDescription(subtitle, "Welcome to dot net Multi platform App U I");
 
-		_counterButton = new Button()
-			.Text("Click me")
-			.Fill();
+		_counterButton = new Button
+		{
+			Text = "Click me",
+			HorizontalOptions = LayoutOptions.Fill
+		};
 		SemanticProperties.SetHint(_counterButton, "Counts the number of times you click");
 		_counterButton.Clicked += OnCounterClicked;
 
@@ -41,6 +48,7 @@ public class MainPage : ContentPage
 		{
 			Content = new VerticalStackLayout
 			{
+				Padding = new Thickness(30, 0),
 				Spacing = 25,
 				Children =
 				{
@@ -50,7 +58,6 @@ public class MainPage : ContentPage
 					_counterButton
 				}
 			}
-			.Padding(30, 0)
 		};
 	}
 

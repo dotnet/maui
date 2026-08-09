@@ -1,7 +1,4 @@
-﻿#if (UseCSharpUI)
-using CommunityToolkit.Maui.Markup;
-#endif
-#if (EnableSampleContent)
+﻿#if (EnableSampleContent)
 using CommunityToolkit.Maui;
 #endif
 using Microsoft.Extensions.Logging;
@@ -30,10 +27,6 @@ public static class MauiProgram
 			.UseAvaloniaEmbedding<AvaloniaApp>()
 #endif
 //+:cnd:noEmit
-#endif
-#if (IncludeSampleContent)
-#if (UseCSharpUI)
-			.UseMauiCommunityToolkitMarkup()
 #endif
 #if (EnableSampleContent)
 			.UseMauiCommunityToolkit()

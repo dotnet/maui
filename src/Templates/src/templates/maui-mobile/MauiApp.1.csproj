@@ -27,7 +27,7 @@
 		<AvaloniaControlsMauiGenerateBootstrap>true</AvaloniaControlsMauiGenerateBootstrap>
 <!--#endif -->
 
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
 		<!-- Enable XAML source generation for faster build times and improved performance.
 		     This generates C# code from XAML at compile time instead of runtime inflation.
 		     To disable, remove this line.
@@ -100,15 +100,6 @@
 		<PackageReference Include="Avalonia.Controls.Maui.Desktop" Version="AVALONIA_CONTROLS_MAUI_VERSION" Condition="'$(TargetFramework)' == 'DOTNET_TFM'" />
 	</ItemGroup>
 <!--#endif -->
-<!--#endif -->
-<!--#if (IncludeSampleContent) -->
-<!--#if (IncludeSampleContent) -->
-<!--#if (UseCSharpUI) -->
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.1" />
-	</ItemGroup>
-<!--#endif -->
-
 <!--#if (EnableSampleContent) -->
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
