@@ -1,5 +1,6 @@
 using Android.Content;
 using Android.Text.Method;
+using Android.Views;
 using AndroidX.Core.Graphics.Drawable;
 using Google.Android.Material.TextField;
 
@@ -11,6 +12,7 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 	public MauiMaterialPicker(Context context) : base(context)
 	{
 		PickerManager.Init(this);
+		LongClickable = false;
 	}
 
 	protected override void Dispose(bool disposing)
@@ -27,7 +29,7 @@ internal class MauiMaterialPicker : MauiMaterialPickerBase
 // TODO: Material3 - make it public in .net 11
 internal class MauiMaterialPickerBase : TextInputEditText
 {
-	PickerScrollingMovementMethod? _movementMethod;
+	readonly PickerDragGestureFilter _dragGestureFilter = new();
 
 	public MauiMaterialPickerBase(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
 	{
@@ -38,14 +40,24 @@ internal class MauiMaterialPickerBase : TextInputEditText
 	}
 
 	// Allow overflow text to scroll without enabling EditText cursor movement.
-	protected override IMovementMethod? DefaultMovementMethod =>
-		_movementMethod ??= new PickerScrollingMovementMethod();
+	protected override IMovementMethod? DefaultMovementMethod => ScrollingMovementMethod.Instance;
 
-	public override bool PerformClick()
+	public override bool OnTouchEvent(MotionEvent? e)
 	{
-		if (_movementMethod?.ConsumeClick() == true)
-			return false;
+		if (_dragGestureFilter.ShouldCancelClick(this, e))
+			DispatchCancelToBase(e!);
 
-		return base.PerformClick();
+		return base.OnTouchEvent(e);
+	}
+
+	void DispatchCancelToBase(MotionEvent e)
+	{
+		using var cancelEvent = MotionEvent.Obtain(e);
+
+		if (cancelEvent is null)
+			return;
+
+		cancelEvent.Action = MotionEventActions.Cancel;
+		base.OnTouchEvent(cancelEvent);
 	}
 }

@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Platform
 			// InputType needs to be set before setting KeyListener
 			editText.InputType = InputTypes.Null;
 			editText.KeyListener = null;
-			editText.LongClickable = false;
 		}
 
 		public static void Dispose(EditText editText)

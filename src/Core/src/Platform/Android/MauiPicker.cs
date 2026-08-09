@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		public MauiPicker(Context context) : base(context)
 		{
 			PickerManager.Init(this);
+			LongClickable = false;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 	public class MauiPickerBase : AppCompatEditText
 	{
-		PickerScrollingMovementMethod? _movementMethod;
+		readonly PickerDragGestureFilter _dragGestureFilter = new();
 
 		public MauiPickerBase(Context context) : base(context)
 		{
@@ -36,15 +37,25 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Allow overflow text to scroll without enabling EditText cursor movement.
-		protected override IMovementMethod? DefaultMovementMethod =>
-			_movementMethod ??= new PickerScrollingMovementMethod();
+		protected override IMovementMethod? DefaultMovementMethod => ScrollingMovementMethod.Instance;
 
-		public override bool PerformClick()
+		public override bool OnTouchEvent(MotionEvent? e)
 		{
-			if (_movementMethod?.ConsumeClick() == true)
-				return false;
+			if (_dragGestureFilter.ShouldCancelClick(this, e))
+				DispatchCancelToBase(e!);
 
-			return base.PerformClick();
+			return base.OnTouchEvent(e);
+		}
+
+		void DispatchCancelToBase(MotionEvent e)
+		{
+			using var cancelEvent = MotionEvent.Obtain(e);
+
+			if (cancelEvent is null)
+				return;
+
+			cancelEvent.Action = MotionEventActions.Cancel;
+			base.OnTouchEvent(cancelEvent);
 		}
 	}
 }

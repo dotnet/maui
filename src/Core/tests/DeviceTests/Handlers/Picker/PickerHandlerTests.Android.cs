@@ -156,6 +156,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Picker Canceled Drag Does Not Suppress Next Tap")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task CanceledDragDoesNotSuppressNextTap(bool useMaterialPicker)
+		{
+			await RunPickerGestureTest(useMaterialPicker, delayPressedState: true, async (platformPicker, getClickCount) =>
+			{
+				DispatchCanceledDrag(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(0, getClickCount());
+
+				DispatchTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(1, getClickCount());
+			});
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
 			pickerHandler.PlatformView;
 
@@ -284,6 +301,20 @@ namespace Microsoft.Maui.DeviceTests
 			platformPicker.DispatchTouchEvent(down);
 			platformPicker.DispatchTouchEvent(move);
 			platformPicker.DispatchTouchEvent(up);
+		}
+
+		static void DispatchCanceledDrag(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var y = platformPicker.Height / 2f;
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, platformPicker.Width - 4f, y, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, 4f, y, 0);
+			using var cancel = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Cancel, 4f, y, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(move);
+			platformPicker.DispatchTouchEvent(cancel);
 		}
 
 		static void DispatchSwipeWithoutMove(EditText platformPicker)
