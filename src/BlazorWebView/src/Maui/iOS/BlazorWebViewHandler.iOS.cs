@@ -377,9 +377,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				foreach (var key in headers.Keys)
 				{
 					var value = headers[key];
-					if (key is not null && value is not null)
+					var keyString = key?.ToString();
+					var valueString = value?.ToString();
+					if (keyString is not null && valueString is not null)
 					{
-						yield return new KeyValuePair<string, string>(key.ToString(), value.ToString());
+						yield return new KeyValuePair<string, string>(keyString, valueString);
 					}
 				}
 			}
