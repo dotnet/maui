@@ -139,6 +139,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Picker Exact Touch Slop Does Not Click")]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task ExactTouchSlopDoesNotClick(bool useMaterialPicker, bool delayPressedState)
+		{
+			await RunPickerGestureTest(useMaterialPicker, delayPressedState, async (platformPicker, getClickCount) =>
+			{
+				DispatchExactTouchSlopDrag(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(0, getClickCount());
+
+				DispatchTap(platformPicker);
+				await WaitForPostedCallbacks(platformPicker);
+				Assert.Equal(1, getClickCount());
+			});
+		}
+
 		[Theory(DisplayName = "Picker Vertical Drag Does Not Click")]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -332,6 +351,24 @@ namespace Microsoft.Maui.DeviceTests
 			platformPicker.DispatchTouchEvent(down);
 			platformPicker.DispatchTouchEvent(move);
 			platformPicker.DispatchTouchEvent(secondMove);
+			platformPicker.DispatchTouchEvent(up);
+		}
+
+		static void DispatchExactTouchSlopDrag(EditText platformPicker)
+		{
+			var downTime = SystemClock.UptimeMillis();
+			var startX = platformPicker.Width - 4f;
+			var y = platformPicker.Height / 2f;
+			var touchSlop = ViewConfiguration.Get(platformPicker.Context)?.ScaledTouchSlop ?? 0;
+
+			Assert.True(touchSlop > 0, "Expected Android touch slop to be positive.");
+
+			using var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, y, 0);
+			using var move = MotionEvent.Obtain(downTime, downTime + 16, MotionEventActions.Move, startX - touchSlop, y, 0);
+			using var up = MotionEvent.Obtain(downTime, downTime + 32, MotionEventActions.Up, startX - touchSlop, y, 0);
+
+			platformPicker.DispatchTouchEvent(down);
+			platformPicker.DispatchTouchEvent(move);
 			platformPicker.DispatchTouchEvent(up);
 		}
 

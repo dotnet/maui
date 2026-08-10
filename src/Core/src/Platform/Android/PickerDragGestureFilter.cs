@@ -59,7 +59,7 @@ sealed class PickerDragGestureFilter
 		var deltaX = global::System.Math.Abs(e.GetX(pointerIndex) - _anchorX);
 		var deltaY = global::System.Math.Abs(e.GetY(pointerIndex) - _anchorY);
 
-		if (global::System.Math.Max(deltaX, deltaY) <= _touchSlop)
+		if (global::System.Math.Max(deltaX, deltaY) < _touchSlop)
 			return false;
 
 		_isDrag = true;
