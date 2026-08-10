@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Maps.Handlers
 		MapControl? _mapControl;
 		WebView2? _webView;
 		bool _webViewReady;
-		bool _setupCompleted;
 		MapElementsLayer? _pinsLayer;
 		MapElementsLayer? _mapElementsLayer;
 		readonly List<MapIcon> _mapIcons = new();
@@ -78,19 +77,16 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapControlLoaded(object sender, RoutedEventArgs e)
 		{
-			if (_mapControl == null || _setupCompleted)
+			if (_mapControl == null)
 				return;
 
 			_mapControl.Loaded -= OnMapControlLoaded;
 
-			if (TryDiscoverWebView())
-			{
-				_setupCompleted = true;
-			}
-			else
+			if (!TryDiscoverWebView())
 			{
 				// WebView2 child may not be available yet during complex initialization.
 				// Retry on LayoutUpdated until found.
+				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
 				_mapControl.LayoutUpdated += OnMapControlLayoutUpdated;
 			}
 		}
@@ -100,7 +96,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (TryDiscoverWebView() && _mapControl != null)
 			{
 				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
-				_setupCompleted = true;
 			}
 		}
 
@@ -113,6 +108,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				VisualTreeHelper.GetChild(_mapControl, 0) is WebView2 webView)
 			{
 				_webView = webView;
+				_webView.NavigationStarting += OnWebViewNavigationStarting;
 				_webView.NavigationCompleted += OnWebViewNavigationCompleted;
 				return true;
 			}
@@ -120,15 +116,23 @@ namespace Microsoft.Maui.Maps.Handlers
 			return false;
 		}
 
+		void OnWebViewNavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
+		{
+			_webViewReady = false;
+		}
+
 		void OnWebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
 		{
-			sender.NavigationCompleted -= OnWebViewNavigationCompleted;
+			if (!args.IsSuccess)
+				return;
+
 			_webViewReady = true;
 
-			// Apply any pending state that was queued before the WebView was ready
-			if (_pendingSpan != null)
+			// Reapply the current region after any WebView navigation, including a
+			// navigation triggered while the MapControl is being reparented.
+			var span = _pendingSpan ?? VirtualView?.VisibleRegion;
+			if (span != null)
 			{
-				var span = _pendingSpan;
 				_pendingSpan = null;
 				_ = ExecuteJsAsync(string.Format(
 					CultureInfo.InvariantCulture,
@@ -230,6 +234,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			if (_webView != null)
 			{
+				_webView.NavigationStarting -= OnWebViewNavigationStarting;
 				_webView.NavigationCompleted -= OnWebViewNavigationCompleted;
 			}
 
@@ -237,7 +242,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapElementsLayer = null;
 			_webView = null;
 			_webViewReady = false;
-			_setupCompleted = false;
 			_mapIcons.Clear();
 			_pendingSpan = null;
 			_mapControl = null;

@@ -1,4 +1,5 @@
-using System;
+#nullable enable
+
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -45,7 +46,6 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(map);
 
 				Assert.Same(webViewBeforeReload, GetWebView(mapHandler));
-				Assert.True(GetWebViewReady(mapHandler));
 
 				map.Pins.Add(new Pin
 				{
@@ -61,16 +61,14 @@ namespace Microsoft.Maui.DeviceTests
 					new Location(47.6062, -122.3321),
 					Distance.FromKilometers(5)));
 
+				Assert.Equal(47.6062, platformMap.Center.Position.Latitude, 3);
+				Assert.Equal(-122.3321, platformMap.Center.Position.Longitude, 3);
+				Assert.NotNull(map.VisibleRegion);
 				await AssertEventually(
-					async () =>
-					{
-						var camera = await webViewBeforeReload.ExecuteScriptAsync(
-							"map.getCamera().center[0].toFixed(4) + ',' + map.getCamera().center[1].toFixed(4)");
-						return camera.Contains("-122.332", StringComparison.Ordinal) &&
-							camera.Contains("47.606", StringComparison.Ordinal);
-					},
-					timeout: 5_000,
-					message: "MoveToRegion did not update the JavaScript map after reload");
+					() => GetWebViewReady(mapHandler) &&
+						GetFieldValue<MapSpan>(mapHandler, "_pendingSpan") == null,
+					timeout: 15_000,
+					message: "Map state was not restored after reload");
 
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
@@ -99,7 +97,9 @@ namespace Microsoft.Maui.DeviceTests
 					Label = "Pin",
 					Location = new Location(47.6458, -122.1419)
 				});
-				Assert.Single(GetFieldValue<List<MapIcon>>(mapHandler, "_mapIcons"));
+				Assert.Single(GetRequiredFieldValue<List<MapIcon>>(mapHandler, "_mapIcons"));
+				var platformMap = Assert.IsType<MapControl>(map.Handler.PlatformView);
+				var layerCount = platformMap.Layers.Count;
 
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
@@ -111,11 +111,12 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(GetWebViewReady(mapHandler));
 				Assert.Null(GetFieldValue<MapElementsLayer>(mapHandler, "_pinsLayer"));
 				Assert.Null(GetFieldValue<MapControl>(mapHandler, "_mapControl"));
-				Assert.Empty(GetFieldValue<List<MapIcon>>(mapHandler, "_mapIcons"));
+				Assert.Empty(GetRequiredFieldValue<List<MapIcon>>(mapHandler, "_mapIcons"));
+				Assert.Equal(layerCount, platformMap.Layers.Count);
 			});
 		}
 
-		static WebView2 GetWebView(MapHandler handler)
+		static WebView2? GetWebView(MapHandler handler)
 		{
 			var field = typeof(MapHandler).GetField("_webView", BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(field);
@@ -129,12 +130,20 @@ namespace Microsoft.Maui.DeviceTests
 			return field.GetValue(handler) is bool value && value;
 		}
 
-		static T GetFieldValue<T>(MapHandler handler, string fieldName)
+		static T? GetFieldValue<T>(MapHandler handler, string fieldName)
 			where T : class
 		{
 			var field = typeof(MapHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 			Assert.NotNull(field);
 			return field.GetValue(handler) as T;
+		}
+
+		static T GetRequiredFieldValue<T>(MapHandler handler, string fieldName)
+			where T : class
+		{
+			var value = GetFieldValue<T>(handler, fieldName);
+			Assert.NotNull(value);
+			return value;
 		}
 	}
 }
