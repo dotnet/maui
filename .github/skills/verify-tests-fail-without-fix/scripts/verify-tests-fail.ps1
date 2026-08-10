@@ -323,6 +323,14 @@ function Invoke-TestRun {
         [string]$LogFile
     )
 
+    $hostOnlyTargetFrameworkArgs = @(
+        "-p:IncludeAndroidTargetFrameworks=false",
+        "-p:IncludeIosTargetFrameworks=false",
+        "-p:IncludeMacCatalystTargetFrameworks=false",
+        "-p:IncludeWindowsTargetFrameworks=false",
+        "-p:IncludeTizenTargetFrameworks=false"
+    )
+
     # Boot device/simulator once for test types that need a platform.
     # Both BuildAndRunHostApp.ps1 and Run-DeviceTests.ps1 use Start-Emulator.ps1
     # internally, but we pre-boot here to ensure a consistent UDID is shared
@@ -395,7 +403,7 @@ function Invoke-TestRun {
                 "test", $projectPath,
                 "--configuration", "Debug",
                 "--logger", "console;verbosity=normal"
-            )
+            ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -432,13 +440,8 @@ function Invoke-TestRun {
             $testArgs = @(
                 "test", $projectPath,
                 "--configuration", "Debug",
-                "--logger", "console;verbosity=normal",
-                "-p:IncludeAndroidTargetFrameworks=false",
-                "-p:IncludeIosTargetFrameworks=false",
-                "-p:IncludeMacCatalystTargetFrameworks=false",
-                "-p:IncludeWindowsTargetFrameworks=false",
-                "-p:IncludeTizenTargetFrameworks=false"
-            )
+                "--logger", "console;verbosity=normal"
+            ) + $hostOnlyTargetFrameworkArgs
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }

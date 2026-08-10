@@ -37,11 +37,33 @@ BeforeAll {
     if (-not $autoDetectionFunction) { throw "Function 'Get-AutoDetectedTests' not found" }
     Invoke-Expression $autoDetectionFunction.Extent.Text
 
+    $invokeTestRunFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Invoke-TestRun'
+    }, $true)
+    if (-not $invokeTestRunFunction) { throw "Function 'Invoke-TestRun' not found" }
+    $script:invokeTestRunText = $invokeTestRunFunction.Extent.Text
+
     function New-LogFile {
         param([string]$Content)
         $f = Join-Path ([System.IO.Path]::GetTempPath()) ("verifylog-" + [Guid]::NewGuid().ToString('N') + ".log")
         $Content | Set-Content -LiteralPath $f -Encoding UTF8
         return $f
+    }
+}
+
+Describe 'Invoke-TestRun — host-only target frameworks' {
+    It 'applies the shared platform exclusions to unit and XAML unit tests' {
+        ([regex]::Matches($script:invokeTestRunText, '\+\s*\$hostOnlyTargetFrameworkArgs')).Count | Should -Be 2
+        foreach ($property in @(
+            'IncludeAndroidTargetFrameworks',
+            'IncludeIosTargetFrameworks',
+            'IncludeMacCatalystTargetFrameworks',
+            'IncludeWindowsTargetFrameworks',
+            'IncludeTizenTargetFrameworks'
+        )) {
+            $script:invokeTestRunText | Should -Match "-p:$property=false"
+        }
     }
 }
 
