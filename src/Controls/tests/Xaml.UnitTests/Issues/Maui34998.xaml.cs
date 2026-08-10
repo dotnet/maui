@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Windows.Input;
 using Xunit;

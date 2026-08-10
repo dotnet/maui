@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Import Component Governance manifest generation targets -->
   <Import Project="$(MSBuildThisFileDirectory)../../../eng/CgManifest.targets" />
   
@@ -92,6 +92,11 @@
         <CurrentVersion>$(MicrosoftDotNetNPackageVersion)</CurrentVersion>
         <ReplacementVersion>$(MicrosoftDotNetNPackageVersion)</ReplacementVersion>
         <ReplacementVersion Condition="$(MicrosoftDotNetNPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftDotNetNPackageVersion)', '-.*$', '-*'))</ReplacementVersion>
+      </_TemplatePackageVersion>
+      <!-- Avalonia ships on its own cadence, so keep its prerelease band instead of floating across all 11.0.0 prereleases. -->
+      <_TemplatePackageVersion Include="AVALONIA_CONTROLS_MAUI_VERSION_VALUE">
+        <ReplacementVersion>$(AvaloniaControlsMauiPackageVersion)</ReplacementVersion>
+        <ReplacementVersion Condition="$(AvaloniaControlsMauiPackageVersion.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace('$(AvaloniaControlsMauiPackageVersion)', '(-[a-zA-Z][a-zA-Z0-9]*\.\d+)\.\d+\.\d+', '%241.*'))</ReplacementVersion>
       </_TemplatePackageVersion>
     </ItemGroup>
   </Target>

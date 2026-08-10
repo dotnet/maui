@@ -96,8 +96,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateUserAgent(webView);
 		}
 
-		//TODO: Make it public in .NET 11.
-		internal static void MapBackground(IWebViewHandler handler, IWebView webView)
+		public static void MapBackground(IWebViewHandler handler, IWebView webView)
 		{
 			handler.PlatformView?.UpdateBackground(webView);
 		}

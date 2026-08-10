@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Media
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 			var tcs = new TaskCompletionSource<List<FileResult>>();
 
-			if (pickExisting)
+			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
 				var config = new PHPickerConfiguration
 				{
@@ -730,11 +730,16 @@ namespace Microsoft.Maui.Media
 
 				if (newSize.Width != originalSize.Width || newSize.Height != originalSize.Height)
 				{
-					// Resize the image
-					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
-					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
-					workingImage = UIGraphics.GetImageFromCurrentImageContext();
-					UIGraphics.EndImageContext();
+					// Resize the image. UIGraphicsImageRenderer (iOS 10+) replaces the
+					// UIGraphics.BeginImageContext* APIs that are unsupported on iOS 17+.
+					var rendererFormat = new UIGraphicsImageRendererFormat
+					{
+						Opaque = false,
+						Scale = normalizedImage.CurrentScale,
+					};
+					var renderer = new UIGraphicsImageRenderer(newSize, rendererFormat);
+					workingImage = renderer.CreateImage(_ =>
+						normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize)));
 				}
 
 				// Then determine output format and apply compression

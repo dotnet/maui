@@ -68,12 +68,13 @@ namespace Microsoft.Maui.Controls.Platform
 			int currentIndex,
 			BottomNavigationView bottomView,
 			IMauiContext mauiContext,
-			out IMenuItem menuItem)
+			out IMenuItem menuItem,
+			Action<IMenuItem> onIconLoaded = null)
 		{
 			Task returnValue;
 			using var title = new Java.Lang.String(item.title);
 			menuItem = menu.Add(0, index, 0, title);
-			returnValue = SetMenuItemIcon(menuItem, item.icon, mauiContext);
+			returnValue = SetMenuItemIcon(menuItem, item.icon, mauiContext, onIconLoaded);
 			UpdateEnabled(item.tabEnabled, menuItem);
 			if (index == currentIndex)
 			{
@@ -90,7 +91,8 @@ namespace Microsoft.Maui.Controls.Platform
 			List<(string title, ImageSource icon, bool tabEnabled)> items,
 			int currentIndex,
 			BottomNavigationView bottomView,
-			IMauiContext mauiContext)
+			IMauiContext mauiContext,
+			Action<IMenuItem> onIconLoaded = null)
 		{
 			maxBottomItems = Math.Min(maxBottomItems, MaxBottomNavigationItems);
 			Context context = mauiContext.Context;
@@ -112,19 +114,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 				IMenuItem menuItem;
 				if (i >= menu.Size())
-					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+					loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem, onIconLoaded));
 				else
 				{
 					menuItem = menu.GetItem(i);
 					if (menuItem.ItemId != i)
 					{
 						menu.RemoveItem(menuItem.ItemId);
-						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem, onIconLoaded));
 					}
 					else
 					{
 						SetMenuItemTitle(menuItem, item.title);
-						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext, onIconLoaded));
+						// Reapply enabled/selected state since this IMenuItem is being reused, not recreated.
+						UpdateEnabled(item.tabEnabled, menuItem);
+						if (i == currentIndex)
+						{
+							menuItem.SetChecked(true);
+							bottomView.SelectedItemId = i;
+						}
 					}
 				}
 
@@ -132,23 +141,48 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var menuSize = menu.Size();
+			IMenuItem moreMenuItem = null;
 			if (showMore && menu.GetItem(menuSize - 1).ItemId != MoreTabId)
 			{
 				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
 				if (menuSize == maxBottomItems)
 					menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
-				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
-				menuItems.Add(menuItem);
+				moreMenuItem = menu.Add(0, MoreTabId, 0, moreString);
+				menuItems.Add(moreMenuItem);
 
-				menuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
-				if (currentIndex >= maxBottomItems - 1)
-					menuItem.SetChecked(true);
+				moreMenuItem.SetIcon(Resource.Drawable.abc_ic_menu_overflow_material);
+			}
+			else if (showMore)
+			{
+				// The More item already exists (reused, not recreated) — still need to
+				// reapply its selected state below in case currentIndex has changed.
+				moreMenuItem = menu.GetItem(menuSize - 1);
+			}
+
+			if (moreMenuItem is not null && currentIndex >= maxBottomItems - 1)
+			{
+				// Use SetChecked only — setting SelectedItemId would trigger ShowMoreBottomSheet().
+				moreMenuItem.SetChecked(true);
 			}
 
 			bottomView.SetShiftMode(false, false);
 
 			if (loadTasks.Count > 0)
-				await Task.WhenAll(loadTasks);
+			{
+				try
+				{
+					await Task.WhenAll(loadTasks);
+				}
+				catch (Exception ex)
+				{
+					// SetupMenu is async void — an unhandled exception here would crash
+					// the app. SetMenuItemIcon itself no longer swallows exceptions so
+					// its other caller (ShellItemRenderer.UpdateShellSectionIcon, via
+					// FireAndForget) can still observe/log a faulted Task; this catch
+					// only protects SetupMenu's own async-void boundary.
+					System.Diagnostics.Debug.WriteLine($"SetupMenu: one or more icon loads failed: {ex}");
+				}
+			}
 		}
 
 		internal static void SetMenuItemTitle(IMenuItem menuItem, string title)
@@ -157,14 +191,31 @@ namespace Microsoft.Maui.Controls.Platform
 			menuItem.SetTitle(jTitle);
 		}
 
-		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context)
+		// Records which ImageSource each reused IMenuItem is currently supposed to show, so a
+		// slower, stale load (from before the item was repurposed for a different tab) can
+		// detect it's been superseded and skip applying its now-outdated result.
+		static readonly ConditionalWeakTable<IMenuItem, ImageSource> s_pendingIconSource = new();
+
+		internal static async Task SetMenuItemIcon(IMenuItem menuItem, ImageSource source, IMauiContext context, Action<IMenuItem> onIconLoaded = null)
 		{
 			if (!menuItem.IsAlive())
 				return;
 
-			if (source is null)
-				return;
+			s_pendingIconSource.AddOrUpdate(menuItem, source);
 
+			if (source is null)
+			{
+				// Clear any stale icon left on this (possibly reused) menu item.
+				menuItem.SetIcon(null);
+				onIconLoaded?.Invoke(menuItem);
+				return;
+			}
+
+			// Exceptions are intentionally allowed to propagate here (not swallowed) so
+			// callers can observe/log failures via the returned Task — e.g. the legacy
+			// ShellItemRenderer.UpdateShellSectionIcon relies on FireAndForget's error
+			// handler seeing a faulted Task. SetupMenu (the other caller) guards its own
+			// async-void boundary separately when awaiting these tasks.
 			var services = context.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(source);
@@ -173,9 +224,14 @@ namespace Microsoft.Maui.Controls.Platform
 				source,
 				context.Context);
 
-			if (menuItem.IsAlive())
+			// Skip applying if this menu item has since been repurposed for a different
+			// source (i.e. a newer SetMenuItemIcon call updated the pending source above).
+			if (menuItem.IsAlive() && s_pendingIconSource.TryGetValue(menuItem, out var pending) && ReferenceEquals(pending, source))
 			{
 				menuItem.SetIcon(result?.Value);
+				// Let the caller reapply per-item icon tint (e.g. to preserve a
+				// FontImageSource's own Color) now that the drawable is installed.
+				onIconLoaded?.Invoke(menuItem);
 			}
 		}
 

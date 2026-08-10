@@ -445,7 +445,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				primaries.Reverse();
 			}
 
-			if (secondaries is not null && secondaries.Count > 0)
+			// UIBarButtonItem(UIImage, UIMenu) is only available on iOS/MacCatalyst 14.0+.
+			if (secondaries is not null && secondaries.Count > 0 &&
+				(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
 			{
 				UIImage? secondaryIcon = null;
 				if (ViewController?.ParentViewController is ShellSectionRenderer ssr)

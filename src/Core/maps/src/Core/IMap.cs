@@ -127,4 +127,26 @@ namespace Microsoft.Maui.Maps
 		/// <param name="animated">Whether the transition should be animated.</param>
 		void MoveToRegion(MapSpan region, bool animated);
 	}
+
+	/// <summary>
+	/// Optional contract for map implementations that provide custom cluster marker images.
+	/// </summary>
+	public interface IMapClusterImageProvider
+	{
+		/// <summary>
+		/// Gets a change token that increments whenever previously resolved cluster images should be invalidated.
+		/// </summary>
+		int ClusterImageVersion { get; }
+
+		/// <summary>
+		/// Called by the handler when building a cluster marker to obtain a custom image for it.
+		/// </summary>
+		/// <param name="pins">The pins contained in the cluster. May be smaller than <paramref name="count"/> on
+		/// platforms where not every cluster member's pin can be resolved.</param>
+		/// <param name="count">The authoritative number of pins in the cluster, independent of how many
+		/// could be resolved into <paramref name="pins"/>.</param>
+		/// <param name="location">The location (centroid) of the cluster.</param>
+		/// <returns>The image to use for the cluster marker, or <see langword="null"/> to use the default marker.</returns>
+		IImageSource? GetClusterImage(IReadOnlyList<IMapPin> pins, int count, Location location);
+	}
 }

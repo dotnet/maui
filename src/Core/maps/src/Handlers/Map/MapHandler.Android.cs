@@ -20,14 +20,14 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Maps.Platform;
 using Microsoft.Maui.Platform;
 using ABitmap = Android.Graphics.Bitmap;
+using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
 using ACanvas = Android.Graphics.Canvas;
-using APaint = Android.Graphics.Paint;
-using ARect = Android.Graphics.Rect;
 using ACircle = Android.Gms.Maps.Model.Circle;
+using ADrawable = Android.Graphics.Drawables.Drawable;
+using APaint = Android.Graphics.Paint;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
-using ADrawable = Android.Graphics.Drawables.Drawable;
-using ABitmapDrawable = Android.Graphics.Drawables.BitmapDrawable;
+using ARect = Android.Graphics.Rect;
 using Math = System.Math;
 
 namespace Microsoft.Maui.Maps.Handlers
@@ -47,6 +47,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
+		const int MaxClusterIconCacheSize = 64;
+		readonly ClusterIconCache<BitmapDescriptor> _clusterIconCache = new(MaxClusterIconCacheSize);
+		WeakReference<IMap>? _clusterImageOwner;
+		int _clusterImageVersion = int.MinValue;
 
 		CancellationTokenSource? _addPinsCts;
 
@@ -122,6 +126,9 @@ namespace Microsoft.Maui.Maps.Handlers
 			_circles = null;
 			_clusters?.Clear();
 			_clusterMarkers?.Clear();
+			_clusterIconCache.Clear();
+			_clusterImageOwner = null;
+			_clusterImageVersion = int.MinValue;
 			_init = true;
 
 			platformView.OnPause();
@@ -363,6 +370,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
+				mapHandler.UpdateClusterImageVersion(map);
 				mapHandler.DisconnectPins();
 
 				if (mapHandler._markers != null)
@@ -385,6 +393,21 @@ namespace Microsoft.Maui.Maps.Handlers
 			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
 		}
 
+		void UpdateClusterImageVersion(IMap map)
+		{
+			var version = map is IMapClusterImageProvider imageProvider
+				? imageProvider.ClusterImageVersion
+				: int.MinValue;
+			var sameOwner = _clusterImageOwner?.TryGetTarget(out var owner) == true && ReferenceEquals(owner, map);
+
+			if (sameOwner && _clusterImageVersion == version)
+				return;
+
+			_clusterImageOwner = new WeakReference<IMap>(map);
+			_clusterImageVersion = version;
+			_clusterIconCache.Clear();
+		}
+
 		/// <summary>
 		/// Clusters pins based on their proximity using a simple grid-based algorithm.
 		/// </summary>
@@ -398,7 +421,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			// At zoom 0 (world view), cluster radius is large
 			// At zoom 21 (street level), cluster radius is tiny
 			// The divisor controls how aggressively pins cluster - smaller = less clustering
-						// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
+			// 50 pixels on screen ≈ cluster if pins would overlap at this zoom
 			// Base cluster radius in approximate screen pixels at zoom 0.
 			// Pins whose projected positions fall within this radius are clustered.
 			const double clusterRadiusBasePixels = 50.0;
@@ -726,23 +749,8 @@ namespace Microsoft.Maui.Maps.Handlers
 					}
 					else
 					{
-						// Multiple pins - create cluster marker
-						var options = new MarkerOptions();
-						options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
-						options.SetTitle($"{cluster.Pins.Count} items");
-						options.Anchor(0.5f, 0.5f);
-
-						// Create a circular cluster icon with count
-						var icon = CreateClusterIcon(cluster.Pins.Count);
-						if (icon != null)
-							options.SetIcon(icon);
-
-						var marker = Map.AddMarker(options);
-						if (marker != null)
-						{
-							_markers.Add(marker);
-							_clusterMarkers[marker.Id] = cluster;
-						}
+						// Multiple pins - create a cluster marker (custom image if provided, else default bubble).
+						AddClusterMarkerAsync(cluster, ct).FireAndForget(this);
 					}
 				}
 
@@ -958,6 +966,62 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Failed to load custom pin icon");
 				return null;
+			}
+		}
+
+		async Task AddClusterMarkerAsync(MapCluster cluster, CancellationToken ct)
+		{
+			var map = Map;
+			var mauiContext = MauiContext;
+			var virtualView = VirtualView;
+			if (map == null || mauiContext == null || virtualView == null)
+				return;
+
+			var center = new Devices.Sensors.Location(cluster.CenterLatitude, cluster.CenterLongitude);
+
+			var options = new MarkerOptions();
+			options.SetPosition(new LatLng(cluster.CenterLatitude, cluster.CenterLongitude));
+			options.SetTitle($"{cluster.Pins.Count} items");
+			options.Anchor(0.5f, 0.5f);
+
+			// Resolve a custom cluster image (provider -> static), falling back to the default bubble.
+			IImageSource? image = null;
+			if (virtualView is IMapClusterImageProvider imageProvider)
+			{
+				try
+				{
+					image = imageProvider.GetClusterImage(cluster.Pins, cluster.Pins.Count, center);
+				}
+				catch (System.Exception ex)
+				{
+					mauiContext.Services.GetService<ILogger<MapHandler>>()?.LogWarning(ex, "Cluster image provider threw");
+				}
+			}
+
+			BitmapDescriptor? icon = null;
+			if (image != null)
+			{
+				var cacheKey = GetClusterIconCacheKey(image);
+				var loadToken = cacheKey is null ? ct : CancellationToken.None;
+				icon = await _clusterIconCache.GetOrCreateAsync(
+					cacheKey,
+					() => LoadPinIconAsync(image, mauiContext, loadToken),
+					() => GetClusterIconCacheExpiry(image));
+			}
+
+			if (ct.IsCancellationRequested || !ReferenceEquals(Map, map))
+				return;
+
+			icon ??= CreateClusterIcon(cluster.Pins.Count);
+			if (icon != null)
+				options.SetIcon(icon);
+
+			var marker = map.AddMarker(options);
+			if (marker != null)
+			{
+				_markers ??= new List<Marker>();
+				_markers.Add(marker);
+				_clusterMarkers?[marker.Id] = cluster;
 			}
 		}
 

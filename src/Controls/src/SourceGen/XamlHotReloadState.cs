@@ -8,15 +8,24 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 /// <summary>
-/// In-process static cache that tracks the last-generated XAML text, version number, and
-/// accumulated patch bodies per file, enabling the incremental hot reload pipeline to
-/// compute diffs between XAML edits and emit a single <c>UpdateComponent()</c> with all patches.
+/// In-process static cache that tracks the last-generated XAML text (and its parsed tree / node IDs)
+/// per file, enabling the incremental hot reload pipeline to compute a diff between successive XAML
+/// edits and emit a single previous→current <c>UpdateComponent()</c> patch.
 /// </summary>
 /// <remarks>
-/// This class uses mutable static state intentionally: Roslyn incremental generators run
-/// in-process during a build session, so state persists across incremental builds.  Each entry
-/// maps a <c>(AssemblyName, TargetFramework, RelativePath)</c> tuple to the XAML content,
-/// version counter, and the list of accumulated patch bodies (each an <c>if (__version == N)</c> block).
+/// This class uses mutable static state intentionally: Roslyn incremental generators run in-process
+/// during a build session, so state persists across incremental builds. Each entry maps a
+/// <c>(AssemblyName, TargetFramework, RelativePath)</c> tuple to the cached XAML content and its
+/// parsed tree.
+///
+/// <para>
+/// IMPORTANT (XIHR determinism): the cache holds only what is needed to diff the PREVIOUS generation
+/// against the CURRENT one. It deliberately does NOT accumulate a growing chain of patch bodies, and
+/// generated output never embeds the <see cref="CacheEntry.Version"/> counter. This keeps the generator's
+/// output a pure function of the current content: identical XAML always produces identical output, and
+/// reverting an edit restores the earlier output. (Accumulating patches / embedding a monotonic counter
+/// is exactly what made the generator non-deterministic and could leave reverted code uncompilable.)
+/// </para>
 ///
 /// Keyed on <c>(AssemblyName, TargetFramework, RelativePath)</c> to prevent:
 /// <list type="bullet">
@@ -55,12 +64,12 @@ internal static class XamlHotReloadState
 		/// to avoid colliding with existing IDs.
 		/// </summary>
 		public int NextNodeId { get; set; }
-		public int Version { get; set; }
 		/// <summary>
-		/// Accumulated patch bodies. Each entry is the code for one <c>if (__version == N) { ... }</c> block.
-		/// On structural change, this list is cleared.
+		/// A monotonic generation counter, kept purely for internal bookkeeping/diagnostics. It does
+		/// NOT drive code generation and its value never leaks into generated output. Retained so tooling
+		/// can tell how many times a file has been regenerated in the current build session.
 		/// </summary>
-		public List<string> PatchBodies { get; } = new();
+		public int Version { get; set; }
 	}
 
 	/// <summary>
@@ -91,10 +100,11 @@ internal static class XamlHotReloadState
 	}
 
 	/// <summary>
-	/// Stores (or replaces) the current XAML text, parsed root, and version for the given file,
-	/// and appends a patch body if provided.
+	/// Stores (or replaces) the current XAML text, parsed root, node IDs, and version for the given
+	/// file. This fully replaces the previous entry — the cache only ever holds the latest generation,
+	/// never an accumulated history.
 	/// </summary>
-	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, string? patchBody = null)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
 	{
 		lock (_lock)
 		{
@@ -108,40 +118,6 @@ internal static class XamlHotReloadState
 			entry.NodeIds = nodeIds;
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
-			if (patchBody != null)
-				entry.PatchBodies.Add(patchBody);
-		}
-	}
-
-	/// <summary>
-	/// Stores the XAML text, parsed root, and version, and clears all accumulated patches (structural change).
-	/// </summary>
-	public static void UpdateAndClearPatches(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
-	{
-		lock (_lock)
-		{
-			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
-			{
-				entry = new CacheEntry();
-				_cache[(assemblyName, targetFramework, relativePath)] = entry;
-			}
-			entry.XamlText = xamlText;
-			entry.ParsedRoot = parsedRoot;
-			entry.NodeIds = nodeIds;
-			entry.NextNodeId = nextNodeId;
-			entry.Version = version;
-			entry.PatchBodies.Clear();
-		}
-	}
-
-	/// <summary>
-	/// Returns the current version for the given file, or 0 if not cached.
-	/// </summary>
-	public static int GetVersion(string assemblyName, string targetFramework, string relativePath)
-	{
-		lock (_lock)
-		{
-			return _cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) ? entry.Version : 0;
 		}
 	}
 
@@ -168,19 +144,6 @@ internal static class XamlHotReloadState
 			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.NodeIds != null)
 				return new Dictionary<ElementNode, string>(entry.NodeIds);
 			return null;
-		}
-	}
-
-	/// <summary>
-	/// Returns a copy of the accumulated patch bodies for the given file.
-	/// </summary>
-	public static List<string> GetPatchBodies(string assemblyName, string targetFramework, string relativePath)
-	{
-		lock (_lock)
-		{
-			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
-				return new List<string>(entry.PatchBodies);
-			return new List<string>();
 		}
 	}
 

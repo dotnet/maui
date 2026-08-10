@@ -49,7 +49,7 @@ public partial class TestPage : ContentPage
 """;
 
 	[Fact]
-	public void CSharpExpression_IC_EmitsVersionField()
+	public void CSharpExpression_IC_EmitsRegistration()
 	{
 		var xaml =
 """
@@ -64,7 +64,6 @@ public partial class TestPage : ContentPage
 """;
 		var (_, text) = RunGenerator(xaml, ViewModelCode, enableIncrementalHotReload: true);
 		Assert.NotNull(text);
-		Assert.Contains("private int __version = 0;", text, StringComparison.Ordinal);
 		Assert.Contains("XamlComponentRegistry.Register(this,", text, StringComparison.Ordinal);
 	}
 
@@ -308,7 +307,7 @@ public partial class TestPage : ContentPage
 	}
 
 	[Fact]
-	public void CSharpExpression_IdenticalXaml_NoUCGenerated()
+	public void CSharpExpression_IdenticalXaml_EmitsEmptyUC()
 	{
 		var xaml =
 """
@@ -324,8 +323,11 @@ public partial class TestPage : ContentPage
 		RunGenerator(xaml, ViewModelCode, enableIncrementalHotReload: true);
 		var (result, _) = RunGenerator(xaml, ViewModelCode, enableIncrementalHotReload: true);
 
+		// UC is always emitted (present-but-empty for unchanged XAML) so the method never disappears.
 		var ucSource = GetUCSource(result);
-		Assert.Null(ucSource);
+		Assert.NotNull(ucSource);
+		Assert.Contains("internal void UpdateComponent()", ucSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("XamlComponentRegistry", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -406,7 +408,8 @@ public partial class TestPage : ContentPage
 		// if UC is null, the fallback full-reload path handles it
 		if (ucSource is not null)
 		{
-			Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
+			// New design: UpdateComponent() is emitted (present) but carries no version-chain guard.
+			Assert.DoesNotContain("if (__version ==", ucSource, StringComparison.Ordinal);
 		}
 	}
 
@@ -452,7 +455,7 @@ public partial class TestPage : ContentPage
 
 		var ucSource = GetUCSource(result);
 		Assert.NotNull(ucSource);
-		Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("if (__version ==", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
