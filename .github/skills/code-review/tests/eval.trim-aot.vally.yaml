@@ -329,4 +329,4 @@ scoring:
   # Each scenario proves skill activation, the expected verdict, review-input
   # access, and semantic reasoning. The workflow treats any failed
   # skill-invocation detail as a hard veto in addition to this aggregate score.
-  threshold: 0.9
+  threshold: 0.925

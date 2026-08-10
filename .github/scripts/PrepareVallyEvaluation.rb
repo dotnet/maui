@@ -13,7 +13,7 @@ FIXTURE_COMMIT_ENV = {
 }.freeze
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
-FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn].freeze
+FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn .mock-executor].freeze
 REQUIRED_SKILL_INVOCATION_SPECS = %w[
   .github/skills/agentic-labeler/tests/eval.vally.yaml
   .github/skills/ci-fix/tests/eval.ownership.vally.yaml
@@ -44,9 +44,16 @@ REQUIRED_SKILL_PATTERNS = {
     "mandatory baseline step" => /^### Step 2: Establish Baseline \(MANDATORY\)$/,
     "mandatory restore step" => /^### Step 9: Restore Working Directory \(MANDATORY .+\)$/,
     "trusted restore command" => /EstablishBrokenBaseline\.ps1 -Restore/,
+    "conditional no-state restore completion" => /No baseline state found.+Restored False/m,
     "raw-git cleanup prohibition" => /not `git checkout`, `git restore`, or `git reset`/
   }
 }.freeze
+MANDATORY_SPEC_PATHS = (
+  REQUIRED_SKILL_INVOCATION_SPECS +
+  PER_GRADER_MUST_PASS_SPECS +
+  REQUIRED_SKILL_PATTERNS.keys +
+  DISALLOWED_SKILL_INVOCATION_STIMULI.keys
+).uniq.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
 PERSISTENT_GIT_IDENTITY_PATTERN =
   /(?:\A|[;&|\r\n])\s*git(?:\s+(?:(?:-C|-c)\s+\S+|--\S+))*\s+config(?:\s+--\S+)*\s+user\.(?:name|email)\b/im
@@ -256,8 +263,12 @@ def validate_environment!(environment, spec_path, skill_root, repo_root, locatio
     destination_parts = Pathname.new(dest).each_filename.to_a
     fail!("#{location}.files[#{index}].dest must be a non-empty relative path") if dest.empty? || Pathname.new(dest).absolute?
     fail!("#{location}.files[#{index}].dest must not traverse parent directories") if destination_parts.include?("..")
-    forbidden_component = destination_parts.find { |part| FORBIDDEN_DESTINATION_COMPONENTS.include?(part.downcase) }
+    normalized_destination_parts = destination_parts.reject { |part| part == "." }
+    forbidden_component = normalized_destination_parts.find { |part| FORBIDDEN_DESTINATION_COMPONENTS.include?(part.downcase) }
     fail!("#{location}.files[#{index}].dest targets forbidden VCS metadata: #{forbidden_component}") if forbidden_component
+    if normalized_destination_parts.first(2).map(&:downcase) == [".github", "hooks"]
+      fail!("#{location}.files[#{index}].dest targets forbidden repository hooks")
+    end
     validate_no_checkout_symlinks!(dest, repo_root, "#{location}.files[#{index}].dest")
   end
 
@@ -310,7 +321,11 @@ def validate_effective_git_destinations!(document, repo_root)
 end
 
 def validate_graders!(graders, location)
-  Array(graders).each_with_index do |grader, index|
+  graders = Array(graders)
+  skill_invocations = graders.count { |grader| grader.is_a?(Hash) && grader["type"] == "skill-invocation" }
+  fail!("#{location} contains multiple skill-invocation graders") if skill_invocations > 1
+
+  graders.each_with_index do |grader, index|
     next unless grader.is_a?(Hash)
     grader_type = grader["type"]
     if grader_type == "skill-invocation" && grader.key?("name")
@@ -332,7 +347,7 @@ def skill_invocation_targets?(grader, skill_name, polarity)
   values.is_a?(Array) && values.include?(skill_name)
 end
 
-def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
+def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect_git_refs:)
   fail!("#{spec_path} uses Vally parameter placeholders; trusted validation requires structurally static specs") if File.read(spec_path).match?(PARAM_PLACEHOLDER_PATTERN)
 
   begin
@@ -341,10 +356,14 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
     fail!("#{spec_path} uses YAML aliases; trusted validation requires alias-free specs")
   end
   fail!("#{spec_path} must contain a mapping") unless document.is_a?(Hash)
+  defaults = document["defaults"]
+  if defaults.is_a?(Hash) && defaults.key?("executor") && defaults["executor"] != "copilot-sdk"
+    fail!("#{relative_spec_path} must not override the trusted copilot-sdk executor")
+  end
 
   validate_environment!(document["environment"], spec_path, skill_root, repo_root, "environment")
-  validate_graders!(document["graders"], "graders")
-  relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
+  parent_graders = Array(document["graders"])
+  validate_graders!(parent_graders, "graders")
   require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
   if PER_GRADER_MUST_PASS_SPECS.include?(relative_spec_path) && document["scoring"] != {}
     fail!("#{relative_spec_path} must use an empty scoring map so every grader must pass its declared threshold")
@@ -364,6 +383,12 @@ def validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs:)
     validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
     graders = Array(stimulus["graders"])
     validate_graders!(graders, "stimuli[#{index}].graders")
+    effective_invocations = (parent_graders + graders).count do |grader|
+      grader.is_a?(Hash) && grader["type"] == "skill-invocation"
+    end
+    if effective_invocations > 1
+      fail!("stimuli[#{index}] has multiple effective skill-invocation graders")
+    end
     if require_skill_invocation
       allowed_disallowed = Array(DISALLOWED_SKILL_INVOCATION_STIMULI[relative_spec_path])
       if allowed_disallowed.include?(stimulus["name"])
@@ -426,6 +451,18 @@ def trusted_fixture_source_ref(repo_root, env = ENV)
   trusted_sha
 end
 
+def validate_mandatory_layout!(repo_root)
+  MANDATORY_SPEC_PATHS.each do |relative_spec_path|
+    relative_tests_path = File.dirname(relative_spec_path)
+    validate_no_checkout_symlinks!(relative_tests_path, repo_root, "mandatory tests path")
+    tests_path = File.join(repo_root, relative_tests_path)
+    fail!("missing mandatory tests path #{relative_tests_path}") unless Dir.exist?(tests_path)
+    validate_no_checkout_symlinks!(relative_spec_path, repo_root, "mandatory spec")
+    spec_path = File.join(repo_root, relative_spec_path)
+    fail!("missing mandatory Vally spec #{relative_spec_path}") unless File.file?(spec_path)
+  end
+end
+
 def create_fixture_commit(repo_root, fixture, parent_ref: BASE_REF)
   Dir.mktmpdir("vally-fixture-") do |temp_root|
     index_path = File.join(temp_root, "index")
@@ -478,23 +515,50 @@ end
 
 def main(argv = ARGV)
   repo_root = File.realpath(File.expand_path(argv.fetch(0)))
+  if argv.fetch(1) == "--validate-mandatory-layout"
+    validate_mandatory_layout!(repo_root)
+    puts "Validated #{MANDATORY_SPEC_PATHS.length} mandatory Vally spec path(s)"
+    return
+  end
+
   requested_tests_path = File.expand_path(argv.fetch(1), repo_root)
   validate_only = argv.include?("--validate-only")
   skills_root_relative = File.join(".github", "skills")
   validate_no_checkout_symlinks!(skills_root_relative, repo_root, "skills root")
   skills_root = File.realpath(File.join(repo_root, skills_root_relative))
   fail!("skills root escapes checkout: #{skills_root}") unless inside?(skills_root, repo_root)
+  requested_tests_relative = Pathname.new(requested_tests_path).relative_path_from(Pathname.new(repo_root)).to_s
+  tests_match = requested_tests_relative.match(%r{\A\.github/skills/([^/]+)/tests\z})
+  fail!("tests path must use the lexical .github/skills/<skill>/tests scope") unless tests_match
+  validate_no_checkout_symlinks!(requested_tests_relative, repo_root, "tests path")
   fail!("tests path does not exist: #{requested_tests_path}") unless Dir.exist?(requested_tests_path)
   tests_path = File.realpath(requested_tests_path)
   fail!("tests path escapes .github/skills") unless inside?(tests_path, skills_root)
+  skill_name = tests_match[1]
+  skill_root = File.realpath(File.join(skills_root, skill_name))
 
   spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
   fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
-  skill_root = File.realpath(File.dirname(tests_path))
   spec_paths.each do |spec_path|
+    relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
+    validate_no_checkout_symlinks!(relative_spec_path, repo_root, "spec path")
     real_spec_path = File.realpath(spec_path)
     fail!("spec path escapes #{tests_path}: #{spec_path}") unless inside?(real_spec_path, tests_path)
-    validate_spec!(real_spec_path, skill_root, repo_root, inspect_git_refs: !validate_only)
+    validate_spec!(
+      real_spec_path,
+      relative_spec_path,
+      skill_root,
+      repo_root,
+      inspect_git_refs: !validate_only
+    )
+  end
+  mandatory_specs = MANDATORY_SPEC_PATHS.select do |relative_path|
+    File.dirname(relative_path) == requested_tests_relative
+  end
+  mandatory_specs.each do |relative_path|
+    mandatory_path = File.join(repo_root, relative_path)
+    fail!("missing mandatory Vally spec #{relative_path}") unless File.file?(mandatory_path)
+    validate_no_checkout_symlinks!(relative_path, repo_root, "mandatory spec")
   end
 
   skill_fixtures = FIXTURES[File.basename(skill_root)]
@@ -523,7 +587,10 @@ def main(argv = ARGV)
       end
     end
 
-    spec_paths.each { |spec_path| validate_spec!(spec_path, skill_root, repo_root, inspect_git_refs: true) }
+    spec_paths.each do |spec_path|
+      relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
+      validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect_git_refs: true)
+    end
   end
 
   puts "Validated #{spec_paths.length} Vally eval spec(s) under #{tests_path}"

@@ -276,6 +276,7 @@ jobs:
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
           ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC"
+          ruby "$PREPARER" "$GITHUB_WORKSPACE" --validate-mandatory-layout
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
           done < <(find .github/skills -name '*.vally.yaml' -exec dirname {} \; | sort -u)
@@ -467,7 +468,6 @@ jobs:
               Write-Host "  -> $skill has NO eval*.vally.yaml (static-only)"
             }
           }
-
           if ($entries.Count -eq 0) {
             Write-Host "No skills with eval tests to evaluate"
             echo "entries=[]" >> $env:GITHUB_OUTPUT
@@ -774,6 +774,7 @@ jobs:
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval \
             "${SPECS[@]}" \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
@@ -884,6 +885,7 @@ jobs:
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval \
             "${SPECS[@]}" \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
@@ -1079,6 +1081,7 @@ jobs:
 
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval -e "$HERMETICITY_SPEC" \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH/out" \
             --junit \
@@ -1361,13 +1364,17 @@ jobs:
               }
               return null;
             }
-            function testcaseProp(testcase, key) {
+            function testcaseProps(testcase, key) {
               const properties = (testcase.match(/<properties\b[^>]*>[\s\S]*?<\/properties>/) || [''])[0];
+              const values = [];
               for (const property of elementBlocks(properties, 'property')) {
                 const openTag = (property.match(/<property\b[^>]*?(?:>|\/>)/) || [''])[0];
-                if (tagAttr(openTag, 'name') === key) return tagAttr(openTag, 'value');
+                if (tagAttr(openTag, 'name') === key) values.push(tagAttr(openTag, 'value'));
               }
-              return null;
+              return values;
+            }
+            function testcaseProp(testcase, key) {
+              return testcaseProps(testcase, key)[0] ?? null;
             }
             function tagAttr(tag, key) {
               const m = (tag || '').match(new RegExp("\\b" + key + "\\s*=\\s*([\"'])(.*?)\\1"));
@@ -1442,7 +1449,7 @@ jobs:
               return elementBlocks(xml, 'testsuite');
             }
             function hasFailedSkillInvocation(testcase) {
-              return testcaseProp(testcase, 'grader.skill-invocation.passed') === 'false';
+              return testcaseProps(testcase, 'grader.skill-invocation.passed').includes('false');
             }
             function allStimuliRan(testsuite) {
               const runText = suiteProp(testsuite, 'stimuliRun');
@@ -1477,6 +1484,15 @@ jobs:
                   !invocationVetoBlocks[0].includes('safely]]></system-out></testcase>')) {
                 throw new Error('Internal JUnit parser failed a skill-invocation veto fixture.');
               }
+            }
+            const duplicateInvocationVetoFixture = [
+              '<testcase name="duplicate-routing-graders"><properties>',
+              '<property name="grader.skill-invocation.passed" value="true"/>',
+              '<property name="grader.skill-invocation.passed" value="false"/>',
+              '</properties></testcase>',
+            ].join('');
+            if (!hasFailedSkillInvocation(duplicateInvocationVetoFixture)) {
+              throw new Error('Internal JUnit parser ignored a later failed skill-invocation property.');
             }
             const suiteBoundaryFixture = [
               '<testsuites>',

@@ -559,8 +559,13 @@ pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
 If restore continues in the background, wait for its matching `shellId` with
-`read_bash` until it completes and confirms `Restored True`. Do not report the
-attempt or end the session before that result is observed.
+`read_bash` until it completes. When Step 2 created `.github/.baseline-state.json`,
+do not report the attempt or end the session until restore confirms
+`Restored True`. If Step 2 already reported `Blocked` before changing any files
+and verified that baseline state was never created because all fix files were
+new or no fix files were detected, the expected completion is
+`No baseline state found` with `Restored False`; accept that result only for
+those verified no-state paths and only when no attempt edits were made.
 
 🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 

@@ -117,6 +117,7 @@ jobs:
           set +e
           "$VALLY_RUNNER" "$VALLY_BIN" eval \
             -e .github/skills/code-review/tests/soak.capability.vally.yaml \
+            --executor copilot-sdk \
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \

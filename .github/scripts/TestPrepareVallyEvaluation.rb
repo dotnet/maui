@@ -67,6 +67,15 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "uses forbidden key(s): mcpServers"
   end
 
+  def test_rejects_mock_executor_override
+    write_spec("defaults" => { "executor" => "mock" })
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "must not override the trusted copilot-sdk executor"
+  end
+
   def test_rejects_executable_grader
     write_spec(
       "stimuli" => [
@@ -136,6 +145,46 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "must not rename the skill-invocation grader"
+  end
+
+  def test_rejects_duplicate_skill_invocation_graders
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "duplicate-routing",
+          "graders" => [
+            { "type" => "skill-invocation", "config" => { "required" => ["test-skill"] } },
+            { "type" => "skill-invocation", "config" => { "required" => ["test-skill"] } }
+          ]
+        }
+      ]
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "contains multiple skill-invocation graders"
+  end
+
+  def test_rejects_duplicate_effective_skill_invocation_graders
+    write_spec(
+      "graders" => [
+        { "type" => "skill-invocation", "config" => { "required" => ["test-skill"] } }
+      ],
+      "stimuli" => [
+        {
+          "name" => "duplicate-routing",
+          "graders" => [
+            { "type" => "skill-invocation", "config" => { "required" => ["test-skill"] } }
+          ]
+        }
+      ]
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "has multiple effective skill-invocation graders"
   end
 
   def test_requires_skill_invocation_grader_for_routing_specs
@@ -341,6 +390,50 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "targets forbidden VCS metadata: .git"
   end
 
+  def test_rejects_mock_executor_evidence_destination
+    write_fixture("fixture.txt")
+    write_spec(
+      "environment" => {
+        "files" => [{ "src" => "fixture.txt", "dest" => ".mock-executor/stimulus.json" }]
+      }
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "targets forbidden VCS metadata: .mock-executor"
+  end
+
+  def test_rejects_repository_hook_destination
+    write_fixture("fixture.txt")
+    write_spec(
+      "environment" => {
+        "files" => [{ "src" => "fixture.txt", "dest" => ".github/hooks/pre-tool.json" }]
+      }
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "targets forbidden repository hooks"
+  end
+
+  def test_rejects_normalized_repository_hook_destination
+    write_fixture("fixture.txt")
+    ["./.github/hooks/pre-tool.json", ".github/./hooks/pre-tool.json"].each do |dest|
+      write_spec(
+        "environment" => {
+          "files" => [{ "src" => "fixture.txt", "dest" => dest }]
+        }
+      )
+
+      _stdout, stderr, status = run_validator
+
+      refute status.success?, dest
+      assert_includes stderr, "targets forbidden repository hooks"
+    end
+  end
+
   def test_rejects_symlinked_destination_component
     write_fixture("fixture.txt")
     FileUtils.mkdir_p(File.join(@repo_root, "outside"))
@@ -404,6 +497,48 @@ class TestPrepareVallyEvaluation < Minitest::Test
     ensure
       FileUtils.remove_entry(outside_root)
     end
+  end
+
+  def test_rejects_symlinked_tests_scope_inside_skills
+    actual_tests_path = File.join(@repo_root, ".github", "skills", "other-skill", "tests")
+    FileUtils.mkdir_p(actual_tests_path)
+    File.write(File.join(actual_tests_path, "eval.vally.yaml"), YAML.dump({}))
+    FileUtils.remove_entry(@tests_path)
+    File.symlink(actual_tests_path, @tests_path)
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "tests path traverses checkout symlink"
+  end
+
+  def test_mandatory_layout_rejects_symlinked_tests_scope
+    actual_tests_path = File.join(@repo_root, ".github", "skills", "other-skill", "tests")
+    labeler_tests_path = File.join(@repo_root, ".github", "skills", "agentic-labeler", "tests")
+    FileUtils.mkdir_p(actual_tests_path)
+    FileUtils.mkdir_p(File.dirname(labeler_tests_path))
+    File.symlink(actual_tests_path, labeler_tests_path)
+
+    _stdout, stderr, status = Open3.capture3(
+      "ruby",
+      PREPARER,
+      @repo_root,
+      "--validate-mandatory-layout"
+    )
+
+    refute status.success?
+    assert_includes stderr, "mandatory tests path traverses checkout symlink"
+  end
+
+  def test_requires_mandatory_spec_filename
+    labeler_tests_path = File.join(@repo_root, ".github", "skills", "agentic-labeler", "tests")
+    FileUtils.mkdir_p(labeler_tests_path)
+    File.write(File.join(labeler_tests_path, "eval.renamed.vally.yaml"), YAML.dump({}))
+
+    _stdout, stderr, status = run_validator(labeler_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "missing mandatory Vally spec .github/skills/agentic-labeler/tests/eval.vally.yaml"
   end
 
   def test_rejects_default_scope_git_name_write

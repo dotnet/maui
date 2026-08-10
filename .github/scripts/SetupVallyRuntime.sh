@@ -196,6 +196,7 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"
 	cat <<EOF | sudo -n tee "$trusted_copilot_home/settings.json" >/dev/null
 {
+  "disableAllHooks": true,
   "sandbox": {
     "enabled": true,
     "allowBypass": false,
@@ -298,6 +299,7 @@ else
 	mkdir -p "$eval_results_root"
 	cat > "$trusted_copilot_home/settings.json" <<EOF
 {
+  "disableAllHooks": true,
   "sandbox": {
     "enabled": true,
     "allowBypass": false,
@@ -337,7 +339,8 @@ const settingsPath = process.argv[2];
 const installRoot = process.argv[3];
 const settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
 const sandbox = settings.sandbox;
-if (!sandbox?.enabled ||
+if (settings.disableAllHooks !== true ||
+    !sandbox?.enabled ||
     sandbox.allowBypass !== false ||
     sandbox.gitAuth !== false ||
     sandbox.ghAuth !== false ||
