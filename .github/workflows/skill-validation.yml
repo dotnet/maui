@@ -52,6 +52,7 @@ on:
       - '.github/skills/**'
       - '.github/plugin.json'
       - '.github/scripts/PrepareVallyEvaluation.rb'
+      - '.github/scripts/SelectVallyToken.sh'
       - '.github/scripts/TestPrepareVallyEvaluation.rb'
       - '.github/scripts/SetupVallyRuntime.sh'
       - '.github/workflows/skill-validation.yml'
@@ -275,15 +276,18 @@ jobs:
           fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
+          TOKEN_SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
           SETUP_RUNTIME="$RUNNER_TEMP/SetupVallyRuntime.sh"
           RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
           VERIFICATION_SPEC="$RUNNER_TEMP/eval.protocol.vally.yaml"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$TOKEN_SELECTOR"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP_RUNTIME"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
-          ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC" "$SETUP_RUNTIME"
+          chmod 700 "$TOKEN_SELECTOR"
+          ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC" "$SETUP_RUNTIME" "$TOKEN_SELECTOR"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" --validate-mandatory-layout
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
@@ -424,7 +428,7 @@ jobs:
               sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
             # Trusted evaluation-harness change => evaluate all skills with specs.
             HARNESS_CHANGES=$(echo "$CHANGED" \
-              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb|scripts/SetupVallyRuntime\.sh)$' \
+              | grep -E '^\.github/(workflows/skill-validation\.yml|scripts/(PrepareVallyEvaluation|TestPrepareVallyEvaluation)\.rb|scripts/(SelectVallyToken|SetupVallyRuntime)\.sh)$' \
               || true)
             if [ -n "$HARNESS_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
           fi
@@ -585,66 +589,42 @@ jobs:
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
-          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
-          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
-          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
-          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
-          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
-          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
-          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
-          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TESTS_PATH: ${{ matrix.entry.tests_path }}
+          TOKEN_START_INDEX: ${{ strategy.job-index }}
         run: |
           set -euo pipefail
-          TOKENS=()
-          for i in 0 1 2 3 4 5 6 7 8 9; do
-            var="TOKEN_$i"
-            val="${!var-}"
-            if [ -n "$val" ]; then
-              echo "::add-mask::$val"
-              TOKENS+=("$val")
-            fi
-          done
-
-          if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
-            exit 1
-          fi
-
-          # A populated secret can still be unusable when its GitHub API quota
-          # is exhausted. The Copilot runtime calls /user while creating every
-          # session, so probe that exact endpoint and rotate to the next healthy
-          # pool entry instead of turning infrastructure exhaustion into a
-          # zero-score skill result.
-          JOB_INDEX="${{ strategy.job-index }}"
-          RUN_ID="${{ github.run_id }}"
-          START_IDX=$(( (${JOB_INDEX:-0} + RUN_ID) % ${#TOKENS[@]} ))
-          SELECTED_TOKEN=""
-          for ((offset = 0; offset < ${#TOKENS[@]}; offset++)); do
-            IDX=$(( (START_IDX + offset) % ${#TOKENS[@]} ))
-            AUTH_HEADER="Authorization: Bearer ${TOKENS[$IDX]}"
-            STATUS=$(curl --silent --show-error --connect-timeout 10 --max-time 20 \
-              --output /dev/null \
-              --write-out '%{http_code}' \
-              --header "$AUTH_HEADER" \
-              --header "Accept: application/vnd.github+json" \
-              --header "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/user || true)
-            unset AUTH_HEADER
-            if [ "$STATUS" = "200" ]; then
-              SELECTED_TOKEN="${TOKENS[$IDX]}"
-              echo "Selected healthy PAT slot $IDX of ${#TOKENS[@]} (job-index=${JOB_INDEX:-0})"
-              break
-            fi
-            echo "::warning::Skipping unavailable Copilot PAT slot $IDX (GitHub /user returned HTTP $STATUS)"
-          done
-          if [ -z "$SELECTED_TOKEN" ]; then
-            echo "::error::Every configured COPILOT_PAT_* secret is unavailable or rate-limited"
-            exit 1
-          fi
-
-          echo "token=$SELECTED_TOKEN" >> "$GITHUB_OUTPUT"
+          PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
+          REQUIRED_MODELS_OUTPUT=$(
+            ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH" \
+              --validate-only --list-models
+          )
+          mapfile -t REQUIRED_MODELS <<< "$REQUIRED_MODELS_OUTPUT"
+          SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$SELECTOR"
+          chmod 700 "$SELECTOR"
+          "$SELECTOR" \
+            "$GITHUB_OUTPUT" \
+            "${{ steps.vally-runtime.outputs.vally_runner }}" \
+            "$COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_HOME" \
+            "$RUNNER_TEMP/model-probe" \
+            "${REQUIRED_MODELS[@]}"
 
       # ── Run LLM evaluation (Vally) ───────────────────────────────
       # ── Optional baseline (pre-PR) evaluation ────────────────────
@@ -1024,56 +1004,35 @@ jobs:
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
-          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
-          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
-          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
-          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
-          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
-          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
-          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
-          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_wrapper }}
+          TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
+          TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
+          TRUSTED_SHA: ${{ github.workflow_sha }}
+          TOKEN_START_INDEX: ${{ github.run_id }}
         run: |
           set -euo pipefail
-          TOKENS=()
-          for i in 0 1 2 3 4 5 6 7 8 9; do
-            var="TOKEN_$i"
-            val="${!var}"
-            if [ -n "$val" ]; then
-              echo "::add-mask::$val"
-              TOKENS+=("$val")
-            fi
-          done
-          if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
-            exit 1
-          fi
-          START_IDX=$((RANDOM % ${#TOKENS[@]}))
-          SELECTED_TOKEN=""
-          for ((offset = 0; offset < ${#TOKENS[@]}; offset++)); do
-            IDX=$(( (START_IDX + offset) % ${#TOKENS[@]} ))
-            AUTH_HEADER="Authorization: Bearer ${TOKENS[$IDX]}"
-            STATUS=$(curl --silent --show-error --connect-timeout 10 --max-time 20 \
-              --output /dev/null \
-              --write-out '%{http_code}' \
-              --header "$AUTH_HEADER" \
-              --header "Accept: application/vnd.github+json" \
-              --header "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/user || true)
-            unset AUTH_HEADER
-            if [ "$STATUS" = "200" ]; then
-              SELECTED_TOKEN="${TOKENS[$IDX]}"
-              echo "Selected healthy PAT slot $IDX of ${#TOKENS[@]}"
-              break
-            fi
-            echo "::warning::Skipping unavailable Copilot PAT slot $IDX (GitHub /user returned HTTP $STATUS)"
-          done
-          if [ -z "$SELECTED_TOKEN" ]; then
-            echo "::error::Every configured COPILOT_PAT_* secret is unavailable or rate-limited"
-            exit 1
-          fi
-          echo "token=$SELECTED_TOKEN" >> "$GITHUB_OUTPUT"
+          SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SelectVallyToken.sh" > "$SELECTOR"
+          chmod 700 "$SELECTOR"
+          "$SELECTOR" \
+            "$GITHUB_OUTPUT" \
+            "${{ steps.vally-runtime.outputs.vally_runner }}" \
+            "$COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_CLI_PATH" \
+            "$TRUSTED_COPILOT_HOME" \
+            "$RUNNER_TEMP/hermeticity-model-probe" \
+            gpt-5.6-sol \
+            claude-opus-5
 
       - name: Run hermeticity control
         id: herm

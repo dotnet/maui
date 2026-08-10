@@ -483,6 +483,42 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
   if inspect_git_refs
     validate_effective_git_destinations!(document, repo_root, trusted_control_ref)
   end
+  document
+end
+
+def explicit_models(document)
+  models = []
+  add_scope = lambda do |scope|
+    return unless scope.is_a?(Hash)
+
+    models << scope["model"] if scope.key?("model")
+    models << scope["judge_model"] if scope.key?("judge_model")
+  end
+  add_graders = lambda do |graders|
+    Array(graders).each do |grader|
+      next unless grader.is_a?(Hash)
+
+      config = grader["config"]
+      next unless config.is_a?(Hash)
+
+      if grader["type"] == "prompt"
+        models << config["model"] if config.key?("model")
+      elsif grader["type"] == "panel"
+        Array(config["models"]).each do |entry|
+          models << (entry.is_a?(Hash) ? entry["model"] : entry)
+        end
+      end
+    end
+  end
+
+  add_scope.call(document["config"])
+  add_scope.call(document["defaults"])
+  add_graders.call(document["graders"])
+  Array(document["stimuli"]).each do |stimulus|
+    add_scope.call(stimulus)
+    add_graders.call(stimulus["graders"]) if stimulus.is_a?(Hash)
+  end
+  models.compact
 end
 
 def fixture_files(fixture)
@@ -594,6 +630,7 @@ end
 
 def main(argv = ARGV)
   allow_missing_trusted_control_ref = argv.delete("--allow-missing-trusted-control-ref")
+  list_models = argv.delete("--list-models")
   repo_root = File.realpath(File.expand_path(argv.fetch(0)))
   if argv.fetch(1) == "--validate-mandatory-layout"
     validate_mandatory_layout!(repo_root)
@@ -624,12 +661,12 @@ def main(argv = ARGV)
 
   spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
   fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
-  spec_paths.each do |spec_path|
+  spec_documents = spec_paths.to_h do |spec_path|
     relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
     validate_no_checkout_symlinks!(relative_spec_path, repo_root, "spec path")
     real_spec_path = File.realpath(spec_path)
     fail!("spec path escapes #{tests_path}: #{spec_path}") unless inside?(real_spec_path, tests_path)
-    validate_spec!(
+    document = validate_spec!(
       real_spec_path,
       relative_spec_path,
       skill_root,
@@ -637,6 +674,7 @@ def main(argv = ARGV)
       inspect_git_refs: !validate_only,
       trusted_control_ref: trusted_control_ref
     )
+    [spec_path, document]
   end
   mandatory_specs = MANDATORY_SPEC_PATHS.select do |relative_path|
     File.dirname(relative_path) == requested_tests_relative
@@ -645,6 +683,15 @@ def main(argv = ARGV)
     mandatory_path = File.join(repo_root, relative_path)
     fail!("missing mandatory Vally spec #{relative_path}") unless File.file?(mandatory_path)
     validate_no_checkout_symlinks!(relative_path, repo_root, "mandatory spec")
+  end
+  if list_models
+    models = spec_documents.values.flat_map { |document| explicit_models(document) }
+    fail!("no explicit models found under #{tests_path}") if models.empty?
+    models.each do |model|
+      fail!("invalid explicit model under #{tests_path}: #{model.inspect}") unless model.is_a?(String) && model.match?(/\A[A-Za-z0-9._-]+\z/) && model != "auto"
+    end
+    models.uniq.sort.each { |model| puts model }
+    return
   end
 
   skill_fixtures = FIXTURES[File.basename(skill_root)]

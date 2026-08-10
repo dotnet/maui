@@ -12,6 +12,7 @@ PREPARER = File.realpath(ARGV.shift || File.join(__dir__, "PrepareVallyEvaluatio
 RESTORE_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 VERIFICATION_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 SETUP_RUNTIME = ARGV.empty? ? nil : File.realpath(ARGV.shift)
+TOKEN_SELECTOR = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 require PREPARER
 
 class TestPrepareVallyEvaluation < Minitest::Test
@@ -612,6 +613,67 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "TRUSTED_BASE_SHA or TRUSTED_SHA is required to validate repository controls"
   end
 
+  def test_lists_all_explicit_executor_and_judge_models
+    write_spec(
+      "config" => {
+        "model" => "legacy-executor",
+        "judge_model" => "legacy-judge"
+      },
+      "defaults" => {
+        "model" => "gpt-5.6-sol",
+        "judge_model" => "claude-opus-5"
+      },
+      "graders" => [
+        {
+          "type" => "prompt",
+          "config" => { "model" => "parent-prompt-judge" }
+        },
+        {
+          "type" => "panel",
+          "config" => {
+            "models" => [
+              "panel-judge-a",
+              { "model" => "panel-judge-b", "weight" => 2 }
+            ]
+          }
+        }
+      ],
+      "stimuli" => [
+        {
+          "name" => "override",
+          "model" => "gemini-3.6-flash",
+          "prompt" => "test",
+          "graders" => [
+            {
+              "type" => "prompt",
+              "config" => { "model" => "stimulus-prompt-judge" }
+            }
+          ]
+        }
+      ]
+    )
+    initialize_git_repo
+    commit_all("candidate")
+
+    stdout, stderr, status = run_validator(list_models: true)
+
+    assert status.success?, stderr
+    assert_equal(
+      %w[
+        claude-opus-5
+        gemini-3.6-flash
+        gpt-5.6-sol
+        legacy-executor
+        legacy-judge
+        panel-judge-a
+        panel-judge-b
+        parent-prompt-judge
+        stimulus-prompt-judge
+      ],
+      stdout.lines(chomp: true)
+    )
+  end
+
   def test_rejects_candidate_repository_control_directory_symlink
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -972,6 +1034,117 @@ class TestPrepareVallyEvaluation < Minitest::Test
     refute_includes content, '"$trusted_copilot_home/hooks"'
   end
 
+  def test_token_selector_skips_pat_with_an_invalid_model_probe_response
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    Dir.mktmpdir("select-vally-token-") do |root|
+      fake_bin = File.join(root, "bin")
+      FileUtils.mkdir_p(fake_bin)
+      write_executable(
+        File.join(fake_bin, "curl"),
+        <<~'SH'
+          #!/usr/bin/env bash
+          header=$(cat)
+          name="Author"
+          name+="ization"
+          case "$header" in
+            "$name: Bearer partial-token"|"$name: Bearer complete-token")
+              printf 200
+              ;;
+            *)
+              printf 401
+              ;;
+          esac
+        SH
+      )
+      write_executable(
+        File.join(fake_bin, "timeout"),
+        <<~'SH'
+          #!/usr/bin/env bash
+          shift
+          exec "$@"
+        SH
+      )
+      runner = File.join(root, "runner")
+      write_executable(
+        runner,
+        <<~'SH'
+          #!/usr/bin/env bash
+          model=""
+          while [ "$#" -gt 0 ]; do
+            if [ "$1" = "--model" ]; then
+              model=$2
+              break
+            fi
+            shift
+          done
+          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "claude-opus-5" ]; then
+            printf WRONG_MODEL
+            exit 0
+          fi
+          printf MODEL_OK
+        SH
+      )
+      wrapper = File.join(root, "wrapper")
+      runtime = File.join(root, "runtime")
+      write_executable(wrapper, "#!/usr/bin/env bash\nexit 0\n")
+      write_executable(runtime, "#!/usr/bin/env bash\nexit 0\n")
+      output = File.join(root, "output")
+      env = {
+        "PATH" => "#{fake_bin}:#{ENV.fetch("PATH")}",
+        "COPILOT_PAT_0" => "partial-token",
+        "COPILOT_PAT_1" => "complete-token",
+        "TOKEN_START_INDEX" => "0"
+      }
+
+      _stdout, stderr, status = Open3.capture3(
+        env,
+        "bash",
+        TOKEN_SELECTOR,
+        output,
+        runner,
+        wrapper,
+        runtime,
+        root,
+        File.join(root, "probe"),
+        "gpt-5.6-sol",
+        "claude-opus-5"
+      )
+
+      assert status.success?, stderr
+      assert_equal "token=complete-token\n", File.read(output)
+      refute_includes stderr, "partial-token"
+      refute_includes stderr, "complete-token"
+    end
+  end
+
+  def test_token_selector_rejects_unsafe_model_name
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    Dir.mktmpdir("select-vally-token-") do |root|
+      executable = File.join(root, "executable")
+      write_executable(executable, "#!/usr/bin/env bash\nexit 0\n")
+      output = File.join(root, "output")
+
+      _stdout, stderr, status = Open3.capture3(
+        { "COPILOT_PAT_0" => "token" },
+        "bash",
+        TOKEN_SELECTOR,
+        output,
+        executable,
+        executable,
+        executable,
+        root,
+        File.join(root, "probe"),
+        "gpt-5.6-sol;echo-unsafe"
+      )
+
+      refute status.success?
+      assert_includes stderr, "Invalid explicit model"
+      refute File.exist?(output)
+    end
+  end
+
   private
 
   def initialize_git_repo
@@ -982,6 +1155,11 @@ class TestPrepareVallyEvaluation < Minitest::Test
     full_path = File.join(@repo_root, path)
     FileUtils.mkdir_p(File.dirname(full_path))
     File.write(full_path, content)
+  end
+
+  def write_executable(path, content)
+    File.write(path, content)
+    FileUtils.chmod(0o700, path)
   end
 
   def commit_all(message)
@@ -1054,7 +1232,8 @@ class TestPrepareVallyEvaluation < Minitest::Test
     tests_path = @tests_path,
     env: {},
     validate_only: true,
-    allow_missing_trusted_control_ref: true
+    allow_missing_trusted_control_ref: true,
+    list_models: false
   )
     args = [
       env,
@@ -1065,6 +1244,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     ]
     args << "--validate-only" if validate_only
     args << "--allow-missing-trusted-control-ref" if allow_missing_trusted_control_ref
+    args << "--list-models" if list_models
     Open3.capture3(*args)
   end
 end
