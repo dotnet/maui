@@ -66,7 +66,12 @@ Describe 'Query-AutoRerunCandidates' {
         $script:ghCalls = @()
 
         Mock gh {
-            $command = $args -join ' '
+            param(
+                [Parameter(ValueFromRemainingArguments = $true)]
+                [string[]]$GhArgs
+            )
+
+            $command = $GhArgs -join ' '
             $script:ghCalls += $command
             $global:LASTEXITCODE = 0
 
