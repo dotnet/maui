@@ -499,7 +499,9 @@ class TestPrepareVallyEvaluation < Minitest::Test
       [".github/copilot/settings.local.json", "{\"disableAllHooks\":false}\n"],
       [".claude/settings.json", "{\"hooks\":{\"preToolUse\":[]}}\n"],
       [".claude/settings.local.json", "{\"hooks\":{\"preToolUse\":[]}}\n"],
-      [".github/hooks/pre-tool.json", "{\"version\":1,\"hooks\":{}}\n"]
+      [".github/hooks/pre-tool.json", "{\"version\":1,\"hooks\":{}}\n"],
+      [".mcp.json", "{\"mcpServers\":{\"unsafe\":{\"command\":\"sh\"}}}\n"],
+      [".github/mcp.json", "{\"mcpServers\":{\"unsafe\":{\"command\":\"sh\"}}}\n"]
     ].each do |path, content|
       write_repo_file(path, content)
       git("add", "-f", path)
@@ -521,9 +523,9 @@ class TestPrepareVallyEvaluation < Minitest::Test
     initialize_git_repo
     write_repo_file(".github/copilot/settings.json", "{}\n")
     trusted = commit_all("trusted")
-    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":false}\n")
+    write_repo_file(".mcp.json", "{\"mcpServers\":{\"unsafe\":{\"command\":\"sh\"}}}\n")
     untrusted_fixture = commit_all("untrusted fixture")
-    write_repo_file(".github/copilot/settings.json", "{}\n")
+    FileUtils.rm(File.join(@repo_root, ".mcp.json"))
     write_spec(
       "stimuli" => [
         {
@@ -547,6 +549,17 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s)"
+  end
+
+  def test_requires_trusted_repository_control_ref
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    commit_all("candidate")
+
+    _stdout, stderr, status = run_validator(allow_missing_trusted_control_ref: false)
+
+    refute status.success?
+    assert_includes stderr, "TRUSTED_BASE_SHA or TRUSTED_SHA is required to validate repository controls"
   end
 
   def test_rejects_candidate_repository_control_directory_symlink
@@ -891,6 +904,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, '"$trusted_copilot_home/config.json"'
     assert_includes content, '"$trusted_copilot_home/settings.json"'
     assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
+    refute_includes content, "\n\t--experimental \\\n"
   end
 
   def test_runtime_setup_limits_writable_copilot_state
@@ -900,7 +914,11 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes content, 'sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700'
     assert_includes content, '"$trusted_copilot_home/logs"'
     assert_includes content, '"$trusted_copilot_home/session-state"'
-    refute_includes content, '"$trusted_copilot_home/installed-plugins"'
+    assert_includes content, '"$trusted_copilot_home/session-store.db"'
+    assert_includes content, '"$trusted_copilot_home/session-store.db-shm"'
+    assert_includes content, '"$trusted_copilot_home/session-store.db-wal"'
+    assert_includes content, 'sudo -n install -d -o root -g root -m 555'
+    assert_includes content, '"$trusted_copilot_home/installed-plugins"'
     refute_includes content, '"$trusted_copilot_home/hooks"'
   end
 
@@ -982,7 +1000,12 @@ class TestPrepareVallyEvaluation < Minitest::Test
     File.write(File.join(@tests_path, name), "fixture")
   end
 
-  def run_validator(tests_path = @tests_path, env: {}, validate_only: true)
+  def run_validator(
+    tests_path = @tests_path,
+    env: {},
+    validate_only: true,
+    allow_missing_trusted_control_ref: true
+  )
     args = [
       env,
       "ruby",
@@ -991,6 +1014,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
       Pathname.new(tests_path).relative_path_from(Pathname.new(@repo_root)).to_s
     ]
     args << "--validate-only" if validate_only
+    args << "--allow-missing-trusted-control-ref" if allow_missing_trusted_control_ref
     Open3.capture3(*args)
   end
 end

@@ -19,7 +19,9 @@ APPROVED_FILE_DESTINATION_PREFIXES = [
   [".github", "pr-review"]
 ].freeze
 REPOSITORY_CONTROL_PATHS = %w[
+  .mcp.json
   .github/hooks
+  .github/mcp.json
   .github/copilot/settings.json
   .github/copilot/settings.local.json
   .claude/settings.json
@@ -350,10 +352,14 @@ def validate_repository_controls!(repo_root, ref, trusted_ref, location)
   fail!("#{location} contains untrusted repository control file(s): #{unsafe_paths.join(', ')}")
 end
 
-def trusted_repository_control_ref(repo_root, env = ENV)
+def trusted_repository_control_ref(repo_root, env = ENV, allow_missing: false)
   ref = env["TRUSTED_BASE_SHA"].to_s
   ref = env["TRUSTED_SHA"].to_s if ref.empty?
-  return nil if ref.empty?
+  if ref.empty?
+    return nil if allow_missing
+
+    fail!("TRUSTED_BASE_SHA or TRUSTED_SHA is required to validate repository controls")
+  end
 
   fail!("trusted repository control ref must be a full commit SHA") unless ref.match?(/\A[0-9a-f]{40}\z/)
   resolved = run_git(repo_root, "rev-parse", "--verify", "#{ref}^{commit}")
@@ -586,6 +592,7 @@ def patch_fixture_ref!(spec_path, fixture, fixture_head)
 end
 
 def main(argv = ARGV)
+  allow_missing_trusted_control_ref = argv.delete("--allow-missing-trusted-control-ref")
   repo_root = File.realpath(File.expand_path(argv.fetch(0)))
   if argv.fetch(1) == "--validate-mandatory-layout"
     validate_mandatory_layout!(repo_root)
@@ -608,7 +615,10 @@ def main(argv = ARGV)
   fail!("tests path escapes .github/skills") unless inside?(tests_path, skills_root)
   skill_name = tests_match[1]
   skill_root = File.realpath(File.join(skills_root, skill_name))
-  trusted_control_ref = trusted_repository_control_ref(repo_root)
+  trusted_control_ref = trusted_repository_control_ref(
+    repo_root,
+    allow_missing: allow_missing_trusted_control_ref
+  )
   validate_repository_controls!(repo_root, "HEAD", trusted_control_ref, "candidate checkout")
 
   spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort

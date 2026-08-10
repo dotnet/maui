@@ -54,7 +54,6 @@ set -euo pipefail
 export COPILOT_HOME="$TRUSTED_COPILOT_HOME"
 export EVALUATE_USE_HOST_COPILOT_HOME=1
 exec "$TRUSTED_COPILOT_CLI_PATH" "$@" \
-	--experimental \
 	--sandbox \
 	--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN
 EOF
@@ -76,9 +75,12 @@ RUNTIME_ARGUMENT_PROBE="$probe_output" \
 	"$copilot_wrapper" --headless --stdio
 grep -Fqx -- "--headless" "$probe_output"
 grep -Fqx -- "--stdio" "$probe_output"
-grep -Fqx -- "--experimental" "$probe_output"
 grep -Fqx -- "--sandbox" "$probe_output"
 grep -Fqx -- "--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN" "$probe_output"
+if grep -Fqx -- "--experimental" "$probe_output"; then
+	echo "Copilot wrapper must use trusted settings instead of rewriting --experimental" >&2
+	exit 1
+fi
 
 # Vally 0.12 normally creates an empty per-run Copilot home and passes it as the
 # session configDirectory, which takes precedence over COPILOT_HOME. Confirm the
@@ -199,9 +201,16 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
 		"$trusted_copilot_home/logs" \
 		"$trusted_copilot_home/session-state"
+	sudo -n install -d -o root -g root -m 555 \
+		"$trusted_copilot_home/installed-plugins"
+	sudo -n install -o "$eval_user" -g "$eval_user" -m 600 /dev/null \
+		"$trusted_copilot_home/session-store.db" \
+		"$trusted_copilot_home/session-store.db-shm" \
+		"$trusted_copilot_home/session-store.db-wal"
 	cat <<EOF | sudo -n tee "$trusted_copilot_home/settings.json" >/dev/null
 {
   "disableAllHooks": true,
+  "experimental": true,
   "sandbox": {
     "enabled": true,
     "allowBypass": false,
@@ -223,12 +232,19 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
   }
 }
 EOF
-	printf '{}\n' | sudo -n tee "$trusted_copilot_home/config.json" >/dev/null
+	cat <<'EOF' | sudo -n tee "$trusted_copilot_home/config.json" >/dev/null
+// User settings belong in settings.json.
+// This file is managed automatically.
+{
+  "firstLaunchAt": "2000-01-01T00:00:00.000Z"
+}
+EOF
 	sudo -n chmod 444 "$trusted_copilot_home/settings.json"
 	sudo -n chmod 444 "$trusted_copilot_home/config.json"
 	for protected_path in \
 		"$trusted_copilot_home" \
 		"$trusted_copilot_home/config.json" \
+		"$trusted_copilot_home/installed-plugins" \
 		"$trusted_copilot_home/settings.json"; do
 		if sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
 			echo "Isolated Vally user can modify protected Copilot path $protected_path" >&2
@@ -237,7 +253,10 @@ EOF
 	done
 	for writable_path in \
 		"$trusted_copilot_home/logs" \
-		"$trusted_copilot_home/session-state"; do
+		"$trusted_copilot_home/session-state" \
+		"$trusted_copilot_home/session-store.db" \
+		"$trusted_copilot_home/session-store.db-shm" \
+		"$trusted_copilot_home/session-store.db-wal"; do
 		if ! sudo -n -u "$eval_user" /usr/bin/test -w "$writable_path"; then
 			echo "Isolated Vally user cannot write Copilot runtime state $writable_path" >&2
 			exit 1
@@ -324,6 +343,7 @@ else
 	cat > "$trusted_copilot_home/settings.json" <<EOF
 {
   "disableAllHooks": true,
+  "experimental": true,
   "sandbox": {
     "enabled": true,
     "allowBypass": false,
@@ -345,6 +365,21 @@ else
   }
 }
 EOF
+	cat > "$trusted_copilot_home/config.json" <<'EOF'
+// User settings belong in settings.json.
+// This file is managed automatically.
+{
+  "firstLaunchAt": "2000-01-01T00:00:00.000Z"
+}
+EOF
+	mkdir -p \
+		"$trusted_copilot_home/installed-plugins" \
+		"$trusted_copilot_home/logs" \
+		"$trusted_copilot_home/session-state"
+	touch \
+		"$trusted_copilot_home/session-store.db" \
+		"$trusted_copilot_home/session-store.db-shm" \
+		"$trusted_copilot_home/session-store.db-wal"
 	cat > "$vally_runner" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -364,6 +399,7 @@ const installRoot = process.argv[3];
 const settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
 const sandbox = settings.sandbox;
 if (settings.disableAllHooks !== true ||
+    settings.experimental !== true ||
     !sandbox?.enabled ||
     sandbox.allowBypass !== false ||
     sandbox.gitAuth !== false ||
