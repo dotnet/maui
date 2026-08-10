@@ -168,11 +168,14 @@ namespace Microsoft.Maui.Maps.Platform
 
 		internal void AddElements(IList elements)
 		{
-			_trackedMapElements = new List<IMapElement>();
+			_trackedMapElements ??= new List<IMapElement>();
 
 			foreach (IMapElement element in elements)
 			{
-				_trackedMapElements.Add(element);
+				if (!_trackedMapElements.Contains(element))
+				{
+					_trackedMapElements.Add(element);
+				}
 
 				IMKOverlay? overlay = null;
 				switch (element)
@@ -208,6 +211,9 @@ namespace Microsoft.Maui.Maps.Platform
 			{
 				if (element.MapElementId is IMKOverlay overlay)
 					RemoveOverlay(overlay);
+
+				_trackedMapElements?.Remove(element);
+				element.MapElementId = null;
 			}
 		}
 
