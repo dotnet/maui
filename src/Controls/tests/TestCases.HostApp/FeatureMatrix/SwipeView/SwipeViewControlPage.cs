@@ -61,7 +61,7 @@ public class SwipeViewControlMainPage : ContentPage
 
 			new BoxView
 			{
-				HeightRequest = 100,
+				HeightRequest = 65,
 				Color = Colors.Transparent
 			},
 

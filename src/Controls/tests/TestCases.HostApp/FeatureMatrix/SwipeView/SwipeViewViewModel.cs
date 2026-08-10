@@ -12,7 +12,7 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 	private Color _backgroundColor = Color.FromArgb("#F0F0F0");
 	private Color _swipeItemsBackgroundColor = Color.FromArgb("#6A5ACD");
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
-	private double _threshold = 100;
+	private double _threshold = 0;
 	private bool _hasShadow = false;
 	private Shadow _swipeViewShadow = null;
 	private SwipeMode _swipeMode = SwipeMode.Reveal;
@@ -272,7 +272,7 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 		BackgroundColor = Color.FromArgb("#F0F0F0");
 		SwipeItemsBackgroundColor = Color.FromArgb("#6A5ACD");
 		FlowDirection = FlowDirection.LeftToRight;
-		Threshold = 100;
+		Threshold = 0;
 		HasShadow = false;
 		SwipeMode = SwipeMode.Reveal;
 		SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.Auto;
