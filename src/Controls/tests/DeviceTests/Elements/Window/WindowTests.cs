@@ -202,7 +202,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(oldRootView.CurrentView);
 				Assert.Null(oldRootView.MainView);
+				Assert.NotNull(rootManager.RootView);
 				Assert.NotSame(oldRootView, rootManager.RootView);
+				AssertPageAttachedToRoot(replacementPage, rootManager);
 			});
 		}
 
@@ -227,10 +229,13 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Content = new Label { Text = "Replacement page" }
 				};
+
+				// This ordering reproduced the missing-container crash on both Android
+				// Mono and CoreCLR before NavigationRootManager drained the transaction.
 				window.Page = replacementPage;
 
 				await OnLoadedAsync(replacementPage);
-				Assert.Same(replacementPage, window.Page);
+				AssertPageAttachedToRoot(replacementPage, handler.MauiContext.GetNavigationRootManager());
 			});
 		}
 
@@ -252,10 +257,10 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
 				await OnLoadedAsync(replacementPage);
-				Assert.Same(replacementPage, window.Page);
+				AssertPageAttachedToRoot(replacementPage, handler.MauiContext.GetNavigationRootManager());
 			});
 
-			void OnShellPageLoaded(object? sender, EventArgs e)
+			void OnShellPageLoaded(object sender, EventArgs e)
 			{
 				shellPage.Loaded -= OnShellPageLoaded;
 				window.Page = replacementPage;
@@ -288,14 +293,144 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
 				await OnLoadedAsync(replacementPage);
-				Assert.Same(replacementPage, window.Page);
+				AssertPageAttachedToRoot(replacementPage, handler.MauiContext.GetNavigationRootManager());
 			});
 
-			void OnDetailPageLoaded(object? sender, EventArgs e)
+			void OnDetailPageLoaded(object sender, EventArgs e)
 			{
 				detailPage.Loaded -= OnDetailPageLoaded;
 				window.Page = replacementPage;
 			}
+		}
+
+		[Fact(DisplayName = "Replacing Content Root With Shell In Same Turn Does Not Crash")]
+		public async Task ReplacingContentRootWithShellInSameTurnDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var window = new Window(new ContentPage());
+			var shellPage = new ContentPage { Content = new Label { Text = "Shell page" } };
+			var shell = new Shell { CurrentItem = shellPage };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				window.Page = new ContentPage { Content = new Label { Text = "Pending page" } };
+				window.Page = shell;
+
+				await OnLoadedAsync(shellPage);
+				AssertPageAttachedToRoot(shellPage, handler.MauiContext.GetNavigationRootManager());
+			});
+		}
+
+		[Fact(DisplayName = "Reentrant Root Replacement Does Not Clobber New Root")]
+		public async Task ReentrantRootReplacementDoesNotClobberNewRoot()
+		{
+			SetupBuilder();
+
+			var window = new Window(CreateFlyoutRoot());
+			var finalPage = new ContentPage
+			{
+				Content = new Label { Text = "Final page" }
+			};
+			var replacingRoot = false;
+			var reenteredDuringReplacement = false;
+			WindowHandlerStub windowHandler = null;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				windowHandler = handler;
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var oldRootView = Assert.IsType<ContainerView>(rootManager.RootView);
+				var fragmentHost = new global::Android.Widget.FrameLayout(handler.MauiContext.Context)
+				{
+					Id = global::Android.Views.View.GenerateViewId()
+				};
+				oldRootView.AddView(fragmentHost);
+
+				var fragmentManager = handler.MauiContext.Context.GetFragmentManager();
+				var fragment = new ReentrantFragment(OnFragmentViewCreated);
+				fragmentManager
+					.BeginTransaction()
+					.Add(fragmentHost.Id, fragment)
+					.Commit();
+
+				try
+				{
+					replacingRoot = true;
+					window.Page = new ContentPage { Content = new Label { Text = "Intermediate page" } };
+					replacingRoot = false;
+
+					await OnLoadedAsync(finalPage);
+					Assert.True(reenteredDuringReplacement);
+					Assert.Same(finalPage, window.Page);
+					Assert.Null(oldRootView.CurrentView);
+					Assert.Null(oldRootView.MainView);
+					Assert.Null(rootManager.DrawerLayout);
+					Assert.Null(rootManager.ToolbarElement);
+					AssertPageAttachedToRoot(finalPage, rootManager);
+				}
+				finally
+				{
+					fragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.CommitAllowingStateLoss();
+					fragmentManager.ExecutePendingTransactions();
+					fragmentHost.RemoveFromParent();
+				}
+			});
+
+			void OnFragmentViewCreated()
+			{
+				reenteredDuringReplacement |= replacingRoot;
+				window.Page = finalPage;
+
+				// WindowHandlerStub is not assigned to window.Handler, so force the
+				// synchronous mapper re-entry that a connected handler performs.
+				windowHandler.UpdateValue(nameof(IWindow.Content));
+			}
+		}
+
+		public sealed class ReentrantFragment : AndroidX.Fragment.App.Fragment
+		{
+			readonly Action _onCreateView;
+
+			public ReentrantFragment()
+			{
+				_onCreateView = () => { };
+			}
+
+			public ReentrantFragment(Action onCreateView)
+			{
+				_onCreateView = onCreateView;
+			}
+
+			public override global::Android.Views.View OnCreateView(
+				global::Android.Views.LayoutInflater inflater,
+				global::Android.Views.ViewGroup container,
+				global::Android.OS.Bundle savedInstanceState)
+			{
+				_onCreateView();
+				return new global::Android.Views.View(inflater.Context);
+			}
+		}
+
+		static void AssertPageAttachedToRoot(Page page, NavigationRootManager rootManager)
+		{
+			var rootView = rootManager.RootView;
+			var platformView = page.ToPlatform();
+
+			Assert.NotNull(rootView);
+			Assert.NotNull(platformView);
+			Assert.True(platformView.IsAttachedToWindow);
+
+			for (global::Android.Views.View current = platformView; current is not null; current = current.Parent as global::Android.Views.View)
+			{
+				if (ReferenceEquals(current, rootView))
+					return;
+			}
+
+			Assert.Fail("The page's platform view is not hosted by the navigation root.");
 		}
 
 		static FlyoutPage CreateFlyoutRoot()

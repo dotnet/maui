@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Platform
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
 		CoordinatorLayout? _managedCoordinatorLayout;
+		int _navigationVersion;
+		int _buildingNavigationVersion;
+		bool _clearingPlatformParts;
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -46,47 +49,77 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetToolbarElement(IToolbarElement toolbarElement)
 		{
-			_toolbarElement = toolbarElement;
+			if (_buildingNavigationVersion == 0 || _buildingNavigationVersion == _navigationVersion)
+				_toolbarElement = toolbarElement;
 		}
 
 		internal void Connect(IView? view, IMauiContext? mauiContext = null)
 		{
+			var navigationVersion = ++_navigationVersion;
 			ClearPlatformParts();
+			if (navigationVersion != _navigationVersion)
+				return;
 
 			mauiContext = mauiContext ?? _mauiContext;
 			CoordinatorLayout? navigationLayout = null;
+			DrawerLayout? drawerLayout = null;
+			AView? rootView = null;
+			_toolbarElement = null;
 
-			if (view is IFlyoutView)
+			var previousBuildingNavigationVersion = _buildingNavigationVersion;
+			_buildingNavigationVersion = navigationVersion;
+			try
 			{
-				var containerView = view.ToContainerView(mauiContext);
+				if (view is IFlyoutView)
+				{
+					var containerView = view.ToContainerView(mauiContext);
 
-				if (containerView is DrawerLayout dl)
-				{
-					_rootView = dl;
-					DrawerLayout = dl;
+					if (containerView is DrawerLayout dl)
+					{
+						rootView = dl;
+						drawerLayout = dl;
+					}
+					else if (containerView is ContainerView cv && cv.MainView is DrawerLayout dlc)
+					{
+						rootView = cv;
+						drawerLayout = dlc;
+					}
 				}
-				else if (containerView is ContainerView cv && cv.MainView is DrawerLayout dlc)
+				else
 				{
-					_rootView = cv;
-					DrawerLayout = dlc;
+					navigationLayout =
+					   LayoutInflater
+						   .Inflate(Resource.Layout.navigationlayout, null)
+						   .JavaCast<CoordinatorLayout>();
+
+					// Set up the CoordinatorLayout with a local inset listener
+					if (navigationLayout is not null)
+					{
+						MauiWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
+					}
+
+					rootView = navigationLayout;
 				}
 			}
-			else
+			finally
 			{
-				navigationLayout =
-				   LayoutInflater
-					   .Inflate(Resource.Layout.navigationlayout, null)
-					   .JavaCast<CoordinatorLayout>();
+				_buildingNavigationVersion = previousBuildingNavigationVersion;
+			}
 
-				// Set up the CoordinatorLayout with a local inset listener
+			if (navigationVersion != _navigationVersion)
+			{
 				if (navigationLayout is not null)
-				{
-					_managedCoordinatorLayout = navigationLayout;
-					MauiWindowInsetListener.SetupViewWithLocalListener(navigationLayout);
-				}
+					MauiWindowInsetListener.RemoveViewWithLocalListener(navigationLayout);
 
-				_rootView = navigationLayout;
+				if (rootView is ContainerView staleContainerView)
+					staleContainerView.CurrentView = null;
+
+				return;
 			}
+
+			_rootView = rootView;
+			DrawerLayout = drawerLayout;
+			_managedCoordinatorLayout = navigationLayout;
 
 			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
@@ -112,7 +145,10 @@ namespace Microsoft.Maui.Platform
 			//
 			// if it's not a drawer layout then we just use our default CoordinatorLayout inside navigationlayout
 			// and place the content there
-			if (DrawerLayout == null)
+			if (navigationVersion != _navigationVersion)
+				return;
+
+			if (drawerLayout == null)
 			{
 				SetContentView(view);
 			}
@@ -139,6 +175,8 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect()
 		{
+			var navigationVersion = ++_navigationVersion;
+
 			// Clean up the coordinator layout and local listener first
 			if (_managedCoordinatorLayout is not null)
 			{
@@ -146,20 +184,39 @@ namespace Microsoft.Maui.Platform
 			}
 
 			ClearPlatformParts();
+			if (navigationVersion != _navigationVersion)
+				return;
+
 			SetContentView(null);
 		}
 
 		void ClearPlatformParts()
 		{
-			_pendingFragment?.Dispose();
-			_pendingFragment = null;
-			if (_rootView is ContainerView containerView && containerView.IsAlive())
+			if (_clearingPlatformParts)
+				return;
+
+			var outgoingRootView = _rootView;
+			_clearingPlatformParts = true;
+			try
 			{
-				// Shell and FlyoutPage can queue work on either manager. Drain it while the
-				// outgoing root still contains every fragment transaction target.
-				ExecutePendingFragmentTransactions();
-				containerView.CurrentView = null;
+				_pendingFragment?.Dispose();
+				_pendingFragment = null;
+				if (outgoingRootView is ContainerView containerView && containerView.IsAlive())
+				{
+					// Shell and FlyoutPage can queue host FragmentManager work that targets
+					// this root. Lifecycle callbacks can re-enter Connect while it drains, so
+					// clear the captured root without clobbering any newer root they install.
+					ExecutePendingFragmentTransactions();
+					containerView.CurrentView = null;
+				}
 			}
+			finally
+			{
+				_clearingPlatformParts = false;
+			}
+
+			if (!ReferenceEquals(_rootView, outgoingRootView))
+				return;
 
 			DrawerLayout = null;
 			_rootView = null;
