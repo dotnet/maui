@@ -314,6 +314,255 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, y100Count);
 		}
 
+		[Fact]
+		public async Task DeferredElementScrollCompletesWhenTheHandlerGoesAway()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+
+			// No handler yet, so the request is held. An element target also cannot be resolved
+			// until layout has run, so it stays held even once a handler attaches.
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
+			Assert.False(task.IsCompleted);
+
+			scrollView.Handler = Substitute.For<IViewHandler>();
+			Assert.False(task.IsCompleted);
+
+			// The handler goes away before layout ever happens, so nothing will dispatch the
+			// request; the awaiting caller must still be released rather than hanging forever.
+			scrollView.Handler = null;
+
+			await task.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DeferredElementScrollDispatchesOnceContentIsArranged()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// No geometry yet, so the request must still be held
+			Assert.Empty(handler.ScrollToRequests);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			// The element target resolves against the arranged position, not the zeros it had
+			// when the request was queued
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(450, request.VerticalOffset);
+
+			// The replay must complete the task the original caller is still awaiting, not a
+			// fresh completion source
+			Assert.False(task.IsCompleted);
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DirectRequestSupersedesDeferredElementRequest()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			_ = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// A direct request while the element request is still held must win
+			var task = scrollView.ScrollToAsync(0, 100, false);
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(100, request.VerticalOffset);
+
+			// Layout completing later must not dispatch the stale element target on top of it
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			Assert.Single(handler.ScrollToRequests);
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DeferredElementScrollCompletesWhenContentArrangesToZero()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// Everything arranges to zero (a collapsed container). "Arranged to nothing" is a
+			// settled state: the request must dispatch and clamp instead of waiting for a
+			// content size that will never become non-zero.
+			item.Layout(new Graphics.Rect(0, 0, 0, 0));
+			layout.Layout(new Graphics.Rect(0, 0, 0, 0));
+			scrollView.Layout(new Graphics.Rect(0, 0, 0, 0));
+
+			Assert.Single(handler.ScrollToRequests);
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void ElementTargetsAccountForViewportAndContentCoordinateInsets()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			// Total obscured insets shrink the viewport; the content-coordinate part is padding
+			// the platform baked into the content, which element positions already include
+			var handler = new ViewportProviderHandlerStub
+			{
+				ViewportInsets = new Thickness(0, 70, 0, 50),
+				ContentCoordinateInsets = new Thickness(0, 10, 0, 10),
+			};
+			scrollView.Handler = handler;
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 300));
+
+			// Start aligns the element with the visible viewport top: the 10 of baked padding in
+			// its coordinates must be shifted back out
+			Assert.Equal(440, scrollView.GetScrollPositionForElement(item, ScrollToPosition.Start).Y);
+
+			// End: 450 - (300 - 70 - 50) + 50 = 320, shifted by the baked 10
+			Assert.Equal(310, scrollView.GetScrollPositionForElement(item, ScrollToPosition.End).Y);
+
+			// Center: 450 - 180 / 2 + 25 = 385, shifted by the baked 10
+			Assert.Equal(375, scrollView.GetScrollPositionForElement(item, ScrollToPosition.Center).Y);
+
+			// The element is below the visible window, so MakeVisible resolves to End
+			Assert.Equal(310, scrollView.GetScrollPositionForElement(item, ScrollToPosition.MakeVisible).Y);
+		}
+
+		[Fact]
+		public void ElementRequestWithHandlerAttachedWaitsForArrange()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var eventCount = 0;
+			((IScrollViewController)scrollView).ScrollToRequested += (_, _) => eventCount++;
+
+			// The handler exists but nothing is arranged yet (Width/Height are the -1
+			// never-arranged sentinels): resolving the element target now would compute
+			// against garbage geometry, so the request must wait for layout
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
+			Assert.Empty(handler.ScrollToRequests);
+			Assert.Equal(1, eventCount);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			// Dispatched once with a target computed from real geometry: 450 - 100/2 + 50/2.
+			// The public event must not be raised a second time on the replay — subscribers
+			// were already notified when the request was made.
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(425, request.VerticalOffset);
+			Assert.Equal(1, eventCount);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DeferredRequestReplaysEventForSubscribersAttachedWithTheHandler()
+		{
+			var scrollView = new ScrollView();
+			var task = scrollView.ScrollToAsync(10, 20, false);
+
+			// Compatibility renderers subscribe to ScrollToRequested when they attach —
+			// after the request above was parked — and perform the scroll from the event,
+			// so the replay must re-raise it for them
+			var eventCount = 0;
+			((IScrollViewController)scrollView).ScrollToRequested += (_, _) => eventCount++;
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			Assert.Equal(1, eventCount);
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(20, request.VerticalOffset);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void InsetRefreshUpdatesOffsetsWithoutRaisingScrolled()
+		{
+			var scrollView = new ScrollView();
+			var scrolledCount = 0;
+			scrollView.Scrolled += (_, _) => scrolledCount++;
+
+			// An inset-only change moves the derived offsets without any scroll: the values
+			// (and their bindings) must refresh, but no Scrolled event may be manufactured
+			((IScrollOffsetReceiver)scrollView).UpdateScrollOffsets(5, 40);
+
+			Assert.Equal(5, scrollView.ScrollX);
+			Assert.Equal(40, scrollView.ScrollY);
+			Assert.Equal(0, scrolledCount);
+
+			// An actual scroll notification still raises Scrolled
+			((IScrollView)scrollView).VerticalOffset = 60;
+
+			Assert.Equal(60, scrollView.ScrollY);
+			Assert.Equal(1, scrolledCount);
+		}
+
+		// IScrollViewportProvider is internal to Core, which NSubstitute cannot proxy, so the
+		// viewport contract is stubbed by hand here.
+		class ViewportProviderHandlerStub : IViewHandler, Microsoft.Maui.Handlers.IScrollViewportProvider
+		{
+			public System.Collections.Generic.List<ScrollToRequest> ScrollToRequests { get; } = new();
+
+			public Thickness ViewportInsets { get; set; }
+			public Thickness ContentCoordinateInsets { get; set; }
+			public void NotifyInsetsChanged() { }
+
+			public bool HasContainer { get; set; }
+			public object ContainerView => null;
+			public IView VirtualView { get; private set; }
+			IElement IElementHandler.VirtualView => VirtualView;
+			public object PlatformView => null;
+			public IMauiContext MauiContext => null;
+
+			public Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint) => Graphics.Size.Zero;
+			public void PlatformArrange(Graphics.Rect frame) { }
+			public void SetMauiContext(IMauiContext mauiContext) { }
+			public void SetVirtualView(IElement view) => VirtualView = (IView)view;
+			public void UpdateValue(string property) { }
+			public void DisconnectHandler() { }
+
+			public void Invoke(string command, object args = null)
+			{
+				if (command == nameof(IScrollView.RequestScrollTo) && args is ScrollToRequest request)
+					ScrollToRequests.Add(request);
+			}
+		}
+
 		void AssertInvalidated(IViewHandler handler)
 		{
 			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
