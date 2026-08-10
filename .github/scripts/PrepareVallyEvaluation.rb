@@ -344,8 +344,9 @@ def validate_repository_controls!(repo_root, ref, trusted_ref, location)
 
   validate_no_repository_control_symlinks!(repo_root, ref, location)
   trusted_entries = repository_control_entries(repo_root, trusted_ref)
-  unsafe_paths = repository_control_entries(repo_root, ref).filter_map do |path, metadata|
-    path unless trusted_entries[path] == metadata
+  candidate_entries = repository_control_entries(repo_root, ref)
+  unsafe_paths = (trusted_entries.keys | candidate_entries.keys).filter_map do |path|
+    path unless trusted_entries[path] == candidate_entries[path]
   end
   return if unsafe_paths.empty?
 

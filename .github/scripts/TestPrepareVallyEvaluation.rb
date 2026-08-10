@@ -518,6 +518,23 @@ class TestPrepareVallyEvaluation < Minitest::Test
     end
   end
 
+  def test_rejects_candidate_repository_controls_deleted_from_trusted_ref
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    trusted = commit_all("trusted")
+    FileUtils.rm(File.join(@repo_root, ".github", "copilot", "settings.json"))
+    commit_all("candidate deletes trusted control")
+
+    _stdout, stderr, status = run_validator(
+      env: { "TRUSTED_BASE_SHA" => trusted },
+      validate_only: false
+    )
+
+    refute status.success?
+    assert_includes stderr, "candidate checkout contains untrusted repository control file(s): .github/copilot/settings.json"
+  end
+
   def test_rejects_fixture_ref_with_untrusted_repository_controls
     write_spec("environment" => { "skills" => [".."] })
     initialize_git_repo
@@ -549,6 +566,39 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s)"
+  end
+
+  def test_rejects_fixture_ref_with_deleted_repository_controls
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    trusted = commit_all("trusted")
+    FileUtils.rm(File.join(@repo_root, ".github", "copilot", "settings.json"))
+    fixture = commit_all("fixture deletes trusted control")
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "untrusted-fixture",
+          "environment" => {
+            "git" => {
+              "type" => "worktree",
+              "source" => ".",
+              "ref" => fixture
+            }
+          }
+        }
+      ]
+    )
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    commit_all("candidate spec")
+
+    _stdout, stderr, status = run_validator(
+      env: { "TRUSTED_BASE_SHA" => trusted },
+      validate_only: false
+    )
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s): .github/copilot/settings.json"
   end
 
   def test_requires_trusted_repository_control_ref
