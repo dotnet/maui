@@ -390,19 +390,31 @@ A deterministic post-step inserts a bounded visual section into your one comment
 
 ## Pre-flight check
 
-Before starting, verify the skill file and context files exist:
+Before reading the skill or classifying failures, inspect the sealed directory.
+The context artifact is best-effort and may legitimately be absent; that is a
+handled failure-report path, never a reason to read a PR-controlled fallback.
 
 ```bash
-test -f '/opt/gh-aw-trusted/review-tests-${{ github.run_id }}-${{ github.event.issue.number || inputs.pr_number }}/SKILL.md'
-test -f '/opt/gh-aw-trusted/review-tests-${{ github.run_id }}-${{ github.event.issue.number || inputs.pr_number }}/maui-ci-facts.md'
-test -f '/opt/gh-aw-trusted/review-tests-${{ github.run_id }}-${{ github.event.issue.number || inputs.pr_number }}/context.json'
-test -f '/opt/gh-aw-trusted/review-tests-${{ github.run_id }}-${{ github.event.issue.number || inputs.pr_number }}/context.md'
+trusted='/opt/gh-aw-trusted/review-tests-${{ github.run_id }}-${{ github.event.issue.number || inputs.pr_number }}'
+for file in SKILL.md maui-ci-facts.md context.json context.md; do
+  if test -f "${trusted}/${file}"; then
+    echo "PRESENT:${file}"
+  else
+    echo "MISSING:${file}"
+  fi
+done
 ```
 
 Visual asset publication is optional. Its absence must not block the ordinary
 test-failure report or change the deterministic verdict ceiling.
 
-If required files are missing, post a short failure report with `add_comment` unless dry-run mode is active.
+- If `SKILL.md` or `maui-ci-facts.md` is missing, post a short trusted-input
+  setup failure with `add_comment` unless dry-run mode is active, then stop.
+- If `context.json` or `context.md` is missing, post the intended short
+  context-unavailable failure report with `add_comment` unless dry-run mode is
+  active, then stop.
+- Only when all four files are present may you read the context, invoke the
+  skill, and classify failures.
 
 ## Dry-run mode
 
