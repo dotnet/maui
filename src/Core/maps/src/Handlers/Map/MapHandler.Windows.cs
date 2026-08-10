@@ -128,11 +128,9 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_webViewReady = true;
 
-			// Reapply the current region after any WebView navigation, including a
-			// navigation triggered while the MapControl is being reparented.
-			var span = _pendingSpan ?? VirtualView?.VisibleRegion;
-			if (span != null)
+			if (_pendingSpan != null)
 			{
+				var span = _pendingSpan;
 				_pendingSpan = null;
 				_ = ExecuteJsAsync(string.Format(
 					CultureInfo.InvariantCulture,
