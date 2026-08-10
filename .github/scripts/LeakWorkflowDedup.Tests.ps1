@@ -99,6 +99,27 @@ Describe 'mechanism-aware final duplicate gate' {
         $result.UnapprovedApiMatches.number | Should -Be 101
     }
 
+    It 'ignores a same-API open PR targeting an unrelated release branch' {
+        $releaseOpen = New-LeakPr `
+            -Number 103 `
+            -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+            -Body "Fixes #20`nRefs: dotnet/maui#20" `
+            -Base 'release/10.0.1xx-sr9' `
+            -Merged $false
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'GradientBrush.GradientStops' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @() `
+            -OpenPullRequests @($releaseOpen) `
+            -ApprovedDifferentMechanismPullRequests @()
+
+        $result.Blocked | Should -BeFalse
+        $result.DirectMatches.Count | Should -Be 0
+        $result.ApiMatches.Count | Should -Be 0
+    }
+
     It 'always blocks a direct issue reference even when the PR was approved by API' {
         $direct = New-LeakPr `
             -Number 102 `
@@ -189,6 +210,10 @@ Describe 'workflow enforcement boundary' {
 
         $workflow | Should -Match '(?s)safe-outputs:.*steps:.*Assert-LeakFixSafeOutputGate\.ps1'
         $workflow | Should -Match 'dedup-state\.json'
+        ([regex]::Matches(
+            $workflow,
+            'select\(\.baseRefName == "main" or \.baseRefName == "inflight/current"\)'
+        )).Count | Should -BeGreaterOrEqual 3
     }
 
     Context 'safe-output gate script' {
@@ -288,6 +313,24 @@ Describe 'workflow enforcement boundary' {
                 )
             } | ConvertTo-Json -Depth 5 |
                 Set-Content -LiteralPath (Join-Path $script:stateDirectory 'dedup-state.json')
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'allows a release-only open PR even when it directly references the issue' {
+            $global:mockOpen = @(
+                New-LeakPr `
+                    -Number 502 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                    -Body "Fixes #20`nRefs: dotnet/maui#20" `
+                    -Base 'release/10.0.1xx-sr9' `
+                    -Merged $false
+            )
 
             {
                 & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `

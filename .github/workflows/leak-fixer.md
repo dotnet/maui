@@ -471,12 +471,13 @@ echo "merged canonical-API matches: $(wc -l < /tmp/gh-aw/agent/merged-api-fix-pr
 # (b) Open [leak-fix] PR already addressing THIS issue number?
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
   --search '"[leak-fix]" in:title' \
-  --json number,title,body \
+  --json number,title,body,baseRefName \
   > /tmp/gh-aw/agent/open-fix-prs-raw.json; then
   echo "ERROR: 'gh pr list --state open [leak-fix]' failed — aborting to avoid fail-open dedup that would re-file over an already-open fix." >&2
   exit 1
 fi
 jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
+    select(.baseRefName == "main" or .baseRefName == "inflight/current") |
     select(.title | startswith("[leak-fix] ")) |
     select((.body // "") |
       test("(^|\n)[ \t]*Fixes #"+$n+"\\b") or
@@ -494,12 +495,15 @@ jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
 if test -n "$API"; then
   if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
     --search '"[leak-fix]" in:title' \
-    --json number,title \
+    --json number,title,baseRefName \
     > /tmp/gh-aw/agent/same-api-prs-raw.json; then
     echo "ERROR: 'gh pr list --state open [leak-fix]' (same-API scan) failed — aborting to avoid fail-open dedup." >&2
     exit 1
   fi
-  jq -r '.[] | select(.title | startswith("[leak-fix] ")) | [.number, .title] | @tsv' \
+  jq -r '.[] |
+      select(.baseRefName == "main" or .baseRefName == "inflight/current") |
+      select(.title | startswith("[leak-fix] ")) |
+      [.number, .title] | @tsv' \
     /tmp/gh-aw/agent/same-api-prs-raw.json \
     | while IFS=$'\t' read -r PR TITLE; do
         PR_API=$(printf '%s\n' "$TITLE" \
@@ -581,7 +585,8 @@ cat /tmp/gh-aw/agent/dedup-state.next.json > /tmp/gh-aw/agent/dedup-state.json
   if the mechanism differs, this is a distinct leak — proceed with Steps 4–10 and cite the
   API-match PR in your own PR body so a human reviewer can double-check.
 - If an **open** fix PR already refs this issue (b) → `skipped: leak already being fixed` and
-  stop (or move to the next automatic candidate).
+  stop (or move to the next automatic candidate). Open PRs targeting unrelated release
+  branches are not authority for the `main` fix lane and do not block.
 - If an open fix PR already fixes the same rooting `Type.Member` with no direct issue
   reference (c) → apply the SAME retention-mechanism check as the merged-API case above before
   skipping; a same-API open PR that targets a different mechanism is not a duplicate.
@@ -807,7 +812,7 @@ jq -r '.[] | [.number, .title] | @tsv' \
 
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
   --search '"[leak-fix]" in:title' \
-  --json number,title,body \
+  --json number,title,body,baseRefName \
   > /tmp/gh-aw/agent/final-open-fix-prs-raw.json; then
   echo "ERROR: final re-check 'gh pr list --state open [leak-fix]' failed — aborting rather than risk a duplicate PR (fail-closed)." >&2
   exit 1
@@ -817,7 +822,9 @@ if test "$FINAL_OPEN_COUNT" -ge 1000; then
   echo "ERROR: final open [leak-fix] search reached the 1000-result ceiling — aborting because the de-dup set may be truncated." >&2
   exit 1
 fi
-jq '[.[] | select(.title | startswith("[leak-fix] "))]' \
+jq '[.[] |
+    select(.baseRefName == "main" or .baseRefName == "inflight/current") |
+    select(.title | startswith("[leak-fix] "))]' \
   /tmp/gh-aw/agent/final-open-fix-prs-raw.json \
   > /tmp/gh-aw/agent/final-open-fix-prs.json
 jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |

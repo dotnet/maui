@@ -115,7 +115,8 @@ function Get-LeakFixFinalDedupResult {
             [string]$_.baseRefName -in @('main', 'inflight/current')
         })
     $eligibleOpen = @($OpenPullRequests | Where-Object {
-            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal)
+            ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal) -and
+            [string]$_.baseRefName -in @('main', 'inflight/current')
         })
     $eligible = @($eligibleMerged + $eligibleOpen)
 
