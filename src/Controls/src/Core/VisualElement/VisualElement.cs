@@ -1194,7 +1194,7 @@ namespace Microsoft.Maui.Controls
 				// Use key-only propagation with an on-demand resolver to avoid resolving lazy resources (issue #35500).
 				OnResourcesChangedKeys(
 					value?.MergedResourcesKeys,
-					key => value != null && value.TryGetValue(key, out var resource) ? resource : null);
+					key => value is not null && value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
