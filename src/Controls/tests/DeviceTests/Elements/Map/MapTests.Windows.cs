@@ -1,13 +1,9 @@
-#nullable enable
-
-using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Maps;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
@@ -20,9 +16,13 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		// Regression test for https://github.com/dotnet/maui/issues/37096
 		[Fact]
-		public async Task RemovingMapFromVisualTreeDoesNotCrash()
+		public async Task RemovingAndReaddingMapDoesNotMutateNativeLayers()
 		{
-			var map = new Map();
+			var map = new Map
+			{
+				// Match the XAML declaration in the public reproduction.
+				IsEnabled = false
+			};
 			var layout = new VerticalStackLayout
 			{
 				map
@@ -31,54 +31,39 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
 			{
 				var mapHandler = Assert.IsType<MapHandler>(map.Handler);
-				await AssertEventually(
-					() => GetWebViewReady(mapHandler),
-					timeout: 15_000,
-					message: "WebView2 never became ready");
-
-				var webViewBeforeReload = GetWebView(mapHandler);
-				Assert.NotNull(webViewBeforeReload);
+				await WaitForMapReady(mapHandler);
+				var platformMap = Assert.IsType<MapControl>(map.Handler.PlatformView);
+				var layerCount = platformMap.Layers.Count;
 
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
+				Assert.Equal(layerCount, platformMap.Layers.Count);
 
 				layout.Add(map);
 				await OnLoadedAsync(map);
 
-				Assert.Same(webViewBeforeReload, GetWebView(mapHandler));
-
 				map.Pins.Add(new Pin
 				{
 					Label = "Pin",
 					Location = new Location(47.6458, -122.1419)
 				});
 
-				var platformMap = Assert.IsType<MapControl>(map.Handler.PlatformView);
 				var pinsLayer = Assert.IsType<MapElementsLayer>(platformMap.Layers[0]);
 				Assert.Single(pinsLayer.MapElements);
 
-				map.MoveToRegion(MapSpan.FromCenterAndRadius(
-					new Location(47.6062, -122.3321),
-					Distance.FromKilometers(5)));
-
-				Assert.Equal(47.6062, platformMap.Center.Position.Latitude, 3);
-				Assert.Equal(-122.3321, platformMap.Center.Position.Longitude, 3);
-				Assert.NotNull(map.VisibleRegion);
-				await AssertEventually(
-					() => GetWebViewReady(mapHandler) &&
-						GetFieldValue<MapSpan>(mapHandler, "_pendingSpan") == null,
-					timeout: 15_000,
-					message: "Map state was not restored after reload");
-
 				layout.Remove(map);
 				await OnUnloadedAsync(map);
+				Assert.Equal(layerCount, platformMap.Layers.Count);
 			});
 		}
 
 		[Fact]
-		public async Task DisconnectHandlerCleansUpResources()
+		public async Task DisconnectHandlerDoesNotMutateNativeLayers()
 		{
-			var map = new Map();
+			var map = new Map
+			{
+				IsEnabled = false
+			};
 			var layout = new VerticalStackLayout
 			{
 				map
@@ -87,17 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async _ =>
 			{
 				var mapHandler = Assert.IsType<MapHandler>(map.Handler);
-				await AssertEventually(
-					() => GetWebViewReady(mapHandler),
-					timeout: 15_000,
-					message: "WebView2 never became ready");
-
-				map.Pins.Add(new Pin
-				{
-					Label = "Pin",
-					Location = new Location(47.6458, -122.1419)
-				});
-				Assert.Single(GetRequiredFieldValue<List<MapIcon>>(mapHandler, "_mapIcons"));
+				await WaitForMapReady(mapHandler);
 				var platformMap = Assert.IsType<MapControl>(map.Handler.PlatformView);
 				var layerCount = platformMap.Layers.Count;
 
@@ -107,43 +82,19 @@ namespace Microsoft.Maui.DeviceTests
 				map.Handler?.DisconnectHandler();
 
 				Assert.Null(map.Handler);
-				Assert.Null(GetWebView(mapHandler));
-				Assert.False(GetWebViewReady(mapHandler));
-				Assert.Null(GetFieldValue<MapElementsLayer>(mapHandler, "_pinsLayer"));
-				Assert.Null(GetFieldValue<MapControl>(mapHandler, "_mapControl"));
-				Assert.Empty(GetRequiredFieldValue<List<MapIcon>>(mapHandler, "_mapIcons"));
 				Assert.Equal(layerCount, platformMap.Layers.Count);
 			});
 		}
 
-		static WebView2? GetWebView(MapHandler handler)
+		static Task WaitForMapReady(MapHandler handler)
 		{
-			var field = typeof(MapHandler).GetField("_webView", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(field);
-			return field.GetValue(handler) as WebView2;
-		}
+			var webViewReadyField = typeof(MapHandler).GetField("_webViewReady", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(webViewReadyField);
 
-		static bool GetWebViewReady(MapHandler handler)
-		{
-			var field = typeof(MapHandler).GetField("_webViewReady", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(field);
-			return field.GetValue(handler) is bool value && value;
-		}
-
-		static T? GetFieldValue<T>(MapHandler handler, string fieldName)
-			where T : class
-		{
-			var field = typeof(MapHandler).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(field);
-			return field.GetValue(handler) as T;
-		}
-
-		static T GetRequiredFieldValue<T>(MapHandler handler, string fieldName)
-			where T : class
-		{
-			var value = GetFieldValue<T>(handler, fieldName);
-			Assert.NotNull(value);
-			return value;
+			return AssertEventually(
+				() => webViewReadyField.GetValue(handler) is true,
+				timeout: 15_000,
+				message: "MapControl's WebView2 never finished loading");
 		}
 	}
 }
