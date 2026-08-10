@@ -170,7 +170,7 @@ public partial class SearchBarOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.TextTransform = radioButton.Content.ToString() == "Lowercase"
+			_viewModel.TextTransform = radioButton.Content.ToString() == "Lower"
 				? TextTransform.Lowercase
 				: TextTransform.Uppercase;
 		}

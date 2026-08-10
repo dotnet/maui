@@ -37,6 +37,7 @@ public partial class SearchBarMaterial3ControlMainPage : ContentPage
 			AutomationId = "SearchBar",
 		};
 
+		searchBar.SetBinding(SearchBar.BackgroundProperty, nameof(SearchBarViewModel.Background));
 		searchBar.SetBinding(SearchBar.CancelButtonColorProperty, nameof(SearchBarViewModel.CancelButtonColor));
 		searchBar.SetBinding(SearchBar.CharacterSpacingProperty, nameof(SearchBarViewModel.CharacterSpacing));
 		searchBar.SetBinding(SearchBar.CursorPositionProperty, nameof(SearchBarViewModel.CursorPosition));
@@ -56,6 +57,8 @@ public partial class SearchBarMaterial3ControlMainPage : ContentPage
 		searchBar.SetBinding(SearchBar.MaxLengthProperty, nameof(SearchBarViewModel.MaxLength));
 		searchBar.SetBinding(SearchBar.PlaceholderProperty, nameof(SearchBarViewModel.Placeholder));
 		searchBar.SetBinding(SearchBar.PlaceholderColorProperty, nameof(SearchBarViewModel.PlaceholderColor));
+		searchBar.SetBinding(SearchBar.ReturnTypeProperty, nameof(SearchBarViewModel.ReturnType));
+		searchBar.SetBinding(SearchBar.SearchIconColorProperty, nameof(SearchBarViewModel.SearchIconColor));
 		searchBar.SetBinding(SearchBar.SelectionLengthProperty, nameof(SearchBarViewModel.SelectionLength));
 		searchBar.SetBinding(SearchBar.TextProperty, nameof(SearchBarViewModel.Text));
 		searchBar.SetBinding(SearchBar.TextColorProperty, nameof(SearchBarViewModel.TextColor));
