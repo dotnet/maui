@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task UsingIsBusyNoCrash()
 		{
 			var page = new ContentPage();
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
+#pragma warning disable CS0618 // TODO: Remove this API in a future release. Issue Link: https://github.com/dotnet/maui/issues/30155
 			page.IsBusy = true;
 #pragma warning restore CS0618 // Type or member is obsolete
 

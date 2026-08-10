@@ -2,6 +2,49 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+#nullable enable
+	/// <summary>
+	/// Provides an abstraction for checking and requesting runtime permissions.
+	/// </summary>
+	public interface IPermissions
+	{
+		/// <summary>
+		/// Retrieves the current status of the permission.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="PermissionException"/> if a required entry was not found in the application manifest.
+		/// Not all permissions require a manifest entry.
+		/// </remarks>
+		/// <exception cref="PermissionException">Thrown if a required entry was not found in the application manifest.</exception>
+		/// <typeparam name="TPermission">The permission type to check.</typeparam>
+		/// <returns>A <see cref="PermissionStatus"/> value indicating the current status of the permission.</returns>
+		Task<PermissionStatus> CheckStatusAsync<TPermission>()
+			where TPermission : Permissions.BasePermission, new();
+
+		/// <summary>
+		/// Requests the permission from the user for this application.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="PermissionException"/> if a required entry was not found in the application manifest.
+		/// Not all permissions require a manifest entry.
+		/// </remarks>
+		/// <exception cref="PermissionException">Thrown if a required entry was not found in the application manifest.</exception>
+		/// <typeparam name="TPermission">The permission type to request.</typeparam>
+		/// <returns>A <see cref="PermissionStatus"/> value indicating the result of this permission request.</returns>
+		Task<PermissionStatus> RequestAsync<TPermission>()
+			where TPermission : Permissions.BasePermission, new();
+
+		/// <summary>
+		/// Determines if an educational UI should be displayed explaining to the user how the permission will be used in the application.
+		/// </summary>
+		/// <remarks>Only used on Android, other platforms will always return <see langword="false"/>.</remarks>
+		/// <typeparam name="TPermission">The permission type to check.</typeparam>
+		/// <returns><see langword="true"/> if the user has denied or disabled the permission in the past, else <see langword="false"/>.</returns>
+		bool ShouldShowRationale<TPermission>()
+			where TPermission : Permissions.BasePermission, new();
+	}
+#nullable restore
+
 	/// <summary>
 	/// The Permissions API provides the ability to check and request runtime permissions.
 	/// </summary>
@@ -19,7 +62,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <returns>A <see cref="PermissionStatus"/> value indicating the current status of the permission.</returns>
 		public static Task<PermissionStatus> CheckStatusAsync<TPermission>()
 			where TPermission : BasePermission, new() =>
-				new TPermission().CheckStatusAsync();
+				Current.CheckStatusAsync<TPermission>();
 
 		/// <summary>
 		/// Requests the permission from the user for this application.
@@ -33,7 +76,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <returns>A <see cref="PermissionStatus"/> value indicating the result of this permission request.</returns>
 		public static Task<PermissionStatus> RequestAsync<TPermission>()
 			where TPermission : BasePermission, new() =>
-				new TPermission().RequestAsync();
+				Current.RequestAsync<TPermission>();
 
 		/// <summary>
 		/// Determines if an educational UI should be displayed explaining to the user how the permission will be used in the application.
@@ -43,7 +86,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <returns><see langword="true"/> if the user has denied or disabled the permission in the past, else <see langword="false"/>.</returns>
 		public static bool ShouldShowRationale<TPermission>()
 			where TPermission : BasePermission, new() =>
-				new TPermission().ShouldShowRationale();
+				Current.ShouldShowRationale<TPermission>();
 
 		internal static void EnsureDeclared<TPermission>()
 			where TPermission : BasePermission, new() =>
@@ -66,6 +109,19 @@ namespace Microsoft.Maui.ApplicationModel
 			if (status != PermissionStatus.Granted && status != PermissionStatus.Restricted)
 				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
 		}
+
+#nullable enable
+		static IPermissions? currentImplementation;
+
+		/// <summary>
+		/// Provides the default implementation for static usage of this API.
+		/// </summary>
+		public static IPermissions Current =>
+			currentImplementation ??= new PermissionsImplementation();
+
+		internal static void SetCurrent(IPermissions? implementation) =>
+			currentImplementation = implementation;
+#nullable restore
 
 		/// <summary>
 		/// Represents the abstract base class for all permissions. 
@@ -308,5 +364,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class Vibrate
 		{
 		}
+	}
+
+	class PermissionsImplementation : IPermissions
+	{
+		public Task<PermissionStatus> CheckStatusAsync<TPermission>()
+			where TPermission : Permissions.BasePermission, new() =>
+				new TPermission().CheckStatusAsync();
+
+		public Task<PermissionStatus> RequestAsync<TPermission>()
+			where TPermission : Permissions.BasePermission, new() =>
+				new TPermission().RequestAsync();
+
+		public bool ShouldShowRationale<TPermission>()
+			where TPermission : Permissions.BasePermission, new() =>
+				new TPermission().ShouldShowRationale();
 	}
 }

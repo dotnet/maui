@@ -213,13 +213,61 @@ namespace Microsoft.Maui
 			return _categoryPrefix;
 		}
 
+		string? _reuseVariantPrefix;
+
+		// Android-only: Shell/Modal/Window tests reuse the same test bodies across a renderer base
+		// class and a handler subclass (see ShellHandlerSubclasses.Android.cs), so DisplayName alone
+		// can't tell them apart. Tag the subclass run as "[Handler]" and the base run as "[Renderer]".
+		string GetReuseVariantPrefix()
+		{
+			if (_reuseVariantPrefix == null)
+			{
+#if ANDROID
+				try
+				{
+					if (Traits.TryGetValue("Variant", out var variants) && variants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "Renderer" trait, so Traits may contain both values for this key.
+						// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
+						if (variants.Contains("Handler"))
+						{
+							_reuseVariantPrefix = "[Handler] ";
+						}
+						else if (variants.Contains("Renderer"))
+						{
+							_reuseVariantPrefix = "[Renderer] ";
+						}
+						else
+						{
+							_reuseVariantPrefix = string.Empty;
+						}
+					}
+					else
+					{
+						_reuseVariantPrefix = string.Empty;
+					}
+				}
+				catch
+				{
+					// Never let display-name resolution crash the test run.
+					_reuseVariantPrefix = string.Empty;
+				}
+#else
+				_reuseVariantPrefix = string.Empty;
+#endif
+			}
+
+			return _reuseVariantPrefix;
+		}
+
 		string? _displayName;
 
 		public string DisplayName
 		{
 			get
 			{
-				_displayName = _displayName ?? $"{GetCategoryPrefix()}{_inner.DisplayName}";
+				_displayName = _displayName ?? $"{GetCategoryPrefix()}{GetReuseVariantPrefix()}{_inner.DisplayName}";
 				return _displayName;
 			}
 		}

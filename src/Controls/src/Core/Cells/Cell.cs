@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
@@ -28,6 +29,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Initializes a new instance of the Cell class.</summary>
 		/// <remarks>Cell class is abstract, this constructor is never invoked directly.</remarks>
+#pragma warning disable CS0618 // Type or member is obsolete
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TextCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(EntryCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ImageCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(SwitchCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ViewCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
 		public Cell()
 		{
 			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
