@@ -1359,9 +1359,9 @@ namespace Microsoft.Maui.Platform
 		// TalkBack's "double tap to activate" calls View.PerformAccessibilityAction(ACTION_CLICK).
 		// Swipe-item commands normally execute via manual touch hit-testing (see ProcessTouchSwipeItems
 		// above), so the swipe button has no OnClickListener and PerformClick() is a no-op for TalkBack
-		// users. ReplaceAccessibilityAction installs an ACTION_CLICK handler without a custom
-		// AccessibilityDelegateCompat subclass; AndroidX composes it with any delegate already on the
-		// view, so this doesn't disturb touch dispatch or existing accessibility behavior.
+		// users. We install an ACTION_CLICK handler by wrapping the current AccessibilityDelegateCompat and
+		// intercepting ACTION_CLICK in a SwipeItemAccessibilityDelegate. The wrapper delegates all other
+		// accessibility behavior to the original delegate, so this doesn't disturb existing behavior.
 		void AttachSwipeItemAccessibilityDelegate(AView swipeItemView)
 		{
 			var currentDelegate = ViewCompat.GetAccessibilityDelegate(swipeItemView);
@@ -1396,10 +1396,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (host is not null &&
 					action == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick?.Id &&
-					_swipeViewRef.TryGetTarget(out var swipeView)
-					)
+					_swipeViewRef.TryGetTarget(out var swipeView))
 				{
-					return swipeView.TryExecuteSwipeItemFromAccessibility(host);
+					if (swipeView.TryExecuteSwipeItemFromAccessibility(host))
+					{
+						return true;
+					}
 				}
 				return base.PerformAccessibilityAction(host, action, args);
 			}
