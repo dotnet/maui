@@ -115,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task IconColorChangeDoesNotReloadImageSource()
+		public async Task IconColorChangeDoesNotReloadOrRedrawImage()
 		{
 			var imageService = new CountingFileImageSourceService();
 			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
@@ -125,12 +125,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var item = new SwipeItemMenuItemStub();
 				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
-				handler.PlatformView.Frame = new CGRect(0, 0, 100, 100);
+				handler.PlatformView.Frame = new CGRect(0, 0, 100.2, 100.2);
 				item.Source = new FileImageSourceStub("custom.png");
 
 				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
 				Assert.Equal(1, imageService.LoadCount);
-				var originalSize = handler.PlatformView.ImageForState(UIControlState.Normal).Size;
+				var originalImage = handler.PlatformView.ImageForState(UIControlState.Normal);
+				var originalSize = originalImage.Size;
+				var originalImageHandle = originalImage.CGImage.Handle;
 
 				item.IconColor = Colors.Red;
 				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
@@ -138,12 +140,13 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, imageService.LoadCount);
 				Assert.Equal(Colors.Red, handler.PlatformView.TintColor.ToColor());
 				Assert.Equal(originalSize, handler.PlatformView.ImageForState(UIControlState.Normal).Size);
+				Assert.Equal(originalImageHandle, handler.PlatformView.ImageForState(UIControlState.Normal).CGImage.Handle);
 			});
 		}
 
 		sealed class CountingFileImageSourceService : IImageSourceService<IFileImageSource>
 		{
-			readonly UIImage _image = UIImage.GetSystemImage("trash");
+			readonly UIImage _image = CreateOversizedImage();
 
 			public int LoadCount { get; private set; }
 
@@ -155,6 +158,18 @@ namespace Microsoft.Maui.DeviceTests
 				LoadCount++;
 				return Task.FromResult<IImageSourceServiceResult<UIImage>>(
 					new ImageSourceServiceResult(_image));
+			}
+
+			static UIImage CreateOversizedImage()
+			{
+				var bounds = new CGRect(0, 0, 200, 200);
+				using var renderer = new UIGraphicsImageRenderer(bounds.Size);
+
+				return renderer.CreateImage(context =>
+				{
+					UIColor.Red.SetFill();
+					context.FillRect(bounds);
+				});
 			}
 		}
 	}

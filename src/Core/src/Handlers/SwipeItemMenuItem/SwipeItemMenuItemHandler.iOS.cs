@@ -167,15 +167,18 @@ namespace Microsoft.Maui.Handlers
 			static UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
 			{
 				var sourceSize = sourceImage.Size;
-				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+				var scale = sourceImage.CurrentScale;
+				var pointTolerance = scale > 0 ? 1 / scale : 0;
 
 				// Color-only updates feed the already-sized native image back through this setter.
-				// Keep an image that exactly fits the bounds instead of redrawing it.
-				if (maxResizeFactor >= 1)
+				// UIGraphicsImageRenderer can quantize its result up by one physical pixel.
+				if (sourceSize.Width <= maxWidth + pointTolerance &&
+					sourceSize.Height <= maxHeight + pointTolerance)
 				{
 					return sourceImage;
 				}
 
+				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 				var width = maxResizeFactor * sourceSize.Width;
 				var height = maxResizeFactor * sourceSize.Height;
 
