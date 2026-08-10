@@ -114,6 +114,15 @@ jobs:
             echo "::warning::Auto-rerun labeling step failed (rc=$rc); the queue issue was still created."
           fi
 
+      - name: Upload auto-rerun decisions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-rerun-decisions
+          path: auto-rerun-decisions.json
+          if-no-files-found: warn
+          retention-days: 7
+
   # Dry-run on PRs: validate the script works without creating issues
   validate:
     runs-on: ubuntu-latest
@@ -169,6 +178,7 @@ jobs:
             -Owner "$REPO_OWNER" \
             -Repo "$REPO_NAME" \
             -DryRun \
+            -Limit 5 \
             -OutputPath auto-rerun-decisions.json
           rc=$?
           set -e

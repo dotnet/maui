@@ -1,0 +1,239 @@
+#!/usr/bin/env pwsh
+#Requires -Modules Pester
+
+BeforeAll {
+    $scriptPath = Join-Path $PSScriptRoot 'Query-AutoRerunCandidates.ps1'
+    $workflowPath = Join-Path $PSScriptRoot '../workflows/pr-review-queue.yml'
+    $scannerPath = Join-Path $PSScriptRoot '../workflows/rerun-review-scanner.md'
+    $labelHelperPath = Join-Path $PSScriptRoot 'shared/Update-AgentLabels.ps1'
+    $outputDir = Join-Path $PSScriptRoot '../../CustomAgentLogsTmp/QueryAutoRerunTests'
+    New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+
+    . $scriptPath -Owner 'test-owner' -Repo 'test-repo'
+
+    function New-TestPR {
+        param(
+            [int]$Number,
+            [bool]$IsDraft = $false,
+            [string[]]$Labels = @(),
+            [string]$HeadSha = '2222222abcdef'
+        )
+
+        [pscustomobject]@{
+            number     = $Number
+            title      = "PR $Number"
+            url        = "https://example.test/$Number"
+            headRefOid = $HeadSha
+            isDraft    = $IsDraft
+            labels     = @($Labels | ForEach-Object { [pscustomobject]@{ name = $_ } })
+            author     = [pscustomobject]@{ login = 'dev-user' }
+        }
+    }
+
+    function ConvertTo-GhLines {
+        param([object[]]$Items)
+        return @($Items | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress })
+    }
+
+    function Invoke-TestScan {
+        Invoke-AutoRerunCandidateScan `
+            -ScanOwner 'test-owner' `
+            -ScanRepo 'test-repo' `
+            -ScanLimit $script:Limit `
+            -ScanDryRun:$script:DryRun `
+            -ScanOutputPath $script:OutputPath
+    }
+}
+
+AfterAll {
+    Remove-Item -LiteralPath $outputDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Describe 'Query-AutoRerunCandidates' {
+    BeforeEach {
+        $script:Owner = 'test-owner'
+        $script:Repo = 'test-repo'
+        $script:Limit = 5
+        $script:DryRun = $true
+        $script:OutputPath = Join-Path $outputDir "$([Guid]::NewGuid().ToString('N')).json"
+        $script:prList = @()
+        $script:issueComments = @()
+        $script:reviews = @()
+        $script:reviewComments = @()
+        $script:commits = @()
+        $script:declinedTimestamps = @()
+        $script:failedPRs = @()
+        $script:ghCalls = @()
+
+        Mock gh {
+            $command = $args -join ' '
+            $script:ghCalls += $command
+            $global:LASTEXITCODE = 0
+
+            if ($command -match '^pr list ') {
+                return ($script:prList | ConvertTo-Json -Depth 10 -Compress)
+            }
+
+            $numberMatch = [regex]::Match($command, '/(?:issues|pulls)/(\d+)/')
+            $number = if ($numberMatch.Success) { [int]$numberMatch.Groups[1].Value } else { 0 }
+            if ($script:failedPRs -contains $number) {
+                $global:LASTEXITCODE = 1
+                return @()
+            }
+
+            if ($command -match '/issues/\d+/comments') { return ConvertTo-GhLines $script:issueComments }
+            if ($command -match '/pulls/\d+/reviews') { return ConvertTo-GhLines $script:reviews }
+            if ($command -match '/pulls/\d+/comments') { return ConvertTo-GhLines $script:reviewComments }
+            if ($command -match '/pulls/\d+/commits') { return ConvertTo-GhLines $script:commits }
+            if ($command -match '/issues/\d+/events') { return @($script:declinedTimestamps) }
+
+            throw "Unexpected gh call: $command"
+        }
+    }
+
+Context 'bounded scan metadata' {
+    It 'processes only Limit items and reports exact truncation using one sentinel item' {
+        $script:prList = @(1..6 | ForEach-Object { New-TestPR -Number $_ -IsDraft $true })
+
+        $messages = Invoke-TestScan 6>&1 | Out-String
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $messages | Should -Match '::warning::Open PR scan truncated'
+        $summary.scan.limit | Should -Be 5
+        $summary.scan.fetchedCount | Should -Be 5
+        $summary.scan.observedCount | Should -Be 6
+        $summary.scan.truncated | Should -BeTrue
+        $summary.decisions.Count | Should -Be 5
+        @($script:ghCalls | Where-Object { $_ -match '^pr list .*--limit 6' }).Count | Should -Be 1
+    }
+
+    It 'pins pull-request dry-run validation to Limit 5' {
+        $workflow = Get-Content -Raw -LiteralPath $workflowPath
+        $workflow | Should -Match '(?s)Validate auto-rerun labeler \(dry-run\).*?-DryRun\s+\\\s*\r?\n\s*-Limit 5\s+\\'
+    }
+}
+
+Context 'error aggregation' {
+    It 'fails a dry-run after writing structured error details' {
+        $script:prList = @(1..2 | ForEach-Object { New-TestPR -Number $_ })
+        $script:failedPRs = @(1, 2)
+
+        { Invoke-TestScan } | Should -Throw '*2 of 2 evaluated PR(s) had errors*'
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.errors | Should -Be 2
+        $summary.evaluated | Should -Be 2
+        $summary.systemicFailure | Should -BeTrue
+        @($summary.decisions | Where-Object reason -like 'error:*').Count | Should -Be 2
+    }
+
+    It 'keeps an isolated scheduled error non-fatal but visible' {
+        $script:DryRun = $false
+        $script:prList = @(1..4 | ForEach-Object { New-TestPR -Number $_ })
+        $script:failedPRs = @(1)
+
+        { Invoke-TestScan } | Should -Not -Throw
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.errors | Should -Be 1
+        $summary.systemicFailure | Should -BeFalse
+    }
+
+    It 'fails a scheduled scan when evaluation failures are systemic' {
+        $script:DryRun = $false
+        $script:prList = @(1..3 | ForEach-Object { New-TestPR -Number $_ })
+        $script:failedPRs = @(1, 2, 3)
+
+        { Invoke-TestScan } | Should -Throw '*3 of 3 evaluated PR(s) had errors*'
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.systemicFailure | Should -BeTrue
+    }
+}
+
+Context 'scanner decline checkpoint' {
+    It 'does not treat generic ready-label removals as scanner declines' {
+        $script:prList = @(New-TestPR -Number 6)
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 1
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                created_at = '2026-05-31T09:00:00Z'
+                updated_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            }
+        )
+        $script:declinedTimestamps = @('2026-05-31T10:00:00Z')
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].eligible | Should -BeTrue
+        $summary.decisions[0].reason | Should -Be 'new-head-commit'
+        @($script:ghCalls | Where-Object { $_ -match '/issues/\d+/events' }).Count | Should -Be 0
+    }
+
+    It 'sorts explicit scanner markers newest-first and re-evaluates eligibility against that checkpoint' {
+        $script:prList = @(
+            New-TestPR -Number 7 -Labels @('s/agent-rerun-declined')
+        )
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 1
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                created_at = '2026-05-31T09:00:00Z'
+                updated_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            },
+            [pscustomobject]@{
+                id = 2
+                body = 'I pushed the update.'
+                created_at = '2026-05-31T09:45:00Z'
+                updated_at = '2026-05-31T09:45:00Z'
+                user = [pscustomobject]@{ login = 'dev-user'; type = 'User' }
+                author_association = 'CONTRIBUTOR'
+            }
+        )
+        $script:declinedTimestamps = @(
+            '2026-05-31T08:00:00Z',
+            '2026-05-31T10:00:00Z',
+            '2026-05-31T09:30:00Z'
+        )
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].eligible | Should -BeFalse
+        $summary.decisions[0].reason | Should -Be 'declined-state-unchanged'
+        @($script:ghCalls | Where-Object {
+            $_ -match 'event == .labeled.' -and $_ -match 's/agent-rerun-declined'
+        }).Count | Should -Be 1
+    }
+
+    It 'persists skip markers before consuming ready labels and clears them before trigger dispatch' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $scanner.IndexOf('await markDeclined(prNumber);') |
+            Should -BeLessThan $scanner.IndexOf("await react(a.rerunCommentId, '-1');")
+        $scanner.IndexOf("await react(a.rerunCommentId, '-1');") |
+            Should -BeLessThan $scanner.IndexOf('await removeReadyLabel(prNumber);')
+        $scanner.IndexOf('await clearDeclined(prNumber);') |
+            Should -BeLessThan $scanner.IndexOf('await github.rest.actions.createWorkflowDispatch({')
+    }
+
+    It 'keeps scanner decline-label metadata aligned with the shared definition' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $labelHelper = Get-Content -Raw -LiteralPath $labelHelperPath
+
+        foreach ($value in @(
+            's/agent-rerun-declined',
+            'AI rerun scanner declined the current PR state; new author activity is required',
+            'D4C5F9'
+        )) {
+            $scanner | Should -Match ([regex]::Escape($value))
+            $labelHelper | Should -Match ([regex]::Escape($value))
+        }
+    }
+}
+}

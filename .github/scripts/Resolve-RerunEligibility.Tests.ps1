@@ -657,6 +657,19 @@ Describe 'Resolve-AutonomousRerunEligibility' {
             $result.Reason | Should -Be 'new-head-commit'
         }
 
+        It 'does not re-qualify when the differing-head commit predates the decline' {
+            $comments = @(
+                New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            )
+            $commits = @(
+                New-TestCommit -Sha '2222222abcdef' -Date '2026-05-31T09:45:00Z'
+            )
+
+            $result = Resolve-AutonomousRerunEligibility -Comments $comments -Commits $commits -CurrentHeadSha '2222222abcdef' -PRAuthorLogin 'dev-user' -LastDeclinedAt '2026-05-31T10:00:00Z'
+            $result.Eligible | Should -BeFalse
+            $result.Reason | Should -Be 'declined-state-unchanged'
+        }
+
         It 're-qualifies on a fresh PR-author comment posted after the decline' {
             $comments = @(
                 New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'

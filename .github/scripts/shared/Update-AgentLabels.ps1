@@ -38,6 +38,7 @@ $script:SignalLabels = @{
 $script:ManualLabels = @{
     's/agent-fix-implemented'   = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
     's/agent-ready-for-rerun'   = @{ Description = 'AI review has new PR activity and is ready for rerun'; Color = '5319E7' }
+    's/agent-rerun-declined'    = @{ Description = 'AI rerun scanner declined the current PR state; new author activity is required'; Color = 'D4C5F9' }
     's/agent-review-in-progress' = @{ Description = 'AI review is currently running for this PR'; Color = 'FBCA04' }
 }
 

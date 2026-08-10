@@ -40,6 +40,7 @@
 param(
     [string]$Owner = 'dotnet',
     [string]$Repo = 'maui',
+    [ValidateRange(1, 10000)]
     [int]$Limit = 300,
     [switch]$DryRun,
     [string]$OutputPath
@@ -48,6 +49,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
+$RerunDeclinedLabel = 's/agent-rerun-declined'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
 
 # Pass -Owner/-Repo through: Resolve-RerunEligibility.ps1 has its own $Owner/$Repo params
@@ -107,18 +109,15 @@ function Get-CommitsForPR {
     return @($commitsRaw | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
-function Get-LastDeclinedAt {
+function Get-LastScannerDeclinedAt {
     param([int]$Number)
 
-    # The most recent time s/agent-ready-for-rerun was REMOVED from this PR. Used as an
-    # anti-flap checkpoint: when the rerun scanner `skip`s a PR it strips the label
-    # WITHOUT posting a fresh AI Summary, so without this the daily scan would re-apply
-    # the label on the same unchanged (already-declined) state forever. A removal that
-    # preceded a completed review is superseded by that review's newer AI Summary, so it
-    # is harmless in the trigger path. Fail loud on API errors (see Get-ActivityForPR) so
-    # a transient failure is recorded as an error rather than silently resurrecting the flap.
+    # The scanner applies s/agent-rerun-declined only for a semantic `skip`, before
+    # consuming s/agent-ready-for-rerun. Using this explicit marker avoids treating
+    # trigger-path or manual ready-label removals as declines. Fail loud on API errors
+    # so a transient failure is recorded rather than silently resurrecting the flap.
     $timestampsRaw = gh api "repos/$Owner/$Repo/issues/$Number/events?per_page=100" --paginate `
-        --jq ".[] | select(.event == `"unlabeled`" and .label.name == `"$ReadyForRerunLabel`") | .created_at"
+        --jq ".[] | select(.event == `"labeled`" and .label.name == `"$RerunDeclinedLabel`") | .created_at"
     if ($LASTEXITCODE -ne 0) { throw "Failed to fetch label events for #$Number (gh api exited $LASTEXITCODE)." }
     $timestamps = @($timestampsRaw | Where-Object { $_ })
     if ($timestamps.Count -eq 0) { return $null }
@@ -127,169 +126,219 @@ function Get-LastDeclinedAt {
     } -Descending)[0]
 }
 
-$searchJson = gh pr list `
-    --repo "$Owner/$Repo" `
-    --state open `
-    --limit $Limit `
-    --json number,title,url,headRefOid,isDraft,labels,author
-if ($LASTEXITCODE -ne 0) {
-    throw "Failed to list open PRs (gh pr list exited with code $LASTEXITCODE)."
-}
-$openPRs = @($searchJson | ConvertFrom-Json)
+function Invoke-AutoRerunCandidateScan {
+    param(
+        [string]$ScanOwner = $Owner,
+        [string]$ScanRepo = $Repo,
+        [int]$ScanLimit = $Limit,
+        [switch]$ScanDryRun = $DryRun,
+        [string]$ScanOutputPath = $OutputPath
+    )
 
-# Warn if we hit the fetch cap — the scan would silently miss eligible PRs beyond it.
-if ($openPRs.Count -ge $Limit) {
-    Write-Host "  ⚠️  Fetched $($openPRs.Count) open PR(s), which meets the -Limit cap of $Limit; some open PRs may be excluded. Raise -Limit." -ForegroundColor Yellow
-}
+    $Owner = $ScanOwner
+    $Repo = $ScanRepo
+    $Limit = $ScanLimit
+    $DryRun = $ScanDryRun
+    $OutputPath = $ScanOutputPath
 
-Write-Host "Inspecting $($openPRs.Count) open PR(s) for autonomous rerun eligibility..."
+    # Fetch one sentinel item beyond the processing ceiling. This preserves the
+    # safety bound while making truncation exact instead of guessing when Count == Limit.
+    $fetchLimit = $Limit + 1
+    $searchJson = gh pr list `
+        --repo "$Owner/$Repo" `
+        --state open `
+        --limit $fetchLimit `
+        --json number,title,url,headRefOid,isDraft,labels,author
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to list open PRs (gh pr list exited with code $LASTEXITCODE)."
+    }
+    $listedPRs = @($searchJson | ConvertFrom-Json)
+    $truncated = $listedPRs.Count -gt $Limit
+    $openPRs = @($listedPRs | Select-Object -First $Limit)
 
-$labelEnsured = $false
-$decisions = @()
-$appliedCount = 0
-
-foreach ($pr in $openPRs) {
-    $number = [int]$pr.number
-    $title = [string]$pr.title
-
-    if ($pr.isDraft) {
-        $decisions += [pscustomobject]@{ prNumber = $number; title = $title; eligible = $false; reason = 'draft'; applied = $false }
-        continue
+    if ($truncated) {
+        Write-Host "::warning::Open PR scan truncated to the newest $Limit PR(s); at least $($listedPRs.Count) were returned. Older PRs were not evaluated."
     }
 
-    # Per-PR error isolation: a single malformed PR (e.g. a null/absent comment
-    # created_at that throws in the eligibility date comparison, or a transient API
-    # error) must not abort the whole daily scan. Record it as an error decision and
-    # continue with the remaining PRs.
-    try {
-    # gh pr list (above) already fetched each PR's labels via --json labels, so derive the initial
-    # label set from that search snapshot instead of an extra Issues-API call per PR. Get-IssueLabels
-    # is reserved for the post-apply verification path below (and only when the add reports failure).
-    $labels = @(@($pr.labels) | Where-Object { $_ } | ForEach-Object { $_.name })
+    Write-Host "Inspecting $($openPRs.Count) open PR(s) for autonomous rerun eligibility..."
 
-    # Treat a stale in-progress label as absent so a wedged review can still be
-    # re-detected — the same staleness rule the rerun scanner uses.
-    $effectiveLabels = @($labels)
-    if ($labels -contains $ReviewInProgressLabel -and (Test-AgentReviewInProgressIsStale -PRNumber $number -Owner $Owner -Repo $Repo)) {
-        $effectiveLabels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
-    }
+    $labelEnsured = $false
+    $decisions = @()
+    $appliedCount = 0
 
-    $activity = @(Get-ActivityForPR -Number $number)
-    $commits = @(Get-CommitsForPR -Number $number)
-    $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
-    $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
+    foreach ($pr in $openPRs) {
+        $number = [int]$pr.number
+        $title = [string]$pr.title
 
-    $result = Resolve-AutonomousRerunEligibility `
-        -Comments $activity `
-        -Commits $commits `
-        -CurrentHeadSha $pr.headRefOid `
-        -PRAuthorLogin $authorLogin `
-        -CurrentLabels $effectiveLabels
+        if ($pr.isDraft) {
+            $decisions += [pscustomobject]@{ prNumber = $number; title = $title; eligible = $false; reason = 'draft'; applied = $false }
+            continue
+        }
 
-    $alreadyPresent = @($labels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+        # Per-PR error isolation: a single malformed PR or transient API failure
+        # must not abort the whole daily scan. Aggregate errors after the loop so
+        # systemic failures cannot produce a misleading green run.
+        try {
+            # gh pr list already fetched labels, so avoid another Issues API call.
+            $labels = @(@($pr.labels) | Where-Object { $_ } | ForEach-Object { $_.name })
 
-    # Anti-flap: only when we would otherwise APPLY a fresh label, consult the last time
-    # the label was removed (a scanner `skip`). If the scanner already declined this exact
-    # state and nothing new has happened since, re-evaluating with that checkpoint drops
-    # the PR back to ineligible, so the label doesn't flap on/off every daily run. Scoped
-    # to this branch to avoid the extra events API call for the common ineligible /
-    # already-present PRs.
-    if ($result.Eligible -and -not $alreadyPresent) {
-        $lastDeclinedAt = Get-LastDeclinedAt -Number $number
-        if ($lastDeclinedAt) {
+            # Treat a stale in-progress label as absent so a wedged review can recover.
+            $effectiveLabels = @($labels)
+            if ($labels -contains $ReviewInProgressLabel -and (Test-AgentReviewInProgressIsStale -PRNumber $number -Owner $Owner -Repo $Repo)) {
+                $effectiveLabels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
+            }
+
+            $activity = @(Get-ActivityForPR -Number $number)
+            $commits = @(Get-CommitsForPR -Number $number)
+            $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
+            $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
+
             $result = Resolve-AutonomousRerunEligibility `
                 -Comments $activity `
                 -Commits $commits `
                 -CurrentHeadSha $pr.headRefOid `
                 -PRAuthorLogin $authorLogin `
-                -CurrentLabels $effectiveLabels `
-                -LastDeclinedAt $lastDeclinedAt
-        }
-    }
+                -CurrentLabels $effectiveLabels
 
-    $applied = $false
+            $alreadyPresent = @($labels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+            $hasDeclinedMarker = @($labels | Where-Object { $_ -eq $RerunDeclinedLabel }).Count -gt 0
 
-    if ($result.Eligible -and -not $alreadyPresent) {
-        if ($DryRun) {
-            Write-Host "  [dry-run] Would label #$number ($($result.Reason)): $title"
-        } else {
-            if (-not $labelEnsured) {
-                Ensure-LabelExists `
-                    -LabelName $ReadyForRerunLabel `
-                    -Description $ReadyForRerunLabelDescription `
-                    -Color $ReadyForRerunLabelColor `
-                    -Owner $Owner `
-                    -Repo $Repo
-                $labelEnsured = $true
-            }
-
-            $addSucceeded = Add-Label -PRNumber $number -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
-            $labelIsPresent = $false
-            if (-not $addSucceeded) {
-                # Safety net only when the POST reported failure (eventual consistency / already-present).
-                # A verify-read failure must not discard a known-successful apply, so don't let it throw
-                # here — otherwise a transient 502 on this second /labels call (plausible across up to
-                # 300 PRs/run) would record a live label as applied=false and undercount $appliedCount.
-                try {
-                    $updatedLabels = @(Get-IssueLabels -Number $number)
-                    $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
-                } catch {
-                    Write-Host "  ⚠️  Could not verify label state for #$($number): $($_.Exception.Message)" -ForegroundColor Yellow
+            # Only an explicit scanner-decline marker advances the checkpoint. Trigger-path
+            # and manual ready-label removals no longer suppress autonomous recovery.
+            if ($result.Eligible -and -not $alreadyPresent -and $hasDeclinedMarker) {
+                $lastDeclinedAt = Get-LastScannerDeclinedAt -Number $number
+                if ($lastDeclinedAt) {
+                    $result = Resolve-AutonomousRerunEligibility `
+                        -Comments $activity `
+                        -Commits $commits `
+                        -CurrentHeadSha $pr.headRefOid `
+                        -PRAuthorLogin $authorLogin `
+                        -CurrentLabels $effectiveLabels `
+                        -LastDeclinedAt $lastDeclinedAt
                 }
             }
-            if ($addSucceeded -or $labelIsPresent) {
-                $applied = $true
-                $appliedCount++
-                Write-Host "  ✅ Applied $ReadyForRerunLabel to #$number ($($result.Reason)): $title" -ForegroundColor Green
-            } else {
-                Write-Host "  ⚠️  Failed to apply $ReadyForRerunLabel to #$number" -ForegroundColor Yellow
+
+            $applied = $false
+
+            if ($result.Eligible -and -not $alreadyPresent) {
+                if ($DryRun) {
+                    Write-Host "  [dry-run] Would label #$number ($($result.Reason)): $title"
+                } else {
+                    if (-not $labelEnsured) {
+                        Ensure-LabelExists `
+                            -LabelName $ReadyForRerunLabel `
+                            -Description $ReadyForRerunLabelDescription `
+                            -Color $ReadyForRerunLabelColor `
+                            -Owner $Owner `
+                            -Repo $Repo
+                        $labelEnsured = $true
+                    }
+
+                    $addSucceeded = Add-Label -PRNumber $number -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
+                    $labelIsPresent = $false
+                    if (-not $addSucceeded) {
+                        try {
+                            $updatedLabels = @(Get-IssueLabels -Number $number)
+                            $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+                        } catch {
+                            Write-Host "  ⚠️  Could not verify label state for #$($number): $($_.Exception.Message)" -ForegroundColor Yellow
+                        }
+                    }
+                    if ($addSucceeded -or $labelIsPresent) {
+                        $applied = $true
+                        $appliedCount++
+                        if ($hasDeclinedMarker -and -not (Remove-Label -PRNumber $number -LabelName $RerunDeclinedLabel -Owner $Owner -Repo $Repo)) {
+                            Write-Host "::warning::Applied $ReadyForRerunLabel to #$number but could not clear $RerunDeclinedLabel."
+                        }
+                        Write-Host "  ✅ Applied $ReadyForRerunLabel to #$number ($($result.Reason)): $title" -ForegroundColor Green
+                    } else {
+                        Write-Host "  ⚠️  Failed to apply $ReadyForRerunLabel to #$number" -ForegroundColor Yellow
+                    }
+                }
+            } elseif ($result.Eligible -and $alreadyPresent) {
+                Write-Host "  ⏭️  #$number already has $ReadyForRerunLabel — skipping"
+            }
+
+            $decisions += [pscustomobject]@{
+                prNumber       = $number
+                title          = $title
+                eligible       = [bool]$result.Eligible
+                reason         = [string]$result.Reason
+                alreadyPresent = $alreadyPresent
+                applied        = $applied
+            }
+        } catch {
+            Write-Host "  ⚠️  Skipping #$number due to evaluation error: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "::warning::Auto-rerun evaluation failed for PR #$number; see the preceding log line."
+            $decisions += [pscustomobject]@{
+                prNumber       = $number
+                title          = $title
+                eligible       = $false
+                reason         = "error: $($_.Exception.Message)"
+                alreadyPresent = $false
+                applied        = $false
             }
         }
-    } elseif ($result.Eligible -and $alreadyPresent) {
-        Write-Host "  ⏭️  #$number already has $ReadyForRerunLabel — skipping"
     }
 
-    $decisions += [pscustomobject]@{
-        prNumber       = $number
-        title          = $title
-        eligible       = [bool]$result.Eligible
-        reason         = [string]$result.Reason
-        alreadyPresent = $alreadyPresent
-        applied        = $applied
+    $eligibleCount = @($decisions | Where-Object { $_.eligible -and -not $_.alreadyPresent }).Count
+    $errorCount = @($decisions | Where-Object { $_.reason -like 'error:*' }).Count
+    $evaluatedCount = @($decisions | Where-Object { $_.reason -ne 'draft' }).Count
+    $systemicThreshold = [Math]::Max(3, [Math]::Ceiling($evaluatedCount * 0.10))
+    $systemicFailure = $evaluatedCount -gt 0 -and (
+        $errorCount -eq $evaluatedCount -or
+        $errorCount -ge $systemicThreshold
+    )
+    $shouldFail = ($DryRun -and $errorCount -gt 0) -or $systemicFailure
+
+    if ($errorCount -gt 0) {
+        Write-Host "::warning::Autonomous rerun scan encountered $errorCount evaluation error(s) across $evaluatedCount evaluated PR(s)."
     }
-    } catch {
-        Write-Host "  ⚠️  Skipping #$number — evaluation error: $($_.Exception.Message)" -ForegroundColor Yellow
-        $decisions += [pscustomobject]@{
-            prNumber       = $number
-            title          = $title
-            eligible       = $false
-            reason         = "error: $($_.Exception.Message)"
-            alreadyPresent = $false
-            applied        = $false
+
+    if ($DryRun) {
+        Write-Host "Autonomous rerun scan complete: $eligibleCount PR(s) eligible (dry-run, no labels applied)."
+    } else {
+        Write-Host "Autonomous rerun scan complete: applied $ReadyForRerunLabel to $appliedCount PR(s)."
+    }
+
+    if ($OutputPath) {
+        $outputDir = Split-Path -Parent $OutputPath
+        if ($outputDir) {
+            New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
         }
-        continue
+        $summary = @{
+            generatedAt       = (Get-Date).ToUniversalTime().ToString('o')
+            dryRun            = [bool]$DryRun
+            applied           = $appliedCount
+            eligible          = $eligibleCount
+            errors            = $errorCount
+            evaluated         = $evaluatedCount
+            systemicThreshold = $systemicThreshold
+            systemicFailure   = [bool]$systemicFailure
+            scan              = @{
+                limit         = $Limit
+                fetchedCount  = $openPRs.Count
+                observedCount = $listedPRs.Count
+                truncated     = [bool]$truncated
+            }
+            decisions         = @($decisions)
+        } | ConvertTo-Json -Depth 10
+        $summary | Set-Content -LiteralPath $OutputPath -Encoding UTF8
+        Write-Host "Wrote decision summary to $OutputPath"
+    }
+
+    if ($shouldFail) {
+        throw "Autonomous rerun scan failed: $errorCount of $evaluatedCount evaluated PR(s) had errors."
     }
 }
 
-$eligibleCount = @($decisions | Where-Object { $_.eligible -and -not $_.alreadyPresent }).Count
-if ($DryRun) {
-    Write-Host "Autonomous rerun scan complete: $eligibleCount PR(s) eligible (dry-run, no labels applied)."
-} else {
-    Write-Host "Autonomous rerun scan complete: applied $ReadyForRerunLabel to $appliedCount PR(s)."
+if ($MyInvocation.InvocationName -eq '.') {
+    return
 }
 
-if ($OutputPath) {
-    $outputDir = Split-Path -Parent $OutputPath
-    if ($outputDir) {
-        New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
-    }
-    $summary = @{
-        generatedAt = (Get-Date).ToUniversalTime().ToString('o')
-        dryRun      = [bool]$DryRun
-        applied     = $appliedCount
-        eligible    = $eligibleCount
-        decisions   = @($decisions)
-    } | ConvertTo-Json -Depth 10
-    $summary | Set-Content -LiteralPath $OutputPath -Encoding UTF8
-    Write-Host "Wrote decision summary to $OutputPath"
-}
+Invoke-AutoRerunCandidateScan `
+    -ScanOwner $Owner `
+    -ScanRepo $Repo `
+    -ScanLimit $Limit `
+    -ScanDryRun:$DryRun `
+    -ScanOutputPath $OutputPath

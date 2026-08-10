@@ -154,6 +154,11 @@ safe-outputs:
             script: |
               const fs = require('fs');
               const readyLabel = 's/agent-ready-for-rerun';
+              const declinedLabel = {
+                name: 's/agent-rerun-declined',
+                description: 'AI rerun scanner declined the current PR state; new author activity is required',
+                color: 'D4C5F9',
+              };
               const dryRun = process.env.DRY_RUN === 'true';
               const actionsPath = process.env.RERUN_ACTIONS_PATH;
               const { owner, repo } = context.repo;
@@ -192,7 +197,47 @@ safe-outputs:
                   core.info(`Removed ${readyLabel} from PR #${prNumber}`);
                 } catch (e) {
                   if (e.status === 404) { core.info(`${readyLabel} already absent on PR #${prNumber}`); }
-                  else { core.warning(`Failed to remove ${readyLabel} from PR #${prNumber}: ${e.message}`); }
+                  else { throw new Error(`Failed to remove ${readyLabel} from PR #${prNumber}: ${e.message}`); }
+                }
+              }
+
+              async function ensureDeclinedLabel() {
+                try {
+                  const existing = await github.rest.issues.getLabel({ owner, repo, name: declinedLabel.name });
+                  if (existing.data.description !== declinedLabel.description || existing.data.color.toUpperCase() !== declinedLabel.color) {
+                    await github.rest.issues.updateLabel({
+                      owner, repo,
+                      name: declinedLabel.name,
+                      new_name: declinedLabel.name,
+                      description: declinedLabel.description,
+                      color: declinedLabel.color,
+                    });
+                  }
+                } catch (e) {
+                  if (e.status !== 404) { throw e; }
+                  await github.rest.issues.createLabel({ owner, repo, ...declinedLabel });
+                }
+              }
+
+              async function markDeclined(prNumber) {
+                if (dryRun) { core.info(`[dry-run] Would apply ${declinedLabel.name} to PR #${prNumber}`); return; }
+                await ensureDeclinedLabel();
+                await github.rest.issues.addLabels({
+                  owner, repo,
+                  issue_number: prNumber,
+                  labels: [declinedLabel.name],
+                });
+                core.info(`Applied ${declinedLabel.name} to PR #${prNumber}`);
+              }
+
+              async function clearDeclined(prNumber) {
+                if (dryRun) { core.info(`[dry-run] Would remove ${declinedLabel.name} from PR #${prNumber}`); return; }
+                try {
+                  await github.rest.issues.removeLabel({ owner, repo, issue_number: prNumber, name: declinedLabel.name });
+                  core.info(`Removed ${declinedLabel.name} from PR #${prNumber}`);
+                } catch (e) {
+                  if (e.status === 404) { return; }
+                  throw new Error(`Failed to remove ${declinedLabel.name} from PR #${prNumber}: ${e.message}`);
                 }
               }
 
@@ -203,6 +248,9 @@ safe-outputs:
                     if (dryRun) {
                       core.info(`[dry-run] Would dispatch review-trigger.yml for PR #${prNumber} (platform=${a.platform}, pipeline_ref=${a.pipelineRef})`);
                     } else {
+                      // A previous semantic skip must not suppress recovery if this
+                      // dispatch or the downstream review fails before posting a summary.
+                      await clearDeclined(prNumber);
                       await github.rest.actions.createWorkflowDispatch({
                         owner, repo,
                         workflow_id: 'review-trigger.yml',
@@ -246,6 +294,9 @@ safe-outputs:
                     } else if (a.headSha && liveHeadSha !== a.headSha) {
                       core.info(`Skip: PR #${prNumber} head advanced ${a.headSha} -> ${liveHeadSha} since the scan; leaving ${readyLabel} for re-evaluation.`);
                     } else {
+                      // Persist an explicit semantic-skip checkpoint before consuming
+                      // the queue label. Generic ready-label removals are not declines.
+                      await markDeclined(prNumber);
                       await react(a.rerunCommentId, '-1');
                       await removeReadyLabel(prNumber);
                     }
@@ -286,8 +337,8 @@ OIDC exchange, and triggers the AzDO `maui-copilot` pipeline (which removes the
 lock in its final cleanup stage). `review-trigger.yml` also has a per-PR
 concurrency group and refuses to start when the in-progress lock is already
 present, so a dispatched rerun can never double-trigger a review that is already
-running. For a `skip`, the safe-output job reacts `-1` and removes the queue
-label itself.
+running. For a `skip`, the safe-output job applies `s/agent-rerun-declined`, reacts
+`-1`, and removes the queue label itself.
 
 Because `review-trigger.yml` consumes `s/agent-ready-for-rerun` when it
 locks+triggers, a queued PR is removed from the candidate set after its first
@@ -318,16 +369,14 @@ such limit. Volume is instead bounded structurally:
    PR state cannot re-qualify and autonomous re-entry cannot loop.
 
    > **Skip-path checkpoint (anti-flap):** the `trigger` path advances the checkpoint by
-   > posting a fresh AI Summary, but a `skip` decision removes `s/agent-ready-for-rerun`
-   > without posting one. To stop the daily queue from re-labelling that same declined
-   > state forever, `Query-AutoRerunCandidates.ps1` reads the most recent time the label
-   > was **removed** (`Get-LastDeclinedAt`, from the issue events API) and passes it to
-   > `Resolve-AutonomousRerunEligibility -LastDeclinedAt`. When that removal is newer than
-   > the latest AI Summary it becomes the eligibility checkpoint, so re-labelling requires
-   > genuinely new activity **after the decline** (a fresh push or a new author comment) —
-   > not merely a head that still differs from the summary's SHA. A removal that preceded a
-   > completed review is naturally superseded by that review's newer AI Summary, so the
-   > `trigger` path is unaffected.
+   > posting a fresh AI Summary, but a `skip` decision does not. Before consuming
+   > `s/agent-ready-for-rerun`, the safe-output job applies the explicit
+   > `s/agent-rerun-declined` marker. `Query-AutoRerunCandidates.ps1` reads the marker's
+   > latest `labeled` event and passes it to
+   > `Resolve-AutonomousRerunEligibility -LastDeclinedAt`. Re-labelling then requires
+   > genuinely new activity **after the semantic skip**. Trigger-path and manual removals
+   > of the ready label are not decline checkpoints, so a failed dispatch/review can
+   > recover autonomously. When a PR becomes ready again, the decline marker is cleared.
 3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
 
 This is an accepted, documented cost trade-off: it matches manual `/review`

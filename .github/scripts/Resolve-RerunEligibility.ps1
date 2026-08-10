@@ -648,12 +648,9 @@ function Resolve-AutonomousRerunEligibility {
         [string]$CurrentHeadSha,
         [string]$PRAuthorLogin,
         [object[]]$CurrentLabels = @(),
-        # ISO-8601 timestamp of the most recent time s/agent-ready-for-rerun was
-        # REMOVED from this PR (a scanner `skip`, or a manual removal). When it is
-        # newer than the latest AI Summary it advances the eligibility checkpoint so
-        # the same declined state is not re-labelled on every daily run (anti-flap).
-        # A removal that preceded a completed review is naturally superseded by that
-        # review's newer AI Summary, so it has no effect in the trigger path.
+        # ISO-8601 timestamp of the most recent explicit scanner `skip` marker.
+        # When newer than the latest AI Summary it advances the checkpoint so the
+        # same declined state is not re-labelled on every daily run (anti-flap).
         [string]$LastDeclinedAt
     )
 
@@ -673,12 +670,9 @@ function Resolve-AutonomousRerunEligibility {
     $summaryCreatedAt = Get-ObjectDate $latestSummary 'created_at'
     $latestReviewedSha = Get-LatestReviewedSha -AISummaryBody $latestSummary.body
 
-    # Anti-flap checkpoint: if the ready label was removed (a scanner `skip`) more
-    # recently than the latest AI Summary, the scanner already declined the current
-    # state. Re-labelling must then require genuinely NEW activity AFTER that decline,
-    # not merely activity after the summary — otherwise the daily queue re-applies the
-    # label on the same unchanged state the scanner just declined and it flaps on/off
-    # forever without a review ever running.
+    # Anti-flap checkpoint: if the scanner explicitly declined this state more recently
+    # than the latest AI Summary, re-labelling requires genuinely NEW activity after
+    # that decline. Trigger-path and manual ready-label removals are not decline markers.
     $effectiveCheckpoint = $summaryCreatedAt
     $declinedAt = $null
     if (-not [string]::IsNullOrWhiteSpace($LastDeclinedAt)) {
