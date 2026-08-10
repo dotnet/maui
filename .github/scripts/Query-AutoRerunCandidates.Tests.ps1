@@ -5,6 +5,7 @@ BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Query-AutoRerunCandidates.ps1'
     $workflowPath = Join-Path $PSScriptRoot '../workflows/pr-review-queue.yml'
     $scannerPath = Join-Path $PSScriptRoot '../workflows/rerun-review-scanner.md'
+    $reviewTriggerPath = Join-Path $PSScriptRoot '../workflows/review-trigger.yml'
     $labelHelperPath = Join-Path $PSScriptRoot 'shared/Update-AgentLabels.ps1'
     $outputDir = Join-Path $PSScriptRoot '../../CustomAgentLogsTmp/QueryAutoRerunTests'
     New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
@@ -35,6 +36,24 @@ BeforeAll {
         return @($Items | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress })
     }
 
+    function New-DeclineMarkerComment {
+        param(
+            [int64]$Id,
+            [string]$CreatedAt,
+            [string]$HeadSha,
+            [string]$Login = 'github-actions[bot]'
+        )
+
+        [pscustomobject]@{
+            id = $Id
+            body = "<!-- agent-rerun-declined:$HeadSha -->"
+            created_at = $CreatedAt
+            updated_at = $CreatedAt
+            user = [pscustomobject]@{ login = $Login; type = 'Bot' }
+            author_association = 'NONE'
+        }
+    }
+
     function Invoke-TestScan {
         Invoke-AutoRerunCandidateScan `
             -ScanOwner 'test-owner' `
@@ -61,7 +80,6 @@ Describe 'Query-AutoRerunCandidates' {
         $script:reviews = @()
         $script:reviewComments = @()
         $script:commits = @()
-        $script:declinedTimestamps = @()
         $script:failedPRs = @()
         $script:ghCalls = @()
 
@@ -90,8 +108,6 @@ Describe 'Query-AutoRerunCandidates' {
             if ($command -match '/pulls/\d+/reviews') { return ConvertTo-GhLines $script:reviews }
             if ($command -match '/pulls/\d+/comments') { return ConvertTo-GhLines $script:reviewComments }
             if ($command -match '/pulls/\d+/commits') { return ConvertTo-GhLines $script:commits }
-            if ($command -match '/issues/\d+/events') { return @($script:declinedTimestamps) }
-
             throw "Unexpected gh call: $command"
         }
     }
@@ -169,19 +185,17 @@ Context 'scanner decline checkpoint' {
                 author_association = 'MEMBER'
             }
         )
-        $script:declinedTimestamps = @('2026-05-31T10:00:00Z')
 
         Invoke-TestScan
 
         $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
         $summary.decisions[0].eligible | Should -BeTrue
         $summary.decisions[0].reason | Should -Be 'new-head-commit'
-        @($script:ghCalls | Where-Object { $_ -match '/issues/\d+/events' }).Count | Should -Be 0
     }
 
     It 'sorts explicit scanner markers newest-first and re-evaluates eligibility against that checkpoint' {
         $script:prList = @(
-            New-TestPR -Number 7 -Labels @('s/agent-rerun-declined')
+            New-TestPR -Number 7 -Labels @('s/agent-rerun-declined') -HeadSha '2222222222222222222222222222222222222222'
         )
         $script:issueComments = @(
             [pscustomobject]@{
@@ -199,12 +213,10 @@ Context 'scanner decline checkpoint' {
                 updated_at = '2026-05-31T09:45:00Z'
                 user = [pscustomobject]@{ login = 'dev-user'; type = 'User' }
                 author_association = 'CONTRIBUTOR'
-            }
-        )
-        $script:declinedTimestamps = @(
-            '2026-05-31T08:00:00Z',
-            '2026-05-31T10:00:00Z',
-            '2026-05-31T09:30:00Z'
+            },
+            (New-DeclineMarkerComment -Id 3 -CreatedAt '2026-05-31T08:00:00Z' -HeadSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+            (New-DeclineMarkerComment -Id 4 -CreatedAt '2026-05-31T10:00:00Z' -HeadSha '2222222222222222222222222222222222222222'),
+            (New-DeclineMarkerComment -Id 5 -CreatedAt '2026-05-31T09:30:00Z' -HeadSha 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
         )
 
         Invoke-TestScan
@@ -212,14 +224,34 @@ Context 'scanner decline checkpoint' {
         $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
         $summary.decisions[0].eligible | Should -BeFalse
         $summary.decisions[0].reason | Should -Be 'declined-state-unchanged'
-        @($script:ghCalls | Where-Object {
-            $_ -match 'event == .labeled.' -and $_ -match 's/agent-rerun-declined'
-        }).Count | Should -Be 1
+    }
+
+    It 're-qualifies a head that changed while the scanner was persisting its decline marker' {
+        $script:prList = @(
+            New-TestPR -Number 8 -Labels @('s/agent-rerun-declined') -HeadSha '3333333333333333333333333333333333333333'
+        )
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 1
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                created_at = '2026-05-31T09:00:00Z'
+                updated_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            },
+            (New-DeclineMarkerComment -Id 2 -CreatedAt '2026-05-31T10:00:00Z' -HeadSha '2222222222222222222222222222222222222222')
+        )
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].eligible | Should -BeTrue
+        $summary.decisions[0].reason | Should -Be 'new-head-commit'
     }
 
     It 'persists skip markers before consuming ready labels and clears them before trigger dispatch' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
-        $scanner.IndexOf('await markDeclined(prNumber);') |
+        $scanner.IndexOf('await markDeclined(prNumber, liveHeadSha);') |
             Should -BeLessThan $scanner.IndexOf("await react(a.rerunCommentId, '-1');")
         $scanner.IndexOf("await react(a.rerunCommentId, '-1');") |
             Should -BeLessThan $scanner.IndexOf('await removeReadyLabel(prNumber);')
@@ -227,10 +259,17 @@ Context 'scanner decline checkpoint' {
             Should -BeLessThan $scanner.IndexOf('await github.rest.actions.createWorkflowDispatch({')
     }
 
+    It 'clears the decline label in the shared review entrypoint before acquiring the review lock' {
+        $reviewTrigger = Get-Content -Raw -LiteralPath $reviewTriggerPath
+        $reviewTrigger.IndexOf('$declineCleared = Clear-AgentRerunDeclined') |
+            Should -BeLessThan $reviewTrigger.IndexOf('$locked = Set-AgentReviewInProgress')
+    }
+
     It 'keeps scanner decline-label metadata aligned with the shared definition' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
         $labelHelper = Get-Content -Raw -LiteralPath $labelHelperPath
 
+        $scanner | Should -Match ([regex]::Escape('agent-rerun-declined:'))
         foreach ($value in @(
             's/agent-rerun-declined',
             'AI rerun scanner declined the current PR state; new author activity is required',

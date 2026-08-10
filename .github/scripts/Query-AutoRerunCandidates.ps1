@@ -109,21 +109,28 @@ function Get-CommitsForPR {
     return @($commitsRaw | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
-function Get-LastScannerDeclinedAt {
-    param([int]$Number)
+function Get-LatestScannerDecline {
+    param([object[]]$Comments)
 
-    # The scanner applies s/agent-rerun-declined only for a semantic `skip`, before
-    # consuming s/agent-ready-for-rerun. Using this explicit marker avoids treating
-    # trigger-path or manual ready-label removals as declines. Fail loud on API errors
-    # so a transient failure is recorded rather than silently resurrecting the flap.
-    $timestampsRaw = gh api "repos/$Owner/$Repo/issues/$Number/events?per_page=100" --paginate `
-        --jq ".[] | select(.event == `"labeled`" and .label.name == `"$RerunDeclinedLabel`") | .created_at"
-    if ($LASTEXITCODE -ne 0) { throw "Failed to fetch label events for #$Number (gh api exited $LASTEXITCODE)." }
-    $timestamps = @($timestampsRaw | Where-Object { $_ })
-    if ($timestamps.Count -eq 0) { return $null }
-    return @($timestamps | Sort-Object {
-        [datetimeoffset]::Parse($_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
-    } -Descending)[0]
+    # The scanner records the exact head it declined in a minimized bot comment.
+    # The SHA identity, not just the marker timestamp, closes the TOCTOU window
+    # between the safe-output job's live-head read and its subsequent writes.
+    $markerPattern = '<!--\s*agent-rerun-declined:([0-9a-fA-F]{40})\s*-->'
+    $markers = @($Comments | Where-Object {
+        $_.kind -eq 'issue-comment' -and
+        $_.user -and
+        (Normalize-GitHubActorLogin ([string]$_.user.login)) -eq 'github-actions[bot]' -and
+        ([string]$_.body) -match $markerPattern
+    } | ForEach-Object {
+        $match = [regex]::Match([string]$_.body, $markerPattern)
+        [pscustomobject]@{
+            CommentId  = [Int64]$_.id
+            DeclinedAt = Get-ObjectDate $_ 'created_at'
+            HeadSha    = $match.Groups[1].Value.ToLowerInvariant()
+        }
+    } | Sort-Object @{ Expression = { $_.DeclinedAt }; Descending = $true }, @{ Expression = { $_.CommentId }; Descending = $true })
+
+    return @($markers | Select-Object -First 1)
 }
 
 function Invoke-AutoRerunCandidateScan {
@@ -203,18 +210,22 @@ function Invoke-AutoRerunCandidateScan {
             $alreadyPresent = @($labels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
             $hasDeclinedMarker = @($labels | Where-Object { $_ -eq $RerunDeclinedLabel }).Count -gt 0
 
-            # Only an explicit scanner-decline marker advances the checkpoint. Trigger-path
-            # and manual ready-label removals no longer suppress autonomous recovery.
-            if ($result.Eligible -and -not $alreadyPresent -and $hasDeclinedMarker) {
-                $lastDeclinedAt = Get-LastScannerDeclinedAt -Number $number
-                if ($lastDeclinedAt) {
+            # Only a trusted scanner marker advances the checkpoint. It carries the
+            # exact declined head so a push racing the marker write always re-qualifies,
+            # even when the commit timestamp predates the marker timestamp.
+            if (-not $alreadyPresent -and $hasDeclinedMarker) {
+                $lastDecline = Get-LatestScannerDecline -Comments $activity
+                if ($lastDecline) {
                     $result = Resolve-AutonomousRerunEligibility `
                         -Comments $activity `
                         -Commits $commits `
                         -CurrentHeadSha $pr.headRefOid `
                         -PRAuthorLogin $authorLogin `
                         -CurrentLabels $effectiveLabels `
-                        -LastDeclinedAt $lastDeclinedAt
+                        -LastDeclinedAt $lastDecline.DeclinedAt.ToString('o') `
+                        -LastDeclinedHeadSha $lastDecline.HeadSha
+                } else {
+                    Write-Host "::warning::PR #$number has $RerunDeclinedLabel but no trusted head marker; ignoring the stale marker."
                 }
             }
 

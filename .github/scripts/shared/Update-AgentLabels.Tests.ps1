@@ -20,13 +20,28 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    # Extract only the pure-function we are testing (it reads files, makes no gh/network calls).
+    # Extract only the functions under test.
     $function = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
         $args[0].Name -eq 'Parse-PhaseOutcomes'
     }, $true)
     if (-not $function) { throw "Function 'Parse-PhaseOutcomes' not found" }
     Invoke-Expression $function.Extent.Text
+
+    $clearDeclinedFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Clear-AgentRerunDeclined'
+    }, $true)
+    if (-not $clearDeclinedFunction) { throw "Function 'Clear-AgentRerunDeclined' not found" }
+    Invoke-Expression $clearDeclinedFunction.Extent.Text
+
+    function Get-AgentLabels {
+        param([string]$PRNumber, [string]$Owner, [string]$Repo)
+    }
+
+    function Remove-Label {
+        param([string]$PRNumber, [string]$LabelName, [string]$Owner, [string]$Repo)
+    }
 
     # Helper: build a fake repo root with a PRAgent artifact dir and optional files.
     function New-FixtureRoot {
@@ -46,6 +61,36 @@ BeforeAll {
         if ($PSBoundParameters.ContainsKey('GateContentMd')) { $GateContentMd | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8 }
         if ($PSBoundParameters.ContainsKey('ReportMd'))      { New-Item -ItemType Directory -Force -Path (Join-Path $agentDir 'report') | Out-Null; $ReportMd | Set-Content (Join-Path $agentDir 'report/content.md') -Encoding UTF8 }
         return $root
+    }
+}
+
+Describe 'Clear-AgentRerunDeclined' {
+    BeforeEach {
+        Mock Get-AgentLabels { @() }
+        Mock Remove-Label { $true }
+    }
+
+    It 'is a no-op when the decline label is absent from supplied labels' {
+        Clear-AgentRerunDeclined -PRNumber 1 -CurrentLabels @('s/agent-ready-for-rerun') |
+            Should -BeTrue
+        Should -Invoke Remove-Label -Times 0
+    }
+
+    It 'removes the decline label using the supplied label snapshot' {
+        Clear-AgentRerunDeclined -PRNumber 1 -Owner dotnet -Repo maui -CurrentLabels @('s/agent-rerun-declined') |
+            Should -BeTrue
+        Should -Invoke Get-AgentLabels -Times 0
+        Should -Invoke Remove-Label -Times 1 -ParameterFilter {
+            $PRNumber -eq '1' -and $LabelName -eq 's/agent-rerun-declined' -and
+            $Owner -eq 'dotnet' -and $Repo -eq 'maui'
+        }
+    }
+
+    It 'reports a failed marker removal' {
+        Mock Remove-Label { $false }
+
+        Clear-AgentRerunDeclined -PRNumber 1 -CurrentLabels @('s/agent-rerun-declined') |
+            Should -BeFalse
     }
 }
 

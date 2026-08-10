@@ -219,9 +219,22 @@ safe-outputs:
                 }
               }
 
-              async function markDeclined(prNumber) {
-                if (dryRun) { core.info(`[dry-run] Would apply ${declinedLabel.name} to PR #${prNumber}`); return; }
+              async function markDeclined(prNumber, headSha) {
+                if (dryRun) { core.info(`[dry-run] Would record ${declinedLabel.name} for PR #${prNumber} at ${headSha}`); return; }
                 await ensureDeclinedLabel();
+                const marker = await github.rest.issues.createComment({
+                  owner, repo,
+                  issue_number: prNumber,
+                  body: `<!-- agent-rerun-declined:${headSha} -->\nAutomated rerun scanner checkpoint for declined head \`${headSha.slice(0, 12)}\`.`,
+                });
+                try {
+                  await github.graphql(
+                    'mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}',
+                    { id: marker.data.node_id },
+                  );
+                } catch (e) {
+                  core.warning(`Recorded decline head for PR #${prNumber}, but could not minimize marker comment: ${e.message}`);
+                }
                 await github.rest.issues.addLabels({
                   owner, repo,
                   issue_number: prNumber,
@@ -296,7 +309,7 @@ safe-outputs:
                     } else {
                       // Persist an explicit semantic-skip checkpoint before consuming
                       // the queue label. Generic ready-label removals are not declines.
-                      await markDeclined(prNumber);
+                      await markDeclined(prNumber, liveHeadSha);
                       await react(a.rerunCommentId, '-1');
                       await removeReadyLabel(prNumber);
                     }
@@ -371,12 +384,13 @@ such limit. Volume is instead bounded structurally:
    > **Skip-path checkpoint (anti-flap):** the `trigger` path advances the checkpoint by
    > posting a fresh AI Summary, but a `skip` decision does not. Before consuming
    > `s/agent-ready-for-rerun`, the safe-output job applies the explicit
-   > `s/agent-rerun-declined` marker. `Query-AutoRerunCandidates.ps1` reads the marker's
-   > latest `labeled` event and passes it to
-   > `Resolve-AutonomousRerunEligibility -LastDeclinedAt`. Re-labelling then requires
-   > genuinely new activity **after the semantic skip**. Trigger-path and manual removals
-   > of the ready label are not decline checkpoints, so a failed dispatch/review can
-   > recover autonomously. When a PR becomes ready again, the decline marker is cleared.
+   > `s/agent-rerun-declined` marker and writes a minimized bot comment containing the
+   > exact head SHA that was declined. `Query-AutoRerunCandidates.ps1` passes both that
+   > SHA and the comment timestamp to `Resolve-AutonomousRerunEligibility`. Re-labelling
+   > then requires genuinely new activity after the semantic skip, while any different
+   > current head always re-qualifies even if a push raced the marker write. Trigger-path
+   > and manual removals of the ready label are not decline checkpoints. Every successful
+   > review entrypoint clears the visible decline label.
 3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
 
 This is an accepted, documented cost trade-off: it matches manual `/review`

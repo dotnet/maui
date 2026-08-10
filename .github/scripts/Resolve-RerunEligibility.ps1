@@ -651,7 +651,11 @@ function Resolve-AutonomousRerunEligibility {
         # ISO-8601 timestamp of the most recent explicit scanner `skip` marker.
         # When newer than the latest AI Summary it advances the checkpoint so the
         # same declined state is not re-labelled on every daily run (anti-flap).
-        [string]$LastDeclinedAt
+        [string]$LastDeclinedAt,
+        # Exact PR head SHA stored by the scanner when it made that skip decision.
+        # A different current head always represents post-decline activity, even
+        # when the push raced the marker write and has an earlier commit timestamp.
+        [string]$LastDeclinedHeadSha
     )
 
     if (@($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0) {
@@ -682,6 +686,12 @@ function Resolve-AutonomousRerunEligibility {
         }
     }
     $isDeclineGated = [bool]($declinedAt -and $declinedAt -gt $summaryCreatedAt)
+    $headDiffersFromDeclined = $isDeclineGated -and
+        (Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $LastDeclinedHeadSha)
+
+    if ($headDiffersFromDeclined) {
+        return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
+    }
 
     $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
     $hasNewComment = Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $effectiveCheckpoint -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin

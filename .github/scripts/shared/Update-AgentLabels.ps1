@@ -241,6 +241,37 @@ function Clear-AgentReviewInProgress {
 }
 
 # ============================================================
+# Clear-AgentRerunDeclined
+# ============================================================
+function Clear-AgentRerunDeclined {
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui',
+        [string[]]$CurrentLabels
+    )
+
+    $label = 's/agent-rerun-declined'
+    $labels = if ($PSBoundParameters.ContainsKey('CurrentLabels')) {
+        @($CurrentLabels)
+    } else {
+        @(Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo)
+    }
+
+    if ($labels -notcontains $label) {
+        return $true
+    }
+
+    $ok = Remove-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo
+    if ($ok) {
+        Write-Host "  ✅ Removed: $label" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠️  Failed to remove: $label" -ForegroundColor Yellow
+    }
+    return $ok
+}
+
+# ============================================================
 # Test-AgentReviewInProgressIsStale
 # ============================================================
 function Test-AgentReviewInProgressIsStale {

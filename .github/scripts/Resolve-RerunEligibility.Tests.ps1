@@ -670,6 +670,23 @@ Describe 'Resolve-AutonomousRerunEligibility' {
             $result.Reason | Should -Be 'declined-state-unchanged'
         }
 
+        It 're-qualifies when the current head differs from the exact declined head even if the marker is newer' {
+            $comments = @(
+                New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            )
+
+            $result = Resolve-AutonomousRerunEligibility `
+                -Comments $comments `
+                -Commits @() `
+                -CurrentHeadSha '3333333333333333333333333333333333333333' `
+                -PRAuthorLogin 'dev-user' `
+                -LastDeclinedAt '2026-05-31T10:00:00Z' `
+                -LastDeclinedHeadSha '2222222222222222222222222222222222222222'
+
+            $result.Eligible | Should -BeTrue
+            $result.Reason | Should -Be 'new-head-commit'
+        }
+
         It 're-qualifies on a fresh PR-author comment posted after the decline' {
             $comments = @(
                 New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
