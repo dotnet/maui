@@ -36,11 +36,11 @@ public partial class SwitchOptionsPage : ContentPage
 	{
 		if (e.Value)
 		{
-			_viewModel.IsEnabled = false;
+			_viewModel.IsEnabled = true;
 		}
 		else
 		{
-			_viewModel.IsEnabled = true;
+			_viewModel.IsEnabled = false;
 		}
 	}
 
@@ -49,11 +49,11 @@ public partial class SwitchOptionsPage : ContentPage
 
 		if (e.Value)
 		{
-			_viewModel.IsVisible = false;
+			_viewModel.IsVisible = true;
 		}
 		else
 		{
-			_viewModel.IsVisible = true;
+			_viewModel.IsVisible = false;
 		}
 	}
 
@@ -82,6 +82,22 @@ public partial class SwitchOptionsPage : ContentPage
 		{
 			OnColorRedCheckBox.IsChecked = false;
 			_viewModel.OnColor = Colors.Green;
+		}
+	}
+
+	private void OnOffColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+			return;
+		if (changedBox == OffColorRedCheckBox)
+		{
+			OffColorGreenCheckBox.IsChecked = false;
+			_viewModel.OffColor = Colors.Red;
+		}
+		else if (changedBox == OffColorGreenCheckBox)
+		{
+			OffColorRedCheckBox.IsChecked = false;
+			_viewModel.OffColor = Colors.Green;
 		}
 	}
 
