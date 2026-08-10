@@ -376,10 +376,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				foreach (var key in headers.Keys)
 				{
-					var value = headers[key];
-					var keyString = key?.ToString();
-					var valueString = value?.ToString();
-					if (keyString is not null && valueString is not null)
+					if (key?.ToString() is string keyString &&
+						headers[key]?.ToString() is string valueString)
 					{
 						yield return new KeyValuePair<string, string>(keyString, valueString);
 					}
