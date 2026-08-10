@@ -198,9 +198,9 @@ jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
   [ -z "$sha" ] && continue
   # Only workflow PRs with an exact SAME-REPO Fixes reference have scan provenance. A Refs line
   # points at a separate upstream issue and an arbitrary cross-repo #N must never become a join.
-  scan_n=$(jq -r --arg repo "$REPO_RE" '
-    [(.body // "") | scan("(?i)\\bFixes\\b:?[ \t]*(?:"+$repo+"#|[^0-9A-Za-z_/]#)([0-9]+)\\b")]
-    | if length > 0 then .[0][0] else empty end' <<<"$pr")
+  scan_n=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -r --arg repo "$REPO_RE" '
+    include "leak-workflow-provenance";
+    leak_first_exact_fixes_number($repo)' <<<"$pr")
   [ -z "$scan_n" ] && continue
 
   # The merge commit must be contained in main, but not in the shipped release tag. If either

@@ -491,10 +491,11 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
 # (d-prefilter) Narrow the raw merged cache BEFORE any compare API calls. Keep PRs that either
 #     carry the exact same-repo Fixes #N provenance (the only destructive-close key) or name the
 #     same rooting API (a non-destructive semantic de-dup candidate).
-jq --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
-    'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
+    'include "leak-workflow-provenance";
+     def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
      def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
-     [.[] | select(((.body // "") | test("(?i)\\bFixes\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))
+     [.[] | select(leak_has_exact_fixes($repo; $n)
        or (((.title // "") | titleapi) == $apiplain)
        or (($targetkey != "") and (bodykey == $targetkey)))]' \
     /tmp/gh-aw/agent/merged-leakfix-raw.json \
@@ -520,8 +521,9 @@ fi
 
 # (d-exact) ONLY an exact same-repo Fixes #N match may drive close-issue. A same Type.Member with a
 # different issue number is not provenance for this retention path and remains non-destructive.
-jq --arg n "$N" --arg repo "$REPO_RE" \
-    '[.[] | select((.body // "") | test("(?i)\\bFixes\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))]' \
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg repo "$REPO_RE" \
+    'include "leak-workflow-provenance";
+     [.[] | select(leak_has_exact_fixes($repo; $n))]' \
     /tmp/gh-aw/agent/merged-onmain-candidates.json \
   > /tmp/gh-aw/agent/merged-exact-fix-prs.json
 jq -r '.[] | "exact merged fix for scan issue: #\(.number) \(.title)"' \
@@ -536,9 +538,9 @@ enrich_scan_provenance () {
   output=$2
   printf '' > "$output"
   jq -c '.[]' "$input" | while IFS= read -r pr; do
-    scan_n=$(jq -r --arg repo "$REPO_RE" '
-      [(.body // "") | scan("(?i)\\bFixes\\b:?[ \t]*(?:"+$repo+"#|[^0-9A-Za-z_/]#)([0-9]+)\\b")]
-      | if length > 0 then .[0][0] else empty end' <<<"$pr")
+    scan_n=$(jq -L "$GITHUB_WORKSPACE/.github/scripts" -r --arg repo "$REPO_RE" '
+      include "leak-workflow-provenance";
+      leak_first_exact_fixes_number($repo)' <<<"$pr")
     [ -z "$scan_n" ] && continue
     issue=$(gh issue view "$scan_n" --repo "$GITHUB_REPOSITORY" --json number,title,body,state 2>/dev/null) || issue=""
     [ -z "$issue" ] && continue
@@ -555,10 +557,11 @@ if [ -s /tmp/gh-aw/agent/same-api-open-fixes.ndjson ]; then
 else
   echo '[]' > /tmp/gh-aw/agent/same-api-open-fixes.json
 fi
-jq --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
-    'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
+jq -L "$GITHUB_WORKSPACE/.github/scripts" --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
+    'include "leak-workflow-provenance";
+     def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
      def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
-     [.[] | select((((.body // "") | test("(?i)\\bFixes\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) | not)
+     [.[] | select((leak_has_exact_fixes($repo; $n) | not)
        and ((((.title // "") | titleapi) == $apiplain)
          or (($targetkey != "") and (bodykey == $targetkey))))]' \
     /tmp/gh-aw/agent/merged-onmain-candidates.json \

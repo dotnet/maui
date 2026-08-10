@@ -9,18 +9,21 @@ Describe 'Memory leak workflow provenance and safety' {
         $fixerLockPath = Join-Path $workflowRoot 'leak-fixer.lock.yml'
         $hunterLockPath = Join-Path $workflowRoot 'daily-leak-hunter.lock.yml'
         $actionsLockPath = Join-Path $PSScriptRoot '../aw/actions-lock.json'
+        $provenanceModulePath = Join-Path $PSScriptRoot 'leak-workflow-provenance.jq'
 
         $script:fixer = Get-Content -LiteralPath $fixerPath -Raw
         $script:hunter = Get-Content -LiteralPath $hunterPath -Raw
         $script:fixerLock = Get-Content -LiteralPath $fixerLockPath -Raw
         $script:hunterLock = Get-Content -LiteralPath $hunterLockPath -Raw
+        $script:provenanceModule = Get-Content -LiteralPath $provenanceModulePath -Raw
+        $script:provenanceModuleRoot = $PSScriptRoot
         $actionsLock = Get-Content -LiteralPath $actionsLockPath -Raw | ConvertFrom-Json
         $setupEntry = $actionsLock.entries.PSObject.Properties |
             Where-Object Name -Like 'github/gh-aw-actions/setup@*' |
             Select-Object -First 1
         $script:compilerVersion = $setupEntry.Value.version
 
-        function Get-FixesScanIssueNumber {
+        function Get-ProductionFixesScanIssueNumber {
             param(
                 [Parameter(Mandatory)]
                 [string] $Body,
@@ -29,16 +32,16 @@ Describe 'Memory leak workflow provenance and safety' {
                 [string] $Repository
             )
 
-            $repoPattern = [Regex]::Escape($Repository)
-            $match = [Regex]::Match(
-                $Body,
-                "(?im)\bFixes\b:?[ \t]*(?:(?:$repoPattern)#|(?<![0-9A-Za-z_/])#)([0-9]+)\b")
-
-            if ($match.Success) {
-                return [int]$match.Groups[1].Value
+            $inputJson = @{ body = $Body } | ConvertTo-Json -Compress
+            $output = $inputJson |
+                & jq -L $script:provenanceModuleRoot -r --arg repo $Repository '
+                    include "leak-workflow-provenance";
+                    leak_first_exact_fixes_number($repo)'
+            if ($LASTEXITCODE -ne 0) {
+                throw "Production jq provenance parser failed with exit code $LASTEXITCODE"
             }
 
-            return $null
+            return @($output)
         }
 
         function Get-LeakScanKey {
@@ -56,16 +59,54 @@ Describe 'Memory leak workflow provenance and safety' {
         }
     }
 
-    It 'accepts only exact bare or same-repository Fixes provenance' -ForEach @(
-        @{ Body = 'Fixes #123'; Expected = 123 }
-        @{ Body = 'Fixes: #124'; Expected = 124 }
-        @{ Body = 'Fixes dotnet/maui#125'; Expected = 125 }
-        @{ Body = 'Refs: dotnet/maui#126'; Expected = $null }
-        @{ Body = 'Fixes dotnet/runtime#127'; Expected = $null }
-        @{ Body = 'Text owner/repo#128 without a closing keyword'; Expected = $null }
+    It 'runs provenance fixtures through the production jq parser' -ForEach @(
+        @{ Body = 'Fixes #123'; Expected = '123' }
+        @{ Body = 'Fixes: #124'; Expected = '124' }
+        @{ Body = 'Fixes dotnet/maui#125'; Expected = '125' }
+        @{ Body = 'fixes:dotnet/maui#126'; Expected = '126' }
+        @{ Body = 'Refs: dotnet/maui#127'; Expected = $null }
+        @{ Body = 'Fixes dotnet/runtime#128'; Expected = $null }
+        @{ Body = 'Fixes dotnet/maui/#129'; Expected = $null }
+        @{ Body = 'Fixes /#130'; Expected = $null }
+        @{ Body = 'Fixes #13abc'; Expected = $null }
+        @{ Body = 'PrefixFixes #131'; Expected = $null }
+        @{ Body = 'Text owner/repo#132 without a closing keyword'; Expected = $null }
     ) {
-        Get-FixesScanIssueNumber -Body $Body -Repository 'dotnet/maui' |
-            Should -Be $Expected
+        $actual = @(Get-ProductionFixesScanIssueNumber -Body $Body -Repository 'dotnet/maui')
+        if ($null -eq $Expected) {
+            $actual | Should -BeNullOrEmpty
+        }
+        else {
+            $actual | Should -Be @($Expected)
+        }
+    }
+
+    It 'filters destructive-close candidates with the same production jq contract' {
+        $inputJson = @(
+            @{ number = 1; body = 'Fixes #500' }
+            @{ number = 2; body = 'Fixes dotnet/maui#500' }
+            @{ number = 3; body = 'Refs dotnet/maui#500' }
+            @{ number = 4; body = 'Fixes dotnet/runtime#500' }
+            @{ number = 5; body = 'Fixes dotnet/maui/#500' }
+            @{ number = 6; body = 'Fixes #500extra' }
+        ) | ConvertTo-Json -Compress
+
+        $result = $inputJson |
+            & jq -L $provenanceModuleRoot --arg repo 'dotnet/maui' --arg n '500' '
+                include "leak-workflow-provenance";
+                [.[] | select(leak_has_exact_fixes($repo; $n)) | .number]' |
+            ConvertFrom-Json
+
+        $LASTEXITCODE | Should -Be 0
+        @($result) | Should -Be @(1, 2)
+    }
+
+    It 'keeps the exact Fixes regex in one production module consumed by both workflows' {
+        $provenanceModule | Should -Match ([Regex]::Escape('\\bFixes\\b'))
+        $fixer | Should -Match 'include "leak-workflow-provenance"'
+        $hunter | Should -Match 'include "leak-workflow-provenance"'
+        $fixer | Should -Not -Match 'scan\("\(\?i\)\\\\bFixes'
+        $hunter | Should -Not -Match 'scan\("\(\?i\)\\\\bFixes'
     }
 
     It 'keeps two mechanisms on the same API as distinct leak identities' {
