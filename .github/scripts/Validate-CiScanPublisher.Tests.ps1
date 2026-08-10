@@ -684,6 +684,14 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
         $script:TwinLock | Should -Match 'CI_SCAN_SCANNER_ID: '
     }
 
+    It 'reads only the fixed same-run agent artifact manifest' {
+        $script:TwinLock |
+            Should -Match 'CI_SCAN_MANIFEST_PATH: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/agent/manifest_final\.json'
+        $script:TwinLock | Should -Match '(?m)^\s+name: agent$'
+        $script:TwinLock | Should -Match '(?m)^\s+path: \$\{\{ runner\.temp \}\}/gh-aw/safe-jobs/$'
+        $script:TwinLock | Should -Not -Match '(?m)^\s+manifest_path:'
+    }
+
     It 'validates the canonical markers at the write boundary' {
         $script:TwinLock | Should -Match 'const assertCanonicalPayload'
         $script:TwinLock | Should -Match 'does not carry exactly one canonical fingerprint marker'
@@ -865,12 +873,14 @@ $publisherSource
             param(
                 [string]$Identity = 'sample test',
                 [string]$Pipeline = 'maui-pr',
+                [string]$FailureCategory = 'assertion failed',
+                [string]$Platform = 'windows',
                 [int]$MatchCount = 2,
                 [string]$EvidenceLine = '',
                 [string]$BodyOverride
             )
 
-            $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|$Pipeline|$Identity|assertion failed|windows"
+            $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|$Pipeline|$Identity|$FailureCategory|$Platform"
             if (-not $EvidenceLine) {
                 $EvidenceLine = "Assertion failed for $Identity"
             }
@@ -1076,6 +1086,27 @@ $publisherSource
             title    = $issue.Title
             body     = $issue.Body
             html_url = 'https://github.com/dotnet/maui/issues/40001'
+        }
+
+        $result = Invoke-Publisher -Plan (New-Plan -Issues @($issue)) -OpenIssues @($open)
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'reuses the canonical marker matching the production uppercase fingerprint' {
+        $issue = New-PlannedIssue `
+            -Identity 'runonios_mauireleasetrimfull' `
+            -FailureCategory 'ios-simulator-boot-timeout' `
+            -Platform 'ios-simulator-64'
+        $expectedFingerprint =
+            "$($script:TwinScannerId)|$($script:TwinBranch)|maui-pr|runonios_mauireleasetrimfull|ios-simulator-boot-timeout|ios-simulator-64"
+        $issue.Fingerprint | Should -BeExactly $expectedFingerprint
+        $open = [pscustomobject]@{
+            number   = 40002
+            title    = $issue.Title
+            body     = $issue.Body
+            html_url = 'https://github.com/dotnet/maui/issues/40002'
         }
 
         $result = Invoke-Publisher -Plan (New-Plan -Issues @($issue)) -OpenIssues @($open)

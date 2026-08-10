@@ -323,6 +323,7 @@ Describe 'New-ExclusiveTempFile' {
     BeforeAll {
         $script:SandboxDir = Join-Path ([System.IO.Path]::GetTempPath()) "apply-prfinalize-tests-$([System.IO.Path]::GetRandomFileName())"
         New-Item -ItemType Directory -Path $script:SandboxDir -Force | Out-Null
+        $script:RealNewItem = Get-Command New-Item -CommandType Cmdlet
         $script:OriginalAgentTemp = $env:AGENT_TEMPDIRECTORY
         $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
     }
@@ -367,11 +368,24 @@ Describe 'New-ExclusiveTempFile' {
         # $script: scope is required — a plain $i++ inside the scriptblock would mutate a
         # local copy, so every attempt would re-request the planted name.
         $script:ForcedIndex = 0
+        $script:AttemptedPaths = @()
+        Mock New-Item {
+            $script:AttemptedPaths += $Path
+            & $script:RealNewItem -ItemType $ItemType -Path $Path -ErrorAction Stop
+        } -ParameterFilter { $ItemType -eq 'File' }
+
         $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
             $n = "forced$($script:ForcedIndex)"; $script:ForcedIndex++; $n
         }
         try {
-            # It must have skipped the planted path entirely...
+            # The spy proves New-Item actually attempted the planted path before moving on.
+            # Generator consumption alone is insufficient: an implementation could generate
+            # forced0, skip it without calling New-Item, then successfully create forced1.
+            $script:AttemptedPaths[0] | Should -Be $planted
+            $script:AttemptedPaths[1] | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
+            $script:ForcedIndex | Should -BeGreaterThan 1
+            $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-forced1.md')
+
             $path | Should -Not -Be $planted
             'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
             # ...so the symlink target is untouched, and the link is still a link.
@@ -390,10 +404,22 @@ Describe 'New-ExclusiveTempFile' {
         New-Item -ItemType SymbolicLink -Path $planted -Target $missingTarget | Out-Null
 
         $script:DangleIndex = 0
+        $script:AttemptedPaths = @()
+        Mock New-Item {
+            $script:AttemptedPaths += $Path
+            & $script:RealNewItem -ItemType $ItemType -Path $Path -ErrorAction Stop
+        } -ParameterFilter { $ItemType -eq 'File' }
+
         $path = New-ExclusiveTempFile -Prefix 'pr-finalize-body-123' -NameGenerator {
             $n = "dangle$($script:DangleIndex)"; $script:DangleIndex++; $n
         }
         try {
+            # As above: pins that the planted path was attempted and skipped, not bypassed.
+            $script:AttemptedPaths[0] | Should -Be $planted
+            $script:AttemptedPaths[1] | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
+            $script:DangleIndex | Should -BeGreaterThan 1
+            $path | Should -Be (Join-Path $script:SandboxDir 'pr-finalize-body-123-dangle1.md')
+
             $path | Should -Not -Be $planted
             'REPLACEMENT BODY' | Set-Content -LiteralPath $path -Encoding UTF8
             # Writing through a dangling link would have created the target.
@@ -452,8 +478,18 @@ Describe 'New-ExclusiveTempFile' {
         $env:AGENT_TEMPDIRECTORY = $script:SandboxDir
         try {
             $script:Calls = 0
-            { New-ExclusiveTempFile -Prefix 'missing-dir/nope/body' -NameGenerator { $script:Calls++; 'x' } } |
-                Should -Throw -ExpectedMessage '*Could not find a part of the path*'
+            # Assert on the exception *type*, not the message: .NET message strings are
+            # localized, so matching "Could not find a part of the path" would fail on a
+            # non-en-US agent. The type is culture-invariant.
+            $thrown = $null
+            try {
+                New-ExclusiveTempFile -Prefix 'missing-dir/nope/body' -NameGenerator { $script:Calls++; 'x' }
+            } catch {
+                $thrown = $_.Exception
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown | Should -BeOfType ([System.IO.DirectoryNotFoundException])
             $script:Calls | Should -Be 1
         } finally {
             $env:AGENT_TEMPDIRECTORY = $saved

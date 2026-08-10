@@ -1,6 +1,8 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
@@ -8,16 +10,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class UIContainerCell : UITableViewCell
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Renderer is owned by the container cell and disconnected in Disconnect.")]
 		IPlatformViewHandler _renderer;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Binding context is unsubscribed from PropertyChanged and cleared in Disconnect.")]
 		object _bindingContext;
+		IElementDefinition _viewResource;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Measure callback is cleared in Disconnect before the cell is released.")]
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Index path is cleared in Disconnect when the cell is released.")]
 		internal NSIndexPath IndexPath { get; set; }
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Table view reference is cleared in Disconnect when the cell is released.")]
 		internal UITableView TableView { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "View MeasureInvalidated subscription is removed in Disconnect.")]
 		internal UIContainerCell(string cellId, View view, Shell shell, object context) : base(UITableViewCellStyle.Default, cellId)
 		{
 			View = view;
+			_viewResource = view as IElementDefinition;
+			_viewResource?.AddResourcesChangedListener(OnResourcesChanged);
 			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
@@ -75,6 +86,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
+			_viewResource?.RemoveResourcesChangedListener(OnResourcesChanged);
+			_viewResource = null;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
@@ -89,19 +102,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				View.Handler = null;
 
 
+			_renderer = null;
+			IndexPath = null;
 			View = null;
 			TableView = null;
 		}
 
 		public View View { get; private set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "BaseShellItem PropertyChanged subscription is removed when BindingContext changes and in Disconnect.")]
 		public object BindingContext
 		{
 			get => _bindingContext;
 			set
 			{
 				if (value == _bindingContext)
+				{
 					return;
+				}
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 					baseShell.PropertyChanged -= OnElementPropertyChanged;
@@ -129,18 +147,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateVisualState()
 		{
-			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
+			if (BindingContext is BaseShellItem bsi)
 			{
-				View.IsItemSelected = baseShellItem.IsChecked;
+				VisualStateManager.GoToState(View, bsi.IsChecked ? "Selected" : "Normal", force: true);
 			}
 		}
 
 		void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
-			{
 				UpdateVisualState();
-			}
+		}
+
+		void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			UpdateVisualState();
 		}
 	}
 }

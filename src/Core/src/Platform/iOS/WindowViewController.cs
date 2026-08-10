@@ -157,9 +157,14 @@ internal class WindowViewController : UIViewController
 		{
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
 		}
-
+		
 		IsFirstLayout = true;
 		LayoutTitleBar();
+		if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
+		{
+			// Force immediate constraint processing so _contentWrapperView repositions below the TitleBar.
+			View?.LayoutIfNeeded();
+		}
 	}
 
 	/// <summary>
