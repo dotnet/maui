@@ -244,7 +244,12 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         var day = date?.Day ?? DateTime.Today.Day;
 
         _dialog = CreateDatePickerDialog(year, month, day);
-        _dialog?.Show(fragmentManager, "MaterialDatePicker");
+        if (_dialog is null)
+        {
+            return;
+        }
+
+        _dialog.Show(fragmentManager, "MaterialDatePicker");
 
         // Focus the field so the outlined layout shows its highlighted (focused) state while the
         // dialog is open. This also covers opens triggered programmatically via IsOpen.

@@ -33,6 +33,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		OpenTimePickerDialog();
 		App.WaitForElement("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+		App.Tap("OK");
 	}
 
 	[Test, Order(2)]
