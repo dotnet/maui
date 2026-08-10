@@ -71,8 +71,13 @@ function Get-InternalOfficialBuildClassification {
         return [PSCustomObject]@{ Classification = 'unknown'; Reason = 'missing-branch-head' }
     }
     $sourceMatchesHead = $sourceSha.Equals($BranchHeadSha, [System.StringComparison]::OrdinalIgnoreCase)
-    if (-not $sourceMatchesHead -and $BuildCoversHead -ne $true) {
-        return [PSCustomObject]@{ Classification = 'stale'; Reason = 'source-sha-trails-head' }
+    if (-not $sourceMatchesHead) {
+        if ($null -eq $BuildCoversHead) {
+            return [PSCustomObject]@{ Classification = 'unknown'; Reason = 'build-currency-unavailable' }
+        }
+        if ($BuildCoversHead -ne $true) {
+            return [PSCustomObject]@{ Classification = 'stale'; Reason = 'source-sha-trails-head' }
+        }
     }
     $triggerCurrentReasonSuffix = if ($sourceMatchesHead) { '' } else { '-after-trigger-excluded-changes' }
 
@@ -161,7 +166,7 @@ function Test-InternalOfficialBuildChangedPathsCoverHead {
     param([AllowNull()][string[]]$Paths)
 
     $changedPaths = @($Paths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-    if ($changedPaths.Count -eq 0) { return $false }
+    if ($changedPaths.Count -eq 0) { return $true }
     foreach ($path in $changedPaths) {
         if (-not (Test-InternalOfficialBuildTriggerExcludedPath $path)) {
             return $false
@@ -198,11 +203,24 @@ function Invoke-InternalOfficialBuildProcess {
     param(
         [Parameter(Mandatory = $true)][string]$FileName,
         [Parameter(Mandatory = $true)][string[]]$Arguments,
-        [ValidateRange(1, 600)][int]$TimeoutSeconds = 30
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 30,
+        [AllowNull()][string]$WorkingDirectory
     )
 
     $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
     $startInfo.FileName = $FileName
+    if (-not [string]::IsNullOrWhiteSpace($WorkingDirectory)) {
+        if (-not [System.IO.Directory]::Exists($WorkingDirectory)) {
+            return [PSCustomObject]@{
+                Started = $false
+                TimedOut = $false
+                ExitCode = -1
+                Stdout = ''
+                Stderr = ''
+            }
+        }
+        $startInfo.WorkingDirectory = $WorkingDirectory
+    }
     $startInfo.UseShellExecute = $false
     $startInfo.CreateNoWindow = $true
     $startInfo.RedirectStandardInput = $true
@@ -280,6 +298,47 @@ function Invoke-InternalOfficialBuildProcess {
         }
     } finally {
         $process.Dispose()
+    }
+}
+
+function Resolve-InternalOfficialBuildCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Arguments,
+        [AllowNull()]$CommandInfo,
+        [bool]$Windows = $IsWindows,
+        [AllowNull()][string]$CommandProcessor = $env:ComSpec
+    )
+
+    $resolved = $CommandInfo
+    if ($null -eq $resolved) {
+        $resolved = Get-Command $Name -ErrorAction SilentlyContinue
+    }
+    if ($null -eq $resolved) { return $null }
+
+    $commandPath = [string](Get-InternalBuildProperty $resolved 'Source')
+    if ([string]::IsNullOrWhiteSpace($commandPath)) {
+        $commandPath = [string](Get-InternalBuildProperty $resolved 'Path')
+    }
+    if ([string]::IsNullOrWhiteSpace($commandPath)) {
+        $commandPath = $Name
+    }
+
+    $extension = [System.IO.Path]::GetExtension($commandPath)
+    if ($Windows -and $extension -in @('.cmd', '.bat')) {
+        if ([string]::IsNullOrWhiteSpace($CommandProcessor)) { return $null }
+        if (@($Arguments | Where-Object { $_ -match '[&|<>()^%!"\r\n]' }).Count -gt 0) {
+            return $null
+        }
+        return [PSCustomObject]@{
+            FileName = $CommandProcessor
+            Arguments = @('/d', '/s', '/c', 'call', $commandPath) + @($Arguments)
+        }
+    }
+
+    return [PSCustomObject]@{
+        FileName = $commandPath
+        Arguments = @($Arguments)
     }
 }
 
@@ -389,17 +448,29 @@ function New-AzdoInternalOfficialBuildFetcher {
     $invokeProcess = if ($ProcessInvoker) {
         $ProcessInvoker
     } else {
-        { param($FileName, $Arguments, $ProcessTimeout) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout }
+        { param($FileName, $Arguments, $ProcessTimeout, $WorkingDirectory) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout -WorkingDirectory $WorkingDirectory }
     }
 
     return {
         param([string]$BranchRef)
 
-        if ($checkCommandAvailability -and -not (Get-Command az -ErrorAction SilentlyContinue)) {
+        $azCommandInfo = if ($checkCommandAvailability) {
+            Get-Command az -ErrorAction SilentlyContinue
+        } else {
+            $null
+        }
+        if ($checkCommandAvailability -and $null -eq $azCommandInfo) {
             return [PSCustomObject]@{
                 Success = $false
                 FailureKind = 'access'
                 Message = 'Azure CLI is unavailable.'
+            }
+        }
+        if (-not [string]::IsNullOrWhiteSpace($manualId) -and $manualId -notmatch '\A\d+\z') {
+            return [PSCustomObject]@{
+                Success = $false
+                FailureKind = 'malformed'
+                Message = 'Internal build ID must contain only digits.'
             }
         }
 
@@ -412,7 +483,23 @@ function New-AzdoInternalOfficialBuildFetcher {
             -ManualBuildId $manualId `
             -ManualBuildBranchRef $manualRef
 
-        $processResult = & $invokeProcess 'az' $azArgs $timeout
+        if ($checkCommandAvailability) {
+            $azCommand = Resolve-InternalOfficialBuildCommand `
+                -Name 'az' `
+                -Arguments $azArgs `
+                -CommandInfo $azCommandInfo
+            if ($null -eq $azCommand) {
+                return [PSCustomObject]@{
+                    Success = $false
+                    FailureKind = 'query'
+                    Message = 'Azure CLI launcher could not be resolved.'
+                }
+            }
+        } else {
+            $azCommand = [PSCustomObject]@{ FileName = 'az'; Arguments = $azArgs }
+        }
+
+        $processResult = & $invokeProcess $azCommand.FileName $azCommand.Arguments $timeout $null
         if ([bool](Get-InternalBuildProperty $processResult 'TimedOut')) {
             return [PSCustomObject]@{
                 Success = $false
@@ -450,7 +537,7 @@ function New-GitHubBranchHeadFetcher {
     $invokeProcess = if ($ProcessInvoker) {
         $ProcessInvoker
     } else {
-        { param($FileName, $Arguments, $ProcessTimeout) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout }
+        { param($FileName, $Arguments, $ProcessTimeout, $WorkingDirectory) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout -WorkingDirectory $WorkingDirectory }
     }
     return {
         param([string]$BranchRef)
@@ -473,36 +560,71 @@ function New-GitHubBranchHeadFetcher {
 
 function New-GitBuildCurrencyFetcher {
     param(
+        [Parameter(Mandatory = $true)][string]$RepositoryPath,
         [ValidateRange(1, 600)][int]$TimeoutSeconds = 30,
         [AllowNull()][scriptblock]$ProcessInvoker
     )
 
+    $repoPath = $RepositoryPath
     $timeout = $TimeoutSeconds
     $checkCommandAvailability = $null -eq $ProcessInvoker
     $invokeProcess = if ($ProcessInvoker) {
         $ProcessInvoker
     } else {
-        { param($FileName, $Arguments, $ProcessTimeout) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout }
+        { param($FileName, $Arguments, $ProcessTimeout, $WorkingDirectory) Invoke-InternalOfficialBuildProcess -FileName $FileName -Arguments $Arguments -TimeoutSeconds $ProcessTimeout -WorkingDirectory $WorkingDirectory }
     }
     return {
         param([string]$BranchRef, [string]$BuildSourceSha, [string]$BranchHeadSha)
 
         if ([string]::IsNullOrWhiteSpace($BuildSourceSha) -or
             [string]::IsNullOrWhiteSpace($BranchHeadSha)) {
-            return $false
+            return $null
         }
         if ($BuildSourceSha.Equals($BranchHeadSha, [System.StringComparison]::OrdinalIgnoreCase)) {
             return $true
         }
         if ($checkCommandAvailability -and -not (Get-Command git -ErrorAction SilentlyContinue)) {
-            return $false
+            return $null
         }
 
-        $ancestryResult = & $invokeProcess 'git' @('merge-base', '--is-ancestor', $BuildSourceSha, $BranchHeadSha) $timeout
+        $objectsAvailable = $true
+        foreach ($sha in @($BuildSourceSha, $BranchHeadSha)) {
+            $objectResult = & $invokeProcess 'git' @('cat-file', '-e', "$sha`^{commit}") $timeout $repoPath
+            if (-not [bool](Get-InternalBuildProperty $objectResult 'Started') -or
+                [bool](Get-InternalBuildProperty $objectResult 'TimedOut') -or
+                [int](Get-InternalBuildProperty $objectResult 'ExitCode') -ne 0) {
+                $objectsAvailable = $false
+                break
+            }
+        }
+        if (-not $objectsAvailable) {
+            $fetchResult = & $invokeProcess 'git' @(
+                'fetch',
+                '--no-tags',
+                '--quiet',
+                'origin',
+                $BranchRef
+            ) $timeout $repoPath
+            if (-not [bool](Get-InternalBuildProperty $fetchResult 'Started') -or
+                [bool](Get-InternalBuildProperty $fetchResult 'TimedOut') -or
+                [int](Get-InternalBuildProperty $fetchResult 'ExitCode') -ne 0) {
+                return $null
+            }
+            foreach ($sha in @($BuildSourceSha, $BranchHeadSha)) {
+                $objectResult = & $invokeProcess 'git' @('cat-file', '-e', "$sha`^{commit}") $timeout $repoPath
+                if (-not [bool](Get-InternalBuildProperty $objectResult 'Started') -or
+                    [bool](Get-InternalBuildProperty $objectResult 'TimedOut') -or
+                    [int](Get-InternalBuildProperty $objectResult 'ExitCode') -ne 0) {
+                    return $null
+                }
+            }
+        }
+
+        $ancestryResult = & $invokeProcess 'git' @('merge-base', '--is-ancestor', $BuildSourceSha, $BranchHeadSha) $timeout $repoPath
         if (-not [bool](Get-InternalBuildProperty $ancestryResult 'Started') -or
             [bool](Get-InternalBuildProperty $ancestryResult 'TimedOut') -or
             [int](Get-InternalBuildProperty $ancestryResult 'ExitCode') -ne 0) {
-            return $false
+            return $null
         }
 
         # Aggregate compare diffs can hide a trigger-eligible change that a
@@ -512,13 +634,14 @@ function New-GitBuildCurrencyFetcher {
             '--format=',
             '--name-only',
             '--no-renames',
+            '--first-parent',
             '--diff-merges=first-parent',
             "$BuildSourceSha..$BranchHeadSha"
-        ) $timeout
+        ) $timeout $repoPath
         if (-not [bool](Get-InternalBuildProperty $logResult 'Started') -or
             [bool](Get-InternalBuildProperty $logResult 'TimedOut') -or
             [int](Get-InternalBuildProperty $logResult 'ExitCode') -ne 0) {
-            return $false
+            return $null
         }
 
         $paths = @(([string](Get-InternalBuildProperty $logResult 'Stdout')) -split '\r?\n')
@@ -604,7 +727,12 @@ function Get-InternalOfficialBuildHealth {
             -not [string]::IsNullOrWhiteSpace($buildSourceSha) -and
             -not [string]::IsNullOrWhiteSpace($headSha) -and
             -not $buildSourceSha.Equals($headSha, [System.StringComparison]::OrdinalIgnoreCase)) {
-            try { [bool](& $BuildCurrencyFetcher $branchRef $buildSourceSha $headSha) } catch { $false }
+            try {
+                $currencyEvidence = & $BuildCurrencyFetcher $branchRef $buildSourceSha $headSha
+                if ($null -eq $currencyEvidence) { $null } else { [bool]$currencyEvidence }
+            } catch {
+                $null
+            }
         } else {
             $null
         }

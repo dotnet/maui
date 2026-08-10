@@ -2620,7 +2620,8 @@ if ($shouldQueryInternal) {
         -ManualBuildId $InternalBuildId `
         -ManualBuildBranchRef $manualBranchRef
     $headFetcher = New-GitHubBranchHeadFetcher -Repository $Repository
-    $buildCurrencyFetcher = New-GitBuildCurrencyFetcher
+    $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../../..'))
+    $buildCurrencyFetcher = New-GitBuildCurrencyFetcher -RepositoryPath $repositoryRoot
     $internalOfficialBuildHealth = Get-InternalOfficialBuildHealth `
         -MajorVersion $majorVersion `
         -ReleaseBranch $Branch `

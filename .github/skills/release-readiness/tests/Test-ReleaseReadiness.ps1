@@ -8667,6 +8667,7 @@ function Invoke-InternalFixtureHealth {
         -ReleaseBranchExists $true `
         -BuildFetcher (New-InternalFixtureFetcher $Fixtures) `
         -HeadFetcher $internalHeadFetcher `
+        -BuildCurrencyFetcher { return $false } `
         -GitHubActions:$GitHubActions
 }
 
@@ -8812,9 +8813,9 @@ Assert-Eq -Label "internal trigger exclusions: rename from included path require
 Assert-Eq -Label "internal trigger exclusions: reverted source path still requires build" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('src/Core/src/Core.cs', 'src/Core/src/Core.cs', 'README.md'))
 Assert-Eq -Label "internal trigger exclusions: leading whitespace is part of a trigger-eligible path" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @(' .github/hidden.yml'))
 Assert-Eq -Label "internal trigger exclusions: trailing whitespace is part of a trigger-eligible path" -Expected $false -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @('README.md '))
+Assert-Eq -Label "internal trigger exclusions: successful no-op history covers branch HEAD" -Expected $true -Actual (Test-InternalOfficialBuildChangedPathsCoverHead @())
 
 $mergeCurrencyFixtureRepo = Join-Path ([System.IO.Path]::GetTempPath()) "rr-internal-merge-fixture-$([guid]::NewGuid().ToString('N'))"
-$mergeCurrencyFixtureLocationPushed = $false
 try {
     New-Item -ItemType Directory -Path $mergeCurrencyFixtureRepo -Force | Out-Null
     git -C $mergeCurrencyFixtureRepo init -q 2>&1 | Out-Null
@@ -8829,29 +8830,56 @@ try {
     git -C $mergeCurrencyFixtureRepo commit -q -m 'Base' 2>&1 | Out-Null
     $mergeCurrencyBaseSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
 
-    git -C $mergeCurrencyFixtureRepo checkout -q -b side $mergeCurrencyBaseSha 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo checkout -q -b empty-history $mergeCurrencyBaseSha 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q --allow-empty -m 'Empty advance' 2>&1 | Out-Null
+    $emptyCurrencyHeadSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+
+    git -C $mergeCurrencyFixtureRepo checkout -q -b add-revert $mergeCurrencyBaseSha 2>&1 | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $mergeCurrencyFixtureRepo 'src') -Force | Out-Null
+    Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'src/Reverted.cs') -Value 'source'
+    git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q -m 'Add source' 2>&1 | Out-Null
+    $sourceCommitSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+    git -C $mergeCurrencyFixtureRepo revert --no-edit $sourceCommitSha 2>&1 | Out-Null
+    $revertedCurrencyHeadSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+
+    git -C $mergeCurrencyFixtureRepo checkout -q -b same-tree-side $mergeCurrencyBaseSha 2>&1 | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $mergeCurrencyFixtureRepo 'src') -Force | Out-Null
+    Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'src/SecondParentOnly.cs') -Value 'source'
+    git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo commit -q -m 'Second-parent source' 2>&1 | Out-Null
+    $secondParentSourceSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+    git -C $mergeCurrencyFixtureRepo revert --no-edit $secondParentSourceSha 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo checkout -q -b same-tree-release $mergeCurrencyBaseSha 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo merge -q --no-ff same-tree-side -m 'Merge already-reverted history' 2>&1 | Out-Null
+    $sameTreeMergeHeadSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
+
+    git -C $mergeCurrencyFixtureRepo checkout -q -b merge-side $mergeCurrencyBaseSha 2>&1 | Out-Null
     Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'docs/side.md') -Value 'side'
     git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
     git -C $mergeCurrencyFixtureRepo commit -q -m 'Excluded side change' 2>&1 | Out-Null
 
-    git -C $mergeCurrencyFixtureRepo checkout -q -b release $mergeCurrencyBaseSha 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo checkout -q -b merge-release $mergeCurrencyBaseSha 2>&1 | Out-Null
     Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'docs/release.md') -Value 'release'
     git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
     git -C $mergeCurrencyFixtureRepo commit -q -m 'Excluded release change' 2>&1 | Out-Null
-    git -C $mergeCurrencyFixtureRepo merge -q --no-commit side 2>&1 | Out-Null
+    git -C $mergeCurrencyFixtureRepo merge -q --no-commit merge-side 2>&1 | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $mergeCurrencyFixtureRepo 'src') -Force | Out-Null
     Set-Content -Path (Join-Path $mergeCurrencyFixtureRepo 'src/OnlyInMerge.cs') -Value 'source'
     git -C $mergeCurrencyFixtureRepo add -A 2>&1 | Out-Null
     git -C $mergeCurrencyFixtureRepo commit -q -m 'Merge with source-only resolution' 2>&1 | Out-Null
     $mergeCurrencyHeadSha = (& git -C $mergeCurrencyFixtureRepo rev-parse HEAD).Trim()
 
-    Push-Location $mergeCurrencyFixtureRepo
-    $mergeCurrencyFixtureLocationPushed = $true
-    $mergeCurrencyFetcher = New-GitBuildCurrencyFetcher -TimeoutSeconds 5
+    $mergeCurrencyFetcher = New-GitBuildCurrencyFetcher -RepositoryPath $mergeCurrencyFixtureRepo -TimeoutSeconds 5
+    Assert-Eq -Label "internal build currency: empty commit remains current" `
+        -Expected $true -Actual (& $mergeCurrencyFetcher 'refs/heads/empty-history' $mergeCurrencyBaseSha $emptyCurrencyHeadSha)
+    Assert-Eq -Label "internal build currency: second-parent-only reverted history remains current" `
+        -Expected $true -Actual (& $mergeCurrencyFetcher 'refs/heads/same-tree-release' $mergeCurrencyBaseSha $sameTreeMergeHeadSha)
     Assert-Eq -Label "internal build currency: merge-result-only source path requires a newer build" `
-        -Expected $false -Actual (& $mergeCurrencyFetcher 'refs/heads/release' $mergeCurrencyBaseSha $mergeCurrencyHeadSha)
+        -Expected $false -Actual (& $mergeCurrencyFetcher 'refs/heads/merge-release' $mergeCurrencyBaseSha $mergeCurrencyHeadSha)
+    Assert-Eq -Label "internal build currency: add-and-revert history still requires a newer build" `
+        -Expected $false -Actual (& $mergeCurrencyFetcher 'refs/heads/add-revert' $mergeCurrencyBaseSha $revertedCurrencyHeadSha)
 } finally {
-    if ($mergeCurrencyFixtureLocationPushed) { Pop-Location }
     if (Test-Path $mergeCurrencyFixtureRepo) { Remove-Item -Recurse -Force $mergeCurrencyFixtureRepo }
 }
 
@@ -8952,8 +8980,13 @@ $headTimeoutFetcher = New-GitHubBranchHeadFetcher -Repository 'dotnet/maui' -Tim
 }
 Assert-Eq -Label "internal branch HEAD query: timeout returns unavailable HEAD" -Expected $null -Actual (& $headTimeoutFetcher $internalInflightRef)
 
-$currencyTimeoutFetcher = New-GitBuildCurrencyFetcher -TimeoutSeconds 7 -ProcessInvoker {
-    param($FileName, $Arguments, $TimeoutSeconds)
+$script:CurrencyWorkingDirectories = [System.Collections.Generic.List[string]]::new()
+$script:CurrencyCommands = [System.Collections.Generic.List[string]]::new()
+$currencyWorkingDirectory = [System.IO.Path]::GetTempPath()
+$currencyTimeoutFetcher = New-GitBuildCurrencyFetcher -RepositoryPath $currencyWorkingDirectory -TimeoutSeconds 7 -ProcessInvoker {
+    param($FileName, $Arguments, $TimeoutSeconds, $WorkingDirectory)
+    [void]$script:CurrencyWorkingDirectories.Add($WorkingDirectory)
+    [void]$script:CurrencyCommands.Add(($Arguments -join ' '))
     return [PSCustomObject]@{
         Started = $true
         TimedOut = $true
@@ -8962,7 +8995,54 @@ $currencyTimeoutFetcher = New-GitBuildCurrencyFetcher -TimeoutSeconds 7 -Process
         Stderr = ''
     }
 }
-Assert-Eq -Label "internal build currency query: timeout does not waive stale evidence" -Expected $false -Actual (& $currencyTimeoutFetcher $internalInflightRef 'a' 'b')
+Assert-Eq -Label "internal build currency query: timeout yields unavailable evidence" -Expected $null -Actual (& $currencyTimeoutFetcher $internalInflightRef 'a' 'b')
+Assert-Eq -Label "internal build currency query: uses explicit repository working directory" -Expected $currencyWorkingDirectory -Actual $script:CurrencyWorkingDirectories[0]
+
+$script:MissingObjectCommands = [System.Collections.Generic.List[string]]::new()
+$missingObjectFetcher = New-GitBuildCurrencyFetcher -RepositoryPath $currencyWorkingDirectory -TimeoutSeconds 7 -ProcessInvoker {
+    param($FileName, $Arguments, $TimeoutSeconds, $WorkingDirectory)
+    [void]$script:MissingObjectCommands.Add(($Arguments -join ' '))
+    return [PSCustomObject]@{
+        Started = $true
+        TimedOut = $false
+        ExitCode = 1
+        Stdout = ''
+        Stderr = 'missing object'
+    }
+}
+Assert-Eq -Label "internal build currency query: missing objects remain unknown after targeted fetch failure" `
+    -Expected $null -Actual (& $missingObjectFetcher $internalInflightRef 'a' 'b')
+Assert-Eq -Label "internal build currency query: missing objects trigger a bounded branch-only fetch" `
+    -Expected $true -Actual ([bool]($script:MissingObjectCommands -contains "fetch --no-tags --quiet origin $internalInflightRef"))
+
+$unknownCurrencyClassification = Get-InternalOfficialBuildClassification `
+    -Build (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha 'a' -Id 74) `
+    -ExpectedBranchRef $internalInflightRef `
+    -BranchHeadSha 'b' `
+    -BuildCoversHead $null
+Assert-Eq -Label "internal build currency query: unavailable evidence classifies UNKNOWN" -Expected 'unknown' -Actual $unknownCurrencyClassification.Classification
+Assert-Eq -Label "internal build currency query: explicit trigger change classifies stale" -Expected 'stale' -Actual (Get-InternalOfficialBuildClassification `
+    -Build (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha 'a' -Id 75) `
+    -ExpectedBranchRef $internalInflightRef `
+    -BranchHeadSha 'b' `
+    -BuildCoversHead $false).Classification
+
+$windowsAzCommand = Resolve-InternalOfficialBuildCommand `
+    -Name 'az' `
+    -Arguments @('pipelines', 'runs', 'list') `
+    -CommandInfo ([PSCustomObject]@{ Source = 'C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd' }) `
+    -Windows:$true `
+    -CommandProcessor 'C:\Windows\System32\cmd.exe'
+Assert-Eq -Label "internal Azure launcher: Windows command scripts use ComSpec" -Expected 'C:\Windows\System32\cmd.exe' -Actual $windowsAzCommand.FileName
+Assert-Eq -Label "internal Azure launcher: Windows command script and arguments remain structured" `
+    -Expected '/d|/s|/c|call|C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd|pipelines|runs|list' `
+    -Actual ($windowsAzCommand.Arguments -join '|')
+Assert-Eq -Label "internal Azure launcher: unsafe command-script arguments fail closed" -Expected $null -Actual (Resolve-InternalOfficialBuildCommand `
+    -Name 'az' `
+    -Arguments @('pipelines', 'runs', 'list&whoami') `
+    -CommandInfo ([PSCustomObject]@{ Source = 'C:\Azure\az.cmd' }) `
+    -Windows:$true `
+    -CommandProcessor 'C:\Windows\System32\cmd.exe')
 
 $pwshExecutable = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
 $inheritedOutputChildCommand = @'
