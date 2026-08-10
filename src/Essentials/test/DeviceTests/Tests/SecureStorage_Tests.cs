@@ -82,7 +82,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			// simulate corrupt the key
 			var corruptData = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
-			var alias = Assert.IsType<SecureStorageImplementation>(SecureStorage.Default).Alias;
+			var alias = SecureStorage.Default switch
+			{
+				SecureStorageImplementation implementation => implementation.Alias,
+				AppInfoSecureStorage wrapper => wrapper.Alias,
+				_ => throw new InvalidOperationException("Unexpected SecureStorage implementation."),
+			};
 			var all = PreferencesImplementation.GetSharedPreferences(alias).All;
 			Preferences.Set(all.Keys.First(x => !x.StartsWith("_")), corruptData, alias);
 
