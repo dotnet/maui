@@ -167,7 +167,6 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CloseRequestedLabel").GetText(), Is.EqualTo("Close Requested: "));
 		App.WaitForElement("CloseSwipeViewButton");
 		App.Tap("CloseSwipeViewButton");
-		// CloseRequested fires synchronously in SwipeView.Close() before platform dispatch.
 		Assert.That(App.WaitForElement("CloseRequestedLabel").GetText(), Is.EqualTo("Close Requested: Animated=True"));
 	}
 
@@ -983,7 +982,6 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
-		// With a very large Threshold, the swipe should not reach open state.
 		var ended = App.WaitForElement("SwipeEndedLabel").GetText();
 		Assert.That(ended, Does.Contain("IsOpen: Closed"),
 			$"When swipe distance is below Threshold, SwipeEnded.IsOpen must be false. Was: '{ended}'");
@@ -1002,7 +1000,6 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
 		App.WaitForElement("Label");
-		// Threshold=0 should still allow the swipe to open (control clamps to a usable minimum).
 		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
 	}
 #endif
