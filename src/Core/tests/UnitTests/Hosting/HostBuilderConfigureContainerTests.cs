@@ -658,110 +658,57 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public async Task BuildFailureDoesNotBlockUIThreadForAsyncOnlyServiceProvider()
+		public void BuildFailureDoesNotCaptureCurrentSynchronizationContextForAsyncOnlyServiceProvider()
 		{
-			var timeout = TimeSpan.FromSeconds(30);
-			var returnTimeout = TimeSpan.FromSeconds(1);
-			var context = new QueuedSynchronizationContext();
-			var factory = new UIThreadAsyncOnlyServiceProviderFactory(context);
+			var factory = new AsyncOnlyServiceProviderFactory(useYieldingProvider: true);
 			var builder = MauiApp.CreateBuilder(useDefaults: false);
 			builder.ConfigureContainer(factory);
 			builder.Services.AddSingleton<IMauiInitializeService, ThrowingInitializeService>();
-			var buildReturned = new TaskCompletionSource<Exception>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
+			var originalContext = SynchronizationContext.Current;
 
-			var build = Task.Run(() =>
+			try
 			{
-				var originalContext = SynchronizationContext.Current;
-				try
-				{
-					SynchronizationContext.SetSynchronizationContext(context);
-					buildReturned.TrySetResult(Record.Exception(builder.Build));
-				}
-				finally
-				{
-					SynchronizationContext.SetSynchronizationContext(originalContext);
-				}
-			});
+				SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
 
-			await factory.DisposeStarted.Task.WaitAsync(timeout);
-			var returnedBeforePump =
-				await Task.WhenAny(buildReturned.Task, Task.Delay(returnTimeout)) == buildReturned.Task;
+				var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
-			context.RunAll();
-			var exception = await buildReturned.Task.WaitAsync(timeout);
-			await Task.WhenAll(build, factory.DisposeCompleted.Task).WaitAsync(timeout);
+				Assert.Equal("initialization failed", exception.Message);
+			}
+			finally
+			{
+				SynchronizationContext.SetSynchronizationContext(originalContext);
+			}
 
-			Assert.True(
-				returnedBeforePump,
-				"Build blocked the UI thread while the async-only provider awaited dispatched work.");
-			Assert.IsType<InvalidOperationException>(exception);
-			Assert.Equal("initialization failed", exception.Message);
-			Assert.True(factory.Provider.IsDisposed);
+			var provider = Assert.IsType<YieldingAsyncOnlyServiceProvider>(factory.Provider);
+			Assert.True(provider.IsDisposed);
+			Assert.False(provider.DisposeStartedWithSynchronizationContext);
 		}
 
 		[Fact]
-		public async Task BuildFailureRestoresEssentialsFacadeAfterAsyncOnlyServiceProviderDisposalCompletes()
+		public void BuildFailureRestoresEssentialsFacadeBeforeReturningAfterAsyncOnlyServiceProviderDisposal()
 		{
-			var timeout = TimeSpan.FromSeconds(30);
-			var returnTimeout = TimeSpan.FromSeconds(1);
 			var originalPreferences = Preferences.Default;
 			var bridgedPreferences = new StubPreferences();
 			PreferencesReadingThrowingInitializeService initializer = null;
-			var context = new QueuedSynchronizationContext();
-			var factory = new UIThreadAsyncOnlyServiceProviderFactory(context);
+			var factory = new AsyncOnlyServiceProviderFactory(useYieldingProvider: true);
 			var builder = MauiApp.CreateBuilder();
 			builder.ConfigureContainer(factory);
 			builder.Services.AddSingleton<IPreferences>(bridgedPreferences);
 			builder.Services.AddSingleton<IMauiInitializeService>(_ =>
 				initializer = new PreferencesReadingThrowingInitializeService());
-			var buildReturned = new TaskCompletionSource<Exception>(
-				TaskCreationOptions.RunContinuationsAsynchronously);
 
 			try
 			{
-				var build = Task.Run(() =>
-				{
-					var originalContext = SynchronizationContext.Current;
-					try
-					{
-						SynchronizationContext.SetSynchronizationContext(context);
-						buildReturned.TrySetResult(Record.Exception(builder.Build));
-					}
-					finally
-					{
-						SynchronizationContext.SetSynchronizationContext(originalContext);
-					}
-				});
+				var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
 
-				await factory.DisposeStarted.Task.WaitAsync(timeout);
-				var returnedBeforePump =
-					await Task.WhenAny(buildReturned.Task, Task.Delay(returnTimeout)) == buildReturned.Task;
-				var exception = await buildReturned.Task.WaitAsync(timeout);
-
-				Assert.True(
-					returnedBeforePump,
-					"Build blocked while the async-only provider awaited dispatched disposal work.");
-				Assert.IsType<InvalidOperationException>(exception);
 				Assert.Equal("initialization failed", exception.Message);
-				Assert.Same(bridgedPreferences, Preferences.Default);
-				Assert.False(factory.Provider.IsDisposed);
-
-				context.RunAll();
-				await Task.WhenAll(build, factory.DisposeCompleted.Task).WaitAsync(timeout);
-
 				Assert.NotNull(initializer);
 				Assert.Same(bridgedPreferences, initializer!.PreferencesDuringDispose);
 				Assert.True(factory.Provider.IsDisposed);
-				Assert.True(
-					SpinWait.SpinUntil(
-						() => ReferenceEquals(originalPreferences, Preferences.Default),
-						timeout),
-					"Essentials facade was not restored after provider disposal completed.");
+				Assert.Same(originalPreferences, Preferences.Default);
 			}
 			finally
 			{
-				context.RunAll();
 				Preferences.SetDefault(originalPreferences);
 			}
 		}
@@ -880,69 +827,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
-		sealed class UIThreadAsyncOnlyServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
-		{
-			readonly QueuedSynchronizationContext _context;
-
-			public UIThreadAsyncOnlyServiceProviderFactory(QueuedSynchronizationContext context)
-			{
-				_context = context;
-			}
-
-			public TaskCompletionSource<bool> DisposeStarted { get; } =
-				new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-			public TaskCompletionSource<bool> DisposeCompleted { get; } =
-				new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-			public UIThreadAsyncOnlyServiceProvider Provider { get; private set; } = null!;
-
-			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
-
-			public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
-			{
-				Provider = new UIThreadAsyncOnlyServiceProvider(
-					containerBuilder.BuildServiceProvider(),
-					_context,
-					DisposeStarted,
-					DisposeCompleted);
-				return Provider;
-			}
-		}
-
-		sealed class UIThreadAsyncOnlyServiceProvider : AsyncOnlyServiceProvider
-		{
-			readonly QueuedSynchronizationContext _context;
-			readonly TaskCompletionSource<bool> _disposeStarted;
-			readonly TaskCompletionSource<bool> _disposeCompleted;
-
-			public UIThreadAsyncOnlyServiceProvider(
-				ServiceProvider innerProvider,
-				QueuedSynchronizationContext context,
-				TaskCompletionSource<bool> disposeStarted,
-				TaskCompletionSource<bool> disposeCompleted)
-				: base(innerProvider)
-			{
-				_context = context;
-				_disposeStarted = disposeStarted;
-				_disposeCompleted = disposeCompleted;
-			}
-
-			public override async ValueTask DisposeAsync()
-			{
-				_disposeStarted.TrySetResult(true);
-				try
-				{
-					await _context.InvokeAsync();
-					await base.DisposeAsync();
-				}
-				finally
-				{
-					_disposeCompleted.TrySetResult(true);
-				}
-			}
-		}
-
 		sealed class ThrowingInitializeService : IMauiInitializeService
 		{
 			public void Initialize(IServiceProvider services)
@@ -960,10 +844,10 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				throw new InvalidOperationException("initialization failed");
 			}
 
-			public ValueTask DisposeAsync()
+			public async ValueTask DisposeAsync()
 			{
+				await Task.Yield();
 				PreferencesDuringDispose = Preferences.Default;
-				return ValueTask.CompletedTask;
 			}
 		}
 
@@ -1096,43 +980,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public void Dispose()
 			{
 				IsDisposed = true;
-			}
-		}
-
-		sealed class QueuedSynchronizationContext : SynchronizationContext
-		{
-			readonly object _sync = new();
-			readonly Queue<(SendOrPostCallback Callback, object State)> _callbacks = new();
-
-			public override void Post(SendOrPostCallback d, object state)
-			{
-				lock (_sync)
-					_callbacks.Enqueue((d, state));
-			}
-
-			public Task InvokeAsync()
-			{
-				var completion = new TaskCompletionSource<bool>(
-					TaskCreationOptions.RunContinuationsAsynchronously);
-				Post(_ => completion.TrySetResult(true), null);
-				return completion.Task;
-			}
-
-			public void RunAll()
-			{
-				while (true)
-				{
-					(SendOrPostCallback Callback, object State) callback;
-					lock (_sync)
-					{
-						if (_callbacks.Count == 0)
-							return;
-
-						callback = _callbacks.Dequeue();
-					}
-
-					callback.Callback(callback.State);
-				}
 			}
 		}
 

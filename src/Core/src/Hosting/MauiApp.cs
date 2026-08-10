@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Hosting
 	public sealed class MauiApp : IDisposable, IAsyncDisposable
 	{
 		private readonly IServiceProvider _services;
+		private readonly MauiAppInitializationState _initializationState;
 
 		// Coordinates the one-shot teardown. The first caller ("winner") runs the teardown and
 		// completes _disposeCompletion; any other concurrent caller ("loser") awaits/blocks on the
@@ -23,11 +24,13 @@ namespace Microsoft.Maui.Hosting
 		private readonly AsyncLocal<DisposalScope?> _disposeScope = new();
 		private readonly AsyncLocal<InitializationScope?> _initializeScope = new();
 		private TaskCompletionSource<ExceptionDispatchInfo?>? _disposeCompletion;
+		private bool _hasCompletedInitialization;
 		private int _initializeInFlight;
 
 		internal MauiApp(IServiceProvider services)
 		{
 			_services = services;
+			_initializationState = services.GetRequiredService<MauiAppInitializationState>();
 		}
 
 		/// <summary>
@@ -198,6 +201,7 @@ namespace Microsoft.Maui.Hosting
 				if (_disposeCompletion is not null)
 					throw new ObjectDisposedException(nameof(MauiApp), "Cannot initialize app services after MauiApp disposal has begun.");
 
+				_initializationState.Enter(isInitialBuild: !_hasCompletedInitialization);
 				_initializeInFlight++;
 				// ExecutionContext copies AsyncLocal references into child tasks. Use one frame per
 				// entry so a child flow cannot mutate the parent's active-scope state.
@@ -205,16 +209,20 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
-		internal void ExitInitializeAppServices()
+		internal void ExitInitializeAppServices(bool initializationSucceeded = true)
 		{
 			lock (_disposeGate)
 			{
+				if (initializationSucceeded)
+					_hasCompletedInitialization = true;
+
 				if (_initializeScope.Value is { } scope)
 				{
 					scope.IsActive = false;
 					_initializeScope.Value = scope.Parent;
 				}
 
+				_initializationState.Exit();
 				if (--_initializeInFlight == 0)
 					Monitor.PulseAll(_disposeGate);
 			}
@@ -285,58 +293,6 @@ namespace Microsoft.Maui.Hosting
 				return new();
 			}
 		}
-
-		internal ValueTask DisposeAfterFailedInitializationAsync(out Exception? cleanupException)
-		{
-			cleanupException = null;
-			if (!TryBeginDispose(waitForInFlightInitialization: false, out var completion))
-				return WaitForDisposalAsync(completion);
-
-			var exceptions = new List<Exception>();
-			var cleanupServices = CapturePostProviderCleanupServices(exceptions);
-			RunSharedCleanup(exceptions);
-			cleanupException = CreateCleanupException(exceptions);
-
-			return DisposeProviderAfterFailedInitializationAsync(
-				completion,
-				cleanupServices,
-				exceptions);
-		}
-
-		private async ValueTask DisposeProviderAfterFailedInitializationAsync(
-			TaskCompletionSource<ExceptionDispatchInfo?> completion,
-			List<IMauiAppPostProviderCleanupService> cleanupServices,
-			List<Exception> exceptions)
-		{
-			try
-			{
-				try
-				{
-					if (_services is IAsyncDisposable asyncDisposable)
-						await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-					else
-						(_services as IDisposable)?.Dispose();
-				}
-				catch (Exception ex)
-				{
-					exceptions.Add(ex);
-				}
-
-				CleanupPostProviderServices(cleanupServices, exceptions);
-			}
-			finally
-			{
-				FinishDisposal(completion, exceptions);
-			}
-		}
-
-		private static Exception? CreateCleanupException(List<Exception> exceptions) =>
-			exceptions.Count switch
-			{
-				0 => null,
-				1 => exceptions[0],
-				_ => new AggregateException("One or more MauiApp cleanup services failed.", exceptions),
-			};
 
 		private static void CleanupPostProviderServices(
 			List<IMauiAppPostProviderCleanupService> cleanupServices,
@@ -453,5 +409,42 @@ namespace Microsoft.Maui.Hosting
 	internal interface IMauiAppPostProviderCleanupService
 	{
 		void Cleanup();
+	}
+
+	internal sealed class MauiAppInitializationState
+	{
+		private readonly AsyncLocal<InitializationStateScope?> _scope = new();
+
+		public bool IsInitialBuild =>
+			_scope.Value is { IsActive: true, IsInitialBuild: true };
+
+		public void Enter(bool isInitialBuild)
+		{
+			_scope.Value = new InitializationStateScope(isInitialBuild, _scope.Value);
+		}
+
+		public void Exit()
+		{
+			if (_scope.Value is not { } scope)
+				return;
+
+			scope.IsActive = false;
+			_scope.Value = scope.Parent;
+		}
+
+		private sealed class InitializationStateScope
+		{
+			public InitializationStateScope(bool isInitialBuild, InitializationStateScope? parent)
+			{
+				IsInitialBuild = isInitialBuild;
+				Parent = parent;
+			}
+
+			public bool IsInitialBuild { get; }
+
+			public InitializationStateScope? Parent { get; }
+
+			public bool IsActive { get; set; } = true;
+		}
 	}
 }

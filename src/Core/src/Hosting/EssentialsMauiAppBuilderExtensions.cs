@@ -217,11 +217,15 @@ namespace Microsoft.Maui.Hosting
 			static readonly List<DeferredAppInfoSecureStorageInstallation> s_deferredAppInfoSecureStorageInstallations = new();
 
 			private readonly IEnumerable<EssentialsRegistration> _essentialsRegistrations;
+			private readonly MauiAppInitializationState _initializationState;
 			private EssentialsBuilder? _essentialsBuilder;
 
-			public EssentialsInitializer(IEnumerable<EssentialsRegistration> essentialsRegistrations)
+			public EssentialsInitializer(
+				IEnumerable<EssentialsRegistration> essentialsRegistrations,
+				MauiAppInitializationState initializationState)
 			{
 				_essentialsRegistrations = essentialsRegistrations;
+				_initializationState = initializationState;
 			}
 
 			public void Initialize(IServiceProvider services)
@@ -238,7 +242,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				var preProviderCleanups = new List<Action>();
 				var facadeCleanups = new List<Action>();
-				EssentialsCleanup? cleanup = null;
+				var cleanup = services.GetRequiredService<EssentialsCleanup>();
 				try
 				{
 #if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
@@ -293,10 +297,6 @@ namespace Microsoft.Maui.Hosting
 						versionTrackingDependencies.FileSystemOwner,
 						versionTrackingDependencies.AppInfoSecureStoragePredecessor,
 						facadeCleanups);
-
-					// Resolve app-owned cleanup before registering AppActions handlers. Facade
-					// actions are appended after initialization has accumulated the complete batch.
-					cleanup = services.GetRequiredService<EssentialsCleanup>();
 
 #if WINDOWS || TIZEN
 					if (hasExplicitMapServiceToken)
@@ -368,7 +368,21 @@ namespace Microsoft.Maui.Hosting
 				{
 					try
 					{
-						RollbackInitialization(preProviderCleanups, facadeCleanups);
+						if (_initializationState.IsInitialBuild)
+						{
+							// Failed Build() owns provider teardown. Run the pre-provider phase now
+							// so its failures remain paired with this initializer failure, but keep
+							// facade restoration in the post-provider phase so provider-owned async
+							// disposables can still use their bridged facade. A repeated
+							// initialization failure has no teardown owner and must rollback both
+							// phases immediately.
+							cleanup.SetCleanups(new List<Action>(), facadeCleanups);
+							RestoreFacadeCleanups(preProviderCleanups);
+						}
+						else
+						{
+							RollbackInitialization(preProviderCleanups, facadeCleanups);
+						}
 					}
 					catch (Exception cleanupException)
 					{

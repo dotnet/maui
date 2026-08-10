@@ -1742,6 +1742,36 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task FailedBridgeResolutionKeepsFacadeUntilAsyncProviderDisposalCompletes()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+
+			var bridgedPreferences = new StubPreferences();
+			var factory = new AsyncOnlyServiceProviderFactory();
+			PreferencesReadingAsyncDisposable? disposalProbe = null;
+			var builder = MauiApp.CreateBuilder();
+			builder.ConfigureContainer(factory);
+			builder.Services.AddSingleton<IPreferences>(bridgedPreferences);
+			builder.Services.AddSingleton<PreferencesReadingAsyncDisposable>();
+			builder.Services.AddSingleton<IScreenshot>(services =>
+			{
+				disposalProbe = services.GetRequiredService<PreferencesReadingAsyncDisposable>();
+				throw new InvalidOperationException("bridge failed");
+			});
+
+			var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+			Assert.Equal("bridge failed", ex.Message);
+			Assert.NotNull(disposalProbe);
+
+			await disposalProbe!.DisposeCompleted.Task.WaitAsync(timeout);
+
+			Assert.Same(bridgedPreferences, disposalProbe.PreferencesDuringDispose);
+			Assert.True(factory.Provider.IsDisposed);
+			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
+		}
+
+		[Fact]
 		public void LaterInitializerFailureDisposesProviderAndRestoresFacade()
 		{
 			Assert.Null(GetStaticField(typeof(Preferences), "defaultImplementation"));
@@ -2213,6 +2243,55 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task RemovedAppActionsWriteThatDoesNotCompleteDoesNotBlockSuccessorLifecycle()
+		{
+			var timeout = TimeSpan.FromSeconds(10);
+			var noStartTimeout = TimeSpan.FromSeconds(1);
+			var releaseFirst = new TaskCompletionSource<bool>(
+				TaskCreationOptions.RunContinuationsAsynchronously);
+			var first = new ControlledStubAppActions(releaseFirst.Task, _ => { });
+			var second = new ControlledStubAppActions(Task.CompletedTask, _ => { });
+			MauiApp? firstApp = null;
+			MauiApp? secondApp = null;
+
+			try
+			{
+				var firstBuilder = MauiApp.CreateBuilder();
+				firstBuilder.Services.AddSingleton<IAppActions>(first);
+				firstBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("first", "First")));
+				firstApp = firstBuilder.Build();
+				await first.FirstCallStarted.Task.WaitAsync(timeout);
+
+				await Task.Run(firstApp.Dispose).WaitAsync(timeout);
+				firstApp = null;
+
+				var secondBuilder = MauiApp.CreateBuilder();
+				secondBuilder.Services.AddSingleton<IAppActions>(second);
+				secondBuilder.ConfigureEssentials(essentials =>
+					essentials.AddAppAction(new AppAction("second", "Second")));
+				secondApp = await Task.Run(secondBuilder.Build).WaitAsync(timeout);
+
+				var unexpectedStart = await Task.WhenAny(
+					second.FirstCallStarted.Task,
+					Task.Delay(noStartTimeout));
+				Assert.NotSame(second.FirstCallStarted.Task, unexpectedStart);
+
+				await Task.Run(secondApp.Dispose).WaitAsync(timeout);
+				secondApp = null;
+				Assert.Equal(0, second.CallCount);
+			}
+			finally
+			{
+				releaseFirst.TrySetResult(true);
+				if (first.FirstCallStarted.Task.IsCompleted)
+					await first.FirstCallCompleted.Task.WaitAsync(timeout);
+				secondApp?.Dispose();
+				firstApp?.Dispose();
+			}
+		}
+
+		[Fact]
 		public async Task ActiveRunningAppActionsCompletesBeforeLaterConfigurationStarts()
 		{
 			var timeout = TimeSpan.FromSeconds(10);
@@ -2476,6 +2555,61 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			{
 				Assert.False(_probe.IsDisposed);
 				throw new InvalidOperationException("later initializer failed");
+			}
+		}
+
+		sealed class AsyncOnlyServiceProviderFactory : IServiceProviderFactory<IServiceCollection>
+		{
+			public AsyncOnlyServiceProvider Provider { get; private set; } = null!;
+
+			public IServiceCollection CreateBuilder(IServiceCollection services) => services;
+
+			public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
+			{
+				Provider = new AsyncOnlyServiceProvider(containerBuilder.BuildServiceProvider());
+				return Provider;
+			}
+		}
+
+		sealed class AsyncOnlyServiceProvider : IServiceProvider, IAsyncDisposable
+		{
+			readonly ServiceProvider _innerProvider;
+
+			public AsyncOnlyServiceProvider(ServiceProvider innerProvider)
+			{
+				_innerProvider = innerProvider;
+			}
+
+			public bool IsDisposed { get; private set; }
+
+			public object? GetService(Type serviceType) =>
+				_innerProvider.GetService(serviceType);
+
+			public async ValueTask DisposeAsync()
+			{
+				await _innerProvider.DisposeAsync();
+				IsDisposed = true;
+			}
+		}
+
+		sealed class PreferencesReadingAsyncDisposable : IAsyncDisposable
+		{
+			public TaskCompletionSource<bool> DisposeCompleted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public IPreferences? PreferencesDuringDispose { get; private set; }
+
+			public async ValueTask DisposeAsync()
+			{
+				try
+				{
+					await Task.Yield();
+					PreferencesDuringDispose = Preferences.Default;
+				}
+				finally
+				{
+					DisposeCompleted.TrySetResult(true);
+				}
 			}
 		}
 

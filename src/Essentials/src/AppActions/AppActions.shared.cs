@@ -29,6 +29,12 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		/// <param name="actions">A collection of <see cref="AppAction"/> that is to be set for this app.</param>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		/// <remarks>
+		/// Implementations must complete the returned task when the platform write finishes.
+		/// App-action publications configured through <c>ConfigureEssentials</c> are serialized,
+		/// and this contract has no cancellation token, so a task that never completes prevents
+		/// later configured publications from starting.
+		/// </remarks>
 		Task SetAsync(IEnumerable<AppAction> actions);
 
 		/// <summary>
