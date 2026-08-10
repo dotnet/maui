@@ -1235,8 +1235,12 @@ class TestPrepareVallyEvaluation < Minitest::Test
     allow_missing_trusted_control_ref: true,
     list_models: false
   )
+    validator_env = {
+      "TRUSTED_BASE_SHA" => nil,
+      "TRUSTED_SHA" => nil
+    }.merge(env)
     args = [
-      env,
+      validator_env,
       "ruby",
       PREPARER,
       @repo_root,
