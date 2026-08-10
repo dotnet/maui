@@ -2,6 +2,10 @@
 #Requires -Modules Pester
 
 Describe 'Memory leak workflow provenance and safety' {
+    BeforeDiscovery {
+        $script:jqAvailable = $null -ne (Get-Command jq -ErrorAction SilentlyContinue)
+    }
+
     BeforeAll {
         $workflowRoot = Join-Path $PSScriptRoot '../workflows'
         $fixerPath = Join-Path $workflowRoot 'leak-fixer.md'
@@ -59,7 +63,7 @@ Describe 'Memory leak workflow provenance and safety' {
         }
     }
 
-    It 'runs provenance fixtures through the production jq parser' -ForEach @(
+    It 'runs provenance fixtures through the production jq parser' -Skip:(-not $script:jqAvailable) -ForEach @(
         @{ Body = 'Fixes #123'; Expected = '123' }
         @{ Body = 'Fixes: #124'; Expected = '124' }
         @{ Body = 'Fixes dotnet/maui#125'; Expected = '125' }
@@ -81,7 +85,7 @@ Describe 'Memory leak workflow provenance and safety' {
         }
     }
 
-    It 'filters destructive-close candidates with the same production jq contract' {
+    It 'filters destructive-close candidates with the same production jq contract' -Skip:(-not $script:jqAvailable) {
         $inputJson = @(
             @{ number = 1; body = 'Fixes #500' }
             @{ number = 2; body = 'Fixes dotnet/maui#500' }
