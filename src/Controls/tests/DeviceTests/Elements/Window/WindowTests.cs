@@ -206,6 +206,98 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Replacing Shell Root While Switching Items Does Not Crash")]
+		public async Task ReplacingShellRootWhileSwitchingItemsDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Content = new Label { Text = "First item" } };
+			var secondPage = new ContentPage { Content = new Label { Text = "Second item" } };
+			var firstItem = new FlyoutItem { Title = "First", Items = { firstPage } };
+			var secondItem = new FlyoutItem { Title = "Second", Items = { secondPage } };
+			var shell = new Shell { Items = { firstItem, secondItem } };
+			var window = new Window(shell);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				shell.CurrentItem = secondItem;
+				var replacementPage = new ContentPage
+				{
+					Content = new Label { Text = "Replacement page" }
+				};
+				window.Page = replacementPage;
+
+				await OnLoadedAsync(replacementPage);
+				Assert.Same(replacementPage, window.Page);
+			});
+		}
+
+		[Fact(DisplayName = "Replacing Shell Root From Page Loaded Does Not Crash")]
+		public async Task ReplacingShellRootFromPageLoadedDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var shellPage = new ContentPage { Content = new Label { Text = "Shell page" } };
+			var replacementPage = new ContentPage
+			{
+				Content = new Label { Text = "Replacement page" }
+			};
+			var shell = new Shell { CurrentItem = shellPage };
+			var window = new Window(shell);
+
+			shellPage.Loaded += OnShellPageLoaded;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(replacementPage);
+				Assert.Same(replacementPage, window.Page);
+			});
+
+			void OnShellPageLoaded(object? sender, EventArgs e)
+			{
+				shellPage.Loaded -= OnShellPageLoaded;
+				window.Page = replacementPage;
+			}
+		}
+
+		[Fact(DisplayName = "Replacing Flyout Root From Detail Loaded Does Not Crash")]
+		public async Task ReplacingFlyoutRootFromDetailLoadedDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var detailPage = new ContentPage
+			{
+				Title = "Detail",
+				Content = new Label { Text = "Detail page" }
+			};
+			var rootPage = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = detailPage
+			};
+			var replacementPage = new ContentPage
+			{
+				Content = new Label { Text = "Replacement page" }
+			};
+			var window = new Window(rootPage);
+
+			detailPage.Loaded += OnDetailPageLoaded;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(replacementPage);
+				Assert.Same(replacementPage, window.Page);
+			});
+
+			void OnDetailPageLoaded(object? sender, EventArgs e)
+			{
+				detailPage.Loaded -= OnDetailPageLoaded;
+				window.Page = replacementPage;
+			}
+		}
+
 		static FlyoutPage CreateFlyoutRoot()
 		{
 			var flyoutPage = new ContentPage { Title = "Flyout" };

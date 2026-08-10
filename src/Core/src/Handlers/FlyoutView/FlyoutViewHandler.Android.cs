@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Android.App.Roles;
 using Android.Runtime;
@@ -8,8 +8,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Platform;
+using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -53,13 +52,22 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		bool _releasing;
+		IDisposable? _pendingFragment;
+
+		void CancelPendingFragment()
+		{
+			_pendingFragment?.Dispose();
+			_pendingFragment = null;
+		}
 
 		void UpdateDetailsFragmentView()
 		{
+			CancelPendingFragment();
+
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			if (_detailViewFragment is not null &&
-				_detailViewFragment.DetailView == VirtualView.Detail &&
+				_detailViewFragment?.DetailView == VirtualView.Detail &&
 				!_detailViewFragment.IsDestroyed)
 			{
 				return;
@@ -69,107 +77,48 @@ namespace Microsoft.Maui.Handlers
 			if (context is null)
 				return;
 
-			var detailContainer = _navigationRoot?.FindViewById(Resource.Id.navigationlayout_content);
-			var activeDetailContainer = MauiContext.Services
-				.GetService<NavigationRootManager>()
-				?.RootView
-				?.FindViewById(Resource.Id.navigationlayout_content);
-			if (detailContainer is null || !ReferenceEquals(detailContainer, activeDetailContainer))
-				return;
-
-			var fragmentManager = GetFragmentManager(context);
-			if (fragmentManager is null || fragmentManager.IsDestroyed(context))
-			{
-				_detailViewFragment = null;
-				return;
-			}
-
 			if (_detailViewFragment?.DetailView is IView previousDetail &&
 				previousDetail != VirtualView.Detail)
 			{
 				previousDetail.Handler?.DisconnectHandler();
 			}
 
+			var fragmentManager = MauiContext.GetFragmentManager();
+
 			if (VirtualView.Detail is null)
 			{
 				if (_detailViewFragment is not null)
 				{
-					var fragmentToRemove = _detailViewFragment;
-					try
-					{
+					_pendingFragment =
 						fragmentManager
-							.BeginTransactionEx()
-							.RemoveEx(fragmentToRemove)
-							.SetReorderingAllowed(true)
-							.CommitNowAllowingStateLoss();
+							.RunOrWaitForResume(context, (fm) =>
+							{
+								if (_detailViewFragment is null)
+								{
+									return;
+								}
 
-						_detailViewFragment = null;
-					}
-					catch (Java.Lang.IllegalStateException)
-					{
-						PlatformView.Post(UpdateDetailsFragmentView);
-					}
+								fm
+									.BeginTransactionEx()
+									.RemoveEx(_detailViewFragment)
+									.SetReorderingAllowed(true)
+									.Commit();
+							});
 				}
 			}
 			else
 			{
-				var detailFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
-				try
-				{
+				_pendingFragment =
 					fragmentManager
-						.BeginTransactionEx()
-						.ReplaceEx(Resource.Id.navigationlayout_content, detailFragment)
-						.SetReorderingAllowed(true)
-						.CommitNowAllowingStateLoss();
-
-					_detailViewFragment = detailFragment;
-				}
-				catch (Java.Lang.IllegalStateException)
-				{
-					detailFragment.Dispose();
-					PlatformView.Post(UpdateDetailsFragmentView);
-				}
-			}
-		}
-
-		FragmentManager? GetFragmentManager(global::Android.Content.Context context) =>
-			MauiContext?.Services.GetService<FragmentManager>() ?? context.GetFragmentManager();
-
-		void RemoveDetailFragment()
-		{
-			var detailFragment = _detailViewFragment;
-			_detailViewFragment = null;
-			if (detailFragment is null)
-				return;
-
-			detailFragment.DetailView?.Handler?.DisconnectHandler();
-
-			var context = MauiContext?.Context;
-			if (context is null)
-				return;
-
-			var fragmentManager = GetFragmentManager(context);
-			if (fragmentManager is null ||
-				fragmentManager.IsDestroyed(context))
-			{
-				return;
-			}
-
-			try
-			{
-				fragmentManager
-					.BeginTransactionEx()
-					.RemoveEx(detailFragment)
-					.SetReorderingAllowed(true)
-					.CommitNowAllowingStateLoss();
-			}
-			catch (Java.Lang.IllegalStateException)
-			{
-				fragmentManager
-					.BeginTransactionEx()
-					.RemoveEx(detailFragment)
-					.SetReorderingAllowed(true)
-					.CommitAllowingStateLossEx();
+						.RunOrWaitForResume(context, (fm) =>
+						{
+							_detailViewFragment = new ScopedFragment(VirtualView.Detail, MauiContext);
+							fm
+								.BeginTransaction()
+								.Replace(Resource.Id.navigationlayout_content, _detailViewFragment)
+								.SetReorderingAllowed(true)
+								.Commit();
+						});
 			}
 		}
 
@@ -369,7 +318,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(View platformView)
 		{
-			RemoveDetailFragment();
+			CancelPendingFragment();
 
 			MauiWindowInsetListener.UnregisterView(platformView);
 			if (_navigationRoot is CoordinatorLayout cl)
@@ -412,6 +361,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
+
+			CancelPendingFragment();
 
 			// PlatformView may be null when the handler has not yet been connected;
 			// the is-pattern serves as a null guard here.

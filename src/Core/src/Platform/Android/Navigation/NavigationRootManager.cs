@@ -9,6 +9,7 @@ using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AView = Android.Views.View;
 
@@ -153,12 +154,39 @@ namespace Microsoft.Maui.Platform
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
 			if (_rootView is ContainerView containerView && containerView.IsAlive())
+			{
+				// Shell and FlyoutPage can queue work on either manager. Drain it while the
+				// outgoing root still contains every fragment transaction target.
+				ExecutePendingFragmentTransactions();
 				containerView.CurrentView = null;
+			}
 
 			DrawerLayout = null;
 			_rootView = null;
 			_toolbarElement = null;
 			_managedCoordinatorLayout = null;
+		}
+
+		void ExecutePendingFragmentTransactions()
+		{
+			var context = _mauiContext.Context;
+			if (context is null)
+				return;
+
+			var scopedFragmentManager = _mauiContext.Services.GetService<FragmentManager>();
+			ExecutePendingTransactions(scopedFragmentManager, context);
+
+			var activityFragmentManager = context.GetFragmentManager();
+			if (!ReferenceEquals(activityFragmentManager, scopedFragmentManager))
+				ExecutePendingTransactions(activityFragmentManager, context);
+		}
+
+		static void ExecutePendingTransactions(FragmentManager? fragmentManager, Context context)
+		{
+			if (fragmentManager is null || fragmentManager.IsDestroyed(context))
+				return;
+
+			fragmentManager.ExecutePendingTransactionsEx();
 		}
 
 		IDisposable? _pendingFragment;
