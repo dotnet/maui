@@ -105,7 +105,6 @@ namespace Microsoft.Maui
 			Closed -= OnClosedPrivate;
 			VisibilityChanged -= OnVisibilityChanged;
 			_viewSettings.ColorValuesChanged -= ViewSettingsColorValuesChanged;
-			_windowManager.WindowMessage -= OnWindowMessage;
 
 			if (_windowIcon != IntPtr.Zero)
 			{

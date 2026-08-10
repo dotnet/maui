@@ -12,12 +12,6 @@ namespace Microsoft.Maui.Handlers
 			return new RadioButton() { GroupName = Guid.NewGuid().ToString() };
 		}
 
-		public override void PlatformArrange(Graphics.Rect frame)
-		{
-			base.PlatformArrange(frame);
-			PlatformView.GroupName = string.Empty;
-		}
-
 		protected override void ConnectHandler(RadioButton platformView)
 		{
 			platformView.Checked += OnCheckedOrUnchecked;
