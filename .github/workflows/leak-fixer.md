@@ -98,6 +98,20 @@ network:
     - "*.blob.core.windows.net"
 
 safe-outputs:
+  # The final duplicate check must be authoritative at the mutation boundary. A failed
+  # in-prompt bash call only reports a tool error to the agent; it cannot prevent the agent
+  # from calling create_pull_request afterward. This deterministic step runs in the generated
+  # safe-output job immediately before Process Safe Outputs and fails the job before any PR
+  # mutation when live metadata or the persisted mechanism decisions are incomplete/stale.
+  steps:
+    - name: Enforce final leak-fix de-dup gate
+      if: ${{ contains(needs.agent.outputs.output_types, 'create_pull_request') }}
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_AW_AGENT_OUTPUT: /tmp/gh-aw/agent_output.json
+        LEAK_DEDUP_STATE_DIR: /tmp/gh-aw/agent
+      run: .github/scripts/Assert-LeakFixSafeOutputGate.ps1
   create-pull-request:
     # No fixed title-prefix: the agent writes the FULL title starting with "[leak-fix] "
     # (it fixes a runtime leak from a [leak-scan] issue). At most ONE PR per run.
@@ -386,6 +400,21 @@ API=$(printf '%s' "$TITLE" \
 echo "target rooting API: $API"
 # Escape the repo slug (repo names may contain '.' / '-') for the exact `Refs:` match below.
 REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
+# Every bash tool call starts in a fresh shell. Persist the target identity and the
+# mechanism-aware exceptions that the agent makes below; Step 9.5 and, authoritatively, the
+# safe-output mutation-boundary gate reload and validate this file. Missing/mismatched state
+# is a fail-closed refusal to create a PR, never an empty-variable fall-through.
+jq -n \
+  --argjson issue_number "$N" \
+  --arg api "$API" \
+  --arg repository "$GITHUB_REPOSITORY" \
+  '{
+    issue_number: $issue_number,
+    api: $api,
+    repository: $repository,
+    step3_api_match_pr_numbers: [],
+    different_mechanism_prs: []
+  }' > /tmp/gh-aw/agent/dedup-state.json
 # (a) Exact [leak-fix] PRs already MERGED to main/inflight/current.
 # Fail-closed: a transient fetch error writes nothing, and jq on an empty pipe still emits []
 # with exit 0 — this gate would then wrongly conclude "no merged fix exists" and let leak-fixer
@@ -519,6 +548,22 @@ jq --arg n "$N" --arg repo "$REPO_RE" --argjson apiNums "$API_MATCH_NUMBERS" '[.
   /tmp/gh-aw/agent/closed-unmerged-fix-prs.json \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
+
+# Snapshot every Step 3 API-only match. If this run proceeds, the agent must record a
+# different-mechanism decision for each of these PRs after comparing retention paths below.
+# Step 9.5 compares only live matches absent from this snapshot; the safe-output gate still
+# verifies that ALL live API-only matches (old and new) have an explicit decision.
+STEP3_API_MATCH_NUMBERS=$(
+  {
+    awk -F '\t' '{ print $2 }' /tmp/gh-aw/agent/merged-api-fix-prs.tsv
+    jq -r '.[].number' /tmp/gh-aw/agent/same-api-prs.json
+  } | jq -R 'select(length > 0) | tonumber' | jq -s 'sort | unique'
+)
+jq --argjson numbers "$STEP3_API_MATCH_NUMBERS" \
+  '.step3_api_match_pr_numbers = $numbers' \
+  /tmp/gh-aw/agent/dedup-state.json \
+  > /tmp/gh-aw/agent/dedup-state.next.json
+cat /tmp/gh-aw/agent/dedup-state.next.json > /tmp/gh-aw/agent/dedup-state.json
 ```
 
 - If `jq 'length' merged-issue-fix-prs.json` is greater than `0` → that merged PR literally
@@ -541,6 +586,14 @@ jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
   reference (c) → apply the SAME retention-mechanism check as the merged-API case above before
   skipping; a same-API open PR that targets a different mechanism is not a duplicate.
   Also double-check the leak isn't already fixed on `main` (Step 6 gate).
+- **Persist every different-mechanism decision.** If you proceed past any API-only match from
+  (a) or (c), append one object to the `different_mechanism_prs` array in
+  `/tmp/gh-aw/agent/dedup-state.json`:
+  `{"number": <PR>, "phase": "step3", "basis": "<specific comparison of the two retention paths>"}`.
+  Keep the `basis` concise but specific (at least 12 characters), do not copy untrusted PR text
+  verbatim, and preserve the other state fields. Use `jq` plus a `.next.json` file and `cat`
+  back over the state file. The safe-output gate rejects missing, duplicate, malformed, or
+  identity-mismatched decisions.
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
 
@@ -692,20 +745,43 @@ test "$(cat /tmp/gh-aw/agent/commitcount.txt)" -ge 1
 
 If nothing was committed (count `0`) → `skipped: no commit produced` and stop.
 
-## Step 9.5 — Re-check de-dup immediately before emitting (snapshots go stale)
+## Step 9.5 — Refresh de-dup immediately before emitting (snapshots go stale)
 
 The Step 3 merged/open snapshots were captured before the red/green build+test cycle
 (Steps 4–9), which can run for up to 120 minutes. Another run can merge or open an equivalent
-fix during that window, so re-run the SAME fail-closed merged/open checks from Step 3 right
-here — the last possible point before `create-pull-request` — using the same `$N`, `$API`,
-and `$REPO_RE` from Step 3, and no-op on a new match instead of emitting a duplicate PR.
+fix during that window. Refresh the live context here so you can compare the retention
+mechanism of any NEW API-only match. This bash call runs in a fresh shell: it MUST reload the
+persisted target identity and fail closed if the state is missing or malformed.
+
+This prompt step prepares semantic mechanism decisions; it is not the authoritative mutation
+gate. The generated safe-output job independently re-fetches live metadata and refuses
+`create_pull_request` immediately before Process Safe Outputs unless every current API-only
+match has a valid different-mechanism decision and no direct issue-reference match exists.
 
 ```bash
+set -euo pipefail
+STATE=/tmp/gh-aw/agent/dedup-state.json
+test -s "$STATE"
+N=$(jq -er '.issue_number | select(type == "number" and . > 0 and floor == .)' "$STATE")
+API=$(jq -er '.api | select(type == "string" and test("^[A-Za-z_][A-Za-z0-9_]*\\.[A-Za-z_][A-Za-z0-9_]*$"))' "$STATE")
+STATE_REPOSITORY=$(jq -er '.repository | select(type == "string" and length > 0)' "$STATE")
+test "$STATE_REPOSITORY" = "$GITHUB_REPOSITORY"
+REPO_RE=$(printf '%s' "$STATE_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
+jq -e '
+  (.step3_api_match_pr_numbers | type == "array") and
+  (.different_mechanism_prs | type == "array")
+' "$STATE" > /dev/null
+
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
   --search '"[leak-fix]" in:title' \
   --json number,title,body,baseRefName,mergedAt,url \
   > /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json; then
   echo "ERROR: final re-check 'gh pr list --state merged [leak-fix]' failed — aborting rather than risk a duplicate PR (fail-closed)." >&2
+  exit 1
+fi
+FINAL_MERGED_COUNT=$(jq 'length' /tmp/gh-aw/agent/final-merged-leak-fix-prs-raw.json)
+if test "$FINAL_MERGED_COUNT" -ge 1000; then
+  echo "ERROR: final merged [leak-fix] search reached the 1000-result ceiling — aborting because the de-dup history may be truncated." >&2
   exit 1
 fi
 jq '[.[] |
@@ -720,19 +796,25 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
       test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
   /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   > /tmp/gh-aw/agent/final-merged-issue-fix-prs.json
-FINAL_MERGED_API_HIT=$(jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
+jq -r '.[] | [.number, .title] | @tsv' \
+  /tmp/gh-aw/agent/final-merged-leak-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(printf '%s\n' "$TITLE" \
         | sed -E 's/^\[leak-fix\] *//' \
         | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
-      test -n "$API" && test "$PR_API" = "$API" && echo "$PR"
-    done | wc -l | tr -d ' ')
+      test "$PR_API" = "$API" && printf 'merged\t%s\t%s\n' "$PR" "$TITLE"
+    done > /tmp/gh-aw/agent/final-merged-api-matches.tsv
 
 if ! gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
   --search '"[leak-fix]" in:title' \
   --json number,title,body \
   > /tmp/gh-aw/agent/final-open-fix-prs-raw.json; then
   echo "ERROR: final re-check 'gh pr list --state open [leak-fix]' failed — aborting rather than risk a duplicate PR (fail-closed)." >&2
+  exit 1
+fi
+FINAL_OPEN_COUNT=$(jq 'length' /tmp/gh-aw/agent/final-open-fix-prs-raw.json)
+if test "$FINAL_OPEN_COUNT" -ge 1000; then
+  echo "ERROR: final open [leak-fix] search reached the 1000-result ceiling — aborting because the de-dup set may be truncated." >&2
   exit 1
 fi
 jq '[.[] | select(.title | startswith("[leak-fix] "))]' \
@@ -744,21 +826,43 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] |
       test("(^|\n)[ \t]*Refs: *"+$repo+"#"+$n+"\\b"))]' \
   /tmp/gh-aw/agent/final-open-fix-prs.json \
   > /tmp/gh-aw/agent/final-open-issue-fix-prs.json
-FINAL_OPEN_API_HIT=$(jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-open-fix-prs.json \
+jq -r '.[] | [.number, .title] | @tsv' /tmp/gh-aw/agent/final-open-fix-prs.json \
   | while IFS=$'\t' read -r PR TITLE; do
       PR_API=$(printf '%s\n' "$TITLE" \
         | sed -E 's/^\[leak-fix\] *//' \
         | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
-      test -n "$API" && test "$PR_API" = "$API" && echo "$PR"
-    done | wc -l | tr -d ' ')
+      test "$PR_API" = "$API" && printf 'open\t%s\t%s\n' "$PR" "$TITLE"
+    done > /tmp/gh-aw/agent/final-open-api-matches.tsv
 
-echo "final re-check: merged issue-ref=$(jq 'length' /tmp/gh-aw/agent/final-merged-issue-fix-prs.json) merged API=$FINAL_MERGED_API_HIT open issue-ref=$(jq 'length' /tmp/gh-aw/agent/final-open-issue-fix-prs.json) open API=$FINAL_OPEN_API_HIT"
+cat /tmp/gh-aw/agent/final-merged-api-matches.tsv \
+    /tmp/gh-aw/agent/final-open-api-matches.tsv \
+  | sort -u > /tmp/gh-aw/agent/final-api-matches.tsv
+cut -f2 /tmp/gh-aw/agent/final-api-matches.tsv \
+  | jq -R --slurpfile state "$STATE" '
+      select(length > 0) |
+      tonumber as $number |
+      select(($state[0].step3_api_match_pr_numbers | index($number)) == null) |
+      $number
+    ' > /tmp/gh-aw/agent/final-new-api-match-pr-numbers.txt
+
+echo "final refresh: merged issue-ref=$(jq 'length' /tmp/gh-aw/agent/final-merged-issue-fix-prs.json) open issue-ref=$(jq 'length' /tmp/gh-aw/agent/final-open-issue-fix-prs.json)"
+echo "all live API-only matches:"; cat /tmp/gh-aw/agent/final-api-matches.tsv
+echo "API-only matches first seen after Step 3:"; cat /tmp/gh-aw/agent/final-new-api-match-pr-numbers.txt
 ```
 
-If ANY of the four counts above is greater than `0` → an equivalent fix was opened or merged
-while this run's build/test cycle was in progress. Record
-`skipped: equivalent fix opened or merged during this run's build/test window` and stop —
-do NOT proceed to Step 10.
+- If either direct issue-reference count is greater than `0`, stop: a direct reference is
+  always an unconditional duplicate.
+- Compare mechanisms only for PR numbers in
+  `final-new-api-match-pr-numbers.txt`; Step 3 already handled the persisted snapshot.
+  For each new API-only match, open the PR and compare its retention path to this issue.
+  If equivalent, stop. If different, append to the `different_mechanism_prs` array in
+  `/tmp/gh-aw/agent/dedup-state.json`:
+  `{"number": <PR>, "phase": "final", "basis": "<specific retention-path comparison>"}`
+  to `dedup-state.json.different_mechanism_prs` with the same atomic `jq`/`.next.json`/`cat`
+  pattern as Step 3.
+- Do not rely on `exit 1` here as enforcement. Even if you route around a failed tool call or
+  forget a decision, the safe-output mutation-boundary step independently re-fetches both
+  lists and blocks creation fail-closed.
 
 ## Step 10 — Emit the draft `[leak-fix]` PR (Track A)
 

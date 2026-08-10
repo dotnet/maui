@@ -139,26 +139,31 @@ pre-agent-steps:
       # A merged [leak-fix] PR is not permanent proof the fix is still active — it may since
       # have been reverted (e.g. it broke something else), in which case the shipped package
       # will still reproduce the ORIGINAL leak and skipping the API forever would be wrong.
-      # GitHub's "Revert" button always creates a PR whose body contains an exact
-      # "Reverts <owner>/<repo>#<N>" line pointing at the original PR — cross-reference that
-      # against every already-merged-fix PR# and drop any that were reverted from the
+      # GitHub's "Revert" button creates a PR whose body contains an exact
+      # "Reverts <owner>/<repo>#<N>" line. Resolve those links recursively: a live revert
+      # removes its target's effect, a revert-of-that-revert restores it, and multiple live
+      # reverts combine by parity. Drop only effectively reverted fixes from the
       # permanent-proof set (they fall back to being re-filable, same as an unmerged attempt).
       gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
         --search '"Revert" in:title' --json number,title,body,mergedAt \
         > /tmp/gh-aw/agent/revert-prs-raw.json
+      REVERT_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/revert-prs-raw.json)
+      if test "$REVERT_RAW_COUNT" -ge 1000; then
+        echo "ERROR: merged Revert search returned $REVERT_RAW_COUNT rows — at/above the GitHub Search API ceiling. Effective revert chains may be truncated, so aborting fail-closed." >&2
+        exit 1
+      fi
       jq '[.[] | select(.mergedAt != null)]' /tmp/gh-aw/agent/revert-prs-raw.json \
         > /tmp/gh-aw/agent/merged-revert-prs.json
-      REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
-      : > /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
-      while IFS=$'\t' read -r API PR BASE URL TITLE; do
-        if jq -e --arg repo "$REPO_RE" --arg n "$PR" \
-            '[.[] | select((.body // "") | test("(^|\n)[ \t]*Reverts *"+$repo+"#"+$n+"\\b"))] | length > 0' \
-            /tmp/gh-aw/agent/merged-revert-prs.json > /dev/null; then
-          echo "$PR" >> /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
-        fi
-      done < /tmp/gh-aw/agent/already-merged-fix-apis.tsv
+      # Resolve the EFFECTIVE state recursively, not just one hop. A merged revert toggles
+      # its target only while that revert itself remains active; reverting the revert
+      # reinstates the original fix. Multiple active reverts are combined by parity.
+      pwsh .github/scripts/Get-EffectiveRevertedLeakFixes.ps1 \
+        -Repository "$GITHUB_REPOSITORY" \
+        -MergedFixTsvPath /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
+        -MergedRevertsJsonPath /tmp/gh-aw/agent/merged-revert-prs.json \
+        -OutputPath /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
       if test -s /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt; then
-        echo "excluding reverted merged-fix PRs from the permanent-proof set:"
+        echo "excluding effectively-reverted merged-fix PRs from the permanent-proof set:"
         cat /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt
         awk -F '\t' 'NR==FNR{rev[$1]=1; next} !($2 in rev)' \
           /tmp/gh-aw/agent/reverted-fix-pr-numbers.txt /tmp/gh-aw/agent/already-merged-fix-apis.tsv \
@@ -269,10 +274,11 @@ echo "already-merged fix APIs:"; cat /tmp/gh-aw/agent/already-merged-fix-apis.ts
   issue this workflow filed (one per line).
 - `already-merged-fix-apis.tsv` / `.txt` — `Type.Member <TAB> PR# <TAB> baseRefName <TAB> URL
   <TAB> title` for every `[leak-fix]` PR already merged to `main` or `inflight/current` (the
-  `.txt` is just the first column, deduplicated). A merged PR that was **later reverted** (via
-  GitHub's Revert button, detected from the standard `Reverts <owner>/<repo>#<N>` line it
-  writes into the revert PR body) is already excluded from both files — it is treated as a
-  re-filable candidate again, not permanent proof the fix is still active.
+  `.txt` is just the first column, deduplicated). Effective revert state is resolved
+  recursively from GitHub's standard `Reverts <owner>/<repo>#<N>` body line: one active
+  revert excludes the fix, a revert-of-that-revert reinstates it, and deeper/multiple chains
+  are combined by parity. Only an effectively reverted fix is treated as re-filable rather
+  than permanent proof the fix is still active.
 
 - A candidate is **OUT** if its rooting `Type.Member` (e.g. `SwipeItemView.Command`,
   `Picker.ItemsSource`) is already in `already-filed-apis.txt`, OR an open `[leak-scan]` issue
