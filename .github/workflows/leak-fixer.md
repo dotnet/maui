@@ -208,14 +208,14 @@ writes are the safe-outputs (`create-pull-request`, `push-to-pull-request-branch
      affected test so Track A stays red→green. Never push a change that breaks the PR's own test
      just to satisfy a review.
 2. **If a Track A leak is already fixed on `main`, open NO PR.** Close the scan issue **only**
-   when a **merged** `[leak-fix]` PR either references this scan issue number (`Fixes`/`Refs #<N>`)
-   OR already covers the same rooting `Type.Member` (Step 3 gate (d)) — that merged PR is the
-   provenance a fix actually landed. Emit a `close-issue` on the
-   `[leak-scan]` issue (AI-attributed comment linking the merged fix) and record
-   `skipped: already fixed on main`. If instead your freshly-authored regression test merely
-   passes on the *unpatched* source (Step 6) with **no** merged fix PR, that is NOT proof the
-   leak is gone — do NOT close it; record `skipped: test green on unpatched main (no PR, issue
-   left open)` and move on.
+   when a merged `[leak-fix]` PR on `main` explicitly carries the exact same-repo
+   `Fixes #<N>` provenance (Step 3 gate (d)). A `Refs` line or Type.Member match can never
+   authorize closure. Emit `close-issue` with an AI-attributed comment linking that exact fix and
+   record `skipped: already fixed on main`. If a different scan issue describes the same
+   leak-scan-key/retention path, skip rebuilding but leave this issue open for manual
+   reconciliation. If instead your freshly-authored regression test merely passes on unpatched
+   source (Step 6) with no exact merged fix PR, that is NOT proof the leak is gone — do NOT close
+   it; record `skipped: test green on unpatched main (no PR, issue left open)` and move on.
 3. **Managed scope for product fixes.** Any *product* change (Track A / a Track C code fix) must
    live in managed cross-platform code (`src/Controls/src`, `src/Core/src`, `src/Essentials/src`).
    If a `[leak-scan]` leak can only be reproduced with a platform handler / native peer, it is out
@@ -391,19 +391,18 @@ Read the chosen issue's body in full (`gh issue view <N> --json title,body`). Ex
 
 - the **rooting API** (e.g. `IndicatorView.ItemsSource`),
 - the **retention path** `root -> … -> transient` with the cited file:line(s),
+- the canonical `<!-- leak-scan-key: ... -->` marker when present (legacy issues may not have one),
 - the **suggested fix** shape, and
 - any **non-default / disabling condition**.
 
 ## Step 2.5 — Fetch workflow-owned `[leak-fix]` PR sets ONCE per run (cache, don't re-query)
 
-Step 3's gates (a)–(d) below all filter this SAME three-state `[leak-fix]` PR history with
-per-candidate `jq` (keyed on `$N` / `$API`), but the raw open/closed/merged PR sets themselves do
-NOT depend on `$N` or `$API` — only the filters do. If Step 2's auto-pick gates out one or more
-candidates before landing on an actionable issue ("move to the next oldest" below), re-running
-these THREE `gh pr list` searches for every candidate multiplies GitHub Search API pagination for
-no reason and can burn the scheduled run before it reaches an actionable candidate. Fetch each
-state ONCE here, cache it, and have Step 3 apply its `jq` filters against these SAME cached files
-for every candidate instead of re-issuing the searches.
+Step 3's gates below all filter this SAME three-state `[leak-fix]` PR history with per-candidate
+`jq` (keyed on `$N` / `$API`), but the raw open/closed/merged PR sets themselves do NOT depend on
+the candidate. Fetch each state ONCE here and cache it. Do NOT ancestry-check every merged PR at
+this stage: Step 3 first narrows the raw cache to the handful matching the exact scan issue or
+rooting API, then calls the compare API only for those survivors. This preserves the main-ancestry
+guard without spending up to 1000 sequential REST calls before the first candidate is evaluated.
 
 ```bash
 # Open [leak-fix] PRs — gates (a) and (b) below both filter this SAME set (issue-ref match and
@@ -422,7 +421,7 @@ gh pr list --repo "$GITHUB_REPOSITORY" --state closed --search '"[leak-fix]" in:
 if [ "$(jq 'length' /tmp/gh-aw/agent/closed-leakfix-all.json)" -ge 1000 ]; then
   echo "WARNING: closed [leak-fix] set hit the 1000 search-API ceiling; older attempts may be TRUNCATED and the 3-attempt cap could under-count for some issues — switch to date-windowed enumeration."
 fi
-# MERGED [leak-fix] PRs — feeds gate (d), the destructive close path.
+# MERGED [leak-fix] PRs — Step 3 first filters this raw set, then ancestry-checks only matches.
 # --limit 1000 = the GitHub SEARCH API's hard result ceiling (pagination cannot exceed it). If
 # the merged [leak-fix] set ever hits 1000, older fixes are TRUNCATED and this gate could miss a
 # valid merged fix. Gate (d) stays fail-safe (it only CLOSES on a positive match, so a miss
@@ -430,65 +429,42 @@ fi
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' --limit 1000 \
   --json number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-raw.json)" -ge 1000 ]; then
-  echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Gate (d) stays fail-safe (under-closes) but close-coverage is incomplete — switch to date-windowed enumeration."
+  echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older merged fixes may be TRUNCATED. Exact-close remains fail-safe (under-closes) but coverage is incomplete — switch to date-windowed enumeration."
 fi
-# A "[leak-fix]" PR being MERGED only proves the fix landed on ITS base branch — NOT necessarily
-# `main`. This workflow's safe-outputs always OPEN the fix PR against `main`, but the SAME merge
-# commit can still land on a forward-integration branch (e.g. `inflight/current`) rather than
-# `main` (real example: #36370 — matches this title/label query, `mergedAt` is set, but its merge
-# commit is on `inflight/current`, not `main`). Gate (d) CLOSES a live [leak-scan] issue as
-# "already fixed on main" on this evidence, so trusting merge-state alone can produce a FALSE
-# "already fixed" close while the leak still reproduces on `main`. Verify each merge commit is
-# ACTUALLY an ancestor of `main` via the GitHub compare API (`ahead_by == 0` ⇒ the merge commit is
-# fully contained in `main`'s history) — the SAME ancestry check the release-readiness skill uses
-# (see `.github/skills/release-readiness/references/methodology.md`) — and drop any entry that
-# fails it BEFORE gate (d) ever sees it, instead of relying on `--state merged` / `--base` alone
-# (`--base` only reflects the PR's declared base, not where the merge commit ultimately landed).
-: > /tmp/gh-aw/agent/merged-onmain.ndjson
-jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
-  sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
-  [ -z "$sha" ] && continue
-  ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || ahead=""
-  if [ "$ahead" = "0" ]; then
-    printf '%s\n' "$pr" >> /tmp/gh-aw/agent/merged-onmain.ndjson
-  fi
-done
-if [ -s /tmp/gh-aw/agent/merged-onmain.ndjson ]; then
-  jq -s '.' /tmp/gh-aw/agent/merged-onmain.ndjson > /tmp/gh-aw/agent/merged-leakfix-all.json
-else
-  echo '[]' > /tmp/gh-aw/agent/merged-leakfix-all.json
-fi
-jq 'length' /tmp/gh-aw/agent/merged-leakfix-all.json
 ```
 
 Do this ONCE at the top of the run, before evaluating any candidate. If Step 2 gates out the
 first candidate and moves to the next-oldest, do NOT re-run the fetches above — go straight to
-Step 3 and re-apply its `jq` filters (below) to these SAME cached files for the new `$N` / `$API`.
+Step 3 and re-apply its filters and targeted ancestry checks to the cached files for the new
+`$N` / `$API`.
 
 ## Step 3 — De-dup + attempt cap (per-candidate filters against the Step 2.5 cache)
 
 A fix PR carries `Fixes #<N>` in its body (where `<N>` is the `[leak-scan]` issue) — that is the
-sole scan-issue join / auto-close key. An optional `Refs: <owner>/<repo>#<UPSTREAM>` line may also
-be present, but it points at a SEPARATE pre-existing upstream issue, never at `#<N>`. Because the
-same underlying leak can still be filed under MULTIPLE issue numbers (duplicate `[leak-scan]`
-issues, or a pre-existing upstream issue), also de-dup by the **rooting `Type.Member`** the target
-names — never open a second fix for a leak already being fixed. (The gate (a) search below matches
-`Fixes` **or** `Refs` against `#<N>` for backward-compatibility with older fix PRs.)
+sole scan-issue join and the ONLY key allowed to drive automatic closure. An optional
+`Refs: <owner>/<repo>#<UPSTREAM>` line points at a separate issue and can never authorize closing
+`#<N>`. Duplicate scan issues may still describe the same leak, so API matching is retained only
+as a cheap prefilter. Before skipping work for a different issue number, compare its
+`leak-scan-key` or full retention path; the Type.Member alone is not a leak identity.
 
 ```bash
 N=<issue-number>
+gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json number,title,body,state \
+  > /tmp/gh-aw/agent/target-scan-issue.json
 # The rooting Type.Member this issue is about (titles lead with it: "[leak-scan] Type.Member — ...").
 # Use the same extraction as daily-leak-hunter.md (last Type.Member pair of the first identifier
 # chain) so off-contract / fully-qualified titles key identically on both sides of the pipeline.
-API=$(gh issue view "$N" --repo "$GITHUB_REPOSITORY" --json title -q '.title' \
+API=$(jq -r '.title // ""' /tmp/gh-aw/agent/target-scan-issue.json \
   | sed -E 's/^\[leak-scan\] *//' \
-  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } else print }')
+  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+TARGET_LEAK_KEY=$(jq -r '(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key // empty' \
+  /tmp/gh-aw/agent/target-scan-issue.json)
 echo "target rooting API: $API"
+echo "target leak key: ${TARGET_LEAK_KEY:-<legacy — compare retention path>}"
 # Escape the owner/repo so it embeds literally in the jq test() calls below. The issue-ref match
 # requires "#<N>" to be a BARE same-repo reference OR an explicit "<owner>/<repo>#<N>" qualifier —
 # NEVER an arbitrary cross-repo "other/repo#<N>". Otherwise an unrelated upstream ref such as
-# "Refs: dotnet/runtime#5000" would satisfy a search for maui #5000 and let a foreign reference
-# drive the destructive close path in gate (d) against a live [leak-scan] issue.
+# "Refs: dotnet/runtime#5000" would satisfy a search for maui #5000.
 REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 # (a) Open [leak-fix] PR already addressing THIS issue number? Filters the Step 2.5 cache — no
 #     new gh pr list call for this (or any later) candidate.
@@ -496,52 +472,117 @@ jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select((.body // "") | test("(?i)\
     /tmp/gh-aw/agent/open-leakfix-all.json \
   > /tmp/gh-aw/agent/open-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/open-fix-prs.json
-# (b) Open [leak-fix] PR already fixing the SAME rooting Type.Member (any issue number)?
+# (b-prefilter) Open [leak-fix] PRs naming the same rooting Type.Member (any issue number).
 #     [leak-fix] PR titles lead with "Fix <Type>.<Member> ...". Normalize each PR title with the
-#     SAME last-dotted-pair extraction used for $API above (issue side) instead of anchoring the
-#     API right after "Fix " — that keys both sides identically, so a qualifier ("Fix Shell
-#     BackButtonBehavior.Command ...") or a fully-qualified title ("Fix
-#     Microsoft.Maui.Controls.Picker.ItemsSource ...") still matches the target Type.Member, and a
-#     deeper member ("Fix Picker.ItemsSource.Something") no longer false-matches Picker.ItemsSource.
-#     Filters the SAME Step 2.5 cache as (a) — still no new gh pr list call.
-jq --arg apiplain "$API" 'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end; [.[] | select(((.title // "") | titleapi) == $apiplain)]' \
+#     same last-dotted-pair extraction used for $API. This is only a cheap prefilter: Step (b)
+#     below resolves each PR's exact Fixes scan issue and compares leak-scan-key / retention path
+#     before deciding to skip. API equality alone is never enough.
+jq --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" '
+    def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
+    def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
+    [.[] | select((((.title // "") | titleapi) == $apiplain) or (($targetkey != "") and (bodykey == $targetkey)))]' \
     /tmp/gh-aw/agent/open-leakfix-all.json \
-  > /tmp/gh-aw/agent/same-api-prs.json
-jq -r '.[] | "same-API open fix PR: #\(.number) \(.title)"' /tmp/gh-aw/agent/same-api-prs.json
+  > /tmp/gh-aw/agent/same-api-open-candidates.json
 # (c) Closed-unmerged attempts for this issue (attempt cap = 3). Filters the Step 2.5 cache.
 jq --arg n "$N" --arg repo "$REPO_RE" '[.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) and (.mergedAt == null))]' \
     /tmp/gh-aw/agent/closed-leakfix-all.json \
   > /tmp/gh-aw/agent/closed-fix-prs.json
 jq 'length' /tmp/gh-aw/agent/closed-fix-prs.json
-# (d) MERGED [leak-fix] PR already fixing this issue number OR the SAME rooting Type.Member?
-#     Merged fixes often reference an UPSTREAM issue (e.g. "Fixes #35775") instead of this
-#     [leak-scan] number, so GitHub never auto-closed this scan issue — leaving it to be
-#     re-picked and rebuilt from source every run. Detect the merged fix by the issue-ref OR the
-#     rooting Type.Member (each merged title normalized with the SAME last-dotted-pair extraction
-#     as $API, so qualified / fully-qualified titles key identically) so we can close this issue
-#     instead of rebuilding. Filters the Step 2.5 cache, which is ALREADY scoped to
-#     label:agentic-workflows (so only workflow-owned merged fixes count) and ALREADY restricted
-#     to merge commits verified as an ancestor of `main` (so a fix merged only into
-#     `inflight/current` or another non-`main` branch can never satisfy this gate).
-jq --arg n "$N" --arg apiplain "$API" --arg repo "$REPO_RE" \
-    'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end; [.[] | select(((.body // "") | test("(?i)\\b(Fixes|Refs)\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) or (((.title // "") | titleapi) == $apiplain))]' \
-    /tmp/gh-aw/agent/merged-leakfix-all.json \
-  > /tmp/gh-aw/agent/merged-fix-prs.json
-jq -r '.[] | "merged fix for this leak: #\(.number) \(.title)"' /tmp/gh-aw/agent/merged-fix-prs.json
-# Reset the SHARED re-open override sentinel at the start of every candidate. It lives at a single
-#   fixed path (NOT keyed by $N) and is written only inside the merged-fix block below, while Step 3
-#   may advance to the next-oldest candidate within the SAME run. Without this reset a sentinel
-#   written for an earlier candidate would leak forward and falsely gate a later one (phantom
-#   "maintainer override" / "unverified timeline"). Clear it so it reflects ONLY the current $N.
-rm -f /tmp/gh-aw/agent/reopen-override.txt
+# (d-prefilter) Narrow the raw merged cache BEFORE any compare API calls. Keep PRs that either
+#     carry the exact same-repo Fixes #N provenance (the only destructive-close key) or name the
+#     same rooting API (a non-destructive semantic de-dup candidate).
+jq --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
+    'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
+     def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
+     [.[] | select(((.body // "") | test("(?i)\\bFixes\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))
+       or (((.title // "") | titleapi) == $apiplain)
+       or (($targetkey != "") and (bodykey == $targetkey)))]' \
+    /tmp/gh-aw/agent/merged-leakfix-raw.json \
+  > /tmp/gh-aw/agent/merged-fix-candidates.json
+
+# A merged PR is usable only when its merge commit is actually contained in main. Compare only
+# the candidate subset above, not the entire up-to-1000-entry history. A failed compare omits the
+# entry (fail open: rebuild rather than close/skip on unverified ancestry).
+printf '' > /tmp/gh-aw/agent/merged-onmain-candidates.ndjson
+jq -c '.[]' /tmp/gh-aw/agent/merged-fix-candidates.json | while IFS= read -r pr; do
+  sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
+  [ -z "$sha" ] && continue
+  ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || ahead=""
+  if [ "$ahead" = "0" ]; then
+    printf '%s\n' "$pr" >> /tmp/gh-aw/agent/merged-onmain-candidates.ndjson
+  fi
+done
+if [ -s /tmp/gh-aw/agent/merged-onmain-candidates.ndjson ]; then
+  jq -s '.' /tmp/gh-aw/agent/merged-onmain-candidates.ndjson > /tmp/gh-aw/agent/merged-onmain-candidates.json
+else
+  echo '[]' > /tmp/gh-aw/agent/merged-onmain-candidates.json
+fi
+
+# (d-exact) ONLY an exact same-repo Fixes #N match may drive close-issue. A same Type.Member with a
+# different issue number is not provenance for this retention path and remains non-destructive.
+jq --arg n "$N" --arg repo "$REPO_RE" \
+    '[.[] | select((.body // "") | test("(?i)\\bFixes\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b"))]' \
+    /tmp/gh-aw/agent/merged-onmain-candidates.json \
+  > /tmp/gh-aw/agent/merged-exact-fix-prs.json
+jq -r '.[] | "exact merged fix for scan issue: #\(.number) \(.title)"' \
+  /tmp/gh-aw/agent/merged-exact-fix-prs.json
+
+# Enrich same-API open/merged candidates with the scan issue named by their exact Fixes line.
+# This makes the scan issue's marker/title/body — not the independently-authored PR title — the
+# cross-workflow leak identity. Legacy scan issues without a marker remain available for semantic
+# retention-path comparison. Entries without valid same-repo scan provenance are ignored.
+enrich_scan_provenance () {
+  input=$1
+  output=$2
+  printf '' > "$output"
+  jq -c '.[]' "$input" | while IFS= read -r pr; do
+    scan_n=$(jq -r --arg repo "$REPO_RE" '
+      [(.body // "") | scan("(?i)\\bFixes\\b:?[ \t]*(?:"+$repo+"#|[^0-9A-Za-z_/]#)([0-9]+)\\b")]
+      | if length > 0 then .[0][0] else empty end' <<<"$pr")
+    [ -z "$scan_n" ] && continue
+    issue=$(gh issue view "$scan_n" --repo "$GITHUB_REPOSITORY" --json number,title,body,state 2>/dev/null) || issue=""
+    [ -z "$issue" ] && continue
+    key=$(jq -r '(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key // empty' <<<"$issue")
+    jq -n --argjson pr "$pr" --argjson issue "$issue" --arg key "$key" \
+      '{pull_request:$pr, scan_issue:$issue,
+        leak_scan_key:($key | if . == "" then null else . end)}' >> "$output"
+  done
+}
+enrich_scan_provenance /tmp/gh-aw/agent/same-api-open-candidates.json \
+  /tmp/gh-aw/agent/same-api-open-fixes.ndjson
+if [ -s /tmp/gh-aw/agent/same-api-open-fixes.ndjson ]; then
+  jq -s '.' /tmp/gh-aw/agent/same-api-open-fixes.ndjson > /tmp/gh-aw/agent/same-api-open-fixes.json
+else
+  echo '[]' > /tmp/gh-aw/agent/same-api-open-fixes.json
+fi
+jq --arg n "$N" --arg apiplain "$API" --arg targetkey "$TARGET_LEAK_KEY" --arg repo "$REPO_RE" \
+    'def titleapi: [scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")] | if length>0 then (.[0]|split(".")|.[-2:]|join(".")) else null end;
+     def bodykey: try ((.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key) catch null;
+     [.[] | select((((.body // "") | test("(?i)\\bFixes\\b:?[ \t]*("+$repo+"#|[^0-9A-Za-z_/]#)"+$n+"\\b")) | not)
+       and ((((.title // "") | titleapi) == $apiplain)
+         or (($targetkey != "") and (bodykey == $targetkey))))]' \
+    /tmp/gh-aw/agent/merged-onmain-candidates.json \
+  > /tmp/gh-aw/agent/same-api-merged-candidates.json
+enrich_scan_provenance /tmp/gh-aw/agent/same-api-merged-candidates.json \
+  /tmp/gh-aw/agent/same-api-merged-fixes.ndjson
+if [ -s /tmp/gh-aw/agent/same-api-merged-fixes.ndjson ]; then
+  jq -s '.' /tmp/gh-aw/agent/same-api-merged-fixes.ndjson > /tmp/gh-aw/agent/same-api-merged-fixes.json
+else
+  echo '[]' > /tmp/gh-aw/agent/same-api-merged-fixes.json
+fi
+
+# Candidate-keyed sentinel: no shared path can leak state from an earlier candidate. `rm` is not
+# in this workflow's shell allowlist, so initialize with allowlisted printf and test with `-s`.
+REOPEN_OVERRIDE_FILE="/tmp/gh-aw/agent/reopen-override-${N}.txt"
+printf '' > "$REOPEN_OVERRIDE_FILE"
 # (d-override) MAINTAINER RE-OPEN GUARD: if this [leak-scan] issue was RE-OPENED *after* the
 #   newest matched merged [leak-fix] PR merged, a maintainer deliberately overrode the auto-close
 #   (the merged fix was incomplete / another retention edge remains). This workflow NEVER re-opens
 #   issues, so any 'reopened' event is an external human action. Respect it: never re-close (which
 #   would reverse the human decision every 6h and post a false "already fixed" comment) and never
 #   rebuild. Emit `skipped: scan issue re-opened after merged fix (maintainer override)` and stop.
-if [ "$(jq 'length' /tmp/gh-aw/agent/merged-fix-prs.json)" -ge 1 ]; then
-  FIX_MERGED_AT=$(jq -r '[.[].mergedAt] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/merged-fix-prs.json)
+if [ "$(jq 'length' /tmp/gh-aw/agent/merged-exact-fix-prs.json)" -ge 1 ]; then
+  FIX_MERGED_AT=$(jq -r '[.[].mergedAt] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/merged-exact-fix-prs.json)
   # Fail CLOSED on this DESTRUCTIVE path: auto-closing a possibly maintainer-reopened issue must
   # never happen on an unverified timeline. If the timeline cannot be fetched AND parsed as a JSON
   # array, we cannot rule out a maintainer re-open, so write the override sentinel (skip close/
@@ -557,19 +598,24 @@ if [ "$(jq 'length' /tmp/gh-aw/agent/merged-fix-prs.json)" -ge 1 ]; then
     REOPENED_AT=$(jq -r '[.[] | select(.event=="reopened") | .created_at] | map(select(. != null)) | max // empty' /tmp/gh-aw/agent/issue-timeline.json)
     if [ "$(jq -n --arg r "$REOPENED_AT" --arg m "$FIX_MERGED_AT" '($r != "") and ($m != "") and ($r > $m)')" = "true" ]; then
       echo "REOPEN OVERRIDE: issue #$N re-opened at $REOPENED_AT AFTER merged fix at $FIX_MERGED_AT — maintainer override; will NOT close or rebuild." \
-        > /tmp/gh-aw/agent/reopen-override.txt
-      cat /tmp/gh-aw/agent/reopen-override.txt
+        > "$REOPEN_OVERRIDE_FILE"
+      cat "$REOPEN_OVERRIDE_FILE"
     fi
   else
     echo "REOPEN GUARD UNVERIFIED: timeline lookup for #$N failed or returned non-array JSON — failing closed; will NOT close or rebuild (cannot rule out a maintainer re-open)." \
-      > /tmp/gh-aw/agent/reopen-override.txt
-    cat /tmp/gh-aw/agent/reopen-override.txt
+      > "$REOPEN_OVERRIDE_FILE"
+    cat "$REOPEN_OVERRIDE_FILE"
   fi
+fi
+if test -s "$REOPEN_OVERRIDE_FILE"; then
+  echo "re-open override active for candidate #$N"
+else
+  echo "no re-open override for candidate #$N"
 fi
 ```
 
 - **Re-open override (takes precedence over gate (d) and any rebuild):** if
-  `/tmp/gh-aw/agent/reopen-override.txt` exists — either THIS `[leak-scan]` issue was **re-opened
+  `/tmp/gh-aw/agent/reopen-override-<N>.txt` is **non-empty** — either THIS `[leak-scan]` issue was **re-opened
   after** the newest matched merged `[leak-fix]` PR merged (a maintainer deliberately overrode the
   auto-close), **or** the issue timeline could **not be fetched/parsed** so the re-open guard
   failed closed — do NOT emit `close-issue` and do NOT rebuild. Read the sentinel and emit the
@@ -577,16 +623,15 @@ fi
   re-open, or `skipped: re-open guard unverified (timeline lookup failed)` when the lookup failed;
   then stop. Never reverse a deliberate human re-open, and never close on an unverified timeline
   (either would re-close the issue every 6h and post a false "already fixed" comment).
-- If a **merged** `[leak-fix]` PR already fixes this issue number OR the same rooting
-  `Type.Member` (d) **and the re-open override above did NOT fire** → the leak is **already on
-  `main`**. Do NOT create a branch or rebuild.
+- If an **exact** merged `[leak-fix]` PR in `merged-exact-fix-prs.json` carries this same-repo
+  `Fixes #<N>` line **and the re-open override above did NOT fire** → this scan issue's fix is
+  already on `main`. Do NOT create a branch or rebuild.
   Emit exactly one `close-issue` safe-output on THIS `[leak-scan]` issue `#<N>` with a closing
   comment (AI-attributed, linking the merged PR), e.g.:
   > 🔍 **AI-generated action** (Memory Leak Fixer) — this leak is already fixed on `main` by
-  > #<merged-PR> (`<merged title>`). That PR's `Fixes:` line referenced a different issue
-  > number, so this `[leak-scan]` issue stayed open and kept being re-processed. Closing it to
-  > stop the rebuild loop. Note: it may still reproduce in the shipped NuGet package until the
-  > fix ships in a release.
+  > #<merged-PR> (`<merged title>`), whose body explicitly carries `Fixes #<N>`. Closing this
+  > still-open `[leak-scan]` issue to stop the rebuild loop. Note: it may still reproduce in the
+  > shipped NuGet package until the fix ships in a release.
 
   **Dry-run gate** (control text — NOT part of the close comment above): if `dry_run == "true"`,
   do NOT emit — print `DRY RUN — would close #<N>` and the closing comment to the run log
@@ -595,9 +640,15 @@ fi
   this issue even if a `close-issue` call is emitted.)
 
   This is the run's single action — stop after emitting `close-issue`.
-- If an **open** fix PR already refs this issue (a) OR already fixes the same rooting
-  `Type.Member` (b) → `skipped: leak already being fixed` and stop (or, if `issue_number` was
-  explicit, just stop). Also double-check the leak isn't already fixed on `main` (Step 8 gate).
+- If an **open** fix PR already refs this exact issue (a) → `skipped: leak already being fixed`
+  and stop (or, if `issue_number` was explicit, just stop).
+- For `same-api-open-fixes.json` and `same-api-merged-fixes.json`, API equality is only a
+  prefilter. Skip without closing/rebuilding only when the referenced scan issue has the same
+  non-empty `leak-scan-key` as `TARGET_LEAK_KEY`, or its title/body describes the same
+  publisher/event/collection and the same `root -> ... -> transient` retention edge.
+  If the Type.Member matches but the mechanism differs, continue normally. A same-leak merged fix
+  under a different scan issue number is non-destructive: leave this issue open for manual
+  reconciliation rather than claiming it was explicitly fixed.
 - If **3+ closed-unmerged** attempts exist → `skipped: attempt cap reached (3)` and stop.
 - An issue that is already CLOSED → `skipped: issue closed` (nothing to do).
 
@@ -784,6 +835,10 @@ two lines as shown), then the details:
 > 🤖 **AI-generated PR** — produced automatically by the **Memory Leak Fixer** agentic workflow from issue #<N>. The regression test below was observed to FAIL on unpatched `main` and PASS with this fix, on the runner. Please review carefully before merging.
 
 Fixes #<N>
+<!-- Copy the exact marker from the selected scan issue. For a legacy issue without one, add:
+     leak-scan-key: <Type.Member>|<short-mechanism-slug>, where the slug is derived from the
+     issue's mechanism text, not from this PR title. -->
+<!-- leak-scan-key: <canonical-key-from-scan-issue> -->
 <!-- OPTIONAL upstream cross-ref: keep the `Refs:` line below ONLY if a SEPARATE pre-existing
      UPSTREAM issue tracks the same leak, and set <UPSTREAM> to THAT issue's number (NEVER <N>).
      DELETE the line entirely when there is no upstream issue. `Fixes #<N>` MUST be the
@@ -818,7 +873,9 @@ PublicAPI.Unshipped.txt entries added).
 
 Before emitting, re-read your body and confirm the `Target branch:` line says `main` and a
 `Fixes #<N>` line is present **whose `<N>` is the `[leak-scan]` issue number selected in Step 2**
-(not an upstream issue). If not, drop the attempt: `skipped: PR self-check failed`.
+(not an upstream issue), and that the body contains exactly one `leak-scan-key` marker copied from
+or canonically derived from that scan issue. If not, drop the attempt:
+`skipped: PR self-check failed`.
 
 If no PR was emitted this run (already-fixed, gated out, or validation failed), produce no
 output — that is an acceptable outcome. Otherwise you have produced exactly one validated,

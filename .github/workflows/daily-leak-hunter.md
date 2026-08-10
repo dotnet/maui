@@ -122,15 +122,15 @@ Never push, never open a PR, never comment, never edit product or test code in t
    `ConditionalWeakTable`, `WeakReference`, or any `Weak*Proxy`, it does not leak — move on.
 5. **De-dup against THIS SCANNER's own OPEN issues AND leaks already fixed on `main`.** Before
    filing, fetch this workflow's open `[leak-scan]` issues and skip a leak already covered by one
-   (same rooting API / retention path). ALSO skip any leak whose rooting `Type.Member` is already
-   fixed on `main` by a **merged `[leak-fix]` PR** (Step 2 builds this set — a merged fix PR is
-   durable, workflow-owned proof a fix landed; a close *reason* alone is not). Such leaks still
-   reproduce against the SHIPPED package until the fix ships, so the empirical test alone can't
-   tell — this provenance-gated de-dup is the only guard. Do NOT suppress a candidate because
+   (same rooting API / retention path). ALSO skip the same retention path when Step 2 proves a
+   workflow-owned `[leak-fix]` PR landed on `main` but is not yet contained in the pinned shipped
+   package. A Type.Member match alone is insufficient: a later regression or second mechanism on
+   the same property remains eligible. A close *reason* alone is not proof of a fix. Such
+   unshipped fixes still reproduce against the package, so the empirical test alone cannot tell;
+   the issue-linked provenance is the guard. Do NOT suppress a candidate because
    AdamEssenmacher (or anyone else) has a repro/issue for it — duplicating those is fine. A
    candidate whose only prior issue from this scanner is CLOSED with **no merged `[leak-fix]` PR**
-   (any close reason) may be re-filed if it still reproduces; one whose leak is fixed on `main` by
-   a merged `[leak-fix]` PR may not.
+   (any close reason) may be re-filed if it still reproduces.
 6. **Never weaken or disable anything, and never commit code.** You only READ repo source
    and (Pass A) ADD a throwaway test under `/tmp`. Never edit product code, never
    `[ActiveIssue]`/skip/mute existing tests, never push.
@@ -151,115 +151,110 @@ filed. You do **not** care about AdamEssenmacher's repro branches or anyone else
 duplicating those is explicitly fine.
 
 Fetch this scanner's own open `[leak-scan]` issues (they are filed with the `agentic-workflows`
-label) and extract the **rooting API** each one already covers:
+label) and retain their full leak identity:
 
 ```
 gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
   --state open --label agentic-workflows --limit 200 --json number,title,body \
   > /tmp/gh-aw/agent/my-open-leakscan.json
-# The rooting API is the "Type.Member" the title names. Titles SHOULD lead with it (Step 6),
-# but real runs have produced off-contract titles like "Shell BackButtonBehavior.Command …"
-# (#36345) vs "BackButtonBehavior.Command: …" (#36354). A prefix-only cut keys those on
-# "Shell" vs "BackButtonBehavior.Command" and re-files a duplicate. Extract the LAST dotted
-# Type.Member pair of the first identifier chain: for a fully-qualified title like
-# "Microsoft.Maui.Controls.Picker.ItemsSource" this yields "Picker.ItemsSource" (not the
-# namespace head "Microsoft.Maui", which would over-collapse distinct leaks to one key).
-jq -r '.[].title' /tmp/gh-aw/agent/my-open-leakscan.json \
-  | sed -E 's/^\[leak-scan\] *//' \
-  | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } else print }' \
-  | sort -u \
-  > /tmp/gh-aw/agent/already-filed-apis.txt
-echo "already-filed rooting APIs:"; cat /tmp/gh-aw/agent/already-filed-apis.txt
+# The rooting API is the LAST dotted Type.Member pair of the first identifier chain. Preserve the
+# issue title/body and canonical marker too: API equality is only a prefilter, because two
+# different retention paths can share one property.
+jq '
+  def titleapi:
+    [(.title // "") | scan("[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)+")]
+    | if length > 0 then (.[0] | split(".") | .[-2:] | join(".")) else null end;
+  def leakkey:
+    [(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key]
+    | if length > 0 then .[0] else null end;
+  [.[] | {scan_issue:., rooting_api:titleapi, leak_scan_key:leakkey}]
+' /tmp/gh-aw/agent/my-open-leakscan.json > /tmp/gh-aw/agent/open-leakscan-provenance.json
+jq -r '.[] | "open scan #\(.scan_issue.number): API \(.rooting_api // "<off-contract>"), key \(.leak_scan_key // "<legacy>")"' \
+  /tmp/gh-aw/agent/open-leakscan-provenance.json
 
-# ── ALSO skip leaks ALREADY FIXED on main — MERGED [leak-fix] PRs ONLY ───────────────────────
-# Your Step 5 confirmation runs against the SHIPPED NuGet package (pinned 10.0.0), where an
-# already-MERGED fix has NOT shipped yet — so a leak that is fixed on `main` STILL reproduces
-# (goes red) and would be re-filed every run forever. De-dup is the ONLY guard. Build the
-# "fixed-on-main" rooting-Type.Member set from **MERGED `[leak-fix]` PR titles ONLY** — a merged
-# fix PR is durable, workflow-owned provenance that a fix ACTUALLY LANDED on `main`. The query is
-# scoped to `label:agentic-workflows`, so ONLY this workflow's own merged fixes count (a manually
-# created `[leak-fix]`-titled PR is ignored). Do NOT trust
-# an issue's close *reason*: a `[leak-scan]` issue closed as COMPLETED records only that SOMEONE
-# closed it, not that a fix merged (a maintainer can close a still-reproducing issue as
-# completed), so treating "closed as completed" as fixed would permanently suppress a still-valid
-# leak. Worst case here (a human-fixed leak with no [leak-fix] PR) is a single bounded re-file
-# that the OPEN-issue de-dup above then catches — far safer than permanent data loss.
-# --limit 1000 = the GitHub SEARCH API's hard result ceiling (pagination cannot exceed it). If the
-# merged [leak-fix] set ever hits 1000, older fixes are TRUNCATED: because Step 5 tests the SHIPPED
-# package (where a merged-but-unshipped fix still reproduces), a dropped-out fix would be re-filed
-# once (then the OPEN-issue de-dup catches it), so warn loudly if we ever reach the ceiling.
+# ── ALSO skip the SAME leak while its merged fix is on main but NOT in the shipped package ───
+# Step 5 tests the shipped package pinned below. A fix newer than that package still reproduces
+# there, so provenance must suppress it temporarily. Suppression MUST end once the pinned release
+# contains the fix, and MUST distinguish two retention paths rooted at the same Type.Member.
+#
+# The durable cross-workflow join is the exact same-repo `Fixes #<scan-issue>` line copied into
+# every [leak-fix] PR body. Resolve that issue and retain its full title/body; never infer leak
+# identity from the independently-authored PR title. New scan issues also carry a canonical
+# `leak-scan-key` marker, while legacy issues without the marker remain comparable from their
+# original title/body. A Type.Member match alone is only a candidate for semantic comparison —
+# it is NEVER sufficient to suppress a different retention mechanism.
+SHIPPED_MAUI_VERSION=10.0.0
+printf '%s\n' "$SHIPPED_MAUI_VERSION" > /tmp/gh-aw/agent/shipped-maui-version.txt
+REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
 gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' \
-  --limit 1000 --json title,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
+  --limit 1000 --json number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-raw.json)" -ge 1000 ]; then
-  echo "WARNING: fixed-on-main provenance hit the 1000 search-API ceiling; older merged [leak-fix] fixes may be TRUNCATED and their leaks could be re-filed once — switch to date-windowed enumeration."
+  echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older unshipped fixes may be TRUNCATED and re-filed once — switch to date-windowed enumeration."
 fi
-# A "[leak-fix]" PR being MERGED only proves the fix landed on ITS base branch — NOT necessarily
-# `main`. This workflow's safe-outputs always OPEN the fix PR against `main`, but a merge can
-# still land the SAME commit content on a forward-integration branch (e.g. `inflight/current`)
-# instead, either via a later retarget or a merge-queue rebase; #36370 is a concrete example
-# (title/label-matches this query, `mergedAt` is set, but its merge commit is on
-# `inflight/current`, not `main`). Trusting merge-state alone would suppress a leak that still
-# reproduces on `main`. Verify each merge commit is ACTUALLY an ancestor of `main` via the GitHub
-# compare API (`ahead_by == 0` ⇒ the merge commit is fully contained in `main`'s history) — the
-# SAME ancestry check the release-readiness skill uses (see
-# `.github/skills/release-readiness/references/methodology.md`) — instead of relying on
-# `--state merged` / `--base` alone (a local `fetch-depth: 50` checkout is too shallow to answer
-# this reliably with local git, and `--base` only reflects the PR's declared base, not where the
-# merge commit ultimately landed).
-: > /tmp/gh-aw/agent/merged-onmain.ndjson
+
+printf '' > /tmp/gh-aw/agent/unshipped-main-fixes.ndjson
 jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
   sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
   [ -z "$sha" ] && continue
-  ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || ahead=""
-  if [ "$ahead" = "0" ]; then
-    printf '%s\n' "$pr" >> /tmp/gh-aw/agent/merged-onmain.ndjson
-  fi
+  # Only workflow PRs with an exact SAME-REPO Fixes reference have scan provenance. A Refs line
+  # points at a separate upstream issue and an arbitrary cross-repo #N must never become a join.
+  scan_n=$(jq -r --arg repo "$REPO_RE" '
+    [(.body // "") | scan("(?i)\\bFixes\\b:?[ \t]*(?:"+$repo+"#|[^0-9A-Za-z_/]#)([0-9]+)\\b")]
+    | if length > 0 then .[0][0] else empty end' <<<"$pr")
+  [ -z "$scan_n" ] && continue
+
+  # The merge commit must be contained in main, but not in the shipped release tag. If either
+  # compare cannot be verified, fail open (do not suppress): a bounded duplicate is safer than
+  # permanently hiding a real leak.
+  on_main=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || on_main=""
+  in_shipped=$(gh api "repos/$GITHUB_REPOSITORY/compare/$SHIPPED_MAUI_VERSION...$sha" -q '.ahead_by' 2>/dev/null) || in_shipped=""
+  [ "$on_main" != "0" ] && continue
+  [ -z "$in_shipped" ] && continue
+  [ "$in_shipped" = "0" ] && continue
+
+  issue=$(gh issue view "$scan_n" --repo "$GITHUB_REPOSITORY" --json number,title,body,state 2>/dev/null) || issue=""
+  [ -z "$issue" ] && continue
+  api=$(jq -r '.title // ""' <<<"$issue" \
+    | sed -E 's/^\[leak-scan\] *//' \
+    | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }')
+  leak_key=$(jq -r '(.body // "") | capture("(?i)<!-- *leak-scan-key: *(?<key>[^>]+?) *-->").key // empty' <<<"$issue")
+  jq -n --argjson pr "$pr" --argjson issue "$issue" --arg api "$api" --arg key "$leak_key" \
+    '{pull_request:{number:$pr.number,title:$pr.title,mergedAt:$pr.mergedAt,mergeCommit:$pr.mergeCommit},
+      scan_issue:$issue, rooting_api:$api,
+      leak_scan_key:($key | if . == "" then null else . end)}' \
+    >> /tmp/gh-aw/agent/unshipped-main-fixes.ndjson
 done
-if [ -s /tmp/gh-aw/agent/merged-onmain.ndjson ]; then
-  jq -s -r '.[].title' /tmp/gh-aw/agent/merged-onmain.ndjson > /tmp/gh-aw/agent/merged-leakfix-titles.txt
+if [ -s /tmp/gh-aw/agent/unshipped-main-fixes.ndjson ]; then
+  jq -s '.' /tmp/gh-aw/agent/unshipped-main-fixes.ndjson > /tmp/gh-aw/agent/unshipped-main-fixes.json
 else
-  : > /tmp/gh-aw/agent/merged-leakfix-titles.txt
+  echo '[]' > /tmp/gh-aw/agent/unshipped-main-fixes.json
 fi
-# awk (not grep) as the leading filter: grep exits 1 when nothing matches, which under the
-# runner's `set -eo pipefail` would abort this step on the common "no merged [leak-fix] PRs yet"
-# state (empty provenance is valid — it just means nothing is fixed-on-main yet). awk always
-# exits 0 and yields an empty fixed-on-main-apis.txt, which is the intended no-op.
-awk '/^\[leak-fix\] /' /tmp/gh-aw/agent/merged-leakfix-titles.txt | sed -E 's/^\[leak-fix\] *(Fix +)?//' \
-  | awk '{
-      if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) {
-        chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n]
-      } else {
-        # Off-contract title with no dotted Type.Member: keep a durable normalized-title
-        # fallback key (prefixed "title:") instead of SILENTLY DROPPING it, so the known-fixed
-        # leak still surfaces with a de-dup identity for the agent to match against.
-        key=tolower($0); gsub(/[^a-z0-9]+/, "-", key); gsub(/^-+|-+$/, "", key);
-        if (key != "") print "title:" key
-      }
-    }' \
-  | sort -u \
-  > /tmp/gh-aw/agent/fixed-on-main-apis.txt
-echo "fixed-on-main (do NOT re-file) rooting APIs:"; cat /tmp/gh-aw/agent/fixed-on-main-apis.txt
+jq -r '.[] | "unshipped main fix: PR #\(.pull_request.number), scan #\(.scan_issue.number), API \(.rooting_api // "<off-contract>"), key \(.leak_scan_key // "<legacy>")"' \
+  /tmp/gh-aw/agent/unshipped-main-fixes.json
 ```
 
-- A candidate is **OUT** if its rooting `Type.Member` (e.g. `SwipeItemView.Command`,
-  `Picker.ItemsSource`) is already in `already-filed-apis.txt`, OR an open `[leak-scan]` issue
-  otherwise covers the same rooting API / retention path. **Check this for EVERY candidate
-  before you write its test** — re-filing a leak this scanner already has open (even with
-  different title wording) is the #1 failure mode, so be strict about matching the `Type.Member`.
-- A candidate is **ALSO OUT** if its rooting `Type.Member` is in `fixed-on-main-apis.txt`
-  (already fixed on `main` by a **merged `[leak-fix]` PR**). The shipped-package test in Step 5
-  will STILL go red for these because the fix hasn't shipped in a release yet — that is expected.
-  Do NOT re-file: the fix is already on `main` and will ship. For an **off-contract candidate
-  whose title has no dotted `Type.Member`**, apply the SAME normalization the merged-PR list uses
-  (lower-case, replace each run of non-alphanumerics with `-`, trim leading/trailing `-`) and
-  treat the candidate as OUT if `title:<that-slug>` is in `fixed-on-main-apis.txt`. That is how the
-  `title:` fallback keys are matched, so off-contract fixed leaks aren't re-filed either.
+- A candidate is **OUT** when an entry in `open-leakscan-provenance.json` covers the same leak.
+  Narrow by rooting `Type.Member`; a matching non-empty `leak-scan-key` is sufficient. Otherwise
+  compare the full title/body and confirm the same publisher/event/collection and retention path.
+  A same-API issue with a different mechanism does not block the candidate. **Check this for
+  EVERY candidate before you write its test** — re-filing the same retention path is the #1
+  failure mode, but over-collapsing distinct paths loses real regressions.
+- A candidate is **ALSO OUT** only when an entry in `unshipped-main-fixes.json` describes the
+  **same leak**, not merely the same API. First narrow by `rooting_api`; then require the same
+  non-empty `leak-scan-key`, or compare the referenced scan issue's title/body and confirm the
+  same publisher/event/collection and the same
+  `root -> ... -> transient` retention edge. If the Type.Member matches but the retention
+  mechanism differs, the candidate remains eligible. Off-contract records are never matched by an
+  independently slugified PR title; use their referenced scan issue title/body directly.
+  These records contain only fixes that are on `main` and absent from the pinned shipped release,
+  so suppression expires automatically when `SHIPPED_MAUI_VERSION` advances to a tag containing
+  the fix.
 
 A candidate whose only prior `[leak-scan]` issue was **closed with no merged `[leak-fix]` PR**
 (closed as not planned — wontfix / invalid / duplicate — OR closed as completed by a maintainer
 without a landed fix) may be re-filed if it still reproduces: a close *reason* is not proof the
-leak is gone. A candidate whose leak is in `fixed-on-main-apis.txt` (fixed on `main` by a merged
-`[leak-fix]` PR) must **not** be re-filed.
+leak is gone. A candidate matching an entry in `unshipped-main-fixes.json` must **not** be
+re-filed while that exact fix is absent from the pinned package.
 
 # ===================== RUNTIME LEAK HUNT =====================
 
@@ -381,15 +376,21 @@ no MAUI source build, no emulator.
 
 For **every** leak Step 5 confirmed, emit a `create-issue` safe-output (up to the 8 cap) — one
 issue per distinct leak. De-dup each against open `[leak-scan]` issues, against
-`fixed-on-main-apis.txt` (Step 2 — never re-file a leak already fixed on `main`), AND against the
-other issues you're filing this run (no two issues for the same rooting API). Each title MUST be
+`unshipped-main-fixes.json` (Step 2 — never re-file the same retention path while its fix is on
+`main` but absent from the pinned package), AND against the other issues you're filing this run
+(no two issues for the same retention path). Each title MUST be
 of the form **`[leak-scan] <Type>.<Member> — <short mechanism>`** — it MUST **lead with the
 canonical rooting `Type.Member`** immediately after the tag (e.g. `[leak-scan] SwipeItemView.Command — non-weak
-ICommand.CanExecuteChanged retains the control`). De-dup (Step 2) matches on that leading
-`Type.Member`, so keep it stable and canonical — do not reword it run-to-run.
+ICommand.CanExecuteChanged retains the control`). Keep both the API and mechanism stable and
+canonical — do not reword them run-to-run.
 Body (markdown):
 
 - A clear **AI-generated** banner naming this workflow.
+- A hidden canonical marker immediately after the banner:
+  `<!-- leak-scan-key: <Type.Member>|<short-mechanism-slug> -->`, where the slug is the lower-case
+  `<short mechanism>` with each non-alphanumeric run replaced by `-` and leading/trailing `-`
+  removed. This marker is copied unchanged into the eventual `[leak-fix]` PR and is the durable
+  identity for this exact retention path; the Type.Member alone is not unique.
 - **Description** of the leak and why it retains.
 - **Retention path** `root -> ... -> transient` with file:line citations.
 - **Repro**: paste the standalone `leakprobe.csproj` + `LeakTest.cs` (it restores the shipped
