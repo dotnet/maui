@@ -61,11 +61,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = new PathF();
 
-			var effectiveStroke = EffectiveStrokeThickness;
-			float x = (float)effectiveStroke / 2;
-			float y = (float)effectiveStroke / 2;
-			float w = (float)Math.Max(0, width - effectiveStroke);
-			float h = (float)Math.Max(0, height - effectiveStroke);
+			var strokeInset = GetPathStrokeInset(width, height);
+			float x = (float)strokeInset / 2;
+			float y = (float)strokeInset / 2;
+			float w = (float)Math.Max(0, width - strokeInset);
+			float h = (float)Math.Max(0, height - strokeInset);
 			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
 
 			// TODO: Create specific Path taking into account RadiusX and RadiusY
