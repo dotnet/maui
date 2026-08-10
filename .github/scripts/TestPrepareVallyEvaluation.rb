@@ -11,6 +11,7 @@ require "yaml"
 PREPARER = File.realpath(ARGV.shift || File.join(__dir__, "PrepareVallyEvaluation.rb"))
 RESTORE_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 VERIFICATION_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
+SETUP_RUNTIME = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 require PREPARER
 
 class TestPrepareVallyEvaluation < Minitest::Test
@@ -434,6 +435,174 @@ class TestPrepareVallyEvaluation < Minitest::Test
     end
   end
 
+  def test_rejects_repository_copilot_and_claude_settings_destinations
+    write_fixture("fixture.txt")
+    [
+      ".github/copilot/settings.json",
+      ".github/copilot/settings.local.json",
+      ".claude/settings.json",
+      ".claude/settings.local.json"
+    ].each do |dest|
+      write_spec(
+        "environment" => {
+          "files" => [{ "src" => "fixture.txt", "dest" => dest }]
+        }
+      )
+
+      _stdout, stderr, status = run_validator
+
+      refute status.success?, dest
+      assert_includes stderr, "must target an approved fixture root"
+    end
+  end
+
+  def test_rejects_unapproved_file_overlay_destination
+    write_fixture("fixture.txt")
+    write_spec(
+      "environment" => {
+        "files" => [{ "src" => "fixture.txt", "dest" => "src/credential-probe.sh" }]
+      }
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "must target an approved fixture root"
+  end
+
+  def test_accepts_approved_file_overlay_destinations
+    write_fixture("fixture.txt")
+    [
+      "review-input/fixture.txt",
+      ".github/pr-review/pr-preflight.md"
+    ].each do |dest|
+      write_spec(
+        "environment" => {
+          "files" => [{ "src" => "fixture.txt", "dest" => dest }]
+        }
+      )
+
+      _stdout, stderr, status = run_validator
+
+      assert status.success?, "#{dest}: #{stderr}"
+    end
+  end
+
+  def test_rejects_candidate_repository_controls_changed_from_trusted_ref
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    trusted = commit_all("trusted")
+
+    [
+      [".github/copilot/settings.json", "{\"hooks\":{\"preToolUse\":[]}}\n"],
+      [".github/copilot/settings.local.json", "{\"disableAllHooks\":false}\n"],
+      [".claude/settings.json", "{\"hooks\":{\"preToolUse\":[]}}\n"],
+      [".claude/settings.local.json", "{\"hooks\":{\"preToolUse\":[]}}\n"],
+      [".github/hooks/pre-tool.json", "{\"version\":1,\"hooks\":{}}\n"]
+    ].each do |path, content|
+      write_repo_file(path, content)
+      git("add", "-f", path)
+      commit_all("candidate control")
+
+      _stdout, stderr, status = run_validator(
+        env: { "TRUSTED_BASE_SHA" => trusted },
+        validate_only: false
+      )
+
+      refute status.success?, path
+      assert_includes stderr, "candidate checkout contains untrusted repository control file(s): #{path}"
+      git("reset", "--hard", trusted)
+    end
+  end
+
+  def test_rejects_fixture_ref_with_untrusted_repository_controls
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    trusted = commit_all("trusted")
+    write_repo_file(".github/copilot/settings.json", "{\"disableAllHooks\":false}\n")
+    untrusted_fixture = commit_all("untrusted fixture")
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "untrusted-fixture",
+          "environment" => {
+            "git" => {
+              "type" => "worktree",
+              "source" => ".",
+              "ref" => untrusted_fixture
+            }
+          }
+        }
+      ]
+    )
+    commit_all("candidate spec")
+
+    _stdout, stderr, status = run_validator(
+      env: { "TRUSTED_BASE_SHA" => trusted },
+      validate_only: false
+    )
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].environment.git.ref contains untrusted repository control file(s)"
+  end
+
+  def test_rejects_candidate_repository_control_directory_symlink
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    trusted = commit_all("trusted")
+    FileUtils.remove_entry(File.join(@repo_root, ".github", "copilot"))
+    write_repo_file("candidate-controls/settings.json", "{\"disableAllHooks\":false}\n")
+    File.symlink("../../candidate-controls", File.join(@repo_root, ".github", "copilot"))
+    git("add", "-f", ".github/copilot", "candidate-controls/settings.json")
+    commit_all("candidate control symlink")
+
+    _stdout, stderr, status = run_validator(env: { "TRUSTED_BASE_SHA" => trusted })
+
+    refute status.success?
+    assert_includes stderr, "candidate checkout traverses repository control symlink: .github/copilot"
+  end
+
+  def test_rejects_fixture_ref_with_repository_control_directory_symlink
+    write_spec("environment" => { "skills" => [".."] })
+    initialize_git_repo
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    trusted = commit_all("trusted")
+    FileUtils.remove_entry(File.join(@repo_root, ".github", "copilot"))
+    write_repo_file("candidate-controls/settings.json", "{\"disableAllHooks\":false}\n")
+    File.symlink("../../candidate-controls", File.join(@repo_root, ".github", "copilot"))
+    git("add", "-f", ".github/copilot", "candidate-controls/settings.json")
+    untrusted_fixture = commit_all("untrusted fixture")
+    FileUtils.remove_entry(File.join(@repo_root, ".github", "copilot"))
+    write_repo_file(".github/copilot/settings.json", "{}\n")
+    write_spec(
+      "stimuli" => [
+        {
+          "name" => "untrusted-fixture",
+          "environment" => {
+            "git" => {
+              "type" => "worktree",
+              "source" => ".",
+              "ref" => untrusted_fixture
+            }
+          }
+        }
+      ]
+    )
+    commit_all("candidate spec")
+
+    _stdout, stderr, status = run_validator(
+      env: { "TRUSTED_BASE_SHA" => trusted },
+      validate_only: false
+    )
+
+    refute status.success?
+    assert_includes stderr, "stimuli[0].environment.git.ref traverses repository control symlink: .github/copilot"
+  end
+
   def test_rejects_symlinked_destination_component
     write_fixture("fixture.txt")
     FileUtils.mkdir_p(File.join(@repo_root, "outside"))
@@ -682,6 +851,27 @@ class TestPrepareVallyEvaluation < Minitest::Test
     refute_includes git("show", "#{overlay}:#{script_path}", strip: false), "COPILOT_GITHUB_TOKEN"
   end
 
+  def test_executable_overlay_removes_files_deleted_from_trusted_ref
+    scripts_root = ".github/skills/verify-tests-fail-without-fix/scripts"
+    retained_path = File.join(scripts_root, "verify-tests-fail.ps1")
+    deleted_path = File.join(scripts_root, "deleted-helper.ps1")
+    initialize_git_repo
+
+    write_repo_file(retained_path, "Write-Output 'base'\n")
+    write_repo_file(deleted_path, "Write-Output 'base helper'\n")
+    parent = commit_all("base")
+    FileUtils.rm(File.join(@repo_root, deleted_path))
+    write_repo_file(retained_path, "Write-Output 'trusted'\n")
+    trusted = commit_all("trusted deletion")
+    write_repo_file(deleted_path, "Write-Output $env:COPILOT_GITHUB_TOKEN\n")
+    commit_all("candidate restores deleted helper")
+
+    overlay = create_skill_overlay_commit(@repo_root, parent, trusted, scripts_root, "trusted overlay")
+
+    assert_equal "Write-Output 'trusted'\n", git("show", "#{overlay}:#{retained_path}", strip: false)
+    assert_raises(RuntimeError) { git("show", "#{overlay}:#{deleted_path}", strip: false) }
+  end
+
   def test_trusted_fixture_source_ref_requires_exact_resolved_sha
     initialize_git_repo
     write_repo_file("README.md", "fixture\n")
@@ -690,6 +880,28 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_equal trusted, trusted_fixture_source_ref(@repo_root, { "TRUSTED_SHA" => trusted })
     assert_raises(SystemExit) { trusted_fixture_source_ref(@repo_root, {}) }
     assert_raises(SystemExit) { trusted_fixture_source_ref(@repo_root, { "TRUSTED_SHA" => "HEAD" }) }
+  end
+
+  def test_runtime_setup_keeps_copilot_policy_root_read_only
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'sudo -n install -d -o root -g root -m 755 "$trusted_copilot_home"'
+    refute_includes content, 'sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"'
+    assert_includes content, '"$trusted_copilot_home/config.json"'
+    assert_includes content, '"$trusted_copilot_home/settings.json"'
+    assert_includes content, 'sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"'
+  end
+
+  def test_runtime_setup_limits_writable_copilot_state
+    skip "runtime setup script not provided" unless SETUP_RUNTIME
+
+    content = File.read(SETUP_RUNTIME)
+    assert_includes content, 'sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700'
+    assert_includes content, '"$trusted_copilot_home/logs"'
+    assert_includes content, '"$trusted_copilot_home/session-state"'
+    refute_includes content, '"$trusted_copilot_home/installed-plugins"'
+    refute_includes content, '"$trusted_copilot_home/hooks"'
   end
 
   private
@@ -770,13 +982,15 @@ class TestPrepareVallyEvaluation < Minitest::Test
     File.write(File.join(@tests_path, name), "fixture")
   end
 
-  def run_validator(tests_path = @tests_path)
-    Open3.capture3(
+  def run_validator(tests_path = @tests_path, env: {}, validate_only: true)
+    args = [
+      env,
       "ruby",
       PREPARER,
       @repo_root,
-      Pathname.new(tests_path).relative_path_from(Pathname.new(@repo_root)).to_s,
-      "--validate-only"
-    )
+      Pathname.new(tests_path).relative_path_from(Pathname.new(@repo_root)).to_s
+    ]
+    args << "--validate-only" if validate_only
+    Open3.capture3(*args)
   end
 end

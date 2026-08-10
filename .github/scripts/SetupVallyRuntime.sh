@@ -193,7 +193,12 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		echo "Isolated Vally user is not using the trusted Git configuration" >&2
 		exit 1
 	fi
-	sudo -n install -d -o root -g root -m 1777 "$trusted_copilot_home"
+	# Keep configuration immutable to the evaluator. Only runtime output that the
+	# CLI never reads as policy is writable across its headless sessions.
+	sudo -n install -d -o root -g root -m 755 "$trusted_copilot_home"
+	sudo -n install -d -o "$eval_user" -g "$eval_user" -m 700 \
+		"$trusted_copilot_home/logs" \
+		"$trusted_copilot_home/session-state"
 	cat <<EOF | sudo -n tee "$trusted_copilot_home/settings.json" >/dev/null
 {
   "disableAllHooks": true,
@@ -218,7 +223,26 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
   }
 }
 EOF
+	printf '{}\n' | sudo -n tee "$trusted_copilot_home/config.json" >/dev/null
 	sudo -n chmod 444 "$trusted_copilot_home/settings.json"
+	sudo -n chmod 444 "$trusted_copilot_home/config.json"
+	for protected_path in \
+		"$trusted_copilot_home" \
+		"$trusted_copilot_home/config.json" \
+		"$trusted_copilot_home/settings.json"; do
+		if sudo -n -u "$eval_user" /usr/bin/test -w "$protected_path"; then
+			echo "Isolated Vally user can modify protected Copilot path $protected_path" >&2
+			exit 1
+		fi
+	done
+	for writable_path in \
+		"$trusted_copilot_home/logs" \
+		"$trusted_copilot_home/session-state"; do
+		if ! sudo -n -u "$eval_user" /usr/bin/test -w "$writable_path"; then
+			echo "Isolated Vally user cannot write Copilot runtime state $writable_path" >&2
+			exit 1
+		fi
+	done
 
 	{
 		echo '#!/usr/bin/env bash'

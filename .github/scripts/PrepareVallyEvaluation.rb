@@ -14,6 +14,17 @@ FIXTURE_COMMIT_ENV = {
 FORBIDDEN_ENVIRONMENT_KEYS = %w[commands env mcpServers].freeze
 FORBIDDEN_GRADERS = %w[program run-command].freeze
 FORBIDDEN_DESTINATION_COMPONENTS = %w[.git .hg .svn .mock-executor].freeze
+APPROVED_FILE_DESTINATION_PREFIXES = [
+  %w[review-input],
+  [".github", "pr-review"]
+].freeze
+REPOSITORY_CONTROL_PATHS = %w[
+  .github/hooks
+  .github/copilot/settings.json
+  .github/copilot/settings.local.json
+  .claude/settings.json
+  .claude/settings.local.json
+].freeze
 REQUIRED_SKILL_INVOCATION_SPECS = %w[
   .github/skills/agentic-labeler/tests/eval.vally.yaml
   .github/skills/ci-fix/tests/eval.ownership.vally.yaml
@@ -264,12 +275,19 @@ def validate_environment!(environment, spec_path, skill_root, repo_root, locatio
     fail!("#{location}.files[#{index}].dest must be a non-empty relative path") if dest.empty? || Pathname.new(dest).absolute?
     fail!("#{location}.files[#{index}].dest must not traverse parent directories") if destination_parts.include?("..")
     normalized_destination_parts = destination_parts.reject { |part| part == "." }
+    normalized_destination_parts_downcase = normalized_destination_parts.map(&:downcase)
     forbidden_component = normalized_destination_parts.find { |part| FORBIDDEN_DESTINATION_COMPONENTS.include?(part.downcase) }
     fail!("#{location}.files[#{index}].dest targets forbidden VCS metadata: #{forbidden_component}") if forbidden_component
-    if normalized_destination_parts.first(2).map(&:downcase) == [".github", "hooks"]
+    if normalized_destination_parts_downcase.first(2) == [".github", "hooks"]
       fail!("#{location}.files[#{index}].dest targets forbidden repository hooks")
     end
     validate_no_checkout_symlinks!(dest, repo_root, "#{location}.files[#{index}].dest")
+    approved_destination = APPROVED_FILE_DESTINATION_PREFIXES.any? do |prefix|
+      normalized_destination_parts_downcase.first(prefix.length) == prefix
+    end
+    unless approved_destination
+      fail!("#{location}.files[#{index}].dest must target an approved fixture root")
+    end
   end
 
   git = environment["git"]
@@ -293,7 +311,58 @@ def validate_git_destination!(repo_root, ref, dest, location)
   end
 end
 
-def validate_effective_git_destinations!(document, repo_root)
+def repository_control_entries(repo_root, ref)
+  output = run_git(
+    repo_root,
+    "ls-tree", "-r", ref, "--", *REPOSITORY_CONTROL_PATHS,
+    strip: false
+  )
+  output.lines.to_h do |line|
+    metadata, path = line.chomp.split("\t", 2)
+    [path, metadata]
+  end
+end
+
+def validate_no_repository_control_symlinks!(repo_root, ref, location)
+  prefixes = REPOSITORY_CONTROL_PATHS.flat_map do |path|
+    parts = path.split("/")
+    (1..parts.length).map { |length| parts.first(length).join("/") }
+  end.uniq
+  prefixes.each do |path|
+    entry = run_git(repo_root, "ls-tree", ref, "--", path)
+    next if entry.empty?
+
+    mode = entry.split.first
+    fail!("#{location} traverses repository control symlink: #{path}") if mode == "120000"
+  end
+end
+
+def validate_repository_controls!(repo_root, ref, trusted_ref, location)
+  return unless trusted_ref
+
+  validate_no_repository_control_symlinks!(repo_root, ref, location)
+  trusted_entries = repository_control_entries(repo_root, trusted_ref)
+  unsafe_paths = repository_control_entries(repo_root, ref).filter_map do |path, metadata|
+    path unless trusted_entries[path] == metadata
+  end
+  return if unsafe_paths.empty?
+
+  fail!("#{location} contains untrusted repository control file(s): #{unsafe_paths.join(', ')}")
+end
+
+def trusted_repository_control_ref(repo_root, env = ENV)
+  ref = env["TRUSTED_BASE_SHA"].to_s
+  ref = env["TRUSTED_SHA"].to_s if ref.empty?
+  return nil if ref.empty?
+
+  fail!("trusted repository control ref must be a full commit SHA") unless ref.match?(/\A[0-9a-f]{40}\z/)
+  resolved = run_git(repo_root, "rev-parse", "--verify", "#{ref}^{commit}")
+  fail!("trusted repository control ref did not resolve exactly: #{ref}") unless resolved == ref
+
+  ref
+end
+
+def validate_effective_git_destinations!(document, repo_root, trusted_control_ref)
   parent_environment = document["environment"] || {}
   contexts = [["environment", parent_environment]]
   Array(document["stimuli"]).each_with_index do |stimulus, index|
@@ -306,7 +375,7 @@ def validate_effective_git_destinations!(document, repo_root)
   contexts.each do |location, environment|
     git = environment["git"]
     files = Array(environment["files"])
-    next unless git && !files.empty?
+    next unless git
 
     ref = git.fetch("ref")
     begin
@@ -314,6 +383,7 @@ def validate_effective_git_destinations!(document, repo_root)
     rescue RuntimeError => e
       fail!("#{location}.git.ref is unavailable for destination validation: #{e.message}")
     end
+    validate_repository_controls!(repo_root, ref, trusted_control_ref, "#{location}.git.ref")
     files.each_with_index do |file, index|
       validate_git_destination!(repo_root, ref, file.fetch("dest"), "#{location}.files[#{index}].dest")
     end
@@ -347,7 +417,7 @@ def skill_invocation_targets?(grader, skill_name, polarity)
   values.is_a?(Array) && values.include?(skill_name)
 end
 
-def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect_git_refs:)
+def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect_git_refs:, trusted_control_ref:)
   fail!("#{spec_path} uses Vally parameter placeholders; trusted validation requires structurally static specs") if File.read(spec_path).match?(PARAM_PLACEHOLDER_PATTERN)
 
   begin
@@ -403,7 +473,9 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
       end
     end
   end
-  validate_effective_git_destinations!(document, repo_root) if inspect_git_refs
+  if inspect_git_refs
+    validate_effective_git_destinations!(document, repo_root, trusted_control_ref)
+  end
 end
 
 def fixture_files(fixture)
@@ -419,7 +491,7 @@ def create_skill_overlay_commit(repo_root, parent_ref, source_ref, relative_root
     parent_files = run_git(repo_root, "ls-tree", "-r", "--name-only", parent_ref, "--", relative_root).split("\n")
     source_files = run_git(repo_root, "ls-tree", "-r", "--name-only", source_ref, "--", relative_root).split("\n")
     (parent_files - source_files).each do |path|
-      run_git(repo_root, "update-index", "--remove", "--", path, env: index_env)
+      run_git(repo_root, "update-index", "--force-remove", "--", path, env: index_env)
     end
     source_files.each do |path|
       entry = run_git(repo_root, "ls-tree", source_ref, "--", path).split
@@ -536,6 +608,8 @@ def main(argv = ARGV)
   fail!("tests path escapes .github/skills") unless inside?(tests_path, skills_root)
   skill_name = tests_match[1]
   skill_root = File.realpath(File.join(skills_root, skill_name))
+  trusted_control_ref = trusted_repository_control_ref(repo_root)
+  validate_repository_controls!(repo_root, "HEAD", trusted_control_ref, "candidate checkout")
 
   spec_paths = Dir.glob(File.join(tests_path, "*.vally.yaml")).sort
   fail!("no Vally specs found under #{tests_path}") if spec_paths.empty?
@@ -549,7 +623,8 @@ def main(argv = ARGV)
       relative_spec_path,
       skill_root,
       repo_root,
-      inspect_git_refs: !validate_only
+      inspect_git_refs: !validate_only,
+      trusted_control_ref: trusted_control_ref
     )
   end
   mandatory_specs = MANDATORY_SPEC_PATHS.select do |relative_path|
@@ -589,7 +664,14 @@ def main(argv = ARGV)
 
     spec_paths.each do |spec_path|
       relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
-      validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect_git_refs: true)
+      validate_spec!(
+        spec_path,
+        relative_spec_path,
+        skill_root,
+        repo_root,
+        inspect_git_refs: true,
+        trusted_control_ref: trusted_control_ref
+      )
     end
   end
 

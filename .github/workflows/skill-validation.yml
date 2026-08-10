@@ -26,9 +26,11 @@
 #   - Skill/test content: checked out from the PR (markdown/YAML data files;
 #     the evaluate job needs full history for frozen-worktree fixtures)
 #   - A workflow-SHA-pinned validator rejects PR-authored commands, process
-#     environment overrides, local MCP servers, executable graders, and escaping
-#     file overlays before model auth is selected. Synthetic git fixtures are
-#     prepared by that trusted script while the job is tokenless.
+#     environment overrides, local MCP servers, executable graders, repository
+#     Copilot controls that differ from the trusted base, and file overlays
+#     outside approved inert fixture roots before model auth is selected.
+#     Synthetic git fixtures are prepared by that trusted script while the job
+#     is tokenless.
 #   - Candidate skill instructions are evaluated, so their tool calls are
 #     untrusted. Vally runs as a no-sudo OS user that cannot modify its root-owned
 #     runtime, while a trusted wrapper passes Copilot's --secret-env-vars
@@ -264,18 +266,24 @@ jobs:
         env:
           TRUSTED_REPOSITORY: ${{ github.repository }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           PREPARER_TESTS="$RUNNER_TEMP/TestPrepareVallyEvaluation.rb"
+          SETUP_RUNTIME="$RUNNER_TEMP/SetupVallyRuntime.sh"
           RESTORE_SPEC="$RUNNER_TEMP/eval.restore.vally.yaml"
           VERIFICATION_SPEC="$RUNNER_TEMP/eval.protocol.vally.yaml"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/TestPrepareVallyEvaluation.rb" > "$PREPARER_TESTS"
+          git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/SetupVallyRuntime.sh" > "$SETUP_RUNTIME"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/try-fix/tests/eval.restore.vally.yaml" > "$RESTORE_SPEC"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/skills/verify-tests-fail-without-fix/tests/eval.protocol.vally.yaml" > "$VERIFICATION_SPEC"
-          ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC"
+          ruby "$PREPARER_TESTS" "$PREPARER" "$RESTORE_SPEC" "$VERIFICATION_SPEC" "$SETUP_RUNTIME"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" --validate-mandatory-layout
           while IFS= read -r tests_path; do
             ruby "$PREPARER" "$GITHUB_WORKSPACE" "$tests_path" --validate-only
@@ -551,9 +559,13 @@ jobs:
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           TRUSTED_REPOSITORY: ${{ github.repository }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
@@ -820,9 +832,13 @@ jobs:
           TESTS_PATH: ${{ matrix.entry.tests_path }}
           TRUSTED_REPOSITORY: ${{ github.repository }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" "$TESTS_PATH"
@@ -976,9 +992,13 @@ jobs:
         env:
           TRUSTED_REPOSITORY: ${{ github.repository }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
+          TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_SHA"
+          if [ -n "${TRUSTED_BASE_SHA:-}" ] && [ "$TRUSTED_BASE_SHA" != "$TRUSTED_SHA" ]; then
+            git fetch --no-tags --depth=1 "https://github.com/${TRUSTED_REPOSITORY}.git" "$TRUSTED_BASE_SHA"
+          fi
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
           git --no-replace-objects show "${TRUSTED_SHA}:.github/scripts/PrepareVallyEvaluation.rb" > "$PREPARER"
           ruby "$PREPARER" "$GITHUB_WORKSPACE" ".github/skills/code-review/tests" --validate-only
