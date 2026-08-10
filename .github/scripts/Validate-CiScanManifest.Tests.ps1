@@ -391,7 +391,7 @@ Describe 'CI scanner pipeline coverage gate' {
             Should -Throw '*exactly 5 issues are filed*'
     }
 
-    It 'rejects a cap skip that appears before five later filed entries' {
+    It 'accepts a cap skip before five later filed entries' {
         $earlySkip = New-TestSignature `
             -Fingerprint 'ci-scan-net11|net11.0|maui-pr|early sample|assertion failed|windows' `
             -Disposition 'skipped' `
@@ -404,8 +404,34 @@ Describe 'CI scanner pipeline coverage gate' {
         }
         $manifest = New-CompleteManifest -MainSignatures (@($earlySkip) + @($filed))
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*cannot use cap-reached before exactly 5 issues are filed*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.filed_count | Should -Be 5
+        $plan.has_cap_skip | Should -BeTrue
+    }
+
+    It 'accepts a substantive skip after five filed entries' {
+        $filed = for ($i = 1; $i -le 5; $i++) {
+            $fingerprint = "ci-scan-net11|net11.0|maui-pr|filed sample $i|assertion failed|windows"
+            New-TestSignature -Fingerprint $fingerprint -Body (
+                New-TestBody -Fingerprint $fingerprint
+            )
+        }
+        $substantiveSkip = New-TestSignature `
+            -Fingerprint 'ci-scan-net11|net11.0|maui-pr|known infrastructure failure|assertion failed|windows' `
+            -Disposition 'skipped' `
+            -SkipReason 'infrastructure-noise'
+        $manifest = New-CompleteManifest -MainSignatures (@($filed) + @($substantiveSkip))
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.filed_count | Should -Be 5
+        $plan.has_cap_skip | Should -BeFalse
+        $plan.pipelines[0].signatures[5].skip_reason | Should -BeExactly 'infrastructure-noise'
     }
 
     It 'rejects reordered configured pipelines' {
@@ -559,6 +585,50 @@ Describe 'CI scanner issue payload gate' {
 
         { Test-CiScanManifest -Manifest $manifest } |
             Should -Throw '*forbidden truncation placeholder*'
+    }
+
+    It 'canonicalizes the production em-dash title before publication' {
+        $rawTitle = "Recurring Android device test failure $([char]0x2014) StatusBarThemeAppliesWhenHandlerConnects fails on Android CoreCLR and Mono (net11.0)"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Title $rawTitle)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $canonicalTitle = 'Recurring Android device test failure - StatusBarThemeAppliesWhenHandlerConnects fails on Android CoreCLR and Mono (net11.0)'
+        $plan.pipelines[0].signatures[0].title | Should -BeExactly $canonicalTitle
+        $plan.issues[0].Title | Should -BeExactly "[ci-scan-net11] $canonicalTitle"
+    }
+
+    It 'also canonicalizes an en-dash title separator' {
+        $rawTitle = "Recurring sample failure $([char]0x2013) Windows"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Title $rawTitle)
+        )
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath (New-DefaultEvidenceRoot)
+
+        $plan.pipelines[0].signatures[0].title |
+            Should -BeExactly 'Recurring sample failure - Windows'
+    }
+
+    It 'still rejects <Case> in a title rather than broadly normalizing Unicode' -ForEach @(
+        @{ Case = 'curly quote'; Character = [char]0x2019 }
+        @{ Case = 'non-breaking space'; Character = [char]0x00A0 }
+        @{ Case = 'emoji'; Character = [char]::ConvertFromUtf32(0x1F600) }
+    ) {
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Title "Recurring sample $Character failure")
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*must contain printable single-line ASCII only*'
     }
 
     <#
@@ -1232,13 +1302,70 @@ Observed 99 times according to the agent."
             Should -Throw '*Trusted evidence file is missing*'
     }
 
-    It 'rejects a body that omits its exact match pattern' {
+    It 'injects an evidence-verified match pattern omitted from the body' {
+        $evidenceRoot = Join-Path $TestDrive 'omitted-pattern-evidence'
+        New-TestEvidence -Root $evidenceRoot -Lines @('Different failure')
         $manifest = New-CompleteManifest -MainSignatures @(
             (New-TestSignature -MatchPattern 'Different failure')
         )
 
-        { Test-CiScanManifest -Manifest $manifest } |
-            Should -Throw '*must contain match_pattern exactly*'
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath $evidenceRoot
+
+        $plan.issues[0].Body |
+            Should -Match '(?ms)## Trusted Match Pattern\r?\n\r?\n    Different failure$'
+    }
+
+    It 'repairs the exact main production body and match_pattern mismatch' {
+        $pipeline = 'maui-pr-devicetests'
+        $buildId = 1540065
+        $fingerprint = 'ci-scan|main|maui-pr-devicetests|carouselviewdoesnotleakwithdefaultitemslayout|reference to microsoft.maui.controls.carouselview is still alive|maccatalyst'
+        $matchPattern = 'XHarness exit code: 1 (TESTS_FAILED)'
+        $body = (New-TestBody -Pipeline $pipeline -BuildId $buildId -Fingerprint $fingerprint).
+            Replace('Assertion failed', 'Reference to Microsoft.Maui.Controls.CarouselView is still alive')
+        $signature = New-TestSignature `
+            -Pipeline $pipeline `
+            -BuildId $buildId `
+            -Fingerprint $fingerprint `
+            -Title 'DeviceTestsMacCatalyst Controls Tests fail: CarouselView memory leak' `
+            -MatchPattern $matchPattern `
+            -Body $body
+        $manifest = [pscustomobject]@{
+            pipelines = @(
+                (New-TestPipeline -Name 'maui-pr' -DefinitionId 302 -BuildId 1540066)
+                (New-TestPipeline -Name $pipeline -DefinitionId 314 -BuildId $buildId -Signatures @($signature))
+                (New-TestPipeline -Name 'maui-pr-uitests' -DefinitionId 313 -BuildId 1540063)
+            )
+        }
+        $evidenceRoot = Join-Path $TestDrive 'main-production-pattern-evidence'
+        New-TestEvidence `
+            -Root $evidenceRoot `
+            -Pipeline $pipeline `
+            -BuildId $buildId `
+            -Lines @($matchPattern)
+
+        $plan = Test-CiScanManifest `
+            -Manifest $manifest `
+            -TrustedEvidencePath $evidenceRoot `
+            -ScannerId 'ci-scan'
+
+        $plan.issues[0].Body |
+            Should -Match "(?ms)## Trusted Match Pattern\r?\n\r?\n    $([regex]::Escape($matchPattern))$"
+        $plan.issues[0].MatchCount | Should -Be 1
+    }
+
+    It 'rejects trusted match-pattern injection that would exceed the body limit' {
+        $body = (New-TestBody).Replace('Assertion failed', 'Different failure')
+        $body += 'a' * (59000 - $body.Length)
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -Body $body)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot) } |
+            Should -Throw '*exceeds 59000 characters after trusted match_pattern injection*'
     }
 
     It 'requires the safely rendered match pattern in the published body' {
@@ -1296,6 +1423,18 @@ Observed 99 times according to the agent."
 
         { Test-CiScanManifest -Manifest $manifest } |
             Should -Throw '*match_pattern*must not contain zero-width spaces*'
+    }
+
+    It 'rejects hidden content in a match pattern before trusted injection' {
+        $pattern = "Failure$([char]0x1B)[31m"
+        $manifest = New-CompleteManifest -MainSignatures @(
+            (New-TestSignature -MatchPattern $pattern)
+        )
+
+        { Test-CiScanManifest `
+                -Manifest $manifest `
+                -TrustedEvidencePath (New-DefaultEvidenceRoot -ExtraLines @($pattern)) } |
+            Should -Throw '*match_pattern*C0 control character*'
     }
 
     It 'rejects a body that smuggles in a zero-width space' {
@@ -1590,6 +1729,32 @@ Describe 'CI scanner workflow source invariants: <_>' -ForEach @('ci-status-main
     It 'requires exactly one complete submission and forbids alternate outputs' {
         $workflowSource | Should -Match 'select\(\.type == "submit_ci_scan"\)'
         $workflowSource | Should -Match 'Expected exactly one argument-free submit_ci_scan output and no alternate outputs'
+    }
+
+    It 'requires a complete frozen evidence line rather than a matching paraphrase' {
+        $workflowSource |
+            Should -Match 'Copy at least one \*\*entire matching line\*\* from a frozen evidence file'
+        $workflowSource |
+            Should -Match 'do not summarize it or replace\s+volatile fields with placeholders such as `<id>`'
+        $workflowSource |
+            Should -Match 'shorter `match_pattern` substring is not sufficient for trusted evidence\s+identity'
+        $workflowSource |
+            Should -Match 'Do not attempt to classify or remove timestamps yourself; copy them\s+verbatim'
+        $workflowSource |
+            Should -Match 'trusted validator alone normalizes a recognized leading AzDO\s+transport timestamp'
+        $workflowSource |
+            Should -Match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt if the agent omitted it'
+    }
+
+    It 'defines cap exhaustion across the complete manifest rather than traversal order' {
+        $workflowSource |
+            Should -Match 'exactly five\s+entries are actually marked `filed` across the complete manifest'
+        $workflowSource |
+            Should -Match 'may appear before or after the fifth filed entry in fixed traversal order'
+        $workflowSource |
+            Should -Match 'Use a substantive\s+skip reason whenever it applies, even after the cap is reached'
+        $workflowSource |
+            Should -Match 'do not replace\s+it with `cap-reached` merely because of its position'
     }
 
     It 'fails the exact-once gate when the collector diverts an attempt into .errors' {
@@ -2089,6 +2254,6 @@ Describe 'CI scanner twin configuration' {
                 -Manifest (New-CompleteManifest -MainSignatures @($signatures)) `
                 -TrustedEvidencePath (New-DefaultEvidenceRoot) `
                 -ScannerId 'ci-scan' } |
-            Should -Throw '*must be skipped with cap-reached because the issue cap was already reached*'
+            Should -Throw '*exceeding the cap of 5*'
     }
 }

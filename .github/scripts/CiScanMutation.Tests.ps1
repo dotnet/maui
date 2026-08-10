@@ -98,6 +98,23 @@ BeforeAll {
     }'
             Replace = ''
         }
+        # The trusted boundary once again relies on the model to avoid typographic
+        # dashes despite an explicit ASCII prompt.
+        'title-dash-not-canonicalized' = @{
+            Find    = '    return $Value.
+        Replace([char]0x2013, [char]0x002D).
+        Replace([char]0x2014, [char]0x002D).
+        Trim()'
+            Replace = '    return $Value.Trim()'
+        }
+        # The publisher once again requires the agent to duplicate match_pattern in
+        # its issue body instead of repairing the evidence-verified handoff.
+        'no-match-pattern-injection' = @{
+            Find    = '    $body = Add-TrustedMatchPatternExcerpt `
+        -Body $body `
+        -MatchPattern $matchPattern'
+            Replace = '    $body = $body'
+        }
     }
 
     function New-MutatedValidator {
@@ -179,6 +196,32 @@ BeforeAll {
             $Source -match 'Flag an isolated VS15/VS16 or a selector following any other base\.'
     }
 
+    function Test-FullEvidenceLinePrompt {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match 'Copy at least one \*\*entire matching line\*\* from a frozen evidence file' -and
+            $Source -match 'do not summarize it or replace\s+volatile fields with placeholders such as `<id>`' -and
+            $Source -match 'shorter `match_pattern` substring is not sufficient for trusted evidence\s+identity' -and
+            $Source -match 'Do not attempt to classify or remove timestamps yourself; copy them\s+verbatim\.' -and
+            $Source -match 'trusted validator alone normalizes a recognized leading AzDO\s+transport timestamp'
+    }
+
+    function Test-MatchPatternRepairPrompt {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match 'trusted\s+publisher verifies it against frozen evidence and appends a canonical\s+match-pattern excerpt if the agent omitted it' -and
+            $Source -match 'does not replace\s+the\s+full-evidence-line requirement'
+    }
+
+    function Test-OrderIndependentCapPrompt {
+        param([Parameter(Mandatory = $true)][string]$Source)
+
+        return $Source -match 'exactly five\s+entries are actually marked `filed` across the complete manifest' -and
+            $Source -match 'may appear before or after the fifth filed entry in fixed traversal order' -and
+            $Source -match 'Use a substantive\s+skip reason whenever it applies, even after the cap is reached' -and
+            $Source -match 'do not replace\s+it with `cap-reached` merely because of its position'
+    }
+
     function Get-CompiledThreatDetectionPrompt {
         param([Parameter(Mandatory = $true)][string]$LockPath)
 
@@ -198,7 +241,8 @@ BeforeAll {
         param(
             [string]$Path,
             [string]$Body,
-            [string]$MatchPattern = 'Assertion failed'
+            [string]$MatchPattern = 'Assertion failed',
+            [string]$Title = 'Sample test fails on Windows'
         )
 
         $fingerprint = 'ci-scan-net11|net11.0|maui-pr|sample test|assertion failed|windows'
@@ -214,7 +258,7 @@ BeforeAll {
                             fingerprint    = $fingerprint
                             disposition    = 'filed'
                             source_log_ids = @(1001)
-                            title          = 'Sample test fails on Windows'
+                            title          = $Title
                             match_pattern  = $MatchPattern
                             body           = $Body
                         }
@@ -262,7 +306,8 @@ BeforeAll {
             [string[]]$Mutation = @(),
             [string]$Body = "## Summary`nRecurring sample failure.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nAssertion failed",
             [string]$MatchPattern = 'Assertion failed',
-            [string[]]$EvidenceLines = @('Assertion failed', 'Assertion failed')
+            [string[]]$EvidenceLines = @('Assertion failed', 'Assertion failed'),
+            [string]$Title = 'Sample test fails on Windows'
         )
 
         $work = Join-Path $TestDrive ('mutation-' + [guid]::NewGuid().ToString('n'))
@@ -279,7 +324,8 @@ BeforeAll {
         $manifestPath = New-ProbeManifest `
             -Path (Join-Path $work 'manifest.json') `
             -Body $Body `
-            -MatchPattern $MatchPattern
+            -MatchPattern $MatchPattern `
+            -Title $Title
         $evidencePath = New-ProbeEvidence `
             -Root (Join-Path $work 'evidence') `
             -Lines $EvidenceLines
@@ -293,7 +339,8 @@ try {
     $manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
     $plan = Test-CiScanManifest -Manifest $manifest -TrustedEvidencePath $EvidencePath
     $body = if (@($plan.issues).Count -gt 0) { $plan.issues[0].Body } else { '' }
-    Write-Output ('RESULT ' + (ConvertTo-Json -Compress -InputObject @{ ok = $true; body = $body }))
+    $title = if (@($plan.issues).Count -gt 0) { $plan.issues[0].Title } else { '' }
+    Write-Output ('RESULT ' + (ConvertTo-Json -Compress -InputObject @{ ok = $true; body = $body; title = $title }))
 } catch {
     Write-Output ('RESULT ' + (ConvertTo-Json -Compress -InputObject @{ ok = $false; error = "$($_.Exception.Message)" }))
 }
@@ -323,6 +370,38 @@ Describe 'CI scanner marker mutation coverage' {
         ([regex]::Matches($result.body, '<!-- ci-scan-evidence-key:')).Count | Should -Be 1
         $result.body.StartsWith($script:CanonicalMarker) | Should -BeTrue
         $result.body | Should -Match '(?m)^<!-- ci-scan-match-count: 2 hits in failure\.log -->$'
+    }
+
+    It 'mutation "title-dash-not-canonicalized": the production title is rejected again' {
+        $title = "Recurring Android device test failure $([char]0x2014) StatusBarThemeAppliesWhenHandlerConnects fails"
+        $baseline = Invoke-ValidatorProbe -Title $title
+        $mutated = Invoke-ValidatorProbe `
+            -Mutation @('title-dash-not-canonicalized') `
+            -Title $title
+
+        $baseline.ok | Should -BeTrue
+        $baseline.title | Should -BeExactly '[ci-scan-net11] Recurring Android device test failure - StatusBarThemeAppliesWhenHandlerConnects fails'
+        $mutated.ok | Should -BeFalse
+        $mutated.error | Should -Match 'must contain printable single-line ASCII only'
+    }
+
+    It 'mutation "no-match-pattern-injection": the main production mismatch is rejected again' {
+        $pattern = 'XHarness exit code: 1 (TESTS_FAILED)'
+        $body = "## Summary`nRecurring CarouselView leak.`n`n## Build Information`n- **Pipeline**: maui-pr`n- **Build ID**: 123456`n`n## Error Message`nReference to Microsoft.Maui.Controls.CarouselView is still alive"
+        $baseline = Invoke-ValidatorProbe `
+            -Body $body `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern)
+        $mutated = Invoke-ValidatorProbe `
+            -Mutation @('no-match-pattern-injection') `
+            -Body $body `
+            -MatchPattern $pattern `
+            -EvidenceLines @($pattern)
+
+        $baseline.ok | Should -BeTrue
+        $baseline.body | Should -Match '(?ms)## Trusted Match Pattern\r?\n\r?\n    XHarness exit code: 1 \(TESTS_FAILED\)$'
+        $mutated.ok | Should -BeFalse
+        $mutated.error | Should -Match 'must contain match_pattern exactly'
     }
 
     It 'mutation "no-injection": removing injection cannot produce a marked issue' {
@@ -549,6 +628,21 @@ Describe 'CI scanner twin discovery mutation coverage' {
             ).Count | Should -Be 2
         }
 
+        It 'baseline: both twins require a full frozen evidence line in filed bodies' {
+            @($script:WorkflowSources | Where-Object { Test-FullEvidenceLinePrompt -Source $_ }).Count |
+                Should -Be 2
+        }
+
+        It 'baseline: both twins describe trusted match-pattern repair' {
+            @($script:WorkflowSources | Where-Object { Test-MatchPatternRepairPrompt -Source $_ }).Count |
+                Should -Be 2
+        }
+
+        It 'baseline: both twins describe cap exhaustion independent of traversal order' {
+            @($script:WorkflowSources | Where-Object { Test-OrderIndependentCapPrompt -Source $_ }).Count |
+                Should -Be 2
+        }
+
         It 'mutation "nested-string-transport": a manifest tool input fails the handoff invariant' {
             foreach ($source in $script:WorkflowSources) {
                 $source.Contains($script:SafeJobStepsNeedle) | Should -BeTrue
@@ -649,6 +743,53 @@ Describe 'CI scanner twin discovery mutation coverage' {
                         -Source $mutated `
                         -ValidatorSource $script:ValidatorSource) |
                     Should -BeFalse
+            }
+        }
+
+        It 'mutation "matching-substring-only": removing the full-line requirement fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms)\n3\. Copy at least one \*\*entire matching line\*\*.*?identity\.\r?\n',
+                    "`n")
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-FullEvidenceLinePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "sequential-cap-contract": restoring traversal-order cap semantics fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'so it may appear before or after the fifth filed entry in fixed traversal order.',
+                    'so it must appear only after the fifth filed entry in fixed traversal order.')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-OrderIndependentCapPrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "agent-normalizes-timestamps": removing trusted timestamp ownership fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms) Do not attempt to classify or remove timestamps yourself; copy them\r?\n   verbatim\. The trusted validator alone normalizes a recognized leading AzDO\r?\n   transport timestamp when computing evidence identity\.',
+                    '')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-FullEvidenceLinePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "agent-only-pattern-handoff": removing trusted repair fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = [regex]::Replace(
+                    $source,
+                    '(?ms) The trusted\r?\n   publisher verifies it against frozen evidence and appends a canonical\r?\n   match-pattern excerpt if the agent omitted it; this repair does not replace the\r?\n   full-evidence-line requirement below\.',
+                    '')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-MatchPatternRepairPrompt -Source $mutated) | Should -BeFalse
             }
         }
     }

@@ -76,6 +76,19 @@ function ConvertTo-TrimmedString {
     return ([string]$Value).Trim()
 }
 
+function ConvertTo-CanonicalIssueTitle {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    # Models commonly use typographic dashes as prose separators even when prompted
+    # for ASCII. Titles are not evidence-bearing content, so normalize only these two
+    # visible, unambiguous punctuation variants at the trusted boundary. The printable
+    # ASCII gate below still rejects every other non-ASCII or control character.
+    return $Value.
+        Replace([char]0x2013, [char]0x002D).
+        Replace([char]0x2014, [char]0x002D).
+        Trim()
+}
+
 function ConvertTo-SafeLogValue {
     param(
         [AllowNull()][object]$Value,
@@ -639,8 +652,31 @@ function Get-ValidatedMatchPattern {
     if (Test-MarkerLikeContent -Value $matchPattern) {
         throw "match_pattern for '$Fingerprint' must not contain scanner marker content."
     }
+    $hiddenReason = Test-HiddenOrControlContent -Value $matchPattern
+    if ($hiddenReason) {
+        throw "match_pattern for '$Fingerprint' must not contain $hiddenReason."
+    }
 
     return $matchPattern
+}
+
+function Add-TrustedMatchPatternExcerpt {
+    param(
+        [Parameter(Mandatory = $true)][string]$Body,
+        [Parameter(Mandatory = $true)][string]$MatchPattern
+    )
+
+    $visibleBody = $Body.Replace([string][char]0x200B, '')
+    if ($visibleBody.Contains($MatchPattern, [System.StringComparison]::Ordinal)) {
+        return $Body
+    }
+
+    # The pattern is agent-selected but reaches this point only after the trusted
+    # evidence recount proved it exists in every claimed source log. Put that bounded,
+    # single-line value in an indented code block so issue-body correctness does not
+    # depend on the model copying the same field into two separate JSON properties.
+    $safeMatchPattern = ConvertTo-SafeIssueBody -Body $MatchPattern
+    return "$Body`n`n## Trusted Match Pattern`n`n    $safeMatchPattern"
 }
 
 function Get-Sha256Hex {
@@ -835,7 +871,7 @@ function Assert-ValidIssuePayload {
     if ($rawTitle -isnot [string]) {
         throw "Title for '$Fingerprint' must be a JSON string."
     }
-    $title = ConvertTo-TrimmedString $rawTitle
+    $title = ConvertTo-CanonicalIssueTitle $rawTitle
     if ($title.Length -lt 10 -or $title.Length -gt 180) {
         throw "Title for '$Fingerprint' must be 10-180 characters."
     }
@@ -891,13 +927,6 @@ function Assert-ValidIssuePayload {
     }
 
     $matchPattern = Get-ValidatedMatchPattern -Signature $Signature -Fingerprint $Fingerprint
-    # Pre-injection evidence check on the neutralized body. Assert-CanonicalPublishedBody
-    # repeats it on the published payload; both matter, because this one blames the agent
-    # body while the post-injection one proves the payload GitHub receives still carries
-    # the counted line.
-    if (-not $body.Replace([string]$zeroWidthSpace, '').Contains($matchPattern, [System.StringComparison]::Ordinal)) {
-        throw "Body for '$Fingerprint' must contain match_pattern exactly."
-    }
     # A filed payload's match count comes from frozen evidence, so a filed payload
     # without frozen evidence has no trusted count to inject. Fail closed rather than
     # inventing one or letting the agent supply it.
@@ -911,6 +940,13 @@ function Assert-ValidIssuePayload {
         -Fingerprint $Fingerprint `
         -SourceLogIds $SourceLogIds `
         -TrustedEvidencePath $TrustedEvidencePath
+
+    $body = Add-TrustedMatchPatternExcerpt `
+        -Body $body `
+        -MatchPattern $matchPattern
+    if ($body.Length -gt 59000) {
+        throw "Body for '$Fingerprint' exceeds 59000 characters after trusted match_pattern injection."
+    }
 
     # Injection. The fingerprint comes only from validated manifest structure that
     # Assert-ValidFingerprint already bound to this scanner, branch, and pipeline; the
@@ -1113,10 +1149,6 @@ function Test-CiScanManifest {
             $disposition = (ConvertTo-TrimmedString (
                 Get-RequiredProperty -Object $signature -Name 'disposition' -Context $signatureContext
             )).ToLowerInvariant()
-            if ($filedCount -eq $script:IssueCap -and $disposition -ne 'skipped') {
-                throw "$signatureContext must be skipped with cap-reached because the issue cap was already reached."
-            }
-
             $normalized = [ordered]@{
                 fingerprint    = $fingerprint
                 disposition    = $disposition
@@ -1182,12 +1214,7 @@ function Test-CiScanManifest {
                         throw "$signatureContext has invalid skip_reason '$skipReason'."
                     }
                     if ($skipReason -eq 'cap-reached') {
-                        if ($filedCount -ne $script:IssueCap) {
-                            throw "$signatureContext cannot use cap-reached before exactly $($script:IssueCap) issues are filed."
-                        }
                         $hasCapSkip = $true
-                    } elseif ($filedCount -eq $script:IssueCap) {
-                        throw "$signatureContext must use cap-reached because the issue cap was already reached."
                     }
 
                     # A skip still consumes terminal coverage for its source logs, so it
