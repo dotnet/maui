@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[nameof(IView.IsEnabled)] = MapIsEnabled
 		};
 
 		UICollectionViewLayout _layout;
@@ -121,6 +122,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.Controller?.UpdateVisibility();
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateSelectionMode();
+		}
+
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
@@ -159,6 +165,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (args.GroupIndex == -1)
 					{
+						// When IsGrouped is set and no explicit group index is provided,
+						// convert the flat index to the correct section/item index path.
+						if (ItemsView is GroupableItemsView groupable && groupable.IsGrouped)
+						{
+							var itemsSource = Controller.ItemsSource;
+							if (itemsSource is not null)
+							{
+								return ConvertFlatIndexToGroupedIndexPath(args.Index, itemsSource);
+							}
+
+							return null;
+						}
+
 						return NSIndexPath.Create(0, args.Index);
 					}
 
@@ -166,6 +185,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				return Controller.GetIndexForItem(args.Item);
+			}
+
+			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, Items.IItemsViewSource itemsSource)
+			{
+				if (flatIndex < 0)
+				{
+					return null;
+				}
+
+				int remaining = flatIndex;
+				int groupCount = itemsSource.GroupCount;
+				for (int section = 0; section < groupCount; section++)
+				{
+					int itemCount = itemsSource.ItemCountInGroup(section);
+					if (remaining < itemCount)
+					{
+						return NSIndexPath.Create(section, remaining);
+					}
+					remaining -= itemCount;
+				}
+
+				return null;
 			}
 		}
 

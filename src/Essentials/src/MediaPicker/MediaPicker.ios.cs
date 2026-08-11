@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Media
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 			var tcs = new TaskCompletionSource<List<FileResult>>();
 
-			if (pickExisting)
+			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
 				var config = new PHPickerConfiguration
 				{

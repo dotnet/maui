@@ -97,6 +97,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Controller?.UpdateLayout(_layout);
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			(handler.Controller as SelectableItemsViewController<ReorderableItemsView>)?.UpdateSelectionMode();
+		}
+
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
 			using (var indexPath = DetermineIndex(args))
@@ -117,6 +122,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					if (args.GroupIndex == -1)
 					{
+						// When IsGrouped is set and no explicit group index is provided,
+						// convert the flat index to the correct section/item index path.
+						if (ItemsView is GroupableItemsView groupable && groupable.IsGrouped)
+						{
+							var itemsSource = Controller.ItemsSource;
+							if (itemsSource is not null)
+							{
+								return ConvertFlatIndexToGroupedIndexPath(args.Index, itemsSource);
+							}
+
+							return null;
+						}
+
 						return NSIndexPath.Create(0, args.Index);
 					}
 
@@ -125,11 +143,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				return Controller.GetIndexForItem(args.Item);
 			}
+
+			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, IItemsViewSource itemsSource)
+			{
+				if (flatIndex < 0)
+				{
+					return null;
+				}
+
+				int remaining = flatIndex;
+				int groupCount = itemsSource.GroupCount;
+				for (int section = 0; section < groupCount; section++)
+				{
+					int itemCount = itemsSource.ItemCountInGroup(section);
+					if (remaining < itemCount)
+					{
+						return NSIndexPath.Create(section, remaining);
+					}
+					remaining -= itemCount;
+				}
+
+				return null;
+			}
 		}
 
 		protected bool IsIndexPathValid(NSIndexPath indexPath)
 		{
-			if (indexPath.Item < 0 || indexPath.Section < 0)
+			if (indexPath is null || indexPath.Item < 0 || indexPath.Section < 0)
 			{
 				return false;
 			}

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
-		Brush _currentBarBackground;
+		Brush? _currentBarBackground;
 		private int? _defaultStartInset;
 
 		NavigationRootManager? NavigationRootManager =>
@@ -31,8 +31,18 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newHandler == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
+				_platformTitleView?.Child = null;
+
+				if (_currentBarBackground is GradientBrush currentGradientBrush)
+				{
+					if (ReferenceEquals(currentGradientBrush.Parent, this))
+					{
+						currentGradientBrush.Parent = null;
+					}
+
+					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+				}
+				_currentBarBackground = null;
 
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,
@@ -149,6 +159,11 @@ namespace Microsoft.Maui.Controls
 			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
 			{
 				materialToolbar.UpdateBarBackground(this);
+
+				if (this is NavigationPageToolbar { Parent: Window })
+				{
+					AndroidSystemChrome.UpdateBottomChrome(materialToolbar, _currentBarBackground);
+				}
 			}
 		}
 

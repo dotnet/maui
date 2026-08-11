@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 #if IOS
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
@@ -28,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -41,11 +43,22 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 
 #if IOS || MACCATALYST
+					if (includeNavigationViewHandler)
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					}
+					else
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					}
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+
+#if IOS || MACCATALYST
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 				});
 
@@ -222,7 +235,86 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
+			SetupBuilder(includeNavigationViewHandler: false);
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
+
+#if IOS || MACCATALYST
+			// Use setForMaui:false to force old event-based NavigationImpl path.
+			// NavigationRenderer doesn't implement RequestNavigation, causing hangs.
+			var firstPage = new NavigationPage(false, new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+				{
+					new Label()
+					{
+						Text = "Page one",
+						Background = Colors.Purple
+					}
+				}
+			})
+			{
+				Title = "First Page"
+			};
+#else
+			var firstPage = new NavigationPage(new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+				{
+					new Label()
+					{
+						Text = "Page one",
+						Background = Colors.Purple
+					}
+				}
+			})
+			{
+				Title = "First Page"
+			};
+#endif
+
+			tabbedPage.Children.Insert(0, firstPage);
+			tabbedPage.CurrentPage = firstPage;
+			var secondPage = tabbedPage.Children[1];
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(firstPage);
+				tabbedPage.Children.Remove(firstPage);
+				await OnNavigatedToAsync(secondPage);
+				await OnUnloadedAsync(firstPage);
+				// Validate that the second page becomes the current active page
+				Assert.Equal(secondPage, tabbedPage.CurrentPage);
+
+				// add the removed page back
+				tabbedPage.Children.Insert(0, firstPage);
+				// Validate that the second page is still the current active page
+				Assert.Equal(secondPage, tabbedPage.CurrentPage);
+
+				// Validate that we can navigate back to the first page
+				tabbedPage.CurrentPage = firstPage;
+				await OnNavigatedToAsync(firstPage);
+			});
+		}
+
+#if IOS || MACCATALYST
+		[Theory("Handler: Remove CurrentPage And Then Re-Add Doesnt Crash")]
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task Handler_RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+				});
+			});
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
@@ -264,6 +356,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(firstPage);
 			});
 		}
+#endif
 
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
@@ -287,7 +380,7 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
+			SetupBuilder(includeNavigationViewHandler: false);
 
 			var pages = new NavigationPage[5];
 
@@ -303,10 +396,20 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				};
 
+#if IOS || MACCATALYST
+				// Use setForMaui:false to force old event-based NavigationImpl path.
+				// NavigationRenderer doesn't implement RequestNavigation,
+				// causing PushAsync/PopAsync to hang.
+				pages[i] = new NavigationPage(false, contentPage)
+				{
+					Title = title
+				};
+#else
 				pages[i] = new NavigationPage(contentPage)
 				{
 					Title = title
 				};
+#endif
 			}
 			;
 
@@ -343,13 +446,92 @@ namespace Microsoft.Maui.DeviceTests
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-					await Task.Delay(200);
+					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
 					await navigationPage.PopAsync();
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
 				}
 			});
 		}
+
+#if IOS || MACCATALYST
+		[Theory]
+		[ClassData(typeof(TabbedPagePivots))]
+		public async Task Handler_MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+				});
+			});
+
+			var pages = new NavigationPage[5];
+
+			for (var i = 0; i < pages.Length; i++)
+			{
+				string title = $"Tab {i} Root Page";
+				var contentPage = new ContentPage()
+				{
+					Title = title,
+					Content = new Button()
+					{
+						Text = title
+					}
+				};
+
+				pages[i] = new NavigationPage(contentPage)
+				{
+					Title = title
+				};
+			}
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, pages);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(pages[0].CurrentPage);
+				await OnLoadedAsync((pages[0].CurrentPage as ContentPage).Content);
+
+				for (var i = 0; i < pages.Length; i++)
+				{
+					NavigationPage navigationPage = pages[i];
+					tabbedPage.CurrentPage = navigationPage;
+					await OnNavigatedToAsync(navigationPage.CurrentPage);
+					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
+
+					var nextPage = new ContentPage()
+					{
+						Content = new Button()
+						{
+							Text = $"Tab {i} Next Page"
+						}
+					};
+					await navigationPage.PushAsync(nextPage);
+					await OnNavigatedToAsync(nextPage);
+					await OnLoadedAsync(nextPage.Content);
+				}
+
+				foreach (var navigationPage in pages)
+				{
+					tabbedPage.CurrentPage = navigationPage;
+					await OnNavigatedToAsync(navigationPage.CurrentPage);
+					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
+					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
+					await navigationPage.PopAsync();
+					await OnNavigatedToAsync(navigationPage.CurrentPage);
+					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
+				}
+			});
+		}
+#endif
 
 #if !WINDOWS
 		[Theory]
@@ -378,7 +560,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if IOS 
+#if IOS
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
 #elif WINDOWS
 		[Theory(Skip = "Test doesn't work on Windows")]
@@ -440,6 +622,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+#if TEST_FAILS_ON_ANDROID //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS
 			, Skip = "FIXME: fails on Windows"
@@ -470,7 +653,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(pageReference);
 		}
-
+#endif
 
 		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false, bool isSmoothScrollEnabled = true, IEnumerable<Page> pages = null)
 		{
@@ -502,6 +685,167 @@ namespace Microsoft.Maui.DeviceTests
 
 			Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.SetIsSmoothScrollEnabled(tabs, isSmoothScrollEnabled);
 			return tabs;
+		}
+
+		// https://github.com/dotnet/maui/issues/35469
+		// When a TabbedPage.BarBackground is set from a shared GradientBrush (e.g. via an app-resource Style),
+		// removing the TabbedPage from the window must not leave a live subscription on the shared brush.
+		// The renderer/manager subscribes to GradientBrush.InvalidateGradientBrushRequested; if it fails to
+		// unsubscribe on disconnect the brush keeps the renderer alive, preventing GC.
+		[Fact(DisplayName = "TabbedPage renderer/manager does not leak shared GradientBrush subscriber on disconnect")]
+		public async Task TabbedPageDoesNotLeakGradientBrushSubscriberOnDisconnect()
+		{
+			SetupBuilder();
+
+			// Simulate a shared app-resource brush — this object lives beyond the TabbedPage.
+			var sharedBrush = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Teal, 0f),
+					new GradientStop(Colors.CornflowerBlue, 1f)
+				},
+				new Graphics.Point(0, 0),
+				new Graphics.Point(1, 1));
+
+			var tabbedPageRef = new WeakReference(null);
+			var handlerRef = new WeakReference(null);
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Home" });
+
+			await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+			{
+				var tabbedPage = new TabbedPage
+				{
+					Title = "Tabbed",
+					BarBackground = sharedBrush,
+				};
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 1" });
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 2" });
+
+				// Push so the TabbedPage handler is created and subscribes to the brush.
+				await navPage.Navigation.PushModalAsync(tabbedPage);
+				await OnLoadedAsync(tabbedPage.Children[0]);
+
+				tabbedPageRef.Target = tabbedPage;
+				handlerRef.Target = tabbedPage.Handler;
+
+				// Pop — this should cause the renderer/manager to disconnect and unsubscribe.
+				await navPage.Navigation.PopModalAsync();
+			});
+
+			// After full GC the renderer/manager and the page itself should be collected.
+			await AssertionExtensions.WaitForGC(handlerRef);
+			await AssertionExtensions.WaitForGC(tabbedPageRef);
+
+			// The shared brush must have zero subscribers to InvalidateGradientBrushRequested.
+			// If the renderer/manager leaked, it would still be subscribed here.
+			var brushInvocationList = GetGradientBrushInvocationList(sharedBrush);
+			Assert.Empty(brushInvocationList);
+		}
+
+		// https://github.com/dotnet/maui/issues/35469
+		// Variant: BarBackground applied via a Style (the exact scenario from the bug report).
+		[Fact(DisplayName = "TabbedPage renderer/manager does not leak shared GradientBrush subscriber when BarBackground is set via Style")]
+		public async Task TabbedPageDoesNotLeakGradientBrushSubscriberWhenSetViaStyle()
+		{
+			SetupBuilder();
+
+			var sharedBrush = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.DarkGreen, 0f),
+					new GradientStop(Colors.SteelBlue, 1f)
+				},
+				new Graphics.Point(0, 0),
+				new Graphics.Point(1, 1));
+
+			var barBackgroundStyle = new Style(typeof(TabbedPage))
+			{
+				Setters = { new Setter { Property = TabbedPage.BarBackgroundProperty, Value = sharedBrush } }
+			};
+
+			var handlerRef = new WeakReference(null);
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Home" });
+
+			await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+			{
+				var tabbedPage = new TabbedPage { Style = barBackgroundStyle };
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 1" });
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 2" });
+
+				await navPage.Navigation.PushModalAsync(tabbedPage);
+				await OnLoadedAsync(tabbedPage.Children[0]);
+
+				handlerRef.Target = tabbedPage.Handler;
+
+				await navPage.Navigation.PopModalAsync();
+			});
+
+			await AssertionExtensions.WaitForGC(handlerRef);
+
+			var brushInvocationList = GetGradientBrushInvocationList(sharedBrush);
+			Assert.Empty(brushInvocationList);
+		}
+
+
+		// https://github.com/dotnet/maui/issues/35469
+		// Verifies that after a modal TabbedPage is popped, the shared GradientBrush
+		// has zero subscribers. DisconnectHandlers is NOT called on modal pop, so the
+		// fix must explicitly unsubscribe via the Disappearing/ViewDidDisappear lifecycle hook.
+		[Fact(DisplayName = "TabbedPage GradientBrush subscriber is removed after modal pop")]
+		public async Task TabbedPageGradientBrushSubscriberRemovedAfterModalPop()
+		{
+			SetupBuilder();
+
+			var sharedBrush = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Purple, 0f),
+					new GradientStop(Colors.Orange, 1f)
+				},
+				new Graphics.Point(0, 0),
+				new Graphics.Point(1, 1));
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Home" });
+
+			await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+			{
+				var tabbedPage = new TabbedPage
+				{
+					Title = "Tabbed",
+					BarBackground = sharedBrush,
+				};
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 1" });
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 2" });
+
+				await navPage.Navigation.PushModalAsync(tabbedPage);
+				await OnLoadedAsync(tabbedPage.Children[0]);
+
+#if !WINDOWS // On Windows, InvalidateGradientBrushRequested is not wired to the TabbedPage renderer/manager, so it is never subscribed.
+				// Confirm the brush has exactly one subscriber while the page is live.
+				Assert.Single(GetGradientBrushInvocationList(sharedBrush));
+#endif
+
+				await navPage.Navigation.PopModalAsync();
+
+				// After pop completes, Disappearing/ViewDidDisappear must have fired
+				// and explicitly unsubscribed from the brush.
+				var invocationList = GetGradientBrushInvocationList(sharedBrush);
+				Assert.Empty(invocationList);
+			});
+		}
+
+		static System.Delegate[] GetGradientBrushInvocationList(GradientBrush brush)
+		{
+			var field = typeof(GradientBrush).GetField(
+				"InvalidateGradientBrushRequested",
+				BindingFlags.Instance | BindingFlags.NonPublic);
+
+			if (field is null)
+				return [];
+
+			return (field.GetValue(brush) as MulticastDelegate)?.GetInvocationList() ?? [];
 		}
 	}
 }

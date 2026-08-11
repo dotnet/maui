@@ -10,7 +10,12 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
 
-class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false) : IXamlNodeVisitor
+// valuePrecomputePass: set by CreateValuesVisitor when this visitor is run only to precompute a
+// value (e.g. a `required` property's value for the object initializer, or an x:Array element)
+// before namescopes are registered. In that pass, DataTemplate LoadTemplate emission under
+// Incremental Hot Reload is deferred to the main pass so x:Reference/bindings resolve against the
+// outer scope at compile time rather than falling back to runtime resolution. See dotnet/maui#36683.
+class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false, bool valuePrecomputePass = false) : IXamlNodeVisitor
 {
 	SourceGenContext Context => context;
 	IndentedTextWriter Writer => Context.Writer;
@@ -38,6 +43,17 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	// Track properties that have been set to detect duplicates
 	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+	// Stable, unique name for a DataTemplate's generated LoadTemplate method. Derived from the
+	// template content root's source position so it stays constant across successive property-value
+	// edits (keeping the Edit-and-Continue identity stable); distinct templates have distinct
+	// positions. See dotnet/maui#36482.
+	static string TemplateLoadMethodName(INode node)
+	{
+		var line = node is IXmlLineInfo li && li.HasLineInfo() ? li.LineNumber : 0;
+		var pos = node is IXmlLineInfo li2 && li2.HasLineInfo() ? li2.LinePosition : 0;
+		return $"LoadTemplate_{line}_{pos}";
+	}
 
 	void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
 	{
@@ -157,7 +173,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (n, type) => 
+		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (n, type) =>
 		{
 			if (!context.Variables.TryGetValue(n, out var val))
 			{
@@ -189,7 +205,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		{
 			// Find the ResourceDictionary parent
 			ILocalValue? rdVar = null;
-			
+
 			if (parentNode is ElementNode parentElement && Context.Variables.TryGetValue(parentElement, out var pVar))
 			{
 				var rdType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
@@ -228,11 +244,61 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (propertyName == XmlName._CreateContent)
 		{
+			// Under Incremental Hot Reload, defer DataTemplate LoadTemplate emission from a
+			// value-precompute prepass (required-property/x:Array) to the main SetPropertiesVisitor
+			// pass. The main pass runs after namescope registration, so it resolves x:Reference and
+			// bindings against the outer scope at compile time; the prepass runs earlier and would
+			// emit a slower runtime-resolved body that first-wins dedup would then keep
+			// (dotnet/maui#36683). Non-HR builds keep their existing prepass behavior.
+			if (valuePrecomputePass && Context.ProjectItem.EnableIncrementalHotReload)
+				return;
+
 			var variable = Context.Variables[parentNode];
+
+			// Under XAML Incremental Hot Reload, emit the template content as a stably-named local
+			// function rather than an anonymous lambda. On each edit the source generator regenerates
+			// InitializeComponent; an anonymous `LoadTemplate = () => { ... }` lambda has an unstable
+			// synthesized-closure identity across regenerations, so successive edits to a control
+			// inside a DataTemplate produce invalid Edit-and-Continue deltas (deleted/renamed
+			// synthesized closure methods) that crash the app, poison Hot Reload, or kill the
+			// watcher (dotnet/maui#36482). A named local function gives EnC a stable name anchor.
+			//
+			// The function is emitted INLINE at the point of use (not hoisted to the top of the
+			// method) so its body keeps the exact lexical scope the lambda had — references to
+			// enclosing locals (the DataTemplate variable, name scopes, resources) resolve the same
+			// way. It is emitted at most once per template: a template value can be set more than
+			// once in the same scope (e.g. a `required` property set both in the object initializer
+			// and as an assignment), and redeclaring the local function would not compile
+			// (dotnet/maui#36682). Non-HR builds keep the anonymous lambda.
+			if (Context.ProjectItem.EnableIncrementalHotReload)
+			{
+				var methodName = TemplateLoadMethodName(node);
+				if (Context.TryReserveTemplateMethod(methodName))
+				{
+					Writer.WriteLine($"object {methodName}()");
+					using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
+					{
+						var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
+						{
+							ParentContext = context,
+						};
+
+						node.Accept(new CreateValuesVisitor(templateContext), null);
+						node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
+						node.Accept(new SetResourcesVisitor(templateContext), null);
+						node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
+						Writer.WriteLine($"return {templateContext.Variables[node].ValueAccessor};");
+					}
+				}
+
+				Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = {methodName};");
+				return;
+			}
+
 			Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
 				{
 					ParentContext = context,
 				};

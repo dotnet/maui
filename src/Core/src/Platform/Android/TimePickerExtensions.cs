@@ -58,8 +58,7 @@ public static class TimePickerExtensions
 		}
 	}
 
-	// Make it public in .NET 11.
-	internal static void UpdateTextAlignment(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	public static void UpdateTextAlignment(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 	{
 		mauiTimePicker.TextAlignment = timePicker.FlowDirection == FlowDirection.RightToLeft
 				? ATextAlignment.TextEnd

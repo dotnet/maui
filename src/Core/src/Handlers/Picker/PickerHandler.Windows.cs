@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
@@ -122,6 +123,13 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null && !UpdatingItemSource)
 				VirtualView.SelectedIndex = PlatformView.SelectedIndex;
 
+			// Reapply CharacterSpacing to the selected item's TextBlock so it persists
+			// across selection changes (e.g. programmatic SelectedIndex updates).
+			if (VirtualView != null && VirtualView.CharacterSpacing > 0)
+			{
+				PlatformView.ApplyCharacterSpacingToSelectedItem(VirtualView.CharacterSpacing.ToEm());
+			}
+
 			PlatformView.MinWidth = 0;
 		}
 
@@ -134,16 +142,42 @@ namespace Microsoft.Maui.Handlers
 
 			comboBox.MinWidth = comboBox.ActualWidth;
 
+			// Apply CharacterSpacing to each ComboBoxItem container so dropdown list items
+			// render with the configured spacing. Containers are only realized once the
+			// dropdown is opened, so this is the earliest reliable point to set them.
+			ApplyCharacterSpacingToItems(comboBox);
+
 			if (VirtualView is null)
 				return;
 
 			VirtualView.IsOpen = true;
 		}
 
+		static void ApplyCharacterSpacingToItems(ComboBox comboBox)
+		{
+			var characterSpacing = comboBox.CharacterSpacing;
+
+			for (int i = 0; i < comboBox.Items.Count; i++)
+			{
+				if (comboBox.ContainerFromIndex(i) is ComboBoxItem container)
+				{
+					container.CharacterSpacing = characterSpacing;
+				}
+			}
+		}
+
 		void OnMauiComboBoxDropDownClosed(object? sender, object e)
 		{
 			if (VirtualView is null)
 				return;
+
+			// After a manual dropdown selection, the ContentPresenter's TextBlock is reused
+			// and its rendered text doesn't pick up the CharacterSpacing already set on the
+			// ComboBox. Reapply CharacterSpacing directly to the selected item's TextBlock here.
+			if (sender is ComboBox cb && VirtualView.CharacterSpacing > 0)
+			{
+				cb.ApplyCharacterSpacingToSelectedItem(VirtualView.CharacterSpacing.ToEm());
+			}
 
 			if (sender is ComboBox comboBox && comboBox.MinWidth > 0)
 			{

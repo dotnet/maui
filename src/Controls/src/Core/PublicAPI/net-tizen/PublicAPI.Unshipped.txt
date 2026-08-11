@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.Maui.Controls.Window.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.Controls.Window.StatusBarTheme.set -> void
+static readonly Microsoft.Maui.Controls.Window.StatusBarThemeProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
@@ -114,6 +117,84 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.ShellAppearance.Background.get -> Microsoft.Maui.Controls.Brush
+~static Microsoft.Maui.Controls.Shell.GetBackground(Microsoft.Maui.Controls.BindableObject obj) -> Microsoft.Maui.Controls.Brush
+~static Microsoft.Maui.Controls.Shell.SetBackground(Microsoft.Maui.Controls.BindableObject obj, Microsoft.Maui.Controls.Brush value) -> void
+~static readonly Microsoft.Maui.Controls.Shell.BackgroundProperty -> Microsoft.Maui.Controls.BindableProperty
+override Microsoft.Maui.Controls.BindablePropertyConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.BindablePropertyConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.BindablePropertyConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.BindablePropertyConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.Button.ButtonContentTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.Button.ButtonContentTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.Button.ButtonContentTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.Button.ButtonContentTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.FontAttributesConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.FontAttributesConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.FontAttributesConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.FontAttributesConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+override Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.Ellipse = "Ellipse" -> string!
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.Line = "Line" -> string!
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.Path = "Path" -> string!
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.Polygon = "Polygon" -> string!
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.Polyline = "Polyline" -> string!
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.Rectangle = "Rectangle" -> string!
+const Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.RoundRectangle = "RoundRectangle" -> string!
+override Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.TextAlignmentConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.TextAlignmentConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.TextAlignmentConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.TextAlignmentConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
 static readonly Microsoft.Maui.Controls.TitleBar.TitleFontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.Platform.IAlertManager
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestActionSheet(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.ActionSheetArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestAlert(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestPageBusy(Microsoft.Maui.Controls.Page! page, bool isBusy) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.RequestPrompt(Microsoft.Maui.Controls.Page! page, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.Subscribe() -> void
+Microsoft.Maui.Controls.Platform.IAlertManager.Unsubscribe() -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnActionSheetRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.ActionSheetArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnAlertRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.AlertArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPageBusy(Microsoft.Maui.Controls.Page! sender, bool enabled) -> void
+Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Microsoft.Maui.Controls.Page! sender, Microsoft.Maui.Controls.Internals.PromptArguments! arguments) -> void
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Duration.get -> System.TimeSpan
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.FromVersion.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.InstanceCount.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.ToVersion.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.CurrentVersion.get -> int
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateApplied -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadAppliedEventArgs!>?
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateFailed -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs!>?
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateRequested -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs!>?
+static Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadDiagnostics.UpdateSkipped -> System.EventHandler<Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs!>?
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Exception.get -> System.Exception!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Instance.get -> object!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.UpdatedType.get -> System.Type!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadErrorEventArgs.Version.get -> int
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadRequestedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.HandledTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.Timestamp.get -> System.DateTimeOffset
+Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.UpdatedTypes.get -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
+Microsoft.Maui.Controls.Label.~Label() -> void
+~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool

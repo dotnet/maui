@@ -56,16 +56,40 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			// Use UIGraphicsImageRenderer instead of the deprecated UIGraphics.BeginImageContext, which
-			// is unsupported on MacCatalyst 17+ (and flagged by CA1416). This matches the approach used
-			// by NormalizeOrientation below.
-			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat
+			if (!(size.Width > 0) || !(size.Height > 0) ||
+				double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
-				Opaque = false,
-				Scale = target.CurrentScale,
-			});
+				return target;
+			}
 
-			var image = renderer.CreateImage(context => target.Draw(new CGRect(CGPoint.Empty, size)));
+			var width = checked((int)Math.Ceiling(size.Width));
+			var height = checked((int)Math.Ceiling(size.Height));
+
+			using var colorSpace = CGColorSpace.CreateDeviceRGB();
+			using var context = new CGBitmapContext(
+				IntPtr.Zero,
+				width,
+				height,
+				8,
+				checked(4 * width),
+				colorSpace,
+				CGBitmapFlags.ByteOrder32Little | CGBitmapFlags.PremultipliedFirst);
+
+			context.TranslateCTM(0, height);
+			context.ScaleCTM(1, -1);
+
+			UIGraphics.PushContext(context);
+			try
+			{
+				target.Draw(new CGRect(CGPoint.Empty, size));
+			}
+			finally
+			{
+				UIGraphics.PopContext();
+			}
+
+			using var cgImage = context.ToImage();
+			var image = UIImage.FromImage(cgImage, 1, UIImageOrientation.Up);
 
 			if (disposeOriginal)
 			{

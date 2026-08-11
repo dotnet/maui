@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -345,6 +346,28 @@ namespace Microsoft.Maui.Media
 
 		async Task<string> CaptureVideoAsync(Intent captureIntent)
 		{
+			// On Android 12 (API 31-32), the camera app creates the video in MediaStore as a pending item.
+			// Android 12 strictly enforces ownership via requireOwnershipForItem() and throws
+			// IllegalStateException when another app tries to read the pending URI.
+			// Fix: Use the same FileProvider + ExtraOutput approach as CapturePhotoAsync.
+			if (OperatingSystem.IsAndroidVersionAtLeast(31) && !OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				var fileName = Guid.NewGuid().ToString("N") + FileExtensions.Mp4;
+				var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
+
+				AndroidUri outputUri = null;
+
+				void OnCreate(Intent intent)
+				{
+					outputUri ??= FileProvider.GetUriForFile(tmpFile);
+					intent.PutExtra(MediaStore.ExtraOutput, outputUri);
+				}
+
+				await IntermediateActivity.StartAsync(captureIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
+
+				return tmpFile.AbsolutePath;
+			}
+
 			string path = null;
 
 			void OnResult(Intent intent)
@@ -381,6 +404,7 @@ namespace Microsoft.Maui.Media
 			SaveToExternalStorageAndScan(context, filePath, fileName, mimeType, isPhoto);
 		}
 
+		[SupportedOSPlatform("android29.0")]
 		static async Task SaveToMediaStoreAsync(Context context, string filePath, string fileName, string mimeType, bool isPhoto)
 		{
 			var contentResolver = context.ContentResolver ?? throw new InvalidOperationException("An Android content resolver is required to save media to the gallery.");
@@ -481,7 +505,7 @@ namespace Microsoft.Maui.Media
 				intent.PutExtra(Intent.ExtraAllowMultiple, options.SelectionLimit > 1 || options.SelectionLimit == 0);
 
 				// Set a maximum when 2 or more. When the limit is 1 we only allow a single one and 0 should allow unlimited.
-				if (options.SelectionLimit >= 2)
+				if (options.SelectionLimit >= 2 && OperatingSystem.IsAndroidVersionAtLeast(33))
 				{
 					intent.PutExtra(MediaStore.ExtraPickImagesMax, options.SelectionLimit);
 				}

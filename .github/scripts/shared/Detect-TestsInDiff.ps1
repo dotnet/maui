@@ -96,7 +96,6 @@ $DeviceTestProjects = @{
     "Essentials"   = "src/Essentials/test/DeviceTests/"
     "Graphics"     = "src/Graphics/tests/DeviceTests/"
     "BlazorWebView"= "src/BlazorWebView/tests/DeviceTests/"
-    "AI"           = "src/AI/tests/Essentials.AI.DeviceTests/"
 }
 
 # Unit test project detection
@@ -109,7 +108,6 @@ $UnitTestProjects = @{
     "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/"
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/"
-    "Essentials.AI.UnitTests"          = "src/AI/tests/Essentials.AI.UnitTests/"
 }
 
 $UnitTestProjectPaths = @{
@@ -121,7 +119,6 @@ $UnitTestProjectPaths = @{
     "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
-    "Essentials.AI.UnitTests"          = "src/AI/tests/Essentials.AI.UnitTests/Essentials.AI.UnitTests.csproj"
 }
 
 # ============================================================

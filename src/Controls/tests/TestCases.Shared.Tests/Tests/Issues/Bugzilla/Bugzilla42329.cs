@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // Issue - https://github.com/dotnet/maui/issues/36299
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -71,3 +72,4 @@ public class Bugzilla42329 : _IssuesUITest
 		await Task.Delay(100);
 	}
 }
+#endif

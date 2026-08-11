@@ -84,57 +84,7 @@ namespace Microsoft.Maui.Controls
 			Shell shell = bindable as Shell
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
-
-			if (shell != null)
-			{
-				// Notify about the property change
-				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
-
-				if (shell == null)
-				{
-					return;
-				}
-
-				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
-
-				if (bindable.IsSet(NavBarIsVisibleProperty))
-				{
-					// Value explicitly set — propagate down so iOS/Mac compatibility renderers
-					// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
-					if (shell is IPropertyPropagationController controller)
-					{
-						controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
-					}
-				}
-				else
-				{
-					// Value was cleared — also clear the propagated copies from visual children
-					// so GetEffectiveValue and platform handlers reflect the reverted state.
-					if (bindable is IVisualTreeElement element)
-					{
-						ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
-					}
-				}
-			}
-		}
-
-		static void ClearPropagatedNavBarIsVisible(IVisualTreeElement element, bool propagatedValue)
-		{
-			foreach (var child in element.GetVisualChildren())
-			{
-				if (child is BindableObject bo
-					&& bo.IsSet(NavBarIsVisibleProperty)
-					&& (bool)bo.GetValue(NavBarIsVisibleProperty) == propagatedValue)
-				{
-					// ClearValue fires OnNavBarIsVisibleChanged on the child, which
-					// recursively clears further down the tree automatically.
-					bo.ClearValue(NavBarIsVisibleProperty);
-				}
-				else if (child is IVisualTreeElement childElement)
-				{
-					ClearPropagatedNavBarIsVisible(childElement, propagatedValue);
-				}
-			}
+			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 		}
 
 		/// <summary>
@@ -530,6 +480,13 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
+		/// Defines the background brush for the Shell toolbar. Supports gradient brushes.
+		/// </summary>
+		public static readonly new BindableProperty BackgroundProperty =
+			BindableProperty.CreateAttached("Background", typeof(Brush), typeof(Shell), Brush.Default,
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		/// <summary>
 		/// The backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
@@ -713,6 +670,20 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The brushed used in the backdrop of the flyout.</param>
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
+		/// <summary>
+		/// Gets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object from which to get the background brush.</param>
+		/// <returns>The background brush for the Shell toolbar.</returns>
+		public static Brush GetBackground(BindableObject obj) => (Brush)obj.GetValue(BackgroundProperty);
+
+		/// <summary>
+		/// Sets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object on which to set the background brush.</param>
+		/// <param name="value">The brush to use as the Shell toolbar background.</param>
+		public static void SetBackground(BindableObject obj, Brush value) => obj.SetValue(BackgroundProperty, value);
+
 		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
@@ -816,7 +787,14 @@ namespace Microsoft.Maui.Controls
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
 				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				if (!Brush.IsNullOrEmpty(appearance?.Background))
+				{
+					Toolbar.BarBackground = appearance.Background;
+				}
+				else
+				{
+					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				}
 				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
 			}
 		}
@@ -1337,10 +1315,29 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current != null)
+			if (Application.Current is not null)
 			{
+				Color light;
+				Color dark;
+
+				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
+				{
+					light = Color.FromArgb("#FEF7FF");
+					dark = Color.FromArgb("#141218");
+				}
+				else
+				{
+					light = Colors.White;
+					dark = Colors.Black;
+				}
+
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
+					new AppThemeBinding
+					{
+						Light = light,
+						Dark = dark,
+						Mode = BindingMode.OneWay
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
@@ -1772,6 +1769,7 @@ namespace Microsoft.Maui.Controls
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			(this.Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		void OnCurrentPageLoaded(object sender, EventArgs e)
@@ -2228,7 +2226,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+				// Refresh Enabled on the predictive back callback; flyout state affects whether back is consumed here.
+				(this.Window as Window)?.NotifyNavigationStateChanged();
+			}
 		}
 
 		#region Shell Flyout Content

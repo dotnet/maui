@@ -56,14 +56,18 @@
       <PackageDestination>$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</PackageDestination>
       <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</IntermediateLocation>
     </TemplateJsonInput>
-    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
+    <TemplateDotFile Include="templates\**\.gitignore">
+      <PackageDestination>templates\%(RecursiveDir).gitignore</PackageDestination>
+      <IntermediateLocation>$(IntermediateOutputPath)dotfiles\templates\%(RecursiveDir)gitignore.gitignore</IntermediateLocation>
+    </TemplateDotFile>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput);@(TemplateDotFile)" />
     <!-- Only include cgmanifest.json when GenerateCgManifest is true (for CI builds) -->
     <Content Include="cgmanifest.json" Pack="true" PackagePath="content" Condition="'$(GenerateCgManifest)' == 'true'" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
   <PropertyGroup>
-    <BeforePack>_UpdateTemplateVersions</BeforePack>
+    <BeforePack>_UpdateTemplateVersions;_UpdateTemplateDotFiles</BeforePack>
   </PropertyGroup>
 
   <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
@@ -90,8 +94,10 @@
       <_TemplateComponentsWebVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebVersion>
       <_TemplateComponentsWebAssemblyVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebAssemblyVersion>
       <_TemplateComponentsWebAssemblyServerVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateComponentsWebAssemblyServerVersion>
+      <_TemplateAvaloniaControlsMauiVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(AvaloniaControlsMauiPackageVersion)', '$(_PreviewWildcardPattern)', '%241.*'))</_TemplateAvaloniaControlsMauiVersion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(StabilizePackageVersion)' == 'true'">
+      <_TemplateAvaloniaControlsMauiVersion>$(AvaloniaControlsMauiPackageVersion)</_TemplateAvaloniaControlsMauiVersion>
       <_TemplateLoggingDebugVersion>$(MicrosoftExtensionsLoggingDebugVersion)</_TemplateLoggingDebugVersion>
       <_TemplateComponentsWebVersion>$(MicrosoftAspNetCoreComponentsWebPackageVersion)</_TemplateComponentsWebVersion>
       <_TemplateComponentsWebAssemblyVersion>$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)</_TemplateComponentsWebAssemblyVersion>
@@ -102,14 +108,27 @@
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE"
-        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(_TemplateLoggingDebugVersion);$(_TemplateComponentsWebVersion);$(_TemplateComponentsWebAssemblyVersion);$(_TemplateComponentsWebAssemblyServerVersion)" />
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE;MS_COMPONENTS_WEB_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_VERSION_VALUE;MS_COMPONENTS_WEBASSEMBLY_SERVER_VERSION_VALUE;AVALONIA_CONTROLS_MAUI_VERSION_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(_TemplateLoggingDebugVersion);$(_TemplateComponentsWebVersion);$(_TemplateComponentsWebAssemblyVersion);$(_TemplateComponentsWebAssemblyServerVersion);$(_TemplateAvaloniaControlsMauiVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
       <Content Include="%(TemplateJsonInput.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateJsonInput.PackageDestination)" Pack="true" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_UpdateTemplateDotFiles"
+      Inputs="@(TemplateDotFile)"
+      Outputs="%(TemplateDotFile.IntermediateLocation)">
+    <Copy
+        SourceFiles="%(TemplateDotFile.Fullpath)"
+        DestinationFiles="%(TemplateDotFile.IntermediateLocation)" />
+
+    <ItemGroup>
+      <FileWrites Include="%(TemplateDotFile.IntermediateLocation)" />
+      <Content Include="%(TemplateDotFile.IntermediateLocation)" PackagePath="$(ContentTargetFolders)\%(TemplateDotFile.PackageDestination)" Pack="true" />
+    </ItemGroup>
   </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">

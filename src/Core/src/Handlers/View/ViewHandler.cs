@@ -199,7 +199,9 @@ namespace Microsoft.Maui.Handlers
 		static void MapInitializeBatchedProperties(IViewHandler handler, IView view)
 		{
 			if (handler.PlatformView is PlatformView pv)
+			{
 				pv.Initialize(view);
+			}	
 		}
 #endif
 

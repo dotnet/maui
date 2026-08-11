@@ -92,6 +92,55 @@ namespace Microsoft.Maui.Controls
 
 			var uri = navigationRequest.Request.FullUri;
 			var queryString = navigationRequest.Query;
+
+			// Seed path parameters from templated route segments BEFORE the
+			// query string. SetQueryStringParameters only adds keys that are
+			// not already present, so path parameters win over a query-string
+			// parameter with the same name (matches ASP.NET Core / Blazor
+			// route-template precedence and lets templated routes override
+			// stale query-string values). For literal-only routes this
+			// dictionary is empty, so the existing behavior is preserved.
+			var pathParameters = navigationRequest.Request.PathParameters;
+			if (pathParameters != null && pathParameters.Count > 0)
+			{
+				// Use "only add if not present" so caller-supplied programmatic
+				// parameters (from GoToAsync overload) take precedence over
+				// path-extracted values. Path params still win over query strings
+				// because SetQueryStringParameters also uses this semantics.
+				foreach (var kvp in pathParameters)
+				{
+					if (!parameters.ContainsKey(kvp.Key))
+						parameters[kvp.Key] = kvp.Value;
+				}
+
+				// Also seed route-prefixed keys so intermediate (non-last) pages
+				// receive path params through ApplyQueryAttributes prefix filtering.
+				// For a route "product/{sku}", the prefix is "product/{sku}." so
+				// the key "product/{sku}.sku" delivers "sku" to that page.
+				var globalRoutes = navigationRequest.Request.GlobalRoutes;
+				if (globalRoutes != null)
+				{
+					foreach (var routeKey in globalRoutes)
+					{
+						if (!Routing.IsTemplateRoute(routeKey))
+							continue;
+						if (!Routing.TryGetRouteTemplate(routeKey, out var tmpl))
+							continue;
+						foreach (var seg in tmpl.Segments)
+						{
+							if (!seg.IsParameter)
+								continue;
+							if (pathParameters.TryGetValue(seg.Value, out var val))
+						{
+							var prefixedKey = $"{routeKey}.{seg.Value}";
+							if (!parameters.ContainsKey(prefixedKey))
+								parameters[prefixedKey] = val;
+						}
+						}
+					}
+				}
+			}
+
 			parameters.SetQueryStringParameters(queryString);
 			ApplyQueryAttributes(_shell, parameters, false, false);
 
@@ -221,14 +270,12 @@ namespace Microsoft.Maui.Controls
 				_shell.PropertyChanged += WaitForWindowToSet;
 				var shellContent = _shell?.CurrentItem?.CurrentItem?.CurrentItem;
 
-				if (shellContent != null)
-					shellContent.ChildAdded += WaitForWindowToSet;
+				shellContent?.ChildAdded += WaitForWindowToSet;
 
 				_waitingForWindow = new ActionDisposable(() =>
 				{
 					_shell.PropertyChanged -= WaitForWindowToSet;
-					if (shellContent != null)
-						shellContent.ChildAdded -= WaitForWindowToSet;
+					shellContent?.ChildAdded -= WaitForWindowToSet;
 				});
 
 				void WaitForWindowToSet(object sender, EventArgs e)
@@ -307,13 +354,20 @@ namespace Microsoft.Maui.Controls
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new ShellRouteParameters(query, prefix);
 
+			// For non-destination items (isLastItem=false), skip entirely when there are no
+			// matching prefix params. This prevents stale QueryAttributesProperty stored from
+			// a prior cycle from propagating to pages that are not the navigation target.
+			if (!isLastItem && filteredQuery.Count == 0)
+			{
+				return;
+			}
 
 			if (baseShellItem is ShellContent)
 			{
 				var mergedData = MergeData(element, filteredQuery, isPopping);
 
 				//if we are pop or navigating back, we need to apply the query attributes to the ShellContent
-				if (isPopping && mergedData.Count > 0 )
+				if (isPopping && mergedData.Count > 0)
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
 				}
@@ -329,6 +383,21 @@ namespace Microsoft.Maui.Controls
 			{
 				var mergedData = MergeData(element, query, isPopping);
 				// Skip setting query attributes if the merged data is empty and we're popping back
+				if (mergedData.Count > 0 || !isPopping)
+				{
+					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
+				}
+			}
+			else if (element is Page)
+			{
+				// Intermediate page (not the last item, not wrapped in ShellContent).
+				// Apply prefix-filtered query parameters directly via the attached property,
+				// which triggers OnQueryAttributesPropertyChanged to handle IQueryAttributable,
+				// BindingContext propagation, and [QueryProperty] attributes.
+				if (filteredQuery.Count == 0 && !element.IsSet(ShellContent.QueryAttributesProperty))
+					return;
+
+				var mergedData = MergeData(element, filteredQuery, isPopping);
 				if (mergedData.Count > 0 || !isPopping)
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
@@ -567,7 +636,7 @@ namespace Microsoft.Maui.Controls
 						for (int i = 1; i < sectionStack.Count; i++)
 						{
 							var page = sectionStack[i];
-							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
+							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetResolvedRoute(page) ?? Routing.GetRoute(page), routeStack, hasUserDefinedRoute));
 						}
 					}
 
@@ -577,11 +646,11 @@ namespace Microsoft.Maui.Controls
 						{
 							var topPage = modalStack[i];
 
-							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
+							routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetResolvedRoute(topPage) ?? Routing.GetRoute(topPage), routeStack, hasUserDefinedRoute));
 
 							for (int j = 1; j < topPage.Navigation.NavigationStack.Count; j++)
 							{
-								routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
+								routeStack.AddRange(ShellUriHandler.CollapsePath(Routing.GetResolvedRoute(topPage.Navigation.NavigationStack[j]) ?? Routing.GetRoute(topPage.Navigation.NavigationStack[j]), routeStack, hasUserDefinedRoute));
 							}
 						}
 					}

@@ -48,7 +48,7 @@ Manual labels are applied by MAUI maintainers. Queue labels are applied by deter
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
 | `s/agent-fix-implemented` | 🟣 `#7B1FA2` | PR author implemented the agent's suggested fix | Maintainer applies when PR author adopts agent's recommendation |
-| `s/agent-ready-for-rerun` | 🟣 `#5319E7` | AI review has new PR activity and is ready for rerun | `/review rerun` finds new comments or commits after the latest AI Summary / previous rerun request |
+| `s/agent-ready-for-rerun` | 🟣 `#5319E7` | AI review has new PR activity and is ready for rerun | Deterministic rerun automation finds new PR-author comments or commits after the latest AI Summary |
 | `s/agent-review-in-progress` | 🟡 `#FBCA04` | AI review is currently running for this PR | Applied before triggering the async AzDO review pipeline and removed by pipeline cleanup; stale locks can be recovered after a conservative timeout |
 
 ---
@@ -72,7 +72,7 @@ Review-PR.ps1
     └── Non-fatal: errors warn but don't fail the workflow
 ```
 
-Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exceptions are queue/lock labels: `s/agent-ready-for-rerun` is applied by the deterministic `/review rerun` GitHub Action path after checking for new comments or commits, and `s/agent-review-in-progress` is applied before triggering the async AzDO review pipeline. The rerun path does not use AI to decide whether these labels apply. The lock label normally clears in the AzDO cleanup stage; trigger paths treat very old locks as stale so a cancelled pipeline does not permanently block reviews.
+Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exceptions are queue/lock labels: `s/agent-ready-for-rerun` is applied by deterministic automation after checking for new PR-author comments or commits, and `s/agent-review-in-progress` is applied before triggering the async AzDO review pipeline. The queue eligibility check does not use AI. The lock label normally clears in the AzDO cleanup stage; trigger paths treat very old locks as stale so a cancelled pipeline does not permanently block reviews.
 
 ### How Labels Are Parsed
 
@@ -141,7 +141,7 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/scripts/Resolve-RerunEligibility.ps1` | Deterministic `/review rerun` checker that can apply `s/agent-ready-for-rerun` |
+| `.github/scripts/Resolve-RerunEligibility.ps1` | Deterministic rerun eligibility and context helpers used by queue automation |
 | `.github/scripts/Invoke-RerunReviewTrigger.ps1` | Safe-output handler that validates rerun decisions and emits an actions list; the scanner then dispatches `review-trigger.yml` (which applies `s/agent-review-in-progress` and triggers the AzDO review) |
 | `.github/workflows/review-trigger.yml` | Manual `/review` trigger that applies `s/agent-review-in-progress` before triggering AzDO reviews |
 | `eng/pipelines/ci-copilot.yml` | AzDO review pipeline that removes `s/agent-review-in-progress` in final cleanup |

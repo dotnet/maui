@@ -105,6 +105,53 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
+	/// A "proxy" class for subscribing BindableObject.PropertyChanging via WeakReference.
+	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
+	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakNotifyPropertyChangingProxy objects from leaking.
+	/// </summary>
+	class WeakNotifyPropertyChangingProxy : WeakEventProxy<BindableObject, PropertyChangingEventHandler>
+	{
+		public WeakNotifyPropertyChangingProxy() { }
+
+		public WeakNotifyPropertyChangingProxy(BindableObject source, PropertyChangingEventHandler handler)
+		{
+			Subscribe(source, handler);
+		}
+
+		void OnPropertyChanging(object? sender, PropertyChangingEventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(BindableObject source, PropertyChangingEventHandler handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanging -= OnPropertyChanging;
+			}
+
+			source.PropertyChanging += OnPropertyChanging;
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.PropertyChanging -= OnPropertyChanging;
+			}
+			base.Unsubscribe();
+		}
+	}
+
+	/// <summary>
 	/// A "proxy" class for subscribing INotifyPropertyChanged via WeakReference.
 	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
 	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakNotifyPropertyChangedProxy objects from leaking.

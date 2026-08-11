@@ -163,43 +163,20 @@ namespace Microsoft.Maui.Controls
 
 			if (oldValue is SwipeItems oldItems)
 			{
-				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
-				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
 				swipeView.RemoveLogicalChild(oldItems);
 			}
 
 			if (newValue is SwipeItems newItems)
 			{
-				newItems.CollectionChanged += SwipeItemsCollectionChanged;
-				newItems.PropertyChanged += SwipeItemsPropertyChanged;
+				// AddLogicalChild reassigns newItems.Parent to this SwipeView. When SwipeItems is
+				// cached/shared across multiple SwipeView instances, subsequent assignments
+				// reparent it away from the previous owner, so previous SwipeViews are not held
+				// alive through this collection. SwipeItems itself self-subscribes to its own
+				// CollectionChanged / PropertyChanged events and uses Parent (this SwipeView) to
+				// notify the handler — we intentionally do NOT add closure-based subscriptions
+				// here, since those captured `swipeView` and prevented GC when SwipeItems was
+				// shared across SwipeViews (issue #35481).
 				swipeView.AddLogicalChild(newItems);
-			}
-
-			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
-			{
-				if (sender is SwipeItems swipeItems)
-					SendChange(swipeItems);
-			}
-
-			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-			{
-				if (sender is SwipeItems swipeItems)
-					SendChange(swipeItems);
-			}
-
-			void SendChange(SwipeItems swipeItems)
-			{
-				if (swipeItems == swipeView.LeftItems)
-					swipeView?.Handler?.UpdateValue(nameof(LeftItems));
-
-				if (swipeItems == swipeView.RightItems)
-					swipeView?.Handler?.UpdateValue(nameof(RightItems));
-
-				if (swipeItems == swipeView.TopItems)
-					swipeView?.Handler?.UpdateValue(nameof(TopItems));
-
-				if (swipeItems == swipeView.BottomItems)
-					swipeView?.Handler?.UpdateValue(nameof(BottomItems));
 			}
 		}
 
@@ -295,13 +272,24 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
-			child.PropertyChanged += OnPropertyChanged;
+
+			// Skip SwipeItems children: they are logical children for visual-tree purposes only;
+			// subscribing to their PropertyChanged would create a strong reference from a
+			// potentially cached/long-lived SwipeItems back to this SwipeView.
+			if (child is not SwipeItems)
+			{
+				child.PropertyChanged += OnPropertyChanged;
+			}
 		}
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
-			child.PropertyChanged -= OnPropertyChanged;
+
+			if (child is not SwipeItems)
+			{
+				child.PropertyChanged -= OnPropertyChanged;
+			}
 		}
 
 		void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

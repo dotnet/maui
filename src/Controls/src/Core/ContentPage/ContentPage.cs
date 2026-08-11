@@ -170,6 +170,9 @@ namespace Microsoft.Maui.Controls
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
 
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{

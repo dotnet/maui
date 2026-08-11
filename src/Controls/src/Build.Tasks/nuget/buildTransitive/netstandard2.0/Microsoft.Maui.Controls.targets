@@ -10,7 +10,17 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
 
+    <!-- XAML Incremental Hot Reload (XIHR): on by default for .NET 11 projects (Preview 7). Hot reload is a
+         dev-time feature; when enabled it emits per-page registry calls and keeps the runtime feature
+         switch on, so it defaults on for Debug builds only and stays off for Release/publish, where the
+         registry calls and runtime switch trim away. Set <EnableMauiIncrementalHotReload>false</...> to
+         opt out (legacy XAML Hot Reload remains available as a fallback). Resolves to an explicit
+         true/false so the value always flows to the source generator and runtime config. -->
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == '' and '$(Configuration)' == 'Debug'">true</EnableMauiIncrementalHotReload>
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">false</EnableMauiIncrementalHotReload>
+
     <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->
+    <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == '' and '$(EnableMauiIncrementalHotReload)' == 'true'">SourceGen</MauiXamlHotReload>
     <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == ''">Legacy</MauiXamlHotReload>
 
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>
@@ -55,14 +65,15 @@
 
 	<!--
 		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		Set MauiEnableFullReadyToRun to true to produce full R2R output without the default MAUI MIBC profiles.
 		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
 	-->
-	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
-		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs);--partial</PublishReadyToRunCrossgen2ExtraArgs>
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true' and '$(MauiEnableFullReadyToRun)' != 'true'">
+		<PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs);--partial</PublishReadyToRunCrossgen2ExtraArgs>
 		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true' and '$(MauiEnableFullReadyToRun)' != 'true'">
 		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
@@ -85,11 +96,6 @@
 		<PropertyGroup>
 			<_MauiXamlHotReloadUpper>$([System.String]::Copy('$(MauiXamlHotReload)').Trim().ToUpperInvariant())</_MauiXamlHotReloadUpper>
 		</PropertyGroup>
-
-		<Warning
-			Code="MAUI1002"
-			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk."
-			Condition="'$(_MauiXamlHotReloadUpper)' == 'SOURCEGEN'" />
 
 		<Warning
 			Code="MAUI1003"
@@ -382,6 +388,14 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsWindowsCollectionView2HandlerEnabled"
                                       Condition="'$(UseWindowsCollectionView2Handler)' != ''"
                                       Value="$(UseWindowsCollectionView2Handler)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled"
+                                      Condition="'$(EnableMauiIncrementalHotReload)' != ''"
+                                      Value="$(EnableMauiIncrementalHotReload)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.UseMauiAndroidSystemBarBackgrounds"
+                                      Condition="'$(MauiAndroidSystemBarsUseMauiChrome)' != ''"
+                                      Value="$(MauiAndroidSystemBarsUseMauiChrome)"
                                       Trim="true" />
     </ItemGroup>
   </Target>

@@ -25,7 +25,7 @@ public class Issue1939 : TestContentPage
 		{
 			VerticalOptions = LayoutOptions.Center,
 			Children = {
-				new Label { Text = "This test adds two groups to this list and then clears the items from one of them. If the test crashes, this test has failed." },
+				new Label { Text = "This test adds two groups to this list and then clears the items from one of them. If the test crashes, this test has failed.", AutomationId = "InstructionsLabel" },
 				listView
 			}
 		};
