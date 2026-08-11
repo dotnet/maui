@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.Media
 {
 	partial class MediaPickerImplementation : IMediaPicker
 	{
-		static UIViewController PickerRef;
-
 		public bool IsCaptureSupported
 			=> UIImagePickerController.IsSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Media
 			=> PhotoAsync(options, true, true);
 
 		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions options)
-			=> PhotosAsync(options, true, true);
+			=> PhotosAsync(options, true);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 		{
@@ -43,7 +42,7 @@ namespace Microsoft.Maui.Media
 			=> PhotoAsync(options, false, true);
 
 		public Task<List<FileResult>> PickVideosAsync(MediaPickerOptions options)
-			=> PhotosAsync(options, false, true);
+			=> PhotosAsync(options, false);
 
 		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 		{
@@ -75,6 +74,9 @@ namespace Microsoft.Maui.Media
 
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 			var tcs = new TaskCompletionSource<FileResult>();
+			UIViewController pickerRef = null;
+
+			PHPickerFileResult.CleanupTemporaryFiles();
 
 			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
 			{
@@ -85,16 +87,21 @@ namespace Microsoft.Maui.Media
 						: PHPickerFilter.VideosFilter
 				};
 
+				if (!photo)
+				{
+					config.PreferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationMode.Compatible;
+				}
+
 				var picker = new PHPickerViewController(config)
 				{
 					Delegate = new Media.PhotoPickerDelegate
 					{
 						CompletedHandler = res =>
-							tcs.TrySetResult(PickerResultsToMediaFile(res))
+							_ = CompletePickerResultAsync(res, options, tcs)
 					}
 				};
 
-				PickerRef = picker;
+				pickerRef = picker;
 			}
 			else
 			{
@@ -133,52 +140,51 @@ namespace Microsoft.Maui.Media
 					picker.CameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Video;
 				}
 
-				PickerRef = picker;
+				pickerRef = picker;
 
 				picker.Delegate = new PhotoPickerDelegate
 				{
 					CompletedHandler = info =>
 					{
-						GetFileResult(info, tcs, options);
+						_ = CompleteUIImagePickerResultAsync(info, options, tcs);
 					}
 				};
 			}
 
 			if (!string.IsNullOrWhiteSpace(options?.Title))
 			{
-				PickerRef.Title = options.Title;
+				pickerRef.Title = options.Title;
 			}
 
 			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
 			{
-				PickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+				pickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
 			}
 
-			if (PickerRef.PresentationController is not null)
+			pickerRef.PresentationController?.Delegate = new PhotoPickerPresentationControllerDelegate
 			{
-				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+				Handler = () => tcs.TrySetResult(null)
+			};
+
+			try
+			{
+				await vc.PresentViewControllerAsync(pickerRef, true);
+				var result = await tcs.Task;
+
+				if (!pickExisting && result is not null && options?.SaveToGallery == true)
 				{
-					Handler = () => tcs.TrySetResult(null)
-				};
+					await SaveToPhotoLibraryAsync(result);
+				}
+
+				return result;
 			}
-
-			await vc.PresentViewControllerAsync(PickerRef, true);
-
-			var result = await tcs.Task;
-
-			PickerRef?.Dispose();
-			PickerRef = null;
-
-			// Save captured media to the photo gallery if requested
-			if (!pickExisting && result is not null && options?.SaveToGallery == true)
+			finally
 			{
-				await SaveToPhotoLibraryAsync(result);
+				pickerRef?.Dispose();
 			}
-
-			return result;
 		}
 
-		async Task<List<FileResult>> PhotosAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		async Task<List<FileResult>> PhotosAsync(MediaPickerOptions options, bool photo)
 		{
 			// iOS 14+ only supports multiple selection
 			// TODO throw exception?
@@ -187,95 +193,96 @@ namespace Microsoft.Maui.Media
 				return [];
 			}
 
-			if (!photo && !pickExisting)
-			{
-				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
-			}
-
-			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
-			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
-			{
-				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
-			}
-
-			if (!pickExisting)
-			{
-				await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			}
-
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 			var tcs = new TaskCompletionSource<List<FileResult>>();
+			UIViewController pickerRef = null;
 
-			if (pickExisting && OperatingSystem.IsIOSVersionAtLeast(14, 0))
+			PHPickerFileResult.CleanupTemporaryFiles();
+
+			var config = new PHPickerConfiguration
 			{
-				var config = new PHPickerConfiguration
-				{
-					Filter = photo
-						? PHPickerFilter.ImagesFilter
-						: PHPickerFilter.VideosFilter,
-					SelectionLimit = options?.SelectionLimit ?? 1,
-				};
+				Filter = photo
+					? PHPickerFilter.ImagesFilter
+					: PHPickerFilter.VideosFilter,
+				SelectionLimit = options?.SelectionLimit ?? 1
+			};
 
-				var picker = new PHPickerViewController(config)
-				{
-					Delegate = new Media.PhotoPickerDelegate
-					{
-						CompletedHandler = async res =>
-						{
-							var result = await PickerResultsToMediaFiles(res, options);
-							tcs.TrySetResult(result);
-						}
-					}
-				};
-
-				PickerRef = picker;
+			if (!photo)
+			{
+				config.PreferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationMode.Compatible;
 			}
+
+			var picker = new PHPickerViewController(config)
+			{
+				Delegate = new Media.PhotoPickerDelegate
+				{
+					CompletedHandler = res =>
+						_ = CompletePickerResultsAsync(res, options, tcs)
+				}
+			};
+
+			pickerRef = picker;
 
 			if (!string.IsNullOrWhiteSpace(options?.Title))
 			{
-				PickerRef.Title = options.Title;
+				pickerRef.Title = options.Title;
 			}
 
 			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
 			{
-				PickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
+				pickerRef.ModalPresentationStyle = UIModalPresentationStyle.PageSheet;
 			}
 
-			if (PickerRef.PresentationController is not null)
+			pickerRef.PresentationController?.Delegate = new PhotoPickerPresentationControllerDelegate
 			{
-				PickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
-				{
-					Handler = () => tcs.TrySetResult([])
-				};
+				Handler = () => tcs.TrySetResult([])
+			};
+
+			try
+			{
+				await vc.PresentViewControllerAsync(pickerRef, true);
+				return await tcs.Task;
 			}
-
-			await vc.PresentViewControllerAsync(PickerRef, true);
-
-			var result = await tcs.Task;
-
-			PickerRef?.Dispose();
-			PickerRef = null;
-
-			return result;
+			finally
+			{
+				pickerRef?.Dispose();
+			}
 		}
 
-		static FileResult PickerResultsToMediaFile(PHPickerResult[] results)
+		static async Task CompletePickerResultAsync(PHPickerResult[] results, MediaPickerOptions options, TaskCompletionSource<FileResult> tcs)
 		{
-			var file = results?.FirstOrDefault();
-
-			return file == null
-				? null
-				: new PHPickerFileResult(file.ItemProvider);
+			try
+			{
+				var result = await PickerResultsToMediaFiles(results, options).ConfigureAwait(false);
+				tcs.TrySetResult(result.FirstOrDefault());
+			}
+			catch (Exception ex)
+			{
+				tcs.TrySetException(ex);
+			}
 		}
 
-		static Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
+		static async Task CompletePickerResultsAsync(PHPickerResult[] results, MediaPickerOptions options, TaskCompletionSource<List<FileResult>> tcs)
+		{
+			try
+			{
+				var result = await PickerResultsToMediaFiles(results, options).ConfigureAwait(false);
+				tcs.TrySetResult(result);
+			}
+			catch (Exception ex)
+			{
+				tcs.TrySetException(ex);
+			}
+		}
+
+		static async Task<List<FileResult>> PickerResultsToMediaFiles(PHPickerResult[] results, MediaPickerOptions options = null)
 		{
 			// Handle null or empty results (cancellation) - return empty list per API contract
 			if (results == null || results.Length == 0)
-				return Task.FromResult(new List<FileResult>());
+				return new List<FileResult>();
 
-			// Rotation, resizing and recompression are all handled lazily by the single Graphics-based
-			// processing wrapper below (see PHPickerProcessedFileResult).
+			// Rotation, resizing and recompression are all handled together by a single Graphics-based
+			// pass (see PHPickerProcessedFileResult).
 			var needsProcessing = ImageProcessor.IsProcessingNeeded(options);
 			var processingOptions = new ImageProcessingOptions(
 				options?.MaximumWidth,
@@ -284,26 +291,60 @@ namespace Microsoft.Maui.Media
 				options?.RotateImage ?? false,
 				options?.PreserveMetaData ?? true);
 
-			var fileResults = results
-				.Select(file =>
-				{
-					FileResult result = new PHPickerFileResult(file.ItemProvider);
-					if (needsProcessing)
-					{
-						result = new PHPickerProcessedFileResult(result, processingOptions);
-					}
-					return result;
-				})
-				.ToList();
+			var fileResults = new List<FileResult>(results.Length);
 
-			return Task.FromResult(fileResults);
+			// Tracks the result being built but not yet handed to the list, so it (and anything it owns)
+			// can be disposed if a later await throws mid-construction.
+			FileResult pending = null;
+			try
+			{
+				foreach (var file in results)
+				{
+					// Materialize the picked item to a real file up-front so FullPath is immediately usable for
+					// direct filesystem access (for example File.Copy(result.FullPath, ...)) — see #32832.
+					var pickedFile = new PHPickerFileResult(file.ItemProvider);
+					pending = pickedFile;
+					await pickedFile.LoadFileRepresentationAsync().ConfigureAwait(false);
+
+					// Only images are processed; videos and other files pass through untouched. Processing is
+					// performed eagerly (and takes ownership of the picked file) so the processed result also
+					// exposes a ready-to-read FullPath.
+					if (needsProcessing && IsImageFile(pickedFile.FileName))
+					{
+						var processed = new PHPickerProcessedFileResult(pickedFile, processingOptions);
+						pending = processed;
+						await processed.LoadProcessedFileAsync().ConfigureAwait(false);
+					}
+
+					fileResults.Add(pending);
+					pending = null;
+				}
+			}
+			catch
+			{
+				(pending as IDisposable)?.Dispose();
+				DisposeFileResults(fileResults);
+				throw;
+			}
+
+			return fileResults;
 		}
 
-		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs, MediaPickerOptions options = null)
+		static void DisposeFileResults(IEnumerable<FileResult> fileResults)
+		{
+			foreach (var fileResult in fileResults)
+			{
+				PHPickerFileResult.TryDeleteTemporaryFile(fileResult.FullPath);
+				(fileResult as IDisposable)?.Dispose();
+			}
+		}
+
+		static async Task CompleteUIImagePickerResultAsync(NSDictionary info, MediaPickerOptions options, TaskCompletionSource<FileResult> tcs)
 		{
 			try
 			{
-				tcs.TrySetResult(DictionaryToMediaFile(info, options));
+				var result = await DictionaryToMediaFile(info, options).ConfigureAwait(false);
+				tcs.TrySetResult(result);
 			}
 			catch (Exception ex)
 			{
@@ -311,7 +352,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static FileResult DictionaryToMediaFile(NSDictionary info, MediaPickerOptions options = null)
+		static async Task<FileResult> DictionaryToMediaFile(NSDictionary info, MediaPickerOptions options = null)
 		{
 			// This method should only be called for iOS < 14
 			if (!OperatingSystem.IsIOSVersionAtLeast(14))
@@ -345,7 +386,7 @@ namespace Microsoft.Maui.Media
 						{
 							try
 							{
-								var rotatedResult = RotateImageFile(docResult).GetAwaiter().GetResult();
+								var rotatedResult = await RotateImageFile(docResult).ConfigureAwait(false);
 								if (rotatedResult != null)
 									return rotatedResult;
 							}
@@ -406,7 +447,7 @@ namespace Microsoft.Maui.Media
 			{
 				try
 				{
-					var rotatedResult = RotateImageFile(assetResult).GetAwaiter().GetResult();
+					var rotatedResult = await RotateImageFile(assetResult).ConfigureAwait(false);
 					if (rotatedResult != null)
 						return rotatedResult;
 				}
@@ -544,12 +585,22 @@ namespace Microsoft.Maui.Media
 		{
 			public Action<NSDictionary> CompletedHandler { get; set; }
 			public override void FinishedPickingMedia(UIImagePickerController picker, NSDictionary info)
-            {
+			{
+				if (picker.PresentationController?.Delegate is PhotoPickerPresentationControllerDelegate pd)
+				{
+					pd.Handler = null;
+				}
+
 				picker.DismissViewController(true, () => CompletedHandler?.Invoke(info));
-            }
+			}
 
 			public override void Canceled(UIImagePickerController picker)
 			{
+				if (picker.PresentationController?.Delegate is PhotoPickerPresentationControllerDelegate pd)
+				{
+					pd.Handler = null;
+				}
+
 				picker.DismissViewController(true, () => CompletedHandler?.Invoke(null));
 			}
 		}
@@ -570,7 +621,7 @@ namespace Microsoft.Maui.Media
 			}
 
 			var captured = results?.Length > 0 ? results : [];
-            picker.DismissViewController(true, () => CompletedHandler?.Invoke(captured));
+			picker.DismissViewController(true, () => CompletedHandler?.Invoke(captured));
 		}
 	}
 
@@ -588,10 +639,22 @@ namespace Microsoft.Maui.Media
 		}
 	}
 
-	class PHPickerFileResult : FileResult
+	class PHPickerFileResult : FileResult, IDisposable
 	{
+		const string TemporaryDirectoryName = "maui-mediapicker";
+		static readonly TimeSpan TemporaryFileRetention = TimeSpan.FromDays(1);
+
 		readonly string _identifier;
 		readonly NSItemProvider _provider;
+		readonly object _loadLock = new();
+		Task _loadFileTask;
+		TaskCompletionSource<bool> _loadTcs;
+		NSProgress _loadProgress;
+		bool _isFileLoaded;
+		bool _disposed;
+
+		static string TemporaryDirectory =>
+			Path.Combine(Path.GetTempPath(), TemporaryDirectoryName);
 
 		internal PHPickerFileResult(NSItemProvider provider)
 		{
@@ -608,15 +671,346 @@ namespace Microsoft.Maui.Media
 				return;
 			}
 
-			FileName = FullPath
-				= $"{provider?.SuggestedName}.{GetTag(_identifier, UTType.TagClassFilenameExtension)}";
+			var extension = GetFileExtension(_identifier);
+			FileName = GetFileName(provider?.SuggestedName, extension);
+			FullPath = CreateTemporaryFilePath(Path.GetExtension(FileName));
 		}
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
-			=> (await _provider?.LoadDataRepresentationAsync(_identifier))?.AsStream();
+		{
+			await LoadFileRepresentationAsync().ConfigureAwait(false);
+
+			return File.Open(FullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+		}
+
+		internal Task LoadFileRepresentationAsync()
+		{
+			ValidateFileRepresentation();
+
+			TaskCompletionSource<bool> loadTcs = null;
+			Task loadTask;
+
+			lock (_loadLock)
+			{
+				ThrowIfDisposedNoLock();
+
+				if (_isFileLoaded)
+				{
+					return Task.CompletedTask;
+				}
+
+				if (_loadFileTask is null)
+				{
+					loadTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+					_loadTcs = loadTcs;
+					_loadFileTask = loadTcs.Task;
+				}
+
+				loadTask = _loadFileTask;
+			}
+
+			if (loadTcs is not null)
+			{
+				StartLoadFileRepresentation(loadTcs);
+			}
+
+			return AwaitLoadFileRepresentationAsync(loadTask);
+		}
+
+		internal static void CleanupTemporaryFiles()
+		{
+			var temporaryDirectory = TemporaryDirectory;
+
+			if (!Directory.Exists(temporaryDirectory))
+			{
+				return;
+			}
+
+			var cutoff = DateTime.UtcNow - TemporaryFileRetention;
+
+			try
+			{
+				foreach (var file in Directory.EnumerateFiles(temporaryDirectory))
+				{
+					DeleteTemporaryFileIfStale(file, cutoff);
+				}
+			}
+			catch (IOException ex)
+			{
+				Debug.WriteLine($"Unable to enumerate MediaPicker temporary files: {ex}");
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				Debug.WriteLine($"Unable to enumerate MediaPicker temporary files: {ex}");
+			}
+		}
+
+		async Task AwaitLoadFileRepresentationAsync(Task loadTask)
+		{
+			try
+			{
+				await loadTask.ConfigureAwait(false);
+			}
+			catch
+			{
+				lock (_loadLock)
+				{
+					if (ReferenceEquals(_loadFileTask, loadTask))
+					{
+						_loadFileTask = null;
+					}
+				}
+
+				throw;
+			}
+		}
+
+		void ValidateFileRepresentation()
+		{
+			if (_provider is null)
+			{
+				throw new InvalidOperationException("Item provider is null.");
+			}
+
+			if (string.IsNullOrWhiteSpace(_identifier))
+			{
+				throw new InvalidOperationException("Item provider does not contain a supported file representation.");
+			}
+
+			if (string.IsNullOrWhiteSpace(FullPath))
+			{
+				throw new InvalidOperationException("Destination file path is not set.");
+			}
+		}
+
+		void StartLoadFileRepresentation(TaskCompletionSource<bool> tcs)
+		{
+			var destinationPath = FullPath;
+
+			try
+			{
+				var progress = _provider.LoadFileRepresentation(_identifier, (url, error) =>
+				{
+					try
+					{
+						if (error is not null)
+						{
+							ClearLoadOperation(tcs);
+							tcs.TrySetException(new NSErrorException(error));
+							return;
+						}
+
+						if (string.IsNullOrWhiteSpace(url?.Path))
+						{
+							ClearLoadOperation(tcs);
+							tcs.TrySetException(new InvalidOperationException("Item provider did not return a file URL."));
+							return;
+						}
+
+						ThrowIfDisposed();
+						CopyTemporaryFile(url.Path, destinationPath);
+
+						lock (_loadLock)
+						{
+							ClearLoadOperationNoLock(tcs);
+
+							if (_disposed)
+							{
+								TryDeleteTemporaryFile(destinationPath);
+								tcs.TrySetException(new ObjectDisposedException(nameof(PHPickerFileResult)));
+								return;
+							}
+
+							_isFileLoaded = true;
+						}
+
+						tcs.TrySetResult(true);
+					}
+					catch (Exception ex)
+					{
+						ClearLoadOperation(tcs);
+						tcs.TrySetException(ex);
+					}
+				});
+
+				lock (_loadLock)
+				{
+					if (_disposed)
+					{
+						progress?.Cancel();
+					}
+					else if (!_isFileLoaded && ReferenceEquals(_loadTcs, tcs) && !tcs.Task.IsCompleted)
+					{
+						_loadProgress = progress;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				ClearLoadOperation(tcs);
+				tcs.TrySetException(ex);
+			}
+		}
+
+		void ClearLoadOperation(TaskCompletionSource<bool> tcs)
+		{
+			lock (_loadLock)
+			{
+				ClearLoadOperationNoLock(tcs);
+			}
+		}
+
+		void ClearLoadOperationNoLock(TaskCompletionSource<bool> tcs)
+		{
+			if (ReferenceEquals(_loadTcs, tcs))
+			{
+				_loadTcs = null;
+				_loadProgress = null;
+			}
+		}
+
+		void ThrowIfDisposed()
+		{
+			lock (_loadLock)
+			{
+				ThrowIfDisposedNoLock();
+			}
+		}
+
+		void ThrowIfDisposedNoLock()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(nameof(PHPickerFileResult));
+			}
+		}
+
+		internal static string CreateTemporaryFilePath(string extension)
+		{
+			Directory.CreateDirectory(TemporaryDirectory);
+
+			return Path.Combine(TemporaryDirectory, $"{Guid.NewGuid():N}{NormalizeExtension(extension)}");
+		}
+
+		static void CopyTemporaryFile(string sourcePath, string destinationPath)
+		{
+			try
+			{
+				File.Copy(sourcePath, destinationPath, overwrite: true);
+				File.SetLastWriteTimeUtc(destinationPath, DateTime.UtcNow);
+			}
+			catch
+			{
+				TryDeleteTemporaryFile(destinationPath);
+				throw;
+			}
+		}
+
+		static void DeleteTemporaryFileIfStale(string path, DateTime cutoff)
+		{
+			try
+			{
+				if (File.GetLastWriteTimeUtc(path) < cutoff)
+				{
+					TryDeleteTemporaryFile(path);
+				}
+			}
+			catch (IOException ex)
+			{
+				Debug.WriteLine($"Unable to inspect MediaPicker temporary file '{path}': {ex}");
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				Debug.WriteLine($"Unable to inspect MediaPicker temporary file '{path}': {ex}");
+			}
+		}
+
+		internal static void TryDeleteTemporaryFile(string path)
+		{
+			if (string.IsNullOrWhiteSpace(path) || !IsTemporaryFile(path))
+			{
+				return;
+			}
+
+			try
+			{
+				if (File.Exists(path))
+				{
+					File.Delete(path);
+				}
+			}
+			catch (IOException ex)
+			{
+				Debug.WriteLine($"Unable to delete MediaPicker temporary file '{path}': {ex}");
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				Debug.WriteLine($"Unable to delete MediaPicker temporary file '{path}': {ex}");
+			}
+		}
+
+		static bool IsTemporaryFile(string path)
+		{
+			var fullDirectory = Path.GetFullPath(TemporaryDirectory + Path.DirectorySeparatorChar);
+			var fullPath = Path.GetFullPath(path);
+
+			return fullPath.StartsWith(fullDirectory, StringComparison.Ordinal);
+		}
+
+		static string NormalizeExtension(string extension)
+		{
+			return string.IsNullOrWhiteSpace(extension)
+				? string.Empty
+				: $".{extension.TrimStart('.')}";
+		}
+
+		static string GetFileExtension(string identifier)
+		{
+			var extension = GetTag(identifier, UTType.TagClassFilenameExtension);
+
+			return NormalizeExtension(extension);
+		}
+
+		static string GetFileName(string suggestedName, string extension)
+		{
+			var fileName = string.IsNullOrWhiteSpace(suggestedName)
+				? Guid.NewGuid().ToString("N")
+				: Path.GetFileName(suggestedName);
+
+			if (string.IsNullOrWhiteSpace(Path.GetExtension(fileName)) && !string.IsNullOrWhiteSpace(extension))
+			{
+				fileName += extension;
+			}
+
+			return fileName;
+		}
 
 		protected internal static string GetTag(string identifier, string tagClass)
 			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
+
+		public void Dispose()
+		{
+			TaskCompletionSource<bool> loadTcs;
+			NSProgress loadProgress;
+
+			lock (_loadLock)
+			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+				loadTcs = _loadTcs;
+				_loadTcs = null;
+				loadProgress = _loadProgress;
+				_loadProgress = null;
+			}
+
+			loadProgress?.Cancel();
+			loadTcs?.TrySetException(new ObjectDisposedException(nameof(PHPickerFileResult)));
+			TryDeleteTemporaryFile(FullPath);
+		}
 	}
 
 	class CompressedUIImageFileResult : FileResult
@@ -660,18 +1054,18 @@ namespace Microsoft.Maui.Media
 		}
 	}
 
-	/// <summary>
-	/// Wrapper that applies compression lazily when the stream is opened.
-	/// This avoids iOS resource limits when processing multiple photos.
-	/// </summary>
 	class PHPickerProcessedFileResult : FileResult, IDisposable
 	{
 		readonly FileResult _originalResult;
 		readonly ImageProcessingOptions _options;
+		readonly object _processLock = new();
+		Task _processFileTask;
+		bool _isProcessed;
+		bool _disposed;
 
-		// Path to the processed cache file, produced on the first call to PlatformOpenReadAsync and
-		// reused on subsequent calls to avoid re-processing.
-		string _processedPath;
+		// Path to the processed cache file once produced; used for cleanup. Null until (and unless)
+		// processing succeeds — before then FullPath still points at the materialized original.
+		string _processedCachePath;
 
 		internal PHPickerProcessedFileResult(FileResult originalResult, ImageProcessingOptions options)
 			: base()
@@ -679,57 +1073,168 @@ namespace Microsoft.Maui.Media
 			_originalResult = originalResult;
 			_options = options;
 
-			// Copy metadata from original, adjusting extension for compressed output
-			var originalFileName = originalResult.FileName;
-			var originalFullPath = originalResult.FullPath;
-
-			// Deterministic output container: PNG stays PNG, everything else becomes JPEG (matching the
-			// shared Graphics processor). FileName/ContentType reflect the actual processed output.
-			var outputExtension = ImageProcessor.GetOutputExtension(ImageProcessor.GetOutputFormat(originalFileName), originalFileName);
-			var isPng = string.Equals(outputExtension, ".png", StringComparison.OrdinalIgnoreCase);
-
-			FileName = !string.IsNullOrEmpty(originalFileName) && !string.IsNullOrEmpty(outputExtension)
-				? Path.ChangeExtension(originalFileName, outputExtension)
-				: originalFileName;
-
-			FullPath = !string.IsNullOrEmpty(originalFullPath) && !string.IsNullOrEmpty(outputExtension)
-				? Path.ChangeExtension(originalFullPath, outputExtension)
-				: originalFullPath;
-
-			ContentType = isPng ? "image/png" : "image/jpeg";
+			// Until processing runs, mirror the materialized original so FullPath is already usable; the
+			// processed output (with any corrected extension) replaces these once produced.
+			FileName = originalResult.FileName;
+			FullPath = originalResult.FullPath;
+			ContentType = originalResult.ContentType;
 		}
 
 		internal override async Task<Stream> PlatformOpenReadAsync()
 		{
-			// Return the already-processed file on subsequent calls to avoid re-processing.
-			if (_processedPath is not null && File.Exists(_processedPath))
-				return File.OpenRead(_processedPath);
+			await LoadProcessedFileAsync().ConfigureAwait(false);
 
+			return File.Open(FullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+		}
+
+		// Processes the picked image exactly once (idempotent and thread-safe) and materializes it to a
+		// real cache file so FullPath points to a readable file even before the stream is opened.
+		internal Task LoadProcessedFileAsync()
+		{
+			Task processTask;
+
+			lock (_processLock)
+			{
+				ThrowIfDisposedNoLock();
+
+				if (_isProcessed)
+				{
+					return Task.CompletedTask;
+				}
+
+				_processFileTask ??= ProcessAndWriteFileAsync();
+				processTask = _processFileTask;
+			}
+
+			return AwaitProcessedFileAsync(processTask);
+		}
+
+		async Task AwaitProcessedFileAsync(Task processTask)
+		{
 			try
 			{
-				// Load the original once (NSItemProvider loads are expensive) and process it directly to
-				// a cache file through the shared Graphics pipeline — no in-memory buffering of the
-				// encoded image.
-				using var originalStream = await _originalResult.OpenReadAsync();
-
-				_processedPath = await ImageProcessor.ProcessImageToCacheFileAsync(
-					originalStream,
-					_originalResult.FileName,
-					_options);
-
-				return File.OpenRead(_processedPath);
+				await processTask.ConfigureAwait(false);
 			}
 			catch
 			{
-				// Fall back to the original file if processing fails.
-				return await _originalResult.OpenReadAsync();
+				lock (_processLock)
+				{
+					if (ReferenceEquals(_processFileTask, processTask))
+					{
+						_processFileTask = null;
+					}
+				}
+
+				throw;
 			}
+		}
+
+		async Task ProcessAndWriteFileAsync()
+		{
+			string processedPath;
+			try
+			{
+				// Load the original once (NSItemProvider loads are expensive) and process it straight to a
+				// cache file through the shared Graphics pipeline — no in-memory buffering of the encoded image.
+				using var originalStream = await _originalResult.OpenReadAsync().ConfigureAwait(false);
+
+				processedPath = await ImageProcessor.ProcessImageToCacheFileAsync(
+					originalStream,
+					_originalResult.FileName,
+					_options).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				// Processing failed (for example an undecodable image): fall back to the materialized
+				// original, which FileName/FullPath/ContentType already point at.
+				Debug.WriteLine($"Unable to process picked image '{_originalResult.FileName}': {ex}");
+				lock (_processLock)
+				{
+					ThrowIfDisposedNoLock();
+					_isProcessed = true;
+				}
+
+				return;
+			}
+
+			var processedContentType = ImageProcessor.GetOutputFormat(processedPath) == Microsoft.Maui.Graphics.ImageFormat.Png
+				? "image/png"
+				: "image/jpeg";
+
+			lock (_processLock)
+			{
+				if (_disposed)
+				{
+					TryDeleteProcessedCacheFile(processedPath);
+					throw new ObjectDisposedException(nameof(PHPickerProcessedFileResult));
+				}
+
+				FileName = Path.GetFileName(processedPath);
+				FullPath = processedPath;
+				ContentType = processedContentType;
+				_processedCachePath = processedPath;
+				_isProcessed = true;
+			}
+
+			// The processed file supersedes the picked original; reclaim the original temp file.
+			PHPickerFileResult.TryDeleteTemporaryFile(_originalResult.FullPath);
+			(_originalResult as IDisposable)?.Dispose();
 		}
 
 		public void Dispose()
 		{
+			string processedCachePath;
+
+			lock (_processLock)
+			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+				processedCachePath = _processedCachePath;
+			}
+
+			// Only reclaim a path we produced; the original picked file is swept from the temp folder.
+			TryDeleteProcessedCacheFile(processedCachePath);
+			PHPickerFileResult.TryDeleteTemporaryFile(_originalResult.FullPath);
 			(_originalResult as IDisposable)?.Dispose();
-			GC.SuppressFinalize(this);
+		}
+
+		// The processed file lives in its own unique sub-directory of the app cache (not the MediaPicker
+		// temp folder), so it is removed directly rather than via PHPickerFileResult.TryDeleteTemporaryFile.
+		static void TryDeleteProcessedCacheFile(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+			{
+				return;
+			}
+
+			try
+			{
+				var directory = Path.GetDirectoryName(path);
+				if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+				{
+					Directory.Delete(directory, recursive: true);
+				}
+				else if (File.Exists(path))
+				{
+					File.Delete(path);
+				}
+			}
+			catch
+			{
+				// Best-effort cleanup.
+			}
+		}
+
+		void ThrowIfDisposedNoLock()
+		{
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(nameof(PHPickerProcessedFileResult));
+			}
 		}
 	}
 }

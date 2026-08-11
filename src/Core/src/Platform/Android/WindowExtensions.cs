@@ -4,11 +4,12 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Util;
 using Android.Views;
+using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
+using AColor = Android.Graphics.Color;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui
 {
@@ -74,10 +75,36 @@ namespace Microsoft.Maui
 				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
-				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+				// Resolve the actual status bar background color from the current theme and
+				// choose icon/text appearance based on its luminance. If the theme color cannot
+				// be resolved, preserve the previous theme-based behavior.
+				if (TryGetThemeColor(activity, global::Android.Resource.Attribute.ColorPrimary, out var statusBarColor))
+					windowInsetsController.AppearanceLightStatusBars = IsLightColor(statusBarColor);
+				else
+					windowInsetsController.AppearanceLightStatusBars = isLightTheme;
+
 				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
 			}
 		}
+
+		static bool TryGetThemeColor(Activity activity, int attribute, out AColor color)
+		{
+			color = default;
+
+			if (activity.Theme is null)
+				return false;
+
+			using var ta = activity.Theme.ObtainStyledAttributes([attribute]);
+
+			if (!ta.HasValue(0))
+				return false;
+
+			color = new AColor(ta.GetColor(0, 0));
+			return true;
+		}
+
+		static bool IsLightColor(AColor color) =>
+			AndroidX.Core.Graphics.ColorUtils.CalculateLuminance(color.ToArgb()) > 0.5;
 
 		internal static void UpdateSystemBarAppearance(
 			this Window? window,

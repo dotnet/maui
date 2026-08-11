@@ -217,14 +217,14 @@ Task("uitests-apphost")
             properties.Add("_UseNativeAot", "true");
             properties.Add("RuntimeIdentifier", "iossimulator-x64");
         }
-        
+
         var useMaterial3 = Argument("usematerial3", false);
         if (useMaterial3)
         {
             Information("Building with Material3 enabled");
             properties.Add("UseMaterial3", "true");
         }
-        
+
         var useWindowsCV1 = Argument("usewindowscv1", false);
         if (useWindowsCV1)
         {
@@ -278,6 +278,7 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
+            "**/MauiBlazorWebView.UnitTests.csproj",
         };
 
         var success = true;
