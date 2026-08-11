@@ -488,6 +488,48 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ElementRequestOnCollapsedScrollViewCompletesInsteadOfHanging()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout, IsVisible = false };
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// A collapsed ScrollView is skipped by layout, so the geometry callbacks that
+			// retry a parked request never fire: the request must dispatch immediately (the
+			// target clamps) so the caller's task can complete instead of hanging forever
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.Single(handler.ScrollToRequests);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
+		public void DeferredElementRequestOnCollapsedAncestorDispatchesOnAttach()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			_ = new StackLayout { IsVisible = false, Children = { scrollView } };
+
+			// Parked because the handler is missing, not because of visibility
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// On attach the collapsed ancestor means no arrange is coming: the deferred
+			// request must dispatch right away rather than wait for callbacks that never fire
+			Assert.Single(handler.ScrollToRequests);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
 		public void DeferredRequestReplaysEventForSubscribersAttachedWithTheHandler()
 		{
 			var scrollView = new ScrollView();

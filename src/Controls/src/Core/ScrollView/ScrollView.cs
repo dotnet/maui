@@ -71,19 +71,25 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (pending.Mode == ScrollToMode.Element)
+			if (pending.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
 			{
-				if (!IsElementTargetGeometryReady())
+				if (WillArrange())
 				{
 					// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
 					return;
 				}
 
-				// Those callbacks run while the pass that produced the sizes is still arranging
-				// children, so resolve on the next tick, once positions are final. Posting on
-				// every retry is deliberate: SendPendingScrollToRequest is a no-op once the
-				// request has been sent or superseded, so a dropped callback cannot wedge the
-				// request the way an "already queued" flag would.
+				// A collapsed branch is skipped by layout entirely, so those callbacks will
+				// never fire: dispatch now — the target clamps — rather than hang the
+				// caller's task forever. Falls through to the immediate send below.
+			}
+			else if (pending.Mode == ScrollToMode.Element)
+			{
+				// The geometry callbacks run while the pass that produced the sizes is still
+				// arranging children, so resolve on the next tick, once positions are final.
+				// Posting on every retry is deliberate: SendPendingScrollToRequest is a no-op
+				// once the request has been sent or superseded, so a dropped callback cannot
+				// wedge the request the way an "already queued" flag would.
 				Dispatcher.Dispatch(SendPendingScrollToRequest);
 				return;
 			}
@@ -100,6 +106,24 @@ namespace Microsoft.Maui.Controls
 		// task forever, while dispatching just clamps the target to the origin.
 		bool IsElementTargetGeometryReady() =>
 			Width >= 0 && Height >= 0 && Content is not ({ Width: < 0 } or { Height: < 0 });
+
+		// A parked element request is retried only from OnSizeAllocated/ContentSizeChanged,
+		// which fire when this view gets arranged — and a view anywhere inside a collapsed
+		// (IsVisible=false) branch is skipped by layout entirely. Parking in that state would
+		// leave the caller's task pending forever; dispatching instead clamps the target and
+		// completes it, which is also what the other platforms do with a collapsed scroll view.
+		bool WillArrange()
+		{
+			for (Element element = this; element is VisualElement visual; element = element.RealParent)
+			{
+				if (!visual.IsVisible)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
 
 		void SendPendingScrollToRequest()
 		{
@@ -527,12 +551,14 @@ namespace Microsoft.Maui.Controls
 				_pendingScrollToRequested = e;
 				_replayPendingScrollToRequestedEvent = true;
 			}
-			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
+			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady() && WillArrange())
 			{
 				// The handler exists but layout has not run yet (e.g. ScrollToAsync from
 				// OnAppearing): resolving the element target now would compute against the -1
 				// never-arranged sentinels. Park it for the layout callbacks instead — the
 				// subscribers were already notified above, so the replay must not re-raise.
+				// A collapsed branch never gets those callbacks, so it dispatches immediately
+				// below instead of parking a request nothing will ever retry.
 				_pendingScrollToRequested = e;
 				_replayPendingScrollToRequestedEvent = false;
 			}
