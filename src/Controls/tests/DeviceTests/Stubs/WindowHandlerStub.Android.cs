@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void OnRootPrepared(
 			NavigationRootManager rootManager,
-			AView platformView)
+			AView? platformView)
 		{
 			if (platformView is null)
 				return;

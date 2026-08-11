@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(platformView);
 			Assert.True(platformView.IsAttachedToWindow);
 
-			for (AView current = platformView; current is not null; current = current.Parent as AView)
+			for (AView? current = platformView; current is not null; current = current.Parent as AView)
 			{
 				if (ReferenceEquals(current, rootView))
 					return;

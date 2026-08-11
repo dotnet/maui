@@ -10,7 +10,6 @@ using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AView = Android.Views.View;
 
@@ -29,6 +28,8 @@ namespace Microsoft.Maui.Platform
 		bool _swapInFlight;
 		bool _retryScheduled;
 		bool _rootSwapsUnavailable;
+		bool _quiescingFragmentManagers;
+		IToolbar? _toolbarBeingQuiesced;
 		RootRequest? _queuedRequest;
 		Action<RootRequestOutcome, AView?>? _disconnectCompletion;
 
@@ -55,8 +56,15 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetToolbarElement(IToolbarElement toolbarElement)
 		{
+			// Transactions drained from the outgoing root can remap its toolbar while that root is
+			// being torn down. Ignore only that stale toolbar; a newer reentrant mapping must
+			// remain protected by the version and identity checks.
+			var toolbar = toolbarElement.Toolbar;
+			if (_quiescingFragmentManagers && ReferenceEquals(toolbar, _toolbarBeingQuiesced))
+				return;
+
 			_toolbarElement = toolbarElement;
-			_toolbar = toolbarElement.Toolbar;
+			_toolbar = toolbar;
 			_toolbarVersion++;
 		}
 
@@ -470,20 +478,30 @@ namespace Microsoft.Maui.Platform
 			if (outgoingRootView.Parent is null)
 				return _viewFragment is null;
 
-			if (!TryExecutePendingTransactions(owningFragmentManager, context))
-				return false;
-
-			// Replacement also drains the activity manager because compatibility Shell can
-			// commit there. Disconnect intentionally does not: modal dismissal already runs
-			// inside the activity manager and re-entering it throws.
-			if (includeActivityFragmentManager)
+			_quiescingFragmentManagers = true;
+			_toolbarBeingQuiesced = _toolbar;
+			try
 			{
-				var activityFragmentManager = context.GetFragmentManager();
-				if (!ReferenceEquals(activityFragmentManager, owningFragmentManager))
-					return TryExecutePendingTransactions(activityFragmentManager, context);
-			}
+				if (!TryExecutePendingTransactions(owningFragmentManager, context))
+					return false;
 
-			return true;
+				// Replacement also drains the activity manager because compatibility Shell can
+				// commit there. Disconnect intentionally does not: modal dismissal already runs
+				// inside the activity manager and re-entering it throws.
+				if (includeActivityFragmentManager)
+				{
+					var activityFragmentManager = context.GetFragmentManager();
+					if (!ReferenceEquals(activityFragmentManager, owningFragmentManager))
+						return TryExecutePendingTransactions(activityFragmentManager, context);
+				}
+
+				return true;
+			}
+			finally
+			{
+				_toolbarBeingQuiesced = null;
+				_quiescingFragmentManagers = false;
+			}
 		}
 
 		static bool TryExecutePendingTransactions(FragmentManager? fragmentManager, Context context)

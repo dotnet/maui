@@ -448,6 +448,56 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Outgoing Toolbar Mapping During Root Drain Is Ignored")]
+		public async Task OutgoingToolbarMappingDuringRootDrainIsIgnored()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var outgoingRoot = new NavigationPage(initialPage);
+			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var window = new Window(outgoingRoot);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var outgoingPlatformRoot = Assert.IsAssignableFrom<global::Android.Views.ViewGroup>(rootManager.RootView);
+				var outgoingToolbarElement = Assert.IsAssignableFrom<IToolbarElement>(rootManager.ToolbarElement);
+				var fragmentHost = new global::Android.Widget.FrameLayout(handler.MauiContext.Context)
+				{
+					Id = global::Android.Views.View.GenerateViewId()
+				};
+				outgoingPlatformRoot.AddView(fragmentHost);
+
+				var fragmentManager = handler.MauiContext.Context.GetFragmentManager();
+				var fragment = new ReentrantFragment(() => rootManager.SetToolbarElement(outgoingToolbarElement));
+				fragmentManager
+					.BeginTransaction()
+					.Add(fragmentHost.Id, fragment)
+					.Commit();
+
+				try
+				{
+					window.Page = replacementPage;
+
+					await OnLoadedAsync(replacementPage);
+					Assert.Null(rootManager.ToolbarElement);
+					AssertPageAttachedToRoot(replacementPage, rootManager);
+				}
+				finally
+				{
+					fragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.CommitAllowingStateLoss();
+					fragmentManager.ExecutePendingTransactions();
+					fragmentHost.RemoveFromParent();
+				}
+			});
+		}
+
 		[Fact(DisplayName = "Root Replacement During Flyout Construction Publishes Latest Root")]
 		public async Task RootReplacementDuringFlyoutConstructionPublishesLatestRoot()
 		{
@@ -568,7 +618,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public sealed class ReentrantFlyoutPage : FlyoutPage
 		{
-			public Action OnCreatingPlatformView { get; set; }
+			public Action? OnCreatingPlatformView { get; set; }
 		}
 
 		public sealed class ReentrantFlyoutViewHandler : FlyoutViewHandler
@@ -598,7 +648,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(rootView);
 
-			for (global::Android.Views.View current = platformView; current is not null; current = current.Parent as global::Android.Views.View)
+			for (global::Android.Views.View? current = platformView; current is not null; current = current.Parent as global::Android.Views.View)
 			{
 				if (ReferenceEquals(current, rootView))
 					return;
