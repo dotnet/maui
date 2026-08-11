@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Animations
 	public class AnimationManager : IAnimationManager, IDisposable
 	{
 		readonly List<Animation> _animations = new();
+		readonly Action _fire;
 		long _lastUpdate;
 		bool _disposedValue;
 
@@ -17,9 +18,10 @@ namespace Microsoft.Maui.Animations
 		public AnimationManager(ITicker ticker)
 		{
 			_lastUpdate = GetCurrentTick();
+			_fire = OnFire;
 
 			Ticker = ticker;
-			Ticker.Fire = OnFire;
+			Ticker.Fire = _fire;
 		}
 
 		/// <inheritdoc/>
@@ -34,6 +36,11 @@ namespace Microsoft.Maui.Animations
 		/// <inheritdoc/>
 		public void Add(Animation animation)
 		{
+			if (_disposedValue)
+			{
+				return;
+			}
+
 			// If animations are disabled, don't do anything
 			if (!Ticker.SystemEnabled)
 			{
@@ -49,6 +56,11 @@ namespace Microsoft.Maui.Animations
 		/// <inheritdoc/>
 		public void Remove(Animation animation)
 		{
+			if (_disposedValue)
+			{
+				return;
+			}
+
 			_animations.TryRemove(animation);
 
 			if (_animations.Count == 0)
@@ -69,6 +81,11 @@ namespace Microsoft.Maui.Animations
 
 		void OnFire()
 		{
+			if (_disposedValue)
+			{
+				return;
+			}
+
 			if (!Ticker.SystemEnabled)
 			{
 				// This is a hack - if we're here, the ticker has detected that animations are no longer enabled,
@@ -115,12 +132,28 @@ namespace Microsoft.Maui.Animations
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!_disposedValue)
+			if (_disposedValue)
 			{
-				if (disposing && Ticker is IDisposable disposable)
-					disposable.Dispose();
+				return;
+			}
 
-				_disposedValue = true;
+			_disposedValue = true;
+
+			if (disposing)
+			{
+				End();
+
+				if (ReferenceEquals(Ticker.Fire, _fire))
+				{
+					Ticker.Fire = null;
+				}
+
+				_animations.Clear();
+
+				if (Ticker is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
 			}
 		}
 
