@@ -156,6 +156,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// <inheritdoc/>
 		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
 		{
+			options ??= new ImageSaveOptions();
 			if (!TryGetMetadataToEmbed(format, options, out var metadata))
 			{
 				Save(stream, format, ClampQuality(options.Quality));
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// <inheritdoc/>
 		public async Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
 		{
+			options ??= new ImageSaveOptions();
 			if (!TryGetMetadataToEmbed(format, options, out var metadata))
 			{
 				await SaveAsync(stream, format, ClampQuality(options.Quality));
@@ -295,6 +297,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		// mirroring the public FromStream(stream, format) overload above.
 		public static IImage FromStream(Stream stream, ImageLoadOptions options)
 		{
+			options ??= new ImageLoadOptions();
+
 			// Use original stream if seekable, otherwise copy to memory stream
 			if (stream.CanSeek)
 			{

@@ -253,6 +253,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		async Task SaveWithOptionsAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
 		{
+			options ??= new ImageSaveOptions();
 			var quality = Math.Max(0f, Math.Min(1f, options.Quality));
 
 			// Metadata re-embedding is only supported for JPEG on this platform.
@@ -286,6 +287,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		static async Task<IImage> FromStreamWithOptionsAsync(Stream stream, ImageLoadOptions options)
 		{
+			options ??= new ImageLoadOptions();
 			var creator = PlatformGraphicsService.Creator;
 			if (creator is null)
 			{

@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Graphics.Platform
 		// the plain pixel save. Metadata preservation is a mobile (iOS/Android)/Windows concern.
 		/// <inheritdoc/>
 		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> Save(stream, format, ClampQuality(options.Quality));
+			=> Save(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
 
 		/// <inheritdoc/>
 		public Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> SaveAsync(stream, format, ClampQuality(options.Quality));
+			=> SaveAsync(stream, format, ClampQuality((options ?? new ImageSaveOptions()).Quality));
 
 		static float ClampQuality(float quality) => Math.Max(0f, Math.Min(1f, quality));
 

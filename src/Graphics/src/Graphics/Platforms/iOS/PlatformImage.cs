@@ -143,6 +143,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		/// <inheritdoc/>
 		public void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
 		{
+			options ??= new ImageSaveOptions();
 			using var data = CreateData(format, options);
 			data.AsStream().CopyTo(stream);
 		}
@@ -248,6 +249,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		// mirroring the public FromStream(stream, format) overload above.
 		public static IImage FromStream(Stream stream, ImageLoadOptions options)
 		{
+			options ??= new ImageLoadOptions();
 			using var data = NSData.FromStream(stream);
 
 			var metadata = options.PreserveMetadata && data is not null

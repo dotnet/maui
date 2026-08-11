@@ -82,6 +82,33 @@ internal static class ImageProcessor
 		format == ImageFormat.Png ? FileExtensions.Png : FileExtensions.Jpg;
 
 	/// <summary>
+	/// The file extension to use for the processed output. When the original file name already uses an
+	/// extension that denotes the same container that will be written (for example a <c>.jpeg</c> source
+	/// producing JPEG output), the original extension is preserved so the file name is not altered
+	/// (issue #33258). Otherwise the canonical extension for <paramref name="format"/> is used.
+	/// </summary>
+	public static string GetOutputExtension(ImageFormat format, string? originalFileName)
+	{
+		var original = string.IsNullOrEmpty(originalFileName) ? null : Path.GetExtension(originalFileName);
+		if (!string.IsNullOrEmpty(original))
+		{
+			if (format == ImageFormat.Png &&
+				string.Equals(original, FileExtensions.Png, StringComparison.OrdinalIgnoreCase))
+			{
+				return original!;
+			}
+
+			if (format == ImageFormat.Jpeg &&
+				Array.Exists(FileExtensions.AllJpeg, ext => string.Equals(original, ext, StringComparison.OrdinalIgnoreCase)))
+			{
+				return original!;
+			}
+		}
+
+		return GetOutputExtension(format);
+	}
+
+	/// <summary>
 	/// Loads the <paramref name="input"/> through MAUI Graphics (normalizing EXIF orientation and/or
 	/// capturing metadata per the options), applies any resize, and writes the encoded result directly
 	/// to <paramref name="output"/>. No intermediate in-memory buffering of the encoded image is done.
@@ -144,13 +171,14 @@ internal static class ImageProcessor
 
 	/// <summary>
 	/// Processes the <paramref name="input"/> and writes the result to a new file in the app cache
-	/// directory, preserving the original file name (with a corrected extension). The source is only
-	/// ever read, never modified. Returns the path to the new file.
+	/// directory, preserving the original file name (correcting the extension only when the output
+	/// container differs from the source). The source is only ever read, never modified. Returns the
+	/// path to the new file.
 	/// </summary>
 	public static async Task<string> ProcessImageToCacheFileAsync(Stream input, string? originalFileName, ImageProcessingOptions options)
 	{
 		var format = GetOutputFormat(originalFileName);
-		var extension = GetOutputExtension(format);
+		var extension = GetOutputExtension(format, originalFileName);
 
 		var baseName = string.IsNullOrEmpty(originalFileName)
 			? Guid.NewGuid().ToString("N")

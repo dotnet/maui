@@ -608,7 +608,7 @@ namespace Microsoft.Maui.Media
 
 			// Preserve the original container (JPEG/PNG). Deterministic: no automatic format switching.
 			var format = ImageProcessor.GetOutputFormat(imagePath);
-			var outputFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + ImageProcessor.GetOutputExtension(format);
+			var outputFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + ImageProcessor.GetOutputExtension(format, imagePath);
 			var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
 			var outputPath = outputFile.AbsolutePath;
 

@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Graphics
 		void Save(Stream stream, ImageFormat format, ImageSaveOptions options);
 #else
 		void Save(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> Save(stream, format, options.Quality);
+			=> Save(stream, format, (options ?? new ImageSaveOptions()).Quality);
 #endif
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Graphics
 		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options);
 #else
 		Task SaveAsync(Stream stream, ImageFormat format, ImageSaveOptions options)
-			=> SaveAsync(stream, format, options.Quality);
+			=> SaveAsync(stream, format, (options ?? new ImageSaveOptions()).Quality);
 #endif
 	}
 }

@@ -635,7 +635,7 @@ namespace Microsoft.Maui.Media
 			// Deterministic output container: PNG stays PNG, everything else becomes JPEG (matching the
 			// shared Graphics processor). A captured photo has no original name, so it becomes JPEG.
 			format = ImageProcessor.GetOutputFormat(originalFileName);
-			var extension = ImageProcessor.GetOutputExtension(format);
+			var extension = ImageProcessor.GetOutputExtension(format, originalFileName);
 			FullPath = Guid.NewGuid().ToString() + extension;
 			FileName = FullPath;
 			ContentType = format == Microsoft.Maui.Graphics.ImageFormat.Png ? "image/png" : "image/jpeg";
@@ -685,7 +685,7 @@ namespace Microsoft.Maui.Media
 
 			// Deterministic output container: PNG stays PNG, everything else becomes JPEG (matching the
 			// shared Graphics processor). FileName/ContentType reflect the actual processed output.
-			var outputExtension = ImageProcessor.GetOutputExtension(ImageProcessor.GetOutputFormat(originalFileName));
+			var outputExtension = ImageProcessor.GetOutputExtension(ImageProcessor.GetOutputFormat(originalFileName), originalFileName);
 			var isPng = string.Equals(outputExtension, ".png", StringComparison.OrdinalIgnoreCase);
 
 			FileName = !string.IsNullOrEmpty(originalFileName) && !string.IsNullOrEmpty(outputExtension)
