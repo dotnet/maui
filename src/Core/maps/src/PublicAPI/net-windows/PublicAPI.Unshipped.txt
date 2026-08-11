@@ -22,6 +22,7 @@ Microsoft.Maui.Maps.MoveToRegionRequest
 Microsoft.Maui.Maps.MoveToRegionRequest.Animated.get -> bool
 Microsoft.Maui.Maps.MoveToRegionRequest.MoveToRegionRequest(Microsoft.Maui.Maps.MapSpan? region, bool animated) -> void
 Microsoft.Maui.Maps.MoveToRegionRequest.Region.get -> Microsoft.Maui.Maps.MapSpan?
+override Microsoft.Maui.Maps.Handlers.MapHandler.DisconnectHandler(Microsoft.UI.Xaml.FrameworkElement! platformView) -> void
 override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Maps.MapSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Maps.MapSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
