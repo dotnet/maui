@@ -110,7 +110,7 @@ BeforeAll {
         # The publisher once again requires the agent to duplicate match_pattern in
         # its issue body instead of repairing the evidence-verified handoff.
         'no-match-pattern-injection' = @{
-            Find    = '    $body = Add-TrustedMatchPatternExcerpt `
+            Find    = '    $body = Add-TrustedErrorMessagePattern `
         -Body $body `
         -MatchPattern $matchPattern'
             Replace = '    $body = $body'
@@ -248,7 +248,10 @@ BeforeAll {
             $Source.Contains('not only in its trusted match-pattern excerpt') -and
             $Source.Contains('normalized identity/failure-category fields must contain a non-generic token') -and
             $Source.Contains('and the pattern itself must contain at least two distinctive tokens or one') -and
-            $Source.Contains('generic text such as `Build FAILED.` is not')
+            $Source.Contains('generic text such as `Build FAILED.` is not') -and
+            $Source.Contains('must not also occur in the `## Error Message` evidence') -and
+            $Source.Contains('of a different open canonical issue for the same scanner branch and pipeline') -and
+            $Source.Contains('restriction applies between `filed` entries in this manifest')
     }
 
     function Get-CompiledThreatDetectionPrompt {
@@ -910,6 +913,28 @@ Describe 'CI scanner twin discovery mutation coverage' {
                 $start | Should -BeGreaterOrEqual 0
                 $end | Should -BeGreaterOrEqual $start
                 $mutated = $source.Remove($start, ($end + $endToken.Length) - $start)
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-CanonicalRecurrencePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "shared-pattern-allowed": dropping cross-issue attribution fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'The pattern must not also occur in the `## Error Message` evidence',
+                    'The pattern may also occur in the `## Error Message` evidence')
+
+                $mutated | Should -Not -BeExactly $source
+                (Test-CanonicalRecurrencePrompt -Source $mutated) | Should -BeFalse
+            }
+        }
+
+        It 'mutation "same-run-shared-pattern-allowed": dropping intra-manifest attribution fails the prompt invariant' {
+            foreach ($source in $script:WorkflowSources) {
+                $mutated = $source.Replace(
+                    'restriction applies between `filed` entries in this manifest',
+                    'restriction does not apply between `filed` entries in this manifest')
 
                 $mutated | Should -Not -BeExactly $source
                 (Test-CanonicalRecurrencePrompt -Source $mutated) | Should -BeFalse

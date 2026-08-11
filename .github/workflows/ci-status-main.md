@@ -335,6 +335,60 @@ safe-outputs:
                 }
                 return false;
               };
+              const getCanonicalFingerprint = (candidate, pipeline) => {
+                const prefix = `${markerPrefix} ${scannerId}|${scannerBranch}|${pipeline}|`;
+                const markerLines = String(candidate.body || '').split(/\r?\n/)
+                  .filter(line => line.startsWith(prefix) && line.endsWith(' -->'));
+                if (markerLines.length !== 1) {
+                  return null;
+                }
+                const fingerprint = markerLines[0].slice(markerPrefix.length + 1, -4);
+                const parts = fingerprint.split('|');
+                return parts.length === 6 &&
+                  parts[0] === scannerId &&
+                  parts[1] === scannerBranch &&
+                  parts[2] === pipeline
+                  ? fingerprint
+                  : null;
+              };
+              const assertUnambiguousCanonicalRecurrence = (
+                fingerprint,
+                pipeline,
+                pattern,
+                openTrackingIssues,
+              ) => {
+                const foreignOwners = openTrackingIssues.filter(candidate => {
+                  if (candidate.pull_request) {
+                    return false;
+                  }
+                  const candidateFingerprint = getCanonicalFingerprint(candidate, pipeline);
+                  return candidateFingerprint !== null &&
+                    candidateFingerprint !== fingerprint &&
+                    hasHistoricalErrorPattern(candidate.body, pattern);
+                }).sort((left, right) => Number(left.number) - Number(right.number));
+                if (foreignOwners.length > 0) {
+                  const issueWord = foreignOwners.length === 1 ? 'issue' : 'issues';
+                  const owners = foreignOwners.map(candidate => `#${candidate.number}`).join(', ');
+                  throw new Error(
+                    `Fingerprint ${fingerprint} recurrence pattern is also historical evidence ` +
+                    `for open canonical ${issueWord} ${owners} in ${pipeline}.`);
+                }
+              };
+              const assertUnambiguousPlannedRecurrence = (issue, plannedIssues) => {
+                const plannedForeignOwners = plannedIssues.filter(candidate =>
+                  candidate.Pipeline === issue.Pipeline &&
+                  candidate.Fingerprint !== issue.Fingerprint &&
+                  hasHistoricalErrorPattern(candidate.Body, issue.MatchPattern))
+                  .sort((left, right) => left.Fingerprint.localeCompare(right.Fingerprint));
+                if (plannedForeignOwners.length > 0) {
+                  const owners = plannedForeignOwners
+                    .map(candidate => candidate.Fingerprint)
+                    .join(', ');
+                  throw new Error(
+                    `Planned fingerprint ${issue.Fingerprint} recurrence pattern is also ` +
+                    `historical evidence for planned fingerprint(s) ${owners}.`);
+                }
+              };
 
               // The plan is produced by the trusted validator checked out at the frozen
               // publisher SHA, and this job's identity comes from the compiled workflow.
@@ -475,7 +529,15 @@ safe-outputs:
                 per_page: 100,
                 request: requestOptions(),
               });
+              for (const issue of plan.issues) {
+                assertUnambiguousPlannedRecurrence(issue, plan.issues);
+              }
               for (const entry of existingEntries) {
+                assertUnambiguousCanonicalRecurrence(
+                  entry.fingerprint,
+                  entry.pipeline,
+                  entry.match_pattern,
+                  openTrackingIssues);
                 const exactMarker = `<!-- ci-scan-fingerprint: ${entry.fingerprint} -->`;
                 const markerMatches = openTrackingIssues.filter(candidate =>
                   !candidate.pull_request &&
@@ -485,6 +547,13 @@ safe-outputs:
                   const matches = markerMatches.map(candidate => `#${candidate.number}`).join(', ') || 'none';
                   throw new Error(`Existing fingerprint ${entry.fingerprint} does not uniquely resolve to #${entry.issue_number}; open marker matches: ${matches}.`);
                 }
+              }
+              for (const issue of plan.issues) {
+                assertUnambiguousCanonicalRecurrence(
+                  issue.Fingerprint,
+                  issue.Pipeline,
+                  issue.MatchPattern,
+                  openTrackingIssues);
               }
               const issuesToCreate = [];
               for (const issue of plan.issues) {
@@ -1191,8 +1260,12 @@ Disposition-specific fields:
   normalized identity/failure-category fields must contain a non-generic token,
   and the pattern itself must contain at least two distinctive tokens or one
   token of at least 16 characters; generic text such as `Build FAILED.` is not
-  sufficient. Use these same rules for `filed` entries so the canonical issue
-  remains reusable. If the matching issue is markerless, use `filed` so the
+  sufficient. The pattern must not also occur in the `## Error Message` evidence
+  of a different open canonical issue for the same scanner branch and pipeline;
+  choose a more identity-bearing evidence substring when it does. The same
+  restriction applies between `filed` entries in this manifest. Use these same
+  rules for `filed` entries so the canonical issue remains reusable. If the
+  matching issue is markerless, use `filed` so the
   publisher creates bounded canonical coverage instead.
 - `skipped` — also include exactly one `skip_reason`:
   `not-recurring`, `not-actionable`, `infrastructure-noise`,

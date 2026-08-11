@@ -740,6 +740,8 @@ Describe 'CI scanner compiled publisher invariants: <_.Name>' -ForEach $script:D
         $script:TwinLock | Should -Match 'canonical-fingerprint-and-distinctive-current-evidence'
         $script:TwinLock | Should -Match 'hasDistinctiveRecurrencePattern'
         $script:TwinLock | Should -Match 'hasHistoricalErrorPattern'
+        $script:TwinLock | Should -Match 'assertUnambiguousCanonicalRecurrence'
+        $script:TwinLock | Should -Match 'recurrence pattern is also historical evidence'
         $script:TwinLock | Should -Not -Match 'does not contain a full current trusted evidence line'
     }
 
@@ -772,6 +774,7 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
                 [switch]$RequireCurrentEvidenceInExistingBody,
                 [switch]$AllowGenericExistingPattern,
                 [switch]$AllowPatternOutsideHistoricalEvidence,
+                [switch]$AllowSharedCanonicalPattern,
                 [string]$ScannerIdOverride,
                 [string]$BranchOverride,
                 [string]$LabelOverride
@@ -831,6 +834,18 @@ Describe 'CI scanner publisher execution: <_.Name>' -Skip:(-not $script:NodeAvai
                 $publisherSource = $publisherSource.Replace(
                     $needle,
                     'if (!body.includes(String(entry.match_pattern ?? ''''))) {')
+            }
+            if ($AllowSharedCanonicalPattern) {
+                $needles = @(
+                    'if (foreignOwners.length > 0) {'
+                    'if (plannedForeignOwners.length > 0) {'
+                )
+                foreach ($needle in $needles) {
+                    $publisherSource.Contains($needle) | Should -BeTrue
+                    $publisherSource = $publisherSource.Replace(
+                        $needle,
+                        $needle.Replace('if (', 'if (false && '))
+                }
             }
             if ($AllowMarkerlessAutoAdoption) {
                 $needle = 'issuesToCreate.push(issue);'
@@ -940,12 +955,16 @@ $publisherSource
                 [string]$Platform = 'windows',
                 [int]$MatchCount = 2,
                 [string]$EvidenceLine = '',
+                [string]$MatchPattern = '',
                 [string]$BodyOverride
             )
 
             $fingerprint = "$($script:TwinScannerId)|$($script:TwinBranch)|$Pipeline|$Identity|$FailureCategory|$Platform"
             if (-not $EvidenceLine) {
                 $EvidenceLine = "Assertion failed for $Identity"
+            }
+            if (-not $MatchPattern) {
+                $MatchPattern = $EvidenceLine
             }
             $proof = New-EvidenceProof -Line $EvidenceLine
             $body = if ($PSBoundParameters.ContainsKey('BodyOverride')) {
@@ -964,6 +983,7 @@ $publisherSource
                 Title              = "[$($script:TwinScannerId)] $Identity fails on Windows"
                 Body               = $body
                 MatchCount         = $MatchCount
+                MatchPattern       = $MatchPattern
                 EvidenceKey        = $proof.EvidenceKey
                 EvidenceLineHashes = $proof.EvidenceLineHashes
             }
@@ -1417,6 +1437,224 @@ Unique current raw failure line
         $result.ok | Should -BeFalse
         $result.error | Should -BeLike '*does not uniquely resolve to #40001*#40001, #40002*'
         @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects the exact cross-issue timeout recurrence from issues 36979 and 36982' {
+        $pattern = 'System.TimeoutException : Timed out waiting for element...'
+        $plan = New-ExistingPlan `
+            -IssueNumber 36979 `
+            -EvidenceLine "   $pattern" `
+            -FingerprintIdentity 'issue21394test' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'system.timeoutexception' `
+            -Platform 'android' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $issue36979 = New-ExistingIssueStub -Number 36979 -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+Failed Issue21394Test [17 s]
+   $pattern
+"@
+        $issue36982 = New-ExistingIssueStub -Number 36982 -Body @"
+<!-- ci-scan-fingerprint: $($script:TwinScannerId)|$($script:TwinBranch)|maui-pr-uitests|validateemptyviewtemplatedisplayed|system.timeoutexception|android -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+Failed ValidateEmptyViewTemplateDisplayed [15 s]
+   $pattern
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '36979' = $issue36979 } `
+            -OpenIssues @($issue36979, $issue36982)
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*recurrence pattern is also historical evidence for open canonical issue #36982*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects filing a new fingerprint with another canonical issue timeout pattern' {
+        $pattern = 'System.TimeoutException : Timed out waiting for element...'
+        $issue = New-PlannedIssue `
+            -Identity 'validateemptyviewtemplatedisplayed' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'system.timeoutexception' `
+            -Platform 'android' `
+            -EvidenceLine "   $pattern" `
+            -MatchPattern $pattern
+        $existingFingerprint =
+            "$($script:TwinScannerId)|$($script:TwinBranch)|maui-pr-uitests|issue21394test|system.timeoutexception|android"
+        $existing = New-MarkedIssue `
+            -Number 36979 `
+            -Fingerprint $existingFingerprint `
+            -Body @"
+<!-- ci-scan-fingerprint: $existingFingerprint -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: sha256:$('1' * 64) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+Failed Issue21394Test [17 s]
+   $pattern
+"@
+
+        $result = Invoke-Publisher `
+            -Plan (New-Plan -Issues @($issue)) `
+            -OpenIssues @($existing)
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*recurrence pattern is also historical evidence for open canonical issue #36979*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'preserves a production XHarness recurrence whose pattern has no identity-token overlap' {
+        $pattern = 'XHarness exit code: 1 (TESTS_FAILED)'
+        $plan = New-ExistingPlan `
+            -IssueNumber 40001 `
+            -EvidenceLine $pattern `
+            -FingerprintIdentity 'carouselview does not leak with default items layout' `
+            -Pipeline 'maui-pr-devicetests' `
+            -FailureCategory 'reference to microsoft.maui.controls.carouselview is still alive' `
+            -Platform 'maccatalyst' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[1].signatures[0]
+        $existing = New-ExistingIssueStub -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-devicetests
+## Error Message
+$pattern
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '40001' = $existing }
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'mutation "shared-canonical-pattern-allowed": the wrong timeout issue suppresses coverage' {
+        $pattern = 'System.TimeoutException : Timed out waiting for element...'
+        $plan = New-ExistingPlan `
+            -IssueNumber 36979 `
+            -EvidenceLine "   $pattern" `
+            -FingerprintIdentity 'issue21394test' `
+            -Pipeline 'maui-pr-uitests' `
+            -FailureCategory 'system.timeoutexception' `
+            -Platform 'android' `
+            -MatchPattern $pattern
+        $entry = $plan.pipelines[2].signatures[0]
+        $issue36979 = New-ExistingIssueStub -Number 36979 -Body @"
+<!-- ci-scan-fingerprint: $($entry.fingerprint) -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+Failed Issue21394Test [17 s]
+   $pattern
+"@
+        $issue36982 = New-ExistingIssueStub -Number 36982 -Body @"
+<!-- ci-scan-fingerprint: $($script:TwinScannerId)|$($script:TwinBranch)|maui-pr-uitests|validateemptyviewtemplatedisplayed|system.timeoutexception|android -->
+<!-- ci-scan-match-count: 1 hits in failure.log -->
+<!-- ci-scan-evidence-key: $($entry.evidence_key) -->
+- **Pipeline**: maui-pr-uitests
+## Error Message
+Failed ValidateEmptyViewTemplateDisplayed [15 s]
+   $pattern
+"@
+
+        $result = Invoke-Publisher `
+            -Plan $plan `
+            -ExistingIssues @{ '36979' = $issue36979 } `
+            -OpenIssues @($issue36979, $issue36982) `
+            -AllowSharedCanonicalPattern
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'rejects two newly filed fingerprints that share one timeout pattern' {
+        $pattern = 'System.TimeoutException : Timed out waiting for element...'
+        $issues = @(
+            (New-PlannedIssue `
+                    -Identity 'issue21394test' `
+                    -Pipeline 'maui-pr-uitests' `
+                    -FailureCategory 'system.timeoutexception' `
+                    -Platform 'android' `
+                    -EvidenceLine "Failed Issue21394Test: $pattern" `
+                    -MatchPattern $pattern)
+            (New-PlannedIssue `
+                    -Identity 'validateemptyviewtemplatedisplayed' `
+                    -Pipeline 'maui-pr-uitests' `
+                    -FailureCategory 'system.timeoutexception' `
+                    -Platform 'android' `
+                    -EvidenceLine "Failed ValidateEmptyViewTemplateDisplayed: $pattern" `
+                    -MatchPattern $pattern)
+        )
+
+        $result = Invoke-Publisher -Plan (New-Plan -Issues $issues)
+
+        $result.ok | Should -BeFalse
+        $result.error | Should -BeLike '*planned fingerprint*recurrence pattern is also historical evidence for planned fingerprint*'
+        @($result.created).Count | Should -Be 0
+    }
+
+    It 'allows two newly filed fingerprints with distinct identity-bearing patterns' {
+        $issues = @(
+            (New-PlannedIssue `
+                    -Identity 'issue21394test' `
+                    -Pipeline 'maui-pr-uitests' `
+                    -FailureCategory 'system.timeoutexception' `
+                    -Platform 'android' `
+                    -EvidenceLine 'Failed Issue21394Test after waiting for LoginButton' `
+                    -MatchPattern 'Issue21394Test after waiting for LoginButton')
+            (New-PlannedIssue `
+                    -Identity 'validateemptyviewtemplatedisplayed' `
+                    -Pipeline 'maui-pr-uitests' `
+                    -FailureCategory 'system.timeoutexception' `
+                    -Platform 'android' `
+                    -EvidenceLine 'Failed ValidateEmptyViewTemplateDisplayed after waiting for EmptyViewLabel' `
+                    -MatchPattern 'ValidateEmptyViewTemplateDisplayed after waiting for EmptyViewLabel')
+        )
+
+        $result = Invoke-Publisher -Plan (New-Plan -Issues $issues)
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 2
+    }
+
+    It 'mutation "same-run-shared-canonical-pattern-allowed": both ambiguous issues are created' {
+        $pattern = 'System.TimeoutException : Timed out waiting for element...'
+        $issues = @(
+            (New-PlannedIssue `
+                    -Identity 'issue21394test' `
+                    -Pipeline 'maui-pr-uitests' `
+                    -FailureCategory 'system.timeoutexception' `
+                    -Platform 'android' `
+                    -EvidenceLine "Failed Issue21394Test: $pattern" `
+                    -MatchPattern $pattern)
+            (New-PlannedIssue `
+                    -Identity 'validateemptyviewtemplatedisplayed' `
+                    -Pipeline 'maui-pr-uitests' `
+                    -FailureCategory 'system.timeoutexception' `
+                    -Platform 'android' `
+                    -EvidenceLine "Failed ValidateEmptyViewTemplateDisplayed: $pattern" `
+                    -MatchPattern $pattern)
+        )
+
+        $result = Invoke-Publisher `
+            -Plan (New-Plan -Issues $issues) `
+            -AllowSharedCanonicalPattern
+
+        $result.ok | Should -BeTrue
+        @($result.created).Count | Should -Be 2
     }
 
     It 'rejects generic historical text that is not bound to the canonical fingerprint' {

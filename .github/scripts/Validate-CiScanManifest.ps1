@@ -756,7 +756,7 @@ function Test-HistoricalErrorPattern {
     return $false
 }
 
-function Add-TrustedMatchPatternExcerpt {
+function Add-TrustedErrorMessagePattern {
     param(
         [Parameter(Mandatory = $true)][string]$Body,
         [Parameter(Mandatory = $true)][string]$MatchPattern
@@ -1036,7 +1036,7 @@ function Assert-ValidIssuePayload {
         -SourceLogIds $SourceLogIds `
         -TrustedEvidencePath $TrustedEvidencePath
 
-    $body = Add-TrustedMatchPatternExcerpt `
+    $body = Add-TrustedErrorMessagePattern `
         -Body $body `
         -MatchPattern $matchPattern
     if ($body.Length -gt 59000) {
@@ -1275,6 +1275,7 @@ function Test-CiScanManifest {
                             Title             = $payload.FinalTitle
                             Body              = $payload.Body
                             MatchCount        = $payload.MatchCount
+                            MatchPattern      = $payload.MatchPattern
                             EvidenceKey       = $payload.EvidenceKey
                             EvidenceLineHashes = $payload.EvidenceLineHashes
                         })
