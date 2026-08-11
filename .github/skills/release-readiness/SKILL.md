@@ -164,6 +164,10 @@ a partially successful build is `partial-success`; a build behind the newest
 trigger-eligible commit is `stale`; a queued/running build is `in-progress`;
 missing or malformed evidence is `unknown`.
 
+Discovery examines a bounded five-build window. It prefers a build at exact branch
+HEAD, then one proven current by trigger-path analysis, before falling back to
+queue-time order, so a later retry of an old SHA cannot hide a current build.
+
 The internal check is intentionally fail-open:
 
 - `GITHUB_ACTIONS=true` skips it before any Azure command runs.

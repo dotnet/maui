@@ -8946,6 +8946,47 @@ $latestSelectionFixture = Select-LatestInternalOfficialBuild -Builds @(
 )
 Assert-Eq -Label "internal build selection: newest queue time wins with ID tie-breaker" -Expected 101 -Actual $latestSelectionFixture.id
 
+$currentHeadBuild = New-InternalBuildFixture -BranchRef $internalInflightRef -Sha $internalInflightHead -Id 102
+$currentHeadBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T12:00:00Z'
+$oldShaRerun = New-InternalBuildFixture -BranchRef $internalInflightRef -Sha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' -Id 103
+$oldShaRerun | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T13:00:00Z'
+$currentHeadSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($currentHeadBuild, $oldShaRerun) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher { throw 'Exact HEAD selection must not need Git currency evidence.' }
+Assert-Eq -Label "internal build selection: current HEAD build wins over later old-SHA rerun" `
+    -Expected 102 -Actual $currentHeadSelection.Build.id
+
+$oldShaRerunHealth = Invoke-InternalFixtureHealth @{
+    $internalInflightRef = [PSCustomObject]@{
+        Success = $true
+        Build = $oldShaRerun
+        Builds = @($oldShaRerun, $currentHeadBuild)
+    }
+    $internalReleaseRef = [PSCustomObject]@{
+        Success = $true
+        Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 104)
+    }
+}
+Assert-Eq -Label "internal build selection: health reports the current HEAD build" `
+    -Expected 102 -Actual $oldShaRerunHealth.branches[0].build.id
+Assert-Eq -Label "internal build selection: old-SHA rerun does not make current branch stale" `
+    -Expected 'green' -Actual $oldShaRerunHealth.branches[0].classification
+
+$excludedPathBuild = New-InternalBuildFixture -BranchRef $internalInflightRef -Sha 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' -Id 105
+$excludedPathBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T12:00:00Z'
+$provenCurrentSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($oldShaRerun, $excludedPathBuild) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher {
+        param($BranchRef, $BuildSourceSha, $BranchHeadSha)
+        return $BuildSourceSha -eq 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+    }
+Assert-Eq -Label "internal build selection: proven-current build wins over later stale rerun" `
+    -Expected 105 -Actual $provenCurrentSelection.Build.id
+
 $orderedArgs = Get-InternalOfficialBuildAzArguments `
     -BranchRef $internalInflightRef `
     -DefinitionId 1095 `
@@ -9014,6 +9055,20 @@ Assert-Eq -Label "internal build currency query: missing objects remain unknown 
     -Expected $null -Actual (& $missingObjectFetcher $internalInflightRef 'a' 'b')
 Assert-Eq -Label "internal build currency query: missing objects trigger a bounded branch-only fetch" `
     -Expected $true -Actual ([bool]($script:MissingObjectCommands -contains "fetch --no-tags --quiet origin $internalInflightRef"))
+
+$nonAncestorFetcher = New-GitBuildCurrencyFetcher -RepositoryPath $currencyWorkingDirectory -TimeoutSeconds 7 -ProcessInvoker {
+    param($FileName, $Arguments, $TimeoutSeconds, $WorkingDirectory)
+    $exitCode = if ($Arguments[0] -eq 'merge-base') { 1 } else { 0 }
+    return [PSCustomObject]@{
+        Started = $true
+        TimedOut = $false
+        ExitCode = $exitCode
+        Stdout = ''
+        Stderr = ''
+    }
+}
+Assert-Eq -Label "internal build currency query: conclusive non-ancestor is stale evidence" `
+    -Expected $false -Actual (& $nonAncestorFetcher $internalInflightRef 'a' 'b')
 
 $unknownCurrencyClassification = Get-InternalOfficialBuildClassification `
     -Build (New-InternalBuildFixture -BranchRef $internalInflightRef -Sha 'a' -Id 74) `

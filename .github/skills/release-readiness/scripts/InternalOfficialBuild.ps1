@@ -175,10 +175,11 @@ function Test-InternalOfficialBuildChangedPathsCoverHead {
     return $true
 }
 
-function Select-LatestInternalOfficialBuild {
+function Get-OrderedInternalOfficialBuilds {
     param([AllowNull()][object[]]$Builds)
 
     return @($Builds) |
+        Where-Object { $null -ne $_ } |
         Sort-Object -Property @(
             @{ Expression = {
                 $queueTime = Get-InternalBuildProperty $_ 'queueTime'
@@ -195,8 +196,68 @@ function Select-LatestInternalOfficialBuild {
                 }
                 return 0L
             }; Descending = $true }
-        ) |
+        )
+}
+
+function Select-LatestInternalOfficialBuild {
+    param([AllowNull()][object[]]$Builds)
+
+    return @(Get-OrderedInternalOfficialBuilds -Builds $Builds) |
         Select-Object -First 1
+}
+
+function Select-InternalOfficialBuildForHead {
+    param(
+        [AllowNull()][object[]]$Builds,
+        [AllowNull()][string]$BranchHeadSha,
+        [Parameter(Mandatory = $true)][string]$BranchRef,
+        [AllowNull()][scriptblock]$BuildCurrencyFetcher
+    )
+
+    $orderedBuilds = @(Get-OrderedInternalOfficialBuilds -Builds $Builds)
+    if ($orderedBuilds.Count -eq 0) {
+        return [PSCustomObject]@{ Build = $null; CoversHead = $null }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($BranchHeadSha)) {
+        $exactBuild = $orderedBuilds |
+            Where-Object {
+                $sourceBranch = [string](Get-InternalBuildProperty $_ 'sourceBranch')
+                $sourceSha = [string](Get-InternalBuildProperty $_ 'sourceVersion')
+                $sourceBranch -eq $BranchRef -and
+                    -not [string]::IsNullOrWhiteSpace($sourceSha) -and
+                    $sourceSha.Equals($BranchHeadSha, [System.StringComparison]::OrdinalIgnoreCase)
+            } |
+            Select-Object -First 1
+        if ($null -ne $exactBuild) {
+            return [PSCustomObject]@{ Build = $exactBuild; CoversHead = $true }
+        }
+    }
+
+    $latestBuild = $orderedBuilds[0]
+    $latestCoverage = $null
+    if ($BuildCurrencyFetcher -and -not [string]::IsNullOrWhiteSpace($BranchHeadSha)) {
+        foreach ($candidate in $orderedBuilds) {
+            $sourceBranch = [string](Get-InternalBuildProperty $candidate 'sourceBranch')
+            $sourceSha = [string](Get-InternalBuildProperty $candidate 'sourceVersion')
+            if ($sourceBranch -ne $BranchRef -or [string]::IsNullOrWhiteSpace($sourceSha)) { continue }
+
+            $coverage = try {
+                $currencyEvidence = & $BuildCurrencyFetcher $BranchRef $sourceSha $BranchHeadSha
+                if ($null -eq $currencyEvidence) { $null } else { [bool]$currencyEvidence }
+            } catch {
+                $null
+            }
+            if ($candidate -eq $latestBuild) {
+                $latestCoverage = $coverage
+            }
+            if ($coverage -eq $true) {
+                return [PSCustomObject]@{ Build = $candidate; CoversHead = $true }
+            }
+        }
+    }
+
+    return [PSCustomObject]@{ Build = $latestBuild; CoversHead = $latestCoverage }
 }
 
 function Invoke-InternalOfficialBuildProcess {
@@ -419,12 +480,13 @@ function ConvertFrom-InternalOfficialBuildAzOutput {
         }
     }
 
-    $build = if ($ManualQuery) {
-        $parsed
-    } else {
-        Select-LatestInternalOfficialBuild -Builds @($parsed)
+    $builds = @($parsed)
+    $build = Select-LatestInternalOfficialBuild -Builds $builds
+    return [PSCustomObject]@{
+        Success = $true
+        Build = $build
+        Builds = $builds
     }
-    return [PSCustomObject]@{ Success = $true; Build = $build }
 }
 
 function New-AzdoInternalOfficialBuildFetcher {
@@ -622,10 +684,12 @@ function New-GitBuildCurrencyFetcher {
 
         $ancestryResult = & $invokeProcess 'git' @('merge-base', '--is-ancestor', $BuildSourceSha, $BranchHeadSha) $timeout $repoPath
         if (-not [bool](Get-InternalBuildProperty $ancestryResult 'Started') -or
-            [bool](Get-InternalBuildProperty $ancestryResult 'TimedOut') -or
-            [int](Get-InternalBuildProperty $ancestryResult 'ExitCode') -ne 0) {
+            [bool](Get-InternalBuildProperty $ancestryResult 'TimedOut')) {
             return $null
         }
+        $ancestryExitCode = [int](Get-InternalBuildProperty $ancestryResult 'ExitCode')
+        if ($ancestryExitCode -eq 1) { return $false }
+        if ($ancestryExitCode -ne 0) { return $null }
 
         # Aggregate compare diffs can hide a trigger-eligible change that a
         # later commit reverted, so inspect the paths touched by every commit.
@@ -720,22 +784,21 @@ function Get-InternalOfficialBuildHealth {
             continue
         }
 
-        $build = Get-InternalBuildProperty $fetchResult 'Build'
         $headSha = try { [string](& $HeadFetcher $branchRef) } catch { $null }
-        $buildSourceSha = [string](Get-InternalBuildProperty $build 'sourceVersion')
-        $buildCoversHead = if ($BuildCurrencyFetcher -and
-            -not [string]::IsNullOrWhiteSpace($buildSourceSha) -and
-            -not [string]::IsNullOrWhiteSpace($headSha) -and
-            -not $buildSourceSha.Equals($headSha, [System.StringComparison]::OrdinalIgnoreCase)) {
-            try {
-                $currencyEvidence = & $BuildCurrencyFetcher $branchRef $buildSourceSha $headSha
-                if ($null -eq $currencyEvidence) { $null } else { [bool]$currencyEvidence }
-            } catch {
-                $null
+        $builds = @(Get-InternalBuildProperty $fetchResult 'Builds' | Where-Object { $null -ne $_ })
+        if ($builds.Count -eq 0) {
+            $fallbackBuild = Get-InternalBuildProperty $fetchResult 'Build'
+            if ($null -ne $fallbackBuild) {
+                $builds = @($fallbackBuild)
             }
-        } else {
-            $null
         }
+        $selection = Select-InternalOfficialBuildForHead `
+            -Builds $builds `
+            -BranchHeadSha $headSha `
+            -BranchRef $branchRef `
+            -BuildCurrencyFetcher $BuildCurrencyFetcher
+        $build = $selection.Build
+        $buildCoversHead = $selection.CoversHead
         $classification = Get-InternalOfficialBuildClassification `
             -Build $build `
             -ExpectedBranchRef $branchRef `

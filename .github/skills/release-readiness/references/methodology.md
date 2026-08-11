@@ -341,8 +341,10 @@ formatting separate:
 2. Build a unique ref list containing `net11.0` and, when it exists, the
    evaluated release branch.
 3. Query a bounded, server-ordered window of definition-1095 builds independently
-   for each ref, then select newest `queueTime` with build ID as the deterministic
-   tie-breaker.
+   for each ref. Prefer the newest build at exact branch HEAD, then any candidate
+   proven current by trigger-path analysis, before falling back to newest
+   `queueTime` with build ID as the deterministic tie-breaker. This prevents a
+   later manual retry of an older SHA from eclipsing a current build.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
    - current completed/succeeded → `green`
@@ -356,13 +358,14 @@ formatting separate:
    evidence instead of hanging the local run. Local Git runs from the explicit
    repository root and performs a bounded fetch of only the evaluated branch
    when either compared commit object is absent.
-7. When branch HEAD is newer than the build, inspect the exact paths touched by
+7. When the build is an ancestor of branch HEAD, inspect the exact paths touched by
    every first-parent commit against `eng/pipelines/ci-official.yml`, including
    each merge result relative to its first parent; excluded-only and successful
    no-op advances remain current. Do not trim path text, traverse merged
    second-parent history, or use an aggregate tip-to-tip diff because whitespace
    is valid in Git paths, merged history may already be built, and a later revert
-   can hide an earlier trigger-eligible change.
+   can hide an earlier trigger-eligible change. A conclusive non-ancestor result
+   means the build is stale; only missing or failed Git evidence remains unknown.
 8. Fold local classifications into readiness: `red`/`stale` → `BLOCKED`,
    `in-progress`/`partial-success` → `WATCH`, `unknown` → `UNKNOWN`; `skipped`
    is fail-open.
