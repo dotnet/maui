@@ -14,6 +14,7 @@ using Microsoft.Maui.Platform;
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
@@ -77,7 +78,14 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		}
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
-#else
+#elif TIZEN
+		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
+#elif !ANDROID
+		// Non-platform host target (net/netstandard). Android registers these inside the
+		// #if ANDROID block below; every other platform is handled above. Without this
+		// fallback the plain net/netstandard TFM would register no CollectionView/CarouselView
+		// handler, causing HandlerNotFound in design-time/unit-test scenarios.
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
@@ -96,6 +104,8 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
 			handlersCollection.AddHandler<Slider, SliderHandler2>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
 			handlersCollection.AddHandler<Entry, EntryHandler2>();
 		}
 		else
@@ -112,6 +122,8 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 			handlersCollection.AddHandler<Slider, SliderHandler>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 			handlersCollection.AddHandler<Entry, EntryHandler>();
 		}
 #else
