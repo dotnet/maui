@@ -490,7 +490,11 @@ namespace Microsoft.Maui.Media
 						rotateImage: true,
 						preserveMetadata: true));
 
-				return new FileResult(outputPath, original.FileName);
+				var contentType = ImageProcessor.GetOutputFormat(outputPath) == Microsoft.Maui.Graphics.ImageFormat.Png
+					? "image/png"
+					: "image/jpeg";
+
+				return new FileResult(outputPath, contentType) { FileName = original.FileName };
 			}
 			catch (Exception ex)
 			{

@@ -190,9 +190,26 @@ internal static class ImageProcessor
 		Directory.CreateDirectory(outputDirectory);
 		var outputPath = Path.Combine(outputDirectory, baseName + extension);
 
-		using (var output = File.Create(outputPath))
+		try
 		{
-			await ProcessImageAsync(input, output, format, options).ConfigureAwait(false);
+			using (var output = File.Create(outputPath))
+			{
+				await ProcessImageAsync(input, output, format, options).ConfigureAwait(false);
+			}
+		}
+		catch
+		{
+			// Don't leave a half-written file (and its unique sub-directory) behind if processing fails.
+			try
+			{
+				Directory.Delete(outputDirectory, recursive: true);
+			}
+			catch
+			{
+				// Best-effort cleanup.
+			}
+
+			throw;
 		}
 
 		return outputPath;
