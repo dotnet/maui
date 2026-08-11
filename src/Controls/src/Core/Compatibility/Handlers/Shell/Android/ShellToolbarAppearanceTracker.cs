@@ -1,6 +1,8 @@
 #nullable disable
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -14,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		bool _originalAppearanceCaptured;
 		Color _originalNativeTitleColor;
+		Color _originalNativeBackgroundColor;
 		IShellContext _shellContext;
 
 		public ShellToolbarAppearanceTracker(IShellContext shellContext)
@@ -32,9 +35,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
-			// SetColors already resolves the right M2/M3 default per-color internally when
-			// passed null, so there's no need to branch on RuntimeFeature.IsMaterial3Enabled here.
-			SetColors(toolbar, toolbarTracker, null, null, null);
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				RestoreNativeColors(toolbar, toolbarTracker);
+			}
+			else
+			{
+				SetColors(toolbar, toolbarTracker,
+					ShellRenderer.DefaultForegroundColor,
+					ShellRenderer.DefaultBackgroundColor,
+					ShellRenderer.DefaultTitleColor);
+			}
 		}
 
 		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
@@ -47,20 +58,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shellToolbar is null)
 				return;
 
-			var defaultBackground = RuntimeFeature.IsMaterial3Enabled ? null : ShellRenderer.DefaultBackgroundColor;
-			var defaultForeground = RuntimeFeature.IsMaterial3Enabled ? null : ShellRenderer.DefaultForegroundColor;
-			var defaultTitle = RuntimeFeature.IsMaterial3Enabled ? _originalNativeTitleColor : ShellRenderer.DefaultTitleColor;
-			var barBackground = background ?? defaultBackground;
-			shellToolbar.BarTextColor = title ?? defaultTitle;
-			shellToolbar.BarBackground = barBackground is null ? null : new SolidColorBrush(barBackground);
-			shellToolbar.IconColor = foreground ?? defaultForeground;
-
-			// Only sync the toolbar's menu-item/hamburger tint on Material3. On Material2 this
-			// must stay untouched: IShellToolbarTracker.TintColor has its own White fallback for
-			// the default (no custom appearance) M2 case, and syncing it here would overwrite
-			// that and unexpectedly darken overflow/hamburger icons.
 			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				shellToolbar.BarTextColor = title ?? _originalNativeTitleColor;
+				shellToolbar.BarBackground = new SolidColorBrush(background ?? _originalNativeBackgroundColor);
+				shellToolbar.IconColor = foreground ?? _originalNativeTitleColor;
 				toolbarTracker.TintColor = foreground;
+			}
+			else
+			{
+				shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
+				shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
+				shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+			}
+		}
+
+		void RestoreNativeColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
+		{
+			if (_disposed)
+				return;
+
+			Toolbar shellToolbar = _shellContext?.Shell?.Toolbar;
+
+			if (shellToolbar is null)
+				return;
+
+			shellToolbar.BarTextColor = _originalNativeTitleColor;
+			shellToolbar.BarBackground = _originalNativeBackgroundColor is not null ? new SolidColorBrush(_originalNativeBackgroundColor) : null;
+			shellToolbar.IconColor = _originalNativeTitleColor;
+			toolbarTracker.TintColor = _originalNativeTitleColor;
+
 		}
 
 		// Shell.Toolbar.BarTextColor is a cross-platform Color, so unlike the TabLayout/BottomNavigationView
@@ -69,14 +96,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// queries an AppCompat Toolbar styleable that isn't Material3-aware and resolves to the wrong
 		// (near-invisible) color under M3. Capturing the real M3 theme color once and using it as our
 		// default keeps BarTextColor from ever being null, so that broken shared fallback path is never hit.
-		internal void CaptureNativeTitleColor(AToolbar toolbar)
+		internal void CaptureNativeColors(AToolbar toolbar)
 		{
 			if (_originalAppearanceCaptured)
 				return;
 
 			var context = toolbar?.Context;
 			if (context is not null)
+			{
 				_originalNativeTitleColor = Color.FromInt(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface));
+			}
+			if (toolbar?.Background is MaterialShapeDrawable materialShapeDrawable && materialShapeDrawable.FillColor is ColorStateList fillColor)
+			{
+				_originalNativeBackgroundColor = Color.FromInt(fillColor.DefaultColor);
+			}
 
 			_originalAppearanceCaptured = true;
 		}

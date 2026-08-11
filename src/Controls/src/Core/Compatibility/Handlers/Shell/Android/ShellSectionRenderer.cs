@@ -151,12 +151,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(ShellSection);
 
 			if (RuntimeFeature.IsMaterial3Enabled && _tabLayoutAppearanceTracker is ShellTabLayoutAppearanceTracker concreteTabLayoutAppearanceTracker)
+			{
 				concreteTabLayoutAppearanceTracker.CaptureNativeColors(_tablayout);
+			}
 
 			_toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
 
 			if (RuntimeFeature.IsMaterial3Enabled && _toolbarAppearanceTracker is ShellToolbarAppearanceTracker concreteToolbarAppearanceTracker)
-				concreteToolbarAppearanceTracker.CaptureNativeTitleColor(_toolbar);
+			{
+				concreteToolbarAppearanceTracker.CaptureNativeColors(_toolbar);
+			}
 
 			HookEvents();
 
