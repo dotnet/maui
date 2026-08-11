@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Animations
 		{
 			if (_disposedValue)
 			{
-				return;
+				throw new ObjectDisposedException(nameof(AnimationManager));
 			}
 
 			// If animations are disabled, don't do anything
