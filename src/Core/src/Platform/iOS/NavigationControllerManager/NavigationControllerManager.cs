@@ -336,15 +336,16 @@ namespace Microsoft.Maui.Platform
                 _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
             }
 
-            // Cancel all pending completion tasks
+            // Complete all pending tasks with false rather than cancelling — preserves the
+            // soft-fail contract Shell relies on (async void callers can't catch TaskCanceledException).
             foreach (var kvp in _completionTasks)
             {
-                kvp.Value.TrySetCanceled();
+                kvp.Value.TrySetResult(false);
             }
 
             _completionTasks.Clear();
 
-            _popCompletionTask?.TrySetCanceled();
+            _popCompletionTask?.TrySetResult(false);
             _popCompletionTask = null;
 
             _pendingViewControllers = null;

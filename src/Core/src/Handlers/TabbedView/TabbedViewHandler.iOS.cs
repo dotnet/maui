@@ -96,6 +96,11 @@ namespace Microsoft.Maui.Handlers
             _manager?.RaiseViewDidDisappear();
         }
 
+        void ITabBarManagerDelegate.OnViewWillLayoutSubviews()
+        {
+            // TabbedPage arranges only after layout completes; nothing needed before.
+        }
+
         void ITabBarManagerDelegate.OnViewDidLayoutSubviews()
         {
             // Use interface property — typed VirtualView throws after DisconnectHandler

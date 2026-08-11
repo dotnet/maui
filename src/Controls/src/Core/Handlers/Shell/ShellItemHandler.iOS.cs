@@ -19,13 +19,15 @@ namespace Microsoft.Maui.Controls.Handlers
     /// <summary>
     /// Handles the iOS Shell item tab bar.
     /// </summary>
-    public partial class ShellItemHandler : ElementHandler<ShellItem, UIView>, IAppearanceObserver, IDisconnectable
+    public partial class ShellItemHandler : ElementHandler<ShellItem, UIView>, IAppearanceObserver, IDisconnectable, ITabBarManagerDelegate
     {
         readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
 
         IShellContext? _shellContext;
+        TabBarControllerManager? _tabManager;
         internal UITabBarController _tabBarController = null!;
         internal IShellTabBarAppearanceTracker? _appearanceTracker;
+        bool _nativeSelectionInProgress;
         readonly Dictionary<UIViewController, IShellSectionRenderer> _sectionRenderers = new Dictionary<UIViewController, IShellSectionRenderer>();
         ShellSection? _currentSection;
         Page? _displayedPage;
@@ -60,9 +62,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override UIView CreatePlatformElement()
         {
-            _tabBarController = new ShellItemTabBarController(this);
-            _tabBarController.DisableiOS18ToolbarTabs();
-            return _tabBarController.View!;
+            _tabManager = new TabBarControllerManager(managerDelegate: this);
+            _tabBarController = _tabManager.TabBarController;
+            return _tabManager.View;
         }
 
         protected override void ConnectHandler(UIView platformView)
@@ -80,11 +82,19 @@ namespace Microsoft.Maui.Controls.Handlers
 
             ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 
+            // Wire event-based lifecycle callbacks from the manager.
+            if (_tabManager is not null)
+            {
+                _tabManager.GetCurrentPageViewControllerFunc = ((ITabBarManagerDelegate)this).GetCurrentPageViewController;
+                _tabManager.ViewDidAppear += OnTabManagerViewDidAppear;
+                _tabManager.ViewDidDisappear += OnTabManagerViewDidDisappear;
+            }
+
             _tabBarController.ViewDidLoad();
             _tabBarController.ShouldSelectViewController = (tabController, viewController) =>
             {
                 bool accept = true;
-                var renderer = RendererForViewController(viewController);
+                var renderer = viewController is null ? null : RendererForViewController(viewController);
                 if (renderer is not null)
                 {
                     // iOS 26+ can still drag-select disabled tabs.
@@ -96,11 +106,18 @@ namespace Microsoft.Maui.Controls.Handlers
                     accept = ((IShellItemController)VirtualView).ProposeSection(renderer.ShellSection, false);
                 }
 
+                // UIKit does not call setSelectedViewController: for individual More-list item picks,
+                // so OnTabSelected never runs for the More button tap. Set the delegate here instead.
+                if (_tabManager is not null && ReferenceEquals(viewController, _tabManager.MoreNavigationController))
+                {
+                    _moreNavigationDelegate ??= new MoreNavigationDelegate(this);
+                    _tabManager.MoreNavigationController.Delegate = _moreNavigationDelegate;
+                }
+
                 return accept;
             };
 
-            // DidSelect catches every native selection path, including rows in the system "More" list.
-            _tabBarController.ViewControllerSelected += OnNativeViewControllerSelected;
+            // ITabBarManagerDelegate.OnTabSelected handles native selection callbacks.
 
             CreateTabRenderers();
         }
@@ -109,8 +126,19 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             ((IDisconnectable)this).Disconnect();
 
-            _tabBarController.ViewControllerSelected -= OnNativeViewControllerSelected;
+            // Must clear ShouldSelectViewController BEFORE disposing _tabManager:
+            // Dispose() releases the UITabBarController, so accessing it afterward crashes
+            // on UITabBarController.get_WeakDelegate() with a SIGSEGV.
             _tabBarController.ShouldSelectViewController = null;
+
+            if (_tabManager is not null)
+            {
+                _tabManager.ViewDidAppear -= OnTabManagerViewDidAppear;
+                _tabManager.ViewDidDisappear -= OnTabManagerViewDidDisappear;
+                _tabManager.GetCurrentPageViewControllerFunc = null;
+                _tabManager.Dispose();
+                _tabManager = null;
+            }
 
             foreach (var kvp in _sectionRenderers.ToList())
             {
@@ -122,6 +150,7 @@ namespace Microsoft.Maui.Controls.Handlers
             CurrentRenderer = null;
             _currentSection = null;
             _displayedPage = null;
+            _moreNavigationDelegate = null;
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
             _shellContext = null;
@@ -171,6 +200,92 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #endregion
 
+        #region ITabBarManagerDelegate
+
+        void ITabBarManagerDelegate.OnTabSelected(int index)
+        {
+            _nativeSelectionInProgress = true;
+            try
+            {
+                var selectedVC = _tabBarController.SelectedViewController;
+                if (selectedVC is null)
+                {
+                    return;
+                }
+
+                var renderer = RendererForViewController(selectedVC);
+                if (renderer is not null)
+                {
+                    VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
+                    CurrentRenderer = renderer;
+
+                    // Keep _currentSection in sync so programmatic GoTo (e.g. GoToAsync("//home"))
+                    // doesn't think the previous section is still current and skip the switch.
+                    if (_currentSection != renderer.ShellSection)
+                    {
+                        ((IShellSectionController?)_currentSection)?.RemoveDisplayedPageObserver(this);
+                        _currentSection = renderer.ShellSection;
+                        ((IShellSectionController)_currentSection).AddDisplayedPageObserver(this, OnDisplayedPageChanged);
+                    }
+                }
+
+                UpdateMoreCellsEnabled();
+            }
+            finally
+            {
+                _nativeSelectionInProgress = false;
+            }
+        }
+
+        void ITabBarManagerDelegate.OnTabsReordered(UIViewController[] viewControllers)
+        {
+            // Shell disables tab reordering; re-apply the guard.
+            if (_tabManager is not null)
+            {
+                _tabManager.CustomizableViewControllers = null;
+            }
+        }
+
+        UIViewController ITabBarManagerDelegate.GetCurrentPageViewController()
+        {
+            // Return the top VC of the current section's nav stack for status-bar routing.
+            var sectionVC = CurrentRenderer?.ViewController;
+            if (sectionVC is UINavigationController navCtrl)
+            {
+                return navCtrl.TopViewController ?? navCtrl;
+            }
+            return sectionVC ?? _tabBarController.SelectedViewController ?? _tabBarController;
+        }
+
+        void ITabBarManagerDelegate.OnViewDidAppear()
+        {
+            _tabManager?.RaiseViewDidAppear();
+        }
+
+        void ITabBarManagerDelegate.OnViewDidDisappear()
+        {
+            _tabManager?.RaiseViewDidDisappear();
+        }
+
+        void ITabBarManagerDelegate.OnViewWillLayoutSubviews()
+        {
+            UpdateTabBarHidden();
+            UpdateLargeTitles();
+        }
+
+        void ITabBarManagerDelegate.OnViewDidLayoutSubviews()
+        {
+            _appearanceTracker?.UpdateLayout(_tabBarController);
+            UpdateNavBarHidden();
+        }
+
+        void ITabBarManagerDelegate.OnTraitCollectionDidChange(UITraitCollection previousTraitCollection)
+        {
+            OnTraitCollectionDidChange(previousTraitCollection);
+        }
+
+        #endregion
+
         #region Tab Renderers
 
         void UpdateTabBarFlowDirection()
@@ -207,13 +322,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 viewControllers[i++] = renderer.ViewController;
             }
 
-            _tabBarController.ViewControllers = viewControllers;
-            _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
+            _tabManager!.ViewControllers = viewControllers;
 
             // Reapply after attaching the shared tab bar; the earlier RTL update runs too soon.
             UpdateTabBarFlowDirection();
 
-            SetTabItemsEnabledState();
+            // Apply enabled/badge state once the tab bar has appeared. Applying it earlier
+            // doesn't reliably affect the native tab bar UI yet.
+            // SetTabItemsEnabledState() is called from OnTabManagerViewDidAppear instead.
 
             UpdateTabBarHidden();
 
@@ -238,7 +354,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (ReferenceEquals(value, _tabBarController.MoreNavigationController))
             {
-                _tabBarController.MoreNavigationController.WeakDelegate = _moreNavigationDelegate ??= new MoreNavigationDelegate(this);
+                _moreNavigationDelegate ??= new MoreNavigationDelegate(this);
+                _tabBarController.MoreNavigationController.Delegate = _moreNavigationDelegate;
             }
 
             UpdateMoreCellsEnabled();
@@ -247,24 +364,21 @@ namespace Microsoft.Maui.Controls.Handlers
         /// <summary>
         /// Handles the post-selection callback for visible tabs and the system "More" list.
         /// </summary>
-        void OnNativeViewControllerSelected(object? sender, UITabBarSelectionEventArgs e)
+        MoreNavigationDelegate? _moreNavigationDelegate;
+
+        void OnTabManagerViewDidAppear(object? sender, EventArgs e)
         {
-            var renderer = RendererForViewController(e.ViewController);
-            if (renderer is not null)
-            {
-                VirtualView.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
-                CurrentRenderer = renderer;
-            }
+            // Apply enabled/badge state once the tab bar has appeared. Applying it earlier
+            // doesn't reliably affect the native tab bar UI yet.
+            SetTabItemsEnabledState();
 
-            if (ReferenceEquals(e.ViewController, _tabBarController.MoreNavigationController))
-            {
-                _tabBarController.MoreNavigationController.WeakDelegate = _moreNavigationDelegate ??= new MoreNavigationDelegate(this);
-            }
-
-            UpdateMoreCellsEnabled();
+            _displayedPage?.SendAppearing();
         }
 
-        MoreNavigationDelegate? _moreNavigationDelegate;
+        void OnTabManagerViewDidDisappear(object? sender, EventArgs e)
+        {
+            _displayedPage?.SendDisappearing();
+        }
 
         /// <summary>
         /// Keeps <see cref="ShellItem.CurrentItem"/> in sync for MoreNavigationController selections.
@@ -285,7 +399,11 @@ namespace Microsoft.Maui.Controls.Handlers
                     return;
                 }
 
-                var renderer = handler.RendererForViewController(handler._tabBarController.SelectedViewController!);
+                // UIKit bypasses our SelectedViewController override for More-item picks;
+                // read SelectedVC here — it is already updated to the section's nav controller.
+                var renderer = handler._tabBarController.SelectedViewController is { } selectedVC
+                    ? handler.RendererForViewController(selectedVC)
+                    : null;
 
                 if (renderer is not null)
                 {
@@ -348,9 +466,8 @@ namespace Microsoft.Maui.Controls.Handlers
                     var renderer = RendererForShellContent(shellSection);
                     if (renderer is not null && _tabBarController.ViewControllers is not null)
                     {
-                        _tabBarController.ViewControllers = _tabBarController.ViewControllers
+                        _tabManager!.ViewControllers = _tabBarController.ViewControllers
                             .Where(vc => vc != renderer.ViewController).ToArray();
-                        _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
                         RemoveRenderer(renderer);
                     }
                 }
@@ -398,8 +515,7 @@ namespace Microsoft.Maui.Controls.Handlers
                     }
                 }
 
-                _tabBarController.ViewControllers = viewControllers;
-                _tabBarController.CustomizableViewControllers = Array.Empty<UIViewController>();
+                _tabManager!.ViewControllers = viewControllers;
 
                 // Reapply after reattaching the tab bar.
                 UpdateTabBarFlowDirection();
@@ -810,17 +926,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         #region Layout
 
-        internal void ViewWillLayoutSubviews()
-        {
-            UpdateTabBarHidden();
-            UpdateLargeTitles();
-        }
-
-        internal void ViewDidLayoutSubviews()
-        {
-            _appearanceTracker?.UpdateLayout(_tabBarController);
-            UpdateNavBarHidden();
-        }
+        // Layout callbacks are forwarded through ITabBarManagerDelegate.OnViewWillLayoutSubviews/OnViewDidLayoutSubviews.
 
         #endregion
 
@@ -828,6 +934,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public static void MapCurrentItem(ShellItemHandler handler, ShellItem shellItem)
         {
+            if (handler._nativeSelectionInProgress)
+            {
+                return;
+            }
             handler.GoTo(shellItem.CurrentItem);
             handler.UpdateTabBarHidden();
         }
@@ -850,53 +960,6 @@ namespace Microsoft.Maui.Controls.Handlers
         public static void MapPreferredStatusBarUpdateAnimation(ShellItemHandler handler, ShellItem item)
         {
             handler._tabBarController?.SetNeedsStatusBarAppearanceUpdate();
-        }
-
-        #endregion
-
-        #region Tab Bar Controller
-
-        /// <summary>
-        /// UITabBarController subclass that forwards UIKit lifecycle callbacks to the handler.
-        /// </summary>
-        internal sealed class ShellItemTabBarController : UITabBarController
-        {
-            readonly WeakReference<ShellItemHandler> _handlerRef;
-
-            public ShellItemTabBarController(ShellItemHandler handler)
-            {
-                _handlerRef = new WeakReference<ShellItemHandler>(handler);
-            }
-
-            public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
-            {
-                base.TraitCollectionDidChange(previousTraitCollection);
-
-                if (_handlerRef.TryGetTarget(out var handler))
-                {
-                    handler.OnTraitCollectionDidChange(previousTraitCollection);
-                }
-            }
-
-            public override void ViewWillLayoutSubviews()
-            {
-                base.ViewWillLayoutSubviews();
-
-                if (_handlerRef.TryGetTarget(out var handler))
-                {
-                    handler.ViewWillLayoutSubviews();
-                }
-            }
-
-            public override void ViewDidLayoutSubviews()
-            {
-                base.ViewDidLayoutSubviews();
-
-                if (_handlerRef.TryGetTarget(out var handler))
-                {
-                    handler.ViewDidLayoutSubviews();
-                }
-            }
         }
 
         #endregion

@@ -1195,12 +1195,50 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnSearchItemSelected(object? sender, object e)
 		{
 			if (_searchController is null)
-			{
 				return;
+
+			var searchController = _searchController;
+			var handlerController = SearchHandler as ISearchHandlerController;
+
+			// Dismiss the search controller first, then navigate after it is fully gone.
+			// UIKit rejects PushViewController calls while a modal presentation is occurring
+			// (including an active UISearchController). Using DidDismissSearchController ensures
+			// the push is not attempted until the dismissal animation is complete.
+			if (searchController.Active)
+			{
+				searchController.Delegate = new SearchItemSelectedDelegate(() =>
+				{
+					handlerController?.ItemSelected(e);
+				});
+				searchController.Active = false;
+			}
+			else
+			{
+				// Already dismissed — fire ItemSelected directly.
+				handlerController?.ItemSelected(e);
+			}
+		}
+
+		// One-shot UISearchControllerDelegate that fires ItemSelected after dismissal completes.
+		sealed class SearchItemSelectedDelegate : UISearchControllerDelegate
+		{
+			readonly Action _onDismissed;
+			bool _fired;
+
+			internal SearchItemSelectedDelegate(Action onDismissed)
+			{
+				_onDismissed = onDismissed;
 			}
 
-			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
-			_searchController.Active = false;
+			public override void DidDismissSearchController(UISearchController searchController)
+			{
+				if (_fired)
+				{
+					return;
+				}
+				_fired = true;
+				_onDismissed();
+			}
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)

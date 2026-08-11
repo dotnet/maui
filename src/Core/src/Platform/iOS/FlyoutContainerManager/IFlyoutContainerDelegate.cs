@@ -50,4 +50,24 @@ internal interface IFlyoutContainerDelegate
     /// whether the flyout/detail container frame should be inset from the safe area.
     /// </summary>
     bool GetIgnoreSafeArea();
+
+    /// <summary>
+    /// Returns whether the flyout should always overlap the detail pane instead of using the
+    /// default iPad-popover/iPhone-slide-over behavior. Shell returns <see langword="true"/>;
+    /// FlyoutPage returns <see langword="false"/>.
+    /// </summary>
+    bool GetFlyoutOverlapsDetail();
+
+    /// <summary>
+    /// Returns whether the detail view should skip dimming while in split/Locked mode.
+    /// Shell returns <see langword="true"/>; FlyoutPage returns <see langword="false"/>.
+    /// </summary>
+    bool GetSkipShadowInSplitMode();
+
+    /// <summary>
+    /// Returns whether a manually-opened flyout's presented state should be preserved across
+    /// rotation and <see cref="FlyoutBehavior"/> changes. Shell returns <see langword="true"/>;
+    /// FlyoutPage returns <see langword="false"/>.
+    /// </summary>
+    bool GetPreservePresentedStateOnTransition();
 }

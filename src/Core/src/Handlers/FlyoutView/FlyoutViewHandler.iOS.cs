@@ -144,5 +144,23 @@ namespace Microsoft.Maui.Handlers
 		{
 			return VirtualView is ISafeAreaView sav && sav.IgnoreSafeArea;
 		}
+
+		// FlyoutPage uses the default idiom-based overlap behavior (iPad overlays, iPhone slides).
+		bool IFlyoutContainerDelegate.GetFlyoutOverlapsDetail()
+		{
+			return false;
+		}
+
+		// FlyoutPage always dims the detail view when the shadow is applied, even in split mode.
+		bool IFlyoutContainerDelegate.GetSkipShadowInSplitMode()
+		{
+			return false;
+		}
+
+		// FlyoutPage always resolves presented state to the idiom/behavior-derived split state.
+		bool IFlyoutContainerDelegate.GetPreservePresentedStateOnTransition()
+		{
+			return false;
+		}
 	}
 }

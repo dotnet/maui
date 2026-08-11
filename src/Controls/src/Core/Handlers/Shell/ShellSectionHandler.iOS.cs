@@ -25,17 +25,17 @@ namespace Microsoft.Maui.Controls.Handlers
     /// <summary>
     /// Handles the iOS Shell section navigation stack, root content, and top tabs.
     /// </summary>
-    public partial class ShellSectionHandler : ElementHandler<ShellSection, UIView>, IAppearanceObserver, IDisconnectable
+    public partial class ShellSectionHandler : ElementHandler<ShellSection, UIView>, IAppearanceObserver, IDisconnectable, INavigationManagerDelegate
     {
         internal const int HeaderHeight = 35;
 
         IShellContext? _shellContext;
-        internal ShellSectionNavController _navigationController = null!;
+        NavigationControllerManager? _navManager;
+        internal UINavigationController _navigationController = null!;
         internal IShellNavBarAppearanceTracker? _appearanceTracker;
 
-        readonly Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks = new();
-        TaskCompletionSource<bool>? _popCompletionTask;
-        UIViewController[]? _pendingViewControllers;
+        // TCS bridging swipe-back to SendPoppedOnCompletion.
+        TaskCompletionSource<bool>? _interactivePopTcs;
 
         internal readonly Dictionary<Element, IShellPageRendererTracker> _trackers = new();
 
@@ -56,6 +56,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
         // iOS 26+ can raise back-navigation callbacks more than once per gesture; guard SendPop().
         bool _sendPopPending;
+
+        // Guard unsolicited-pop detection while a push is in flight.
+        // Without this, UIKit's rescheduleBlock mechanism causes shellStack.Count > ActiveViewControllers().Length
+        // between the first and second DidShowViewController calls during rapid pushes, triggering a false pop.
+        int _pendingPushCount;
 
         ShellSectionRootViewController? _rootViewController;
 
@@ -89,8 +94,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override UIView CreatePlatformElement()
         {
-            _navigationController = new ShellSectionNavController(this, typeof(MauiNavigationBar), null!);
-            _navigationController.Delegate = new NavDelegate(this);
+            _navManager = new NavigationControllerManager(typeof(MauiNavigationBar), managerDelegate: this);
+            _navigationController = _navManager.NavigationController;
             return _navigationController.View!;
         }
 
@@ -173,6 +178,7 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             _pageAnimation?.StopAnimation(true);
             _pageAnimation = null;
+            _pendingPushCount = 0;
 
             if (_displayedPage is not null)
             {
@@ -253,6 +259,109 @@ namespace Microsoft.Maui.Controls.Handlers
             }
             else
                 _appearanceTracker?.SetAppearance(moreNavigationController, appearance);
+        }
+
+        #endregion
+
+        #region INavigationManagerDelegate
+
+        (bool isHidden, bool animate) INavigationManagerDelegate.GetNavigationBarVisibility(UIViewController viewController)
+        {
+            var (isHidden, animate) = GetNavigationBarVisibility(viewController);
+            return (isHidden, animate);
+        }
+
+        bool INavigationManagerDelegate.ShouldPop()
+        {
+            if (_sendPopPending)
+            {
+                return false;
+            }
+
+            return SendPop();
+        }
+
+        void INavigationManagerDelegate.OnNavigationComplete(
+            UINavigationController navigationController,
+            UIViewController viewController)
+        {
+            // Resolve an interactive-pop completion that was started in OnInteractivePopCompleted.
+            var wasInteractivePop = _interactivePopTcs is not null;
+            _interactivePopTcs?.TrySetResult(true);
+            _interactivePopTcs = null;
+
+            // Detect unsolicited pops (iOS long-press back navigation, iOS 14+).
+            // Long-press back bypasses shouldPopItem: — UIKit pops directly without notifying us.
+            // Skip detection while a push is still in flight: UIKit's rescheduleBlock causes
+            // shellStack.Count > ActiveViewControllers().Length until the queued push completes.
+            if (_pendingPushCount > 0)
+            {
+                _pendingPushCount--;
+            }
+
+            var shellStack = VirtualView?.Stack;
+            if (!wasInteractivePop &&
+                _pendingPushCount == 0 &&
+                shellStack is { Count: > 1 } &&
+                ActiveViewControllers().Length < shellStack.Count)
+            {
+                SendPoppedOnCompletion(Task.CompletedTask);
+            }
+
+            if (!_firstLayoutCompleted)
+            {
+                UpdateShadowImages();
+                _firstLayoutCompleted = true;
+            }
+
+            (_navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
+            _appearanceTracker?.UpdateLayout(_navigationController);
+        }
+
+        void INavigationManagerDelegate.OnWillShowViewController(
+            UINavigationController navigationController,
+            UIViewController viewController,
+            bool animated)
+        {
+            var (isHidden, shouldAnimate) = GetNavigationBarVisibility(viewController);
+            navigationController.SetNavigationBarHidden(isHidden, shouldAnimate && animated);
+
+            // Set toolbar items early to avoid flicker.
+            var currentPage = _shellContext?.Shell?.GetCurrentShellPage();
+            if (currentPage?.Handler is IPlatformViewHandler pvh &&
+                pvh.ViewController == viewController &&
+                _trackers.TryGetValue(currentPage, out var tracker) &&
+                tracker is ShellPageRendererTracker shellRendererTracker)
+            {
+                shellRendererTracker.UpdateToolbarItemsInternal(false);
+                if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                {
+                    shellRendererTracker.UpdateTitleViewInternal();
+                }
+            }
+        }
+
+        void INavigationManagerDelegate.OnInteractivePopCompleted()
+        {
+            // UIKit completed a swipe-back gesture; bridge completion to SendPoppedOnCompletion.
+            // OnNavigationComplete will resolve the TCS once DidShowViewController fires.
+            _interactivePopTcs = new TaskCompletionSource<bool>();
+            SendPoppedOnCompletion(_interactivePopTcs.Task);
+        }
+
+        void INavigationManagerDelegate.OnNavigationControllerDidAppear()
+        {
+            _displayedPage?.SendAppearing();
+        }
+
+        void INavigationManagerDelegate.OnNavigationControllerDidDisappear()
+        {
+            _displayedPage?.SendDisappearing();
+        }
+
+        void INavigationManagerDelegate.OnViewDidLayoutSubviews(CoreGraphics.CGRect bounds)
+        {
+            // Layout is handled by ShellSectionRootViewController.ViewDidLayoutSubviews → LayoutRootSubviews().
         }
 
         #endregion
@@ -836,6 +945,10 @@ namespace Microsoft.Maui.Controls.Handlers
                     if (!showsPresentation)
                     {
                         CompletePushImmediately(pageViewController);
+                        if (_pendingPushCount > 0)
+                        {
+                            _pendingPushCount--;
+                        }
                         completionSource.TrySetResult(true);
                     }
                     else
@@ -1077,16 +1190,24 @@ namespace Microsoft.Maui.Controls.Handlers
 
             VirtualView.Icon.LoadImage(VirtualView.FindMauiContext()!, icon =>
             {
+                // VirtualView (typed) throws if accessed after disconnect; check the interface
+                // member instead, which returns null. The pattern match also gives us a safe,
+                // non-throwing local to use for the rest of the callback.
+                if (((IElementHandler)this).VirtualView is not ShellSection section)
+                {
+                    return;
+                }
+
                 UIImage? image = null;
                 if (icon?.Value is not null)
                 {
                     image = TabbedViewExtensions.AutoResizeTabBarImage(_navigationController.TraitCollection, icon.Value);
                 }
-                _navigationController.TabBarItem = new UITabBarItem(VirtualView.Title, image, null);
-                _navigationController.TabBarItem.AccessibilityIdentifier = VirtualView.AutomationId ?? VirtualView.Title;
+                _navigationController.TabBarItem = new UITabBarItem(section.Title, image, null);
+                _navigationController.TabBarItem.AccessibilityIdentifier = section.AutomationId ?? section.Title;
 
                 // Reapply badge state after recreating UITabBarItem.
-                ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, VirtualView);
+                ShellItemHandler.UpdateTabBarItemBadge(_navigationController.TabBarItem, section);
             });
         }
 
@@ -1428,6 +1549,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetupInteractivePopGesture()
         {
+            _navManager?.SetupInteractivePopGesture();
+            // Override with Shell's gesture delegate so BackButtonBehavior is enforced.
             if (_navigationController.InteractivePopGestureRecognizer is not null)
             {
                 _navigationController.InteractivePopGestureRecognizer.Delegate =
@@ -1437,90 +1560,60 @@ namespace Microsoft.Maui.Controls.Handlers
 
         TaskCompletionSource<bool> PushViewController(UIViewController viewController, bool animated)
         {
-            var completionSource = new TaskCompletionSource<bool>();
-            _pendingViewControllers = null;
-            _completionTasks[viewController] = completionSource;
-            _navigationController.PushViewController(viewController, animated);
-            return completionSource;
+            if (_navManager is not null)
+            {
+                _pendingPushCount++;
+                return _navManager.PushViewController(viewController, animated);
+            }
+            return new TaskCompletionSource<bool>();
         }
 
         Task<bool> PopViewController(bool animated)
         {
-            _pendingViewControllers = null;
-            _popCompletionTask = new TaskCompletionSource<bool>();
-            _navigationController.PopViewController(animated);
-            return _popCompletionTask.Task;
+            if (_navManager is not null)
+            {
+                return _navManager.PopViewController(animated);
+            }
+            return Task.FromResult(false);
         }
 
         Task<bool> PopToRootViewController(UIViewController rootViewController, bool animated)
         {
-            _pendingViewControllers = null;
-            var completionSource = new TaskCompletionSource<bool>();
-            _completionTasks[rootViewController] = completionSource;
-            _navigationController.PopToRootViewController(animated);
-            return completionSource.Task;
+            if (_navManager is not null)
+            {
+                return _navManager.PopToRootViewController(rootViewController, animated);
+            }
+            return Task.FromResult(false);
         }
 
         void InsertViewController(int index, UIViewController viewController)
         {
-            _pendingViewControllers ??= _navigationController.ViewControllers;
-            if (_pendingViewControllers is not null)
-            {
-                _pendingViewControllers = _pendingViewControllers.Insert(index, viewController);
-                _navigationController.ViewControllers = _pendingViewControllers;
-            }
+            _navManager?.InsertViewController(index, viewController);
         }
 
         void RemoveViewController(UIViewController viewController)
         {
-            _pendingViewControllers ??= _navigationController.ViewControllers;
-            if (_pendingViewControllers is not null && _pendingViewControllers.Contains(viewController))
-            {
-                _pendingViewControllers = _pendingViewControllers.Remove(viewController);
-            }
-            if (_pendingViewControllers is not null)
-            {
-                _navigationController.ViewControllers = _pendingViewControllers;
-            }
+            _navManager?.RemoveViewController(viewController);
         }
 
-        UIViewController[] ActiveViewControllers() =>
-            _pendingViewControllers ?? _navigationController.ViewControllers ?? Array.Empty<UIViewController>();
+        UIViewController[] ActiveViewControllers()
+            => _navManager?.ActiveViewControllers() ?? Array.Empty<UIViewController>();
 
-        void ClearPendingViewControllers() => _pendingViewControllers = null;
+        void ClearPendingViewControllers()
+            => _navManager?.ClearPendingViewControllers();
 
         void CompletePushImmediately(UIViewController viewController)
-        {
-            if (_completionTasks.TryGetValue(viewController, out var source))
-            {
-                source.TrySetResult(true);
-                _completionTasks.Remove(viewController);
-            }
-        }
+            => _navManager?.CompletePushImmediately(viewController);
 
         void CompletePopImmediately()
-        {
-            _popCompletionTask?.TrySetResult(true);
-            _popCompletionTask = null;
-        }
+            => _navManager?.CompletePopImmediately();
 
         void DisposeNavigationResources()
         {
-            // Break the nav-controller delegate retain cycle so the handler can be collected after disconnect.
-            _navigationController.Delegate = null!;
-            if (_navigationController.InteractivePopGestureRecognizer is not null)
-            {
-                _navigationController.InteractivePopGestureRecognizer.Delegate = null!;
-            }
-
-            // Complete pending sources with false (not cancel) so awaiting async void methods don't surface an exception.
-            foreach (var kvp in _completionTasks)
-                kvp.Value.TrySetResult(false);
-            _completionTasks.Clear();
-
-            _popCompletionTask?.TrySetResult(false);
-            _popCompletionTask = null;
-            _pendingViewControllers = null;
+            _interactivePopTcs?.TrySetResult(false);
+            _interactivePopTcs = null;
+            _navManager?.Dispose();
+            _navManager = null;
             _sendPopPending = false;
         }
 
@@ -1545,95 +1638,8 @@ namespace Microsoft.Maui.Controls.Handlers
             return (false, false);
         }
 
-        void OnInteractionChanged(IUIViewControllerTransitionCoordinatorContext context)
-        {
-            if (!context.IsCancelled)
-            {
-                _popCompletionTask = new TaskCompletionSource<bool>();
-                SendPoppedOnCompletion(_popCompletionTask.Task);
-            }
-        }
-
         /// <summary>
-        /// UINavigationController delegate for completion and nav-bar visibility updates.
-        /// </summary>
-        sealed class NavDelegate : UINavigationControllerDelegate
-        {
-            readonly WeakReference<ShellSectionHandler> _handlerRef;
-
-            public NavDelegate(ShellSectionHandler handler)
-            {
-                _handlerRef = new WeakReference<ShellSectionHandler>(handler);
-            }
-
-            public override void DidShowViewController(
-                UINavigationController navigationController,
-                [Transient] UIViewController viewController,
-                bool animated)
-            {
-                if (!_handlerRef.TryGetTarget(out var handler))
-                {
-                    return;
-                }
-
-                if (handler._completionTasks.TryGetValue(viewController, out var source))
-                {
-                    source.TrySetResult(true);
-                    handler._completionTasks.Remove(viewController);
-                }
-                else
-                {
-                    handler._popCompletionTask?.TrySetResult(true);
-                    handler._popCompletionTask = null;
-                }
-
-                if (!handler._firstLayoutCompleted)
-                {
-                    handler.UpdateShadowImages();
-                    handler._firstLayoutCompleted = true;
-                }
-
-                (navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
-                handler._appearanceTracker?.UpdateLayout(handler._navigationController);
-            }
-
-            public override void WillShowViewController(
-                UINavigationController navigationController,
-                [Transient] UIViewController viewController,
-                bool animated)
-            {
-                if (!_handlerRef.TryGetTarget(out var handler))
-                {
-                    return;
-                }
-
-                var (isHidden, shouldAnimate) = handler.GetNavigationBarVisibility(viewController);
-                navigationController.SetNavigationBarHidden(isHidden, shouldAnimate && animated);
-
-                var coordinator = viewController.GetTransitionCoordinator();
-                if (coordinator is not null && coordinator.IsInteractive)
-                {
-                    coordinator.NotifyWhenInteractionChanges(handler.OnInteractionChanged);
-                }
-
-                // Set BackButtonItem early to avoid flicker.
-                var currentPage = handler._shellContext?.Shell?.GetCurrentShellPage();
-                if (currentPage?.Handler is IPlatformViewHandler pvh &&
-                    pvh.ViewController == viewController &&
-                    handler._trackers.TryGetValue(currentPage, out var tracker) &&
-                    tracker is ShellPageRendererTracker shellRendererTracker)
-                {
-                    shellRendererTracker.UpdateToolbarItemsInternal(false);
-                    if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
-                    {
-                        shellRendererTracker.UpdateTitleViewInternal();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Delegate for the interactive pop gesture.
+        /// Checks BackButtonBehavior and ProposeNavigation before allowing a swipe-back gesture.
         /// </summary>
         sealed class GestureDelegate : UIGestureRecognizerDelegate
         {
@@ -1667,58 +1673,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
-        [Export("navigationBar:shouldPopItem:")]
-        bool ShouldPopItem(UINavigationBar bar, UINavigationItem item)
-            => SendPop();
-
         #endregion
-
-        /// <summary>
-        /// UINavigationController subclass that relays navigation-bar pop callbacks to the handler.
-        /// </summary>
-        internal sealed class ShellSectionNavController : UINavigationController
-        {
-            readonly WeakReference<ShellSectionHandler> _handlerRef;
-
-            public ShellSectionNavController(ShellSectionHandler handler, Type navigationBarClass, Type? toolbarClass)
-                : base(navigationBarClass, toolbarClass!)
-            {
-                _handlerRef = new WeakReference<ShellSectionHandler>(handler);
-            }
-
-            [Export("navigationBar:shouldPopItem:")]
-            bool ShouldPopItem(UINavigationBar bar, UINavigationItem item)
-            {
-                if (!_handlerRef.TryGetTarget(out var handler))
-                {
-                    return true;
-                }
-
-                return handler.SendPop();
-            }
-
-            [Export("navigationBar:didPopItem:")]
-            bool DidPopItem(UINavigationBar bar, UINavigationItem item)
-            {
-                if (!_handlerRef.TryGetTarget(out var handler))
-                {
-                    return true;
-                }
-
-                if (handler.VirtualView?.Stack is null || NavigationBar?.Items is null)
-                {
-                    return true;
-                }
-
-                if (handler.VirtualView.Stack.Count == NavigationBar.Items.Length)
-                {
-                    return true;
-                }
-
-                // A mismatch means UIKit already popped natively (for example via swipe-back).
-                return handler.SendPop();
-            }
-        }
 
         /// <summary>
         /// Adapter that exposes <see cref="ShellSectionHandler"/> as <see cref="IShellSectionRenderer"/>.

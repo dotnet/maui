@@ -233,6 +233,16 @@ namespace Microsoft.Maui.Platform
                 }
             }
 
+            public override void ViewWillLayoutSubviews()
+            {
+                base.ViewWillLayoutSubviews();
+
+                if (_managerRef is not null && _managerRef.TryGetTarget(out var manager))
+                {
+                    manager._delegate.OnViewWillLayoutSubviews();
+                }
+            }
+
             public override void ViewDidLayoutSubviews()
             {
                 base.ViewDidLayoutSubviews();
