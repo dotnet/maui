@@ -20,8 +20,8 @@
       "language": "C#",
       "type": "project"
     },
-    "precedence": "9000",
-    "identity": "MauiAspire.ServiceDefaults.CSharp.8.0",
+    "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
+    "identity": "MauiAspire.ServiceDefaults.CSharp.DOTNET_TFM_VERSION_VALUE",
     "thirdPartyNotices": "https://aka.ms/dotnet/aspire/third-party-notices",
     "groupIdentity": "MauiAspire.ServiceDefaults",
     "symbols": {
