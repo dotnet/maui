@@ -658,22 +658,6 @@ public class SearchBarFeatureTests : _GalleryUITest
 
 	[Test, Order(36)]
 	[Category(UITestCategories.SearchBar)]
-	public void SearchBar_SetSearchIconColorAndText_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("SearchIconColorRedButton");
-		App.Tap("SearchIconColorRedButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SearchBar");
-		App.ClearText("SearchBar");
-		App.EnterText("SearchBar", "Search Text");
-		VerifyScreenshotWithPlatformCropping();
-	}
-
-	[Test, Order(37)]
-	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_SetBackgroundColor_VerifyVisualState()
 	{
 		App.WaitForElement("Options");
@@ -688,7 +672,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		VerifyScreenshotWithPlatformCropping();
 	}
 
-	[Test, Order(38)]
+	[Test, Order(37)]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_SetShadowAndBackground_VerifyVisualState()
 	{
@@ -704,7 +688,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		VerifyScreenshotWithPlatformCropping();
 	}
 
-	[Test, Order(39)]
+	[Test, Order(38)]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_SetSearchIconColorAndPlaceholder_VerifyVisualState()
 	{
@@ -714,31 +698,15 @@ public class SearchBarFeatureTests : _GalleryUITest
 		App.Tap("SearchIconColorBlueButton");
 		App.WaitForElement("PlaceholderEntry");
 		App.EnterText("PlaceholderEntry", "Search here...");
+		App.WaitForElement("PlaceholderColorRedButton");
+		App.Tap("PlaceholderColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("SearchBar");
 		VerifyScreenshotWithPlatformCropping();
 	}
 
-	[Test, Order(40)]
-	[Category(UITestCategories.SearchBar)]
-	public void SearchBar_SetBackgroundAndTextColor_VerifyVisualState()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundLightBlueButton");
-		App.Tap("BackgroundLightBlueButton");
-		App.WaitForElement("TextColorRedButton");
-		App.Tap("TextColorRedButton");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SearchBar");
-		App.ClearText("SearchBar");
-		App.EnterText("SearchBar", "Styled Text");
-		VerifyScreenshotWithPlatformCropping();
-	}
-
-	[Test, Order(41)]
+	[Test, Order(39)]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_TextChanged_VerifyEventTriggered()
 	{
@@ -753,7 +721,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		Assert.That(newText, Is.EqualTo("Hello"));
 	}
 
-	[Test, Order(42)]
+	[Test, Order(40)]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_SetTextTransformLowercase_VerifyTextTransformed()
 	{

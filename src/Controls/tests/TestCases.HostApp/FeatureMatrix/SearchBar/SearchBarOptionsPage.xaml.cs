@@ -219,7 +219,7 @@ public partial class SearchBarOptionsPage : ContentPage
 		var button = sender as Button;
 		if (button != null)
 		{
-			_viewModel.Background = button.Text == "LightBlue"
+			_viewModel.Background = button.AutomationId == "BackgroundLightBlueButton"
 				? new SolidColorBrush(Colors.LightBlue)
 				: new SolidColorBrush(Colors.LightYellow);
 		}
