@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					var exif = new ExifInterface(seekableStream);
 					var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
 					seekableStream.Position = 0;
-					bitmap = BitmapFactory.DecodeStream(seekableStream);
+					bitmap = DecodeOrThrow(seekableStream);
 					// Apply rotation only if needed
 					if (orientation != 1)
 					{
@@ -282,13 +282,13 @@ namespace Microsoft.Maui.Graphics.Platform
 				{
 					// Fallback: decode without EXIF orientation correction
 					seekableStream.Position = 0;
-					bitmap = BitmapFactory.DecodeStream(seekableStream);
+					bitmap = DecodeOrThrow(seekableStream);
 				}
 			}
 			else
 			{
 				// Fallback for older Android
-				bitmap = BitmapFactory.DecodeStream(seekableStream);
+				bitmap = DecodeOrThrow(seekableStream);
 			}
 			return new PlatformImage(bitmap);
 		}
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			// to work with; just decode the pixels as-is.
 			if (!OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
-				return new PlatformImage(BitmapFactory.DecodeStream(seekableStream));
+				return new PlatformImage(DecodeOrThrow(seekableStream));
 			}
 
 			int orientation = 1;
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			seekableStream.Position = 0;
-			var bitmap = BitmapFactory.DecodeStream(seekableStream);
+			var bitmap = DecodeOrThrow(seekableStream);
 
 			// Apply orientation normalization unless the caller opted out.
 			if (!options.DisableRotationNormalization && orientation != 1)
@@ -358,6 +358,14 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			return new PlatformImage(bitmap, metadata);
 		}
+
+		// BitmapFactory.DecodeStream returns null (rather than throwing) for empty, corrupt, or
+		// unsupported image data. Surface that as a controlled ArgumentException — matching the
+		// FromStream contract for invalid image data — instead of letting a null bitmap flow into
+		// RotateBitmap/PlatformImage and crash later with an opaque NullReferenceException.
+		static Bitmap DecodeOrThrow(Stream seekableStream) =>
+			BitmapFactory.DecodeStream(seekableStream)
+				?? throw new ArgumentException("The stream does not contain a decodable image.", nameof(seekableStream));
 
 		static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
 		{
