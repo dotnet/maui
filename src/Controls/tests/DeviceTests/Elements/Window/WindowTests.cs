@@ -368,6 +368,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Null(oldRootView.MainView);
 					Assert.Null(rootManager.DrawerLayout);
 					Assert.Null(rootManager.ToolbarElement);
+					Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
 					AssertPageAttachedToRoot(finalPage, rootManager);
 				}
 				finally
@@ -386,6 +387,65 @@ namespace Microsoft.Maui.DeviceTests
 				reenteredDuringReplacement |= replacingRoot;
 				window.Page = finalPage;
 			}
+		}
+
+		[Fact(DisplayName = "Root Replacement During Fragment Execution Is Deferred")]
+		public async Task RootReplacementDuringFragmentExecutionIsDeferred()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var finalPage = new ContentPage { Content = new Label { Text = "Final page" } };
+			var finalRoot = new NavigationPage(finalPage);
+			var window = new Window(initialPage);
+			var toolbar = new Toolbar(window);
+			var replacementWasDeferred = false;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var outgoingRoot = Assert.IsAssignableFrom<global::Android.Views.ViewGroup>(rootManager.RootView);
+				var fragmentHost = new global::Android.Widget.FrameLayout(handler.MauiContext.Context)
+				{
+					Id = global::Android.Views.View.GenerateViewId()
+				};
+				outgoingRoot.AddView(fragmentHost);
+
+				var fragmentManager = handler.MauiContext.Context.GetFragmentManager();
+				var fragment = new ReentrantFragment(() =>
+				{
+					handler.ConnectContent(finalRoot);
+					window.Toolbar = toolbar;
+					replacementWasDeferred = ReferenceEquals(outgoingRoot, rootManager.RootView);
+				});
+				fragmentManager
+					.BeginTransaction()
+					.Add(fragmentHost.Id, fragment)
+					.Commit();
+
+				try
+				{
+					fragmentManager.ExecutePendingTransactions();
+
+					await OnLoadedAsync(finalPage);
+					Assert.True(replacementWasDeferred);
+					Assert.Same(toolbar, rootManager.ToolbarElement.Toolbar);
+					Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
+					AssertPageAttachedToRoot(finalPage, rootManager);
+					AssertPlatformViewAttachedToRoot(toolbar.ToPlatform(handler.MauiContext), rootManager);
+				}
+				finally
+				{
+					fragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.CommitAllowingStateLoss();
+					fragmentManager.ExecutePendingTransactions();
+					fragmentHost.RemoveFromParent();
+				}
+			});
 		}
 
 		[Fact(DisplayName = "Root Replacement During Flyout Construction Publishes Latest Root")]
@@ -425,7 +485,60 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(finalRoot, window.Page);
 				Assert.Null(reentrantRoot.Handler);
 				Assert.NotNull(rootManager.ToolbarElement);
+				Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
 				AssertPageAttachedToRoot(finalPage, rootManager);
+			});
+		}
+
+		[Fact(DisplayName = "Root Replacement During Disconnect Attaches Latest Root")]
+		public async Task RootReplacementDuringDisconnectAttachesLatestRoot()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var finalPage = new ContentPage { Content = new Label { Text = "Final page" } };
+			var window = new Window(initialPage);
+			var replacedDuringDisconnect = false;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var fragmentHost = new global::Android.Widget.FrameLayout(handler.MauiContext.Context)
+				{
+					Id = global::Android.Views.View.GenerateViewId()
+				};
+				Assert.IsAssignableFrom<global::Android.Views.ViewGroup>(rootManager.RootView).AddView(fragmentHost);
+
+				var fragmentManager = handler.MauiContext.Context.GetFragmentManager();
+				var fragment = new ReentrantFragment(() =>
+				{
+					replacedDuringDisconnect = true;
+					window.Page = finalPage;
+				});
+				fragmentManager
+					.BeginTransaction()
+					.Add(fragmentHost.Id, fragment)
+					.Commit();
+
+				try
+				{
+					rootManager.Disconnect();
+
+					await OnLoadedAsync(finalPage);
+					Assert.True(replacedDuringDisconnect);
+					Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
+					Assert.NotNull(handler.PlatformViewUnderTest.Parent);
+					AssertPageAttachedToRoot(finalPage, rootManager);
+				}
+				finally
+				{
+					fragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.CommitAllowingStateLoss();
+					fragmentManager.ExecutePendingTransactions();
+					fragmentHost.RemoveFromParent();
+				}
 			});
 		}
 
@@ -470,12 +583,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void AssertPageAttachedToRoot(Page page, NavigationRootManager rootManager)
 		{
-			var rootView = rootManager.RootView;
 			var platformView = page.ToPlatform();
 
-			Assert.NotNull(rootView);
 			Assert.NotNull(platformView);
 			Assert.True(platformView.IsAttachedToWindow);
+			AssertPlatformViewAttachedToRoot(platformView, rootManager);
+		}
+
+		static void AssertPlatformViewAttachedToRoot(
+			global::Android.Views.View platformView,
+			NavigationRootManager rootManager)
+		{
+			var rootView = rootManager.RootView;
+
+			Assert.NotNull(rootView);
 
 			for (global::Android.Views.View current = platformView; current is not null; current = current.Parent as global::Android.Views.View)
 			{
