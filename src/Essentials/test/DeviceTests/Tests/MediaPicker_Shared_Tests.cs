@@ -92,5 +92,34 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					File.Delete(outputPath);
 			}
 		}
+
+		[Fact]
+		public async Task ProcessImage_PreservesOriginalJpegExtension()
+		{
+			string outputPath = null;
+			try
+			{
+				using var input = new MemoryStream(SampleJpeg);
+
+				// A ".jpeg" source produces JPEG output; the original extension must be preserved
+				// exactly (not rewritten to ".jpg"), keeping the picked file name intact (#33258).
+				outputPath = await ImageProcessor.ProcessImageToCacheFileAsync(
+					input,
+					"picked.jpeg",
+					new ImageProcessingOptions(
+						maximumWidth: 40,
+						maximumHeight: 40,
+						compressionQuality: 80,
+						rotateImage: false,
+						preserveMetadata: true));
+
+				Assert.Equal("picked.jpeg", Path.GetFileName(outputPath));
+			}
+			finally
+			{
+				if (outputPath is not null && File.Exists(outputPath))
+					File.Delete(outputPath);
+			}
+		}
 	}
 }
