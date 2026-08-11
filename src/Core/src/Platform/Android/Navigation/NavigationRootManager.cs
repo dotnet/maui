@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_hasQueuedRoot)
 			{
-				DiscardRoot(rootView, navigationLayout);
+				DiscardRoot(view, rootView, navigationLayout);
 				return;
 			}
 
@@ -285,8 +285,10 @@ namespace Microsoft.Maui.Platform
 			_managedCoordinatorLayout = null;
 		}
 
-		static void DiscardRoot(AView? rootView, CoordinatorLayout? navigationLayout)
+		static void DiscardRoot(IView? view, AView? rootView, CoordinatorLayout? navigationLayout)
 		{
+			view?.Handler?.DisconnectHandler();
+
 			if (navigationLayout is not null)
 				MauiWindowInsetListener.RemoveViewWithLocalListener(navigationLayout);
 

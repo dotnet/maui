@@ -423,6 +423,7 @@ namespace Microsoft.Maui.DeviceTests
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
 				Assert.True(reenteredDuringConstruction);
 				Assert.Same(finalRoot, window.Page);
+				Assert.Null(reentrantRoot.Handler);
 				Assert.NotNull(rootManager.ToolbarElement);
 				AssertPageAttachedToRoot(finalPage, rootManager);
 			});
