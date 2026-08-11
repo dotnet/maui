@@ -585,6 +585,7 @@ namespace Microsoft.Maui.DeviceTests
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
+				SetupShellTabColorsTest(shell);
 			});
 
 			await CreateHandlerAndAddToWindow(shell, () =>
@@ -601,6 +602,10 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(global::Android.Graphics.Color.White, changeRevealDrawable.EndColor);
 				}
 			});
+		}
+
+		protected virtual void SetupShellTabColorsTest(Shell shell)
+		{
 		}
 
 		[Fact(DisplayName = "ShellContentFragment.Destroy handles null _shellContext gracefully")]

@@ -173,14 +173,15 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void SetupTabbedViewManager()
         {
-            if (_viewPager is null || VirtualView is null || MauiContext is null)
+            if (_tabbedViewManager is not null || _viewPager is null || VirtualView is null || MauiContext is null)
             {
                 return;
             }
 
-            var shellSections = ((IShellItemController)VirtualView).GetItems();
+            var shellItemController = (IShellItemController)VirtualView;
+            var shellSections = shellItemController.GetItems();
 
-            if (shellSections is null || shellSections.Count == 0)
+            if (shellSections is null || shellSections.Count == 0 || !shellItemController.ShowTabs)
             {
                 return;
             }
@@ -217,6 +218,21 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Get BNV reference for appearance tracker
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
+            RecreateBottomNavigationAppearanceTracker();
+
+            // Initial setup registers the appearance observer immediately afterward. When
+            // setup was deferred, replay the appearance for the newly-created bottom tabs.
+            if (_registeredShell is not null && _displayedPage is not null)
+            {
+                ((IShellController)_registeredShell).AppearanceChanged(_displayedPage, false);
+            }
+        }
+
+        void RecreateBottomNavigationAppearanceTracker()
+        {
+            _appearanceTracker?.Dispose();
+            _shellContext ??= GetShellContext();
+            _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
         }
 
         /// <summary>
@@ -236,6 +252,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Update BNV reference (SetElement creates a new BNV)
             _bottomNavigationView = _tabbedViewManager.BottomNavigationView;
+            RecreateBottomNavigationAppearanceTracker();
         }
 
         /// <summary>
@@ -342,8 +359,15 @@ namespace Microsoft.Maui.Controls.Handlers
             // Rebuild ViewPager2 adapter for new ShellItem's sections
             SetupViewPagerAdapter();
 
-            // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
-            RebuildBottomNavigation();
+            if (_tabbedViewManager is null)
+            {
+                SetupTabbedViewManager();
+            }
+            else
+            {
+                // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
+                RebuildBottomNavigation();
+            }
 
             // Apply badges to the rebuilt bottom navigation
             UpdateAllBadges();
@@ -616,7 +640,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabBarVisibility()
         {
-            if (_tabbedViewManager is null || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
+            if (_displayedPage is null || ((ElementHandler)this).VirtualView is null)
             {
                 return;
             }
@@ -625,11 +649,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (showTabs)
             {
-                _tabbedViewManager.SetTabLayout();
+                SetupTabbedViewManager();
+                _tabbedViewManager?.SetTabLayout();
             }
             else
             {
-                _tabbedViewManager.RemoveTabs();
+                _tabbedViewManager?.RemoveTabs();
             }
         }
 
@@ -727,9 +752,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 ((IShellItemController)VirtualView).ItemsCollectionChanged += OnShellItemsChanged;
             }
 
-            // Initialize shell context and appearance tracker early
+            // Initialize the Shell context early. The bottom navigation appearance tracker
+            // is created with the deferred TabbedViewManager when tabs are actually needed.
             _shellContext ??= GetShellContext();
-            _appearanceTracker = _shellContext.CreateBottomNavViewAppearanceTracker(VirtualView);
 
             // NOTE: Appearance observer registration is deferred to RegisterAppearanceObserver()
             // called from OnViewCreated in the wrapper fragment. At ConnectHandler time,
@@ -776,11 +801,14 @@ namespace Microsoft.Maui.Controls.Handlers
                 // 0→N transition: adapter/manager were not created during initial setup
                 // because there were no sections. Now that sections exist, create them.
                 SetupViewPagerAdapter();
-                SetupTabbedViewManager();
             }
 
-            // Rebuild the bottom navigation menu for the updated sections via TabbedViewManager
-            _tabbedViewManager?.RefreshTabs();
+            var existingTabbedViewManager = _tabbedViewManager;
+            SetupTabbedViewManager();
+
+            // Rebuild an existing bottom navigation menu. A newly-created manager was
+            // already populated by SetElement in SetupTabbedViewManager.
+            existingTabbedViewManager?.RefreshTabs();
             UpdateTabBarVisibility();
 
             // Signal that the adapter was just rebuilt. The next SwitchToSection call
@@ -837,7 +865,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _registeredShell = null;
             }
 
-            // Dispose per-item appearance tracker (ConnectHandler recreates for new item)
+            // Dispose per-item appearance tracker; tab setup or rebuild recreates it as needed.
             _appearanceTracker?.Dispose();
             _appearanceTracker = null;
 

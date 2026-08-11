@@ -149,21 +149,6 @@ namespace Microsoft.Maui.Controls.Handlers
             _rootLayout = rootView.FindViewById<LinearLayout>(Resource.Id.shellsection_coordinator);
             _viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellsection_viewpager);
 
-            // Create TabLayout programmatically (no longer from XML layout).
-            // It will be placed into navigationlayout_toptabs via PlaceTopTabs().
-            var context = MauiContext?.Context
-                ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
-
-            int actionBarHeight = context.GetActionBarHeight();
-
-            _contentTabLayout = new TabLayout(context)
-            {
-                Id = AView.GenerateViewId(),
-                LayoutParameters = new LP(LP.MatchParent, actionBarHeight),
-                Visibility = ViewStates.Gone,  // Hidden by default (shown when > 1 tab)
-                TabMode = TabLayout.ModeScrollable
-            };
-
             return rootView;
         }
 
@@ -253,18 +238,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var visibleItems = SectionController.GetItems();
             _viewPager.OffscreenPageLimit = Math.Max(visibleItems.Count, 1);
 
-            // Setup TabbedViewManager for top tab management.
-            // Pre-assign Shell's TabLayout (specific sizing) before SetElement.
-            _shellSectionAdapter = new ShellSectionTabbedViewAdapter(VirtualView);
-            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager)
-            {
-                TabLayout = _contentTabLayout
-            };
-            _tabbedViewManager.SetElement(_shellSectionAdapter);
-
-            // Register page change callback (stored in field for cleanup in DisconnectHandler)
-            _pageChangedCallback = new ViewPagerPageChangeCallback(this);
-            _viewPager.RegisterOnPageChangeCallback(_pageChangedCallback);
+            SetupTabbedViewManager();
 
             // Update TabLayout visibility based on item count
             UpdateTabLayoutVisibility();
@@ -275,10 +249,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // Set initial position
             SetInitialPosition();
 
-            // Setup TabLayout appearance tracker
-            _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
-
-            // Register as appearance observer for TabLayout updates
             var shell = VirtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
@@ -301,6 +271,53 @@ namespace Microsoft.Maui.Controls.Handlers
                     toolbarTracker?.Page = page;
 
                     ((IShellController)shell).AppearanceChanged(page, false);
+                }
+            }
+        }
+
+        void SetupTabbedViewManager()
+        {
+            if (_tabbedViewManager is not null || VirtualView is null || _viewPager is null || MauiContext is null || _shellContext is null)
+            {
+                return;
+            }
+
+            if (SectionController.GetItems().Count <= 1)
+            {
+                return;
+            }
+
+            var context = MauiContext.Context
+                ?? throw new InvalidOperationException("MauiContext.Context cannot be null");
+
+            _contentTabLayout = new TabLayout(context)
+            {
+                Id = AView.GenerateViewId(),
+                LayoutParameters = new LP(LP.MatchParent, context.GetActionBarHeight()),
+                Visibility = ViewStates.Gone,
+                TabMode = TabLayout.ModeScrollable
+            };
+
+            _shellSectionAdapter = new ShellSectionTabbedViewAdapter(VirtualView);
+            _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager)
+            {
+                TabLayout = _contentTabLayout
+            };
+            _tabbedViewManager.SetElement(_shellSectionAdapter);
+
+            _pageChangedCallback = new ViewPagerPageChangeCallback(this);
+            _viewPager.RegisterOnPageChangeCallback(_pageChangedCallback);
+
+            _tabLayoutAppearanceTracker = _shellContext.CreateTabLayoutAppearanceTracker(VirtualView);
+
+            // Initial setup registers the appearance observer immediately afterward. When
+            // setup was deferred, replay the appearance for the newly-created TabLayout.
+            if (_registeredShell is not null && IsCurrentlyActiveSection() && VirtualView.CurrentItem is ShellContent currentContent)
+            {
+                var page = ((IShellContentController)currentContent).GetOrCreateContent();
+                if (page is not null)
+                {
+                    ((IShellController)_registeredShell).AppearanceChanged(page, false);
                 }
             }
         }
@@ -646,6 +663,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var visibleCount = SectionController.GetItems().Count;
             _viewPager?.OffscreenPageLimit = Math.Max(visibleCount, 1);
 
+            SetupTabbedViewManager();
             UpdateTabLayoutVisibility();
             UpdateViewPagerUserInput();
         }
