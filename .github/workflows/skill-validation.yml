@@ -605,7 +605,7 @@ jobs:
           TRUSTED_BASE_SHA: ${{ needs.pr-gate.outputs.base_sha || needs.slash-gate.outputs.base_sha }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
-          TOKEN_START_INDEX: ${{ strategy.job-index }}
+          TOKEN_START_OFFSET: ${{ strategy.job-index }}
         run: |
           set -euo pipefail
           PREPARER="$RUNNER_TEMP/PrepareVallyEvaluation.rb"
@@ -1018,7 +1018,6 @@ jobs:
           TRUSTED_COPILOT_CLI_PATH: ${{ steps.vally-runtime.outputs.copilot_runtime }}
           TRUSTED_COPILOT_HOME: ${{ steps.vally-runtime.outputs.copilot_home }}
           TRUSTED_SHA: ${{ github.workflow_sha }}
-          TOKEN_START_INDEX: ${{ github.run_id }}
         run: |
           set -euo pipefail
           SELECTOR="$RUNNER_TEMP/SelectVallyToken.sh"

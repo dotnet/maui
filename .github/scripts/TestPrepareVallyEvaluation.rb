@@ -168,7 +168,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "contains multiple skill-invocation graders"
   end
 
-  def test_rejects_duplicate_effective_skill_invocation_graders
+  def test_rejects_top_level_graders_ignored_by_pinned_vally
     write_spec(
       "graders" => [
         { "type" => "skill-invocation", "config" => { "required" => ["test-skill"] } }
@@ -186,7 +186,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator
 
     refute status.success?
-    assert_includes stderr, "has multiple effective skill-invocation graders"
+    assert_includes stderr, "uses top-level graders, which pinned Vally does not execute"
   end
 
   def test_requires_skill_invocation_grader_for_routing_specs
@@ -613,40 +613,33 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "TRUSTED_BASE_SHA or TRUSTED_SHA is required to validate repository controls"
   end
 
-  def test_lists_all_explicit_executor_and_judge_models
+  def test_lists_effective_executor_and_judge_models
     write_spec(
-      "config" => {
-        "model" => "legacy-executor",
-        "judge_model" => "legacy-judge"
-      },
       "defaults" => {
         "model" => "gpt-5.6-sol",
         "judge_model" => "claude-opus-5"
       },
-      "graders" => [
-        {
-          "type" => "prompt",
-          "config" => { "model" => "parent-prompt-judge" }
-        },
-        {
-          "type" => "panel",
-          "config" => {
-            "models" => [
-              "panel-judge-a",
-              { "model" => "panel-judge-b", "weight" => 2 }
-            ]
-          }
-        }
-      ],
       "stimuli" => [
         {
-          "name" => "override",
-          "model" => "gemini-3.6-flash",
+          "name" => "effective-graders",
           "prompt" => "test",
           "graders" => [
             {
               "type" => "prompt",
               "config" => { "model" => "stimulus-prompt-judge" }
+            },
+            {
+              "type" => "prompt",
+              "config" => { "prompt" => "uses default judge" }
+            },
+            {
+              "type" => "panel",
+              "config" => {
+                "models" => [
+                  "panel-judge-a",
+                  { "model" => "panel-judge-b", "weight" => 2 }
+                ]
+              }
             }
           ]
         }
@@ -661,17 +654,100 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_equal(
       %w[
         claude-opus-5
-        gemini-3.6-flash
         gpt-5.6-sol
-        legacy-executor
-        legacy-judge
         panel-judge-a
         panel-judge-b
-        parent-prompt-judge
         stimulus-prompt-judge
       ],
       stdout.lines(chomp: true)
     )
+  end
+
+  def test_lists_models_from_legacy_config
+    write_spec(
+      "config" => {
+        "model" => "legacy-executor",
+        "judge_model" => "legacy-judge"
+      },
+      "stimuli" => [
+        {
+          "name" => "legacy",
+          "graders" => [{ "type" => "prompt", "config" => { "prompt" => "judge" } }]
+        }
+      ]
+    )
+    initialize_git_repo
+    commit_all("candidate")
+
+    stdout, stderr, status = run_validator(list_models: true)
+
+    assert status.success?, stderr
+    assert_equal %w[legacy-executor legacy-judge], stdout.lines(chomp: true)
+  end
+
+  def test_model_listing_excludes_non_eval_specs
+    write_spec(
+      "defaults" => {
+        "model" => "effective-executor",
+        "judge_model" => "unused-judge"
+      }
+    )
+    File.write(
+      File.join(@tests_path, "soak.capability.vally.yaml"),
+      YAML.dump("defaults" => { "model" => "phantom-executor", "judge_model" => "phantom-judge" })
+    )
+    initialize_git_repo
+    commit_all("candidate")
+
+    stdout, stderr, status = run_validator(list_models: true)
+
+    assert status.success?, stderr
+    assert_equal ["effective-executor"], stdout.lines(chomp: true)
+  end
+
+  def test_rejects_prompt_grader_without_effective_judge_model
+    write_spec(
+      "defaults" => { "model" => "executor" },
+      "stimuli" => [
+        {
+          "name" => "implicit-fallback",
+          "graders" => [{ "type" => "prompt", "config" => { "prompt" => "judge" } }]
+        }
+      ]
+    )
+    initialize_git_repo
+    commit_all("candidate")
+
+    _stdout, stderr, status = run_validator(list_models: true)
+
+    refute status.success?
+    assert_includes stderr, "must declare config.model or inherit an explicit judge_model"
+  end
+
+  def test_rejects_combined_legacy_config_and_defaults_for_model_listing
+    write_spec(
+      "config" => { "model" => "legacy-executor" },
+      "defaults" => { "model" => "executor" }
+    )
+    initialize_git_repo
+    commit_all("candidate")
+
+    _stdout, stderr, status = run_validator(list_models: true)
+
+    refute status.success?
+    assert_includes stderr, "must not combine legacy config with defaults"
+  end
+
+  def test_rejects_stimulus_model_override_ignored_by_pinned_vally
+    write_spec(
+      "defaults" => { "model" => "executor" },
+      "stimuli" => [{ "name" => "ignored-override", "model" => "phantom-executor" }]
+    )
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "uses unsupported model key(s): model"
   end
 
   def test_rejects_candidate_repository_control_directory_symlink
@@ -1094,7 +1170,8 @@ class TestPrepareVallyEvaluation < Minitest::Test
         "PATH" => "#{fake_bin}:#{ENV.fetch("PATH")}",
         "COPILOT_PAT_0" => "partial-token",
         "COPILOT_PAT_1" => "complete-token",
-        "TOKEN_START_INDEX" => "0"
+        "GITHUB_RUN_ID" => "0",
+        "TOKEN_START_OFFSET" => "0"
       }
 
       _stdout, stderr, status = Open3.capture3(
@@ -1115,6 +1192,67 @@ class TestPrepareVallyEvaluation < Minitest::Test
       assert_equal "token=complete-token\n", File.read(output)
       refute_includes stderr, "partial-token"
       refute_includes stderr, "complete-token"
+    end
+  end
+
+  def test_token_selector_combines_run_attempt_and_matrix_entropy
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    Dir.mktmpdir("select-vally-token-") do |root|
+      fake_bin = File.join(root, "bin")
+      FileUtils.mkdir_p(fake_bin)
+      write_executable(
+        File.join(fake_bin, "curl"),
+        <<~'SH'
+          #!/usr/bin/env bash
+          cat >/dev/null
+          printf 200
+        SH
+      )
+      write_executable(
+        File.join(fake_bin, "timeout"),
+        <<~'SH'
+          #!/usr/bin/env bash
+          shift
+          exec "$@"
+        SH
+      )
+      runner = File.join(root, "runner")
+      write_executable(runner, "#!/usr/bin/env bash\nprintf MODEL_OK\n")
+      wrapper = File.join(root, "wrapper")
+      runtime = File.join(root, "runtime")
+      write_executable(wrapper, "#!/usr/bin/env bash\nexit 0\n")
+      write_executable(runtime, "#!/usr/bin/env bash\nexit 0\n")
+      token_env = (0..9).to_h { |index| ["COPILOT_PAT_#{index}", "token-#{index}"] }
+      select = lambda do |run_id:, offset: 0, attempt: 1|
+        output = File.join(root, "output-#{run_id}-#{offset}-#{attempt}")
+        env = token_env.merge(
+          "PATH" => "#{fake_bin}:#{ENV.fetch("PATH")}",
+          "GITHUB_RUN_ID" => run_id.to_s,
+          "GITHUB_RUN_ATTEMPT" => attempt.to_s,
+          "TOKEN_START_OFFSET" => offset.to_s,
+          "TOKEN_START_INDEX" => nil
+        )
+        _stdout, stderr, status = Open3.capture3(
+          env,
+          "bash",
+          TOKEN_SELECTOR,
+          output,
+          runner,
+          wrapper,
+          runtime,
+          root,
+          File.join(root, "probe"),
+          "gpt-5.6-sol"
+        )
+        assert status.success?, stderr
+        File.read(output)
+      end
+
+      assert_equal "token=token-8\n", select.call(run_id: 18)
+      assert_equal "token=token-9\n", select.call(run_id: 19)
+      assert_equal "token=token-9\n", select.call(run_id: 18, offset: 1)
+      assert_equal "token=token-9\n", select.call(run_id: 18, attempt: 2)
     end
   end
 

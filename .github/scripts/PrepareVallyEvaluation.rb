@@ -433,14 +433,17 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
     fail!("#{spec_path} uses YAML aliases; trusted validation requires alias-free specs")
   end
   fail!("#{spec_path} must contain a mapping") unless document.is_a?(Hash)
-  defaults = document["defaults"]
-  if defaults.is_a?(Hash) && defaults.key?("executor") && defaults["executor"] != "copilot-sdk"
-    fail!("#{relative_spec_path} must not override the trusted copilot-sdk executor")
+  %w[defaults config].each do |scope_name|
+    scope = document[scope_name]
+    if scope.is_a?(Hash) && scope.key?("executor") && scope["executor"] != "copilot-sdk"
+      fail!("#{relative_spec_path} must not override the trusted copilot-sdk executor")
+    end
+  end
+  if document.key?("graders")
+    fail!("#{relative_spec_path} uses top-level graders, which pinned Vally does not execute")
   end
 
   validate_environment!(document["environment"], spec_path, skill_root, repo_root, "environment")
-  parent_graders = Array(document["graders"])
-  validate_graders!(parent_graders, "graders")
   require_skill_invocation = REQUIRED_SKILL_INVOCATION_SPECS.include?(relative_spec_path)
   if PER_GRADER_MUST_PASS_SPECS.include?(relative_spec_path) && document["scoring"] != {}
     fail!("#{relative_spec_path} must use an empty scoring map so every grader must pass its declared threshold")
@@ -454,13 +457,17 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
 
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
+    unsupported_model_keys = stimulus.keys & %w[model judge_model]
+    unless unsupported_model_keys.empty?
+      fail!("stimuli[#{index}] uses unsupported model key(s): #{unsupported_model_keys.join(", ")}")
+    end
     if stimulus.key?("attachments")
       fail!("stimuli[#{index}].attachments is forbidden in credentialed evaluation specs")
     end
     validate_environment!(stimulus["environment"], spec_path, skill_root, repo_root, "stimuli[#{index}].environment")
     graders = Array(stimulus["graders"])
     validate_graders!(graders, "stimuli[#{index}].graders")
-    effective_invocations = (parent_graders + graders).count do |grader|
+    effective_invocations = graders.count do |grader|
       grader.is_a?(Hash) && grader["type"] == "skill-invocation"
     end
     if effective_invocations > 1
@@ -486,39 +493,48 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
   document
 end
 
-def explicit_models(document)
-  models = []
-  add_scope = lambda do |scope|
-    return unless scope.is_a?(Hash)
-
-    models << scope["model"] if scope.key?("model")
-    models << scope["judge_model"] if scope.key?("judge_model")
+def effective_models(document, relative_spec_path)
+  config = document["config"]
+  defaults = document["defaults"]
+  if config && defaults
+    fail!("#{relative_spec_path} must not combine legacy config with defaults")
   end
-  add_graders = lambda do |graders|
-    Array(graders).each do |grader|
+  execution_defaults = defaults || config
+  unless execution_defaults.is_a?(Hash)
+    fail!("#{relative_spec_path} must declare defaults.model or legacy config.model")
+  end
+
+  executor_model = execution_defaults["model"]
+  fail!("#{relative_spec_path} must declare an explicit executor model") unless executor_model
+
+  models = [executor_model]
+  default_judge_model = execution_defaults["judge_model"]
+  Array(document["stimuli"]).each_with_index do |stimulus, stimulus_index|
+    Array(stimulus["graders"]).each_with_index do |grader, grader_index|
       next unless grader.is_a?(Hash)
 
-      config = grader["config"]
-      next unless config.is_a?(Hash)
+      case grader["type"]
+      when "prompt"
+        grader_config = grader["config"].is_a?(Hash) ? grader["config"] : {}
+        judge_model = grader_config["model"] || default_judge_model
+        unless judge_model
+          fail!(
+            "#{relative_spec_path} stimuli[#{stimulus_index}].graders[#{grader_index}] " \
+            "must declare config.model or inherit an explicit judge_model"
+          )
+        end
+        models << judge_model
+      when "panel"
+        grader_config = grader["config"]
+        next unless grader_config.is_a?(Hash)
 
-      if grader["type"] == "prompt"
-        models << config["model"] if config.key?("model")
-      elsif grader["type"] == "panel"
-        Array(config["models"]).each do |entry|
+        Array(grader_config["models"]).each do |entry|
           models << (entry.is_a?(Hash) ? entry["model"] : entry)
         end
       end
     end
   end
-
-  add_scope.call(document["config"])
-  add_scope.call(document["defaults"])
-  add_graders.call(document["graders"])
-  Array(document["stimuli"]).each do |stimulus|
-    add_scope.call(stimulus)
-    add_graders.call(stimulus["graders"]) if stimulus.is_a?(Hash)
-  end
-  models.compact
+  models
 end
 
 def fixture_files(fixture)
@@ -685,7 +701,14 @@ def main(argv = ARGV)
     validate_no_checkout_symlinks!(relative_path, repo_root, "mandatory spec")
   end
   if list_models
-    models = spec_documents.values.flat_map { |document| explicit_models(document) }
+    effective_specs = spec_documents.select do |spec_path, _document|
+      File.basename(spec_path).match?(/\Aeval.*\.vally\.yaml\z/)
+    end
+    fail!("no eval*.vally.yaml specs found under #{tests_path}") if effective_specs.empty?
+    models = effective_specs.flat_map do |spec_path, document|
+      relative_spec_path = Pathname.new(spec_path).relative_path_from(Pathname.new(repo_root)).to_s
+      effective_models(document, relative_spec_path)
+    end
     fail!("no explicit models found under #{tests_path}") if models.empty?
     models.each do |model|
       fail!("invalid explicit model under #{tests_path}: #{model.inspect}") unless model.is_a?(String) && model.match?(/\A[A-Za-z0-9._-]+\z/) && model != "auto"

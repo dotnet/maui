@@ -65,36 +65,27 @@ jobs:
       - name: Select Copilot token
         id: select-token
         env:
-          TOKEN_0: ${{ secrets.COPILOT_PAT_0 }}
-          TOKEN_1: ${{ secrets.COPILOT_PAT_1 }}
-          TOKEN_2: ${{ secrets.COPILOT_PAT_2 }}
-          TOKEN_3: ${{ secrets.COPILOT_PAT_3 }}
-          TOKEN_4: ${{ secrets.COPILOT_PAT_4 }}
-          TOKEN_5: ${{ secrets.COPILOT_PAT_5 }}
-          TOKEN_6: ${{ secrets.COPILOT_PAT_6 }}
-          TOKEN_7: ${{ secrets.COPILOT_PAT_7 }}
-          TOKEN_8: ${{ secrets.COPILOT_PAT_8 }}
-          TOKEN_9: ${{ secrets.COPILOT_PAT_9 }}
+          COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+          COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+          COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+          COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+          COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+          COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+          COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+          COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+          COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+          COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
         run: |
           set -euo pipefail
-          TOKENS=()
-          for i in 0 1 2 3 4 5 6 7 8 9; do
-            var="TOKEN_$i"
-            val="${!var-}"
-            if [ -n "$val" ]; then
-              TOKENS+=("$val")
-            fi
-          done
-
-          if [ ${#TOKENS[@]} -eq 0 ]; then
-            echo "::error::No COPILOT_PAT_* secrets are configured in the copilot-pat-pool environment"
-            exit 1
-          fi
-
-          IDX=$((GITHUB_RUN_ID % ${#TOKENS[@]}))
-          echo "Selected 1 of ${#TOKENS[@]} available PATs"
-          echo "::add-mask::${TOKENS[$IDX]}"
-          echo "token=${TOKENS[$IDX]}" >> "$GITHUB_OUTPUT"
+          .github/scripts/SelectVallyToken.sh \
+            "$GITHUB_OUTPUT" \
+            "${{ steps.vally-runtime.outputs.vally_runner }}" \
+            "${{ steps.vally-runtime.outputs.copilot_wrapper }}" \
+            "${{ steps.vally-runtime.outputs.copilot_runtime }}" \
+            "${{ steps.vally-runtime.outputs.copilot_home }}" \
+            "$RUNNER_TEMP/model-probe" \
+            gpt-5.6-sol \
+            claude-opus-5
 
       - name: Run live soak
         id: soak

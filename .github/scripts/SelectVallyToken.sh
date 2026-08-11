@@ -57,12 +57,26 @@ fi
 
 mkdir -p "$probe_root"
 chmod 755 "$probe_root"
-start_seed=${TOKEN_START_INDEX:-${GITHUB_RUN_ID:-0}}
-if [[ ! "$start_seed" =~ ^[0-9]+$ ]]; then
-	echo "TOKEN_START_INDEX must be numeric" >&2
+run_id=${GITHUB_RUN_ID:-0}
+run_attempt=${GITHUB_RUN_ATTEMPT:-1}
+start_offset=${TOKEN_START_OFFSET:-0}
+validate_numeric() {
+	local name=$1
+	local value=$2
+	if [[ ! "$value" =~ ^[0-9]+$ ]]; then
+		echo "$name must be numeric" >&2
+		exit 1
+	fi
+}
+validate_numeric GITHUB_RUN_ID "$run_id"
+validate_numeric GITHUB_RUN_ATTEMPT "$run_attempt"
+validate_numeric TOKEN_START_OFFSET "$start_offset"
+if [ "$run_attempt" -eq 0 ]; then
+	echo "GITHUB_RUN_ATTEMPT must be at least 1" >&2
 	exit 1
 fi
-start_index=$((start_seed % ${#tokens[@]}))
+token_count=${#tokens[@]}
+start_index=$(((run_id % token_count + start_offset % token_count + (run_attempt - 1) % token_count) % token_count))
 
 selected_token=""
 for ((offset = 0; offset < ${#tokens[@]}; offset++)); do
