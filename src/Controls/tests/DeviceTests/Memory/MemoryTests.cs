@@ -768,14 +768,23 @@ public class MemoryTests : ControlsHandlerTestBase
 		Assert.Equal(4, references.Count);
 		await AssertionExtensions.WaitForGC(references[2], references[3]);
 	}
-#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
+
 	[Fact("Window Does Not Leak")]
 	public async Task WindowDoesNotLeak()
 	{
 		SetupBuilder();
 
-		var references = new List<WeakReference>();
+		var references = await CreateWindowLeakReferencesAsync();
 
+		await AssertionExtensions.WaitForGC([.. references]);
+	}
+
+	// Extracted into a non-inlineable method so the `window`/`page` locals aren't hoisted into the
+	// caller's async state machine, which could keep them rooted past the WaitForGC await below.
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	async Task<List<WeakReference>> CreateWindowLeakReferencesAsync()
+	{
+		var references = new List<WeakReference>();
 
 		var page = new ContentPage();
 		var window = new Window(page);
@@ -795,9 +804,8 @@ public class MemoryTests : ControlsHandlerTestBase
 			}
 		});
 
-		await AssertionExtensions.WaitForGC([.. references]);
+		return references;
 	}
-#endif
 
 	[Fact("VisualDiagnosticsOverlay Does Not Leak"
 #if IOS || MACCATALYST
