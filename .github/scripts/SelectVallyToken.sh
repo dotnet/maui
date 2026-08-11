@@ -87,7 +87,7 @@ for ((offset = 0; offset < ${#tokens[@]}; offset++)); do
 	auth_header_name+="ization"
 	auth_scheme="Bear"
 	auth_scheme+="er"
-	status=$(
+	if ! status=$(
 		printf '%s: %s %s\n' "$auth_header_name" "$auth_scheme" "$token" |
 			curl --silent --show-error --connect-timeout 10 --max-time 20 \
 				--header @- \
@@ -95,10 +95,16 @@ for ((offset = 0; offset < ${#tokens[@]}; offset++)); do
 				--write-out '%{http_code}' \
 				--header "Accept: application/vnd.github+json" \
 				--header "X-GitHub-Api-Version: 2022-11-28" \
-				https://api.github.com/user || true
-	)
+				https://api.github.com/user
+	); then
+		status="transport-error"
+	fi
 	if [ "$status" != "200" ]; then
-		echo "::warning::Skipping unavailable Copilot PAT slot $slot (GitHub /user returned HTTP $status)"
+		if [ "$status" = "transport-error" ]; then
+			echo "::warning::Skipping unavailable Copilot PAT slot $slot (GitHub /user transport failed)"
+		else
+			echo "::warning::Skipping unavailable Copilot PAT slot $slot (GitHub /user returned HTTP $status)"
+		fi
 		continue
 	fi
 

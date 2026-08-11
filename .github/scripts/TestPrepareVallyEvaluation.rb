@@ -1289,6 +1289,15 @@ class TestPrepareVallyEvaluation < Minitest::Test
     end
   end
 
+  def test_token_selector_labels_github_transport_failures
+    skip "token selector not provided" unless TOKEN_SELECTOR
+
+    content = File.read(TOKEN_SELECTOR)
+    assert_match(/if ! status=\$\(.*?https:\/\/api\.github\.com\/user\s+\); then\s+status="transport-error"\s+fi/m, content)
+    refute_match(/https:\/\/api\.github\.com\/user\s+\|\| true/, content)
+    assert_includes content, "GitHub /user transport failed"
+  end
+
   def test_token_selector_combines_run_attempt_and_matrix_entropy
     skip "token selector not provided" unless TOKEN_SELECTOR
 

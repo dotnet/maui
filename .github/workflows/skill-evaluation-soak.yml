@@ -20,10 +20,6 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: read
-  issues: read
-  checks: read
-  statuses: read
 
 env:
   VALLY_VERSION: "0.12.0"
