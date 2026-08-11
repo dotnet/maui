@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Animations
 	public class AnimationManager : IAnimationManager, IDisposable
 	{
 		readonly List<Animation> _animations = new();
-		readonly Action _fire;
 		long _lastUpdate;
 		bool _disposedValue;
 
@@ -18,10 +17,9 @@ namespace Microsoft.Maui.Animations
 		public AnimationManager(ITicker ticker)
 		{
 			_lastUpdate = GetCurrentTick();
-			_fire = OnFire;
 
 			Ticker = ticker;
-			Ticker.Fire = _fire;
+			Ticker.Fire = OnFire;
 		}
 
 		/// <inheritdoc/>
@@ -105,6 +103,11 @@ namespace Microsoft.Maui.Animations
 
 			foreach (var animation in animations)
 			{
+				if (_disposedValue)
+				{
+					return;
+				}
+
 				OnAnimationTick(animation);
 			}
 
@@ -139,21 +142,18 @@ namespace Microsoft.Maui.Animations
 
 			_disposedValue = true;
 
-			if (disposing)
+			if (!disposing)
 			{
-				End();
+				return;
+			}
 
-				if (ReferenceEquals(Ticker.Fire, _fire))
-				{
-					Ticker.Fire = null;
-				}
+			Ticker.Fire -= OnFire;
+			End();
+			_animations.Clear();
 
-				_animations.Clear();
-
-				if (Ticker is IDisposable disposable)
-				{
-					disposable.Dispose();
-				}
+			if (Ticker is IDisposable disposable)
+			{
+				disposable.Dispose();
 			}
 		}
 

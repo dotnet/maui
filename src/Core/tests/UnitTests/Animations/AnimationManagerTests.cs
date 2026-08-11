@@ -45,6 +45,38 @@ namespace Microsoft.Maui.UnitTests
 			GC.KeepAlive(ticker);
 		}
 
+		[Fact]
+		public void DisposeRemovesOwnedCallbackFromMulticastDelegate()
+		{
+			var ticker = new TestTicker();
+			var manager = new AnimationManager(ticker);
+			bool stepCalled = false;
+			int otherCallbackCount = 0;
+			manager.Add(new Animation(_ => stepCalled = true, duration: 10));
+			ticker.Fire += () => otherCallbackCount++;
+
+			manager.Dispose();
+			ticker.Fire?.Invoke();
+
+			Assert.False(stepCalled);
+			Assert.Equal(1, otherCallbackCount);
+		}
+
+		[Fact]
+		public void DisposeDuringTickStopsProcessingRemainingAnimations()
+		{
+			var ticker = new TestTicker();
+			var manager = new AnimationManager(ticker);
+			bool secondAnimationCalled = false;
+			manager.Add(new Animation(_ => manager.Dispose(), duration: 10));
+			manager.Add(new Animation(_ => secondAnimationCalled = true, duration: 10));
+			Action fire = ticker.Fire!;
+
+			fire();
+
+			Assert.False(secondAnimationCalled);
+		}
+
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		static WeakReference<object> CreateDisposedManagerPayload(TestTicker ticker)
 		{
