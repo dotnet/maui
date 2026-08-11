@@ -378,6 +378,83 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "requires mandatory baseline step"
   end
 
+  def test_requires_try_fix_to_preserve_injected_skill_directory
+    try_fix_root = File.join(@repo_root, ".github", "skills", "try-fix")
+    try_fix_tests_path = File.join(try_fix_root, "tests")
+    FileUtils.mkdir_p(try_fix_tests_path)
+    File.write(
+      File.join(try_fix_root, "SKILL.md"),
+      <<~MARKDOWN
+        ### Step 2: Establish Baseline (MANDATORY)
+        ### Step 9: Restore Working Directory (MANDATORY - always)
+        EstablishBrokenBaseline.ps1 -Restore
+        No baseline state found and Restored False
+        not `git checkout`, `git restore`, or `git reset`
+      MARKDOWN
+    )
+    File.write(
+      File.join(try_fix_tests_path, "eval.restore.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "restore-protocol",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["try-fix"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(try_fix_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "requires injected skill preservation"
+  end
+
+  def test_requires_restore_fixture_to_preserve_injected_skill_directory
+    try_fix_root = File.join(@repo_root, ".github", "skills", "try-fix")
+    try_fix_tests_path = File.join(try_fix_root, "tests")
+    FileUtils.mkdir_p(try_fix_tests_path)
+    File.write(
+      File.join(try_fix_root, "SKILL.md"),
+      <<~MARKDOWN
+        ### Step 2: Establish Baseline (MANDATORY)
+        ### Step 9: Restore Working Directory (MANDATORY - always)
+        EstablishBrokenBaseline.ps1 -Restore
+        No baseline state found and Restored False
+        not `git checkout`, `git restore`, or `git reset`
+        an evaluator-loaded `try-fix/` directory may remain visible in
+        `git status --short`; do not delete it.
+      MARKDOWN
+    )
+    File.write(
+      File.join(try_fix_tests_path, "eval.restore.vally.yaml"),
+      YAML.dump(
+        "stimuli" => [
+          {
+            "name" => "restores-synthetic-fix-without-raw-git",
+            "prompt" => "Restore the target file.",
+            "graders" => [
+              {
+                "type" => "skill-invocation",
+                "config" => { "required" => ["try-fix"] }
+              }
+            ]
+          }
+        ]
+      )
+    )
+
+    _stdout, stderr, status = run_validator(try_fix_tests_path)
+
+    refute status.success?
+    assert_includes stderr, "prompt requires pre-existing untracked path preservation"
+  end
+
   def test_rejects_vcs_metadata_destination
     write_fixture("fixture.txt")
     write_spec(

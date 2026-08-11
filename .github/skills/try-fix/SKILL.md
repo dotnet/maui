@@ -36,12 +36,19 @@ If the prompt does not include a **problem to fix** and a **test command to veri
    array is non-empty, report `Blocked` before editing: added production files
    are not safely restorable. If the approach requires another tracked file,
    report `Blocked` instead of editing it.
-8. **Wait for command completion** - If a shell tool reports that a command is
+8. **Preserve pre-existing untracked paths** - Never modify or delete an
+   untracked file or directory that existed before the attempt. Evaluators may
+   inject the loaded skill as an untracked directory such as `try-fix/`; leave
+   it exactly as found even when `git status --short` lists it. It is
+   harness-owned input, not attempt-created drift. The restore script is the
+   only cleanup step; do not use `rm`, `Remove-Item`, or another filesystem
+   command to make the worktree appear clean.
+9. **Wait for command completion** - If a shell tool reports that a command is
    still running and returns a `shellId`, call `read_bash` with that exact
    `shellId` and wait for the completed result. Never proceed, report, or end
    the session while baseline, test, artifact, self-review, or restore work is
    still running.
-9. **Contain attempt artifacts** - Create every log, snapshot, state marker, and
+10. **Contain attempt artifacts** - Create every log, snapshot, state marker, and
    scratch file under `$OUTPUT_DIR`. Never persist `$OUTPUT_DIR` or other shell
    state in `.github/`, the repository root, or another workspace path. Shell
    variables do not persist between tool calls, so redeclare the same literal
@@ -164,7 +171,7 @@ The skill is complete when:
 - [ ] **Expert self-review performed inline (Step 6) and `reviewer-findings.json` written** — `[]` if clean. **Refreshed by Step 7.5 if the test loop modified code, so the saved findings reflect the final diff.**
 - [ ] Analysis provided (success explanation or failure reasoning with evidence)
 - [ ] Artifacts saved to output directory (verified by Step 8 file-existence gate)
-- [ ] Baseline restored (working directory clean)
+- [ ] Baseline target files restored with no attempt-created changes; pre-existing untracked harness inputs remain untouched
 - [ ] Results reported to invoker (including `findings_count`)
 
 🚨 **CRITICAL: What counts as "Pass" vs "Fail"**
@@ -546,7 +553,7 @@ if ($missing.Count -gt 0) {
 }
 ```
 
-**If `$gateFailureMessage` was set:** Step 9 still runs (do NOT skip it). After Step 9 restores the worktree, surface the failure in Step 10's report — set `result.txt` to `Blocked` (already done above) and explain in `analysis.md` which artifact was missing. The next sequential attempt then starts from a clean worktree.
+**If `$gateFailureMessage` was set:** Step 9 still runs (do NOT skip it). After Step 9 restores the target files, surface the failure in Step 10's report — set `result.txt` to `Blocked` (already done above) and explain in `analysis.md` which artifact was missing. The next sequential attempt then starts from the same restored baseline state, including any pre-existing untracked harness inputs.
 
 **Analysis quality matters.** Bad: "Didn't work". Good: "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached value was already used."
 
@@ -568,6 +575,12 @@ new or no fix files were detected, the expected completion is
 those verified no-state paths and only when no attempt edits were made.
 
 🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
+
+After restoration, leave every pre-existing untracked path unchanged. In
+particular, an evaluator-loaded `try-fix/` directory may remain visible in
+`git status --short`; do not delete it. Judge restoration by `Restored True`
+and by the absence of attempt-created changes to the allowed target files, not
+by forcing all untracked harness inputs out of the workspace.
 
 ### Step 10: Report Results
 

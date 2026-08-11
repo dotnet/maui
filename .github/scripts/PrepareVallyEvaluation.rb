@@ -58,13 +58,23 @@ REQUIRED_SKILL_PATTERNS = {
     "mandatory restore step" => /^### Step 9: Restore Working Directory \(MANDATORY .+\)$/,
     "trusted restore command" => /EstablishBrokenBaseline\.ps1 -Restore/,
     "conditional no-state restore completion" => /No baseline state found.+Restored False/m,
-    "raw-git cleanup prohibition" => /not `git checkout`, `git restore`, or `git reset`/
+    "raw-git cleanup prohibition" => /not `git checkout`, `git restore`, or `git reset`/,
+    "injected skill preservation" => /an evaluator-loaded `try-fix\/` directory may remain visible in\s+`git status --short`; do not delete it\./m
+  }
+}.freeze
+REQUIRED_STIMULUS_PROMPT_PATTERNS = {
+  ".github/skills/try-fix/tests/eval.restore.vally.yaml" => {
+    "restores-synthetic-fix-without-raw-git" => {
+      "pre-existing untracked path preservation" =>
+        /The evaluator injects a read-only `try-fix\/` skill directory.+must remain.+Do not remove or modify it/m
+    }
   }
 }.freeze
 MANDATORY_SPEC_PATHS = (
   REQUIRED_SKILL_INVOCATION_SPECS +
   PER_GRADER_MUST_PASS_SPECS +
   REQUIRED_SKILL_PATTERNS.keys +
+  REQUIRED_STIMULUS_PROMPT_PATTERNS.keys +
   DISALLOWED_SKILL_INVOCATION_STIMULI.keys
 ).uniq.freeze
 PARAM_PLACEHOLDER_PATTERN = /\$\{[A-Za-z_]\w*(?:=[^}]*)?\}/
@@ -457,6 +467,13 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
 
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
+    required_prompt_patterns =
+      REQUIRED_STIMULUS_PROMPT_PATTERNS.dig(relative_spec_path, stimulus["name"]) || {}
+    required_prompt_patterns.each do |description, pattern|
+      unless stimulus["prompt"].is_a?(String) && stimulus["prompt"].match?(pattern)
+        fail!("#{relative_spec_path} stimuli[#{index}].prompt requires #{description}")
+      end
+    end
     unsupported_model_keys = stimulus.keys & %w[model judge_model]
     unless unsupported_model_keys.empty?
       fail!("stimuli[#{index}] uses unsupported model key(s): #{unsupported_model_keys.join(", ")}")

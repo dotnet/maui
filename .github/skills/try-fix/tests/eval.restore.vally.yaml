@@ -45,6 +45,11 @@ stimuli:
 
       You may modify only that target file. If another tracked file is required,
       report the attempt as Blocked instead of editing it.
+
+      The evaluator injects a read-only `try-fix/` skill directory that may
+      appear as an untracked path. It predates the attempt and must remain
+      exactly as found. Do not remove or modify it, and do not delete any other
+      pre-existing untracked path to make `git status` appear clean.
     environment:
       # The immutable fallback is itself a verified one-commit fixture, so the
       # PR remains evaluatable by the current base workflow. Once this workflow
@@ -76,6 +81,9 @@ stimuli:
           disallowed:
             - name: '^(bash|powershell)$'
               command: '(?:^\s*|(?:&&|\|\||;|\||&|\n|\$\(|\(|\{|\`)\s*)(?:(?:then|do|if|while|until)\s+)?!?\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S+\s+)*(?:(?:(?:\S*/)?command(?:\s+-\S+)*|(?:\S*/)?env(?:\s+(?:(?:-u|--unset)\s+\S+|(?:-i|--ignore-environment|--)|\S+=\S+))*|(?:\S*/)?sudo(?:\s+-\S+)*|(?:\S*/)?xargs(?:\s+-\S+)*|exec)\s+|(?:\S*/)?(?:sh|bash|zsh)(?:\s+-\S+)*\s+[''\"]?)*(?:\S*/)?git(?:\s+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*\s+(?:checkout|clean|restore|reset|stash)\b'
+      # Vally compares the starting and ending workspace snapshots, including
+      # pre-existing untracked inputs. Leaving injected skill files untouched
+      # is neutral; deleting them is correctly reported as drift.
       - type: diff-empty
     constraints:
       max_duration: 15m
