@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			// Build a native WinRT BitmapPropertySet (rather than a managed generic collection) so it can
 			// be marshalled across the WinRT ABI without requiring AOT/unsafe code generation.
-			var orientationValue = new BitmapTypedValue(Orientation, PropertyType.UInt16);
+			var orientationValue = new BitmapTypedValue(Orientation, global::Windows.Foundation.PropertyType.UInt16);
 
 			var toSet = new BitmapPropertySet { { OrientationKey, orientationValue } };
 			foreach (var property in _properties)
