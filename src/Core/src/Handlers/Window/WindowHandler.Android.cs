@@ -41,9 +41,9 @@ namespace Microsoft.Maui.Handlers
 			if (handler is WindowHandler windowHandler && windowHandler._disconnecting)
 				return;
 
-			ConnectRootViewFromContent(handler, window, (rootManager, outcome, rootView) =>
+			ConnectRootViewFromContent(handler, window, (rootManager, rootView) =>
 			{
-				if (outcome != NavigationRootManager.RootRequestOutcome.Applied || rootView is null)
+				if (rootView is null)
 					return;
 
 				if (handler is WindowHandler currentHandler && currentHandler._disconnecting)
@@ -158,14 +158,14 @@ namespace Microsoft.Maui.Handlers
 		internal static void ConnectRootViewFromContent(
 			IWindowHandler handler,
 			IWindow window,
-			Action<NavigationRootManager, NavigationRootManager.RootRequestOutcome, View?> completion)
+			Action<NavigationRootManager, View?> completion)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.Connect(
 				window.Content,
-				completion: (outcome, rootView) => completion(rootManager, outcome, rootView));
+				rootPrepared: rootView => completion(rootManager, rootView));
 		}
 
 		void UpdateVirtualViewFrame(Activity activity)

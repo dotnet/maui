@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Platform
 	public class NavigationRootManager
 	{
 		IMauiContext _mauiContext;
-		readonly Handler _mainHandler = new(
-			Looper.MainLooper ?? throw new InvalidOperationException("Android main looper is unavailable."));
+		Handler? _mainHandler;
 		AView? _rootView;
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
+		IToolbar? _toolbar;
 		int _toolbarVersion;
 		CoordinatorLayout? _managedCoordinatorLayout;
 		bool _swapInFlight;
@@ -56,19 +56,23 @@ namespace Microsoft.Maui.Platform
 		internal void SetToolbarElement(IToolbarElement toolbarElement)
 		{
 			_toolbarElement = toolbarElement;
+			_toolbar = toolbarElement.Toolbar;
 			_toolbarVersion++;
 		}
 
 		internal bool Connect(
 			IView? view,
 			IMauiContext? mauiContext = null,
+			Action<AView?>? rootPrepared = null,
 			Action<RootRequestOutcome, AView?>? completion = null)
 		{
 			return SubmitRootRequest(new RootRequest(
 				disconnect: false,
 				view,
 				mauiContext,
+				_toolbar,
 				_toolbarVersion,
+				rootPrepared,
 				completion));
 		}
 
@@ -80,7 +84,9 @@ namespace Microsoft.Maui.Platform
 				disconnect: true,
 				view: null,
 				mauiContext: null,
+				_toolbar,
 				_toolbarVersion,
+				rootPrepared: null,
 				completion));
 		}
 
@@ -235,25 +241,43 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_retryScheduled = true;
+			var mainLooper = Looper.MainLooper;
+			if (mainLooper is null)
+			{
+				CancelQueuedRootSwap("The Android main looper is unavailable.");
+				return;
+			}
+
+			_mainHandler ??= new Handler(mainLooper);
 			if (!_mainHandler.Post(ProcessQueuedRootSwap))
 			{
-				_retryScheduled = false;
-				_rootSwapsUnavailable = true;
-				var request = TakeQueuedRootRequest();
-				try
-				{
-					request.Complete(RootRequestOutcome.Cancelled, _rootView);
-				}
-				catch (Exception ex)
-				{
-					_mauiContext.CreateLogger<NavigationRootManager>()?.LogError(
-						ex,
-						"An Android navigation root request completion failed after the main looper stopped accepting work.");
-				}
-
-				_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(
-					"The Android main looper stopped accepting navigation root swaps.");
+				CancelQueuedRootSwap("The Android main looper stopped accepting navigation root swaps.");
 			}
+		}
+
+		void CancelQueuedRootSwap(string message)
+		{
+			_retryScheduled = false;
+			_rootSwapsUnavailable = true;
+			CancelPendingFragment();
+			var outgoingRootView = _rootView;
+			_rootView = null;
+			_viewFragment = null;
+			ReleaseOutgoingRoot(outgoingRootView, clearToolbarElement: true);
+
+			var request = TakeQueuedRootRequest();
+			try
+			{
+				request.Complete(RootRequestOutcome.Cancelled, _rootView);
+			}
+			catch (Exception ex)
+			{
+				_mauiContext.CreateLogger<NavigationRootManager>()?.LogError(
+					ex,
+					"An Android navigation root request completion failed after deferred swaps became unavailable.");
+			}
+
+			_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(message);
 		}
 
 		void ProcessQueuedRootSwap()
@@ -286,7 +310,9 @@ namespace Microsoft.Maui.Platform
 			_rootView = null;
 			ReleaseOutgoingRoot(
 				outgoingRootView,
-				clearToolbarElement: _toolbarVersion == request.ToolbarVersion);
+				clearToolbarElement:
+					_toolbarVersion == request.ToolbarVersion &&
+					ReferenceEquals(_toolbar, request.Toolbar));
 
 			var mauiContext = request.MauiContext ?? _mauiContext;
 			CoordinatorLayout? navigationLayout = null;
@@ -350,6 +376,34 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			try
+			{
+				request.PrepareRoot(_rootView);
+			}
+			catch
+			{
+				DiscardPublishedRoot(
+					view,
+					previousHandler,
+					rootView,
+					clearToolbarElement:
+						_toolbarVersion == request.ToolbarVersion &&
+						ReferenceEquals(_toolbar, request.Toolbar));
+				throw;
+			}
+
+			if (_queuedRequest is not null)
+			{
+				DiscardPublishedRoot(
+					view,
+					previousHandler,
+					rootView,
+					clearToolbarElement:
+						_toolbarVersion == request.ToolbarVersion &&
+						ReferenceEquals(_toolbar, request.Toolbar));
+				return false;
+			}
+
 			// if the incoming view is a Drawer Layout then the Drawer Layout
 			// will be the root view and internally handle all if its view management
 			// this is mainly used for FlyoutView
@@ -363,16 +417,6 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				SetContentView(null);
-			}
-
-			if (_queuedRequest is not null)
-			{
-				DiscardPublishedRoot(
-					view,
-					previousHandler,
-					rootView,
-					clearToolbarElement: _toolbarVersion == request.ToolbarVersion);
-				return false;
 			}
 
 			return true;
@@ -412,19 +456,26 @@ namespace Microsoft.Maui.Platform
 
 		bool QuiesceOutgoingRoot(AView? outgoingRootView, bool includeActivityFragmentManager)
 		{
-			if (outgoingRootView is null || !outgoingRootView.IsAlive() || outgoingRootView.Parent is null)
+			if (outgoingRootView is null || !outgoingRootView.IsAlive())
 				return true;
 
 			var context = _mauiContext.Context;
 			if (context is null)
 				return true;
 
-			var owningFragmentManager =
-				_mauiContext.Services.GetService<FragmentManager>() ??
-				context.GetFragmentManager();
+			var owningFragmentManager = _mauiContext.GetFragmentManager();
+			if (owningFragmentManager.IsDestroyed(context))
+				return true;
+
+			if (outgoingRootView.Parent is null)
+				return _viewFragment is null;
+
 			if (!TryExecutePendingTransactions(owningFragmentManager, context))
 				return false;
 
+			// Replacement also drains the activity manager because compatibility Shell can
+			// commit there. Disconnect intentionally does not: modal dismissal already runs
+			// inside the activity manager and re-entering it throws.
 			if (includeActivityFragmentManager)
 			{
 				var activityFragmentManager = context.GetFragmentManager();
@@ -462,7 +513,10 @@ namespace Microsoft.Maui.Platform
 
 			DrawerLayout = null;
 			if (clearToolbarElement)
+			{
 				_toolbarElement = null;
+				_toolbar = null;
+			}
 
 			_managedCoordinatorLayout = null;
 		}
@@ -506,19 +560,24 @@ namespace Microsoft.Maui.Platform
 
 		sealed class RootRequest
 		{
+			Action<AView?>? _rootPrepared;
 			Action<RootRequestOutcome, AView?>? _completion;
 
 			public RootRequest(
 				bool disconnect,
 				IView? view,
 				IMauiContext? mauiContext,
+				IToolbar? toolbar,
 				int toolbarVersion,
+				Action<AView?>? rootPrepared,
 				Action<RootRequestOutcome, AView?>? completion)
 			{
 				Disconnect = disconnect;
 				View = view;
 				MauiContext = mauiContext;
+				Toolbar = toolbar;
 				ToolbarVersion = toolbarVersion;
+				_rootPrepared = rootPrepared;
 				_completion = completion;
 			}
 
@@ -528,10 +587,20 @@ namespace Microsoft.Maui.Platform
 
 			public IMauiContext? MauiContext { get; }
 
+			public IToolbar? Toolbar { get; }
+
 			public int ToolbarVersion { get; }
+
+			public void PrepareRoot(AView? rootView)
+			{
+				var rootPrepared = _rootPrepared;
+				_rootPrepared = null;
+				rootPrepared?.Invoke(rootView);
+			}
 
 			public void Complete(RootRequestOutcome outcome, AView? rootView)
 			{
+				_rootPrepared = null;
 				var completion = _completion;
 				_completion = null;
 				completion?.Invoke(outcome, rootView);

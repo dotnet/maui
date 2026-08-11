@@ -32,15 +32,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			var rootManager = MauiContext.GetNavigationRootManager();
 			rootManager.Connect(
 				content,
-				completion: (outcome, rootView) => OnRootRequestCompleted(rootManager, outcome, rootView));
+				rootPrepared: rootView => OnRootPrepared(rootManager, rootView));
 		}
 
-		void OnRootRequestCompleted(
+		void OnRootPrepared(
 			NavigationRootManager rootManager,
-			NavigationRootManager.RootRequestOutcome outcome,
 			AView platformView)
 		{
-			if (outcome != NavigationRootManager.RootRequestOutcome.Applied || platformView is null)
+			if (platformView is null)
 				return;
 
 			// This is used for cases where we are testing swapping out the page set on window
