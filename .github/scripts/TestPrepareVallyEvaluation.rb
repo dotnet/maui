@@ -13,6 +13,7 @@ RESTORE_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 VERIFICATION_SPEC = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 SETUP_RUNTIME = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 TOKEN_SELECTOR = ARGV.empty? ? nil : File.realpath(ARGV.shift)
+SKILL_VALIDATION_WORKFLOW = ARGV.empty? ? nil : File.realpath(ARGV.shift)
 require PREPARER
 
 class TestPrepareVallyEvaluation < Minitest::Test
@@ -453,6 +454,22 @@ class TestPrepareVallyEvaluation < Minitest::Test
 
     refute status.success?
     assert_includes stderr, "prompt requires pre-existing untracked path preservation"
+  end
+
+  def test_comment_posting_cannot_erase_evaluator_verdict
+    skip "skill-validation workflow not supplied" unless SKILL_VALIDATION_WORKFLOW
+
+    workflow = File.read(SKILL_VALIDATION_WORKFLOW)
+    post_comment = workflow[/      - name: Post comment\n.*?(?=\n  # ={10,}\n  # REPORT STATUS)/m]
+
+    refute_nil post_comment
+    output_index = post_comment.index("fs.appendFileSync(outputPath, `eval_passed=")
+    api_index = post_comment.index("const comments = await github.paginate(")
+    refute_nil output_index
+    refute_nil api_index
+    assert_operator output_index, :<, api_index
+    assert_match(/try \{\s+\/\/ Upsert comment.*?github\.paginate\(.*?\} catch \(err\) \{/m, post_comment)
+    assert_match(/retries:\s+3/, post_comment)
   end
 
   def test_rejects_vcs_metadata_destination
