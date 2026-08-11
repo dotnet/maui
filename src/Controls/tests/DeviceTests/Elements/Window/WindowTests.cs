@@ -49,6 +49,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#if ANDROID
+					handlers.AddHandler(typeof(ReentrantFlyoutPage), typeof(ReentrantFlyoutViewHandler));
+#endif
 #else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
@@ -334,11 +337,9 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			var replacingRoot = false;
 			var reenteredDuringReplacement = false;
-			WindowHandlerStub windowHandler = null;
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
-				windowHandler = handler;
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
 				var oldRootView = Assert.IsType<ContainerView>(rootManager.RootView);
 				var fragmentHost = new global::Android.Widget.FrameLayout(handler.MauiContext.Context)
@@ -384,11 +385,47 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				reenteredDuringReplacement |= replacingRoot;
 				window.Page = finalPage;
-
-				// WindowHandlerStub is not assigned to window.Handler, so force the
-				// synchronous mapper re-entry that a connected handler performs.
-				windowHandler.UpdateValue(nameof(IWindow.Content));
 			}
+		}
+
+		[Fact(DisplayName = "Root Replacement During Flyout Construction Publishes Latest Root")]
+		public async Task RootReplacementDuringFlyoutConstructionPublishesLatestRoot()
+		{
+			SetupBuilder();
+
+			var finalPage = new ContentPage
+			{
+				Title = "Final page",
+				Content = new Label { Text = "Final page content" }
+			};
+			var finalRoot = new NavigationPage(finalPage);
+			var initialRoot = new ContentPage();
+			var reentrantRoot = new ReentrantFlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage { Title = "Detail" }
+			};
+			var window = new Window(initialRoot);
+			var reenteredDuringConstruction = false;
+
+			reentrantRoot.OnCreatingPlatformView = () =>
+			{
+				reenteredDuringConstruction = true;
+				window.Page = finalRoot;
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				window.Page = reentrantRoot;
+
+				await OnLoadedAsync(finalPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				Assert.True(reenteredDuringConstruction);
+				Assert.Same(finalRoot, window.Page);
+				Assert.NotNull(rootManager.ToolbarElement);
+				AssertPageAttachedToRoot(finalPage, rootManager);
+			});
 		}
 
 		public sealed class ReentrantFragment : AndroidX.Fragment.App.Fragment
@@ -412,6 +449,21 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				_onCreateView();
 				return new global::Android.Views.View(inflater.Context);
+			}
+		}
+
+		public sealed class ReentrantFlyoutPage : FlyoutPage
+		{
+			public Action OnCreatingPlatformView { get; set; }
+		}
+
+		public sealed class ReentrantFlyoutViewHandler : FlyoutViewHandler
+		{
+			protected override global::Android.Views.View CreatePlatformView()
+			{
+				var platformView = base.CreatePlatformView();
+				((ReentrantFlyoutPage)VirtualView).OnCreatingPlatformView?.Invoke();
+				return platformView;
 			}
 		}
 

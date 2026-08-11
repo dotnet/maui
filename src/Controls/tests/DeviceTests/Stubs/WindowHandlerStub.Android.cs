@@ -22,7 +22,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void UpdateContent()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			AView platformView = WindowHandler.CreateRootViewFromContent(this, VirtualView);
+			if (!WindowHandler.TryCreateRootViewFromContent(this, VirtualView, out var platformView))
+				return;
+
+			_ = platformView ?? throw new InvalidOperationException("Navigation root view should not be null.");
 
 			// This is used for cases where we are testing swapping out the page set on window
 			if (PlatformViewUnderTest?.Parent is FakeActivityRootView farw)

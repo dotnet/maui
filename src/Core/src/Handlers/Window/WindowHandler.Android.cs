@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var rootView = CreateRootViewFromContent(handler, window);
+			if (!TryCreateRootViewFromContent(handler, window, out var rootView))
+				return;
+
 			handler.PlatformView.SetContentView(rootView);
 		}
 
@@ -102,18 +104,21 @@ namespace Microsoft.Maui.Handlers
 			navigationRootManager?.Disconnect();
 		}
 
-		internal static View? CreateRootViewFromContent(IWindowHandler handler, IWindow window)
+		internal static bool TryCreateRootViewFromContent(IWindowHandler handler, IWindow window, out View? rootView)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
-			rootManager.Connect(window.Content);
+			if (!rootManager.Connect(window.Content))
+			{
+				rootView = null;
+				return false;
+			}
 
 			// The NavigationRootManager creates a MauiCoordinatorLayout which automatically
 			// registers its MauiWindowInsetListener in the static registry for child views to use
-			var rootView = rootManager.RootView;
-
-			return rootView;
+			rootView = rootManager.RootView;
+			return true;
 		}
 
 		void UpdateVirtualViewFrame(Activity activity)
