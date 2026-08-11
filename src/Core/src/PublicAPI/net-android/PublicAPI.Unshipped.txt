@@ -197,6 +197,7 @@ override Microsoft.Maui.Platform.MauiMaterialEditText.OnMeasure(int widthMeasure
 override Microsoft.Maui.Platform.MauiMaterialEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.MauiMaterialPicker.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiMaterialPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiMaterialPickerBase.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
@@ -204,6 +205,7 @@ override Microsoft.Maui.Platform.MauiMaterialTextInputLayout.OnMeasure(int width
 override Microsoft.Maui.Platform.MauiMaterialTextView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiMaterialTextView.SetText(Java.Lang.ICharSequence? text, Android.Widget.TextView.BufferType? type) -> void
 override Microsoft.Maui.Platform.MauiMaterialTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiPickerBase.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiScrollView.OnVisibilityChanged(Android.Views.View! changedView, Android.Views.ViewStates visibility) -> void
 override Microsoft.Maui.Platform.MauiScrollView.SetOnTouchListener(Android.Views.View.IOnTouchListener? touchListener) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
