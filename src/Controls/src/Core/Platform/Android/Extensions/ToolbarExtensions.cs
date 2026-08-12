@@ -209,10 +209,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				nativeToolbar.SetTitleTextColor(defaultTitleTextColor);
 			}
-			else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
-			{
-				nativeToolbar.SetTitleTextColor(defaultForegroundColor.ToPlatform().ToArgb());
-			}
 
 			nativeToolbar.UpdateNavigationIconColor(toolbar);
 			nativeToolbar.UpdateOverflowIconColor(toolbar);
@@ -244,10 +240,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (textColor != null)
 				{
 					icon.Color = textColor.ToPlatform().ToArgb();
-				}
-				else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
-				{
-					icon.Color = defaultForegroundColor.ToPlatform().ToArgb();
 				}
 				else if (GetDefaultNavigationIconColor(nativeToolbar) is int defaultNavigationIconColor)
 				{
