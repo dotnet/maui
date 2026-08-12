@@ -125,6 +125,29 @@ function Add-NativeAotArguments([string[]]$Arguments) {
     )
 }
 
+function Get-BinlogConfiguration {
+    param(
+        [string]$OutputPath,
+        [string]$Platform,
+        [switch]$Publish,
+        [switch]$CreateBinlog
+    )
+
+    $buildPath = if ($CreateBinlog) { Join-Path $OutputPath "build.binlog" } else { $null }
+    $storePath = if ($CreateBinlog -and $Publish -and $Platform -eq "android") {
+        Join-Path $OutputPath "store-build.binlog"
+    } else {
+        $null
+    }
+
+    return [pscustomobject]@{
+        BuildPath      = $buildPath
+        BuildArguments = if ($buildPath) { @("/bl:$buildPath") } else { @() }
+        StorePath      = $storePath
+        StoreArguments = if ($storePath) { @("/bl:$storePath") } else { @() }
+    }
+}
+
 function Invoke-MacNotarization([string]$AppBundlePath) {
     # Notarize + staple a Developer ID-signed .app so Gatekeeper lets it launch on other Macs.
     # Reuses the App Store Connect API key already configured for TestFlight publishing.
@@ -177,78 +200,77 @@ function New-MacCatalystDeveloperIdSideload {
     # TestFlight-only.
     $devIdKey = [Environment]::GetEnvironmentVariable("APPLE_DEVELOPERID_CODESIGN_KEY")
     $devIdProvision = [Environment]::GetEnvironmentVariable("APPLE_DEVELOPERID_CODESIGN_PROVISION")
-    if ([string]::IsNullOrWhiteSpace($devIdKey) -or [string]::IsNullOrWhiteSpace($devIdProvision)) {
+    $hasDevIdKey = -not [string]::IsNullOrWhiteSpace($devIdKey)
+    $hasDevIdProvision = -not [string]::IsNullOrWhiteSpace($devIdProvision)
+    if (-not $hasDevIdKey -and -not $hasDevIdProvision) {
         Write-Host "No Developer ID signing assets provided; skipping the notarized macOS sideload build."
         return $null
     }
-
-    try {
-        $devIdOutput = Join-Path $OutputPath "developer-id"
-        New-Item -ItemType Directory -Path $devIdOutput -Force | Out-Null
-
-        $devIdArgs = @(
-            "publish", $ProjectFile.FullName,
-            "-f", $TargetFramework,
-            "-c", $Configuration,
-            "-p:MtouchLink=SdkOnly",
-            "-p:ApplicationDisplayVersion=$AppDisplayVersion",
-            "-p:ApplicationVersion=$AppBuildNumber",
-            "-p:ValidateXcodeVersion=false",
-            "-p:CreatePackage=false",
-            "-p:EnableCodeSigning=true",
-            "-p:EnableHardenedRuntime=true",
-            "-p:ValidateEntitlements=disable",
-            "-p:CodesignKey=$devIdKey",
-            "-p:CodesignProvision=$devIdProvision",
-            "-p:CodesignEntitlements=Platforms/MacCatalyst/Entitlements.plist",
-            "-o", $devIdOutput
-        )
-
-        if ($UseNet11OrLater) { $devIdArgs += "-p:UseMonoRuntime=false" }
-        if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
-            $devIdArgs += @("-r", $RuntimeIdentifier)
-        } elseif ($UseNet11OrLater) {
-            # Match the dry-run: pin arm64-native for net11+ (the universal multi-RID publish
-            # trips PublishReadyToRun inference). arm64 runs natively on Apple Silicon Macs.
-            $devIdArgs += @("-r", "maccatalyst-arm64")
-        }
-
-        Write-Host "Building Developer ID (notarizable) Mac Catalyst app for $($ProjectFile.FullName)"
-        Invoke-DotNetPublish $devIdArgs "Mac Catalyst Developer ID publish"
-
-        $devIdApp = Get-NewestBuildOutput $devIdOutput "*.app" -Directory
-        if (-not $devIdApp) {
-            Write-Warning "Developer ID publish did not produce a .app; skipping notarized sideload."
-            return $null
-        }
-
-        # Hardened runtime is required for notarization. Re-sign deeply, preserving entitlements.
-        # Extract the current entitlements as XML (--xml avoids codesign's deprecated ':' path
-        # syntax) and only re-apply them when the bundle actually declares some.
-        $entitlementsPath = Join-Path $devIdOutput "developerid-entitlements.plist"
-        Remove-Item -Path $entitlementsPath -Force -ErrorAction SilentlyContinue
-        $capturedEntitlements = & codesign -d --xml --entitlements - $devIdApp.FullName 2>$null
-        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($capturedEntitlements)) {
-            Set-Content -Path $entitlementsPath -Value $capturedEntitlements -Encoding utf8
-        }
-        $signArgs = @("--force", "--deep", "--options", "runtime", "--timestamp", "--sign", $devIdKey)
-        if (Test-Path $entitlementsPath) { $signArgs += @("--entitlements", $entitlementsPath) }
-        & codesign @signArgs $devIdApp.FullName
-        if ($LASTEXITCODE -ne 0) { throw "Developer ID hardened-runtime re-sign failed." }
-
-        Invoke-MacNotarization $devIdApp.FullName
-
-        $devIdZip = Join-Path $OutputPath "$($devIdApp.BaseName)-macos-developerid.zip"
-        Remove-Item -Path $devIdZip -Force -ErrorAction SilentlyContinue
-        & ditto -c -k --keepParent $devIdApp.FullName $devIdZip
-        if ($LASTEXITCODE -ne 0) { throw "Failed to archive the notarized macOS app." }
-
-        Write-Host "Notarized macOS sideload artifact: $devIdZip"
-        return (Get-Item $devIdZip)
-    } catch {
-        Write-Warning "Developer ID / notarized macOS sideload build failed: $($_.Exception.Message). The Mac App Store .pkg (TestFlight) build is unaffected."
-        return $null
+    if (-not $hasDevIdKey -or -not $hasDevIdProvision) {
+        throw "Developer ID sideload signing is partially configured. Both the signing identity and provisioning profile are required."
     }
+
+    $devIdOutput = Join-Path $OutputPath "developer-id"
+    New-Item -ItemType Directory -Path $devIdOutput -Force | Out-Null
+
+    $devIdArgs = @(
+        "publish", $ProjectFile.FullName,
+        "-f", $TargetFramework,
+        "-c", $Configuration,
+        "-p:MtouchLink=SdkOnly",
+        "-p:ApplicationDisplayVersion=$AppDisplayVersion",
+        "-p:ApplicationVersion=$AppBuildNumber",
+        "-p:ValidateXcodeVersion=false",
+        "-p:CreatePackage=false",
+        "-p:EnableCodeSigning=true",
+        "-p:EnableHardenedRuntime=true",
+        "-p:ValidateEntitlements=disable",
+        "-p:CodesignKey=$devIdKey",
+        "-p:CodesignProvision=$devIdProvision",
+        "-p:CodesignEntitlements=Platforms/MacCatalyst/Entitlements.plist",
+        "-o", $devIdOutput
+    )
+
+    if ($UseNet11OrLater) { $devIdArgs += "-p:UseMonoRuntime=false" }
+    if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
+        $devIdArgs += @("-r", $RuntimeIdentifier)
+    } elseif ($UseNet11OrLater) {
+        # Match the dry-run: pin arm64-native for net11+ (the universal multi-RID publish
+        # trips PublishReadyToRun inference). arm64 runs natively on Apple Silicon Macs.
+        $devIdArgs += @("-r", "maccatalyst-arm64")
+    }
+
+    Write-Host "Building Developer ID (notarizable) Mac Catalyst app for $($ProjectFile.FullName)"
+    Invoke-DotNetPublish $devIdArgs "Mac Catalyst Developer ID publish"
+
+    $devIdApp = Get-NewestBuildOutput $devIdOutput "*.app" -Directory
+    if (-not $devIdApp) {
+        throw "Developer ID publish completed but did not produce a .app."
+    }
+
+    # Hardened runtime is required for notarization. Re-sign deeply, preserving entitlements.
+    # Extract the current entitlements as XML (--xml avoids codesign's deprecated ':' path
+    # syntax) and only re-apply them when the bundle actually declares some.
+    $entitlementsPath = Join-Path $devIdOutput "developerid-entitlements.plist"
+    Remove-Item -Path $entitlementsPath -Force -ErrorAction SilentlyContinue
+    $capturedEntitlements = & codesign -d --xml --entitlements - $devIdApp.FullName 2>$null
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($capturedEntitlements)) {
+        Set-Content -Path $entitlementsPath -Value $capturedEntitlements -Encoding utf8
+    }
+    $signArgs = @("--force", "--deep", "--options", "runtime", "--timestamp", "--sign", $devIdKey)
+    if (Test-Path $entitlementsPath) { $signArgs += @("--entitlements", $entitlementsPath) }
+    & codesign @signArgs $devIdApp.FullName
+    if ($LASTEXITCODE -ne 0) { throw "Developer ID hardened-runtime re-sign failed." }
+
+    Invoke-MacNotarization $devIdApp.FullName
+
+    $devIdZip = Join-Path $OutputPath "$($devIdApp.BaseName)-macos-developerid.zip"
+    Remove-Item -Path $devIdZip -Force -ErrorAction SilentlyContinue
+    & ditto -c -k --keepParent $devIdApp.FullName $devIdZip
+    if ($LASTEXITCODE -ne 0) { throw "Failed to archive the notarized macOS app." }
+
+    Write-Host "Notarized macOS sideload artifact: $devIdZip"
+    return (Get-Item $devIdZip)
 }
 
 function New-IosAdHocSideload {
@@ -272,47 +294,41 @@ function New-IosAdHocSideload {
         return $null
     }
 
-    try {
-        $adhocKey = Assert-EnvironmentValue "IOS_CODESIGN_KEY"
-        $adhocOutput = Join-Path $OutputPath "adhoc"
-        New-Item -ItemType Directory -Path $adhocOutput -Force | Out-Null
+    $adhocKey = Assert-EnvironmentValue "IOS_CODESIGN_KEY"
+    $adhocOutput = Join-Path $OutputPath "adhoc"
+    New-Item -ItemType Directory -Path $adhocOutput -Force | Out-Null
 
-        $adhocArgs = @(
-            "publish", $ProjectFile.FullName,
-            "-f", $TargetFramework,
-            "-c", $Configuration,
-            "-r", $RuntimeIdentifier,
-            "-p:ApplicationDisplayVersion=$AppDisplayVersion",
-            "-p:ApplicationVersion=$AppBuildNumber",
-            "-p:ValidateXcodeVersion=false",
-            "-p:BuildIpa=true",
-            "-p:ArchiveOnBuild=true",
-            "-p:CodesignKey=$adhocKey",
-            "-p:CodesignProvision=$adhocProvision",
-            "-o", $adhocOutput
-        )
+    $adhocArgs = @(
+        "publish", $ProjectFile.FullName,
+        "-f", $TargetFramework,
+        "-c", $Configuration,
+        "-r", $RuntimeIdentifier,
+        "-p:ApplicationDisplayVersion=$AppDisplayVersion",
+        "-p:ApplicationVersion=$AppBuildNumber",
+        "-p:ValidateXcodeVersion=false",
+        "-p:BuildIpa=true",
+        "-p:ArchiveOnBuild=true",
+        "-p:CodesignKey=$adhocKey",
+        "-p:CodesignProvision=$adhocProvision",
+        "-o", $adhocOutput
+    )
 
-        if (Test-IsNet11OrLater $TargetFramework) {
-            $adhocArgs += "-p:UseMonoRuntime=false"
-            $adhocArgs = Add-NativeAotArguments $adhocArgs
-        }
-
-        Write-Host "Building ad-hoc iOS IPA (sideloadable on registered devices) for $($ProjectFile.FullName)"
-        Invoke-DotNetPublish $adhocArgs "iOS ad-hoc publish"
-
-        $adhocIpa = Get-NewestBuildOutput $adhocOutput "*.ipa"
-        if (-not $adhocIpa) { $adhocIpa = Get-NewestBuildOutput $ProjectFile.DirectoryName "*.ipa" }
-        if (-not $adhocIpa) {
-            Write-Warning "Ad-hoc publish did not produce an IPA; skipping the sideloadable iOS artifact."
-            return $null
-        }
-
-        Write-Host "Ad-hoc iOS sideload artifact: $($adhocIpa.FullName)"
-        return $adhocIpa
-    } catch {
-        Write-Warning "Ad-hoc iOS sideload build failed: $($_.Exception.Message). The App Store IPA (TestFlight) build is unaffected."
-        return $null
+    if (Test-IsNet11OrLater $TargetFramework) {
+        $adhocArgs += "-p:UseMonoRuntime=false"
+        $adhocArgs = Add-NativeAotArguments $adhocArgs
     }
+
+    Write-Host "Building ad-hoc iOS IPA (sideloadable on registered devices) for $($ProjectFile.FullName)"
+    Invoke-DotNetPublish $adhocArgs "iOS ad-hoc publish"
+
+    $adhocIpa = Get-NewestBuildOutput $adhocOutput "*.ipa"
+    if (-not $adhocIpa) { $adhocIpa = Get-NewestBuildOutput $ProjectFile.DirectoryName "*.ipa" }
+    if (-not $adhocIpa) {
+        throw "Ad-hoc publish completed but did not produce an IPA."
+    }
+
+    Write-Host "Ad-hoc iOS sideload artifact: $($adhocIpa.FullName)"
+    return $adhocIpa
 }
 
 function New-IosUnsignedDeviceIpa {
@@ -410,13 +426,19 @@ if (-not $projectFile) {
 }
 
 New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
-$binlogPath = if ($CreateBinlog) { Join-Path $OutputPath "build.binlog" } else { $null }
-$binlogArguments = if ($CreateBinlog) { @("/bl:$binlogPath") } else { @() }
+$binlogs = Get-BinlogConfiguration -OutputPath $OutputPath -Platform $Platform -Publish:$Publish -CreateBinlog:$CreateBinlog
+$binlogPath = $binlogs.BuildPath
+$binlogArguments = $binlogs.BuildArguments
+$storeBinlogPath = $binlogs.StorePath
+$storeBinlogArguments = $binlogs.StoreArguments
 
 if ($CreateBinlog -and $env:GITHUB_OUTPUT) {
     # Emit the binlog path up-front so a failed build still exposes the (partial) binlog to the
     # upload step for diagnosis, even though the script throws before reaching the final emit below.
     "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
+    if ($storeBinlogPath) {
+        "store_binlog_path=$storeBinlogPath" >> $env:GITHUB_OUTPUT
+    }
 }
 
 # $package          => the "store" package (aab/ipa/pkg/zip) consumed by the Play/TestFlight steps.
@@ -493,6 +515,9 @@ switch ($Platform) {
         if (-not $apkPackage) { $apkPackage = Get-NewestBuildOutput $apkOutput "*.apk" }
         if (-not $apkPackage) { $apkPackage = Get-NewestBuildOutput $ProjectPath "*-Signed.apk" }
         if (-not $apkPackage) { $apkPackage = Get-NewestBuildOutput $ProjectPath "*.apk" }
+        if (-not $apkPackage) {
+            throw "Android APK publish completed but no APK artifact was found. Refusing to substitute the non-installable App Bundle."
+        }
         $sideloadPackage = $apkPackage
 
         if ($Publish) {
@@ -500,7 +525,7 @@ switch ($Platform) {
             #    (not to the universal sideload APK) so Play gets the intended ABI target.
             $aabOutput = Join-Path $OutputPath "aab"
             New-Item -ItemType Directory -Path $aabOutput -Force | Out-Null
-            $aabArgs = $commonArgs + @("-p:AndroidPackageFormat=aab", "-o", $aabOutput) + $signingArgs
+            $aabArgs = $commonArgs + @("-p:AndroidPackageFormat=aab", "-o", $aabOutput) + $signingArgs + $storeBinlogArguments
             if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
                 $aabArgs += @("-r", $RuntimeIdentifier)
             }
@@ -618,6 +643,7 @@ switch ($Platform) {
                 # The installable IPA becomes the primary sideload artifact; keep the Simulator
                 # app as an additional upload for Mac-only smoke testing.
                 $additionalPackage = $package
+                $package = $deviceIpa
                 $sideloadPackage = $deviceIpa
             }
         }
@@ -749,6 +775,9 @@ if ($additionalPackage) {
 }
 if ($CreateBinlog) {
     Write-Host "Build binlog: $binlogPath"
+    if ($storeBinlogPath) {
+        Write-Host "Store build binlog: $storeBinlogPath"
+    }
 }
 
 if ($env:GITHUB_OUTPUT) {

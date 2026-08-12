@@ -115,7 +115,8 @@ platform :ios do
       if testflight_review_conflict?(error)
         UI.important("The build was uploaded, but another build in this train is already in beta review. Treating this as a successful upload.")
       elsif testflight_processing_timeout?(error)
-        UI.important("The build was uploaded, but App Store Connect did not finish processing it before the configured wait timeout. Treating this as a successful upload.")
+        UI.error("The build was uploaded, but App Store Connect did not finish processing it before the configured wait timeout, so requested TestFlight distribution could not be completed.")
+        raise
       else
         raise
       end

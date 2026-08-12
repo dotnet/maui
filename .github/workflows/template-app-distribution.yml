@@ -718,7 +718,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: template-app-publish-binlog-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
-          path: ${{ steps.build.outputs.binlog_path }}
+          path: |
+            ${{ steps.build.outputs.binlog_path }}
+            ${{ steps.build.outputs.store_binlog_path }}
           retention-days: 14
 
       - name: Write Google Play credentials
