@@ -1050,6 +1050,24 @@ function Get-TestResultFromOutput {
                     $summaryFailurePattern = '(?ms)^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?\n.*?(?=^\s*(?:Failed|Passed|Skipped)\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
                     $failedCaseBlocks = @([regex]::Matches($content, $summaryFailurePattern))
                 }
+
+                # A native-library marker is environmental only when it accounts for every
+                # failed case. A mixed run can contain one DllNotFoundException plus an
+                # unrelated assertion/NRE; treating the whole class as infrastructure would
+                # hide the genuine failure. Use the same all-failed-cases guard as the
+                # workload-pack and snapshot-size classifications below.
+                $nativeLibFailurePattern = '(?is)(?:DllNotFoundException.{0,240}Unable to load|Unable to load (?:shared library|DLL))'
+                $nativeLibFailureBlocks = @($failedCaseBlocks | Where-Object { $_.Value -match $nativeLibFailurePattern })
+                $nativeLibFailureCount = $nativeLibFailureBlocks.Count
+                $allFailedCasesAreNativeLib = (
+                    $failedCaseBlocks.Count -eq $deviceFailCount -and
+                    $nativeLibFailureCount -eq $deviceFailCount
+                )
+                if ($failedCaseBlocks.Count -eq 0 -and $deviceFailCount -eq 1 -and $hasNativeLibLoadFailure) {
+                    $nativeLibFailureCount = 1
+                    $allFailedCasesAreNativeLib = $true
+                }
+
                 if ($failedCaseBlocks.Count -eq $deviceFailCount) {
                     $unsupportedWorkloadFailures = @($failedCaseBlocks | Where-Object { $_.Value -match '(?i)\bNETSDK1178\b' })
                     if ($unsupportedWorkloadFailures.Count -eq $deviceFailCount) {
@@ -1111,7 +1129,8 @@ function Get-TestResultFromOutput {
                 return @{
                     Passed = $false; FailCount = $deviceFailCount; Failed = $deviceFailCount
                     PassCount = $devicePassCount; Total = $deviceTotal; Skipped = 0
-                    NativeLibLoadFailure = $hasNativeLibLoadFailure
+                    NativeLibLoadFailure = $allFailedCasesAreNativeLib
+                    NativeLibFailureCount = $nativeLibFailureCount
                     FailureReason = "Device tests: $deviceFailCount of $deviceTotal failed"
                 }
             }
@@ -3598,14 +3617,10 @@ foreach ($t in $AllDetectedTests) {
     # the identical missing-lib error in both. (build 14699033, PR #36653.)
     $bothNativeLib = [bool]$wo.NativeLibLoadFailure -and [bool]$w.NativeLibLoadFailure
     if ($bothNativeLib) { $bothNativeLibCount++ }
-    # A with-fix NATIVE shared-library load failure (missing libSkiaSharp/libHarfBuzzSharp .so on
-    # the gate agent) means the test HOST crashed before running the fixed code — the fix is
-    # unverifiable via that test REGARDLESS of the without-fix leg. The $bothNativeLib guard above
-    # only catches the case where BOTH legs hit the missing lib; it misses the (equally
-    # environmental) case where the without-fix leg failed for a DIFFERENT reason — most commonly a
-    # compile-coupled build error (new API + test in the same project), so the without-fix run
-    # never reached the native-lib load at all. A genuine assertion regression never presents as a
-    # DllNotFoundException, so reclassify a with-fix native-lib failure as env/INCONCLUSIVE.
+    # NativeLibLoadFailure is set only when the parser accounted for EVERY failed case as a
+    # native-library load error. A with-fix run in that state is unverifiable regardless of the
+    # without-fix leg; mixed native-library + genuine failures retain NativeLibLoadFailure=false
+    # and remain blocking.
     # (build 14850956, PR #35710: GenerateSplash* libSkiaSharp DllNotFound on the Linux android
     # gate; without-fix was compile-coupled Passed=False/Failed=0 so $bothNativeLib was false and
     # the with-fix native-lib failures were wrongly counted as a genuine FAILED.)

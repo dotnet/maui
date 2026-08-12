@@ -273,31 +273,45 @@ Test Run Failed.
         Remove-Item -LiteralPath $log -Force
     }
 
-    # The MIXED pass+fail case the FIRST native-lib fix MISSED: when SOME tests pass and SOME
-    # fail on the missing native lib, the "trust the counts" path returns a plain FAIL BEFORE the
-    # dedicated env block ever runs — so that path must ANNOTATE NativeLibLoadFailure. The
-    # aggregation then excludes the test only when the SAME load failure is present in BOTH the
-    # without-fix and with-fix runs. Real build 14699033 (#36653) ResizetizeImagesTests reported
-    # Passed:9 Failed:12 (every failure libSkiaSharp — some direct DllNotFoundException, one a
-    # downstream "File did not exist" because the image was never generated) and was counted as a
-    # genuine with-fix failure -> blocking FAILED, while the real repro DpiPathTests went FAIL->PASS.
-    It 'annotates NativeLibLoadFailure on a MIXED pass+fail run of libSkiaSharp failures (real #36653 ResizetizeImagesTests)' {
+    It 'annotates NativeLibLoadFailure when every failed case is a native-load failure' {
         $log = New-LogFile @'
-[xUnit.net 00:00:01.43]     ResizetizeImagesTests+ExecuteForAndroid.SingleRasterAppIcon [FAIL]
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests.FirstImage [FAIL]
       There was an exception processing the image ''. System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
       /home/vsts/work/1/s/artifacts/bin/Resizetizer.UnitTests/Debug/net11.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
-    ResizetizeImagesTests+ExecuteForCustomPlatform.UsesGenericDesktopFallback [FAIL]
-      File did not exist: /tmp/.../camera.png
-  Failed!  - Failed:    12, Passed:     9, Skipped:     0, Total:    21
+[xUnit.net 00:00:01.44]     ResizetizeImagesTests.SecondImage [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+  Failed!  - Failed:     2, Passed:     1, Skipped:     0, Total:     3
   Test Run Failed.
-  Total tests: 21
-       Passed: 9
-       Failed: 12
+  Total tests: 3
+       Passed: 1
+       Failed: 2
 '@
         $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
         $r.Passed               | Should -BeFalse
         $r.NativeLibLoadFailure | Should -BeTrue
-        $r.FailCount            | Should -Be 12
+        $r.NativeLibFailureCount | Should -Be 2
+        $r.FailCount            | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not hide a genuine failure mixed with a native-load failure' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests.NativeDependency [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+[xUnit.net 00:00:01.44]     ResizetizeImagesTests.RealRegression [FAIL]
+      Assert.Equal() Failure: Expected 5, Actual 4
+  Failed!  - Failed:     2, Passed:     1, Skipped:     0, Total:     3
+  Test Run Failed.
+  Total tests: 3
+       Passed: 1
+       Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
+        $r.Passed                | Should -BeFalse
+        $r.EnvError              | Should -Not -BeTrue
+        $r.NativeLibLoadFailure  | Should -Not -BeTrue
+        $r.NativeLibFailureCount | Should -Be 1
+        $r.FailCount             | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1166,16 +1180,17 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
 }
 
 Describe 'Get-TestResultFromOutput — native-lib load failure flag (feeds with-fix env reclassify)' {
-    It 'flags libSkiaSharp DllNotFound as NativeLibLoadFailure in the device-count FAIL path (build 14850956 #35710)' {
+    It 'flags a fully accounted libSkiaSharp failure in the device-count FAIL path' {
         $log = New-LogFile -Content @"
   [xUnit.net 00:00:00.94]     Microsoft.Maui.Resizetizer.Tests.GenerateSplashAndroidResourcesTests.SplashScreenResectsAlias [FAIL]
   [xUnit.net 00:00:00.94]       Error occurred in processing Android-specific image resources. System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
   [xUnit.net 00:00:00.94]       /home/vsts/work/1/s/artifacts/bin/Resizetizer.UnitTests/Debug/net11.0/libSkiaSharp.so: cannot open shared object file: No such file or directory
   Passed: 3
-  Failed: 24
+  Failed: 1
 "@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.NativeLibLoadFailure | Should -BeTrue
+        $r.NativeLibFailureCount | Should -Be 1
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
     }

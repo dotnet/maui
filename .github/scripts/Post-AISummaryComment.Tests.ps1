@@ -187,6 +187,38 @@ Describe 'Add-MissingUITestResultsNote' {
         $result | Should -Match 'Detected UI test categories'
     }
 
+    It 'uses the trusted non-failed gate result for infrastructure guidance' -TestCases @(
+        @{ GateResult = 'PASSED' }
+        @{ GateResult = 'SKIPPED' }
+        @{ GateResult = 'INCONCLUSIVE' }
+    ) {
+        param($GateResult)
+
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult $GateResult
+
+        $result | Should -Match 'interrupted on \*\*infrastructure\*\*'
+        $result | Should -Not -Match 'Fix the build/gate issues'
+    }
+
+    It 'keeps failed-gate guidance when the trusted result is FAILED' {
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult 'FAILED'
+
+        $result | Should -Match 'Fix the build/gate issues'
+        $result | Should -Not -Match 'PR build itself was'
+    }
+
+    It 'does not infer gate state from UI-phase text' {
+        $content = "**Detected UI test categories:** ``Picker```nGate Result: PASSED"
+        $result = Add-MissingUITestResultsNote -Content $content
+
+        $result | Should -Match 'Fix the build/gate issues'
+        $result | Should -Not -Match 'PR build itself was'
+    }
+
     It 'does not advertise the removed rerun command' {
         $script:ScriptSource | Should -Not -Match '/review rerun'
     }

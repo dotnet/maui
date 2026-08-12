@@ -200,10 +200,17 @@ Describe 'review trigger hardening' {
 
     It 'only hides commands after the pre-flight authorization gate succeeded' {
         $script:TriggerJob | Should -Not -Match 'steps\.auth'
-        $script:TriggerJob | Should -Match "(?m)^        if: \$\{\{ !cancelled\(\) && github\.event_name == 'issue_comment' \}\}$"
+        $script:Workflow | Should -Match '(?m)^      source_comment_id:$'
+        $script:Workflow | Should -Match '(?m)^      source_comment_node_id:$'
+        $script:TriggerJob | Should -Match "github\.event_name == 'issue_comment'"
+        $script:TriggerJob | Should -Match "inputs\.source_comment_id != ''"
+        $script:TriggerJob | Should -Match "inputs\.source_comment_node_id != ''"
         $script:TriggerJob | Should -Match '(?m)^      - name: Acknowledge and hide the /review command comment$'
         $script:TriggerJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions'
         $script:TriggerJob | Should -Match "-f content='rocket'"
+        $script:TriggerJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \|\| inputs\.source_comment_id \}\}'
+        $script:TriggerJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \|\| inputs\.source_comment_node_id \}\}'
+        $script:TriggerJob | Should -Match 'Recovery source comment identity or command validation failed'
     }
 
     It 'posts a visible start notice only after AzDO returns a valid build id' {

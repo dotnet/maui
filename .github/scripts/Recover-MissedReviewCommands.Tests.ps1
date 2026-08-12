@@ -276,7 +276,9 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
             $PRNumber -eq 37148 -and
             $Platform -eq 'android' -and
-            $PipelineRef -eq 'improved-reviewer'
+            $PipelineRef -eq 'improved-reviewer' -and
+            $CommentId -eq 5209319531 -and
+            $CommentNodeId -eq 'IC_5209319531'
         }
         Should -Invoke Add-ReviewRecoveryMarker -Times 1 -Exactly -ParameterFilter {
             $CommentId -eq 5209319531
@@ -333,12 +335,20 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
     }
 
-    It 'requires at least one durable acknowledgement after dispatch' {
+    It 'continues the batch when immediate acknowledgement fails' {
+        $secondComment = New-RecoveryTestComment `
+            -Id 5209319532 `
+            -Body '/review ios' `
+            -CreatedAt '2026-08-06T21:29:00Z'
+        Mock Get-RecentIssueComments { @($script:Comment, $secondComment) }
         Mock Add-ReviewRecoveryMarker { $false }
         Mock Hide-ReviewCommandComment { $false }
 
-        { Invoke-MissedReviewCommandRecovery -Now $script:Now } |
-            Should -Throw '*could not persist a recovery acknowledgement*'
+        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
+
+        $result.Recovered.Count | Should -Be 2
+        @($result.Recovered | Where-Object AcknowledgementPending).Count | Should -Be 2
+        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 2 -Exactly
     }
 
     It 'accepts minimized state when the reaction marker write fails' {
@@ -347,7 +357,32 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
 
         $result.Recovered.Count | Should -Be 1
+        $result.Recovered[0].AcknowledgementPending | Should -BeFalse
         Should -Invoke Hide-ReviewCommandComment -Times 1 -Exactly
+    }
+}
+
+Describe 'Invoke-ReviewWorkflowDispatch' {
+    It 'carries the source comment identity into workflow_dispatch' {
+        $script:DispatchPayload = $null
+        Mock Invoke-ReviewRecoveryGhApi {
+            param([string[]]$Arguments)
+            $inputIndex = [Array]::IndexOf($Arguments, '--input')
+            $script:DispatchPayload = Get-Content -Raw -LiteralPath $Arguments[$inputIndex + 1] |
+                ConvertFrom-Json
+        }
+
+        Invoke-ReviewWorkflowDispatch `
+            -Owner 'dotnet' `
+            -Repo 'maui' `
+            -PRNumber 37148 `
+            -Platform 'android' `
+            -PipelineRef 'improved-reviewer' `
+            -CommentId 5209319531 `
+            -CommentNodeId 'IC_5209319531'
+
+        $script:DispatchPayload.inputs.source_comment_id | Should -Be '5209319531'
+        $script:DispatchPayload.inputs.source_comment_node_id | Should -Be 'IC_5209319531'
     }
 }
 

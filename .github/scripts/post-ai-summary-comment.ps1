@@ -311,7 +311,15 @@ function Add-MissingUITestResultsNote {
     # stage was skipped), that placeholder is posted as-is — an empty, confusing section. Append
     # a short explanation so the empty section explains itself. No-op for content that already
     # has results, or for the "no categories"/"full matrix" placeholders.
-    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content)
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Content,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+        [string]$TrustedGateResult = ''
+    )
 
     if ([string]::IsNullOrWhiteSpace($Content)) { return $Content }
     if ($Content -notmatch '(?im)Detected UI test categories') { return $Content }
@@ -323,10 +331,10 @@ function Add-MissingUITestResultsNote {
         return $Content
     }
 
-    # Tailor the guidance to the ACTUAL gate outcome (already present in $Content)
-    # instead of always blaming "the PR build failed (see the Gate section)". Only a
-    # FAILED gate means the PR build is the likely blocker. A gate that PASSED, was
-    # SKIPPED (no tests), or was INCONCLUSIVE means the PR build itself was fine — so
+    # Tailor the guidance to the trusted pipeline gate outcome instead of trying to
+    # discover it in UI-phase content. Only a FAILED gate means the PR build is the
+    # likely blocker. A gate that PASSED, was SKIPPED (no tests), or was INCONCLUSIVE
+    # means the PR build itself was not the blocker — so
     # the deep UI stage produced nothing because it was skipped or died on
     # INFRASTRUCTURE (the merge-for-testing step, emulator/simulator boot, or an
     # Appium hang), NOT because of this PR's code. Pointing the author at "fix the
@@ -335,12 +343,9 @@ function Add-MissingUITestResultsNote {
     # A FAILED gate — or an unknown/absent gate outcome — falls back to the neutral
     # "fix the build/gate and push again" guidance; only an explicit non-FAILED gate
     # (PASSED/SKIPPED/INCONCLUSIVE) points at infrastructure.
-    $gateState = ''
-    if ($Content -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
-        $gateState = $Matches[1].ToUpperInvariant()
-    }
+    $gateState = $TrustedGateResult.Trim().ToUpperInvariant()
 
-    if ($gateState -eq 'FAILED' -or $gateState -eq '') {
+    if ($gateState -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE')) {
         $note = @'
 
 > [!WARNING]
@@ -350,7 +355,7 @@ function Add-MissingUITestResultsNote {
 > re-runs on new commits (a maintainer can also re-run it).
 '@
     } else {
-        # PASSED / SKIPPED / INCONCLUSIVE / unknown → the PR build was not the blocker.
+        # PASSED / SKIPPED / INCONCLUSIVE → the PR build was not the blocker.
         $note = @'
 
 > [!WARNING]
@@ -915,7 +920,9 @@ foreach ($key in $phases.Keys) {
         # For uitests, annotate the "detected categories but no results" placeholder so an
         # empty section explains itself instead of showing only the detected categories.
         if ($key -eq "uitests") {
-            $content = Add-MissingUITestResultsNote -Content $content
+            $content = Add-MissingUITestResultsNote `
+                -Content $content `
+                -TrustedGateResult $TrustedGateResult
         }
         $phaseContentByKey[$key] = $content
         Write-Host "  ✅ $key ($((Get-Item -LiteralPath $filePath).Length) bytes)" -ForegroundColor Green

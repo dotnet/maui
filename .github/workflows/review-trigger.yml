@@ -25,6 +25,12 @@ on:
         description: 'AzDO pipeline branch (default: main)'
         required: false
         default: 'main'
+      source_comment_id:
+        description: 'Internal recovery source comment database ID'
+        required: false
+      source_comment_node_id:
+        description: 'Internal recovery source comment node ID'
+        required: false
 
 jobs:
   # Lightweight pre-flight gate that matches the command and checks permission
@@ -634,11 +640,13 @@ jobs:
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
       - name: Acknowledge and hide the /review command comment
-        if: ${{ !cancelled() && github.event_name == 'issue_comment' }}
+        if: ${{ !cancelled() && (github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && inputs.source_comment_id != '' && inputs.source_comment_node_id != '')) }}
         env:
           GH_TOKEN: ${{ github.token }}
-          COMMENT_ID: ${{ github.event.comment.id }}
-          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+          COMMENT_ID: ${{ github.event.comment.id || inputs.source_comment_id }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id || inputs.source_comment_node_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
           # This job only runs after the pre-flight authorization gate succeeds, so
           # collapse the recognized command no matter the trigger outcome, including
@@ -653,6 +661,33 @@ jobs:
           # The rocket reaction and minimized state are durable idempotency
           # signals for the scheduled recovery workflow. Either one prevents a
           # delayed issue_comment webhook from double-triggering a recovered command.
+          #
+          # A workflow_dispatch recovery carries the source comment identity so this
+          # trusted workflow can retry acknowledgement if the scheduled scanner's
+          # immediate marker/minimize calls failed. Revalidate that identity before
+          # mutating the comment so manual dispatch inputs cannot target arbitrary text.
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
+              echo "::warning::Recovery acknowledgement inputs are invalid; leaving the comment unchanged."
+              exit 0
+            fi
+            if ! SOURCE_COMMENT=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}" 2>/dev/null); then
+              echo "::warning::Could not read recovery source comment ${COMMENT_ID}; leaving it unchanged."
+              exit 0
+            fi
+            ACTUAL_NODE_ID=$(echo "${SOURCE_COMMENT}" | jq -r '.node_id // ""')
+            ACTUAL_ISSUE_URL=$(echo "${SOURCE_COMMENT}" | jq -r '.issue_url // ""')
+            SOURCE_BODY=$(echo "${SOURCE_COMMENT}" | jq -r '.body // ""')
+            TRIMMED_BODY=$(printf '%s' "${SOURCE_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+            if [ "${ACTUAL_NODE_ID}" != "${COMMENT_NODE_ID}" ] ||
+               [ "${ACTUAL_ISSUE_URL##*/}" != "${PR_NUMBER}" ] ||
+               [[ ! "${TRIMMED_BODY}" =~ ^/review([[:space:]]|$) ]] ||
+               [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]; then
+              echo "::warning::Recovery source comment identity or command validation failed; leaving it unchanged."
+              exit 0
+            fi
+          fi
+
           if gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions" \
             --method POST \
             -f content='rocket' \

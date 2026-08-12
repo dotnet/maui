@@ -284,7 +284,9 @@ function Invoke-ReviewWorkflowDispatch {
         [string]$Repo,
         [Parameter(Mandatory = $true)][int]$PRNumber,
         [string]$Platform,
-        [string]$PipelineRef
+        [string]$PipelineRef,
+        [Parameter(Mandatory = $true)][Int64]$CommentId,
+        [Parameter(Mandatory = $true)][string]$CommentNodeId
     )
 
     $payloadPath = New-TemporaryFile
@@ -295,6 +297,8 @@ function Invoke-ReviewWorkflowDispatch {
                 pr_number = [string]$PRNumber
                 platform = [string]$Platform
                 pipeline_ref = [string]$PipelineRef
+                source_comment_id = [string]$CommentId
+                source_comment_node_id = $CommentNodeId
             }
         } |
             ConvertTo-Json -Depth 5 |
@@ -414,6 +418,7 @@ function Invoke-MissedReviewCommandRecovery {
             continue
         }
 
+        $acknowledgementPending = $false
         if ($DryRun) {
             Write-Host "[dry-run] Would recover comment $($candidate.CommentId) for PR #$($candidate.PRNumber)."
         } else {
@@ -422,7 +427,9 @@ function Invoke-MissedReviewCommandRecovery {
                 -Repo $Repo `
                 -PRNumber $candidate.PRNumber `
                 -Platform $candidate.Platform `
-                -PipelineRef $candidate.PipelineRef
+                -PipelineRef $candidate.PipelineRef `
+                -CommentId $candidate.CommentId `
+                -CommentNodeId $candidate.CommentNodeId
 
             $marked = Add-ReviewRecoveryMarker `
                 -Owner $Owner `
@@ -430,7 +437,8 @@ function Invoke-MissedReviewCommandRecovery {
                 -CommentId $candidate.CommentId
             $hidden = Hide-ReviewCommandComment -NodeId $candidate.CommentNodeId
             if (-not $marked -and -not $hidden) {
-                throw "Dispatched comment $($candidate.CommentId), but could not persist a recovery acknowledgement."
+                $acknowledgementPending = $true
+                Write-Warning "Dispatched comment $($candidate.CommentId), but immediate acknowledgement failed. The dispatched workflow received the source comment identity and will retry acknowledgement; continuing with the remaining candidates."
             }
 
             Write-Host "Recovered comment $($candidate.CommentId) for PR #$($candidate.PRNumber)."
@@ -441,6 +449,7 @@ function Invoke-MissedReviewCommandRecovery {
             PRNumber = $candidate.PRNumber
             Platform = $candidate.Platform
             PipelineRef = $candidate.PipelineRef
+            AcknowledgementPending = $acknowledgementPending
             DryRun = [bool]$DryRun
         })
     }
