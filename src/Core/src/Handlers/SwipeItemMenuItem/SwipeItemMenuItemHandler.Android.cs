@@ -225,7 +225,6 @@ namespace Microsoft.Maui.Handlers
 						// ConstantState. Mutate only before changing its color filter.
 						platformImage = platformImage.Mutate();
 					}
-
 					int drawableWidth = platformImage.IntrinsicWidth;
 					int drawableHeight = platformImage.IntrinsicHeight;
 

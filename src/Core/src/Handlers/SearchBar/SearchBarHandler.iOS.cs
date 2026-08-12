@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 
 			_editor = searchBar.GetSearchTextField();
 
-
 			return searchBar;
 		}
 
@@ -77,15 +76,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(searchBar);
 
-			if (!handler.IsConnectingHandler())
-			{
-				// If we're not connecting the handler, we need to update the text formatting.
-				// During connect, CharacterSpacing/HorizontalTextAlignment/MaxLength are applied
-				// by the normal mapper sweep after Text, so calling MapFormatting here would
-				// cause those properties to fire twice (including any AppendToMapping/ModifyMapping
-				// callbacks).
-				MapFormatting(handler, searchBar);
-			}
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, searchBar);
 		}
 
 		public static void MapPlaceholder(ISearchBarHandler handler, ISearchBar searchBar)
@@ -120,21 +112,17 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 
-		// NOTE: This method routes through UpdateValue() rather than calling platform methods
-		// directly. This means any AppendToMapping/ModifyMapping customizations on CharacterSpacing,
-		// HorizontalTextAlignment, and MaxLength will also fire here. This is intentional for
-		// extensibility and mirrors the EntryHandler pattern.
 		public static void MapFormatting(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			// Update all of the attributed text formatting properties
-			handler.UpdateValue(nameof(ISearchBar.CharacterSpacing));
+			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.UpdateValue(nameof(ISearchBar.HorizontalTextAlignment));
+			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 
 			// We also update MaxLength which depends on the text
-			handler.UpdateValue(nameof(ISearchBar.MaxLength));
+			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
 		public static void MapTextColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -176,6 +164,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButton(searchBar);
+			if (handler is SearchBarHandler searchBarHandler)
+				handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(searchBar.Text));
+
 		}
 
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
@@ -299,6 +290,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
+					handler.PlatformView?.UpdateClearButtonVisibility(!string.IsNullOrEmpty(VirtualView?.Text));
 				}
 			}
 

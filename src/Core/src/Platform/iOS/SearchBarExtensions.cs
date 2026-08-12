@@ -80,8 +80,8 @@ namespace Microsoft.Maui.Platform
 
 			var placeholder = searchBar.Placeholder ?? string.Empty;
 			var placeholderColor = searchBar.PlaceholderColor is Color color ? color.ToPlatform() : ColorExtensions.PlaceholderColor;
-			var attributed = new NSAttributedString(str: placeholder, foregroundColor: placeholderColor);
-			textField.AttributedPlaceholder = attributed.WithCharacterSpacing(searchBar.CharacterSpacing) ?? attributed;
+			textField.AttributedPlaceholder = new NSAttributedString(str: placeholder, foregroundColor: placeholderColor);
+			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager)
@@ -97,6 +97,24 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			textField.UpdateFont(textStyle, fontManager);
+		}
+
+		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, bool hasText)
+		{
+			if (OperatingSystem.IsMacCatalyst())
+			{
+				var clearButton = uiSearchBar.GetClearButton();
+
+				if (clearButton != null)
+				{
+					var shouldHide = !hasText;
+
+					if (clearButton.Hidden != shouldHide)
+					{
+						clearButton.Hidden = shouldHide;
+					}
+				}
+			}
 		}
 
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
@@ -460,5 +478,7 @@ namespace Microsoft.Maui.Platform
 			var end = textField.GetPosition(start, endOffset - startOffset);
 			return end ?? start;
 		}
+		internal static UIButton? GetClearButton(this UISearchBar searchBar) =>
+			searchBar.GetSearchTextField()?.ValueForKey(new NSString("clearButton")) as UIButton;
 	}
 }

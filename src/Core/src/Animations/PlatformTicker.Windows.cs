@@ -8,9 +8,13 @@ namespace Microsoft.Maui.Animations
 	/// <inheritdoc/>
 	public class PlatformTicker : Ticker, IDisposable
 	{
+		bool _isRunning;
 		readonly ViewManagement.UISettings _uiSettings = new();
 		readonly DispatcherQueue? _dispatcherQueue;
 		bool _disposed;
+
+		/// <inheritdoc/>
+		public override bool IsRunning => _isRunning;
 
 		/// <summary>
 		/// Creates a new Windows <see cref="PlatformTicker"/> that respects the "Show animations in Windows" accessibility setting.
@@ -25,17 +29,24 @@ namespace Microsoft.Maui.Animations
 		/// <inheritdoc/>
 		public override void Start()
 		{
-			if (_disposed)
+			if (_isRunning || _disposed)
 			{
 				return;
 			}
 
+			_isRunning = true;
 			CompositionTarget.Rendering += RenderingFrameEventHandler;
 		}
 
 		/// <inheritdoc/>
 		public override void Stop()
 		{
+			if (!_isRunning)
+			{
+				return;
+			}
+
+			_isRunning = false;
 			CompositionTarget.Rendering -= RenderingFrameEventHandler;
 		}
 

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
+		int _gotoPosition = -1;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
 		NSObject _orientationObserver;
@@ -126,6 +127,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			_isUpdating = true;
+			// Pending scroll target belongs to the old source; clear it.
+			_gotoPosition = -1;
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
 			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
@@ -134,6 +137,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+				// The Position=0 reset above indirectly sets _gotoPosition via
+				// UpdateFromPosition -> ScrollToPosition(0, oldPos, ...); clear it so later
+				// programmatic Position/CurrentItem changes aren't suppressed.
+				_gotoPosition = -1;
 			}
 			_isUpdating = false;
 		}
@@ -215,6 +222,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_isUpdating = false;
 			_isRotating = false;
 			_isInternalCollectionUpdate = false;
+			// Don't let a pending scroll target survive re-attach.
+			_gotoPosition = -1;
 		}
 
 		internal void UpdateScrollingConstraints()
@@ -341,7 +350,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			//_gotoPosition = -1;
+			_gotoPosition = -1;
 
 			// We need to update the position while modifying the collection.
 			targetPosition = GetTargetPosition();
@@ -366,6 +375,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_isUpdating = false;
 			ScrollToPosition(targetPosition, targetPosition, false, true);
+			// The forced scroll above sets _gotoPosition but fires no callback when already at the target; clear it so a later user-initiated scroll isn't suppressed.
+			_gotoPosition = -1;
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
@@ -472,6 +483,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionView.ReloadData();
 
 			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+
+			// Symmetric to CollectionViewUpdated: this forced re-center may leave
+			// _gotoPosition stuck (no-op scroll, or dropped while another scroll was
+			// in-flight), so clear it to avoid blocking future programmatic scrolls.
+			_gotoPosition = -1;
 		}
 
 		void UpdateScrollBarVisibility()
@@ -499,7 +515,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (goToPosition != carouselPosition || forceScroll)
+			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
@@ -509,6 +525,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
+				_gotoPosition = goToPosition;
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
 		}
@@ -534,6 +551,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!InitialPositionSet || position == -1)
 			{
 				return;
+			}
+
+			if (_gotoPosition != -1)
+			{
+				if (position == _gotoPosition)
+				{
+					_gotoPosition = -1;
+				}
+				else
+				{
+					// Suppress intermediate positions while scrolling to target
+					return;
+				}
 			}
 
 			ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, position);
@@ -577,6 +607,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (currentItemIndex.Row < 0)
 			{
 				return;
+			}
+
+			if (currentItemIndex.Row == _gotoPosition)
+			{
+				_gotoPosition = -1;
 			}
 
 			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);

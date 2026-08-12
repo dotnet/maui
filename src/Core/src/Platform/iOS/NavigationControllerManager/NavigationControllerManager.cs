@@ -231,6 +231,17 @@ namespace Microsoft.Maui.Platform
                 return base.ChildViewControllerForStatusBarHidden()!;
             }
 
+#if !MACCATALYST
+            public override UIViewController ChildViewControllerForStatusBarStyle()
+            {
+                if (_currentTopVC?.TryGetTarget(out var vc) == true)
+                {
+                    return vc;
+                }
+                return base.ChildViewControllerForStatusBarStyle()!;
+            }
+#endif
+
             [Export("navigationBar:shouldPopItem:")]
             bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item)
             {

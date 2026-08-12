@@ -144,11 +144,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ScaleOneImageJustOverLimitIsResized()
+		{
+			var imageService = new CountingFileImageSourceService(
+				CountingFileImageSourceService.CreateImage(51, 1));
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFileImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+				handler.PlatformView.Frame = new CGRect(0, 0, 100, 100);
+				item.Source = new FileImageSourceStub("custom.png");
+
+				await SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+
+				var resizedImage = handler.PlatformView.ImageForState(UIControlState.Normal);
+				Assert.NotNull(resizedImage);
+				Assert.True(resizedImage.Size.Width <= 50);
+				Assert.True(resizedImage.Size.Height <= 50);
+				Assert.NotEqual(imageService.SourceImage.CGImage.Handle, resizedImage.CGImage.Handle);
+			});
+		}
+
 		sealed class CountingFileImageSourceService : IImageSourceService<IFileImageSource>
 		{
-			readonly UIImage _image = CreateOversizedImage();
+			public CountingFileImageSourceService()
+				: this(CreateImage(200, UIScreen.MainScreen.Scale))
+			{
+			}
+
+			public CountingFileImageSourceService(UIImage image)
+			{
+				SourceImage = image;
+			}
 
 			public int LoadCount { get; private set; }
+
+			public UIImage SourceImage { get; }
 
 			public Task<IImageSourceServiceResult<UIImage>> GetImageAsync(
 				IImageSource imageSource,
@@ -157,13 +192,18 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				LoadCount++;
 				return Task.FromResult<IImageSourceServiceResult<UIImage>>(
-					new ImageSourceServiceResult(_image));
+					new ImageSourceServiceResult(SourceImage));
 			}
 
-			static UIImage CreateOversizedImage()
+			public static UIImage CreateImage(nfloat size, nfloat scale)
 			{
-				var bounds = new CGRect(0, 0, 200, 200);
-				using var renderer = new UIGraphicsImageRenderer(bounds.Size);
+				var bounds = new CGRect(0, 0, size, size);
+				var format = new UIGraphicsImageRendererFormat
+				{
+					Opaque = false,
+					Scale = scale
+				};
+				using var renderer = new UIGraphicsImageRenderer(bounds.Size, format);
 
 				return renderer.CreateImage(context =>
 				{

@@ -140,8 +140,9 @@ namespace Microsoft.Maui.Handlers
 				{
 					var maxWidth = frame.Width * 0.5f;
 					var maxHeight = frame.Height * 0.5f;
+					var renderScale = button.Window?.Screen.Scale ?? UIScreen.MainScreen.Scale;
 
-					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxWidth, maxHeight);
+					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxWidth, maxHeight, renderScale);
 
 					try
 					{
@@ -164,11 +165,14 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			static UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+			static UIImage MaxResizeSwipeItemIconImage(
+				UIImage sourceImage,
+				nfloat maxWidth,
+				nfloat maxHeight,
+				nfloat renderScale)
 			{
 				var sourceSize = sourceImage.Size;
-				var scale = sourceImage.CurrentScale;
-				var pointTolerance = scale > 0 ? 1 / scale : 0;
+				var pointTolerance = renderScale > 0 ? 1 / renderScale : 0;
 
 				// Color-only updates feed the already-sized native image back through this setter.
 				// UIGraphicsImageRenderer can quantize its result up by one physical pixel.
@@ -185,7 +189,7 @@ namespace Microsoft.Maui.Handlers
 				var format = new UIGraphicsImageRendererFormat
 				{
 					Opaque = false,
-					Scale = 0
+					Scale = renderScale
 				};
 
 				using (var renderer = new UIGraphicsImageRenderer(new CGSize(width, height), format))

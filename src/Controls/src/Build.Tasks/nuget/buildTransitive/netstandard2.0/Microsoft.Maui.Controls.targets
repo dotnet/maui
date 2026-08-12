@@ -65,14 +65,15 @@
 
 	<!--
 		Enable Composite Partial R2R for Android CoreCLR Release builds by default.
+		Set MauiEnableFullReadyToRun to true to produce full R2R output without the default MAUI MIBC profiles.
 		Note: PublishReadyToRun and PublishReadyToRunComposite are already set by the Android workload.
 	-->
-	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
-		<PublishReadyToRunCrossgen2ExtraArgs Condition="'$(_MauiPublishReadyToRunPartial)' != 'false'">$(PublishReadyToRunCrossgen2ExtraArgs);--partial</PublishReadyToRunCrossgen2ExtraArgs>
+	<PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true' and '$(MauiEnableFullReadyToRun)' != 'true'">
+		<PublishReadyToRunCrossgen2ExtraArgs>$(PublishReadyToRunCrossgen2ExtraArgs);--partial</PublishReadyToRunCrossgen2ExtraArgs>
 		<_MauiUseDefaultReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == ''">true</_MauiUseDefaultReadyToRunPgoFiles>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true'">
+	<ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(UseMonoRuntime)' != 'true' and '$(Configuration)' == 'Release' and '$(PublishReadyToRun)' == 'true' and '$(MauiEnableFullReadyToRun)' != 'true'">
 		<_ReadyToRunPgoFiles Condition="'$(_MauiUseDefaultReadyToRunPgoFiles)' == 'true'" Include="$(MSBuildThisFileDirectory)mibc\android\**\*.mibc" />
 	</ItemGroup>
 
@@ -392,6 +393,24 @@
                                       Condition="'$(EnableMauiIncrementalHotReload)' != ''"
                                       Value="$(EnableMauiIncrementalHotReload)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.UseMauiAndroidSystemBarBackgrounds"
+                                      Condition="'$(MauiAndroidSystemBarsUseMauiChrome)' != ''"
+                                      Value="$(MauiAndroidSystemBarsUseMauiChrome)"
+                                      Trim="true" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Workaround for Android SDK bug: Microsoft.Android.Sdk.ILLink.targets uses %(RootMode) without
+    fully qualifying it as %(TrimmerRootAssembly.RootMode), which causes MSB4096 when user-defined
+    TrimmerRootAssembly items don't have the RootMode metadata.
+    See: https://github.com/dotnet/android/issues/10758
+  -->
+  <Target Name="_MauiFixTrimmerRootAssemblyMetadata"
+          BeforeTargets="PrepareForILLink"
+          Condition="'$(UsingAndroidNETSdk)' == 'true'">
+    <ItemGroup>
+      <TrimmerRootAssembly Update="@(TrimmerRootAssembly)" Condition="'%(TrimmerRootAssembly.RootMode)' == ''" RootMode="All" />
     </ItemGroup>
   </Target>
 
