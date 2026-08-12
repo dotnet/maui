@@ -1407,8 +1407,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
 			bool _toolbarUpdatePending = false;
 
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proxy scroll view is removed from its superview, disposed, and cleared in RemoveLargeTitleProxyScrollView.")]
 			UIScrollView _largeTitleProxyScrollView;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observed scroll view reference is cleared in TearDownLargeTitleProxyScrollView.")]
 			UIScrollView _largeTitleObservedScrollView;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared in TearDownLargeTitleProxyScrollView.")]
 			IDisposable _largeTitleContentOffsetObserver;
 			PointF _largeTitleInitialContentOffset;
 			bool _largeTitleProxyScrollObservationArmed;
