@@ -606,15 +606,8 @@ namespace Microsoft.Maui.Platform
 						_swipeItems.Add(item, swipeItem);
 					}
 
-					if (swipeItem is not null)
-					{
-						swipeItems.Add(swipeItem);
-
-						if (item is not null)
-						{
-							AttachSwipeItemAccessibilityDelegate(swipeItem);
-						}
-					}
+					swipeItems.Add(swipeItem);
+					AttachSwipeItemAccessibilityDelegate(swipeItem);
 				}
 			}
 
@@ -1356,31 +1349,46 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TalkBack's "double tap to activate" calls View.PerformAccessibilityAction(ACTION_CLICK).
-		// Swipe-item commands normally execute via manual touch hit-testing (see ProcessTouchSwipeItems
-		// above), so the swipe button has no OnClickListener and PerformClick() is a no-op for TalkBack
-		// users. We install an ACTION_CLICK handler by wrapping the current AccessibilityDelegateCompat and
-		// intercepting ACTION_CLICK in a SwipeItemAccessibilityDelegate. The wrapper delegates all other
-		// accessibility behavior to the original delegate, so this doesn't disturb existing behavior.
 		void AttachSwipeItemAccessibilityDelegate(AView swipeItemView)
 		{
+			// Avoid re-wrapping an already-attached delegate;
+			if (ViewCompat.GetAccessibilityDelegate(swipeItemView) is SwipeItemAccessibilityDelegate)
+			{
+				return;
+			}
+
 			var currentDelegate = ViewCompat.GetAccessibilityDelegate(swipeItemView);
 			ViewCompat.SetAccessibilityDelegate(swipeItemView, new SwipeItemAccessibilityDelegate(this, currentDelegate));
 		}
 
 		bool TryExecuteSwipeItemFromAccessibility(AView? host)
 		{
-			int index = _actionView?.IndexOfChild(host) ?? -1;
-			var swipeItems = GetSwipeItemsByDirection();
-
-			if (_isResettingSwipe || swipeItems is null || index < 0 || index >= swipeItems.Count)
+			if (_isResettingSwipe || host is null || host.Visibility != ViewStates.Visible)
 			{
 				return false;
 			}
 
-			ExecuteSwipeItem(swipeItems[index]);
+			ISwipeItem? swipeItem = null;
 
-			if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+			foreach (var kvp in _swipeItems)
+			{
+				if (ReferenceEquals(kvp.Value, host))
+				{
+					swipeItem = kvp.Key;
+					break;
+				}
+			}
+
+			if (swipeItem is null)
+			{
+				return false;
+			}
+
+			ExecuteSwipeItem(swipeItem);
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems?.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 			{
 				ResetSwipe();
 			}
@@ -1391,6 +1399,19 @@ namespace Microsoft.Maui.Platform
 		sealed class SwipeItemAccessibilityDelegate(MauiSwipeView swipeView, AccessibilityDelegateCompat? originalDelegate) : AccessibilityDelegateCompatWrapper(originalDelegate)
 		{
 			readonly WeakReference<MauiSwipeView> _swipeViewRef = new(swipeView);
+
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfoCompat? info)
+			{
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+
+				//Without this, non-clickable platform views never expose the action, so ACTION_CLICK
+				// is never dispatched to PerformAccessibilityAction below.
+				if (info is not null)
+				{
+					info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
+					info.Clickable = true;
+				}
+			}
 
 			public override bool PerformAccessibilityAction(AView? host, int action, Bundle? args)
 			{

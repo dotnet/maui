@@ -69,9 +69,89 @@ namespace Microsoft.Maui.DeviceTests
 
 				await InvokeOnMainThreadAsync(() =>
 				{
+					// A real accessibility service (TalkBack) only dispatches ACTION_CLICK to nodes
+					// that actually advertise the action. Assert discoverability, not just dispatch,
+					// so this test would fail if the node never exposed ACTION_CLICK in the first place.
+					var nodeInfo = AccessibilityNodeInfoCompat.Wrap(swipeItemView.CreateAccessibilityNodeInfo());
+					Assert.Contains(nodeInfo.ActionList, action => action.Id == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id);
+
 					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
 #pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
 					ViewCompat.PerformAccessibilityAction(swipeItemView, actionClickId, null);
+#pragma warning restore CS0618
+				});
+
+				await AssertEventually(() => commandExecuted);
+				Assert.True(commandExecuted);
+			});
+		}
+
+		// Issue #23478 (SwipeItemView variant): SwipeItemView's platform view is a plain ContentViewGroup,
+		// which — unlike SwipeItem's AppCompatButton — is not inherently clickable. This verifies the
+		// accessibility action still reaches the bound Command for custom-content swipe items.
+		[Fact(DisplayName = "SwipeItemView Command Executes Via Accessibility ACTION_CLICK")]
+		public async Task SwipeItemViewCommandExecutesViaAccessibilityActionClick()
+		{
+			SetupBuilder();
+
+			bool commandExecuted = false;
+			ICommand command = new Command(() => commandExecuted = true);
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItemContent = new Grid
+			{
+				BackgroundColor = Colors.Red,
+				WidthRequest = 60,
+			};
+
+			var swipeItemView = new SwipeItemView
+			{
+				Content = swipeItemContent,
+				Command = command
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItemView
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds the action-item container as a child dynamically when opened.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeItemPlatformView = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItemPlatformView);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var nodeInfo = AccessibilityNodeInfoCompat.Wrap(swipeItemPlatformView.CreateAccessibilityNodeInfo());
+					Assert.Contains(nodeInfo.ActionList, action => action.Id == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id);
+
+					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
+#pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
+					ViewCompat.PerformAccessibilityAction(swipeItemPlatformView, actionClickId, null);
 #pragma warning restore CS0618
 				});
 
