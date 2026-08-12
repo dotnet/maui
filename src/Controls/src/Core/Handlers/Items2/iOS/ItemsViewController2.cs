@@ -103,12 +103,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				_emptyViewFormsElement = null;
 
-				if (_orientationObserver is not null)
-				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
-					_orientationObserver = null;
-				}
-
 				ItemsViewLayout?.Dispose();
 				CollectionView?.Dispose();
 			}
@@ -314,6 +308,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsSource?.Dispose();
 			ItemsSource = new Items.EmptySource();
 			ReloadData();
+		}
+
+		// remove the orientation observer when the controller is disposed to avoid a memory leak
+		internal void DisposeObserver()
+		{
+			if (_orientationObserver is not null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+				_orientationObserver = null;
+			}
 		}
 
 		void EnsureLayoutInitialized()
