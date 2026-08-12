@@ -903,6 +903,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
         internal void OnTraitCollectionDidChange(UITraitCollection? previousTraitCollection)
         {
+            if (_tabBarController is null)
+            {
+                return;
+            }
+
             if (previousTraitCollection?.VerticalSizeClass == _tabBarController.TraitCollection.VerticalSizeClass)
             {
                 return;

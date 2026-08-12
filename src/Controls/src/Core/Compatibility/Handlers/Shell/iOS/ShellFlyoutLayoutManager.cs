@@ -215,7 +215,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void SetHeaderContentInset()
 		{
-			if (ScrollView is null)
+			// ScrollView may not be attached to a window yet.
+			if (ScrollView is null || ScrollView.Window is null)
 				return;
 
 			var offset = ScrollView.ContentInset.Top;

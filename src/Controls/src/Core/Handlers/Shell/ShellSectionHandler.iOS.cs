@@ -51,6 +51,9 @@ namespace Microsoft.Maui.Controls.Handlers
         bool _isRotating;
         int _lastTabThickness = int.MinValue;
         Thickness _lastInset;
+#if MACCATALYST
+        CGRect _previousHeaderFrame;
+#endif
         UIViewPropertyAnimator? _pageAnimation;
         UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
@@ -1337,6 +1340,16 @@ namespace Microsoft.Maui.Controls.Handlers
                     _blurView.Frame = frame;
                 }
                 _header.ViewController.View!.Frame = frame;
+#if MACCATALYST
+                if (frame.Width != _previousHeaderFrame.Width || frame.Height != _previousHeaderFrame.Height)
+                {
+                    _previousHeaderFrame = frame;
+                    if (_header.ViewController is ShellSectionRootHeader rootHeader)
+                    {
+                        rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+                    }
+                }
+#endif
             }
 
             nfloat left, top, right, bottom;

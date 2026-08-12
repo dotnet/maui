@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		// FlyoutPage always dims the detail view when the shadow is applied, even in split mode.
+		// FlyoutPage always dims the detail view when the shadow is applied, even on iPad/Mac Catalyst.
 		bool IFlyoutContainerDelegate.GetSkipShadowInSplitMode()
 		{
 			return false;

@@ -509,7 +509,9 @@ internal class FlyoutContainerManager
 		{
 			if (!FlyoutOverlapsDetailsInPopoverMode || ShouldShowSplitMode)
 			{
-				if (IsRTL && ShouldShowSplitMode)
+				// iOS mirrors the locked RTL detail origin, while Mac Catalyst requires the
+				// explicit flyout-width offset used by the legacy Shell renderer.
+				if (IsRTL && ShouldShowSplitMode && !(OperatingSystem.IsMacCatalyst() && _flyoutOverlapsDetail))
 				{
 					detailFrame.X = 0;
 				}
@@ -524,16 +526,17 @@ internal class FlyoutContainerManager
 				detailFrame.Width -= flyoutFrame.Width;
 			}
 
-			// Shadow only makes sense in overlay mode (flyout on top of detail).
-			// Skip dimming in split/Locked mode only if opted in (see IFlyoutContainerDelegate.GetSkipShadowInSplitMode).
-			if (_applyShadow && !(_skipShadowInSplitMode && ShouldShowSplitMode))
+			// On iPad/Mac Catalyst, the flyout sits alongside detail rather than over it, so skip
+			// the dimming there when opted in (see IFlyoutContainerDelegate.GetSkipShadowInSplitMode) -
+			// matches the legacy renderer's idiom-based check, not the Locked/split behavior state.
+			if (_applyShadow && !(_skipShadowInSplitMode && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad))
 			{
 				opacity = 0.5f;
 			}
 
 			// RTL split mode: the narrow detail strip behind the flyout must be invisible
 			// so it matches the baseline (white background), while remaining accessible for taps.
-			if (IsRTL && ShouldShowSplitMode)
+			if (IsRTL && ShouldShowSplitMode && UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
 			{
 				opacity = 0;
 			}

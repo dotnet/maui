@@ -158,11 +158,17 @@ namespace Microsoft.Maui.Platform
             {
                 _managerRef = new WeakReference<TabBarControllerManager>(manager);
 
-                // Apply iOS 18 tab bar fixes
-                this.DisableiOS18ToolbarTabs();
-
                 // Subscribe to tab reordering events
                 FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
+            }
+
+            public override void ViewDidLoad()
+            {
+                base.ViewDidLoad();
+
+                // Mode = TabSidebar needs the controller's view to exist, so set it here
+                // rather than in the constructor to avoid a crash inside UIKit.
+                this.DisableiOS18ToolbarTabs();
             }
 
             public override UIViewController SelectedViewController

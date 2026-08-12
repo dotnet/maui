@@ -59,8 +59,8 @@ internal interface IFlyoutContainerDelegate
     bool GetFlyoutOverlapsDetail();
 
     /// <summary>
-    /// Returns whether the detail view should skip dimming while in split/Locked mode.
-    /// Shell returns <see langword="true"/>; FlyoutPage returns <see langword="false"/>.
+    /// Returns whether the detail view should skip dimming on iPad/Mac Catalyst (idiom-based,
+    /// matching the legacy renderer). Shell returns <see langword="true"/>; FlyoutPage returns <see langword="false"/>.
     /// </summary>
     bool GetSkipShadowInSplitMode();
 

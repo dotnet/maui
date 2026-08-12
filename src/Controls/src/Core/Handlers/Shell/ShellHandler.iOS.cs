@@ -55,10 +55,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SetupFlyout();
 
-            if (VirtualView.CurrentItem is not null)
-            {
-                SwitchToItem(VirtualView.CurrentItem, animate: false);
-            }
+            // Don't explicitly switch to the initial item here: Mapper.UpdateProperties() (called
+            // right after ConnectHandler) invokes MapCurrentItem for the already-set CurrentItem,
+            // which performs the switch. Calling SwitchToItem here too would race with that.
         }
 
         protected override void DisconnectHandler(UIView platformView)
@@ -434,6 +433,28 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var newView = newRenderer.ViewController.View;
+
+            // iOS 26's Liquid Glass tab bar fails to update/render its icons correctly if we attach the
+            // incoming tab bar's view while a modal is still being dismissed. Deferring the attach by one
+            // run loop turn lets the in-flight dismiss finish first, avoiding the ghosted tab-icon glitch.
+            if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                && ViewController?.PresentedViewController is not null
+                && newRenderer.ViewController is UITabBarController)
+            {
+                // Post to the main queue and await it instead of running inline: this defers our
+                // continuation to the next run loop turn, letting the modal dismiss's already-queued
+                // completion work run first.
+                var pendingAction = new TaskCompletionSource();
+                CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => pendingAction.TrySetResult());
+                await pendingAction.Task;
+
+                // While we were waiting, another call to this method may have already run and become
+                // the current renderer. If so, attaching our now-stale newRenderer would be wrong — bail out.
+                if (_currentShellItemRenderer != value)
+                {
+                    return;
+                }
+            }
 
             if (newView is not null)
             {
