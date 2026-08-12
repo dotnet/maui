@@ -121,18 +121,10 @@ namespace Microsoft.Maui.Animations
 
 				if (disposing)
 				{
-					try
-					{
-						ForceFinishAnimations();
-					}
-					finally
-					{
-						// Always dispose the ticker, even if force-finishing an animation
-						// threw or the drain safety cap was hit, so the manager doesn't
-						// leak a running ticker on a failed teardown.
-						if (Ticker is IDisposable disposable)
-							disposable.Dispose();
-					}
+					ForceFinishAnimations();
+
+					if (Ticker is IDisposable disposable)
+						disposable.Dispose();
 				}
 			}
 		}
@@ -146,48 +138,20 @@ namespace Microsoft.Maui.Animations
 
 		void ForceFinishAnimations()
 		{
-			// Drain until _animations is empty (or the safety cap is hit). A Finished
-			// callback invoked below may reentrantly queue a new animation on this same
-			// manager (e.g. via AnimationExtensions.Add/Insert); a single snapshot would
-			// leave that new entry un-finished and still rooted in the static tweener
-			// registry, so we keep re-snapshotting until no new animations show up.
-			const int MaxDrainPasses = 8;
+			Animation[] animations = [.._animations];
 
-			for (int pass = 0; pass < MaxDrainPasses && _animations.Count > 0; pass++)
+			foreach (var animation in animations)
 			{
-				Animation[] animations = [.._animations];
-
-				foreach (var animation in animations)
-				{
-					ForceFinish(animation);
-				}
+				ForceFinish(animation);
 			}
-
-			// If a pathological handler kept re-adding animations past the safety cap,
-			// force the collection empty so this manager can't be left holding entries
-			// after Dispose returns.
-			if (_animations.Count > 0)
-				_animations.Clear();
 
 			End();
 
 			void ForceFinish(Animation animation)
 			{
-				try
-				{
-					// Isolate failures per-animation so one bad callback can't prevent
-					// the remaining animations from being finished and removed, and
-					// can't abort disposal before the ticker is disposed.
-					animation.ForceFinish();
-				}
-				catch
-				{
-				}
-				finally
-				{
-					_animations.TryRemove(animation);
-					animation.RemoveFromParent();
-				}
+				animation.ForceFinish();
+				_animations.TryRemove(animation);
+				animation.RemoveFromParent();
 			}
 		}
 
