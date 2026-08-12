@@ -49,22 +49,9 @@ function Assert-LeakDedupState {
     if ($State.repository -cne $Repository) {
         throw "De-dup state repository '$($State.repository)' does not match '$Repository'."
     }
-    foreach ($requiredProperty in @('step3_api_match_pr_numbers', 'different_mechanism_prs')) {
-        if ($requiredProperty -notin $State.PSObject.Properties.Name -or
-            $null -eq $State.$requiredProperty) {
-            throw "De-dup state is missing required array '$requiredProperty'."
-        }
-    }
-
-    $snapshotSeen = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($numberValue in @($State.step3_api_match_pr_numbers)) {
-        $number = 0
-        if (-not [int]::TryParse([string]$numberValue, [ref]$number) -or $number -le 0) {
-            throw "Invalid Step 3 API-match PR number '$numberValue'."
-        }
-        if (-not $snapshotSeen.Add($number)) {
-            throw "Duplicate Step 3 API-match PR number #$number."
-        }
+    if ('different_mechanism_prs' -notin $State.PSObject.Properties.Name -or
+        $null -eq $State.different_mechanism_prs) {
+        throw "De-dup state is missing required array 'different_mechanism_prs'."
     }
 
     $seen = [System.Collections.Generic.HashSet[int]]::new()
@@ -75,15 +62,6 @@ function Assert-LeakDedupState {
         }
         if (-not $seen.Add($number)) {
             throw "Duplicate different-mechanism decision for PR #$number."
-        }
-        if ([string]$decision.phase -notin @('step3', 'final')) {
-            throw "Invalid different-mechanism phase '$($decision.phase)' for PR #$number."
-        }
-        if ([string]$decision.phase -eq 'step3' -and -not $snapshotSeen.Contains($number)) {
-            throw "Step 3 different-mechanism decision PR #$number is absent from the Step 3 API-match snapshot."
-        }
-        if ([string]$decision.phase -eq 'final' -and $snapshotSeen.Contains($number)) {
-            throw "Final different-mechanism decision PR #$number was already present in the Step 3 API-match snapshot."
         }
         if ([string]::IsNullOrWhiteSpace([string]$decision.basis) -or
             ([string]$decision.basis).Length -lt 12) {
@@ -101,6 +79,7 @@ function Get-LeakFixFinalDedupResult {
         [Parameter(Mandatory = $true)][string]$Repository,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$MergedPullRequests,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$OpenPullRequests,
+        [AllowEmptyCollection()][object[]]$MergedRevertPullRequests = @(),
         [int[]]$ApprovedDifferentMechanismPullRequests = @()
     )
 
@@ -113,6 +92,19 @@ function Get-LeakFixFinalDedupResult {
             $null -ne $_.mergedAt -and
             ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal) -and
             [string]$_.baseRefName -in @('main', 'inflight/current')
+        })
+    $effectivelyReverted = @(
+        Get-EffectiveRevertedPullRequestNumbers `
+            -Repository $Repository `
+            -FixPullRequestNumbers @($eligibleMerged | ForEach-Object { [int]$_.number }) `
+            -MergedRevertPullRequests $MergedRevertPullRequests
+    )
+    $reverted = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($number in $effectivelyReverted) {
+        [void]$reverted.Add($number)
+    }
+    $eligibleMerged = @($eligibleMerged | Where-Object {
+            -not $reverted.Contains([int]$_.number)
         })
     $eligibleOpen = @($OpenPullRequests | Where-Object {
             ([string]$_.title).StartsWith('[leak-fix] ', [System.StringComparison]::Ordinal) -and
@@ -139,6 +131,8 @@ function Get-LeakFixFinalDedupResult {
         "direct issue-reference match: $($directMatches.number -join ', ')"
     } elseif ($unapprovedApiMatches.Count -gt 0) {
         "same-API match without a different-mechanism decision: $($unapprovedApiMatches.number -join ', ')"
+    } elseif ($apiMatches.Count -eq 0) {
+        'no live direct-reference or same-API duplicate matches'
     } else {
         'all live same-API matches were explicitly judged to use different retention mechanisms'
     }
@@ -149,6 +143,7 @@ function Get-LeakFixFinalDedupResult {
         DirectMatches        = $directMatches
         ApiMatches           = $apiMatches
         UnapprovedApiMatches = $unapprovedApiMatches
+        EffectivelyReverted  = $effectivelyReverted
     }
 }
 

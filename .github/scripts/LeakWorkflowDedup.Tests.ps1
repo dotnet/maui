@@ -47,9 +47,8 @@ Describe 'fresh-shell de-dup state' {
             issue_number = 42
             api = 'Picker.ItemsSource'
             repository = 'dotnet/maui'
-            step3_api_match_pr_numbers = @()
             different_mechanism_prs = @(
-                [pscustomobject]@{ number = 100; phase = 'final'; basis = 'too short' }
+                [pscustomobject]@{ number = 100; basis = 'too short' }
             )
         }
 
@@ -137,6 +136,28 @@ Describe 'mechanism-aware final duplicate gate' {
         $result.Blocked | Should -BeTrue
         $result.DirectMatches.number | Should -Be 102
     }
+
+    It 'does not treat an effectively reverted merged fix as a duplicate' {
+        $fix = New-LeakPr `
+            -Number 100 `
+            -Title '[leak-fix] Restore collection cleanup' `
+            -Body "Fixes #20`nRefs: dotnet/maui#20"
+        $revert = New-LeakPr `
+            -Number 200 `
+            -Title 'Revert leak fix' `
+            -Body 'Reverts dotnet/maui#100'
+
+        $result = Get-LeakFixFinalDedupResult `
+            -IssueNumber 20 `
+            -Api 'GradientBrush.GradientStops' `
+            -Repository 'dotnet/maui' `
+            -MergedPullRequests @($fix) `
+            -OpenPullRequests @() `
+            -MergedRevertPullRequests @($revert)
+
+        $result.Blocked | Should -BeFalse
+        $result.EffectivelyReverted | Should -Be @(100)
+    }
 }
 
 Describe 'effective recursive revert state' {
@@ -210,6 +231,10 @@ Describe 'workflow enforcement boundary' {
 
         $workflow | Should -Match '(?s)safe-outputs:.*steps:.*Assert-LeakFixSafeOutputGate\.ps1'
         $workflow | Should -Match 'dedup-state\.json'
+        $workflow | Should -Match 'github\.event\.repository\.default_branch'
+        $workflow | Should -Match 'RUNNER_TEMP/leak-fix-safe-output'
+        $workflow | Should -Not -Match 'run: \.github/scripts/Assert-LeakFixSafeOutputGate\.ps1'
+        $workflow | Should -Match 'refusing unsupported empty-API de-dup before build/test work'
         ([regex]::Matches(
             $workflow,
             'select\(\.baseRefName == "main" or \.baseRefName == "inflight/current"\)'
@@ -235,12 +260,12 @@ Describe 'workflow enforcement boundary' {
                 issue_number = 20
                 api = 'GradientBrush.GradientStops'
                 repository = 'dotnet/maui'
-                step3_api_match_pr_numbers = @()
                 different_mechanism_prs = @()
             } | ConvertTo-Json -Depth 5 |
                 Set-Content -LiteralPath (Join-Path $script:stateDirectory 'dedup-state.json')
 
             $global:mockMerged = @()
+            $global:mockReverts = @()
             $global:mockOpen = @()
             $global:mockGhExitCode = 0
             function global:gh {
@@ -252,8 +277,14 @@ Describe 'workflow enforcement boundary' {
                 }
                 $stateIndex = [Array]::IndexOf($GhArgs, '--state')
                 $state = $GhArgs[$stateIndex + 1]
+                $searchIndex = [Array]::IndexOf($GhArgs, '--search')
+                $search = $GhArgs[$searchIndex + 1]
                 if ($state -eq 'merged') {
-                    Write-Output (ConvertTo-Json -InputObject @($global:mockMerged) -Depth 5)
+                    if ($search -eq '"Revert" in:title') {
+                        Write-Output (ConvertTo-Json -InputObject @($global:mockReverts) -Depth 5)
+                    } else {
+                        Write-Output (ConvertTo-Json -InputObject @($global:mockMerged) -Depth 5)
+                    }
                 } else {
                     Write-Output (ConvertTo-Json -InputObject @($global:mockOpen) -Depth 5)
                 }
@@ -262,7 +293,7 @@ Describe 'workflow enforcement boundary' {
 
         AfterAll {
             Remove-Item Function:\global:gh -ErrorAction SilentlyContinue
-            Remove-Variable mockMerged, mockOpen, mockGhExitCode -Scope Global -ErrorAction SilentlyContinue
+            Remove-Variable mockMerged, mockReverts, mockOpen, mockGhExitCode -Scope Global -ErrorAction SilentlyContinue
         }
 
         It 'fails closed before mutation when live metadata has a direct issue match' {
@@ -303,11 +334,9 @@ Describe 'workflow enforcement boundary' {
                 issue_number = 20
                 api = 'GradientBrush.GradientStops'
                 repository = 'dotnet/maui'
-                step3_api_match_pr_numbers = @(501)
                 different_mechanism_prs = @(
                     @{
                         number = 501
-                        phase = 'step3'
                         basis = 'Existing PR fixes detach teardown; this issue fixes Reset unsubscription.'
                     }
                 )
@@ -330,6 +359,28 @@ Describe 'workflow enforcement boundary' {
                     -Body "Fixes #20`nRefs: dotnet/maui#20" `
                     -Base 'release/10.0.1xx-sr9' `
                     -Merged $false
+            )
+
+            {
+                & (Join-Path $PSScriptRoot 'Assert-LeakFixSafeOutputGate.ps1') `
+                    -AgentOutputPath $script:agentOutput `
+                    -StateDirectory $script:stateDirectory `
+                    -Repository 'dotnet/maui'
+            } | Should -Not -Throw
+        }
+
+        It 'allows a re-file after the matching merged fix was effectively reverted' {
+            $global:mockMerged = @(
+                New-LeakPr `
+                    -Number 503 `
+                    -Title '[leak-fix] Fix GradientBrush.GradientStops reset leak' `
+                    -Body "Fixes #20`nRefs: dotnet/maui#20"
+            )
+            $global:mockReverts = @(
+                New-LeakPr `
+                    -Number 504 `
+                    -Title 'Revert leak fix' `
+                    -Body 'Reverts dotnet/maui#503'
             )
 
             {

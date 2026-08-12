@@ -110,6 +110,20 @@ if ($merged.Count -ge 1000) {
     throw "Merged [leak-fix] search returned $($merged.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
 }
 
+$mergedReverts = @(
+    Invoke-GhJson -Arguments @(
+        'pr', 'list',
+        '--repo', $Repository,
+        '--state', 'merged',
+        '--limit', '1000',
+        '--search', '"Revert" in:title',
+        '--json', 'number,title,body,mergedAt'
+    )
+)
+if ($mergedReverts.Count -ge 1000) {
+    throw "Merged Revert search returned $($mergedReverts.Count) rows at the GitHub Search API ceiling; refusing a potentially truncated final gate."
+}
+
 $open = @(
     Invoke-GhJson -Arguments @(
         'pr', 'list',
@@ -130,6 +144,7 @@ $result = Get-LeakFixFinalDedupResult `
     -Repository $Repository `
     -MergedPullRequests $merged `
     -OpenPullRequests $open `
+    -MergedRevertPullRequests $mergedReverts `
     -ApprovedDifferentMechanismPullRequests $approved
 
 if ($result.Blocked) {
