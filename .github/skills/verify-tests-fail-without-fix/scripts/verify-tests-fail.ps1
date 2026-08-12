@@ -42,7 +42,8 @@
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
 
 .PARAMETER BaseBranch
-    Branch to revert files from. Auto-detected from PR if not specified.
+    Branch or full commit SHA to revert files from. Auto-detected from PR if not specified.
+    A full commit SHA also selects frozen-fixture test detection from the local diff.
 
 .PARAMETER RequireFullVerification
     If set, the script will fail if it cannot run full verification mode
@@ -848,10 +849,12 @@ function Get-AutoDetectedTests {
     param([string]$MergeBase)
 
     $params = @{}
+    $useFrozenWorktreeDiff = $MergeBase -and
+        $ExplicitBaseBranch -match '^(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})$'
 
-    # An explicit base identifies a local/frozen worktree. Prefer its immutable
+    # A full commit ID identifies a local/frozen worktree. Prefer its immutable
     # diff over PR metadata so an unrelated real PR number cannot change the run.
-    if ($MergeBase -and $ExplicitBaseBranch) {
+    if ($useFrozenWorktreeDiff) {
         $changedFiles = git diff $MergeBase HEAD --name-only 2>$null
         if (-not $changedFiles -or $changedFiles.Count -eq 0) {
             $changedFiles = git diff --name-only 2>$null
@@ -873,7 +876,7 @@ function Get-AutoDetectedTests {
     }
 
     # Fall back to PR number if no changed files from git diff
-    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber -and -not $ExplicitBaseBranch) {
+    if (-not $params.ContainsKey("ChangedFiles") -and $PRNumber -and -not $useFrozenWorktreeDiff) {
         $params.PRNumber = $PRNumber
     }
 

@@ -256,6 +256,9 @@ CustomAgentLogsTmp/
 # Explicit fix files  
 -FixFiles @("src/Core/src/File.cs")
 
-# Explicit base branch
+# Explicit base branch (ordinary PR metadata remains authoritative)
 -BaseBranch "main"
+
+# Full commit SHA (frozen-fixture mode uses the local immutable diff)
+-BaseBranch "$(git rev-parse HEAD^)"
 ```

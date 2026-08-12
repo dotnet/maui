@@ -124,7 +124,7 @@ Build succeeded.
 }
 
 Describe 'Get-AutoDetectedTests — frozen worktree isolation' {
-    It 'prefers the explicit-base local diff over PR metadata' {
+    It 'prefers the immutable explicit-base local diff over PR metadata' {
         $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
         $detector = Join-Path $repo 'detect.ps1'
         try {
@@ -163,6 +163,32 @@ Describe 'Get-AutoDetectedTests — frozen worktree isolation' {
             @($result.ChangedFiles) | Should -Contain $testPath
         } finally {
             Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+Describe 'Get-AutoDetectedTests — ordinary PR metadata' {
+    It 'uses PR metadata when the explicit base is a branch name' {
+        $detector = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-" + [Guid]::NewGuid().ToString('N') + ".ps1")
+        try {
+            @(
+                'param([string]$PRNumber, [string[]]$ChangedFiles)'
+                '[pscustomobject]@{'
+                '    PRNumber = $PRNumber'
+                '    ChangedFiles = @($ChangedFiles)'
+                '}'
+            ) | Set-Content -LiteralPath $detector
+
+            $script:PRNumber = '33134'
+            $script:ExplicitBaseBranch = 'main'
+            $script:DetectTestsScript = $detector
+
+            $result = Get-AutoDetectedTests -MergeBase ('a' * 40)
+
+            $result.PRNumber | Should -Be '33134'
+            @($result.ChangedFiles) | Should -BeNullOrEmpty
+        } finally {
+            Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
         }
     }
 }
