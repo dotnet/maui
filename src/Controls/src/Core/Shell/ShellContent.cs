@@ -184,6 +184,7 @@ namespace Microsoft.Maui.Controls
 
 		WeakNotifyPropertyChangedProxy _pagePropertyChangedProxy;
 		PropertyChangedEventHandler _pagePropertyChangedHandler;
+		~ShellContent() => _pagePropertyChangedProxy?.Unsubscribe();
 
 		protected override void OnChildAdded(Element child)
 		{
