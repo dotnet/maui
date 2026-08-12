@@ -157,7 +157,17 @@ namespace Microsoft.Maui.Handlers
 		/// Gets the view that acts as a container for the <see cref="PlatformView"/>.
 		/// </summary>
 		/// <remarks>Note that this can be <see langword="null"/>. Especially when <see cref="HasContainer"/> is set to <see langword="false"/> this value might not be set.</remarks>
-		public PlatformView? ContainerView { get; private protected set; }
+		PlatformView? _containerView;
+
+		public PlatformView? ContainerView
+		{
+			get
+			{
+				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				return _containerView;
+			}
+			private protected set => _containerView = value;
+		}
 
 		object? IViewHandler.ContainerView => ContainerView;
 
@@ -168,7 +178,11 @@ namespace Microsoft.Maui.Handlers
 		/// The abstract (.NET MAUI) view is found in <see cref="VirtualView"/>.</remarks>
 		public new PlatformView? PlatformView
 		{
-			get => (PlatformView?)base.PlatformView;
+			get
+			{
+				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				return (PlatformView?)base.PlatformView;
+			}
 			private protected set => base.PlatformView = value;
 		}
 

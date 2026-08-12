@@ -16,6 +16,14 @@
     <!-- NOTE: By default the UseMaterial3 flag value is false. If you change the UseMaterial3 flag, you MUST delete the artifacts folder 
        and rebuild the entire codebase using: dotnet build ./Microsoft.Maui.BuildTasks.slnf -->
     <UseMaterial3>false</UseMaterial3>
+    <UseHandlerUpdateBatching Condition="'$(UseHandlerUpdateBatching)' == ''">false</UseHandlerUpdateBatching>
+    <DefineConstants Condition="'$(UseHandlerUpdateBatching)' == 'true'">$(DefineConstants);EXPERIMENTAL_HANDLER_UPDATE_BATCHING</DefineConstants>
+    <StartupUpdateRounds Condition="'$(StartupUpdateRounds)' == ''">0</StartupUpdateRounds>
+    <DefineConstants Condition="'$(StartupUpdateRounds)' != '0'">$(DefineConstants);STARTUP_UPDATE_BURST</DefineConstants>
+    <DefineConstants Condition="'$(StartupUpdateRounds)' == '1'">$(DefineConstants);STARTUP_UPDATE_ROUNDS_1</DefineConstants>
+    <DefineConstants Condition="'$(StartupUpdateRounds)' == '5'">$(DefineConstants);STARTUP_UPDATE_ROUNDS_5</DefineConstants>
+    <DefineConstants Condition="'$(StartupUpdateRounds)' == '20'">$(DefineConstants);STARTUP_UPDATE_ROUNDS_20</DefineConstants>
+    <DefineConstants Condition="'$(StartupUpdateRounds)' == '100'">$(DefineConstants);STARTUP_UPDATE_ROUNDS_100</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
