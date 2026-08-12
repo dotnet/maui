@@ -5,6 +5,7 @@ using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _originalAppearanceCaptured;
 		ColorStateList _originalTextColors;
 		Drawable _originalBackground;
-		Drawable _originalIndicatorDrawable;
+		int? _originalIndicatorColor;
 		IShellContext _shellContext;
 
 		public ShellTabLayoutAppearanceTracker(IShellContext shellContext)
@@ -76,7 +77,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else
 				{
-					tabLayout.SetSelectedTabIndicator(_originalIndicatorDrawable);
+					// Only the tint needs restoring; the indicator shape/Drawable is never swapped.
+					if (_originalIndicatorColor is int originalColor)
+						tabLayout.SetSelectedTabIndicatorColor(new AColor(originalColor));
 				}
 			}
 			else
@@ -96,7 +99,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_originalTextColors = tabLayout.TabTextColors;
 			_originalBackground = tabLayout.Background;
-			_originalIndicatorDrawable = tabLayout.TabSelectedIndicator;
+
+			// Native indicator color is not exposed via a public getter; derive it from the M3
+			// default theme attribute (Widget.Material3.TabLayout's tabIndicatorColor = ?attr/colorPrimary)
+			// instead of reflecting into TabLayout's private field.
+			var context = tabLayout.Context;
+			_originalIndicatorColor = context?.GetThemeAttrColor(Resource.Attribute.colorPrimary);
 
 			_originalAppearanceCaptured = true;
 		}
@@ -106,9 +114,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!_originalAppearanceCaptured)
 				return;
 
-			tabLayout.SetTabTextColors(_originalTextColors.DefaultColor, _originalTextColors.DefaultColor);
+			tabLayout.TabTextColors = _originalTextColors;
 			tabLayout.SetBackground(_originalBackground);
-			tabLayout.SetSelectedTabIndicator(_originalIndicatorDrawable);
+
+			if (_originalIndicatorColor is int originalColor)
+				tabLayout.SetSelectedTabIndicatorColor(new AColor(originalColor));
 		}
 
 		#region IDisposable
@@ -126,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_disposed = true;
 			_originalBackground = null;
 			_originalTextColors = null;
-			_originalIndicatorDrawable = null;
+			_originalIndicatorColor = null;
 			_shellContext = null;
 		}
 
