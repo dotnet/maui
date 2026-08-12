@@ -107,15 +107,30 @@ namespace Microsoft.Maui
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
 		}
 
+		// Backs VisualTreeChanged with weak references so subscribers can be GC'd without explicit unsubscribe (issue #37242).
+		static readonly WeakEventManager s_visualTreeChangedWeakEventManager = new WeakEventManager();
+
 		/// <summary>
 		/// Event fired when the visual tree changes (child added or removed).
 		/// </summary>
 		/// <remarks>Subscribers receive <see cref="VisualTreeChangeEventArgs"/> with change details.</remarks>
-		public static event EventHandler<VisualTreeChangeEventArgs>? VisualTreeChanged;
+		public static event EventHandler<VisualTreeChangeEventArgs>? VisualTreeChanged
+		{
+			add
+			{
+				if (value is not null)
+					s_visualTreeChangedWeakEventManager.AddEventHandler(value);
+			}
+			remove
+			{
+				if (value is not null)
+					s_visualTreeChangedWeakEventManager.RemoveEventHandler(value);
+			}
+		}
 
 		static void OnVisualTreeChanged(VisualTreeChangeEventArgs e)
 		{
-			VisualTreeChanged?.Invoke(e.Parent, e);
+			s_visualTreeChangedWeakEventManager.HandleEvent(e.Parent, e, nameof(VisualTreeChanged));
 		}
 
 		/// <summary>
