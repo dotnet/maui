@@ -116,6 +116,49 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ImageServiceResultsAreDisposedWhenReplacedAndDisconnected()
+		{
+			var imageService = new DelayedFileImageSourceService();
+			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
+				services => services.AddService<IFileImageSource>(_ => imageService)));
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItemMenuItemStub();
+				var handler = CreateHandler<SwipeItemMenuItemHandler>(item);
+
+				item.Source = new FileImageSourceStub("first.png");
+				var firstLoad = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				var firstRequest = await imageService.Requests.DequeueAsync();
+				var firstDisposeCount = 0;
+				firstRequest.SetResult(new ImageSourceServiceResult(
+					new BitmapImage(),
+					() => firstDisposeCount++));
+				await firstLoad.WaitAsync(ImageLoadTimeout);
+
+				Assert.Equal(0, firstDisposeCount);
+
+				item.Source = new FileImageSourceStub("second.png");
+				var secondLoad = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
+				var secondRequest = await imageService.Requests.DequeueAsync();
+				var secondDisposeCount = 0;
+
+				Assert.Equal(1, firstDisposeCount);
+
+				secondRequest.SetResult(new ImageSourceServiceResult(
+					new BitmapImage(),
+					() => secondDisposeCount++));
+				await secondLoad.WaitAsync(ImageLoadTimeout);
+
+				Assert.Equal(0, secondDisposeCount);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Equal(1, secondDisposeCount);
+			});
+		}
+
+		[Fact]
 		public async Task UriImageUsesRegisteredServiceWhenTintIsRequested()
 		{
 			var imageService = new DelayedUriImageSourceService();
@@ -360,18 +403,31 @@ namespace Microsoft.Maui.DeviceTests
 				var newerLoad = SwipeItemMenuItemHandler.MapSourceAsync(handler, item);
 				var newerRequest = await imageService.Requests.DequeueAsync();
 				var newerImage = new BitmapImage();
-				newerRequest.SetResult(new ImageSourceServiceResult(newerImage));
+				var newerDisposeCount = 0;
+				newerRequest.SetResult(new ImageSourceServiceResult(
+					newerImage,
+					() => newerDisposeCount++));
 				await newerLoad.WaitAsync(ImageLoadTimeout);
 
 				var currentIcon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(newerImage, currentIcon.ImageSource);
+				Assert.Equal(0, newerDisposeCount);
 
 				var staleImage = new BitmapImage();
-				initialRequest.SetResult(new ImageSourceServiceResult(staleImage));
+				var staleDisposeCount = 0;
+				initialRequest.SetResult(new ImageSourceServiceResult(
+					staleImage,
+					() => staleDisposeCount++));
 				await staleLoad.WaitAsync(ImageLoadTimeout);
 
 				currentIcon = Assert.IsType<ImageIconSource>(handler.PlatformView.IconSource);
 				Assert.Same(newerImage, currentIcon.ImageSource);
+				Assert.Equal(1, staleDisposeCount);
+				Assert.Equal(0, newerDisposeCount);
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				Assert.Equal(1, newerDisposeCount);
 			});
 		}
 

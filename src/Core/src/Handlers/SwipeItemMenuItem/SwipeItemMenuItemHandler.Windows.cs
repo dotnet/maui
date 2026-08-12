@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static readonly ConditionalWeakTable<ISwipeItemMenuItemHandler, HandlerState> s_externalHandlerStates = new();
 		int _iconLoadGeneration;
+		readonly ImageSourceServiceResultManager _iconSourceManager = new();
 		IFontImageSource? _fontIconLoadSource;
 		Color? _fontIconLoadColor;
 		int _fontIconLoadGeneration;
@@ -100,6 +102,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(WSwipeItem platformView)
 		{
 			System.Threading.Interlocked.Increment(ref _iconLoadGeneration);
+			_iconSourceManager.Reset();
 			ResetFontIconLoad();
 			base.DisconnectHandler(platformView);
 			platformView.Invoked -= OnSwipeItemInvoked;
@@ -110,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.OnInvoked();
 		}
 
-		internal static async Task LoadFileIconAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem item)
+		internal static async Task LoadIconAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem item)
 		{
 			if (handler.PlatformView is not WSwipeItem swipeItem || handler.MauiContext is null)
 			{
@@ -118,18 +121,22 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			int generation = BeginIconLoad(handler);
+			var sourceManager = GetIconSourceManager(handler);
+			var cancellationToken = sourceManager.BeginLoad();
 
 			var source = item.Source;
 			var fontSource = source as IFontImageSource;
 			var resolvedFontColor = fontSource is null ? null : item.GetIconTintColor();
 			bool fontIconApplied = false;
 			var platformHandler = handler as SwipeItemMenuItemHandler;
+			IImageSourceServiceResult<WImageSource>? result = null;
 
 			platformHandler?.SetFontIconLoad(fontSource, resolvedFontColor, generation);
 
 			if (source is null)
 			{
 				swipeItem.IconSource = null;
+				sourceManager.CompleteLoad(null);
 				return;
 			}
 
@@ -149,11 +156,15 @@ namespace Microsoft.Maui.Handlers
 
 					if (tintedIconSource is not null)
 					{
-						if (IsIconLoadCurrent(handler, item, swipeItem, generation) &&
-							ReferenceEquals(item.Source, source))
+						if (IsIconLoadCurrent(handler, item, swipeItem, generation))
 						{
-							tintedIconSource.Foreground = tintColor.ToPlatform();
-							swipeItem.IconSource = tintedIconSource;
+							if (ReferenceEquals(item.Source, source))
+							{
+								tintedIconSource.Foreground = tintColor.ToPlatform();
+								swipeItem.IconSource = tintedIconSource;
+							}
+
+							sourceManager.CompleteLoad(null);
 						}
 
 						return;
@@ -182,7 +193,7 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				// Do not use ConfigureAwait(false): WinUI DependencyProperty writes require the UI thread.
-				var result = await service.GetImageSourceAsync(loadSource, scale);
+				result = await service.GetImageSourceAsync(loadSource, scale, cancellationToken);
 
 				// Only apply the result if no newer load has started on THIS handler while this one was
 				// in flight. Checking item.Source == source alone is not enough: the source can be
@@ -195,14 +206,25 @@ namespace Microsoft.Maui.Handlers
 					var iconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
 					swipeItem.IconSource = iconSource;
 					fontIconApplied = fontSource is not null && iconSource is not null;
+					sourceManager.CompleteLoad(result);
+					result = null;
 				}
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				// A newer source/tint load or disconnect owns the platform view now.
 			}
 			catch (System.Exception ex)
 			{
+				if (IsIconLoadCurrent(handler, item, swipeItem, generation))
+					sourceManager.CompleteLoad(null);
+
 				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(LogLevel.Warning, new EventId(), "Cannot load SwipeItem Icon", ex, static (state, _) => state);
 			}
 			finally
 			{
+				result?.Dispose();
+
 				if (fontSource is not null &&
 					!fontIconApplied &&
 					platformHandler is not null)
@@ -287,6 +309,14 @@ namespace Microsoft.Maui.Handlers
 			return System.Threading.Interlocked.Increment(ref state.IconLoadGeneration);
 		}
 
+		static ImageSourceServiceResultManager GetIconSourceManager(ISwipeItemMenuItemHandler handler)
+		{
+			if (handler is SwipeItemMenuItemHandler platformHandler)
+				return platformHandler._iconSourceManager;
+
+			return s_externalHandlerStates.GetValue(handler, static _ => new HandlerState()).SourceManager;
+		}
+
 		internal static bool IsIconLoadCurrent(
 			ISwipeItemMenuItemHandler handler,
 			ISwipeItemMenuItem item,
@@ -341,6 +371,7 @@ namespace Microsoft.Maui.Handlers
 		sealed class HandlerState
 		{
 			public int IconLoadGeneration;
+			public ImageSourceServiceResultManager SourceManager { get; } = new();
 		}
 
 		sealed class TintedFontImageSource : IFontImageSource
@@ -365,6 +396,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(ImageSource? platformImage)
 			{
+				// The built-in Windows mapper uses LoadIconAsync for tint selection and result
+				// ownership. This override remains required for subclasses/custom mappers that
+				// deliberately opt into SourceLoader.
 				if (Handler?.PlatformView is not WSwipeItem button)
 					return;
 

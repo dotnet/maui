@@ -830,7 +830,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		// A colorless font icon derives its tint from TextColor, so the TextColor mapper must
-		// also refresh the source after initial mapping has completed.
+		// route through the IconColor mapper chain after initial mapping has completed.
 		[Fact]
 		public void ChangingTextColorRefreshesIconForColorlessFontIcon()
 		{
@@ -847,7 +847,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
 			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
-			handler.Received(1).UpdateValue(nameof(IMenuElement.Source));
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		// Discriminating test for the IFontImageSource (interface, not concrete FontImageSource) guard:
@@ -868,7 +869,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swipeItem.TextColor = Colors.Red;
 			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
-			handler.Received(1).UpdateValue(nameof(IMenuElement.Source));
+			handler.Received(1).UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
+			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
 		[Fact]
@@ -888,6 +890,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
 			handler.Received(1).UpdateValue(nameof(ITextStyle.TextColor));
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
@@ -906,6 +909,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swipeItem.TextColor = Colors.Red;
 			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
@@ -924,6 +928,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swipeItem.TextColor = Colors.Red;
 			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
 
+			handler.DidNotReceive().UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 			handler.DidNotReceive().UpdateValue(nameof(IMenuElement.Source));
 		}
 
@@ -998,7 +1003,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			handler.State = ElementHandlerState.Connected;
 			SwipeItemMenuItemHandler.UpdateTextColorIconDependency(handler, (ISwipeItemMenuItem)swipeItem);
-			Assert.Equal(new[] { nameof(IMenuElement.Source) }, handler.UpdatedProperties);
+			Assert.Equal(new[] { nameof(ISwipeItemMenuItemIconColor.IconColor) }, handler.UpdatedProperties);
 		}
 
 		[Fact]

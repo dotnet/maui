@@ -20,6 +20,11 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides an optional icon tint for an <see cref="ISwipeItemMenuItem"/>.
 	/// </summary>
+	/// <remarks>
+	/// This is a separate optional interface to preserve compatibility for existing
+	/// <see cref="ISwipeItemMenuItem"/> implementations, including netstandard2.0 targets
+	/// where adding the member to the existing interface would require implementers to add it.
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface ISwipeItemMenuItemIconColor
 	{

@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Handlers
 				view is not ISwipeItemMenuItemIconColor { IconColor: not null } &&
 				view.Source is IFontImageSource { Color: null })
 			{
-				UpdateIconColor(handler, view);
+				handler.UpdateValue(nameof(ISwipeItemMenuItemIconColor.IconColor));
 			}
 		}
 
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{
 #if WINDOWS
-			return LoadFileIconAsync(handler, image);
+			return LoadIconAsync(handler, image);
 #else
 			if (handler.SourceLoader is ImageSourcePartLoader loader)
 				return loader.UpdateImageSourceAsync();

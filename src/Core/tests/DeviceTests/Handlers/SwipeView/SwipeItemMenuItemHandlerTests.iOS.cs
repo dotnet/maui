@@ -145,10 +145,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task ScaleOneImageJustOverLimitIsResized()
+		public async Task ScaleOneImageBeyondRenderToleranceIsResized()
 		{
+			var renderScale = UIScreen.MainScreen.Scale;
 			var imageService = new CountingFileImageSourceService(
-				CountingFileImageSourceService.CreateImage(51, 1));
+				CountingFileImageSourceService.CreateImage(50 + (1 / renderScale) + 0.5f, 1));
 			EnsureHandlerCreated(builder => builder.ConfigureImageSources(
 				services => services.AddService<IFileImageSource>(_ => imageService)));
 
