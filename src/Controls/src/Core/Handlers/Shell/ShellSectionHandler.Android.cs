@@ -277,9 +277,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetupTabbedViewManager()
         {
-            if (_tabbedViewManager is not null || VirtualView is null || _viewPager is null || MauiContext is null || _shellContext is null)
+            if (_tabbedViewManager is not null || VirtualView is null || _viewPager is null || MauiContext is null)
             {
                 return;
+            }
+
+            if (_shellContext is null)
+            {
+                throw new InvalidOperationException("Shell context must be initialized before setting up top tabs.");
             }
 
             if (SectionController.GetItems().Count <= 1)
@@ -339,7 +344,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabLayoutVisibility()
         {
-            if (_tabbedViewManager is null || VirtualView is null)
+            if (VirtualView is null)
             {
                 return;
             }
@@ -1035,7 +1040,7 @@ namespace Microsoft.Maui.Controls.Handlers
             toolbarTracker?.Page = page;
 
             // Update CurrentItem
-            virtualView.CurrentItem = newCurrentItem;
+            virtualView.SetValueFromRenderer(ShellSection.CurrentItemProperty, newCurrentItem);
 
             // Trigger appearance update
             if (shell is not null)

@@ -255,6 +255,14 @@ namespace Microsoft.Maui.Controls.Handlers
             RecreateBottomNavigationAppearanceTracker();
         }
 
+        void RemoveBottomNavigationInfrastructure()
+        {
+            _tabbedViewManager?.SetElement(null);
+            _tabbedViewManager = null;
+            _shellItemAdapter = null;
+            _bottomNavigationView = null;
+        }
+
         /// <summary>
         /// Switches to a new ShellSection using ViewPager2.
         /// The ViewPager2 adapter handles the fragment management.
@@ -359,29 +367,26 @@ namespace Microsoft.Maui.Controls.Handlers
             // Rebuild ViewPager2 adapter for new ShellItem's sections
             SetupViewPagerAdapter();
 
-            if (_tabbedViewManager is null)
-            {
-                SetupTabbedViewManager();
-            }
-            else
-            {
-                // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
-                RebuildBottomNavigation();
-            }
-
-            // Apply badges to the rebuilt bottom navigation
-            UpdateAllBadges();
-
-            // Update tab visibility for new ShellItem (may need to show/hide bottom tabs)
             var showTabs = ((IShellItemController)newItem).ShowTabs;
 
             if (showTabs)
             {
+                if (_tabbedViewManager is null)
+                {
+                    SetupTabbedViewManager();
+                }
+                else
+                {
+                    // Rebuild bottom navigation for new ShellItem's sections via TabbedViewManager
+                    RebuildBottomNavigation();
+                }
+
+                UpdateAllBadges();
                 _tabbedViewManager?.SetTabLayout();
             }
             else
             {
-                _tabbedViewManager?.RemoveTabs();
+                RemoveBottomNavigationInfrastructure();
             }
 
             // Re-register appearance observer with new ShellItem
@@ -640,7 +645,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateTabBarVisibility()
         {
-            if (_displayedPage is null || ((ElementHandler)this).VirtualView is null)
+            if (_switchingShellItem || _displayedPage is null || ((ElementHandler)this).VirtualView is null)
             {
                 return;
             }
@@ -879,13 +884,7 @@ namespace Microsoft.Maui.Controls.Handlers
             if (!_preserveFragmentResources)
             {
                 // Full disconnect: fragment is being destroyed — clean everything
-                if (_tabbedViewManager is not null)
-                {
-                    _tabbedViewManager.RemoveTabs();
-                    _tabbedViewManager.SetElement(null);
-                    _tabbedViewManager = null;
-                }
-                _shellItemAdapter = null;
+                RemoveBottomNavigationInfrastructure();
 
                 _toolbarAppearanceTracker?.Dispose();
                 _toolbarAppearanceTracker = null;

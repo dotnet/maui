@@ -16,6 +16,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using AView = Android.Views.View;
+using AViewStates = Android.Views.ViewStates;
 using NativeShellHandler = Microsoft.Maui.Controls.Handlers.ShellHandler;
 
 namespace Microsoft.Maui.DeviceTests
@@ -84,12 +85,17 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(sectionHandler.ContentTabLayout);
 				Assert.Equal(0, shellHandler.BottomNavAppearanceTrackerCreationCount);
 				Assert.Equal(0, shellHandler.TabLayoutAppearanceTrackerCreationCount);
+				var topTabsContainer = shellHandler.PlatformView.FindViewById(Resource.Id.navigationlayout_toptabs);
+				Assert.NotNull(topTabsContainer);
+				Assert.Equal(AViewStates.Gone, topTabsContainer.Visibility);
 
 				item.Items.Add(secondSection);
 				section.Items.Add(secondContent);
 
 				Assert.NotNull(itemHandler._tabbedViewManager);
 				Assert.NotNull(sectionHandler.ContentTabLayout);
+				var bottomBackground = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
+				Assert.Equal(expectedTabBackground.ToPlatform(), bottomBackground.EndColor);
 				var background = Assert.IsType<ColorDrawable>(sectionHandler.ContentTabLayout.Background);
 				Assert.Equal(expectedTabBackground.ToPlatform(), background.Color);
 				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
@@ -102,6 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				item.Items.Remove(secondSection);
 				section.Items.Remove(secondContent);
+				Assert.Equal(AViewStates.Gone, topTabsContainer.Visibility);
 				item.Items.Add(secondSection);
 				section.Items.Add(secondContent);
 
@@ -111,6 +118,83 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Same(contentTabLayout, sectionHandler.ContentTabLayout);
 				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
 				Assert.Equal(1, shellHandler.TabLayoutAppearanceTrackerCreationCount);
+			});
+		}
+
+		[Fact]
+		public async Task SwitchingShellItemsCreatesBottomTabsOnlyWhenNeeded()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage();
+			var firstItem = new FlyoutItem
+			{
+				Title = "First item",
+				Items =
+				{
+					new ShellSection
+					{
+						Items = { new ShellContent { Content = firstPage } }
+					}
+				}
+			};
+			var secondPage = new ContentPage();
+			var secondItem = new FlyoutItem
+			{
+				Title = "Second item",
+				Items =
+				{
+					new ShellSection
+					{
+						Title = "First section",
+						Items = { new ShellContent { Content = secondPage } }
+					},
+					new ShellSection
+					{
+						Title = "Second section",
+						Items = { new ShellContent { Content = new ContentPage() } }
+					}
+				}
+			};
+			var expectedTabBackground = Colors.Blue;
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTabBarBackgroundColor(secondItem, expectedTabBackground);
+				shell.Items.Add(firstItem);
+				shell.Items.Add(secondItem);
+				shell.CurrentItem = firstItem;
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(firstPage);
+
+				var shellHandler = Assert.IsType<StartupTrackingShellHandler>(shell.Handler);
+				Assert.Equal(0, shellHandler.BottomNavAppearanceTrackerCreationCount);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				var itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.NotNull(itemHandler._tabbedViewManager);
+				var background = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
+				Assert.Equal(expectedTabBackground.ToPlatform(), background.EndColor);
+
+				shell.CurrentItem = firstItem;
+				await OnLoadedAsync(firstPage);
+
+				itemHandler = Assert.IsType<ShellItemHandler>(firstItem.Handler);
+				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.Null(itemHandler._tabbedViewManager);
+				Assert.Null(itemHandler.BottomNavigationView);
+
+				shell.CurrentItem = secondItem;
+				await OnLoadedAsync(secondPage);
+
+				itemHandler = Assert.IsType<ShellItemHandler>(secondItem.Handler);
+				Assert.Equal(2, shellHandler.BottomNavAppearanceTrackerCreationCount);
+				Assert.NotNull(itemHandler._tabbedViewManager);
 			});
 		}
 
