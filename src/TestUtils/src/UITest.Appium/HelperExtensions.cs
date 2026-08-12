@@ -33,7 +33,11 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			RunWithTimeout(() => FindElement(app, element).Click());
+			RunWithTimeout(() =>
+			{
+				var target = FindElement(app, element);
+				ClickWithRefresh(target, () => FindElement(app, element));
+			});
 		}
 
 		/// <summary>
@@ -54,7 +58,11 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
 		{
-			RunWithTimeout(() => FindElement(app, element).Click());
+			RunWithTimeout(() =>
+			{
+				var target = FindElement(app, element);
+				ClickWithRefresh(target, () => FindElement(app, element));
+			});
 		}
 
 		/// <summary>
@@ -64,7 +72,20 @@ namespace UITest.Appium
 		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
 		public static void Click(this IApp app, IQuery query)
 		{
-			RunWithTimeout(() => app.FindElement(query).Click());
+			RunWithTimeout(() =>
+			{
+				var target = app.FindElement(query);
+				ClickWithRefresh(target, () => app.FindElement(query));
+			});
+		}
+
+		static void ClickWithRefresh(IUIElement element, Func<IUIElement> refreshElement)
+		{
+			element.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", element },
+				{ "refreshElement", refreshElement }
+			});
 		}
 
 		public static void RightClick(this IApp app, string element)
