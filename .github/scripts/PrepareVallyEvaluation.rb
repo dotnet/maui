@@ -465,10 +465,13 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
     fail!("#{relative_spec_path} requires #{description} in #{skill_path}") unless File.read(skill_path).match?(pattern)
   end
 
+  required_stimulus_prompts = REQUIRED_STIMULUS_PROMPT_PATTERNS.fetch(relative_spec_path, {})
+  observed_required_stimuli = {}
   Array(document["stimuli"]).each_with_index do |stimulus, index|
     fail!("stimuli[#{index}] must be a mapping") unless stimulus.is_a?(Hash)
-    required_prompt_patterns =
-      REQUIRED_STIMULUS_PROMPT_PATTERNS.dig(relative_spec_path, stimulus["name"]) || {}
+    stimulus_name = stimulus["name"]
+    required_prompt_patterns = required_stimulus_prompts.fetch(stimulus_name, {})
+    observed_required_stimuli[stimulus_name] = true if required_stimulus_prompts.key?(stimulus_name)
     required_prompt_patterns.each do |description, pattern|
       unless stimulus["prompt"].is_a?(String) && stimulus["prompt"].match?(pattern)
         fail!("#{relative_spec_path} stimuli[#{index}].prompt requires #{description}")
@@ -503,6 +506,10 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
         fail!("stimuli[#{index}] must not restrict supported_executors in mandatory invocation spec #{relative_spec_path}")
       end
     end
+  end
+  missing_required_stimuli = required_stimulus_prompts.keys.reject { |name| observed_required_stimuli[name] }
+  unless missing_required_stimuli.empty?
+    fail!("#{relative_spec_path} is missing required stimulus name(s): #{missing_required_stimuli.join(", ")}")
   end
   if inspect_git_refs
     validate_effective_git_destinations!(document, repo_root, trusted_control_ref)
