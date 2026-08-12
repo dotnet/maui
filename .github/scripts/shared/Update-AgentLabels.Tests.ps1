@@ -35,9 +35,12 @@ BeforeAll {
     if (-not $clearDeclinedFunction) { throw "Function 'Clear-AgentRerunDeclined' not found" }
     Invoke-Expression $clearDeclinedFunction.Extent.Text
 
-    function Get-AgentLabels {
-        param([string]$PRNumber, [string]$Owner, [string]$Repo)
-    }
+    $removeLabelFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Remove-Label'
+    }, $true)
+    if (-not $removeLabelFunction) { throw "Function 'Remove-Label' not found" }
+    Invoke-Expression ($removeLabelFunction.Extent.Text -replace '^function Remove-Label', 'function Invoke-RemoveLabelUnderTest')
 
     function Remove-Label {
         param([string]$PRNumber, [string]$LabelName, [string]$Owner, [string]$Repo)
@@ -64,22 +67,42 @@ BeforeAll {
     }
 }
 
+Describe 'Remove-Label' {
+    BeforeEach {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+        }
+    }
+
+    It 'treats an already-absent label as a successful idempotent removal' {
+        Mock gh {
+            $global:LASTEXITCODE = 1
+            'gh: Label does not exist (HTTP 404)'
+        }
+
+        Invoke-RemoveLabelUnderTest -PRNumber 1 -LabelName 's/agent-rerun-declined' |
+            Should -BeTrue
+    }
+
+    It 'reports a non-404 API failure' {
+        Mock gh {
+            $global:LASTEXITCODE = 1
+            'gh: API rate limit exceeded (HTTP 403)'
+        }
+
+        Invoke-RemoveLabelUnderTest -PRNumber 1 -LabelName 's/agent-rerun-declined' |
+            Should -BeFalse
+    }
+}
+
 Describe 'Clear-AgentRerunDeclined' {
     BeforeEach {
-        Mock Get-AgentLabels { @() }
         Mock Remove-Label { $true }
     }
 
-    It 'is a no-op when the decline label is absent from supplied labels' {
-        Clear-AgentRerunDeclined -PRNumber 1 -CurrentLabels @('s/agent-ready-for-rerun') |
+    It 'unconditionally performs an idempotent removal' {
+        Clear-AgentRerunDeclined -PRNumber 1 -Owner dotnet -Repo maui |
             Should -BeTrue
-        Should -Invoke Remove-Label -Times 0
-    }
-
-    It 'removes the decline label using the supplied label snapshot' {
-        Clear-AgentRerunDeclined -PRNumber 1 -Owner dotnet -Repo maui -CurrentLabels @('s/agent-rerun-declined') |
-            Should -BeTrue
-        Should -Invoke Get-AgentLabels -Times 0
         Should -Invoke Remove-Label -Times 1 -ParameterFilter {
             $PRNumber -eq '1' -and $LabelName -eq 's/agent-rerun-declined' -and
             $Owner -eq 'dotnet' -and $Repo -eq 'maui'
@@ -89,7 +112,7 @@ Describe 'Clear-AgentRerunDeclined' {
     It 'reports a failed marker removal' {
         Mock Remove-Label { $false }
 
-        Clear-AgentRerunDeclined -PRNumber 1 -CurrentLabels @('s/agent-rerun-declined') |
+        Clear-AgentRerunDeclined -PRNumber 1 |
             Should -BeFalse
     }
 }

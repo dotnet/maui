@@ -255,16 +255,14 @@ jobs:
             }
           }
 
-          # Every review entrypoint clears a prior semantic decline, not only the
-          # scanner path. Do this before acquiring the lock so a cleanup failure
-          # cannot leave a newly-created in-progress label behind.
+          # Every review entrypoint best-effort clears a prior semantic decline,
+          # not only the scanner path. This bookkeeping must never block a review.
           $declineCleared = Clear-AgentRerunDeclined `
             -PRNumber $env:PR_NUMBER `
             -Owner '${{ github.repository_owner }}' `
-            -Repo '${{ github.event.repository.name }}' `
-            -CurrentLabels $labels
+            -Repo '${{ github.event.repository.name }}'
           if (-not $declineCleared) {
-            throw "Failed to clear s/agent-rerun-declined from PR #$($env:PR_NUMBER)."
+            Write-Host "::warning::Could not clear s/agent-rerun-declined from PR #$($env:PR_NUMBER); continuing with the review."
           }
 
           $locked = Set-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'

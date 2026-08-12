@@ -168,9 +168,26 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 1>$null 2>$null
-    return $LASTEXITCODE -eq 0
+    $output = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
+        --method DELETE 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) {
+        return $true
+    }
+
+    $message = ($output | Out-String).Trim()
+    if ($message -match '(?i)\bHTTP\s+404\b|\bstatus(?:\s+code)?\s*:?\s*404\b|\blabel does not exist\b') {
+        return $true
+    }
+
+    if ([string]::IsNullOrWhiteSpace($message)) {
+        $message = "gh api exited with code $exitCode."
+    } elseif ($message.Length -gt 1000) {
+        $message = $message.Substring(0, 1000) + '...'
+    }
+
+    Write-Host "  ⚠️  Failed to remove label '$LabelName' from PR #$PRNumber (gh api exit code $exitCode): $message" -ForegroundColor Yellow
+    return $false
 }
 
 # ============================================================
@@ -247,24 +264,13 @@ function Clear-AgentRerunDeclined {
     param(
         [Parameter(Mandatory)] [string]$PRNumber,
         [string]$Owner = 'dotnet',
-        [string]$Repo = 'maui',
-        [string[]]$CurrentLabels
+        [string]$Repo = 'maui'
     )
 
     $label = 's/agent-rerun-declined'
-    $labels = if ($PSBoundParameters.ContainsKey('CurrentLabels')) {
-        @($CurrentLabels)
-    } else {
-        @(Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo)
-    }
-
-    if ($labels -notcontains $label) {
-        return $true
-    }
-
     $ok = Remove-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo
     if ($ok) {
-        Write-Host "  ✅ Removed: $label" -ForegroundColor Green
+        Write-Host "  ✅ Cleared or already absent: $label" -ForegroundColor Green
     } else {
         Write-Host "  ⚠️  Failed to remove: $label" -ForegroundColor Yellow
     }

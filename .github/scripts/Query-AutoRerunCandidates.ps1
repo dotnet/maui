@@ -78,25 +78,28 @@ function Get-IssueLabels {
     return @($names)
 }
 
-function Get-ActivityForPR {
+function Get-IssueCommentsForPR {
     param([int]$Number)
 
-    # Fail loud on API errors — same contract as Get-IssueLabels. A transient/auth/rate-limit
-    # failure must NOT be treated as "no activity", which would silently mark a PR ineligible
-    # and drop a real rerun candidate. Capture raw output first so $LASTEXITCODE reflects
-    # `gh api` (not the trailing ForEach-Object in a pipeline). The per-PR try/catch records
-    # the throw as an 'error' decision and continues.
     $issueCommentsRaw = gh api "repos/$Owner/$Repo/issues/$Number/comments?per_page=100" --paginate --jq '.[]'
     if ($LASTEXITCODE -ne 0) { throw "Failed to fetch issue comments for #$Number (gh api exited $LASTEXITCODE)." }
+    return @($issueCommentsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'issue-comment' })
+}
+
+function Get-ReviewActivityForPR {
+    param([int]$Number)
+
+    # Fetch review history only after an issue comment proves this PR has an AI
+    # Summary. Most open PRs have never been AI-reviewed, so this avoids three
+    # paginated API families for every ineligible PR.
     $reviewsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/reviews?per_page=100" --paginate --jq '.[]'
     if ($LASTEXITCODE -ne 0) { throw "Failed to fetch reviews for #$Number (gh api exited $LASTEXITCODE)." }
     $reviewCommentsRaw = gh api "repos/$Owner/$Repo/pulls/$Number/comments?per_page=100" --paginate --jq '.[]'
     if ($LASTEXITCODE -ne 0) { throw "Failed to fetch review comments for #$Number (gh api exited $LASTEXITCODE)." }
 
-    $issueComments = @($issueCommentsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'issue-comment' })
     $reviews = @($reviewsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review' })
     $reviewComments = @($reviewCommentsRaw | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review-comment' })
-    return @($issueComments + $reviews + $reviewComments)
+    return @($reviews + $reviewComments)
 }
 
 function Get-CommitsForPR {
@@ -195,8 +198,14 @@ function Invoke-AutoRerunCandidateScan {
                 $effectiveLabels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
             }
 
-            $activity = @(Get-ActivityForPR -Number $number)
-            $commits = @(Get-CommitsForPR -Number $number)
+            $issueComments = @(Get-IssueCommentsForPR -Number $number)
+            $activity = @($issueComments)
+            $commits = @()
+            if (Get-LatestAISummaryComment -Comments $issueComments) {
+                $reviewActivity = @(Get-ReviewActivityForPR -Number $number)
+                $activity = @($issueComments + $reviewActivity)
+                $commits = @(Get-CommitsForPR -Number $number)
+            }
             $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
             $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
 
@@ -214,7 +223,7 @@ function Invoke-AutoRerunCandidateScan {
             # exact declined head so a push racing the marker write always re-qualifies,
             # even when the commit timestamp predates the marker timestamp.
             if (-not $alreadyPresent -and $hasDeclinedMarker) {
-                $lastDecline = Get-LatestScannerDecline -Comments $activity
+                $lastDecline = Get-LatestScannerDecline -Comments $issueComments
                 if ($lastDecline) {
                     $result = Resolve-AutonomousRerunEligibility `
                         -Comments $activity `

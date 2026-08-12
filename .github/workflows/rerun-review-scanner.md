@@ -222,18 +222,45 @@ safe-outputs:
               async function markDeclined(prNumber, headSha) {
                 if (dryRun) { core.info(`[dry-run] Would record ${declinedLabel.name} for PR #${prNumber} at ${headSha}`); return; }
                 await ensureDeclinedLabel();
-                const marker = await github.rest.issues.createComment({
-                  owner, repo,
-                  issue_number: prNumber,
-                  body: `<!-- agent-rerun-declined:${headSha} -->\nAutomated rerun scanner checkpoint for declined head \`${headSha.slice(0, 12)}\`.`,
-                });
-                try {
-                  await github.graphql(
-                    'mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}',
-                    { id: marker.data.node_id },
-                  );
-                } catch (e) {
-                  core.warning(`Recorded decline head for PR #${prNumber}, but could not minimize marker comment: ${e.message}`);
+                const issue = await github.rest.issues.get({ owner, repo, issue_number: prNumber });
+                const alreadyLabelled = issue.data.labels.some(
+                  label => (typeof label === 'string' ? label : label.name) === declinedLabel.name,
+                );
+
+                const markerText = `<!-- agent-rerun-declined:${headSha} -->`;
+                const existing = await github.graphql(
+                  `query($owner:String!,$repo:String!,$number:Int!){
+                    repository(owner:$owner,name:$repo){
+                      pullRequest(number:$number){
+                        comments(last:100){nodes{id body}}
+                      }
+                    }
+                  }`,
+                  { owner, repo, number: prNumber },
+                );
+                const existingMarker = existing.repository.pullRequest.comments.nodes.find(
+                  comment => comment.body.includes(markerText),
+                );
+
+                if (alreadyLabelled && existingMarker) {
+                  core.info(`${declinedLabel.name} already records unchanged head ${headSha} for PR #${prNumber}`);
+                  return;
+                } else if (existingMarker) {
+                  core.info(`Decline marker for PR #${prNumber} at ${headSha} already exists; restoring its label only.`);
+                } else {
+                  const marker = await github.rest.issues.createComment({
+                    owner, repo,
+                    issue_number: prNumber,
+                    body: `${markerText}\nAutomated rerun scanner checkpoint for declined head \`${headSha.slice(0, 12)}\`.`,
+                  });
+                  try {
+                    await github.graphql(
+                      'mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}',
+                      { id: marker.data.node_id },
+                    );
+                  } catch (e) {
+                    core.warning(`Recorded decline head for PR #${prNumber}, but could not minimize marker comment: ${e.message}`);
+                  }
                 }
                 await github.rest.issues.addLabels({
                   owner, repo,
@@ -249,8 +276,11 @@ safe-outputs:
                   await github.rest.issues.removeLabel({ owner, repo, issue_number: prNumber, name: declinedLabel.name });
                   core.info(`Removed ${declinedLabel.name} from PR #${prNumber}`);
                 } catch (e) {
-                  if (e.status === 404) { return; }
-                  throw new Error(`Failed to remove ${declinedLabel.name} from PR #${prNumber}: ${e.message}`);
+                  if (e.status === 404) {
+                    core.info(`${declinedLabel.name} already absent on PR #${prNumber}`);
+                  } else {
+                    core.warning(`Could not remove advisory label ${declinedLabel.name} from PR #${prNumber}; continuing dispatch: ${e.message}`);
+                  }
                 }
               }
 

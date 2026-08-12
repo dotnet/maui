@@ -29,11 +29,7 @@ jobs:
     permissions:
       contents: read
       issues: write
-      # pull-requests: write (not read) is required to apply s/agent-ready-for-rerun
-      # in the "Auto-label rerun-ready PRs" step below — adding a label to a PR is a
-      # write to the PR resource, so pull-requests: read yields HTTP 403. This mirrors
-      # the permissions of review-trigger.yml's mark-rerun-ready job.
-      pull-requests: write
+      pull-requests: read
       repository-projects: read
     steps:
       - uses: actions/checkout@v4

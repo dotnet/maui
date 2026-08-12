@@ -132,6 +132,26 @@ Context 'bounded scan metadata' {
         $workflow = Get-Content -Raw -LiteralPath $workflowPath
         $workflow | Should -Match '(?s)Validate auto-rerun labeler \(dry-run\).*?-DryRun\s+\\\s*\r?\n\s*-Limit 5\s+\\'
     }
+
+    It 'keeps the scheduled queue job at pull-request read permission' {
+        $workflow = Get-Content -Raw -LiteralPath $workflowPath
+        $generateJob = [regex]::Match($workflow, '(?s)  generate-report:.*?^  validate:', 'Multiline').Value
+        $generateJob | Should -Match 'pull-requests:\s+read'
+        $generateJob | Should -Not -Match 'pull-requests:\s+write'
+    }
+}
+
+Context 'API request bounding' {
+    It 'does not fetch review or commit history for a PR without an AI Summary' {
+        $script:prList = @(New-TestPR -Number 10)
+
+        Invoke-TestScan
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.decisions[0].reason | Should -Be 'no-ai-summary'
+        @($script:ghCalls | Where-Object { $_ -match '/issues/10/comments' }).Count | Should -Be 1
+        @($script:ghCalls | Where-Object { $_ -match '/pulls/10/(reviews|comments|commits)' }).Count | Should -Be 0
+    }
 }
 
 Context 'error aggregation' {
@@ -259,10 +279,39 @@ Context 'scanner decline checkpoint' {
             Should -BeLessThan $scanner.IndexOf('await github.rest.actions.createWorkflowDispatch({')
     }
 
+    It 'makes decline marking idempotent across partial failures' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $markDeclined = [regex]::Match(
+            $scanner,
+            '(?s)async function markDeclined\(prNumber, headSha\).*?async function clearDeclined'
+        ).Value
+
+        $markDeclined.IndexOf('if (alreadyLabelled && existingMarker)') |
+            Should -BeLessThan $markDeclined.IndexOf('issues.createComment({')
+        $markDeclined.IndexOf('if (existingMarker)') |
+            Should -BeLessThan $markDeclined.IndexOf('issues.createComment({')
+        $markDeclined | Should -Match 'rest\.issues\.addLabels'
+    }
+
+    It 'keeps advisory decline cleanup best-effort before dispatch' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $clearDeclined = [regex]::Match(
+            $scanner,
+            '(?s)async function clearDeclined\(prNumber\).*?\n\s+for \(const a of actions\)'
+        ).Value
+
+        $clearDeclined | Should -Match 'core\.warning'
+        $clearDeclined | Should -Not -Match 'throw new Error'
+        $scanner.IndexOf('await clearDeclined(prNumber);') |
+            Should -BeLessThan $scanner.IndexOf('await github.rest.actions.createWorkflowDispatch({')
+    }
+
     It 'clears the decline label in the shared review entrypoint before acquiring the review lock' {
         $reviewTrigger = Get-Content -Raw -LiteralPath $reviewTriggerPath
         $reviewTrigger.IndexOf('$declineCleared = Clear-AgentRerunDeclined') |
             Should -BeLessThan $reviewTrigger.IndexOf('$locked = Set-AgentReviewInProgress')
+        $reviewTrigger | Should -Match '::warning::Could not clear s/agent-rerun-declined'
+        $reviewTrigger | Should -Not -Match 'throw "Failed to clear s/agent-rerun-declined'
     }
 
     It 'keeps scanner decline-label metadata aligned with the shared definition' {
