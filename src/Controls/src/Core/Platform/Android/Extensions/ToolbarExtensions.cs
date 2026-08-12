@@ -261,8 +261,18 @@ namespace Microsoft.Maui.Controls.Platform
 		static ColorStateList? GetDefaultTitleTextColor(AToolbar nativeToolbar)
 		{
 			var context = nativeToolbar.Context?.GetThemedContext();
-			return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
-				Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				var colorContext = context is null
+				 ? null
+				 : ColorStateList.ValueOf(new global::Android.Graphics.Color(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface)));
+				return colorContext;
+			}
+			else
+			{
+				return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
+				 Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+			}
 		}
 
 		static int? GetDefaultNavigationIconColor(AToolbar nativeToolbar)
@@ -271,6 +281,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (context is null)
 			{
 				return null;
+			}
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				return context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
 			}
 
 			using var icon = new DrawerArrowDrawable(context);
