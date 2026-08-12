@@ -248,16 +248,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static Color? GetDefaultForegroundColor()
-		{
-			return Application.Current?.RequestedTheme switch
-			{
-				ApplicationModel.AppTheme.Light => Colors.Black,
-				ApplicationModel.AppTheme.Dark => Colors.White,
-				_ => null
-			};
-		}
-
 		static ColorStateList? GetDefaultTitleTextColor(AToolbar nativeToolbar)
 		{
 			var context = nativeToolbar.Context?.GetThemedContext();
@@ -299,7 +289,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor ?? GetDefaultForegroundColor();
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
 			if (iconColor is null)
 			{
 				overflowIcon.ClearColorFilter();
