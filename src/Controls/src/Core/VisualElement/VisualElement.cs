@@ -1185,7 +1185,10 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChanged(value);
+				// Use key-only propagation with an on-demand resolver to avoid resolving lazy resources (issue #35500).
+				OnResourcesChangedKeys(
+					value?.MergedResourcesKeys,
+					key => value is not null && value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -1610,8 +1613,9 @@ namespace Microsoft.Maui.Controls
 
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				if (innerKeys.Add(value.Key))
@@ -1638,10 +1642,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// Build a set of keys we already have in our resources (child takes precedence)
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
@@ -1693,10 +1698,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// Build a set of keys we already have in our resources (child takes precedence)
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
