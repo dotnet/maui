@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IPlatformViewHandler _renderer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Binding context is unsubscribed from PropertyChanged and cleared in Disconnect.")]
 		object _bindingContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Resources changed listener is removed and the reference cleared in Disconnect.")]
 		IElementDefinition _viewResource;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Measure callback is cleared in Disconnect before the cell is released.")]
