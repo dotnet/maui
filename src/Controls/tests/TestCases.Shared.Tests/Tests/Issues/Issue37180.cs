@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void LabelBackgroundClearsWhenSetToNull()
 		{
 			App.WaitForElement("BackgroundLabel");
+			VerifyScreenshot("Issue37180_RedBackground");
 			App.Tap("SetBackgroundButton");
 			VerifyScreenshot("NoBackground");
 		}
