@@ -46,6 +46,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	static readonly nfloat SilentResetThreshold = 10f;
 
 	// KVO observer token for contentOffset — active while the view is attached to a window.
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared when the view is detached from its window or the view is disposed.")]
 	IDisposable? _contentOffsetObserver;
 
 	internal void SetPendingScrollRestore(int section, int item, UICollectionViewScrollPosition position)
