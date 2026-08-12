@@ -134,63 +134,63 @@ namespace Microsoft.Maui
 				del => del(this, new WindowsPlatformWindowSubclassedEventArgs(WindowHandle)));
 
 			_windowManager.WindowMessage += OnWindowMessage;
+		}
 
-			void OnWindowMessage(object? sender, WindowMessageEventArgs e)
+		void OnWindowMessage(object? sender, WindowMessageEventArgs e)
+		{
+			if (e.MessageId == PlatformMethods.MessageIds.WM_GETMINMAXINFO)
 			{
-				if (e.MessageId == PlatformMethods.MessageIds.WM_GETMINMAXINFO)
+				var win = this as IPlatformSizeRestrictedWindow;
+				var minSize = win.MinimumSize;
+				var maxSize = win.MaximumSize;
+
+				var changedMinSize = minSize != DefaultMinimumSize;
+				var changedMaxSize = maxSize != DefaultMaximumSize;
+
+				if (changedMinSize || changedMaxSize)
 				{
-					var win = this as IPlatformSizeRestrictedWindow;
-					var minSize = win.MinimumSize;
-					var maxSize = win.MaximumSize;
+					var rect = Marshal.PtrToStructure<PlatformMethods.MinMaxInfo>(e.LParam);
 
-					var changedMinSize = minSize != DefaultMinimumSize;
-					var changedMaxSize = maxSize != DefaultMaximumSize;
-
-					if (changedMinSize || changedMaxSize)
+					if (changedMinSize)
 					{
-						var rect = Marshal.PtrToStructure<PlatformMethods.MinMaxInfo>(e.LParam);
-
-						if (changedMinSize)
+						var newMinSize = new PlatformMethods.POINT
 						{
-							var newMinSize = new PlatformMethods.POINT
-							{
-								X = Math.Max(minSize.Width, rect.MinTrackSize.X),
-								Y = Math.Max(minSize.Height, rect.MinTrackSize.Y)
-							};
-							rect.MinTrackSize = newMinSize;
-						}
-
-						if (changedMaxSize)
-						{
-							var newMaxSize = new PlatformMethods.POINT
-							{
-								X = Math.Min(maxSize.Width, rect.MaxTrackSize.X),
-								Y = Math.Min(maxSize.Height, rect.MaxTrackSize.Y)
-							};
-							rect.MaxTrackSize = newMaxSize;
-						}
-
-						Marshal.StructureToPtr(rect, e.LParam, true);
+							X = Math.Max(minSize.Width, rect.MinTrackSize.X),
+							Y = Math.Max(minSize.Height, rect.MinTrackSize.Y)
+						};
+						rect.MinTrackSize = newMinSize;
 					}
-				}
-				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
-				{
-					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
+
+					if (changedMaxSize)
 					{
-						var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
-						bool hasTitleBar = PlatformMethods.HasStyle(styleChange.StyleNew, PlatformMethods.WindowStyles.WS_CAPTIONANDSYSTEMMENU);
-
-						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
-						if (rootManager is not null)
+						var newMaxSize = new PlatformMethods.POINT
 						{
-							rootManager?.SetTitleBarVisibility(hasTitleBar);
-						}
+							X = Math.Min(maxSize.Width, rect.MaxTrackSize.X),
+							Y = Math.Min(maxSize.Height, rect.MaxTrackSize.Y)
+						};
+						rect.MaxTrackSize = newMaxSize;
 					}
-				}
 
-				Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
-					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
+					Marshal.StructureToPtr(rect, e.LParam, true);
+				}
 			}
+			else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
+			{
+				if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
+				{
+					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+					bool hasTitleBar = PlatformMethods.HasStyle(styleChange.StyleNew, PlatformMethods.WindowStyles.WS_CAPTIONANDSYSTEMMENU);
+
+					var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
+					if (rootManager is not null)
+					{
+						rootManager?.SetTitleBarVisibility(hasTitleBar);
+					}
+				}
+			}
+
+			Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
+				m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
 		}
 
 		/// <summary>
