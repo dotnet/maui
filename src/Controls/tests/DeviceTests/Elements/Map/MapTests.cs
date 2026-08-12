@@ -120,7 +120,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task UpdatingSingleElementPreservesTrackingForOtherElements()
 		{
 			var map = new Map();
-			await CreateHandlerAsync<Microsoft.Maui.Maps.Handlers.MapHandler>(map);
+			var handler = await CreateHandlerAsync<Microsoft.Maui.Maps.Handlers.MapHandler>(map);
+			var platformView = handler.PlatformView;
 
 			var polyline1 = new Polyline
 			{
@@ -148,7 +149,16 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(polyline1.MapElementId);
 			Assert.NotNull(polyline2.MapElementId);
 
+			var overlaysBefore = await InvokeOnMainThreadAsync(() => platformView.Overlays?.Length);
+			var polyline2IdBefore = polyline2.MapElementId;
+
 			await InvokeOnMainThreadAsync(() => polyline1.Geopath.Add(new Location(47.62, -122.33)));
+
+			// Updating polyline1 must not leak/drop native overlays or disturb polyline2's overlay.
+			var overlaysAfter = await InvokeOnMainThreadAsync(() => platformView.Overlays?.Length);
+			Assert.Equal(overlaysBefore, overlaysAfter);
+			Assert.Same(polyline2IdBefore, polyline2.MapElementId);
+
 			await InvokeOnMainThreadAsync(() => map.MapElements.Clear());
 
 			Assert.Null(polyline1.MapElementId);
