@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		List<APolyline>? _polylines;
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
+		Dictionary<string, IMapElement>? _trackedMapElements;
 		bool _isClusteringEnabled;
 		List<MapCluster>? _clusters;
 		Dictionary<string, MapCluster>? _clusterMarkers;
@@ -117,6 +118,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapReady?.Dispose();
 			_mapReady = null;
+
+			if (_trackedMapElements != null)
+			{
+				foreach (var element in _trackedMapElements.Values)
+					element.MapElementId = null;
+
+				_trackedMapElements = null;
+			}
 
 			_markers = null;
 			_pins = null;
@@ -1125,7 +1134,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polylines != null)
 			{
 				for (int i = 0; i < _polylines.Count; i++)
-					_polylines[i].Remove();
+				{
+					var polyline = _polylines[i];
+					ClearTrackedMapElementId(polyline.Id);
+					polyline.Remove();
+				}
 
 				_polylines = null;
 			}
@@ -1133,7 +1146,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polygons != null)
 			{
 				for (int i = 0; i < _polygons.Count; i++)
-					_polygons[i].Remove();
+				{
+					var polygon = _polygons[i];
+					ClearTrackedMapElementId(polygon.Id);
+					polygon.Remove();
+				}
 
 				_polygons = null;
 			}
@@ -1141,7 +1158,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_circles != null)
 			{
 				for (int i = 0; i < _circles.Count; i++)
-					_circles[i].Remove();
+				{
+					var circle = _circles[i];
+					ClearTrackedMapElementId(circle.Id);
+					circle.Remove();
+				}
 
 				_circles = null;
 			}
@@ -1192,6 +1213,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (nativePolyline != null)
 			{
 				polyline.MapElementId = nativePolyline.Id;
+				TrackMapElement(nativePolyline.Id, polyline);
 				nativePolyline.Clickable = true;
 
 				if (polyline is IMapElement mapElement)
@@ -1224,6 +1246,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			polygon.MapElementId = nativePolygon.Id;
+			TrackMapElement(nativePolygon.Id, polygon);
 			nativePolygon.Clickable = true;
 
 			if (polygon is IMapElement mapElement)
@@ -1255,6 +1278,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			circle.MapElementId = nativeCircle.Id;
+			TrackMapElement(nativeCircle.Id, circle);
 			nativeCircle.Clickable = true;
 
 			if (circle is IMapElement mapElement)
@@ -1264,6 +1288,20 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 
 			_circles.Add(nativeCircle);
+		}
+
+		void TrackMapElement(string nativeId, IMapElement element)
+		{
+			_trackedMapElements ??= new Dictionary<string, IMapElement>();
+			_trackedMapElements[nativeId] = element;
+		}
+
+		void ClearTrackedMapElementId(string nativeId)
+		{
+			if (_trackedMapElements != null && _trackedMapElements.Remove(nativeId, out var element))
+			{
+				element.MapElementId = null;
+			}
 		}
 	}
 

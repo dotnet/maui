@@ -168,6 +168,7 @@ namespace Microsoft.Maui.Handlers
 				if (platformImage is not null)
 				{
 					var iconSize = GetIconSize(Handler);
+					var textColor = item.GetTextColor()?.ToPlatform();
 					int drawableWidth = platformImage.IntrinsicWidth;
 					int drawableHeight = platformImage.IntrinsicHeight;
 
@@ -184,22 +185,8 @@ namespace Microsoft.Maui.Handlers
 						platformImage.SetBounds(0, 0, iconWidth, iconHeight);
 					}
 
-					if (item.Source is IFontImageSource fontImageSource)
-					{
-						if (fontImageSource.Color is not null)
-						{
-							platformImage.SetColorFilter(fontImageSource.Color.ToPlatform(), FilterMode.SrcAtop);
-						}
-						else
-						{
-							var textColor = item.GetTextColor()?.ToPlatform();
-
-							if (textColor is not null)
-							{
-								platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
-							}
-						}
-					}
+					if (textColor != null)
+						platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
 				}
 
 				button.SetCompoundDrawables(null, platformImage, null, null);

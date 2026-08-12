@@ -320,7 +320,18 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public void Add(string prefix, string ns) => namespaces.Add(prefix, ns);
 	}
 
-	public class XamlDataTypeProvider : IXamlDataTypeProvider
+	/// <summary>
+	/// Extended internal interface for <see cref="IXamlDataTypeProvider"/> implementations
+	/// that can report whether the x:DataType was declared directly on the binding node
+	/// (as opposed to being inherited from an ancestor such as a DataTemplate).
+	/// This avoids a concrete cast to <see cref="XamlDataTypeProvider"/> in consumers.
+	/// </summary>
+	internal interface IXamlDataTypeProviderWithBindingNodeInfo : IXamlDataTypeProvider
+	{
+		bool IsDataTypeOnBindingNode { get; }
+	}
+
+	public class XamlDataTypeProvider : IXamlDataTypeProviderWithBindingNodeInfo
 	{
 		public XamlDataTypeProvider(string dataType) => this.dataType = dataType;
 
@@ -369,12 +380,16 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			INode dataTypeNode = null;
 			ElementNode n = node as ElementNode;
+			var firstNode = n;
 
 			// Special handling for BindingContext={Binding ...}
 			// The order of checks is:
 			// - x:DataType on the binding itself
 			// - SKIP looking for x:DataType on the parent
 			// - continue looking for x:DataType on the parent's parent...
+			// Note: skipNode = GetParent(node), so skipNode CANNOT equal firstNode (= node).
+			// The first loop iteration always checks the binding node itself for x:DataType,
+			// regardless of whether it is a BindingContext binding.
 			ElementNode skipNode = null;
 			if (IsBindingContextBinding(node))
 			{
@@ -396,9 +411,21 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 			if (dataTypeNode is ValueNode valueNode)
 				this.dataType = valueNode.Value as string;
+			// Track whether x:DataType was found directly on the binding node, not inherited from
+			// an ancestor (e.g. a DataTemplate). This lets BindingExtension correctly skip the
+			// DataType for RelativeSource bindings whose DataType is only the DataTemplate item type.
+			IsDataTypeOnBindingNode = dataTypeNode != null && n == firstNode;
 		}
 		string dataType;
 		string IXamlDataTypeProvider.BindingDataType => dataType;
+		bool IXamlDataTypeProviderWithBindingNodeInfo.IsDataTypeOnBindingNode => IsDataTypeOnBindingNode;
 		internal HydrationContext Context { get; }
+
+		/// <summary>
+		/// Gets whether the x:DataType was found directly on the binding node itself
+		/// (as opposed to being inherited from an ancestor element such as a DataTemplate).
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal bool IsDataTypeOnBindingNode { get; }
 	}
 }
