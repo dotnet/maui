@@ -107,7 +107,6 @@ namespace Microsoft.Maui
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
 		}
 
-		// Backs VisualTreeChanged with weak references so subscribers can be GC'd without explicit unsubscribe (issue #37242).
 		static readonly WeakEventManager s_visualTreeChangedWeakEventManager = new WeakEventManager();
 
 		/// <summary>
@@ -119,12 +118,16 @@ namespace Microsoft.Maui
 			add
 			{
 				if (value is not null)
+				{
 					s_visualTreeChangedWeakEventManager.AddEventHandler(value);
+				}
 			}
 			remove
 			{
 				if (value is not null)
+				{
 					s_visualTreeChangedWeakEventManager.RemoveEventHandler(value);
+				}
 			}
 		}
 

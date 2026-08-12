@@ -368,7 +368,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_treeEvents.Clear();
 		}
 
-		// Regression tests for https://github.com/dotnet/maui/issues/37242
 		// The static VisualDiagnostics.VisualTreeChanged event must not keep
 		// its subscribers alive; otherwise every page/view that subscribes leaks.
 		class VisualTreeChangedSubscriber
