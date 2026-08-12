@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
 using Xunit;
 
@@ -128,6 +130,433 @@ namespace Microsoft.Maui.UnitTests
 			Assert.False(wasMapper2Called);
 		}
 
+		[Fact]
+		public void BatchedPropertyUpdatesAreCoalescedInMapperOrder()
+		{
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["First"] = (handler, view) => mapped.Add("First"),
+				["Second"] = (handler, view) => mapped.Add("Second"),
+			};
+			var handler = new HandlerStub(mapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("Second");
+			handler.UpdateValue("First");
+			handler.UpdateValue("Second");
+
+			Assert.Empty(mapped);
+
+			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
+
+			Assert.Equal(new[] { "First", "Second" }, mapped);
+		}
+
+		[Fact]
+		public void BatchedPropertyUpdatesResolveChainedMapperAtFlushTime()
+		{
+			var mapped = new List<string>();
+			var chainedMapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapped.Add("original"),
+			};
+			var mapper = new PropertyMapper<IView, HandlerStub>(chainedMapper);
+			var handler = new HandlerStub(mapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			view.BatchBegin();
+			handler.UpdateValue("Value");
+			chainedMapper.AppendToMapping("Value", (handler, view) => mapped.Add("customized"));
+			view.BatchCommit();
+
+			Assert.Equal(new[] { "original", "customized" }, mapped);
+		}
+
+		[Fact]
+		public void BatchedPropertyUpdatesProcessReentrantUpdates()
+		{
+			var mapped = new List<string>();
+			HandlerStub handler = null;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["First"] = (h, view) =>
+				{
+					mapped.Add("First");
+					handler!.UpdateValue("Second");
+				},
+				["Second"] = (h, view) => mapped.Add("Second"),
+			};
+			handler = new HandlerStub(mapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("First");
+			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
+
+			Assert.Equal(new[] { "First", "Second" }, mapped);
+		}
+
+		[Fact]
+		public void BatchCommitFlushesPendingHandlerUpdates()
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var handler = new HandlerStub(mapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			view.BatchBegin();
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+
+			Assert.Equal(0, mapCount);
+
+			view.BatchCommit();
+
+			Assert.Equal(1, mapCount);
+		}
+
+		[Fact]
+		public void AutomaticPropertyUpdatesApplyLeadingValueAndCoalesceTrailingValue()
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+
+			Assert.Equal(1, mapCount);
+			Assert.Equal(1, dispatcher.PendingCount);
+
+			dispatcher.RunNext();
+
+			Assert.Equal(2, mapCount);
+		}
+
+		[Fact]
+		public void AutomaticMeasureInvalidationsAreCoalescedAfterLeadingValue()
+		{
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>
+			{
+				["Value"] = (handler, view) => mapped.Add("Value"),
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => mapped.Add("InvalidateMeasure"),
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateCommandHandlerWithDispatcher(mapper, commandMapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+
+			Assert.Equal(new[] { "Value", "InvalidateMeasure" }, mapped);
+			Assert.Equal(1, dispatcher.PendingCount);
+
+			dispatcher.RunNext();
+
+			Assert.Equal(new[] { "Value", "InvalidateMeasure", "Value", "InvalidateMeasure" }, mapped);
+		}
+
+		[Fact]
+		public void ExplicitBatchCoalescesMeasureInvalidationUntilCommit()
+		{
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>
+			{
+				["Value"] = (handler, view) => mapped.Add("Value"),
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => mapped.Add("InvalidateMeasure"),
+			};
+			var handler = new CommandHandlerStub(mapper, commandMapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			view.BatchBegin();
+			handler.UpdateValue("Value");
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+
+			Assert.Empty(mapped);
+
+			view.BatchCommit();
+
+			Assert.Equal(new[] { "Value", "InvalidateMeasure" }, mapped);
+		}
+
+		[Fact]
+		public void ReentrantMeasureInvalidationRunsAfterReentrantProperties()
+		{
+			var mapped = new List<string>();
+			CommandHandlerStub handler = null;
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>
+			{
+				["First"] = (currentHandler, view) =>
+				{
+					mapped.Add("First");
+					handler!.Invoke(nameof(IView.InvalidateMeasure), null);
+					handler.UpdateValue("Second");
+				},
+				["Second"] = (currentHandler, view) => mapped.Add("Second"),
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (currentHandler, view, args) => mapped.Add("InvalidateMeasure"),
+			};
+			handler = new CommandHandlerStub(mapper, commandMapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("First");
+			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
+
+			Assert.Equal(new[] { "First", "Second", "InvalidateMeasure" }, mapped);
+		}
+
+		[Fact]
+		public void NonMeasureCommandFlushesPendingMeasureInvalidationFirst()
+		{
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>();
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => mapped.Add("InvalidateMeasure"),
+				["Command"] = (handler, view, args) => mapped.Add("Command"),
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateCommandHandlerWithDispatcher(mapper, commandMapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+			handler.Invoke("Command", null);
+
+			Assert.Equal(new[] { "InvalidateMeasure", "Command" }, mapped);
+		}
+
+		[Fact]
+		public void PlatformViewAccessObservesLeadingMeasureInvalidation()
+		{
+			var invalidationCount = 0;
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>();
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => invalidationCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateCommandHandlerWithDispatcher(mapper, commandMapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			invalidationCount = 0;
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+
+			Assert.Equal(1, invalidationCount);
+			Assert.NotNull(handler.PlatformView);
+			Assert.Equal(1, invalidationCount);
+		}
+
+		[Fact]
+		public void DisconnectPreservesLeadingMeasureInvalidation()
+		{
+			var invalidationCount = 0;
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>();
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => invalidationCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateCommandHandlerWithDispatcher(mapper, commandMapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			invalidationCount = 0;
+			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+			((IViewHandler)handler).DisconnectHandler();
+			dispatcher.RunNext();
+
+			Assert.Equal(1, invalidationCount);
+		}
+
+		[Fact]
+		public void PlatformViewAccessFlushesAutomaticPropertyUpdates()
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+
+			Assert.Equal(1, mapCount);
+			Assert.NotNull(handler.PlatformView);
+			Assert.Equal(1, mapCount);
+
+			dispatcher.RunNext();
+
+			Assert.Equal(1, mapCount);
+		}
+
+		[Fact]
+		public void ScheduledAutomaticFlushDoesNotInterruptExplicitBatch()
+		{
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["First"] = (handler, view) => mapped.Add("First"),
+				["Second"] = (handler, view) => mapped.Add("Second"),
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("First");
+			view.BatchBegin();
+			handler.UpdateValue("Second");
+
+			dispatcher.RunNext();
+
+			Assert.Equal(new[] { "First" }, mapped);
+
+			view.BatchCommit();
+
+			Assert.Equal(new[] { "First", "Second" }, mapped);
+		}
+
+		[Fact]
+		public void EmptyExplicitBatchClearsPreservedAutomaticLeadingState()
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+			view.BatchBegin();
+			dispatcher.RunNext();
+			view.BatchCommit();
+			handler.UpdateValue("Value");
+
+			Assert.Equal(2, mapCount);
+			Assert.Equal(1, dispatcher.PendingCount);
+		}
+
+		[Fact]
+		public void DisconnectDiscardsTrailingAutomaticPropertyUpdates()
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+			((IViewHandler)handler).DisconnectHandler();
+			dispatcher.RunNext();
+
+			Assert.Equal(1, mapCount);
+		}
+
+		static HandlerStub CreateHandlerWithDispatcher(
+			PropertyMapper mapper,
+			IDispatcher dispatcher)
+		{
+			var collection = new MauiHandlersCollection();
+			collection.TryAddSingleton<IMauiHandlersFactory>(new MauiHandlersFactory(collection));
+			collection.TryAddSingleton(dispatcher);
+
+			var handler = new HandlerStub(mapper);
+			handler.SetMauiContext(new HandlersContextStub(new MauiFactory(collection)));
+			return handler;
+		}
+
+		static CommandHandlerStub CreateCommandHandlerWithDispatcher(
+			PropertyMapper mapper,
+			CommandMapper commandMapper,
+			IDispatcher dispatcher)
+		{
+			var collection = new MauiHandlersCollection();
+			collection.TryAddSingleton<IMauiHandlersFactory>(new MauiHandlersFactory(collection));
+			collection.TryAddSingleton(dispatcher);
+
+			var handler = new CommandHandlerStub(mapper, commandMapper);
+			handler.SetMauiContext(new HandlersContextStub(new MauiFactory(collection)));
+			return handler;
+		}
+
+		class CommandHandlerStub : ViewHandler<Maui.Controls.Button, object>
+		{
+			public CommandHandlerStub(PropertyMapper mapper, CommandMapper commandMapper)
+				: base(mapper, commandMapper)
+			{
+			}
+
+			protected override object CreatePlatformView() =>
+				new();
+		}
+
 		class CustomNativeButton : object
 		{
 
@@ -136,6 +565,44 @@ namespace Microsoft.Maui.UnitTests
 		class CustomButton : Maui.Controls.Button
 		{
 
+		}
+
+		class AlwaysBatchingButton : Maui.Controls.Button, IPropertyUpdateBatchingElement
+		{
+			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingEnabled => true;
+
+			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingExplicitlyScoped => true;
+		}
+
+		class AutomaticBatchingButton : Maui.Controls.Button, IPropertyUpdateBatchingElement
+		{
+			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingEnabled => true;
+
+			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingExplicitlyScoped => Batched;
+		}
+
+		class QueuedDispatcher : IDispatcher
+		{
+			readonly Queue<Action> _pending = new();
+
+			public bool IsDispatchRequired => false;
+
+			public int PendingCount => _pending.Count;
+
+			public bool Dispatch(Action action)
+			{
+				_pending.Enqueue(action);
+				return true;
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) =>
+				Dispatch(action);
+
+			public IDispatcherTimer CreateTimer() =>
+				throw new NotSupportedException();
+
+			public void RunNext() =>
+				_pending.Dequeue().Invoke();
 		}
 
 		[Fact]

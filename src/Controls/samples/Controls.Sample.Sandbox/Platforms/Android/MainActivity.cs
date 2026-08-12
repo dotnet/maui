@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Platform
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode)]
 	[IntentFilter(
 		new[] { Microsoft.Maui.ApplicationModel.Platform.Intent.ActionAppAction },
-		Categories = new[] { Android.Content.Intent.CategoryDefault })]
+		Categories = new[] { global::Android.Content.Intent.CategoryDefault })]
 	[Register("com.microsoft.maui.sandbox.MainActivity")]
 	public class MainActivity : MauiAppCompatActivity
 	{

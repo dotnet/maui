@@ -18,7 +18,11 @@ namespace Microsoft.Maui.Handlers
 
 		public new TPlatformView PlatformView
 		{
-			get => (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+			get
+			{
+				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				return (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
+			}
 			private set => base.PlatformView = value;
 		}
 
@@ -30,7 +34,14 @@ namespace Microsoft.Maui.Handlers
 
 		IElement? IElementHandler.VirtualView => base.VirtualView;
 
-		object? IElementHandler.PlatformView => base.PlatformView;
+		object? IElementHandler.PlatformView
+		{
+			get
+			{
+				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				return base.PlatformView;
+			}
+		}
 
 		protected abstract TPlatformView CreatePlatformElement();
 
