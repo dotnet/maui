@@ -51,15 +51,20 @@ namespace Microsoft.Maui.Controls
 		internal override void ForceFinish()
 		{
 			if (HasFinished)
-			{
 				return;
-			}
 
 			HasFinished = true;
 
 			// The tweeners use long.MaxValue for in-band signaling that they should
 			// jump to the end of the animation 
-			_ = _step.Invoke(long.MaxValue);
+			try
+			{
+				_ = _step.Invoke(long.MaxValue);
+			}
+			finally
+			{
+				Finished?.Invoke();
+			}
 		}
 	}
 

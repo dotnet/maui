@@ -117,23 +117,15 @@ namespace Microsoft.Maui.Animations
 		{
 			if (_disposedValue)
 			{
-				return;
-			}
+				_disposedValue = true;
 
-			_disposedValue = true;
+				if (disposing)
+				{
+					ForceFinishAnimations();
 
-			if (!disposing)
-			{
-				return;
-			}
-
-			Ticker.Fire -= OnFire;
-			End();
-			_animations.Clear();
-
-			if (Ticker is IDisposable disposable)
-			{
-				disposable.Dispose();
+					if (Ticker is IDisposable disposable)
+						disposable.Dispose();
+				}
 			}
 		}
 
