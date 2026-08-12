@@ -376,10 +376,11 @@ namespace Microsoft.Maui.Animations
 
 		internal virtual void ForceFinish()
 		{
-			if (Progress < 1.0)
-			{
-				Update(1.0);
-			}
+			if (HasFinished)
+				return;
+
+			Update(1.0);
+			Finished?.Invoke();
 		}
 	}
 }
