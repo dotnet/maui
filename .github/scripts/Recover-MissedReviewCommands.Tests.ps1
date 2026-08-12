@@ -265,8 +265,6 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         }
         Mock Test-ReviewOptionLoginTrusted { $true }
         Mock Invoke-ReviewWorkflowDispatch
-        Mock Add-ReviewRecoveryMarker { $true }
-        Mock Hide-ReviewCommandComment { $true }
     }
 
     It 'dispatches an authorized unprocessed command with its original options' {
@@ -280,12 +278,7 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
             $CommentId -eq 5209319531 -and
             $CommentNodeId -eq 'IC_5209319531'
         }
-        Should -Invoke Add-ReviewRecoveryMarker -Times 1 -Exactly -ParameterFilter {
-            $CommentId -eq 5209319531
-        }
-        Should -Invoke Hide-ReviewCommandComment -Times 1 -Exactly -ParameterFilter {
-            $NodeId -eq 'IC_5209319531'
-        }
+        $result.Recovered[0].AcknowledgementPending | Should -BeTrue
     }
 
     It 'does not dispatch minimized commands' {
@@ -321,9 +314,8 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
 
         $result.Recovered.Count | Should -Be 1
         $result.Recovered[0].DryRun | Should -BeTrue
+        $result.Recovered[0].AcknowledgementPending | Should -BeFalse
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
-        Should -Invoke Add-ReviewRecoveryMarker -Times 0 -Exactly
-        Should -Invoke Hide-ReviewCommandComment -Times 0 -Exactly
     }
 
     It 'passes the deployment epoch through candidate selection' {
@@ -335,14 +327,12 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 0 -Exactly
     }
 
-    It 'continues the batch when immediate acknowledgement fails' {
+    It 'dispatches the full batch while the serialized workflow owns acknowledgement' {
         $secondComment = New-RecoveryTestComment `
             -Id 5209319532 `
             -Body '/review ios' `
             -CreatedAt '2026-08-06T21:29:00Z'
         Mock Get-RecentIssueComments { @($script:Comment, $secondComment) }
-        Mock Add-ReviewRecoveryMarker { $false }
-        Mock Hide-ReviewCommandComment { $false }
 
         $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
 
@@ -351,14 +341,11 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 2 -Exactly
     }
 
-    It 'accepts minimized state when the reaction marker write fails' {
-        Mock Add-ReviewRecoveryMarker { $false }
-
-        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
-
-        $result.Recovered.Count | Should -Be 1
-        $result.Recovered[0].AcknowledgementPending | Should -BeFalse
-        Should -Invoke Hide-ReviewCommandComment -Times 1 -Exactly
+    It 'does not acknowledge in the scanner before the serialized trigger workflow runs' {
+        $scriptText = Get-Content -Raw -LiteralPath $script:RecoverScriptPath
+        $scriptText | Should -Not -Match 'function Add-ReviewRecoveryMarker'
+        $scriptText | Should -Not -Match 'function Hide-ReviewCommandComment'
+        $scriptText | Should -Match 'serialized review-trigger workflow will acknowledge'
     }
 }
 
@@ -405,10 +392,11 @@ Describe 'review trigger recovery workflow safety' {
         $script:RecoveryWorkflow | Should -Match '(?m)^          persist-credentials: false$'
     }
 
-    It 'uses only the permissions needed to poll, dispatch, and mark comments' {
+    It 'uses only the permissions needed to poll and dispatch' {
         $script:RecoveryWorkflow | Should -Match '(?m)^      actions: write$'
         $script:RecoveryWorkflow | Should -Match '(?m)^      contents: read$'
-        $script:RecoveryWorkflow | Should -Match '(?m)^      issues: write$'
+        $script:RecoveryWorkflow | Should -Match '(?m)^      issues: read$'
+        $script:RecoveryWorkflow | Should -Not -Match '(?m)^      issues: write$'
         $script:RecoveryWorkflow | Should -Match '(?m)^      pull-requests: read$'
         $script:RecoveryWorkflow | Should -Not -Match 'id-token: write'
     }

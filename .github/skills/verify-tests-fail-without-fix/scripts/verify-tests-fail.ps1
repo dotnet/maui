@@ -1044,28 +1044,45 @@ function Get-TestResultFromOutput {
                 # final "Failed TestName [duration]" blocks for runners without live output.
                 # (build 14907252, PR #37176: the fix made the Android case pass, while the
                 # only two remaining failures were iOS/MacCatalyst NETSDK1178 on Linux.)
-                $xunitFailurePattern = '(?ms)^\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?\n.*?(?=^\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?$|^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
+                $xunitFailurePattern = '(?ms)^\s*\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?\n.*?(?=^\s*\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?$|^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
                 $failedCaseBlocks = @([regex]::Matches($content, $xunitFailurePattern))
                 if ($failedCaseBlocks.Count -eq 0) {
                     $summaryFailurePattern = '(?ms)^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?\n.*?(?=^\s*(?:Failed|Passed|Skipped)\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
                     $failedCaseBlocks = @([regex]::Matches($content, $summaryFailurePattern))
                 }
 
-                # A native-library marker is environmental only when it accounts for every
-                # failed case. A mixed run can contain one DllNotFoundException plus an
-                # unrelated assertion/NRE; treating the whole class as infrastructure would
-                # hide the genuine failure. Use the same all-failed-cases guard as the
-                # workload-pack and snapshot-size classifications below.
+                # A native-library marker is environmental only when every failed case is
+                # either the direct DllNotFoundException or a downstream missing-output
+                # cascade from that failure. Requiring the literal native marker in every
+                # block rejects real cascades, while trusting a whole-log marker when no
+                # failed block parsed can hide an unrelated assertion.
                 $nativeLibFailurePattern = '(?is)(?:DllNotFoundException.{0,240}Unable to load|Unable to load (?:shared library|DLL))'
                 $nativeLibFailureBlocks = @($failedCaseBlocks | Where-Object { $_.Value -match $nativeLibFailurePattern })
-                $nativeLibFailureCount = $nativeLibFailureBlocks.Count
+                # Resizetizer's follow-on verification uses this exact output-existence
+                # assertion after a libSkiaSharp generation step fails. Keep both the
+                # message and suite guard narrow: a missing-file failure in an unrelated
+                # test can be a real regression even if the log contains an optional
+                # native-library warning.
+                $nativeLibCascadePattern = '(?is)\bFile did not exist:\s*[^\r\n]+'
+                $nativeLibCascadeEligible = (
+                    $content -match '(?i)\blibSkiaSharp\b' -and
+                    ($TestFilter -match '(?i)(?:Resizetiz|GenerateSplash)' -or
+                     $content -match '(?i)(?:Resizetiz|GenerateSplash)')
+                )
+                $nativeLibCascadeBlocks = @($failedCaseBlocks | Where-Object {
+                    $nativeLibCascadeEligible -and
+                    $_.Value -notmatch $nativeLibFailurePattern -and
+                    $_.Value -match $nativeLibCascadePattern
+                })
                 $allFailedCasesAreNativeLib = (
                     $failedCaseBlocks.Count -eq $deviceFailCount -and
-                    $nativeLibFailureCount -eq $deviceFailCount
+                    $nativeLibFailureBlocks.Count -gt 0 -and
+                    ($nativeLibFailureBlocks.Count + $nativeLibCascadeBlocks.Count) -eq $deviceFailCount
                 )
-                if ($failedCaseBlocks.Count -eq 0 -and $deviceFailCount -eq 1 -and $hasNativeLibLoadFailure) {
-                    $nativeLibFailureCount = 1
-                    $allFailedCasesAreNativeLib = $true
+                $nativeLibFailureCount = if ($allFailedCasesAreNativeLib) {
+                    $deviceFailCount
+                } else {
+                    $nativeLibFailureBlocks.Count
                 }
 
                 if ($failedCaseBlocks.Count -eq $deviceFailCount) {

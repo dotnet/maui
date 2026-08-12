@@ -148,8 +148,8 @@ Describe 'review trigger hardening' {
         $script:MatchJob | Should -Match '(?m)^      proceed: \$\{\{ steps\.gate\.outputs\.proceed \}\}$'
         $script:MatchJob | Should -Match '(?m)^      - name: Check actor permission$'
         $script:MatchJob | Should -Match 'ACTOR: \$\{\{ github\.actor \}\}'
-        $script:MatchJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \}\}'
-        $script:MatchJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \|\| inputs\.source_comment_id \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \|\| inputs\.source_comment_node_id \}\}'
         $script:MatchJob | Should -Match 'REPO: \$\{\{ github\.repository \}\}'
         $script:MatchJob | Should -Match 'Permission lookup failed.*treating the caller as unauthorized'
         $script:MatchJob | Should -Match 'PERMISSION="none"'
@@ -158,6 +158,10 @@ Describe 'review trigger hardening' {
     }
 
     It 'skips delayed webhook deliveries already handled by recovery' {
+        $script:MatchJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \|\| inputs\.source_comment_id \}\}'
+        $script:MatchJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \|\| inputs\.source_comment_node_id \}\}'
+        $script:MatchJob | Should -Match 'PR_NUMBER: \$\{\{ github\.event\.issue\.number \|\| inputs\.pr_number \}\}'
+        $script:MatchJob | Should -Match 'Recovery source comment identity or command validation failed; skipping dispatch'
         $script:MatchJob | Should -Match 'issues/comments/\$\{COMMENT_ID\}/reactions\?per_page=100'
         $script:MatchJob | Should -Match 'gh api --paginate --slurp'
         $script:MatchJob | Should -Match "jq -e '\.\[\]\[\] \| select"
@@ -166,6 +170,24 @@ Describe 'review trigger hardening' {
         $script:MatchJob | Should -Match 'IssueComment\{isMinimized\}'
         $script:MatchJob | Should -Match 'already minimized by recovery; skipping delayed duplicate delivery'
         $script:MatchJob | Should -Match '(?m)^          for attempt in 1 2 3; do$'
+        $script:MatchJob | Should -Match 'Recovery source comment is still unacknowledged; proceeding with dispatch'
+        $script:MatchJob | Should -Not -Match 'workflow_dispatch — skipping collaborator check'
+    }
+
+    It 'rechecks recovery acknowledgement after job concurrency and before the review lock' {
+        $script:TriggerJob | Should -Match 'COMMENT_ID: \$\{\{ inputs\.source_comment_id \}\}'
+        $script:TriggerJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ inputs\.source_comment_node_id \}\}'
+        $script:TriggerJob | Should -Match 'any\(\.\[\]\[\]; \.content == "rocket"'
+        $script:TriggerJob | Should -Match 'already acknowledged by an earlier serialized run'
+
+        $dedupeIndex = $script:TriggerJob.IndexOf('# The job concurrency group serializes recovery dispatches')
+        $labelReadIndex = $script:TriggerJob.IndexOf('$labels = Get-AgentLabels')
+        $lockWriteIndex = $script:TriggerJob.IndexOf('$locked = Set-AgentReviewInProgress')
+
+        $dedupeIndex | Should -BeGreaterOrEqual 0
+        $labelReadIndex | Should -BeGreaterThan $dedupeIndex
+        $lockWriteIndex | Should -BeGreaterThan $dedupeIndex
+        $script:TriggerJob | Should -Match "(?m)^        if: steps\.review_lock\.outputs\.locked != 'true'$"
     }
 
     It 'stops trigger-review extraction at the next top-level job' {
@@ -211,6 +233,44 @@ Describe 'review trigger hardening' {
         $script:TriggerJob | Should -Match 'COMMENT_ID: \$\{\{ github\.event\.comment\.id \|\| inputs\.source_comment_id \}\}'
         $script:TriggerJob | Should -Match 'COMMENT_NODE_ID: \$\{\{ github\.event\.comment\.node_id \|\| inputs\.source_comment_node_id \}\}'
         $script:TriggerJob | Should -Match 'Recovery source comment identity or command validation failed'
+        $script:TriggerJob | Should -Match 'is_recoverable_review_command'
+        $script:TriggerJob | Should -Match 'jq -Rrs'
+        $script:TriggerJob | Should -Match 'ascii_downcase'
+    }
+
+    It 'validates recovery commands with whole-body trim and case-insensitive matching' -TestCases @(
+        @{ Body = '/review'; Expected = 'true' }
+        @{ Body = '/REVIEW'; Expected = 'true' }
+        @{ Body = "`n/review"; Expected = 'true' }
+        @{ Body = "  `n/ReViEw -p ios`n"; Expected = 'true' }
+        @{ Body = '/review tests'; Expected = 'false' }
+        @{ Body = "`n/REVIEW RERUN"; Expected = 'false' }
+        @{ Body = 'please /review'; Expected = 'false' }
+    ) {
+        param($Body, $Expected)
+
+        if (-not (Get-Command bash -ErrorAction SilentlyContinue) -or
+            -not (Get-Command jq -ErrorAction SilentlyContinue)) {
+            Set-ItResult -Skipped -Because 'bash and jq are required'
+            return
+        }
+
+        $functionMatch = [regex]::Match(
+            $script:TriggerJob,
+            '(?ms)^            is_recoverable_review_command\(\) \{\r?\n.*?^            \}')
+        $functionMatch.Success | Should -BeTrue
+        $functionBody = (($functionMatch.Value -split "`n") |
+            ForEach-Object { $_ -replace '^            ', '' }) -join "`n"
+        $validator = $functionBody + "`n" + @'
+if is_recoverable_review_command "$1"; then
+  printf 'true'
+else
+  printf 'false'
+fi
+'@
+
+        (& bash -c $validator 'review-validator' $Body | Out-String).Trim() |
+            Should -BeExactly $Expected
     }
 
     It 'posts a visible start notice only after AzDO returns a valid build id' {

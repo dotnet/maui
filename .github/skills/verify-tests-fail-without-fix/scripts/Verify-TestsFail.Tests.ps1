@@ -315,6 +315,64 @@ Test Run Failed.
         Remove-Item -LiteralPath $log -Force
     }
 
+    It 'treats missing-output failures downstream of a native-load failure as one environment cascade' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests.GenerateImage [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+[xUnit.net 00:00:01.44]     ResizetizeImagesTests.VerifyGeneratedImage [FAIL]
+      Xunit.Sdk.TrueException: File did not exist: /tmp/output/resized.png
+  Failed!  - Failed:     2, Passed:     1, Skipped:     0, Total:     3
+  Test Run Failed.
+  Total tests: 3
+       Passed: 1
+       Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
+        $r.Passed                | Should -BeFalse
+        $r.NativeLibLoadFailure  | Should -BeTrue
+        $r.NativeLibFailureCount | Should -Be 2
+        $r.FailCount             | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not hide an unrelated missing-output regression beside a native-load failure' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     UnrelatedTests.OptionalNativeFeature [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+[xUnit.net 00:00:01.44]     UnrelatedTests.RealOutputRegression [FAIL]
+      Xunit.Sdk.TrueException: File did not exist: /tmp/output/required.txt
+  Failed!  - Failed:     2, Passed:     1, Skipped:     0, Total:     3
+  Test Run Failed.
+  Total tests: 3
+       Passed: 1
+       Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'UnrelatedTests'
+        $r.Passed                | Should -BeFalse
+        $r.EnvError              | Should -Not -BeTrue
+        $r.NativeLibLoadFailure  | Should -Not -BeTrue
+        $r.NativeLibFailureCount | Should -Be 1
+        $r.FailCount             | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'does not trust an incidental whole-log native marker when the failed case did not parse' {
+        $log = New-LogFile @'
+Optional diagnostics: Unable to load shared library 'libOptionalTelemetry' or one of its dependencies.
+Assert.Equal() Failure: Expected 5, Actual 4
+  Total tests: 2
+       Passed: 1
+       Failed: 1
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'RealRegression'
+        $r.Passed                | Should -BeFalse
+        $r.EnvError              | Should -Not -BeTrue
+        $r.NativeLibLoadFailure  | Should -Not -BeTrue
+        $r.NativeLibFailureCount | Should -Be 0
+        $r.FailCount             | Should -Be 1
+        Remove-Item -LiteralPath $log -Force
+    }
+
     # SAFETY counterpart: a MIXED pass+fail run whose failures are GENUINE managed assertions
     # (no native lib in the log) must NOT be annotated, so a real regression is never masked by
     # the both-states native-lib exclusion. (#36653 DpiPathTests: NullReference/ArgumentNull —

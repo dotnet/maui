@@ -90,15 +90,44 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ACTOR: ${{ github.actor }}
-          COMMENT_ID: ${{ github.event.comment.id }}
-          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+          COMMENT_ID: ${{ github.event.comment.id || inputs.source_comment_id }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id || inputs.source_comment_node_id }}
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
           REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
+          is_recoverable_review_command() {
+            NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+            [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+          }
+
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
-            echo "workflow_dispatch — skipping collaborator check"
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-            exit 0
+            if [ -z "${COMMENT_ID}" ] && [ -z "${COMMENT_NODE_ID}" ]; then
+              echo "Manual workflow_dispatch — skipping source-comment dedupe and collaborator check"
+              echo "proceed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
+              echo "::warning::Recovery source comment inputs are invalid; skipping dispatch."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! SOURCE_COMMENT=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}" 2>/dev/null); then
+              echo "::warning::Could not read recovery source comment ${COMMENT_ID}; skipping dispatch."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            ACTUAL_NODE_ID=$(echo "${SOURCE_COMMENT}" | jq -r '.node_id // ""')
+            ACTUAL_ISSUE_URL=$(echo "${SOURCE_COMMENT}" | jq -r '.issue_url // ""')
+            SOURCE_BODY=$(echo "${SOURCE_COMMENT}" | jq -r '.body // ""')
+            if [ "${ACTUAL_NODE_ID}" != "${COMMENT_NODE_ID}" ] ||
+               [ "${ACTUAL_ISSUE_URL##*/}" != "${PR_NUMBER}" ] ||
+               ! is_recoverable_review_command "${SOURCE_BODY}"; then
+              echo "::warning::Recovery source comment identity or command validation failed; skipping dispatch."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
           fi
 
           # The scheduled recovery workflow adds a rocket reaction and minimizes
@@ -144,6 +173,12 @@ jobs:
           if [ "${IS_MINIMIZED}" = "true" ]; then
             echo "::notice::Review comment ${COMMENT_ID} was already minimized by recovery; skipping delayed duplicate delivery."
             echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "Recovery source comment is still unacknowledged; proceeding with dispatch."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -358,8 +393,63 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           LABEL_HELPER_PATH: ${{ steps.label_helper.outputs.path }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_ID: ${{ inputs.source_comment_id }}
+          COMMENT_NODE_ID: ${{ inputs.source_comment_node_id }}
+          REPO: ${{ github.repository }}
         run: |
           . $env:LABEL_HELPER_PATH
+
+          # The job concurrency group serializes recovery dispatches for this PR.
+          # Re-check the durable acknowledgement here, after serialization and
+          # immediately before taking the review lock, so a second queued recovery
+          # cannot trigger AzDO after the first run acknowledged the same comment.
+          if ($env:EVENT_NAME -eq 'workflow_dispatch' -and
+              -not [string]::IsNullOrWhiteSpace($env:COMMENT_ID) -and
+              -not [string]::IsNullOrWhiteSpace($env:COMMENT_NODE_ID)) {
+            $reactionsRead = $false
+            $hasRecoveryMarker = $false
+            foreach ($attempt in 1..3) {
+              $markerText = gh api --paginate --slurp `
+                "repos/$($env:REPO)/issues/comments/$($env:COMMENT_ID)/reactions?per_page=100" `
+                --jq 'any(.[][]; .content == "rocket" and .user.login == "github-actions[bot]")' 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                $reactionsRead = $true
+                $hasRecoveryMarker = ([string]$markerText).Trim() -eq 'true'
+                break
+              }
+              Start-Sleep -Seconds $attempt
+            }
+
+            $minimizedRead = $false
+            $isMinimized = $false
+            foreach ($attempt in 1..3) {
+              $minimizedText = gh api graphql `
+                -f 'query=query($id:ID!){node(id:$id){... on IssueComment{isMinimized}}}' `
+                -f "id=$($env:COMMENT_NODE_ID)" `
+                --jq '.data.node.isMinimized' 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                $minimizedRead = $true
+                $isMinimized = ([string]$minimizedText).Trim() -eq 'true'
+                break
+              }
+              Start-Sleep -Seconds $attempt
+            }
+
+            if (-not $reactionsRead -or -not $minimizedRead) {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
+              "Could not safely re-check acknowledgement for source comment $($env:COMMENT_ID)." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+            if ($hasRecoveryMarker -or $isMinimized) {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
+              "Source comment $($env:COMMENT_ID) was already acknowledged by an earlier serialized run." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+          }
+
           $labels = Get-AgentLabels -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
           if ($labels -contains 's/agent-review-in-progress') {
             if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
@@ -667,6 +757,12 @@ jobs:
           # immediate marker/minimize calls failed. Revalidate that identity before
           # mutating the comment so manual dispatch inputs cannot target arbitrary text.
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            is_recoverable_review_command() {
+              NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+              [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+            }
+
             if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
               echo "::warning::Recovery acknowledgement inputs are invalid; leaving the comment unchanged."
               exit 0
@@ -678,11 +774,9 @@ jobs:
             ACTUAL_NODE_ID=$(echo "${SOURCE_COMMENT}" | jq -r '.node_id // ""')
             ACTUAL_ISSUE_URL=$(echo "${SOURCE_COMMENT}" | jq -r '.issue_url // ""')
             SOURCE_BODY=$(echo "${SOURCE_COMMENT}" | jq -r '.body // ""')
-            TRIMMED_BODY=$(printf '%s' "${SOURCE_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
             if [ "${ACTUAL_NODE_ID}" != "${COMMENT_NODE_ID}" ] ||
                [ "${ACTUAL_ISSUE_URL##*/}" != "${PR_NUMBER}" ] ||
-               [[ ! "${TRIMMED_BODY}" =~ ^/review([[:space:]]|$) ]] ||
-               [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]; then
+               ! is_recoverable_review_command "${SOURCE_BODY}"; then
               echo "::warning::Recovery source comment identity or command validation failed; leaving it unchanged."
               exit 0
             fi

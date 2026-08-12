@@ -314,51 +314,6 @@ function Invoke-ReviewWorkflowDispatch {
     }
 }
 
-function Add-ReviewRecoveryMarker {
-    param(
-        [string]$Owner,
-        [string]$Repo,
-        [Parameter(Mandatory = $true)][Int64]$CommentId
-    )
-
-    $payloadPath = New-TemporaryFile
-    try {
-        @{ content = $script:RecoveryMarker } |
-            ConvertTo-Json -Compress |
-            Set-Content -LiteralPath $payloadPath -Encoding utf8 -NoNewline
-
-        Invoke-ReviewRecoveryGhApi -Arguments @(
-            '--method', 'POST',
-            "repos/$Owner/$Repo/issues/comments/$CommentId/reactions",
-            '-H', 'Accept: application/vnd.github+json',
-            '--input', $payloadPath
-        ) | Out-Null
-        return $true
-    } catch {
-        Write-Warning "Could not add recovery marker to comment $CommentId`: $(ConvertTo-RecoveryErrorText $_)"
-        return $false
-    } finally {
-        Remove-Item -LiteralPath $payloadPath -Force -ErrorAction SilentlyContinue
-    }
-}
-
-function Hide-ReviewCommandComment {
-    param([Parameter(Mandatory = $true)][string]$NodeId)
-
-    try {
-        $query = 'mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}'
-        $response = Invoke-ReviewRecoveryGhApi -Arguments @(
-            'graphql',
-            '-f', "query=$query",
-            '-f', "id=$NodeId"
-        )
-        return [bool]$response.data.minimizeComment.minimizedComment.isMinimized
-    } catch {
-        Write-Warning "Could not hide recovered review command '$NodeId': $(ConvertTo-RecoveryErrorText $_)"
-        return $false
-    }
-}
-
 function Invoke-MissedReviewCommandRecovery {
     param(
         [string]$Owner = 'dotnet',
@@ -418,7 +373,7 @@ function Invoke-MissedReviewCommandRecovery {
             continue
         }
 
-        $acknowledgementPending = $false
+        $acknowledgementPending = -not $DryRun
         if ($DryRun) {
             Write-Host "[dry-run] Would recover comment $($candidate.CommentId) for PR #$($candidate.PRNumber)."
         } else {
@@ -431,17 +386,7 @@ function Invoke-MissedReviewCommandRecovery {
                 -CommentId $candidate.CommentId `
                 -CommentNodeId $candidate.CommentNodeId
 
-            $marked = Add-ReviewRecoveryMarker `
-                -Owner $Owner `
-                -Repo $Repo `
-                -CommentId $candidate.CommentId
-            $hidden = Hide-ReviewCommandComment -NodeId $candidate.CommentNodeId
-            if (-not $marked -and -not $hidden) {
-                $acknowledgementPending = $true
-                Write-Warning "Dispatched comment $($candidate.CommentId), but immediate acknowledgement failed. The dispatched workflow received the source comment identity and will retry acknowledgement; continuing with the remaining candidates."
-            }
-
-            Write-Host "Recovered comment $($candidate.CommentId) for PR #$($candidate.PRNumber)."
+            Write-Host "Dispatched comment $($candidate.CommentId) for PR #$($candidate.PRNumber); the serialized review-trigger workflow will acknowledge it after dedupe."
         }
 
         $recovered.Add([pscustomobject]@{

@@ -341,11 +341,20 @@ function Add-MissingUITestResultsNote {
     # build/gate" in that case sends them down the wrong path (e.g. PR #36544, whose
     # gate was SKIPPED and whose deep stage failed at the Windows autocrlf merge step).
     # A FAILED gate — or an unknown/absent gate outcome — falls back to the neutral
-    # "fix the build/gate and push again" guidance; only an explicit non-FAILED gate
-    # (PASSED/SKIPPED/INCONCLUSIVE) points at infrastructure.
+    # "fix the build/gate and push again" guidance. TIMEDOUT gets neutral transient
+    # infrastructure wording without claiming that the build passed.
     $gateState = $TrustedGateResult.Trim().ToUpperInvariant()
 
-    if ($gateState -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE')) {
+    if ($gateState -eq 'TIMEDOUT') {
+        $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The trusted gate timed
+> out before producing a definitive result, and the deep UI stage also returned no results.
+> This is usually transient **infrastructure**, but the PR build was not proven either way;
+> inspect the **Gate** section and push again after any confirmed build issue is addressed.
+'@
+    } elseif ($gateState -notin @('PASSED', 'SKIPPED', 'INCONCLUSIVE')) {
         $note = @'
 
 > [!WARNING]

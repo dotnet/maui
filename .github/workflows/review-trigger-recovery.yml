@@ -24,7 +24,7 @@ jobs:
     permissions:
       actions: write
       contents: read
-      issues: write
+      issues: read
       pull-requests: read
     steps:
       # Scheduled workflows execute from the default branch; pin the checked-out

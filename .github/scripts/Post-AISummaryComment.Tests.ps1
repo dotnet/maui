@@ -211,6 +211,17 @@ Describe 'Add-MissingUITestResultsNote' {
         $result | Should -Not -Match 'PR build itself was'
     }
 
+    It 'uses neutral infrastructure guidance when the trusted gate timed out' {
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult 'TIMEDOUT'
+
+        $result | Should -Match 'trusted gate timed'
+        $result | Should -Match '\*\*infrastructure\*\*'
+        $result | Should -Not -Match 'Fix the build/gate issues'
+        $result | Should -Not -Match 'PR build itself was\s+fine'
+    }
+
     It 'does not infer gate state from UI-phase text' {
         $content = "**Detected UI test categories:** ``Picker```nGate Result: PASSED"
         $result = Add-MissingUITestResultsNote -Content $content
