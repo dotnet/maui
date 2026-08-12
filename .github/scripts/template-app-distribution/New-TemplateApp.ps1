@@ -50,6 +50,12 @@ function ConvertTo-XmlEscaped([string]$Value) {
     return [System.Security.SecurityElement]::Escape($Value)
 }
 
+function Set-ProjectElementValue([string]$Content, [string]$Name, [string]$Value) {
+    $elementPattern = "<$([regex]::Escape($Name))>[^<]+</$([regex]::Escape($Name))>"
+    $replacement = "<$Name>$(ConvertTo-XmlEscaped $Value)</$Name>"
+    return ([regex]$elementPattern).Replace($Content, { param($match) $replacement }, 1)
+}
+
 function Set-PlistBooleanFalse([string]$Path, [string]$Key) {
     if (-not (Test-Path $Path)) {
         return
@@ -185,10 +191,10 @@ for ($i = $targetFrameworksMatches.Count - 1; $i -ge 0; $i--) {
     $content = $content.Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
 }
 
-$content = $content -replace "<ApplicationTitle>[^<]+</ApplicationTitle>", "<ApplicationTitle>$(ConvertTo-XmlEscaped $DisplayName)</ApplicationTitle>"
-$content = $content -replace "<ApplicationId>[^<]+</ApplicationId>", "<ApplicationId>$(ConvertTo-XmlEscaped $ApplicationId)</ApplicationId>"
-$content = $content -replace "<ApplicationDisplayVersion>[^<]+</ApplicationDisplayVersion>", "<ApplicationDisplayVersion>$(ConvertTo-XmlEscaped $AppDisplayVersion)</ApplicationDisplayVersion>"
-$content = $content -replace "<ApplicationVersion>[^<]+</ApplicationVersion>", "<ApplicationVersion>$(ConvertTo-XmlEscaped $AppBuildNumber)</ApplicationVersion>"
+$content = Set-ProjectElementValue $content "ApplicationTitle" $DisplayName
+$content = Set-ProjectElementValue $content "ApplicationId" $ApplicationId
+$content = Set-ProjectElementValue $content "ApplicationDisplayVersion" $AppDisplayVersion
+$content = Set-ProjectElementValue $content "ApplicationVersion" $AppBuildNumber
 
 if ($TargetFramework.Contains("-windows", [System.StringComparison]::OrdinalIgnoreCase) -and
     $content -notmatch "RuntimeIdentifierOverride") {

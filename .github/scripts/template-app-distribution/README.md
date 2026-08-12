@@ -16,7 +16,8 @@ App Store / Play account. The build script therefore emits two things:
 - `package_path` — the **store** package (`.aab` / App Store `.ipa` / Mac App Store `.pkg`).
   Consumed only by the Google Play / TestFlight upload steps.
 - `sideload_package_path` — the **directly installable** artifact. This is what the dry-run
-  job and the publish "artifact copy" step upload for testers.
+  job and the publish "artifact copy" step upload for testers. When optional Apple sideload
+  signing is not configured, the publish job intentionally falls back to the store package.
 - `additional_package_path` — an optional extra file uploaded next to the sideload one. Used on
   iOS to include the Simulator `.app` zip alongside the device `.ipa`.
 
@@ -110,4 +111,9 @@ immediately.
 
 If the optional Apple secrets are absent, the workflow still succeeds and simply falls back to
 uploading the store `.ipa` / `.pkg` (which stay TestFlight-only). No secret is ever required for
-the Android and Windows fixes.
+the Android and Windows fixes. If optional Apple signing is configured but its publish, signing,
+or notarization step fails, the build fails instead of silently uploading the non-installable
+store package as though it were a sideload artifact.
+
+Publish builds upload MSBuild binlogs even on failure. Android publishes include separate binlogs
+for the installable APK and the store-critical AAB so a failed Play package build is diagnosable.
