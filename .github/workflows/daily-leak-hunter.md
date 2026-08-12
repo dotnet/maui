@@ -186,14 +186,29 @@ jq -r '.[] | "open scan #\(.scan_issue.number): API \(.rooting_api // "<off-cont
 SHIPPED_MAUI_VERSION=10.0.0
 printf '%s\n' "$SHIPPED_MAUI_VERSION" > /tmp/gh-aw/agent/shipped-maui-version.txt
 REPO_RE=$(printf '%s' "$GITHUB_REPOSITORY" | sed -E 's/[][(){}.^$*+?|\\]/\\&/g')
-gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows' \
+gh pr list --repo "$GITHUB_REPOSITORY" --state merged --search '"[leak-fix]" in:title label:agentic-workflows base:main' \
   --limit 1000 --json number,title,body,mergedAt,mergeCommit > /tmp/gh-aw/agent/merged-leakfix-raw.json
 if [ "$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-raw.json)" -ge 1000 ]; then
   echo "WARNING: merged [leak-fix] provenance hit the 1000 search-API ceiling; older unshipped fixes may be TRUNCATED and re-filed once — switch to date-windowed enumeration."
 fi
 
+SHIPPED_MAUI_COMMIT_DATE=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHIPPED_MAUI_VERSION" -q '.commit.committer.date' 2>/dev/null) || SHIPPED_MAUI_COMMIT_DATE=""
+if [ -z "$SHIPPED_MAUI_COMMIT_DATE" ]; then
+  echo "WARNING: shipped release tag \"$SHIPPED_MAUI_VERSION\" could not be resolved — unshipped-fix suppression is degraded for this run."
+  echo '[]' > /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json
+else
+  # A main-targeting PR merged before the shipped tag's commit cannot be an unshipped fix.
+  # Apply this cheap exact cutoff before spending compare-API calls on recent candidates.
+  jq --arg cutoff "$SHIPPED_MAUI_COMMIT_DATE" \
+    '[.[] | select((.mergedAt // "") > $cutoff)]' \
+    /tmp/gh-aw/agent/merged-leakfix-raw.json \
+    > /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json
+fi
+
 printf '' > /tmp/gh-aw/agent/unshipped-main-fixes.ndjson
-jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
+printf '' > /tmp/gh-aw/agent/merged-leakfix-compare-failures.txt
+COMPARE_CANDIDATE_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json)
+jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-unshipped-candidates.json | while IFS= read -r pr; do
   sha=$(jq -r '.mergeCommit.oid // empty' <<<"$pr")
   [ -z "$sha" ] && continue
   # Only workflow PRs with an exact SAME-REPO Fixes reference have scan provenance. A Refs line
@@ -207,9 +222,17 @@ jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
   # compare cannot be verified, fail open (do not suppress): a bounded duplicate is safer than
   # permanently hiding a real leak.
   on_main=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$sha" -q '.ahead_by' 2>/dev/null) || on_main=""
-  in_shipped=$(gh api "repos/$GITHUB_REPOSITORY/compare/$SHIPPED_MAUI_VERSION...$sha" -q '.ahead_by' 2>/dev/null) || in_shipped=""
+  if [ -z "$on_main" ]; then
+    printf '%s main\n' "$sha" >> /tmp/gh-aw/agent/merged-leakfix-compare-failures.txt
+    continue
+  fi
   [ "$on_main" != "0" ] && continue
-  [ -z "$in_shipped" ] && continue
+
+  in_shipped=$(gh api "repos/$GITHUB_REPOSITORY/compare/$SHIPPED_MAUI_VERSION...$sha" -q '.ahead_by' 2>/dev/null) || in_shipped=""
+  if [ -z "$in_shipped" ]; then
+    printf '%s shipped\n' "$sha" >> /tmp/gh-aw/agent/merged-leakfix-compare-failures.txt
+    continue
+  fi
   [ "$in_shipped" = "0" ] && continue
 
   issue=$(gh issue view "$scan_n" --repo "$GITHUB_REPOSITORY" --json number,title,body,state 2>/dev/null) || issue=""
@@ -224,6 +247,10 @@ jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while IFS= read -r pr; do
       leak_scan_key:($key | if . == "" then null else . end)}' \
     >> /tmp/gh-aw/agent/unshipped-main-fixes.ndjson
 done
+COMPARE_FAILURE_COUNT=$(wc -l < /tmp/gh-aw/agent/merged-leakfix-compare-failures.txt | tr -d ' ')
+if [ "$COMPARE_FAILURE_COUNT" -gt 0 ]; then
+  echo "WARNING: ancestry compare failed for $COMPARE_FAILURE_COUNT/$COMPARE_CANDIDATE_COUNT prefiltered merged fixes (tag \"$SHIPPED_MAUI_VERSION\" resolvable?) — unshipped-fix suppression is degraded."
+fi
 if [ -s /tmp/gh-aw/agent/unshipped-main-fixes.ndjson ]; then
   jq -s '.' /tmp/gh-aw/agent/unshipped-main-fixes.ndjson > /tmp/gh-aw/agent/unshipped-main-fixes.json
 else

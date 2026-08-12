@@ -827,7 +827,12 @@ issue so GitHub auto-closes it on merge; otherwise the scan issue is orphaned an
 re-picks and rebuilds it every run.
 
 The body MUST start with the required MAUI testing note (verbatim, no block-quote on the first
-two lines as shown), then the details:
+two lines as shown), then the details. Before constructing it, copy the selected scan issue's
+exact `leak-scan-key` marker. For a legacy issue without one, derive
+`Type.Member|short-mechanism-slug` from the issue's mechanism text, never from the PR title.
+Include an optional `Refs: <owner>/<repo>#<UPSTREAM>` line only for a separate pre-existing
+upstream issue; otherwise omit that line entirely. `Fixes #<N>` always names the selected
+`[leak-scan]` issue and is the sole auto-close key.
 
 ```markdown
 > [!NOTE]
@@ -838,15 +843,7 @@ two lines as shown), then the details:
 > 🤖 **AI-generated PR** — produced automatically by the **Memory Leak Fixer** agentic workflow from issue #<N>. The regression test below was observed to FAIL on unpatched `main` and PASS with this fix, on the runner. Please review carefully before merging.
 
 Fixes #<N>
-<!-- Copy the exact marker from the selected scan issue. For a legacy issue without one, add:
-     leak-scan-key: <Type.Member>|<short-mechanism-slug>, where the slug is derived from the
-     issue's mechanism text, not from this PR title. -->
 <!-- leak-scan-key: <canonical-key-from-scan-issue> -->
-<!-- OPTIONAL upstream cross-ref: keep the `Refs:` line below ONLY if a SEPARATE pre-existing
-     UPSTREAM issue tracks the same leak, and set <UPSTREAM> to THAT issue's number (NEVER <N>).
-     DELETE the line entirely when there is no upstream issue. `Fixes #<N>` MUST be the
-     [leak-scan] issue from Step 2 and is the SOLE auto-close key; `Refs:` never points at #<N>
-     and is never a second `Fixes:` — only the [leak-scan] issue may close on merge. -->
 Refs: <owner>/<repo>#<UPSTREAM>
 Target branch: main
 Attempt: <K>/3

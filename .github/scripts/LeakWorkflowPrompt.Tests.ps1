@@ -61,6 +61,134 @@ Describe 'Memory leak workflow provenance and safety' {
 
             return $null
         }
+
+        function Get-WorkflowParts {
+            param([Parameter(Mandatory)][string] $Path)
+
+            $content = (Get-Content -LiteralPath $Path -Raw) -replace "`r`n", "`n"
+            $lines = $content -split "`n"
+            if ($lines.Count -eq 0 -or $lines[0].Trim() -ne '---') {
+                return @{
+                    Frontmatter = ''
+                    Body = $content
+                }
+            }
+
+            $endIndex = -1
+            for ($i = 1; $i -lt $lines.Count; $i++) {
+                if ($lines[$i].Trim() -eq '---') {
+                    $endIndex = $i
+                    break
+                }
+            }
+            if ($endIndex -lt 0) {
+                throw "Frontmatter is not closed in $Path"
+            }
+
+            return @{
+                Frontmatter = $lines[1..($endIndex - 1)] -join "`n"
+                Body = $lines[($endIndex + 1)..($lines.Count - 1)] -join "`n"
+            }
+        }
+
+        function Get-WorkflowImports {
+            param([Parameter(Mandatory)][string] $Frontmatter)
+
+            $imports = @()
+            $inImports = $false
+            $baseIndent = 0
+            foreach ($line in ($Frontmatter -split "`n")) {
+                $trimmed = $line.Trim()
+                if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith('#')) {
+                    continue
+                }
+
+                if ($trimmed.StartsWith('imports:')) {
+                    $inImports = $true
+                    $baseIndent = $line.Length - $line.TrimStart().Length
+                    continue
+                }
+
+                if (-not $inImports) {
+                    continue
+                }
+
+                $lineIndent = $line.Length - $line.TrimStart().Length
+                if ($lineIndent -le $baseIndent) {
+                    break
+                }
+
+                if ($trimmed.StartsWith('-')) {
+                    $item = $trimmed.Substring(1).Trim()
+                    if ($item.StartsWith('uses:')) {
+                        $item = $item.Substring('uses:'.Length).Trim()
+                    }
+                    elseif ($item.StartsWith('path:')) {
+                        $item = $item.Substring('path:'.Length).Trim()
+                    }
+
+                    $item = $item.Trim('"', "'")
+                    if (-not [string]::IsNullOrWhiteSpace($item)) {
+                        $imports += $item
+                    }
+                }
+            }
+
+            return $imports
+        }
+
+        function Get-WorkflowBodyHash {
+            param([Parameter(Mandatory)][string] $Path)
+
+            $visited = [Collections.Generic.HashSet[string]]::new(
+                [StringComparer]::Ordinal)
+
+            function Get-ImportedBodies {
+                param([string] $WorkflowPath)
+
+                $parts = Get-WorkflowParts -Path $WorkflowPath
+                $bodies = @()
+                foreach ($import in (Get-WorkflowImports -Frontmatter $parts.Frontmatter | Sort-Object)) {
+                    $importPath = [IO.Path]::GetFullPath(
+                        (Join-Path (Split-Path -Parent $WorkflowPath) $import))
+                    if (-not $visited.Add($importPath) -or -not (Test-Path -LiteralPath $importPath)) {
+                        continue
+                    }
+
+                    $importParts = Get-WorkflowParts -Path $importPath
+                    $bodies += $importParts.Body.Trim()
+                    $bodies += Get-ImportedBodies -WorkflowPath $importPath
+                }
+
+                return $bodies
+            }
+
+            $parts = Get-WorkflowParts -Path $Path
+            $allBodies = @($parts.Body.Trim())
+            $allBodies += @(Get-ImportedBodies -WorkflowPath $Path) | Sort-Object
+            $combined = $allBodies -join "`n---`n"
+            $bytes = [Text.Encoding]::UTF8.GetBytes($combined)
+            $sha = [Security.Cryptography.SHA256]::Create()
+            try {
+                return ([BitConverter]::ToString($sha.ComputeHash($bytes))).Replace('-', '').ToLowerInvariant()
+            }
+            finally {
+                $sha.Dispose()
+            }
+        }
+
+        function Get-LockMetadata {
+            param([Parameter(Mandatory)][string] $Lock)
+
+            $match = [Regex]::Match(
+                $Lock,
+                '(?m)^#\s*gh-aw-metadata:\s*(?<json>\{.+\})\s*$')
+            if (-not $match.Success) {
+                throw 'Lock file has no gh-aw metadata header'
+            }
+
+            return $match.Groups['json'].Value | ConvertFrom-Json
+        }
     }
 
     It 'runs provenance fixtures through the production jq parser' -Skip:(-not $script:jqAvailable) -ForEach @(
@@ -75,6 +203,16 @@ Describe 'Memory leak workflow provenance and safety' {
         @{ Body = 'Fixes #13abc'; Expected = $null }
         @{ Body = 'PrefixFixes #131'; Expected = $null }
         @{ Body = 'Text owner/repo#132 without a closing keyword'; Expected = $null }
+        @{ Body = 'Fixes `#133`'; Expected = $null }
+        @{ Body = '`Fixes #134`'; Expected = $null }
+        @{ Body = '``Fixes #134``'; Expected = $null }
+        @{ Body = 'Fixes *#135*'; Expected = $null }
+        @{ Body = '<!-- Fixes #136 -->'; Expected = $null }
+        @{ Body = ('```text' + [Environment]::NewLine + 'Fixes #137' + [Environment]::NewLine + '```'); Expected = $null }
+        @{ Body = ('````text' + [Environment]::NewLine + 'Fixes #137' + [Environment]::NewLine + '````'); Expected = $null }
+        @{ Body = ('~~~text' + [Environment]::NewLine + 'Fixes #138' + [Environment]::NewLine + '~~~'); Expected = $null }
+        @{ Body = 'Closes #139'; Expected = $null }
+        @{ Body = 'Resolved #140'; Expected = $null }
     ) {
         $actual = @(Get-ProductionFixesScanIssueNumber -Body $Body -Repository 'dotnet/maui')
         if ($null -eq $Expected) {
@@ -93,6 +231,11 @@ Describe 'Memory leak workflow provenance and safety' {
             @{ number = 4; body = 'Fixes dotnet/runtime#500' }
             @{ number = 5; body = 'Fixes dotnet/maui/#500' }
             @{ number = 6; body = 'Fixes #500extra' }
+            @{ number = 7; body = 'Fixes `#500`' }
+            @{ number = 8; body = '`Fixes #500`' }
+            @{ number = 9; body = '<!-- Fixes #500 -->' }
+            @{ number = 10; body = ('```text' + [Environment]::NewLine + 'Fixes #500' + [Environment]::NewLine + '```') }
+            @{ number = 11; body = '``Fixes #500``' }
         ) | ConvertTo-Json -Compress
 
         $result = $inputJson |
@@ -126,10 +269,20 @@ Describe 'Memory leak workflow provenance and safety' {
     It 'filters merged history before making compare API calls' {
         $filterIndex = $fixer.IndexOf('# (d-prefilter)', [StringComparison]::Ordinal)
         $compareIndex = $fixer.IndexOf('compare/main...$sha', [StringComparison]::Ordinal)
+        $hunterFilterIndex = $hunter.IndexOf(
+            'merged-leakfix-unshipped-candidates.json',
+            [StringComparison]::Ordinal)
+        $hunterCompareIndex = $hunter.IndexOf(
+            'compare/main...$sha',
+            [StringComparison]::Ordinal)
 
         $filterIndex | Should -BeGreaterThan -1
         $compareIndex | Should -BeGreaterThan $filterIndex
+        $hunterFilterIndex | Should -BeGreaterThan -1
+        $hunterCompareIndex | Should -BeGreaterThan $hunterFilterIndex
         $fixer | Should -Not -Match ([Regex]::Escape(
+            "jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while"))
+        $hunter | Should -Not -Match ([Regex]::Escape(
             "jq -c '.[]' /tmp/gh-aw/agent/merged-leakfix-raw.json | while"))
     }
 
@@ -157,6 +310,8 @@ Describe 'Memory leak workflow provenance and safety' {
         $packageMatch.Success | Should -BeTrue
         $versionMatch.Groups['version'].Value | Should -Be $packageMatch.Groups['version'].Value
         $hunter | Should -Match 'compare/\$SHIPPED_MAUI_VERSION\.\.\.\$sha'
+        $hunter | Should -Match 'WARNING: shipped release tag'
+        $hunter | Should -Match 'WARNING: ancestry compare failed'
         $hunter | Should -Match 'open-leakscan-provenance\.json'
         $hunter | Should -Match 'unshipped-main-fixes\.json'
         $hunter | Should -Not -Match 'already-filed-apis\.txt'
@@ -172,11 +327,14 @@ Describe 'Memory leak workflow provenance and safety' {
     }
 
     It 'keeps generated locks synchronized with the current dynamic compiler version and prompt' {
+        $fixerMetadata = Get-LockMetadata -Lock $fixerLock
+        $hunterMetadata = Get-LockMetadata -Lock $hunterLock
+
         $compilerVersion | Should -Not -BeNullOrEmpty
-        $fixerLock | Should -Match ([Regex]::Escape("""compiler_version"":""$compilerVersion"""))
-        $hunterLock | Should -Match ([Regex]::Escape("""compiler_version"":""$compilerVersion"""))
-        $fixerLock | Should -Match '"body_hash":"[0-9a-f]{64}"'
-        $hunterLock | Should -Match '"body_hash":"[0-9a-f]{64}"'
+        $fixerMetadata.compiler_version | Should -Be $compilerVersion
+        $hunterMetadata.compiler_version | Should -Be $compilerVersion
+        $fixerMetadata.body_hash | Should -Be (Get-WorkflowBodyHash -Path $fixerPath)
+        $hunterMetadata.body_hash | Should -Be (Get-WorkflowBodyHash -Path $hunterPath)
         $hunterLock | Should -Not -Match 'fixed-on-main-apis\.txt'
     }
 }
