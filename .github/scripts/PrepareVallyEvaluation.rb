@@ -196,6 +196,51 @@ FIXTURES = {
   }
 }.freeze
 
+def yaml_mapping_value_node(mapping, key)
+  return unless mapping.is_a?(Psych::Nodes::Mapping)
+
+  pair = mapping.children.each_slice(2).find do |key_node, _value_node|
+    key_node.is_a?(Psych::Nodes::Scalar) && key_node.value == key
+  end
+  pair&.last
+end
+
+def validate_fixture_marker_owners!(spec_path, relative_spec_path)
+  path_parts = Pathname.new(relative_spec_path).each_filename.to_a
+  fixtures = FIXTURES.dig(path_parts[2], File.basename(relative_spec_path))
+  return unless fixtures
+
+  syntax_tree = Psych.parse_file(spec_path)
+  stimuli_node = yaml_mapping_value_node(syntax_tree.root, "stimuli")
+  fail!("#{relative_spec_path} fixtures require a stimuli sequence") unless stimuli_node.is_a?(Psych::Nodes::Sequence)
+
+  lines = File.readlines(spec_path)
+  fixtures.each do |fixture|
+    marker = fixture.fetch(:marker)
+    marker_pattern = /#\s*fixture:\s*#{Regexp.escape(marker)}\s*$/
+    marker_lines = lines.each_index.select { |line| lines[line].match?(marker_pattern) }
+    unless marker_lines.length == 1
+      fail!("#{relative_spec_path} requires exactly one fixture marker #{marker}")
+    end
+
+    marker_line = marker_lines.first
+    owners = stimuli_node.children.filter_map do |stimulus_node|
+      environment_node = yaml_mapping_value_node(stimulus_node, "environment")
+      git_node = yaml_mapping_value_node(environment_node, "git")
+      ref_node = yaml_mapping_value_node(git_node, "ref")
+      next unless ref_node&.start_line == marker_line
+
+      yaml_mapping_value_node(stimulus_node, "name")&.value
+    end
+    unless owners.length == 1
+      fail!("#{relative_spec_path} fixture marker #{marker} must annotate its stimulus environment.git.ref")
+    end
+    unless owners.first == marker
+      fail!("#{relative_spec_path} fixture marker #{marker} belongs to stimulus #{owners.first.inspect}, not the required stimulus")
+    end
+  end
+end
+
 def fail!(message)
   warn "Vally evaluation safety check failed: #{message}"
   exit 1
@@ -511,6 +556,7 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
   unless missing_required_stimuli.empty?
     fail!("#{relative_spec_path} is missing required stimulus name(s): #{missing_required_stimuli.join(", ")}")
   end
+  validate_fixture_marker_owners!(spec_path, relative_spec_path)
   if inspect_git_refs
     validate_effective_git_destinations!(document, repo_root, trusted_control_ref)
   end
