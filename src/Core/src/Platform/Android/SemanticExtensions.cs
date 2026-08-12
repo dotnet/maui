@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Platform
 
 			if (!string.IsNullOrEmpty(desc))
 			{
+				newContentDescription = desc;
+
 				// Edit Text fields won't read anything for the content description
 				if (platformView is EditText et)
 				{
@@ -30,8 +32,6 @@ namespace Microsoft.Maui.Platform
 					else
 						newText = $"{desc}";
 				}
-				else
-					newContentDescription = desc;
 			}
 
 			if (!string.IsNullOrEmpty(hint))
