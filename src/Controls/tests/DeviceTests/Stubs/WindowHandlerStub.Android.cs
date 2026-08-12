@@ -22,17 +22,21 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void UpdateContent()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			ConnectContent(VirtualView.Content);
+			_ = ConnectContent(VirtualView.Content);
 		}
 
-		internal void ConnectContent(IView content)
+		internal bool ConnectContent(IView content, Action? rootPrepared = null)
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = MauiContext.GetNavigationRootManager();
-			rootManager.Connect(
+			return rootManager.Connect(
 				content,
-				rootPrepared: rootView => OnRootPrepared(rootManager, rootView));
+				rootPrepared: rootView =>
+				{
+					rootPrepared?.Invoke();
+					OnRootPrepared(rootManager, rootView);
+				});
 		}
 
 		void OnRootPrepared(

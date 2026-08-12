@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 	{
 		IMauiContext _mauiContext;
 		Handler? _mainHandler;
+		Java.Lang.IRunnable? _retryRunnable;
 		AView? _rootView;
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Platform
 		bool _retryScheduled;
 		bool _rootSwapsUnavailable;
 		bool _quiescingFragmentManagers;
-		IToolbar? _toolbarBeingQuiesced;
+		IToolbarElement? _toolbarElementBeingQuiesced;
 		RootRequest? _queuedRequest;
 		Action<RootRequestOutcome, AView?>? _disconnectCompletion;
 
@@ -57,10 +58,10 @@ namespace Microsoft.Maui.Platform
 		internal void SetToolbarElement(IToolbarElement toolbarElement)
 		{
 			// Transactions drained from the outgoing root can remap its toolbar while that root is
-			// being torn down. Ignore only that stale toolbar; a newer reentrant mapping must
-			// remain protected by the version and identity checks.
+			// being torn down. Ignore only that stale element; a newer element that happens to
+			// reuse the same toolbar instance must remain protected by the version check.
 			var toolbar = toolbarElement.Toolbar;
-			if (_quiescingFragmentManagers && ReferenceEquals(toolbar, _toolbarBeingQuiesced))
+			if (_quiescingFragmentManagers && ReferenceEquals(toolbarElement, _toolbarElementBeingQuiesced))
 				return;
 
 			_toolbarElement = toolbarElement;
@@ -151,7 +152,8 @@ namespace Microsoft.Maui.Platform
 		bool RunRootSwaps(RootRequest request)
 		{
 			Exception? firstException = null;
-			var deferred = false;
+			var submittedRequest = request;
+			var submittedRequestApplied = false;
 			_swapInFlight = true;
 			try
 			{
@@ -162,6 +164,9 @@ namespace Microsoft.Maui.Platform
 						var applied = request.Disconnect
 							? DisconnectCore()
 							: ConnectCore(request);
+
+						if (ReferenceEquals(request, submittedRequest))
+							submittedRequestApplied = applied;
 
 						CompleteRequest(
 							request,
@@ -180,8 +185,11 @@ namespace Microsoft.Maui.Platform
 						}
 
 						ScheduleQueuedRootSwap();
-						deferred = true;
 						break;
+					}
+					catch (RootSwapUnavailableException ex)
+					{
+						CancelRootSwaps(request, ex.Message, ref firstException);
 					}
 					catch (Exception ex)
 					{
@@ -203,7 +211,7 @@ namespace Microsoft.Maui.Platform
 			if (firstException is not null)
 				ExceptionDispatchInfo.Capture(firstException).Throw();
 
-			return !deferred;
+			return submittedRequestApplied;
 		}
 
 		void CompleteRequest(
@@ -257,7 +265,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_mainHandler ??= new Handler(mainLooper);
-			if (!_mainHandler.Post(ProcessQueuedRootSwap))
+			_retryRunnable ??= new Java.Lang.Runnable(ProcessQueuedRootSwap);
+			if (!_mainHandler.Post(_retryRunnable))
 			{
 				CancelQueuedRootSwap("The Android main looper stopped accepting navigation root swaps.");
 			}
@@ -265,15 +274,8 @@ namespace Microsoft.Maui.Platform
 
 		void CancelQueuedRootSwap(string message)
 		{
-			_retryScheduled = false;
-			_rootSwapsUnavailable = true;
-			CancelPendingFragment();
-			var outgoingRootView = _rootView;
-			_rootView = null;
-			_viewFragment = null;
-			ReleaseOutgoingRoot(outgoingRootView, clearToolbarElement: true);
-
 			var request = TakeQueuedRootRequest();
+			StopRootSwaps();
 			try
 			{
 				request.Complete(RootRequestOutcome.Cancelled, _rootView);
@@ -288,11 +290,46 @@ namespace Microsoft.Maui.Platform
 			_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(message);
 		}
 
+		void CancelRootSwaps(
+			RootRequest request,
+			string message,
+			ref Exception? firstException)
+		{
+			StopRootSwaps();
+			CompleteRequest(request, RootRequestOutcome.Cancelled, ref firstException);
+
+			if (_queuedRequest is not null)
+				CompleteRequest(TakeQueuedRootRequest(), RootRequestOutcome.Cancelled, ref firstException);
+
+			_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(message);
+		}
+
+		void StopRootSwaps()
+		{
+			_retryScheduled = false;
+			if (_mainHandler is not null && _retryRunnable is not null)
+				_mainHandler.RemoveCallbacks(_retryRunnable);
+
+			_rootSwapsUnavailable = true;
+			CancelPendingFragment();
+			var outgoingRootView = _rootView;
+			_rootView = null;
+			_viewFragment = null;
+			ReleaseOutgoingRoot(outgoingRootView, clearToolbarElement: true);
+		}
+
 		void ProcessQueuedRootSwap()
 		{
 			_retryScheduled = false;
 			if (_queuedRequest is null)
 				return;
+
+			var context = _mauiContext.Context;
+			if (context.IsDestroyed() || context?.GetActivity()?.IsFinishing == true)
+			{
+				CancelQueuedRootSwap("The Android activity became unavailable before a deferred navigation root swap could run.");
+				return;
+			}
 
 			var request = TakeQueuedRootRequest();
 			try
@@ -459,7 +496,7 @@ namespace Microsoft.Maui.Platform
 			_rootView = null;
 			ReleaseOutgoingRoot(outgoingRootView, clearToolbarElement: true);
 			SetContentView(null);
-			return _queuedRequest is null;
+			return true;
 		}
 
 		bool QuiesceOutgoingRoot(AView? outgoingRootView, bool includeActivityFragmentManager)
@@ -476,10 +513,16 @@ namespace Microsoft.Maui.Platform
 				return true;
 
 			if (outgoingRootView.Parent is null)
-				return _viewFragment is null;
+			{
+				if (_viewFragment is not null)
+				throw new RootSwapUnavailableException(
+					"The outgoing Android navigation root was detached while its content fragment was still active.");
+
+				return true;
+			}
 
 			_quiescingFragmentManagers = true;
-			_toolbarBeingQuiesced = _toolbar;
+			_toolbarElementBeingQuiesced = _toolbarElement;
 			try
 			{
 				if (!TryExecutePendingTransactions(owningFragmentManager, context))
@@ -499,7 +542,7 @@ namespace Microsoft.Maui.Platform
 			}
 			finally
 			{
-				_toolbarBeingQuiesced = null;
+				_toolbarElementBeingQuiesced = null;
 				_quiescingFragmentManagers = false;
 			}
 		}
@@ -627,6 +670,14 @@ namespace Microsoft.Maui.Platform
 
 		sealed class FragmentManagerBusyException : Exception
 		{
+		}
+
+		sealed class RootSwapUnavailableException : Exception
+		{
+			public RootSwapUnavailableException(string message)
+				: base(message)
+			{
+			}
 		}
 
 		IDisposable? _pendingFragment;

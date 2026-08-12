@@ -540,6 +540,120 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Superseded Root Request Does Not Report Applied")]
+		public async Task SupersededRootRequestDoesNotReportApplied()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var supersededPage = new ContentPage { Content = new Label { Text = "Superseded page" } };
+			var finalPage = new ContentPage { Content = new Label { Text = "Final page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				bool? supersedingRequestApplied = null;
+				var submittedRequestApplied = handler.ConnectContent(
+					supersededPage,
+					rootPrepared: () => supersedingRequestApplied = handler.ConnectContent(finalPage));
+
+				Assert.False(submittedRequestApplied);
+				Assert.False(supersedingRequestApplied);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				handler.MauiContext.GetFragmentManager().ExecutePendingTransactions();
+				Assert.Null(supersededPage.Handler);
+				Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
+				var finalPlatformView = Assert.IsAssignableFrom<global::Android.Views.View>(finalPage.Handler?.PlatformView);
+				Assert.True(finalPlatformView.IsAttachedToWindow);
+				AssertPlatformViewAttachedToRoot(finalPlatformView, rootManager);
+			});
+		}
+
+		[Fact(DisplayName = "New Toolbar Element Reusing Outgoing Toolbar Wins During Root Drain")]
+		public async Task NewToolbarElementReusingOutgoingToolbarWinsDuringRootDrain()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var toolbar = new Toolbar(window);
+				var outgoingToolbarElement = new ToolbarElementStub(toolbar);
+				var incomingToolbarElement = new ToolbarElementStub(toolbar);
+				rootManager.SetToolbarElement(outgoingToolbarElement);
+
+				var outgoingPlatformRoot = Assert.IsAssignableFrom<global::Android.Views.ViewGroup>(rootManager.RootView);
+				var fragmentHost = new global::Android.Widget.FrameLayout(handler.MauiContext.Context)
+				{
+					Id = global::Android.Views.View.GenerateViewId()
+				};
+				outgoingPlatformRoot.AddView(fragmentHost);
+
+				var fragmentManager = handler.MauiContext.Context.GetFragmentManager();
+				var fragment = new ReentrantFragment(() => rootManager.SetToolbarElement(incomingToolbarElement));
+				fragmentManager
+					.BeginTransaction()
+					.Add(fragmentHost.Id, fragment)
+					.Commit();
+
+				try
+				{
+					window.Page = replacementPage;
+
+					await OnLoadedAsync(replacementPage);
+					Assert.Same(incomingToolbarElement, rootManager.ToolbarElement);
+					AssertPageAttachedToRoot(replacementPage, rootManager);
+				}
+				finally
+				{
+					fragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.CommitAllowingStateLoss();
+					fragmentManager.ExecutePendingTransactions();
+					fragmentHost.RemoveFromParent();
+				}
+			});
+		}
+
+		[Fact(DisplayName = "Detached Root With Active Fragment Cancels Replacement")]
+		public async Task DetachedRootWithActiveFragmentCancelsReplacement()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				rootManager.SetToolbarElement(new ToolbarElementStub(new Toolbar(window)));
+				handler.PlatformViewUnderTest.RemoveFromParent();
+
+				NavigationRootManager.RootRequestOutcome? outcome = null;
+				var applied = rootManager.Connect(
+					replacementPage,
+					completion: (result, _) => outcome = result);
+
+				Assert.False(applied);
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, outcome);
+				Assert.Null(rootManager.RootView);
+				Assert.Null(rootManager.ToolbarElement);
+			});
+		}
+
 		[Fact(DisplayName = "Root Replacement During Disconnect Attaches Latest Root")]
 		public async Task RootReplacementDuringDisconnectAttachesLatestRoot()
 		{
@@ -590,6 +704,16 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentHost.RemoveFromParent();
 				}
 			});
+		}
+
+		sealed class ToolbarElementStub : IToolbarElement
+		{
+			public ToolbarElementStub(IToolbar toolbar)
+			{
+				Toolbar = toolbar;
+			}
+
+			public IToolbar Toolbar { get; }
 		}
 
 		public sealed class ReentrantFragment : AndroidX.Fragment.App.Fragment
