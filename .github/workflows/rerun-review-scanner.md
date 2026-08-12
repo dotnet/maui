@@ -201,21 +201,32 @@ safe-outputs:
                 }
               }
 
+              async function syncDeclinedLabel(existing) {
+                if (existing.data.description !== declinedLabel.description || existing.data.color.toUpperCase() !== declinedLabel.color) {
+                  await github.rest.issues.updateLabel({
+                    owner, repo,
+                    name: declinedLabel.name,
+                    new_name: declinedLabel.name,
+                    description: declinedLabel.description,
+                    color: declinedLabel.color,
+                  });
+                }
+              }
+
               async function ensureDeclinedLabel() {
                 try {
                   const existing = await github.rest.issues.getLabel({ owner, repo, name: declinedLabel.name });
-                  if (existing.data.description !== declinedLabel.description || existing.data.color.toUpperCase() !== declinedLabel.color) {
-                    await github.rest.issues.updateLabel({
-                      owner, repo,
-                      name: declinedLabel.name,
-                      new_name: declinedLabel.name,
-                      description: declinedLabel.description,
-                      color: declinedLabel.color,
-                    });
-                  }
+                  await syncDeclinedLabel(existing);
                 } catch (e) {
                   if (e.status !== 404) { throw e; }
-                  await github.rest.issues.createLabel({ owner, repo, ...declinedLabel });
+                  try {
+                    await github.rest.issues.createLabel({ owner, repo, ...declinedLabel });
+                  } catch (createError) {
+                    if (createError.status !== 422) { throw createError; }
+                    const existing = await github.rest.issues.getLabel({ owner, repo, name: declinedLabel.name });
+                    await syncDeclinedLabel(existing);
+                    core.info(`${declinedLabel.name} was created concurrently; using the existing label.`);
+                  }
                 }
               }
 

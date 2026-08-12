@@ -293,6 +293,21 @@ Context 'scanner decline checkpoint' {
         $markDeclined | Should -Match 'rest\.issues\.addLabels'
     }
 
+    It 'recovers when concurrent decline-label creation returns 422' {
+        $scanner = Get-Content -Raw -LiteralPath $scannerPath
+        $ensureDeclinedLabel = [regex]::Match(
+            $scanner,
+            '(?s)async function ensureDeclinedLabel\(\).*?async function markDeclined'
+        ).Value
+
+        $ensureDeclinedLabel | Should -Match 'if \(createError\.status !== 422\) \{ throw createError; \}'
+        ([regex]::Matches($ensureDeclinedLabel, 'rest\.issues\.getLabel')).Count | Should -Be 2
+        $ensureDeclinedLabel.LastIndexOf('rest.issues.getLabel') |
+            Should -BeGreaterThan $ensureDeclinedLabel.IndexOf('rest.issues.createLabel')
+        $ensureDeclinedLabel.LastIndexOf('await syncDeclinedLabel(existing);') |
+            Should -BeGreaterThan $ensureDeclinedLabel.LastIndexOf('rest.issues.getLabel')
+    }
+
     It 'keeps advisory decline cleanup best-effort before dispatch' {
         $scanner = Get-Content -Raw -LiteralPath $scannerPath
         $clearDeclined = [regex]::Match(
