@@ -1,4 +1,5 @@
-# Pester regression gate for `.github/scripts/**`.
+# Pester regression gate for `.github/scripts/**` and the `/review tests`
+# workflow trust boundary.
 #
 # Why this exists: the automation under `.github/scripts` ships a large Pester
 # suite (transport gating, safe-output expectation reconciliation, milestone
@@ -19,6 +20,8 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - '.github/workflows/copilot-review-tests.md'
+      - '.github/workflows/copilot-review-tests.lock.yml'
       - '.github/workflows/powershell-script-tests.yml'
   workflow_dispatch:
 

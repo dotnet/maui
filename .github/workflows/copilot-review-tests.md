@@ -286,14 +286,14 @@ steps:
   - name: Seal trusted review inputs
     # Seal every instruction and context file the agent may consume before gh-aw checks out the
     # untrusted PR branch. The prompt and visual merge step read ONLY this root-owned directory.
-    # If sealing fails, the agent's pre-flight posts a short failure report and the visual merge
-    # no-ops; neither path may fall back to PR-controlled copies.
-    continue-on-error: true
+    # Mandatory copy failures stop the host job before PR checkout. Missing best-effort context
+    # remains a handled agent report path; neither path may fall back to PR-controlled copies.
     env:
       PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
       CONTEXT_DIRECTORY: /tmp/gh-aw/agent/review-tests-context-${{ github.run_id }}/${{ github.event.issue.number || inputs.pr_number }}
     run: |
       set -euo pipefail
+      trap 'echo "::error::Failed to seal trusted review inputs before PR checkout."' ERR
       trusted="${RUNNER_TEMP}/gh-aw/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"
       sudo install -d -o root -g root -m 0755 "${trusted}"
       sudo install -o root -g root -m 0444 \
