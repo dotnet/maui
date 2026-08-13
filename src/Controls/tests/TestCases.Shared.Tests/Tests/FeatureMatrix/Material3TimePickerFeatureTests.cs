@@ -32,8 +32,8 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	{
 		OpenTimePickerDialog();
 		App.WaitForElement("OK");
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		App.Tap("OK");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
@@ -405,6 +405,16 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Time: 17:30"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(22)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_TapTextArea_DoesNotOpenDialog()
+	{
+		App.WaitForElement("TimePickerControl");
+		// Material3 opens the dialog only via the trailing clock icon; tapping the text area must not open it.
+		App.Tap("TimePickerControl");
+		App.WaitForNoElement("OK");
 	}
 }
 #endif

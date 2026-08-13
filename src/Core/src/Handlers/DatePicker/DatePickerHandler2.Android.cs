@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Android.Content;
+using Android.Views;
 using AndroidX.Fragment.App;
 using Google.Android.Material.DatePicker;
 
@@ -29,6 +30,8 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
     public static CommandMapper<IDatePicker, DatePickerHandler2> CommandMapper = new(ViewCommandMapper)
     {
+        [nameof(IView.Focus)] = MapFocus,
+        [nameof(IView.Unfocus)] = MapUnfocus,
     };
 
     public DatePickerHandler2() : base(Mapper, CommandMapper)
@@ -50,6 +53,10 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
         platformView.ConnectClickListener();
+
+        // Focus lives on the inner edit text (the outer TextInputLayout never receives focus), so
+        // subscribe here to keep VirtualView.IsFocused and the Focused/Unfocused events in sync.
+        platformView.InputEditText?.FocusChange += OnInputFocusChange;
     }
 
     protected override void DisconnectHandler(MauiMaterialDatePicker platformView)
@@ -75,7 +82,33 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         platformView.HidePicker = null;
         platformView.DisconnectClickListener();
 
+        platformView.InputEditText?.FocusChange -= OnInputFocusChange;
+
         base.DisconnectHandler(platformView);
+    }
+
+    void OnInputFocusChange(object? sender, View.FocusChangeEventArgs e)
+    {
+        if (VirtualView is null)
+        {
+            return;
+        }
+
+        VirtualView.IsFocused = e.HasFocus;
+    }
+
+    // The outer TextInputLayout never takes focus, so route IView.Focus/Unfocus to the inner edit text.
+    public static void MapFocus(DatePickerHandler2 handler, IDatePicker picker, object? args)
+    {
+        if (args is FocusRequest request)
+        {
+            handler.PlatformView?.FocusInput(request);
+        }
+    }
+
+    public static void MapUnfocus(DatePickerHandler2 handler, IDatePicker picker, object? args)
+    {
+        handler.PlatformView?.ClearInputFocus();
     }
 
     static void MapBackground(DatePickerHandler2 handler, IDatePicker datePicker)
@@ -253,7 +286,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
 
         // Focus the field so the outlined layout shows its highlighted (focused) state while the
         // dialog is open. This also covers opens triggered programmatically via IsOpen.
-        PlatformView?.InputEditText?.RequestFocus();
+        PlatformView?.RequestInputFocus();
 
         UpdateIsOpenState(true);
     }
@@ -262,7 +295,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
     {
         if (_dialog is null)
         {
-            PlatformView?.InputEditText?.ClearFocus();
+            PlatformView?.ClearInputFocus();
             UpdateIsOpenState(false);
             return;
         }
@@ -275,7 +308,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
         }
 
         _dialog = null;
-        PlatformView?.InputEditText?.ClearFocus();
+        PlatformView?.ClearInputFocus();
         UpdateIsOpenState(false);
     }
 
@@ -356,7 +389,7 @@ public class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterf
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
-        handler.PlatformView?.InputEditText?.ClearFocus();
+        handler.PlatformView?.ClearInputFocus();
         handler.UpdateIsOpenState(false);
     }
 }

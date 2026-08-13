@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Runtime;
 using Android.Text;
 using Android.Text.Method;
 using Android.Views;
@@ -18,6 +19,10 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     MauiMaterialEditText? _inputEditText;
     PickerClickListener? _clickListener;
 
+    protected MauiMaterialDateTimePickerBase(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+    {
+    }
+
     // The context is expected to already be theme-wrapped by the handler's CreatePlatformView;
     // the wrapped context then propagates to the inner edit text created below.
     protected MauiMaterialDateTimePickerBase(Context context, int endIconResource) : base(context)
@@ -33,9 +38,10 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         _inputEditText.KeyListener = null;
         _inputEditText.SetCursorVisible(false);
 
-        // Set focusability after InputType/KeyListener so RequestFocus() can highlight the outline
-        // while the picker dialog is open.
-        _inputEditText.FocusableInTouchMode = true;
+        // Keep the field non-focusable at rest so it is never an initial-focus candidate; focusability
+        // is enabled only while the picker dialog is open (see RequestInputFocus).
+        _inputEditText.Focusable = false;
+        _inputEditText.FocusableInTouchMode = false;
 
         // Only the trailing (calendar/clock) end icon opens the picker dialog. The click listener that
         // wires the tap is attached by the handler in ConnectHandler so it can be torn down
@@ -69,6 +75,49 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         SetEndIconOnClickListener(null);
         _clickListener?.Dispose();
         _clickListener = null;
+    }
+
+    // Focuses the inner edit text so the outlined layout shows its focused stroke while the picker
+    // dialog is open. Focusability is toggled on only for the dialog's lifetime so the read-only
+    // field is never an initial-focus candidate at rest.
+    internal void RequestInputFocus()
+    {
+        EnableInputFocusable();
+        _inputEditText?.RequestFocus();
+    }
+
+    // Routes a programmatic IView.Focus request to the inner edit text (the outer TextInputLayout
+    // never takes focus). Uses Focus(request) so the FocusRequest result is completed for the framework.
+    internal void FocusInput(FocusRequest request)
+    {
+        EnableInputFocusable();
+        _inputEditText?.Focus(request);
+    }
+
+    // The read-only field is non-focusable at rest; enable focusability before requesting focus.
+    void EnableInputFocusable()
+    {
+        if (_inputEditText is null)
+        {
+            return;
+        }
+
+        _inputEditText.Focusable = true;
+        _inputEditText.FocusableInTouchMode = true;
+    }
+
+    // Clears focus only when the inner edit text currently holds it, then removes its focusability so
+    // Android does not resolve focus onto the read-only field (which could surface another keyboard).
+    internal void ClearInputFocus()
+    {
+        if (_inputEditText is null || !_inputEditText.IsFocused)
+        {
+            return;
+        }
+
+        _inputEditText.ClearFocus();
+        _inputEditText.Focusable = false;
+        _inputEditText.FocusableInTouchMode = false;
     }
 
     protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

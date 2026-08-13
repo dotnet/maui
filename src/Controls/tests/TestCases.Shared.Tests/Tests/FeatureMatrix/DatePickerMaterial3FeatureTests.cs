@@ -430,5 +430,15 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 		App.Tap("CultureFormatLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+
+	[Test, Order(25)]
+	[Category(UITestCategories.Material3)]
+	public void Material3DatePicker_TapTextArea_DoesNotOpenDialog()
+	{
+		App.WaitForElement("DatePickerControl");
+		// Material3 opens the dialog only via the trailing calendar icon; tapping the text area must not open it.
+		App.Tap("DatePickerControl");
+		App.WaitForNoElement("OK");
+	}
 }
 #endif
