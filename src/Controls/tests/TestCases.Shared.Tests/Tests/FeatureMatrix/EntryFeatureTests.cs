@@ -768,6 +768,463 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(45)]
+	public void VerifyEntryControlWhenPlaceholderColorSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PlaceholderColorRed");
+		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(46)]
+	public void VerifyEntryWhenTextDynamicallyUpdated()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.EnterText("TextEntryChanged", "New Text Changed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("New Text Changed"));
+	}
+
+	[Test, Order(47)]
+	public void VerifyTextWhenFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(48)]
+	public void VerifyTextWhenTextTransformSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextTransformUppercase");
+		App.Tap("TextTransformUppercase");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("TEST ENTRY"));
+	}
+
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
+	[Test, Order(49)]
+	public void VerifyEntry_WithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(50)]
+	public void VerifyPlaceholderWithShadow()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowCheckBox");
+		App.Tap("ShadowCheckBox");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+#endif
+
+	[Test, Order(51)]
+	public void VerifyPlaceholderWithClearButtonVisible()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		VerifyScreenshotWithKeyboardHandling("PlaceholderWithClearButtonVisible");
+	}
+
+	[Test, Order(52)]
+	public void VerifyPlaceholderWithPasswordTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your password");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(53)]
+	public void VerifyPlaceholderWithHorizontalAlignment()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HCenter");
+		App.Tap("HCenter");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(54)]
+	public void VerifyPlaceholderWithVerticalAlignment()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("VStart");
+		App.Tap("VStart");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
+	[Test, Order(55)]
+	public void VerifyPlaceholderWithCharacterSpacing()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("CharacterSpacing");
+		App.ClearText("CharacterSpacing");
+		App.EnterText("CharacterSpacing", "5");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+#endif
+
+	[Test, Order(56)]
+	public void VerifyPlaceholderWithFontFamily()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontFamily");
+		App.EnterText("FontFamily", "MontserratBold");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(57)]
+	public void VerifyPlaceholderWithFontSize()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "20");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(58)]
+	public void VerifyPlaceholderWithFontAttributes()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(59)]
+	public void VerifyEntryWhenWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("WidthRequest");
+		App.ClearText("WidthRequest");
+		App.EnterText("WidthRequest", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(60)]
+	public void VerifyEntryWhenHeightRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequest");
+		App.ClearText("HeightRequest");
+		App.EnterText("HeightRequest", "80");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(61)]
+	public void VerifyEntryWhenHeightRequestAndWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequest");
+		App.ClearText("HeightRequest");
+		App.EnterText("HeightRequest", "100");
+		App.WaitForElement("WidthRequest");
+		App.ClearText("WidthRequest");
+		App.EnterText("WidthRequest", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(62)]
+	public void VerifyEntryWhenOpacitySet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(63)]
+	public void VerifyEntryWhenOpacityResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "1.0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(64)]
+	public void VerifyEntryWhenOpacitySetToZero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(65)]
+	public void VerifyEntryWhenBackgroundColorSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+	[Test, Order(66)]
+	public void VerifyTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(67)]
+	public void VerifyPlaceholderTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		HideSoftKeyboardIfVisible();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(68)]
+	public void VerifyEntryBackgroundColorWithTextColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(69)]
+	public void VerifyEntryBackgroundColorWithPlaceholderText()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		HideSoftKeyboardIfVisible();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(70)]
+	public void VerifyEntryBackgroundColorWithPlaceholderColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("PlaceholderColorRed");
+		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(71)]
+	public void VerifyEntryBackgroundColorResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorDefault");
+		App.Tap("BackgroundColorDefault");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(72)]
+	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyTextWhenIsTextPredictionEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextPredictionTrue");
+		App.Tap("TextPredictionTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
+	}
+
+	[Test, Order(73)]
+	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyTextWhenIsSpellCheckEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SpellCheckTrue");
+		App.Tap("SpellCheckTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		VerifyScreenshotWithKeyboardHandling();
+	}
+
+	[Test, Order(74)]
 	public void VerifyEntryControlWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -780,7 +1237,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(46)]
+	[Test, Order(75)]
 	public void VerifyPlaceholderWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -795,8 +1252,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-
-	[Test, Order(47)]
+	[Test, Order(76)]
 	public void VerifyEntryControlWhenPlaceholderTextSet()
 	{
 		App.WaitForElement("Options");
@@ -812,22 +1268,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test, Order(48)]
-	public void VerifyEntryControlWhenPlaceholderColorSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("PlaceholderColorRed");
-		App.Tap("PlaceholderColorRed");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(49)]
+	[Test, Order(77)]
 	public void VerifyPlaceholderColorResetToDefault()
 	{
 		App.WaitForElement("Options");
@@ -850,449 +1291,6 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
-
-	[Test, Order(50)]
-	public void VerifyEntryWhenTextDynamicallyUpdated()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "New Text Changed");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("New Text Changed"));
-	}
-
-	[Test, Order(51)]
-	public void VerifyTextWhenFontAttributesSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(52)]
-	public void VerifyTextWhenTextTransformSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextTransformUppercase");
-		App.Tap("TextTransformUppercase");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("TEST ENTRY"));
-	}
-
-#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
-	[Test, Order(53)]
-	public void VerifyEntry_WithShadow()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(54)]
-	public void VerifyPlaceholderWithShadow()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("ShadowCheckBox");
-		App.Tap("ShadowCheckBox");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-#endif
-
-	[Test, Order(55)]
-	public void VerifyPlaceholderWithClearButtonVisible()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandling("PlaceholderWithClearButtonVisible");
-	}
-
-	[Test, Order(56)]
-	public void VerifyPlaceholderWithPasswordTrue()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("PlaceholderText");
-		App.ClearText("PlaceholderText");
-		App.EnterText("PlaceholderText", "Enter your password");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(57)]
-	public void VerifyPlaceholderWithHorizontalAlignment()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("HCenter");
-		App.Tap("HCenter");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(58)]
-	public void VerifyPlaceholderWithVerticalAlignment()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("VStart");
-		App.Tap("VStart");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
-	[Test, Order(59)]
-	public void VerifyPlaceholderWithCharacterSpacing()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("CharacterSpacing");
-		App.ClearText("CharacterSpacing");
-		App.EnterText("CharacterSpacing", "5");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-#endif
-
-	[Test, Order(60)]
-	public void VerifyPlaceholderWithFontFamily()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontFamily");
-		App.EnterText("FontFamily", "MontserratBold");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(61)]
-	public void VerifyPlaceholderWithFontSize()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontSizeEntry");
-		App.ClearText("FontSizeEntry");
-		App.EnterText("FontSizeEntry", "20");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(62)]
-	public void VerifyPlaceholderWithFontAttributes()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(63)]
-	public void VerifyEntryWhenWidthRequestSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("WidthRequest");
-		App.ClearText("WidthRequest");
-		App.EnterText("WidthRequest", "150");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(64)]
-	public void VerifyEntryWhenHeightRequestSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("HeightRequest");
-		App.ClearText("HeightRequest");
-		App.EnterText("HeightRequest", "80");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(65)]
-	public void VerifyEntryWhenHeightRequestAndWidthRequestSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("HeightRequest");
-		App.ClearText("HeightRequest");
-		App.EnterText("HeightRequest", "100");
-		App.WaitForElement("WidthRequest");
-		App.ClearText("WidthRequest");
-		App.EnterText("WidthRequest", "150");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(66)]
-	public void VerifyEntryWhenOpacitySet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("OpacityEntry");
-		App.ClearText("OpacityEntry");
-		App.EnterText("OpacityEntry", "0.5");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(67)]
-	public void VerifyEntryWhenOpacityResetToDefault()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("OpacityEntry");
-		App.ClearText("OpacityEntry");
-		App.EnterText("OpacityEntry", "0.5");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("OpacityEntry");
-		App.ClearText("OpacityEntry");
-		App.EnterText("OpacityEntry", "1.0");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(68)]
-	public void VerifyEntryWhenOpacitySetToZero()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("OpacityEntry");
-		App.ClearText("OpacityEntry");
-		App.EnterText("OpacityEntry", "0");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("Options");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(69)]
-	public void VerifyEntryWhenBackgroundColorSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundColorLightBlue");
-		App.Tap("BackgroundColorLightBlue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-	[Test, Order(70)]
-	public void VerifyTextWhenBoldAndItalicFontAttributesSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(71)]
-	public void VerifyPlaceholderTextWhenBoldAndItalicFontAttributesSet()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("FontAttributesBold");
-		App.Tap("FontAttributesBold");
-		App.WaitForElement("FontAttributesItalic");
-		App.Tap("FontAttributesItalic");
-		App.WaitForElement("PlaceholderText");
-		App.ClearText("PlaceholderText");
-		App.EnterText("PlaceholderText", "Enter your name");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		HideSoftKeyboardIfVisible();
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(72)]
-	public void VerifyEntryBackgroundColorWithTextColor()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundColorYellow");
-		App.Tap("BackgroundColorYellow");
-		App.WaitForElement("TextColorRed");
-		App.Tap("TextColorRed");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(73)]
-	public void VerifyEntryBackgroundColorWithPlaceholderText()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundColorLightBlue");
-		App.Tap("BackgroundColorLightBlue");
-		App.WaitForElement("PlaceholderText");
-		App.ClearText("PlaceholderText");
-		App.EnterText("PlaceholderText", "Enter your name");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		HideSoftKeyboardIfVisible();
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(74)]
-	public void VerifyEntryBackgroundColorWithPlaceholderColor()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundColorYellow");
-		App.Tap("BackgroundColorYellow");
-		App.WaitForElement("PlaceholderColorRed");
-		App.Tap("PlaceholderColorRed");
-		App.WaitForElement("TextEntryChanged");
-		App.ClearText("TextEntryChanged");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(75)]
-	public void VerifyEntryBackgroundColorResetToDefault()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundColorYellow");
-		App.Tap("BackgroundColorYellow");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("BackgroundColorDefault");
-		App.Tap("BackgroundColorDefault");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		VerifyScreenshot(cropBottom: CropBottomValue);
-	}
-
-	[Test, Order(76)]
-	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
-	public void VerifyTextWhenIsTextPredictionEnabledTrue()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("TextPredictionTrue");
-		App.Tap("TextPredictionTrue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		App.EnterText("TestEntry", "Testig");
-		App.EnterText("TestEntry", " ");
-		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
-	}
-
-	[Test, Order(77)]
-	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
-	public void VerifyTextWhenIsSpellCheckEnabledTrue()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("SpellCheckTrue");
-		App.Tap("SpellCheckTrue");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
-		App.ClearText("TestEntry");
-		App.EnterText("TestEntry", "Testig");
-		App.EnterText("TestEntry", " ");
-		VerifyScreenshotWithKeyboardHandling();
-	}
-
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping
