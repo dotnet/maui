@@ -542,6 +542,67 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, 'fixture marker restores-synthetic-fix-without-raw-git belongs to stimulus "renamed-restoration-scenario"'
   end
 
+  def test_rejects_duplicate_name_decoy_for_fixture_marker_owner
+    try_fix_root = File.join(@repo_root, ".github", "skills", "try-fix")
+    try_fix_tests_path = File.join(try_fix_root, "tests")
+    FileUtils.mkdir_p(try_fix_tests_path)
+    File.write(
+      File.join(try_fix_root, "SKILL.md"),
+      <<~MARKDOWN
+        ### Step 2: Establish Baseline (MANDATORY)
+        ### Step 9: Restore Working Directory (MANDATORY - always)
+        EstablishBrokenBaseline.ps1 -Restore
+        No baseline state found and Restored False
+        not `git checkout`, `git restore`, or `git reset`
+        an evaluator-loaded `try-fix/` directory may remain visible in
+        `git status --short`; do not delete it.
+      MARKDOWN
+    )
+    File.write(
+      File.join(try_fix_tests_path, "eval.restore.vally.yaml"),
+      <<~YAML
+        stimuli:
+          - name: restores-synthetic-fix-without-raw-git
+            prompt: |
+              The evaluator injects a read-only `try-fix/` skill directory that
+              must remain exactly as found. Do not remove or modify it.
+            graders:
+              - type: skill-invocation
+                config: { required: [try-fix] }
+          - name: restores-synthetic-fix-without-raw-git
+            name: renamed-restoration-scenario
+            prompt: Restore the target file.
+            environment:
+              git:
+                type: worktree
+                ref: 451bd73351c20b49a03e43cafe54a1dfb31e3771 # fixture: restores-synthetic-fix-without-raw-git
+                source: .
+            graders:
+              - type: skill-invocation
+                config: { required: [try-fix] }
+      YAML
+    )
+
+    _stdout, stderr, status = run_validator(try_fix_tests_path)
+
+    refute status.success?
+    assert_includes stderr, 'contains duplicate YAML mapping key "name"'
+    assert_includes stderr, "first defined at line"
+  end
+
+  def test_rejects_semantically_duplicate_tagged_mapping_key
+    write_raw_spec(<<~YAML)
+      stimuli:
+        - name: original-name
+          !!binary bmFtZQ==: decoded-name
+    YAML
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, 'contains duplicate YAML mapping key "name"'
+  end
+
   def test_comment_posting_cannot_erase_evaluator_verdict
     skip "skill-validation workflow not supplied" unless SKILL_VALIDATION_WORKFLOW
 

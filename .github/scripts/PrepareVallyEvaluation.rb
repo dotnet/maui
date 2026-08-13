@@ -205,12 +205,36 @@ def yaml_mapping_value_node(mapping, key)
   pair&.last
 end
 
-def validate_fixture_marker_owners!(spec_path, relative_spec_path)
+def validate_no_duplicate_mapping_keys!(node, relative_spec_path, scalar_visitor)
+  if node.is_a?(Psych::Nodes::Mapping)
+    key_lines = {}
+    node.children.each_slice(2) do |key_node, value_node|
+      if key_node.is_a?(Psych::Nodes::Scalar)
+        key = scalar_visitor.accept(key_node)
+        if key_lines.key?(key)
+          fail!(
+            "#{relative_spec_path} contains duplicate YAML mapping key #{key.inspect} at line " \
+            "#{key_node.start_line + 1} (first defined at line #{key_lines.fetch(key) + 1})"
+          )
+        end
+        key_lines[key] = key_node.start_line
+      end
+
+      validate_no_duplicate_mapping_keys!(key_node, relative_spec_path, scalar_visitor)
+      validate_no_duplicate_mapping_keys!(value_node, relative_spec_path, scalar_visitor)
+    end
+  elsif node.respond_to?(:children)
+    Array(node.children).each do |child|
+      validate_no_duplicate_mapping_keys!(child, relative_spec_path, scalar_visitor)
+    end
+  end
+end
+
+def validate_fixture_marker_owners!(spec_path, relative_spec_path, syntax_tree)
   path_parts = Pathname.new(relative_spec_path).each_filename.to_a
   fixtures = FIXTURES.dig(path_parts[2], File.basename(relative_spec_path))
   return unless fixtures
 
-  syntax_tree = Psych.parse_file(spec_path)
   stimuli_node = yaml_mapping_value_node(syntax_tree.root, "stimuli")
   fail!("#{relative_spec_path} fixtures require a stimuli sequence") unless stimuli_node.is_a?(Psych::Nodes::Sequence)
 
@@ -482,6 +506,10 @@ end
 def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect_git_refs:, trusted_control_ref:)
   fail!("#{spec_path} uses Vally parameter placeholders; trusted validation requires structurally static specs") if File.read(spec_path).match?(PARAM_PLACEHOLDER_PATTERN)
 
+  syntax_tree = Psych.parse_file(spec_path)
+  scalar_visitor = Psych::Visitors::NoAliasRuby.create(symbolize_names: false, freeze: false)
+  validate_no_duplicate_mapping_keys!(syntax_tree, relative_spec_path, scalar_visitor)
+
   begin
     document = YAML.safe_load_file(spec_path, permitted_classes: [], permitted_symbols: [], aliases: false)
   rescue Psych::AliasesNotEnabled
@@ -556,7 +584,7 @@ def validate_spec!(spec_path, relative_spec_path, skill_root, repo_root, inspect
   unless missing_required_stimuli.empty?
     fail!("#{relative_spec_path} is missing required stimulus name(s): #{missing_required_stimuli.join(", ")}")
   end
-  validate_fixture_marker_owners!(spec_path, relative_spec_path)
+  validate_fixture_marker_owners!(spec_path, relative_spec_path, syntax_tree)
   if inspect_git_refs
     validate_effective_git_destinations!(document, repo_root, trusted_control_ref)
   end
