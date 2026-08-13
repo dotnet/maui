@@ -22,6 +22,11 @@ internal class FlyoutContainerManager
 	UIView? _detailContainerView;
 	UIView? _clickOffView;
 
+	// Cached colors so SetShadowBackgroundColor/SetScrimColor survive being called before
+	// the containers exist (or after a future teardown/re-pack), instead of being lost.
+	UIColor? _shadowBackgroundColor;
+	UIColor? _scrimColor;
+
 	// Gesture recognizers
 	UIPanGestureRecognizer? _panGesture;
 	UITapGestureRecognizer? _tapGesture;
@@ -413,6 +418,8 @@ internal class FlyoutContainerManager
 	/// Defaults to black. Pass <see cref="UIColor.SystemBackground"/> to replicate a light-overlay dim (Shell's historical behavior). Used by Shell.</summary>
 	internal void SetShadowBackgroundColor(UIColor color)
 	{
+		_shadowBackgroundColor = color;
+
 		if (_detailContainerView is not null)
 		{
 			_detailContainerView.BackgroundColor = color;
@@ -422,6 +429,8 @@ internal class FlyoutContainerManager
 	/// <summary>Sets the scrim (click-off overlay) background color. Pass <c>null</c> to reset to transparent. Used by Shell.</summary>
 	internal void SetScrimColor(UIColor? color)
 	{
+		_scrimColor = color;
+
 		if (_clickOffView is not null)
 		{
 			_clickOffView.BackgroundColor = color ?? new UIColor(0, 0, 0, 0);
@@ -526,16 +535,21 @@ internal class FlyoutContainerManager
 				detailFrame.Width -= flyoutFrame.Width;
 			}
 
-			// On iPad/Mac Catalyst, the flyout sits alongside detail rather than over it, so skip
-			// the dimming there when opted in (see IFlyoutContainerDelegate.GetSkipShadowInSplitMode) -
-			// matches the legacy renderer's idiom-based check, not the Locked/split behavior state.
-			if (_applyShadow && !(_skipShadowInSplitMode && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad))
+			// Shadow only makes sense in overlay mode (flyout on top of detail).
+			// Skip dimming when opted in (see IFlyoutContainerDelegate.GetSkipShadowInSplitMode) and either:
+			//  - the idiom is Pad or Mac Catalyst (desktop/tablet split-view UX never dims the detail pane), or
+			//  - ShouldShowSplitMode is true (covers Shell's Locked+RTL split layout on iPhone too, not just Pad/Mac).
+			bool isDesktopOrTabletIdiom = UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad
+				|| OperatingSystem.IsMacCatalyst();
+			if (_applyShadow && !(_skipShadowInSplitMode && (isDesktopOrTabletIdiom || ShouldShowSplitMode)))
 			{
 				opacity = 0.5f;
 			}
 
-			// RTL split mode: the narrow detail strip behind the flyout must be invisible
-			// so it matches the baseline (white background), while remaining accessible for taps.
+			// RTL split mode: the narrow detail strip behind the flyout must be invisible so it
+			// matches the baseline (white background), while remaining accessible for taps.
+			// Layer.Opacity (unlike UIView.Alpha) doesn't affect UIKit's default hit-testing, so
+			// zeroing it here hides the content visually without breaking tap/VoiceOver/Appium access.
 			if (IsRTL && ShouldShowSplitMode && UIDevice.CurrentDevice.UserInterfaceIdiom != UIUserInterfaceIdiom.Pad)
 			{
 				opacity = 0;
@@ -771,6 +785,18 @@ internal class FlyoutContainerManager
 			// iPad: detail behind, flyout on top
 			parentView.AddSubview(_detailContainerView);
 			parentView.AddSubview(_flyoutContainerView);
+		}
+
+		// Re-apply any colors requested before the containers existed (or across a future
+		// teardown/re-pack), so SetShadowBackgroundColor/SetScrimColor calls are never lost.
+		if (_shadowBackgroundColor is not null)
+		{
+			_detailContainerView.BackgroundColor = _shadowBackgroundColor;
+		}
+
+		if (_clickOffView is not null && _scrimColor is not null)
+		{
+			_clickOffView.BackgroundColor = _scrimColor;
 		}
 	}
 
@@ -1022,10 +1048,10 @@ internal class FlyoutContainerManager
 
 		if (_detailContainerView is not null)
 		{
-			// Hide detail only when the flyout physically displaces it (phone push-aside mode).
-			// In overlay mode the flyout slides over the detail without moving it — both areas
-			// remain accessible (VoiceOver + Appium). Split mode also keeps both accessible.
-			bool shouldHideDetail = _isPresented && !ShouldShowSplitMode && !FlyoutOverlapsDetailsInPopoverMode;
+			// Use _flyoutOverlapsDetail (not the idiom-inclusive FlyoutOverlapsDetailsInPopoverMode)
+			// so only Shell's explicit "always overlay" mode skips hiding. Otherwise FlyoutPage on
+			// iPad would wrongly stay "accessible" while the scrim still blocks taps on it.
+			bool shouldHideDetail = _isPresented && !ShouldShowSplitMode && !_flyoutOverlapsDetail;
 			_detailContainerView.AccessibilityElementsHidden = shouldHideDetail;
 		}
 	}

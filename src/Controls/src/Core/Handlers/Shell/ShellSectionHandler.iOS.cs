@@ -111,7 +111,6 @@ namespace Microsoft.Maui.Controls.Handlers
             _appearanceTracker = _shellContext?.CreateNavBarAppearanceTracker();
 
             VirtualView.PropertyChanged += HandlePropertyChanged;
-            ((IShellSectionController)VirtualView).NavigationRequested += OnNavigationRequested;
 
             if (_shellContext?.Shell is not null)
             {
@@ -124,7 +123,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
             SetupInteractivePopGesture();
 
+            // Subscribe to NavigationRequested only after LoadPages() completes (matching the
+            // Compatibility renderer's ordering), so any push triggered by the root page's own
+            // appearing lifecycle is handled as part of LoadPages()'s stack loop, not delivered
+            // live while the navigation controller is still being set up.
             LoadPages();
+
+            ((IShellSectionController)VirtualView).NavigationRequested += OnNavigationRequested;
 
             UpdateTabBarItem();
             UpdateFlowDirection();
@@ -1532,6 +1537,35 @@ namespace Microsoft.Maui.Controls.Handlers
                 if (handler is not null)
                 {
                     handler._isRotating = true;
+                }
+
+                coordinator.AnimateAlongsideTransition(_ =>
+                {
+                    // iOS 26+: re-apply the TitleView's frame during rotation, since it doesn't auto-resize.
+                    if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                    {
+                        (handler?._rootTracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+                    }
+                }, _ =>
+                {
+                    // Force the navigation bar's Auto Layout pass to complete synchronously so the
+                    // TitleView has settled at its final size by the time the rotation transition ends,
+                    // instead of relying on a later, unsynchronized layout pass.
+                    handler?._navigationController?.NavigationBar.LayoutIfNeeded();
+                });
+            }
+
+            public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+            {
+                base.TraitCollectionDidChange(previousTraitCollection);
+
+                if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+                    previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+                {
+                    if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                    {
+                        (GetHandler()?._rootTracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+                    }
                 }
             }
 

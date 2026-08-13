@@ -90,7 +90,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 _tabManager.ViewDidDisappear += OnTabManagerViewDidDisappear;
             }
 
-            _tabBarController.ViewDidLoad();
+            // Force the view to load (usually already loaded via CreatePlatformElement) instead of
+            // manually invoking the ViewDidLoad() override, which would re-run DisableiOS18ToolbarTabs().
+            _ = _tabBarController.View;
             _tabBarController.ShouldSelectViewController = (tabController, viewController) =>
             {
                 bool accept = true;
