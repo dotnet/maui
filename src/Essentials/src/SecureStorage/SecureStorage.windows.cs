@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
@@ -130,8 +131,6 @@ namespace Microsoft.Maui.Storage
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
 		static readonly object Sync = new();
-		static SecureStorageDictionary _secureStorage;
-		static string _secureStoragePath;
 		readonly string _path;
 		readonly string _legacyPath;
 
@@ -159,7 +158,7 @@ namespace Microsoft.Maui.Storage
 		static string GetAliasPathSegment(string alias) =>
 			Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(alias)));
 
-		// Caller must hold Sync. A failed Load leaves the fields unchanged so a later call can retry.
+		// Caller must hold Sync and the process lock for path.
 		SecureStorageDictionary GetSecureStorage(out string path)
 		{
 			path = _path;
@@ -170,31 +169,50 @@ namespace Microsoft.Maui.Storage
 					: _legacyPath);
 		}
 
-		// Caller must hold Sync. Unpackaged FileSystem paths already include publisher/package
-		// identity, so the captured path is also the storage namespace for this operation.
+		// Caller must hold Sync and the process lock for path. Reload on every operation so a
+		// process never writes a stale snapshot after another process updates the file.
 		static SecureStorageDictionary GetSecureStorage(
 			string path,
 			string fallbackPath = null)
 		{
-			if (_secureStorage is null ||
-				!string.Equals(_secureStoragePath, path, StringComparison.OrdinalIgnoreCase))
+			var pathExists = File.Exists(path);
+			var migrateFallback =
+				!pathExists &&
+				fallbackPath is not null &&
+				File.Exists(fallbackPath);
+			// Copy legacy shared data forward on first alias-scoped access. Keep the legacy
+			// file intact so unbridged/default callers preserve their historical store.
+			var secureStorage = Load(migrateFallback ? fallbackPath : path);
+			if (migrateFallback)
+				Save(path, secureStorage);
+
+			return secureStorage;
+		}
+
+		internal static IDisposable AcquireProcessLock(string path)
+		{
+			var normalizedPath = Path.GetFullPath(path).ToUpperInvariant();
+			var mutexName =
+				$@"Local\Microsoft.Maui.SecureStorage.{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalizedPath)))}";
+			var mutex = new Mutex(initiallyOwned: false, mutexName);
+			try
 			{
-				var pathExists = File.Exists(path);
-				var migrateFallback =
-					!pathExists &&
-					fallbackPath is not null &&
-					File.Exists(fallbackPath);
-				// Copy legacy shared data forward on first alias-scoped access. Keep the legacy
-				// file intact so unbridged/default callers preserve their historical store.
-				var secureStorage = Load(migrateFallback ? fallbackPath : path);
-				if (migrateFallback)
-					Save(path, secureStorage);
+				try
+				{
+					mutex.WaitOne();
+				}
+				catch (AbandonedMutexException)
+				{
+					// Ownership is granted when an abandoned mutex is observed.
+				}
 
-				_secureStorage = secureStorage;
-				_secureStoragePath = path;
+				return new ProcessLock(mutex);
 			}
-
-			return _secureStorage;
+			catch
+			{
+				mutex.Dispose();
+				throw;
+			}
 		}
 
 		static SecureStorageDictionary Load(string path)
@@ -247,6 +265,7 @@ namespace Microsoft.Maui.Storage
 		{
 			lock (Sync)
 			{
+				using var processLock = AcquireProcessLock(_path);
 				var secureStorage = GetSecureStorage(out _);
 				secureStorage.TryGetValue(key, out var value);
 				return Task.FromResult(value);
@@ -263,6 +282,7 @@ namespace Microsoft.Maui.Storage
 
 			lock (Sync)
 			{
+				using var processLock = AcquireProcessLock(writePath);
 				var secureStorage = GetSecureStorage(
 					writePath,
 					string.Equals(writePath, _path, StringComparison.OrdinalIgnoreCase)
@@ -281,6 +301,7 @@ namespace Microsoft.Maui.Storage
 		{
 			lock (Sync)
 			{
+				using var processLock = AcquireProcessLock(_path);
 				var secureStorage = GetSecureStorage(out var path);
 				var result = secureStorage.TryRemove(key, out _);
 				Save(path, secureStorage);
@@ -292,9 +313,32 @@ namespace Microsoft.Maui.Storage
 		{
 			lock (Sync)
 			{
+				using var processLock = AcquireProcessLock(_path);
 				var secureStorage = GetSecureStorage(out var path);
 				secureStorage.Clear();
 				Save(path, secureStorage);
+			}
+		}
+
+		sealed class ProcessLock : IDisposable
+		{
+			readonly Mutex _mutex;
+
+			public ProcessLock(Mutex mutex)
+			{
+				_mutex = mutex;
+			}
+
+			public void Dispose()
+			{
+				try
+				{
+					_mutex.ReleaseMutex();
+				}
+				finally
+				{
+					_mutex.Dispose();
+				}
 			}
 		}
 	}

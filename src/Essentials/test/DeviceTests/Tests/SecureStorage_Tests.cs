@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -402,6 +404,68 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				Assert.Equal(value, await first.GetAsync(key));
 				Assert.Null(await second.GetAsync(key));
 				Assert.Null(await historical.GetAsync(key));
+			}
+			finally
+			{
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
+		public async Task Unpackaged_FirstAliasMigrationWaitsForCrossProcessWriter()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var appDataDirectory = Path.Combine(root, "AppData");
+			var key = $"legacy-{Guid.NewGuid():N}";
+			byte[] legacyValue = [1, 2, 3];
+			byte[] newerValue = [4, 5, 6];
+			var historical = new UnpackagedSecureStorageImplementation(appDataDirectory);
+			var aliasStorage = new UnpackagedSecureStorageImplementation(appDataDirectory, "first.alias");
+			var aliasPath = aliasStorage.CaptureWritePath();
+
+			try
+			{
+				await historical.SetAsync(key, legacyValue);
+
+				byte[] migratedValue = null;
+				Exception migrationException = null;
+				Thread migrationThread;
+				using var migrationStarted = new ManualResetEventSlim();
+				using (UnpackagedSecureStorageImplementation.AcquireProcessLock(aliasPath))
+				{
+					migrationThread = new Thread(() =>
+					{
+						migrationStarted.Set();
+						migrationException = Record.Exception(
+							() => migratedValue = aliasStorage.GetAsync(key).GetAwaiter().GetResult());
+					})
+					{
+						IsBackground = true,
+					};
+					migrationThread.Start();
+					Assert.True(migrationStarted.Wait(timeout));
+					Assert.True(
+						SpinWait.SpinUntil(
+							() => (migrationThread.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0,
+							timeout),
+						"Alias migration did not wait for the cross-process lock.");
+
+					var newerStorage = new ConcurrentDictionary<string, byte[]>();
+					newerStorage[key] = newerValue;
+					Directory.CreateDirectory(Path.GetDirectoryName(aliasPath)!);
+					using var stream = File.Create(aliasPath);
+					JsonSerializer.Serialize(
+						stream,
+						newerStorage,
+						SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+				}
+
+				Assert.True(migrationThread.Join(timeout), "Alias migration did not finish.");
+				Assert.Null(migrationException);
+				Assert.Equal(newerValue, migratedValue);
+				Assert.Equal(newerValue, await aliasStorage.GetAsync(key));
 			}
 			finally
 			{

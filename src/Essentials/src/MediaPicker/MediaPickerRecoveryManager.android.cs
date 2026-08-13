@@ -951,6 +951,7 @@ internal static class MediaPickerRecoveryStore
 	const string PreferencesFeatureName = "media_picker";
 	const int SerializedRecordVersion = 1;
 
+	static readonly Lock PreferencesSharedNameLock = new();
 	static string? s_preferencesSharedName;
 
 	// PackageName is immutable for the running process, so the resolved shared-preferences name is
@@ -960,14 +961,17 @@ internal static class MediaPickerRecoveryStore
 	{
 		get
 		{
-			if (s_preferencesSharedName is null)
+			lock (PreferencesSharedNameLock)
 			{
-				var packageName = Application.Context.PackageName ??
-					throw new InvalidOperationException("The Android application package name is unavailable.");
-				s_preferencesSharedName = Preferences.GetPrivatePreferencesSharedName(packageName, PreferencesFeatureName);
-			}
+				if (s_preferencesSharedName is null)
+				{
+					var packageName = Application.Context.PackageName ??
+						throw new InvalidOperationException("The Android application package name is unavailable.");
+					s_preferencesSharedName = Preferences.GetPrivatePreferencesSharedName(packageName, PreferencesFeatureName);
+				}
 
-			return s_preferencesSharedName;
+				return s_preferencesSharedName;
+			}
 		}
 	}
 

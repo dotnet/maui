@@ -393,6 +393,120 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public async Task InterruptedDisposeCompletesTeardownAndPublishesFailure()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var initializer = new BlockingRepeatedInitializeService(timeout);
+			var cleanupCount = 0;
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiInitializeService>(initializer);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() => Interlocked.Increment(ref cleanupCount)));
+			builder.Services.AddSingleton<AsyncOnlySingleton>();
+			var app = builder.Build();
+			var asyncOnlySingleton = app.Services.GetRequiredService<AsyncOnlySingleton>();
+
+			var initialization = Task.Run(app.InitializeAppServices);
+			await initializer.SecondCallEntered.Task.WaitAsync(timeout);
+
+			Exception winnerException = null;
+			var disposalThread = new Thread(() => winnerException = Record.Exception(app.Dispose))
+			{
+				IsBackground = true,
+			};
+			disposalThread.Start();
+			Assert.True(
+				SpinWait.SpinUntil(() => GetDisposeCompletion(app) is not null, timeout),
+				"Disposal did not publish its completion before waiting for initialization.");
+
+			var concurrentDisposal = app.DisposeAsync().AsTask();
+			disposalThread.Interrupt();
+			initializer.ReleaseSecondCall.TrySetResult(true);
+
+			await initialization.WaitAsync(timeout);
+			Assert.True(disposalThread.Join(timeout), "Interrupted disposal did not finish.");
+			var concurrentException = await Record.ExceptionAsync(() => concurrentDisposal);
+			var laterException = Record.Exception(app.Dispose);
+
+			Assert.IsType<ThreadInterruptedException>(winnerException);
+			Assert.Same(winnerException, concurrentException);
+			Assert.Same(winnerException, laterException);
+			Assert.Equal(1, cleanupCount);
+			Assert.Equal(1, asyncOnlySingleton.DisposeCount);
+		}
+
+		[Fact]
+		public async Task DisposeAsyncWaitFailureStillCompletesTeardownAndPublishesFailure()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			using var initializationEntered = new ManualResetEventSlim();
+			using var releaseInitialization = new ManualResetEventSlim();
+			var cleanupCount = 0;
+			AsyncOnlySingleton asyncOnlySingleton = null;
+			var postCleanup = new CallbackPostProviderCleanup(
+				() => Assert.Equal(1, asyncOnlySingleton.DisposeCount));
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<IMauiAppCleanupService>(
+				new CallbackCleanup(() => Interlocked.Increment(ref cleanupCount)));
+			builder.Services.AddSingleton<IMauiAppPostProviderCleanupService>(postCleanup);
+			builder.Services.AddSingleton<AsyncOnlySingleton>();
+			var app = builder.Build();
+			asyncOnlySingleton = app.Services.GetRequiredService<AsyncOnlySingleton>();
+
+			var initializationThread = new Thread(() =>
+			{
+				app.EnterInitializeAppServices();
+				initializationEntered.Set();
+				try
+				{
+					releaseInitialization.Wait(timeout);
+				}
+				finally
+				{
+					app.ExitInitializeAppServices();
+				}
+			})
+			{
+				IsBackground = true,
+			};
+			initializationThread.Start();
+			Assert.True(initializationEntered.Wait(timeout), "Initialization did not start.");
+
+			var winnerDisposal = app.DisposeAsync().AsTask();
+			Assert.True(
+				SpinWait.SpinUntil(() => GetDisposeCompletion(app) is not null, timeout),
+				"Async disposal did not begin.");
+			var concurrentDisposal = Task.Run(app.Dispose);
+			var failedWaitCompletion = GetInitializeCompletion(app);
+			var waitFailure = new InvalidOperationException("initialization wait failed");
+			Assert.True(failedWaitCompletion.TrySetException(waitFailure));
+			Assert.True(
+				SpinWait.SpinUntil(
+					() =>
+					{
+						var current = GetInitializeCompletion(app);
+						return current is not null && !ReferenceEquals(current, failedWaitCompletion);
+					},
+					timeout),
+				"Disposal did not recover from the failed initialization wait.");
+			Assert.False(winnerDisposal.IsCompleted);
+
+			releaseInitialization.Set();
+			Assert.True(initializationThread.Join(timeout), "Initialization did not finish.");
+
+			var winnerException = await Record.ExceptionAsync(() => winnerDisposal);
+			var concurrentException = await Record.ExceptionAsync(() => concurrentDisposal);
+			var laterException = await Record.ExceptionAsync(() => app.DisposeAsync().AsTask());
+
+			Assert.Same(waitFailure, winnerException);
+			Assert.Same(waitFailure, concurrentException);
+			Assert.Same(waitFailure, laterException);
+			Assert.Equal(1, cleanupCount);
+			Assert.Equal(1, asyncOnlySingleton.DisposeCount);
+			Assert.True(postCleanup.WasCalled);
+		}
+
+		[Fact]
 		public async Task DisposeWaitsForChildFlowInitializationAfterParentScopeExits()
 		{
 			var timeout = TimeSpan.FromSeconds(30);
@@ -619,6 +733,19 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void MauiAppDisposeDisposesAsyncOnlySingletonFromDefaultServiceProvider()
+		{
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddSingleton<AsyncOnlySingleton>();
+			var app = builder.Build();
+			var asyncOnlySingleton = app.Services.GetRequiredService<AsyncOnlySingleton>();
+
+			app.Dispose();
+
+			Assert.Equal(1, asyncOnlySingleton.DisposeCount);
+		}
+
+		[Fact]
 		public void MauiAppDisposeDoesNotCaptureCurrentSynchronizationContextForAsyncOnlyServiceProvider()
 		{
 			var factory = new AsyncOnlyServiceProviderFactory(useYieldingProvider: true);
@@ -734,6 +861,15 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			return field.GetValue(app);
 		}
 
+		static TaskCompletionSource<bool> GetInitializeCompletion(MauiApp app)
+		{
+			var field = typeof(MauiApp).GetField(
+				"_initializeCompletion",
+				System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+				?? throw new InvalidOperationException("MauiApp initialization completion field was not found.");
+			return (TaskCompletionSource<bool>)field.GetValue(app);
+		}
+
 		private class MyServiceProviderFactory : IServiceProviderFactory<MyServiceBuilder>
 		{
 			public MyServiceBuilder CreateBuilder(IServiceCollection services) => new MyServiceBuilder(services);
@@ -824,6 +960,17 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				DisposeStartedWithSynchronizationContext = SynchronizationContext.Current is not null;
 				await Task.Yield();
 				await base.DisposeAsync();
+			}
+		}
+
+		sealed class AsyncOnlySingleton : IAsyncDisposable
+		{
+			public int DisposeCount { get; private set; }
+
+			public async ValueTask DisposeAsync()
+			{
+				await Task.Yield();
+				DisposeCount++;
 			}
 		}
 

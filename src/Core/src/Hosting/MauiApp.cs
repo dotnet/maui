@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Hosting
 		private readonly AsyncLocal<DisposalScope?> _disposeScope = new();
 		private readonly AsyncLocal<InitializationScope?> _initializeScope = new();
 		private TaskCompletionSource<ExceptionDispatchInfo?>? _disposeCompletion;
+		private TaskCompletionSource<bool>? _initializeCompletion;
 		private bool _hasCompletedInitialization;
 		private int _initializeInFlight;
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Hosting
 
 		/// <inheritdoc />
 		/// <remarks>
-		/// When <see cref="Services"/> implements only <see cref="IAsyncDisposable"/>,
+		/// When <see cref="Services"/> implements <see cref="IAsyncDisposable"/>,
 		/// this method blocks until asynchronous provider disposal completes. If provider
 		/// disposal requires the calling thread to remain responsive, such as explicitly
 		/// dispatching work to the UI thread, use <see cref="DisposeAsync"/> instead.
@@ -68,30 +69,31 @@ namespace Microsoft.Maui.Hosting
 		/// </remarks>
 		public void Dispose()
 		{
-			if (!TryBeginDispose(waitForInFlightInitialization: true, out var completion))
+			if (!TryBeginDispose(out var completion))
 			{
 				WaitForDisposal(completion);
 				return;
 			}
 
 			var exceptions = new List<Exception>();
-			var postProviderCleanupServices = CapturePostProviderCleanupServices(exceptions);
 			try
 			{
+				WaitForInitializeAppServices(exceptions);
+				var postProviderCleanupServices = CapturePostProviderCleanupServices(exceptions);
 				RunSharedCleanup(exceptions);
 
 				try
 				{
-					if (_services is IDisposable disposable)
-					{
-						disposable.Dispose();
-					}
-					else if (_services is IAsyncDisposable asyncDisposable)
+					if (_services is IAsyncDisposable asyncDisposable)
 					{
 						Task.Run(async () =>
 						{
 							await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 						}).GetAwaiter().GetResult();
+					}
+					else if (_services is IDisposable disposable)
+					{
+						disposable.Dispose();
 					}
 				}
 				catch (Exception ex)
@@ -123,17 +125,17 @@ namespace Microsoft.Maui.Hosting
 		/// </remarks>
 		public async ValueTask DisposeAsync()
 		{
-			if (!TryBeginDispose(waitForInFlightInitialization: false, out var completion))
+			if (!TryBeginDispose(out var completion))
 			{
 				await WaitForDisposalAsync(completion).ConfigureAwait(false);
 				return;
 			}
 
 			var exceptions = new List<Exception>();
-			var postProviderCleanupServices = CapturePostProviderCleanupServices(exceptions);
 			try
 			{
-				await WaitForInitializeAppServicesAsync().ConfigureAwait(false);
+				await WaitForInitializeAppServicesAsync(exceptions).ConfigureAwait(false);
+				var postProviderCleanupServices = CapturePostProviderCleanupServices(exceptions);
 				RunSharedCleanup(exceptions);
 
 				try
@@ -164,7 +166,6 @@ namespace Microsoft.Maui.Hosting
 		// must perform the teardown. Returns false otherwise: 'completion' is the shared completion to
 		// wait on, or null when the current logical flow is re-entering teardown.
 		private bool TryBeginDispose(
-			bool waitForInFlightInitialization,
 			[NotNullWhen(true)] out TaskCompletionSource<ExceptionDispatchInfo?>? completion)
 		{
 			lock (_disposeGate)
@@ -187,8 +188,6 @@ namespace Microsoft.Maui.Hosting
 				completion = _disposeCompletion = new TaskCompletionSource<ExceptionDispatchInfo?>(
 					TaskCreationOptions.RunContinuationsAsynchronously);
 				_disposeScope.Value = new DisposalScope();
-				if (waitForInFlightInitialization)
-					WaitForInitializeAppServices();
 
 				return true;
 			}
@@ -202,6 +201,12 @@ namespace Microsoft.Maui.Hosting
 					throw new ObjectDisposedException(nameof(MauiApp), "Cannot initialize app services after MauiApp disposal has begun.");
 
 				_initializationState.Enter(isInitialBuild: !_hasCompletedInitialization);
+				if (_initializeInFlight == 0)
+				{
+					_initializeCompletion = new TaskCompletionSource<bool>(
+						TaskCreationOptions.RunContinuationsAsynchronously);
+				}
+
 				_initializeInFlight++;
 				// ExecutionContext copies AsyncLocal references into child tasks. Use one frame per
 				// entry so a child flow cannot mutate the parent's active-scope state.
@@ -224,7 +229,11 @@ namespace Microsoft.Maui.Hosting
 
 				_initializationState.Exit();
 				if (--_initializeInFlight == 0)
+				{
 					Monitor.PulseAll(_disposeGate);
+					_initializeCompletion?.TrySetResult(true);
+					_initializeCompletion = null;
+				}
 			}
 		}
 
@@ -239,23 +248,54 @@ namespace Microsoft.Maui.Hosting
 			return false;
 		}
 
-		private async ValueTask WaitForInitializeAppServicesAsync()
+		private async ValueTask WaitForInitializeAppServicesAsync(List<Exception> exceptions)
 		{
-			lock (_disposeGate)
+			while (true)
 			{
-				if (_initializeInFlight == 0)
-					return;
-			}
+				Task completion;
+				lock (_disposeGate)
+				{
+					if (_initializeInFlight == 0)
+						return;
 
-			await Task.Run(WaitForInitializeAppServices).ConfigureAwait(false);
+					if (_initializeCompletion is null || _initializeCompletion.Task.IsCompleted)
+					{
+						_initializeCompletion = new TaskCompletionSource<bool>(
+							TaskCreationOptions.RunContinuationsAsynchronously);
+					}
+
+					completion = _initializeCompletion.Task;
+				}
+
+				try
+				{
+					await completion.ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					exceptions.Add(ex);
+				}
+			}
 		}
 
-		private void WaitForInitializeAppServices()
+		private void WaitForInitializeAppServices(List<Exception> exceptions)
 		{
-			lock (_disposeGate)
+			while (true)
 			{
-				while (_initializeInFlight > 0)
-					Monitor.Wait(_disposeGate);
+				try
+				{
+					lock (_disposeGate)
+					{
+						while (_initializeInFlight > 0)
+							Monitor.Wait(_disposeGate);
+					}
+
+					return;
+				}
+				catch (ThreadInterruptedException ex)
+				{
+					exceptions.Add(ex);
+				}
 			}
 		}
 
