@@ -475,6 +475,65 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
+		public async Task Unpackaged_FirstAliasMigrationWaitsForLegacyWriter()
+		{
+			var timeout = TimeSpan.FromSeconds(30);
+			var root = Path.Combine(FileSystem.CacheDirectory, $"secure-storage-{Guid.NewGuid():N}");
+			var appDataDirectory = Path.Combine(root, "AppData");
+			var key = $"legacy-{Guid.NewGuid():N}";
+			byte[] newerValue = [4, 5, 6];
+			var historical = new UnpackagedSecureStorageImplementation(appDataDirectory);
+			var aliasStorage = new UnpackagedSecureStorageImplementation(appDataDirectory, "first.alias");
+			var legacyPath = historical.CaptureWritePath();
+
+			try
+			{
+				byte[] migratedValue = null;
+				Exception migrationException = null;
+				Thread migrationThread;
+				using var migrationStarted = new ManualResetEventSlim();
+				using (UnpackagedSecureStorageImplementation.AcquireProcessLock(legacyPath))
+				{
+					migrationThread = new Thread(() =>
+					{
+						migrationStarted.Set();
+						migrationException = Record.Exception(
+							() => migratedValue = aliasStorage.GetAsync(key).GetAwaiter().GetResult());
+					})
+					{
+						IsBackground = true,
+					};
+					migrationThread.Start();
+					Assert.True(migrationStarted.Wait(timeout));
+					Assert.True(
+						SpinWait.SpinUntil(
+							() => (migrationThread.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0,
+							timeout),
+						"Alias migration did not wait for the legacy storage lock.");
+
+					var newerStorage = new ConcurrentDictionary<string, byte[]>();
+					newerStorage[key] = newerValue;
+					Directory.CreateDirectory(Path.GetDirectoryName(legacyPath)!);
+					using var stream = File.Create(legacyPath);
+					JsonSerializer.Serialize(
+						stream,
+						newerStorage,
+						SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
+				}
+
+				Assert.True(migrationThread.Join(timeout), "Alias migration did not finish.");
+				Assert.Null(migrationException);
+				Assert.Equal(newerValue, migratedValue);
+				Assert.Equal(newerValue, await aliasStorage.GetAsync(key));
+			}
+			finally
+			{
+				if (Directory.Exists(root))
+					Directory.Delete(root, recursive: true);
+			}
+		}
+
+		[Fact]
 		public void AppInfo_Bridge_Captures_Owning_FileSystem_AppDataDirectory()
 		{
 			var originalAppInfo = AppInfo.Current;

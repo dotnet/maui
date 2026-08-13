@@ -70,11 +70,15 @@ namespace Microsoft.Maui.Storage
 		// ApplicationData settings and have no path. Callers must treat the result as optional: the
 		// packaged SetAsync ignores writePath, while the unpackaged implementation always returns a
 		// non-null path and rejects a null one.
-		string CaptureWritePath();
+#nullable enable annotations
+		string? CaptureWritePath();
+#nullable restore
 
 		Task<byte[]> GetAsync(string key);
 
-		Task SetAsync(string key, byte[] value, string writePath);
+#nullable enable annotations
+		Task SetAsync(string key, byte[] value, string? writePath);
+#nullable restore
 
 		bool Remove(string key);
 
@@ -91,7 +95,9 @@ namespace Microsoft.Maui.Storage
 		}
 
 		// Packaged apps persist via ApplicationData settings, so there is no file path to capture.
-		public string CaptureWritePath() => null;
+#nullable enable annotations
+		public string? CaptureWritePath() => null;
+#nullable restore
 
 		public Task<byte[]> GetAsync(string key)
 		{
@@ -100,12 +106,14 @@ namespace Microsoft.Maui.Storage
 			return Task.FromResult(encBytes);
 		}
 
-		public Task SetAsync(string key, byte[] data, string writePath)
+#nullable enable annotations
+		public Task SetAsync(string key, byte[] data, string? writePath)
 		{
 			var settings = GetSettings(_alias);
 			settings.Values[key] = data;
 			return Task.CompletedTask;
 		}
+#nullable restore
 
 		public bool Remove(string key)
 		{
@@ -175,18 +183,20 @@ namespace Microsoft.Maui.Storage
 			string path,
 			string fallbackPath = null)
 		{
-			var pathExists = File.Exists(path);
-			var migrateFallback =
-				!pathExists &&
-				fallbackPath is not null &&
-				File.Exists(fallbackPath);
 			// Copy legacy shared data forward on first alias-scoped access. Keep the legacy
 			// file intact so unbridged/default callers preserve their historical store.
-			var secureStorage = Load(migrateFallback ? fallbackPath : path);
-			if (migrateFallback)
-				Save(path, secureStorage);
+			if (!File.Exists(path) && fallbackPath is not null)
+			{
+				using var fallbackProcessLock = AcquireProcessLock(fallbackPath);
+				if (File.Exists(fallbackPath))
+				{
+					var migratedStorage = Load(fallbackPath);
+					Save(path, migratedStorage);
+					return migratedStorage;
+				}
+			}
 
-			return secureStorage;
+			return Load(path);
 		}
 
 		internal static IDisposable AcquireProcessLock(string path)
@@ -275,7 +285,8 @@ namespace Microsoft.Maui.Storage
 		public Task SetAsync(string key, byte[] value) =>
 			SetAsync(key, value, CaptureWritePath());
 
-		public Task SetAsync(string key, byte[] value, string writePath)
+#nullable enable annotations
+		public Task SetAsync(string key, byte[] value, string? writePath)
 		{
 			if (writePath is null)
 				throw new ArgumentNullException(nameof(writePath));
@@ -296,6 +307,7 @@ namespace Microsoft.Maui.Storage
 				return Task.CompletedTask;
 			}
 		}
+#nullable restore
 
 		public bool Remove(string key)
 		{
