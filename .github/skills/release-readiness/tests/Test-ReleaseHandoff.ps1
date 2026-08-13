@@ -99,7 +99,7 @@ $publicNuGetConfig = @'
 
 $previewEvidence = [PSCustomObject]@{
     PublicEvidence = $true
-    ReleaseName = '.NET MAUI 11.0.0 Preview 7'
+    ReleaseName = '.NET MAUI 11.0.0 Preview 7 Candidate'
     ReleaseVersion = '11.0.0-preview.7'
     Owner = 'private-owner-is-ignored'
     BreakingChanges = @(
@@ -161,6 +161,8 @@ $previewEvidence = [PSCustomObject]@{
 $previewModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence $previewEvidence
 $previewMarkdown = Format-ReleaseHandoffMarkdown -Model $previewModel
 Assert-HandoffEqual -Label 'Preview report is recognized' -Expected 'preview' -Actual $previewModel.ReleaseType
+Assert-HandoffEqual -Label 'Valid public release name is honored' `
+    -Expected '.NET MAUI 11.0.0 Preview 7 Candidate' -Actual $previewModel.ReleaseName
 Assert-HandoffTrue -Label 'Exact workload-set version is used in the generated command' `
     -Actual $previewModel.WorkloadSet.InstallCommand.Contains('11.0.100-preview.7.26000.2')
 Assert-HandoffTrue -Label 'Public MAUI build link survives sanitization' `
@@ -177,6 +179,12 @@ Assert-HandoffTrue -Label 'Public readiness prose is replaced with a fixed sourc
     -Actual $previewMarkdown.Contains('See the public source readiness report.')
 Assert-HandoffEqual -Label 'Local readiness details are not carried into public handoff output' `
     -Expected $false -Actual $previewMarkdown.Contains('Contact captain')
+$originalReleaseName = $previewEvidence.ReleaseName
+$previewEvidence.ReleaseName = 'Owner: Private Person'
+$unsafeReleaseNameModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence $previewEvidence
+Assert-HandoffEqual -Label 'Unsafe public release name falls back to the derived name' `
+    -Expected '.NET MAUI 11.0.0 Preview 7' -Actual $unsafeReleaseNameModel.ReleaseName
+$previewEvidence.ReleaseName = $originalReleaseName
 
 $sectionOrder = @(
     '## Breaking Changes',

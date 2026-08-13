@@ -607,10 +607,9 @@ function New-ReleaseHandoffModel {
         $null
     }
 
-    $releaseName = if ($PublicSafe) {
-        $defaultName
-    } else {
-        Get-HandoffProperty -Object $effectiveEvidence -Name 'ReleaseName'
+    $releaseName = Get-HandoffProperty -Object $effectiveEvidence -Name 'ReleaseName'
+    if ($PublicSafe) {
+        $releaseName = ConvertTo-HandoffStructuredText -Value $releaseName -Kind name -PublicSafe $true
     }
     if ([string]::IsNullOrWhiteSpace([string]$releaseName)) { $releaseName = $defaultName }
     $releaseVersion = [string](Get-HandoffProperty -Object $effectiveEvidence -Name 'ReleaseVersion')
