@@ -259,7 +259,7 @@ steps:
             if [[ $C == 0 ]]; then
               break
             fi
-            echo "    still $C simulators left..."
+            echo "    still $C simulator runtimes left..."
           done
           # If images are STILL present the delete hung on a stuck mount (images wedged in
           # "(Deleting)"). Force-unmount again out-of-band and issue one more delete so the
