@@ -446,7 +446,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
-		App.SwipeLeftToRight("SwipeViewImage");
+		App.SwipeLeftToRight("SwipeViewImage", swipePercentage: 0.90);
 		Assert.That(App.WaitForElement("EventInvokedLabel").GetText(), Is.EqualTo("Label Invoked"));
 	}
 
@@ -762,7 +762,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
-		App.SwipeLeftToRight("SwipeViewImage");
+		App.SwipeLeftToRight("SwipeViewImage", swipePercentage: 0.90);
 		App.WaitForElement("Label");
 	}
 
@@ -778,7 +778,7 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("SwipeViewImage");
-		App.SwipeLeftToRight("SwipeViewImage");
+		App.SwipeLeftToRight("SwipeViewImage", swipePercentage: 0.90);
 		App.WaitForElement("Icon");
 	}
 

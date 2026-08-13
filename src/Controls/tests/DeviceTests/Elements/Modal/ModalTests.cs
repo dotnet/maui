@@ -722,6 +722,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+#if ANDROID
 		[Fact("Dont leak with Animation")]
 		public async Task ModalPageDontLeakWithAnimation()
 		{
@@ -751,6 +752,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
+#endif
 
 		class PageTypes : IEnumerable<object[]>
 		{

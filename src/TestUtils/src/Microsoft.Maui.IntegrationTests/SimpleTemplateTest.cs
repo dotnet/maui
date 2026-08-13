@@ -5,6 +5,8 @@ namespace Microsoft.Maui.IntegrationTests;
 [Trait("Category", "Build")]
 public class SimpleTemplateTest : BaseTemplateTests
 {
+	const string AvaloniaBuildSkipReason = "Avalonia packages are not available on dotnet-public. See https://github.com/dotnet/maui/pull/35950";
+
 	public SimpleTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
 	[Theory]
@@ -18,8 +20,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	//Debug not ready yet
 	//[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
-	[InlineData("maui", DotNetCurrent, "Debug", false, "--with-avalonia", "")]
-	[InlineData("maui", DotNetCurrent, "Release", false, "--with-avalonia", "TrimMode=partial")]
+	[InlineData("maui", DotNetCurrent, "Debug", false, "--with-avalonia", "", Skip = AvaloniaBuildSkipReason)]
+	[InlineData("maui", DotNetCurrent, "Release", false, "--with-avalonia", "TrimMode=partial", Skip = AvaloniaBuildSkipReason)]
 	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
@@ -393,10 +395,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
 			"Expected Extensions.cs file was not created.");
 
-		// Verify we can build it (even if restore fails due to placeholder tokens, the project structure should be valid)
+		// Verify the project file contains required properties
 		var projectContent = File.ReadAllText(expectedProjectFile);
 		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
 			"Project file should contain Aspire-specific properties.");
+		Assert.True(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
+			"Project file should contain UseMauiCore property.");
+
+		// Verify the project actually builds
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
 	[Fact]
@@ -405,7 +413,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia", output: _output),
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --no-restore", output: _output),
 			"Unable to create template maui with --with-avalonia. Check test output for errors.");
 
 		var csproj = File.ReadAllText(projectFile);
@@ -429,7 +437,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--no-restore", output: _output),
 			"Unable to create template maui. Check test output for errors.");
 
 		var csproj = File.ReadAllText(projectFile);
@@ -447,7 +455,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 		// --with-avalonia is gated on the blank app: combining it with sample content must not wire Avalonia in.
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content", output: _output),
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content --no-restore", output: _output),
 			"Unable to create template maui with --with-avalonia --sample-content. Check test output for errors.");
 
 		var csproj = File.ReadAllText(projectFile);

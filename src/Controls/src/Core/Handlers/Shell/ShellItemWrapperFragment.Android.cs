@@ -60,9 +60,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // BNV is created by TabbedViewManager in SetupTabbedViewManager().
             // It is placed into navigationlayout_bottomtabs via TabbedViewManager.SetTabLayout().
 
-            // Setup window insets for safe area handling
-            MauiWindowInsetListener.SetupViewWithLocalListener(_rootLayout);
-
             return rootView;
         }
 
@@ -199,14 +196,6 @@ namespace Microsoft.Maui.Controls.Handlers
                 _handler._adapter = null;
             }
 
-            // Remove window insets listener before nulling _rootLayout.
-            // Dispose guards on `_rootLayout is not null` — if nulled here first,
-            // Dispose skips the removal and the listener is never unregistered.
-            if (_rootLayout is not null)
-            {
-                MauiWindowInsetListener.RemoveViewWithLocalListener(_rootLayout);
-            }
-
             _rootLayout = null;
 
             // _backPressedCallback is auto-removed by ViewLifecycleOwner when the view is destroyed.
@@ -225,12 +214,6 @@ namespace Microsoft.Maui.Controls.Handlers
                     _backPressedCallback.Remove();
                     _backPressedCallback.Dispose();
                     _backPressedCallback = null;
-                }
-
-                // Remove window insets listener
-                if (_rootLayout is not null)
-                {
-                    MauiWindowInsetListener.RemoveViewWithLocalListener(_rootLayout);
                 }
 
                 _rootLayout = null;
