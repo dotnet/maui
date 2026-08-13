@@ -31,10 +31,10 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>10.0.20</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/sdk -->
-    <MicrosoftNETSdkPackageVersion>11.0.100-rc.1.26411.112</MicrosoftNETSdkPackageVersion>
+    <MicrosoftNETSdkPackageVersion>11.0.100-rc.1.26411.119</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>11.0.0-rc.1.26411.112</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>11.0.0-rc.1.26411.119</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -42,18 +42,18 @@
     <optimizationandroidx64MIBCRuntimePackageVersion>1.0.0-prerelease.26317.1</optimizationandroidx64MIBCRuntimePackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsConfigurationVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsPrimitivesVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>11.0.0-rc.1.26411.112</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsPrimitivesVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>11.0.0-rc.1.26411.119</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsAIVersion>10.3.0</MicrosoftExtensionsAIVersion>
     <MicrosoftExtensionsAIAbstractionsVersion>10.3.0</MicrosoftExtensionsAIAbstractionsVersion>
     <MicrosoftExtensionsHttpVersion>11.0.0-preview.2.26103.111</MicrosoftExtensionsHttpVersion>
@@ -85,19 +85,19 @@
     <MicrosoftGraphicsWin2DPackageVersion>1.4.0</MicrosoftGraphicsWin2DPackageVersion>
     <MicrosoftWindowsWebView2PackageVersion>1.0.4078.44</MicrosoftWindowsWebView2PackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreComponentsFormsPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsFormsPackageVersion>
-    <MicrosoftAspNetCoreComponentsPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreMetadataPackageVersion>11.0.0-rc.1.26411.112</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftJSInteropPackageVersion>11.0.0-rc.1.26411.112</MicrosoftJSInteropPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>11.0.0-rc.1.26411.119</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftJSInteropPackageVersion>11.0.0-rc.1.26411.119</MicrosoftJSInteropPackageVersion>
     <!-- Everything else (previous edition) -->
     <MicrosoftAspNetCorePackageVersion>10.0.2</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
@@ -147,13 +147,13 @@
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <ExCSSPackageVersion>4.2.3</ExCSSPackageVersion>
     <SystemDrawingCommonPackageVersion>9.0.0</SystemDrawingCommonPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26411.112</MicrosoftDotNetBuildTasksFeedVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26411.112</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26411.112</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26411.112</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksFeedVersion>11.0.0-beta.26411.119</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26411.119</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26411.119</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26411.119</MicrosoftDotNetHelixSdkPackageVersion>
     <MicroBuildPluginsSwixBuildDotnetPackageVersion>1.1.87-gba258badda</MicroBuildPluginsSwixBuildDotnetPackageVersion>
-    <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26411.112</MicrosoftDotNetRemoteExecutorPackageVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26411.112</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotNetRemoteExecutorPackageVersion>11.0.0-beta.26411.119</MicrosoftDotNetRemoteExecutorPackageVersion>
+    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.26411.119</MicrosoftDotNetXUnitExtensionsPackageVersion>
     <MicrosoftWixVersion>6.0.3-dotnet.4</MicrosoftWixVersion>
   </PropertyGroup>
   <PropertyGroup>
