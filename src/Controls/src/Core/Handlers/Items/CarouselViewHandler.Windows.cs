@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		Size _currentSize;
 		bool _isCarouselViewReady;
 		bool _isInternalPositionUpdate;
+		int _positionUpdateFromScroll = -1;
+		bool _hasCurrentItemUpdateFromScroll;
+		object _currentItemUpdateFromScroll;
 		int _gotoPosition = -1;
 		bool _isCollectionChanged;
 		NotifyCollectionChangedEventHandler _collectionChanged;
@@ -375,7 +378,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				throw new InvalidOperationException("Visible item not found");
 
 			var item = itemTemplateContext.Item;
-			ItemsView.CurrentItem = item;
+			var isPositionUpdateFromScroll = _positionUpdateFromScroll == carouselPosition;
+			if (isPositionUpdateFromScroll)
+			{
+				_hasCurrentItemUpdateFromScroll = true;
+				_currentItemUpdateFromScroll = item;
+			}
+
+			try
+			{
+				ItemsView.CurrentItem = item;
+			}
+			finally
+			{
+				if (isPositionUpdateFromScroll)
+				{
+					_hasCurrentItemUpdateFromScroll = false;
+					_currentItemUpdateFromScroll = null;
+				}
+			}
 		}
 
 		int GetItemPositionInCarousel(object item)
@@ -424,6 +445,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (CollectionViewSource == null)
 				return;
+
+			if (_hasCurrentItemUpdateFromScroll
+				&& _positionUpdateFromScroll == ItemsView.Position
+				&& ReferenceEquals(_currentItemUpdateFromScroll, ItemsView.CurrentItem))
+			{
+				return;
+			}
 
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
@@ -549,11 +577,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// Suppress intermediate scroll events during a programmatic animated scroll.
+			if (_gotoPosition != -1)
+			{
+				return;
+			}
+
 			var position = e.CenterItemIndex;
 			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
 			{
 				position = ItemsView.Position;
 				_isCollectionChanged = false;
+			}
+			else if (ShouldCenterCarouselItem()
+				&& TryGetClosestVisibleItem(out var closestVisibleIndex, out _, out _, out _))
+			{
+				position = closestVisibleIndex;
+				if (ItemsView.Loop && _loopableCollectionView?.RealCount > 0)
+					position %= _loopableCollectionView.RealCount;
 			}
 
 			if (position == -1)
@@ -566,13 +607,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Suppress intermediate scroll events during a programmatic animated scroll.
-			if (_gotoPosition != -1)
+			_positionUpdateFromScroll = position;
+			try
 			{
-				return;
+				SetCarouselViewPosition(position);
 			}
-
-			SetCarouselViewPosition(position);
+			finally
+			{
+				_positionUpdateFromScroll = -1;
+			}
 		}
 
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
@@ -588,6 +631,83 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ItemsView.SetIsDragging(e.IsIntermediate);
 			ItemsView.IsScrolling = e.IsIntermediate;
+
+			if (!e.IsIntermediate)
+				CenterCarouselItem();
+		}
+
+		void CenterCarouselItem()
+		{
+			if (!InitialPositionSet
+				|| _gotoPosition != -1
+				|| !ShouldCenterCarouselItem()
+				|| !TryGetClosestVisibleItem(out _, out var horizontalOffset, out var verticalOffset, out var distance))
+			{
+				return;
+			}
+
+			if (distance >= 1)
+				_scrollViewer.ChangeView(horizontalOffset, verticalOffset, null, true);
+		}
+
+		bool ShouldCenterCarouselItem()
+		{
+			var snapPointsType = CarouselItemsLayout?.SnapPointsType;
+			return (snapPointsType == SnapPointsType.Mandatory || snapPointsType == SnapPointsType.MandatorySingle)
+				&& CarouselItemsLayout.SnapPointsAlignment == SnapPointsAlignment.Center;
+		}
+
+		bool TryGetClosestVisibleItem(out int closestVisibleIndex, out double horizontalOffset, out double verticalOffset, out double distance)
+		{
+			closestVisibleIndex = -1;
+			horizontalOffset = 0;
+			verticalOffset = 0;
+			distance = double.MaxValue;
+
+			if (_scrollViewer?.Content is not UIElement content
+				|| ListViewBase?.ItemsPanelRoot is not ItemsStackPanel itemsPanel)
+			{
+				return false;
+			}
+
+			var firstVisibleIndex = itemsPanel.FirstVisibleIndex;
+			var lastVisibleIndex = itemsPanel.LastVisibleIndex;
+			if (firstVisibleIndex < 0 || lastVisibleIndex < firstVisibleIndex)
+				return false;
+
+			var currentHorizontalOffset = _scrollViewer.HorizontalOffset;
+			var currentVerticalOffset = _scrollViewer.VerticalOffset;
+			horizontalOffset = currentHorizontalOffset;
+			verticalOffset = currentVerticalOffset;
+
+			for (int index = firstVisibleIndex; index <= lastVisibleIndex; index++)
+			{
+				if (ListViewBase.ContainerFromIndex(index) is not FrameworkElement container)
+					continue;
+
+				var position = container.TransformToVisual(content).TransformPoint(new Point());
+				var candidateHorizontalOffset = currentHorizontalOffset;
+				var candidateVerticalOffset = currentVerticalOffset;
+				if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+					candidateHorizontalOffset = position.X - ((_scrollViewer.ViewportWidth - container.ActualWidth) / 2);
+				else
+					candidateVerticalOffset = position.Y - ((_scrollViewer.ViewportHeight - container.ActualHeight) / 2);
+
+				candidateHorizontalOffset = Math.Clamp(candidateHorizontalOffset, 0, _scrollViewer.ScrollableWidth);
+				candidateVerticalOffset = Math.Clamp(candidateVerticalOffset, 0, _scrollViewer.ScrollableHeight);
+
+				var candidateDistance = Math.Abs(currentHorizontalOffset - candidateHorizontalOffset)
+					+ Math.Abs(currentVerticalOffset - candidateVerticalOffset);
+				if (candidateDistance < distance)
+				{
+					closestVisibleIndex = index;
+					distance = candidateDistance;
+					horizontalOffset = candidateHorizontalOffset;
+					verticalOffset = candidateVerticalOffset;
+				}
+			}
+
+			return closestVisibleIndex != -1;
 		}
 
 		void OnCollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
