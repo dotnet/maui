@@ -694,12 +694,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			var y = windowBounds.Y;
 			var width = windowBounds.Width;
 			var height = windowBounds.Height;
+			var logicalWidth = (int)Math.Round(width);
+			var logicalHeight = (int)Math.Round(height);
 			const int cornerRadius = 12;
 
 			// Take the screenshot
 			var bytes = App.Screenshot();
 
-			if (width <= 0 || height <= 0)
+			if (logicalWidth <= 0 || logicalHeight <= 0)
 				return bytes;
 
 			byte[] ReturnUncroppedScreenshot(string reason)
@@ -725,8 +727,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			int pixelX = (int)Math.Round((x - displayBounds.Origin.X) * scaleX);
 			int pixelY = (int)Math.Round((y - displayBounds.Origin.Y) * scaleY);
-			int pixelRight = (int)Math.Round((x + width - displayBounds.Origin.X) * scaleX);
-			int pixelBottom = (int)Math.Round((y + height - displayBounds.Origin.Y) * scaleY);
+			int pixelRight = (int)Math.Round((x + logicalWidth - displayBounds.Origin.X) * scaleX);
+			int pixelBottom = (int)Math.Round((y + logicalHeight - displayBounds.Origin.Y) * scaleY);
 			int pixelWidth = pixelRight - pixelX;
 			int pixelHeight = pixelBottom - pixelY;
 
@@ -751,9 +753,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// Keep committed snapshots density-independent and preserve the existing
 			// logical crop values (for example, the 29-point title-bar crop).
-			if (pixelWidth != width || pixelHeight != height)
+			if (pixelWidth != logicalWidth || pixelHeight != logicalHeight)
 			{
-				var logicalSize = new MagickGeometry((uint)width, (uint)height)
+				var logicalSize = new MagickGeometry((uint)logicalWidth, (uint)logicalHeight)
 				{
 					IgnoreAspectRatio = true,
 				};
