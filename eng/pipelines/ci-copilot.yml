@@ -648,24 +648,92 @@ stages:
 
           # If 'Build MSBuild Tasks' wiped ./.dotnet on a retry (corrupt-SDK
           # recovery), the .NET WORKLOADS installed by 'Install .NET and workloads'
-          # are gone and the buildtasks reinstall restored only the SDK — so the
-          # gate's test build would fail with NETSDK1147 ("the following workloads
-          # must be installed: android"), a GATE-INFRA flake wrongly surfaced as an
-          # ENV/INCONCLUSIVE gate (build 14843829 / #36572). Re-run the SAME proven,
-          # band-correct workload install ONLY in that case (marker present), so the
-          # common no-wipe path pays nothing. build.ps1 --target=dotnet is idempotent
-          # and uses the repo's pinned workload manifest (never a mismatched band).
+          # are gone and the buildtasks reinstall may restore only the SDK. The
+          # workload-pack incremental stamp lives at .dotnet/packs/.stamp; a partial
+          # wipe can leave that stamp behind after deleting the SDK workload
+          # registration, so a plain build.ps1 --target=dotnet reports success while
+          # skipping _InstallWorkloadPacks. The gate then fails with NETSDK1147 even
+          # though the pinned Android packs are available (build 14953016 / #37321).
+          # Verify the platform workload on every mobile run, invalidate the stale
+          # stamp when recovery is needed, and clear the retry marker only after the
+          # repo-pinned installer has restored a visible registration.
           - pwsh: |
+              $ErrorActionPreference = 'Continue'
               $marker = Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads'
-              if (Test-Path $marker) {
-                Write-Host "##[warning]./.dotnet was wiped by a Build MSBuild Tasks retry — reinstalling .NET workloads so the gate build does not hit NETSDK1147 (missing android/ios/maccatalyst workload)."
-                ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
-                if ($LASTEXITCODE -ne 0) { Write-Host "##[warning]Workload reinstall exited $LASTEXITCODE — the gate will still classify a residual NETSDK1147 as retryable ENV." }
-                Remove-Item $marker -Force -ErrorAction SilentlyContinue
-              } else {
-                Write-Host "No ./.dotnet wipe this run — workloads from 'Install .NET and workloads' are intact; skipping reinstall."
+              $dotnetDir = Join-Path (Get-Location).Path '.dotnet'
+              $dotnetExeName = if ($IsWindows) { 'dotnet.exe' } else { 'dotnet' }
+              $dotnetExe = Join-Path $dotnetDir $dotnetExeName
+              $packStamp = Join-Path $dotnetDir 'packs/.stamp'
+              $platform = '${{ parameters.Platform }}'
+              $expectedWorkload = switch ($platform) {
+                'android' { 'android' }
+                'ios' { 'ios' }
+                'catalyst' { 'maccatalyst' }
+                default { $null }
               }
-            displayName: 'Restore .NET workloads if .dotnet was wiped'
+
+              function Test-ExpectedWorkload {
+                if (-not $expectedWorkload) { return $true }
+                if (-not (Test-Path -LiteralPath $dotnetExe -PathType Leaf)) {
+                  Write-Host "Local dotnet executable is missing: $dotnetExe"
+                  return $false
+                }
+
+                $workloadOutput = @(& $dotnetExe workload list 2>&1)
+                $workloadExit = $LASTEXITCODE
+                $workloadOutput | ForEach-Object { Write-Host "$_" }
+                if ($workloadExit -ne 0) {
+                  Write-Host "dotnet workload list exited $workloadExit."
+                  return $false
+                }
+
+                $workloadPattern = '^\s*' + [regex]::Escape($expectedWorkload) + '(?:\s|$)'
+                return [bool]($workloadOutput | Where-Object { "$_" -match $workloadPattern } | Select-Object -First 1)
+              }
+
+              $wasWiped = Test-Path -LiteralPath $marker
+              if (-not $expectedWorkload -and -not $wasWiped) {
+                Write-Host "Platform '$platform' does not require mobile workload verification; no recovery needed."
+                exit 0
+              }
+
+              $workloadRegistered = Test-ExpectedWorkload
+              if (-not $wasWiped -and $workloadRegistered) {
+                Write-Host "Verified '$expectedWorkload' workload registration; no recovery needed."
+                exit 0
+              }
+
+              if ($wasWiped) {
+                Write-Host "##[warning]./.dotnet was wiped by a Build MSBuild Tasks retry — forcing workload reinstallation."
+              } else {
+                Write-Host "##[warning]Expected '$expectedWorkload' workload is not registered — forcing workload reinstallation before Gate."
+                New-Item -ItemType File -Force -Path $marker | Out-Null
+              }
+
+              if (Test-Path -LiteralPath $packStamp) {
+                Write-Host "Removing stale workload-pack stamp $packStamp so _InstallWorkloadPacks cannot be skipped."
+                Remove-Item -LiteralPath $packStamp -Force -ErrorAction SilentlyContinue
+              }
+
+              ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+              $restoreExit = $LASTEXITCODE
+              if ($restoreExit -ne 0) {
+                Write-Host "##[warning]Workload reinstall exited $restoreExit; retaining the recovery marker for the task retry."
+                exit $restoreExit
+              }
+
+              if ($expectedWorkload -and -not (Test-ExpectedWorkload)) {
+                Write-Host "##[warning]Workload reinstall completed but '$expectedWorkload' is still not registered; retaining the recovery marker for the task retry."
+                exit 1
+              }
+
+              Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
+              if ($expectedWorkload) {
+                Write-Host "Verified '$expectedWorkload' workload registration after recovery."
+              } else {
+                Write-Host "Completed .NET recovery for platform '$platform'."
+              }
+            displayName: 'Verify and restore .NET workloads'
             retryCountOnTaskFailure: 2
             continueOnError: true
             timeoutInMinutes: 30
