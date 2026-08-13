@@ -52,7 +52,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var firstPage = new ContentPage();
 			var firstContent = new ShellContent { Content = firstPage };
-			var section = new ShellSection { Items = { firstContent } };
+			var expectedBadgeText = "7";
+			var section = new ShellSection
+			{
+				BadgeText = expectedBadgeText,
+				Items = { firstContent }
+			};
 			var item = new FlyoutItem { Items = { section } };
 			var secondSection = new ShellSection
 			{
@@ -96,6 +101,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(sectionHandler.ContentTabLayout);
 				var bottomBackground = Assert.IsType<ColorChangeRevealDrawable>(itemHandler.BottomNavigationView.Background);
 				Assert.Equal(expectedTabBackground.ToPlatform(), bottomBackground.EndColor);
+				var badge = itemHandler.BottomNavigationView.GetBadge(0);
+				Assert.NotNull(badge);
+				Assert.Equal(expectedBadgeText, badge.Text);
 				var background = Assert.IsType<ColorDrawable>(sectionHandler.ContentTabLayout.Background);
 				Assert.Equal(expectedTabBackground.ToPlatform(), background.Color);
 				Assert.Equal(1, shellHandler.BottomNavAppearanceTrackerCreationCount);

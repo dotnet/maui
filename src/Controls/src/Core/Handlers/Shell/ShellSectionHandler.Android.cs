@@ -277,14 +277,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void SetupTabbedViewManager()
         {
-            if (_tabbedViewManager is not null || VirtualView is null || _viewPager is null || MauiContext is null)
+            if (_tabbedViewManager is not null || VirtualView is null || _viewPager is null || MauiContext is null || _shellContext is null)
             {
                 return;
-            }
-
-            if (_shellContext is null)
-            {
-                throw new InvalidOperationException("Shell context must be initialized before setting up top tabs.");
             }
 
             if (SectionController.GetItems().Count <= 1)

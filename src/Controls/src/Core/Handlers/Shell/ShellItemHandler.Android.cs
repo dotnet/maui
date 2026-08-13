@@ -221,9 +221,10 @@ namespace Microsoft.Maui.Controls.Handlers
             RecreateBottomNavigationAppearanceTracker();
 
             // Initial setup registers the appearance observer immediately afterward. When
-            // setup was deferred, replay the appearance for the newly-created bottom tabs.
+            // setup was deferred, replay state for the newly-created bottom tabs.
             if (_registeredShell is not null && _displayedPage is not null)
             {
+                UpdateAllBadges();
                 ((IShellController)_registeredShell).AppearanceChanged(_displayedPage, false);
             }
         }
