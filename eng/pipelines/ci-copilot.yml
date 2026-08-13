@@ -655,11 +655,14 @@ stages:
           # skipping _InstallWorkloadPacks. The gate then fails with NETSDK1147 even
           # though the pinned Android packs are available (build 14953016 / #37321).
           # Verify the platform workload on every mobile run, invalidate the stale
-          # stamp when recovery is needed, and clear the retry marker only after the
-          # repo-pinned installer has restored a visible registration.
+          # stamp when recovery is needed, then rebuild the MAUI build tasks that the
+          # failed wrapper could not produce. Clear each failure marker only after
+          # its corresponding prerequisite is healthy.
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $marker = Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads'
+              $recoveryReadyMarker = Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-workloads-recovered'
+              $btFailMarker = Join-Path "$(Build.ArtifactStagingDirectory)" 'buildtasks-failed.marker'
               $dotnetDir = Join-Path (Get-Location).Path '.dotnet'
               $dotnetExeName = if ($IsWindows) { 'dotnet.exe' } else { 'dotnet' }
               $dotnetExe = Join-Path $dotnetDir $dotnetExeName
@@ -692,6 +695,7 @@ stages:
               }
 
               $wasWiped = Test-Path -LiteralPath $marker
+              $dotnetRecoveryCompleted = Test-Path -LiteralPath $recoveryReadyMarker
               if (-not $expectedWorkload -and -not $wasWiped) {
                 Write-Host "Platform '$platform' does not require mobile workload verification; no recovery needed."
                 exit 0
@@ -703,31 +707,52 @@ stages:
                 exit 0
               }
 
-              if ($wasWiped) {
-                Write-Host "##[warning]./.dotnet was wiped by a Build MSBuild Tasks retry — forcing workload reinstallation."
+              $needsDotnetRecovery = -not $workloadRegistered -or ($wasWiped -and -not $dotnetRecoveryCompleted)
+              if ($needsDotnetRecovery) {
+                if ($wasWiped) {
+                  Write-Host "##[warning]./.dotnet was wiped by a Build MSBuild Tasks retry — forcing workload reinstallation."
+                } else {
+                  Write-Host "##[warning]Expected '$expectedWorkload' workload is not registered — forcing workload reinstallation before Gate."
+                  New-Item -ItemType File -Force -Path $marker | Out-Null
+                }
+
+                if (Test-Path -LiteralPath $packStamp) {
+                  Write-Host "Removing stale workload-pack stamp $packStamp so _InstallWorkloadPacks cannot be skipped."
+                  Remove-Item -LiteralPath $packStamp -Force -ErrorAction SilentlyContinue
+                }
+
+                ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+                $restoreExit = $LASTEXITCODE
+                if ($restoreExit -ne 0) {
+                  Write-Host "##[warning]Workload reinstall exited $restoreExit; retaining the recovery marker for the task retry."
+                  exit $restoreExit
+                }
+
+                if ($expectedWorkload -and -not (Test-ExpectedWorkload)) {
+                  Write-Host "##[warning]Workload reinstall completed but '$expectedWorkload' is still not registered; retaining the recovery marker for the task retry."
+                  exit 1
+                }
+
+                New-Item -ItemType File -Force -Path $recoveryReadyMarker | Out-Null
               } else {
-                Write-Host "##[warning]Expected '$expectedWorkload' workload is not registered — forcing workload reinstallation before Gate."
-                New-Item -ItemType File -Force -Path $marker | Out-Null
+                Write-Host "The repo-pinned .NET SDK and '$expectedWorkload' workload were already recovered by an earlier task attempt."
               }
 
-              if (Test-Path -LiteralPath $packStamp) {
-                Write-Host "Removing stale workload-pack stamp $packStamp so _InstallWorkloadPacks cannot be skipped."
-                Remove-Item -LiteralPath $packStamp -Force -ErrorAction SilentlyContinue
-              }
+              if ($wasWiped -and (Test-Path -LiteralPath $btFailMarker)) {
+                Write-Host "##[warning]Rebuilding MAUI MSBuild tasks now that the local SDK and workloads are healthy."
+                ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+                $buildTasksExit = $LASTEXITCODE
+                if ($buildTasksExit -ne 0) {
+                  Write-Host "##[warning]MSBuild task recovery exited $buildTasksExit; retaining the failure markers for the task retry."
+                  exit $buildTasksExit
+                }
 
-              ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
-              $restoreExit = $LASTEXITCODE
-              if ($restoreExit -ne 0) {
-                Write-Host "##[warning]Workload reinstall exited $restoreExit; retaining the recovery marker for the task retry."
-                exit $restoreExit
-              }
-
-              if ($expectedWorkload -and -not (Test-ExpectedWorkload)) {
-                Write-Host "##[warning]Workload reinstall completed but '$expectedWorkload' is still not registered; retaining the recovery marker for the task retry."
-                exit 1
+                Remove-Item -LiteralPath $btFailMarker -Force -ErrorAction SilentlyContinue
+                Write-Host "Verified MAUI MSBuild tasks after .NET recovery."
               }
 
               Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
+              Remove-Item -LiteralPath $recoveryReadyMarker -Force -ErrorAction SilentlyContinue
               if ($expectedWorkload) {
                 Write-Host "Verified '$expectedWorkload' workload registration after recovery."
               } else {
