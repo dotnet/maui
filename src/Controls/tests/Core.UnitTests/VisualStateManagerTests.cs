@@ -154,6 +154,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingGroupUpdatesVisualStateAndValidationSubscription()
+		{
+			var label = new Label();
+			var originalMargin = new Thickness(1);
+			var replacementMargin = new Thickness(2);
+			var groups = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = NormalStateName,
+							Setters =
+							{
+								new Setter { Property = View.MarginProperty, Value = originalMargin }
+							}
+						}
+					}
+				}
+			};
+
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			Assert.Equal(originalMargin, label.Margin);
+
+			var replacementGroup = new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState
+					{
+						Name = NormalStateName,
+						Setters =
+						{
+							new Setter { Property = View.MarginProperty, Value = replacementMargin }
+						}
+					}
+				}
+			};
+
+			groups[0] = replacementGroup;
+
+			Assert.Equal(replacementMargin, label.Margin);
+			Assert.Throws<InvalidOperationException>(() => replacementGroup.States.Add(new VisualState { Name = NormalStateName }));
+		}
+
+		[Fact]
 		public void StateNamesInGroupMayNotBeNull()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
