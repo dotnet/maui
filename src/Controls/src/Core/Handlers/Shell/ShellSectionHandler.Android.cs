@@ -1017,7 +1017,7 @@ namespace Microsoft.Maui.Controls.Handlers
             toolbarTracker?.Page = page;
 
             // Update CurrentItem
-            virtualView.CurrentItem = newCurrentItem;
+            virtualView.SetValueFromRenderer(ShellSection.CurrentItemProperty, newCurrentItem);
 
             // Trigger appearance update
             if (shell is not null)
