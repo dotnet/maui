@@ -156,6 +156,11 @@ foreach ($variantName in $selectedVariants) {
     }
 
     $variant = $variantDefinitions[$variantName]
+    foreach ($requiredField in @("displayName", "projectName", "template")) {
+        if ([string]::IsNullOrWhiteSpace([string]$variant[$requiredField])) {
+            throw "Variant '$variantName' does not define required field '$requiredField'."
+        }
+    }
 
     foreach ($platformName in $selectedPlatforms) {
         if (-not $platformDefinitions.Contains($platformName)) {
