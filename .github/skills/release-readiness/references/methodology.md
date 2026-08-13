@@ -343,10 +343,12 @@ formatting separate:
 3. Query a bounded, server-ordered window of definition-1095 builds independently
    for each ref. Prefer the newest build at exact branch HEAD, then any candidate
    proven current by trigger-path analysis after skipping only newer candidates
-   proven stale. Stop at the first indeterminate candidate rather than upgrading
-   to an older green build. Use `queueTime` with build ID as the deterministic
-   ordering. This prevents both a later manual retry of an older SHA and a
-   transient currency-probe failure from producing false readiness.
+   proven stale. Buffer indeterminate candidates rather than blindly bypassing or
+   immediately selecting them: preserve `unknown` when possible outcomes disagree,
+   but keep a later proven-current failure `red` when every buffered candidate is
+   also a completed failure/cancellation. Use `queueTime` with build ID as the
+   deterministic ordering. This prevents both false readiness upgrades and loss
+   of certain blocking evidence.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
    - current completed/succeeded → `green`

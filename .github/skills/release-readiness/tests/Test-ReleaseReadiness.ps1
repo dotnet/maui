@@ -9039,6 +9039,69 @@ Assert-Eq -Label "internal build selection: indeterminate newer failed build kee
 Assert-Eq -Label "internal build selection: indeterminate newer failed build remains reported" `
     -Expected 106 -Actual $indeterminateHealth.branches[0].build.id
 
+$olderFailedBuild = New-InternalBuildFixture `
+    -BranchRef $internalInflightRef `
+    -Sha 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' `
+    -Result 'failed' `
+    -Id 109
+$olderFailedBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T13:00:00Z'
+$certainRedSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($indeterminateFailedBuild, $olderFailedBuild) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher {
+        param($BranchRef, $BuildSourceSha, $BranchHeadSha)
+        if ($BuildSourceSha -eq 'cccccccccccccccccccccccccccccccccccccccc') { return $null }
+        return $true
+    }
+Assert-Eq -Label "internal build selection: later current failure preserves certain red evidence" `
+    -Expected 109 -Actual $certainRedSelection.Build.id
+Assert-Eq -Label "internal build selection: later current failure is selected as current" `
+    -Expected $true -Actual $certainRedSelection.CoversHead
+
+$certainRedHealth = Get-InternalOfficialBuildHealth `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists $true `
+    -BuildFetcher (New-InternalFixtureFetcher @{
+        $internalInflightRef = [PSCustomObject]@{
+            Success = $true
+            Build = $indeterminateFailedBuild
+            Builds = @($indeterminateFailedBuild, $olderFailedBuild)
+        }
+        $internalReleaseRef = [PSCustomObject]@{
+            Success = $true
+            Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 110)
+        }
+    }) `
+    -HeadFetcher $internalHeadFetcher `
+    -BuildCurrencyFetcher {
+        param($BranchRef, $BuildSourceSha, $BranchHeadSha)
+        if ($BuildSourceSha -eq 'cccccccccccccccccccccccccccccccccccccccc') { return $null }
+        return $true
+    } `
+    -GitHubActions:$false
+Assert-Eq -Label "internal build selection: all possible failed outcomes keep health red" `
+    -Expected 'red' -Actual $certainRedHealth.branches[0].classification
+Assert-Eq -Label "internal build selection: all possible failed outcomes keep readiness blocked" `
+    -Expected 'BLOCKED' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $certainRedHealth -PublicSafe:$false)[0].Status)
+
+$blankShaFailedBuild = New-InternalBuildFixture `
+    -BranchRef $internalInflightRef `
+    -Sha '' `
+    -Result 'canceled' `
+    -Id 111
+$blankShaFailedBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T15:00:00Z'
+$blankShaCertainRedSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($blankShaFailedBuild, $olderFailedBuild) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher { return $true }
+Assert-Eq -Label "internal build selection: blank-SHA blocking candidate does not erase later current failure" `
+    -Expected 109 -Actual $blankShaCertainRedSelection.Build.id
+Assert-Eq -Label "internal build selection: blank-SHA and current failure remain conclusively current" `
+    -Expected $true -Actual $blankShaCertainRedSelection.CoversHead
+
 $orderedArgs = Get-InternalOfficialBuildAzArguments `
     -BranchRef $internalInflightRef `
     -DefinitionId 1095 `

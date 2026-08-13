@@ -166,9 +166,10 @@ missing or malformed evidence is `unknown`.
 
 Discovery examines a bounded five-build window. It prefers a build at exact branch
 HEAD, then scans by queue time and skips only candidates proven stale before
-accepting one proven current. Indeterminate evidence stops the scan and remains
-`unknown`, so neither an old-SHA retry nor a transient probe failure can produce
-a false readiness upgrade.
+accepting one proven current. Indeterminate candidates are buffered: disagreeing
+possible outcomes remain `unknown`, while a later proven-current failure remains
+`red` only when every buffered candidate is also a completed failure/cancellation.
+This prevents both false readiness upgrades and loss of certain blocking evidence.
 
 The internal check is intentionally fail-open:
 

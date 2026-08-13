@@ -130,6 +130,16 @@ function Get-InternalOfficialBuildOverallClassification {
     return $worst
 }
 
+function Test-InternalOfficialBuildHasBlockingResult {
+    param([AllowNull()]$Build)
+
+    if ($null -eq $Build) { return $false }
+    $status = [string](Get-InternalBuildProperty $Build 'status')
+    $result = [string](Get-InternalBuildProperty $Build 'result')
+    return $status.Equals('completed', [System.StringComparison]::OrdinalIgnoreCase) -and
+        $result.ToLowerInvariant() -in @('failed', 'canceled', 'cancelled')
+}
+
 function ConvertTo-SafeInternalBuildNumber {
     param([AllowNull()]$BuildNumber)
 
@@ -236,12 +246,19 @@ function Select-InternalOfficialBuildForHead {
 
     $latestBuild = $orderedBuilds[0]
     $latestCoverage = $null
+    $firstIndeterminateBuild = $null
+    $allIndeterminateBuildsBlock = $true
     if ($BuildCurrencyFetcher -and -not [string]::IsNullOrWhiteSpace($BranchHeadSha)) {
         foreach ($candidate in $orderedBuilds) {
             $sourceBranch = [string](Get-InternalBuildProperty $candidate 'sourceBranch')
             $sourceSha = [string](Get-InternalBuildProperty $candidate 'sourceVersion')
             if ($sourceBranch -ne $BranchRef -or [string]::IsNullOrWhiteSpace($sourceSha)) {
-                return [PSCustomObject]@{ Build = $candidate; CoversHead = $null }
+                if ($null -eq $firstIndeterminateBuild) {
+                    $firstIndeterminateBuild = $candidate
+                }
+                $allIndeterminateBuildsBlock = $allIndeterminateBuildsBlock -and
+                    (Test-InternalOfficialBuildHasBlockingResult $candidate)
+                continue
             }
 
             $coverage = try {
@@ -254,14 +271,29 @@ function Select-InternalOfficialBuildForHead {
                 $latestCoverage = $coverage
             }
             if ($null -eq $coverage) {
-                return [PSCustomObject]@{ Build = $candidate; CoversHead = $null }
+                if ($null -eq $firstIndeterminateBuild) {
+                    $firstIndeterminateBuild = $candidate
+                }
+                $allIndeterminateBuildsBlock = $allIndeterminateBuildsBlock -and
+                    (Test-InternalOfficialBuildHasBlockingResult $candidate)
+                continue
             }
             if ($coverage -eq $true) {
+                if ($null -ne $firstIndeterminateBuild) {
+                    if ($allIndeterminateBuildsBlock -and
+                        (Test-InternalOfficialBuildHasBlockingResult $candidate)) {
+                        return [PSCustomObject]@{ Build = $candidate; CoversHead = $true }
+                    }
+                    return [PSCustomObject]@{ Build = $firstIndeterminateBuild; CoversHead = $null }
+                }
                 return [PSCustomObject]@{ Build = $candidate; CoversHead = $true }
             }
         }
     }
 
+    if ($null -ne $firstIndeterminateBuild) {
+        return [PSCustomObject]@{ Build = $firstIndeterminateBuild; CoversHead = $null }
+    }
     return [PSCustomObject]@{ Build = $latestBuild; CoversHead = $latestCoverage }
 }
 
