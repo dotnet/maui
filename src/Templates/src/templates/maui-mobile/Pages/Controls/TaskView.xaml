@@ -9,6 +9,7 @@
     x:Class="MauiApp._1.Pages.Controls.TaskView"
     StrokeShape="RoundRectangle 20"
     Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
+    SemanticProperties.Description="{Binding Title}"
     x:DataType="models:ProjectTask">
 
         <shimmer:SfShimmer
