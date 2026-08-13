@@ -209,10 +209,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				nativeToolbar.SetTitleTextColor(defaultTitleTextColor);
 			}
-			else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
-			{
-				nativeToolbar.SetTitleTextColor(defaultForegroundColor.ToPlatform().ToArgb());
-			}
 
 			nativeToolbar.UpdateNavigationIconColor(toolbar);
 			nativeToolbar.UpdateOverflowIconColor(toolbar);
@@ -245,10 +241,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
-				else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
-				{
-					icon.Color = defaultForegroundColor.ToPlatform().ToArgb();
-				}
 				else if (GetDefaultNavigationIconColor(nativeToolbar) is int defaultNavigationIconColor)
 				{
 					icon.Color = defaultNavigationIconColor;
@@ -256,21 +248,21 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static Color? GetDefaultForegroundColor()
-		{
-			return Application.Current?.RequestedTheme switch
-			{
-				ApplicationModel.AppTheme.Light => Colors.Black,
-				ApplicationModel.AppTheme.Dark => Colors.White,
-				_ => null
-			};
-		}
-
 		static ColorStateList? GetDefaultTitleTextColor(AToolbar nativeToolbar)
 		{
 			var context = nativeToolbar.Context?.GetThemedContext();
-			return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
-				Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				var colorContext = context is null
+				 ? null
+				 : ColorStateList.ValueOf(new global::Android.Graphics.Color(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface)));
+				return colorContext;
+			}
+			else
+			{
+				return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
+				 Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+			}
 		}
 
 		static int? GetDefaultNavigationIconColor(AToolbar nativeToolbar)
@@ -279,6 +271,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (context is null)
 			{
 				return null;
+			}
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				return context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
 			}
 
 			using var icon = new DrawerArrowDrawable(context);
@@ -292,7 +289,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor ?? GetDefaultForegroundColor();
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
 			if (iconColor is null)
 			{
 				overflowIcon.ClearColorFilter();
