@@ -281,12 +281,35 @@ function Get-ClassNameFromFile {
             try {
                 $content = Get-Content $p -Raw -ErrorAction Stop
             } catch { continue }
-            # Match the first non-static, non-abstract `public class XXX` or
-            # `public partial class XXX` declaration — only concrete classes (skip
-            # `abstract`/`static`) so a base test class declared above the concrete
-            # test class isn't picked up and turned into a non-matching test filter.
-            $m = [regex]::Match($content, '(?m)^\s*public(?:\s+(?:partial|sealed))*\s+class\s+(\w+)')
-            if ($m.Success) { return $m.Groups[1].Value }
+            # A test file can declare concrete helper classes before its actual test
+            # class. Prefer the first concrete class that owns a test method
+            # attribute instead of blindly selecting the first public class.
+            # This keeps XHarness class isolation on the class that owns the tests
+            # (for example ShellHandlerTests_Shell, not StartupTrackingShellHandler).
+            $classMatches = @([regex]::Matches(
+                $content,
+                '(?m)^\s*public(?<modifiers>(?:\s+(?:partial|sealed|abstract|static))*)\s+class\s+(?<name>\w+)'
+            ))
+            $concreteClasses = @($classMatches | Where-Object {
+                $_.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b'
+            })
+            if ($concreteClasses.Count -eq 0) { continue }
+
+            $testAttributes = @([regex]::Matches(
+                $content,
+                '(?m)^\s*\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b'
+            ))
+            foreach ($testAttribute in $testAttributes) {
+                $testClass = $classMatches |
+                    Where-Object { $_.Index -lt $testAttribute.Index } |
+                    Select-Object -Last 1
+                if ($testClass -and
+                    $testClass.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b') {
+                    return $testClass.Groups['name'].Value
+                }
+            }
+
+            return $concreteClasses[0].Groups['name'].Value
         }
     }
     return $null

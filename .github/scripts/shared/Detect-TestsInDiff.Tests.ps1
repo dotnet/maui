@@ -229,6 +229,80 @@ public async Task LaterMethod()
             Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It 'selects the test class when a concrete helper class appears first' {
+        $root = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-tests-" + [Guid]::NewGuid().ToString('N'))
+        $relativeFile = 'src/Controls/tests/DeviceTests/Elements/Shell/ShellHandlerSubclasses.Android.cs'
+        $testFile = Join-Path $root $relativeFile
+
+        try {
+            New-Item -ItemType Directory -Force -Path (Split-Path $testFile -Parent) | Out-Null
+            @'
+namespace Microsoft.Maui.DeviceTests;
+
+public class StartupTrackingShellHandler
+{
+}
+
+[Category(TestCategory.Shell)]
+public partial class ShellHandlerTests_Shell
+{
+}
+'@ | Set-Content $testFile -Encoding UTF8
+
+            Push-Location $root
+            try {
+                git init -q
+                git config user.email tests@example.com
+                git config user.name Tests
+                git add .
+                git commit -q -m base
+                $base = (git rev-parse HEAD).Trim()
+
+                @'
+namespace Microsoft.Maui.DeviceTests;
+
+public class StartupTrackingShellHandler
+{
+}
+
+[Category(TestCategory.Shell)]
+public partial class ShellHandlerTests_Shell
+{
+    [Fact]
+    public async Task SinglePageShellCreatesTabInfrastructureOnlyWhenNeeded()
+    {
+        await Task.Yield();
+    }
+
+    [Fact]
+    public async Task SwitchingShellItemsCreatesBottomTabsOnlyWhenNeeded()
+    {
+        await Task.Yield();
+    }
+}
+'@ | Set-Content $testFile -Encoding UTF8
+                git add .
+                git commit -q -m tests
+
+                $tests = @(& $scriptPath `
+                    -ChangedFiles $relativeFile `
+                    -DiffBase $base `
+                    -Platform android)
+            } finally {
+                Pop-Location
+            }
+
+            $test = $tests | Where-Object { $_.Type -eq 'DeviceTest' } | Select-Object -First 1
+            $test.ClassFilter | Should -Be 'Microsoft.Maui.DeviceTests.ShellHandlerTests_Shell'
+            @($test.Methods) | Should -Be @(
+                'SinglePageShellCreatesTabInfrastructureOnlyWhenNeeded',
+                'SwitchingShellItemsCreatesBottomTabsOnlyWhenNeeded'
+            )
+        } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 Describe 'Detect-TestsInDiff PR files cache' {
