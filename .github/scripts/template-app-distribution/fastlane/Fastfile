@@ -113,7 +113,12 @@ platform :ios do
       upload_to_testflight(upload_options)
     rescue => error
       if testflight_review_conflict?(error)
-        UI.important("The build was uploaded, but another build in this train is already in beta review. Treating this as a successful upload.")
+        if groups.empty?
+          UI.important("The build was uploaded, but another build in this train is already in beta review. Treating this as a successful upload because no external distribution was requested.")
+        else
+          UI.error("The build was uploaded, but another build in this train is already in beta review, so the requested external TestFlight groups did not receive it.")
+          raise
+        end
       elsif testflight_processing_timeout?(error)
         UI.error("The build was uploaded, but App Store Connect did not finish processing it before the configured wait timeout, so requested TestFlight distribution could not be completed.")
         raise

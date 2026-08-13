@@ -32,6 +32,21 @@ function Get-SecretText([string]$Value) {
     }
 }
 
+function Assert-PairedEnvironmentValues(
+    [string]$FirstName,
+    [string]$SecondName,
+    [string]$Description
+) {
+    $firstConfigured = -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($FirstName))
+    $secondConfigured = -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($SecondName))
+
+    if ($firstConfigured -ne $secondConfigured) {
+        throw "$Description is partially configured. Set both $FirstName and $SecondName, or leave both unset."
+    }
+
+    return $firstConfigured
+}
+
 function Get-VariantProvisioningProfile([string]$VariantName) {
     if (-not [string]::IsNullOrWhiteSpace($env:APPLE_PROVISIONING_PROFILES_JSON)) {
         $profiles = Get-SecretText $env:APPLE_PROVISIONING_PROFILES_JSON | ConvertFrom-Json
@@ -67,6 +82,14 @@ function Write-Base64File([string]$Base64Value, [string]$Path) {
 
 if (-not $IsMacOS) {
     throw "Apple signing assets can only be installed on macOS runners."
+}
+
+$hasDeveloperIdSigningAssets = $false
+if ($Platform -eq "maccatalyst") {
+    $hasDeveloperIdSigningAssets = Assert-PairedEnvironmentValues `
+        "APPLE_DEVELOPERID_CERTIFICATE_BASE64" `
+        "APPLE_DEVELOPERID_PROVISIONING_PROFILE_BASE64" `
+        "Developer ID sideload signing"
 }
 
 $tempDirectory = Join-Path $env:RUNNER_TEMP "template-app-apple-signing"
@@ -181,7 +204,7 @@ if ($Platform -eq "maccatalyst") {
 # launched outside the store).
 $developerIdIdentity = $null
 $developerIdProvisionValue = $null
-if ($Platform -eq "maccatalyst" -and -not [string]::IsNullOrWhiteSpace($env:APPLE_DEVELOPERID_CERTIFICATE_BASE64)) {
+if ($Platform -eq "maccatalyst" -and $hasDeveloperIdSigningAssets) {
     $developerIdCertPath = Join-Path $tempDirectory "developer-id-certificate.p12"
     Write-Base64File $env:APPLE_DEVELOPERID_CERTIFICATE_BASE64 $developerIdCertPath
     $developerIdCertPassword = if ([string]::IsNullOrWhiteSpace($env:APPLE_DEVELOPERID_CERTIFICATE_PASSWORD)) {
@@ -198,10 +221,6 @@ if ($Platform -eq "maccatalyst" -and -not [string]::IsNullOrWhiteSpace($env:APPL
         Select-Object -First 1
     if ([string]::IsNullOrWhiteSpace($developerIdIdentity)) {
         throw "APPLE_DEVELOPERID_CERTIFICATE_BASE64 was provided but no 'Developer ID Application' identity was found in it."
-    }
-
-    if ([string]::IsNullOrWhiteSpace($env:APPLE_DEVELOPERID_PROVISIONING_PROFILE_BASE64)) {
-        throw "APPLE_DEVELOPERID_CERTIFICATE_BASE64 also requires APPLE_DEVELOPERID_PROVISIONING_PROFILE_BASE64 (a Developer ID Mac Catalyst provisioning profile)."
     }
 
     $developerIdProfilePath = Join-Path $tempDirectory "$Variant-developerid.provisionprofile"
