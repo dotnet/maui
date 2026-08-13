@@ -96,3 +96,4 @@ public class Issue32275 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
