@@ -86,8 +86,13 @@ pre-agent-steps:
 
       # This workflow's own open [leak-scan] issues (filed with the agentic-workflows label).
       gh issue list --repo "$GITHUB_REPOSITORY" --search '"[leak-scan]" in:title' \
-        --state open --label agentic-workflows --limit 200 --json number,title,body \
+        --state open --label agentic-workflows --limit 1000 --json number,title,body \
         > /tmp/gh-aw/agent/my-open-leakscan.json
+      OPEN_LEAKSCAN_COUNT=$(jq 'length' /tmp/gh-aw/agent/my-open-leakscan.json)
+      if test "$OPEN_LEAKSCAN_COUNT" -ge 1000; then
+        echo "ERROR: open [leak-scan] search returned $OPEN_LEAKSCAN_COUNT rows — at/above the GitHub Search API's 1000-result ceiling. The issue de-dup history may be truncated, so aborting fail-closed." >&2
+        exit 1
+      fi
       jq -r '.[].title | gsub("[\r\n]+";" ")' /tmp/gh-aw/agent/my-open-leakscan.json \
         | sed -E 's/^\[leak-scan\] *//' \
         | awk '{ if (match($0, /[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+/)) { chain=substr($0,RSTART,RLENGTH); n=split(chain,seg,"."); print seg[n-1]"."seg[n] } }' \

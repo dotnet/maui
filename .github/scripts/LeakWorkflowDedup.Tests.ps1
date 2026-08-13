@@ -226,6 +226,38 @@ Describe 'effective recursive revert state' {
 }
 
 Describe 'workflow enforcement boundary' {
+    It 'fails closed when the early merged-fix search reaches the GitHub Search API ceiling' {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
+        $stepStart = $workflow.IndexOf('# (a) Exact [leak-fix] PRs already MERGED')
+        $stepEnd = $workflow.IndexOf('# Canonicalize every merged PR title', $stepStart)
+        $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
+
+        $rawWrite = $step.IndexOf('> /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json')
+        $ceilingCheck = $step.IndexOf('if test "$MERGED_RAW_COUNT" -ge 1000')
+        $filteredWrite = $step.IndexOf('> /tmp/gh-aw/agent/merged-leak-fix-prs.json')
+
+        $step | Should -Match '--state merged --limit 1000'
+        ($rawWrite -ge 0) | Should -BeTrue
+        ($ceilingCheck -gt $rawWrite) | Should -BeTrue
+        ($filteredWrite -gt $ceilingCheck) | Should -BeTrue
+    }
+
+    It 'uses the full Search API window and fails closed for open leak-scan issue de-dup' {
+        $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/daily-leak-hunter.md') -Raw
+        $stepStart = $workflow.IndexOf("# This workflow's own open [leak-scan] issues")
+        $stepEnd = $workflow.IndexOf('# Exact [leak-fix] PRs already MERGED', $stepStart)
+        $step = $workflow.Substring($stepStart, $stepEnd - $stepStart)
+
+        $rawWrite = $step.IndexOf('> /tmp/gh-aw/agent/my-open-leakscan.json')
+        $ceilingCheck = $step.IndexOf('if test "$OPEN_LEAKSCAN_COUNT" -ge 1000')
+        $dedupRead = $step.IndexOf("jq -r '.[].title")
+
+        $step | Should -Match '--state open --label agentic-workflows --limit 1000'
+        ($rawWrite -ge 0) | Should -BeTrue
+        ($ceilingCheck -gt $rawWrite) | Should -BeTrue
+        ($dedupRead -gt $ceilingCheck) | Should -BeTrue
+    }
+
     It 'wires the final check into safe-output steps rather than prompt-only enforcement' {
         $workflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../workflows/leak-fixer.md') -Raw
 

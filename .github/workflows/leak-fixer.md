@@ -452,6 +452,11 @@ if ! gh pr list --repo "$GITHUB_REPOSITORY" --state merged --limit 1000 \
   echo "ERROR: 'gh pr list --state merged [leak-fix]' failed — aborting to avoid fail-open dedup that would re-create an already-merged fix." >&2
   exit 1
 fi
+MERGED_RAW_COUNT=$(jq 'length' /tmp/gh-aw/agent/merged-leak-fix-prs-raw.json)
+if test "$MERGED_RAW_COUNT" -ge 1000; then
+  echo "ERROR: 'gh pr list --state merged [leak-fix]' returned $MERGED_RAW_COUNT rows — at/above the GitHub Search API's 1000-result ceiling. The merged-fix history may be truncated, so aborting before build/test work (fail-closed)." >&2
+  exit 1
+fi
 jq '[.[] |
     select(.mergedAt != null) |
     select(.title | startswith("[leak-fix] ")) |
