@@ -102,6 +102,8 @@ namespace Microsoft.Maui.Controls
 				_doubleArray[i] = -1;
 		}
 
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
 		/// <summary>Determines whether the specified object is equal to the current <see cref="ShellAppearance"/>.</summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
@@ -131,6 +133,7 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		/// <summary>Serves as the default hash function.</summary>
 		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()

@@ -271,7 +271,7 @@ public static class XamlComponentRegistry
 
 	/// <summary>
 	/// Resolves <paramref name="key"/> using full StaticResource lookup semantics: walks the
-	/// element parent chain (each <see cref="IResourcesProvider"/>'s <c>Resources</c>),
+	/// element parent chain and checks each resource provider's <c>Resources</c>,
 	/// then falls back to <c>Application.Current.Resources</c> and system resources.
 	/// Returns <see langword="null"/> if not found.
 	/// </summary>

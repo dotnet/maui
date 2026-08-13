@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </remarks>
 	public class LocationTypeConverter : TypeConverter
 	{
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="TypeConverter.CanConvertFrom(ITypeDescriptorContext?, Type)"/>
 		/// <summary>Determines whether conversion is possible from the specified type to <see cref="Location"/>.</summary>
 		/// <param name="context">The format context.</param>
 		/// <param name="sourceType">The source type to check.</param>
@@ -23,6 +25,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
+		/// <inheritdoc cref="TypeConverter.CanConvertTo(ITypeDescriptorContext?, Type?)"/>
 		/// <summary>Determines whether conversion is possible from <see cref="Location"/> to the specified type.</summary>
 		/// <param name="context">The format context.</param>
 		/// <param name="destinationType">The destination type to check.</param>
@@ -30,6 +33,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
+		/// <inheritdoc cref="TypeConverter.ConvertFrom(ITypeDescriptorContext?, CultureInfo?, object)"/>
 		/// <summary>Converts a string representation of latitude and longitude to a <see cref="Location"/> object.</summary>
 		/// <param name="context">The format context.</param>
 		/// <param name="culture">The culture info.</param>
@@ -54,6 +58,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Location)}");
 		}
 
+		/// <inheritdoc cref="TypeConverter.ConvertTo(ITypeDescriptorContext?, CultureInfo?, object?, Type)"/>
 		/// <summary>Converts a <see cref="Location"/> object to a string representation.</summary>
 		/// <param name="context">The format context.</param>
 		/// <param name="culture">The culture info.</param>

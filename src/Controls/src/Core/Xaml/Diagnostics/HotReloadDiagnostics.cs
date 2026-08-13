@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics;
 /// Subscribe to these events to observe hot reload lifecycle in tooling or diagnostics overlays.
 /// </summary>
 /// <remarks>
-/// Events are only raised when <see cref="Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled"/>
-/// is <see langword="true"/>. All events are raised on the thread where the work occurs:
+/// Events are only raised when the <c>Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled</c>
+/// feature switch is <see langword="true"/>. All events are raised on the thread where the work occurs:
 /// <see cref="UpdateRequested"/> and <see cref="UpdateSkipped"/> on the calling thread,
 /// <see cref="UpdateApplied"/> and <see cref="UpdateFailed"/> on the main/UI thread.
 /// </remarks>
