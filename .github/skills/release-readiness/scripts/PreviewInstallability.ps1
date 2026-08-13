@@ -97,6 +97,10 @@ function ConvertFrom-PreviewPackageSourceSpec {
     & $add 'dotnet-workloads' "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-workloads/nuget/v3/index.json" 'workload-set' $false
     & $add "dotnet$Major-workloads" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$Major-workloads/nuget/v3/index.json" 'platform' $false
     & $add "dotnet$Major" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$Major/nuget/v3/index.json" 'product' $false
+    if ($Major -gt 8) {
+        $compatMajor = $Major - 1
+        & $add "dotnet$compatMajor" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$compatMajor/nuget/v3/index.json" 'compatibility' $false
+    }
     & $add "dotnet$Major-transport" "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet$Major-transport/nuget/v3/index.json" 'transport' $false
     & $add 'dotnet-public' "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" 'shared' $false
     & $add 'nuget.org' 'https://api.nuget.org/v3/index.json' 'shared' $false
@@ -503,17 +507,17 @@ function Get-PreviewSourceOrder {
 
     $id = $PackageId.ToLowerInvariant()
     $roleOrder = if ($id -match '^microsoft\.net\.workloads\.') {
-        @('workload-set', 'additional', 'product', 'platform', 'transport', 'shared')
+        @('workload-set', 'additional', 'product', 'compatibility', 'platform', 'transport', 'shared')
     } elseif ($id -match '^microsoft\.net\.sdk\.android\.manifest-' -or $id -match '^microsoft\.android\.') {
-        @('platform', 'additional', 'product', 'transport', 'shared')
+        @('platform', 'additional', 'product', 'compatibility', 'transport', 'shared')
     } elseif ($id -match '^microsoft\.netcore\.app\.runtime\.' -or $id -match '^microsoft\.net\.runtime\.') {
-        @('additional', 'transport', 'product', 'platform', 'shared')
+        @('additional', 'transport', 'product', 'compatibility', 'platform', 'shared')
     } elseif ($id -match '^microsoft\.(ios|maccatalyst|macos|tvos)\.') {
-        @('product', 'additional', 'platform', 'transport', 'shared')
+        @('product', 'compatibility', 'additional', 'platform', 'transport', 'shared')
     } elseif ($id -match '^microsoft\.net\..+\.manifest-' -or $id -match '^microsoft\.maui\.') {
-        @('product', 'additional', 'platform', 'transport', 'shared')
+        @('product', 'compatibility', 'additional', 'platform', 'transport', 'shared')
     } else {
-        @('additional', 'product', 'platform', 'transport', 'shared')
+        @('additional', 'product', 'compatibility', 'platform', 'transport', 'shared')
     }
 
     return @(
@@ -798,6 +802,19 @@ function ConvertTo-IsolatedNuGetConfig {
         [void]$builder.AppendLine("    <add key=`"$name`" value=`"$uri`" protocolVersion=`"3`" />")
     }
     [void]$builder.AppendLine('  </packageSources>')
+    [void]$builder.AppendLine('  <packageSourceMapping>')
+    foreach ($source in @($Sources | Sort-Object -Property Name -Unique)) {
+        $name = [Security.SecurityElement]::Escape([string]$source.Name)
+        [void]$builder.AppendLine("    <packageSource key=`"$name`">")
+        $pattern = if ([string]$source.Role -eq 'workload-set') {
+            'Microsoft.NET.Workloads.*'
+        } else {
+            '*'
+        }
+        [void]$builder.AppendLine("      <package pattern=`"$pattern`" />")
+        [void]$builder.AppendLine('    </packageSource>')
+    }
+    [void]$builder.AppendLine('  </packageSourceMapping>')
     [void]$builder.AppendLine('</configuration>')
     return $builder.ToString()
 }
@@ -1275,7 +1292,7 @@ function Get-PreviewConsumerInstallability {
     foreach ($location in @($allLocations | Where-Object { $_.Status -eq 'found' })) {
         [void]$requiredSources.Add($location.ResolvedSource.Source)
     }
-    foreach ($baseline in @($sources | Where-Object { $_.Role -eq 'shared' })) {
+    foreach ($baseline in @($sources | Where-Object { -not $_.IsAdditional })) {
         [void]$requiredSources.Add($baseline)
     }
     if ($status -ne 'installable') {
