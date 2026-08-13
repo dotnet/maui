@@ -240,7 +240,9 @@ function Select-InternalOfficialBuildForHead {
         foreach ($candidate in $orderedBuilds) {
             $sourceBranch = [string](Get-InternalBuildProperty $candidate 'sourceBranch')
             $sourceSha = [string](Get-InternalBuildProperty $candidate 'sourceVersion')
-            if ($sourceBranch -ne $BranchRef -or [string]::IsNullOrWhiteSpace($sourceSha)) { continue }
+            if ($sourceBranch -ne $BranchRef -or [string]::IsNullOrWhiteSpace($sourceSha)) {
+                return [PSCustomObject]@{ Build = $candidate; CoversHead = $null }
+            }
 
             $coverage = try {
                 $currencyEvidence = & $BuildCurrencyFetcher $BranchRef $sourceSha $BranchHeadSha
@@ -250,6 +252,9 @@ function Select-InternalOfficialBuildForHead {
             }
             if ($candidate -eq $latestBuild) {
                 $latestCoverage = $coverage
+            }
+            if ($null -eq $coverage) {
+                return [PSCustomObject]@{ Build = $candidate; CoversHead = $null }
             }
             if ($coverage -eq $true) {
                 return [PSCustomObject]@{ Build = $candidate; CoversHead = $true }

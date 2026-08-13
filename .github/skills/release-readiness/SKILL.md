@@ -165,8 +165,10 @@ trigger-eligible commit is `stale`; a queued/running build is `in-progress`;
 missing or malformed evidence is `unknown`.
 
 Discovery examines a bounded five-build window. It prefers a build at exact branch
-HEAD, then one proven current by trigger-path analysis, before falling back to
-queue-time order, so a later retry of an old SHA cannot hide a current build.
+HEAD, then scans by queue time and skips only candidates proven stale before
+accepting one proven current. Indeterminate evidence stops the scan and remains
+`unknown`, so neither an old-SHA retry nor a transient probe failure can produce
+a false readiness upgrade.
 
 The internal check is intentionally fail-open:
 

@@ -8987,6 +8987,58 @@ $provenCurrentSelection = Select-InternalOfficialBuildForHead `
 Assert-Eq -Label "internal build selection: proven-current build wins over later stale rerun" `
     -Expected 105 -Actual $provenCurrentSelection.Build.id
 
+$indeterminateFailedBuild = New-InternalBuildFixture `
+    -BranchRef $internalInflightRef `
+    -Sha 'cccccccccccccccccccccccccccccccccccccccc' `
+    -Result 'failed' `
+    -Id 106
+$indeterminateFailedBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T14:00:00Z'
+$olderGreenBuild = New-InternalBuildFixture `
+    -BranchRef $internalInflightRef `
+    -Sha 'dddddddddddddddddddddddddddddddddddddddd' `
+    -Id 107
+$olderGreenBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T13:00:00Z'
+$indeterminateSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($indeterminateFailedBuild, $olderGreenBuild) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher {
+        param($BranchRef, $BuildSourceSha, $BranchHeadSha)
+        if ($BuildSourceSha -eq 'cccccccccccccccccccccccccccccccccccccccc') { return $null }
+        return $true
+    }
+Assert-Eq -Label "internal build selection: newer unknown evidence is not bypassed by older green build" `
+    -Expected 106 -Actual $indeterminateSelection.Build.id
+Assert-Eq -Label "internal build selection: newer unknown evidence remains unknown" `
+    -Expected $null -Actual $indeterminateSelection.CoversHead
+
+$indeterminateHealth = Get-InternalOfficialBuildHealth `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists $true `
+    -BuildFetcher (New-InternalFixtureFetcher @{
+        $internalInflightRef = [PSCustomObject]@{
+            Success = $true
+            Build = $indeterminateFailedBuild
+            Builds = @($indeterminateFailedBuild, $olderGreenBuild)
+        }
+        $internalReleaseRef = [PSCustomObject]@{
+            Success = $true
+            Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 108)
+        }
+    }) `
+    -HeadFetcher $internalHeadFetcher `
+    -BuildCurrencyFetcher {
+        param($BranchRef, $BuildSourceSha, $BranchHeadSha)
+        if ($BuildSourceSha -eq 'cccccccccccccccccccccccccccccccccccccccc') { return $null }
+        return $true
+    } `
+    -GitHubActions:$false
+Assert-Eq -Label "internal build selection: indeterminate newer failed build keeps health UNKNOWN" `
+    -Expected 'unknown' -Actual $indeterminateHealth.branches[0].classification
+Assert-Eq -Label "internal build selection: indeterminate newer failed build remains reported" `
+    -Expected 106 -Actual $indeterminateHealth.branches[0].build.id
+
 $orderedArgs = Get-InternalOfficialBuildAzArguments `
     -BranchRef $internalInflightRef `
     -DefinitionId 1095 `

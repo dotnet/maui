@@ -342,9 +342,11 @@ formatting separate:
    evaluated release branch.
 3. Query a bounded, server-ordered window of definition-1095 builds independently
    for each ref. Prefer the newest build at exact branch HEAD, then any candidate
-   proven current by trigger-path analysis, before falling back to newest
-   `queueTime` with build ID as the deterministic tie-breaker. This prevents a
-   later manual retry of an older SHA from eclipsing a current build.
+   proven current by trigger-path analysis after skipping only newer candidates
+   proven stale. Stop at the first indeterminate candidate rather than upgrading
+   to an older green build. Use `queueTime` with build ID as the deterministic
+   ordering. This prevents both a later manual retry of an older SHA and a
+   transient currency-probe failure from producing false readiness.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
    - current completed/succeeded → `green`
