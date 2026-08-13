@@ -13,6 +13,7 @@ using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.Communication;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Devices.Sensors;
@@ -22,7 +23,6 @@ using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Networking;
 using Microsoft.Maui.Storage;
-using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
 #if ANDROID
 using Android.App;
 #endif

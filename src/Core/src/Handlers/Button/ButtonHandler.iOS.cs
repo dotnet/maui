@@ -102,11 +102,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(button);
 
-			if (!handler.IsConnectingHandler())
-			{
-				// Any text update requires that we update any attributed string formatting
-				MapFormatting(handler, button);
-			}
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
@@ -143,13 +140,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateFont(button, fontManager);
 		}
 
-		// NOTE: This method routes through UpdateValue() rather than calling platform methods
-		// directly. This means any AppendToMapping/ModifyMapping customizations on CharacterSpacing
-		// will also fire here. This is intentional for extensibility and mirrors the EntryHandler pattern.
 		public static void MapFormatting(IButtonHandler handler, IText button)
 		{
 			// Update all of the attributed text formatting properties
-			handler.UpdateValue(nameof(ITextStyle.CharacterSpacing));
+			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, IImage image) =>

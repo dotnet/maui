@@ -107,10 +107,10 @@ public partial class Maui34056 : ContentPage
         [XamlInflatorData]
         internal void RelativeSourceSelfInDataTemplateWithXDataTypeUsesStringBinding(XamlInflator inflator)
         {
-            // Verifies SourceGen does not use the DataTemplate's x:DataType as the source type for
-            // {RelativeSource Self} bindings. The source is the element itself, resolved at runtime.
+            // Verifies compiled XAML does not use the DataTemplate's x:DataType as the source type
+            // for {RelativeSource Self} bindings. The source is the element itself, resolved at runtime.
             // Path=ItemName exists on Maui34056ItemViewModel to ensure the guard is what prevents
-            // compiled binding, not a failed type lookup. XamlC behavior is pre-existing and separate.
+            // compiled binding, not a failed type lookup.
             var page = new Maui34056(inflator);
 
             var template = ((CollectionView)page.SelfBindingCollectionView).ItemTemplate;
@@ -121,18 +121,9 @@ public partial class Maui34056 : ContentPage
             Assert.NotNull(bindingContext);
             var binding = bindingContext.Bindings.GetValue();
 
-            if (inflator is XamlInflator.XamlC)
-            {
-                // XamlC pre-existing behavior: compiles RelativeSource Self using DataTemplate x:DataType.
-                // This is a separate issue, not addressed by this fix.
-                Assert.IsType<TypedBinding<Maui34056ItemViewModel, string>>(binding);
-            }
-            else
-            {
-                // Runtime: no compile-time type info, always string-based Binding.
-                // SourceGen (the fix): HasRelativeSourceBinding blocks x:DataType path for Self bindings.
-                Assert.IsType<Binding>(binding);
-            }
+            // Runtime has no compile-time type info. SourceGen and XamlC both reject the inherited
+            // x:DataType because RelativeSource Self resolves to the element, not the template item.
+            Assert.IsType<Binding>(binding);
         }
 
         [Theory]

@@ -79,6 +79,5 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-
 	}
 }

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.UnitTests.Dispatching
 	[Category(TestCategory.Core, TestCategory.Dispatching)]
 	// Serialize mutations of DispatcherProvider.Current with other tests that
 	// modify process-wide dispatcher/MainThread state.
-	[Collection(nameof(DispatcherProviderTestCollection))]
+	[Collection("MainThreadStaticState")]
 	public class DispatcherTests : IDisposable
 	{
 		public DispatcherTests()

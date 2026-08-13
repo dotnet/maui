@@ -61,10 +61,7 @@ namespace Microsoft.Maui.Controls
 		static void MapFormattedText(ILabelHandler handler, Label label)
 		{
 			if (label.IsConnectingHandler())
-			{
-				// If we're connecting the handler, we don't want to map the text multiple times.
 				return;
-			}
 
 			MapText(handler, label);
 		}
@@ -170,10 +167,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// if there is formatted text,
 				// then we re-apply the whole formatted text
-				if (!handler.IsConnectingHandler())
-				{
-					handler.UpdateValue(nameof(FormattedText));
-				}
+				handler.UpdateValue(nameof(FormattedText));
 			}
 			else if (label.TextType == TextType.Text || !label.TextColor.IsDefault())
 			{

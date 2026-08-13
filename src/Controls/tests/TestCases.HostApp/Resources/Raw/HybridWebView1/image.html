@@ -206,8 +206,6 @@
                     window.chrome.webview.postMessage("__RawMessage|" + msg);
                 } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
                     window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
-                } else if (window.hybridWebViewHost) {
-                    window.hybridWebViewHost.sendMessage("__RawMessage|" + msg);
                 }
             }
         };

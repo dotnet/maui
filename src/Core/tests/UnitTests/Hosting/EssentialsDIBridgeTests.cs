@@ -23,7 +23,7 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
-	[Collection(nameof(DispatcherProviderTestCollection))]
+	[Collection("MainThreadStaticState")]
 	public class EssentialsDIBridgeTests : IDisposable
 	{
 		public void Dispose()

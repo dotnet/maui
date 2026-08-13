@@ -34,20 +34,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
-			nameof(InputTransparent), typeof(bool), typeof(VisualElement), default(bool),
+			nameof(InputTransparent), typeof(bool), typeof(VisualElement), BooleanBoxes.FalseBox,
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
-		/// <summary>
-		/// Gets the explicit value of <see cref="IsEnabled"/> set directly on this element,
-		/// before coercion by <see cref="IsEnabledCore"/> which factors in parent state.
-		/// </summary>
-		internal bool IsExplicitlyEnabled => _isEnabledExplicit;
-
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
+			typeof(VisualElement), BooleanBoxes.TrueBox, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(nameof(X), typeof(double), typeof(VisualElement), default(double));
 
@@ -276,7 +270,7 @@ namespace Microsoft.Maui.Controls
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
-		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
@@ -642,7 +636,7 @@ namespace Microsoft.Maui.Controls
 		public bool InputTransparent
 		{
 			get { return (bool)GetValue(InputTransparentProperty); }
-			set { SetValue(InputTransparentProperty, value); }
+			set { SetValue(InputTransparentProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -655,7 +649,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -728,7 +722,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -1191,7 +1185,10 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChanged(value);
+				// Use key-only propagation with an on-demand resolver to avoid resolving lazy resources (issue #35500).
+				OnResourcesChangedKeys(
+					value?.MergedResourcesKeys,
+					key => value is not null && value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -1616,8 +1613,9 @@ namespace Microsoft.Maui.Controls
 
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				if (innerKeys.Add(value.Key))
@@ -1644,10 +1642,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// Build a set of keys we already have in our resources (child takes precedence)
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
@@ -1699,10 +1698,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// Build a set of keys we already have in our resources (child takes precedence)
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
@@ -1877,10 +1877,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._isEnabledExplicit = (bool)value;
-				return visualElement.IsEnabledCore;
+				return BooleanBoxes.Box(visualElement.IsEnabledCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1900,10 +1900,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._inputTransparentExplicit = (bool)value;
-				return visualElement.InputTransparentCore;
+				return BooleanBoxes.Box(visualElement.InputTransparentCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -2213,7 +2213,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>

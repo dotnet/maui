@@ -135,11 +135,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(editor);
 
-			if (!handler.IsConnectingHandler())
-			{
-				// Any text update requires that we update any attributed string formatting
-				MapFormatting(handler, editor);
-			}
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, editor);
 		}
 
 		public static void MapBackground(IEditorHandler handler, IEditor editor)
@@ -209,17 +206,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapKeyboard(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateKeyboard(editor);
 
-		// NOTE: This method routes through UpdateValue() rather than calling platform methods
-		// directly. This means any AppendToMapping/ModifyMapping customizations on MaxLength
-		// and CharacterSpacing will also fire here. This is intentional for extensibility
-		// and mirrors the EntryHandler pattern.
 		public static void MapFormatting(IEditorHandler handler, IEditor editor)
 		{
-			// We update MaxLength which depends on the text
-			handler.UpdateValue(nameof(IEditor.MaxLength));
+			handler.PlatformView?.UpdateMaxLength(editor);
 
 			// Update all of the attributed text formatting properties
-			handler.UpdateValue(nameof(IEditor.CharacterSpacing));
+			handler.PlatformView?.UpdateCharacterSpacing(editor);
 		}
 
 		public static void MapIsEnabled(IEditorHandler handler, IEditor editor) =>
