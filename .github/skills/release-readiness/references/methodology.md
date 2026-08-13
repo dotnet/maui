@@ -346,9 +346,11 @@ formatting separate:
    proven stale. Buffer indeterminate candidates rather than blindly bypassing or
    immediately selecting them: preserve `unknown` when possible outcomes disagree,
    but keep a later proven-current failure `red` when every buffered candidate is
-   also a completed failure/cancellation. Use `queueTime` with build ID as the
-   deterministic ordering. This prevents both false readiness upgrades and loss
-   of certain blocking evidence.
+   also a completed failure/cancellation. If the bounded window ends with only
+   same-branch failed/canceled indeterminate candidates, preserve a blocking
+   failed-or-stale outcome because every possible currency result blocks. Use
+   `queueTime` with build ID as the deterministic ordering. This prevents both
+   false readiness upgrades and loss of certain blocking evidence.
 4. Resolve each public branch HEAD and compare it to the build's `sourceVersion`.
 5. Classify deterministically:
    - current completed/succeeded → `green`

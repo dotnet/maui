@@ -48,7 +48,8 @@ function Get-InternalOfficialBuildClassification {
         [AllowNull()]$Build,
         [Parameter(Mandatory = $true)][string]$ExpectedBranchRef,
         [AllowNull()][string]$BranchHeadSha,
-        [AllowNull()][Nullable[bool]]$BuildCoversHead
+        [AllowNull()][Nullable[bool]]$BuildCoversHead,
+        [bool]$BlocksRegardlessOfCurrency = $false
     )
 
     if ($null -eq $Build) {
@@ -63,6 +64,13 @@ function Get-InternalOfficialBuildClassification {
     if ([string]::IsNullOrWhiteSpace($sourceBranch) -or
         -not $sourceBranch.Equals($ExpectedBranchRef, [System.StringComparison]::OrdinalIgnoreCase)) {
         return [PSCustomObject]@{ Classification = 'unknown'; Reason = 'branch-mismatch' }
+    }
+    if ($BlocksRegardlessOfCurrency -and
+        (Test-InternalOfficialBuildHasBlockingResult $Build)) {
+        return [PSCustomObject]@{
+            Classification = 'red'
+            Reason = "completed-$($result.ToLowerInvariant())-or-stale"
+        }
     }
     if ([string]::IsNullOrWhiteSpace($sourceSha)) {
         return [PSCustomObject]@{ Classification = 'unknown'; Reason = 'missing-source-sha' }
@@ -226,7 +234,7 @@ function Select-InternalOfficialBuildForHead {
 
     $orderedBuilds = @(Get-OrderedInternalOfficialBuilds -Builds $Builds)
     if ($orderedBuilds.Count -eq 0) {
-        return [PSCustomObject]@{ Build = $null; CoversHead = $null }
+        return [PSCustomObject]@{ Build = $null; CoversHead = $null; BlocksRegardlessOfCurrency = $false }
     }
 
     if (-not [string]::IsNullOrWhiteSpace($BranchHeadSha)) {
@@ -240,7 +248,7 @@ function Select-InternalOfficialBuildForHead {
             } |
             Select-Object -First 1
         if ($null -ne $exactBuild) {
-            return [PSCustomObject]@{ Build = $exactBuild; CoversHead = $true }
+            return [PSCustomObject]@{ Build = $exactBuild; CoversHead = $true; BlocksRegardlessOfCurrency = $false }
         }
     }
 
@@ -252,7 +260,14 @@ function Select-InternalOfficialBuildForHead {
         foreach ($candidate in $orderedBuilds) {
             $sourceBranch = [string](Get-InternalBuildProperty $candidate 'sourceBranch')
             $sourceSha = [string](Get-InternalBuildProperty $candidate 'sourceVersion')
-            if ($sourceBranch -ne $BranchRef -or [string]::IsNullOrWhiteSpace($sourceSha)) {
+            if ($sourceBranch -ne $BranchRef) {
+                if ($null -eq $firstIndeterminateBuild) {
+                    $firstIndeterminateBuild = $candidate
+                }
+                $allIndeterminateBuildsBlock = $false
+                continue
+            }
+            if ([string]::IsNullOrWhiteSpace($sourceSha)) {
                 if ($null -eq $firstIndeterminateBuild) {
                     $firstIndeterminateBuild = $candidate
                 }
@@ -282,19 +297,23 @@ function Select-InternalOfficialBuildForHead {
                 if ($null -ne $firstIndeterminateBuild) {
                     if ($allIndeterminateBuildsBlock -and
                         (Test-InternalOfficialBuildHasBlockingResult $candidate)) {
-                        return [PSCustomObject]@{ Build = $candidate; CoversHead = $true }
+                        return [PSCustomObject]@{ Build = $candidate; CoversHead = $true; BlocksRegardlessOfCurrency = $false }
                     }
-                    return [PSCustomObject]@{ Build = $firstIndeterminateBuild; CoversHead = $null }
+                    return [PSCustomObject]@{ Build = $firstIndeterminateBuild; CoversHead = $null; BlocksRegardlessOfCurrency = $false }
                 }
-                return [PSCustomObject]@{ Build = $candidate; CoversHead = $true }
+                return [PSCustomObject]@{ Build = $candidate; CoversHead = $true; BlocksRegardlessOfCurrency = $false }
             }
         }
     }
 
     if ($null -ne $firstIndeterminateBuild) {
-        return [PSCustomObject]@{ Build = $firstIndeterminateBuild; CoversHead = $null }
+        return [PSCustomObject]@{
+            Build = $firstIndeterminateBuild
+            CoversHead = $null
+            BlocksRegardlessOfCurrency = $allIndeterminateBuildsBlock
+        }
     }
-    return [PSCustomObject]@{ Build = $latestBuild; CoversHead = $latestCoverage }
+    return [PSCustomObject]@{ Build = $latestBuild; CoversHead = $latestCoverage; BlocksRegardlessOfCurrency = $false }
 }
 
 function Invoke-InternalOfficialBuildProcess {
@@ -840,7 +859,8 @@ function Get-InternalOfficialBuildHealth {
             -Build $build `
             -ExpectedBranchRef $branchRef `
             -BranchHeadSha $headSha `
-            -BuildCoversHead $buildCoversHead
+            -BuildCoversHead $buildCoversHead `
+            -BlocksRegardlessOfCurrency ([bool](Get-InternalBuildProperty $selection 'BlocksRegardlessOfCurrency'))
 
         $buildId = Get-InternalBuildProperty $build 'id'
         $buildUrl = if ($buildId) {

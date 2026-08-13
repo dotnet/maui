@@ -169,7 +169,9 @@ HEAD, then scans by queue time and skips only candidates proven stale before
 accepting one proven current. Indeterminate candidates are buffered: disagreeing
 possible outcomes remain `unknown`, while a later proven-current failure remains
 `red` only when every buffered candidate is also a completed failure/cancellation.
-This prevents both false readiness upgrades and loss of certain blocking evidence.
+A terminal window containing only same-branch failed/canceled indeterminate builds
+also remains blocking because every candidate is either red or stale. This prevents
+both false readiness upgrades and loss of certain blocking evidence.
 
 The internal check is intentionally fail-open:
 

@@ -9102,6 +9102,51 @@ Assert-Eq -Label "internal build selection: blank-SHA blocking candidate does no
 Assert-Eq -Label "internal build selection: blank-SHA and current failure remain conclusively current" `
     -Expected $true -Actual $blankShaCertainRedSelection.CoversHead
 
+$terminalFailedSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($indeterminateFailedBuild) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher { return $null }
+Assert-Eq -Label "internal build selection: terminal failed null-currency build is certainly blocking" `
+    -Expected $true -Actual $terminalFailedSelection.BlocksRegardlessOfCurrency
+
+$terminalFailedHealth = Get-InternalOfficialBuildHealth `
+    -MajorVersion 11 `
+    -ReleaseBranch 'release/11.0.1xx-preview7' `
+    -ReleaseBranchExists $true `
+    -BuildFetcher (New-InternalFixtureFetcher @{
+        $internalInflightRef = [PSCustomObject]@{
+            Success = $true
+            Build = $indeterminateFailedBuild
+            Builds = @($indeterminateFailedBuild)
+        }
+        $internalReleaseRef = [PSCustomObject]@{
+            Success = $true
+            Build = (New-InternalBuildFixture -BranchRef $internalReleaseRef -Sha $internalReleaseHead -Id 112)
+        }
+    }) `
+    -HeadFetcher $internalHeadFetcher `
+    -BuildCurrencyFetcher { return $null } `
+    -GitHubActions:$false
+Assert-Eq -Label "internal build selection: terminal failed null-currency health remains red" `
+    -Expected 'red' -Actual $terminalFailedHealth.branches[0].classification
+Assert-Eq -Label "internal build selection: terminal failed null-currency readiness remains blocked" `
+    -Expected 'BLOCKED' -Actual (@(Convert-InternalOfficialBuildHealthToChecks -Health $terminalFailedHealth -PublicSafe:$false)[0].Status)
+
+$terminalCanceledBuild = New-InternalBuildFixture `
+    -BranchRef $internalInflightRef `
+    -Sha 'ffffffffffffffffffffffffffffffffffffffff' `
+    -Result 'canceled' `
+    -Id 113
+$terminalCanceledBuild | Add-Member -NotePropertyName queueTime -NotePropertyValue '2026-07-29T12:00:00Z'
+$allNullBlockingSelection = Select-InternalOfficialBuildForHead `
+    -Builds @($indeterminateFailedBuild, $terminalCanceledBuild) `
+    -BranchHeadSha $internalInflightHead `
+    -BranchRef $internalInflightRef `
+    -BuildCurrencyFetcher { return $null }
+Assert-Eq -Label "internal build selection: all-null failed/canceled window is certainly blocking" `
+    -Expected $true -Actual $allNullBlockingSelection.BlocksRegardlessOfCurrency
+
 $orderedArgs = Get-InternalOfficialBuildAzArguments `
     -BranchRef $internalInflightRef `
     -DefinitionId 1095 `
