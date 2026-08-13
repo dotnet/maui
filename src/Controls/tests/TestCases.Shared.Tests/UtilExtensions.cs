@@ -29,13 +29,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		public static void NavigateToGallery(this IApp app, string page)
+		public static void NavigateToGallery(this IApp app, string page, string? pageReadyElement = null)
 		{
 			// For Catalyst app directly go the test page while opening.
 			if (app is not AppiumCatalystApp)
 			{
 				app.WaitForGoToTestButtonWithRecovery();
-				NavigateTo(app, page);
+				NavigateTo(app, page, pageReadyElement);
 			}
 		}
 
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			throw new TimeoutException($"{message} (the app did not recover after crash-recovery attempts)");
 		}
 
-		public static void NavigateTo(this IApp app, string text)
+		public static void NavigateTo(this IApp app, string text, string? pageReadyElement = null)
 		{
 			app.WaitForElement("SearchBar");
 			app.ClearText("SearchBar");
@@ -101,7 +101,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			app.Tap(goToTestButtonId);
 
-			app.WaitForNoElement(goToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
+			if (pageReadyElement is null)
+				app.WaitForNoElement(goToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
+			else
+				app.WaitForElement(pageReadyElement, $"Timed out waiting for {pageReadyElement} after navigating to {text}", TimeSpan.FromMinutes(1));
 		}
 
 		public static int CenterX(this Rectangle rect)
