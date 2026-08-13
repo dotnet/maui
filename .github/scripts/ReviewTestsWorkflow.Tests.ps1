@@ -42,7 +42,16 @@ Describe '/review tests compiled trust boundary' {
         $sealStep | Should -Match (
             'sudo install -d -o root -g root -m 0755 (?:(?!sudo install).)*?\$\{trusted\}')
 
-        $sealedFiles = @(
+        $contextGuard = $sealStep.IndexOf(
+            'if [ -f \"${CONTEXT_DIRECTORY}/context.json\" ]; then',
+            [StringComparison]::Ordinal)
+        $contextGuard | Should -BeGreaterOrEqual 0
+
+        $mandatorySeal = $sealStep.Substring(0, $contextGuard)
+        $mandatorySeal | Should -Not -Match '(?m)(?:^|\\n)\s*(?:if|elif|else)\b'
+        $mandatorySeal | Should -Not -Match '\|\|\s*(?:true|echo)\b'
+
+        $mandatoryFiles = @(
             @{
                 Source = '.github/skills/review-test-failures/SKILL.md'
                 Destination = '${trusted}/SKILL.md'
@@ -54,7 +63,18 @@ Describe '/review tests compiled trust boundary' {
             @{
                 Source = '.github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1'
                 Destination = '${trusted}/Merge-TestVisualsIntoComment.ps1'
-            },
+            }
+        )
+
+        foreach ($file in $mandatoryFiles) {
+            $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
+                '(?:(?!sudo install).)*?' + [regex]::Escape($file.Source) +
+                '(?:(?!sudo install).)*?' +
+                [regex]::Escape($file.Destination)
+            $mandatorySeal | Should -Match $installPattern
+        }
+
+        $optionalFiles = @(
             @{
                 Source = '${CONTEXT_DIRECTORY}/context.json'
                 Destination = '${trusted}/context.json'
@@ -65,7 +85,7 @@ Describe '/review tests compiled trust boundary' {
             }
         )
 
-        foreach ($file in $sealedFiles) {
+        foreach ($file in $optionalFiles) {
             $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
                 '(?:(?!sudo install).)*?' + [regex]::Escape($file.Source) +
                 '(?:(?!sudo install).)*?' +
@@ -130,6 +150,8 @@ Describe '/review tests compiled trust boundary' {
             'If `context\.json` or `context\.md` is missing, post the intended short')
         $prompt | Should -Not -Match (
             '\.github/skills/review-test-failures/(?:SKILL\.md|scripts/)')
+        $prompt | Should -Not -Match (
+            '\.github/docs/maui-ci-facts\.md')
         $prompt | Should -Not -Match (
             '\.github/workflows/copilot-review-tests\.md')
     }
