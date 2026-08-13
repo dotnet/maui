@@ -55,15 +55,12 @@ namespace UITest.Appium
 		{
 			if (parameters.TryGetValue("element", out var val))
 			{
-				AppiumElement? element = GetAppiumElement(val);
+				AppiumElement? element = GetAppiumElement(parameters["element"]);
 				if (element == null)
 				{
 					return CommandResponse.FailedEmptyResponse;
 				}
-				Func<IUIElement>? refreshElement = parameters.TryGetValue("refreshElement", out var refresh)
-					? refresh as Func<IUIElement>
-					: null;
-				return ClickElement(element, refreshElement);
+				return ClickElement(element);
 			}
 			else if (parameters.TryGetValue("x", out var x) &&
 					 parameters.TryGetValue("y", out var y))
@@ -96,13 +93,12 @@ namespace UITest.Appium
 			return CommandResponse.FailedEmptyResponse;
 		}
 
-		CommandResponse ClickElement(AppiumElement element, Func<IUIElement>? refreshElement)
+		CommandResponse ClickElement(AppiumElement element)
 		{
 			string tagName = string.Empty;
 
-			// Callers with a locator can re-query only if the click fails. Preserve the existing
-			// tag-name fallback for element-only calls that cannot provide a locator.
-			if (_appiumApp.Driver is MacDriver && refreshElement is null)
+			// If the click fails on catalyst we need to retrieve the element again
+			if (_appiumApp.Driver is MacDriver)
 				tagName = element.TagName;
 
 			try
@@ -125,9 +121,7 @@ namespace UITest.Appium
 			{
 				// Appium elements will sometimes become stale
 				// Which appears to happen if click fails, so, we retrieve it here
-				if (refreshElement is not null)
-					element = GetAppiumElement(refreshElement()) ?? element;
-				else if (!String.IsNullOrWhiteSpace(tagName))
+				if (!String.IsNullOrWhiteSpace(tagName))
 					element = (AppiumElement)_appiumApp.FindElement(tagName);
 
 				if (element is null)
