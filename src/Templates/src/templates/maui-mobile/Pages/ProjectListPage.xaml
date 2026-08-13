@@ -32,8 +32,13 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
                     <Border 
-                        Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"
-                        SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
+                        Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}">
+                        <SemanticProperties.Description>
+                            <MultiBinding StringFormat="{}{0}, {1}">
+                                <Binding Path="Name" />
+                                <Binding Path="Description" />
+                            </MultiBinding>
+                        </SemanticProperties.Description>
                         <VerticalStackLayout Padding="10">
                             <Label Text="{Binding Name}" FontSize="24" />
                             <Label Text="{Binding Description}" />
