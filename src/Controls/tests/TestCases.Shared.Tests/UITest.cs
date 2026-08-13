@@ -702,20 +702,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (width <= 0 || height <= 0)
 				return bytes;
 
+			byte[] ReturnUncroppedScreenshot(string reason)
+			{
+				TestContext.Error.WriteLine($"Unable to crop the Mac screenshot; preserving the full screenshot instead. {reason}");
+				return bytes;
+			}
+
 			using var image = new MagickImage(bytes);
 			var displayBounds = CGDisplayBounds(CGMainDisplayID());
 
 			if (displayBounds.Size.Width <= 0 || displayBounds.Size.Height <= 0)
-				throw new InvalidOperationException($"Invalid main display bounds: {displayBounds.Size.Width}x{displayBounds.Size.Height}.");
+				return ReturnUncroppedScreenshot($"Invalid main display bounds: {displayBounds.Size.Width}x{displayBounds.Size.Height}.");
 
-			// Mac2 reports element bounds in logical points while screenshots use
-			// display pixels. Hosted macOS agents currently use Retina scaling, so
-			// applying point coordinates directly crops the wrong part of the desktop.
+			// CGDisplayBounds and Mac2 element bounds use the display coordinate space,
+			// while the PNG uses its backing pixels. Deriving the scale from the actual
+			// image also handles non-Retina and downsampled screenshots correctly.
 			double scaleX = image.Width / displayBounds.Size.Width;
 			double scaleY = image.Height / displayBounds.Size.Height;
 
 			if (!double.IsFinite(scaleX) || !double.IsFinite(scaleY) || scaleX <= 0 || scaleY <= 0)
-				throw new InvalidOperationException($"Invalid Mac screenshot scale: {scaleX}x{scaleY}.");
+				return ReturnUncroppedScreenshot($"Invalid screenshot scale: {scaleX}x{scaleY}.");
 
 			int pixelX = (int)Math.Round((x - displayBounds.Origin.X) * scaleX);
 			int pixelY = (int)Math.Round((y - displayBounds.Origin.Y) * scaleY);
@@ -727,7 +733,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (pixelX < 0 || pixelY < 0 || pixelWidth <= 0 || pixelHeight <= 0 ||
 				pixelRight > image.Width || pixelBottom > image.Height)
 			{
-				throw new InvalidOperationException(
+				return ReturnUncroppedScreenshot(
 					$"Mac app window pixels ({pixelX},{pixelY},{pixelWidth},{pixelHeight}) " +
 					$"are outside screenshot bounds {image.Width}x{image.Height}.");
 			}
