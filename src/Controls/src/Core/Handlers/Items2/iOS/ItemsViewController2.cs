@@ -573,6 +573,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Keep the empty view inside the collection view so its pan gesture can drive pull-to-refresh.
+			// In RTL, cancel the collection layout's coordinate-system flip; content flow direction is applied below.
+			_emptyUIView.Transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+				? CGAffineTransform.MakeScale(-1, 1)
+				: CGAffineTransform.MakeIdentity();
+
 			if (_emptyViewFormsElement is not null)
 			{
 				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
@@ -605,25 +611,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Tag = EmptyTag;
-
-			// Add the empty view to the CollectionView's superview instead of the CollectionView itself.
-			// The compositional layout's flipsHorizontallyInOppositeLayoutDirection (default true) causes
-			// the CollectionView to flip its content coordinate system when SemanticContentAttribute is
-			// ForceRightToLeft. Layout-managed views (cells, supplementary views) are compensated by the
-			// layout, but direct subviews are NOT — resulting in mirror-flipped rendering.
-			// Adding to the superview avoids this flip zone entirely.
-			var targetView = CollectionView.Superview;
-			if (targetView is not null)
-			{
-				targetView.InsertSubviewAbove(_emptyUIView, CollectionView);
-			}
-			else
-			{
-				// TODO: DetermineEmptyViewFrame() returns superview-coordinate-space values (CollectionView.Frame.X/Y),
-				// which are incorrect when the empty view is a child of CollectionView. This fallback is unlikely
-				// to execute in practice since Superview is expected to be non-null by the time ShowEmptyView() is called.
-				CollectionView.AddSubview(_emptyUIView);
-			}
+			CollectionView.AddSubview(_emptyUIView);
 
 			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{
@@ -682,6 +670,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Frame = frame;
+			AlignEmptyView();
 
 			return frame;
 		}
