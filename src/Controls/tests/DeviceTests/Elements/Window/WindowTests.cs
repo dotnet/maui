@@ -419,6 +419,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.ConnectContent(finalRoot);
 					window.Toolbar = toolbar;
 					replacementWasDeferred = ReferenceEquals(outgoingRoot, rootManager.RootView);
+					Assert.True(HasRootSwapRetryInfrastructure(rootManager));
 				});
 				fragmentManager
 					.BeginTransaction()
@@ -435,6 +436,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
 					AssertPageAttachedToRoot(finalPage, rootManager);
 					AssertPlatformViewAttachedToRoot(toolbar.ToPlatform(handler.MauiContext), rootManager);
+					Assert.False(HasRootSwapRetryInfrastructure(rootManager));
 				}
 				finally
 				{
@@ -625,13 +627,14 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Detached Root With Active Fragment Cancels Replacement")]
-		public async Task DetachedRootWithActiveFragmentCancelsReplacement()
+		[Fact(DisplayName = "Detached Root With Active Fragment Cancels Replacement And Allows Recovery")]
+		public async Task DetachedRootWithActiveFragmentCancelsReplacementAndAllowsRecovery()
 		{
 			SetupBuilder();
 
 			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
 			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var recoveredPage = new ContentPage { Content = new Label { Text = "Recovered page" } };
 			var window = new Window(initialPage);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
@@ -640,6 +643,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
 				rootManager.SetToolbarElement(new ToolbarElementStub(new Toolbar(window)));
+				var activityRoot = Assert.IsType<FakeActivityRootView>(handler.PlatformViewUnderTest.Parent);
 				handler.PlatformViewUnderTest.RemoveFromParent();
 
 				NavigationRootManager.RootRequestOutcome? outcome = null;
@@ -651,6 +655,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, outcome);
 				Assert.Null(rootManager.RootView);
 				Assert.Null(rootManager.ToolbarElement);
+
+				applied = handler.ConnectContent(recoveredPage);
+
+				Assert.True(applied);
+				activityRoot.AddView(handler.PlatformViewUnderTest, 0);
+				await OnLoadedAsync(recoveredPage);
+				Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
+				AssertPageAttachedToRoot(recoveredPage, rootManager);
 			});
 		}
 
@@ -779,6 +791,17 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			Assert.Fail("The page's platform view is not hosted by the navigation root.");
+		}
+
+		static bool HasRootSwapRetryInfrastructure(NavigationRootManager rootManager)
+		{
+			const System.Reflection.BindingFlags flags =
+				System.Reflection.BindingFlags.Instance |
+				System.Reflection.BindingFlags.NonPublic;
+
+			var handler = typeof(NavigationRootManager).GetField("_mainHandler", flags)?.GetValue(rootManager);
+			var runnable = typeof(NavigationRootManager).GetField("_retryRunnable", flags)?.GetValue(rootManager);
+			return handler is not null || runnable is not null;
 		}
 
 		static FlyoutPage CreateFlyoutRoot()

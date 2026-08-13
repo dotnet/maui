@@ -17,9 +17,13 @@ namespace Microsoft.Maui.Platform
 {
 	public class NavigationRootManager
 	{
+		const int MaxFragmentManagerBusyRetries = 8;
+		const long InitialFragmentManagerBusyRetryDelay = 16;
+		const long MaxFragmentManagerBusyRetryDelay = 256;
+
 		IMauiContext _mauiContext;
 		Handler? _mainHandler;
-		Java.Lang.IRunnable? _retryRunnable;
+		Java.Lang.Runnable? _retryRunnable;
 		AView? _rootView;
 		ScopedFragment? _viewFragment;
 		IToolbarElement? _toolbarElement;
@@ -184,12 +188,33 @@ namespace Microsoft.Maui.Platform
 							CompleteRequest(request, RootRequestOutcome.Superseded, ref firstException);
 						}
 
-						ScheduleQueuedRootSwap();
-						break;
+						var requestToRetry = _queuedRequest;
+						if (requestToRetry is not null &&
+							requestToRetry.TryScheduleBusyRetry(out var retryDelay))
+						{
+							ScheduleQueuedRootSwap(retryDelay);
+							break;
+						}
+
+						if (_queuedRequest is not null)
+						{
+							CompleteRequest(
+								TakeQueuedRootRequest(),
+								RootRequestOutcome.Cancelled,
+								ref firstException);
+						}
+
+						_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(
+							"Cancelled an Android navigation root swap after {RetryCount} retries because fragment transactions remained busy.",
+							MaxFragmentManagerBusyRetries);
 					}
 					catch (RootSwapUnavailableException ex)
 					{
-						CancelRootSwaps(request, ex.Message, ref firstException);
+						CancelRootSwaps(
+							request,
+							ex.Message,
+							permanentlyUnavailable: false,
+							ref firstException);
 					}
 					catch (Exception ex)
 					{
@@ -206,6 +231,8 @@ namespace Microsoft.Maui.Platform
 			finally
 			{
 				_swapInFlight = false;
+				if (!_retryScheduled)
+					ReleaseRetryInfrastructure();
 			}
 
 			if (firstException is not null)
@@ -251,7 +278,7 @@ namespace Microsoft.Maui.Platform
 			return request;
 		}
 
-		void ScheduleQueuedRootSwap()
+		void ScheduleQueuedRootSwap(long delay)
 		{
 			if (_retryScheduled)
 				return;
@@ -266,7 +293,7 @@ namespace Microsoft.Maui.Platform
 
 			_mainHandler ??= new Handler(mainLooper);
 			_retryRunnable ??= new Java.Lang.Runnable(ProcessQueuedRootSwap);
-			if (!_mainHandler.Post(_retryRunnable))
+			if (!_mainHandler.PostDelayed(_retryRunnable, delay))
 			{
 				CancelQueuedRootSwap("The Android main looper stopped accepting navigation root swaps.");
 			}
@@ -275,7 +302,7 @@ namespace Microsoft.Maui.Platform
 		void CancelQueuedRootSwap(string message)
 		{
 			var request = TakeQueuedRootRequest();
-			StopRootSwaps();
+			StopRootSwaps(permanentlyUnavailable: true);
 			try
 			{
 				request.Complete(RootRequestOutcome.Cancelled, _rootView);
@@ -293,24 +320,22 @@ namespace Microsoft.Maui.Platform
 		void CancelRootSwaps(
 			RootRequest request,
 			string message,
+			bool permanentlyUnavailable,
 			ref Exception? firstException)
 		{
-			StopRootSwaps();
+			StopRootSwaps(permanentlyUnavailable);
 			CompleteRequest(request, RootRequestOutcome.Cancelled, ref firstException);
 
-			if (_queuedRequest is not null)
+			if (permanentlyUnavailable && _queuedRequest is not null)
 				CompleteRequest(TakeQueuedRootRequest(), RootRequestOutcome.Cancelled, ref firstException);
 
 			_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(message);
 		}
 
-		void StopRootSwaps()
+		void StopRootSwaps(bool permanentlyUnavailable)
 		{
-			_retryScheduled = false;
-			if (_mainHandler is not null && _retryRunnable is not null)
-				_mainHandler.RemoveCallbacks(_retryRunnable);
-
-			_rootSwapsUnavailable = true;
+			ReleaseRetryInfrastructure();
+			_rootSwapsUnavailable = permanentlyUnavailable;
 			CancelPendingFragment();
 			var outgoingRootView = _rootView;
 			_rootView = null;
@@ -342,6 +367,18 @@ namespace Microsoft.Maui.Platform
 					ex,
 					"A deferred Android navigation root swap failed.");
 			}
+		}
+
+		void ReleaseRetryInfrastructure()
+		{
+			_retryScheduled = false;
+			if (_mainHandler is not null && _retryRunnable is not null)
+				_mainHandler.RemoveCallbacks(_retryRunnable);
+
+			_retryRunnable?.Dispose();
+			_retryRunnable = null;
+			_mainHandler?.Dispose();
+			_mainHandler = null;
 		}
 
 		bool ConnectCore(RootRequest request)
@@ -515,8 +552,8 @@ namespace Microsoft.Maui.Platform
 			if (outgoingRootView.Parent is null)
 			{
 				if (_viewFragment is not null)
-				throw new RootSwapUnavailableException(
-					"The outgoing Android navigation root was detached while its content fragment was still active.");
+					throw new RootSwapUnavailableException(
+						"The outgoing Android navigation root was detached while its content fragment was still active.");
 
 				return true;
 			}
@@ -651,6 +688,23 @@ namespace Microsoft.Maui.Platform
 			public IToolbar? Toolbar { get; }
 
 			public int ToolbarVersion { get; }
+
+			int BusyRetryCount { get; set; }
+
+			public bool TryScheduleBusyRetry(out long delay)
+			{
+				if (BusyRetryCount >= MaxFragmentManagerBusyRetries)
+				{
+					delay = 0;
+					return false;
+				}
+
+				delay = Math.Min(
+					InitialFragmentManagerBusyRetryDelay << BusyRetryCount,
+					MaxFragmentManagerBusyRetryDelay);
+				BusyRetryCount++;
+				return true;
+			}
 
 			public void PrepareRoot(AView? rootView)
 			{
