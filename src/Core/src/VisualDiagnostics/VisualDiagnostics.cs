@@ -107,7 +107,7 @@ namespace Microsoft.Maui
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
 		}
 
-		static readonly WeakEventManager s_visualTreeChangedWeakEventManager = new WeakEventManager();
+		static readonly WeakEventManager _visualTreeChangedWeakEventManager = new WeakEventManager();
 
 		/// <summary>
 		/// Event fired when the visual tree changes (child added or removed).
@@ -119,21 +119,21 @@ namespace Microsoft.Maui
 			{
 				if (value is not null)
 				{
-					s_visualTreeChangedWeakEventManager.AddEventHandler(value);
+					_visualTreeChangedWeakEventManager.AddEventHandler(value);
 				}
 			}
 			remove
 			{
 				if (value is not null)
 				{
-					s_visualTreeChangedWeakEventManager.RemoveEventHandler(value);
+					_visualTreeChangedWeakEventManager.RemoveEventHandler(value);
 				}
 			}
 		}
 
 		static void OnVisualTreeChanged(VisualTreeChangeEventArgs e)
 		{
-			s_visualTreeChangedWeakEventManager.HandleEvent(e.Parent, e, nameof(VisualTreeChanged));
+			_visualTreeChangedWeakEventManager.HandleEvent(e.Parent, e, nameof(VisualTreeChanged));
 		}
 
 		/// <summary>
