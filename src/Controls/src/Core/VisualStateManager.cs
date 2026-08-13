@@ -461,7 +461,17 @@ namespace Microsoft.Maui.Controls
 		public VisualStateGroup this[int index]
 		{
 			get => _internalList[index];
-			set => _internalList[index] = value;
+			set
+			{
+				if (value == null)
+					throw new ArgumentNullException(nameof(value));
+
+				var oldGroup = _internalList[index];
+				oldGroup.StatesChanged -= ValidateAndNotify;
+				_internalList[index] = value;
+				value.StatesChanged += ValidateAndNotify;
+				ValidateAndNotify(_internalList);
+			}
 		}
 
 		WeakReference<VisualElement> _visualElement;
