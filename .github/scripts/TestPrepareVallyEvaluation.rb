@@ -61,6 +61,22 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert_includes stderr, "uses YAML aliases"
   end
 
+  def test_rejects_yaml_merge_keys_before_semantic_validation
+    write_raw_spec(<<~YAML)
+      stimuli:
+        - name: merge-key-bypass
+          prompt: unsafe
+          <<:
+            prompt: safe
+    YAML
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "uses YAML merge key <<"
+    assert_includes stderr, "trusted validation requires explicit mappings"
+  end
+
   def test_rejects_forbidden_environment_key
     write_spec("environment" => { "mcpServers" => {} })
 
