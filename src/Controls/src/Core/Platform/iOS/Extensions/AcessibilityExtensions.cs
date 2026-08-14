@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform;
@@ -20,30 +21,46 @@ internal static class AcessibilityExtensions
 	internal static void UpdateAccessibilityTraits(this UICollectionViewCell cell, ItemsView itemsView)
 	{
 		var selectionMode = (itemsView as CollectionView)?.SelectionMode;
-		if (cell.ContentView is not null
-			&& cell.ContentView.Subviews.Length > 0
-			&& selectionMode is not null)
+		if (cell.ContentView is null
+			|| cell.ContentView.Subviews.Length == 0
+			|| selectionMode is null)
 		{
-			var firstChild = cell.ContentView.Subviews[0];
-
-			// if the first child is a control, changing the accessibility traits from an entry to a button could be confusing.
-			if (firstChild is UIControl)
-			{
-				return;
-			}
-
-			var accessibilityElement = FindAccessibilityElement(firstChild, 0) ?? firstChild;
-
-			if (selectionMode != SelectionMode.None)
-			{
-				accessibilityElement.AccessibilityTraits |= UIAccessibilityTrait.Button;
-			}
-			else
-			{
-				accessibilityElement.AccessibilityTraits &= ~UIAccessibilityTrait.Button;
-			}
+			return;
 		}
+
+		if (selectionMode == SelectionMode.None)
+		{
+			// Nothing to apply. Only clear a previously-applied trait (e.g. the cell is being
+			// reused after a prior bind with Single/Multiple selection); avoid re-running the
+			// accessibility-element search when this cell never had the trait applied.
+			if (s_appliedAccessibilityElements.TryGetValue(cell, out var previouslyAppliedElement))
+			{
+				previouslyAppliedElement.AccessibilityTraits &= ~UIAccessibilityTrait.Button;
+				s_appliedAccessibilityElements.Remove(cell);
+			}
+
+			return;
+		}
+
+		var firstChild = cell.ContentView.Subviews[0];
+
+		// if the first child is a control, changing the accessibility traits from an entry to a button could be confusing.
+		if (firstChild is UIControl)
+		{
+			return;
+		}
+
+		var accessibilityElement = FindAccessibilityElement(firstChild, 0) ?? firstChild;
+
+		accessibilityElement.AccessibilityTraits |= UIAccessibilityTrait.Button;
+		s_appliedAccessibilityElements.Remove(cell);
+		s_appliedAccessibilityElements.Add(cell, accessibilityElement);
 	}
+
+	// Tracks which descendant view (if any) last received the Button trait for a given cell,
+	// so that switching to SelectionMode.None can clear the trait from that exact element
+	// without re-running the recursive accessibility-element search on every bind/rebind.
+	static readonly ConditionalWeakTable<UICollectionViewCell, UIView> s_appliedAccessibilityElements = new();
 
 	static UIView? FindAccessibilityElement(UIView view, int depth)
 	{
