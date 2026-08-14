@@ -147,6 +147,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
+					// Visible cells may keep the same frame, so UIKit does not always schedule the arrange pass.
+					SetNeedsLayout();
 				}
 
 				var preferredSize = preferredAttributes.Size;
