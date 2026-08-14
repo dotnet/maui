@@ -530,6 +530,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CollapsedShellAncestorBeyondNonVisualLinksIsDetected()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			var page = new ContentPage { Content = scrollView };
+			var shell = new Shell { IsVisible = false };
+			shell.Items.Add(new ShellContent { Content = page });
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// The ancestor chain crosses non-VisualElement links (ShellContent/ShellSection)
+			// before reaching the collapsed Shell: the visibility walk must skip over them
+			// rather than stop, so the request dispatches immediately instead of parking for
+			// an arrange that never comes
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.Single(handler.ScrollToRequests);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
+		}
+
+		[Fact]
 		public void DeferredRequestReplaysEventForSubscribersAttachedWithTheHandler()
 		{
 			var scrollView = new ScrollView();

@@ -108,15 +108,20 @@ namespace Microsoft.Maui.Controls
 			Width >= 0 && Height >= 0 && Content is not ({ Width: < 0 } or { Height: < 0 });
 
 		// A parked element request is retried only from OnSizeAllocated/ContentSizeChanged,
-		// which fire when this view gets arranged — and a view anywhere inside a collapsed
+		// which fire when this view gets arranged — and a view inside a collapsed
 		// (IsVisible=false) branch is skipped by layout entirely. Parking in that state would
 		// leave the caller's task pending forever; dispatching instead clamps the target and
 		// completes it, which is also what the other platforms do with a collapsed scroll view.
+		// The walk checks IsVisible on every VisualElement ancestor, skipping over non-visual
+		// links in the chain (e.g. Shell's ShellContent/ShellSection) rather than stopping at
+		// them. Non-visual containers' own visibility semantics (a hidden tab, say) are
+		// deliberately not consulted: parking keeps the scroll correct if that container is
+		// ever shown, and a handler detach still completes the task.
 		bool WillArrange()
 		{
-			for (Element element = this; element is VisualElement visual; element = element.RealParent)
+			for (Element element = this; element is not null; element = element.RealParent)
 			{
-				if (!visual.IsVisible)
+				if (element is VisualElement { IsVisible: false })
 				{
 					return false;
 				}
