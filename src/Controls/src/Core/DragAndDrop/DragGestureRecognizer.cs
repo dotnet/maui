@@ -1,7 +1,8 @@
 using System;
+using System.ComponentModel;
+using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
@@ -92,7 +93,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DragStartingCommandParameterProperty, value); }
 		}
 
-		internal void SendDropCompleted(DropCompletedEventArgs args)
+		/// <summary>
+		/// Executes the associated command and raises the <see cref="DropCompleted"/> event for an active drag operation.
+		/// </summary>
+		/// <param name="args">The event arguments that describe the completed drop operation.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendDropCompleted(DropCompletedEventArgs args)
 		{
 			if (!_isDragActive)
 			{
@@ -109,7 +115,15 @@ namespace Microsoft.Maui.Controls
 			DropCompleted?.Invoke(Parent ?? this, args);
 		}
 
-		internal DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
+		/// <summary>
+		/// Executes the associated command and raises the <see cref="DragStarting"/> event.
+		/// </summary>
+		/// <param name="element">The view on which the drag gesture was recognized.</param>
+		/// <param name="getPosition">A function that returns the drag position relative to a specified element.</param>
+		/// <param name="platformArgs">The platform-specific data associated with the drag operation.</param>
+		/// <returns>The event arguments populated by the command and event handlers.</returns>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
 		{
 			var args = new DragStartingEventArgs(getPosition, platformArgs);
 

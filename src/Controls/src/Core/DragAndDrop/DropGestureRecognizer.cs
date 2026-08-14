@@ -131,13 +131,24 @@ namespace Microsoft.Maui.Controls
 			DragOver?.Invoke(Parent ?? this, args);
 		}
 
-		internal void SendDragLeave(DragEventArgs args)
+		/// <summary>
+		/// Executes the associated command and raises the <see cref="DragLeave"/> event.
+		/// </summary>
+		/// <param name="args">The event arguments that describe the drag operation.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendDragLeave(DragEventArgs args)
 		{
 			DragLeaveCommand?.Execute(DragLeaveCommandParameter);
 			DragLeave?.Invoke(Parent ?? this, args);
 		}
 
-		internal async Task SendDrop(DropEventArgs args)
+		/// <summary>
+		/// Executes the associated command, raises the <see cref="Drop"/> event, and performs default drop processing when the event is not handled.
+		/// </summary>
+		/// <param name="args">The event arguments that describe the drop operation.</param>
+		/// <returns>A task that completes when event dispatch and any default drop processing are complete.</returns>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public async Task SendDrop(DropEventArgs args)
 		{
 			if (!AllowDrop)
 				return;
