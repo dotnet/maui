@@ -27,6 +27,10 @@ internal class FlyoutContainerManager
 	UIColor? _shadowBackgroundColor;
 	UIColor? _scrimColor;
 
+	// Whether the current layout pass wants the detail content dimmed via the click-off scrim
+	// overlay (see PerformLayout). Recomputed on every layout since it depends on idiom/split state.
+	bool _dimDetailWithScrim;
+
 	// Gesture recognizers
 	UIPanGestureRecognizer? _panGesture;
 	UITapGestureRecognizer? _tapGesture;
@@ -496,6 +500,7 @@ internal class FlyoutContainerManager
 
 		var flyoutFrame = frame;
 		nfloat opacity = 1;
+		_dimDetailWithScrim = false;
 
 		// Apply custom flyout height when set; default uses full frame height.
 		if (_flyoutHeight > 0)
@@ -543,7 +548,9 @@ internal class FlyoutContainerManager
 				|| OperatingSystem.IsMacCatalyst();
 			if (_applyShadow && !(_skipShadowInSplitMode && (isDesktopOrTabletIdiom || ShouldShowSplitMode)))
 			{
-				opacity = 0.5f;
+				// Dim using the click-off scrim overlay, not Layer.Opacity — an overlay dims
+				// everything underneath it (including the nav bar), unlike Layer.Opacity.
+				_dimDetailWithScrim = true;
 			}
 
 			// RTL split mode: the narrow detail strip behind the flyout must be invisible so it
@@ -560,6 +567,13 @@ internal class FlyoutContainerManager
 		if (IsRTL && !FlyoutOverlapsDetailsInPopoverMode)
 		{
 			detailFrame.X = detailFrame.X * -1;
+		}
+
+		// Dim the detail content via the click-off scrim overlay rather than Layer.Opacity — see
+		// the comment above where _dimDetailWithScrim is set for why.
+		if (_clickOffView is not null)
+		{
+			_clickOffView.BackgroundColor = _dimDetailWithScrim ? ColorExtensions.BackgroundColor.ColorWithAlpha(0.5f) : UIColor.Clear;
 		}
 
 		// Animate or set detail frame
