@@ -115,5 +115,7 @@ the Android and Windows fixes. If optional Apple signing is configured but its p
 or notarization step fails, the build fails instead of silently uploading the non-installable
 store package as though it were a sideload artifact.
 
-Publish builds upload MSBuild binlogs even on failure. Android publishes include separate binlogs
-for the installable APK and the store-critical AAB so a failed Play package build is diagnosable.
+The workflow runs the behavioral Pester suite before preparing the build matrix. Publish builds
+upload MSBuild binlogs even on failure. Android publishes include separate binlogs for the
+installable APK and the store-critical AAB; optional iOS ad-hoc and Mac Catalyst Developer ID
+publishes each emit their own sideload binlog so signing failures remain diagnosable.
