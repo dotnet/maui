@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Core;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
@@ -195,6 +197,7 @@ namespace Microsoft.Maui.Handlers
 				if (currentPaddingLayer is not null)
 				{
 					currentPaddingLayer.CachedChildren.Clear();
+					currentPaddingLayer.IsTabStop = false;
 				}
 
 				return;
@@ -210,6 +213,7 @@ namespace Microsoft.Maui.Handlers
 			if (currentPaddingLayer is not null)
 			{
 				currentPaddingLayer.CachedChildren.Add(nativeContent);
+				currentPaddingLayer.IsTabStop = true;
 			}
 			else
 			{
@@ -227,8 +231,10 @@ namespace Microsoft.Maui.Handlers
 			var paddingShim = new ContentPanel()
 			{
 				CrossPlatformLayout = crossPlatformLayout,
-				Tag = ContentPanelTag
+				Tag = ContentPanelTag,
+				IsTabStop = true
 			};
+			AutomationProperties.SetAccessibilityView(paddingShim, AccessibilityView.Raw);
 
 			scrollViewer.Content = null;
 			paddingShim.CachedChildren.Add(nativeContent);
