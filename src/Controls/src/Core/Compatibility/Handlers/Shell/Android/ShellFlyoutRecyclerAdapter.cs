@@ -321,16 +321,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				set
 				{
 					if (_element == value)
+					{
 						return;
+					}
 
-					if (View.Parent is BaseShellItem bsi)
-						bsi.RemoveLogicalChild(View);
+					if (View.Parent is BaseShellItem bsiParent)
+						bsiParent.RemoveLogicalChild(View);
 					else
 						_shell.RemoveLogicalChild(View);
 
-					if (_element != null && _element is BaseShellItem)
+					if (_element != null)
 					{
 						_element.PropertyChanged -= OnElementPropertyChanged;
+						((IElementDefinition)View)?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 					}
 
 					_element = value;
@@ -346,6 +349,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							_shell.AddLogicalChild(View);
 
 						_element.PropertyChanged += OnElementPropertyChanged;
+						((IElementDefinition)View)?.AddResourcesChangedListener(OnElementResourcesChanged);
 						UpdateVisualState();
 					}
 				}
@@ -353,9 +357,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void UpdateVisualState()
 			{
-				if (Element is BaseShellItem baseShellItem && baseShellItem != null)
+				if (Element is BaseShellItem baseShellItem)
 				{
-					View.IsItemSelected = baseShellItem.IsChecked;
+					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 				}
 			}
 
@@ -363,6 +367,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
 					UpdateVisualState();
+			}
+
+			void OnElementResourcesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				UpdateVisualState();
 			}
 
 			void OnClicked(object sender, EventArgs e)

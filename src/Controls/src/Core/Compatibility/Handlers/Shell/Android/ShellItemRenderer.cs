@@ -576,6 +576,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void RegisterBottomMenuItems(IReadOnlyList<IMenuItem> menuItems)
 		{
 			var shellSections = ShellItemController.GetItems();
+			var registrationItems = new List<(IMenuItem MenuItem, object Owner, bool IsMoreItem)>();
 			foreach (var previousMenuItem in _registeredMenuItems)
 			{
 				if (!menuItems.Any(current => ReferenceEquals(current, previousMenuItem)))
@@ -591,6 +592,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				object owner = isMoreItem
 					? ShellItem
 					: shellSections[menuItem.ItemId];
+				registrationItems.Add((menuItem, owner, isMoreItem));
 				_nativeTabRegistrations.Register(
 					owner,
 					menuItem,
@@ -601,28 +603,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var registrationGeneration = ++_tabRegistrationGeneration;
 			_bottomView.Post(() =>
 			{
-				if (registrationGeneration != _tabRegistrationGeneration)
+				if (registrationGeneration != _tabRegistrationGeneration ||
+					_bottomView is null ||
+					!_bottomView.IsAlive())
 					return;
 
 				var retainedElements = new List<object> { _bottomView };
-				retainedElements.AddRange(menuItems.Cast<object>());
+				foreach (var registrationItem in registrationItems)
+					retainedElements.Add(registrationItem.MenuItem);
 				if (_bottomView?.GetChildAt(0) is ViewGroup menuView)
 				{
-					var count = Math.Min(menuView.ChildCount, menuItems.Count);
+					var count = Math.Min(menuView.ChildCount, registrationItems.Count);
 					for (int index = 0; index < count; index++)
 					{
-						var menuItem = menuItems[index];
-						var isMoreItem = menuItem.ItemId == MoreTabId;
-						object owner = isMoreItem
-							? ShellItem
-							: shellSections[menuItem.ItemId];
+						var registrationItem = registrationItems[index];
 						if (menuView.GetChildAt(index) is AView itemView)
 						{
 							retainedElements.Add(itemView);
 							_nativeTabRegistrations.RegisterExclusive(
-								owner,
+								registrationItem.Owner,
 								itemView,
-								isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+								registrationItem.IsMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
 								NativeElementDiscriminators.RealizedView);
 						}
 					}

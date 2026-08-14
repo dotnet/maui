@@ -133,14 +133,16 @@ param(
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
     [switch]$Candidate,
-    # Display-only: mark the survey as a SHIPPED SR (its stable tag already
-    # exists). Behaves exactly like in-flight for all survey/verdict logic
-    # (surveys the SR branch directly) — it ONLY relabels the rendered report
-    # header `mode=shipped` so a post-ship tracker doesn't misreport as
-    # in-flight. Set by the workflow for the most-recently-shipped SR, whose
-    # tracker keeps refreshing until a human closes it. Mutually exclusive with
-    # -Candidate.
+    # Mark the survey as a SHIPPED SR (its stable tag already exists). Surveys
+    # the SR branch directly, but applies post-ship verdict, carry-forward, and
+    # hotfix-vs-next-SR guidance semantics. Set by the workflow for the most-
+    # recently-shipped SR, whose tracker refreshes until a human closes it.
+    # Mutually exclusive with -Candidate.
     [switch]$Shipped,
+    # Optional immutable published tag override for -Shipped mode.
+    # Prevents a live branch hotfix bump from moving the shipped content anchor
+    # before the newer hotfix tag is actually published.
+    [string]$ShippedTag,
     # When set in -Candidate mode, model the dotnet/maui workflow where, after
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
     # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
@@ -161,7 +163,10 @@ param(
     # turn permanently parks the verdict at 🟡 Conditionally Ready with a
     # bogus "unknown" Tier 2 reason. Enable when running locally with AzDO
     # auth (az login / PAT) and you actually want internal signal.
-    [switch]$IncludeInternal
+    [switch]$IncludeInternal,
+    # Redact private/internal coordinates from Markdown and JSON outputs. Keep
+    # enabled for any report that may be posted to a public GitHub issue.
+    [bool]$PublicSafe = $true
 )
 
 $ErrorActionPreference = 'Stop'
@@ -177,6 +182,24 @@ if (Test-Path $nightlyFeedHelperPath) {
     $Script:NightlyFeedHelperLoaded = $true
 } else {
     Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled." -WarningAction Continue
+}
+
+$publicSanitizerHelperPath = Join-Path $PSScriptRoot 'PublicReportSanitizer.ps1'
+if (-not (Test-Path $publicSanitizerHelperPath)) {
+    throw "Required public-report sanitizer not found at $publicSanitizerHelperPath."
+}
+. $publicSanitizerHelperPath
+
+function Select-OutputSrContents {
+    param(
+        [Parameter(Mandatory)]$Data,
+        [bool]$PublicSafe = $true
+    )
+
+    $srContents = Get-MetadataValue -Container $Data -Name 'srContents'
+    if ($null -eq $srContents) { return $null }
+    if ($PublicSafe) { return ConvertTo-PublicSafeValue -Value $srContents }
+    return $srContents
 }
 
 # DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
@@ -201,10 +224,40 @@ $Script:InternalPipelines = @(
 )
 
 $Script:Warnings = [System.Collections.Generic.List[string]]::new()
+$Script:RegressionEvidenceFailures = [System.Collections.Generic.List[string]]::new()
 
 function Write-Warn([string]$msg) {
     $Script:Warnings.Add($msg) | Out-Null
     Write-Host "warn: $msg" -ForegroundColor Yellow
+}
+
+function Add-RegressionEvidenceFailure([string]$Context) {
+    if (-not [string]::IsNullOrWhiteSpace($Context)) {
+        [void]$Script:RegressionEvidenceFailures.Add($Context)
+    }
+}
+
+function ConvertFrom-GhJsonArrayResult {
+    param($Raw, [string]$Context, [switch]$SuppressRegressionFailure)
+    if ($null -eq $Raw) {
+        if (-not $SuppressRegressionFailure) { Add-RegressionEvidenceFailure $Context }
+        return [PSCustomObject]@{ Success = $false; Items = @() }
+    }
+    try {
+        $rawJson = ($Raw | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($rawJson)) { throw 'empty response' }
+        $items = ConvertFrom-Json -InputObject $rawJson -NoEnumerate -ErrorAction Stop
+        if ($null -eq $items -or $items -isnot [System.Array]) { throw 'expected a JSON array' }
+        $flattened = if ($items.Count -gt 0 -and @($items | Where-Object { $_ -isnot [System.Array] }).Count -eq 0) {
+            @($items | ForEach-Object { @($_) })
+        } else {
+            @($items)
+        }
+        return [PSCustomObject]@{ Success = $true; Items = $flattened }
+    } catch {
+        if (-not $SuppressRegressionFailure) { Add-RegressionEvidenceFailure "$Context ($($_.Exception.Message))" }
+        return [PSCustomObject]@{ Success = $false; Items = @() }
+    }
 }
 
 function Invoke-Git([string]$Cmd) {
@@ -227,6 +280,7 @@ function Invoke-Gh([string[]]$GhArgs, [switch]$Quiet) {
                 $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
                 Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
             }
+
             return $null
         }
         return $out
@@ -525,6 +579,375 @@ function Get-MainBumpDateForCycle {
     }
 }
 
+function Get-StableTagInfo {
+    <#
+    .SYNOPSIS
+        Resolves the stable git tag for a shipped SR version and returns its date.
+    .DESCRIPTION
+        Shipped SRs publish a BARE stable tag `Major.Minor.Patch` (e.g. `10.0.60`)
+        — no prerelease suffix. Given that version string, look up the tag ref and
+        prefer the corresponding GitHub Release's published_at timestamp. MAUI's
+        stable tags are lightweight, so git alone exposes only the tagged commit's
+        committer date, not when the release became public. When release metadata is
+        unavailable, use that commit date as a conservative content-freeze anchor.
+
+        Returns [PSCustomObject]@{ Tag; Date (UTC); DateSource } or $null when the
+        tag is absent or its date is unreadable.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Version,
+        [string]$Repo = 'dotnet/maui'
+    )
+    if ([string]::IsNullOrWhiteSpace($Version)) { return $null }
+    # Guard: only accept a clean Major.Minor.Patch — never a prerelease/malformed
+    # string that could resolve a non-stable tag.
+    if ($Version -notmatch '^\d+\.\d+\.\d+$') { return $null }
+
+    # The public GitHub Release timestamp is the best available evidence for when
+    # customers could consume the release. Query it quietly because the tracker can
+    # run between tag creation and Release publication, or during a GitHub outage.
+    $publishedAt = Invoke-Gh @('api', "repos/$Repo/releases/tags/$Version", '--jq', '.published_at') -Quiet
+    if ($publishedAt) {
+        if ($publishedAt -is [array]) { $publishedAt = $publishedAt[0] }
+        $publishedUtc = ConvertTo-Utc -Value ([string]$publishedAt).Trim()
+        if ($publishedUtc) {
+            return [PSCustomObject]@{
+                Tag        = $Version
+                Date       = $publishedUtc
+                DateSource = 'github-release'
+            }
+        }
+    }
+
+    $ref = "refs/tags/$Version"
+    # `creatordate` is the tagger date for annotated tags and the target commit's
+    # committer date for lightweight tags. No spaces in the format token keeps it
+    # safe under Invoke-Git's argument splitting.
+    $dateStr = Invoke-Git "for-each-ref --format=%(creatordate:iso-strict) $ref"
+    if (-not $dateStr) { $dateStr = Invoke-Git "log -1 --format=%cI $Version" }
+    if (-not $dateStr) { return $null }
+    if ($dateStr -is [array]) { $dateStr = $dateStr[0] }
+    $dateUtc = ConvertTo-Utc -Value ([string]$dateStr).Trim()
+    if (-not $dateUtc) { return $null }
+    $tagType = Invoke-Git "cat-file -t $ref"
+    if ($tagType -is [array]) { $tagType = $tagType[0] }
+    return [PSCustomObject]@{
+        Tag        = $Version
+        Date       = $dateUtc
+        DateSource = if (([string]$tagType).Trim() -eq 'tag') { 'annotated-tag' } else { 'tagged-commit' }
+    }
+}
+
+function Test-GitRefResolves {
+    param([string]$Ref)
+    if ([string]::IsNullOrWhiteSpace($Ref)) { return $false }
+    return [bool](Invoke-Git "rev-parse --verify --quiet $Ref`^{commit}")
+}
+
+function Test-BranchAdvancedBeyondTag {
+    param(
+        [Parameter(Mandatory)][string]$Tag,
+        [Parameter(Mandatory)][string]$HeadSha
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Tag) -or [string]::IsNullOrWhiteSpace($HeadSha)) {
+        return $false
+    }
+
+    $tagCommit = Invoke-Git "rev-parse --verify --quiet refs/tags/$Tag`^{commit}"
+    if ($tagCommit -is [array]) { $tagCommit = $tagCommit[0] }
+    $tagCommit = ([string]$tagCommit).Trim()
+    if (-not $tagCommit -or $tagCommit -eq $HeadSha) { return $false }
+
+    return Test-CommitOnBranch -Sha $tagCommit -BranchRef $HeadSha
+}
+
+function Get-PublishedStableTags {
+    param([string]$Repo = 'dotnet/maui')
+
+    $raw = Invoke-Gh @(
+        'api', "repos/$Repo/releases", '--paginate',
+        '--jq', '.[] | select(.draft == false and .published_at != null) | .tag_name'
+    ) -Quiet
+    if ($null -eq $raw) { return $null }
+    $values = @()
+    foreach ($item in @($raw)) {
+        foreach ($line in ([string]$item -split '\r?\n')) {
+            $tag = $line.Trim()
+            if ($tag -match '^\d+\.\d+\.\d+$') { $values += $tag }
+        }
+    }
+    return @($values | Sort-Object -Unique)
+}
+
+function Get-LocalStableTags {
+    $raw = Invoke-Git "tag --list"
+    if ($null -eq $raw) { return $null }
+
+    $values = @()
+    foreach ($item in @($raw)) {
+        $tag = ([string]$item).Trim()
+        if ($tag -notmatch '^\d+\.\d+\.\d+$') { continue }
+        [version]$parsed = $null
+        if (-not [version]::TryParse($tag, [ref]$parsed)) { continue }
+        $values += [PSCustomObject]@{ Name = $tag; Version = $parsed }
+    }
+    return @($values | Sort-Object Version | Select-Object -ExpandProperty Name -Unique)
+}
+
+function Write-ShippedPublicationPendingWarning {
+    param([Parameter(Mandatory)][string]$Tag)
+
+    Write-Warn "Stable tag '$Tag' exists, but its GitHub Release is not published yet. Shipped contents are anchored to the immutable tag and the displayed date uses tagged-commit evidence until publication metadata is available."
+}
+
+function Write-ShippedPublicationStatusUnknownWarning {
+    param([Parameter(Mandatory)][string]$Tag)
+
+    Write-Warn "Could not query GitHub Release publication metadata for stable tag '$Tag'. Shipped contents remain anchored to the immutable local tag, publication status is unknown, and the displayed date uses tagged-commit evidence."
+}
+
+function Resolve-ShippedPublicationState {
+    param(
+        [bool]$ListQueryFailed,
+        [bool]$AnchorInPublishedList,
+        [string]$TagDateSource
+    )
+
+    # A successful per-tag published_at lookup is definitive even when the
+    # paginated list request failed independently.
+    if ($TagDateSource -eq 'github-release' -or $AnchorInPublishedList) {
+        return 'published'
+    }
+    if ($ListQueryFailed) { return 'unknown' }
+    return 'pending'
+}
+
+function Select-LatestStableTagForSr {
+    param(
+        [string]$SrBranch,
+        [string[]]$StableTags
+    )
+
+    $match = [regex]::Match($SrBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+    if (-not $match.Success) { return $null }
+    $major = [int]$match.Groups[1].Value
+    $minor = [int]$match.Groups[2].Value
+    $patchFloor = [int]$match.Groups[3].Value * 10
+    $matches = @()
+    foreach ($tag in @($StableTags)) {
+        [version]$parsed = $null
+        if (-not [version]::TryParse([string]$tag, [ref]$parsed)) { continue }
+        if ($parsed.Major -eq $major -and $parsed.Minor -eq $minor -and
+            $parsed.Build -ge $patchFloor -and $parsed.Build -lt ($patchFloor + 10)) {
+            $matches += [PSCustomObject]@{ Name = [string]$tag; Version = $parsed }
+        }
+    }
+    $latest = @($matches | Sort-Object Version -Descending | Select-Object -First 1)
+    if ($latest.Count -gt 0) { return [string]$latest[0].Name }
+    return $null
+}
+
+function Select-LatestPublishedTagForSr {
+    param(
+        [string]$SrBranch,
+        [string[]]$PublishedTags
+    )
+    return Select-LatestStableTagForSr -SrBranch $SrBranch -StableTags $PublishedTags
+}
+
+function Test-StableTagMatchesSr {
+    param(
+        [string]$Tag,
+        [string]$SrBranch
+    )
+
+    [version]$tagVersion = $null
+    if (-not [version]::TryParse($Tag, [ref]$tagVersion)) { return $false }
+    $match = [regex]::Match($SrBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+    if (-not $match.Success) { return $false }
+    $patchFloor = [int]$match.Groups[3].Value * 10
+    return $tagVersion.Major -eq [int]$match.Groups[1].Value -and
+        $tagVersion.Minor -eq [int]$match.Groups[2].Value -and
+        $tagVersion.Build -ge $patchFloor -and $tagVersion.Build -lt ($patchFloor + 10)
+}
+
+function Get-PreviousSrBaselineTag {
+    param(
+        [string]$Version,
+        [string[]]$PublishedTags
+    )
+
+    [version]$current = $null
+    if (-not [version]::TryParse($Version, [ref]$current)) { return $null }
+    $srPatchFloor = [int][math]::Floor($current.Build / 10) * 10
+    $parsedTags = @()
+    foreach ($tag in @($PublishedTags)) {
+        if ($tag -notmatch '^\d+\.\d+\.\d+$') { continue }
+        [version]$parsedTag = $null
+        if (-not [version]::TryParse([string]$tag, [ref]$parsedTag)) { continue }
+        if ($parsedTag -ge $current) { continue }
+        # A hotfix tag must retain the full SR inventory, not only the delta
+        # since the previous tag in the same patch decade.
+        if ($parsedTag.Major -eq $current.Major -and
+            $parsedTag.Minor -eq $current.Minor -and
+            $parsedTag.Build -ge $srPatchFloor) { continue }
+        $parsedTags += [PSCustomObject]@{ Name = [string]$tag; Version = $parsedTag }
+    }
+    $prior = @($parsedTags | Sort-Object Version -Descending | Select-Object -First 1)
+    if ($prior.Count -gt 0) { return [string]$prior[0].Name }
+    return $null
+}
+
+function Resolve-ShippedContentsRefs {
+    param(
+        [string]$Version,
+        [string]$Repo = 'dotnet/maui',
+        [string[]]$PublishedTags
+    )
+
+    if (-not (Test-GitRefResolves -Ref $Version)) {
+        throw "Stable tag '$Version' does not resolve locally. Rerun without -NoFetch (or fetch refs/tags/$Version) before generating a shipped tracker."
+    }
+    if ($null -eq $PublishedTags) {
+        $PublishedTags = Get-PublishedStableTags -Repo $Repo
+    }
+    if ($null -eq $PublishedTags -or @($PublishedTags).Count -eq 0) {
+        throw "Cannot query stable-tag evidence to bound shipped contents for '$Version'."
+    }
+    if (@($PublishedTags) -notcontains $Version) {
+        throw "Stable tag '$Version' is not present in the supplied stable-tag evidence set."
+    }
+    $previousTag = Get-PreviousSrBaselineTag -Version $Version -PublishedTags $PublishedTags
+    if (-not $previousTag -or -not (Test-GitRefResolves -Ref $previousTag)) {
+        throw "Cannot resolve a prior SR baseline tag to bound shipped contents for '$Version'. Fetch stable tags before generating a shipped tracker."
+    }
+    return [PSCustomObject]@{
+        ContentsRef = $Version
+        ExcludeRefs = @($previousTag)
+        PreviousTag = $previousTag
+    }
+}
+
+function Set-ShippedContentsRefs {
+    param(
+        [Parameter(Mandatory)][System.Collections.IDictionary]$Context,
+        [Parameter(Mandatory)]$ShippedRefs
+    )
+
+    $Context['contentsRef'] = $ShippedRefs.ContentsRef
+    $Context['excludeBranches'] = @($ShippedRefs.ExcludeRefs)
+    $Context['previousStableTag'] = $ShippedRefs.PreviousTag
+    $Context['mainRevertBaselineRef'] = $ShippedRefs.PreviousTag
+}
+
+function Get-ShippedStableTagsForBounds {
+    param(
+        [string]$AnchorTag,
+        [string[]]$PublishedTags,
+        [string[]]$LocalStableTags,
+        [bool]$PublicationQueryFailed
+    )
+
+    if ($PublicationQueryFailed) {
+        return @(Get-NonEmptyStringValues -Value $LocalStableTags | Sort-Object -Unique)
+    }
+    return @(Get-NonEmptyStringValues -Value @($PublishedTags + $AnchorTag) | Sort-Object -Unique)
+}
+
+function Test-IsCarryForwardRegression {
+    <#
+    .SYNOPSIS
+        Decides whether a regression record is a POST-SHIP carry-forward for an
+        already-shipped SR (and therefore non-gating in -Shipped mode).
+    .DESCRIPTION
+        Deterministic, evidence-only. A regression is carry-forward only when its
+        milestone explicitly names a LATER SR (same major, higher SR number) or a
+        later major — structured evidence that a triager assigned it to a future
+        cycle. Issue creation time is not sufficient: a defect in shipped binaries
+        can be reported after publication and may still require a hotfix decision.
+
+        Does NOT parse free-text human notes, comments, or labels beyond the
+        structured milestone. Returns $false when it cannot make a positive
+        determination (unknown shipped cycle or no later-SR milestone) so the
+        caller keeps the conservative "still a follow-up to review" stance.
+
+        StrictMode/shape-safe: reads `milestone` through Get-MetadataValue so a
+        hashtable (live survey) and a pscustomobject (JSON round-trip) both work.
+    #>
+    param(
+        $Regression,
+        [int]$ShippedSrNumber = 0,
+        [int]$ShippedMajor = 0,
+        [int]$ShippedSubPatch = 0
+    )
+    if ($null -eq $Regression) { return $false }
+
+    # A structured milestone names a later SR / later major.
+    $milestone = Get-MetadataValue -Container $Regression -Name 'milestone'
+    $milestoneMajor = Get-MauiReleaseMilestoneMajor -Milestone $milestone
+    if ($ShippedMajor -gt 0 -and $milestoneMajor -gt $ShippedMajor) { return $true }
+
+    $milestoneParts = Get-SrMilestoneParts -Milestone $milestone
+    if ($milestoneParts) {
+        if ($milestoneParts.Major -eq $ShippedMajor -and $ShippedSrNumber -gt 0 -and $milestoneParts.SrNumber -gt $ShippedSrNumber) { return $true }
+        if ($milestoneParts.Major -eq $ShippedMajor -and $milestoneParts.SrNumber -eq $ShippedSrNumber -and
+            $milestoneParts.SubPatch -gt $ShippedSubPatch) { return $true }
+    }
+
+    return $false
+}
+
+function Get-SrMilestoneParts {
+    param([string]$Milestone)
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return $null }
+
+    $match = [regex]::Match($Milestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)(?:\.(\d+))?$')
+    if (-not $match.Success) { return $null }
+
+    $major = ConvertTo-PrNumber -Value $match.Groups[1].Value
+    $srNumber = ConvertTo-PrNumber -Value $match.Groups[2].Value
+    [long]$parsedSubPatch = 0
+    $subPatch = if ($match.Groups[3].Success) {
+        if ([long]::TryParse($match.Groups[3].Value, [ref]$parsedSubPatch) -and
+            $parsedSubPatch -ge 0 -and $parsedSubPatch -le [int]::MaxValue) {
+            [int]$parsedSubPatch
+        } else { $null }
+    } else { 0 }
+    if ($null -eq $major -or $null -eq $srNumber -or $null -eq $subPatch) { return $null }
+    return [PSCustomObject]@{ Major = $major; SrNumber = $srNumber; SubPatch = $subPatch }
+}
+
+function Get-SrSubPatchFromVersion {
+    param([string]$Version)
+    $match = [regex]::Match([string]$Version, '^\d+\.\d+\.(\d+)$')
+    if (-not $match.Success) { return 0 }
+
+    $patch = [int]$match.Groups[1].Value
+    if ($patch -lt 10) { return 0 }
+    return ($patch % 10)
+}
+
+function Get-MauiReleaseMilestoneMajor {
+    param([string]$Milestone)
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return 0 }
+
+    $patterns = @(
+        '(?i)^\.NET\s+(\d+)(?:\.0)?\s+SR\d+(?:\.\d+)?$',
+        '(?i)^\.NET\s+(\d+)(?:\.0)?-(?:preview|rc)\d+$',
+        '(?i)^\.NET\s+(\d+)(?:\.0)?\s+(?:GA|Servicing)$'
+    )
+    foreach ($pattern in $patterns) {
+        $match = [regex]::Match($Milestone, $pattern)
+        if ($match.Success) {
+            $major = ConvertTo-PrNumber -Value $match.Groups[1].Value
+            if ($null -ne $major) { return $major }
+            return 0
+        }
+    }
+    return 0
+}
+
 function New-ReadinessCheck {
     <#
     .SYNOPSIS
@@ -573,6 +996,7 @@ function Get-ReleaseShipChecks {
 
     $checks = @()
     $isCandidate = ($Ctx.mode -eq 'candidate')
+    $isShipped = ($Ctx.mode -eq 'shipped')
 
     # Determine the SR number from the SR branch name. In live-SR mode (not
     # candidate), srBranch IS the release branch (release/X.Y.Zxx-srN). In
@@ -593,9 +1017,15 @@ function Get-ReleaseShipChecks {
     $expectedPatchPrefix = $targetSr * 10   # SR8 → 80, SR9 → 90, SR10 → 100
 
     # Which ref do we read Versions.props from?
-    # Shipped mode: the SR branch itself.
+    # Shipped mode: the immutable stable-tag contents.
     # Candidate mode: main (which would carry the bump once SR-prior cuts).
-    $versionsRef = if ($isCandidate) { "origin/$($Ctx.mainBranch)" } else { $Ctx.srRef }
+    $versionsRef = if ($isCandidate) {
+        "origin/$($Ctx.mainBranch)"
+    } elseif ($isShipped) {
+        Get-MetadataValue -Container $Ctx -Name 'contentsRef' -Default $Ctx.srRef
+    } else {
+        $Ctx.srRef
+    }
     $vp = Get-VersionsPropsState -Ref $versionsRef
 
     if (-not $vp) {
@@ -653,7 +1083,11 @@ function Get-ReleaseShipChecks {
             # produce stable packages, but worth surfacing so the release
             # captain knows there was no deliberate SR-direct flip PR).
             $prevSrBranch = "release/$major.$minor.1xx-sr$($targetSr - 1)"
-            $prevSrRef    = "origin/$prevSrBranch"
+            $prevSrRef    = if ($isShipped) {
+                Get-MetadataValue -Container $Ctx -Name 'previousStableTag'
+            } else {
+                "origin/$prevSrBranch"
+            }
             $mainRef      = if ($Ctx -is [hashtable]) {
                 if ($Ctx.ContainsKey('mainBranch')) { "origin/$($Ctx['mainBranch'])" } else { 'origin/main' }
             } elseif ($Ctx.PSObject.Properties.Name -contains 'mainBranch') {
@@ -661,7 +1095,12 @@ function Get-ReleaseShipChecks {
             } else { 'origin/main' }
             $flipDirectSha = $null
             try {
-                $shas = git log --no-merges --pretty='%H' "origin/$($Ctx.srBranch)" "^$prevSrRef" "^$mainRef" -- eng/Versions.props 2>$null
+                $releaseContentRef = if ($isShipped) { $versionsRef } else { "origin/$($Ctx.srBranch)" }
+                $logArgs = @('log', '--no-merges', '--pretty=%H', $releaseContentRef)
+                if ($prevSrRef) { $logArgs += "^$prevSrRef" }
+                if (-not $isShipped) { $logArgs += "^$mainRef" }
+                $logArgs += @('--', 'eng/Versions.props')
+                $shas = & git @logArgs 2>$null
                 foreach ($s in @($shas)) {
                     $sTrim = $s.Trim(); if (-not $sTrim) { continue }
                     $diff = git show --no-color --format= $sTrim -- eng/Versions.props 2>$null
@@ -679,13 +1118,14 @@ function Get-ReleaseShipChecks {
                 # Find the merge commit on this SR branch that brought in `prevSrBranch`.
                 $mergeShaShort = $null
                 try {
-                    $mergeSha = git log --merges --pretty='%H' --first-parent "origin/$($Ctx.srBranch)" -- eng/Versions.props 2>$null | Select-Object -First 1
+                    $mergeSha = git log --merges --pretty='%H' --first-parent $versionsRef -- eng/Versions.props 2>$null | Select-Object -First 1
                     if ($mergeSha) { $mergeShaShort = $mergeSha.Trim().Substring(0, 10) }
                 } catch { }
+                $provenanceLabel = if ($isShipped -and $prevSrRef) { $prevSrRef } else { $prevSrBranch }
                 $provenance = if ($mergeShaShort) {
-                    "inherited from ``$prevSrBranch`` via catch-up merge ``$mergeShaShort``"
+                    "inherited from ``$provenanceLabel`` via catch-up merge ``$mergeShaShort``"
                 } else {
-                    "inherited from ``$prevSrBranch``"
+                    "inherited from ``$provenanceLabel``"
                 }
                 $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages. The values were $provenance, rather than from an SR-direct flip PR; this is the valid cut-then-merge pattern used by .NET 10 SR8."
             }
@@ -697,9 +1137,19 @@ function Get-ReleaseShipChecks {
             $missing = @()
             if (-not $labelOk) { $missing += "``PreReleaseVersionLabel=$actualLabel`` (expected ``servicing``)" }
             if (-not $stabilizeOk) { $missing += "``StabilizePackageVersion=$actualStabilize`` (expected ``true``)" }
+            $flipDetails = if ($isShipped) {
+                "The published stable tag ``$versionsRef`` records an invalid servicing configuration: $($missing -join '; '). This cannot be repaired retroactively in the shipped tag; verify the published assets and decide whether a hotfix/rebuild or documented follow-up is required."
+            } else {
+                "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it."
+            }
+            $flipNextAction = if ($isShipped) {
+                "Inspect the published ``$versionsRef`` packages and release metadata. If stable assets are wrong, coordinate the release-owner hotfix/rebuild path; otherwise document why the tag is safe despite the configuration."
+            } else {
+                "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
+            }
             $checks += New-ReadinessCheck -Area $flipArea -Status 'BLOCKED' `
-                -Details "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it." `
-                -NextAction "After the last required backport, open a focused PR targeting ``$($Ctx.srBranch)``. Preserve ``PatchVersion``; replace the base ``ci.main`` label and remove its ``inflight/current`` conditional with ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>``, then set ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. Keep ``main`` on its next-cycle version and rerun final CI after the SR PR merges."
+                -Details $flipDetails `
+                -NextAction $flipNextAction
         }
     }
 
@@ -782,9 +1232,19 @@ function Get-ReleaseShipChecks {
                     if (-not $mainStabilizeOk) { $mainFixNeeded += "``StabilizePackageVersion`` (currently ``$($vpMain.StabilizePackageVersion)``)" }
                     $mainlineKeepClause = "Keep ``SdkBandVersion`` unchanged, and in the SAME PR restore the dev-main mainline settings that are currently misconfigured for a stable/servicing build ($($mainFixNeeded -join ' and ')): set ``PreReleaseVersionLabel=ci.main`` and ``StabilizePackageVersion=false`` — leaving them as-is would keep ``$($Ctx.mainBranch)`` emitting servicing/stable packages"
                 }
+                $mainBumpDetails = if ($isShipped) {
+                    "``$mainRef`` still reports ``$($vpMain.FullVersion)`` even though SR$targetSr already shipped. New PR builds can continue claiming the shipped version until main advances to SR$nextSr."
+                } else {
+                    "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr."
+                }
+                $mainBumpNextAction = if ($isShipped) {
+                    "Open the focused ``$mainBumpTitle`` PR against ``$($Ctx.mainBranch)`` immediately. Change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``; $mainlineKeepClause. This is post-ship containment, not a pre-ship gate."
+                } else {
+                    "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. $mainlineKeepClause; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
+                }
                 $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
-                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr." `
-                    -NextAction "Open a focused PR targeting ``$($Ctx.mainBranch)`` titled ``$mainBumpTitle``. In ``eng/Versions.props``, change only ``<PatchVersion>$($vpMain.Patch)</PatchVersion>`` to ``<PatchVersion>$expectedNextPatchPrefix</PatchVersion>``. $mainlineKeepClause; do not combine this main bump with the SR servicing-flip PR. This is the one-line pattern used by #35433 and #35879. Merge it before shipping SR$targetSr."
+                    -Details $mainBumpDetails `
+                    -NextAction $mainBumpNextAction
             }
         }
     }
@@ -792,27 +1252,46 @@ function Get-ReleaseShipChecks {
     # === Bug template version listing ===
     # Issue templates live on the default branch (main) — they're global per repo.
     $templateRef = "origin/$($Ctx.mainBranch)"
-    $templateVersions = Get-BugTemplateVersions -Ref $templateRef
-    # Acceptable: any entry matching $major.$minor.<patch-in-SR-range>, with or
-    # without an "SR$targetSr" or similar suffix.
+    $templateVersions = @(Get-BugTemplateVersions -Ref $templateRef)
+    # Before ship, any entry in the target SR decade proves the dropdown is
+    # prepared. After ship, users must be able to select the exact immutable
+    # published version; a sibling patch in the same decade is not sufficient.
+    $shippedTemplateVersion = if ($isShipped) {
+        [string](Get-MetadataValue -Container $Ctx -Name 'shippedTagVersion')
+    } else { $null }
     $matchPattern = "^$major\.$minor\.(\d+)"
-    $matchingEntries = @($templateVersions | Where-Object {
-        if ($_ -match $matchPattern) {
-            $p = [int]$Matches[1]
-            return ($p -ge $expectedPatchPrefix -and $p -lt ($expectedPatchPrefix + 10))
+    $matchingEntries = @(
+        if ($isShipped -and $shippedTemplateVersion) {
+            $exactPattern = "^\s*$([regex]::Escape($shippedTemplateVersion))(?:\s|$)"
+            $templateVersions | Where-Object { $_ -match $exactPattern }
+        } else {
+            $templateVersions | Where-Object {
+            if ($_ -match $matchPattern) {
+                $p = [int]$Matches[1]
+                return ($p -ge $expectedPatchPrefix -and $p -lt ($expectedPatchPrefix + 10))
+            }
+            return $false
+            }
         }
-        return $false
-    })
+    )
 
     $bugArea = "Bug template lists SR$targetSr version"
     if ($templateVersions.Count -eq 0) {
         $checks += New-ReadinessCheck -Area $bugArea -Status 'UNKNOWN' `
             -Details "Could not read .github/ISSUE_TEMPLATE/bug-report.yml from ``$templateRef`` or the version-with-bug dropdown is empty." `
             -NextAction "Inspect the bug template manually."
+    } elseif ($isShipped -and -not $shippedTemplateVersion) {
+        $checks += New-ReadinessCheck -Area $bugArea -Status 'UNKNOWN' `
+            -Details "The shipped tag version is unavailable, so the exact version-with-bug entry cannot be verified on ``$templateRef``." `
+            -NextAction "Resolve the immutable shipped tag and verify its exact version is listed in .github/ISSUE_TEMPLATE/bug-report.yml."
     } elseif ($matchingEntries.Count -gt 0) {
         $first = $matchingEntries[0]
         $checks += New-ReadinessCheck -Area $bugArea -Status 'READY' `
-            -Details "Bug template lists ``$first`` (and $($matchingEntries.Count - 1) other SR$targetSr entries)." `
+            -Details $(if ($isShipped) {
+                "Bug template lists the exact shipped version ``$first``."
+            } else {
+                "Bug template lists ``$first`` (and $($matchingEntries.Count - 1) other SR$targetSr entries)."
+            }) `
             -NextAction "No template update needed."
     } else {
         $sample = ($templateVersions | Select-Object -First 3) -join ', '
@@ -821,8 +1300,39 @@ function Get-ReleaseShipChecks {
         # version for the first few days. Surface prominently so it gets done,
         # but don't escalate the verdict to Not Ready.
         $checks += New-ReadinessCheck -Area $bugArea -Status 'CLEANUP' `
-            -Details "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample." `
-            -NextAction "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml — can land before or shortly after ship."
+            -Details $(if ($isShipped) {
+                "Exact shipped version ``$shippedTemplateVersion`` is missing from the version-with-bug dropdown on ``$templateRef``. Same-decade entries do not let users select this shipped patch. Top entries: $sample."
+            } else {
+                "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample."
+            }) `
+            -NextAction $(if ($isShipped) {
+                "Add ``$shippedTemplateVersion`` to .github/ISSUE_TEMPLATE/bug-report.yml so users can file against the exact shipped patch."
+            } else {
+                "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml — can land before or shortly after ship."
+            })
+    }
+
+    if ($isShipped) {
+        $liveVersion = [string](Get-MetadataValue -Container $Ctx -Name 'liveBranchVersion')
+        $publishedVersion = [string](Get-MetadataValue -Container $Ctx -Name 'shippedTagVersion')
+        $hasPostTagCommits = [bool](Get-MetadataValue -Container $Ctx -Name 'hotfixHasPostTagCommits' -Default $false)
+        $hotfixInProgress = [bool](Get-MetadataValue -Container $Ctx -Name 'hotfixInProgress' `
+            -Default ($liveVersion -and $publishedVersion -and $liveVersion -ne $publishedVersion))
+        if ($hotfixInProgress) {
+            $hotfixEvidence = if ($hasPostTagCommits -and
+                ([string]::IsNullOrEmpty($liveVersion) -or $liveVersion -eq $publishedVersion)) {
+                if ($liveVersion) {
+                    "The live SR branch has commits after the published ``$publishedVersion`` tag even though ``eng/Versions.props`` still reports that version."
+                } else {
+                    "The live SR branch has commits after the published ``$publishedVersion`` tag; the live ``eng/Versions.props`` version could not be determined."
+                }
+            } else {
+                "The live SR branch reports ``$liveVersion``, while the latest published tag for this SR cycle is ``$publishedVersion``."
+            }
+            $checks += New-ReadinessCheck -Area "Unpublished hotfix branch state" -Status 'WATCH' `
+                -Details "$hotfixEvidence The shipped tracker remains anchored to the published tag until a newer stable tag exists." `
+                -NextAction "Treat the post-tag branch state as an in-progress hotfix candidate. Bump the target version if needed, complete build/sign/validation, and publish its stable tag before advancing the shipped-content anchor."
+        }
     }
 
     return $checks
@@ -1170,6 +1680,99 @@ function Get-AllMilestones {
     }
 }
 
+# .NET ships preview1..preview7, then rc1, rc2, then GA. There is NO preview8 —
+# preview7 is the FINAL preview of a major, and the milestone that follows it is
+# `.NET <major>.0-rc1`. Verified against dotnet/maui's own history:
+#   .NET 9  → 9.0.0-preview.7.24407.4  → 9.0.0-rc.1.24453.9  → 9.0.0-rc.2.24503.2
+#   .NET 10 → 10.0.0-preview.7.25406.3 → 10.0.0-rc.1.25424.2 → 10.0.0-rc.2.25504.7
+# and the matching milestones `.NET 10.0-preview7` → `.NET 10.0-rc1` → `.NET 10.0-rc2`.
+# (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since
+# .NET 6. If that ever changes, this constant is the single place to update.)
+$script:FinalPreviewNumber = 7
+$script:RcCountPerMajor    = 2
+
+function Get-PreviewTrainMilestoneTitle {
+    <#
+    .SYNOPSIS
+        PURE. Maps a 1-based preview-train ordinal to its GitHub milestone title,
+        honouring the preview→rc transition.
+    .DESCRIPTION
+        The pre-release train for a major is a single ordered sequence, so
+        "the cycle after preview7" is rc1 — not the non-existent preview8.
+        Naively incrementing the preview number is the bug this replaces: it
+        told release captains to create a `.NET <major>.0-preview8` milestone
+        that .NET never ships.
+
+            ordinal 1..7  → ".NET <major>.0-preview<ordinal>"
+            ordinal 8     → ".NET <major>.0-rc1"
+            ordinal 9     → ".NET <major>.0-rc2"
+            ordinal 10+   → $null   (GA — no further pre-release milestone)
+
+        Returning $null for post-rc2 ordinals lets callers skip the roll-forward
+        check rather than inventing an "rc3" that will never exist.
+    .OUTPUTS
+        [string] milestone title, or $null when the ordinal runs past rc2.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$Major,
+        [Parameter(Mandatory)][int]$Ordinal
+    )
+
+    if ($Ordinal -lt 1) { return $null }
+    if ($Ordinal -le $script:FinalPreviewNumber) {
+        return ".NET $Major.0-preview$Ordinal"
+    }
+
+    $rcNumber = $Ordinal - $script:FinalPreviewNumber
+    if ($rcNumber -le $script:RcCountPerMajor) {
+        return ".NET $Major.0-rc$rcNumber"
+    }
+    return $null
+}
+
+function Get-PastDueOpenMilestones {
+    <#
+    .SYNOPSIS
+        Open milestones whose `due_on` lapsed before $Cutoff, oldest first.
+    .DESCRIPTION
+        The single definition of "past due" shared by Check 3 (already-shipped
+        debt) and Check 3b (slipped next-cycle target). Those two checks partition
+        the same milestone set on the next-cycle title — one excludes it, the other
+        selects it — so they MUST agree on what "past due" means. If the state /
+        due_on / cutoff test drifted between them, a milestone could either
+        double-report or fall through both checks unreported, which is exactly the
+        bug class Check 3b was added to fix. Keeping the test here makes that
+        agreement structural rather than a copy-paste invariant nothing enforces.
+
+        `-Stable` is required, not cosmetic. PowerShell's default `Sort-Object` is
+        NOT stable — per the cmdlet docs, equal-key inputs are only delivered in
+        received order when `-Top`, `-Bottom`, or `-Stable` is used. In practice the
+        default stays ordered below .NET's ~16-element insertion-sort threshold and
+        starts permuting ties above it, so a bug here would stay invisible in small
+        fixtures and only appear on a repo with many past-due milestones. Because
+        sorting now happens BEFORE each caller's discriminator instead of after,
+        a stable sort is what makes the two orderings equivalent: filtering a stably
+        sorted list preserves relative order, so each caller sees the same sequence
+        it would have produced by filtering first. It also makes tie order
+        deterministic, which the previous filter-then-sort code did not guarantee
+        either.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [array] $Milestones,
+
+        [Parameter(Mandatory)]
+        [datetime] $Cutoff
+    )
+
+    return @($Milestones | Where-Object {
+        $_.state -eq 'open' -and
+        $_.due_on -and
+        ([datetime]$_.due_on).ToUniversalTime() -lt $Cutoff
+    } | Sort-Object -Stable { [datetime]$_.due_on })
+}
+
 function Get-MilestoneHygieneChecks {
     <#
     .SYNOPSIS
@@ -1220,9 +1823,37 @@ function Get-MilestoneHygieneChecks {
         $major = [int]$previewMatch.Groups[1].Value
         $cycleNum = [int]$previewMatch.Groups[2].Value
         if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
-        $expectedTitlesCurrent = @(".NET $major.0-preview$cycleNum")
-        $expectedTitlesNext    = @(".NET $major.0-preview$($cycleNum + 1)")
-        $cycleLabel = "preview$cycleNum"
+        # Walk the preview train (preview1..preview7 → rc1 → rc2), NOT a naive
+        # preview number increment — .NET has no preview8, so the cycle after
+        # preview7 is rc1.
+        $currentTrainTitle = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal $cycleNum
+        $nextTrainTitle    = Get-PreviewTrainMilestoneTitle -Major $major -Ordinal ($cycleNum + 1)
+        if (-not $currentTrainTitle) {
+            if ($cycleNum -lt 1) {
+                # Nonsensical ordinal (e.g. a `release/<major>.0.1xx-preview0`
+                # branch — the `\d+` capture syntactically accepts 0). The
+                # pre-release train has no member below 1. This is a MATCHED
+                # branch shape with an out-of-range ordinal — a misconfiguration,
+                # not the legitimate end of the train — so surface UNKNOWN rather
+                # than silently dropping the current-cycle signal, which would let
+                # a bad branch name masquerade as "all clear". Distinct from the
+                # past-rc2 case just below, where no milestone exists by design and
+                # an empty result is correct.
+                return @(New-ReadinessCheck -Area "Milestone hygiene (branch shape)" -Status 'UNKNOWN' `
+                    -Details "Unrecognized pre-release ordinal ``$cycleNum`` derived from branch ``$branchToParse`` — cannot map it to a preview/rc milestone title." `
+                    -NextAction "Verify the branch follows the ``release/<major>.0.<feature>xx-preview<n>`` convention with ``n >= 1``.")
+            }
+            # Past rc2 — the pre-release train is over and GA milestones don't
+            # follow this naming convention. Skip silently rather than guess.
+            return @()
+        }
+        $expectedTitlesCurrent = @($currentTrainTitle)
+        # NOTE: assign via a statement, not `= if (...) { @($x) } else { @() }` —
+        # an if-expression unrolls a single-element array back to a scalar, which
+        # then blows up on `.Count` under `Set-StrictMode -Version Latest`.
+        $expectedTitlesNext = @()
+        if ($nextTrainTitle) { $expectedTitlesNext = @($nextTrainTitle) }
+        $cycleLabel = $currentTrainTitle -replace "^\.NET $major\.0-", ''
     } else {
         # Unknown branch shape — can't derive milestone names. Skip silently.
         return @()
@@ -1230,7 +1861,7 @@ function Get-MilestoneHygieneChecks {
 
     $milestonesResult = Get-AllMilestones -Repo $Ctx.repo
     if (-not $milestonesResult.Success) {
-        return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+        return @(New-ReadinessCheck -Area "Milestone hygiene (API failure)" -Status 'UNKNOWN' `
             -Details "Failed to query milestones from GitHub API for ``$($Ctx.repo)``." `
             -NextAction "Re-run with valid 'gh' auth: ``gh auth status`` and ``gh api repos/$($Ctx.repo)/milestones``")
     }
@@ -1254,12 +1885,17 @@ function Get-MilestoneHygieneChecks {
     # create it any time before the next cycle starts. In candidate mode this
     # is especially conservative: SR9 candidate would otherwise BLOCK on
     # missing SR10, even though we're not yet ready to cut SR9.
-    $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
-    $nextTitle = $expectedTitlesNext[0]
-    if ($nextMs.Count -eq 0) {
-        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
-            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
-            -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+    #
+    # $expectedTitlesNext is empty when the pre-release train has no successor
+    # (i.e. we're on rc2, after which comes GA) — skip rather than invent one.
+    if ($expectedTitlesNext.Count -gt 0) {
+        $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
+        $nextTitle = $expectedTitlesNext[0]
+        if ($nextMs.Count -eq 0) {
+            $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
+                -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
+                -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+        }
     }
 
     # === Check 3: Stale open milestones with past due_on ===
@@ -1270,6 +1906,12 @@ function Get-MilestoneHygieneChecks {
     # triggering BLOCKED.
     # Also excluded:
     #   - the current cycle (still being prepped)
+    #   - the next cycle (the roll-forward target Check 2 may have just told the
+    #     captain to create; a slipped next-cycle milestone whose due_on passed is
+    #     NOT "already-shipped debt" — flagging it here would contradict Check 2's
+    #     "create it" advice. It is instead re-classified by Check 3b below, so the
+    #     signal is preserved rather than dropped. Lane-agnostic: this holds for an
+    #     SR next-cycle milestone as much as a preview/rc one.)
     #   - "Backlog" (intentional long-running)
     #   - ".NET N Planning" (intentional long-running planning ms)
     #   - milestones without due_on (caller has no schedule, no signal)
@@ -1279,16 +1921,19 @@ function Get-MilestoneHygieneChecks {
         # Match ".NET <major> SR<n>" and ".NET <major>.0 SR<n>" (and SR<n>.<patch>)
         "^\.NET\s+$major(\.0)?\s+SR\d+(\.\d+)?$"
     } else {
-        # Match ".NET <major>.0-preview<n>"
-        "^\.NET\s+$major\.0-preview\d+$"
+        # Match ".NET <major>.0-preview<n>" AND ".NET <major>.0-rc<n>" — preview
+        # and rc are one continuous pre-release train, so a stale rc1 milestone
+        # is the same class of housekeeping debt as a stale preview6 one.
+        "^\.NET\s+$major\.0-(preview|rc)\d+$"
     }
-    $staleMs = @($allMs | Where-Object {
-        $_.state -eq 'open' -and
-        $_.due_on -and
-        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
+    # Shared "past due" set — Check 3 and Check 3b select disjoint halves of it.
+    $pastDueOpen = Get-PastDueOpenMilestones -Milestones $allMs -Cutoff $graceCutoff
+
+    $staleMs = @($pastDueOpen | Where-Object {
         ($expectedTitlesCurrent -notcontains $_.title) -and
+        ($expectedTitlesNext -notcontains $_.title) -and
         ($_.title -match $cycleFilter)
-    } | Sort-Object { [datetime]$_.due_on })
+    })
 
     if ($staleMs.Count -gt 0) {
         $list = ($staleMs | ForEach-Object {
@@ -1302,6 +1947,32 @@ function Get-MilestoneHygieneChecks {
         $checks += New-ReadinessCheck -Area "Stale open milestones ($($staleMs.Count))" -Status 'CLEANUP' `
             -Details "$($staleMs.Count) milestone(s) in the .NET $major cycle are past due (>7 days) and still open: $list. These represent already-shipped releases that were never closed out — accumulating open issues that should have been rolled forward." `
             -NextAction "For each: triage the open issues (close-as-fixed, move to current cycle, or move to Backlog), then close the milestone: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
+    }
+
+    # === Check 3b: Next-cycle milestone exists but has slipped past its due date ===
+    # Check 3 deliberately excludes the next-cycle (roll-forward target) milestone
+    # from the "already-shipped debt" bucket — calling it that would contradict
+    # Check 2's advice to create it. But an EXISTING next-cycle milestone that is
+    # well past due must not become invisible: an unbounded slip usually means the
+    # schedule moved, or the cycle was skipped and the milestone abandoned. Re-classify
+    # it into its own row with accurate wording so the signal is preserved without the
+    # misleading "already shipped" framing. Lane-agnostic — fires for an SR next-cycle
+    # milestone (e.g. a long-overdue SR9 while surveying SR8) exactly as for a slipped
+    # preview/rc one, which is the SR-lane signal the bare Check-3 exclusion had dropped.
+    $slippedNext = @($pastDueOpen | Where-Object {
+        $expectedTitlesNext -contains $_.title
+    })
+
+    if ($slippedNext.Count -gt 0) {
+        $slippedList = ($slippedNext | ForEach-Object {
+            $dueDate = ([datetime]$_.due_on).ToUniversalTime().ToString('yyyy-MM-dd')
+            "[$($_.title)](https://github.com/$($Ctx.repo)/milestone/$($_.number)) (due $dueDate, $($_.open_issues) open)"
+        }) -join '; '
+        # CLEANUP, not BLOCKED — like stale debt, a slipped roll-forward target is
+        # housekeeping, not a blocker on THIS cycle shipping.
+        $checks += New-ReadinessCheck -Area "Next-cycle milestone past due ($($slippedNext.Count))" -Status 'CLEANUP' `
+            -Details "The next-cycle roll-forward milestone(s) exist but are past due (>7 days) and still open: $slippedList. This is NOT already-shipped debt — it's the target open issues roll forward to after ``$cycleLabel`` ships. A slip usually means the schedule moved, or the cycle was skipped and the milestone was abandoned." `
+            -NextAction "If the schedule slipped, update the milestone's ``due_on``; if the cycle was skipped, triage its open issues and close it: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
     }
 
     return $checks
@@ -1388,6 +2059,26 @@ function Get-CandidatePrResolution {
     }
     $res.mode = 'resolved'
     return $res
+}
+
+function Get-CandidatePrAge {
+    <#
+    .SYNOPSIS
+        Returns the stable age decision used by both Candidate rendering and hashing.
+    #>
+    param($Candidate, $Now)
+
+    $created = ConvertTo-Utc -Value (Get-MetadataValue -Container $Candidate -Name 'createdAt')
+    $nowUtc = ConvertTo-Utc -Value $Now
+    if (-not $created -or -not $nowUtc) {
+        return [PSCustomObject]@{ AgeDays = $null; Bucket = 'unknown' }
+    }
+
+    $ageDays = [int][Math]::Floor(($nowUtc - $created).TotalDays)
+    return [PSCustomObject]@{
+        AgeDays = $ageDays
+        Bucket  = if ($ageDays -ge 14) { 'stale' } else { 'fresh' }
+    }
 }
 
 function Get-CandidatePrChecks {
@@ -1563,11 +2254,10 @@ function Resolve-Context {
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
     }
     elseif ($Shipped) {
-        # Display-only relabel. The survey is identical to in-flight (the SR
-        # branch surveyed directly); only the rendered header reads 'shipped'
-        # so the post-ship tracker doesn't misreport as in-flight.
+        # Survey the same SR branch as in-flight mode, but apply post-ship verdict,
+        # carry-forward, and hotfix-vs-next-SR guidance semantics.
         $mode = 'shipped'
-        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef (display-only relabel)" -ForegroundColor Cyan
+        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef with post-ship semantics" -ForegroundColor Cyan
     }
 
     # Main-side revert detection needs a bounded release-window baseline, but the
@@ -1660,17 +2350,38 @@ function Get-RevertedPrFromSubject {
     #>
     param([string]$Subject)
     if (-not $Subject) { return $null }
+    $Subject = $Subject -replace '[\u201C\u201D]', '"'
+    $Subject = [regex]::Replace($Subject, '^(?i)(?:\[(?!Revert\])[^]]+\]\s*)+', '')
+    # Common hand-authored forms without GitHub's quoted-title convention.
+    $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ing)?\s+(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    $m = [regex]::Match($Subject, '(?i)^Backing\s+out\s+(?:the\s+)?fix\s+(?:for\s+)?#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    $m = [regex]::Match($Subject, '(?i)^(?:This\s+)?Revert(?:s|ed|ing)?\b[\s:–—-]*(?:(?:of|for)\s+)?(?:the\s+)?(?:(?:broken\s+)?(?:change|fix)\s+(?:for\s+)?)?(?:PR\s+)?#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
+    if ($Subject -match '(?i)^\[Revert\]') {
+        $bareRefs = [regex]::Matches($Subject, '(?<!\()#(\d+)(?![\p{L}\p{N}_]|\))')
+        if ($bareRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $bareRefs[0].Groups[1].Value)
+        }
+    }
+    if ($Subject -match '(?i)^Backing\s+out\b') {
+        $bareRefs = [regex]::Matches($Subject, '(?<!\()#(\d+)(?![\p{L}\p{N}_]|\))')
+        if ($bareRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $bareRefs[0].Groups[1].Value)
+        }
+    }
     # Explicit "Revert PR #NNNN" form.
-    $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)')
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)(?![\p{L}\p{N}_])')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     # Standard GitHub revert: the (#N) INSIDE the quoted original title, e.g.
     # Revert "Original title (#1234)" (#5678). Greedy .* anchored to the closing
     # quote captures the original PR (1234): it tolerates internal quotes in the
     # title (the old [^"]* halted at the first inner quote and returned null) and,
     # because the trailing revert PR is NOT followed by a quote, never reaches it.
     # Case-insensitive to also match hand-typed lowercase 'revert "..."' subjects.
-    $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)\)"')
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)(?![\p{L}\p{N}_])\)"')
+    if ($m.Success) { return (ConvertTo-PrNumber -Value $m.Groups[1].Value) }
     # Manual/hand-authored revert form (no GitHub quotes, and the body carries no
     # "This reverts commit <sha>" line, so the SHA-override in the caller can't
     # recover it either): "Revert - <original title> #<reverted> (#<revertPR>)".
@@ -1679,14 +2390,401 @@ function Get-RevertedPrFromSubject {
     # this, revertedPrSet records only 36152, the reverted fix's original commit
     # still satisfies Test-PrNumberOnBranch, and a "fixed by #35372" comment on a
     # CLOSED issue is falsely de-noised to closed-fix-unlinked ("No ship risk").
-    # Anchored to a Revert subject AND to the bare `#N` immediately before the
-    # trailing `(#M)` so (a) non-revert subjects never match, (b) the trailing
-    # (#M) is never returned, and (c) incidental #refs earlier in the title are
-    # ignored. A rare misfire only ever marks a PR as reverted (safe direction —
-    # never a false "shipped").
-    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b.*#(\d+)\s+\(#\d+\)\s*$')
-    if ($m.Success) { return [int]$m.Groups[1].Value }
+    # Manual subjects are only deterministic when they name one bare reference,
+    # or explicitly identify exactly one of several references as "PR #N".
+    $m = [regex]::Match($Subject, '(?i)^(?:\[[^\]]+\]\s+)?Revert\b(?<title>.*?)\s+\(#\d+\)\s*$')
+    if ($m.Success) {
+        $title = $m.Groups['title'].Value
+        $prRefs = @([regex]::Matches($title, '(?i)\bPR\s*#(\d+)(?![\p{L}\p{N}_])'))
+        if ($prRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $prRefs[0].Groups[1].Value)
+        }
+        $bareRefs = @([regex]::Matches($title, '#(\d+)(?![\p{L}\p{N}_])'))
+        if ($bareRefs.Count -eq 1) {
+            return (ConvertTo-PrNumber -Value $bareRefs[0].Groups[1].Value)
+        }
+    }
     return $null
+}
+
+function Test-IsRevertPrTitle {
+    param([AllowNull()][AllowEmptyString()][string]$Title)
+
+    if ([string]::IsNullOrWhiteSpace($Title)) { return $false }
+    return ($Title -match '(?i)^(?:\[[^\]]+\]\s+)?(?:Revert\b|Backing\s+out\b)') -or
+        ($Title -match '(?i)\[Revert\]')
+}
+
+function ConvertTo-NegationNormalizedText {
+    param([AllowNull()][AllowEmptyString()][string]$Text)
+
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+    $Text = $Text -replace '[\u2018\u2019\u201B\u02BC\uA78C\uFF07]', "'"
+    # Struck text is explicitly withdrawn; remove it rather than turning
+    # `~~Fixes #N~~` into affirmative evidence.
+    $normalized = [regex]::Replace($Text, '(?s)~~.*?~~', '')
+    $normalized = $normalized -replace '\*\*|__', ''
+    $normalized = $normalized -replace '(?<!\w)[*_](?=\w)|(?<=\w)[*_](?!\w)', ''
+    $asidePattern = '(?i)\b(not|never)\s*(?:,\s*[^,\r\n]{0,80},|\([^)\r\n]{0,80}\)|[—–-]\s*[^—–\r\n]{0,80}[—–-]|(?:;\s*[^;\r\n]{0,80})+;)\s*'
+    do {
+        $previous = $normalized
+        $normalized = [regex]::Replace($normalized, $asidePattern, '$1 ')
+    } while ($normalized -ne $previous)
+    $normalized = [regex]::Replace(
+        $normalized,
+        '(?i)\b(?<neg>not|never)\s*;\s*(?=(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|(?:re-?)?backport(?:ed)?|cherry[-\s]pick(?:ed)?|require(?:d)?|need(?:ed)?|relevant|applicable)\b)',
+        '${neg} ')
+    $normalized = [regex]::Replace(
+        $normalized,
+        "(?i)\b(?<neg>don't|doesn't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s*;\s*(?=(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|(?:re-?)?backport(?:ed)?|cherry[-\s]pick(?:ed)?)\b)",
+        '${neg} ')
+    $normalized = [regex]::Replace(
+        $normalized,
+        "(?i)\b(?<neg>not|never)\b(?<gap>[^.!?;`r`n]{0,100}?)(?=\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?|include(?:d)?|apply|applied|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?|require(?:d)?|need(?:ed)?|relevant|applicable)\b)",
+        {
+            param($match)
+            $gap = [regex]::Replace($match.Groups['gap'].Value, '[^\p{L}\p{N}_'']+', ' ')
+            "$($match.Groups['neg'].Value) $($gap.Trim()) "
+        })
+    return $normalized
+}
+
+function Get-ClosingIssueNumbers {
+    <#
+    .SYNOPSIS
+        Extracts dotnet/maui issue numbers named by GitHub closing keywords.
+    #>
+    param([string]$Text)
+    if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
+    $Text = ConvertTo-NegationNormalizedText -Text $Text
+
+    $matches = [regex]::Matches(
+        $Text,
+        '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)\s*:?\s+(?:dotnet/maui#|#|https?://github\.com/dotnet/maui/issues/)(\d+)(?![\p{L}\p{N}_])')
+    return @($matches | ForEach-Object {
+        $prefixStart = [Math]::Max(0, $_.Index - 512)
+        $prefix = $Text.Substring($prefixStart, $_.Index - $prefixStart)
+        $prefixLines = @([regex]::Split($prefix, '\r\n|\r|\n'))
+        $prefix = $prefixLines[-1]
+        if ($prefixLines.Count -ge 2 -and -not [string]::IsNullOrWhiteSpace($prefixLines[-2])) {
+            $prefix = "$($prefixLines[-2]) $prefix"
+        }
+        $negated = $prefix -match "(?i)(?:\b(?:do(?:es)?|did|will|would|should|can|could|must)\s+not(?:\s+\w+){0,8}\s+$|\bcannot(?:\s+\w+){0,8}\s+$|\b(?:isn't|wasn't|aren't|weren't|doesn't|don't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)\s+(?:\w+\s+){0,8}$|\bnever(?:\s+\w+){0,8}\s+$|\bno\s+longer\s+$|\bnot\s+(?!only\b)(?:\w+\s+){0,8}$|\bfail(?:s|ed)?\s+to(?:\s+\w+ly){0,8}\s+$|\bunable\s+to(?:\s+\w+ly){0,8}\s+$|\bonly\s+(?:partial(?:ly)?|partly)\s+$)"
+        if (-not $negated) {
+            ConvertTo-PrNumber -Value $_.Groups[1].Value
+        }
+    } | Where-Object { $null -ne $_ } | Sort-Object -Unique)
+}
+
+function ConvertTo-PrNumber {
+    param([string]$Value)
+
+    [long]$parsed = 0
+    if (-not [long]::TryParse($Value, [ref]$parsed)) { return $null }
+    if ($parsed -lt 1 -or $parsed -gt [int]::MaxValue) { return $null }
+    return [int]$parsed
+}
+
+function Test-IsLineageVerbNegated {
+    param(
+        [string]$Prefix,
+        [string]$Between
+    )
+
+    $prefix = ConvertTo-NegationNormalizedText -Text ($Prefix -replace '[\u2018\u2019]', "'")
+    $between = ConvertTo-NegationNormalizedText -Text ($Between -replace '[\u2018\u2019]', "'")
+    $preVerbNegation = "(?i)(?:\b(?:no|without|never|cannot|against|avoid(?:ing)?)\s+$|\bnever\s+(?:\w+\s+){0,3}to\s+$|\b(?:do(?:es)?|did|should|must|will|would|can|could)\s+not\s+$|\b(?:do(?:es)?|did)\s+not(?:\s+\w+){0,4}\s+to\s+$|\b(?:should|must|will|would|can|could)\s+not(?:\s+\w+){0,4}\s+$|\b(?:can't|couldn't|shouldn't|mustn't|won't|wouldn't)\s+(?:\w+\s+){0,3}$|\b(?:don't|doesn't|didn't)\s+(?:\w+\s+){0,4}to\s+$|\b(?:isn't|wasn't|aren't|weren't)\s+(?:\w+\s+){0,4}intended\s+to\s+(?:be\s+)?$|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+$|\bdon't\s+think\s+(?:we\s+)?should\s+$|\bnot\s+to\s+$|\bnot\s+(?:(?:going|planning|intending|expected|allowed|authorized|permitted|supposed|ready|able)\s+|(?:think|believe)(?:\s+\w+){0,5}\s+)to\s+$|\bnot\s*,\s*(?:after|following|pending)\b[^,]*,\s*to\s+$|\bno\s+(?:need|reason|plan|intention)\b[\s\S]*?\bto\s+$|\bnot\s+(?:a\s+)?$|\brevert(?:s|ed|ing)?\s+(?:the\s+)?$)"
+    $postVerbNegation = "(?i)(?:\bnot\b|\bno\s+longer\b|\bnever\s+(?:include|apply|land|ship|use)\w*\b|\bcannot\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\bno\s+(?:need|reason|plan|intention)\b|\b(?:don't|doesn't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't|isn't|wasn't|aren't|weren't)\s+(?:be\s+)?(?:included?|applied?|landed?|shipped?|used?)\b|\brevert(?:s|ed|ing)?\s+(?:the\s+)?)"
+    $clauseNegation = $prefix -match "(?i)\b(?:not(?!\s+(?:only|unusual|unlikely|impossible)\b)|never|cannot|isn't|wasn't|aren't|weren't|can't|couldn't|shouldn't|mustn't|won't|wouldn't|don't|doesn't|didn't)\b(?:(?!\b(?:but|however|nevertheless|nonetheless|so|agreed|decided|chose|want(?:ed)?|went\s+ahead)\b|\b(?:and|yet|still|plus|then|therefore|thus|hence|instead|meanwhile|regardless)\s+(?:we|i|it|this|that|they|maintainers?|the\s+(?:team|fix|change|pr))\b)[^.!?;]){0,2048}$"
+    return ($prefix -match $preVerbNegation) -or ($between -match $postVerbNegation) -or $clauseNegation
+}
+
+function Test-IsLineageReferenceNegated {
+    param(
+        [string]$Suffix,
+        [switch]$PresenceOnly,
+        [switch]$DirectPrSubject
+    )
+
+    $suffix = ConvertTo-NegationNormalizedText -Text ($Suffix -replace '[\u2018\u2019]', "'")
+    $lead = '(?:was|is|were|are|did|does|should|must|will|would|can|could)'
+    $contraction = "(?:wasn't|isn't|weren't|aren't|didn't|shouldn't|mustn't|won't|wouldn't|can't|couldn't)"
+    $presenceEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies)|land(?:ed)?|ship(?:ped)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $fullEffect = '(?:include(?:d)?|omit(?:ted)?|exclude(?:d)?|appl(?:y|ied|ies|icable)|relevant|need(?:ed)?|require(?:d)?|necessary|pertain(?:s|ed|ing)?|land(?:ed)?|ship(?:ped)?|use(?:d)?|backport(?:ed)?|cherry[-\s]pick(?:ed)?)'
+    $effect = if ($PresenceOnly -and -not $DirectPrSubject) { $presenceEffect } else { $fullEffect }
+    $prefix = '\s*(?:[,\-–—.!?;]\s*)*[\(\[]?\s*(?:(?:which|that|this|it|though|but|although|yet|however)\s*[,;:]?\s+){0,3}'
+    $negatedEffect = "(?i)^$prefix(?:(?:$lead\s+(?:\w+\s+){0,3}?(?:not|never))|(?:$contraction))(?:\s+\w+){0,8}?\s+(?:be\s+)?$effect\b"
+    $directNegatedEffect = "(?i)^$prefix(?:not|never)\s+(?:\w+\s+){0,8}?$effect\b"
+    $passiveRemovalLead = '(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:(?:since|later|subsequently|ultimately)\s+))?'
+    $rollback = "(?i)^$prefix$passiveRemovalLead" + 'revert(?:s|ed|ing)?\b'
+    $omitted = "(?i)^$prefix$passiveRemovalLead" + '(?:omit(?:ted)?|exclude(?:d)?)\b'
+    $noLongerEffect = "(?i)^$prefix(?:\w+\s+){0,3}?no\s+longer\s+$effect\b"
+    $rolledBack = "(?i)^$prefix(?:(?:this|it)\s+)?(?:(?:(?:was|is|were|are|has\s+been|had\s+been|got|gets)\s+(?:\w+\s+){0,3}?)|(?:later\s+(?:(?:\w+\s+){0,8}?and\s+)?)|(?:(?:since|subsequently|ultimately)\s+))?(?:rolled\s+back|back(?:ed|ing)\s+out)\b"
+    $laterPresenceRemoval = "(?i)\b(?:but|however|although|yet|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:(?:was|is|were|are)\s+(?:not|never)\s+(?:\w+\s+){0,3}?(?:be\s+)?$presenceEffect\b|(?:was|is)\s+(?:revert(?:ed)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b)"
+    $negatedHardRemoval = "(?i)^$prefix(?:\w+\s+){0,6}?(?:not|never)\s+(?:\w+\s+){0,2}?(?:revert(?:s|ed|ing)?|omit(?:ted)?|exclude(?:d)?|rolled\s+back)\b"
+    if ($suffix -match $negatedHardRemoval) { return $false }
+    if ($suffix -match $laterPresenceRemoval) { return $true }
+    $restoredPresence = '(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:(?:(?:it|this\s+(?:change|fix|PR)|the\s+(?:change|fix))\s+)?(?:(?:was|is|has\s+been)\s+)?(?:(?:now|later|then|subsequently|ultimately|eventually|afterwards?)\s+)?)?(?:re-?)?(?:included|applied|landed|shipped|backported|retained|restored)\b'
+    $decisionRetraction = '(?is)^[\s\S]{0,240}?\b(?:(?:we|(?:the\s+)?team|maintainers?)\s+)?(?:(?:decided|opted|chose|elected)\s+(?:against\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport|(?:including|applying|landing|shipping|backporting|cherry-picking)\s+it)|not\s+to\s+(?:proceed|include|apply|land|ship|backport|cherry-pick))|(?:rejected|declined|abandoned)\s+(?:it|this\s+(?:backport|change|fix)|the\s+backport))\b'
+    if ($suffix -match $decisionRetraction) { return -not ($suffix -match $restoredPresence) }
+    $isHardRemoval = ($suffix -match $rollback) -or ($suffix -match $omitted) -or
+        ($suffix -match $noLongerEffect) -or ($suffix -match $rolledBack)
+    if ($isHardRemoval) { return -not ($suffix -match $restoredPresence) }
+
+    $isNegated = ($suffix -match $negatedEffect) -or ($suffix -match $directNegatedEffect)
+    if (-not $isNegated) { return $false }
+    if ($PresenceOnly -and -not $DirectPrSubject) { return $true }
+
+    # Only an explicit correction of a prior expectation can reverse a soft
+    # "not needed/required" phrase. Generic contrastive prose ("not backported,
+    # but it is required reading") and hard removal states never restore lineage.
+    # "was not expected to be needed, but it is required for this backport."
+    $firstSentence = ($suffix -split '(?<=[.;!?])\s|\r?\n', 2)[0]
+    $expectationNegation = "(?i)^$prefix(?:(?:$lead\s+not)|$contraction)\s+(?:\w+\s+){0,2}(?:expected|planned|intended|supposed|anticipated)\s+to\s+be\s+(?:needed|required|relevant|applicable)\b"
+    $contrastiveLineageAffirmation = "(?i)\b(?:but|however|nevertheless|nonetheless)\b\s*(?:it|this\s+(?:change|fix|PR))\s+(?:is|remains?|will\s+be|must\s+be|should\s+be|is\s+still)\s+(?:needed|required|included|applied|relevant)\s+(?:for|in|to)\s+(?:this|the)\s+(?:backport|fix|branch|SR)\b"
+    if (($firstSentence -match $expectationNegation) -and
+        ($firstSentence -match $contrastiveLineageAffirmation)) {
+        return $false
+    }
+
+    return $true
+}
+
+function Test-IsDirectLineageReferenceSubject {
+    param([string]$Prefix)
+
+    return $Prefix -match '(?i)(?:^|[.!?;,:]\s*|\bPR\s*)(?:(?:however|but|although|though|yet|nevertheless|nonetheless)\b[\s,;:]*)?$'
+}
+
+function Get-ExplicitBackportSourceNumbers {
+    <#
+    .SYNOPSIS
+        Extracts non-negated source PR lineage from backport/cherry-pick prose.
+    .DESCRIPTION
+        Shared by commit scanning and PR lookup so both evidence paths apply
+        identical negation, multi-source-list, repository, and overflow rules.
+    #>
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) { return @() }
+    # Remove withdrawn Markdown spans before calculating reference offsets; doing
+    # this only on split prefix/suffix fragments leaves unmatched `~~` sentinels.
+    $Text = [regex]::Replace($Text, '(?s)~~.*?~~', '')
+    $Text = $Text -replace '[\u2018\u2019]', "'"
+    $Text = $Text -replace "`r`n", "`n"
+    $Text = $Text -replace "`r", "`n"
+    $Text = $Text -replace '\u2028', "`n"
+    $Text = $Text -replace '\u2029', "`n`n"
+    # Bridge only semicolon-delimited asides that sit between a governing
+    # negator and the lineage verb; full-text normalization would alter verb
+    # boundaries such as `re-backport`.
+    $Text = [regex]::Replace(
+        $Text,
+        '(?i)\b(?<neg>not|never)(?:;\s*[^;\r\n]{0,80})*;\s*(?=(?:a\s+)?(?:re-?)?backport|cherry[-\s]pick)',
+        '${neg} ')
+    $Text = [regex]::Replace(
+        $Text,
+        "(?i)\b(?<neg>don't|doesn't|didn't|won't|wouldn't|shouldn't|can't|couldn't|mustn't)(?:;\s*[^;\r\n]{0,80})*;\s*(?=(?:a\s+)?(?:re-?)?backport|cherry[-\s]pick)",
+        '${neg} ')
+    # Drop a contextual middle item without orphaning later explicit list items.
+    $Text = [regex]::Replace(
+        $Text,
+        '(?i)(?:;\s*(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])\s+(?:is|was)\s+(?:(?:only\s+)?(?:context|background|reference)(?:\s+only)?)\s*)+;\s*(?=(?:and|plus)\s+(?:(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))',
+        ', ')
+    # A semicolon can be list punctuation rather than a clause boundary:
+    # `#A, #B; and #C`. Normalize only this structured continuation.
+    $Text = [regex]::Replace(
+        $Text,
+        '(?i)(?<ref>(?:https://github\.com/dotnet/maui/pull/|dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_]))\s*;\s*(?=(?:(?:and|plus)\s+)?(?:https://github\.com/dotnet/maui/pull/|dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|(?:PRs?\s*)?#)\d+(?![\p{L}\p{N}_])(?!(?:\s+)(?:is|was)\s+(?:only\s+)?(?:context|background|reference)\b))',
+        '${ref}, ')
+    # Preserve paragraphs and Markdown block/list boundaries, but fold genuine
+    # wrapped continuation lines so `Backport of` + newline + `#N` remains one
+    # explicit lineage clause. A new bullet is independent evidence and must
+    # never bind to the prior bullet's lineage verb.
+    $newMarkdownBlock = '(?![ \t]*(?:[-*+]\s+|\d+[.)]\s+|>\s+|#{1,6}\s+))'
+    $Text = [regex]::Replace($Text, "(?<!\n)\n(?!\n)$newMarkdownBlock", ' ')
+    $result = [System.Collections.Generic.HashSet[int]]::new()
+    # A period terminates only when followed by whitespace/end, preserving dots
+    # inside github.com URLs while preventing a later sentence's PR mention from
+    # binding to an earlier lineage verb.
+    $clauses = @([regex]::Split($Text, '(?:[!?;](?:\s+|$)|\.(?=\s|$)(?:\s+|$)|\r?\n+)'))
+    $processedVerbs = 0
+    $searchOffset = 0
+    foreach ($clause in $clauses) {
+        if ([string]::IsNullOrWhiteSpace($clause)) { continue }
+        $clauseOffset = $Text.IndexOf($clause, $searchOffset, [System.StringComparison]::Ordinal)
+        if ($clauseOffset -lt 0) { $clauseOffset = $searchOffset }
+        $searchOffset = $clauseOffset + $clause.Length
+        $verbs = [regex]::Matches(
+            $clause,
+            '(?im)\b(?:(?:re-?)?backport(?:s|ed|ing)?|cherry[-\s]pick(?:ed|ing)?(?:\s+from)?)\b')
+        foreach ($verb in $verbs) {
+            $processedVerbs++
+            if ($processedVerbs -gt 200) { break }
+            # When a single prose clause has an extreme prefix, fail closed
+            # rather than silently ignoring a distant negator outside the
+            # bounded analysis window.
+            if ($verb.Index -gt 2048) { continue }
+            $prefixStart = [Math]::Max(0, $verb.Index - 2048)
+            $prefix = $clause.Substring($prefixStart, $verb.Index - $prefixStart)
+            $clauseStart = $verb.Index + $verb.Length
+            $windowLength = [Math]::Min(2048, $clause.Length - $clauseStart)
+            $window = $clause.Substring($clauseStart, $windowLength)
+            $references = @([regex]::Matches($window,
+                '(?i)(?:https://github\.com/dotnet/maui/pull/|dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|(?:PRs?\s*)?#)(?<number>\d+)(?![\p{L}\p{N}_])'))
+            if ($references.Count -eq 0) { continue }
+            $acceptedReferenceIndexes = [System.Collections.Generic.HashSet[int]]::new()
+
+            for ($i = 0; $i -lt $references.Count; $i++) {
+                $reference = $references[$i]
+                $number = ConvertTo-PrNumber -Value $reference.Groups['number'].Value
+                $between = $window.Substring(0, $reference.Index)
+                if ($null -eq $number) {
+                    if ($i -eq 0) {
+                        $firstShapeOk = $between -match '(?i)^\s*[:\-]?\s*(?:\([^)]{0,200}\)\s*)?(?:(?:(?:of|from|for(?:\s+issue)?|targeting|resolving|addresses)|(?:the\s+)?(?:fix|changes?)\s+from|that\s+fixes|of\s+(?:the\s+change\s+in|the\s+following|this)|(?:the\s+following|this))\s*:?\s+)?(?:PRs?\s*)?:?\s*$'
+                        if ($firstShapeOk) { [void]$acceptedReferenceIndexes.Add(0) }
+                    }
+                    continue
+                }
+                if (Test-IsLineageVerbNegated -Prefix $prefix -Between $between) {
+                    continue
+                }
+                $absoluteReferenceEnd = $clauseOffset + $clauseStart + $reference.Index + $reference.Length
+                $suffixLength = [Math]::Min(2048, $Text.Length - $absoluteReferenceEnd)
+                $suffix = $Text.Substring($absoluteReferenceEnd, $suffixLength)
+                $sawRepeatedReference = $false
+                $repeatedReferenceIsDirectSubject = $false
+                # Negation after a later PR reference belongs to that later
+                # list item, not the current one.
+                while ($true) {
+                    $nextReference = [regex]::Match($suffix, '(?i)(?:dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+                    if (-not $nextReference.Success) { break }
+                    $nextNumber = ConvertTo-PrNumber -Value $nextReference.Groups['number'].Value
+                    if ($nextNumber -eq $number) {
+                        $beforeRepeatedReference = $suffix.Substring(0, $nextReference.Index)
+                        $contextualObject = $beforeRepeatedReference -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+                        $lineageObject = $beforeRepeatedReference -match '(?i)\b(?:change|fix|work|code|commit|backport|patch|implementation|workaround)\b[^#\r\n]{0,80}\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+                        if ($contextualObject -and -not $lineageObject) {
+                            # An unrelated object ("the guide mentioned in #N")
+                            # cannot retract the PR's lineage.
+                            $suffix = $beforeRepeatedReference
+                            break
+                        }
+                        $repeatedReferenceIsDirectSubject =
+                            (-not $contextualObject) -and
+                            (Test-IsDirectLineageReferenceSubject -Prefix $beforeRepeatedReference)
+                        # A repeated mention of the same PR often introduces its
+                        # non-inclusion reason ("#N, but #N was not included").
+                        $sawRepeatedReference = $true
+                        $suffix = $suffix.Substring($nextReference.Index + $nextReference.Length)
+                        continue
+                    }
+                    $suffix = $suffix.Substring(0, $nextReference.Index)
+                    break
+                }
+                if ($suffix -match '(?i)^\s*(?:is|was)\s+(?:(?:only\s+)?(?:context|background|reference)(?:\s+only)?)\b') {
+                    [void]$result.Remove($number)
+                    continue
+                }
+                if (Test-IsLineageReferenceNegated -Suffix $suffix `
+                    -PresenceOnly:$sawRepeatedReference `
+                    -DirectPrSubject:$repeatedReferenceIsDirectSubject) {
+                    # A later repeated mention can retract an earlier positive
+                    # occurrence ("#A and #B, but #A was not included"). Remove
+                    # any already-accepted occurrence before continuing.
+                    [void]$result.Remove($number)
+                    continue
+                }
+
+                if ($i -eq 0) {
+                    # The first reference must be syntactically governed by the
+                    # lineage verb. Arbitrary prose such as "updates tests, see
+                    # PR #N for context" is not lineage.
+                    $firstShapeOk = $between -match '(?i)^\s*[:\-]?\s*(?:\([^)]{0,200}\)\s*)?(?:(?:(?:of|from|for(?:\s+issue)?|targeting|resolving|addresses)|(?:the\s+)?(?:fix|changes?)\s+from|that\s+fixes|of\s+(?:the\s+change\s+in|the\s+following|this)|(?:the\s+following|this))\s*:?\s+)?(?:PRs?\s*)?:?\s*$'
+                    if (-not $firstShapeOk) { continue }
+                    [void]$result.Add($number)
+                    [void]$acceptedReferenceIndexes.Add(0)
+                    continue
+                }
+
+                if (-not $acceptedReferenceIndexes.Contains($i - 1)) { continue }
+                $isExplicitList = $true
+                for ($j = 1; $j -le $i; $j++) {
+                    $previous = $references[$j - 1]
+                    $current = $references[$j]
+                    $betweenStart = $previous.Index + $previous.Length
+                    $listSeparator = $window.Substring($betweenStart, $current.Index - $betweenStart)
+                    # Multi-source prose is deliberately structured-only:
+                    # direct separators, conjunctions, or a bounded parenthetical
+                    # qualifier followed by a conjunction. Ambiguous free text is
+                    # rejected rather than risking false shipped-lineage evidence.
+                    $listShapeOk = $listSeparator -match '^\s*(?:(?:,|/|&)\s*(?:PRs?\s*)?|(?:,\s*)?(?:and|plus)\s+(?:PRs?\s*)?|(?:,\s*)?\([^#\r\n]{0,80}\)\s*,?\s*(?:and|plus)\s+(?:PRs?\s*)?)$'
+                    $listNegated = Test-IsLineageVerbNegated -Prefix '' -Between $listSeparator
+                    $listIsContextual = $listSeparator -match '(?i)\b(?:see|consult|details?|context|background|related|discussion|reference|compare|mention|describ(?:e|ed)|above|below|introduced\s+by|caused\s+by|regressed\s+by|depends?\s+on|conflicts?\s+with|supersed(?:e|es|ed)|blocks?|unblocks?|affected\s+by|reverted\s+by)\b'
+                    if (-not $listShapeOk -or $listNegated -or $listIsContextual -or [string]::IsNullOrWhiteSpace($listSeparator)) {
+                        $isExplicitList = $false
+                        break
+                    }
+                }
+                if ($isExplicitList) {
+                    [void]$result.Add($number)
+                    [void]$acceptedReferenceIndexes.Add($i)
+                }
+            }
+        }
+        if ($processedVerbs -gt 200) { break }
+    }
+
+    # A later clause can explicitly retract an earlier source after intervening
+    # PR numbers ("#A and #B. #A was not included"). Re-scan accepted numbers
+    # for any repeated negated occurrence across the bounded full text so list
+    # order and sentence boundaries cannot preserve false-positive lineage.
+    foreach ($acceptedNumber in @($result)) {
+        $acceptedPattern = "(?i)(?:dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|#)$acceptedNumber(?![\p{L}\p{N}_])"
+        foreach ($occurrence in [regex]::Matches($Text, $acceptedPattern)) {
+            $prefixStart = [Math]::Max(0, $occurrence.Index - 160)
+            $occurrencePrefix = $Text.Substring($prefixStart, $occurrence.Index - $prefixStart)
+            $contextualObject = $occurrencePrefix -match '(?i)\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+            $lineageObject = $occurrencePrefix -match '(?i)\b(?:change|fix|work|code|commit|backport|patch|implementation|workaround)\b[^#\r\n]{0,80}\b(?:in|from|by|of|about|within|via)\s+(?:PR\s*)?$'
+            if ($contextualObject -and -not $lineageObject) { continue }
+            $occurrenceIsDirectSubject =
+                (-not $contextualObject) -and
+                (Test-IsDirectLineageReferenceSubject -Prefix $occurrencePrefix)
+            $occurrenceEnd = $occurrence.Index + $occurrence.Length
+            $remainingLength = [Math]::Min(2048, $Text.Length - $occurrenceEnd)
+            $occurrenceSuffix = $Text.Substring($occurrenceEnd, $remainingLength)
+            # This occurrence gets its own retraction decision. Stop before any
+            # later PR reference so another PR's removal cannot retract it; a
+            # repeated occurrence of the same number is evaluated separately.
+            $nextReference = [regex]::Match(
+                $occurrenceSuffix,
+                '(?i)(?:dotnet/maui/pull/|(?<!/)pull/|dotnet/maui#|#)(?<number>\d+)(?![\p{L}\p{N}_])')
+            if ($nextReference.Success) {
+                $occurrenceSuffix = $occurrenceSuffix.Substring(0, $nextReference.Index)
+            }
+            if (Test-IsLineageReferenceNegated -Suffix $occurrenceSuffix `
+                -PresenceOnly -DirectPrSubject:$occurrenceIsDirectSubject) {
+                [void]$result.Remove($acceptedNumber)
+                break
+            }
+        }
+    }
+    return @($result | Sort-Object)
+}
+
+function Get-CopilotBackportSourceNumbers {
+    param([string]$HeadRefName)
+
+    $match = [regex]::Match(
+        $HeadRefName,
+        '(?i)^copilot/backport-(?:(?:prs?|fix-from-pr|dotnet-maui)-)?(?<numbers>\d{4,7}(?:-\d{4,7})*)$')
+    if (-not $match.Success) { return @() }
+    $result = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($token in $match.Groups['numbers'].Value -split '-') {
+        $number = ConvertTo-PrNumber -Value $token
+        if ($null -ne $number) { [void]$result.Add($number) }
+    }
+    return @($result | Sort-Object)
 }
 
 # Internal scanner — extracts source PRs / backports / reverts from commits
@@ -1730,17 +2828,19 @@ function Get-CommitsForRevSpec {
         $backportPr = $null
         $subjMatches = [regex]::Matches($subject, '\(#(\d+)\)')
         if ($subjMatches.Count -gt 0) {
-            $backportPr = [int]$subjMatches[$subjMatches.Count - 1].Groups[1].Value
-            $allBackportPrs.Add($backportPr) | Out-Null
-            $allSourcePrs.Add($backportPr) | Out-Null   # greedy: backport # also resolves
+            $backportPr = ConvertTo-PrNumber -Value $subjMatches[$subjMatches.Count - 1].Groups[1].Value
+            if ($backportPr) {
+                $allBackportPrs.Add($backportPr) | Out-Null
+                $allSourcePrs.Add($backportPr) | Out-Null   # greedy: backport # also resolves
+            }
         }
 
-        # Source PR strong signal: "Backport of #NNNN" / "cherry picked from PR #NNNN"
-        $sourcePr = $null
-        $sourceMatch = [regex]::Match($body, '(?im)(?:backport\s+of|cherry[-\s]picked\s+from(?:\s+PR)?)\s+#(\d+)')
-        if ($sourceMatch.Success) {
-            $sourcePr = [int]$sourceMatch.Groups[1].Value
-            $allSourcePrs.Add($sourcePr) | Out-Null
+        # Source PR strong signals share the same bounded, negation-aware parser
+        # used by PR lookup.
+        $sourcePrs = @(Get-ExplicitBackportSourceNumbers -Text $body)
+        $sourcePr = if ($sourcePrs.Count -gt 0) { $sourcePrs[0] } else { $null }
+        foreach ($sourcePrNumber in $sourcePrs) {
+            $allSourcePrs.Add($sourcePrNumber) | Out-Null
         }
 
         # cherry-pick source SHA: "(cherry picked from commit <sha>)"
@@ -1749,27 +2849,21 @@ function Get-CommitsForRevSpec {
         if ($cherryShaMatch.Success) { $cherrySourceSha = $cherryShaMatch.Groups[1].Value }
 
         # Fixed issues
-        $issMatches = [regex]::Matches($body, '(?im)(?:fixes|closes|resolves)\s+(?:dotnet/maui#|#)(\d+)')
-        $fixesList = @()
-        foreach ($m in $issMatches) {
-            $n = [int]$m.Groups[1].Value
-            $fixesList += $n
+        $fixesList = @(Get-ClosingIssueNumbers -Text $body)
+        foreach ($n in $fixesList) {
             $fixedIssues.Add($n) | Out-Null
         }
 
-        # Revert detection — matches "Revert ", "[Revert]", or "[branch-prefix] Revert ..."
-        $isRevert = ($subject -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($subject -match '\[Revert\]')
-        $revertsCommit = $null
-        $revertsPr = $null
+        # Revert detection uses the same parser as the extracted PR identity so
+        # hand-authored "This reverts", "Reverting", and "Backing out" subjects
+        # cannot be parsed successfully but skipped by a narrower outer gate.
+        $revertsPr = Get-RevertedPrFromSubject -Subject $subject
+        $revM = [regex]::Match($body, '(?im)This reverts commit\s+([0-9a-f]{7,40})')
+        $revertsCommit = if ($revM.Success) { $revM.Groups[1].Value } else { $null }
+        $isRevert = ($null -ne $revertsPr) -or ($null -ne $revertsCommit) -or
+            ($subject -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or
+            ($subject -match '\[Revert\]')
         if ($isRevert) {
-            $revM = [regex]::Match($body, '(?im)This reverts commit\s+([0-9a-f]{7,40})')
-            if ($revM.Success) { $revertsCommit = $revM.Groups[1].Value }
-
-            # Recover the ORIGINAL (reverted) PR number from the subject. See
-            # Get-RevertedPrFromSubject for why the trailing (#N) on a revert
-            # subject is the revert's OWN PR and must not be used here.
-            $revertsPr = Get-RevertedPrFromSubject -Subject $subject
-
             # Authoritative override: when we know the reverted commit SHA, read its
             # real subject — its trailing (#NNNN) IS the reverted PR's own number.
             # This is ground truth and overrides any subject-based guess above.
@@ -1778,7 +2872,7 @@ function Get-CommitsForRevSpec {
                 if ($revSubj) {
                     $rsM = [regex]::Matches($revSubj, '\(#(\d+)\)')
                     if ($rsM.Count -gt 0) {
-                        $revertsPr = [int]$rsM[$rsM.Count - 1].Groups[1].Value
+                        $revertsPr = ConvertTo-PrNumber -Value $rsM[$rsM.Count - 1].Groups[1].Value
                     }
                 }
             }
@@ -1787,6 +2881,7 @@ function Get-CommitsForRevSpec {
                 revertsCommit = $revertsCommit
                 revertsPr = $revertsPr
                 revertBackportPr = $backportPr
+                date = $authorDate
                 origin = $OriginTag
             }
         }
@@ -1799,6 +2894,7 @@ function Get-CommitsForRevSpec {
             isRevert = $isRevert
             backportPr = $backportPr
             sourcePr = $sourcePr
+            sourcePrs = $sourcePrs
             cherrySourceSha = $cherrySourceSha
             fixedIssues = $fixesList
             origin = $OriginTag
@@ -1819,7 +2915,8 @@ function Get-SrCommits {
 
     Write-Host "Computing SR-only commits..." -ForegroundColor Cyan
     $excludeArgs = $Ctx.excludeBranches | ForEach-Object { "^$_" }
-    $primaryRevSpec = "$($Ctx.srRef) $($excludeArgs -join ' ')"
+    $contentsRef = Get-MetadataValue -Container $Ctx -Name 'contentsRef' -Default $Ctx.srRef
+    $primaryRevSpec = "$contentsRef $($excludeArgs -join ' ')"
     $primary = Get-CommitsForRevSpec -RevSpec $primaryRevSpec -OriginTag 'primary'
     Write-Host "  Found $($primary.commits.Count) primary SR commits" -ForegroundColor Gray
 
@@ -1867,7 +2964,7 @@ function Get-SrCommits {
         # unbounded scan over a false-safe backport recommendation.
         $mainRevertBaselineRef = Get-MetadataValue -Container $Ctx -Name 'mainRevertBaselineRef'
         $mainRevertBounds = if ($mainRevertBaselineRef) { @("^$mainRevertBaselineRef") } else { @() }
-        $mainRevertRevSpec = "origin/$($Ctx.mainBranch) $(($mainRevertBounds -join ' ')) --regexp-ignore-case --grep=Revert"
+        $mainRevertRevSpec = "origin/$($Ctx.mainBranch) $(($mainRevertBounds -join ' ')) --regexp-ignore-case --grep=Revert --grep=Backing"
         $mainRevertScan = Get-CommitsForRevSpec -RevSpec $mainRevertRevSpec -OriginTag 'main'
         $mainReverts = @($mainRevertScan.reverts)
     }
@@ -2056,10 +3153,10 @@ function Get-RegressionLabelsAuto {
 
 function Get-IssueTimelinePrs {
     param($Repo, $IssueNumber)
-    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/timeline", '--paginate')
-    if (-not $raw) { return @() }
-    $events = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if (-not $events) { return @() }
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/timeline", '--paginate', '--slurp')
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "issue #$IssueNumber timeline lookup failed"
+    if (-not $parsed.Success) { return @() }
+    $events = @($parsed.Items)
     $prs = @()
     foreach ($e in $events) {
         # Use PSObject.Properties checks because strict mode forbids accessing
@@ -2120,10 +3217,10 @@ function Get-IssueCommentPrs {
         mention ("duplicate of #X", "see #Y") is not proof of anything.
     #>
     param($Repo, $IssueNumber)
-    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate')
-    if (-not $raw) { return @() }
-    $comments = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if (-not $comments) { return @() }
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate', '--slurp')
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "issue #$IssueNumber comments lookup failed"
+    if (-not $parsed.Success) { return @() }
+    $comments = @($parsed.Items)
 
     # strongest evidence seen per PR number ('fix-phrase' beats 'mention')
     $byNum = @{}
@@ -2138,7 +3235,7 @@ function Get-IssueCommentPrs {
         # URLs/paths, bare `#123` and `PR#123` are all accepted. The
         # `qual`/`urlrepo`/`pathrepo` groups capture any owner/repo qualifier so a
         # foreign one can be skipped.
-        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(\d+)')
+        $refs = [regex]::Matches($body, '(?:(?<qual>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)#|github\.com/(?<urlrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|(?<pathrepo>[A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/pull/|pull/|#)(?<number>\d+)(?![\p{L}\p{N}_])')
         foreach ($m in $refs) {
             $qual     = $m.Groups['qual'].Value
             $urlRepo  = $m.Groups['urlrepo'].Value
@@ -2146,7 +3243,8 @@ function Get-IssueCommentPrs {
             if ($qual     -and $qual     -ne $Repo) { continue }   # cross-repo owner/repo#N shorthand
             if ($urlRepo  -and $urlRepo  -ne $Repo) { continue }   # cross-repo github.com/.../pull/N URL
             if ($pathRepo -and $pathRepo -ne $Repo) { continue }   # cross-repo scheme-less owner/repo/pull/N
-            $num = [int]$m.Groups[1].Value
+            $num = ConvertTo-PrNumber -Value $m.Groups['number'].Value
+            if ($null -eq $num) { continue }
             # Does THIS comment pair the reference with fix/resolve/close language
             # within a short window (tolerates the long ".../pull/" URL prefix)?
             # The negative lookbehind drops ADJACENTLY-negated fix phrases ("not
@@ -2156,7 +3254,13 @@ function Get-IssueCommentPrs {
             # matches; only a SOLELY-(adjacently-)negated reference is demoted. A
             # non-adjacent negation ("won't be fixed by #X") is not caught here, but
             # the caller's merged-AND-on-branch gates still bound the blast radius.
-            $isFix = $body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            $partialQualifier = '(?:partial(?:ly)?|partly|temporar(?:y|ily)|workaround|in\s+part)'
+            $fixVerb = '(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)'
+            $partialFix = ($body -match "(?i)\b$partialQualifier\s+$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b") -or
+                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b[^.!?`r`n]{0,100}?\b$partialQualifier\b") -or
+                ($body -match "(?i)\b$fixVerb\b[\s\S]{0,60}?(?:pull/|#)$num\b\s*[.!?]\s*(?:Note:\s*)?(?:it|this|that|the\s+(?:change|fix|resolution))\s+(?:is|was)\s+(?:only\s+)?(?:a\s+)?$partialQualifier(?:\s+fix)?\b")
+            $isFix = (-not $partialFix) -and
+                ($body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b")
             $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
             if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
         }
@@ -2167,7 +3271,7 @@ function Get-IssueCommentPrs {
 function Get-PrEvidenceType {
     param($PrBody, $IssueNumber)
     if (-not $PrBody) { return 'none' }
-    if ($PrBody -match "(?im)(?:fixes|closes|resolves)\s+(?:dotnet/maui#|#)$IssueNumber\b") {
+    if (@(Get-ClosingIssueNumbers -Text $PrBody) -contains [int]$IssueNumber) {
         return 'closing-keyword'
     }
     if ($PrBody -match '(?im)(?:backport|cherry[-\s]picked)') {
@@ -2181,8 +3285,28 @@ function Get-PrInfo {
     param($Repo, $PrNumber)
     $json = Invoke-Gh @('pr', 'view', $PrNumber, '--repo', $Repo, '--json',
         'number,title,state,baseRefName,mergedAt,closedAt,body,mergeCommit,author,labels,isDraft,files')
-    if (-not $json) { return $null }
-    return ($json | ConvertFrom-Json -ErrorAction SilentlyContinue)
+    if ($null -eq $json) {
+        Add-RegressionEvidenceFailure "PR #$PrNumber details lookup failed"
+        return $null
+    }
+    try {
+        $rawJson = ($json | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($rawJson)) { throw 'empty response' }
+        $info = ConvertFrom-Json -InputObject $rawJson -ErrorAction Stop
+        if ($null -eq $info -or $info -is [System.Array] -or
+            $info -is [string] -or $info -is [ValueType]) {
+            throw 'expected a JSON object'
+        }
+        $requiredProperties = @('number', 'title', 'state', 'baseRefName', 'body', 'mergeCommit', 'files')
+        $missingProperties = @($requiredProperties | Where-Object { -not $info.PSObject.Properties[$_] })
+        if ($missingProperties.Count -gt 0) {
+            throw "PR JSON object missing required properties: $($missingProperties -join ', ')"
+        }
+        return $info
+    } catch {
+        Add-RegressionEvidenceFailure "PR #$PrNumber details lookup failed ($($_.Exception.Message))"
+        return $null
+    }
 }
 
 function Test-PrIsToolingOnly {
@@ -2248,13 +3372,34 @@ function Test-PrNumberOnBranch {
 
 function Get-BackportPrsForSr {
     param($Repo, $SrBranch, $SourcePrNumber)
-    # Look for any PR targeting the SR branch that mentions the source PR
+    # Search broadly, then require explicit source→backport lineage before a
+    # result can prove fix presence. A bare contextual mention is not lineage.
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Repo, '--base', $SrBranch,
                        '--state', 'all', '--search', "$SourcePrNumber in:title,body",
-                       '--json', 'number,title,state,mergedAt,closedAt', '--limit', '20')
-    if (-not $raw) { return @() }
-    $list = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    return @($list)
+                       '--json', 'number,title,body,headRefName,state,mergedAt,closedAt', '--limit', '21')
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "backport lookup for source PR #$SourcePrNumber failed"
+    if (-not $parsed.Success) { return @() }
+    $items = @($parsed.Items)
+    if ($items.Count -gt 20) {
+        Add-RegressionEvidenceFailure "backport lookup for source PR #$SourcePrNumber exceeded the 20-result evidence cap"
+        $items = @($items | Select-Object -First 20)
+    }
+    return @($items | Where-Object { Test-IsExplicitBackportForSource -Pr $_ -SourcePrNumber $SourcePrNumber })
+}
+
+function Test-IsExplicitBackportForSource {
+    param($Pr, [int]$SourcePrNumber)
+    if (-not $Pr -or -not $SourcePrNumber) { return $false }
+
+    $body = [string](Get-MetadataValue -Container $Pr -Name 'body' -Default '')
+    $title = [string](Get-MetadataValue -Container $Pr -Name 'title' -Default '')
+    $head = [string](Get-MetadataValue -Container $Pr -Name 'headRefName' -Default '')
+
+    if (@(Get-CopilotBackportSourceNumbers -HeadRefName $head) -contains $SourcePrNumber) { return $true }
+    if (@(Get-ExplicitBackportSourceNumbers -Text $title) -contains $SourcePrNumber) { return $true }
+    if (@(Get-ExplicitBackportSourceNumbers -Text $body) -contains $SourcePrNumber) { return $true }
+    if ($head -match "(?i)^backport/pr-$SourcePrNumber-to-") { return $true }
+    return $false
 }
 
 function Resolve-ClosedFixUnlinked {
@@ -2314,12 +3459,15 @@ function Resolve-ClosedFixUnlinked {
         # Skip agent/skill/workflow PRs that only mention the issue for context.
         if (Test-PrIsToolingOnly -Files $info.files) { continue }
         $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
-        # Gate 2: presence on the SR branch via EITHER signal — direct SHA
+        # Gate 2: presence in the release contents via EITHER signal — direct SHA
         # ancestry (fix merged straight to SR) OR the `(#<num>)` subject token
         # (fix flowed in from inflight/main under a different SHA — the common
-        # case).
-        $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
-                -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
+        # case). Shipped mode supplies an immutable stable tag as contentsRef;
+        # other modes fall back to the live SR ref.
+        $fixTargetRef = Get-MetadataValue -Container $Ctx -Name 'contentsRef' `
+            -Default (Get-MetadataValue -Container $Ctx -Name 'srRef' -Default "origin/$($Ctx.srBranch)")
+        $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef $fixTargetRef) `
+                -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef $fixTargetRef)
         if (-not $onSr) { continue }
         $verifiedFixes += @{
             number = [int]$info.number
@@ -2334,6 +3482,7 @@ function Resolve-ClosedFixUnlinked {
         return @{
             classification = 'closed-fix-unlinked'
             confidence = 'high'
+            verifiedFromSrContents = $false
             evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
             candidateFixPrs = @($verifiedFixes | ForEach-Object {
                 @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
@@ -2344,15 +3493,102 @@ function Resolve-ClosedFixUnlinked {
     return $null
 }
 
+function Get-NetRevertedPrSet {
+    param($Reverts)
+
+    $rows = @($Reverts)
+    $net = @{}
+    if ($rows.Count -eq 0) { return $net }
+
+    $targetToReverters = @{}
+    $syntheticReverter = -1
+    foreach ($row in $rows) {
+        $revertPr = [int](Get-MetadataValue -Container $row -Name 'revertBackportPr' -Default 0)
+        $targetPr = [int](Get-MetadataValue -Container $row -Name 'revertsPr' -Default 0)
+        if (-not $targetPr) { continue }
+        if (-not $revertPr) {
+            $revertPr = $syntheticReverter
+            $syntheticReverter--
+        }
+        if (-not $targetToReverters.ContainsKey($targetPr)) {
+            $targetToReverters[$targetPr] = [System.Collections.Generic.List[int]]::new()
+        }
+        if (-not $targetToReverters[$targetPr].Contains($revertPr)) {
+            [void]$targetToReverters[$targetPr].Add($revertPr)
+        }
+    }
+
+    # A PR is net-reverted when at least one currently-active revert PR targets
+    # it. This graph model preserves independent revert contributions while a
+    # revert-of-a-revert disables only the specific reverter it targets.
+    $memo = @{}
+    $visiting = @{}
+    $resolve = $null
+    $resolve = {
+        param([int]$PrNumber)
+        if ($memo.ContainsKey($PrNumber)) { return [bool]$memo[$PrNumber] }
+        if ($visiting.ContainsKey($PrNumber)) {
+            # Cyclic metadata is ambiguous; fail safe rather than claiming active.
+            foreach ($cyclePr in @($visiting.Keys)) { $memo[[int]$cyclePr] = $true }
+            return $true
+        }
+        $visiting[$PrNumber] = $true
+        $isReverted = $false
+        if ($targetToReverters.ContainsKey($PrNumber)) {
+            foreach ($reverter in $targetToReverters[$PrNumber]) {
+                $reverterIsReverted = & $resolve ([int]$reverter)
+                if ($memo.ContainsKey($PrNumber) -and [bool]$memo[$PrNumber]) {
+                    [void]$visiting.Remove($PrNumber)
+                    return $true
+                }
+                if (-not $reverterIsReverted) {
+                    $isReverted = $true
+                    break
+                }
+            }
+        }
+        [void]$visiting.Remove($PrNumber)
+        $memo[$PrNumber] = $isReverted
+        return $isReverted
+    }
+
+    foreach ($targetPr in $targetToReverters.Keys) {
+        if (& $resolve ([int]$targetPr)) { $net[[int]$targetPr] = $true }
+    }
+    return $net
+}
+
 function Classify-RegressionCandidate {
     param($Issue, $CandidatePrs, $Ctx, $SrContents)
 
     $sourcePrSet = @{}
     foreach ($n in $SrContents.sourcePrs) { $sourcePrSet[$n] = $true }
-    $revertedPrSet = @{}
-    foreach ($r in $SrContents.reverts) {
-        if ($r.revertsPr) { $revertedPrSet[$r.revertsPr] = $true }
-        if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
+    $revertedPrSet = Get-NetRevertedPrSet -Reverts $SrContents.reverts
+    # sourcePrSet intentionally contains both a backport PR number and the source
+    # PR named by "Backport of #N". Preserve that mapping so a later revert of the
+    # backport cannot leave the source number looking active (e.g. source #36495,
+    # backport #36498, then a revert of #36498).
+    $sourceToBackportPrs = @{}
+    $srCommitsForMapping = Get-MetadataValue -Container $SrContents -Name 'commits'
+    foreach ($commit in @($srCommitsForMapping)) {
+        $sourcePrs = @((Get-MetadataValue -Container $commit -Name 'sourcePrs') |
+            Where-Object { $null -ne $_ -and [int]$_ -gt 0 })
+        if ($sourcePrs.Count -eq 0) {
+            $legacySourcePr = [int](Get-MetadataValue -Container $commit -Name 'sourcePr' -Default 0)
+            if ($legacySourcePr) { $sourcePrs = @($legacySourcePr) }
+        }
+        $backportPr = [int](Get-MetadataValue -Container $commit -Name 'backportPr' -Default 0)
+        if (-not $backportPr) { continue }
+        foreach ($sourcePr in $sourcePrs) {
+            $sourcePr = [int]$sourcePr
+            if (-not $sourcePr) { continue }
+            if (-not $sourceToBackportPrs.ContainsKey($sourcePr)) {
+                $sourceToBackportPrs[$sourcePr] = [System.Collections.Generic.List[int]]::new()
+            }
+            if (-not $sourceToBackportPrs[$sourcePr].Contains($backportPr)) {
+                [void]$sourceToBackportPrs[$sourcePr].Add($backportPr)
+            }
+        }
     }
     $mainRevertedPrSet = @{}
     # Shape-safe read: $SrContents is a [hashtable] during a live survey but can be
@@ -2362,12 +3598,20 @@ function Classify-RegressionCandidate {
     # was silently ignored and the guard no-op'd. Route through Get-MetadataValue
     # (IDictionary.Contains) so it fires for every dictionary shape (#36497 review).
     $mainReverts = Get-MetadataValue -Container $SrContents -Name 'mainReverts'
-    if ($mainReverts) {
-        foreach ($r in @($mainReverts)) {
-            if ($r.revertsPr) { $mainRevertedPrSet[[int]$r.revertsPr] = $true }
-            if ($r.revertBackportPr) { $mainRevertedPrSet[[int]$r.revertBackportPr] = $true }
-        }
-    }
+    if ($mainReverts) { $mainRevertedPrSet = Get-NetRevertedPrSet -Reverts $mainReverts }
+
+    # Target-branch on-ancestry context. A fix merged BEFORE the SR was cut (or a
+    # catch-up merge) is common ancestry of BOTH main and the SR, so the differential
+    # `srRef ^main` source-PR set omits it — yet the fix IS present on the SR. When a
+    # merged fix's commit is verifiably an ancestor of the target branch, that beats a
+    # `merged-on-main-no-backport` conclusion (real-world: #35615 under SR9). Only apply
+    # this override when the target is a GENUINE SR branch distinct from main — in
+    # candidate mode the target IS main, so common ancestry proves nothing.
+    $ctxModeEarly = Get-MetadataValue -Container $Ctx -Name 'mode'
+    $targetSrRef  = Get-MetadataValue -Container $Ctx -Name 'contentsRef' `
+        -Default (Get-MetadataValue -Container $Ctx -Name 'srRef')
+    $targetIsDistinct = ($ctxModeEarly -ne 'candidate') -and [bool]$targetSrRef
+    $candidateCutLagGuidance = 'Fix is already merged on main, but the selected Candidate cut can lag current main. Rerun readiness after the release/...-srN branch exists to verify inclusion and get the exact backport command if needed.'
 
     # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
     #
@@ -2401,7 +3645,16 @@ function Classify-RegressionCandidate {
         $fixPrs = @()
         foreach ($c in $fixingSrCommits) {
             if ($c.backportPr) { $fixPrs += [int]$c.backportPr }
-            elseif ($c.sourcePr) { $fixPrs += [int]$c.sourcePr }
+            else {
+                $commitSourcePrs = @((Get-MetadataValue -Container $c -Name 'sourcePrs') |
+                    Where-Object { $null -ne $_ -and [int]$_ -gt 0 })
+                if ($commitSourcePrs.Count -gt 0) {
+                    $fixPrs += @($commitSourcePrs | ForEach-Object { [int]$_ })
+                } else {
+                    $legacyCommitSourcePr = [int](Get-MetadataValue -Container $c -Name 'sourcePr' -Default 0)
+                    if ($legacyCommitSourcePr) { $fixPrs += $legacyCommitSourcePr }
+                }
+            }
         }
         $fixPrs = @($fixPrs | Sort-Object -Unique)
 
@@ -2410,9 +3663,22 @@ function Classify-RegressionCandidate {
 
         if ($unreverted.Count -gt 0) {
             $prList = ($unreverted | ForEach-Object { "#$_" }) -join ', '
+            if ($ctxModeEarly -eq 'candidate') {
+                return @{
+                    classification    = 'merged-on-main-no-backport'
+                    confidence        = 'medium'
+                    verifiedFromSrContents = $false
+                    evidence          = @("Candidate survey of current main includes a fix for #$($Issue.number) via $prList, but the eventual SR cut ancestry is not yet available")
+                    candidateFixPrs   = @($unreverted | ForEach-Object {
+                        @{ number = $_; baseRef = 'main'; state = 'MERGED'; onMain = $true; evidenceType = 'candidate-main-fix'; backports = @(); title = '' }
+                    })
+                    recommendedAction = $candidateCutLagGuidance
+                }
+            }
             return @{
                 classification    = 'in-sr-active'
                 confidence        = 'high'
+                verifiedFromSrContents = $true
                 evidence          = @("SR contents already include a fix for #$($Issue.number) via $prList (closing keyword on merged SR commit)")
                 candidateFixPrs   = @($unreverted | ForEach-Object {
                     @{ number = $_; baseRef = 'release/*'; state = 'MERGED'; onMain = $false; evidenceType = 'sr-direct-fix'; backports = @(); title = '' }
@@ -2426,6 +3692,7 @@ function Classify-RegressionCandidate {
             return @{
                 classification    = 'in-sr-reverted'
                 confidence        = 'high'
+                verifiedFromSrContents = $true
                 evidence          = @("All SR fixes for #$($Issue.number) were reverted on SR: $prList")
                 candidateFixPrs   = @()
                 recommendedAction = 'Investigate: SR fix was reverted; needs a new fix or revert-of-revert'
@@ -2456,14 +3723,31 @@ function Classify-RegressionCandidate {
             continue
         }
 
-        # Detect "Revert ..." titled PRs — these are NOT fixes, they're rollbacks.
-        # When the only candidate PR is a revert, the issue is likely unfixed (or
-        # in a revert-of-revert chain that needs manual verification).
-        $isRevertPr = ($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')
-        if ($isRevertPr) { $sawRevertCandidate = $true; continue }
-
         $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
         $onMain = if ($mergeSha) { Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.mainBranch)" } else { $false }
+        # Verified presence on the (real) target SR branch. `$onTargetRef` is the raw
+        # ancestry check against srRef (valid even in candidate mode, where srRef==main).
+        # `$onTarget` gates the merged-on-main → in-sr-active override to a DISTINCT SR
+        # target only.
+        $onTargetRef = if ($targetSrRef -and $mergeSha) { Test-CommitOnBranch -Sha $mergeSha -BranchRef $targetSrRef } else { $false }
+        $onTarget = [bool]($targetIsDistinct -and $onTargetRef)
+
+        # Detect "Revert ..." titled PRs. Normally a revert is a ROLLBACK, not a fix,
+        # so skip it and remember we saw one. BUT a revert of the change that INTRODUCED
+        # the regression can itself be the fix. Accept a revert as a fix ONLY under
+        # strict, conservative evidence: it MERGED, it EXPLICITLY closes THIS issue
+        # (closing-keyword — not a bare mention or generic "Reverts #X" body), and the
+        # source PR is verified in the target contents OR its merge commit is an
+        # ancestor of the target. The source-PR set covers normal backports, whose
+        # target merge SHA differs from the source merge SHA (real-world: #36495 →
+        # SR9 backport #36498). Anything short of all three stays a rollback.
+        $isRevertPr = Test-IsRevertPrTitle -Title $info.title
+        if ($isRevertPr) {
+            $sourcePrInTargetContents = $sourcePrSet.ContainsKey([int]$prNum)
+            $revertCountsAsFix = ($ev -eq 'closing-keyword') -and ($info.state -eq 'MERGED') -and
+                ($onTargetRef -or $sourcePrInTargetContents)
+            if (-not $revertCountsAsFix) { $sawRevertCandidate = $true; continue }
+        }
 
         # Look for backport PRs targeting SR
         $backports = Get-BackportPrsForSr -Repo $Ctx.repo -SrBranch $Ctx.srBranch -SourcePrNumber $prNum
@@ -2477,6 +3761,7 @@ function Classify-RegressionCandidate {
             mergedAt = $info.mergedAt
             evidenceType = $ev
             onMain = $onMain
+            onTarget = $onTarget
             backports = @($backports | ForEach-Object {
                 @{ number = $_.number; state = $_.state; mergedAt = $_.mergedAt; closedAt = $_.closedAt; title = $_.title }
             })
@@ -2518,10 +3803,30 @@ function Classify-RegressionCandidate {
         $subreasonPr = $null
         $confidence = 'high'
         $evidence = @()
+        $verifiedFromSrContents = $false
 
         # In-SR (with revert check)
-        if ($sourcePrSet.ContainsKey($pr.number)) {
-            if ($revertedPrSet.ContainsKey($pr.number)) {
+        if ($targetIsDistinct -and $sourcePrSet.ContainsKey($pr.number)) {
+            $verifiedFromSrContents = $true
+            $mappedBackports = @()
+            if ($sourceToBackportPrs.ContainsKey([int]$pr.number)) {
+                $mappedBackports = @($sourceToBackportPrs[[int]$pr.number])
+            }
+            $activeMappedBackports = @($mappedBackports | Where-Object { -not $revertedPrSet.ContainsKey([int]$_) })
+            $directSourceActive = $pr.onTarget -and -not $revertedPrSet.ContainsKey([int]$pr.number)
+            if ($directSourceActive -or $activeMappedBackports.Count -gt 0) {
+                $verdict = 'in-sr-active'
+                if ($directSourceActive) {
+                    $evidence += "PR #$($pr.number) merge commit is directly present and active on $($Ctx.srBranch)"
+                } else {
+                    $mappedList = ($activeMappedBackports | ForEach-Object { "#$_" }) -join ', '
+                    $evidence += "PR #$($pr.number) source-PR is active in the SR through mapped backport(s) $mappedList"
+                }
+            } elseif ($mappedBackports.Count -gt 0) {
+                $verdict = 'in-sr-reverted'
+                $mappedList = ($mappedBackports | ForEach-Object { "#$_" }) -join ', '
+                $evidence += "PR #$($pr.number) reached the SR through mapped backport(s) $mappedList, but every mapped backport was reverted"
+            } elseif ($revertedPrSet.ContainsKey($pr.number)) {
                 $verdict = 'in-sr-reverted'
                 $evidence += "PR #$($pr.number) source-PR in SR but reverted"
             } else {
@@ -2551,6 +3856,7 @@ function Classify-RegressionCandidate {
             elseif ($mergedBackport) {
                 # backport landed but PR # is different from what we tracked → check sourcePrSet for backport #
                 if ($sourcePrSet.ContainsKey([int]$mergedBackport.number)) {
+                    $verifiedFromSrContents = $true
                     if ($revertedPrSet.ContainsKey([int]$mergedBackport.number)) {
                         $verdict = 'in-sr-reverted'
                         $evidence += "Backport PR #$($mergedBackport.number) in SR but reverted"
@@ -2577,7 +3883,21 @@ function Classify-RegressionCandidate {
             elseif ($pr.state -eq 'MERGED') {
                 # reverted-on-main is handled by the hoisted guard above, so a PR
                 # reaching here is known NOT to have been reverted on main.
-                if ($pr.onMain) {
+                if ($pr.onTarget) {
+                    $verifiedFromSrContents = $true
+                    # Merge commit is verifiably an ancestor of the SR branch, even
+                    # though it fell out of the differential source-PR set (common
+                    # ancestry with main — merged before the cut or via catch-up
+                    # merge). Presence on the branch beats a "no backport" verdict.
+                    if ($revertedPrSet.ContainsKey([int]$pr.number)) {
+                        $verdict = 'in-sr-reverted'
+                        $evidence += "PR #$($pr.number) merge commit is present on $($Ctx.srBranch) but was reverted on the SR"
+                    } else {
+                        $verdict = 'in-sr-active'
+                        $evidence += "PR #$($pr.number) merge commit verified on $($Ctx.srBranch) via common ancestry (absent from the differential source-PR set, but present on the branch)"
+                    }
+                }
+                elseif ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
                     $confidence = 'medium'
                     $evidence += "PR #$($pr.number) merged to main, no backport PR opened"
@@ -2614,7 +3934,15 @@ function Classify-RegressionCandidate {
             }
         }
 
-        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; subreason = $subreason; subreasonPr = $subreasonPr; confidence = $confidence; evidence = $evidence }
+        $perPrVerdicts += @{
+            pr = $pr
+            verdict = $verdict
+            subreason = $subreason
+            subreasonPr = $subreasonPr
+            confidence = $confidence
+            evidence = $evidence
+            verifiedFromSrContents = $verifiedFromSrContents
+        }
     }
 
     # Pick the highest-priority verdict (in-sr-active > backport-in-progress > ... > no-fix-yet)
@@ -2681,17 +4009,40 @@ function Classify-RegressionCandidate {
     # IDictionary.Contains and also handles the [pscustomobject] round-trip shape.
     $ctxMode = Get-MetadataValue -Container $Ctx -Name 'mode'
     $isCandidateMode = $ctxMode -eq 'candidate' -or $Ctx.srBranch -eq $Ctx.mainBranch
+    $isShippedMode = $ctxMode -eq 'shipped'
     $backportCommand = "/backport to $($Ctx.srBranch)"
-    $candidateMergedGuidance = 'Fix must land on main before the SR is cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    # Candidate mode surveys current main, but an already-selected Candidate cut
+    # commit can lag it. Keep the row as a risk until the SR branch exists and
+    # ancestry can prove the fix was included.
+    $candidateMergedGuidance = $candidateCutLagGuidance
     $candidateOpenGuidance = 'Wait for the main merge before the SR cut; rerun readiness after the release/...-srN branch exists to get the exact backport command.'
+    # Shipped mode: the SR already tagged, so the current-SR `/backport` command no
+    # longer applies. Reframe as a human hotfix/next-SR decision (never an automatic
+    # backport to an already-shipped SR).
+    $shippedMergedGuidance = "SR ``$($Ctx.srBranch)`` has already shipped — the automatic current-SR backport workflow no longer applies. A human decides whether to hotfix this shipped SR or carry the fix forward to the next SR."
+    $shippedOpenGuidance = "SR ``$($Ctx.srBranch)`` has already shipped and this fix has not merged yet — a human decides whether it warrants a hotfix to the shipped SR or should ride the next SR; the automatic current-SR backport workflow no longer applies."
     $recAction = switch ($best.verdict) {
         'in-sr-active' { 'No action — fix is shipping' }
         'in-sr-reverted' { 'Investigate: backport landed and was reverted on SR' }
         'rejected-from-sr' { 'Check rejection rationale (WorkIQ) — was this intentional or stale?' }
-        'backport-in-progress' { 'Track backport PR to completion' }
-        'merged-on-main-no-backport' { if ($isCandidateMode) { $candidateMergedGuidance } else { "On the merged source PR, post ``$backportCommand``" } }
+        'backport-in-progress' {
+            if ($isShippedMode) {
+                "SR ``$($Ctx.srBranch)`` has already shipped — decide whether the open backport should land as a hotfix or close in favor of the next SR; it is not a retroactive ship blocker."
+            } else {
+                'Track backport PR to completion'
+            }
+        }
+        'merged-on-main-no-backport' {
+            if ($isShippedMode) { $shippedMergedGuidance }
+            elseif ($isCandidateMode) { $candidateMergedGuidance }
+            else { "On the merged source PR, post ``$backportCommand``" }
+        }
         'merged-non-main-only' { 'Flow fix to main first, then rerun readiness to verify the merged source PR is on main before requesting a backport' }
-        'open-on-main' { if ($isCandidateMode) { $candidateOpenGuidance } else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" } }
+        'open-on-main' {
+            if ($isShippedMode) { $shippedOpenGuidance }
+            elseif ($isCandidateMode) { $candidateOpenGuidance }
+            else { "Wait for main merge; then post ``$backportCommand`` on the merged source PR" }
+        }
         'needs-human-review' {
             switch ($best.subreason) {
                 'merged-backport-missing' { "Re-run readiness without ``-NoFetch`` (or verify the backport's merge target manually) — backport #$($best.subreasonPr) is MERGED on GitHub but absent from SR git contents" }
@@ -2708,6 +4059,7 @@ function Classify-RegressionCandidate {
     @{
         classification = $best.verdict
         confidence = $best.confidence
+        verifiedFromSrContents = [bool]$best.verifiedFromSrContents
         evidence = $best.evidence
         candidateFixPrs = @($strongPrs | ForEach-Object { @{
             number = $_.number; title = $_.title; state = $_.state
@@ -2724,13 +4076,42 @@ function Get-RegressionCandidates {
     Write-Host "Scanning regression issues for labels: $($Labels -join ', ')" -ForegroundColor Cyan
     $allIssues = @()
     $seen = @{}
+    $failedLabels = [System.Collections.Generic.List[string]]::new()
+    $truncatedLabels = [System.Collections.Generic.List[string]]::new()
+    $failedIssues = [System.Collections.Generic.List[int]]::new()
+    $Script:RegressionEvidenceFailures.Clear()
+    $probeLimit = $MaxIssues + 1
 
     foreach ($label in $Labels) {
         $raw = Invoke-Gh @('issue', 'list', '--repo', $Ctx.repo, '--label', $label,
-                           '--state', 'all', '--limit', $MaxIssues.ToString(),
+                           '--state', 'all', '--limit', $probeLimit.ToString(),
                            '--json', 'number,title,state,stateReason,labels,milestone,createdAt,closedAt')
-        if (-not $raw) { continue }
-        $list = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+        if ($null -eq $raw) {
+            [void]$failedLabels.Add($label)
+            continue
+        }
+        try {
+            $rawJson = ($raw | Out-String).Trim()
+            if ([string]::IsNullOrWhiteSpace($rawJson)) {
+                throw "gh returned an empty response"
+            }
+            $list = ConvertFrom-Json -InputObject $rawJson -NoEnumerate -ErrorAction Stop
+            if ($null -eq $list) {
+                throw "expected a JSON array but received null"
+            }
+            if ($list -isnot [System.Array]) {
+                throw "expected a JSON array but received $($list.GetType().Name)"
+            }
+        } catch {
+            [void]$failedLabels.Add($label)
+            Write-Warn "Failed to parse regression issue query for label '$label': $($_.Exception.Message)"
+            continue
+        }
+        if ($list.Count -gt $MaxIssues) {
+            [void]$truncatedLabels.Add($label)
+            Write-Warn "Regression issue query for label '$label' exceeded -MaxIssues $MaxIssues; results are truncated and incomplete."
+            $list = @($list | Select-Object -First $MaxIssues)
+        }
         foreach ($iss in $list) {
             if (-not $seen.ContainsKey($iss.number)) {
                 $seen[$iss.number] = $true
@@ -2861,10 +4242,10 @@ function Get-RegressionCandidates {
 
                 # --- Signal (2): explicit milestone for a different SR ---
                 if (-not $evidence -and $issueMilestone) {
-                    $mm = [regex]::Match($issueMilestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)$')
-                    if ($mm.Success) {
-                        $milestoneMajor    = [int]$mm.Groups[1].Value
-                        $milestoneCycleNum = [int]$mm.Groups[2].Value
+                    $milestoneParts = Get-SrMilestoneParts -Milestone $issueMilestone
+                    if ($milestoneParts) {
+                        $milestoneMajor    = $milestoneParts.Major
+                        $milestoneCycleNum = $milestoneParts.SrNumber
                         if ($milestoneMajor -ne $scopeMajor -or $milestoneCycleNum -ne $scopeCycleNum) {
                             $evidence = "Milestone ``$issueMilestone`` is a different SR cycle than this readiness scope (.NET $scopeMajor SR$scopeCycleNum). The triager assigned it to a different SR — treat as out of scope here."
                         }
@@ -2900,9 +4281,27 @@ function Get-RegressionCandidates {
             }
         }
 
+        $evidenceFailureStart = $Script:RegressionEvidenceFailures.Count
         $candidatePrs = Get-IssueTimelinePrs -Repo $Ctx.repo -IssueNumber $iss.number
         $classify = Classify-RegressionCandidate -Issue $iss -CandidatePrs $candidatePrs `
                         -Ctx $Ctx -SrContents $SrContents
+        $issueEvidenceFailures = @($Script:RegressionEvidenceFailures | Select-Object -Skip $evidenceFailureStart)
+        if ($issueEvidenceFailures.Count -gt 0) {
+            [void]$failedIssues.Add([int]$iss.number)
+            # Deterministic target-content evidence is sufficient even if an
+            # unrelated secondary lookup failed. Active and reverted verdicts
+            # receive the same protection when their git evidence is complete.
+            $verifiedFromSrContents = [bool](Get-MetadataValue -Container $classify -Name 'verifiedFromSrContents' -Default $false)
+            if (-not $verifiedFromSrContents) {
+                $classify = @{
+                    classification    = 'needs-human-review'
+                    confidence        = 'low'
+                    evidence          = @("Evidence lookup incomplete for issue #$($iss.number): $($issueEvidenceFailures -join '; ')")
+                    candidateFixPrs   = @()
+                    recommendedAction = 'Rerun readiness after GitHub API access recovers; do not treat missing PR/backport evidence as authoritative.'
+                }
+            }
+        }
 
         $results += @{
             issue = [int]$iss.number
@@ -2920,7 +4319,13 @@ function Get-RegressionCandidates {
             recommendedAction = $classify.recommendedAction
         }
     }
-    return $results
+    return [PSCustomObject]@{
+        Items           = @($results)
+        IsComplete      = ($failedLabels.Count -eq 0 -and $truncatedLabels.Count -eq 0 -and $failedIssues.Count -eq 0)
+        FailedLabels    = @($failedLabels)
+        TruncatedLabels = @($truncatedLabels)
+        FailedIssues    = @($failedIssues)
+    }
 }
 
 # region ────────────────────── 6. OPEN SR-TARGETING PRs ───────────────────
@@ -2929,10 +4334,20 @@ function Get-OpenSrPrs {
     param($Ctx)
     Write-Host "Listing open PRs targeting $($Ctx.srBranch)..." -ForegroundColor Cyan
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--base', $Ctx.srBranch,
-                       '--state', 'open', '--limit', '100',
+                       '--state', 'open', '--limit', '101',
                        '--json', 'number,title,author,isDraft,createdAt,updatedAt,labels,reviewDecision')
-    if (-not $raw) { return @() }
-    return @($raw | ConvertFrom-Json -ErrorAction SilentlyContinue)
+    $parsed = ConvertFrom-GhJsonArrayResult -Raw $raw -Context "open PR lookup for $($Ctx.srBranch) failed" -SuppressRegressionFailure
+    if (-not $parsed.Success) {
+        return [PSCustomObject]@{ Items = @(); IsComplete = $false; Reason = "Open PR query failed for $($Ctx.srBranch)." }
+    }
+    $items = @($parsed.Items)
+    $truncated = ($items.Count -gt 100)
+    if ($truncated) { $items = @($items | Select-Object -First 100) }
+    return [PSCustomObject]@{
+        Items      = @($items)
+        IsComplete = -not $truncated
+        Reason     = if ($truncated) { "Open PR query for $($Ctx.srBranch) exceeded the 100-result cap." } else { $null }
+    }
 }
 
 function Test-IsP0Pr {
@@ -2976,18 +4391,36 @@ function Get-P0PrChecks {
     .OUTPUTS
         Array with exactly one check record (see New-ReadinessCheck).
     #>
-    param($OpenSrPrs, [string]$SrBranch)
+    param($OpenSrPrs, [string]$SrBranch, [switch]$Shipped, [switch]$Incomplete, [string]$IncompleteReason)
 
     $prs = @($OpenSrPrs)
     $p0 = @($prs | Where-Object { Test-IsP0Pr $_ })
-
     if ($p0.Count -gt 0) {
         $nums = ($p0 | ForEach-Object { "#$($_.number)" }) -join ', '
+        $nextAction = if ($Shipped) {
+            "``$SrBranch`` already shipped — decide whether to land each P/0 PR as a hotfix, carry it to the next SR, or explicitly de-prioritize it."
+        } else {
+            'Land or de-prioritize each P/0 PR before shipping.'
+        }
+        $incompleteSuffix = if ($Incomplete) {
+            $reason = if ($IncompleteReason) { $IncompleteReason } else { 'Open PR scan incomplete.' }
+            " $reason Additional P/0 PRs may be omitted."
+        } else { '' }
+        if ($Incomplete) {
+            $nextAction += ' Inspect the full release-branch PR queue because the retained results may omit additional P/0 PRs.'
+        }
         return @(New-ReadinessCheck `
             -Area 'P/0 release-branch PRs' `
             -Status 'BLOCKED' `
-            -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums." `
-            -NextAction 'Land or de-prioritize each P/0 PR before shipping.')
+            -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums.$incompleteSuffix" `
+            -NextAction $nextAction)
+    }
+    if ($Incomplete) {
+        return @(New-ReadinessCheck `
+            -Area 'P/0 release-branch PRs' `
+            -Status 'WATCH' `
+            -Details $(if ($IncompleteReason) { $IncompleteReason } else { 'Open PR scan incomplete; P/0 status could not be confirmed.' }) `
+            -NextAction 'Rerun readiness with working GitHub access and a sufficient PR limit before treating P/0 status as clear.')
     }
     return @(New-ReadinessCheck `
         -Area 'P/0 release-branch PRs' `
@@ -3267,6 +4700,26 @@ function Get-VerdictTier {
     }
 }
 
+function Get-EffectiveVerdictTier {
+    <#
+    .SYNOPSIS
+        Applies state-sensitive tier adjustments to a regression classification.
+        The Mode parameter is retained so verdict, hash, and renderer callers share
+        one stable policy surface as lifecycle-specific rules evolve.
+    #>
+    param(
+        [string]$Classification,
+        [string]$Mode = 'in-flight',
+        [string]$State = 'OPEN'
+    )
+
+    $tier = Get-VerdictTier -Classification $Classification
+    if ($Classification -eq 'no-fix-yet' -and $State -ne 'OPEN') {
+        return 3
+    }
+    return $tier
+}
+
 # Shape-safe accessor for report metadata (and any maybe-hashtable /
 # maybe-pscustomobject payload). Report data is a live [hashtable] during a
 # survey but a [pscustomobject] once round-tripped through JSON (renderer /
@@ -3287,6 +4740,142 @@ function Get-MetadataValue {
         return $Container.$Name
     }
     return $Default
+}
+
+function ConvertTo-TopLevelDictionary {
+    param($Container)
+    if ($Container -is [System.Collections.IDictionary]) { return $Container }
+
+    $result = @{}
+    if ($null -ne $Container -and $Container.PSObject) {
+        foreach ($property in $Container.PSObject.Properties) {
+            $result[$property.Name] = $property.Value
+        }
+    }
+    return $result
+}
+
+function Get-NonEmptyStringValues {
+    param($Value)
+    @($Value) |
+        Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+        ForEach-Object { ([string]$_).Trim() }
+}
+
+function Get-ShippedVerdict {
+    <#
+    .SYNOPSIS
+        Computes the post-ship follow-up verdict for an already-tagged SR (-Shipped).
+    .DESCRIPTION
+        An SR that has tagged cannot be un-shipped, so this NEVER returns 🔴 Not
+        Ready. It surfaces the same regression/CI/ship-check signals the in-flight
+        verdict uses, but reframes them:
+          - Any actionable Tier-1/Tier-2 regression — carry-forward or not — and
+            any BLOCKED ship check drive a 🟡 "Shipped — follow-up required".
+          - Regressions milestoned to a later SR are carry-forward: non-gating for
+            the shipped release (never 🔴), but still yellow until forward-tracking
+            is acknowledged.
+          - CI red/stale/unknown is advisory only and does not change the symbol.
+          - Otherwise the verdict is 🟢 "Shipped — clean".
+
+        Reads the shipped SR number/major from $Data.shippedInfo (populated by
+        Invoke-Main) to classify carry-forward. Absent shippedInfo → carry-forward
+        detection finds nothing and every actionable signal stays a follow-up.
+    #>
+    param($Data)
+
+    $reasons = New-Object System.Collections.Generic.List[string]
+    $followUp = $false
+    if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
+        $followUp = $true
+        $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
+        $reasons.Add("[Follow-up] $partialReason Rerun with ``-Phase all`` before treating the tracker as clean.") | Out-Null
+    }
+    if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
+        $followUp = $true
+        $failedLabels = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
+        $failedLabelText = if ($failedLabels.Count -gt 0) { " ($($failedLabels -join ', '))" } else { '' }
+        $reasons.Add("[Follow-up] Regression scan incomplete$failedLabelText — results may be understated; rerun before treating the tracker as clean.") | Out-Null
+    }
+
+    # Shipped cycle anchor for carry-forward classification.
+    $shippedSr = 0; $shippedMajor = 0; $shippedSubPatch = 0
+    $si = Get-MetadataValue -Container $Data -Name 'shippedInfo'
+    if ($si) {
+        $shippedSr    = [int](Get-MetadataValue -Container $si -Name 'srNumber' -Default 0)
+        $shippedMajor = [int](Get-MetadataValue -Container $si -Name 'major' -Default 0)
+        $shippedSubPatch = Get-SrSubPatchFromVersion -Version (Get-MetadataValue -Container $si -Name 'version')
+        if ([bool](Get-MetadataValue -Container $si -Name 'hotfixInProgress' -Default $false)) {
+            $followUp = $true
+            $liveHotfixVersion = [string](Get-MetadataValue -Container $si -Name 'liveVersion')
+            $hotfixSuffix = if ($liveHotfixVersion) { " (``$liveHotfixVersion``)" } else { '' }
+            $reasons.Add("[Follow-up] An unpublished hotfix$hotfixSuffix is in progress on the shipped SR branch.") | Out-Null
+        }
+    }
+
+    $shippedRegressions = Get-MetadataValue -Container $Data -Name 'regressions'
+    if ($shippedRegressions) {
+        $followCounts = @{}
+        $carryCount = 0
+        foreach ($r in $shippedRegressions) {
+            $regressionState = [string](Get-MetadataValue -Container $r -Name 'state' -Default 'OPEN')
+            $tier = Get-EffectiveVerdictTier -Classification $r.classification -Mode 'shipped' -State $regressionState
+            if ($tier -ge 3) { continue }
+            if (Test-IsCarryForwardRegression -Regression $r `
+                    -ShippedSrNumber $shippedSr -ShippedMajor $shippedMajor -ShippedSubPatch $shippedSubPatch) {
+                $carryCount++
+                continue
+            }
+            if (-not $followCounts.ContainsKey($r.classification)) { $followCounts[$r.classification] = 0 }
+            $followCounts[$r.classification]++
+            $followUp = $true
+        }
+        foreach ($k in $followCounts.Keys | Sort-Object) {
+            $reasons.Add("[Follow-up] $($followCounts[$k]) × ``$k`` — post-ship carry-forward / hotfix decision, not a ship blocker") | Out-Null
+        }
+        if ($carryCount -gt 0) {
+            $followUp = $true
+            $reasons.Add("[Advisory] $carryCount regression(s) milestoned to a later SR — carry-forward, non-gating") | Out-Null
+        }
+    }
+
+    # CI is advisory in shipped mode — the tag already published.
+    $shippedCi = Get-MetadataValue -Container $Data -Name 'ci'
+    $shippedCiOverall = Get-MetadataValue -Container $shippedCi -Name 'overall'
+    if ($shippedCiOverall -in @('red-needs-review', 'stale', 'partial-unknown', 'unknown')) {
+        $reasons.Add("[Advisory] Post-ship CI on the SR branch is ``$shippedCiOverall`` — informational; it does not affect the already-shipped release.") | Out-Null
+    }
+
+    # BLOCKED/WATCH/UNKNOWN ship checks post-ship are follow-ups, never
+    # retroactive blockers. Missing required evidence must not render "clean".
+    $shippedChecks = Get-MetadataValue -Container $Data -Name 'shipChecks'
+    if ($shippedChecks) {
+        $blockedShipChecks = @($shippedChecks | Where-Object { $_.Status -eq 'BLOCKED' })
+        foreach ($sc in $blockedShipChecks) {
+            $followUp = $true
+            $reasons.Add("[Follow-up] Ship check needs post-ship attention: $($sc.Area)") | Out-Null
+        }
+        $uncertainShipChecks = @($shippedChecks | Where-Object { $_.Status -in @('WATCH', 'UNKNOWN') })
+        foreach ($sc in $uncertainShipChecks) {
+            $followUp = $true
+            $reasons.Add("[Follow-up] Ship check $($sc.Status): $($sc.Area)") | Out-Null
+        }
+    }
+
+    if ($followUp) {
+        return @{
+            symbol = '🟡'
+            tier = 2
+            label = 'Shipped — follow-up required'
+            reasons = $reasons.ToArray()
+        }
+    }
+    return @{
+        symbol = '🟢'
+        tier = 3
+        label = 'Shipped — clean'
+        reasons = if ($reasons.Count -gt 0) { $reasons.ToArray() } else { @('Shipped — no urgent or gating post-ship follow-ups detected.') }
+    }
 }
 
 function Get-OverallVerdict {
@@ -3319,23 +4908,44 @@ function Get-OverallVerdict {
           reasons  = string[] explaining each contributing factor
     #>
     param($Data)
+    $Data = ConvertTo-TopLevelDictionary -Container $Data
 
-    $isCandidate = ((Get-MetadataValue -Container $Data.metadata -Name 'mode') -eq 'candidate')
+    $mode = Get-MetadataValue -Container $Data.metadata -Name 'mode'
+    $isCandidate = ($mode -eq 'candidate')
+
+    # ── SHIPPED MODE: post-ship follow-up framing (never retroactively blocks) ──
+    # The SR already tagged. Nothing surfaced here can un-ship it, so we NEVER
+    # return 🔴 Not Ready. Newly discovered regressions and signals become
+    # post-ship FOLLOW-UPS (carry-forward / hotfix decisions). CI red is advisory.
+    # Regressions milestoned to a later SR are carry-forward and non-gating.
+    # Carry-forward still requires tracking, so it produces a yellow follow-up
+    # verdict; only a report with no actionable or carry-forward work is green.
+    if ($mode -eq 'shipped') {
+        return (Get-ShippedVerdict -Data $Data)
+    }
 
     $reasons = New-Object System.Collections.Generic.List[string]
     $tier1 = $false
     $tier2 = $false
+    if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
+        $tier2 = $true
+        $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
+        $reasons.Add("[Tier 2] $partialReason Rerun with ``-Phase all`` for a global verdict.") | Out-Null
+    }
+    if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
+        $tier2 = $true
+        $failedLabels = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
+        $failedLabelText = if ($failedLabels.Count -gt 0) { " ($($failedLabels -join ', '))" } else { '' }
+        $reasons.Add("[Tier 2] Regression scan incomplete$failedLabelText — results may be understated") | Out-Null
+    }
 
     # Regression classifications
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
         $t1Counts = @{}
         $t2Counts = @{}
         foreach ($r in $Data['regressions']) {
-            $tier = Get-VerdictTier -Classification $r.classification
-            # `no-fix-yet` only blocks if the issue is still OPEN
-            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') {
-                $tier = 3
-            }
+            $regressionState = [string](Get-MetadataValue -Container $r -Name 'state' -Default 'OPEN')
+            $tier = Get-EffectiveVerdictTier -Classification $r.classification -Mode $mode -State $regressionState
             if ($tier -eq 1) {
                 if (-not $t1Counts.ContainsKey($r.classification)) { $t1Counts[$r.classification] = 0 }
                 $t1Counts[$r.classification]++
@@ -3385,8 +4995,8 @@ function Get-OverallVerdict {
     #   - BLOCKED → Tier 1 (Not Ready). Must be resolved before ship.
     #   - WATCH   → Tier 2 (Conditionally Ready). Worth eyeballing; doesn't
     #              block but the verdict acknowledges the soft signal.
-    # CLEANUP and UNKNOWN do NOT escalate the verdict — they're follow-ups
-    # or missing data, not ship signals.
+    # CLEANUP does not escalate. UNKNOWN means required evidence is incomplete,
+    # so align with Preview and surface a conditional verdict.
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         $blockedShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'BLOCKED' })
         foreach ($sc in $blockedShipChecks) {
@@ -3397,6 +5007,11 @@ function Get-OverallVerdict {
         foreach ($sc in $watchShipChecks) {
             $tier2 = $true
             $reasons.Add("[Tier 2] Ship check WATCH: $($sc.Area)") | Out-Null
+        }
+        $unknownShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'UNKNOWN' })
+        foreach ($sc in $unknownShipChecks) {
+            $tier2 = $true
+            $reasons.Add("[Tier 2] Ship check UNKNOWN: $($sc.Area)") | Out-Null
         }
     }
 
@@ -3603,6 +5218,7 @@ function Get-ReportSemanticHash {
         ago" relative times, and any other field that drifts on every run.
     #>
     param($Data, $Verdict)
+    $Data = ConvertTo-TopLevelDictionary -Container $Data
 
     # MUST be [ordered]: a plain [hashtable] enumerates keys in an order derived
     # from per-process String.GetHashCode(), which .NET Core randomizes on every
@@ -3613,22 +5229,59 @@ function Get-ReportSemanticHash {
     $mainBranchName = Get-MetadataValue -Container $Data.metadata -Name 'mainBranch'
     $modeForHash = Get-MetadataValue -Container $Data.metadata -Name 'mode' -Default 'in-flight'
     if (-not $modeForHash) { $modeForHash = 'in-flight' }
+    $shippedInfoForHash = if ($modeForHash -eq 'shipped' -and $Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) {
+        $Data['shippedInfo']
+    } else { $null }
+    $shipDateForHash = if ($shippedInfoForHash) {
+        ConvertTo-Utc -Value (Get-MetadataValue -Container $shippedInfoForHash -Name 'tagDate')
+    } else { $null }
+    $shipVersionForHash = if ($shippedInfoForHash) {
+        [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'version')
+    } else { '' }
+    $shipDateSourceForHash = if ($shippedInfoForHash) {
+        [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'dateSource')
+    } else { '' }
+    $shipPublicationStateForHash = if ($shippedInfoForHash) {
+        [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'publicationState' -Default 'unknown')
+    } else { '' }
+    $shipSrForHash = if ($shippedInfoForHash) {
+        [int](Get-MetadataValue -Container $shippedInfoForHash -Name 'srNumber' -Default 0)
+    } else { 0 }
+    $shipMajorForHash = if ($shippedInfoForHash) {
+        [int](Get-MetadataValue -Container $shippedInfoForHash -Name 'major' -Default 0)
+    } else { 0 }
+    $shipSubPatchForHash = if ($shippedInfoForHash) {
+        Get-SrSubPatchFromVersion -Version $shipVersionForHash
+    } else { 0 }
 
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
         # Tracker lifecycle mode (candidate / in-flight / shipped). Folded in so a
         # lifecycle TRANSITION always flips the hash and refreshes the tracker —
         # even when every other hashed field is byte-for-byte identical across the
-        # flip. This matters most at in-flight -> shipped: `-Shipped` is a pure
-        # display relabel that surveys the SAME SR branch as in-flight, so srHead,
-        # ci, srPrs, regressions, shipChecks and nightlyFeed can all be unchanged
-        # at the moment the stable tag publishes. Without `mode` here, hash(shipped)
+        # flip. This matters most at in-flight -> shipped: `-Shipped` surveys the
+        # SAME SR branch as in-flight, so srHead, ci, srPrs, regressions, shipChecks
+        # and nightlyFeed can all be unchanged at the moment the stable tag
+        # publishes. Without `mode` here, hash(shipped)
         # == hash(in-flight), the workflow's idempotent no-op skips `gh issue edit`,
         # and the tracker never visually flips to "shipped" (the whole point of the
         # shipped lifecycle). `mode` is constant within a mode, so it adds NO daily
         # churn — only the one-time transition refreshes. Default 'in-flight' when
         # absent, matching Format-MarkdownReport's $mode default.
         mode = $modeForHash
+        shippedAnchor = if ($shippedInfoForHash) {
+            $shipDateToken = if ($shipDateForHash) { $shipDateForHash.ToString('o') } else { '' }
+            $hotfixVersion = [string](Get-MetadataValue -Container $shippedInfoForHash -Name 'liveVersion')
+            $hotfixInProgress = [bool](Get-MetadataValue -Container $shippedInfoForHash -Name 'hotfixInProgress' -Default $false)
+            "$shipVersionForHash|$shipDateToken|$shipDateSourceForHash|$shipPublicationStateForHash|$hotfixInProgress|$hotfixVersion"
+        } else { '' }
+        regressionScan = if ([bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)) {
+            $failedLabels = @(@(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels')) | Sort-Object)
+            "incomplete|$($failedLabels -join ',')"
+        } else { 'complete' }
+        survey = if ([bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)) {
+            "partial|$(Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason')"
+        } else { 'complete' }
         srHead = Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha'
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
@@ -3659,6 +5312,17 @@ function Get-ReportSemanticHash {
                               } elseif ($_.PSObject.Properties['recommendedAction']) {
                                   $recAct = [string]$_.recommendedAction
                               }
+                              $lifecycleBucket = ''
+                              $regressionState = [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN')
+                              $regressionTitle = [string](Get-MetadataValue -Container $_ -Name 'title' -Default '')
+                              if ($modeForHash -eq 'shipped') {
+                                  $effectiveTier = Get-EffectiveVerdictTier -Classification $_.classification -Mode $modeForHash -State $regressionState
+                                  if ($effectiveTier -lt 3) {
+                                      $isCarryForward = Test-IsCarryForwardRegression -Regression $_ `
+                                          -ShippedSrNumber $shipSrForHash -ShippedMajor $shipMajorForHash -ShippedSubPatch $shipSubPatchForHash
+                                      $lifecycleBucket = if ($isCarryForward) { 'carry-forward' } else { 'follow-up' }
+                                  }
+                              }
                               # `no-fix-yet` is the ONLY classification whose rendered tier
                               # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
                               # Format-MarkdownReport's $emitTier). Fold the state-derived tier
@@ -3669,26 +5333,76 @@ function Get-ReportSemanticHash {
                               # state-insensitive, so unrelated state transitions (e.g. a
                               # Tier-3 in-sr-active issue closing) do NOT churn the hash or
                               # spam issue watchers — preserving the conservative design above.
+                              $modeTierSuffix = if ($modeForHash -eq 'candidate' -and
+                                  $_.classification -eq 'merged-on-main-no-backport') {
+                                  $effectiveTier = Get-EffectiveVerdictTier -Classification $_.classification `
+                                      -Mode $modeForHash -State $regressionState
+                                  ":tier$effectiveTier"
+                              } else { '' }
                               if ($_.classification -eq 'no-fix-yet') {
-                                  $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
-                                  "$($_.issue):$($_.classification):$($nfyTier):$($selPrNum):$recAct"
+                                  $nfyTier = if ($regressionState -eq 'OPEN') { 't1' } else { 't3' }
+                                  "$($_.issue):${regressionTitle}:$($_.classification):$($nfyTier):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
                               } else {
-                                  "$($_.issue):$($_.classification):$($selPrNum):$recAct"
+                                  "$($_.issue):${regressionTitle}:$($_.classification):$($lifecycleBucket):$($selPrNum):$recAct$modeTierSuffix"
                               }
                           }) -join '|'
                       } else { '' }
         openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
-                        @($Data['openSrPrs'] | Sort-Object number | ForEach-Object { $_.number }) -join ','
+                        @($Data['openSrPrs'] | Sort-Object number | ForEach-Object {
+                            $author = Get-MetadataValue -Container $_ -Name 'author'
+                            @(
+                                Get-MetadataValue -Container $_ -Name 'number'
+                                Get-MetadataValue -Container $_ -Name 'title'
+                                Get-MetadataValue -Container $author -Name 'login'
+                                [bool](Get-MetadataValue -Container $_ -Name 'isDraft' -Default $false)
+                                Get-MetadataValue -Container $_ -Name 'reviewDecision'
+                                Get-MetadataValue -Container $_ -Name 'updatedAt'
+                            ) -join '~'
+                        }) -join '|'
                     } else { '' }
+        candidatePr = if ($Data.ContainsKey('candidatePr') -and $Data['candidatePr']) {
+                          $candidateResolution = $Data['candidatePr']
+                          $candidateItems = @(Get-MetadataValue -Container $candidateResolution -Name 'candidates')
+                          $primaryCandidate = $candidateItems | Select-Object -First 1
+                          $candidateNow = ConvertTo-Utc -Value (Get-MetadataValue -Container $Data.metadata -Name 'fetchedAt')
+                          $primaryAge = Get-CandidatePrAge -Candidate $primaryCandidate -Now $candidateNow
+                          [ordered]@{
+                              mode = Get-MetadataValue -Container $candidateResolution -Name 'mode'
+                              nextSr = Get-MetadataValue -Container $candidateResolution -Name 'nextSr'
+                              versionBase = Get-MetadataValue -Container $candidateResolution -Name 'versionBase'
+                              spoofers = Get-MetadataValue -Container $candidateResolution -Name 'spoofers' -Default 0
+                              unverifiable = Get-MetadataValue -Container $candidateResolution -Name 'unverifiable' -Default 0
+                              primaryNumber = Get-MetadataValue -Container $primaryCandidate -Name 'number'
+                              primaryAgeBucket = $primaryAge.Bucket
+                              candidates = @(
+                                  $candidateItems |
+                                      Sort-Object { Get-MetadataValue -Container $_ -Name 'number' } |
+                                      ForEach-Object {
+                                          $candidate = $_
+                                          $candidateAuthor = Get-MetadataValue -Container $candidate -Name 'author'
+                                          [ordered]@{
+                                              number = Get-MetadataValue -Container $candidate -Name 'number'
+                                              title = Get-MetadataValue -Container $candidate -Name 'title'
+                                              author = Get-MetadataValue -Container $candidateAuthor -Name 'login'
+                                              state = Get-MetadataValue -Container $candidate -Name 'state'
+                                              isDraft = [bool](Get-MetadataValue -Container $candidate -Name 'isDraft' -Default $false)
+                                              mergeable = Get-MetadataValue -Container $candidate -Name 'mergeable'
+                                              reviewDecision = Get-MetadataValue -Container $candidate -Name 'reviewDecision'
+                                          }
+                                      }
+                              )
+                          }
+                      } else { $null }
         shipChecks = if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
                          @($Data['shipChecks'] | Sort-Object Area | ForEach-Object {
+                             $details = [string](Get-MetadataValue -Container $_ -Name 'Details' -Default '')
                              $na = ''
                              if ($_ -is [System.Collections.IDictionary]) {
                                  if ($_.Contains('NextAction')) { $na = [string]$_['NextAction'] }
                              } elseif ($_.PSObject.Properties['NextAction']) {
                                  $na = [string]$_.NextAction
                              }
-                             "$($_.Area):$($_.Status):$na"
+                             "$($_.Area):$($_.Status):${details}:$na"
                          }) -join '|'
                      } else { '' }
         # Nightly dogfood feed banner state. Folded in so a feed going stale (or a
@@ -3774,7 +5488,14 @@ function Select-OpenMainFixPr {
 }
 
 function Format-MarkdownReport {
-    param($Data, [string]$RepoUrl, [string]$TrackerKey, [int]$MaxBodyBytes = 60000)
+    param(
+        $Data,
+        [string]$RepoUrl,
+        [string]$TrackerKey,
+        [int]$MaxBodyBytes = 60000,
+        [bool]$PublicSafe = $true
+    )
+    $Data = ConvertTo-TopLevelDictionary -Container $Data
 
     $ctx = $Data.metadata
     $srBranch = $ctx.srBranch
@@ -3798,6 +5519,19 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine("<!-- release-readiness-tracker: $TrackerKey -->")
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
+    $hotfixMarkerInfo = Get-MetadataValue -Container $Data -Name 'shippedInfo'
+    $shippedMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'version')
+    if ($shippedMarkerVersion) {
+        [void]$sb.AppendLine("<!-- release-readiness-shipped: $shippedMarkerVersion -->")
+    }
+    if ([bool](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'hotfixInProgress' -Default $false)) {
+        $hotfixMarkerVersion = [string](Get-MetadataValue -Container $hotfixMarkerInfo -Name 'liveVersion')
+        $hotfixMarkerCommit = [string](Get-MetadataValue -Container $Data.metadata -Name 'srHeadSha')
+        if (-not $hotfixMarkerVersion) { $hotfixMarkerVersion = 'version-pending' }
+        if ($hotfixMarkerCommit) {
+            [void]$sb.AppendLine("<!-- release-readiness-hotfix: $hotfixMarkerVersion@$hotfixMarkerCommit -->")
+        }
+    }
 
     # $mode / $inherits, read shape-safe via the shared accessor for the SAME
     # reason as $mainBranchName above (metadata may be a hashtable during a survey
@@ -3806,6 +5540,21 @@ function Format-MarkdownReport {
     $mode = Get-MetadataValue -Container $ctx -Name 'mode' -Default 'in-flight'
     if (-not $mode) { $mode = 'in-flight' }
     $inherits = [bool](Get-MetadataValue -Container $ctx -Name 'inheritFromPriorSr' -Default $false)
+
+    # Shipped-render context — resolved once and reused by the header, the ship-date
+    # line, and the post-ship follow-up summary. Reads the actual stable-tag ship
+    # date + shipped SR number/major from $Data.shippedInfo (Invoke-Main populates
+    # it). Absent → carry-forward detection finds nothing and every follow-up stays
+    # actionable (conservative).
+    $isShippedRender = ($mode -eq 'shipped')
+    $shippedInfoRender = if ($isShippedRender -and $Data.ContainsKey('shippedInfo') -and $Data['shippedInfo']) { $Data['shippedInfo'] } else { $null }
+    $shipTagDateRender = if ($shippedInfoRender) { ConvertTo-Utc -Value (Get-MetadataValue -Container $shippedInfoRender -Name 'tagDate') } else { $null }
+    $shipTagVersion    = if ($shippedInfoRender) { Get-MetadataValue -Container $shippedInfoRender -Name 'version' } else { $null }
+    $shipTagDateSource = if ($shippedInfoRender) { Get-MetadataValue -Container $shippedInfoRender -Name 'dateSource' } else { $null }
+    $shipTagSrNum      = if ($shippedInfoRender) { [int](Get-MetadataValue -Container $shippedInfoRender -Name 'srNumber' -Default 0) } else { 0 }
+    $shipTagMajor      = if ($shippedInfoRender) { [int](Get-MetadataValue -Container $shippedInfoRender -Name 'major' -Default 0) } else { 0 }
+    $shipTagSubPatch   = if ($shippedInfoRender) { Get-SrSubPatchFromVersion -Version $shipTagVersion } else { 0 }
+
     if ($mode -eq 'candidate') {
         if ($inherits) {
             [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")
@@ -3818,6 +5567,18 @@ function Format-MarkdownReport {
         }
     } else {
         [void]$sb.AppendLine("# Release Readiness — $srBranch")
+        if ($isShippedRender) {
+            [void]$sb.AppendLine()
+            if ($shipTagDateRender -and $shipTagDateSource -eq 'github-release') {
+                $shipVerLabel = if ($shipTagVersion) { "$shipTagVersion " } else { '' }
+                [void]$sb.AppendLine("> 📦 **Shipped ${shipVerLabel}on $($shipTagDateRender.ToString('yyyy-MM-dd')) (post-ship tracker).** ``$srBranch`` has already tagged. Findings below are post-ship **follow-ups / carry-forward** (hotfix or next-SR decisions), not ship blockers.")
+            } elseif ($shipTagDateRender) {
+                $shipVerLabel = if ($shipTagVersion) { "$shipTagVersion " } else { '' }
+                [void]$sb.AppendLine("> 📦 **Shipped ${shipVerLabel}(post-ship tracker; tagged-content anchor $($shipTagDateRender.ToString('yyyy-MM-dd'))).** ``$srBranch`` has already tagged. Findings below are post-ship **follow-ups / carry-forward** (hotfix or next-SR decisions), not ship blockers.")
+            } else {
+                [void]$sb.AppendLine("> 📦 **Shipped SR (post-ship tracker).** ``$srBranch`` has already tagged. Findings below are post-ship **follow-ups / carry-forward** (hotfix or next-SR decisions), not ship blockers.")
+            }
+        }
     }
     [void]$sb.AppendLine()
 
@@ -3890,7 +5651,21 @@ function Format-MarkdownReport {
         if ($bumpInfoForShip) { $mainBumpDateForShip = $bumpInfoForShip.Date }
     }
     $shipDate = Get-ExpectedShipDate -PatchVersion $patchForShipDate -MainBumpDate $mainBumpDateForShip
-    if ($shipDate.Cadence -eq 'asap-hotfix') {
+    if ($isShippedRender) {
+        # The SR already tagged — show the public release date when available,
+        # otherwise label the tagged-commit fallback precisely. Suppress the overdue
+        # "window passed" warning either way (a shipped SR is not "late").
+        if ($shipTagDateRender) {
+            $shipVerLabel2 = if ($shipTagVersion) { "$shipTagVersion " } else { '' }
+            if ($shipTagDateSource -eq 'github-release') {
+                [void]$sb.AppendLine("**Shipped**: 📦 ${shipVerLabel2}on $($shipTagDateRender.ToString('dddd MMMM d, yyyy')) (GitHub Release published) — post-ship tracker; ship-window checks no longer apply.")
+            } else {
+                [void]$sb.AppendLine("**Tag content anchor**: 📦 ${shipVerLabel2}$($shipTagDateRender.ToString('dddd MMMM d, yyyy')) (tagged commit date; public release timestamp unavailable) — post-ship tracker; ship-window checks no longer apply.")
+            }
+        } else {
+            [void]$sb.AppendLine("**Shipped**: 📦 This SR has already tagged — post-ship tracker; ship-window checks no longer apply.")
+        }
+    } elseif ($shipDate.Cadence -eq 'asap-hotfix') {
         [void]$sb.AppendLine("**Expected ship date**: 🚑 $($shipDate.FormattedLong) — $($shipDate.Note)")
     } elseif ($shipDate.MissedWindow) {
         [void]$sb.AppendLine("**Expected ship date**: ⚠️ $($shipDate.FormattedLong) — **window passed** ($([Math]::Abs($shipDate.DaysFromNow)) day(s) ago). $($shipDate.Note)")
@@ -3912,49 +5687,161 @@ function Format-MarkdownReport {
         foreach ($w in $Data['warnings']) { [void]$sb.AppendLine("> - $w") }
         [void]$sb.AppendLine()
     }
+    $surveyIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'surveyIncomplete' -Default $false)
+    if ($surveyIncompleteRender) {
+        $partialReason = Get-MetadataValue -Container $Data -Name 'surveyIncompleteReason' -Default 'Partial survey did not query every readiness axis.'
+        [void]$sb.AppendLine("> ⚠️ **Partial survey — not a global ship verdict.** $partialReason Rerun with ``-Phase all`` for the complete assessment.")
+        [void]$sb.AppendLine()
+    }
 
-    # === BLOCKING SUMMARY (hoisted to top, right under the verdict) ===
-    # Surface every BLOCKED ship-check AND every Tier 1 regression so the
-    # release captain sees what's preventing ship without scrolling past
-    # CI tables, open-PR tables, and the full tier breakdown below.
+    # === BLOCKING / POST-SHIP FOLLOW-UP SUMMARY (hoisted to top, under verdict) ===
+    # In-flight/candidate: every BLOCKED ship-check + Tier 1 regression is a ship
+    # blocker. Shipped: the SR already tagged, so the same items become post-ship
+    # FOLLOW-UPS (hotfix / next-SR decisions), and Tier-1 regressions explicitly
+    # milestoned to a later SR are split into a separate, non-gating list so they
+    # stay VISIBLE without implying the shipped release is broken.
     $blockingItems = New-Object System.Collections.Generic.List[hashtable]
+    $blockedShipCheckItems = New-Object System.Collections.Generic.List[hashtable]
+    $releaseContentFollowUpItems = New-Object System.Collections.Generic.List[hashtable]
+    $carryForwardItems = New-Object System.Collections.Generic.List[hashtable]
+    $regressionScanIncompleteRender = [bool](Get-MetadataValue -Container $Data -Name 'regressionScanIncomplete' -Default $false)
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         foreach ($sc in $Data['shipChecks']) {
-            if ($sc.Status -eq 'BLOCKED') {
-                [void]$blockingItems.Add(@{
+            $isHotfixWatch = $isShippedRender -and
+                $sc.Status -eq 'WATCH' -and
+                $sc.Area -eq 'Unpublished hotfix branch state'
+            $isShippedFollowUp = $isShippedRender -and $sc.Status -in @('BLOCKED', 'WATCH', 'UNKNOWN')
+            if ($sc.Status -eq 'BLOCKED' -or $isHotfixWatch -or $isShippedFollowUp) {
+                $shipCheckItem = @{
                     area = "🛠️ $($sc.Area)"
                     details = $sc.Details
                     action = $sc.NextAction
-                })
+                }
+                if ($isShippedRender -and $sc.Area -eq 'P/0 release-branch PRs') {
+                    [void]$releaseContentFollowUpItems.Add($shipCheckItem)
+                } else {
+                    [void]$blockedShipCheckItems.Add($shipCheckItem)
+                }
             }
         }
     }
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
         foreach ($r in $Data['regressions']) {
-            $tier = Get-VerdictTier -Classification $r.classification
-            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
-            if ($tier -eq 1) {
+            $regressionState = [string](Get-MetadataValue -Container $r -Name 'state' -Default 'OPEN')
+            $tier = Get-EffectiveVerdictTier -Classification $r.classification -Mode $mode -State $regressionState
+            # In normal release modes only Tier 1 belongs in the hoisted blocking
+            # summary. After ship, Tier 1 and Tier 2 are follow-ups/hotfix decisions,
+            # so hoist both; otherwise the report can claim "No post-ship follow-ups"
+            # while listing a needs-human-review row later in the document.
+            if ($tier -eq 1 -or ($isShippedRender -and $tier -eq 2)) {
                 $issLink = "[#$($r.issue)]($RepoUrl/issues/$($r.issue))"
-                [void]$blockingItems.Add(@{
+                $item = @{
                     area = "🐞 $issLink — $($r.classification)"
                     details = $r.title
                     action = $r.recommendedAction
-                })
+                }
+                if ($isShippedRender -and (Test-IsCarryForwardRegression -Regression $r `
+                        -ShippedSrNumber $shipTagSrNum -ShippedMajor $shipTagMajor -ShippedSubPatch $shipTagSubPatch)) {
+                    [void]$carryForwardItems.Add($item)
+                } else {
+                    [void]$blockingItems.Add($item)
+                }
             }
         }
     }
 
-    if ($blockingItems.Count -gt 0) {
-        [void]$sb.AppendLine("## 🔴 Blocking — $($blockingItems.Count) item(s)")
+    if ($isShippedRender) {
+        if ($regressionScanIncompleteRender) {
+            $incompleteReasons = @(Get-NonEmptyStringValues -Value (Get-MetadataValue -Container $Data -Name 'regressionFailedLabels'))
+            $incompleteReasonText = if ($incompleteReasons.Count -gt 0) { " ($($incompleteReasons -join ', '))" } else { '' }
+            [void]$sb.AppendLine("## ⚠️ Urgent follow-ups unknown — regression scan incomplete")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Regression scan did not complete$incompleteReasonText. See the Verdict and Warnings above, then rerun with the appropriate labels, phase, or ``-MaxIssues`` before treating this shipped tracker as clean._")
+            [void]$sb.AppendLine()
+        }
+        if ($blockingItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 📌 Post-ship regression follow-ups — $($blockingItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_``$srBranch`` already shipped — these did NOT block the release. Each needs a human hotfix-vs-next-SR decision._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $blockingItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
+        if ($blockedShipCheckItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 🛠️ Post-ship operational follow-ups — $($blockedShipCheckItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Lifecycle or configuration checks still need direct remediation after ship. Follow each row's specific next action; these are not regression hotfix-vs-next-SR decisions._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $blockedShipCheckItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
+        if ($releaseContentFollowUpItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 🚩 Post-ship release-content decisions — $($releaseContentFollowUpItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Release-critical content is still open after ship. Decide whether to land it as a hotfix, carry it to the next SR, or explicitly de-prioritize it._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $releaseContentFollowUpItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
+        if (-not $surveyIncompleteRender -and -not $regressionScanIncompleteRender -and $blockingItems.Count -eq 0 -and
+            $blockedShipCheckItems.Count -eq 0 -and $releaseContentFollowUpItems.Count -eq 0 -and
+            $carryForwardItems.Count -eq 0) {
+            [void]$sb.AppendLine("## 🟢 No urgent post-ship follow-ups")
+            [void]$sb.AppendLine()
+        }
+        if ($carryForwardItems.Count -gt 0) {
+            [void]$sb.AppendLine("## 🔁 Carry-forward — $($carryForwardItems.Count) item(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("_Regressions explicitly milestoned to a later SR. Non-gating for this shipped SR — tracked forward to the next cycle._")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Area | Details | Next action |')
+            [void]$sb.AppendLine('|---|---|---|')
+            foreach ($b in $carryForwardItems) {
+                $area = Format-MarkdownTableCell $b.area
+                $details = Format-MarkdownTableCell $b.details
+                $action = Format-MarkdownTableCell $b.action
+                [void]$sb.AppendLine("| $area | $details | $action |")
+            }
+            [void]$sb.AppendLine()
+        }
+    }
+    elseif (($blockingItems.Count + $blockedShipCheckItems.Count + $releaseContentFollowUpItems.Count) -gt 0) {
+        $blockingCount = $blockingItems.Count + $blockedShipCheckItems.Count + $releaseContentFollowUpItems.Count
+        [void]$sb.AppendLine("## 🔴 Blocking — $blockingCount item(s)")
         [void]$sb.AppendLine()
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
-        foreach ($b in $blockingItems) {
+        foreach ($b in @($blockedShipCheckItems) + @($releaseContentFollowUpItems) + @($blockingItems)) {
             $area = Format-MarkdownTableCell $b.area
             $details = Format-MarkdownTableCell $b.details
             $action = Format-MarkdownTableCell $b.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
+        [void]$sb.AppendLine()
+    } elseif ($surveyIncompleteRender -or $regressionScanIncompleteRender) {
+        $incompleteLabel = if ($surveyIncompleteRender) { 'partial survey' } else { 'regression scan incomplete' }
+        [void]$sb.AppendLine("## ⚠️ Blocking status incomplete — $incompleteLabel")
         [void]$sb.AppendLine()
     } else {
         [void]$sb.AppendLine("## 🟢 No blocking items")
@@ -4001,14 +5888,35 @@ function Format-MarkdownReport {
                 $cpTitle = Format-MarkdownTableCell $cpTitleRaw
                 $author = if ($cp.author -and $cp.author.login) { Format-GitHubHandle $cp.author.login } else { 'unknown' }
 
-                # Status: OPEN + draft/ready + mergeable (all fields optional).
-                $draftBit = if ($cp.PSObject.Properties['isDraft'] -and $cp.isDraft) { '📝 Draft' } else { '✅ Ready' }
-                $mergeBit = switch ("$($cp.mergeable)".ToUpperInvariant()) {
-                    'MERGEABLE'   { ' · mergeable' }
-                    'CONFLICTING' { ' · ⚠️ conflicts' }
-                    default       { '' }
+                # Status: lead with a non-contradictory summary that prioritizes
+                # BLOCKING facts (draft, merge conflicts, review required / changes
+                # requested) ahead of non-blocking facts (mergeable, approved, ready
+                # for review). All component fields are optional; degrade gracefully.
+                # The old cell rendered "✅ Ready · ⚠️ conflicts" — a review-required,
+                # conflicting PR is NOT "Ready", so blocking facts now come first and
+                # the not-draft state is labelled "Ready for review" (not "Ready").
+                $isDraft = [bool](Get-MetadataValue -Container $cp -Name 'isDraft' -Default $false)
+                $mergeState = "$((Get-MetadataValue -Container $cp -Name 'mergeable' -Default ''))".ToUpperInvariant()
+                $reviewState = "$((Get-MetadataValue -Container $cp -Name 'reviewDecision' -Default ''))".ToUpperInvariant()
+
+                $blockingFacts = @()
+                if ($isDraft) { $blockingFacts += '📝 Draft' }
+                if ($mergeState -eq 'CONFLICTING') { $blockingFacts += '⚠️ conflicts' }
+                if ($reviewState -eq 'CHANGES_REQUESTED') { $blockingFacts += '⚠️ changes requested' }
+                elseif ($reviewState -eq 'REVIEW_REQUIRED') { $blockingFacts += 'review required' }
+
+                $okFacts = @()
+                if ($mergeState -eq 'MERGEABLE') { $okFacts += 'mergeable' }
+                if ($reviewState -eq 'APPROVED') { $okFacts += 'approved' }
+                if (-not $isDraft) { $okFacts += 'Ready for review' }
+
+                $facts = @($blockingFacts) + @($okFacts)
+                $leadSymbol = if ($blockingFacts.Count -gt 0) { '🟠' } else { '🟢' }
+                $statusCell = if ($facts.Count -gt 0) {
+                    "$leadSymbol Open · " + ($facts -join ' · ')
+                } else {
+                    "$leadSymbol Open"
                 }
-                $statusCell = "🟢 Open · $draftBit$mergeBit"
 
                 # Age of the PR (created) and last activity (updated), relative to $nowRef.
                 $openedCell = '—'
@@ -4041,8 +5949,8 @@ function Format-MarkdownReport {
             # version base and the ship window. A cut PR that has sat open a long time
             # likely points at a now-stale `main` commit and should be re-confirmed.
             $primary = @($cpr.candidates)[0]
-            $pCreated = ConvertTo-Utc -Value $primary.createdAt
-            $pAge = if ($pCreated -and $nowRef) { [int][Math]::Floor(($nowRef - $pCreated).TotalDays) } else { $null }
+            $primaryAge = Get-CandidatePrAge -Candidate $primary -Now $nowRef
+            $pAge = $primaryAge.AgeDays
             $shipBit = if ($shipDate -and $shipDate.FormattedLong) {
                 if ($shipDate.DaysFromNow -ge 0) { " Ship target: **$($shipDate.FormattedLong)** (in $($shipDate.DaysFromNow) day(s))." }
                 else { " Ship target **$($shipDate.FormattedLong)** has passed." }
@@ -4151,12 +6059,17 @@ function Format-MarkdownReport {
                     $openBp = $cp.backports | Where-Object { $_.state -eq 'OPEN' } | Select-Object -First 1
                     if ($openBp) {
                         $prLink = "[#$($openBp.number)]($RepoUrl/pull/$($openBp.number))"
+                        $postShipBackport = ($mode -eq 'shipped')
                         [void]$openFixRows.Add(@{
                             prCell  = $prLink
                             baseCell = "``$srBranch``"
                             issCell = $issCell
-                            statusCell = "🟡 backport OPEN on SR"
-                            actionCell = 'Land this PR before ship'
+                            statusCell = if ($postShipBackport) { '🟡 backport OPEN — post-ship decision' } else { '🟡 backport OPEN on SR' }
+                            actionCell = if ($postShipBackport) {
+                                'Decide whether this backport should land as a hotfix or close in favor of the next SR; it is not a retroactive ship blocker.'
+                            } else {
+                                'Land this PR before ship'
+                            }
                         })
                         break
                     }
@@ -4172,13 +6085,16 @@ function Format-MarkdownReport {
                 if ($openMain) {
                     $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
                     $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { '`main`' }
+                    $postShipOpenFix = ($mode -eq 'shipped')
                     [void]$openFixRows.Add(@{
                         prCell  = $prLink
                         baseCell = $base
                         issCell = $issCell
-                        statusCell = '🔵 OPEN — awaiting main merge'
+                        statusCell = if ($postShipOpenFix) { '🔵 OPEN — post-ship fix decision' } else { '🔵 OPEN — awaiting main merge' }
                         actionCell = if ($mode -eq 'candidate') {
                             'Watch for merge to main before the SR cut; rerun readiness after the release/...-srN branch is cut to get the exact backport command'
+                        } elseif ($postShipOpenFix) {
+                            "After merge, decide whether this warrants a hotfix to the shipped SR or should ride the next SR; no automatic current-SR backport applies."
                         } else {
                             "Watch for merge, then post ``/backport to $srBranch`` on the merged source PR"
                         }
@@ -4188,9 +6104,14 @@ function Format-MarkdownReport {
         }
 
         if ($openFixRows.Count -gt 0) {
-            [void]$sb.AppendLine("## 📥 Open Fix PRs Inbound — $($openFixRows.Count) PR(s)")
+            $openFixHeading = if ($mode -eq 'shipped') { 'Open Fix PRs Post-ship' } else { 'Open Fix PRs Inbound' }
+            [void]$sb.AppendLine("## 📥 $openFixHeading — $($openFixRows.Count) PR(s)")
             [void]$sb.AppendLine()
-            [void]$sb.AppendLine('_Fix PRs in flight for regression issues. Land these (or their backports) before ship to close out the regression list._')
+            if ($mode -eq 'shipped') {
+                [void]$sb.AppendLine('_Fix PRs discovered after the SR shipped. Track them for a human hotfix-vs-next-SR decision; they are not retroactive ship blockers._')
+            } else {
+                [void]$sb.AppendLine('_Fix PRs in flight for regression issues. Land these (or their backports) before ship to close out the regression list._')
+            }
             [void]$sb.AppendLine()
             [void]$sb.AppendLine('| Fix PR | Base | Regression issue | Status | Next action |')
             [void]$sb.AppendLine('|---|---|---|---|---|')
@@ -4269,9 +6190,10 @@ function Format-MarkdownReport {
         $sc = $Data['srContents']
         [void]$sb.AppendLine("## What's New in SR — $($sc.commitCount) commits")
         [void]$sb.AppendLine()
-        if ($inherits -and $sc.ContainsKey('inheritedCommitCount') -and $sc['inheritedCommitCount'] -gt 0) {
+        $inheritedCommitCount = [int](Get-MetadataValue -Container $sc -Name 'inheritedCommitCount' -Default 0)
+        if ($inherits -and $inheritedCommitCount -gt 0) {
             [void]$sb.AppendLine("- **From main** (since prior SR): $($sc.primaryCommitCount) commits / $($sc.primarySourcePrs.Count) source PRs")
-            [void]$sb.AppendLine("- **Inherited from $($ctx.priorSrBranch)** (will be merged in after cut): $($sc.inheritedCommitCount) commits / $($sc.inheritedSourcePrs.Count) source PRs")
+            [void]$sb.AppendLine("- **Inherited from $($ctx.priorSrBranch)** (will be merged in after cut): $inheritedCommitCount commits / $($sc.inheritedSourcePrs.Count) source PRs")
             [void]$sb.AppendLine("- **Total source PRs** (deduplicated): **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
         } else {
             [void]$sb.AppendLine("- Source PRs included: **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
@@ -4286,7 +6208,7 @@ function Format-MarkdownReport {
                 $rs = ConvertTo-LinkedSha -Sha $r.revertCommit -RepoUrl $RepoUrl
                 $rc = ConvertTo-LinkedSha -Sha $r.revertsCommit -RepoUrl $RepoUrl
                 $rp = ConvertTo-LinkedPr -PrNumber $r.revertsPr -RepoUrl $RepoUrl
-                $ro = if ($r.ContainsKey('origin')) { $r.origin } else { '?' }
+                $ro = Get-MetadataValue -Container $r -Name 'origin' -Default '?'
                 [void]$sb.AppendLine("| $rs | $rp | $rc | $ro |")
             }
         }
@@ -4337,20 +6259,42 @@ function Format-MarkdownReport {
 
         [void]$sb.AppendLine("## Regression Candidates — $($regs.Count) issues scanned")
         [void]$sb.AppendLine()
+        if ($isShippedRender) {
+            [void]$sb.AppendLine("_Post-ship tracker: the tiers below are severity groupings, not ship gates. ``$srBranch`` already shipped — treat Tier 1/2 rows as post-ship **follow-ups / carry-forward** (see the summary above)._")
+            [void]$sb.AppendLine()
+        }
         [void]$sb.AppendLine('### Summary')
         [void]$sb.AppendLine('| Verdict | Count |')
         [void]$sb.AppendLine('|---|---|')
-        foreach ($k in $summary.Keys | Sort-Object) {
-            [void]$sb.AppendLine("| ``$k`` | $($summary[$k]) |")
+        $summaryEntries = if ($summary -is [System.Collections.IDictionary]) {
+            @($summary.Keys | ForEach-Object { [PSCustomObject]@{ Name = [string]$_; Value = $summary[$_] } })
+        } else {
+            @($summary.PSObject.Properties | ForEach-Object { [PSCustomObject]@{ Name = $_.Name; Value = $_.Value } })
+        }
+        foreach ($entry in $summaryEntries | Sort-Object Name) {
+            [void]$sb.AppendLine("| ``$($entry.Name)`` | $($entry.Value) |")
         }
         [void]$sb.AppendLine()
 
-        # Three deterministic tiers. Order within a tier is alphabetical
-        # over the classification name for stable diffs across runs.
-        $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
-        $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
-                          'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
+        # Derive detail-section membership from the same lifecycle-aware tier
+        # helper used by verdicts and the hoisted summary. `no-fix-yet` appears
+        # in Tier 1 for OPEN issues and Tier 3 for CLOSED issues.
+        $knownClasses = @(
+            'in-sr-reverted', 'no-fix-yet', 'rejected-from-sr',
+            'backport-in-progress', 'merged-on-main-no-backport',
+            'merged-non-main-only', 'open-on-main', 'needs-human-review',
+            'in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked',
+            'out-of-scope-future-sr'
+        )
+        $tier1Classes = @($knownClasses | Where-Object {
+            (Get-EffectiveVerdictTier -Classification $_ -Mode $mode -State 'OPEN') -eq 1
+        } | Sort-Object)
+        $tier2Classes = @($knownClasses | Where-Object {
+            (Get-EffectiveVerdictTier -Classification $_ -Mode $mode -State 'OPEN') -eq 2
+        } | Sort-Object)
+        $tier3Classes = @($knownClasses | Where-Object {
+            (Get-EffectiveVerdictTier -Classification $_ -Mode $mode -State 'CLOSED') -eq 3
+        } | Sort-Object)
 
         $emitTier = {
             param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)
@@ -4363,9 +6307,13 @@ function Format-MarkdownReport {
                 # entries are counted in the Summary yet rendered in no tier at all.
                 if ($cls -eq 'no-fix-yet') {
                     if ($NoFixYetState -eq 'OPEN') {
-                        $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                        $items = @($items | Where-Object {
+                            [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN') -eq 'OPEN'
+                        })
                     } elseif ($NoFixYetState -eq 'CLOSED') {
-                        $items = @($items | Where-Object { $_.state -ne 'OPEN' })
+                        $items = @($items | Where-Object {
+                            [string](Get-MetadataValue -Container $_ -Name 'state' -Default 'OPEN') -ne 'OPEN'
+                        })
                     }
                 }
                 if ($items.Count -eq 0) { continue }
@@ -4397,12 +6345,19 @@ function Format-MarkdownReport {
             }
         }
 
-        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._' 'OPEN'
-        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._' $null
+        $tier1Title = if ($isShippedRender) { '🔴 Tier 1 — Urgent follow-up' } else { '🔴 Tier 1 — Blocking' }
+        $tier2Title = if ($isShippedRender) { '🟡 Tier 2 — Follow-up / Review' } else { '🟡 Tier 2 — Risk / Review' }
+        $tier1Empty = if ($isShippedRender) { '_No urgent follow-up regressions._' } else { '_No blocking regressions._' }
+        $tier2Empty = if ($isShippedRender) { '_No follow-up/review regressions._' } else { '_No risk-tier regressions._' }
+        & $emitTier $tier1Title $tier1Classes $tier1Empty 'OPEN'
+        & $emitTier $tier2Title $tier2Classes $tier2Empty $null
         & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null 'CLOSED'
     }
 
     $body = $sb.ToString()
+    if ($PublicSafe) {
+        $body = ConvertTo-PublicSafeMarkdown -Text $body
+    }
 
     # === SAFETY NET: defang any bare @-mentions ===
     # Primary defense is Format-GitHubHandle at emit time, but PR/issue
@@ -4570,10 +6525,90 @@ function Invoke-Main {
 
     $ctx['regressionLabels'] = $labels
     $ctx['labelInferenceMode'] = $labelMode
+    $ctx['phase'] = $Phase
+    $ctx['contentsRef'] = $ctx.srRef
 
     $data = @{
         metadata = $ctx
         warnings = @()
+        surveyIncomplete = ($Phase -ne 'all')
+        surveyIncompleteReason = if ($Phase -ne 'all') { "Partial survey (-Phase $Phase) did not query every readiness axis." } else { $null }
+    }
+
+    # Shipped mode: prefer the GitHub Release publication time for the report's
+    # "shipped on" date. If release metadata is unavailable, use the stable tag's
+    # content date as an explicitly labeled conservative display anchor.
+    # Use an explicit immutable tag override when supplied; otherwise select
+    # the latest published stable tag in this SR's patch range.
+    if ($ctx.mode -eq 'shipped') {
+        $shippedInfo = @{ version = $null; liveVersion = $null; srNumber = 0; major = 0; tagDate = $null; dateSource = $null; tagFound = $false }
+        $srMatchShip = [regex]::Match($ctx.srBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+        if ($srMatchShip.Success) {
+            $shippedInfo.major    = [int]$srMatchShip.Groups[1].Value
+            $shippedInfo.srNumber = [int]$srMatchShip.Groups[3].Value
+        }
+        $vpShipped = Get-VersionsPropsState -Ref $ctx.srRef
+        if ($vpShipped) {
+            $shippedInfo.liveVersion = $vpShipped.FullVersion
+            $ctx['liveBranchVersion'] = $vpShipped.FullVersion
+            if (-not $shippedInfo.major) { $shippedInfo.major = [int]$vpShipped.Major }
+        }
+        $localStableTags = Get-LocalStableTags
+        if ($null -eq $localStableTags -or @($localStableTags).Count -eq 0) {
+            throw "Cannot query local stable tags for shipped branch '$($ctx.srBranch)'. Fetch tags before generating the tracker."
+        }
+        $publishedTags = Get-PublishedStableTags -Repo $ctx.repo
+        $publicationQueryFailed = $null -eq $publishedTags
+        if ($publicationQueryFailed) {
+            $publishedTags = @()
+        }
+        $anchorTag = if ($ShippedTag) {
+            if (-not (Test-StableTagMatchesSr -Tag $ShippedTag -SrBranch $ctx.srBranch)) {
+                throw "Explicit shipped tag '$ShippedTag' does not belong to SR branch '$($ctx.srBranch)'."
+            }
+            $ShippedTag
+        } else {
+            Select-LatestStableTagForSr -SrBranch $ctx.srBranch -StableTags $localStableTags
+        }
+        if (-not $anchorTag) {
+            throw "No stable tag was found for shipped branch '$($ctx.srBranch)'."
+        }
+        $stableTagsForBounds = @(Get-ShippedStableTagsForBounds `
+            -AnchorTag $anchorTag `
+            -PublishedTags @($publishedTags) `
+            -LocalStableTags @($localStableTags) `
+            -PublicationQueryFailed $publicationQueryFailed)
+        $anchorIsPublished = @($publishedTags) -contains $anchorTag
+        $shippedInfo.version = $anchorTag
+        $ctx['shippedTagVersion'] = $anchorTag
+        $tagInfo = Get-StableTagInfo -Version $anchorTag -Repo $ctx.repo
+        if (-not $tagInfo) {
+            throw "Cannot resolve release metadata for immutable shipped tag '$anchorTag'."
+        }
+        $shippedInfo.tagDate = $tagInfo.Date.ToString('o')
+        $shippedInfo.dateSource = $tagInfo.DateSource
+        $shippedInfo['publicationState'] = Resolve-ShippedPublicationState `
+            -ListQueryFailed $publicationQueryFailed `
+            -AnchorInPublishedList $anchorIsPublished `
+            -TagDateSource $tagInfo.DateSource
+        if ($shippedInfo.publicationState -eq 'unknown') {
+            Write-ShippedPublicationStatusUnknownWarning -Tag $anchorTag
+        } elseif ($shippedInfo.publicationState -eq 'pending') {
+            Write-ShippedPublicationPendingWarning -Tag $anchorTag
+        }
+        $shippedInfo.tagFound = $true
+        $shippedRefs = Resolve-ShippedContentsRefs -Version $anchorTag -Repo $ctx.repo -PublishedTags $stableTagsForBounds
+        Set-ShippedContentsRefs -Context $ctx -ShippedRefs $shippedRefs
+        $shippedInfo.previousTag = $shippedRefs.PreviousTag
+        $hasPostTagCommits = Test-BranchAdvancedBeyondTag -Tag $anchorTag -HeadSha $ctx.srHeadSha
+        $shippedInfo.hotfixHasPostTagCommits = $hasPostTagCommits
+        $shippedInfo.hotfixInProgress = [bool](
+            ($shippedInfo.liveVersion -and $shippedInfo.liveVersion -ne $anchorTag) -or
+            $hasPostTagCommits
+        )
+        $ctx['hotfixHasPostTagCommits'] = $hasPostTagCommits
+        $ctx['hotfixInProgress'] = $shippedInfo.hotfixInProgress
+        $data['shippedInfo'] = $shippedInfo
     }
 
     # Nightly dogfood feed freshness (full runs only). Maps this SR lane to its Azure
@@ -4593,7 +6628,16 @@ function Invoke-Main {
     }
 
     if ($Phase -in 'all', 'open-prs') {
-        $data['openSrPrs'] = Get-OpenSrPrs -Ctx $ctx
+        $openPrScan = Get-OpenSrPrs -Ctx $ctx
+        $data['openSrPrs'] = @($openPrScan.Items)
+        $data['openPrScanIncomplete'] = -not $openPrScan.IsComplete
+        $data['openPrScanIncompleteReason'] = $openPrScan.Reason
+        if (-not $openPrScan.IsComplete) {
+            $data['surveyIncomplete'] = $true
+            $existingReason = Get-MetadataValue -Container $data -Name 'surveyIncompleteReason'
+            $data['surveyIncompleteReason'] = @($existingReason, $openPrScan.Reason |
+                Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }) -join ' '
+        }
     }
 
     # Run version + bug-template checks (cheap; included in all phases except 'ci'-only).
@@ -4613,7 +6657,11 @@ function Invoke-Main {
             if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
                 $data['shipChecks'] = @()
             }
-            $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] -SrBranch $ctx.srBranch)
+            $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] `
+                                                                                 -SrBranch $ctx.srBranch `
+                                                                                 -Shipped:($ctx.mode -eq 'shipped') `
+                                                                                 -Incomplete:$data['openPrScanIncomplete'] `
+                                                                                 -IncompleteReason $data['openPrScanIncompleteReason'])
         }
     }
 
@@ -4685,9 +6733,16 @@ function Invoke-Main {
         if ($labels.Count -eq 0) {
             Write-Warn "No regression labels provided/inferred; skipping regressions phase. Pass -RegressionLabels or -InferRegressionLabels."
             $data['regressions'] = @()
+            $data['regressionScanIncomplete'] = $true
+            $data['regressionFailedLabels'] = @('(no labels provided)')
         } else {
-            $data['regressions'] = Get-RegressionCandidates -Ctx $ctx -Labels $labels `
-                                       -SrContents $data['srContents'] -MaxIssues $MaxIssues
+            $regressionScan = Get-RegressionCandidates -Ctx $ctx -Labels $labels `
+                                                    -SrContents $data['srContents'] -MaxIssues $MaxIssues
+            $data['regressions'] = @($regressionScan.Items)
+            $data['regressionScanIncomplete'] = -not $regressionScan.IsComplete
+            $data['regressionFailedLabels'] = @($regressionScan.FailedLabels) +
+                @($regressionScan.TruncatedLabels | ForEach-Object { "$_ (truncated at -MaxIssues $MaxIssues)" }) +
+                @($regressionScan.FailedIssues | ForEach-Object { "issue #$_ evidence lookup incomplete" })
 
             # Summary buckets
             $summary = @{}
@@ -4698,6 +6753,13 @@ function Invoke-Main {
             }
             $data['summary'] = $summary
         }
+    } else {
+        # Partial diagnostic phases intentionally skip regression discovery. Mark
+        # that absence explicitly so a focused `-Phase ci|commits|open-prs` run
+        # cannot emit a global Ready/Shipped-clean verdict for data never queried.
+        $data['regressions'] = @()
+        $data['regressionScanIncomplete'] = $true
+        $data['regressionFailedLabels'] = @("(regressions phase not run: -Phase $Phase)")
     }
 
     $data['warnings'] = @($Script:Warnings)
@@ -4760,8 +6822,10 @@ function Invoke-Main {
     }
 
     # Output
-    $jsonOut = $data | ConvertTo-Json -Depth 20 -Compress:$false
-    $mdOut = Format-MarkdownReport -Data $data -RepoUrl $RepoUrl -TrackerKey $TrackerKey -MaxBodyBytes $MaxBodyBytes
+    $jsonData = if ($PublicSafe) { ConvertTo-PublicSafeValue -Value $data } else { $data }
+    $jsonOut = $jsonData | ConvertTo-Json -Depth 20 -Compress:$false
+    $mdOut = Format-MarkdownReport -Data $data -RepoUrl $RepoUrl -TrackerKey $TrackerKey `
+        -MaxBodyBytes $MaxBodyBytes -PublicSafe:$PublicSafe
 
     if ($OutputDir) {
         if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir | Out-Null }
@@ -4772,10 +6836,11 @@ function Invoke-Main {
             Set-Content -Path (Join-Path $OutputDir 'release-readiness.md') -Value $mdOut -Encoding UTF8
         }
         if ($data.ContainsKey('srContents')) {
-            $srcPrs = $data['srContents'].sourcePrs -join "`n"
+            $outputSrContents = Select-OutputSrContents -Data $data -PublicSafe:$PublicSafe
+            $srcPrs = (Get-MetadataValue -Container $outputSrContents -Name 'sourcePrs' -Default @()) -join "`n"
             Set-Content -Path (Join-Path $OutputDir 'sr-source-prs.txt') -Value $srcPrs -Encoding UTF8
 
-            $commitsJson = $data['srContents'] | ConvertTo-Json -Depth 10
+            $commitsJson = $outputSrContents | ConvertTo-Json -Depth 10
             Set-Content -Path (Join-Path $OutputDir 'sr-commits.json') -Value $commitsJson -Encoding UTF8
         }
         Write-Host "`nWrote outputs to: $OutputDir" -ForegroundColor Green

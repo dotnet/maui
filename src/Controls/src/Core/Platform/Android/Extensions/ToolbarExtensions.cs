@@ -476,11 +476,19 @@ namespace Microsoft.Maui.Controls.Platform
 			void RegisterCurrentView()
 			{
 				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch) ||
+					!toolbar.IsAlive() ||
 					!menuItem.IsAlive() ||
 					!_menuItemToolbarItemMap.TryGetValue(itemId, out var currentOwner) ||
 					!currentOwner.TryGetTarget(out var owner) ||
 					!ReferenceEquals(owner, toolbarItem))
 				{
+					return;
+				}
+
+				if (toolbar.HasExpandedActionView)
+				{
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.RealizedView);
 					return;
 				}
 
@@ -506,7 +514,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var lifecycleEpoch = nativeElementRegistrations.LifecycleEpoch;
 			void RegisterCurrentViews()
 			{
-				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch))
+				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch) ||
+					!toolbar.IsAlive())
 					return;
 
 				nativeElementRegistrations.RegisterExclusive(
@@ -516,7 +525,13 @@ namespace Microsoft.Maui.Controls.Platform
 					NativeElementDiscriminators.ToolbarContainer);
 
 				if (toolbar.HasExpandedActionView)
+				{
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.TitleView);
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.RealizedView);
 					return;
+				}
 
 				global::Android.Widget.TextView? titleView = null;
 				for (var index = 0; index < toolbar.ChildCount; index++)

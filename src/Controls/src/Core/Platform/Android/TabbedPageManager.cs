@@ -184,7 +184,7 @@ public class TabbedPageManager
 					var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
 					_tabLayout = new TabLayout(_context.Context)
 					{
-						TabMode = TabLayout.ModeAuto,
+						TabMode = TabLayout.ModeFixed,
 						TabGravity = TabLayout.GravityFill,
 						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					};
@@ -618,6 +618,7 @@ public class TabbedPageManager
 
 	void RegisterBottomMenuItems(IReadOnlyList<IMenuItem> menuItems)
 	{
+		var registrationItems = new List<(IMenuItem MenuItem, object Owner, bool IsMoreItem)>();
 		foreach (var previousMenuItem in _registeredMenuItems)
 		{
 			var retained = false;
@@ -641,6 +642,7 @@ public class TabbedPageManager
 		{
 			var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
 			object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
+			registrationItems.Add((menuItem, owner, isMoreItem));
 			_nativeTabRegistrations.Register(
 				owner,
 				menuItem,
@@ -651,28 +653,28 @@ public class TabbedPageManager
 		var registrationGeneration = ++_tabRegistrationGeneration;
 		_bottomNavigationView.Post(() =>
 		{
-			if (registrationGeneration != _tabRegistrationGeneration)
+			if (registrationGeneration != _tabRegistrationGeneration ||
+				_bottomNavigationView is null ||
+				!_bottomNavigationView.IsAlive())
 				return;
 
 			var retainedElements = new List<object> { _bottomNavigationView };
-			foreach (var menuItem in menuItems)
-				retainedElements.Add(menuItem);
+			foreach (var registrationItem in registrationItems)
+				retainedElements.Add(registrationItem.MenuItem);
 
 			if (_bottomNavigationView?.GetChildAt(0) is ViewGroup menuView)
 			{
-				var count = Math.Min(menuView.ChildCount, menuItems.Count);
+				var count = Math.Min(menuView.ChildCount, registrationItems.Count);
 				for (int index = 0; index < count; index++)
 				{
-					var menuItem = menuItems[index];
-					var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
-					object owner = isMoreItem ? Element : Element.Children[menuItem.ItemId];
+					var registrationItem = registrationItems[index];
 					if (menuView.GetChildAt(index) is AView itemView)
 					{
 						retainedElements.Add(itemView);
 						_nativeTabRegistrations.RegisterExclusive(
-							owner,
+							registrationItem.Owner,
 							itemView,
-							isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+							registrationItem.IsMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
 							NativeElementDiscriminators.RealizedView);
 					}
 				}
