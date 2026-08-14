@@ -211,9 +211,9 @@ def validate_no_duplicate_mapping_keys!(node, relative_spec_path, scalar_visitor
     node.children.each_slice(2) do |key_node, value_node|
       if key_node.is_a?(Psych::Nodes::Scalar)
         key = scalar_visitor.accept(key_node)
-        if key == "<<"
+        if key == "<<" || key_node.tag == "tag:yaml.org,2002:merge"
           fail!(
-            "#{relative_spec_path} uses YAML merge key << at line #{key_node.start_line + 1}; " \
+            "#{relative_spec_path} uses a YAML merge key at line #{key_node.start_line + 1}; " \
             "trusted validation requires explicit mappings"
           )
         end

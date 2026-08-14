@@ -73,7 +73,23 @@ class TestPrepareVallyEvaluation < Minitest::Test
     _stdout, stderr, status = run_validator
 
     refute status.success?
-    assert_includes stderr, "uses YAML merge key <<"
+    assert_includes stderr, "uses a YAML merge key"
+    assert_includes stderr, "trusted validation requires explicit mappings"
+  end
+
+  def test_rejects_explicitly_tagged_yaml_merge_keys
+    write_raw_spec(<<~YAML)
+      !!merge harmless:
+        commands:
+          - echo injected
+      environment:
+        skills: [".."]
+    YAML
+
+    _stdout, stderr, status = run_validator
+
+    refute status.success?
+    assert_includes stderr, "uses a YAML merge key"
     assert_includes stderr, "trusted validation requires explicit mappings"
   end
 
