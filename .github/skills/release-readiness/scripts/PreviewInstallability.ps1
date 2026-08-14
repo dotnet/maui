@@ -789,7 +789,10 @@ function Get-PreviewRepresentativePackRequests {
 }
 
 function ConvertTo-IsolatedNuGetConfig {
-    param([Parameter(Mandatory)][array]$Sources)
+    param(
+        [Parameter(Mandatory)][array]$Sources,
+        [AllowNull()][string]$WorkloadSetSourceName
+    )
 
     $builder = [Text.StringBuilder]::new()
     [void]$builder.AppendLine('<?xml version="1.0" encoding="utf-8"?>')
@@ -806,12 +809,13 @@ function ConvertTo-IsolatedNuGetConfig {
     foreach ($source in @($Sources | Sort-Object -Property Name -Unique)) {
         $name = [Security.SecurityElement]::Escape([string]$source.Name)
         [void]$builder.AppendLine("    <packageSource key=`"$name`">")
-        $pattern = if ([string]$source.Role -eq 'workload-set') {
-            'Microsoft.NET.Workloads.*'
-        } else {
-            '*'
+        if ([string]$source.Role -eq 'workload-set' -or
+            [string]$source.Name -eq $WorkloadSetSourceName) {
+            [void]$builder.AppendLine('      <package pattern="Microsoft.NET.Workloads.*" />')
         }
-        [void]$builder.AppendLine("      <package pattern=`"$pattern`" />")
+        if ([string]$source.Role -ne 'workload-set') {
+            [void]$builder.AppendLine('      <package pattern="*" />')
+        }
         [void]$builder.AppendLine('    </packageSource>')
     }
     [void]$builder.AppendLine('  </packageSourceMapping>')
@@ -885,6 +889,7 @@ function ConvertTo-PublicInstallabilityResult {
     }
 
     $copy.NuGetConfig = $null
+    $copy.PublicEvidence = $true
     # A release-owner-confirmed build or a candidate learned from an authenticated/internal
     # source is sensitive. Keep public candidates visible, but withhold sensitive top-level
     # and nested versions while retaining match/mismatch/missing status as coherence evidence.
@@ -1302,7 +1307,8 @@ function Get-PreviewConsumerInstallability {
     }
     $requiredSources = @($requiredSources | Sort-Object -Property Name -Unique)
 
-    $config = ConvertTo-IsolatedNuGetConfig -Sources $requiredSources
+    $config = ConvertTo-IsolatedNuGetConfig -Sources $requiredSources `
+        -WorkloadSetSourceName ([string]$package.Source.Source.Name)
     $command = "dotnet workload install maui --version $selectedCliVersion --configfile ./preview-nuget.config"
     $summary = switch ($status) {
         'installable' { 'The confirmed workload set matches branch pins and its required manifest and representative pack assets are resolvable.' }

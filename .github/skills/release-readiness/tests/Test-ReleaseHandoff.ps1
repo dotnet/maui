@@ -54,6 +54,17 @@ Assert-HandoffEqual -Label 'Workload feed is mapped only to workload-set package
     -Expected 'Microsoft.NET.Workloads.*' -Actual ([string]$workloadMapping.package.pattern)
 Assert-HandoffEqual -Label 'Component feeds remain eligible for dependency packages' `
     -Expected '*' -Actual ([string]$productMapping.package.pattern)
+$fallbackConfig = ConvertTo-IsolatedNuGetConfig -Sources $sources -WorkloadSetSourceName 'dotnet11'
+[xml]$fallbackConfigXml = $fallbackConfig
+$fallbackProductPatterns = @(
+    @($fallbackConfigXml.configuration.packageSourceMapping.packageSource |
+        Where-Object { $_.key -eq 'dotnet11' })[0].package |
+        ForEach-Object { [string]$_.pattern }
+)
+Assert-HandoffTrue -Label 'Resolver-selected product feed can supply the workload-set package' `
+    -Actual ($fallbackProductPatterns -contains 'Microsoft.NET.Workloads.*')
+Assert-HandoffTrue -Label 'Resolver-selected product feed remains eligible for component packages' `
+    -Actual ($fallbackProductPatterns -contains '*')
 
 Write-Host "`n[Unit] Preview handoff projection" -ForegroundColor Cyan
 $previewReadiness = [PSCustomObject]@{
@@ -185,6 +196,41 @@ $unsafeReleaseNameModel = New-ReleaseHandoffModel -Readiness $previewReadiness -
 Assert-HandoffEqual -Label 'Unsafe public release name falls back to the derived name' `
     -Expected '.NET MAUI 11.0.0 Preview 7' -Actual $unsafeReleaseNameModel.ReleaseName
 $previewEvidence.ReleaseName = $originalReleaseName
+
+$previewReadiness | Add-Member -MemberType NoteProperty -Name ConsumerInstallability -Value ([PSCustomObject]@{
+    PublicEvidence = $false
+    VersionSourceIsSensitive = $false
+    CliVersion = '11.0.100-preview.7.26000.9'
+    NuGetConfig = $publicNuGetConfig
+})
+$noProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'Readiness installability without public provenance cannot supply a CLI version' `
+    -Expected $null -Actual $noProvenanceModel.WorkloadSet.CliVersion
+Assert-HandoffEqual -Label 'Readiness installability without public provenance cannot supply NuGet config' `
+    -Expected $null -Actual $noProvenanceModel.WorkloadSet.NuGetConfig
+$previewReadiness.ConsumerInstallability.PublicEvidence = 'true'
+$stringProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'String public provenance cannot supply a CLI version' `
+    -Expected $null -Actual $stringProvenanceModel.WorkloadSet.CliVersion
+$previewReadiness.ConsumerInstallability.PublicEvidence = $true
+$previewReadiness.ConsumerInstallability.VersionSourceIsSensitive = $true
+$sensitiveProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'Sensitive readiness installability cannot supply a CLI version' `
+    -Expected $null -Actual $sensitiveProvenanceModel.WorkloadSet.CliVersion
+Assert-HandoffEqual -Label 'Sensitive readiness installability cannot supply NuGet config' `
+    -Expected $null -Actual $sensitiveProvenanceModel.WorkloadSet.NuGetConfig
+$previewReadiness.ConsumerInstallability.PSObject.Properties.Remove('VersionSourceIsSensitive')
+$missingSensitivityModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'Readiness installability without explicit non-sensitive provenance fails closed' `
+    -Expected $null -Actual $missingSensitivityModel.WorkloadSet.CliVersion
+$previewReadiness.ConsumerInstallability | Add-Member -MemberType NoteProperty `
+    -Name VersionSourceIsSensitive -Value $false
+$publicProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'Explicit public readiness installability can supply a CLI version' `
+    -Expected '11.0.100-preview.7.26000.9' -Actual $publicProvenanceModel.WorkloadSet.CliVersion
+Assert-HandoffTrue -Label 'Explicit public readiness installability can supply validated NuGet config' `
+    -Actual (-not [string]::IsNullOrWhiteSpace($publicProvenanceModel.WorkloadSet.NuGetConfig))
+$previewReadiness.PSObject.Properties.Remove('ConsumerInstallability')
 
 $sectionOrder = @(
     '## Breaking Changes',
