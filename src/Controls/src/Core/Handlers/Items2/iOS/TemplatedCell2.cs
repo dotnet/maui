@@ -147,8 +147,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
-					// Visible cells may keep the same frame, so UIKit does not always schedule the arrange pass.
-					SetNeedsLayout();
 				}
 
 				var preferredSize = preferredAttributes.Size;
@@ -161,7 +159,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
 
+				// Preserve any new invalidation raised synchronously by Arrange.
 				_measureInvalidated = false;
+
+				if (_needsArrange)
+				{
+					_needsArrange = false;
+					var arrangeFrame = new Rect(Point.Zero, size);
+					MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
+					// UIKit may skip LayoutSubviews when a recycled cell's frame is unchanged.
+					virtualView.Arrange(arrangeFrame);
+				}
 			}
 
 			return preferredAttributes;
@@ -264,6 +272,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (PlatformHandler is null && virtualView is not null)
 			{
+				// Match CV1 by applying bindings before creating the platform tree.
+				virtualView.BindingContext = bindingContext;
+
 				var mauiContext = itemsView.FindMauiContext()!;
 				var nativeView = virtualView.ToPlatform(mauiContext);
 
@@ -280,7 +291,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
 
-				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
 
 				if (this.Selected)
