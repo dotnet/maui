@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			if (!UIKitCompensatesForSafeArea)
 				_safeArea = GetInset().ToSafeAreaInsets();
 			else
 				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
@@ -486,8 +486,9 @@ namespace Microsoft.Maui.Platform
 		/// <see cref="UIScrollView.AdjustedContentInset"/>. When it is not
 		/// (<see cref="UIScrollViewContentInsetAdjustmentBehavior.Never"/>, or a zero system
 		/// inset), <see cref="CrossPlatformArrange"/> bakes the safe area into the content's
-		/// coordinate space instead. Shared by the arrange branch and
-		/// <see cref="SafeAreaBakedIntoContent"/> so the two can never desynchronize.
+		/// coordinate space instead. Shared by the arrange branch, the <c>_safeArea</c> source
+		/// selection in <see cref="ValidateSafeArea"/>, and
+		/// <see cref="SafeAreaBakedIntoContent"/> so the sites can never desynchronize.
 		/// </summary>
 		bool UIKitCompensatesForSafeArea =>
 			SystemAdjustedContentInset != UIEdgeInsets.Zero
