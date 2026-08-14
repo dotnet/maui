@@ -174,6 +174,7 @@ namespace Microsoft.Maui.Platform
 
 			if (width <= 0 || height <= 0)
 			{
+				ClearContentClip();
 				return;
 			}
 
@@ -306,8 +307,9 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (height <= 0 && width <= 0)
+			if (width <= 0 || height <= 0)
 			{
+				ClearContentClip();
 				return;
 			}
 

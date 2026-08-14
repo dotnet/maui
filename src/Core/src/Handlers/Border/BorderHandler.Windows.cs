@@ -49,11 +49,5 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		protected override void DisconnectHandler(ContentPanel platformView)
-		{
-			platformView.Content = null;
-			platformView.UpdateCrossPlatformLayout(null);
-			base.DisconnectHandler(platformView);
-		}
 	}
 }
