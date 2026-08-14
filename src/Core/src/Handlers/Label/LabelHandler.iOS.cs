@@ -27,7 +27,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public override bool NeedsContainer =>
-			!VirtualView?.Background.IsNullOrEmpty() ?? false || base.NeedsContainer;
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
 
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{
