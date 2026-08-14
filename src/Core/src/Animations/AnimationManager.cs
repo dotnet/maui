@@ -34,11 +34,6 @@ namespace Microsoft.Maui.Animations
 		/// <inheritdoc/>
 		public void Add(Animation animation)
 		{
-			if (_disposedValue)
-			{
-				throw new ObjectDisposedException(nameof(AnimationManager));
-			}
-
 			// If animations are disabled, don't do anything
 			if (!Ticker.SystemEnabled)
 			{
@@ -54,11 +49,6 @@ namespace Microsoft.Maui.Animations
 		/// <inheritdoc/>
 		public void Remove(Animation animation)
 		{
-			if (_disposedValue)
-			{
-				return;
-			}
-
 			_animations.TryRemove(animation);
 
 			if (_animations.Count == 0)
@@ -79,11 +69,6 @@ namespace Microsoft.Maui.Animations
 
 		void OnFire()
 		{
-			if (_disposedValue)
-			{
-				return;
-			}
-
 			if (!Ticker.SystemEnabled)
 			{
 				// This is a hack - if we're here, the ticker has detected that animations are no longer enabled,
@@ -103,11 +88,6 @@ namespace Microsoft.Maui.Animations
 
 			foreach (var animation in animations)
 			{
-				if (_disposedValue)
-				{
-					return;
-				}
-
 				OnAnimationTick(animation);
 			}
 

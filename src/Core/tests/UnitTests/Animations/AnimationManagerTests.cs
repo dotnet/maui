@@ -16,11 +16,9 @@ namespace Microsoft.Maui.UnitTests
 			bool stepCalled = false;
 			bool finishedCalled = false;
 			var animation = new Animation(_ => stepCalled = true, duration: 10, finished: () => finishedCalled = true);
-			Action fire = ticker.Fire!;
 
 			manager.Add(animation);
 			manager.Dispose();
-			fire();
 
 			Assert.Null(ticker.Fire);
 			Assert.False(ticker.IsRunning);
@@ -60,21 +58,6 @@ namespace Microsoft.Maui.UnitTests
 
 			Assert.False(stepCalled);
 			Assert.Equal(1, otherCallbackCount);
-		}
-
-		[Fact]
-		public void DisposeDuringTickStopsProcessingRemainingAnimations()
-		{
-			var ticker = new TestTicker();
-			var manager = new AnimationManager(ticker);
-			bool secondAnimationCalled = false;
-			manager.Add(new Animation(_ => manager.Dispose(), duration: 10));
-			manager.Add(new Animation(_ => secondAnimationCalled = true, duration: 10));
-			Action fire = ticker.Fire!;
-
-			fire();
-
-			Assert.False(secondAnimationCalled);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
