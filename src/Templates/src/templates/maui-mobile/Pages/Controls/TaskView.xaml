@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!-- Issue #36940: Windows only. On iOS/Mac Catalyst, setting Description on the Border makes the container a single accessibility element, preventing VoiceOver from focusing the inner CheckBox. -->
 <Border
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -9,7 +10,8 @@
     x:Class="MauiApp._1.Pages.Controls.TaskView"
     StrokeShape="RoundRectangle 20"
     Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
-    x:DataType="models:ProjectTask">
+    x:DataType="models:ProjectTask"
+    SemanticProperties.Description="{OnPlatform WinUI={Binding Title}}">
 
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
