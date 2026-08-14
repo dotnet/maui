@@ -620,7 +620,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			LayoutEmptyView();
 
-			AlignEmptyView();
 			_emptyViewDisplayed = true;
 		}
 
