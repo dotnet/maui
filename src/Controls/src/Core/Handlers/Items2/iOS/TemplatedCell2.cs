@@ -147,8 +147,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					}
 					_cachedConstraints = constraints;
 					_needsArrange = true;
-					// Visible cells may keep the same frame, so UIKit does not always schedule the arrange pass.
-					SetNeedsLayout();
 				}
 
 				var preferredSize = preferredAttributes.Size;
@@ -160,6 +158,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
+
+				// When content was dynamically modified during binding (e.g.
+				// BoxViews rebuilt in a Grid from a BindableProperty callback),
+				// arrange directly here instead of deferring to LayoutSubviews.
+				// UIKit may skip LayoutSubviews when the cell frame doesn't
+				// change, leaving new children unarranged with zero-width
+				// frames (#37427). Arranging inline is zero-cost on the
+				// steady-state scrolling path because _needsArrange is only
+				// set when _measureInvalidated or constraints change.
+				if (_needsArrange)
+				{
+					_needsArrange = false;
+					var arrangeFrame = new Rect(Point.Zero, size);
+					MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
+					virtualView.Arrange(arrangeFrame);
+				}
 
 				_measureInvalidated = false;
 			}
@@ -264,6 +278,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (PlatformHandler is null && virtualView is not null)
 			{
+				// Set BindingContext BEFORE creating the platform handler, matching
+				// CV1's order (TemplatedCell.Bind). This ensures property-changed
+				// callbacks (e.g. dynamically adding Grid children) fire before the
+				// handler tree exists, so the initial ToPlatform call sees all
+				// children and includes them in the first layout pass. Setting it
+				// after ToPlatform causes children to be added via LayoutHandler.Add
+				// while the cell may not yet have a Window, which blocks measure
+				// invalidation propagation and leaves recycled cells with
+				// zero-width dynamic content (#37427).
+				virtualView.BindingContext = bindingContext;
+
 				var mauiContext = itemsView.FindMauiContext()!;
 				var nativeView = virtualView.ToPlatform(mauiContext);
 
@@ -280,7 +305,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
 
-				virtualView.BindingContext = bindingContext;
+				// AddLogicalChild after BindingContext is set to avoid briefly
+				// inheriting the ItemsView's BindingContext (matching CV1 pattern).
 				itemsView.AddLogicalChild(virtualView);
 
 				if (this.Selected)
