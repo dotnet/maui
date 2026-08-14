@@ -488,7 +488,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ElementRequestOnCollapsedScrollViewCompletesInsteadOfHanging()
+		public void ElementRequestOnCollapsedScrollViewReleasesCallerAndReplaysWhenShown()
 		{
 			var item = new View();
 			var layout = new StackLayout { Children = { item } };
@@ -497,23 +497,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = new ViewportProviderHandlerStub();
 			scrollView.Handler = handler;
 
-			// A collapsed ScrollView is skipped by layout, so the geometry callbacks that
-			// retry a parked request never fire: the request must dispatch immediately (the
-			// target clamps) so the caller's task can complete instead of hanging forever
-			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
-			Assert.Single(handler.ScrollToRequests);
-
-			scrollView.SendScrollFinished();
+			// A collapsed ScrollView is skipped by layout, so no geometry callback is coming:
+			// the caller must be released immediately instead of hanging forever...
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
 			Assert.True(task.IsCompleted);
+
+			// ...but the request must not resolve against the -1 never-arranged sentinels —
+			// it stays parked instead of clamping a garbage target to the origin
+			Assert.Empty(handler.ScrollToRequests);
+
+			// Showing the branch arranges it; the first arrange replays the parked request
+			// against real geometry so the scroll still lands on the element
+			scrollView.IsVisible = true;
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			// Center: 450 - 100/2 + 50/2
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(425, request.VerticalOffset);
 		}
 
 		[Fact]
-		public void DeferredElementRequestOnCollapsedAncestorDispatchesOnAttach()
+		public void DeferredElementRequestOnCollapsedAncestorReleasesCallerOnAttach()
 		{
 			var item = new View();
 			var layout = new StackLayout { Children = { item } };
 			var scrollView = new ScrollView { Content = layout };
-			_ = new StackLayout { IsVisible = false, Children = { scrollView } };
+			var parent = new StackLayout { IsVisible = false, Children = { scrollView } };
 
 			// Parked because the handler is missing, not because of visibility
 			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
@@ -521,12 +532,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = new ViewportProviderHandlerStub();
 			scrollView.Handler = handler;
 
-			// On attach the collapsed ancestor means no arrange is coming: the deferred
-			// request must dispatch right away rather than wait for callbacks that never fire
-			Assert.Single(handler.ScrollToRequests);
-
-			scrollView.SendScrollFinished();
+			// On attach the collapsed ancestor means no arrange is coming: release the
+			// caller, but keep the request parked rather than resolving it against the
+			// never-arranged sentinels
 			Assert.True(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// Showing the ancestor arranges the branch and replays the request for real
+			parent.IsVisible = true;
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			// Start aligns the element's top with the viewport top
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(450, request.VerticalOffset);
 		}
 
 		[Fact]
@@ -544,13 +564,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// The ancestor chain crosses non-VisualElement links (ShellContent/ShellSection)
 			// before reaching the collapsed Shell: the visibility walk must skip over them
-			// rather than stop, so the request dispatches immediately instead of parking for
-			// an arrange that never comes
+			// rather than stop, so the caller is released immediately instead of parking
+			// behind an arrange that never comes
 			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
-			Assert.Single(handler.ScrollToRequests);
-
-			scrollView.SendScrollFinished();
 			Assert.True(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
 		}
 
 		[Fact]

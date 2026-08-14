@@ -73,17 +73,21 @@ namespace Microsoft.Maui.Controls
 
 			if (pending.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
 			{
-				if (WillArrange())
+				if (!WillArrange())
 				{
-					// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
-					return;
+					// A collapsed branch is skipped by layout, so no callback is coming to
+					// resolve the target. Release the caller now, but keep the request
+					// parked: if the branch is later shown, the first arrange replays it
+					// against real geometry so the scroll still lands on the element
+					// (a newer request supersedes it as usual).
+					SendScrollFinished();
 				}
 
-				// A collapsed branch is skipped by layout entirely, so those callbacks will
-				// never fire: dispatch now — the target clamps — rather than hang the
-				// caller's task forever. Falls through to the immediate send below.
+				// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
+				return;
 			}
-			else if (pending.Mode == ScrollToMode.Element)
+
+			if (pending.Mode == ScrollToMode.Element)
 			{
 				// The geometry callbacks run while the pass that produced the sizes is still
 				// arranging children, so resolve on the next tick, once positions are final.
@@ -109,9 +113,10 @@ namespace Microsoft.Maui.Controls
 
 		// A parked element request is retried only from OnSizeAllocated/ContentSizeChanged,
 		// which fire when this view gets arranged — and a view inside a collapsed
-		// (IsVisible=false) branch is skipped by layout entirely. Parking in that state would
-		// leave the caller's task pending forever; dispatching instead clamps the target and
-		// completes it, which is also what the other platforms do with a collapsed scroll view.
+		// (IsVisible=false) branch is skipped by layout entirely, so a request parked there
+		// has no callback coming. In that state the awaiting caller is released immediately
+		// while the request stays parked: showing the branch arranges it and replays the
+		// scroll against real geometry (see DispatchPendingScrollToRequest).
 		// The walk checks IsVisible on every VisualElement ancestor, skipping over non-visual
 		// links in the chain (e.g. Shell's ShellContent/ShellSection) rather than stopping at
 		// them. Non-visual containers' own visibility semantics (a hidden tab, say) are
@@ -556,16 +561,23 @@ namespace Microsoft.Maui.Controls
 				_pendingScrollToRequested = e;
 				_replayPendingScrollToRequestedEvent = true;
 			}
-			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady() && WillArrange())
+			else if (e.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
 			{
 				// The handler exists but layout has not run yet (e.g. ScrollToAsync from
 				// OnAppearing): resolving the element target now would compute against the -1
 				// never-arranged sentinels. Park it for the layout callbacks instead — the
 				// subscribers were already notified above, so the replay must not re-raise.
-				// A collapsed branch never gets those callbacks, so it dispatches immediately
-				// below instead of parking a request nothing will ever retry.
 				_pendingScrollToRequested = e;
 				_replayPendingScrollToRequestedEvent = false;
+
+				if (!WillArrange())
+				{
+					// A collapsed branch gets no layout callbacks, so parking alone would
+					// hang the caller. Complete the task now and leave the request parked:
+					// showing the branch arranges it and replays the scroll against real
+					// geometry.
+					SendScrollFinished();
+				}
 			}
 			else
 			{
