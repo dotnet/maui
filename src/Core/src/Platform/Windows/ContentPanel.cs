@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Microsoft.Graphics.Canvas;
@@ -13,6 +13,7 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Media;
@@ -22,22 +23,31 @@ namespace Microsoft.Maui.Platform
 	public partial class ContentPanel : MauiPanel
 	{
 		readonly Path? _borderPath;
+		ContentPanelClipHost? _contentClipHost;
 		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
 		internal IBorderStroke? BorderStroke => _borderStroke;
+		internal ContentPanelClipHost? ContentClipHost => _contentClipHost;
 		internal FrameworkElement? Content
 		{
 			get => _content;
 			set
 			{
-				var children = CachedChildren;
-
-				// Remove the previous content if it exists
-				if (_content is not null && children.Contains(_content) && value != _content)
+				if (value == _content)
 				{
-					children.Remove(_content);
+					return;
+				}
+
+				if (_contentClipHost is not null)
+				{
+					_contentClipHost.CachedChildren.Clear();
+					ClearContentClip();
+				}
+				else if (_content is not null && CachedChildren.Contains(_content))
+				{
+					CachedChildren.Remove(_content);
 				}
 
 				_content = value;
@@ -47,26 +57,40 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
+				var children = _contentClipHost?.CachedChildren ?? CachedChildren;
 				if (!children.Contains(_content))
 				{
 					children.Add(_content);
 				}
 			}
+
 		}
 
 		internal bool IsInnerPath { get; private set; }
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			var measured = base.MeasureOverride(availableSize);
+			global::Windows.Foundation.Size measured;
 
-			// On Windows, when content inside a Border has the same WidthRequest/HeightRequest
-			// as the Border itself, AdjustForExplicitSize expands the content's measured size
-			// back to its explicit request even after the stroke inset reduces the constraint.
-			// This inflates MeasureContent's result by StrokeThickness*2, so the parent
-			// allocates an oversized layout slot and the border renders with its right/bottom
-			// strokes clipped. Capping here at the Border's explicit dimensions corrects the
-			// reported desired size and ensures the parent allocates the right amount.
+			if (_contentClipHost is not null)
+			{
+				_contentClipHost.InvalidateMeasure();
+				_contentClipHost.Measure(availableSize);
+				measured = _contentClipHost.DesiredSize;
+			}
+			else
+			{
+				measured = base.MeasureOverride(availableSize);
+			}
+
+			return ConstrainMeasureToExplicitBorderSize(measured);
+		}
+
+		internal global::Windows.Foundation.Size ConstrainMeasureToExplicitBorderSize(global::Windows.Foundation.Size measured)
+		{
+			// AdjustForExplicitSize can expand content back to its explicit request after the
+			// stroke inset reduced its constraint. Cap both the host and panel desired sizes so
+			// WinUI also arranges the host within the Border's explicit dimensions.
 			if (_borderStroke is not null && Content is not null &&
 			 CrossPlatformLayout is IBorderView borderView)
 			{
@@ -89,7 +113,18 @@ namespace Microsoft.Maui.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			var actual = base.ArrangeOverride(finalSize);
+			global::Windows.Foundation.Size actual;
+
+			if (_contentClipHost is not null)
+			{
+				_contentClipHost.InvalidateArrange();
+				_contentClipHost.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
+				actual = finalSize;
+			}
+			else
+			{
+				actual = base.ArrangeOverride(finalSize);
+			}
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 
@@ -163,6 +198,37 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal void EnableContentClip()
+		{
+			if (_contentClipHost is not null)
+			{
+				_contentClipHost.CrossPlatformLayout = CrossPlatformLayout;
+				return;
+			}
+
+			_contentClipHost = new ContentPanelClipHost(this)
+			{
+				CrossPlatformLayout = CrossPlatformLayout,
+			};
+			CachedChildren.Add(_contentClipHost);
+
+			if (_content is not null && CachedChildren.Contains(_content))
+			{
+				CachedChildren.Remove(_content);
+				_contentClipHost.CachedChildren.Add(_content);
+			}
+		}
+
+		internal void UpdateCrossPlatformLayout(ICrossPlatformLayout? crossPlatformLayout)
+		{
+			CrossPlatformLayout = crossPlatformLayout;
+
+			if (_contentClipHost is not null)
+			{
+				_contentClipHost.CrossPlatformLayout = crossPlatformLayout;
+			}
+		}
+
 		static void OnBackgroundPropertyChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
 		{
 			if (dependencyObject is ContentPanel contentPanel)
@@ -203,19 +269,20 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderStroke = borderStroke;
-
-			if (_borderStroke is null)
-			{
-				return;
-			}
-
-			UpdateBorder(_borderStroke.Shape);
+			UpdateBorder(borderStroke.Shape);
 		}
 
 		void UpdateBorder(IShape? strokeShape)
 		{
-			if (strokeShape is null || _borderPath is null)
+			if (_borderPath is null)
 			{
+				return;
+			}
+
+			if (strokeShape is null)
+			{
+				_borderPath.Data = null;
+				ClearContentClip();
 				return;
 			}
 
@@ -234,7 +301,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateClip(IShape? borderShape, double width, double height)
 		{
-			if (Content is null)
+			if (Content is null || _contentClipHost is null)
 			{
 				return;
 			}
@@ -248,17 +315,11 @@ namespace Microsoft.Maui.Platform
 
 			if (clipGeometry is null)
 			{
+				ClearContentClip();
 				return;
 			}
 
-			var visual = ElementCompositionPreview.GetElementVisual(Content);
-
-			// Prevent clip collision: When ContentView is inside Border, let WrapperView handle 
-			// clipping to avoid Border overwriting ContentView's clip geometry during SizeChanged.
-			if (visual.Clip != null && Content.Parent is WrapperView)
-			{
-				return;
-			}
+			var visual = ElementCompositionPreview.GetElementVisual(_contentClipHost);
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;
@@ -283,14 +344,30 @@ namespace Microsoft.Maui.Platform
 			var pathGeometry = compositor.CreatePathGeometry(path);
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
-			// Use ActualOffset (not LayoutInformation.GetLayoutSlot) because it reflects the true
-			// visual position of Content after WinUI alignment adjustments (e.g. a Stretch=None
-			// image wider than its slot is centered, shifting ActualOffset well outside the slot).
-			// The formula converts the stroke-inset boundary from ContentPanel space into Content's
-			// local space so the clip aligns correctly regardless of alignment-driven offsets.
-			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
+			geometricClip.Offset = new Vector2(strokeThickness, strokeThickness);
 
 			visual.Clip = geometricClip;
 		}
+
+		void ClearContentClip()
+		{
+			if (_contentClipHost is not null)
+			{
+				ElementCompositionPreview.GetElementVisual(_contentClipHost).Clip = null;
+			}
+		}
+	}
+
+	sealed partial class ContentPanelClipHost : MauiPanel
+	{
+		readonly ContentPanel _owner;
+
+		internal ContentPanelClipHost(ContentPanel owner)
+		{
+			_owner = owner;
+		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize) =>
+			_owner.ConstrainMeasureToExplicitBorderSize(base.MeasureOverride(availableSize));
 	}
 }

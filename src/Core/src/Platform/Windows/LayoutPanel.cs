@@ -28,10 +28,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var actual = base.ArrangeOverride(finalSize);
 
-			if (!(Parent is ContentPanel contentPanel && contentPanel.BorderStroke?.Shape is not null))
-			{
-				Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
-			}
+			Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
 
 			return actual;
 		}

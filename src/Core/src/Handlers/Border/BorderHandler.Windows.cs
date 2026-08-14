@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			PlatformView.CrossPlatformLayout = VirtualView;
+			PlatformView.EnableContentClip();
+			PlatformView.UpdateCrossPlatformLayout(VirtualView);
 		}
 
 		static partial void UpdateContent(IBorderHandler handler)
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.PlatformView.CachedChildren.Clear();
+			handler.PlatformView.Content = null;
 			handler.PlatformView.EnsureBorderPath();
 
 			if (handler.VirtualView.PresentedContent is IView view)
@@ -43,8 +44,16 @@ namespace Microsoft.Maui.Handlers
 			{
 				CrossPlatformLayout = VirtualView
 			};
+			view.EnableContentClip();
 
 			return view;
+		}
+
+		protected override void DisconnectHandler(ContentPanel platformView)
+		{
+			platformView.Content = null;
+			platformView.UpdateCrossPlatformLayout(null);
+			base.DisconnectHandler(platformView);
 		}
 	}
 }
