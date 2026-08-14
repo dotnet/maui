@@ -19,6 +19,8 @@ Only top-level property notifications are deferred. An `UpdateValue` requested b
 
 Pending properties are distinct and retain relative last-occurrence order. For example, `A, B, A` flushes as `B, A`.
 
+Handlers reuse an indexed pending-property list, its lookup dictionary, and the dispatcher callback after their first automatic batch. This keeps enqueue and move-to-last operations O(1) without allocating linked-list nodes or callback closures for each batch.
+
 Accessing `PlatformView` or `ContainerView`, invoking a non-measure command, committing an explicit batch, changing the virtual view, and disconnecting the handler are barriers. Platform-view access does not flush while a mapper is executing.
 
 Measure invalidation is not coalesced. `InvalidateMeasure` remains synchronous because its ordering relative to measurement and layout has not been proven safe to defer.
@@ -28,6 +30,8 @@ At flush time, the handler:
 1. verifies that platform mappers can still run;
 2. resolves the current mapper action, including chained mapper customization;
 3. invokes the mapper with reentrant dependency updates kept synchronous.
+
+When neither explicit nor automatic batching is active, `UpdateValue`, command invocation, and initial mapper application use the existing direct mapper path. Platform-view access reduces to a zero pending-count check. The disabled path does not allocate or enter mapper-depth tracking.
 
 ## Rollout
 

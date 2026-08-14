@@ -540,6 +540,36 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void PendingDispatcherCallbackFlushesUpdatesQueuedAfterBarrier()
+		{
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+			Assert.NotNull(handler.PlatformView);
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+
+			Assert.Equal(3, mapCount);
+			Assert.Equal(1, dispatcher.PendingCount);
+
+			dispatcher.RunNext();
+
+			Assert.Equal(4, mapCount);
+		}
+
+		[Fact]
 		public void ScheduledAutomaticFlushDoesNotInterruptExplicitBatch()
 		{
 			var mapped = new List<string>();
