@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 37427, "CollectionView item content renders with zero width on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 37427, "CollectionView item content renders with zero width on iOS", PlatformAffected.iOS)]
 public partial class Issue37427 : ContentPage
 {
 	static readonly Color[] s_palette =
