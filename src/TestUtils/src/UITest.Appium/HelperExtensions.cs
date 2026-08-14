@@ -79,6 +79,7 @@ namespace UITest.Appium
 			});
 		}
 
+		// Preserve the locator for failure recovery without an eager MacCatalyst TagName request on successful clicks.
 		static void ClickWithRefresh(IUIElement element, Func<IUIElement> refreshElement)
 		{
 			element.Command.Execute("click", new Dictionary<string, object>()
