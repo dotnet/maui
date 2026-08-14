@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
@@ -39,6 +40,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		TabNavigation = KeyboardNavigationMode.Once;
+		AddHandler(GettingFocusEvent, new GettingFocusEventHandler(OnGettingFocus), true);
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
@@ -47,6 +50,107 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		ItemTransitionProvider = null;
 
 		ApplyItemContainerResourceOverrides();
+	}
+
+	void OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
+	{
+		if (args.FocusState != FocusState.Keyboard ||
+			(args.Direction != FocusNavigationDirection.Next &&
+			args.Direction != FocusNavigationDirection.Previous))
+		{
+			return;
+		}
+
+		var repeater = ItemsRepeaterControl;
+		if (repeater is null || IsDescendantOf(args.OldFocusedElement, repeater))
+		{
+			return;
+		}
+
+		if (args.NewFocusedElement is ItemContainer proposedContainer &&
+			IsEligibleTabEntryContainer(proposedContainer, repeater))
+		{
+			return;
+		}
+
+		var target = FindTabEntryContainer(repeater, args.Direction);
+		if (target is not null)
+		{
+			args.TrySetNewFocusedElement(target);
+		}
+	}
+
+	ItemContainer? FindTabEntryContainer(ItemsRepeater repeater, FocusNavigationDirection direction)
+	{
+		if (CurrentItemIndex >= 0 &&
+			repeater.TryGetElement(CurrentItemIndex) is ItemContainer currentContainer &&
+			IsEligibleTabEntryContainer(currentContainer, repeater))
+		{
+			return currentContainer;
+		}
+
+		ItemContainer? target = null;
+		int targetIndex = direction == FocusNavigationDirection.Next ? int.MaxValue : int.MinValue;
+		int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (int childIndex = 0; childIndex < childCount; childIndex++)
+		{
+			if (VisualTreeHelper.GetChild(repeater, childIndex) is not ItemContainer container ||
+				!IsEligibleTabEntryContainer(container, repeater))
+			{
+				continue;
+			}
+
+			int itemIndex = repeater.GetElementIndex(container);
+			if ((direction == FocusNavigationDirection.Next && itemIndex < targetIndex) ||
+				(direction == FocusNavigationDirection.Previous && itemIndex > targetIndex))
+			{
+				target = container;
+				targetIndex = itemIndex;
+			}
+		}
+
+		return target;
+	}
+
+	bool IsEligibleTabEntryContainer(ItemContainer container, ItemsRepeater repeater)
+	{
+		if (container.Child is not ElementWrapper { IsHeaderOrFooter: false } ||
+			!container.IsTabStop || !container.IsEnabled ||
+			container.Visibility != WVisibility.Visible ||
+			!container.IsLoaded || container.ActualWidth <= 0 || container.ActualHeight <= 0 ||
+			repeater.GetElementIndex(container) < 0 ||
+			_scrollViewer is null)
+		{
+			return false;
+		}
+
+		try
+		{
+			var bounds = container.TransformToVisual(_scrollViewer).TransformBounds(
+				new global::Windows.Foundation.Rect(0, 0, container.ActualWidth, container.ActualHeight));
+
+			return bounds.Left < _scrollViewer.ActualWidth && bounds.Right > 0 &&
+				bounds.Top < _scrollViewer.ActualHeight && bounds.Bottom > 0;
+		}
+		catch (ArgumentException)
+		{
+			return false;
+		}
+	}
+
+	static bool IsDescendantOf(DependencyObject? element, DependencyObject ancestor)
+	{
+		while (element is not null)
+		{
+			if (element == ancestor)
+			{
+				return true;
+			}
+
+			element = VisualTreeHelper.GetParent(element);
+		}
+
+		return false;
 	}
 
 	/// <summary>

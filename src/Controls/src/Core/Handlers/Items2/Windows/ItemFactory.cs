@@ -153,6 +153,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// selectability behavior.
 				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
+				container.IsTabStop = !isHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
 					// Cache the default template once for later restoration

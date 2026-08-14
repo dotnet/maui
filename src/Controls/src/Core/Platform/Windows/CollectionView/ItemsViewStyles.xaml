@@ -365,6 +365,7 @@
 
                                         <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
                                                                 ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
+                                                                TabFocusNavigation="Once"
                                                                 HorizontalCacheLength="2"
                                                                 VerticalCacheLength="2"
                                                                 ItemsSource="{TemplateBinding ItemsSource}"
