@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var wasEmpty = _isEmpty;
 
-			_isEmpty = ItemsSource.ItemCount == 0;
+			_isEmpty = IsEmptySource();
 
 			if (wasEmpty != _isEmpty)
 			{
@@ -546,7 +546,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+			UpdateEmptyViewVisibility(IsEmptySource());
+		}
+
+		bool IsEmptySource()
+		{
+			if (ItemsSource is null)
+			{
+				return true;
+			}
+
+			return ItemsView is GroupableItemsView { IsGrouped: true }
+				? ItemsSource.GroupCount == 0
+				: ItemsSource.ItemCount == 0;
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)

@@ -105,6 +105,38 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
+		[Fact]
+		public async Task GroupedCollectionViewEmptyViewTracksGroups()
+		{
+				SetupBuilder();
+
+				var groups = new ObservableCollection<ObservableCollection<string>>
+				{
+					new()
+				};
+				var collectionView = new CollectionView
+				{
+					IsGrouped = true,
+					ItemsSource = groups,
+					EmptyView = new Label { Text = "Empty" }
+				};
+				var frame = collectionView.Frame;
+
+				await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+				{
+					await WaitForUIUpdate(frame, collectionView);
+					Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+
+					groups.Clear();
+					await Task.Delay(100);
+					Assert.IsType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+
+					groups.Add(new());
+					await Task.Delay(100);
+					Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+				});
+		}
+
 		//src/Compatibility/Core/tests/Android/RendererTests.cs
 		[Fact(DisplayName = "EmptySource should have a count of zero")]
 		[Trait("Category", "CollectionView")]

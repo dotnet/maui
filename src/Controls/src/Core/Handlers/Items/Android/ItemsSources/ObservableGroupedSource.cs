@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		internal int GroupCount => _groups.Count;
+
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 		public bool ObserveChanges { get; set; } = true;
@@ -324,6 +326,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var absolutePosition = GetAbsolutePosition(_groups[groupIndex], 0);
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
 
+			if (itemCount == 0)
+			{
+				_notifier.NotifyDataSetChanged();
+				return;
+			}
+
 			if (itemCount == 1)
 			{
 				_notifier.NotifyItemInserted(this, absolutePosition);
@@ -371,18 +379,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Figure out how many items are in the groups we're removing
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
 
+			UpdateGroupTracking();
+
+			if (itemCount == 0)
+			{
+				_notifier.NotifyDataSetChanged();
+				return;
+			}
+
 			if (itemCount == 1)
 			{
 				_notifier.NotifyItemRemoved(this, absolutePosition);
-
-				UpdateGroupTracking();
-
 				return;
 			}
 
 			_notifier.NotifyItemRangeRemoved(this, absolutePosition, itemCount);
-
-			UpdateGroupTracking();
 		}
 
 		void Replace(NotifyCollectionChangedEventArgs args)

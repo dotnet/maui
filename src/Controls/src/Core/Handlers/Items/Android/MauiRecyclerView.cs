@@ -1060,7 +1060,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					itemCount++;
 			}
 
-			var showEmptyView = (ItemsView?.EmptyView is not null || ItemsView?.EmptyViewTemplate is not null) && ItemsViewAdapter.ItemCount == itemCount;
+			var sourceIsEmpty = ItemsView is GroupableItemsView { IsGrouped: true }
+				&& ItemsViewAdapter.ItemsSource is ObservableGroupedSource groupedSource
+					? groupedSource.GroupCount == 0
+					: ItemsViewAdapter.ItemCount == itemCount;
+			var showEmptyView = (ItemsView?.EmptyView is not null || ItemsView?.EmptyViewTemplate is not null) && sourceIsEmpty;
 
 			var currentAdapter = GetAdapter();
 			if (showEmptyView && currentAdapter != _emptyViewAdapter)

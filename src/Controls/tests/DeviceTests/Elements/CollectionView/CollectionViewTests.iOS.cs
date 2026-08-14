@@ -21,6 +21,60 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact(DisplayName = "Grouped CollectionView EmptyView Tracks Groups")]
+		public Task GroupedCollectionViewEmptyViewTracksGroups()
+		{
+			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler>();
+		}
+
+		[Fact(DisplayName = "CollectionViewHandler2 Grouped EmptyView Tracks Groups")]
+		public Task GroupedCollectionViewEmptyViewTracksGroups2()
+		{
+			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler2>();
+		}
+
+		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<THandler>()
+			where THandler : class, IElementHandler
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, THandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var groups = new ObservableCollection<ObservableCollection<string>>
+			{
+				new()
+			};
+			var emptyView = new Label { Text = "Empty" };
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				EmptyView = emptyView
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<THandler>(collectionView, async _ =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				var emptyPlatformView = Assert.IsAssignableFrom<UIView>(emptyView.Handler.PlatformView);
+				var emptyViewWrapper = Assert.IsAssignableFrom<UIView>(emptyPlatformView.Superview);
+				Assert.Null(emptyViewWrapper.Superview);
+
+				groups.Clear();
+				await Task.Delay(100);
+				Assert.NotNull(emptyViewWrapper.Superview);
+
+				groups.Add(new());
+				await Task.Delay(100);
+				Assert.Null(emptyViewWrapper.Superview);
+			});
+		}
+
 		[Fact]
 		public async Task ItemsSourceGroupedClearDoestCrash()
 		{
