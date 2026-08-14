@@ -642,7 +642,9 @@ namespace Microsoft.Maui.DeviceTests
 				await OnLoadedAsync(initialPage);
 
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
-				rootManager.SetToolbarElement(new ToolbarElementStub(new Toolbar(window)));
+				var toolbarElement = new ToolbarElementStub(new Toolbar(window));
+				rootManager.SetToolbarElement(toolbarElement);
+				var outgoingRoot = rootManager.RootView;
 				var activityRoot = Assert.IsType<FakeActivityRootView>(handler.PlatformViewUnderTest.Parent);
 				handler.PlatformViewUnderTest.RemoveFromParent();
 
@@ -653,16 +655,95 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.False(applied);
 				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, outcome);
-				Assert.Null(rootManager.RootView);
-				Assert.Null(rootManager.ToolbarElement);
+				Assert.Same(outgoingRoot, rootManager.RootView);
+				Assert.Same(toolbarElement, rootManager.ToolbarElement);
 
+				activityRoot.AddView(handler.PlatformViewUnderTest, 0);
 				applied = handler.ConnectContent(recoveredPage);
 
 				Assert.True(applied);
-				activityRoot.AddView(handler.PlatformViewUnderTest, 0);
 				await OnLoadedAsync(recoveredPage);
 				Assert.Same(rootManager.RootView, handler.PlatformViewUnderTest);
 				AssertPageAttachedToRoot(recoveredPage, rootManager);
+			});
+		}
+
+		[Fact(DisplayName = "Busy Root Replacement Cancels After Retry Limit")]
+		public async Task BusyRootReplacementCancelsAfterRetryLimit()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var recoveredPage = new ContentPage { Content = new Label { Text = "Recovered page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var outgoingRoot = rootManager.RootView;
+				NavigationRootManager.RootRequestOutcome? outcome = null;
+				rootManager.TryExecutePendingTransactionsOverride = (_, _) => false;
+
+				var applied = rootManager.Connect(
+					replacementPage,
+					completion: (result, _) => outcome = result);
+
+				Assert.False(applied);
+				await AssertHelpers.AssertEventually(
+					() => outcome is not null,
+					timeout: 5000,
+					message: "The busy root request did not reach its retry limit.");
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, outcome);
+				Assert.Same(outgoingRoot, rootManager.RootView);
+				AssertPageAttachedToRoot(initialPage, rootManager);
+				Assert.False(HasRootSwapRetryInfrastructure(rootManager));
+
+				rootManager.TryExecutePendingTransactionsOverride = null;
+				Assert.True(handler.ConnectContent(recoveredPage));
+				await OnLoadedAsync(recoveredPage);
+				AssertPageAttachedToRoot(recoveredPage, rootManager);
+			});
+		}
+
+		[Fact(DisplayName = "Unavailable Activity Permanently Stops Deferred Root Swaps")]
+		public async Task UnavailableActivityPermanentlyStopsDeferredRootSwaps()
+		{
+			SetupBuilder();
+
+			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
+			var replacementPage = new ContentPage { Content = new Label { Text = "Replacement page" } };
+			var laterPage = new ContentPage { Content = new Label { Text = "Later page" } };
+			var window = new Window(initialPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				await OnLoadedAsync(initialPage);
+
+				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var activityUnavailable = false;
+				NavigationRootManager.RootRequestOutcome? deferredOutcome = null;
+				rootManager.TryExecutePendingTransactionsOverride = (_, _) => false;
+				rootManager.IsActivityUnavailableOverride = () => activityUnavailable;
+
+				Assert.False(rootManager.Connect(
+					replacementPage,
+					completion: (result, _) => deferredOutcome = result));
+
+				activityUnavailable = true;
+				await AssertHelpers.AssertEventually(
+					() => deferredOutcome is not null,
+					message: "The deferred root request did not observe the unavailable activity.");
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, deferredOutcome);
+				Assert.Null(rootManager.RootView);
+
+				NavigationRootManager.RootRequestOutcome? laterOutcome = null;
+				Assert.False(rootManager.Connect(
+					laterPage,
+					completion: (result, _) => laterOutcome = result));
+				Assert.Equal(NavigationRootManager.RootRequestOutcome.Cancelled, laterOutcome);
 			});
 		}
 

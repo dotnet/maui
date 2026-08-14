@@ -33,10 +33,15 @@ namespace Microsoft.Maui.Platform
 		bool _swapInFlight;
 		bool _retryScheduled;
 		bool _rootSwapsUnavailable;
+		bool _processingRetryCallback;
 		bool _quiescingFragmentManagers;
 		IToolbarElement? _toolbarElementBeingQuiesced;
 		RootRequest? _queuedRequest;
 		Action<RootRequestOutcome, AView?>? _disconnectCompletion;
+
+		internal Func<FragmentManager?, Context, bool>? TryExecutePendingTransactionsOverride { get; set; }
+
+		internal Func<bool>? IsActivityUnavailableOverride { get; set; }
 
 		// TODO MAUI: temporary event to alert when rootview is ready
 		// handlers and various bits use this to start interacting with rootview
@@ -89,6 +94,14 @@ namespace Microsoft.Maui.Platform
 				completion));
 		}
 
+		/// <summary>
+		/// Disconnects the current Android navigation root.
+		/// </summary>
+		/// <remarks>
+		/// If AndroidX is already executing fragment transactions, teardown is deferred until
+		/// those transactions settle. <see cref="RootView"/> can therefore remain non-null when
+		/// this method returns.
+		/// </remarks>
 		public virtual void Disconnect()
 		{
 			var completion = _disconnectCompletion;
@@ -210,11 +223,8 @@ namespace Microsoft.Maui.Platform
 					}
 					catch (RootSwapUnavailableException ex)
 					{
-						CancelRootSwaps(
-							request,
-							ex.Message,
-							permanentlyUnavailable: false,
-							ref firstException);
+						CompleteRequest(request, RootRequestOutcome.Cancelled, ref firstException);
+						_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(ex.Message);
 					}
 					catch (Exception ex)
 					{
@@ -302,7 +312,7 @@ namespace Microsoft.Maui.Platform
 		void CancelQueuedRootSwap(string message)
 		{
 			var request = TakeQueuedRootRequest();
-			StopRootSwaps(permanentlyUnavailable: true);
+			StopRootSwapsPermanently();
 			try
 			{
 				request.Complete(RootRequestOutcome.Cancelled, _rootView);
@@ -317,25 +327,10 @@ namespace Microsoft.Maui.Platform
 			_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(message);
 		}
 
-		void CancelRootSwaps(
-			RootRequest request,
-			string message,
-			bool permanentlyUnavailable,
-			ref Exception? firstException)
-		{
-			StopRootSwaps(permanentlyUnavailable);
-			CompleteRequest(request, RootRequestOutcome.Cancelled, ref firstException);
-
-			if (permanentlyUnavailable && _queuedRequest is not null)
-				CompleteRequest(TakeQueuedRootRequest(), RootRequestOutcome.Cancelled, ref firstException);
-
-			_mauiContext.CreateLogger<NavigationRootManager>()?.LogWarning(message);
-		}
-
-		void StopRootSwaps(bool permanentlyUnavailable)
+		void StopRootSwapsPermanently()
 		{
 			ReleaseRetryInfrastructure();
-			_rootSwapsUnavailable = permanentlyUnavailable;
+			_rootSwapsUnavailable = true;
 			CancelPendingFragment();
 			var outgoingRootView = _rootView;
 			_rootView = null;
@@ -345,50 +340,84 @@ namespace Microsoft.Maui.Platform
 
 		void ProcessQueuedRootSwap()
 		{
-			_retryScheduled = false;
-			if (_queuedRequest is null)
-				return;
-
-			var context = _mauiContext.Context;
-			if (context.IsDestroyed() || context?.GetActivity()?.IsFinishing == true)
-			{
-				CancelQueuedRootSwap("The Android activity became unavailable before a deferred navigation root swap could run.");
-				return;
-			}
-
-			var request = TakeQueuedRootRequest();
+			_processingRetryCallback = true;
 			try
 			{
-				RunRootSwaps(request);
+				_retryScheduled = false;
+				if (_queuedRequest is null)
+					return;
+
+				if (IsActivityUnavailable())
+				{
+					CancelQueuedRootSwap("The Android activity became unavailable before a deferred navigation root swap could run.");
+					return;
+				}
+
+				var request = TakeQueuedRootRequest();
+				try
+				{
+					RunRootSwaps(request);
+				}
+				catch (Exception ex)
+				{
+					_mauiContext.CreateLogger<NavigationRootManager>()?.LogError(
+						ex,
+						"A deferred Android navigation root swap failed.");
+				}
 			}
-			catch (Exception ex)
+			finally
 			{
-				_mauiContext.CreateLogger<NavigationRootManager>()?.LogError(
-					ex,
-					"A deferred Android navigation root swap failed.");
+				_processingRetryCallback = false;
+				if (!_retryScheduled)
+					ReleaseRetryInfrastructure();
 			}
 		}
 
 		void ReleaseRetryInfrastructure()
 		{
 			_retryScheduled = false;
-			if (_mainHandler is not null && _retryRunnable is not null)
-				_mainHandler.RemoveCallbacks(_retryRunnable);
-
-			_retryRunnable?.Dispose();
-			_retryRunnable = null;
-			_mainHandler?.Dispose();
+			var handler = _mainHandler;
+			var runnable = _retryRunnable;
 			_mainHandler = null;
+			_retryRunnable = null;
+
+			if (handler is not null && runnable is not null)
+				handler.RemoveCallbacks(runnable);
+
+			if (_processingRetryCallback &&
+				handler is not null &&
+				runnable is not null)
+			{
+				_ = handler.Post(() => DisposeRetryInfrastructure(handler, runnable));
+				return;
+			}
+
+			DisposeRetryInfrastructure(handler, runnable);
+		}
+
+		bool IsActivityUnavailable()
+		{
+			if (IsActivityUnavailableOverride is not null)
+				return IsActivityUnavailableOverride();
+
+			var context = _mauiContext.Context;
+			return context.IsDestroyed() || context?.GetActivity()?.IsFinishing == true;
+		}
+
+		static void DisposeRetryInfrastructure(Handler? handler, Java.Lang.Runnable? runnable)
+		{
+			runnable?.Dispose();
+			handler?.Dispose();
 		}
 
 		bool ConnectCore(RootRequest request)
 		{
 			var view = request.View;
-			CancelPendingFragment();
 			var outgoingRootView = _rootView;
 			if (!QuiesceOutgoingRoot(outgoingRootView, includeActivityFragmentManager: true))
 				throw new FragmentManagerBusyException();
 
+			CancelPendingFragment();
 			_rootView = null;
 			ReleaseOutgoingRoot(
 				outgoingRootView,
@@ -521,7 +550,6 @@ namespace Microsoft.Maui.Platform
 
 		bool DisconnectCore()
 		{
-			CancelPendingFragment();
 			var outgoingRootView = _rootView;
 
 			// A modal root owns a scoped child FragmentManager. Draining the activity
@@ -530,6 +558,7 @@ namespace Microsoft.Maui.Platform
 			if (!QuiesceOutgoingRoot(outgoingRootView, includeActivityFragmentManager: false))
 				throw new FragmentManagerBusyException();
 
+			CancelPendingFragment();
 			_rootView = null;
 			ReleaseOutgoingRoot(outgoingRootView, clearToolbarElement: true);
 			SetContentView(null);
@@ -562,7 +591,7 @@ namespace Microsoft.Maui.Platform
 			_toolbarElementBeingQuiesced = _toolbarElement;
 			try
 			{
-				if (!TryExecutePendingTransactions(owningFragmentManager, context))
+				if (!TryExecutePendingTransactionsForRootSwap(owningFragmentManager, context))
 					return false;
 
 				// Replacement also drains the activity manager because compatibility Shell can
@@ -572,7 +601,7 @@ namespace Microsoft.Maui.Platform
 				{
 					var activityFragmentManager = context.GetFragmentManager();
 					if (!ReferenceEquals(activityFragmentManager, owningFragmentManager))
-						return TryExecutePendingTransactions(activityFragmentManager, context);
+						return TryExecutePendingTransactionsForRootSwap(activityFragmentManager, context);
 				}
 
 				return true;
@@ -583,6 +612,10 @@ namespace Microsoft.Maui.Platform
 				_quiescingFragmentManagers = false;
 			}
 		}
+
+		bool TryExecutePendingTransactionsForRootSwap(FragmentManager? fragmentManager, Context context) =>
+			TryExecutePendingTransactionsOverride?.Invoke(fragmentManager, context) ??
+			TryExecutePendingTransactions(fragmentManager, context);
 
 		static bool TryExecutePendingTransactions(FragmentManager? fragmentManager, Context context)
 		{
