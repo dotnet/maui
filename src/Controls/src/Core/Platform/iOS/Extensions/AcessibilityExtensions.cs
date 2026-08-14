@@ -5,6 +5,7 @@ namespace Microsoft.Maui.Controls.Platform;
 
 internal static class AcessibilityExtensions
 {
+	// Defensive cap on recursion depth, not a UIKit limit; real item templates rarely nest this deep.
 	const int MaxAccessibilityElementDepth = 10;
 
 	internal static void UpdateAccessibilityTraits(this UICollectionView collectionView, SelectableItemsView itemsView)
