@@ -319,6 +319,7 @@ namespace Microsoft.Maui.DeviceTests
 						}
 					}
 
+
 					Assert.True(renderedRedPixels > 0, "Expected the loaded image to render without resizing the outer window.");
 				}
 				finally
@@ -415,20 +416,59 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Border only remeasures clip host after a cross-platform invalidation - Issue 17523")]
+		public async Task BorderOnlyRemeasuresClipHostAfterCrossPlatformInvalidation()
+		{
+			SetupBuilder();
+
+			var border = new MeasureCountingBorder
+			{
+				Content = new Label { Text = "Content" },
+				HeightRequest = 100,
+				WidthRequest = 100,
+			};
+
+			await AttachAndRun(border, (BorderHandler handler) =>
+			{
+				var platformView = handler.PlatformView;
+				var initialMeasureCount = border.MeasureCount;
+				var availableSize = new global::Windows.Foundation.Size(platformView.ActualWidth, platformView.ActualHeight);
+
+				platformView.InvalidateMeasure();
+				platformView.Measure(availableSize);
+
+				Assert.Equal(initialMeasureCount, border.MeasureCount);
+
+				handler.Invoke(nameof(IView.InvalidateMeasure), null);
+				platformView.Measure(availableSize);
+
+				Assert.Equal(initialMeasureCount + 1, border.MeasureCount);
+			});
+		}
+
 		[Fact(DisplayName = "Border refreshes clip host layout when its handler reconnects - Issue 17523")]
 		public async Task BorderRefreshesClipHostLayoutWhenHandlerReconnects()
 		{
 			SetupBuilder();
 
-			var firstBorder = new Border { Content = new Label { Text = "First" } };
-			var secondBorder = new Border { Content = new Label { Text = "Second" } };
+			var firstBorder = new MeasureCountingBorder();
+			var secondBorder = new MeasureCountingBorder { Padding = 20 };
 			var handler = await CreateHandlerAsync<BorderHandler>(firstBorder);
 
-			await InvokeOnMainThreadAsync(() => handler.SetVirtualView(secondBorder));
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var clipHost = Assert.IsType<ContentPanelClipHost>(handler.PlatformView.ContentClipHost);
+				var availableSize = new global::Windows.Foundation.Size(100, 100);
+				clipHost.Measure(availableSize);
+
+				handler.SetVirtualView(secondBorder);
+				clipHost.Measure(availableSize);
+			});
 
 			var clipHost = Assert.IsType<ContentPanelClipHost>(handler.PlatformView.ContentClipHost);
 			Assert.Same(secondBorder, handler.PlatformView.CrossPlatformLayout);
 			Assert.Same(secondBorder, clipHost.CrossPlatformLayout);
+			Assert.Equal(1, secondBorder.MeasureCount);
 		}
 
 		[Fact(DisplayName = "Derived Border handler creates the content clip host - Issue 17523")]
@@ -641,6 +681,20 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			protected override ContentPanel CreatePlatformView() =>
 				new() { CrossPlatformLayout = VirtualView };
+		}
+
+		sealed class MeasureCountingBorder : Border, ICrossPlatformLayout
+		{
+			public int MeasureCount { get; private set; }
+
+			public new Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+			{
+				MeasureCount++;
+				return base.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			}
+
+			public new Size CrossPlatformArrange(Rect bounds) =>
+				base.CrossPlatformArrange(bounds);
 		}
 
 	}

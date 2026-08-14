@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Platform
 		{
 			var actual = base.ArrangeOverride(finalSize);
 
+			// Border shape clipping is applied to ContentPanel's stationary clip host.
+			// This rectangular clip only represents the Layout's own IsClippedToBounds setting.
 			Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
 
 			return actual;

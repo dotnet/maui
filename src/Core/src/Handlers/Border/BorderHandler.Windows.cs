@@ -33,6 +33,13 @@ namespace Microsoft.Maui.Handlers
 				
 		}
 
+		internal static void MapInvalidateMeasure(BorderHandler handler, IBorderView view, object? args)
+		{
+			// The clip host owns cross-platform layout, so both native layers must be invalidated.
+			handler.PlatformView.InvalidateMeasure(view);
+			handler.PlatformView.ContentClipHost?.InvalidateMeasure();
+		}
+
 		protected override ContentPanel CreatePlatformView()
 		{
 			if (VirtualView == null)

@@ -74,7 +74,6 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentClipHost is not null)
 			{
-				_contentClipHost.InvalidateMeasure();
 				_contentClipHost.Measure(availableSize);
 				measured = _contentClipHost.DesiredSize;
 			}
@@ -117,7 +116,6 @@ namespace Microsoft.Maui.Platform
 
 			if (_contentClipHost is not null)
 			{
-				_contentClipHost.InvalidateArrange();
 				_contentClipHost.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 				actual = finalSize;
 			}
@@ -222,11 +220,18 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateCrossPlatformLayout(ICrossPlatformLayout? crossPlatformLayout)
 		{
+			var layoutChanged = !ReferenceEquals(CrossPlatformLayout, crossPlatformLayout);
 			CrossPlatformLayout = crossPlatformLayout;
 
 			if (_contentClipHost is not null)
 			{
 				_contentClipHost.CrossPlatformLayout = crossPlatformLayout;
+			}
+
+			if (layoutChanged)
+			{
+				InvalidateMeasure();
+				_contentClipHost?.InvalidateMeasure();
 			}
 		}
 
