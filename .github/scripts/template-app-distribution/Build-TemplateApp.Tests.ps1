@@ -62,6 +62,8 @@ BeforeAll {
 
     $script:prepareMatrixScriptPath = Join-Path $PSScriptRoot 'Prepare-Matrix.ps1'
     $script:fastfilePath = Join-Path $PSScriptRoot 'fastlane/Fastfile'
+    $script:workflowPath = Join-Path $PSScriptRoot '../../workflows/template-app-distribution.yml'
+    $script:workflowText = Get-Content -Path $script:workflowPath -Raw
     $script:pwshPath = (Get-Command pwsh -ErrorAction Stop).Source
     $script:rubyPath = (Get-Command ruby -ErrorAction SilentlyContinue).Source
     $script:originalPath = $env:PATH
@@ -114,11 +116,11 @@ for ($index = 0; $index -lt $args.Count; $index++) {
         Set-Content -Path $binlogPath -Value "fake binlog"
     }
 }
+$argumentText = $args -join "`n"
 
 switch ($env:FAKE_DOTNET_MODE) {
     "android-success" {
         New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
-        $argumentText = $args -join "`n"
         if ($argumentText -match "AndroidPackageFormat=apk") {
             New-Item -ItemType File -Path (Join-Path $outputPath "TestApp-Signed.apk") -Force | Out-Null
         } elseif ($argumentText -match "AndroidPackageFormat=aab") {
@@ -132,6 +134,17 @@ switch ($env:FAKE_DOTNET_MODE) {
             New-Item -ItemType Directory -Path $appPath -Force | Out-Null
             Set-Content -Path (Join-Path $appPath "Info.plist") -Value "fake app"
         }
+    }
+    "ios-publish-success" {
+        New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
+        New-Item -ItemType File -Path (Join-Path $outputPath "TestApp.ipa") -Force | Out-Null
+    }
+    "ios-adhoc-failure" {
+        New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
+        if ($argumentText -match "CodesignProvision=Ad Hoc Profile") {
+            exit 23
+        }
+        New-Item -ItemType File -Path (Join-Path $outputPath "TestApp.ipa") -Force | Out-Null
     }
 }
 
@@ -323,7 +336,13 @@ Describe 'optional Apple sideload signing' {
     It 'fails when a configured iOS ad-hoc publish fails' {
         $env:IOS_ADHOC_CODESIGN_PROVISION = 'AdHoc Profile'
         $env:IOS_CODESIGN_KEY = 'Apple Distribution'
-        Mock Invoke-DotNetPublish { throw 'simulated ad-hoc publish failure' }
+        $binlogPath = Join-Path $testRoot 'ios-adhoc-build.binlog'
+        $script:publishArguments = $null
+        Mock Invoke-DotNetPublish {
+            param($Arguments)
+            $script:publishArguments = $Arguments
+            throw 'simulated ad-hoc publish failure'
+        }
 
         {
             New-IosAdHocSideload `
@@ -333,8 +352,11 @@ Describe 'optional Apple sideload signing' {
                 -RuntimeIdentifier 'ios-arm64' `
                 -OutputPath $testRoot `
                 -AppDisplayVersion '11.0' `
-                -AppBuildNumber '1'
+                -AppBuildNumber '1' `
+                -BinlogArguments @("/bl:$binlogPath")
         } | Should -Throw '*simulated ad-hoc publish failure*'
+
+        $script:publishArguments | Should -Contain "/bl:$binlogPath"
     }
 
     It 'fails when Developer ID signing is only partially configured' {
@@ -355,7 +377,13 @@ Describe 'optional Apple sideload signing' {
     It 'fails when a configured Developer ID publish fails' {
         $env:APPLE_DEVELOPERID_CODESIGN_KEY = 'Developer ID Application'
         $env:APPLE_DEVELOPERID_CODESIGN_PROVISION = 'Developer ID Profile'
-        Mock Invoke-DotNetPublish { throw 'simulated Developer ID publish failure' }
+        $binlogPath = Join-Path $testRoot 'maccatalyst-developer-id-build.binlog'
+        $script:publishArguments = $null
+        Mock Invoke-DotNetPublish {
+            param($Arguments)
+            $script:publishArguments = $Arguments
+            throw 'simulated Developer ID publish failure'
+        }
 
         {
             New-MacCatalystDeveloperIdSideload `
@@ -365,8 +393,11 @@ Describe 'optional Apple sideload signing' {
                 -OutputPath $testRoot `
                 -AppDisplayVersion '11.0' `
                 -AppBuildNumber '1' `
-                -RuntimeIdentifier 'maccatalyst-arm64'
+                -RuntimeIdentifier 'maccatalyst-arm64' `
+                -BinlogArguments @("/bl:$binlogPath")
         } | Should -Throw '*simulated Developer ID publish failure*'
+
+        $script:publishArguments | Should -Contain "/bl:$binlogPath"
     }
 }
 
@@ -545,6 +576,10 @@ Describe 'iOS dry-run artifact safety' {
 }
 
 Describe 'publish binlogs' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
     It 'uses a distinct store binlog for an Android publish' {
         $configuration = Get-BinlogConfiguration `
             -OutputPath $testRoot `
@@ -556,6 +591,103 @@ Describe 'publish binlogs' {
         $configuration.StorePath | Should -Be (Join-Path $testRoot 'store-build.binlog')
         $configuration.BuildArguments | Should -Contain "/bl:$($configuration.BuildPath)"
         $configuration.StoreArguments | Should -Contain "/bl:$($configuration.StorePath)"
+    }
+
+    It 'uses a dedicated binlog for an iOS ad-hoc publish' {
+        $configuration = Get-BinlogConfiguration `
+            -OutputPath $testRoot `
+            -Platform 'ios' `
+            -Publish `
+            -CreateBinlog
+
+        $configuration.SideloadPath | Should -Be (Join-Path $testRoot 'ios-adhoc-build.binlog')
+        $configuration.SideloadArguments | Should -Contain "/bl:$($configuration.SideloadPath)"
+    }
+
+    It 'uses a dedicated binlog for a Mac Catalyst Developer ID publish' {
+        $configuration = Get-BinlogConfiguration `
+            -OutputPath $testRoot `
+            -Platform 'maccatalyst' `
+            -Publish `
+            -CreateBinlog
+
+        $configuration.SideloadPath | Should -Be (Join-Path $testRoot 'maccatalyst-developer-id-build.binlog')
+        $configuration.SideloadArguments | Should -Contain "/bl:$($configuration.SideloadPath)"
+    }
+
+    It 'emits both primary and ad-hoc iOS binlogs from the publish path' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'ios-publish-success'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:RUNNER_TEMP = $case.RunnerTemp
+        $env:IOS_CODESIGN_KEY = 'Apple Distribution'
+        $env:IOS_CODESIGN_PROVISION = 'App Store Profile'
+        $env:IOS_ADHOC_CODESIGN_PROVISION = 'Ad Hoc Profile'
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'ios' `
+            -TargetFramework 'net11.0-ios' `
+            -RuntimeIdentifier 'ios-arm64' `
+            -Publish `
+            -CreateBinlog
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $outputValues = @{}
+        foreach ($line in Get-Content -Path $case.GitHubOutput) {
+            $name, $value = $line -split '=', 2
+            $outputValues[$name] = $value
+        }
+
+        $outputValues.binlog_path | Should -Be (Join-Path $case.OutputRoot 'build.binlog')
+        $outputValues.sideload_binlog_path | Should -Be (Join-Path $case.OutputRoot 'ios-adhoc-build.binlog')
+        Test-Path $outputValues.binlog_path | Should -BeTrue
+        Test-Path $outputValues.sideload_binlog_path | Should -BeTrue
+    }
+
+    It 'preserves the ad-hoc binlog output when the secondary publish fails' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'ios-adhoc-failure'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:RUNNER_TEMP = $case.RunnerTemp
+        $env:IOS_CODESIGN_KEY = 'Apple Distribution'
+        $env:IOS_CODESIGN_PROVISION = 'App Store Profile'
+        $env:IOS_ADHOC_CODESIGN_PROVISION = 'Ad Hoc Profile'
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'ios' `
+            -TargetFramework 'net11.0-ios' `
+            -RuntimeIdentifier 'ios-arm64' `
+            -Publish `
+            -CreateBinlog
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'iOS ad-hoc publish failed with exit code 23'
+        $outputValues = @{}
+        foreach ($line in Get-Content -Path $case.GitHubOutput) {
+            $name, $value = $line -split '=', 2
+            $outputValues[$name] = $value
+        }
+
+        $outputValues.sideload_binlog_path | Should -Be (Join-Path $case.OutputRoot 'ios-adhoc-build.binlog')
+        Test-Path $outputValues.sideload_binlog_path | Should -BeTrue
+    }
+}
+
+Describe 'workflow test gate' {
+    It 'runs the behavioral suite before matrix preparation' {
+        $script:workflowText | Should -Match (
+            '(?ms)^  script-tests:.*?Invoke-Pester.*?-CI')
+        $script:workflowText | Should -Match (
+            '(?ms)^  prepare:.*?^\s{4}needs: script-tests\s*$')
+        $script:workflowText | Should -Not -Match (
+            '(?ms)uses:\s*actions/checkout@v4\s+with:\s+' +
+            'ref:\s*\$\{\{\s*github\.ref\s*\}\}')
+        [regex]::Matches(
+            $script:workflowText,
+            'ref:\s*\$\{\{\s*github\.sha\s*\}\}').Count |
+            Should -Be 4
     }
 }
 

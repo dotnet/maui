@@ -75,8 +75,39 @@ env:
   FASTLANE_OPT_OUT_USAGE: "1"
 
 jobs:
+  script-tests:
+    name: Validate distribution scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout workflow scripts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: trusted
+          persist-credentials: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion 6.0.1 -Scope CurrentUser -Force
+
+      - name: Run distribution script tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -RequiredVersion 6.0.1 -Force
+          Invoke-Pester `
+            -Path "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.Tests.ps1" `
+            -CI
+
   prepare:
     name: Prepare matrix
+    needs: script-tests
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -96,7 +127,7 @@ jobs:
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           path: trusted
           persist-credentials: false
 
@@ -189,7 +220,7 @@ jobs:
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           path: trusted
           persist-credentials: false
 
@@ -473,7 +504,7 @@ jobs:
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           path: trusted
           persist-credentials: false
 
@@ -721,6 +752,7 @@ jobs:
           path: |
             ${{ steps.build.outputs.binlog_path }}
             ${{ steps.build.outputs.store_binlog_path }}
+            ${{ steps.build.outputs.sideload_binlog_path }}
           retention-days: 14
 
       - name: Write Google Play credentials

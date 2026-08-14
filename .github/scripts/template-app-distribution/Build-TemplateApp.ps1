@@ -139,12 +139,23 @@ function Get-BinlogConfiguration {
     } else {
         $null
     }
+    $sideloadPath = if ($CreateBinlog -and $Publish) {
+        switch ($Platform) {
+            "ios" { Join-Path $OutputPath "ios-adhoc-build.binlog" }
+            "maccatalyst" { Join-Path $OutputPath "maccatalyst-developer-id-build.binlog" }
+            default { $null }
+        }
+    } else {
+        $null
+    }
 
     return [pscustomobject]@{
-        BuildPath      = $buildPath
-        BuildArguments = if ($buildPath) { @("/bl:$buildPath") } else { @() }
-        StorePath      = $storePath
-        StoreArguments = if ($storePath) { @("/bl:$storePath") } else { @() }
+        BuildPath         = $buildPath
+        BuildArguments    = if ($buildPath) { @("/bl:$buildPath") } else { @() }
+        StorePath         = $storePath
+        StoreArguments    = if ($storePath) { @("/bl:$storePath") } else { @() }
+        SideloadPath      = $sideloadPath
+        SideloadArguments = if ($sideloadPath) { @("/bl:$sideloadPath") } else { @() }
     }
 }
 
@@ -190,7 +201,8 @@ function New-MacCatalystDeveloperIdSideload {
         [string]$AppDisplayVersion,
         [string]$AppBuildNumber,
         [string]$RuntimeIdentifier,
-        [switch]$UseNet11OrLater
+        [switch]$UseNet11OrLater,
+        [string[]]$BinlogArguments = @()
     )
 
     # Secret-gated. Only runs when a Developer ID Application identity + provisioning profile
@@ -239,6 +251,7 @@ function New-MacCatalystDeveloperIdSideload {
         # trips PublishReadyToRun inference). arm64 runs natively on Apple Silicon Macs.
         $devIdArgs += @("-r", "maccatalyst-arm64")
     }
+    $devIdArgs += $BinlogArguments
 
     Write-Host "Building Developer ID (notarizable) Mac Catalyst app for $($ProjectFile.FullName)"
     Invoke-DotNetPublish $devIdArgs "Mac Catalyst Developer ID publish"
@@ -281,7 +294,8 @@ function New-IosAdHocSideload {
         [string]$RuntimeIdentifier,
         [string]$OutputPath,
         [string]$AppDisplayVersion,
-        [string]$AppBuildNumber
+        [string]$AppBuildNumber,
+        [string[]]$BinlogArguments = @()
     )
 
     # Secret-gated. Only runs when an ad-hoc distribution provisioning profile was installed
@@ -317,6 +331,7 @@ function New-IosAdHocSideload {
         $adhocArgs += "-p:UseMonoRuntime=false"
         $adhocArgs = Add-NativeAotArguments $adhocArgs
     }
+    $adhocArgs += $BinlogArguments
 
     Write-Host "Building ad-hoc iOS IPA (sideloadable on registered devices) for $($ProjectFile.FullName)"
     Invoke-DotNetPublish $adhocArgs "iOS ad-hoc publish"
@@ -431,6 +446,8 @@ $binlogPath = $binlogs.BuildPath
 $binlogArguments = $binlogs.BuildArguments
 $storeBinlogPath = $binlogs.StorePath
 $storeBinlogArguments = $binlogs.StoreArguments
+$sideloadBinlogPath = $binlogs.SideloadPath
+$sideloadBinlogArguments = $binlogs.SideloadArguments
 
 if ($CreateBinlog -and $env:GITHUB_OUTPUT) {
     # Emit the binlog path up-front so a failed build still exposes the (partial) binlog to the
@@ -438,6 +455,9 @@ if ($CreateBinlog -and $env:GITHUB_OUTPUT) {
     "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
     if ($storeBinlogPath) {
         "store_binlog_path=$storeBinlogPath" >> $env:GITHUB_OUTPUT
+    }
+    if ($sideloadBinlogPath) {
+        "sideload_binlog_path=$sideloadBinlogPath" >> $env:GITHUB_OUTPUT
     }
 }
 
@@ -583,7 +603,8 @@ switch ($Platform) {
                 -RuntimeIdentifier $RuntimeIdentifier `
                 -OutputPath $OutputPath `
                 -AppDisplayVersion $AppDisplayVersion `
-                -AppBuildNumber $AppBuildNumber
+                -AppBuildNumber $AppBuildNumber `
+                -BinlogArguments $sideloadBinlogArguments
         } else {
             # A dry-run has no signing secrets. We produce two complementary iOS artifacts:
             #
@@ -719,7 +740,8 @@ switch ($Platform) {
                 -AppDisplayVersion $AppDisplayVersion `
                 -AppBuildNumber $AppBuildNumber `
                 -RuntimeIdentifier $RuntimeIdentifier `
-                -UseNet11OrLater:$useNet11OrLater
+                -UseNet11OrLater:$useNet11OrLater `
+                -BinlogArguments $sideloadBinlogArguments
         } else {
             $appBundle = Get-NewestBuildOutput $OutputPath "*.app" -Directory
             if (-not $appBundle) {
@@ -777,6 +799,9 @@ if ($CreateBinlog) {
     Write-Host "Build binlog: $binlogPath"
     if ($storeBinlogPath) {
         Write-Host "Store build binlog: $storeBinlogPath"
+    }
+    if ($sideloadBinlogPath) {
+        Write-Host "Sideload build binlog: $sideloadBinlogPath"
     }
 }
 
