@@ -133,8 +133,15 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			finally
 			{
-				_canvas.ResetState();
-				PlatformGraphicsService.ThreadLocalCreator = null;
+				try
+				{
+					_canvas.ResetState();
+				}
+				finally
+				{
+					_canvas.Session = null;
+					PlatformGraphicsService.ThreadLocalCreator = null;
+				}
 			}
 		}
 	}
