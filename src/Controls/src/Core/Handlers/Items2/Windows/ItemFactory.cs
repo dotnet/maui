@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -146,6 +148,15 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// Must be set every time to handle recycled containers correctly.
 			if (wrapper is not null)
 			{
+				if (wrapper.VirtualView is View semanticView)
+				{
+					container.UpdateSemantics(semanticView);
+					if (string.IsNullOrWhiteSpace(((IView)semanticView).Semantics?.Description))
+					{
+						WAutomationProperties.SetName(container, templateContext.Item?.ToString() ?? string.Empty);
+					}
+				}
+
 				// Refresh the flag from the current context for both new and recycled wrappers.
 				// The pool is keyed by DataTemplate, so a recycled container can be reused for
 				// different purposes (header vs. item) if they share the same template. Without
