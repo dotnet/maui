@@ -18,9 +18,9 @@ public class Issue37427 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void DynamicallyAddedContentRendersAfterCellRealization()
 	{
-		App.WaitForElement("37427ScrollButton");
-		App.Tap("37427ScrollButton");
-		App.WaitForElement("37427Card15");
+		App.WaitForElement("37427CollectionView");
+		App.ScrollDown("37427CollectionView", ScrollStrategy.Gesture, 0.8, 500);
+		App.WaitForElement("37427Card10");
 
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
