@@ -50,7 +50,8 @@ namespace Microsoft.Maui.Platform
 			if (effectiveBarColor != null)
 			{
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-				if (OperatingSystem.IsIOSVersionAtLeast(26))
+				// A direct view background is required on Mac Catalyst, but obscures iOS 26's floating tab bar.
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				{
 					tabBar.BackgroundColor = effectiveBarColor;
 				}

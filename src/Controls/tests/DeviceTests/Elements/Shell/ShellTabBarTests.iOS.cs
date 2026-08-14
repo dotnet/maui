@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -20,18 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
-			// In macOS 15 Sequoia, the UITabBar is nested within the second subview (index 1) of the pagerParent. 
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(15, 0) || OperatingSystem.IsMacOSVersionAtLeast(15, 0))
-			{
-				var subview = pagerParent.Subviews.ElementAtOrDefault(1);
-
-				if (subview?.Subviews is null)
-					return null;
-
-				return subview.Subviews.OfType<UITabBar>().FirstOrDefault();
-			}
-
-			return pagerParent.Subviews.OfType<UITabBar>().FirstOrDefault();
+			return (pagerParent?.NextResponder as UITabBarController)?.TabBar;
 		}
 
 		async Task ValidateTabBarIconColor(
@@ -66,6 +54,29 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(GetTabBar(item),
 					item.Title, textColor, MauiContext);
 			}
+		}
+
+		[Fact(DisplayName = "Shell TabBar Background Color Preserves iOS 26 Floating Tab Bar")]
+		public async Task ShellTabBarBackgroundColorPreservesIOS26FloatingTabBar()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+				return;
+
+			var expectedColor = Colors.Red;
+
+			await RunShellTabBarTests(
+				shell => Shell.SetTabBarBackgroundColor(shell, expectedColor),
+				shell =>
+				{
+					var tabBar = GetTabBar(shell.CurrentSection);
+
+					if (OperatingSystem.IsMacCatalyst())
+						Assert.Equal(expectedColor, tabBar.BackgroundColor.ToColor());
+					else
+						Assert.Null(tabBar.BackgroundColor);
+
+					return Task.CompletedTask;
+				});
 		}
 	}
 }
