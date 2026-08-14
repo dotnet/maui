@@ -2,9 +2,11 @@
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
+using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
@@ -36,6 +38,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ScrollViewer? _scrollViewer;
 	Canvas? _dropIndicatorCanvas;
 
+	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
+
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
@@ -48,6 +52,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		ApplyItemContainerResourceOverrides();
 	}
+
+	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
 
 	/// <summary>
 	/// Overrides WinUI ItemContainer theme resources on this instance so that
@@ -196,6 +202,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override void OnApplyTemplate()
 	{
+		if (_itemsRepeater is ItemsRepeater previousRepeater)
+		{
+			previousRepeater.ElementPrepared -= ItemsRepeater_AutomationElementPrepared;
+			previousRepeater.ElementIndexChanged -= ItemsRepeater_AutomationElementIndexChanged;
+		}
+
 		base.OnApplyTemplate();
 
 		// WinUI's base.OnApplyTemplate() re-assigns ItemTransitionProvider to its
@@ -217,7 +229,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
 		// defaults, so a direct code assignment is the reliable approach.
 		if (_itemsRepeater is ItemsRepeater repeater)
+		{
 			repeater.ItemTransitionProvider = null;
+			repeater.ElementPrepared += ItemsRepeater_AutomationElementPrepared;
+			repeater.ElementIndexChanged += ItemsRepeater_AutomationElementIndexChanged;
+		}
 
 		if (_emptyViewContentControl is not null)
 		{
@@ -248,6 +264,45 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// avoids the repeated allocations.
 		InitInsertionFadeStoryboard();
 	}
+
+	void ItemsRepeater_AutomationElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args) =>
+		UpdateAutomationSetProperties(sender, args.Element, args.Index);
+
+	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
+		UpdateAutomationSetProperties(sender, args.Element, args.NewIndex);
+
+	static void UpdateAutomationSetProperties(ItemsRepeater repeater, UIElement element, int index)
+	{
+		if (index < 0 || index >= repeater.ItemsSourceView.Count ||
+			!IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index)))
+		{
+			element.ClearValue(WAutomationProperties.PositionInSetProperty);
+			element.ClearValue(WAutomationProperties.SizeOfSetProperty);
+			return;
+		}
+
+		var position = 0;
+		var size = 0;
+		for (var sourceIndex = 0; sourceIndex < repeater.ItemsSourceView.Count; sourceIndex++)
+		{
+			if (!IsAutomationDataItem(repeater.ItemsSourceView.GetAt(sourceIndex)))
+			{
+				continue;
+			}
+
+			size++;
+			if (sourceIndex <= index)
+			{
+				position++;
+			}
+		}
+
+		WAutomationProperties.SetPositionInSet(element, position);
+		WAutomationProperties.SetSizeOfSet(element, size);
+	}
+
+	static bool IsAutomationDataItem(object? item) =>
+		item is not ItemTemplateContext2 context || (!context.IsHeader && !context.IsFooter);
 
 	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>
 	internal bool IsHorizontalLayout => _isHorizontalLayout;
