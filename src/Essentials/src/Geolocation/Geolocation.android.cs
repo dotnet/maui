@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
 
 			foreach (var provider in listeningProviders)
-				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, providerInfo.Accuracy, continuousListener, looper);
+				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, 0, continuousListener, looper);
 
 			return true;
 

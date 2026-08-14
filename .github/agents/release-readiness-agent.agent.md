@@ -80,7 +80,7 @@ If the user wants the raw deterministic report with no judgment layer (e.g. for 
 
 **If the user named a specific release** (or the current branch is a release branch), inspect it:
 
-- `release/<major>.0.1xx-sr<N>` → **SR lane** → `Get-ReleaseReadiness.ps1` (`-Candidate` if the branch doesn't exist yet)
+- `release/<major>.0.1xx-sr<N>` → **SR lane** → `Get-ReleaseReadiness.ps1` (`-Candidate` if the branch doesn't exist yet; `-Shipped` if that SR cycle has a stable tag)
 - `release/<major>.0.1xx-preview<N>` → **Preview lane** → `Get-PreviewReadiness.ps1` (`-Mode candidate -SurveyRef net<major>.0` if the preview branch doesn't exist yet)
 
 **If the user asked a portfolio / cross-release question** (plural "releases", "status overview", "what needs attention across releases", "what's next" — no single branch named) → **Portfolio path (§0a)**. Do NOT ask "which release?" — the whole point is they may not know which releases exist.
@@ -112,7 +112,7 @@ When the user wants status **across all active releases**, read the live tracker
    - **Generated report** (verdict, CI table, port candidates) — authoritative *as of the issue's `updatedAt`*.
    - **Release Captain Notes** (between `<!-- release-readiness:human-notes:begin -->` and `:end -->`) — **human authority that supersedes the automated verdict.** Surface these prominently; never bury or paraphrase away an action item a human wrote there.
 
-3. **Judge staleness before trusting content for a ship call.** The cron refresh runs weekdays 08:30 UTC. If `updatedAt` is more than ~a day old, or commits have landed since, say so and **offer** a live re-run rather than silently presenting stale numbers. (SR bodies embed `<!-- release-readiness-hash: sha=... -->`; an unchanged hash across runs means the last run was a no-op — not that work has stalled.)
+3. **Judge staleness before trusting content for a ship call.** Scheduled refreshes run every three hours from 08:30–20:30 UTC daily, with additional targeted refreshes on release pushes and relevant issue/milestone events. If `updatedAt` is unexpectedly old or commits have landed since, say so and **offer** a live re-run rather than silently presenting stale numbers. (SR bodies embed `<!-- release-readiness-hash: sha=... -->`; an unchanged hash across runs means the last run was a no-op — not that work has stalled.)
 
 4. **Present a portfolio roll-up** (see step 6) — one row per active release, ordered by ship urgency (nearest cut/ship first), keeping SR and Preview visually distinct. Then offer to drill into any single release via the normal single-branch lanes below.
 
@@ -121,6 +121,13 @@ When the user wants status **across all active releases**, read the live tracker
 - Use the branch the user named, OR the current branch if it matches a release shape, OR ask.
 - Confirm it exists: `git rev-parse --verify origin/<branch>`.
 - If missing → switch to **Candidate mode** (step 1b). Do NOT silently substitute another branch.
+- For an existing SR branch, resolve its lifecycle before running the report:
+  1. Run `Find-ReleaseReadinessTrackers.ps1 -MajorVersion <major>` and use the matching branch descriptor when one is emitted.
+  2. If its `mode` is `shipped`, pass `-Shipped -ShippedTag <expectedTag>`.
+  3. Older shipped SRs are intentionally omitted from the active detector matrix. If no descriptor is emitted, inspect stable tags in the branch's SR patch decade (`SR<N>` owns patches `N*10..N*10+9`). If any matching stable tag exists, pass `-Shipped` and let the script select the latest immutable tag in that decade.
+  4. Only an existing SR with no stable tag in its cycle uses the default in-flight semantics.
+
+Never infer shipped state from branch existence or the branch's current `PatchVersion` alone; a live branch can already have a shipped tag and can advance to an unpublished hotfix.
 
 ### 1b. Candidate mode (branch not cut yet)
 
@@ -159,7 +166,7 @@ Never silently accept inferred labels for the final report.
 
 ### 3. Run the script
 
-Use the routing decision from step 0. See SKILL.md for the full parameter contract. Tell the user the script is running — for large repos this is 60-120s.
+Use the routing and lifecycle decision from steps 0-1. For the SR lane, append the resolved `-Candidate` or `-Shipped [-ShippedTag <tag>]` arguments; do not run an existing tagged SR with default in-flight semantics. See SKILL.md for the full parameter contract. Tell the user the script is running — for large repos this is 60-120s.
 
 ### 4. Read the JSON output
 
@@ -187,7 +194,8 @@ Both lanes may emit `UNKNOWN` rows when a tool isn't available in the running en
 | `BAR default-channel mapping (<branch> → .NET <band> SDK)` | `maestro_default_channels` with `repository: https://github.com/dotnet/maui` | Mapping present + enabled → `READY`. Missing/disabled → `BLOCKED` + surface the `darc add-default-channel` command from the script's `Next action`. |
 | `BAR build for <branch> HEAD (<short-sha>)` | `maestro_builds` with `commit: <full-sha>` and `repository: https://github.com/dotnet/maui` | Filter returned builds to the requested SR branch **before** patching: accept only builds whose branch metadata is `<branch>` (or `refs/heads/<branch>`). A same-SHA build from `main` or another branch does **not** count. Matching SR build → `READY` and cite buildNumber/id. Empty/no SR-branch match → `WATCH` (transient, CI still running). |
 | `Ship Assessment validation feed` | `maestro_builds` / BAR asset details for the verified SR-branch build | Patch to `READY` only after verifying the SR-branch build has a published `NugetFeed` location for the `Microsoft.Maui.Controls` asset (the per-build `darc-pub-dotnet-maui-<sha8>` endpoint). If the build exists but the `NugetFeed` location is absent/unconfirmed, leave/patch as `WATCH` and tell the captain to wait for BAR asset publishing rather than linking a guessed feed URL. |
-| `Milestone hygiene` (API failure) | Re-run `gh auth status` and retry — milestone checks use plain `gh api`, so UNKNOWN means gh isn't scoped right. |
+| `Milestone hygiene (API failure)` | Re-run `gh auth status`, then retry the query — milestone checks use plain `gh api`, and this UNKNOWN can mean missing scope or a transient GitHub API/network failure. |
+| `Milestone hygiene (branch shape)` | **Not** an auth issue — the surveyed branch name has an unrecognized pre-release ordinal (e.g. `…-preview0`) that maps to no milestone title. Re-running `gh auth` will not help; verify the branch follows `release/<major>.0.<feature>xx-preview<n>` with `n >= 1` (the row's `Details` names the offending ordinal). |
 
 Always cite the MCP query result in your write-up (e.g. *"Verified via `maestro_default_channels`: SR8 is **not** in the mapping list — see darc command above"*).
 
@@ -200,6 +208,20 @@ Lead with a 1-2 sentence overall verdict (Ready 🟢 / Conditionally Ready 🟡 
 - Highlight `merged-non-main-only` entries — fixes that are "merged" but not on main
 - Surface fresh ci-scan WATCH signals if the scanner just flagged something
 - For preview candidates, frame as "what would ship if we cut today," not "is this ready"
+
+**Preview action-plan ordering (mandatory).** Follow the canonical dependency-ordered
+list in the release-readiness SKILL.md **Preview action ordering** section. Do not
+restate or reorder it here; that section owns the production-ingestion check and the
+rule that SDK/VMR reconciliation is local rather than a VMR subscription.
+
+If the official SDK/runtime build is unavailable under the access-tier workflow,
+report the public-feed build as display-only and leave VMR validation `UNKNOWN`.
+Never recommend a pin update or render VMR as matched from that fallback.
+
+Then list the current-preview build/promotion and CI validation work. Keep the report
+strictly scoped to Preview N: do **not** mention the `netN.0` Preview N+1 bump,
+`main → netN.0` PRs, the next milestone, or other next-preview housekeeping. Those
+belong only in the Preview N+1 readiness report.
 
 **Portfolio roll-up (cross-release path from §0a).** When answering a portfolio question, lead with a one-screen table — one row per active release — then a prioritized next-actions list:
 

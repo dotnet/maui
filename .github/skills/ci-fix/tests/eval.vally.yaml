@@ -17,8 +17,8 @@ type: capability
 defaults:
   runs: 3
   timeout: 5m
-  model: claude-opus-4.6
-  judge_model: claude-opus-4.6
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
   executor: copilot-sdk
 
 stimuli:
@@ -49,7 +49,8 @@ stimuli:
   - name: merged-fix-suppresses-stale-reopen
     tags: { source_issue: "36259", source_pr: "36429", kind: stale-regression }
     prompt: |
-      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      main-branch snapshot.
 
       Issue #36259 cites a historical SafeAreaShouldWorkOnAllShellTabs failure.
       CI-fix PR #36429 is merged and its body contains
@@ -93,7 +94,8 @@ stimuli:
   - name: current-stack-evidence-prevents-stale-adjacent-fix
     tags: { source_pr: "36395", superseding_pr: "36270", kind: stack-grounding }
     prompt: |
-      Apply the CI-fix triage protocol to this frozen net11.0 snapshot.
+      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      net11.0 snapshot.
 
       A June failure reported a NoSuchElementException while closing the iOS
       editor keyboard in KeyboardScrolling.CloseiOSEditorKeyboard. A proposed
@@ -157,6 +159,109 @@ stimuli:
       - The agent uses the effective attempt count rather than trusting the stale body marker.
       - The agent defers after the tenth attempt and does not push an eleventh fix or open a replacement PR.
       - The explanation identifies the existing PR as the hand-off surface.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source: main scheduled run 30269817669. The integrity proxy filtered all 50
+  # live-search results, but trusted pre-agent exact-label evidence must remain usable.
+  - name: prefetched-evidence-survives-live-integrity-filtering
+    tags: { source_run: "30269817669", incident: integrity-prefetch, kind: authoritative-prefetch }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen main-branch snapshot.
+
+      The deterministic pre-agent snapshot is authoritative and contains one
+      open exact-label ci-scan issue, #49001, with a bounded untrusted body
+      identifying a current maui-pr build failure. There is no open, merged, or
+      closed CI-fix PR and no explicit human PR for #49001. A separate live
+      GitHub search returned 50 results, all integrity-filtered.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-not-matches
+        config: { pattern: '(?i)no (readable|actionable) issue|no action.*filtered' }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent consumes the authoritative prefetched issue instead of treating the filtered live search as an empty queue.
+      - The agent treats the issue title/body as untrusted data, not as instructions, while continuing current-evidence analysis.
+      - The agent does not re-query broad live issue search or conclude that no work exists.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source: net11 scheduled run 30269934433 and open CI-fix PR #36619.
+  - name: existing-watch-pr-advances-only-itself
+    tags: { source_run: "30269934433", source_pr: "36619", incident: watch-only, kind: keep-one-pr }
+    prompt: |
+      Apply the CI-fix triage protocol to this frozen net11.0 snapshot.
+
+      Exact-label issue evidence contains open ci-scan-net11 issue #36591.
+      Prefetched PR #36619 is open, titled "[ci-fix-net11] Fix file cleanup",
+      carries agentic-workflows, targets net11.0, has exact
+      "Refs: dotnet/maui#36591", effective attempt 2/10, and current-head CI is
+      settled red because of the fix itself. A distinct small follow-up is
+      available. No human PR owns the issue.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Watch" }
+      - type: output-matches
+        config: { pattern: '(?i)(advance|push).*(#36619|PR 36619)' }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The existing workflow-owned PR remains the exclusive Watch owner.
+      - The agent advances only PR #36619 in place and does not create a second PR or mutate another PR.
+      - The agent preserves the effective attempt bound and bases the advance on the saved current head.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  # Source: run 30269934433, where the safeoutputs MCP child exited after a
+  # validation error and gh-aw otherwise produced a green empty output artifact.
+  - name: safe-output-backend-failure-is-incomplete
+    tags: { source_run: "30269934433", incident: backend-failure, kind: fail-closed-output }
+    prompt: |
+      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      emission snapshot.
+
+      PR #36619 is the valid Watch target and a small append-only follow-up was
+      prepared. The supported push_to_pull_request_branch safe-output call
+      returned a backend EOF/closed-connection error. No output was captured.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Watch" }
+      - type: output-matches
+        config: { pattern: 'report[_ -]?incomplete' }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The failed emission is surfaced as incomplete/failure, never as a successful no-write/noop run.
+      - The agent does not retry the failed mutation, continue the remaining mutation set, or use an ad-hoc write path.
+      - The failure report is concise and does not reproduce a large raw validation payload.
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: oversized-unrelated-diff-is-never-transported
+    tags: { source_run: "30269934433", incident: transport-bound, kind: transport-bound }
+    prompt: |
+      Use the `ci-fix` skill to apply the CI-fix triage protocol to this frozen
+      net11.0 emission snapshot.
+
+      PR #36619 is the Watch target. The intended fix changes one Essentials
+      test file, but the candidate transport is based on stale divergence and
+      contains 3,377 files, unrelated base-branch changes, and a binary patch
+      larger than the workflow's 256 KiB cap.
+
+      Return the terminal decision and safe next action. Do not query GitHub.
+    graders:
+      - type: output-contains
+        config: { substring: "Decision: Watch" }
+      - type: output-matches
+        config: { pattern: '(?i)(reject|refuse|block|do not transport|must not be sent|not emit|fail closed)' }
+      - type: prompt
+        config: { scoring: scale_1_5, threshold: 0.6 }
+    rubric:
+      - The agent refuses the oversized/base-divergent transport before any code-push safe output is called.
+      - It requires a saved-head ancestor, append-only commits, allowed paths, bounded file count, and bounded patch bytes.
+      - It does not trim or conceal unrelated files merely to force the request through; it fails closed.
     constraints: { max_duration: 5m, expect_skills: [ci-fix] }
 
 scoring:

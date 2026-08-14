@@ -35,6 +35,17 @@ namespace Microsoft.Maui.Controls.Diagnostics
 					string.Equals(existing.Discriminator, discriminator, StringComparison.Ordinal))
 				{
 					var registrationEnabled = NativeElementDiagnostics.IsRegistrationEnabled;
+					if (existing.IsActive && registrationEnabled)
+					{
+						existing.SubscriptionEpoch = NativeElementDiagnostics.ReplayRegistered(
+							owner,
+							nativeElement,
+							role,
+							discriminator,
+							existing.SubscriptionEpoch);
+						return;
+					}
+
 					if (existing.IsActive == registrationEnabled)
 						return;
 
@@ -44,9 +55,11 @@ namespace Microsoft.Maui.Controls.Diagnostics
 						nativeElement,
 						role,
 						discriminator,
-						out var token)
+						out var token,
+						out var currentSubscriptionEpoch)
 							? token
 							: null;
+					existing.SubscriptionEpoch = currentSubscriptionEpoch;
 					return;
 				}
 
@@ -55,6 +68,7 @@ namespace Microsoft.Maui.Controls.Diagnostics
 
 			_registrations[nativeElement] = new Registration(
 				owner,
+				nativeElement,
 				role,
 				discriminator,
 				NativeElementDiagnostics.TryRegister(
@@ -62,9 +76,11 @@ namespace Microsoft.Maui.Controls.Diagnostics
 					nativeElement,
 					role,
 					discriminator,
-					out var registration)
+					out var registration,
+					out var subscriptionEpoch)
 						? registration
-						: null);
+						: null,
+				subscriptionEpoch);
 		}
 
 		public void RegisterExclusive(
@@ -112,6 +128,30 @@ namespace Microsoft.Maui.Controls.Diagnostics
 		public void UnregisterOwner(object? owner, string discriminator)
 		{
 			UnregisterOwner(owner, discriminator, matchDiscriminator: true);
+		}
+
+		public void UnregisterDiscriminator(string discriminator)
+		{
+			if (_registrations.Count == 0)
+				return;
+
+			List<object>? nativeElements = null;
+			foreach (var registration in _registrations)
+			{
+				if (string.Equals(
+					registration.Value.Discriminator,
+					discriminator,
+					StringComparison.Ordinal))
+				{
+					(nativeElements ??= new List<object>()).Add(registration.Key);
+				}
+			}
+
+			if (nativeElements is null)
+				return;
+
+			foreach (var nativeElement in nativeElements)
+				Unregister(nativeElement);
 		}
 
 		public void Retain(IEnumerable<object> nativeElements)
@@ -172,25 +212,43 @@ namespace Microsoft.Maui.Controls.Diagnostics
 		{
 			public Registration(
 				object owner,
+				object nativeElement,
 				string role,
 				string? discriminator,
-				IDisposable? token)
+				IDisposable? token,
+				long subscriptionEpoch)
 			{
 				Owner = owner;
+				NativeElement = nativeElement;
 				Role = role;
 				Discriminator = discriminator;
 				Token = token;
+				SubscriptionEpoch = subscriptionEpoch;
 			}
 
 			public object Owner { get; }
+			public object NativeElement { get; }
 			public string Role { get; }
 			public string? Discriminator { get; }
 			public bool IsActive => Token is not null;
 			public IDisposable? Token { get; set; }
+			public long SubscriptionEpoch { get; set; }
 
 			public void Dispose()
 			{
-				Token?.Dispose();
+				if (Token is not null)
+				{
+					SubscriptionEpoch = NativeElementDiagnostics.ReplayRegisteredAndDispose(
+						Owner,
+						NativeElement,
+						Role,
+						Discriminator,
+						SubscriptionEpoch,
+						Token);
+					Token = null;
+					return;
+				}
+
 				Token = null;
 			}
 		}
