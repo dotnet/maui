@@ -48,8 +48,14 @@ Describe '/review tests compiled trust boundary' {
         $contextGuard | Should -BeGreaterOrEqual 0
 
         $mandatorySeal = $sealStep.Substring(0, $contextGuard)
-        $mandatorySeal | Should -Not -Match '(?m)(?:^|\\n)\s*(?:if|elif|else)\b'
-        $mandatorySeal | Should -Not -Match '\|\|\s*(?:true|echo)\b'
+        $mandatorySealText = [regex]::Unescape($mandatorySeal).Replace("`r`n", "`n")
+        $runStart = $mandatorySealText.IndexOf(
+            'run: "set -euo pipefail',
+            [StringComparison]::Ordinal)
+        $runStart | Should -BeGreaterOrEqual 0
+        $mandatoryCommands = $mandatorySealText.Substring($runStart)
+        $mandatoryCommands | Should -Not -Match '(?m)^\s*(?:if|elif|else)\b'
+        $mandatoryCommands | Should -Not -Match '&&|\|\|'
 
         $mandatoryFiles = @(
             @{
@@ -67,11 +73,13 @@ Describe '/review tests compiled trust boundary' {
         )
 
         foreach ($file in $mandatoryFiles) {
-            $installPattern = '(?s)sudo install -o root -g root -m 0444 ' +
-                '(?:(?!sudo install).)*?' + [regex]::Escape($file.Source) +
-                '(?:(?!sudo install).)*?' +
-                [regex]::Escape($file.Destination)
-            $mandatorySeal | Should -Match $installPattern
+            $expectedInstall = @(
+                'sudo install -o root -g root -m 0444 \'
+                '  ' + $file.Source + ' \'
+                '  "' + $file.Destination + '"'
+            ) -join "`n"
+            $mandatoryCommands | Should -Match (
+                '(?m)^' + [regex]::Escape($expectedInstall) + '$')
         }
 
         $optionalFiles = @(
