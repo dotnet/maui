@@ -1035,9 +1035,11 @@ namespace Microsoft.Maui.Controls
 		public bool Batched => _batched > 0;
 
 		bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingEnabled =>
+			HandlerUpdateBatchingEnabled;
+
+		bool IPropertyUpdateBatchingElement.IsAutomaticPropertyUpdateBatchingEnabled =>
 			HandlerUpdateBatchingEnabled &&
-			(Batched ||
-				AutomaticHandlerUpdateBatchingEnabled);
+			AutomaticHandlerUpdateBatchingEnabled;
 
 		bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingExplicitlyScoped => Batched;
 
@@ -1161,7 +1163,11 @@ namespace Microsoft.Maui.Controls
 		/// <para>Application authors will generally not need to batch updates manually as the animation framework will do this for them.</para>
 		/// <para>When the operation is done, <see cref="BatchCommit"/> should be called.</para>
 		/// </remarks>
-		public void BatchBegin() => _batched++;
+		public void BatchBegin()
+		{
+			if (_batched++ == 0)
+				(Handler as IPropertyUpdateBatchingHandler)?.BeginPropertyUpdateBatch();
+		}
 
 		/// <summary>
 		/// Signals the end of a batch of commands to the element and that those commands should now be committed.

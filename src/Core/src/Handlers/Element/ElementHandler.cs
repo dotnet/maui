@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Handlers
@@ -18,15 +19,16 @@ namespace Microsoft.Maui.Handlers
 		internal readonly CommandMapper? _commandMapper;
 		internal IPropertyMapper _mapper;
 		ElementHandlerState _handlerState;
-		HashSet<string>? _pendingPropertyUpdates;
-		HashSet<string>? _mappedAutomaticPropertyUpdates;
+		LinkedList<string>? _pendingPropertyUpdates;
+		Dictionary<string, LinkedListNode<string>>? _pendingPropertyUpdateNodes;
 		IElement? _pendingPropertyUpdateView;
-		bool _isFlushingPropertyUpdates;
-		bool _isApplyingLeadingAutomaticUpdate;
-		bool _isMeasureInvalidationPending;
-		bool _mappedAutomaticMeasureInvalidation;
+		bool _isPropertyUpdateBatchingEnabled;
+		bool _isAutomaticPropertyUpdateBatchingEnabled;
+		bool _isExplicitPropertyUpdateBatching;
+		bool _hasMappedAutomaticLeadingUpdate;
 		bool _isPropertyUpdateFlushScheduled;
 		int _propertyUpdateFlushGeneration;
+		int _mapperExecutionDepth;
 
 		ElementHandlerState IElementHandlerStateExhibitor.State => _handlerState;
 
@@ -65,6 +67,21 @@ namespace Microsoft.Maui.Handlers
 			bool setupPlatformView = oldVirtualView == null;
 
 			VirtualView = view;
+			if (view is IPropertyUpdateBatchingElement batchingElement)
+			{
+				_isPropertyUpdateBatchingEnabled = batchingElement.IsPropertyUpdateBatchingEnabled;
+				_isAutomaticPropertyUpdateBatchingEnabled = batchingElement.IsAutomaticPropertyUpdateBatchingEnabled;
+				_isExplicitPropertyUpdateBatching =
+					_isPropertyUpdateBatchingEnabled &&
+					batchingElement.IsPropertyUpdateBatchingExplicitlyScoped;
+			}
+			else
+			{
+				_isPropertyUpdateBatchingEnabled = false;
+				_isAutomaticPropertyUpdateBatchingEnabled = false;
+				_isExplicitPropertyUpdateBatching = false;
+			}
+
 			if (PlatformView is null)
 			{
 				_handlerState = ElementHandlerState.Connecting;
@@ -106,7 +123,15 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			_mapper.UpdateProperties(this, VirtualView);
+			_mapperExecutionDepth++;
+			try
+			{
+				_mapper.UpdateProperties(this, VirtualView);
+			}
+			finally
+			{
+				_mapperExecutionDepth--;
+			}
 
 			_handlerState = ElementHandlerState.Connected;
 		}
@@ -116,15 +141,15 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			if (_isFlushingPropertyUpdates)
+			if (_mapperExecutionDepth > 0)
 			{
-				QueuePropertyUpdate(property);
+				InvokePropertyMapper(property);
 				return;
 			}
 
-			if (VirtualView is IPropertyUpdateBatchingElement { IsPropertyUpdateBatchingEnabled: true } batchingElement)
+			if (_isExplicitPropertyUpdateBatching || _isAutomaticPropertyUpdateBatchingEnabled)
 			{
-				if (!batchingElement.IsPropertyUpdateBatchingExplicitlyScoped && _handlerState != ElementHandlerState.Connected)
+				if (!_isExplicitPropertyUpdateBatching && _handlerState != ElementHandlerState.Connected)
 				{
 					_mapper?.UpdateProperty(this, VirtualView, property);
 					return;
@@ -136,24 +161,15 @@ namespace Microsoft.Maui.Handlers
 					_pendingPropertyUpdateView = VirtualView;
 				}
 
-				if (batchingElement.IsPropertyUpdateBatchingExplicitlyScoped)
+				if (_isExplicitPropertyUpdateBatching)
 				{
 					QueuePropertyUpdate(property);
 				}
-				else if (_mappedAutomaticPropertyUpdates is not { Count: > 0 })
+				else if (!_hasMappedAutomaticLeadingUpdate)
 				{
-					(_mappedAutomaticPropertyUpdates ??= new(StringComparer.Ordinal)).Add(property);
+					_hasMappedAutomaticLeadingUpdate = true;
 					SchedulePropertyUpdateFlush();
-					var wasApplyingLeadingUpdate = _isApplyingLeadingAutomaticUpdate;
-					_isApplyingLeadingAutomaticUpdate = true;
-					try
-					{
-						_mapper?.UpdateProperty(this, VirtualView, property);
-					}
-					finally
-					{
-						_isApplyingLeadingAutomaticUpdate = wasApplyingLeadingUpdate;
-					}
+					InvokePropertyMapper(property);
 				}
 				else
 				{
@@ -163,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			_mapper?.UpdateProperty(this, VirtualView, property);
+			InvokePropertyMapper(property);
 		}
 
 		public virtual void Invoke(string command, object? args)
@@ -171,50 +187,16 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			if (command == nameof(IView.InvalidateMeasure) &&
-				VirtualView is IPropertyUpdateBatchingElement { IsPropertyUpdateBatchingEnabled: true } batchingElement)
+			if (command == nameof(IView.InvalidateMeasure))
 			{
-				if (!batchingElement.IsPropertyUpdateBatchingExplicitlyScoped && _handlerState != ElementHandlerState.Connected)
-				{
-					_commandMapper?.Invoke(this, VirtualView, command, args);
-					return;
-				}
-
-				if (!ReferenceEquals(_pendingPropertyUpdateView, VirtualView))
-				{
-					ClearPendingPropertyUpdates();
-					_pendingPropertyUpdateView = VirtualView;
-				}
-
-				if (batchingElement.IsPropertyUpdateBatchingExplicitlyScoped)
-				{
-					_isMeasureInvalidationPending = true;
-				}
-				else if (!_mappedAutomaticMeasureInvalidation)
-				{
-					_mappedAutomaticMeasureInvalidation = true;
-					SchedulePropertyUpdateFlush();
-					var wasApplyingLeadingUpdate = _isApplyingLeadingAutomaticUpdate;
-					_isApplyingLeadingAutomaticUpdate = true;
-					try
-					{
-						_commandMapper?.Invoke(this, VirtualView, command, args);
-					}
-					finally
-					{
-						_isApplyingLeadingAutomaticUpdate = wasApplyingLeadingUpdate;
-					}
-				}
-				else
-				{
-					_isMeasureInvalidationPending = _pendingPropertyUpdates is { Count: > 0 };
-				}
-
+				InvokeCommandMapper(command, args);
 				return;
 			}
 
-			FlushPendingPropertyUpdates();
-			_commandMapper?.Invoke(this, VirtualView, command, args);
+			if (_mapperExecutionDepth == 0)
+				FlushPendingPropertyUpdates();
+
+			InvokeCommandMapper(command, args);
 		}
 
 		void QueuePropertyUpdate(string property)
@@ -225,11 +207,32 @@ namespace Microsoft.Maui.Handlers
 				_pendingPropertyUpdateView = VirtualView;
 			}
 
-			(_pendingPropertyUpdates ??= new(StringComparer.Ordinal)).Add(property);
+			_pendingPropertyUpdates ??= new();
+			_pendingPropertyUpdateNodes ??= new(StringComparer.Ordinal);
+
+			if (_pendingPropertyUpdateNodes.TryGetValue(property, out var existingNode))
+			{
+				_pendingPropertyUpdates.Remove(existingNode);
+				_pendingPropertyUpdates.AddLast(existingNode);
+			}
+			else
+			{
+				var node = _pendingPropertyUpdates.AddLast(property);
+				_pendingPropertyUpdateNodes.Add(property, node);
+			}
 		}
 
-		void IPropertyUpdateBatchingHandler.FlushPendingPropertyUpdates() =>
+		void IPropertyUpdateBatchingHandler.BeginPropertyUpdateBatch()
+		{
+			if (_isPropertyUpdateBatchingEnabled)
+				_isExplicitPropertyUpdateBatching = true;
+		}
+
+		void IPropertyUpdateBatchingHandler.FlushPendingPropertyUpdates()
+		{
+			_isExplicitPropertyUpdateBatching = false;
 			FlushPendingPropertyUpdates();
+		}
 
 		void SchedulePropertyUpdateFlush()
 		{
@@ -239,7 +242,7 @@ namespace Microsoft.Maui.Handlers
 			_isPropertyUpdateFlushScheduled = true;
 			var generation = ++_propertyUpdateFlushGeneration;
 
-			var dispatcher = MauiContext?.Services?.GetService(typeof(IDispatcher)) as IDispatcher;
+			var dispatcher = MauiContext?.GetOptionalDispatcher();
 			if (dispatcher?.Dispatch(() => FlushScheduledPropertyUpdates(generation)) != true)
 				FlushScheduledPropertyUpdates(generation);
 		}
@@ -251,33 +254,34 @@ namespace Microsoft.Maui.Handlers
 
 			_isPropertyUpdateFlushScheduled = false;
 
-			if (VirtualView is IPropertyUpdateBatchingElement { IsPropertyUpdateBatchingExplicitlyScoped: true })
+			if (_isExplicitPropertyUpdateBatching)
 				return;
 
 			FlushPendingPropertyUpdates();
-			if (_mappedAutomaticPropertyUpdates is { Count: > 0 })
+			if (_hasMappedAutomaticLeadingUpdate)
 				ClearPendingPropertyUpdates();
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private protected void FlushPendingPropertyUpdatesBeforePlatformViewAccess()
 		{
-			if (!_isFlushingPropertyUpdates)
+			if (_mapperExecutionDepth == 0 && _pendingPropertyUpdates is { Count: > 0 })
 				FlushPendingPropertyUpdates();
 		}
 
 		internal void FlushPendingPropertyUpdates()
 		{
 			var pending = _pendingPropertyUpdates;
-			if (pending is not { Count: > 0 } && !_isMeasureInvalidationPending)
+			if (pending is not { Count: > 0 })
 			{
-				if (!_isApplyingLeadingAutomaticUpdate &&
-					(_mappedAutomaticPropertyUpdates is { Count: > 0 } || _mappedAutomaticMeasureInvalidation))
-				{
+				if (_mapperExecutionDepth == 0 && _hasMappedAutomaticLeadingUpdate)
 					ClearPendingPropertyUpdates();
-				}
 
 				return;
 			}
+
+			if (_mapperExecutionDepth > 0)
+				return;
 
 			if (VirtualView is null || !ReferenceEquals(_pendingPropertyUpdateView, VirtualView))
 			{
@@ -285,55 +289,70 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			_isFlushingPropertyUpdates = true;
-
 			try
 			{
-				const int maxPasses = 4;
-
-				for (int pass = 0; pending is not null && pass < maxPasses && pending.Count > 0; pass++)
+				while (pending.First is { } node)
 				{
-					foreach (var key in _mapper.GetKeys())
-					{
-						if (pending.Remove(key))
-							_mapper.GetProperty(key)?.Invoke(this, VirtualView);
-					}
-				}
-
-				if (pending is { Count: > 0 })
-				{
-					var remaining = new string[pending.Count];
-					pending.CopyTo(remaining);
-					pending.Clear();
-
-					foreach (var key in remaining)
-						_mapper.GetProperty(key)?.Invoke(this, VirtualView);
-				}
-
-				if (_isMeasureInvalidationPending)
-				{
-					_isMeasureInvalidationPending = false;
-					_commandMapper?.Invoke(this, VirtualView, nameof(IView.InvalidateMeasure), null);
+					var property = node.Value;
+					pending.RemoveFirst();
+					_pendingPropertyUpdateNodes!.Remove(property);
+					InvokeCurrentPropertyMapper(property);
 				}
 			}
 			finally
 			{
-				_isFlushingPropertyUpdates = false;
+				ClearPendingPropertyUpdates();
+			}
+		}
 
-				if (pending is { Count: > 0 } || _isMeasureInvalidationPending)
-					SchedulePropertyUpdateFlush();
-				else
-					ClearPendingPropertyUpdates();
+		void InvokePropertyMapper(string property)
+		{
+			_mapperExecutionDepth++;
+			try
+			{
+				_mapper?.UpdateProperty(this, VirtualView!, property);
+			}
+			finally
+			{
+				_mapperExecutionDepth--;
+			}
+		}
+
+		void InvokeCurrentPropertyMapper(string property)
+		{
+			_mapperExecutionDepth++;
+			try
+			{
+				if (!this.CanInvokeMappers())
+					return;
+
+				_mapper.GetProperty(property)?.Invoke(this, VirtualView!);
+			}
+			finally
+			{
+				_mapperExecutionDepth--;
+			}
+		}
+
+		void InvokeCommandMapper(string command, object? args)
+		{
+			_mapperExecutionDepth++;
+			try
+			{
+				_commandMapper?.Invoke(this, VirtualView!, command, args);
+			}
+			finally
+			{
+				_mapperExecutionDepth--;
 			}
 		}
 
 		void ClearPendingPropertyUpdates()
 		{
 			_pendingPropertyUpdates?.Clear();
-			_mappedAutomaticPropertyUpdates?.Clear();
+			_pendingPropertyUpdateNodes?.Clear();
 			_pendingPropertyUpdateView = null;
-			_isMeasureInvalidationPending = false;
-			_mappedAutomaticMeasureInvalidation = false;
+			_hasMappedAutomaticLeadingUpdate = false;
 			_isPropertyUpdateFlushScheduled = false;
 			_propertyUpdateFlushGeneration++;
 		}
@@ -360,6 +379,9 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Handler = null;
 
 			VirtualView = null;
+			_isPropertyUpdateBatchingEnabled = false;
+			_isAutomaticPropertyUpdateBatchingEnabled = false;
+			_isExplicitPropertyUpdateBatching = false;
 		}
 
 		void IElementHandler.DisconnectHandler()

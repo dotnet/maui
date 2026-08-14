@@ -131,7 +131,7 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void BatchedPropertyUpdatesAreCoalescedInMapperOrder()
+		public void BatchedPropertyUpdatesAreCoalescedInLastOccurrenceOrder()
 		{
 			var mapped = new List<string>();
 			var mapper = new PropertyMapper<IView, HandlerStub>
@@ -145,15 +145,15 @@ namespace Microsoft.Maui.UnitTests
 			handler.SetVirtualView(view);
 			mapped.Clear();
 
-			handler.UpdateValue("Second");
 			handler.UpdateValue("First");
 			handler.UpdateValue("Second");
+			handler.UpdateValue("First");
 
 			Assert.Empty(mapped);
 
 			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
 
-			Assert.Equal(new[] { "First", "Second" }, mapped);
+			Assert.Equal(new[] { "Second", "First" }, mapped);
 		}
 
 		[Fact]
@@ -203,6 +203,41 @@ namespace Microsoft.Maui.UnitTests
 			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
 
 			Assert.Equal(new[] { "First", "Second" }, mapped);
+		}
+
+		[Fact]
+		public void MapperDependenciesRunSynchronouslyWithoutInterruptingAutomaticBatch()
+		{
+			var mapped = new List<string>();
+			HandlerStub handler = null;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Leading"] = (currentHandler, view) =>
+				{
+					mapped.Add("Leading");
+					handler!.UpdateValue("Dependency");
+					Assert.NotNull(handler.PlatformView);
+				},
+				["Dependency"] = (currentHandler, view) => mapped.Add("Dependency"),
+				["Trailing"] = (currentHandler, view) => mapped.Add("Trailing"),
+			};
+			var dispatcher = new QueuedDispatcher();
+			handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("Leading");
+			handler.UpdateValue("Trailing");
+			handler.UpdateValue("Trailing");
+
+			Assert.Equal(new[] { "Leading", "Dependency" }, mapped);
+			Assert.Equal(1, dispatcher.PendingCount);
+
+			dispatcher.RunNext();
+
+			Assert.Equal(new[] { "Leading", "Dependency", "Trailing" }, mapped);
 		}
 
 		[Fact]
@@ -257,7 +292,66 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void AutomaticMeasureInvalidationsAreCoalescedAfterLeadingValue()
+		public void AutomaticPropertyUpdatesPreserveTrailingLastOccurrenceOrder()
+		{
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Leading"] = (handler, view) => mapped.Add("Leading"),
+				["First"] = (handler, view) => mapped.Add("First"),
+				["Second"] = (handler, view) => mapped.Add("Second"),
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("Leading");
+			handler.UpdateValue("First");
+			handler.UpdateValue("Second");
+			handler.UpdateValue("First");
+
+			dispatcher.RunNext();
+
+			Assert.Equal(new[] { "Leading", "Second", "First" }, mapped);
+		}
+
+		[Fact]
+		public void TrailingMapperDependenciesPreserveRequestedOrder()
+		{
+			var mapped = new List<string>();
+			HandlerStub handler = null;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Leading"] = (currentHandler, view) => mapped.Add("Leading"),
+				["Formatting"] = (currentHandler, view) =>
+				{
+					mapped.Add("Formatting");
+					handler!.UpdateValue("LineHeight");
+					handler.UpdateValue("Alignment");
+				},
+				["Alignment"] = (currentHandler, view) => mapped.Add("Alignment"),
+				["LineHeight"] = (currentHandler, view) => mapped.Add("LineHeight"),
+			};
+			var dispatcher = new QueuedDispatcher();
+			handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("Leading");
+			handler.UpdateValue("Formatting");
+
+			dispatcher.RunNext();
+
+			Assert.Equal(new[] { "Leading", "Formatting", "LineHeight", "Alignment" }, mapped);
+		}
+
+		[Fact]
+		public void MeasureInvalidationsRemainSynchronousDuringAutomaticBatch()
 		{
 			var mapped = new List<string>();
 			var mapper = new PropertyMapper<IView, CommandHandlerStub>
@@ -280,16 +374,16 @@ namespace Microsoft.Maui.UnitTests
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 
-			Assert.Equal(new[] { "Value", "InvalidateMeasure" }, mapped);
+			Assert.Equal(new[] { "Value", "InvalidateMeasure", "InvalidateMeasure" }, mapped);
 			Assert.Equal(1, dispatcher.PendingCount);
 
 			dispatcher.RunNext();
 
-			Assert.Equal(new[] { "Value", "InvalidateMeasure", "Value", "InvalidateMeasure" }, mapped);
+			Assert.Equal(new[] { "Value", "InvalidateMeasure", "InvalidateMeasure", "Value" }, mapped);
 		}
 
 		[Fact]
-		public void ExplicitBatchCoalescesMeasureInvalidationUntilCommit()
+		public void MeasureInvalidationsRemainSynchronousDuringExplicitBatch()
 		{
 			var mapped = new List<string>();
 			var mapper = new PropertyMapper<IView, CommandHandlerStub>
@@ -311,15 +405,15 @@ namespace Microsoft.Maui.UnitTests
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 
-			Assert.Empty(mapped);
+			Assert.Equal(new[] { "InvalidateMeasure", "InvalidateMeasure" }, mapped);
 
 			view.BatchCommit();
 
-			Assert.Equal(new[] { "Value", "InvalidateMeasure" }, mapped);
+			Assert.Equal(new[] { "InvalidateMeasure", "InvalidateMeasure", "Value" }, mapped);
 		}
 
 		[Fact]
-		public void ReentrantMeasureInvalidationRunsAfterReentrantProperties()
+		public void ReentrantMeasureInvalidationRunsSynchronously()
 		{
 			var mapped = new List<string>();
 			CommandHandlerStub handler = null;
@@ -346,17 +440,19 @@ namespace Microsoft.Maui.UnitTests
 			handler.UpdateValue("First");
 			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
 
-			Assert.Equal(new[] { "First", "Second", "InvalidateMeasure" }, mapped);
+			Assert.Equal(new[] { "First", "InvalidateMeasure", "Second" }, mapped);
 		}
 
 		[Fact]
-		public void NonMeasureCommandFlushesPendingMeasureInvalidationFirst()
+		public void NonMeasureCommandFlushesPendingPropertiesFirst()
 		{
 			var mapped = new List<string>();
-			var mapper = new PropertyMapper<IView, CommandHandlerStub>();
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>
+			{
+				["Value"] = (handler, view) => mapped.Add("Value"),
+			};
 			var commandMapper = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.InvalidateMeasure)] = (handler, view, args) => mapped.Add("InvalidateMeasure"),
 				["Command"] = (handler, view, args) => mapped.Add("Command"),
 			};
 			var dispatcher = new QueuedDispatcher();
@@ -366,14 +462,15 @@ namespace Microsoft.Maui.UnitTests
 			handler.SetVirtualView(view);
 			mapped.Clear();
 
-			handler.Invoke(nameof(IView.InvalidateMeasure), null);
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
 			handler.Invoke("Command", null);
 
-			Assert.Equal(new[] { "InvalidateMeasure", "Command" }, mapped);
+			Assert.Equal(new[] { "Value", "Value", "Command" }, mapped);
 		}
 
 		[Fact]
-		public void PlatformViewAccessObservesLeadingMeasureInvalidation()
+		public void PlatformViewAccessDoesNotReplaySynchronousMeasureInvalidation()
 		{
 			var invalidationCount = 0;
 			var mapper = new PropertyMapper<IView, CommandHandlerStub>();
@@ -395,7 +492,7 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void DisconnectPreservesLeadingMeasureInvalidation()
+		public void DisconnectDoesNotReplaySynchronousMeasureInvalidation()
 		{
 			var invalidationCount = 0;
 			var mapper = new PropertyMapper<IView, CommandHandlerStub>();
@@ -411,9 +508,9 @@ namespace Microsoft.Maui.UnitTests
 			invalidationCount = 0;
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 			((IViewHandler)handler).DisconnectHandler();
-			dispatcher.RunNext();
 
 			Assert.Equal(1, invalidationCount);
+			Assert.Equal(0, dispatcher.PendingCount);
 		}
 
 		[Fact]
@@ -571,12 +668,16 @@ namespace Microsoft.Maui.UnitTests
 		{
 			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingEnabled => true;
 
+			bool IPropertyUpdateBatchingElement.IsAutomaticPropertyUpdateBatchingEnabled => false;
+
 			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingExplicitlyScoped => true;
 		}
 
 		class AutomaticBatchingButton : Maui.Controls.Button, IPropertyUpdateBatchingElement
 		{
 			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingEnabled => true;
+
+			bool IPropertyUpdateBatchingElement.IsAutomaticPropertyUpdateBatchingEnabled => true;
 
 			bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingExplicitlyScoped => Batched;
 		}

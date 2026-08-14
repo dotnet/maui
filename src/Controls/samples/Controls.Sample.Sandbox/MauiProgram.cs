@@ -2,17 +2,8 @@
 
 public static class MauiProgram
 {
-	public static MauiApp CreateMauiApp()
-	{
-		SandboxStartupMetrics.BeginStartup();
-
-#if EXPERIMENTAL_HANDLER_UPDATE_BATCHING
-		AppContext.SetSwitch("Microsoft.Maui.Experimental.HandlerUpdateBatching", true);
-		AppContext.SetSwitch("Microsoft.Maui.Experimental.HandlerUpdateBatching.AutoDispatch", true);
-#endif
-		HandlerBatchingMetrics.Configure();
-
-		var app = MauiApp
+	public static MauiApp CreateMauiApp() =>
+		MauiApp
 			.CreateBuilder()
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
@@ -32,8 +23,4 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 			})
 			.Build();
-
-		SandboxStartupMetrics.AppBuilt();
-		return app;
-	}
 }
