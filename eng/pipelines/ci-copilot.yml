@@ -1632,6 +1632,31 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
+              $baseSha = "$(REPLICATION_BASE_SHA)"
+              if ($baseSha -cnotmatch '^[0-9a-f]{40}$') {
+                throw 'Trusted replication baseline SHA is invalid.'
+              }
+              & git cat-file -e "$baseSha^{commit}"
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Trusted replication baseline commit is unavailable.'
+              }
+              & git restore --source $baseSha --staged --worktree -- .
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to restore tracked files to the replication baseline.'
+              }
+              & git diff --quiet
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Tracked worktree changes remain after restoring the replication baseline.'
+              }
+              & git diff --cached --quiet
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Staged changes remain after restoring the replication baseline.'
+              }
+            displayName: 'Restore clean replication baseline'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
               $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
               $artifactRoot = "$(REPLICATION_ARTIFACT_ROOT)"
               $deviceUdid = "${env:DEVICE_UDID}"

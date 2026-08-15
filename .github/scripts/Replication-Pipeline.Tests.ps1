@@ -39,6 +39,11 @@ Describe 'MAUI Copilot mode routing' {
 
     It 'uses a clean main baseline and replication-only recording dependencies' {
         $script:Pipeline | Should -Match 'git checkout --detach origin/main'
+        $restoreIndex = $script:Pipeline.IndexOf("displayName: 'Restore clean replication baseline'")
+        $replicateIndex = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")
+        $restoreIndex | Should -BeGreaterThan -1
+        $restoreIndex | Should -BeLessThan $replicateIndex
+        $script:Pipeline | Should -Match 'git restore --source \$baseSha --staged --worktree -- \.'
         $script:Pipeline | Should -Match "displayName: 'Install reproduction recording tools'"
         $script:Pipeline | Should -Match "(?s)displayName: 'Install reproduction recording tools'.*?eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "REPLICATION_AGENT_CONTEXT_PATH.*?issue-agent-context\.json"
