@@ -2387,49 +2387,50 @@ stages:
               }
             displayName: 'Validate replication candidate without credentials'
 
-          - task: AzureCLI@2
-            displayName: 'Upload validated public evidence'
-            inputs:
-              azureSubscription: '$(MAUI_REPLICATION_AZURE_SERVICE_CONNECTION)'
-              scriptType: pscore
-              scriptLocation: inlineScript
-              inlineScript: |
-                $ErrorActionPreference = 'Stop'
-                foreach ($name in @(
-                  'MAUI_REPLICATION_STORAGE_ACCOUNT',
-                  'MAUI_REPLICATION_STORAGE_CONTAINER',
-                  'MAUI_REPLICATION_PUBLIC_BASE_URL'
-                )) {
-                  $value = [Environment]::GetEnvironmentVariable($name)
-                  if ([string]::IsNullOrWhiteSpace($value) -or $value.StartsWith('$(')) {
-                    throw "Required replication publication variable '$name' is not configured."
+          - ${{ if eq(parameters.Mode, 'replicate') }}:
+            - task: AzureCLI@2
+              displayName: 'Upload validated public evidence'
+              inputs:
+                azureSubscription: '$(MAUI_REPLICATION_AZURE_SERVICE_CONNECTION)'
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  $ErrorActionPreference = 'Stop'
+                  foreach ($name in @(
+                    'MAUI_REPLICATION_STORAGE_ACCOUNT',
+                    'MAUI_REPLICATION_STORAGE_CONTAINER',
+                    'MAUI_REPLICATION_PUBLIC_BASE_URL'
+                  )) {
+                    $value = [Environment]::GetEnvironmentVariable($name)
+                    if ([string]::IsNullOrWhiteSpace($value) -or $value.StartsWith('$(')) {
+                      throw "Required replication publication variable '$name' is not configured."
+                    }
                   }
-                }
 
-                $attempt = if ($env:SYSTEM_JOBATTEMPT -match '^[1-9]\d*$') { $env:SYSTEM_JOBATTEMPT } else { '1' }
-                $prefix = "maui-copilot/issue-${{ parameters.IssueNumber }}/${{ parameters.Platform }}/$(Build.BuildId)-$attempt"
-                try {
-                  & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationEvidence.ps1") `
-                    -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
-                    -EvidenceDirectory "$(Pipeline.Workspace)/ReplicationArtifacts/evidence" `
-                    -StorageAccount $env:MAUI_REPLICATION_STORAGE_ACCOUNT `
-                    -Container $env:MAUI_REPLICATION_STORAGE_CONTAINER `
-                    -BlobPrefix $prefix `
-                    -PublicBaseUrl $env:MAUI_REPLICATION_PUBLIC_BASE_URL `
-                    -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json"
-                  if ($LASTEXITCODE -ne 0) {
-                    throw "Publishing replication evidence failed."
+                  $attempt = if ($env:SYSTEM_JOBATTEMPT -match '^[1-9]\d*$') { $env:SYSTEM_JOBATTEMPT } else { '1' }
+                  $prefix = "maui-copilot/issue-${{ parameters.IssueNumber }}/${{ parameters.Platform }}/$(Build.BuildId)-$attempt"
+                  try {
+                    & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationEvidence.ps1") `
+                      -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                      -EvidenceDirectory "$(Pipeline.Workspace)/ReplicationArtifacts/evidence" `
+                      -StorageAccount $env:MAUI_REPLICATION_STORAGE_ACCOUNT `
+                      -Container $env:MAUI_REPLICATION_STORAGE_CONTAINER `
+                      -BlobPrefix $prefix `
+                      -PublicBaseUrl $env:MAUI_REPLICATION_PUBLIC_BASE_URL `
+                      -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json"
+                    if ($LASTEXITCODE -ne 0) {
+                      throw "Publishing replication evidence failed."
+                    }
                   }
-                }
-                finally {
-                  az logout 2>$null
-                  az account clear 2>$null
-                }
-            env:
-              MAUI_REPLICATION_STORAGE_ACCOUNT: $(MAUI_REPLICATION_STORAGE_ACCOUNT)
-              MAUI_REPLICATION_STORAGE_CONTAINER: $(MAUI_REPLICATION_STORAGE_CONTAINER)
-              MAUI_REPLICATION_PUBLIC_BASE_URL: $(MAUI_REPLICATION_PUBLIC_BASE_URL)
-              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+                  finally {
+                    az logout 2>$null
+                    az account clear 2>$null
+                  }
+              env:
+                MAUI_REPLICATION_STORAGE_ACCOUNT: $(MAUI_REPLICATION_STORAGE_ACCOUNT)
+                MAUI_REPLICATION_STORAGE_CONTAINER: $(MAUI_REPLICATION_STORAGE_CONTAINER)
+                MAUI_REPLICATION_PUBLIC_BASE_URL: $(MAUI_REPLICATION_PUBLIC_BASE_URL)
+                SYSTEM_JOBATTEMPT: $(System.JobAttempt)
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
