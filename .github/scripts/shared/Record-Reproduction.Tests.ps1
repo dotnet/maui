@@ -218,7 +218,7 @@ Describe 'Record-Reproduction recorder adapters' {
         $remoteCommand | Should -Match '--bit-rate 4000000'
         $remoteCommand | Should -Match '--time-limit 12'
         $remoteCommand |
-            Should -Match 'echo \$\$ > /sdcard/maui-reproduction-[0-9a-f]{32}\.mp4\.pid'
+            Should -Match 'printf "%s" "\$\$" > /sdcard/maui-reproduction-[0-9a-f]{32}\.mp4\.pid'
         $videoMatch = [regex]::Match(
             $remoteCommand,
             '(?<video>/sdcard/maui-reproduction-[0-9a-f]{32}\.mp4)$')
@@ -292,6 +292,11 @@ Describe 'Record-Reproduction recorder adapters' {
         $start = (Get-ProcessRequest $harness Start)[0]
         $start.FilePath | Should -BeExactly 'ffmpeg'
         $start.ArgumentList | Should -Contain 'avfoundation'
+        $pixelFormatIndex = [array]::IndexOf($start.ArgumentList, '-pixel_format')
+        $inputIndex = [array]::IndexOf($start.ArgumentList, '-i')
+        $pixelFormatIndex | Should -BeGreaterThan -1
+        $start.ArgumentList[$pixelFormatIndex + 1] | Should -BeExactly 'nv12'
+        $pixelFormatIndex | Should -BeLessThan $inputIndex
         $start.ArgumentList | Should -Contain 'Capture screen 0:none'
         $start.ArgumentList | Should -Contain '-an'
         $start.ArgumentList | Should -Contain '-t'

@@ -877,7 +877,7 @@ $recorderArguments = @()
 switch ($Platform) {
     'android' {
         $remoteRecordCommand = (
-            'echo $$ > ' + $remoteAndroidPidPath +
+            'printf "%s" "$$" > ' + $remoteAndroidPidPath +
             '; exec screenrecord' +
             " --size ${maxWidth}x${maxHeight}" +
             ' --bit-rate 4000000' +
@@ -912,6 +912,7 @@ switch ($Platform) {
             '-nostats',
             '-f', 'avfoundation',
             '-framerate', [string][int]$maxFrameRate,
+            '-pixel_format', 'nv12',
             '-capture_cursor', '1',
             '-i', 'Capture screen 0:none',
             '-an',
@@ -981,7 +982,11 @@ try {
                 -Purpose 'Resolve Android recorder PID'
             $pidText = ([string](Get-ObjectPropertyValue $pidResult 'StdOut' '')).Trim()
             if ($pidText -cnotmatch '^[1-9][0-9]*$') {
-                throw 'Resolve Android recorder PID returned an invalid exact process ID.'
+                $safePidText = ConvertTo-SafeLogText $pidText
+                if ([string]::IsNullOrWhiteSpace($safePidText)) {
+                    $safePidText = '<empty>'
+                }
+                throw "Resolve Android recorder PID returned an invalid exact process ID: '$safePidText'."
             }
             $remoteAndroidPid = [long]$pidText
         }

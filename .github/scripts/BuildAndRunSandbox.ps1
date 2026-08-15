@@ -501,7 +501,7 @@ try {
         if ($logFileSize -lt 100) {
             Write-Info "Console output was minimal, using os_log fallback..."
             $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
-            $catalystLogCommand = "log show --level debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
+            $catalystLogCommand = "log show --debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
             Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
         }
         

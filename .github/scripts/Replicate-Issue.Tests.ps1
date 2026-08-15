@@ -8,6 +8,9 @@ BeforeAll {
     $script:BuildSandboxSource = Get-Content `
         -LiteralPath $script:BuildSandboxPath `
         -Raw
+    $script:TrustedAppiumSource = Get-Content `
+        -LiteralPath (Join-Path $PSScriptRoot 'templates/RunReplicationAppiumPlan.cs') `
+        -Raw
     $buildTokens = $null
     $buildErrors = $null
     $buildAst = [System.Management.Automation.Language.Parser]::ParseFile(
@@ -54,6 +57,18 @@ BeforeAll {
 }
 
 Describe 'Replication orchestrator security boundary' {
+    It 'uses native Appium class-name locators instead of Selenium CSS locators' {
+        $script:TrustedAppiumSource |
+            Should -Match '"className"\s*=>\s*MobileBy\.ClassName\(locator\.Value\)'
+        $script:TrustedAppiumSource |
+            Should -Not -Match '"className"\s*=>\s*By\.ClassName\(locator\.Value\)'
+    }
+
+    It 'uses the supported macOS unified-log debug flag' {
+        $script:BuildSandboxSource | Should -Match 'log show --debug --predicate'
+        $script:BuildSandboxSource | Should -Not -Match 'log show --level'
+    }
+
     It 'removes terminal controls and Azure logging directives from untrusted output' {
         ConvertTo-ReplicationSafeLog `
             -Value "x`e[31;1m red`e[0m`n##vso[task.setvariable variable=Y]bad ##[error]fake" |

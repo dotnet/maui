@@ -263,7 +263,7 @@ static By CreateLocator(ReplicationLocator locator) =>
         "id" => MobileBy.Id(locator.Value),
         "accessibilityId" => MobileBy.AccessibilityId(locator.Value),
         "xpath" => MobileBy.XPath(locator.Value),
-        "className" => By.ClassName(locator.Value),
+        "className" => MobileBy.ClassName(locator.Value),
         _ => throw new InvalidOperationException(
             $"Unsupported locator strategy '{locator.Strategy}'.")
     };
