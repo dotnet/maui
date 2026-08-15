@@ -44,6 +44,7 @@ Describe 'MAUI Copilot mode routing' {
         $restoreIndex | Should -BeGreaterThan -1
         $restoreIndex | Should -BeLessThan $replicateIndex
         $script:Pipeline | Should -Match 'git restore --source \$baseSha --staged --worktree -- \.'
+        $script:Pipeline | Should -Match '(?s)- name: APPIUM_HOME\s+value: \$\(Agent\.TempDirectory\)/\.appium/'
         $script:Pipeline | Should -Match "displayName: 'Install reproduction recording tools'"
         $script:Pipeline | Should -Match "(?s)displayName: 'Install reproduction recording tools'.*?eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "REPLICATION_AGENT_CONTEXT_PATH.*?issue-agent-context\.json"

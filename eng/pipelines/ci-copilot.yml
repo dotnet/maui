@@ -85,7 +85,7 @@ variables:
   - name: Codeql.SkipTaskAutoInjection
     value: true
   - name: APPIUM_HOME
-    value: $(System.DefaultWorkingDirectory)/.appium/
+    value: $(Agent.TempDirectory)/.appium/
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
 
