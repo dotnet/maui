@@ -12,7 +12,9 @@ BeforeAll {
             [string]$FailCommandPurpose,
             [string]$FailureOutput = '',
             [switch]$FailStop,
-            [switch]$RecorderExitsEarly
+            [switch]$RecorderExitsEarly,
+            [int]$StopExitCode = 0,
+            [string]$StopErrorOutput = ''
         )
 
         if ($null -eq $MediaInfo) {
@@ -38,6 +40,8 @@ BeforeAll {
             FailureOutput      = $FailureOutput
             FailStop           = $FailStop.IsPresent
             RecorderExitsEarly = $RecorderExitsEarly.IsPresent
+            StopExitCode       = $StopExitCode
+            StopErrorOutput    = $StopErrorOutput
             NextPid            = 4100
         }
 
@@ -124,8 +128,11 @@ BeforeAll {
                         throw 'exact stop failed'
                     }
                     return [pscustomobject]@{
-                        Stopped = $true
-                        Id      = $request.Handle.Id
+                        Stopped  = $true
+                        Id       = $request.Handle.Id
+                        ExitCode = $state.StopExitCode
+                        StdOut   = ''
+                        StdErr   = $state.StopErrorOutput
                     }
                 }
                 default {
@@ -391,6 +398,23 @@ Describe 'Record-Reproduction exact process lifecycle' {
 
         (Get-ProcessRequest $harness Stop).Count | Should -Be 1
         Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') | Should -BeFalse
+    }
+
+    It 'surfaces the exact recorder exit code and sanitized stderr' {
+        $harness = New-RecordingHarness `
+            -StopExitCode 1 `
+            -StopErrorOutput "capture denied`n##vso[task.setvariable variable=secret]bad"
+        $evidenceDir = Join-Path $TestDrive 'recorder-exit-failure'
+
+        {
+            Invoke-TestRecording `
+                -Harness $harness `
+                -Platform catalyst `
+                -EvidenceDir $evidenceDir
+        } | Should -Throw '*catalyst recorder exited with code 1*capture denied*'
+
+        Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') |
+            Should -BeFalse
     }
 
     It 'fails closed when the exact Android recorder PID does not exit' {

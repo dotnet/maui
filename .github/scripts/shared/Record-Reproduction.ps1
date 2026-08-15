@@ -552,7 +552,7 @@ function Start-Recorder {
     }
 
     if ($null -eq $ProcessRunner) {
-        Start-Sleep -Milliseconds 300
+        Start-Sleep -Milliseconds 1000
     }
     $probe = Invoke-ProcessOperation -Request ([pscustomobject]@{
         Operation = 'Probe'
@@ -593,6 +593,21 @@ function Stop-Recorder {
     if ($null -eq $result -or -not [bool](Get-ObjectPropertyValue $result 'Stopped' $false)) {
         $recorderPid = ConvertTo-SafeLogText (Get-ObjectPropertyValue $Handle 'Id' 'unknown')
         throw "Failed to stop the exact $Kind recorder process (PID $recorderPid)."
+    }
+
+    $exitCode = [int](Get-ObjectPropertyValue $result 'ExitCode' 0)
+    if ($exitCode -ne 0) {
+        $output = @(
+            Get-ObjectPropertyValue $result 'StdErr' ''
+            Get-ObjectPropertyValue $result 'StdOut' ''
+        ) -join ' '
+        $safeOutput = ConvertTo-SafeLogText $output
+        $suffix = if ([string]::IsNullOrWhiteSpace($safeOutput)) {
+            ''
+        } else {
+            " Output: $safeOutput"
+        }
+        throw "The $Kind recorder exited with code $exitCode.$suffix"
     }
 }
 
