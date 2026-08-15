@@ -199,6 +199,7 @@ $previewEvidence.ReleaseName = $originalReleaseName
 
 $previewReadiness | Add-Member -MemberType NoteProperty -Name ConsumerInstallability -Value ([PSCustomObject]@{
     PublicEvidence = $false
+    VersionConfirmed = $true
     VersionSourceIsSensitive = $false
     CliVersion = '11.0.100-preview.7.26000.9'
     NuGetConfig = $publicNuGetConfig
@@ -213,6 +214,25 @@ $stringProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -E
 Assert-HandoffEqual -Label 'String public provenance cannot supply a CLI version' `
     -Expected $null -Actual $stringProvenanceModel.WorkloadSet.CliVersion
 $previewReadiness.ConsumerInstallability.PublicEvidence = $true
+$previewReadiness.ConsumerInstallability.VersionConfirmed = $false
+$unconfirmedVersionModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'Unconfirmed readiness installability cannot supply a CLI version' `
+    -Expected $null -Actual $unconfirmedVersionModel.WorkloadSet.CliVersion
+Assert-HandoffEqual -Label 'Unconfirmed readiness installability cannot supply NuGet config' `
+    -Expected $null -Actual $unconfirmedVersionModel.WorkloadSet.NuGetConfig
+$unconfirmedWithEvidenceConfigModel = New-ReleaseHandoffModel `
+    -Readiness $previewReadiness `
+    -Evidence ([PSCustomObject]@{
+        PublicEvidence = $true
+        WorkloadSet = [PSCustomObject]@{ NuGetConfig = $publicNuGetConfig }
+    })
+Assert-HandoffEqual -Label 'Unconfirmed readiness version plus public evidence config cannot produce an install command' `
+    -Expected $null -Actual $unconfirmedWithEvidenceConfigModel.WorkloadSet.InstallCommand
+$previewReadiness.ConsumerInstallability.VersionConfirmed = 'true'
+$stringConfirmedModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+Assert-HandoffEqual -Label 'String version confirmation cannot supply a CLI version' `
+    -Expected $null -Actual $stringConfirmedModel.WorkloadSet.CliVersion
+$previewReadiness.ConsumerInstallability.VersionConfirmed = $true
 $previewReadiness.ConsumerInstallability.VersionSourceIsSensitive = $true
 $sensitiveProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
 Assert-HandoffEqual -Label 'Sensitive readiness installability cannot supply a CLI version' `
@@ -225,6 +245,14 @@ Assert-HandoffEqual -Label 'Readiness installability without explicit non-sensit
     -Expected $null -Actual $missingSensitivityModel.WorkloadSet.CliVersion
 $previewReadiness.ConsumerInstallability | Add-Member -MemberType NoteProperty `
     -Name VersionSourceIsSensitive -Value $false
+foreach ($invalidSensitivity in @($null, 0, 0.0, '', @())) {
+    $previewReadiness.ConsumerInstallability.VersionSourceIsSensitive = $invalidSensitivity
+    $invalidSensitivityModel = New-ReleaseHandoffModel `
+        -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
+    Assert-HandoffEqual -Label "Non-boolean sensitivity '$invalidSensitivity' fails closed" `
+        -Expected $null -Actual $invalidSensitivityModel.WorkloadSet.CliVersion
+}
+$previewReadiness.ConsumerInstallability.VersionSourceIsSensitive = $false
 $publicProvenanceModel = New-ReleaseHandoffModel -Readiness $previewReadiness -Evidence ([PSCustomObject]@{})
 Assert-HandoffEqual -Label 'Explicit public readiness installability can supply a CLI version' `
     -Expected '11.0.100-preview.7.26000.9' -Actual $publicProvenanceModel.WorkloadSet.CliVersion

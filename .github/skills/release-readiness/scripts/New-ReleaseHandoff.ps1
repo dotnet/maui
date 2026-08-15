@@ -590,11 +590,15 @@ function New-ReleaseHandoffModel {
     $workload = Get-HandoffProperty -Object $effectiveEvidence -Name 'WorkloadSet'
     $installabilityPublicValue = Get-HandoffProperty -Object $installability -Name 'PublicEvidence' -Default $false
     $installabilityIsPublic = $installabilityPublicValue -is [bool] -and $installabilityPublicValue
-    $installabilityVersionIsSensitive = [bool](
-        Get-HandoffProperty -Object $installability -Name 'VersionSourceIsSensitive' -Default $true
-    )
+    $installabilityConfirmedValue = Get-HandoffProperty -Object $installability -Name 'VersionConfirmed' -Default $false
+    $installabilityVersionIsConfirmed = $installabilityConfirmedValue -is [bool] -and $installabilityConfirmedValue
+    $installabilitySensitiveValue = Get-HandoffProperty -Object $installability -Name 'VersionSourceIsSensitive'
+    $installabilityVersionIsPublic = $installabilitySensitiveValue -is [bool] -and
+        -not $installabilitySensitiveValue
     $useInstallabilityFallback = -not $PublicSafe -or (
-        $installabilityIsPublic -and -not $installabilityVersionIsSensitive
+        $installabilityIsPublic -and
+        $installabilityVersionIsConfirmed -and
+        $installabilityVersionIsPublic
     )
     $cliVersion = Get-HandoffProperty -Object $workload -Name 'CliVersion'
     if ([string]::IsNullOrWhiteSpace([string]$cliVersion) -and $installability -and $useInstallabilityFallback) {
