@@ -1,10 +1,9 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
-override Microsoft.Maui.Controls.ScrollView.OnParentSet() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
-Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void

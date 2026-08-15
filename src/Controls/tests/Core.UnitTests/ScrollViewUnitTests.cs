@@ -488,7 +488,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ElementRequestOnCollapsedScrollViewReleasesCallerAndReplaysWhenShown()
+		public void ElementRequestOnHiddenScrollViewWaitsAndScrollsOnceShown()
 		{
 			var item = new View();
 			var layout = new StackLayout { Children = { item } };
@@ -497,131 +497,91 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = new ViewportProviderHandlerStub();
 			scrollView.Handler = handler;
 
-			// A collapsed ScrollView is skipped by layout, so no geometry callback is coming:
-			// the caller must be released immediately instead of hanging forever...
+			// A hidden view is skipped by layout, so no arrange is coming yet. The request
+			// stays parked and the task stays pending: completing it here would either
+			// scroll to a target computed from unarranged geometry or leave a request alive
+			// after its await returned — the task means "the scroll happened or the view is
+			// gone", nothing in between.
 			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Center, false);
-			Assert.True(task.IsCompleted);
-
-			// ...but the request must not resolve against the -1 never-arranged sentinels —
-			// it stays parked instead of clamping a garbage target to the origin
+			Assert.False(task.IsCompleted);
 			Assert.Empty(handler.ScrollToRequests);
 
-			// Showing the branch arranges it; the first arrange replays the parked request
-			// against real geometry so the scroll still lands on the element
+			// Showing the view arranges it; the first arrange replays the request against
+			// real geometry so the scroll lands on the element: Center = 450 - 100/2 + 50/2
 			scrollView.IsVisible = true;
 			item.Layout(new Graphics.Rect(0, 450, 100, 50));
 			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
 			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
 
-			// Center: 450 - 100/2 + 50/2
 			var request = Assert.Single(handler.ScrollToRequests);
 			Assert.Equal(425, request.VerticalOffset);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task.IsCompleted);
 		}
 
 		[Fact]
-		public void DeferredElementRequestOnCollapsedAncestorReleasesCallerOnAttach()
+		public async Task ElementRequestIsDroppedAndCompletedWhenTheViewLeavesTheTree()
 		{
 			var item = new View();
 			var layout = new StackLayout { Children = { item } };
 			var scrollView = new ScrollView { Content = layout };
-			var parent = new StackLayout { IsVisible = false, Children = { scrollView } };
-
-			// Parked because the handler is missing, not because of visibility
-			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			var parent = new StackLayout { Children = { scrollView } };
 
 			var handler = new ViewportProviderHandlerStub();
 			scrollView.Handler = handler;
 
-			// On attach the collapsed ancestor means no arrange is coming: release the
-			// caller, but keep the request parked rather than resolving it against the
-			// never-arranged sentinels
+			// Parked with the handler attached, waiting for the arrange
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.False(task.IsCompleted);
+
+			// Removing the view from the tree ends its lifecycle for layout purposes: no
+			// arrange will ever come from a parent it no longer has, and the removal does
+			// not disconnect its handler — so the request must be dropped and the caller
+			// released here rather than left pending forever
+			parent.Children.Remove(scrollView);
+
+			await task.WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.True(task.IsCompleted);
 			Assert.Empty(handler.ScrollToRequests);
 
-			// Showing the ancestor arranges the branch and replays the request for real
-			parent.IsVisible = true;
+			// And dropped means dropped: re-attaching and arranging later must not resurrect
+			// the stale request into a scroll the caller no longer expects
+			parent.Children.Add(scrollView);
 			item.Layout(new Graphics.Rect(0, 450, 100, 50));
 			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
 			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
-
-			// Start aligns the element's top with the viewport top
-			var request = Assert.Single(handler.ScrollToRequests);
-			Assert.Equal(450, request.VerticalOffset);
+			Assert.Empty(handler.ScrollToRequests);
 		}
 
 		[Fact]
-		public void ElementRequestParkedWhileVisibleIsReleasedWhenCollapsedBeforeArrange()
+		public async Task ScrollCompletionNeverResumesTheCallerInlineOnTheMutationStack()
 		{
 			var item = new View();
-			var layout = new StackLayout { Children = { item } };
-			var scrollView = new ScrollView { Content = layout };
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var parent = new StackLayout { Children = { scrollView } };
+			scrollView.Handler = new ViewportProviderHandlerStub();
 
-			var handler = new ViewportProviderHandlerStub();
-			scrollView.Handler = handler;
-
-			// Parked while visible with geometry not ready — the OnAppearing ordering
-			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
-			Assert.False(task.IsCompleted);
-			Assert.Empty(handler.ScrollToRequests);
-
-			// Collapsing before the first arrange removes the callbacks that would retry
-			// it: the caller must be released rather than left pending forever, and the
-			// request must stay parked instead of resolving against unarranged geometry
-			scrollView.IsVisible = false;
-			Assert.True(task.IsCompleted);
-			Assert.Empty(handler.ScrollToRequests);
-
-			// Shown again, the first arrange still replays it against real geometry:
-			// End = 450 - 100 + 50
-			scrollView.IsVisible = true;
-			item.Layout(new Graphics.Rect(0, 450, 100, 50));
-			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
-			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
-
-			var request = Assert.Single(handler.ScrollToRequests);
-			Assert.Equal(400, request.VerticalOffset);
-		}
-
-		[Fact]
-		public void ElementRequestParkedWhileVisibleIsReleasedWhenReparentedIntoCollapsedBranch()
-		{
-			var item = new View();
-			var layout = new StackLayout { Children = { item } };
-			var scrollView = new ScrollView { Content = layout };
-
-			var handler = new ViewportProviderHandlerStub();
-			scrollView.Handler = handler;
-
+			// The task is completed from inside a lifecycle mutation (child removal). The
+			// caller's continuation must not run inline on that mutation's stack, where it
+			// could re-enter a half-finished parenting operation. A continuation that asks
+			// to run synchronously would do exactly that if the completion source allowed
+			// it, so it must instead land on a different thread than the one mutating.
+			var mutatingThread = Environment.CurrentManagedThreadId;
+			var continuationThread = -1;
 			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
-			Assert.False(task.IsCompleted);
+			var continuation = task.ContinueWith(
+				_ => continuationThread = Environment.CurrentManagedThreadId,
+				TaskContinuationOptions.ExecuteSynchronously);
 
-			// Moving the ScrollView under a collapsed parent means no arrange is coming
-			// from there either: the parent change must release the caller
-			_ = new StackLayout { IsVisible = false, Children = { scrollView } };
+			parent.Children.Remove(scrollView);
+
+			// The task itself completes synchronously with the drop...
 			Assert.True(task.IsCompleted);
-			Assert.Empty(handler.ScrollToRequests);
-		}
 
-		[Fact]
-		public void CollapsedShellAncestorBeyondNonVisualLinksIsDetected()
-		{
-			var item = new View();
-			var layout = new StackLayout { Children = { item } };
-			var scrollView = new ScrollView { Content = layout };
-			var page = new ContentPage { Content = scrollView };
-			var shell = new Shell { IsVisible = false };
-			shell.Items.Add(new ShellContent { Content = page });
-
-			var handler = new ViewportProviderHandlerStub();
-			scrollView.Handler = handler;
-
-			// The ancestor chain crosses non-VisualElement links (ShellContent/ShellSection)
-			// before reaching the collapsed Shell: the visibility walk must skip over them
-			// rather than stop, so the caller is released immediately instead of parking
-			// behind an arrange that never comes
-			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
-			Assert.True(task.IsCompleted);
-			Assert.Empty(handler.ScrollToRequests);
+			// ...but the continuation was pushed off the mutating thread's stack
+			await continuation.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.NotEqual(mutatingThread, continuationThread);
 		}
 
 		[Fact]

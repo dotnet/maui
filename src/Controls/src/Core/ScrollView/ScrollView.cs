@@ -43,6 +43,17 @@ namespace Microsoft.Maui.Controls
 		ScrollToRequestedEventArgs _pendingScrollToRequested;
 		bool _replayPendingScrollToRequestedEvent;
 
+		// A parked element request lives exactly as long as the task the caller is awaiting.
+		// It leaves the park in one of two ways, and no other: the arrange arrives and the
+		// request is replayed against real geometry (the task completes with the scroll),
+		// or the view's lifecycle ends — its handler goes away or it is removed from the
+		// tree — and the request is dropped (the task completes without a scroll). Nothing
+		// releases the task while the request is still parked, so a completed await never
+		// scrolls later; and nothing but a lifecycle end drops the request, so a view that is
+		// merely hidden (a collapsed branch, an unselected tab) still scrolls to the element
+		// when it is eventually arranged. A view that stays attached and is never arranged
+		// keeps the task pending — that is the contract, not a leak: the task completes when
+		// the scroll happens or the view is torn down.
 		private protected override void OnHandlerChangedCore()
 		{
 			base.OnHandlerChangedCore();
@@ -50,18 +61,42 @@ namespace Microsoft.Maui.Controls
 			if (Handler is null)
 			{
 				// The handler went away with a request still queued, so nothing will ever
-				// dispatch it. Release the caller rather than leaving its task pending
-				// forever; Core does the same for its own pending request on disconnect.
-				if (_pendingScrollToRequested is not null)
-				{
-					_pendingScrollToRequested = null;
-					SendScrollFinished();
-				}
-
+				// dispatch it; Core does the same for its own pending request on disconnect
+				DropPendingScrollToRequest();
 				return;
 			}
 
 			DispatchPendingScrollToRequest();
+		}
+
+		private protected override void OnParentChangedCore()
+		{
+			base.OnParentChangedCore();
+
+			// Removed from the tree: no arrange will come from a parent that no longer
+			// exists, and the handler is not necessarily disconnected by the removal, so
+			// this is the other lifecycle end that drops a parked request
+			if (RealParent is null)
+			{
+				DropPendingScrollToRequest();
+			}
+		}
+
+		void DropPendingScrollToRequest()
+		{
+			if (_pendingScrollToRequested is null)
+			{
+				return;
+			}
+
+			_pendingScrollToRequested = null;
+			// A stale replay flag from a pre-handler park must not carry over to a later request
+			_replayPendingScrollToRequestedEvent = false;
+
+			// Safe to complete here even though this runs from a lifecycle mutation: the
+			// completion source runs continuations asynchronously, so the caller never
+			// resumes inline on this stack (see CheckTaskCompletionSource)
+			SendScrollFinished();
 		}
 
 		void DispatchPendingScrollToRequest()
@@ -71,25 +106,15 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (pending.Mode == ScrollToMode.Element && !IsElementTargetGeometryReady())
-			{
-				if (!WillArrange())
-				{
-					// A collapsed branch is skipped by layout, so no callback is coming to
-					// resolve the target. Release the caller now, but keep the request
-					// parked: if the branch is later shown, the first arrange replays it
-					// against real geometry so the scroll still lands on the element
-					// (a newer request supersedes it as usual).
-					SendScrollFinished();
-				}
-
-				// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
-				return;
-			}
-
 			if (pending.Mode == ScrollToMode.Element)
 			{
-				// The geometry callbacks run while the pass that produced the sizes is still
+				if (!IsElementTargetGeometryReady())
+				{
+					// The request has to wait; OnSizeAllocated and ContentSizeChanged retry it.
+					return;
+				}
+
+				// Those callbacks run while the pass that produced the sizes is still
 				// arranging children, so resolve on the next tick, once positions are final.
 				// Posting on every retry is deliberate: SendPendingScrollToRequest is a no-op
 				// once the request has been sent or superseded, so a dropped callback cannot
@@ -110,64 +135,6 @@ namespace Microsoft.Maui.Controls
 		// task forever, while dispatching just clamps the target to the origin.
 		bool IsElementTargetGeometryReady() =>
 			Width >= 0 && Height >= 0 && Content is not ({ Width: < 0 } or { Height: < 0 });
-
-		// A parked element request is retried only from OnSizeAllocated/ContentSizeChanged,
-		// which fire when this view gets arranged — and a view inside a collapsed
-		// (IsVisible=false) branch is skipped by layout entirely, so a request parked there
-		// has no callback coming. In that state the awaiting caller is released immediately
-		// while the request stays parked: showing the branch arranges it and replays the
-		// scroll against real geometry (see DispatchPendingScrollToRequest).
-		// The walk checks IsVisible on every VisualElement ancestor, skipping over non-visual
-		// links in the chain (e.g. Shell's ShellContent/ShellSection) rather than stopping at
-		// them. Non-visual containers' own visibility semantics (a hidden tab, say) are
-		// deliberately not consulted: parking keeps the scroll correct if that container is
-		// ever shown, and a handler detach still completes the task.
-		// Evaluated when a request is parked, at every retry, and again when this view's own
-		// IsVisible or parent changes (OnIsVisibleChanged/OnParentSet) so a request parked
-		// while visible is released if the view is collapsed or reparented into a collapsed
-		// branch before it arranges. An *ancestor* collapsing after the park sends no signal
-		// down the tree; that request is released when the branch is shown again or the
-		// handler detaches, and watching every ancestor for it would cost more than it
-		// covers.
-		bool WillArrange()
-		{
-			for (Element element = this; element is not null; element = element.RealParent)
-			{
-				if (element is VisualElement { IsVisible: false })
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
-		{
-			base.OnIsVisibleChanged(oldValue, newValue);
-
-			// A request parked while visible loses its arrange callbacks if this view is
-			// collapsed before layout runs: release the caller now (the request stays parked
-			// and replays if the view is shown again, exactly as a request parked while
-			// already collapsed does)
-			ReleaseParkedRequestIfCollapsed();
-		}
-
-		protected override void OnParentSet()
-		{
-			base.OnParentSet();
-
-			// Same for a parked request carried into a collapsed branch by reparenting
-			ReleaseParkedRequestIfCollapsed();
-		}
-
-		void ReleaseParkedRequestIfCollapsed()
-		{
-			if (_pendingScrollToRequested is not null && !WillArrange())
-			{
-				SendScrollFinished();
-			}
-		}
 
 		void SendPendingScrollToRequest()
 		{
@@ -570,7 +537,12 @@ namespace Microsoft.Maui.Controls
 			{
 				_scrollCompletionSource.TrySetCanceled();
 			}
-			_scrollCompletionSource = new TaskCompletionSource<bool>();
+			// The task can be completed from inside a lifecycle mutation (a handler change, the
+			// view leaving the tree) as well as from platform scroll callbacks. The caller's
+			// await continuation must never resume on that stack — it could re-enter a
+			// half-finished parenting or property change — so continuations always run
+			// asynchronously. The task itself still transitions to completed synchronously.
+			_scrollCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		}
 
 		double GetCoordinate(Element item, string coordinateName, double coordinate)
@@ -601,17 +573,10 @@ namespace Microsoft.Maui.Controls
 				// OnAppearing): resolving the element target now would compute against the -1
 				// never-arranged sentinels. Park it for the layout callbacks instead — the
 				// subscribers were already notified above, so the replay must not re-raise.
+				// It stays parked until the arrange arrives or the view's lifecycle ends
+				// (see OnHandlerChangedCore); a hidden view scrolls once it is shown.
 				_pendingScrollToRequested = e;
 				_replayPendingScrollToRequestedEvent = false;
-
-				if (!WillArrange())
-				{
-					// A collapsed branch gets no layout callbacks, so parking alone would
-					// hang the caller. Complete the task now and leave the request parked:
-					// showing the branch arranges it and replays the scroll against real
-					// geometry.
-					SendScrollFinished();
-				}
 			}
 			else
 			{
