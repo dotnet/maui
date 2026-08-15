@@ -453,6 +453,12 @@ function Invoke-DefaultProcessOperation {
         'Stop' {
             $handle = Get-ObjectPropertyValue $Request 'Handle'
             $kind = [string](Get-ObjectPropertyValue $Request 'Kind')
+            $graceSeconds = [Math]::Min(
+                30,
+                [Math]::Max(
+                    1,
+                    [int](Get-ObjectPropertyValue $Request 'GraceSeconds' 5)))
+            $graceMilliseconds = $graceSeconds * 1000
             $process = Get-ObjectPropertyValue $handle 'Process'
             if ($null -eq $process) {
                 throw 'Recorder process handle is invalid.'
@@ -467,7 +473,7 @@ function Invoke-DefaultProcessOperation {
                         } catch {
                             Write-Debug 'Recorder exited before the graceful stdin stop completed.'
                         }
-                        [void]$process.WaitForExit(2000)
+                        [void]$process.WaitForExit($graceMilliseconds)
                     }
 
                     if ($kind -eq 'android') {
@@ -482,7 +488,7 @@ function Invoke-DefaultProcessOperation {
                             -ArgumentList @('-INT', '--', [string]$process.Id) `
                             -TimeoutSeconds 5
                         if ($signal.ExitCode -eq 0) {
-                            [void]$process.WaitForExit(3000)
+                            [void]$process.WaitForExit($graceMilliseconds)
                         }
                     }
 
@@ -588,7 +594,7 @@ function Stop-Recorder {
         Operation    = 'Stop'
         Handle       = $Handle
         Kind         = $Kind
-        GraceSeconds = 5
+        GraceSeconds = 15
         Purpose      = "Stop $Kind recorder"
     })
     if ($null -eq $result -or -not [bool](Get-ObjectPropertyValue $result 'Stopped' $false)) {
@@ -629,6 +635,15 @@ function ConvertTo-PositiveDouble {
         return 0.0
     }
     return $parsed
+}
+
+function ConvertTo-AndroidShellScriptArgument {
+    param([Parameter(Mandatory = $true)][string]$Script)
+
+    if ($Script.Contains("'")) {
+        throw 'Android shell script contains an unsupported single quote.'
+    }
+    return "'$Script'"
 }
 
 function ConvertFrom-FrameRate {
@@ -889,7 +904,7 @@ switch ($Platform) {
             '-s', $DeviceUdid,
             'shell',
             'sh', '-c',
-            $remoteRecordCommand
+            (ConvertTo-AndroidShellScriptArgument -Script $remoteRecordCommand)
         )
     }
     'ios' {
@@ -977,7 +992,9 @@ try {
             )
             $pidResult = Invoke-RequiredCommand `
                 -FilePath 'adb' `
-                -ArgumentList @('-s', $DeviceUdid, 'shell', 'sh', '-c', $resolvePidCommand) `
+                -ArgumentList @(
+                    '-s', $DeviceUdid, 'shell', 'sh', '-c',
+                    (ConvertTo-AndroidShellScriptArgument -Script $resolvePidCommand)) `
                 -TimeoutSeconds 10 `
                 -Purpose 'Resolve Android recorder PID'
             $pidText = ([string](Get-ObjectPropertyValue $pidResult 'StdOut' '')).Trim()
@@ -1000,6 +1017,17 @@ try {
         $recordingError = $_
     } finally {
         if ($null -ne $captureClock) {
+            if (
+                $null -eq $reproductionError -and
+                $null -eq $ProcessRunner -and
+                $captureClock.Elapsed.TotalSeconds -lt 2
+            ) {
+                $remainingMilliseconds = [int][Math]::Ceiling(
+                    (2 - $captureClock.Elapsed.TotalSeconds) * 1000)
+                if ($remainingMilliseconds -gt 0) {
+                    Start-Sleep -Milliseconds $remainingMilliseconds
+                }
+            }
             $captureClock.Stop()
         }
         $handleToStop = if ($null -ne $recorderHandle) {
@@ -1036,7 +1064,7 @@ try {
                             -FilePath 'adb' `
                             -ArgumentList @(
                                 '-s', $DeviceUdid, 'shell', 'sh', '-c',
-                                $waitForExitCommand) `
+                                (ConvertTo-AndroidShellScriptArgument -Script $waitForExitCommand)) `
                             -TimeoutSeconds 15 `
                             -Purpose 'Wait for Android recorder exit')
                     }
@@ -1070,7 +1098,7 @@ try {
                         -FilePath 'adb' `
                         -ArgumentList @(
                             '-s', $DeviceUdid, 'shell', 'sh', '-c',
-                            $waitForFinalizationCommand) `
+                            (ConvertTo-AndroidShellScriptArgument -Script $waitForFinalizationCommand)) `
                         -TimeoutSeconds 15 `
                         -Purpose 'Wait for Android recording finalization'
                     $remoteSize = (
@@ -1220,7 +1248,15 @@ try {
 
     $hash = (Get-FileHash -LiteralPath $videoPath -Algorithm SHA256 -ErrorAction Stop).
         Hash.ToLowerInvariant()
-    $device = if ([string]::IsNullOrWhiteSpace($DeviceUdid)) { 'host' } else { $DeviceUdid }
+    $device = if (-not [string]::IsNullOrWhiteSpace($DeviceUdid)) {
+        $DeviceUdid
+    } elseif ($Platform -eq 'catalyst') {
+        'mac-catalyst-host'
+    } elseif ($Platform -eq 'windows') {
+        'windows-host'
+    } else {
+        'host'
+    }
     $metadata = [ordered]@{
         schemaVersion    = 1
         platform         = $Platform

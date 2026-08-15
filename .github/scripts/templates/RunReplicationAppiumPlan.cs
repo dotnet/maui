@@ -274,16 +274,43 @@ static void AssertElementText(
     TimeSpan timeout,
     bool contains)
 {
-    var actual = WaitForElement(driver, step.Locator!, timeout).Text ?? string.Empty;
     var expected = step.Value!;
-    var matched = contains
-        ? actual.Contains(expected, StringComparison.Ordinal)
-        : string.Equals(actual, expected, StringComparison.Ordinal);
-    if (!matched)
+    var by = CreateLocator(step.Locator!);
+    var wait = new WebDriverWait(driver, timeout);
+    var actual = string.Empty;
+    try
+    {
+        wait.Until(current =>
+        {
+            try
+            {
+                var element = current.FindElement(by);
+                if (!element.Displayed)
+                {
+                    return false;
+                }
+
+                actual = element.Text ?? string.Empty;
+                return contains
+                    ? actual.Contains(expected, StringComparison.Ordinal)
+                    : string.Equals(actual, expected, StringComparison.Ordinal);
+            }
+            catch (NoSuchElementException)
+            {
+                return false;
+            }
+            catch (StaleElementReferenceException)
+            {
+                return false;
+            }
+        });
+    }
+    catch (WebDriverTimeoutException exception)
     {
         var comparison = contains ? "contain" : "equal";
         throw new InvalidOperationException(
-            $"Expected element text to {comparison} '{expected}', actual '{actual}'.");
+            $"Expected element text to {comparison} '{expected}', actual '{actual}'.",
+            exception);
     }
 }
 

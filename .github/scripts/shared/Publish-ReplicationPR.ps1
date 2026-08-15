@@ -114,7 +114,16 @@ function New-ReplicationPullRequestBody {
     $platform = ConvertTo-ReplicationSingleLine -Value ([string]$Candidate.platform) -MaximumLength 40
     $testType = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testType)
     $testFilter = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.testFilter)
-    $failureSignature = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.expectedFailureSignature)
+    $rawFailureSignature = [string]$Candidate.expectedFailureSignature
+    $actualFailureMessage = [string]$Candidate.actualFailureMessage
+    if ([string]::IsNullOrWhiteSpace($rawFailureSignature) -or
+        [string]::IsNullOrWhiteSpace($actualFailureMessage) -or
+        -not $actualFailureMessage.Contains(
+            $rawFailureSignature,
+            [StringComparison]::Ordinal)) {
+        throw 'Validated candidate targeted failure message does not contain the expected failure signature.'
+    }
+    $failureSignature = ConvertTo-ReplicationInlineCode -Value $rawFailureSignature
     $baseSha = ConvertTo-ReplicationInlineCode -Value ([string]$Candidate.baseSha
     )
     $marker = Get-ReplicationPullRequestMarker -IssueNumber $issueNumber -Platform $platform

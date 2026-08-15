@@ -90,6 +90,36 @@ Describe 'Trusted replication evidence publishing' {
         $script:EvidenceSource | Should -Match '--auth-mode login'
         $script:EvidenceSource | Should -Match '--overwrite false'
         $script:EvidenceSource | Should -Not -Match 'sas-token'
+        $script:EvidenceSource | Should -Match 'actualFailureMessage'
+        $script:EvidenceSource | Should -Match '\.Contains\('
+    }
+
+    It 'rejects evidence publication when the targeted failure message does not match' {
+        $candidatePath = Join-Path $TestDrive 'validated-candidate.json'
+        [ordered]@{
+            validationPassed = $true
+            issueNumber = 12345
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'unit'
+            testFilter = 'Issue12345'
+            expectedFailureSignature = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: expected red but was blue'
+        } |
+            ConvertTo-Json |
+            Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
+
+        $output = @(& pwsh -NoProfile -File $evidenceScript `
+            -ValidatedCandidatePath $candidatePath `
+            -EvidenceDirectory $TestDrive `
+            -StorageAccount account123 `
+            -Container public `
+            -BlobPrefix issue-12345/android/test `
+            -DryRun 2>&1)
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $output -join [Environment]::NewLine |
+            Should -Match 'targeted failure message'
     }
 }
 
@@ -114,6 +144,7 @@ Describe 'Trusted replication pull request publishing' {
             testType = 'device'
             testFilter = 'Issue37440'
             expectedFailureSignature = 'Expected: 1; Actual: 0'
+            actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
             reproductionSteps = @('Launch the scenario', 'Tap the action button')
         }
         $evidence = [pscustomobject]@{
@@ -137,6 +168,36 @@ Describe 'Trusted replication pull request publishing' {
         $body | Should -Match '\[!\[Reproduction preview\]\(https://example.test/preview.gif\)\]\(https://example.test/repro.mp4\)'
         $body | Should -Match 'No linked repository, archive, binary, script, package, or arbitrary external file was downloaded'
         $body | Should -Match 'MAUI_COPILOT_REPLICATION issue=37440 platform=android'
+    }
+
+    It 'rejects publication when the expected signature is absent from the failure message' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 12345
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'unit'
+            testFilter = 'Issue12345'
+            expectedFailureSignature = 'Issue12345'
+            actualFailureMessage = 'Xunit failure: expected red but was blue'
+            reproductionSteps = @('Run the test')
+        }
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        {
+            New-ReplicationPullRequestBody `
+                -Candidate $candidate `
+                -Evidence $evidence `
+                -IssueTitle 'Reported behavior' `
+                -TargetOwner dotnet `
+                -TargetRepository maui `
+                -BuildUrl ''
+        } | Should -Throw '*targeted failure message*'
     }
 
     It 'uses an add-only staged diff and creates a draft PR from the fork' {

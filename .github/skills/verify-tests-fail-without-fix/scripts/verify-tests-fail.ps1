@@ -37,6 +37,21 @@
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
     If not provided, auto-detects from test files in the git diff.
 
+.PARAMETER TestProject
+    Trusted project key for an explicitly targeted unit or device test.
+
+.PARAMETER TestProjectPath
+    Trusted repository-relative project path for an explicitly targeted unit test.
+
+.PARAMETER TestClass
+    Trusted fully-qualified class name used for exact test isolation.
+
+.PARAMETER TestMethod
+    Trusted method name used for exact test isolation.
+
+.PARAMETER MachineResultPath
+    Optional replication-only JSON output containing the exact targeted failure message.
+
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
@@ -80,6 +95,21 @@ param(
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
+    [string]$TestProject,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestProjectPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestClass,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestMethod,
+
+    [Parameter(Mandatory = $false)]
+    [string]$MachineResultPath,
+
+    [Parameter(Mandatory = $false)]
     [string[]]$FixFiles,
 
     [Parameter(Mandatory = $false)]
@@ -98,6 +128,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
+
+if (-not [string]::IsNullOrWhiteSpace($MachineResultPath)) {
+    if (-not [IO.Path]::IsPathRooted($MachineResultPath)) {
+        $MachineResultPath = Join-Path $RepoRoot $MachineResultPath
+    }
+    $machineResultDirectory = Split-Path -Parent $MachineResultPath
+    if ($machineResultDirectory) {
+        New-Item -ItemType Directory -Path $machineResultDirectory -Force | Out-Null
+    }
+    Remove-Item -LiteralPath $MachineResultPath -Force -ErrorAction SilentlyContinue
+}
 
 # Normalize platform name (accept both "catalyst" and "maccatalyst")
 if ($Platform -eq "maccatalyst") {
@@ -488,7 +529,11 @@ function Invoke-TestRun {
         }
 
         "XamlUnitTest" {
-            $projectPath = Join-Path $RepoRoot "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj"
+            $projectPath = if ($MachineResultPath -and $DetectedProjectPath) {
+                Join-Path $RepoRoot $DetectedProjectPath
+            } else {
+                Join-Path $RepoRoot "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj"
+            }
             Write-Host "🧪 Running XAML unit tests: $projectPath" -ForegroundColor Cyan
             Write-Host "   Filter: $Filter" -ForegroundColor Gray
 
@@ -845,6 +890,7 @@ function Invoke-TestRunWithRetry {
         # requested platform SDK pack. Return immediately so they flow to INCONCLUSIVE without
         # burning repeated full test runs.
         if (-not $result.EnvError -or $result.SnapshotBaselineMissing -or $result.UnsupportedWorkloadPackFailure) {
+            $result.ResultLogFile = $logFileAttempt
             return $result
         }
 
@@ -883,6 +929,7 @@ function Invoke-TestRunWithRetry {
             $result.RetriesExhausted = $true
             $result.WindowsDeviceNoResultAttemptCount = $windowsDeviceNoResultAttemptCount
             $result.WindowsDeviceTargetTimeoutAttemptCount = $windowsDeviceTargetTimeoutAttemptCount
+            $result.ResultLogFile = $logFileAttempt
             Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
             return $result
         }
@@ -956,6 +1003,230 @@ function Invoke-TestRunConfirmed {
 # ============================================================
 # Parse test results from output (supports all test types)
 # ============================================================
+function Get-TargetedTestFailureMessage {
+    param(
+        [Parameter(Mandatory = $true)][string]$LogFile,
+        [Parameter(Mandatory = $true)][string]$TargetClass,
+        [Parameter(Mandatory = $true)][string]$TargetMethod,
+        [string]$TargetTestType = '',
+        [string]$TargetFilter = ''
+    )
+
+    if (-not (Test-Path -LiteralPath $LogFile -PathType Leaf)) {
+        return ''
+    }
+
+    $content = Get-Content -LiteralPath $LogFile -Raw
+    $shortClass = ($TargetClass -split '\.')[-1]
+    $identities = @(
+        "$TargetClass.$TargetMethod",
+        "$shortClass.$TargetMethod",
+        $TargetMethod
+    ) | Sort-Object -Unique
+
+    $segments = [Collections.Generic.List[string]]::new()
+    foreach ($identity in $identities) {
+        $escapedIdentity = [regex]::Escape($identity)
+        $patterns = @(
+            "(?ms)^\s*Failed\s+$escapedIdentity(?=\s|\(|\[|$).*?(?=^\s*(?:Failed|Passed|Skipped)\s+\S|^\s*Total tests:|\z)",
+            "(?ms)^\s*\[xUnit\.net[^\r\n]*\]\s+$escapedIdentity(?=\s|\(|\[|$).*?(?=^\s*\[xUnit\.net[^\r\n]*\]\s+\S+.*\[(?:FAIL|PASS)\]\s*$|^\s*Failed\s+\S|^\s*Total tests:|\z)",
+            "(?ms)^\s*\[FAIL\]\s+$escapedIdentity(?=\s|\(|$).*?(?=^\s*\[(?:FAIL|PASS)\]\s+\S|\z)",
+            "(?ms)^\s*\[(?:UI|Unit|Device|XamlUnit)Test\]\s+$escapedIdentity(?=\s|\(|:|$).*?(?=^\s*\[(?:UI|Unit|Device|XamlUnit)Test\]\s+$escapedIdentity\s*:|\z)"
+        )
+        foreach ($pattern in $patterns) {
+            foreach ($match in [regex]::Matches($content, $pattern)) {
+                $segments.Add($match.Value)
+            }
+        }
+    }
+
+    $consoleFailureMessage = ''
+    foreach ($segment in $segments) {
+        $messageMatch = [regex]::Match(
+            $segment,
+            '(?ms)^\s*(?:\[xUnit\.net[^\r\n]*\]\s*)?Error Message:\s*\r?\n(?<message>.*?)(?=^\s*(?:\[xUnit\.net[^\r\n]*\]\s*)?(?:Stack Trace:|Standard Output Messages?:)|^\s*(?:Failed|Passed|Skipped)\s+\S|\z)'
+        )
+        if (-not $messageMatch.Success) {
+            continue
+        }
+
+        $messageLines = @(
+            $messageMatch.Groups['message'].Value -split '\r?\n' |
+                ForEach-Object {
+                    ($_ -replace '^\s*\[xUnit\.net[^\]]*\]\s*', '').TrimEnd()
+                } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+        if ($messageLines.Count -gt 0) {
+            $consoleFailureMessage = ($messageLines -join [Environment]::NewLine).Trim()
+            break
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($consoleFailureMessage) -and
+        $TargetTestType -notin @('UITest', 'DeviceTest')) {
+        return $consoleFailureMessage
+    }
+
+    $repoPath = [IO.Path]::GetFullPath($RepoRoot).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $pathComparison = if ($IsWindows) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+    $candidateResultPaths = [Collections.Generic.List[string]]::new()
+    if ($TargetTestType -ceq 'UITest' -and
+        -not [string]::IsNullOrWhiteSpace($TargetFilter)) {
+        $trxBaseName = $TargetFilter -replace '[^A-Za-z0-9._-]', '_'
+        $candidateResultPaths.Add((Join-Path `
+            $RepoRoot `
+            "CustomAgentLogsTmp/UITests/TestResults/$trxBaseName.trx"))
+    }
+    $deviceDiagnosticsPath = "$LogFile.diagnostics"
+    if ($TargetTestType -ceq 'DeviceTest' -and
+        (Test-Path -LiteralPath $deviceDiagnosticsPath -PathType Container)) {
+        foreach ($resultFile in @(Get-ChildItem `
+            -LiteralPath $deviceDiagnosticsPath `
+            -Filter '*.xml' `
+            -File `
+            -Recurse `
+            -ErrorAction SilentlyContinue |
+                Select-Object -First 20)) {
+            $candidateResultPaths.Add($resultFile.FullName)
+        }
+    }
+
+    foreach ($candidatePath in @($candidateResultPaths | Sort-Object -Unique)) {
+        if ([string]::IsNullOrWhiteSpace($candidatePath)) {
+            continue
+        }
+        try {
+            $fullPath = [IO.Path]::GetFullPath($candidatePath)
+        } catch {
+            continue
+        }
+        if (-not $fullPath.StartsWith(
+            "$repoPath$([IO.Path]::DirectorySeparatorChar)",
+            $pathComparison)) {
+            continue
+        }
+        $resultFile = Get-Item -LiteralPath $fullPath -ErrorAction SilentlyContinue
+        if (-not $resultFile -or $resultFile.Length -gt 10MB) {
+            continue
+        }
+
+        $xmlReader = $null
+        try {
+            $xmlSettings = [Xml.XmlReaderSettings]::new()
+            $xmlSettings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+            $xmlSettings.XmlResolver = $null
+            $xmlSettings.MaxCharactersInDocument = 10MB
+            $xmlReader = [Xml.XmlReader]::Create($fullPath, $xmlSettings)
+            $resultXml = [Xml.XmlDocument]::new()
+            $resultXml.XmlResolver = $null
+            $resultXml.Load($xmlReader)
+        } catch {
+            continue
+        } finally {
+            if ($xmlReader) {
+                $xmlReader.Dispose()
+            }
+        }
+        $messages = [Collections.Generic.List[string]]::new()
+        foreach ($testNode in @($resultXml.SelectNodes('//test'))) {
+            if (
+                $testNode.GetAttribute('type') -cne $TargetClass -or
+                $testNode.GetAttribute('method') -cne $TargetMethod -or
+                $testNode.GetAttribute('result') -cne 'Fail'
+            ) {
+                continue
+            }
+            $messageNode = $testNode.SelectSingleNode('failure/message')
+            $message = if ($messageNode) {
+                [string]$messageNode.InnerText
+            } else {
+                [string]$testNode.GetAttribute('message')
+            }
+            $message = $message.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($message) -and
+                -not $messages.Contains($message)) {
+                $messages.Add($message)
+            }
+        }
+        if ($messages.Count -gt 0) {
+            return ($messages -join [Environment]::NewLine)
+        }
+
+        foreach ($resultNode in @($resultXml.SelectNodes(
+            '//*[local-name()="UnitTestResult"]'
+        ))) {
+            if ($resultNode.GetAttribute('outcome') -cne 'Failed') {
+                continue
+            }
+            $resultName = [string]$resultNode.GetAttribute('testName')
+            $isTarget = $false
+            foreach ($identity in $identities) {
+                if ($resultName -ceq $identity -or
+                    $resultName.StartsWith(
+                        "$identity(",
+                        [StringComparison]::Ordinal)) {
+                    $isTarget = $true
+                    break
+                }
+            }
+            if (-not $isTarget) {
+                continue
+            }
+            $messageNode = $resultNode.SelectSingleNode(
+                './*[local-name()="Output"]/*[local-name()="ErrorInfo"]/*[local-name()="Message"]'
+            )
+            $message = if ($messageNode) {
+                [string]$messageNode.InnerText
+            } else {
+                ''
+            }
+            $message = $message.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($message) -and
+                -not $messages.Contains($message)) {
+                $messages.Add($message)
+            }
+        }
+        if ($messages.Count -gt 0) {
+            return ($messages -join [Environment]::NewLine)
+        }
+    }
+
+    return $consoleFailureMessage
+}
+
+function Write-ReplicationVerifierMachineResult {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$TestEntry,
+        [Parameter(Mandatory = $true)][hashtable]$TestResult,
+        [Parameter(Mandatory = $true)][string]$ActualFailureMessage
+    )
+
+    if ([string]::IsNullOrWhiteSpace($MachineResultPath)) {
+        return
+    }
+
+    [ordered]@{
+        schemaVersion = 1
+        testType = [string]$TestEntry.Type
+        testFilter = [string]$TestEntry.Filter
+        testProject = [string]$TestEntry.Project
+        testProjectPath = [string]$TestEntry.ProjectPath
+        testClass = [string]$TestEntry.ClassFilter
+        testMethod = [string]($TestEntry.Methods | Select-Object -First 1)
+        failed = -not [bool]$TestResult.Passed
+        actualFailureMessage = $ActualFailureMessage
+    } |
+        ConvertTo-Json -Depth 10 |
+        Set-Content -LiteralPath $MachineResultPath -Encoding utf8NoBOM
+}
+
 function Get-TestResultFromOutput {
     <#
     .SYNOPSIS
@@ -1794,12 +2065,36 @@ if ($DetectedFixFiles.Count -eq 0) {
         }
     } else {
         $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+        if ($MachineResultPath -and (-not $TestClass -or -not $TestMethod)) {
+            throw 'Explicit test verification requires -TestClass and -TestMethod.'
+        }
+        if ($MachineResultPath -and
+            $effectiveType -in @('UnitTest', 'XamlUnitTest') -and
+            -not $TestProjectPath) {
+            throw "Explicit $effectiveType verification requires -TestProjectPath."
+        }
+        if ($MachineResultPath -and $effectiveType -eq 'UnitTest' -and -not $TestProject) {
+            throw 'Explicit UnitTest verification requires -TestProject.'
+        }
+        if ($MachineResultPath -and $effectiveType -eq 'DeviceTest' -and -not $TestProject) {
+            throw 'Explicit DeviceTest verification requires -TestProject.'
+        }
+        $effectiveFilter = if (
+            $MachineResultPath -and
+            $effectiveType -in @('UnitTest', 'XamlUnitTest')
+        ) {
+            "FullyQualifiedName=$TestClass.$TestMethod"
+        } else {
+            $TestFilter
+        }
         $AllDetectedTests = @(@{
             Type = $effectiveType
             TestName = $TestFilter
-            Filter = $TestFilter
-            Project = $null
-            ProjectPath = $null
+            Filter = $effectiveFilter
+            Project = if ($MachineResultPath) { $TestProject } else { $null }
+            ProjectPath = if ($MachineResultPath) { $TestProjectPath } else { $null }
+            ClassFilter = if ($MachineResultPath) { $TestClass } else { $null }
+            Methods = if ($MachineResultPath) { @($TestMethod) } else { @() }
         })
     }
 
@@ -1900,6 +2195,29 @@ if ($DetectedFixFiles.Count -eq 0) {
         $testResult.TestName = $testEntry.TestName
         $testResult.TestType = $testEntry.Type
         $allResults += $testResult
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($MachineResultPath)) {
+        if ($AllDetectedTests.Count -ne 1 -or $allResults.Count -ne 1) {
+            throw 'Machine-readable verification requires exactly one targeted test entry.'
+        }
+        $targetEntry = $AllDetectedTests[0]
+        $targetResult = $allResults[0]
+        $actualFailureMessage = if (-not $targetResult.Passed) {
+            Get-TargetedTestFailureMessage `
+                -LogFile ([string]$targetResult.ResultLogFile) `
+                -TargetClass ([string]$targetEntry.ClassFilter) `
+                -TargetMethod ([string]($targetEntry.Methods | Select-Object -First 1)) `
+                -TargetTestType ([string]$targetEntry.Type) `
+                -TargetFilter ([string]$targetEntry.Filter)
+        } else {
+            ''
+        }
+        $targetResult.FailureMessage = $actualFailureMessage
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry $targetEntry `
+            -TestResult $targetResult `
+            -ActualFailureMessage $actualFailureMessage
     }
 
     # Evaluate results
@@ -2014,12 +2332,36 @@ if (-not $TestFilter) {
 } else {
     # Explicit filter provided — use single test entry with given/detected type
     $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+    if ($MachineResultPath -and (-not $TestClass -or -not $TestMethod)) {
+        throw 'Explicit test verification requires -TestClass and -TestMethod.'
+    }
+    if ($MachineResultPath -and
+        $effectiveType -in @('UnitTest', 'XamlUnitTest') -and
+        -not $TestProjectPath) {
+        throw "Explicit $effectiveType verification requires -TestProjectPath."
+    }
+    if ($MachineResultPath -and $effectiveType -eq 'UnitTest' -and -not $TestProject) {
+        throw 'Explicit UnitTest verification requires -TestProject.'
+    }
+    if ($MachineResultPath -and $effectiveType -eq 'DeviceTest' -and -not $TestProject) {
+        throw 'Explicit DeviceTest verification requires -TestProject.'
+    }
+    $effectiveFilter = if (
+        $MachineResultPath -and
+        $effectiveType -in @('UnitTest', 'XamlUnitTest')
+    ) {
+        "FullyQualifiedName=$TestClass.$TestMethod"
+    } else {
+        $TestFilter
+    }
     $AllDetectedTests = @(@{
         Type = $effectiveType
         TestName = $TestFilter
-        Filter = $TestFilter
-        Project = $null
-        ProjectPath = $null
+        Filter = $effectiveFilter
+        Project = if ($MachineResultPath) { $TestProject } else { $null }
+        ProjectPath = if ($MachineResultPath) { $TestProjectPath } else { $null }
+        ClassFilter = if ($MachineResultPath) { $TestClass } else { $null }
+        Methods = if ($MachineResultPath) { @($TestMethod) } else { @() }
         Runner = switch ($effectiveType) {
             "UITest" { "BuildAndRunHostApp" }
             "DeviceTest" { "Run-DeviceTests" }

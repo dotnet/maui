@@ -1509,10 +1509,17 @@ function Assert-SourceTextIsSafe {
         throw "Candidate source '$Path' contains Unicode escapes that could obscure denied code."
     }
 
-    if ($RequireGuard) {
+    $normalizedPath = $Path.Replace('\', '/')
+    if (
+        [System.IO.Path]::GetExtension($Path) -ieq '.cs' -and
+        $normalizedPath -cnotmatch '^src/Controls/tests/TestCases\.HostApp/'
+    ) {
         Assert-ReplicationTestLifecycleSafety `
             -Content $normalized `
             -Path $Path
+    }
+
+    if ($RequireGuard) {
         Assert-ReplicationTestGuard `
             -Content $normalized `
             -Path $Path `
@@ -2235,7 +2242,12 @@ function Assert-ReplicationVerificationEvidence {
                 'platform',
                 'testType',
                 'testFilter',
+                'testProject',
+                'testProjectPath',
+                'testClass',
+                'testMethod',
                 'expectedFailureSignature',
+                'actualFailureMessage',
                 'verifierExitCode',
                 'verifierPassed',
                 'signatureMatched',
@@ -2307,7 +2319,25 @@ function Assert-ReplicationVerificationEvidence {
         if ($resultSignature -cne $Manifest.ExpectedFailurePattern) {
             throw 'Verification result failure signature does not exactly match the manifest.'
         }
-
+        $actualFailureProperty = Find-AliasedProperty `
+            -Object $result `
+            -Names @('actualFailureMessage') `
+            -Context 'Verification result' `
+            -Required
+        if ($actualFailureProperty.Value -isnot [string]) {
+            throw 'Verification result actual failure message must be a string.'
+        }
+        $actualFailureMessage = [string]$actualFailureProperty.Value
+        if ([string]::IsNullOrWhiteSpace($actualFailureMessage) -or
+            $actualFailureMessage.Length -gt 10000 -or
+            $actualFailureMessage.Contains([char]0)) {
+            throw 'Verification result actual failure message is missing or invalid.'
+        }
+        if (-not $actualFailureMessage.Contains(
+            $resultSignature,
+            [StringComparison]::Ordinal)) {
+            throw 'The targeted test failure message does not contain the expected failure signature.'
+        }
         $exitCodeProperty = Find-AliasedProperty `
             -Object $result `
             -Names @('verifierExitCode') `
@@ -2382,7 +2412,7 @@ function Assert-ReplicationVerificationEvidence {
             throw 'Verification console does not prove the named test failed as expected.'
         }
 
-        return
+        return $result
     }
 
     $report = Read-BoundedUtf8File `
@@ -2893,9 +2923,12 @@ function Invoke-ReplicationCandidateValidation {
         $null = Read-ReplicationEvidenceMetadata `
             -Inventory $inventory `
             -Manifest $manifest
-        Assert-ReplicationVerificationEvidence `
+        $verificationResult = Assert-ReplicationVerificationEvidence `
             -Inventory $inventory `
             -Manifest $manifest
+        if ($manifest.ArtifactContract -and $null -eq $verificationResult) {
+            throw 'Verification evidence must include a trusted targeted failure message.'
+        }
         Assert-ReplicationMediaEvidence `
             -Inventory $inventory `
             -Probe $MediaProbe
@@ -2913,6 +2946,11 @@ function Invoke-ReplicationCandidateValidation {
             testFilter = $manifest.TestFilter
             expectedFailureSignature = $manifest.ExpectedFailurePattern
             expectedFailurePattern = $manifest.ExpectedFailurePattern
+            actualFailureMessage = if ($verificationResult) {
+                [string]$verificationResult.actualFailureMessage
+            } else {
+                $null
+            }
             reproductionMarker = $manifest.ReproductionMarker
             files = @($manifest.ProposedFiles)
             proposedFiles = @($manifest.ProposedFiles)

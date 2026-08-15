@@ -22,6 +22,18 @@ param(
     [ValidateLength(1, 500)]
     [string]$TestFilter,
 
+    [string]$TestProject = '',
+
+    [string]$TestProjectPath = '',
+
+    [Parameter(Mandatory = $true)]
+    [ValidateLength(1, 500)]
+    [string]$TestClass,
+
+    [Parameter(Mandatory = $true)]
+    [ValidateLength(1, 500)]
+    [string]$TestMethod,
+
     [Parameter(Mandatory = $true)]
     [ValidateLength(3, 1000)]
     [string]$ExpectedFailureSignature,
@@ -90,6 +102,7 @@ if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $consoleLog = Join-Path $OutputDirectory 'verification-console.log'
 $resultPath = Join-Path $OutputDirectory 'verification-result.json'
+$machineResultPath = Join-Path $OutputDirectory 'verifier-machine-result.json'
 
 $secretNames = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN', 'GH_REPLICATION_TOKEN')
 $savedSecrets = @{}
@@ -108,8 +121,17 @@ try {
         '-Platform', $Platform,
         '-TestType', $TestType,
         '-TestFilter', $TestFilter,
+        '-TestClass', $TestClass,
+        '-TestMethod', $TestMethod,
+        '-MachineResultPath', $machineResultPath,
         '-PRNumber', [string]$IssueNumber
     )
+    if (-not [string]::IsNullOrWhiteSpace($TestProject)) {
+        $arguments += @('-TestProject', $TestProject)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($TestProjectPath)) {
+        $arguments += @('-TestProjectPath', $TestProjectPath)
+    }
 
     $output = @(& pwsh @arguments 2>&1)
     $exitCode = $LASTEXITCODE
@@ -139,7 +161,41 @@ $combined = ($candidateLogs | Sort-Object -Unique | ForEach-Object {
 }) -join [Environment]::NewLine
 
 $verifierPassed = $exitCode -eq 0 -and $combined -match 'VERIFICATION PASSED'
-$signatureMatched = Test-ReplicationExpectedFailureSignature -Content $combined -Signature $ExpectedFailureSignature
+$actualFailureMessage = ''
+$expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
+    "FullyQualifiedName=$TestClass.$TestMethod"
+} else {
+    $TestFilter
+}
+if (Test-Path -LiteralPath $machineResultPath -PathType Leaf) {
+    try {
+        $machineResultFile = Get-Item -LiteralPath $machineResultPath
+        if ($machineResultFile.Length -gt 64KB) {
+            throw 'Verifier machine result exceeds the trusted size limit.'
+        }
+        $machineResult = Get-Content -LiteralPath $machineResultPath -Raw |
+            ConvertFrom-Json -ErrorAction Stop
+        if (
+            [int]$machineResult.schemaVersion -eq 1 -and
+            $machineResult.failed -eq $true -and
+            ([string]$machineResult.testType) -ceq $TestType -and
+            ([string]$machineResult.testFilter) -ceq $expectedMachineFilter -and
+            ([string]$machineResult.testProject) -ceq $TestProject -and
+            ([string]$machineResult.testProjectPath) -ceq $TestProjectPath -and
+            ([string]$machineResult.testClass) -ceq $TestClass -and
+            ([string]$machineResult.testMethod) -ceq $TestMethod -and
+            ([string]$machineResult.actualFailureMessage).Length -le 10000
+        ) {
+            $actualFailureMessage = [string]$machineResult.actualFailureMessage
+        }
+    } catch {
+        $actualFailureMessage = ''
+    }
+    Remove-Item -LiteralPath $machineResultPath -Force
+}
+$signatureMatched = Test-ReplicationExpectedFailureSignature `
+    -Content $actualFailureMessage `
+    -Signature $ExpectedFailureSignature
 $infrastructureFailure = Test-ReplicationInfrastructureFailure -Content $combined
 $verificationPassed = $verifierPassed -and $signatureMatched -and -not $infrastructureFailure
 
@@ -149,7 +205,12 @@ $result = [ordered]@{
     platform = $Platform
     testType = $TestType
     testFilter = $TestFilter
+    testProject = $TestProject
+    testProjectPath = $TestProjectPath
+    testClass = $TestClass
+    testMethod = $TestMethod
     expectedFailureSignature = $ExpectedFailureSignature
+    actualFailureMessage = $actualFailureMessage
     verifierExitCode = $exitCode
     verifierPassed = $verifierPassed
     signatureMatched = $signatureMatched

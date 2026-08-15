@@ -141,6 +141,12 @@ $baseSha = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @
 $testType = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('testType') -Description 'test type')
 $testFilter = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('testFilter') -Description 'test filter')
 $failureSignature = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('expectedFailureSignature', 'failureSignature') -Description 'failure signature')
+$actualFailureMessage = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('actualFailureMessage') -Description 'targeted failure message')
+if (-not $actualFailureMessage.Contains(
+    $failureSignature,
+    [StringComparison]::Ordinal)) {
+    throw 'Validated candidate targeted failure message does not contain the expected failure signature.'
+}
 
 $evidenceRoot = (Resolve-Path -LiteralPath $EvidenceDirectory).Path
 $fileNames = [ordered]@{
@@ -175,6 +181,7 @@ $publication = [ordered]@{
         type = $testType
         filter = $testFilter
         expectedFailureSignature = $failureSignature
+        actualFailureMessage = $actualFailureMessage
     }
     capture = Get-Content -LiteralPath (Join-Path $evidenceRoot 'evidence.json') -Raw | ConvertFrom-Json -Depth 20
     blobs = [ordered]@{}

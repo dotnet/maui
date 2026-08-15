@@ -397,6 +397,11 @@ $guardHelper
             'DeviceTest' { 'device' }
             'UITest' { 'ui' }
         }
+        $deviceId = switch ($Fixture.Platform) {
+            'catalyst' { 'mac-catalyst-host' }
+            'windows' { 'windows-host' }
+            default { 'device-1' }
+        }
         $manifest = [ordered]@{
             schemaVersion = 1
             issueNumber = $Fixture.IssueNumber
@@ -405,7 +410,7 @@ $guardHelper
             status = 'reproduced'
             blocked = $null
             selectedDevice = [ordered]@{
-                id = 'device-1'
+                id = $deviceId
                 name = 'Test Device'
                 osVersion = '1.0'
             }
@@ -453,7 +458,7 @@ $guardHelper
         $evidenceMetadata = [ordered]@{
             schemaVersion = 1
             platform = $Fixture.Platform
-            device = 'device-1'
+            device = $deviceId
             durationSeconds = 4.25
             dimensions = [ordered]@{
                 width = 720
@@ -489,6 +494,7 @@ $guardHelper
             testType = $Fixture.TestType
             testFilter = $Fixture.TestFilter
             expectedFailureSignature = $Fixture.FailurePattern
+            actualFailureMessage = "Xunit.Sdk.XunitException: $($Fixture.FailurePattern)"
             verifierExitCode = 0
             verifierPassed = $true
             signatureMatched = $true
@@ -508,7 +514,7 @@ $guardHelper
                 baseSha = $baseSha
                 attempt = 1
                 succeeded = $true
-                device = 'device-1'
+                device = $deviceId
                 evidenceManifest = 'evidence/evidence.json'
             })
 
@@ -615,8 +621,25 @@ Describe 'Validate-ReplicationCandidate happy paths' {
         $result.baseSha | Should -BeExactly $fixture.BaseSha
         $result.testType | Should -BeExactly 'unit'
         $result.expectedFailureSignature | Should -BeExactly $fixture.FailurePattern
+        $result.actualFailureMessage |
+            Should -BeExactly "Xunit.Sdk.XunitException: $($fixture.FailurePattern)"
         $result.files | Should -Be @($fixture.CandidatePath)
         $result.reproductionSteps.Count | Should -Be 2
+    }
+
+    It 'validates the selected host identifier for <Platform> evidence' -TestCases @(
+        @{ Platform = 'catalyst'; DeviceId = 'mac-catalyst-host' },
+        @{ Platform = 'windows'; DeviceId = 'windows-host' }
+    ) {
+        param($Platform, $DeviceId)
+
+        $fixture = New-ValidationFixture -Platform $Platform
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+        (Get-Content -LiteralPath (Join-Path $fixture.EvidenceDir 'evidence/evidence.json') -Raw |
+            ConvertFrom-Json).device | Should -BeExactly $DeviceId
     }
 
     It 'rejects an artifact contract without a successful trusted execution result' {
@@ -924,6 +947,66 @@ public class $($fixture.TestName)
             Should -Throw '*unguarded test-class constructor*'
     }
 
+    It 'rejects pre-execution code in an auxiliary generated C# file' {
+        $fixture = New-ValidationFixture
+        $helperPath = 'src/Core/tests/UnitTests/Issue12345Bootstrap.cs'
+        $helperSource = @'
+using System.Runtime.CompilerServices;
+
+public static class Issue12345Bootstrap
+{
+    [ModuleInitializer]
+    public static void Initialize() => throw new Exception("Runs before the guarded test");
+}
+'@
+        Write-FixtureManifest `
+            -Fixture $fixture `
+            -Overrides @{ proposedFiles = @($fixture.CandidatePath, $helperPath) }
+        Write-TestText `
+            -Path $fixture.PatchPath `
+            -Value (
+                (New-AddOnlyPatch `
+                    -Path $fixture.CandidatePath `
+                    -Content $fixture.Source) +
+                (New-AddOnlyPatch `
+                    -Path $helperPath `
+                    -Content $helperSource)
+            )
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*unguarded test lifecycle hook*'
+    }
+
+    It 'allows a UI HostApp companion constructor' {
+        $fixture = New-ValidationFixture -TestType UITest
+        $hostPath = 'src/Controls/tests/TestCases.HostApp/Issues/Issue12345Page.xaml.cs'
+        $hostSource = @'
+public partial class Issue12345Page : ContentPage
+{
+    public Issue12345Page()
+    {
+        InitializeComponent();
+    }
+}
+'@
+        Write-FixtureManifest `
+            -Fixture $fixture `
+            -Overrides @{ proposedFiles = @($fixture.CandidatePath, $hostPath) }
+        Write-TestText `
+            -Path $fixture.PatchPath `
+            -Value (
+                (New-AddOnlyPatch `
+                    -Path $fixture.CandidatePath `
+                    -Content $fixture.Source) +
+                (New-AddOnlyPatch `
+                    -Path $hostPath `
+                    -Content $hostSource)
+            )
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+    }
+
     It 'rejects a source-level verification spoof' {
         $fixture = New-ValidationFixture
         Write-FixturePatch `
@@ -1029,6 +1112,23 @@ Describe 'Validate-ReplicationCandidate verification boundary' {
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*signatureMatched*'
+    }
+
+    It 'rejects a signature found only in machine-result metadata, not the failure message' {
+        $fixture = New-ValidationFixture `
+            -TestName Issue12345 `
+            -TestFilter Issue12345 `
+            -FailurePattern Issue12345
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        $resultPath = Join-Path $fixture.EvidenceDir 'verification/verification-result.json'
+        $verificationResult = Get-Content -Raw -LiteralPath $resultPath | ConvertFrom-Json
+        $verificationResult.actualFailureMessage =
+            'Xunit.Sdk.EqualException: expected red but was blue'
+        $verificationResult.signatureMatched = $true
+        Write-TestJson -Path $resultPath -Value $verificationResult
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*targeted test failure message*'
     }
 }
 

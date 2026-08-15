@@ -212,7 +212,10 @@ Describe 'Record-Reproduction recorder adapters' {
         $start = (Get-ProcessRequest $harness Start)[0]
         $start.FilePath | Should -BeExactly 'adb'
         $start.ArgumentList[0..4] | Should -Be @('-s', 'emulator-5554', 'shell', 'sh', '-c')
-        $remoteCommand = $start.ArgumentList[5]
+        $start.ArgumentList[5] | Should -Match "^'.*'$"
+        $remoteCommand = $start.ArgumentList[5].Substring(
+            1,
+            $start.ArgumentList[5].Length - 2)
         $remoteCommand | Should -Match 'exec screenrecord'
         $remoteCommand | Should -Match '--size 1280x720'
         $remoteCommand | Should -Match '--bit-rate 4000000'
@@ -228,6 +231,7 @@ Describe 'Record-Reproduction recorder adapters' {
 
         $resolve = (Get-CommandRequest $harness 'Resolve Android recorder PID')[0]
         $resolve.ArgumentList[0..4] | Should -Be @('-s', 'emulator-5554', 'shell', 'sh', '-c')
+        $resolve.ArgumentList[5] | Should -Match "^'.*'$"
         $resolve.ArgumentList[5] | Should -Match ([regex]::Escape("$remotePath.pid"))
 
         $signal = (Get-CommandRequest $harness 'Signal Android recorder')[0]
@@ -237,6 +241,7 @@ Describe 'Record-Reproduction recorder adapters' {
         $waitForExit = (Get-CommandRequest $harness 'Wait for Android recorder exit')[0]
         $waitForExit.ArgumentList[0..4] |
             Should -Be @('-s', 'emulator-5554', 'shell', 'sh', '-c')
+        $waitForExit.ArgumentList[5] | Should -Match "^'.*'$"
         $waitForExit.ArgumentList[5] | Should -Match 'kill -0 4242'
 
         $finalization = (
@@ -244,6 +249,7 @@ Describe 'Record-Reproduction recorder adapters' {
         )[0]
         $finalization.ArgumentList[0..4] |
             Should -Be @('-s', 'emulator-5554', 'shell', 'sh', '-c')
+        $finalization.ArgumentList[5] | Should -Match "^'.*'$"
         $finalization.ArgumentList[5] | Should -Match ([regex]::Escape($remotePath))
         $finalization.ArgumentList[5] | Should -Match 'stable.*-ge 3'
 
@@ -284,10 +290,10 @@ Describe 'Record-Reproduction recorder adapters' {
         $harness = New-RecordingHarness
         $evidenceDir = Join-Path $TestDrive 'catalyst evidence'
 
-        Invoke-TestRecording `
+        $result = Invoke-TestRecording `
             -Harness $harness `
             -Platform catalyst `
-            -EvidenceDir $evidenceDir | Out-Null
+            -EvidenceDir $evidenceDir
 
         $start = (Get-ProcessRequest $harness Start)[0]
         $start.FilePath | Should -BeExactly 'ffmpeg'
@@ -303,16 +309,19 @@ Describe 'Record-Reproduction recorder adapters' {
         ($start.ArgumentList -join ' ') | Should -Match 'fps=15'
         ($start.ArgumentList -join ' ') | Should -Match 'scale=1280:720'
         $start.ArgumentList | Should -Not -Contain ':default'
+        $result.device | Should -BeExactly 'mac-catalyst-host'
+        (Get-Content -LiteralPath (Join-Path $evidenceDir 'evidence.json') -Raw |
+            ConvertFrom-Json).device | Should -BeExactly 'mac-catalyst-host'
     }
 
     It 'constructs a no-audio bounded gdigrab desktop command for Windows' {
         $harness = New-RecordingHarness
         $evidenceDir = Join-Path $TestDrive 'windows evidence'
 
-        Invoke-TestRecording `
+        $result = Invoke-TestRecording `
             -Harness $harness `
             -Platform windows `
-            -EvidenceDir $evidenceDir | Out-Null
+            -EvidenceDir $evidenceDir
 
         $start = (Get-ProcessRequest $harness Start)[0]
         $start.FilePath | Should -BeExactly 'ffmpeg'
@@ -322,6 +331,9 @@ Describe 'Record-Reproduction recorder adapters' {
         $start.ArgumentList | Should -Contain '-t'
         ($start.ArgumentList -join ' ') | Should -Match 'fps=15'
         ($start.ArgumentList -join ' ') | Should -Match 'scale=1280:720'
+        $result.device | Should -BeExactly 'windows-host'
+        (Get-Content -LiteralPath (Join-Path $evidenceDir 'evidence.json') -Raw |
+            ConvertFrom-Json).device | Should -BeExactly 'windows-host'
     }
 
     It 'uses no name-based process termination or broad evidence deletion' {
@@ -348,6 +360,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
         $stops = Get-ProcessRequest $harness Stop
         $stops.Count | Should -Be 1
         $stops[0].Handle.Id | Should -Be 4101
+        $stops[0].GraceSeconds | Should -Be 15
         [object]::ReferenceEquals($stops[0].Handle, $harness.State.Handles[0]) |
             Should -BeTrue
     }

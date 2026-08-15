@@ -22,6 +22,49 @@ BeforeAll {
         }, $true)
         Invoke-Expression $function.Extent.Text
     }
+
+    function New-ReplicationVerifierStub {
+        param(
+            [Parameter(Mandatory = $true)][string]$Path,
+            [Parameter(Mandatory = $true)][string]$ActualFailureMessage
+        )
+
+        $encodedMessage = [Convert]::ToBase64String(
+            [Text.Encoding]::UTF8.GetBytes($ActualFailureMessage))
+        @"
+param(
+    [string]`$Platform,
+    [string]`$TestType,
+    [string]`$TestFilter,
+    [string]`$TestProject,
+    [string]`$TestProjectPath,
+    [string]`$TestClass,
+    [string]`$TestMethod,
+    [string]`$MachineResultPath,
+    [string]`$PRNumber
+)
+`$message = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$encodedMessage'))
+[ordered]@{
+    schemaVersion = 1
+    testType = `$TestType
+    testFilter = if (`$TestType -in @('UnitTest', 'XamlUnitTest')) {
+        "FullyQualifiedName=`$TestClass.`$TestMethod"
+    } else {
+        `$TestFilter
+    }
+    testProject = `$TestProject
+    testProjectPath = `$TestProjectPath
+    testClass = `$TestClass
+    testMethod = `$TestMethod
+    failed = `$true
+    actualFailureMessage = `$message
+} | ConvertTo-Json | Set-Content -LiteralPath `$MachineResultPath -Encoding utf8NoBOM
+Write-Host 'VERIFY FAILURE ONLY MODE'
+Write-Host "[`$TestType] `$TestFilter FAILED"
+Write-Host 'VERIFICATION PASSED'
+exit 0
+"@ | Set-Content -LiteralPath $Path -Encoding utf8NoBOM
+    }
 }
 
 Describe 'Replication failure-only verification' {
@@ -57,5 +100,68 @@ Describe 'Replication failure-only verification' {
         $script:Source | Should -Match "& pwsh @arguments"
         $script:Source | Should -Match "signatureMatched"
         $script:Source | Should -Match "infrastructureFailure"
+    }
+
+    It 'persists and matches only the verifier machine result failure message' {
+        $verifier = Join-Path $TestDrive 'verifier.ps1'
+        $output = Join-Path $TestDrive 'success'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Assert.Equal() Failure: Issue12345 expected red but was blue'
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.actualFailureMessage |
+            Should -BeExactly 'Assert.Equal() Failure: Issue12345 expected red but was blue'
+        $result.signatureMatched | Should -BeTrue
+        $result.testProject | Should -BeExactly 'Controls.Core.UnitTests'
+        $result.testClass |
+            Should -BeExactly 'Microsoft.Maui.Controls.Tests.Issue12345Tests'
+        $result.testMethod | Should -BeExactly 'ReproducesIssue12345'
+        Test-Path -LiteralPath (Join-Path $output 'verifier-machine-result.json') |
+            Should -BeFalse
+    }
+
+    It 'does not match a signature present only in test metadata and console output' {
+        $verifier = Join-Path $TestDrive 'metadata-verifier.ps1'
+        $output = Join-Path $TestDrive 'metadata-mismatch'
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Assert.Equal() Failure: expected red but was blue'
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 12345 `
+            -Platform android `
+            -TestType UnitTest `
+            -TestFilter Issue12345 `
+            -TestProject Controls.Core.UnitTests `
+            -TestProjectPath src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj `
+            -TestClass Microsoft.Maui.Controls.Tests.Issue12345Tests `
+            -TestMethod ReproducesIssue12345 `
+            -ExpectedFailureSignature Issue12345 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $result = Get-Content -LiteralPath (Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.actualFailureMessage |
+            Should -BeExactly 'Assert.Equal() Failure: expected red but was blue'
+        $result.signatureMatched | Should -BeFalse
+        $result.verificationPassed | Should -BeFalse
     }
 }

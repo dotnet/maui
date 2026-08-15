@@ -16,6 +16,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'verify-tests-fail.ps1'
+    $script:VerifierSource = Get-Content -LiteralPath $scriptPath -Raw
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -23,7 +24,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-GateTestDetectionParameters', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -90,6 +91,123 @@ Describe 'Gate test detection snapshot pinning' {
         $params.DiffBase | Should -Be '0123456789abcdef'
         @($params.ChangedFiles).Count | Should -Be 0
         $params.ContainsKey('PRNumber') | Should -BeFalse
+    }
+}
+
+Describe 'Targeted failure message extraction' {
+    It 'returns only the exact target assertion message, not names or sibling failures' {
+        $log = New-LogFile @'
+[UnitTest] Issue12345 FAILED
+  Failed Microsoft.Maui.Tests.Issue12345Tests.ReproducesIssue [12 ms]
+  Error Message:
+   Xunit.Sdk.EqualException: expected red but was blue
+  Stack Trace:
+     at Microsoft.Maui.Tests.Issue12345Tests.ReproducesIssue()
+  Failed Microsoft.Maui.Tests.OtherTests.Unrelated [8 ms]
+  Error Message:
+   Issue12345 appeared only in an unrelated sibling assertion
+  Stack Trace:
+     at Microsoft.Maui.Tests.OtherTests.Unrelated()
+Total tests: 2
+'@
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.Tests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' |
+            Should -BeExactly 'Xunit.Sdk.EqualException: expected red but was blue'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'uses trusted project and class/method metadata for replication-scoped entries' {
+        $script:VerifierSource |
+            Should -Match 'Project\s*=\s*if \(\$MachineResultPath\) \{ \$TestProject \}'
+        $script:VerifierSource |
+            Should -Match 'ProjectPath\s*=\s*if \(\$MachineResultPath\) \{ \$TestProjectPath \}'
+        $script:VerifierSource |
+            Should -Match 'ClassFilter\s*=\s*if \(\$MachineResultPath\) \{ \$TestClass \}'
+        $script:VerifierSource |
+            Should -Match 'Methods\s*=\s*if \(\$MachineResultPath\) \{ @\(\$TestMethod\) \}'
+        $script:VerifierSource |
+            Should -Match '"FullyQualifiedName=\$TestClass\.\$TestMethod"'
+    }
+
+    It 'reads only the exact device target failure message from scoped xUnit XML' {
+        $RepoRoot = [IO.Path]::GetTempPath()
+        $log = New-LogFile '[DeviceTest] Issue12345 FAILED'
+        $diagnostics = "$log.diagnostics"
+        New-Item -ItemType Directory -Path $diagnostics | Out-Null
+        $resultFile = Join-Path $diagnostics 'device-target-results.xml'
+        @'
+<assemblies>
+  <assembly>
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.Issue12345Tests" method="ReproducesIssue" result="Fail">
+        <failure exception-type="Xunit.Sdk.EqualException">
+          <message><![CDATA[Expected red but was blue]]></message>
+          <stack-trace><![CDATA[at target]]></stack-trace>
+        </failure>
+      </test>
+      <test type="Microsoft.Maui.DeviceTests.OtherTests" method="Unrelated" result="Fail">
+        <failure exception-type="Xunit.Sdk.TrueException">
+          <message><![CDATA[Issue12345 appeared only in a sibling failure]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content -LiteralPath $resultFile -Encoding utf8NoBOM
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.DeviceTests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue12345 |
+            Should -BeExactly 'Expected red but was blue'
+
+        Remove-Item -LiteralPath $log -Force
+        Remove-Item -LiteralPath $diagnostics -Recurse -Force
+    }
+
+    It 'reads the exact UI target exception message from the authoritative TRX' {
+        $RepoRoot = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))
+        $trxPath = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/TestResults/Issue12345.trx'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $trxPath) -Force |
+            Out-Null
+        @'
+<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Results>
+    <UnitTestResult testName="Microsoft.Maui.UITests.Issue12345Tests.ReproducesIssue" outcome="Failed">
+      <Output>
+        <ErrorInfo>
+          <Message>Expected red but was blue</Message>
+          <StackTrace>at target</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult testName="Microsoft.Maui.UITests.OtherTests.Unrelated" outcome="Failed">
+      <Output>
+        <ErrorInfo>
+          <Message>Issue12345 appeared only in a sibling failure</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+</TestRun>
+'@ | Set-Content -LiteralPath $trxPath -Encoding utf8NoBOM
+        $log = New-LogFile '[UITest] Issue12345 FAILED'
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.UITests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' `
+            -TargetTestType UITest `
+            -TargetFilter Issue12345 |
+            Should -BeExactly 'Expected red but was blue'
+
+        Remove-Item -LiteralPath $log -Force
+        Remove-Item -LiteralPath $RepoRoot -Recurse -Force
     }
 }
 

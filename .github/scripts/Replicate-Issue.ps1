@@ -849,6 +849,12 @@ function Assert-GeneratedTestContent {
         $content = Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
         Assert-ReplicationGeneratedSourceSafety -Content $content -Path $file
         if ($file.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
+            $normalizedPath = $file.Replace('\', '/')
+            if ($normalizedPath -cnotmatch '^src/Controls/tests/TestCases\.HostApp/') {
+                Assert-ReplicationTestLifecycleSafety `
+                    -Content $content `
+                    -Path $file
+            }
             $testAttributeMatches = @([regex]::Matches(
                 $content,
                 '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*(?:Fact|Test)\b'
@@ -863,9 +869,6 @@ function Assert-GeneratedTestContent {
                     $file.Replace('\', '/') -cmatch '^src/Controls/tests/TestCases\.Shared\.Tests/'
                 )
             ) {
-                Assert-ReplicationTestLifecycleSafety `
-                    -Content $content `
-                    -Path $file
                 Assert-ReplicationTestGuard `
                     -Content $content `
                     -Path $file `
@@ -978,6 +981,152 @@ function Get-VerifierTestType {
         'device' { return 'DeviceTest' }
         'ui' { return 'UITest' }
         default { throw "Unsupported test type: $TestType" }
+    }
+}
+
+function Get-ReplicationTargetTestDeclarations {
+    param([Parameter(Mandatory = $true)][string[]]$Files)
+
+    $declarations = [Collections.Generic.List[object]]::new()
+    foreach ($file in $Files) {
+        if (-not $file.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)) {
+            continue
+        }
+
+        $content = Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
+        $classMatches = @([regex]::Matches(
+            $content,
+            '(?m)^\s*public(?<modifiers>(?:\s+(?:partial|sealed|abstract|static))*)\s+class\s+(?<name>[A-Za-z_]\w*)\b'
+        ))
+        $testMatches = @([regex]::Matches(
+            $content,
+            '(?ms)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*(?:Fact|Test)\b[^\]]*\]\s*(?:\[[^\]\r\n]+\]\s*)*(?:(?:public|internal|protected|private|static|async|virtual|override|new|sealed)\s+)*(?:[A-Za-z_][\w.<>,?\[\]]*\s+)+(?<method>[A-Za-z_]\w*)\s*\('
+        ))
+
+        foreach ($testMatch in $testMatches) {
+            $classMatch = $classMatches |
+                Where-Object {
+                    $_.Index -lt $testMatch.Index -and
+                    $_.Groups['modifiers'].Value -notmatch '\b(?:abstract|static)\b'
+                } |
+                Select-Object -Last 1
+            if (-not $classMatch) {
+                throw "Generated test source '$file' has a test method outside a named class."
+            }
+
+            $namespaceMatch = @([regex]::Matches(
+                $content.Substring(0, $classMatch.Index),
+                '(?m)^\s*namespace\s+(?<name>[A-Za-z_][\w.]*)\s*(?:;|\{)'
+            )) | Select-Object -Last 1
+            $className = $classMatch.Groups['name'].Value
+            $namespaceName = if ($namespaceMatch) {
+                $namespaceMatch.Groups['name'].Value
+            } else {
+                ''
+            }
+            $qualifiedClassName = if ($namespaceName) {
+                "$namespaceName.$className"
+            } else {
+                $className
+            }
+
+            $declarations.Add([pscustomobject]@{
+                File = $file.Replace('\', '/')
+                ClassName = $className
+                QualifiedClassName = $qualifiedClassName
+                MethodName = $testMatch.Groups['method'].Value
+            })
+        }
+    }
+
+    return @($declarations)
+}
+
+function Resolve-ReplicationVerifierMetadata {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Files,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('UITest', 'UnitTest', 'XamlUnitTest', 'DeviceTest')]
+        [string]$TestType,
+        [Parameter(Mandatory = $true)][string]$TestFilter,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [string]$DetectorPath = ''
+    )
+
+    $declarations = @(Get-ReplicationTargetTestDeclarations -Files $Files)
+    if ($declarations.Count -ne 1) {
+        throw "Generated files must resolve to exactly one targeted test method; found $($declarations.Count)."
+    }
+    $declaration = $declarations[0]
+
+    if ([string]::IsNullOrWhiteSpace($DetectorPath)) {
+        $DetectorPath = Join-Path $trustedScripts 'shared/Detect-TestsInDiff.ps1'
+    }
+    if (-not (Test-Path -LiteralPath $DetectorPath -PathType Leaf)) {
+        throw "Trusted test metadata detector was not found: $DetectorPath"
+    }
+
+    Push-Location $repoRoot
+    try {
+        $detectedTests = @(
+            & $DetectorPath `
+                -ChangedFiles $Files `
+                -Platform $Platform 6>$null
+        )
+    } finally {
+        Pop-Location
+    }
+    $matchingTests = @($detectedTests | Where-Object { $_.Type -ceq $TestType })
+    if ($matchingTests.Count -ne 1) {
+        throw "Generated files have ambiguous verifier metadata for $TestType; detected $($matchingTests.Count) matching entries."
+    }
+    $detectedTest = $matchingTests[0]
+    if (
+        -not $declaration.QualifiedClassName.Contains(
+            $TestFilter,
+            [StringComparison]::Ordinal) -and
+        -not $declaration.MethodName.Contains(
+            $TestFilter,
+            [StringComparison]::Ordinal) -and
+        ([string]$detectedTest.Filter) -cne $TestFilter
+    ) {
+        throw "The exact test filter '$TestFilter' does not identify the generated test class or method."
+    }
+    $detectedClassName = ([string]$detectedTest.TestName -split ' \(')[0]
+    if ($detectedClassName -cne $declaration.ClassName) {
+        throw "Detected test class '$detectedClassName' does not match generated declaration '$($declaration.ClassName)'."
+    }
+
+    $project = [string]$detectedTest.Project
+    $projectPath = [string]$detectedTest.ProjectPath
+    if ($TestType -eq 'UnitTest') {
+        if ([string]::IsNullOrWhiteSpace($project) -or
+            [string]::IsNullOrWhiteSpace($projectPath)) {
+            throw 'Unit test verifier metadata must resolve an exact project and project path.'
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $projectPath) -PathType Leaf)) {
+            throw "Resolved unit test project path does not exist: $projectPath"
+        }
+    } elseif ($TestType -eq 'XamlUnitTest') {
+        if ([string]::IsNullOrWhiteSpace($projectPath) -or
+            -not (Test-Path -LiteralPath (Join-Path $repoRoot $projectPath) -PathType Leaf)) {
+            throw "Resolved XAML unit test project path does not exist: $projectPath"
+        }
+    } elseif ($TestType -eq 'DeviceTest') {
+        if ([string]::IsNullOrWhiteSpace($project)) {
+            throw 'Device test verifier metadata must resolve an exact project.'
+        }
+        $classFilter = [string]$detectedTest.ClassFilter
+        if ($classFilter -cne $declaration.QualifiedClassName) {
+            throw "Device test class isolation metadata '$classFilter' does not match '$($declaration.QualifiedClassName)'."
+        }
+    }
+
+    return [pscustomobject]@{
+        Project = $project
+        ProjectPath = $projectPath
+        ClassName = $declaration.QualifiedClassName
+        MethodName = $declaration.MethodName
     }
 }
 
@@ -1350,6 +1499,7 @@ if (-not (Test-PathInsideRoot -Path $ContextPath -Root $ArtifactRoot)) {
 if (-not (Test-Path -LiteralPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Record-Reproduction.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') -PathType Leaf) -or
+    -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Detect-TestsInDiff.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath $trustedAppiumRunnerPath -PathType Leaf)) {
     throw 'Trusted replication scripts are incomplete.'
 }
@@ -1450,9 +1600,7 @@ try {
                 '-MaxDurationSeconds', '180',
                 '-MaxVideoBytes', [string](64MB)
             )
-            if ($DeviceUdid) {
-                $recordArguments += @('-DeviceUdid', $DeviceUdid)
-            }
+            $recordArguments += @('-DeviceUdid', $selectedDeviceId)
             Invoke-LoggedChildProcess `
                 -ScriptPath (Join-Path $trustedScripts 'shared/Record-Reproduction.ps1') `
                 -Arguments $recordArguments `
@@ -1526,6 +1674,11 @@ try {
             -Files $generatedFiles `
             -Issue $IssueNumber `
             -TestType $verifierTestType
+        $verifierMetadata = Resolve-ReplicationVerifierMetadata `
+            -Files $plannedTestFiles `
+            -TestType $verifierTestType `
+            -TestFilter ([string]$testProposal.testFilter) `
+            -Platform $Platform
 
         foreach ($file in $generatedFiles) {
             & git add -N -- $file
@@ -1540,10 +1693,18 @@ try {
                 '-Platform', $Platform,
                 '-TestType', $verifierTestType,
                 '-TestFilter', [string]$testProposal.testFilter,
+                '-TestClass', $verifierMetadata.ClassName,
+                '-TestMethod', $verifierMetadata.MethodName,
                 '-ExpectedFailureSignature', [string]$testProposal.expectedFailureSignature,
                 '-VerifierPath', (Join-Path $trustedSkills 'verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'),
                 '-OutputDirectory', $verificationDir
             )
+            if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.Project)) {
+                $verificationArgs += @('-TestProject', $verifierMetadata.Project)
+            }
+            if (-not [string]::IsNullOrWhiteSpace($verifierMetadata.ProjectPath)) {
+                $verificationArgs += @('-TestProjectPath', $verifierMetadata.ProjectPath)
+            }
             Invoke-LoggedChildProcess `
                 -ScriptPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') `
                 -Arguments $verificationArgs `

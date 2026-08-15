@@ -46,6 +46,8 @@ BeforeAll {
         'Get-ProposedTestFiles',
         'Assert-TestProposalMatchesPlan',
         'Get-VerifierTestType',
+        'Get-ReplicationTargetTestDeclarations',
+        'Resolve-ReplicationVerifierMetadata',
         'Assert-GeneratedTestContent'
     )) {
         $function = $ast.Find({
@@ -62,6 +64,15 @@ Describe 'Replication orchestrator security boundary' {
             Should -Match '"className"\s*=>\s*MobileBy\.ClassName\(locator\.Value\)'
         $script:TrustedAppiumSource |
             Should -Not -Match '"className"\s*=>\s*By\.ClassName\(locator\.Value\)'
+    }
+
+    It 'polls semantic text assertions until the expected state or timeout' {
+        $script:TrustedAppiumSource |
+            Should -Match 'static void AssertElementText[\s\S]*new WebDriverWait\(driver, timeout\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'wait\.Until\(current =>'
+        $script:TrustedAppiumSource |
+            Should -Match 'catch \(WebDriverTimeoutException exception\)'
     }
 
     It 'uses the supported macOS unified-log debug flag' {
@@ -276,6 +287,7 @@ InitializeComponent();
         $script:Source | Should -Match "'windows-host'"
         $script:Source | Should -Match 'device = \$selectedDeviceId'
         $script:Source | Should -Match 'id = \$selectedDeviceId'
+        $script:Source | Should -Match '''-DeviceUdid'', \$selectedDeviceId'
     }
 
     It 'preserves current attempt counts in blocked candidate manifests' {
@@ -542,5 +554,224 @@ public class Issue37440
                 -Content $source `
                 -Path 'Issue37440.cs'
         } | Should -Throw '*unguarded test-class constructor*'
+    }
+
+    It 'rejects pre-execution code in a generated helper file without a test attribute' {
+        $repoRoot = $TestDrive
+        $testFile = 'src/Controls/tests/Core.UnitTests/Issues/Issue37440Tests.cs'
+        $helperFile = 'src/Controls/tests/Core.UnitTests/Issues/Issue37440Bootstrap.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $testFile)) -Force |
+            Out-Null
+        @'
+using Xunit;
+
+public class Issue37440Tests
+{
+    [Fact]
+    public void ReproducesIssue()
+    {
+        if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Assert.True(false, "Issue37440");
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $testFile)
+        @'
+using System.Runtime.CompilerServices;
+
+public static class Issue37440Bootstrap
+{
+    [ModuleInitializer]
+    public static void Initialize() => throw new Exception("Runs before the guarded test");
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $helperFile)
+
+        {
+            Assert-GeneratedTestContent `
+                -Files @($testFile, $helperFile) `
+                -Issue 37440 `
+                -TestType UnitTest
+        } | Should -Throw '*unguarded test lifecycle hook*'
+    }
+
+    It 'allows a UI HostApp companion constructor while guarding the UI test assembly' {
+        $repoRoot = $TestDrive
+        $testFile = 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issue37440Tests.cs'
+        $hostFile = 'src/Controls/tests/TestCases.HostApp/Issues/Issue37440Page.xaml.cs'
+        foreach ($file in @($testFile, $hostFile)) {
+            New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+                Out-Null
+        }
+        @'
+using NUnit.Framework;
+
+public class Issue37440Tests
+{
+    [Test]
+    public void ReproducesIssue()
+    {
+        if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Assert.Fail("Issue37440");
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $testFile)
+        @'
+public partial class Issue37440Page : ContentPage
+{
+    public Issue37440Page()
+    {
+        InitializeComponent();
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $hostFile)
+
+        {
+            Assert-GeneratedTestContent `
+                -Files @($testFile, $hostFile) `
+                -Issue 37440 `
+                -TestType UITest
+        } | Should -Not -Throw
+    }
+}
+
+Describe 'Replication verifier metadata resolution' {
+    BeforeEach {
+        $repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $repoRoot -Force | Out-Null
+        $script:DetectorPath = Join-Path $PSScriptRoot 'shared/Detect-TestsInDiff.ps1'
+    }
+
+    It 'resolves the exact Controls unit-test project, class, and method' {
+        $file = 'src/Controls/tests/Core.UnitTests/Issues/Issue37440Tests.cs'
+        $project = 'src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
+        @'
+namespace Microsoft.Maui.Controls.Tests;
+
+public class Issue37440Tests
+{
+    private class Recorder
+    {
+    }
+
+    [Fact]
+    public void ReproducesIssue37440()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $file)
+
+        $metadata = Resolve-ReplicationVerifierMetadata `
+            -Files @($file) `
+            -TestType UnitTest `
+            -TestFilter Issue37440 `
+            -Platform android `
+            -DetectorPath $script:DetectorPath
+
+        $metadata.Project | Should -BeExactly 'Controls.Core.UnitTests'
+        $metadata.ProjectPath | Should -BeExactly $project
+        $metadata.ClassName |
+            Should -BeExactly 'Microsoft.Maui.Controls.Tests.Issue37440Tests'
+        $metadata.MethodName | Should -BeExactly 'ReproducesIssue37440'
+    }
+
+    It 'resolves a non-Controls unit-test project instead of defaulting to Controls' {
+        $file = 'src/Core/tests/UnitTests/Issue37440Tests.cs'
+        $project = 'src/Core/tests/UnitTests/Core.UnitTests.csproj'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
+        @'
+namespace Microsoft.Maui.UnitTests;
+
+public class Issue37440Tests
+{
+    [Fact]
+    public void ReproducesIssue37440()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $file)
+
+        $metadata = Resolve-ReplicationVerifierMetadata `
+            -Files @($file) `
+            -TestType UnitTest `
+            -TestFilter Issue37440 `
+            -Platform android `
+            -DetectorPath $script:DetectorPath
+
+        $metadata.Project | Should -BeExactly 'Core.UnitTests'
+        $metadata.ProjectPath | Should -BeExactly $project
+    }
+
+    It 'resolves a non-Controls device project with exact class isolation' {
+        $file = 'src/Essentials/test/DeviceTests/Tests/Issue37440Tests.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+            Out-Null
+        @'
+namespace Microsoft.Maui.Essentials.DeviceTests;
+
+[Category(TestCategory.Essentials)]
+public class Issue37440Tests
+{
+    [Fact]
+    public void ReproducesIssue37440()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $file)
+
+        $metadata = Resolve-ReplicationVerifierMetadata `
+            -Files @($file) `
+            -TestType DeviceTest `
+            -TestFilter 'Category=Essentials' `
+            -Platform android `
+            -DetectorPath $script:DetectorPath
+
+        $metadata.Project | Should -BeExactly 'Essentials'
+        $metadata.ClassName |
+            Should -BeExactly 'Microsoft.Maui.Essentials.DeviceTests.Issue37440Tests'
+        $metadata.MethodName | Should -BeExactly 'ReproducesIssue37440'
+    }
+
+    It 'rejects ambiguous planned files instead of broadening the verifier run' {
+        $files = @(
+            'src/Core/tests/UnitTests/Issue37440FirstTests.cs',
+            'src/Core/tests/UnitTests/Issue37440SecondTests.cs'
+        )
+        $project = 'src/Core/tests/UnitTests/Core.UnitTests.csproj'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $files[0])) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
+        foreach ($file in $files) {
+            $className = [IO.Path]::GetFileNameWithoutExtension($file)
+            @"
+public class $className
+{
+    [Fact]
+    public void ReproducesIssue37440()
+    {
+    }
+}
+"@ | Set-Content -LiteralPath (Join-Path $repoRoot $file)
+        }
+
+        {
+            Resolve-ReplicationVerifierMetadata `
+                -Files $files `
+                -TestType UnitTest `
+                -TestFilter Issue37440 `
+                -Platform android `
+                -DetectorPath $script:DetectorPath
+        } | Should -Throw '*exactly one targeted test method*'
     }
 }
