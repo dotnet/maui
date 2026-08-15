@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -37,8 +38,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _bound;
 		bool _measureInvalidated;
 		bool _needsArrange;
+		bool _hasArrangedSize;
+		bool _isArranging;
+		bool _measureInvalidatedDuringArrange;
+		bool _replayedArrangeInvalidation;
 		Size _measuredSize;
 		Size _cachedConstraints;
+		Size _lastArrangedSize;
 
 		// Indicates the cell is being used as a supplementary view (group header/footer)
 		internal bool isSupplementaryView = false;
@@ -159,16 +165,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
 
-				// Preserve any new invalidation raised synchronously by Arrange.
 				_measureInvalidated = false;
 
 				if (_needsArrange)
 				{
 					_needsArrange = false;
-					var arrangeFrame = new Rect(Point.Zero, size);
-					MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
-					// UIKit may skip LayoutSubviews when a recycled cell's frame is unchanged.
-					virtualView.Arrange(arrangeFrame);
+					Arrange(virtualView, size);
 				}
 			}
 
@@ -208,25 +210,59 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var boundsSize = Bounds.Size.ToSize();
 				if (!_needsArrange)
 				{
-					// While rotating the device, and under other circumstances,
-					// a layout pass is being triggered without going through PreferredLayoutAttributesFittingAttributes first.
-					// In this case we should not trigger an Arrange pass because
-					// the last measurement does not match the new bounds size.
-					return;
+					if (!_hasArrangedSize || Bounds.Size.IsCloseTo(_lastArrangedSize))
+					{
+						return;
+					}
+
+					// The layout can stretch a cell beyond its preferred size (for example,
+					// to match the tallest item in a grid row). Only re-arrange when every
+					// finite measurement constraint still matches the final bounds.
+					var measuredConstraintsMatchBounds =
+						(double.IsPositiveInfinity(_cachedConstraints.Width) ||
+							Math.Abs(_cachedConstraints.Width - boundsSize.Width) < 0.001) &&
+						(double.IsPositiveInfinity(_cachedConstraints.Height) ||
+							Math.Abs(_cachedConstraints.Height - boundsSize.Height) < 0.001);
+
+					if (!measuredConstraintsMatchBounds)
+					{
+						return;
+					}
 				}
 
 				_needsArrange = false;
+				Arrange(virtualView, boundsSize);
+			}
+		}
 
-				// We now have to apply the new bounds size to the virtual view
-				// which will automatically set the frame on the platform view too.
-				var frame = new Rect(Point.Zero, boundsSize);
-
-				// Inject per-cell safe area insets into the MauiView for CrossPlatformArrange
-				// to apply as internal padding. UICollectionView bypasses MAUI's arrange chain,
-				// so cells cannot use the standard safe area flow (#33604, #34635).
+		void Arrange(IView virtualView, Size size)
+		{
+			_measureInvalidatedDuringArrange = false;
+			_isArranging = true;
+			try
+			{
 				MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
+				virtualView.Arrange(new Rect(Point.Zero, size));
+				_lastArrangedSize = size;
+				_hasArrangedSize = true;
+			}
+			finally
+			{
+				_isArranging = false;
+			}
 
-				virtualView.Arrange(frame);
+			if (_measureInvalidatedDuringArrange)
+			{
+				if (_replayedArrangeInvalidation)
+				{
+					// Bound an arrange-time invalidation to one follow-up measure pass.
+					_measureInvalidated = false;
+				}
+				else
+				{
+					_replayedArrangeInvalidation = true;
+					this.InvalidateAncestorsMeasures();
+				}
 			}
 		}
 
@@ -260,6 +296,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
+			_measureInvalidatedDuringArrange = false;
+			_replayedArrangeInvalidation = false;
+
 			var oldElement = PlatformHandler?.VirtualView as View;
 
 			if (oldElement is not null && oldElement != virtualView && isHeaderOrFooterChanged)
@@ -437,6 +476,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!_measureInvalidated && _bound)
 			{
 				_measureInvalidated = true;
+
+				if (_isArranging)
+				{
+					_measureInvalidatedDuringArrange = true;
+					return false;
+				}
+
+				_replayedArrangeInvalidation = false;
 				return true;
 			}
 

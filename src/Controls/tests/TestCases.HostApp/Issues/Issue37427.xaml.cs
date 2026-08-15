@@ -20,7 +20,7 @@ public partial class Issue37427 : ContentPage
 
 		Items = new ObservableCollection<Issue37427Item>(
 			Enumerable.Range(1, 10).Select(index =>
-				new Issue37427Item($"Card {index}", s_palette, "dotnet_bot.png")));
+				new Issue37427Item($"Card {index}", s_palette.ToArray(), "dotnet_bot.png")));
 
 		BindingContext = this;
 	}
