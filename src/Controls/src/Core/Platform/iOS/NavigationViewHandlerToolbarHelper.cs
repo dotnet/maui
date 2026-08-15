@@ -184,7 +184,20 @@ namespace Microsoft.Maui.Controls
             // Match renderer behavior: when the nav bar is opaque, prevent content
             // from extending underneath it. When translucent, allow full extension.
             var isTranslucent = NavigationController?.NavigationBar.Translucent ?? false;
-            EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+            var edges = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
+            // On iOS/MacCatalyst 26+, the tab bar renders as a floating glass overlay.
+            // Extend behind it when inside a visible UITabBarController so content
+            // isn't clipped at the old tab bar boundary.
+            if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+                && TabBarController is { } tbc
+                && !tbc.TabBar.Hidden
+                && tbc.TabBar.Translucent)
+            {
+                edges |= UIRectEdge.Bottom;
+            }
+
+            EdgesForExtendedLayout = edges;
 
             // Re-evaluate per-page IconColor when this page becomes visible
             // (push or pop-back). IconColor is already set before the push,

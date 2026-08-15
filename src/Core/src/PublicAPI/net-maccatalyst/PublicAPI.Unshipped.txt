@@ -57,4 +57,3 @@ static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdge
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.ConnectHandler(UIKit.UIView platformView) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.DisconnectHandler(UIKit.UIView platformView) -> void
-﻿#nullable enable
