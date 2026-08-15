@@ -23,3 +23,8 @@ override Microsoft.Maui.Controls.ScrollView.OnParentSet() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
+override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.LayoutSubviews() -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
+Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
