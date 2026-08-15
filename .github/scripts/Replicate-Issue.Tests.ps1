@@ -54,9 +54,10 @@ BeforeAll {
 }
 
 Describe 'Replication orchestrator security boundary' {
-    It 'removes Azure logging directives from untrusted output' {
-        ConvertTo-ReplicationSafeLog -Value 'x ##vso[task.setvariable variable=Y]bad ##[error]fake' |
-            Should -BeExactly 'x bad fake'
+    It 'removes terminal controls and Azure logging directives from untrusted output' {
+        ConvertTo-ReplicationSafeLog `
+            -Value "x`e[31;1m red`e[0m`n##vso[task.setvariable variable=Y]bad ##[error]fake" |
+            Should -BeExactly 'x red bad fake'
     }
 
     It 'recognizes only paths inside the requested root' {
@@ -363,6 +364,13 @@ exit 0
             Should -Match 'git restore --source \$BaseSha --staged --worktree -- \.'
         $script:Source |
             Should -Not -Match 'git restore --worktree -- \$sandboxXamlPath \$sandboxCodePath'
+    }
+
+    It 'allows a compile repair plus an empirical adjustment within the bounded Sandbox loop' {
+        $script:Source |
+            Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*3'
+        $script:Source |
+            Should -Match 'Use Console\.WriteLine rather than importing System\.Diagnostics'
     }
 
     It 'requires new add-only guarded tests and literal expected failure verification' {

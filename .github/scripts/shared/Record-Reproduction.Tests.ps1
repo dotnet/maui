@@ -648,7 +648,7 @@ Describe 'Record-Reproduction safe inputs and evidence' {
     It 'sanitizes subprocess output before surfacing a command failure' {
         $harness = New-RecordingHarness `
             -FailCommandPurpose 'Normalize recording' `
-            -FailureOutput "bad`r`n##vso[task.setvariable variable=x]owned`n##[error]owned"
+            -FailureOutput "bad`e[31;1m red`e[0m`r`n##vso[task.setvariable variable=x]owned`n##[error]owned"
         $caught = $null
 
         try {
@@ -665,6 +665,8 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $caught.Exception.Message | Should -Match '## \[error\]'
         $caught.Exception.Message | Should -Not -Match '##vso\['
         $caught.Exception.Message | Should -Not -Match '##\[error\]'
+        $caught.Exception.Message | Should -Match 'bad red'
+        $caught.Exception.Message | Should -Not -Match '\x1B\['
     }
 
     It 'bounds MaxDurationSeconds at parameter binding' {

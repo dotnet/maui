@@ -83,6 +83,7 @@ function ConvertTo-SafeLogText {
     }
 
     $text = [string]$Value
+    $text = $text -replace '\x1B\[[0-?]*[ -/]*[@-~]', ''
     $text = $text -replace '[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]', '?'
     $text = $text -replace '[\r\n]+', ' '
     $text = $text -replace '##(?=\[|vso\[)', '## '
