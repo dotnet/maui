@@ -4,8 +4,9 @@
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
     $script:Source = Get-Content -LiteralPath $scriptPath -Raw
+    $script:BuildSandboxPath = Join-Path $PSScriptRoot 'BuildAndRunSandbox.ps1'
     $script:BuildSandboxSource = Get-Content `
-        -LiteralPath (Join-Path $PSScriptRoot 'BuildAndRunSandbox.ps1') `
+        -LiteralPath $script:BuildSandboxPath `
         -Raw
     . (Join-Path $PSScriptRoot 'shared/Assert-ReplicationTestGuard.ps1')
     $tokens = $null
@@ -256,8 +257,67 @@ InitializeComponent();
     It 'prepares the app before starting a bounded recording-only run' {
         $script:Source | Should -Match "'-PrepareOnly'"
         $script:Source | Should -Match "'-SkipBuildDeploy'"
+        $script:Source | Should -Match ([regex]::Escape("'-RepoRoot', `$repoRoot"))
+        $script:BuildSandboxSource | Should -Match '\[string\]\$RepoRoot'
+        $script:BuildSandboxSource | Should -Match 'Repository root does not exist'
         $script:Source | Should -Match "'-MaxDurationSeconds', '180'"
         $script:Source | Should -Match 'Record-Reproduction\.ps1'
+    }
+
+    It 'uses the explicit repository root when run from a trusted copy' {
+        $trustedScripts = Join-Path $TestDrive 'trusted/scripts'
+        $trustedShared = Join-Path $trustedScripts 'shared'
+        New-Item -ItemType Directory -Path $trustedShared -Force | Out-Null
+        Copy-Item `
+            -LiteralPath $script:BuildSandboxPath `
+            -Destination (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1')
+        Copy-Item `
+            -LiteralPath (Join-Path $PSScriptRoot 'shared/shared-utils.ps1') `
+            -Destination (Join-Path $trustedShared 'shared-utils.ps1')
+        @'
+param(
+    [string]$Platform,
+    [string]$ProjectPath,
+    [string]$TargetFramework,
+    [string]$Configuration,
+    [string]$DeviceUdid,
+    [string]$BundleId,
+    [switch]$Rebuild
+)
+
+$expected = [IO.Path]::GetFullPath(
+    (Join-Path $env:EXPECTED_REPLICATION_REPO 'src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj'))
+if ([IO.Path]::GetFullPath($ProjectPath) -cne $expected) {
+    throw "Unexpected project path: $ProjectPath"
+}
+exit 0
+'@ | Set-Content -LiteralPath (Join-Path $trustedShared 'Build-AndDeploy.ps1')
+
+        $repo = Join-Path $TestDrive 'worktree'
+        $project = Join-Path $repo 'src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj'
+        $appiumScript = Join-Path $repo 'CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $project) -Force |
+            Out-Null
+        New-Item -ItemType Directory -Path (Split-Path -Parent $appiumScript) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath $project
+        'return;' | Set-Content -LiteralPath $appiumScript
+
+        $previousRepo = $env:EXPECTED_REPLICATION_REPO
+        try {
+            $env:EXPECTED_REPLICATION_REPO = $repo
+            $output = @(& pwsh -NoLogo -NoProfile -NonInteractive `
+                -File (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+                -Platform catalyst `
+                -RepoRoot $repo `
+                -PrepareOnly 2>&1)
+            $LASTEXITCODE | Should -Be 0 -Because ($output -join [Environment]::NewLine)
+            $output -join [Environment]::NewLine |
+                Should -Match 'Sandbox build and deployment preparation completed'
+        }
+        finally {
+            $env:EXPECTED_REPLICATION_REPO = $previousRepo
+        }
     }
 
     It 'requires new add-only guarded tests and literal expected failure verification' {

@@ -19,6 +19,9 @@
 .PARAMETER DeviceUdid
     Specific device UDID to target (optional - will auto-detect if not provided)
 
+.PARAMETER RepoRoot
+    Repository root to operate on. Defaults to the script's repository location.
+
 .EXAMPLE
     ./BuildAndRunSandbox.ps1 -Platform android
     
@@ -43,6 +46,8 @@ param(
 
     [string]$DeviceUdid,
 
+    [string]$RepoRoot,
+
     [switch]$PrepareOnly,
 
     [switch]$SkipBuildDeploy
@@ -54,7 +59,15 @@ if ($PrepareOnly -and $SkipBuildDeploy) {
 
 # Script configuration
 $ErrorActionPreference = "Stop"
-$RepoRoot = Resolve-Path "$PSScriptRoot/../.."
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = [IO.Path]::GetFullPath(
+        [string](Resolve-Path "$PSScriptRoot/../.."))
+} else {
+    $RepoRoot = [IO.Path]::GetFullPath($RepoRoot)
+}
+if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) {
+    throw "Repository root does not exist: $RepoRoot"
+}
 $SandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
 $SandboxAppiumDir = Join-Path $RepoRoot "CustomAgentLogsTmp/Sandbox"
 $AppiumTestScript = Join-Path $SandboxAppiumDir "RunWithAppiumTest.cs"

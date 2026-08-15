@@ -1406,7 +1406,12 @@ try {
                 -Force
 
             $prepareLog = Join-Path $sandboxArtifactDir "prepare-attempt-$attempt.log"
-            $prepareArgs = @('-Platform', $Platform, '-Configuration', 'Debug', '-PrepareOnly')
+            $prepareArgs = @(
+                '-Platform', $Platform,
+                '-Configuration', 'Debug',
+                '-RepoRoot', $repoRoot,
+                '-PrepareOnly'
+            )
             if ($DeviceUdid) {
                 $prepareArgs += @('-DeviceUdid', $DeviceUdid)
             }
@@ -1416,9 +1421,12 @@ try {
                 -LogPath $prepareLog `
                 -Description 'Preparing the Sandbox app'
 
+            $escapedRepoRoot = $repoRoot.Replace("'", "''")
             $wrapperArgs = @(
                 '$ErrorActionPreference = ''Stop''',
-                '$arguments = @(''-Platform'', ' + "'$Platform'" + ', ''-Configuration'', ''Debug'', ''-SkipBuildDeploy'')'
+                '$arguments = @(''-Platform'', ' + "'$Platform'" +
+                    ', ''-Configuration'', ''Debug'', ''-RepoRoot'', ' +
+                    "'$escapedRepoRoot'" + ', ''-SkipBuildDeploy'')'
             )
             if ($DeviceUdid) {
                 $escapedDevice = $DeviceUdid.Replace("'", "''")
