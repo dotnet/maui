@@ -46,8 +46,8 @@ Use `.github/instructions/sandbox.instructions.md` only for existing MainPage an
    - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml`
    - `src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs`
    - `CustomAgentLogsTmp/Sandbox/appium-plan.json`
-2. Keep the scenario minimal. Add stable AutomationIds and `SANDBOX:` log markers.
-3. Express Appium actions only through the bounded JSON plan schema from the prompt. Use the bounded `setOrientation` action when the reported steps require portrait/landscape rotation. Never create executable host code. End the plan with a semantic assertion that proves the observed wrong result.
+2. Keep the scenario minimal. Add stable AutomationIds and `SANDBOX:` log markers. Give every XAML element referenced from code-behind an `x:Name`; `AutomationId` alone does not create a generated field.
+3. Express Appium actions only through the bounded JSON plan schema from the prompt. Every string value must be non-empty and already trimmed; never use leading or trailing whitespace to make a prefix assertion. For variable wrong outcomes, expose a stable semantic result in the app and assert a trimmed value. Use the bounded `setOrientation` action when the reported steps require portrait/landscape rotation. Never create executable host code. End the plan with a semantic assertion that proves the observed wrong result.
 4. Hand the scenario to the trusted runner. It must execute `.github/scripts/BuildAndRunSandbox.ps1` against the exact selected target and wrap that run with `.github/scripts/shared/Record-Reproduction.ps1`.
 5. The trusted recorder must capture from before the first Appium action through the visible failure state.
 6. Validate Appium actions, completion, device markers, and the issue-specific mismatch. HTTP success or app launch alone is not reproduction.

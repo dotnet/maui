@@ -386,6 +386,12 @@ exit 0
             Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*3'
         $script:Source |
             Should -Match 'Use Console\.WriteLine rather than importing System\.Diagnostics'
+        $script:Source |
+            Should -Match 'Every XAML element referenced from code-behind must have x:Name'
+        $script:Source |
+            Should -Match 'Every string must be non-empty and already trimmed'
+        $script:Source |
+            Should -Match 'prior tracked Sandbox files were restored to baseline'
     }
 
     It 'requires new add-only guarded tests and literal expected failure verification' {
