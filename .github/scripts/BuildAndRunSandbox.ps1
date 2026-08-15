@@ -73,6 +73,33 @@ $SandboxAppiumDir = Join-Path $RepoRoot "CustomAgentLogsTmp/Sandbox"
 $AppiumTestScript = Join-Path $SandboxAppiumDir "RunWithAppiumTest.cs"
 $AppiumPort = 4723
 
+function Resolve-CatalystSandboxAppPath {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$BuildConfiguration,
+        [Parameter(Mandatory = $true)][string]$Framework,
+        [Parameter(Mandatory = $true)][string]$RuntimeIdentifier
+    )
+
+    $outputDirectory = Join-Path $RepositoryRoot (
+        "artifacts/bin/Maui.Controls.Sample.Sandbox/" +
+        "$BuildConfiguration/$Framework/$RuntimeIdentifier")
+    $apps = @(
+        Get-ChildItem `
+            -LiteralPath $outputDirectory `
+            -Filter '*.app' `
+            -Directory `
+            -ErrorAction SilentlyContinue
+    )
+    if ($apps.Count -ne 1) {
+        throw "Expected exactly one MacCatalyst Sandbox app under '$outputDirectory'; found $($apps.Count)."
+    }
+    if ($apps[0].Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw "MacCatalyst Sandbox app must not be a symbolic link: $($apps[0].FullName)"
+    }
+    return $apps[0].FullName
+}
+
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
 
@@ -252,43 +279,41 @@ if ($Platform -eq "catalyst") {
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
     
-    # Build app path
-    $appPath = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework/$rid/Sandbox.app"
-    
-    if (Test-Path $appPath) {
-        Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
-        Write-Info "App path: $appPath"
+    $appPath = Resolve-CatalystSandboxAppPath `
+        -RepositoryRoot $RepoRoot `
+        -BuildConfiguration $Configuration `
+        -Framework $TargetFramework `
+        -RuntimeIdentifier $rid
+    Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
+    Write-Info "App path: $appPath"
         
-        # Make executable
-        $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
-        if (Test-Path $executablePath) {
-            & chmod +x $executablePath
-        }
+    # Make executable
+    $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
+    if (Test-Path $executablePath) {
+        & chmod +x $executablePath
+    }
         
-        # Use dotnet run with StandardOutputPath/StandardErrorPath
-        # This launches the app via 'open' but captures stdout/stderr to files
-        # Console.WriteLine on MacCatalyst goes to stderr
-        $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
-        $stderrFile = "$deviceLogFile.stderr"
-        $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
+    # Use dotnet run with StandardOutputPath/StandardErrorPath
+    # This launches the app via 'open' but captures stdout/stderr to files
+    # Console.WriteLine on MacCatalyst goes to stderr
+    $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
+    $stderrFile = "$deviceLogFile.stderr"
+    $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
         
-        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
-        & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
-            -p:StandardOutputPath=$deviceLogFile `
-            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
+    Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
+    & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
+        -p:StandardOutputPath=$deviceLogFile `
+        -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
         
-        # dotnet run exits immediately when using 'open', give app time to launch
-        Start-Sleep -Seconds 3
+    # dotnet run exits immediately when using 'open', give app time to launch
+    Start-Sleep -Seconds 3
         
-        # Get app process ID for later cleanup
-        $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($catalystAppProcess) {
-            Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
-        } else {
-            Write-Success "MacCatalyst Sandbox app launched with log capture"
-        }
+    # Get app process ID for later cleanup
+    $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($catalystAppProcess) {
+        Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
     } else {
-        Write-Warn "MacCatalyst Sandbox app not found at: $appPath"
+        Write-Success "MacCatalyst Sandbox app launched with log capture"
     }
 }
 

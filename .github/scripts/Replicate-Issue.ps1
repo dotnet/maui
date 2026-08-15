@@ -1259,9 +1259,9 @@ function Clear-TransientAppiumDirectory {
 }
 
 function Restore-TransientSandbox {
-    & git restore --worktree -- $sandboxXamlPath $sandboxCodePath
+    & git restore --source $BaseSha --staged --worktree -- .
     if ($LASTEXITCODE -ne 0) {
-        throw 'Failed to restore tracked Sandbox files.'
+        throw 'Failed to restore the pinned tracked replication baseline.'
     }
     Clear-TransientAppiumDirectory
 }

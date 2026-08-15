@@ -8,6 +8,20 @@ BeforeAll {
     $script:BuildSandboxSource = Get-Content `
         -LiteralPath $script:BuildSandboxPath `
         -Raw
+    $buildTokens = $null
+    $buildErrors = $null
+    $buildAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $script:BuildSandboxPath,
+        [ref]$buildTokens,
+        [ref]$buildErrors)
+    if ($buildErrors) {
+        throw ($buildErrors | ForEach-Object Message) -join [Environment]::NewLine
+    }
+    $resolveCatalystApp = $buildAst.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Resolve-CatalystSandboxAppPath'
+    }, $true)
+    Invoke-Expression $resolveCatalystApp.Extent.Text
     . (Join-Path $PSScriptRoot 'shared/Assert-ReplicationTestGuard.ps1')
     $tokens = $null
     $errors = $null
@@ -318,6 +332,37 @@ exit 0
         finally {
             $env:EXPECTED_REPLICATION_REPO = $previousRepo
         }
+    }
+
+    It 'resolves the single built Mac Catalyst app without assuming its bundle name' {
+        $repo = Join-Path $TestDrive 'catalyst-repo'
+        $output = Join-Path $repo 'artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-maccatalyst/maccatalyst-arm64'
+        $app = Join-Path $output 'Maui.Controls.Sample.Sandbox.app'
+        New-Item -ItemType Directory -Path $app -Force | Out-Null
+
+        Resolve-CatalystSandboxAppPath `
+            -RepositoryRoot $repo `
+            -BuildConfiguration Debug `
+            -Framework net10.0-maccatalyst `
+            -RuntimeIdentifier maccatalyst-arm64 |
+            Should -BeExactly $app
+
+        New-Item -ItemType Directory -Path (Join-Path $output 'Unexpected.app') |
+            Out-Null
+        {
+            Resolve-CatalystSandboxAppPath `
+                -RepositoryRoot $repo `
+                -BuildConfiguration Debug `
+                -Framework net10.0-maccatalyst `
+                -RuntimeIdentifier maccatalyst-arm64
+        } | Should -Throw '*Expected exactly one*'
+    }
+
+    It 'restores every tracked file to the pinned baseline between Sandbox attempts' {
+        $script:Source |
+            Should -Match 'git restore --source \$BaseSha --staged --worktree -- \.'
+        $script:Source |
+            Should -Not -Match 'git restore --worktree -- \$sandboxXamlPath \$sandboxCodePath'
     }
 
     It 'requires new add-only guarded tests and literal expected failure verification' {
