@@ -64,6 +64,13 @@ Describe 'Replication orchestrator security boundary' {
       "timeoutSeconds": 10
     },
     {
+      "action": "setOrientation",
+      "description": "Rotate the selected device",
+      "locator": null,
+      "value": "landscape",
+      "timeoutSeconds": 10
+    },
+    {
       "action": "assertTextContains",
       "description": "Verify the reported incorrect result",
       "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },

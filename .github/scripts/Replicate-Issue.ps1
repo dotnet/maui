@@ -449,7 +449,8 @@ function Read-GeneratedAppiumPlan {
         'enterText',
         'assertTextEquals',
         'assertTextContains',
-        'swipe'
+        'swipe',
+        'setOrientation'
     )
     $assertionActions = @(
         'assertExists',
@@ -457,7 +458,10 @@ function Read-GeneratedAppiumPlan {
         'assertTextEquals',
         'assertTextContains'
     )
-    $allowedActions = @($locatorActions + @('back', 'swipe') | Sort-Object -Unique)
+    $allowedActions = @(
+        $locatorActions + @('back', 'swipe', 'setOrientation') |
+            Sort-Object -Unique
+    )
     $allowedStrategies = @('id', 'accessibilityId', 'xpath', 'className')
 
     for ($index = 0; $index -lt $steps.Count; $index++) {
@@ -528,6 +532,12 @@ function Read-GeneratedAppiumPlan {
                 -MaximumLength 500
             if ($action -ceq 'swipe' -and $value -cnotin @('up', 'down', 'left', 'right')) {
                 throw "Generated Appium step $($index + 1) swipe direction is invalid."
+            }
+            if (
+                $action -ceq 'setOrientation' -and
+                $value -cnotin @('portrait', 'landscape')
+            ) {
+                throw "Generated Appium step $($index + 1) orientation is invalid."
             }
         } elseif ($null -ne $step.value) {
             throw "Generated Appium step $($index + 1) must not contain a value."
@@ -850,7 +860,7 @@ Revise the reconstruction to address only that failure.
 Perform only the Sandbox-authoring portion:
 1. Read the sanitized local issue context.
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
-3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe. Locator actions use exactly strategy (id|accessibilityId|xpath|className) and value; use null for locator/value when the action does not need them. Swipe values are up|down|left|right. End with a deterministic assert action proving the reported bug.
+3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. Locator actions use exactly strategy (id|accessibilityId|xpath|className) and value; use null for locator/value when the action does not need them. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, and files. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
 Do not create an automated test yet and do not claim reproduction succeeded.

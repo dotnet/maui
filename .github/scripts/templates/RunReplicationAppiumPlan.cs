@@ -203,6 +203,15 @@ static void ExecuteStep(AppiumDriver driver, string platform, ReplicationStep st
         case "swipe":
             Swipe(driver, platform, step.Value!);
             break;
+        case "setOrientation":
+            driver.Orientation = step.Value switch
+            {
+                "portrait" => ScreenOrientation.Portrait,
+                "landscape" => ScreenOrientation.Landscape,
+                _ => throw new InvalidOperationException(
+                    $"Unsupported orientation '{step.Value}'.")
+            };
+            break;
         default:
             throw new InvalidOperationException($"Unsupported Appium action '{step.Action}'.");
     }
