@@ -61,7 +61,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 					x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"">
 					<Label x:Name=""label0""/>
 				</ContentView>";
-		}
+
+			// Deliberately shares the same x:Class across all Platforms/<Platform> variants, to
+			// mirror the common per-platform partial-page pattern from https://github.com/dotnet/maui/issues/36951.
+			}
 
 		class Css
 		{
@@ -773,6 +776,129 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 						  log.Contains("CodesignEntitlements = Custom\\Entitlements.plist", StringComparison.Ordinal),
 				"Custom CodesignEntitlements property should be preserved and not overridden by default Entitlements.plist");
 		}
+
+		/// <summary>
+		/// Regression test for https://github.com/dotnet/maui/issues/36951.
+		///
+		/// MauiXaml had no ExcludeFromCurrentConfiguration gating like Compile does, so every
+		/// platform's *.xaml under Platforms/&lt;Platform&gt; stayed in MauiXaml (and therefore in
+		/// the XAML SourceGen's AdditionalFiles) for every inner build/TFM. Files reusing the same
+		/// x:Class across platform folders (a standard per-platform pattern) produced duplicate
+		/// InitializeComponent/attribute definitions (CS0579/CS0111).
+		///
+		/// After the fix, only the active platform's MauiXaml items (plus shared ones outside any
+		/// Platforms/ sub-folder) should survive _MauiRemovePlatformCompileItems.
+		/// </summary>
+		[Theory]
+		[InlineData("android", "Android")]
+		[InlineData("ios", "iOS")]
+		[InlineData("maccatalyst", "MacCatalyst")]
+		[InlineData("tizen", "Tizen")]
+		public void SingleProject_RemovePlatformCompileItems_RetainsActivePlatformMauiXaml(
+			string targetPlatformIdentifier, string activePlatformFolder)
+		{
+			var allFolders = new[] { "Android", "iOS", "MacCatalyst", "Tizen" };
+			var log = BuildMauiXamlFilterProject(targetPlatformIdentifier, allFolders);
+			var itemsLine = GetNormalizedMauiXamlItemsLine(log);
+
+			Assert.Contains("SharedPage.xaml", itemsLine, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains($"Platforms/{activePlatformFolder}/TestPage.xaml", itemsLine, StringComparison.OrdinalIgnoreCase);
+
+			foreach (var folder in allFolders.Where(f => !string.Equals(f, activePlatformFolder, StringComparison.OrdinalIgnoreCase)))
+				Assert.DoesNotContain($"Platforms/{folder}/TestPage.xaml", itemsLine, StringComparison.OrdinalIgnoreCase);
+		}
+
+		/// <summary>
+		/// Windows XAML is WinUI markup — not MAUI XAML — and is unconditionally stripped from
+		/// MauiXaml by _MauiRemovePlatformCompileItems even when Windows is the active platform.
+		/// This behaviour predates issue #36951 and is intentionally separate from the
+		/// Android/iOS/MacCatalyst/Tizen filtering above.
+		/// </summary>
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_AlwaysRemovesWindowsMauiXaml()
+		{
+			var log = BuildMauiXamlFilterProject("windows", new[] { "Windows" });
+			var itemsLine = GetNormalizedMauiXamlItemsLine(log);
+
+			Assert.Contains("SharedPage.xaml", itemsLine, StringComparison.OrdinalIgnoreCase);
+			Assert.DoesNotContain("Platforms/Windows/", itemsLine, StringComparison.OrdinalIgnoreCase);
+		}
+
+		/// <summary>
+		/// Builds a minimal project that exercises _MauiRemovePlatformCompileItems and returns
+		/// the MSBuild log. Placeholder XAML files are written under Platforms/&lt;folder&gt;/ so
+		/// the glob in the filter target resolves them. TargetPlatformIdentifier is injected via a
+		/// BeforeTargets target rather than a PropertyGroup so MSBuild does not attempt workload
+		/// resolution at evaluation time (which fails with NETSDK1147 on clean CI agents).
+		/// </summary>
+		string BuildMauiXamlFilterProject(string targetPlatformIdentifier, string[] platformFolders)
+		{
+			SetUp();
+
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			propertyGroup.Add(NewElement("EnableDefaultEmbeddedResourceItems").WithValue("false"));
+			project.Add(propertyGroup);
+
+			// Set TargetPlatformIdentifier inside a target, not in PropertyGroup.
+			// Setting it during evaluation triggers SDK workload resolution and fails with
+			// NETSDK1147 on clean CI agents. The filter target reads the property at execution
+			// time, so injecting it via BeforeTargets is equivalent.
+			var setPlatformTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestSetPlatformIdentifier")
+				.WithAttribute("BeforeTargets", "_MauiRemovePlatformCompileItems");
+			var innerPg = NewElement("PropertyGroup");
+			innerPg.Add(NewElement("TargetPlatformIdentifier").WithValue(targetPlatformIdentifier));
+			setPlatformTarget.Add(innerPg);
+			project.Add(setPlatformTarget);
+
+			var beforeTargetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine(
+				"src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0",
+				"Microsoft.Maui.Controls.SingleProject.Before.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", beforeTargetsPath));
+
+			// Write placeholder files so the glob in _MauiXamlToRemove resolves them.
+			// File content is irrelevant — the filter only cares about paths.
+			var xamlItems = NewElement("ItemGroup");
+			foreach (var folder in platformFolders)
+			{
+				var relativePath = IOPath.Combine("Platforms", folder, "TestPage.xaml");
+				WriteFile(relativePath, "<x/>");
+				xamlItems.Add(NewElement("MauiXaml").WithAttribute("Include", relativePath));
+			}
+			WriteFile("SharedPage.xaml", "<x/>");
+			xamlItems.Add(NewElement("MauiXaml").WithAttribute("Include", "SharedPage.xaml"));
+			project.Add(xamlItems);
+
+			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine(
+				"src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0",
+				"Microsoft.Maui.Controls.SingleProject.targets"));
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+
+			// Emit surviving MauiXaml item identities to the log for assertions.
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpMauiXamlItems")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "MAUIXAML_ITEMS: @(MauiXaml->'%(Identity)', '|')"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Run the filter target directly. BeforeTargets will inject TargetPlatformIdentifier
+			// first, and AfterTargets will fire the dump after — no full compilation needed.
+			return Build(projectFile, target: "_MauiRemovePlatformCompileItems");
+		}
+
+		static string GetNormalizedMauiXamlItemsLine(string log) =>
+			(log.Split('\n').FirstOrDefault(l => l.Contains("MAUIXAML_ITEMS:", StringComparison.OrdinalIgnoreCase)) ?? "")
+			.Replace('\\', '/');
 
 		/// <summary>
 		/// Tests that the SingleProject Before targets use default Entitlements.plist when no custom CodesignEntitlements is set
