@@ -259,6 +259,7 @@ Microsoft.Maui.Controls.Xaml.Diagnostics.HotReloadSkippedEventArgs.UpdatedTypes.
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.UpdateEmptyViewVisibility() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 ~Microsoft.Maui.Controls.SwipeItem.IconColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SwipeItem.IconColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SwipeItem.IconColorProperty -> Microsoft.Maui.Controls.BindableProperty
