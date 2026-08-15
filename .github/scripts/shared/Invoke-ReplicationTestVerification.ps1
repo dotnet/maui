@@ -104,7 +104,7 @@ $consoleLog = Join-Path $OutputDirectory 'verification-console.log'
 $resultPath = Join-Path $OutputDirectory 'verification-result.json'
 $machineResultPath = Join-Path $OutputDirectory 'verifier-machine-result.json'
 
-$secretNames = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN', 'GH_REPLICATION_TOKEN')
+$secretNames = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')
 $savedSecrets = @{}
 $previousIssue = [Environment]::GetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE')
 

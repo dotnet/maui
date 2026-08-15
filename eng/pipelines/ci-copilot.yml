@@ -2322,12 +2322,10 @@ stages:
               publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
-  # Replication publication configuration:
-  # - MAUI_REPLICATION_AZURE_SERVICE_CONNECTION: federated Azure service connection
-  # - MAUI_REPLICATION_STORAGE_ACCOUNT / MAUI_REPLICATION_STORAGE_CONTAINER
-  # - MAUI_REPLICATION_PUBLIC_BASE_URL: anonymous-read container base URL
-  # - MAUI_REPLICATION_FORK_OWNER / MAUI_REPLICATION_FORK_REPOSITORY
-  # - GH_REPLICATION_TOKEN: dedicated token for the bot fork and draft PR creation
+  # Replication publication reuses the trusted GitHub service-connection
+  # credential and the existing public review-tests-assets-v2 branch. The
+  # credential is exposed only after deterministic candidate validation, in a
+  # clean job that never executes generated code.
   - stage: PublishReplication
     displayName: 'Validate and publish issue replication'
     dependsOn: ReviewPR
@@ -2345,7 +2343,10 @@ stages:
           - checkout: self
             clean: true
             fetchDepth: 0
-            persistCredentials: false
+            # Trusted-only publisher exception: reuse the existing checkout PAT
+            # for the public asset branch and reproduction branch. Generated
+            # code is validated but never executed in this credentialed job.
+            persistCredentials: true
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -2420,90 +2421,74 @@ stages:
               }
             displayName: 'Validate replication candidate without credentials'
 
-          - ${{ if and(eq(parameters.Mode, 'replicate'), ne(coalesce(variables['MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'], ''), '')) }}:
-            - task: AzureCLI@2
-              displayName: 'Upload validated public evidence'
-              inputs:
-                azureSubscription: '$(MAUI_REPLICATION_AZURE_SERVICE_CONNECTION)'
-                scriptType: pscore
-                scriptLocation: inlineScript
-                inlineScript: |
-                  $ErrorActionPreference = 'Stop'
-                  foreach ($name in @(
-                    'MAUI_REPLICATION_STORAGE_ACCOUNT',
-                    'MAUI_REPLICATION_STORAGE_CONTAINER',
-                    'MAUI_REPLICATION_PUBLIC_BASE_URL'
-                  )) {
-                    $value = [Environment]::GetEnvironmentVariable($name)
-                    if ([string]::IsNullOrWhiteSpace($value) -or $value.StartsWith('$(')) {
-                      throw "Required replication publication variable '$name' is not configured."
-                    }
-                  }
-
-                  $attempt = if ($env:SYSTEM_JOBATTEMPT -match '^[1-9]\d*$') { $env:SYSTEM_JOBATTEMPT } else { '1' }
-                  $prefix = "maui-copilot/issue-${{ parameters.IssueNumber }}/${{ parameters.Platform }}/$(Build.BuildId)-$attempt"
-                  try {
-                    & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationEvidence.ps1") `
-                      -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
-                      -EvidenceDirectory "$(Pipeline.Workspace)/ReplicationArtifacts/evidence" `
-                      -StorageAccount $env:MAUI_REPLICATION_STORAGE_ACCOUNT `
-                      -Container $env:MAUI_REPLICATION_STORAGE_CONTAINER `
-                      -BlobPrefix $prefix `
-                      -PublicBaseUrl $env:MAUI_REPLICATION_PUBLIC_BASE_URL `
-                      -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json"
-                    if ($LASTEXITCODE -ne 0) {
-                      throw "Publishing replication evidence failed."
-                    }
-                  }
-                  finally {
-                    az logout 2>$null
-                    az account clear 2>$null
-                  }
-              env:
-                MAUI_REPLICATION_STORAGE_ACCOUNT: $(MAUI_REPLICATION_STORAGE_ACCOUNT)
-                MAUI_REPLICATION_STORAGE_CONTAINER: $(MAUI_REPLICATION_STORAGE_CONTAINER)
-                MAUI_REPLICATION_PUBLIC_BASE_URL: $(MAUI_REPLICATION_PUBLIC_BASE_URL)
-                SYSTEM_JOBATTEMPT: $(System.JobAttempt)
-
-          - ${{ if and(eq(parameters.Mode, 'replicate'), eq(coalesce(variables['MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'], ''), '')) }}:
-            - pwsh: |
-                throw 'Replication was validated, but publication is not configured. Set MAUI_REPLICATION_AZURE_SERVICE_CONNECTION and the documented storage, fork, and token variables to publish evidence and a draft PR.'
-              displayName: 'Require replication publication configuration'
-
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              foreach ($name in @('MAUI_REPLICATION_FORK_OWNER', 'MAUI_REPLICATION_FORK_REPOSITORY')) {
-                $value = [Environment]::GetEnvironmentVariable($name)
-                if ([string]::IsNullOrWhiteSpace($value) -or $value.StartsWith('$(')) {
-                  throw "Required replication publication variable '$name' is not configured."
+              $checkoutToken = $null
+              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
+                if ($line -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') {
+                  $decoded = [Text.Encoding]::UTF8.GetString(
+                    [Convert]::FromBase64String($matches[1]))
+                  $checkoutToken = ($decoded -split ':', 2)[-1]
+                  break
+                }
+                if ($line -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') {
+                  $checkoutToken = $matches[1]
+                  break
                 }
               }
-
-              & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
-                -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
-                -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
-                -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
-                -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
-                -RepositoryRoot "$(Build.SourcesDirectory)" `
-                -ForkOwner $env:MAUI_REPLICATION_FORK_OWNER `
-                -ForkRepository $env:MAUI_REPLICATION_FORK_REPOSITORY `
-                -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
-                -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
-              if ($LASTEXITCODE -ne 0) {
-                throw "Publishing the replication pull request failed."
+              if ([string]::IsNullOrWhiteSpace($checkoutToken)) {
+                throw 'Trusted checkout credential is unavailable for replication publication.'
               }
 
-              $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw | ConvertFrom-Json
-              if ([string]::IsNullOrWhiteSpace([string]$result.url)) {
-                throw "Replication publisher did not return a pull request URL."
+              try {
+                $env:GH_TOKEN = $checkoutToken
+                $attempt = if ($env:SYSTEM_JOBATTEMPT -match '^[1-9]\d*$') {
+                  $env:SYSTEM_JOBATTEMPT
+                } else {
+                  '1'
+                }
+                # The shared asset-only branch intentionally allows only pr-<n>
+                # top-level trees. Reuse the issue number as that bounded
+                # namespace and keep replication media in a distinct subtree.
+                $prefix = "pr-${{ parameters.IssueNumber }}/replication/${{ parameters.Platform }}/$(Build.BuildId)-$attempt"
+                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationEvidence.ps1") `
+                  -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                  -EvidenceDirectory "$(Pipeline.Workspace)/ReplicationArtifacts/evidence" `
+                  -RepositoryRoot "$(Build.SourcesDirectory)" `
+                  -Repository "$(Build.Repository.Name)" `
+                  -AssetBranch "review-tests-assets-v2" `
+                  -AssetPrefix $prefix `
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json"
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Publishing replication evidence failed."
+                }
+
+                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
+                  -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                  -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
+                  -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
+                  -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
+                  -RepositoryRoot "$(Build.SourcesDirectory)" `
+                  -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Publishing the replication pull request failed."
+                }
+
+                $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw |
+                  ConvertFrom-Json
+                if ([string]::IsNullOrWhiteSpace([string]$result.url)) {
+                  throw "Replication publisher did not return a pull request URL."
+                }
+                Write-Host "##vso[task.setvariable variable=replicationPrUrl;isOutput=true]$($result.url)"
               }
-              Write-Host "##vso[task.setvariable variable=replicationPrUrl;isOutput=true]$($result.url)"
+              finally {
+                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+                $checkoutToken = $null
+              }
             name: PublishReplicationPR
-            displayName: 'Create draft reproduction pull request'
+            displayName: 'Publish evidence and create draft reproduction PR'
             env:
-              GH_TOKEN: $(GH_REPLICATION_TOKEN)
-              MAUI_REPLICATION_FORK_OWNER: $(MAUI_REPLICATION_FORK_OWNER)
-              MAUI_REPLICATION_FORK_REPOSITORY: $(MAUI_REPLICATION_FORK_REPOSITORY)
               BUILD_BUILDID: $(Build.BuildId)
               SYSTEM_JOBATTEMPT: $(System.JobAttempt)
 

@@ -31,11 +31,9 @@ BeforeAll {
     $script:PrSource = Get-Content -LiteralPath $prScript -Raw
 
     foreach ($name in @(
-        'Test-ReplicationBlobPrefix',
-        'Get-ReplicationEvidenceContentType',
-        'Test-ReplicationPublicBaseUrl',
+        'Test-ReplicationAssetPrefix',
         'ConvertTo-ReplicationUrlPath',
-        'Get-ReplicationPublicBlobUrl'
+        'Get-ReplicationPublicAssetUrl'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $evidenceScript -Name $name)
     }
@@ -51,45 +49,27 @@ BeforeAll {
 }
 
 Describe 'Trusted replication evidence publishing' {
-    It 'rejects traversal-like and malformed blob prefixes' {
-        Test-ReplicationBlobPrefix -Value 'maui-copilot/issue-37440/android/123' | Should -BeTrue
-        Test-ReplicationBlobPrefix -Value '../secrets' | Should -BeFalse
-        Test-ReplicationBlobPrefix -Value 'valid//empty' | Should -BeFalse
-        Test-ReplicationBlobPrefix -Value '/absolute' | Should -BeFalse
+    It 'rejects traversal-like and malformed asset prefixes' {
+        Test-ReplicationAssetPrefix -Value 'pr-37440/replication/android/123-1' | Should -BeTrue
+        Test-ReplicationAssetPrefix -Value '../secrets' | Should -BeFalse
+        Test-ReplicationAssetPrefix -Value 'valid//empty' | Should -BeFalse
+        Test-ReplicationAssetPrefix -Value '/absolute' | Should -BeFalse
     }
 
-    It 'maps only the public evidence allowlist content types' {
-        Get-ReplicationEvidenceContentType -FileName 'repro.mp4' | Should -BeExactly 'video/mp4'
-        Get-ReplicationEvidenceContentType -FileName 'preview.gif' | Should -BeExactly 'image/gif'
-        Get-ReplicationEvidenceContentType -FileName 'thumbnail.png' | Should -BeExactly 'image/png'
-        { Get-ReplicationEvidenceContentType -FileName 'device.log' } | Should -Throw
-    }
-
-    It 'constructs encoded anonymous blob URLs' {
-        Get-ReplicationPublicBlobUrl `
-            -BaseUrl 'https://evidence.blob.core.windows.net/public' `
-            -Prefix 'issue-37440/android/build 12' `
+    It 'constructs encoded commit-pinned public asset URLs' {
+        Get-ReplicationPublicAssetUrl `
+            -Repository 'dotnet/maui' `
+            -Commit ('a' * 40) `
+            -Prefix 'pr-37440/replication/android/build 12' `
             -FileName 'repro.mp4' |
-            Should -BeExactly 'https://evidence.blob.core.windows.net/public/issue-37440/android/build%2012/repro.mp4'
+            Should -BeExactly "https://raw.githubusercontent.com/dotnet/maui/$('a' * 40)/pr-37440/replication/android/build%2012/repro.mp4"
     }
 
-    It 'accepts only the configured HTTPS Azure Blob container endpoint' {
-        Test-ReplicationPublicBaseUrl `
-            -Value 'https://mauievidence.blob.core.windows.net/public' `
-            -StorageAccount 'mauievidence' `
-            -Container 'public' |
-            Should -BeTrue
-        Test-ReplicationPublicBaseUrl `
-            -Value 'https://example.test/public' `
-            -StorageAccount 'mauievidence' `
-            -Container 'public' |
-            Should -BeFalse
-    }
-
-    It 'uses federated Azure login and immutable uploads' {
-        $script:EvidenceSource | Should -Match '--auth-mode login'
-        $script:EvidenceSource | Should -Match '--overwrite false'
-        $script:EvidenceSource | Should -Not -Match 'sas-token'
+    It 'uses the asset-only branch, refuses overwrite, and pushes through origin' {
+        $script:EvidenceSource | Should -Match 'review-tests-assets-v2'
+        $script:EvidenceSource | Should -Match 'already exists and will not be overwritten'
+        $script:EvidenceSource | Should -Match 'push origin "HEAD:refs/heads/\$AssetBranch"'
+        $script:EvidenceSource | Should -Not -Match '\baz\b'
         $script:EvidenceSource | Should -Match 'actualFailureMessage'
         $script:EvidenceSource | Should -Match '\.Contains\('
     }
@@ -112,9 +92,10 @@ Describe 'Trusted replication evidence publishing' {
         $output = @(& pwsh -NoProfile -File $evidenceScript `
             -ValidatedCandidatePath $candidatePath `
             -EvidenceDirectory $TestDrive `
-            -StorageAccount account123 `
-            -Container public `
-            -BlobPrefix issue-12345/android/test `
+            -RepositoryRoot $TestDrive `
+            -Repository 'dotnet/maui' `
+            -AssetBranch 'review-tests-assets-v2' `
+            -AssetPrefix 'pr-12345/replication/android/test-1' `
             -DryRun 2>&1)
 
         $LASTEXITCODE | Should -Not -Be 0
@@ -200,10 +181,12 @@ Describe 'Trusted replication pull request publishing' {
         } | Should -Throw '*targeted failure message*'
     }
 
-    It 'uses an add-only staged diff and creates a draft PR from the fork' {
+    It 'uses an add-only staged diff and creates a same-repository draft PR' {
         $script:PrSource | Should -Match 'git diff --cached --name-status --diff-filter=ACDMRTUXB'
         $script:PrSource | Should -Match '\s--draft'
         $script:PrSource | Should -Match 'GH_TOKEN is required'
+        $script:PrSource | Should -Match "'push', 'origin'"
+        $script:PrSource | Should -Not -Match 'ForkOwner|ForkRepository|replication-fork'
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
     }
 }

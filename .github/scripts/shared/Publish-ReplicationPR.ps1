@@ -25,14 +25,6 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$RepositoryRoot,
 
-    [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$ForkOwner,
-
-    [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[A-Za-z0-9._-]+$')]
-    [string]$ForkRepository,
-
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
     [string]$TargetOwner = 'dotnet',
 
@@ -314,19 +306,17 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
 "@
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('commit', '-m', $commitMessage) -Description 'Committing reproduction test'
-        Invoke-ReplicationExternalCommand -FilePath 'gh' -Arguments @('auth', 'setup-git') -Description 'Configuring GitHub credential helper'
-
-        $remoteName = 'replication-fork'
-        & git remote remove $remoteName 2>$null
-        Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('remote', 'add', $remoteName, "https://github.com/$ForkOwner/$ForkRepository.git") -Description 'Adding bot fork remote'
-        Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('push', $remoteName, "HEAD:refs/heads/$branchName") -Description 'Pushing reproduction branch'
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @('push', 'origin', "HEAD:refs/heads/$branchName") `
+            -Description 'Pushing reproduction branch'
 
         $bodyPath = Join-Path ([IO.Path]::GetTempPath()) "maui-replication-pr-$issueNumber-$buildId.md"
         try {
             $prBody | Set-Content -LiteralPath $bodyPath -Encoding utf8NoBOM
             $prUrl = & gh pr create `
                 --repo "$TargetOwner/$TargetRepository" `
-                --head "$ForkOwner`:$branchName" `
+                --head $branchName `
                 --base $BaseBranch `
                 --title $prTitle `
                 --body-file $bodyPath `

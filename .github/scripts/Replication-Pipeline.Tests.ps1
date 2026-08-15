@@ -59,19 +59,22 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "artifact: 'ReplicationArtifacts'"
     }
 
-    It 'validates without credentials before split Azure and GitHub publication' {
+    It 'validates before extracting the trusted checkout credential for publication' {
         $validationIndex = $script:Pipeline.IndexOf("displayName: 'Validate replication candidate without credentials'")
-        $azureIndex = $script:Pipeline.IndexOf("displayName: 'Upload validated public evidence'")
-        $githubIndex = $script:Pipeline.IndexOf("displayName: 'Create draft reproduction pull request'")
+        $credentialIndex = $script:Pipeline.IndexOf('$checkoutToken = $null', $validationIndex)
+        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Publish evidence and create draft reproduction PR'")
 
         $validationIndex | Should -BeGreaterThan -1
-        $validationIndex | Should -BeLessThan $azureIndex
-        $azureIndex | Should -BeLessThan $githubIndex
+        $validationIndex | Should -BeLessThan $credentialIndex
+        $credentialIndex | Should -BeLessThan $publicationIndex
         $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
-        $script:Pipeline | Should -Match 'GH_TOKEN: \$\(GH_REPLICATION_TOKEN\)'
-        $script:Pipeline | Should -Match "azureSubscription: '\$\(MAUI_REPLICATION_AZURE_SERVICE_CONNECTION\)'"
-        $script:Pipeline | Should -Match "(?s)- \$\{\{ if and\(eq\(parameters\.Mode, 'replicate'\), ne\(coalesce\(variables\['MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'\], ''\), ''\)\) \}\}:.*?- task: AzureCLI@2.*?azureSubscription:"
-        $script:Pipeline | Should -Match "displayName: 'Require replication publication configuration'"
+        $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
+        $script:Pipeline | Should -Match 'review-tests-assets-v2'
+        $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
+        $script:Pipeline | Should -Match 'Remove-Item Env:GH_TOKEN'
+        $script:Pipeline | Should -Not -Match 'GH_REPLICATION_TOKEN'
+        $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'
+        $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_(?:STORAGE|PUBLIC_BASE_URL|FORK)'
         $script:Pipeline | Should -Match 'git merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
         $script:Pipeline | Should -Match "'Assert-ReplicationTestGuard\.ps1'"
     }

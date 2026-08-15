@@ -1,12 +1,13 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Publishes validated reproduction media to public Azure Blob Storage.
+    Publishes validated reproduction media to the existing public asset branch.
 
 .DESCRIPTION
-    This script is intended to run in the trusted replication publisher job.
-    It uploads only the fixed evidence allowlist and never executes generated
-    repository content.
+    Run only from the trusted replication publisher job after candidate
+    validation. The script copies the fixed evidence allowlist into an
+    immutable build-specific path on review-tests-assets-v2 and pushes with the
+    trusted checkout credential already persisted in the clean publisher job.
 #>
 
 [CmdletBinding()]
@@ -18,17 +19,16 @@ param(
     [string]$EvidenceDirectory,
 
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[a-z0-9]{3,24}$')]
-    [string]$StorageAccount,
+    [string]$RepositoryRoot,
+
+    [ValidatePattern('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')]
+    [string]$Repository = 'dotnet/maui',
+
+    [ValidatePattern('^[A-Za-z0-9._/-]+$')]
+    [string]$AssetBranch = 'review-tests-assets-v2',
 
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])?$')]
-    [string]$Container,
-
-    [Parameter(Mandatory = $true)]
-    [string]$BlobPrefix,
-
-    [string]$PublicBaseUrl = '',
+    [string]$AssetPrefix,
 
     [string]$OutputPath = '',
 
@@ -38,17 +38,15 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
-function Test-ReplicationBlobPrefix {
+function Test-ReplicationAssetPrefix {
     param([Parameter(Mandatory = $true)][string]$Value)
 
     if ($Value.Length -gt 220 -or $Value -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]*$') {
         return $false
     }
-
     if ($Value.Contains('//')) {
         return $false
     }
-
     foreach ($segment in ($Value -split '/')) {
         if ($segment -in @('', '.', '..')) {
             return $false
@@ -57,55 +55,26 @@ function Test-ReplicationBlobPrefix {
     return $true
 }
 
-function Get-ReplicationEvidenceContentType {
-    param([Parameter(Mandatory = $true)][string]$FileName)
-
-    switch ([IO.Path]::GetExtension($FileName).ToLowerInvariant()) {
-        '.mp4' { return 'video/mp4' }
-        '.gif' { return 'image/gif' }
-        '.png' { return 'image/png' }
-        '.json' { return 'application/json; charset=utf-8' }
-        default { throw "Unsupported public evidence type: $FileName" }
-    }
-}
-
-function Test-ReplicationPublicBaseUrl {
-    param(
-        [Parameter(Mandatory = $true)][string]$Value,
-        [Parameter(Mandatory = $true)][string]$StorageAccount,
-        [Parameter(Mandatory = $true)][string]$Container
-    )
-
-    $uri = $null
-    if (-not [Uri]::TryCreate($Value, [UriKind]::Absolute, [ref]$uri)) {
-        return $false
-    }
-    return (
-        $uri.Scheme -ceq 'https' -and
-        $uri.Host -ceq "$StorageAccount.blob.core.windows.net" -and
-        [string]::IsNullOrEmpty($uri.UserInfo) -and
-        [string]::IsNullOrEmpty($uri.Query) -and
-        [string]::IsNullOrEmpty($uri.Fragment) -and
-        $uri.AbsolutePath.TrimEnd('/') -ceq "/$Container"
-    )
-}
-
 function ConvertTo-ReplicationUrlPath {
     param([Parameter(Mandatory = $true)][string]$Value)
 
-    return (($Value -split '/') | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/'
+    return (($Value -split '/') | ForEach-Object {
+        [Uri]::EscapeDataString($_)
+    }) -join '/'
 }
 
-function Get-ReplicationPublicBlobUrl {
+function Get-ReplicationPublicAssetUrl {
     param(
-        [Parameter(Mandatory = $true)][string]$BaseUrl,
+        [Parameter(Mandatory = $true)][string]$Repository,
+        [Parameter(Mandatory = $true)][string]$Commit,
         [Parameter(Mandatory = $true)][string]$Prefix,
         [Parameter(Mandatory = $true)][string]$FileName
     )
 
-    $safePrefix = ConvertTo-ReplicationUrlPath -Value $Prefix
-    $safeFile = [Uri]::EscapeDataString($FileName)
-    return "$($BaseUrl.TrimEnd('/'))/$safePrefix/$safeFile"
+    $repositoryPath = ConvertTo-ReplicationUrlPath -Value $Repository
+    $prefixPath = ConvertTo-ReplicationUrlPath -Value $Prefix
+    $filePath = [Uri]::EscapeDataString($FileName)
+    return "https://raw.githubusercontent.com/$repositoryPath/$Commit/$prefixPath/$filePath"
 }
 
 function Get-ReplicationCandidateValue {
@@ -117,31 +86,196 @@ function Get-ReplicationCandidateValue {
 
     foreach ($name in $Names) {
         $property = $Candidate.PSObject.Properties[$name]
-        if ($property -and $null -ne $property.Value -and -not [string]::IsNullOrWhiteSpace([string]$property.Value)) {
+        if (
+            $property -and
+            $null -ne $property.Value -and
+            -not [string]::IsNullOrWhiteSpace([string]$property.Value)
+        ) {
             return $property.Value
         }
     }
-
     throw "Validated candidate is missing $Description."
 }
 
-if (-not (Test-ReplicationBlobPrefix -Value $BlobPrefix)) {
-    throw "BlobPrefix contains an invalid or traversal-like path: '$BlobPrefix'."
+function Invoke-ReplicationExternalCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$FilePath,
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    & $FilePath @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Description failed with exit code $LASTEXITCODE."
+    }
 }
 
-$candidate = Get-Content -LiteralPath $ValidatedCandidatePath -Raw | ConvertFrom-Json -Depth 50
+function Publish-ReplicationAssetCommit {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$AssetBranch,
+        [Parameter(Mandatory = $true)][string]$AssetPrefix,
+        [Parameter(Mandatory = $true)][string]$EvidenceRoot,
+        [Parameter(Mandatory = $true)][string[]]$FileNames,
+        [Parameter(Mandatory = $true)][int]$IssueNumber,
+        [Parameter(Mandatory = $true)][string]$Platform
+    )
+
+    $worktreePath = Join-Path `
+        ([IO.Path]::GetTempPath()) `
+        "maui-replication-assets-$([guid]::NewGuid().ToString('N'))"
+
+    Push-Location $RepositoryRoot
+    try {
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @(
+                'fetch',
+                '--no-tags',
+                'origin',
+                "refs/heads/$AssetBranch`:refs/remotes/origin/$AssetBranch"
+            ) `
+            -Description 'Fetching public replication asset branch'
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @(
+                'worktree',
+                'add',
+                '--detach',
+                $worktreePath,
+                "refs/remotes/origin/$AssetBranch"
+            ) `
+            -Description 'Creating isolated replication asset worktree'
+
+        $targetRoot = Join-Path $worktreePath $AssetPrefix
+        New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
+        $relativePaths = @()
+        foreach ($fileName in $FileNames) {
+            $sourcePath = Join-Path $EvidenceRoot $fileName
+            $targetPath = Join-Path $targetRoot $fileName
+            if (Test-Path -LiteralPath $targetPath) {
+                throw "Replication asset path already exists and will not be overwritten: $AssetPrefix/$fileName"
+            }
+            Copy-Item -LiteralPath $sourcePath -Destination $targetPath
+            $relativePaths += "$AssetPrefix/$fileName"
+        }
+
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @('-C', $worktreePath, 'config', 'user.name', 'maui-copilot-replication') `
+            -Description 'Configuring replication asset author'
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @(
+                '-C',
+                $worktreePath,
+                'config',
+                'user.email',
+                '223556219+Copilot@users.noreply.github.com'
+            ) `
+            -Description 'Configuring replication asset email'
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments (@('-C', $worktreePath, 'add', '--') + $relativePaths) `
+            -Description 'Staging replication evidence'
+
+        $message = "Publish reproduction evidence for #$IssueNumber on $Platform"
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @('-C', $worktreePath, 'commit', '-m', $message) `
+            -Description 'Committing replication evidence'
+
+        $pushed = $false
+        for ($attempt = 1; $attempt -le 3 -and -not $pushed; $attempt++) {
+            & git -C $worktreePath push origin "HEAD:refs/heads/$AssetBranch"
+            if ($LASTEXITCODE -eq 0) {
+                $pushed = $true
+                break
+            }
+            if ($attempt -lt 3) {
+                Invoke-ReplicationExternalCommand `
+                    -FilePath 'git' `
+                    -Arguments @(
+                        '-C',
+                        $worktreePath,
+                        'fetch',
+                        '--no-tags',
+                        'origin',
+                        $AssetBranch
+                    ) `
+                    -Description 'Refreshing replication asset branch'
+                Invoke-ReplicationExternalCommand `
+                    -FilePath 'git' `
+                    -Arguments @(
+                        '-C',
+                        $worktreePath,
+                        'rebase',
+                        "origin/$AssetBranch"
+                    ) `
+                    -Description 'Rebasing replication evidence'
+            }
+        }
+        if (-not $pushed) {
+            throw 'Publishing replication evidence to the public asset branch failed after three attempts.'
+        }
+
+        $commit = (& git -C $worktreePath rev-parse HEAD).Trim()
+        if ($LASTEXITCODE -ne 0 -or $commit -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'Could not resolve the committed replication evidence SHA.'
+        }
+        return $commit
+    }
+    finally {
+        if (Test-Path -LiteralPath $worktreePath) {
+            & git worktree remove --force $worktreePath 2>$null
+        }
+        & git worktree prune 2>$null
+        Pop-Location
+    }
+}
+
+if (-not (Test-ReplicationAssetPrefix -Value $AssetPrefix)) {
+    throw "AssetPrefix contains an invalid or traversal-like path: '$AssetPrefix'."
+}
+if ($AssetBranch.Contains('..') -or $AssetBranch.StartsWith('/') -or $AssetBranch.EndsWith('/')) {
+    throw "AssetBranch is invalid: '$AssetBranch'."
+}
+
+$candidate = Get-Content -LiteralPath $ValidatedCandidatePath -Raw |
+    ConvertFrom-Json -Depth 50
 $validationProperty = $candidate.PSObject.Properties['validationPassed']
 if (-not $validationProperty -or $validationProperty.Value -ne $true) {
     throw 'Candidate validation did not pass; public evidence will not be uploaded.'
 }
 
-$issueNumber = [int](Get-ReplicationCandidateValue -Candidate $candidate -Names @('issueNumber') -Description 'issueNumber')
-$platform = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('platform') -Description 'platform')
-$baseSha = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('baseSha', 'baseCommit') -Description 'base SHA')
-$testType = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('testType') -Description 'test type')
-$testFilter = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('testFilter') -Description 'test filter')
-$failureSignature = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('expectedFailureSignature', 'failureSignature') -Description 'failure signature')
-$actualFailureMessage = [string](Get-ReplicationCandidateValue -Candidate $candidate -Names @('actualFailureMessage') -Description 'targeted failure message')
+$issueNumber = [int](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('issueNumber') `
+    -Description 'issueNumber')
+$platform = [string](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('platform') `
+    -Description 'platform')
+$baseSha = [string](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('baseSha', 'baseCommit') `
+    -Description 'base SHA')
+$testType = [string](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('testType') `
+    -Description 'test type')
+$testFilter = [string](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('testFilter') `
+    -Description 'test filter')
+$failureSignature = [string](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('expectedFailureSignature', 'failureSignature') `
+    -Description 'failure signature')
+$actualFailureMessage = [string](Get-ReplicationCandidateValue `
+    -Candidate $candidate `
+    -Names @('actualFailureMessage') `
+    -Description 'targeted failure message')
 if (-not $actualFailureMessage.Contains(
     $failureSignature,
     [StringComparison]::Ordinal)) {
@@ -153,8 +287,8 @@ $fileNames = [ordered]@{
     video = 'repro.mp4'
     preview = 'preview.gif'
     thumbnail = 'thumbnail.png'
+    manifest = 'evidence.json'
 }
-
 foreach ($fileName in $fileNames.Values) {
     $filePath = Join-Path $evidenceRoot $fileName
     if (-not (Test-Path -LiteralPath $filePath -PathType Leaf)) {
@@ -162,14 +296,17 @@ foreach ($fileName in $fileNames.Values) {
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($PublicBaseUrl)) {
-    $PublicBaseUrl = "https://$StorageAccount.blob.core.windows.net/$Container"
-}
-if (-not (Test-ReplicationPublicBaseUrl `
-    -Value $PublicBaseUrl `
-    -StorageAccount $StorageAccount `
-    -Container $Container)) {
-    throw 'PublicBaseUrl must be the HTTPS Azure Blob endpoint for the configured account and container.'
+$assetCommit = if ($DryRun) {
+    '0000000000000000000000000000000000000000'
+} else {
+    Publish-ReplicationAssetCommit `
+        -RepositoryRoot $RepositoryRoot `
+        -AssetBranch $AssetBranch `
+        -AssetPrefix $AssetPrefix `
+        -EvidenceRoot $evidenceRoot `
+        -FileNames @($fileNames.Values) `
+        -IssueNumber $issueNumber `
+        -Platform $platform
 }
 
 $publication = [ordered]@{
@@ -177,61 +314,35 @@ $publication = [ordered]@{
     issueNumber = $issueNumber
     platform = $platform
     baseSha = $baseSha
+    assetRepository = $Repository
+    assetBranch = $AssetBranch
+    assetCommit = $assetCommit
+    assetPrefix = $AssetPrefix
     test = [ordered]@{
         type = $testType
         filter = $testFilter
         expectedFailureSignature = $failureSignature
         actualFailureMessage = $actualFailureMessage
     }
-    capture = Get-Content -LiteralPath (Join-Path $evidenceRoot 'evidence.json') -Raw | ConvertFrom-Json -Depth 20
+    capture = Get-Content -LiteralPath (Join-Path $evidenceRoot 'evidence.json') -Raw |
+        ConvertFrom-Json -Depth 20
     blobs = [ordered]@{}
 }
-
 foreach ($entry in $fileNames.GetEnumerator()) {
-    $publication.blobs[$entry.Key] = Get-ReplicationPublicBlobUrl `
-        -BaseUrl $PublicBaseUrl `
-        -Prefix $BlobPrefix `
+    $publication.blobs[$entry.Key] = Get-ReplicationPublicAssetUrl `
+        -Repository $Repository `
+        -Commit $assetCommit `
+        -Prefix $AssetPrefix `
         -FileName $entry.Value
-}
-
-$evidenceJsonPath = Join-Path $evidenceRoot 'evidence.json'
-$publication.blobs['manifest'] = Get-ReplicationPublicBlobUrl `
-    -BaseUrl $PublicBaseUrl `
-    -Prefix $BlobPrefix `
-    -FileName 'evidence.json'
-$publication | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $evidenceJsonPath -Encoding utf8NoBOM
-$fileNames['manifest'] = 'evidence.json'
-
-if (-not $DryRun) {
-    foreach ($entry in $fileNames.GetEnumerator()) {
-        $filePath = Join-Path $evidenceRoot $entry.Value
-        $blobName = "$BlobPrefix/$($entry.Value)"
-        $contentType = Get-ReplicationEvidenceContentType -FileName $entry.Value
-
-        & az storage blob upload `
-            --account-name $StorageAccount `
-            --container-name $Container `
-            --file $filePath `
-            --name $blobName `
-            --auth-mode login `
-            --overwrite false `
-            --content-type $contentType `
-            --only-show-errors `
-            --output none
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Azure Blob upload failed for '$($entry.Value)'."
-        }
-    }
 }
 
 if ([string]::IsNullOrWhiteSpace($OutputPath)) {
     $OutputPath = Join-Path $evidenceRoot 'published-evidence.json'
 }
-
 $outputDirectory = Split-Path -Parent $OutputPath
 if ($outputDirectory) {
     New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
 }
-$publication | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
+$publication | ConvertTo-Json -Depth 10 |
+    Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
 Write-Host "Published reproduction evidence manifest: $OutputPath"

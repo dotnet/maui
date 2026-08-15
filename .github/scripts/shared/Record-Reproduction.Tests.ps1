@@ -14,7 +14,8 @@ BeforeAll {
             [switch]$FailStop,
             [switch]$RecorderExitsEarly,
             [int]$StopExitCode = 0,
-            [string]$StopErrorOutput = ''
+            [string]$StopErrorOutput = '',
+            [switch]$StopForcedTermination
         )
 
         if ($null -eq $MediaInfo) {
@@ -42,6 +43,7 @@ BeforeAll {
             RecorderExitsEarly = $RecorderExitsEarly.IsPresent
             StopExitCode       = $StopExitCode
             StopErrorOutput    = $StopErrorOutput
+            StopForcedTermination = $StopForcedTermination.IsPresent
             NextPid            = 4100
         }
 
@@ -131,6 +133,7 @@ BeforeAll {
                         Stopped  = $true
                         Id       = $request.Handle.Id
                         ExitCode = $state.StopExitCode
+                        ForcedTermination = $state.StopForcedTermination
                         StdOut   = ''
                         StdErr   = $state.StopErrorOutput
                     }
@@ -306,6 +309,9 @@ Describe 'Record-Reproduction recorder adapters' {
         $start.ArgumentList | Should -Contain 'Capture screen 0:none'
         $start.ArgumentList | Should -Contain '-an'
         $start.ArgumentList | Should -Contain '-t'
+        $start.ArgumentList | Should -Contain 'mpegts'
+        $start.ArgumentList[-1] |
+            Should -BeExactly (Join-Path $evidenceDir 'recording.raw.ts')
         ($start.ArgumentList -join ' ') | Should -Match 'fps=15'
         ($start.ArgumentList -join ' ') | Should -Match 'scale=1280:720'
         $start.ArgumentList | Should -Not -Contain ':default'
@@ -455,6 +461,22 @@ Describe 'Record-Reproduction exact process lifecycle' {
         (Get-CommandRequest $harness 'Signal Android recorder').Count | Should -Be 1
         (Get-ProcessRequest $harness Stop).Count | Should -Be 1
         Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') | Should -BeFalse
+    }
+
+    It 'accepts an exact forced Catalyst stop only when retained media validates' {
+        $harness = New-RecordingHarness `
+            -StopExitCode 137 `
+            -StopForcedTermination
+        $evidenceDir = Join-Path $TestDrive 'forced-catalyst-stop'
+
+        $result = Invoke-TestRecording `
+            -Harness $harness `
+            -Platform catalyst `
+            -EvidenceDir $evidenceDir
+
+        $result.platform | Should -BeExactly 'catalyst'
+        Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') |
+            Should -BeTrue
     }
 }
 

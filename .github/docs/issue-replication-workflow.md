@@ -31,8 +31,8 @@ Replication targets `main` in the first version. The issue must describe a scena
    - UI test only when lower-level tests cannot prove the issue.
 6. Runs the exact test with `MAUI_REPRODUCTION_ISSUE=<issue>` and confirms the expected assertion fails.
 7. Validates that the patch is add-only and restricted to approved test locations.
-8. Uploads evidence to public read-only Azure Blob URLs.
-9. Pushes the validated patch to the configured bot fork and opens a draft PR against `dotnet/maui:main`.
+8. Publishes evidence to the repository's public, asset-only `review-tests-assets-v2` branch.
+9. Pushes the validated patch to a same-repository branch and opens a draft PR against `dotnet/maui:main`.
 
 The PR embeds the GIF/thumbnail linked to the MP4. GitHub does not provide a supported API for uploading a video attachment directly into a PR body.
 
@@ -64,8 +64,8 @@ Issue content and generated code are untrusted.
 - Appium interactions are bounded JSON data interpreted by trusted code; the agent cannot author host-executable Appium code.
 - Generated Sandbox and test sources are capability-scanned before any credentialless execution.
 - Trusted scripts run builds, tests, Appium, recording, patch validation, uploads, and publication.
-- The publisher runs from a clean checkout and validates artifacts before receiving Azure or GitHub credentials.
-- Azure evidence upload and GitHub PR publication use separate least-privilege credentials.
+- The publisher runs from a clean trusted checkout, validates artifacts before extracting the persisted checkout credential, and never executes generated code.
+- The checkout credential is scoped to immutable asset publication, reproduction-branch push, and draft PR creation, then cleared.
 
 See `.github/instructions/ci-copilot-pipeline-security.instructions.md` for mandatory implementation rules.
 
@@ -80,22 +80,24 @@ See `.github/instructions/ci-copilot-pipeline-security.instructions.md` for mand
 | Patch or evidence validation fails | Do not expose publisher credentials; publish diagnostics only |
 | Matching open reproduction PR already exists | Do not create a duplicate |
 
-Public evidence is stored under an immutable path similar to:
+Public evidence is stored under an immutable, build-specific path on
+`review-tests-assets-v2` similar to:
 
 ```text
-maui-copilot/issue-<number>/<platform>/<build-id>/
+pr-<issue-number>/replication/<platform>/<build-id>-<attempt>/
 ```
 
-Retention is controlled by the configured Azure Storage lifecycle policy.
+PR media uses commit-pinned `raw.githubusercontent.com` URLs, so it renders
+without Azure DevOps authentication and remains stable when the asset branch
+advances.
 
-## Required pipeline configuration
+## Publication credentials
 
-- `MAUI_REPLICATION_AZURE_SERVICE_CONNECTION`: federated Azure service connection with create-only access to the evidence container.
-- `MAUI_REPLICATION_STORAGE_ACCOUNT`, `MAUI_REPLICATION_STORAGE_CONTAINER`, and `MAUI_REPLICATION_PUBLIC_BASE_URL`: public anonymous-read evidence container and lifecycle-managed Blob endpoint.
-- `MAUI_REPLICATION_FORK_OWNER` and `MAUI_REPLICATION_FORK_REPOSITORY`: bot fork target.
-- Dedicated `GH_REPLICATION_TOKEN` able to push to the bot fork and open draft PRs in `dotnet/maui`.
-
-The pipeline variables are documented next to the `PublishReplication` job in `eng/pipelines/ci-copilot.yml`.
+No replication-specific token, storage account, service connection, or fork
+configuration is required. The clean trusted publisher job reuses the GitHub
+service-connection credential already persisted by `checkout: self`, the same
+credential pattern used for UI-test screenshot assets. Candidate validation
+finishes before that credential is extracted.
 
 ## Initial pilot set
 
@@ -103,6 +105,6 @@ Before each run, confirm the issue is still open, has no equivalent active fix/r
 
 - Android: `#37440`
 - iOS: `#31059`
-- Mac Catalyst: `#36716`
+- Mac Catalyst: `#35516`
 
 Windows recording and runner behavior is covered by focused validation in the implementation PR; a live Windows issue is not required for the initial pilot.

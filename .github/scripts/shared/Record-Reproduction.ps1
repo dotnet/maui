@@ -491,15 +491,10 @@ function Invoke-DefaultProcessOperation {
             if ($null -eq $process) {
                 throw 'Recorder process handle is invalid.'
             }
+            $forcedTermination = $false
 
             try {
                 if (-not $process.HasExited) {
-                    if ($kind -eq 'catalyst' -and $waitForNaturalExit) {
-                        Wait-ForBoundedRecorderNaturalExit `
-                            -Process $process `
-                            -MaximumDurationSeconds $maximumDurationSeconds
-                    }
-
                     if ($kind -in @('catalyst', 'windows')) {
                         if (-not $process.HasExited) {
                             try {
@@ -544,6 +539,7 @@ function Invoke-DefaultProcessOperation {
                         } catch {
                             $process.Kill()
                         }
+                        $forcedTermination = $true
                     }
                 }
 
@@ -556,6 +552,7 @@ function Invoke-DefaultProcessOperation {
                     Stopped  = $true
                     Id       = $process.Id
                     ExitCode = $process.ExitCode
+                    ForcedTermination = $forcedTermination
                     StdOut   = $output.StdOut
                     StdErr   = $output.StdErr
                 }
@@ -653,7 +650,17 @@ function Stop-Recorder {
     }
 
     $exitCode = [int](Get-ObjectPropertyValue $result 'ExitCode' 0)
-    if ($exitCode -ne 0) {
+    $forcedTermination = [bool](Get-ObjectPropertyValue `
+        $result `
+        'ForcedTermination' `
+        $false)
+    $allowValidatedCatalystStop = (
+        $Kind -eq 'catalyst' -and
+        $WaitForNaturalExit -and
+        $forcedTermination -and
+        $exitCode -eq 137
+    )
+    if ($exitCode -ne 0 -and -not $allowValidatedCatalystStop) {
         $output = @(
             Get-ObjectPropertyValue $result 'StdErr' ''
             Get-ObjectPropertyValue $result 'StdOut' ''
@@ -906,7 +913,14 @@ if ($Platform -eq 'ios' -and $DeviceUdid -notmatch '^[0-9A-Fa-f-]{8,64}$') {
 }
 
 $evidenceRoot = Initialize-SafeEvidenceDirectory -Path $EvidenceDir
-$rawVideoPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'recording.raw.mp4'
+$rawVideoFileName = if ($Platform -eq 'catalyst') {
+    'recording.raw.ts'
+} else {
+    'recording.raw.mp4'
+}
+$rawVideoPath = Get-SafeEvidencePath `
+    -Root $evidenceRoot `
+    -FileName $rawVideoFileName
 $videoPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'repro.mp4'
 $thumbnailPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'thumbnail.png'
 $previewPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'preview.gif'
@@ -986,9 +1000,10 @@ switch ($Platform) {
             '-c:v', 'libx264',
             '-preset', 'ultrafast',
             '-pix_fmt', 'yuv420p',
+            '-g', [string][int]$maxFrameRate,
             '-maxrate', '4M',
             '-bufsize', '8M',
-            '-movflags', '+faststart',
+            '-f', 'mpegts',
             $rawVideoPath
         )
     }

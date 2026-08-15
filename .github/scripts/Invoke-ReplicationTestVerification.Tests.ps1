@@ -98,7 +98,8 @@ Describe 'Replication failure-only verification' {
 
     It 'sets the issue guard only around a child verifier and clears all publisher tokens' {
         $script:Source | Should -Match "MAUI_REPRODUCTION_ISSUE"
-        $script:Source | Should -Match "GH_REPLICATION_TOKEN"
+        $script:Source | Should -Match "'GH_TOKEN'"
+        $script:Source | Should -Not -Match "GH_REPLICATION_TOKEN"
         $script:Source | Should -Match "& pwsh @arguments"
         $script:Source | Should -Match "signatureMatched"
         $script:Source | Should -Match "infrastructureFailure"

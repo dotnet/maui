@@ -118,7 +118,6 @@ $allSecretNames = @(
     'GH_TOKEN',
     'GITHUB_TOKEN',
     'GH_COMMENT_TOKEN',
-    'GH_REPLICATION_TOKEN',
     'SYSTEM_ACCESSTOKEN',
     'AZURE_STORAGE_KEY',
     'AZURE_STORAGE_SAS_TOKEN',
@@ -507,7 +506,13 @@ function Read-GeneratedAppiumPlan {
         $locatorActions + @('back', 'swipe', 'setOrientation') |
             Sort-Object -Unique
     )
-    $allowedStrategies = @('id', 'accessibilityId', 'xpath', 'className')
+    $allowedStrategies = @(
+        'id',
+        'accessibilityId',
+        'xpath',
+        'className',
+        'androidText'
+    )
 
     for ($index = 0; $index -lt $steps.Count; $index++) {
         $step = $steps[$index]
@@ -562,10 +567,21 @@ function Read-GeneratedAppiumPlan {
             if ($strategy -cnotin $allowedStrategies) {
                 throw "Generated Appium step $($index + 1) locator strategy is unsupported."
             }
-            $null = ConvertTo-BoundedAgentLine `
+            $locatorValue = ConvertTo-BoundedAgentLine `
                 -Value $step.locator.value `
                 -Description "Generated Appium step $($index + 1) locator value" `
                 -MaximumLength 500
+            if ($strategy -ceq 'androidText') {
+                if ($Platform -cne 'android') {
+                    throw "Generated Appium step $($index + 1) uses androidText outside Android."
+                }
+                if (
+                    $locatorValue.Length -gt 200 -or
+                    $locatorValue -cnotmatch '^[A-Za-z0-9 _.,:;!?()/+=-]+$'
+                ) {
+                    throw "Generated Appium step $($index + 1) androidText value is unsafe."
+                }
+            }
         } elseif ($null -ne $step.locator) {
             throw "Generated Appium step $($index + 1) must not contain a locator."
         }
@@ -1167,7 +1183,7 @@ Perform only the Sandbox-authoring portion:
 1. Read the sanitized local issue context.
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
-3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. Locator actions use exactly strategy (id|accessibilityId|xpath|className) and value; use null for locator/value when the action does not need them. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable wrong outcomes, expose a stable semantic result in the app and assert a trimmed value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
+3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. Locator actions use exactly strategy (id|accessibilityId|xpath|className|androidText) and value; androidText is Android-only, accepts literal visible text rather than a UiAutomator expression, and should be preferred over XPath for stable Android text such as BUG_REPRODUCED. Use null for locator/value when the action does not need them. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable wrong outcomes, expose a stable semantic result in the app and assert a trimmed value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, and files. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
@@ -1238,7 +1254,7 @@ function Invoke-ReplicationCopilot {
         '--no-ask-user',
         '--available-tools', 'view', 'rg', 'glob', 'apply_patch',
         '--add-dir', $TrustedRoot,
-        '--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,GH_COMMENT_TOKEN,GH_REPLICATION_TOKEN,SYSTEM_ACCESSTOKEN,COPILOT_GITHUB_TOKEN,AZURE_STORAGE_KEY,AZURE_STORAGE_SAS_TOKEN'
+        '--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,GH_COMMENT_TOKEN,SYSTEM_ACCESSTOKEN,COPILOT_GITHUB_TOKEN,AZURE_STORAGE_KEY,AZURE_STORAGE_SAS_TOKEN'
     )
     $writePathComparer = if ($IsWindows) {
         [StringComparer]::OrdinalIgnoreCase

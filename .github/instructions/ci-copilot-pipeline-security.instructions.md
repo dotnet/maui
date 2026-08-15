@@ -9,9 +9,7 @@ Review mode runs **untrusted PR code**. Replication mode runs AI-generated Sandb
 
 - `GH_COMMENT_TOKEN` / `GH_TOKEN` — `maui-bot` PAT (post comments, labels, reviews on any PR)
 - `COPILOT_GITHUB_TOKEN` — Copilot CLI install token
-- AzDO GitHub service-connection PAT — repo contents, PRs, checks, workflows
-- Azure federated storage identity — upload public reproduction evidence
-- `GH_REPLICATION_TOKEN` — push an add-only test branch to the bot fork and open a draft PR
+- AzDO GitHub service-connection PAT — trusted checkout plus asset, branch, and PR publication
 
 Once the PR is merged into the worktree, the author controls every `.csproj`, `Directory.Build.targets`, source generator, analyzer, test, `.ps1`, and `.yml` the pipeline subsequently runs.
 
@@ -21,7 +19,7 @@ Issue text, Markdown, inline code, screenshots, generated patches, test output, 
 
 1. **Per-task `env:` scoping.** Only put tokens in tasks that need them. The Copilot-agent task gets `COPILOT_GITHUB_TOKEN` only — never `GH_TOKEN`. The Post task runs in its own Microsoft-hosted job and receives `GH_COMMENT_TOKEN` only in its posting step. Pass `--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,COPILOT_GITHUB_TOKEN` to the Copilot CLI.
 
-2. **`persistCredentials: false` on every `checkout: self`** unless the task pushes. Default checkout writes the service-connection PAT into `.git/config` as `extraheader`, readable by any subprocess. The trusted Stage 3 summary job is the explicit exception: it never runs PR-controlled code and scopes that credential to snapshot-asset publication and the conservative PR title/body updater.
+2. **`persistCredentials: false` on every `checkout: self`** unless the task pushes. Default checkout writes the service-connection PAT into `.git/config` as `extraheader`, readable by any subprocess. The trusted Stage 3 summary job and trusted replication publisher are explicit exceptions: neither runs untrusted code, and both scope the credential to validated asset/repository writes.
 
 3. **Trusted-copy scripts before merging the PR.** Setup copies `.github/scripts`, `.github/skills`, and `eng/scripts` to `$(Build.ArtifactStagingDirectory)/trusted-github/` before switching branches or merging the PR. Gate and CopilotReview invoke scripts through `$ScriptsDir`, `$SkillsDir`, and `$EngScriptsDir`, never from the merged worktree. New scripts used by those phases must be added to the Setup copy block.
 
@@ -41,13 +39,13 @@ Issue text, Markdown, inline code, screenshots, generated patches, test output, 
 
 11. **Issue ingestion is allowlisted and bounded.** Replication may fetch only `dotnet/maui` issue metadata through the GitHub API and explicitly allowed GitHub user-attachment raster screenshots. Never clone or download a linked repository, archive, binary, script, package, video, or arbitrary file. Reject SVG, mismatched MIME/decoded formats, oversized images, redirects to disallowed hosts, and issue targets that are pull requests.
 
-12. **Copilot replication has no shell, network, or publishing tools.** Give the replication agent repository read tools and exact-file write approvals only—never directory-wide or global write approval. The Sandbox paths are fixed. A proposal-only pass selects new issue-specific test paths; trusted code validates their approved roots, existing regular parent directories, add-only status, and lack of traversal/symlinks before authoring or repair receives those exact paths. Disable GitHub MCP and URL tools. The agent must never author host-executable Appium code; a fixed trusted interpreter executes the validated plan. Trusted scripts—not Copilot—run builds, tests, Appium, recording, git, Azure upload, and GitHub writes. The Copilot task receives only `COPILOT_GITHUB_TOKEN`.
+12. **Copilot replication has no shell, network, or publishing tools.** Give the replication agent repository read tools and exact-file write approvals only—never directory-wide or global write approval. The Sandbox paths are fixed. A proposal-only pass selects new issue-specific test paths; trusted code validates their approved roots, existing regular parent directories, add-only status, and lack of traversal/symlinks before authoring or repair receives those exact paths. Disable GitHub MCP and URL tools. The agent must never author host-executable Appium code; a fixed trusted interpreter executes the validated plan. Trusted scripts—not Copilot—run builds, tests, Appium, recording, git, asset publication, and GitHub writes. The Copilot task receives only `COPILOT_GITHUB_TOKEN`.
 
 13. **Generated success is never authoritative.** Capability-scan generated Sandbox and test sources before credentialless execution. Accept reproduction only from trusted runner outputs: a trusted Appium-plan completion marker, a targeted failure-only verifier result, an exact expected failure signature, and validated media. Do not trust markers written by the agent, test, issue content, plan data, or patch. Compilation errors, timeouts, missing screenshot baselines, infrastructure failures, and unrelated failures are not reproduction proof.
 
-14. **Validate before exposing publisher credentials.** The trusted publisher downloads replication artifacts outside the checkout and runs deterministic validation before either Azure or GitHub credentials are present. Require an add-only patch in approved test paths, regular text source files only, no existing-file/project/workflow/product edits, no symlinks/submodules/executable bits/binaries/baselines, an issue-keyed `MAUI_REPRODUCTION_ISSUE` guard, matching manifests, valid bounded MP4/GIF/PNG evidence, and no traversal paths.
+14. **Validate before exposing publisher credentials.** The trusted publisher downloads replication artifacts outside the checkout and runs deterministic validation before extracting the persisted checkout credential. Require an add-only patch in approved test paths, regular text source files only, no existing-file/project/workflow/product edits, no symlinks/submodules/executable bits/binaries/baselines, an issue-keyed `MAUI_REPRODUCTION_ISSUE` guard, matching manifests, valid bounded MP4/GIF/PNG evidence, and no traversal paths.
 
-15. **Split Azure and GitHub publication.** The evidence-upload task gets only the federated Azure identity and uploads a fixed media/JSON allowlist to immutable build-ID paths with overwrite disabled. The draft-PR task gets only `GH_REPLICATION_TOKEN`, starts from a clean pipeline checkout, applies the already validated patch, re-checks staged files, and never executes generated code. Public evidence URLs must contain no SAS token or other credential.
+15. **Scope trusted publication.** Only after validation, extract the service-connection credential from the clean publisher checkout. Publish the fixed media/JSON allowlist without overwrite to the asset-only `review-tests-assets-v2` branch, use commit-pinned public raw URLs, apply and independently re-check the validated add-only patch, push a same-repository reproduction branch, and open the draft PR. Never execute generated code while the credential is present; clear `GH_TOKEN` in `finally`.
 
 ## Review checklist
 
@@ -68,7 +66,7 @@ Issue text, Markdown, inline code, screenshots, generated patches, test output, 
 - [ ] Replication Appium actions are validated JSON interpreted by fixed trusted code, not agent-authored host code.
 - [ ] Trusted on-device, expected-failure, patch, and media validators all pass before publication.
 - [ ] Replication artifacts are downloaded outside the clean publisher checkout.
-- [ ] Azure upload and GitHub publication run in separate credential scopes; neither executes generated content.
+- [ ] The checkout credential is extracted only after validation, used only in the clean publisher job, and cleared in `finally`.
 - [ ] The publisher independently verifies the staged add-only file list before push.
 - [ ] Public evidence uses immutable paths, fixed content types, no overwrite, and no credential-bearing URL.
 
@@ -80,7 +78,7 @@ git grep -nE 'Join-Path \$RepoRoot ".*\.(ps1|sh)"' .github/scripts .github/skill
 git grep -nA1 'checkout: self' eng/pipelines/ci-copilot.yml | grep -v persistCredentials
 git grep -nE 'Set-Content.*\$RepoRoot.*(gate-result|sentinel|verdict)' .github/scripts .github/skills
 git grep -nE 'sed.*##vso' eng/pipelines/ci-copilot.yml | grep -v 'tr -d'
-git grep -nE 'GH_REPLICATION_TOKEN|REPLICATION_STORAGE' eng/pipelines/ci-copilot.yml .github/scripts
+git grep -nE 'MAUI_REPLICATION_(AZURE|STORAGE|PUBLIC_BASE_URL|FORK)|GH_REPLICATION_TOKEN' eng/pipelines/ci-copilot.yml .github/scripts
 git grep -nE 'allow-all-tools|github-mcp-server|web_fetch|web_search|shell|bash' .github/scripts/Replicate-Issue.ps1 .github/skills/replicate-issue
 git grep -nE '(clone|wget|curl|Invoke-WebRequest)' .github/scripts/Replicate-Issue.ps1 .github/scripts/shared/Get-ReplicationIssueContext.ps1
 ```

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -25,7 +26,7 @@ if (!File.Exists(planPath))
 
 var planJson = File.ReadAllText(planPath);
 var plan = ReadPlan(planJson);
-ValidatePlan(plan);
+ValidatePlan(plan, platform);
 
 Console.WriteLine($"Running issue {plan.IssueNumber} Appium plan on {platform}.");
 using var driver = CreateDriver(platform, udid);
@@ -264,6 +265,8 @@ static By CreateLocator(ReplicationLocator locator) =>
         "accessibilityId" => MobileBy.AccessibilityId(locator.Value),
         "xpath" => MobileBy.XPath(locator.Value),
         "className" => MobileBy.ClassName(locator.Value),
+        "androidText" => MobileBy.AndroidUIAutomator(
+            $"new UiSelector().text(\"{locator.Value}\")"),
         _ => throw new InvalidOperationException(
             $"Unsupported locator strategy '{locator.Strategy}'.")
     };
@@ -343,7 +346,7 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
         });
 }
 
-static void ValidatePlan(ReplicationPlan plan)
+static void ValidatePlan(ReplicationPlan plan, string platform)
 {
     if (plan.SchemaVersion != 1 ||
         plan.IssueNumber <= 0 ||
@@ -363,6 +366,22 @@ static void ValidatePlan(ReplicationPlan plan)
     {
         throw new InvalidOperationException(
             "Trusted Appium plan must end with a deterministic assertion.");
+    }
+
+    foreach (var step in plan.Steps)
+    {
+        if (step.Locator?.Strategy != "androidText")
+        {
+            continue;
+        }
+
+        if (platform != "android" ||
+            step.Locator.Value.Length is < 1 or > 200 ||
+            !Regex.IsMatch(step.Locator.Value, @"^[A-Za-z0-9 _.,:;!?()/+=-]+$"))
+        {
+            throw new InvalidOperationException(
+                "Trusted Appium plan contains an invalid Android text locator.");
+        }
     }
 }
 

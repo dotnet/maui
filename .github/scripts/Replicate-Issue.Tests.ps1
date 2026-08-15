@@ -66,6 +66,17 @@ Describe 'Replication orchestrator security boundary' {
             Should -Not -Match '"className"\s*=>\s*By\.ClassName\(locator\.Value\)'
     }
 
+    It 'maps constrained Android text locators to native UiAutomator selectors' {
+        $script:TrustedAppiumSource |
+            Should -Match '"androidText"\s*=>\s*MobileBy\.AndroidUIAutomator'
+        $script:TrustedAppiumSource |
+            Should -Match 'UiSelector\(\)\.text'
+        $script:Source |
+            Should -Match "'androidText'"
+        $script:Source |
+            Should -Match 'androidText value is unsafe'
+    }
+
     It 'polls semantic text assertions until the expected state or timeout' {
         $script:TrustedAppiumSource |
             Should -Match 'static void AssertElementText[\s\S]*new WebDriverWait\(driver, timeout\)'
@@ -136,6 +147,42 @@ Describe 'Replication orchestrator security boundary' {
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*must end with a deterministic assertion*'
+    }
+
+    It 'accepts safe Android literal text locators and rejects other platforms or expressions' {
+        $IssueNumber = 37440
+        $Platform = 'android'
+        $appiumPlanPath = Join-Path $TestDrive 'android-text-plan.json'
+        @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 37440,
+  "steps": [
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the native Android result",
+      "locator": { "strategy": "androidText", "value": "BUG_REPRODUCED" },
+      "value": "BUG_REPRODUCED",
+      "timeoutSeconds": 30
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $appiumPlanPath
+
+        { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+
+        $Platform = 'ios'
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*androidText outside Android*'
+
+        $Platform = 'android'
+        $invalid = Get-Content -LiteralPath $appiumPlanPath -Raw |
+            ConvertFrom-Json -Depth 10
+        $invalid.steps[0].locator.value = 'new UiSelector().text("BUG_REPRODUCED")'
+        $invalid | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*androidText value is unsafe*'
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
@@ -252,7 +299,8 @@ InitializeComponent();
         $script:Source | Should -Match 'permissions must target exact regular files'
         $script:Source | Should -Not -Match 'WriteRoots'
         $script:Source | Should -Not -Match '--allow-all-tools|--allow-all-paths|--allow-all-urls|--yolo'
-        $script:Source | Should -Match 'GH_REPLICATION_TOKEN'
+        $script:Source | Should -Match "'GH_TOKEN'"
+        $script:Source | Should -Not -Match 'GH_REPLICATION_TOKEN'
         $script:Source | Should -Match 'Invoke-WithoutReplicationSecrets'
     }
 
