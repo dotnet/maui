@@ -41,8 +41,10 @@ param(
     [string]`$TestClass,
     [string]`$TestMethod,
     [string]`$MachineResultPath,
+    [string]`$DeviceTestScriptPath,
     [string]`$PRNumber
 )
+if (-not [string]::IsNullOrWhiteSpace(`$DeviceTestScriptPath)) { Set-Content -LiteralPath (`$MachineResultPath + '.device-runner-path') -Value `$DeviceTestScriptPath -Encoding utf8NoBOM }
 `$message = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('$encodedMessage'))
 [ordered]@{
     schemaVersion = 1
@@ -163,5 +165,42 @@ Describe 'Replication failure-only verification' {
             Should -BeExactly 'Assert.Equal() Failure: expected red but was blue'
         $result.signatureMatched | Should -BeFalse
         $result.verificationPassed | Should -BeFalse
+    }
+
+    It 'passes the trusted pre-baseline device runner to the verifier' {
+        $trustedRoot = Join-Path $TestDrive 'trusted-github'
+        $verifier = Join-Path `
+            $trustedRoot `
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        $deviceRunner = Join-Path `
+            $trustedRoot `
+            'skills/run-device-tests/scripts/Run-DeviceTests.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verifier) -Force |
+            Out-Null
+        New-Item -ItemType Directory -Path (Split-Path -Parent $deviceRunner) -Force |
+            Out-Null
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Issue31059 expected item 4 but observed item 1'
+        'trusted runner' | Set-Content -LiteralPath $deviceRunner -Encoding utf8NoBOM
+
+        $output = Join-Path $TestDrive 'device-success'
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 31059 `
+            -Platform ios `
+            -TestType DeviceTest `
+            -TestFilter Issue31059 `
+            -TestProject Controls `
+            -TestProjectPath src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj `
+            -TestClass Microsoft.Maui.DeviceTests.Issue31059 `
+            -TestMethod RetainsCenteredItemAfterPortraitToLandscapeResize `
+            -ExpectedFailureSignature Issue31059 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        $capturedPath = Get-Content -LiteralPath (
+            Join-Path $output 'verifier-machine-result.json.device-runner-path') -Raw
+        $capturedPath.Trim() | Should -BeExactly $deviceRunner
     }
 }

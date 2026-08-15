@@ -132,6 +132,18 @@ try {
     if (-not [string]::IsNullOrWhiteSpace($TestProjectPath)) {
         $arguments += @('-TestProjectPath', $TestProjectPath)
     }
+    if ($TestType -eq 'DeviceTest') {
+        $trustedSkillsRoot = Split-Path -Parent (
+            Split-Path -Parent (
+                Split-Path -Parent $VerifierPath))
+        $deviceTestScriptPath = Join-Path `
+            $trustedSkillsRoot `
+            'run-device-tests/scripts/Run-DeviceTests.ps1'
+        if (-not (Test-Path -LiteralPath $deviceTestScriptPath -PathType Leaf)) {
+            throw "Trusted device-test runner was not found: $deviceTestScriptPath"
+        }
+        $arguments += @('-DeviceTestScriptPath', $deviceTestScriptPath)
+    }
 
     $output = @(& pwsh @arguments 2>&1)
     $exitCode = $LASTEXITCODE

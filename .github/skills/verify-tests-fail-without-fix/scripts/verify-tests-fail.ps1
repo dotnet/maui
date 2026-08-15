@@ -52,6 +52,10 @@
 .PARAMETER MachineResultPath
     Optional replication-only JSON output containing the exact targeted failure message.
 
+.PARAMETER DeviceTestScriptPath
+    Optional trusted device-test runner path. Replication supplies the runner captured
+    before the source worktree is restored to the reproduction baseline.
+
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
@@ -110,6 +114,9 @@ param(
     [string]$MachineResultPath,
 
     [Parameter(Mandatory = $false)]
+    [string]$DeviceTestScriptPath,
+
+    [Parameter(Mandatory = $false)]
     [string[]]$FixFiles,
 
     [Parameter(Mandatory = $false)]
@@ -128,6 +135,15 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
+
+$resolvedDeviceTestScriptPath = if ([string]::IsNullOrWhiteSpace($DeviceTestScriptPath)) {
+    Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+} else {
+    [IO.Path]::GetFullPath($DeviceTestScriptPath)
+}
+if (-not (Test-Path -LiteralPath $resolvedDeviceTestScriptPath -PathType Leaf)) {
+    throw "Device-test runner was not found: $resolvedDeviceTestScriptPath"
+}
 
 if (-not [string]::IsNullOrWhiteSpace($MachineResultPath)) {
     if (-not [IO.Path]::IsPathRooted($MachineResultPath)) {
@@ -621,7 +637,7 @@ function Invoke-TestRun {
             }
             $deviceProject = if ($DetectedProject) { $DetectedProject } else { "Controls" }
 
-            $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+            $deviceTestScript = $resolvedDeviceTestScriptPath
             Write-Host "🧪 Running device tests: $deviceProject on $devicePlatform" -ForegroundColor Cyan
             Write-Host "   Filter: $Filter" -ForegroundColor Gray
 
