@@ -1103,7 +1103,11 @@ function Test-AllowedScreenshotResponseUri {
 
     return [string]::Equals($Uri.Host, 'github.com', [StringComparison]::OrdinalIgnoreCase) -or
         [string]::Equals($Uri.Host, 'githubusercontent.com', [StringComparison]::OrdinalIgnoreCase) -or
-        $Uri.Host.EndsWith('.githubusercontent.com', [StringComparison]::OrdinalIgnoreCase)
+        $Uri.Host.EndsWith('.githubusercontent.com', [StringComparison]::OrdinalIgnoreCase) -or
+        [string]::Equals(
+            $Uri.Host,
+            'github-production-user-asset-6210df.s3.amazonaws.com',
+            [StringComparison]::OrdinalIgnoreCase)
 }
 
 function Invoke-ScreenshotHttpRequest {

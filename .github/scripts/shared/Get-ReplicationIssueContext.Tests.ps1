@@ -341,6 +341,10 @@ $second
             Should -BeFalse
         Test-AllowedScreenshotResponseUri ([uri] 'https://objects.githubusercontent.com/path/image.png') |
             Should -BeTrue
+        Test-AllowedScreenshotResponseUri ([uri] 'https://github-production-user-asset-6210df.s3.amazonaws.com/path/image.png?signature=value') |
+            Should -BeTrue
+        Test-AllowedScreenshotResponseUri ([uri] 'https://github-production-user-asset-6210df.s3.amazonaws.com.evil.example/path/image.png') |
+            Should -BeFalse
         Test-AllowedScreenshotResponseUri ([uri] 'https://evil.example/path/image.png') |
             Should -BeFalse
         {
