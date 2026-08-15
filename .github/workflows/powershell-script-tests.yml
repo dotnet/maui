@@ -20,6 +20,7 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - '.github/aw/actions-lock.json'
       - '.github/skills/review-test-failures/**'
       - '.github/docs/maui-ci-facts.md'
       - '.github/workflows/copilot-review-tests.md'

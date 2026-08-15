@@ -9,6 +9,9 @@ Describe '/review tests compiled trust boundary' {
         $script:source = Get-Content -Raw -LiteralPath $sourcePath
         $pesterWorkflowPath = Join-Path $PSScriptRoot '../workflows/powershell-script-tests.yml'
         $script:pesterWorkflow = Get-Content -Raw -LiteralPath $pesterWorkflowPath
+        $actionsLockPath = Join-Path $PSScriptRoot '../aw/actions-lock.json'
+        $script:actionsLock = Get-Content -Raw -LiteralPath $actionsLockPath |
+            ConvertFrom-Json
         $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
         $script:mandatoryFiles = @(
             @{
@@ -35,6 +38,8 @@ Describe '/review tests compiled trust boundary' {
             "(?m)^\s+- '\.github/skills/review-test-failures/\*\*'\s*$")
         $script:pesterWorkflow | Should -Match (
             "(?m)^\s+- '\.github/docs/maui-ci-facts\.md'\s*$")
+        $script:pesterWorkflow | Should -Match (
+            "(?m)^\s+- '\.github/aw/actions-lock\.json'\s*$")
     }
 
     It 'keeps every mandatory sealed source in the trusted base checkout' {
@@ -89,8 +94,12 @@ Describe '/review tests compiled trust boundary' {
         $expectedMandatoryLines = @(
             'set -euo pipefail'
             'trap ''echo "::error::Failed to seal trusted review inputs before PR checkout."'' ERR'
-            'trusted="${RUNNER_TEMP}/gh-aw/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"'
-            'sudo install -d -o root -g root -m 0755 "${trusted}"'
+            'trusted="/tmp/review-tests-trusted-${GITHUB_RUN_ID}"'
+            'test "$(stat -c ''%u'' /tmp)" = "0"'
+            'test -k /tmp'
+            'sudo mkdir -- "${trusted}"'
+            'sudo chown root:root "${trusted}"'
+            'sudo chmod 0755 "${trusted}"'
         )
 
         foreach ($file in $script:mandatoryFiles) {
@@ -124,7 +133,23 @@ Describe '/review tests compiled trust boundary' {
         }
 
         $runBody | Should -Match (
-            'sudo chmod 0555 .*?\$\{trusted\}')
+            'sudo chmod 0555 "\$\{trusted\}"')
+    }
+
+    It 'protects host post-processing inputs from runner-side replacement' {
+        $script:source | Should -Match (
+            'mounts:\s*\r?\n\s+- "/tmp/review-tests-trusted-\$\{\{\s*github\.run_id\s*\}\}:/review-tests-trusted:ro"')
+        $script:source | Should -Match (
+            'trusted="/tmp/review-tests-trusted-\$\{GITHUB_RUN_ID\}"')
+        $script:source | Should -Match (
+            'test "\$\(stat -c ''%u'' /tmp\)" = "0"')
+        $script:source | Should -Match 'test -k /tmp'
+        $script:source | Should -Match (
+            'pwsh "\$\{trusted\}/Merge-TestVisualsIntoComment\.ps1"')
+        $script:source | Should -Match (
+            '-ContextJsonPath "\$\{trusted\}/context\.json"')
+        $script:source | Should -Not -Match (
+            'sudo install -d .*?"\$\{trusted\}"')
     }
 
     It 'mounts the gh-aw runner directory read-only for the agent' {
@@ -140,10 +165,31 @@ Describe '/review tests compiled trust boundary' {
 
         $agentStep = $script:lock.Substring($agent, $agentEnd - $agent)
         $mount = '--mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro"'
+        $trustedMount =
+            '--mount "/tmp/review-tests-trusted-${{ github.run_id }}:/review-tests-trusted:ro"'
 
         $agentStep | Should -Match ([regex]::Escape($mount))
+        $agentStep | Should -Match ([regex]::Escape($trustedMount))
         $agentStep | Should -Not -Match (
             [regex]::Escape('--mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:rw"'))
+    }
+
+    It 'uses one peeled commit pin for actions/github-script v9' {
+        $expectedSha = '3a2844b7e9c422d3c10d287c895573f7108da1b3'
+        $pin = $script:actionsLock.entries.'actions/github-script@v9.0.0'
+
+        $pin.version | Should -BeExactly 'v9.0.0'
+        $pin.sha | Should -BeExactly $expectedSha
+
+        $compiledPins = @(
+            [regex]::Matches(
+                $script:lock,
+                'uses:\s+actions/github-script@(?<sha>[0-9a-f]{40})') |
+                ForEach-Object { $_.Groups['sha'].Value } |
+                Sort-Object -Unique
+        )
+        $compiledPins | Should -HaveCount 1
+        $compiledPins[0] | Should -BeExactly $expectedSha
     }
 
     It 'renders the trusted prompt before checkout without a worktree fallback' {
@@ -170,10 +216,15 @@ Describe '/review tests compiled trust boundary' {
         $promptStart | Should -BeGreaterOrEqual 0
 
         $prompt = $script:source.Substring($promptStart)
+        $trustedPromptRoot = '/review-tests-trusted'
         $prompt | Should -Match (
-            '\$\{RUNNER_TEMP\}/gh-aw/review-tests-trusted-.*?/SKILL\.md')
+            $trustedPromptRoot + '/SKILL\.md')
         $prompt | Should -Match (
-            '\$\{RUNNER_TEMP\}/gh-aw/review-tests-trusted-.*?/maui-ci-facts\.md')
+            $trustedPromptRoot + '/maui-ci-facts\.md')
+        $prompt | Should -Match (
+            $trustedPromptRoot + '/context\.json')
+        $prompt | Should -Match (
+            $trustedPromptRoot + '/context\.md')
         $prompt | Should -Match (
             'handled failure-report path, never a reason to read a PR-controlled fallback')
         $prompt | Should -Match (
@@ -184,5 +235,9 @@ Describe '/review tests compiled trust boundary' {
             '\.github/docs/maui-ci-facts\.md')
         $prompt | Should -Not -Match (
             '\.github/workflows/copilot-review-tests\.md')
+        $prompt | Should -Not -Match (
+            '/tmp/gh-aw/agent/review-tests-context')
+        $prompt | Should -Not -Match (
+            '\$\{RUNNER_TEMP\}/gh-aw/review-tests-trusted-')
     }
 }
