@@ -2387,7 +2387,7 @@ stages:
               }
             displayName: 'Validate replication candidate without credentials'
 
-          - ${{ if eq(parameters.Mode, 'replicate') }}:
+          - ${{ if and(eq(parameters.Mode, 'replicate'), ne(coalesce(variables['MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'], ''), '')) }}:
             - task: AzureCLI@2
               displayName: 'Upload validated public evidence'
               inputs:
@@ -2431,6 +2431,11 @@ stages:
                 MAUI_REPLICATION_STORAGE_CONTAINER: $(MAUI_REPLICATION_STORAGE_CONTAINER)
                 MAUI_REPLICATION_PUBLIC_BASE_URL: $(MAUI_REPLICATION_PUBLIC_BASE_URL)
                 SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+
+          - ${{ if and(eq(parameters.Mode, 'replicate'), eq(coalesce(variables['MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'], ''), '')) }}:
+            - pwsh: |
+                throw 'Replication was validated, but publication is not configured. Set MAUI_REPLICATION_AZURE_SERVICE_CONNECTION and the documented storage, fork, and token variables to publish evidence and a draft PR.'
+              displayName: 'Require replication publication configuration'
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'

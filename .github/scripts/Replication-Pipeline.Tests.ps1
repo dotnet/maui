@@ -57,7 +57,8 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match 'GH_TOKEN: \$\(GH_REPLICATION_TOKEN\)'
         $script:Pipeline | Should -Match "azureSubscription: '\$\(MAUI_REPLICATION_AZURE_SERVICE_CONNECTION\)'"
-        $script:Pipeline | Should -Match "(?s)- \$\{\{ if eq\(parameters\.Mode, 'replicate'\) \}\}:.*?- task: AzureCLI@2.*?azureSubscription:"
+        $script:Pipeline | Should -Match "(?s)- \$\{\{ if and\(eq\(parameters\.Mode, 'replicate'\), ne\(coalesce\(variables\['MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'\], ''\), ''\)\) \}\}:.*?- task: AzureCLI@2.*?azureSubscription:"
+        $script:Pipeline | Should -Match "displayName: 'Require replication publication configuration'"
         $script:Pipeline | Should -Match 'git merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
         $script:Pipeline | Should -Match "'Assert-ReplicationTestGuard\.ps1'"
     }
