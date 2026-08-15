@@ -34,13 +34,13 @@
 # brittle (a correct finding phrased differently fails). Those move into
 # the LLM-judge rubric. Each scenario keeps at most 1–2 structural / crisp-
 # negative floors so the judge stays decisive (this suite omits
-# scoring.weights, so Vally 0.10 scores a trial as the unweighted mean of its
+# scoring.weights, so Vally 0.12 scores a trial as the unweighted mean of its
 # graders). The two purely-semantic
 # detection scenarios (weak assertions, edge-case gaps) are judge-only — a
 # single prompt grader means the trial score IS the judge's normalized
 # rubric score.
 #
-# Scoring: scoring.weights is deliberately omitted, so Vally 0.10 uses the
+# Scoring: scoring.weights is deliberately omitted, so Vally 0.12 uses the
 # equal-weight aggregate and the 0.6 threshold remains active.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -191,8 +191,9 @@ stimuli:
 
       Is this the right test type?
     graders:
-      - type: output-contains
-        config: { substring: "Test Type Appropriateness" }
+      - type: output-matches
+        config:
+          pattern: '(?is)test type(?: appropriateness)?.{0,240}\bunit test\b'
       - type: output-not-contains
         config: { substring: "UI test is appropriate here" }
       - type: prompt
@@ -404,7 +405,7 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [evaluate-pr-tests] }
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.10 uses the
+  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
   # unweighted mean of grader [0,1] scores; skill passes
   # when the mean across runs >= threshold. Structural section-heading floors
   # are kept only where producing the report format IS the capability; the
