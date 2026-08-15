@@ -319,6 +319,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var groupIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var groupCount = args.NewItems.Count;
+			var previousGroupCount = _groups.Count;
 
 			UpdateGroupTracking();
 
@@ -328,7 +329,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (itemCount == 0)
 			{
-				_notifier.NotifyDataSetChanged();
+				if (previousGroupCount == 0 && GroupCount > 0)
+				{
+					_notifier.NotifyDataSetChanged();
+				}
+
 				return;
 			}
 
@@ -378,12 +383,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Figure out how many items are in the groups we're removing
 			var itemCount = CountItemsInGroups(groupIndex, groupCount);
+			var previousGroupCount = _groups.Count;
 
 			UpdateGroupTracking();
 
 			if (itemCount == 0)
 			{
-				_notifier.NotifyDataSetChanged();
+				if (previousGroupCount > 0 && GroupCount == 0)
+				{
+					_notifier.NotifyDataSetChanged();
+				}
+
 				return;
 			}
 

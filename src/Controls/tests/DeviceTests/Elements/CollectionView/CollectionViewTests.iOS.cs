@@ -16,6 +16,7 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -66,12 +67,10 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(emptyViewWrapper.Superview);
 
 				groups.Clear();
-				await Task.Delay(100);
-				Assert.NotNull(emptyViewWrapper.Superview);
+				await AssertEventually(() => emptyViewWrapper.Superview is not null);
 
 				groups.Add(new());
-				await Task.Delay(100);
-				Assert.Null(emptyViewWrapper.Superview);
+				await AssertEventually(() => emptyViewWrapper.Superview is null);
 			});
 		}
 

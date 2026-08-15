@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AInsets = AndroidX.Core.Graphics.Insets;
 using AView = Android.Views.View;
 
@@ -127,13 +128,19 @@ namespace Microsoft.Maui.DeviceTests
 					await WaitForUIUpdate(frame, collectionView);
 					Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
 
-					groups.Clear();
-					await Task.Delay(100);
-					Assert.IsType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+					groups.RemoveAt(0);
+					await AssertEventually(() => handler.PlatformView.GetAdapter() is EmptyViewAdapter);
 
 					groups.Add(new());
-					await Task.Delay(100);
-					Assert.IsNotType<EmptyViewAdapter>(handler.PlatformView.GetAdapter());
+					await AssertEventually(() => handler.PlatformView.GetAdapter() is not EmptyViewAdapter);
+
+					groups.Add(new() { "Item 1", "Item 2" });
+					await AssertEventually(() => handler.PlatformView.GetAdapter().ItemCount == 2);
+
+					groups.RemoveAt(1);
+					await AssertEventually(() =>
+						handler.PlatformView.GetAdapter() is not EmptyViewAdapter &&
+						handler.PlatformView.GetAdapter().ItemCount == 0);
 				});
 		}
 
