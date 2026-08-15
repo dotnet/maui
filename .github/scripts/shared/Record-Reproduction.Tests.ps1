@@ -361,6 +361,8 @@ Describe 'Record-Reproduction exact process lifecycle' {
         $stops.Count | Should -Be 1
         $stops[0].Handle.Id | Should -Be 4101
         $stops[0].GraceSeconds | Should -Be 15
+        $stops[0].MaximumDurationSeconds | Should -Be 10
+        $stops[0].WaitForNaturalExit | Should -BeTrue
         [object]::ReferenceEquals($stops[0].Handle, $harness.State.Handles[0]) |
             Should -BeTrue
     }
@@ -380,6 +382,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
 
         $stops = Get-ProcessRequest $harness Stop
         $stops.Count | Should -Be 1
+        $stops[0].WaitForNaturalExit | Should -BeFalse
         [object]::ReferenceEquals($stops[0].Handle, $harness.State.Handles[0]) |
             Should -BeTrue
         (Get-CommandRequest $harness 'Clean Android recording').Count | Should -Be 1

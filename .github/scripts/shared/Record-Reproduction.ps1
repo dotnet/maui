@@ -421,6 +421,25 @@ function Get-DefaultRecorderOutput {
     }
 }
 
+function Wait-ForBoundedRecorderNaturalExit {
+    param(
+        [Parameter(Mandatory = $true)][System.Diagnostics.Process]$Process,
+        [Parameter(Mandatory = $true)][int]$MaximumDurationSeconds
+    )
+
+    $naturalExitDeadline = $Process.StartTime.ToUniversalTime().AddSeconds(
+        $MaximumDurationSeconds + 10)
+    $remainingNaturalWait = $naturalExitDeadline - [DateTime]::UtcNow
+    if ($remainingNaturalWait.TotalMilliseconds -le 0) {
+        return
+    }
+
+    $remainingNaturalWaitMilliseconds = [int][Math]::Min(
+        [int]::MaxValue,
+        [Math]::Ceiling($remainingNaturalWait.TotalMilliseconds))
+    [void]$Process.WaitForExit($remainingNaturalWaitMilliseconds)
+}
+
 function Invoke-DefaultProcessOperation {
     param([Parameter(Mandatory = $true)][object]$Request)
 
@@ -459,6 +478,15 @@ function Invoke-DefaultProcessOperation {
                     1,
                     [int](Get-ObjectPropertyValue $Request 'GraceSeconds' 5)))
             $graceMilliseconds = $graceSeconds * 1000
+            $maximumDurationSeconds = [Math]::Min(
+                180,
+                [Math]::Max(
+                    2,
+                    [int](Get-ObjectPropertyValue $Request 'MaximumDurationSeconds' 60)))
+            $waitForNaturalExit = [bool](Get-ObjectPropertyValue `
+                $Request `
+                'WaitForNaturalExit' `
+                $false)
             $process = Get-ObjectPropertyValue $handle 'Process'
             if ($null -eq $process) {
                 throw 'Recorder process handle is invalid.'
@@ -466,14 +494,22 @@ function Invoke-DefaultProcessOperation {
 
             try {
                 if (-not $process.HasExited) {
+                    if ($kind -eq 'catalyst' -and $waitForNaturalExit) {
+                        Wait-ForBoundedRecorderNaturalExit `
+                            -Process $process `
+                            -MaximumDurationSeconds $maximumDurationSeconds
+                    }
+
                     if ($kind -in @('catalyst', 'windows')) {
-                        try {
-                            $process.StandardInput.WriteLine('q')
-                            $process.StandardInput.Flush()
-                        } catch {
-                            Write-Debug 'Recorder exited before the graceful stdin stop completed.'
+                        if (-not $process.HasExited) {
+                            try {
+                                $process.StandardInput.WriteLine('q')
+                                $process.StandardInput.Flush()
+                            } catch {
+                                Write-Debug 'Recorder exited before the graceful stdin stop completed.'
+                            }
+                            [void]$process.WaitForExit($graceMilliseconds)
                         }
-                        [void]$process.WaitForExit($graceMilliseconds)
                     }
 
                     if ($kind -eq 'android') {
@@ -490,6 +526,16 @@ function Invoke-DefaultProcessOperation {
                         if ($signal.ExitCode -eq 0) {
                             [void]$process.WaitForExit($graceMilliseconds)
                         }
+                    }
+
+                    if (
+                        -not $process.HasExited -and
+                        $waitForNaturalExit -and
+                        $kind -eq 'windows'
+                    ) {
+                        Wait-ForBoundedRecorderNaturalExit `
+                            -Process $process `
+                            -MaximumDurationSeconds $maximumDurationSeconds
                     }
 
                     if (-not $process.HasExited) {
@@ -587,15 +633,19 @@ function Start-Recorder {
 function Stop-Recorder {
     param(
         [Parameter(Mandatory = $true)][object]$Handle,
-        [Parameter(Mandatory = $true)][string]$Kind
+        [Parameter(Mandatory = $true)][string]$Kind,
+        [Parameter(Mandatory = $true)][int]$MaximumDurationSeconds,
+        [Parameter(Mandatory = $true)][bool]$WaitForNaturalExit
     )
 
     $result = Invoke-ProcessOperation -Request ([pscustomobject]@{
-        Operation    = 'Stop'
-        Handle       = $Handle
-        Kind         = $Kind
-        GraceSeconds = 15
-        Purpose      = "Stop $Kind recorder"
+        Operation              = 'Stop'
+        Handle                 = $Handle
+        Kind                   = $Kind
+        GraceSeconds           = 15
+        MaximumDurationSeconds = $MaximumDurationSeconds
+        WaitForNaturalExit     = $WaitForNaturalExit
+        Purpose                = "Stop $Kind recorder"
     })
     if ($null -eq $result -or -not [bool](Get-ObjectPropertyValue $result 'Stopped' $false)) {
         $recorderPid = ConvertTo-SafeLogText (Get-ObjectPropertyValue $Handle 'Id' 'unknown')
@@ -1074,7 +1124,13 @@ try {
                 }
             }
             try {
-                Stop-Recorder -Handle $handleToStop -Kind $Platform
+                Stop-Recorder `
+                    -Handle $handleToStop `
+                    -Kind $Platform `
+                    -MaximumDurationSeconds $MaxDurationSeconds `
+                    -WaitForNaturalExit (
+                        $null -eq $reproductionError -and
+                        $null -eq $recordingError)
             } catch {
                 [void]$cleanupErrors.Add(
                     "recorder stop: $(ConvertTo-SafeLogText $_.Exception.Message)")

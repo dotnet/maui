@@ -59,7 +59,7 @@ Empirical proof requires all of:
 - `evidence/repro.mp4` visibly covers those actions and the resulting failure.
 - The result is not merely a screenshot difference or missing baseline.
 
-Use only the runner-configured bounded attempts (default two and never more than three). If proof is still absent or inconclusive, write a blocked manifest and stop. Before restoring the Sandbox, copy the final scenario and logs into the artifact contract below.
+Use only the runner-configured bounded attempts (default three and never more than three). If proof is still absent or inconclusive, write a blocked manifest and stop. Before restoring the Sandbox, copy the final scenario and logs into the artifact contract below.
 
 ### 2. Restore the Sandbox
 
@@ -177,7 +177,7 @@ For `status: "blocked"`, set `blocked` to:
 
 For blocked results, keep every key in `candidate.json` and set unavailable scalar/object values to `null` and unavailable arrays to `[]`; do not invent evidence.
 
-The trusted recorder owns `evidence/evidence.json`; it must report `schemaVersion`, `platform`, `device`, `durationSeconds`, `dimensions`, `sha256`, `videoBytes`, and `files.video|thumbnail|preview`. The trusted verifier owns `verification/verification-result.json`; it must report the exact issue/platform/type/filter/signature plus `verifierPassed`, `signatureMatched`, `infrastructureFailure`, and `verificationPassed`. The agent must never create or alter those trusted claims.
+The trusted recorder owns `evidence/evidence.json`; it must report `schemaVersion`, `platform`, `device`, `durationSeconds`, `dimensions`, `sha256`, `videoBytes`, and `files.video|thumbnail|preview`. The trusted verifier owns `verification/verification-result.json`; it must report the exact issue/platform/type/filter, resolved project/path/class/method, expected signature, targeted `actualFailureMessage`, plus `verifierPassed`, `signatureMatched`, `infrastructureFailure`, and `verificationPassed`. `signatureMatched` is valid only when the targeted failure message contains the expected signature, never when aggregate logs or test metadata contain it. The agent must never create or alter those trusted claims.
 
 Every path in `candidate.json` must be relative to the artifact root, remain inside it, not be a symlink, and identify a regular file. Use 1-10 bounded single-line `reproductionSteps`; keep `expectedFailureSignature` literal and between 3 and 1000 characters. `files` may contain only added text test files in approved MAUI test locations. `test.patch` must contain only those additions. Do not copy raw issue context, URLs, instructions, or external code into artifacts.
 

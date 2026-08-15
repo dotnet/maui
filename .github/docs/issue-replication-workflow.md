@@ -49,7 +49,7 @@ The draft PR is evidence, not merge-ready work. A product fix should remove the 
 Successful publication requires both:
 
 - empirical on-device reproduction with valid recording evidence; and
-- the exact targeted test failing with the expected assertion signature.
+- the exact resolved project, class, and method failing with the expected assertion signature in that test's parsed failure message.
 
 A video alone, a test alone, a compilation error, a timeout, an infrastructure failure, or a missing snapshot baseline does not qualify.
 
