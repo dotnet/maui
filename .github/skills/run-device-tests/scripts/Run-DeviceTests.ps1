@@ -5,7 +5,8 @@
 .DESCRIPTION
     This script builds a specified MAUI device test project for the target platform
     and runs the tests. It handles device/emulator/simulator selection, build configuration,
-    and test execution.
+    and test execution. When MAUI_REPRODUCTION_ISSUE is set to a positive integer by the
+    trusted replication runner, the value is forwarded into the device test process.
 
     Platform support by OS:
     - macOS: ios, maccatalyst, android
@@ -190,6 +191,17 @@ function Get-CategoryFiltersFromTestFilter {
     }
 
     return @($categories | Select-Object -Unique)
+}
+
+function Get-DeviceTestReproductionIssue {
+    $value = [Environment]::GetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        return $null
+    }
+    if ($value -notmatch '^[1-9]\d*$') {
+        throw 'MAUI_REPRODUCTION_ISSUE must be a positive integer when provided.'
+    }
+    return $value
 }
 
 function ConvertTo-DeviceTestClassFilterValue {
@@ -443,6 +455,13 @@ function Start-WindowsDeviceTestProcess {
         $startInfo.Environment["NUNIT_SKIPPED_CLASSES"] = $IncludeClasses
     } else {
         [void]$startInfo.Environment.Remove("NUNIT_SKIPPED_CLASSES")
+    }
+
+    $reproductionIssue = Get-DeviceTestReproductionIssue
+    if ($reproductionIssue) {
+        $startInfo.Environment['MAUI_REPRODUCTION_ISSUE'] = $reproductionIssue
+    } else {
+        [void]$startInfo.Environment.Remove('MAUI_REPRODUCTION_ISSUE')
     }
 
     $process = [System.Diagnostics.Process]::Start($startInfo)
@@ -1063,6 +1082,7 @@ try {
     # Derive artifact folder name from the project file name.
     $artifactName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
     $IncludeClasses = ConvertTo-DeviceTestClassFilterValue -Value $IncludeClasses
+    $reproductionIssue = Get-DeviceTestReproductionIssue
     
     Write-Host ""
     Write-Host "Project:       $Project" -ForegroundColor Yellow
@@ -1410,6 +1430,14 @@ try {
             } else {
                 # iOS/MacCatalyst uses --set-env
                 $xharnessArgs += "--set-env=TestFilter=$TestFilter"
+            }
+        }
+
+        if ($reproductionIssue) {
+            if ($Platform -eq "android") {
+                $xharnessArgs += "--arg", "MAUI_REPRODUCTION_ISSUE=$reproductionIssue"
+            } else {
+                $xharnessArgs += "--set-env=MAUI_REPRODUCTION_ISSUE=$reproductionIssue"
             }
         }
 

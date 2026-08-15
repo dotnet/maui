@@ -10,9 +10,23 @@ trigger: none  # Manual trigger only
 pr: none  # Not triggered by PRs
 
 parameters:
+  - name: Mode
+    displayName: 'Mode'
+    type: string
+    default: review
+    values:
+      - review
+      - replicate
+
   - name: PRNumber
     displayName: 'Pull Request Number'
     type: number
+    default: 0
+
+  - name: IssueNumber
+    displayName: 'Issue Number'
+    type: number
+    default: 0
 
   - name: Platform
     displayName: 'Target Platform'
@@ -77,10 +91,10 @@ variables:
 
 stages:
   - stage: ReviewPR
-    displayName: 'Review Pull Request'
+    displayName: 'Run Copilot Operation'
     jobs:
       - job: CopilotReview
-        displayName: 'Run Copilot PR Reviewer Agent'
+        displayName: 'Run Copilot ${{ parameters.Mode }} Agent'
         ${{ if eq(parameters.Platform, 'android') }}:
           pool: ${{ parameters.androidPool }}
         ${{ elseif eq(parameters.Platform, 'ios') }}:
@@ -101,24 +115,41 @@ stages:
             # blast radius: Gate and CopilotReview tasks cannot push to the repo.
 
           # Validate Parameters
-          # PRNumber is received via env var to avoid compile-time shell injection.
+          # Target numbers are received via env vars to avoid compile-time shell injection.
           # Anyone triggering this pipeline directly (AzDO UI/REST) could pass arbitrary
           # strings — so we validate before any further use.
           - bash: |
-              echo "Validating PR Number parameter..."
+              echo "Validating pipeline parameters..."
+              MODE="${PARAM_MODE}"
               PR_NUM="${PARAM_PR_NUMBER}"
-              if [ -z "${PR_NUM}" ]; then
-                echo "##vso[task.logissue type=error]PRNumber parameter is required"
-                exit 1
-              fi
-              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
-                echo "##vso[task.logissue type=error]PRNumber must be a positive integer, got: '${PR_NUM}'"
-                exit 1
-              fi
-              echo "PR Number: ${PR_NUM}"
+              ISSUE_NUM="${PARAM_ISSUE_NUMBER}"
+
+              case "${MODE}" in
+                review)
+                  if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]] || [ "${ISSUE_NUM}" != "0" ]; then
+                    echo "##vso[task.logissue type=error]Mode=review requires PRNumber > 0 and IssueNumber = 0."
+                    exit 1
+                  fi
+                  ;;
+                replicate)
+                  if ! [[ "${ISSUE_NUM}" =~ ^[1-9][0-9]*$ ]] || [ "${PR_NUM}" != "0" ]; then
+                    echo "##vso[task.logissue type=error]Mode=replicate requires IssueNumber > 0 and PRNumber = 0."
+                    exit 1
+                  fi
+                  ;;
+                *)
+                  echo "##vso[task.logissue type=error]Mode must be review or replicate, got: '${MODE}'"
+                  exit 1
+                  ;;
+              esac
+
+              echo "Mode=${MODE} PRNumber=${PR_NUM} IssueNumber=${ISSUE_NUM} Platform=${PARAM_PLATFORM}"
             displayName: 'Validate Parameters'
             env:
+              PARAM_MODE: ${{ parameters.Mode }}
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # Preserve the one helper needed by the final telemetry stage while
           # the worktree is still the immutable pipeline revision. Publish it
@@ -192,12 +223,19 @@ stages:
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
 
           - bash: |
-              echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
+              if [ "${PARAM_MODE}" = "review" ]; then
+                echo "##vso[build.updatebuildnumber]Review PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
+              else
+                echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${{ parameters.Platform }}"
+              fi
             displayName: 'Set Pipeline Run Title'
             env:
+              PARAM_MODE: ${{ parameters.Mode }}
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
 
           # Capture trusted test infrastructure exactly once while the worktree
           # is still at $(Build.SourceVersion). Keep this outside the retried
@@ -306,6 +344,98 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
+
+          - bash: |
+              set -euo pipefail
+              git fetch --no-tags --depth=1 origin main
+              git checkout --detach origin/main
+              BASE_SHA=$(git rev-parse HEAD)
+              echo "Replication baseline: ${BASE_SHA}"
+              echo "##vso[task.setvariable variable=REPLICATION_BASE_SHA]${BASE_SHA}"
+              echo "##vso[task.setvariable variable=replicationBaseSha;isOutput=true]${BASE_SHA}"
+            name: ResolveReplicationBase
+            displayName: 'Resolve issue replication baseline'
+            retryCountOnTaskFailure: 2
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ((Get-Command ffmpeg -ErrorAction SilentlyContinue) -and
+                  (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+                ffmpeg -version | Select-Object -First 1
+                exit 0
+              }
+
+              if ($IsMacOS) {
+                brew install ffmpeg
+              } elseif ($IsLinux) {
+                sudo apt-get update -qq
+                sudo apt-get install -y -qq ffmpeg
+              } elseif ($IsWindows) {
+                choco install ffmpeg -y --no-progress
+              } else {
+                throw "Unsupported host OS for ffmpeg installation."
+              }
+
+              if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue) -or
+                  -not (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+                throw "ffmpeg/ffprobe installation completed but the tools are not on PATH."
+              }
+            displayName: 'Install reproduction recording tools'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 15
+
+          - bash: |
+              echo "Installing GitHub CLI..."
+              if command -v gh &> /dev/null; then
+                echo "GitHub CLI already installed: $(gh --version | head -1)"
+              elif command -v brew &> /dev/null; then
+                brew install gh
+              else
+                echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
+                exit 1
+              fi
+              gh --version
+              echo "GitHub CLI ready"
+            displayName: 'Install GitHub CLI'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
+              $root = Join-Path "$(System.DefaultWorkingDirectory)" "CustomAgentLogsTmp/IssueReplication/Issue${{ parameters.IssueNumber }}"
+              $contextDir = Join-Path $root "context"
+              $privateContextDir = Join-Path "$(Build.ArtifactStagingDirectory)" "replication-private-context"
+              Remove-Item -LiteralPath $contextDir -Recurse -Force -ErrorAction SilentlyContinue
+              Remove-Item -LiteralPath $privateContextDir -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $contextDir -Force | Out-Null
+              New-Item -ItemType Directory -Path $privateContextDir -Force | Out-Null
+              New-Item -ItemType Directory -Path (Join-Path $root "copilot-token-usage/raw") -Force | Out-Null
+              Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_ROOT]$root"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $contextDir 'issue-context.json')"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_PRIVATE_CONTEXT_ROOT]$privateContextDir"
+              & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") `
+                -IssueNumber ${{ parameters.IssueNumber }} `
+                -Platform "${{ parameters.Platform }}" `
+                -OutputDir $privateContextDir `
+                -Repository "dotnet/maui" `
+                -DownloadScreenshots
+              if ($LASTEXITCODE -ne 0) {
+                throw "Preparing the sanitized issue context failed."
+              }
+              Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.json") -Destination $contextDir -Force
+              Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.md") -Destination $contextDir -Force
+              $screenshots = Join-Path $privateContextDir "screenshots"
+              if (Test-Path -LiteralPath $screenshots -PathType Container) {
+                Copy-Item -LiteralPath $screenshots -Destination $contextDir -Recurse -Force
+              }
+            name: PrepareReplicationContext
+            displayName: 'Prepare sanitized issue context'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 10
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -388,7 +518,7 @@ stages:
               Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$catsForOutput"
             name: RunDetect
             displayName: 'Detect UI categories (early, infra-independent)'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
             retryCountOnTaskFailure: 1
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
@@ -1098,22 +1228,6 @@ stages:
             env:
               APPIUM_HOME: $(APPIUM_HOME)
 
-          - bash: |
-              echo "Installing GitHub CLI..."
-              # gh is pre-installed on Azure Pipelines hosted images (ubuntu, macOS, windows)
-              # Attempt upgrade if available, otherwise install
-              if command -v gh &> /dev/null; then
-                echo "GitHub CLI already installed: $(gh --version | head -1)"
-              elif command -v brew &> /dev/null; then
-                brew install gh
-              else
-                echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
-                exit 1
-              fi
-              gh --version
-              echo "GitHub CLI ready"
-            displayName: 'Install GitHub CLI'
-
           # NOTE: Removed `gh auth login` step. With the phased task design,
           # GH_TOKEN is passed as an env var only to Setup and Post tasks, and
           # `gh` uses GH_TOKEN directly without needing `gh auth login`. This
@@ -1516,6 +1630,122 @@ stages:
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
+              $artifactRoot = "$(REPLICATION_ARTIFACT_ROOT)"
+              $deviceUdid = "${env:DEVICE_UDID}"
+              $platform = "${{ parameters.Platform }}"
+
+              $overrideTemplate = Join-Path "$(Build.SourcesDirectory)" "Directory.Build.Override.props.in"
+              $overridePath = Join-Path "$(Build.SourcesDirectory)" "Directory.Build.Override.props"
+              Copy-Item -LiteralPath $overrideTemplate -Destination $overridePath -Force
+              $override = Get-Content -LiteralPath $overridePath -Raw
+              $override = $override.Replace(
+                '</Project>',
+                "  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>$([Environment]::NewLine)</Project>")
+              $override | Set-Content -LiteralPath $overridePath -Encoding utf8NoBOM
+
+              $deviceName = switch ($platform) {
+                'android' {
+                  $value = (& adb -s $deviceUdid shell getprop ro.product.model 2>$null | Select-Object -First 1)
+                  if ($value) { ([string]$value).Trim() } else { 'Android target' }
+                }
+                'ios' {
+                  try {
+                    $devices = (& xcrun simctl list devices --json | ConvertFrom-Json).devices
+                    $match = $devices.PSObject.Properties |
+                      ForEach-Object { $_.Value } |
+                      ForEach-Object { $_ } |
+                      Where-Object { $_.udid -eq $deviceUdid } |
+                      Select-Object -First 1
+                    if ($match) { [string]$match.name } else { 'iOS simulator' }
+                  } catch { 'iOS simulator' }
+                }
+                'catalyst' { 'Mac Catalyst host' }
+                'windows' { if ($env:COMPUTERNAME) { $env:COMPUTERNAME } else { 'Windows host' } }
+              }
+
+              $deviceOSVersion = switch ($platform) {
+                'android' {
+                  $value = (& adb -s $deviceUdid shell getprop ro.build.version.release 2>$null | Select-Object -First 1)
+                  if ($value) { ([string]$value).Trim() } else { 'unknown' }
+                }
+                'ios' {
+                  try {
+                    $devices = (& xcrun simctl list devices --json | ConvertFrom-Json).devices
+                    $runtime = $devices.PSObject.Properties |
+                      Where-Object {
+                        @($_.Value | Where-Object { $_.udid -eq $deviceUdid }).Count -gt 0
+                      } |
+                      Select-Object -First 1 -ExpandProperty Name
+                    if ($runtime) {
+                      $runtime -replace '^com\.apple\.CoreSimulator\.SimRuntime\.iOS-', '' -replace '-', '.'
+                    } else { 'unknown' }
+                  } catch { 'unknown' }
+                }
+                'catalyst' {
+                  $value = (& sw_vers -productVersion 2>$null | Select-Object -First 1)
+                  if ($value) { ([string]$value).Trim() } else { 'unknown' }
+                }
+                'windows' { [Environment]::OSVersion.VersionString }
+              }
+
+              & (Join-Path $trusted "scripts/Replicate-Issue.ps1") `
+                -IssueNumber ${{ parameters.IssueNumber }} `
+                -Platform $platform `
+                -BaseSha "$(REPLICATION_BASE_SHA)" `
+                -ContextPath "$(REPLICATION_AGENT_CONTEXT_PATH)" `
+                -TrustedRoot $trusted `
+                -DeviceUdid $deviceUdid `
+                -DeviceName $deviceName `
+                -DeviceOSVersion $deviceOSVersion `
+                -ArtifactRoot $artifactRoot `
+                -TokenUsageOutputDir (Join-Path $artifactRoot "copilot-token-usage/raw")
+              if ($LASTEXITCODE -ne 0) {
+                throw "Issue replication orchestration failed."
+              }
+            name: RunReplication
+            displayName: 'Replicate issue and author failing test'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 210
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+              DEVICE_UDID: $(DEVICE_UDID)
+              APPIUM_HOME: $(APPIUM_HOME)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $privateContextDir = "$(REPLICATION_PRIVATE_CONTEXT_ROOT)"
+              $contextDir = Join-Path "$(REPLICATION_ARTIFACT_ROOT)" "context"
+              foreach ($name in @('issue-context.json', 'issue-context.md')) {
+                $source = Join-Path $privateContextDir $name
+                if (Test-Path -LiteralPath $source -PathType Leaf) {
+                  Copy-Item -LiteralPath $source -Destination (Join-Path $contextDir $name) -Force
+                } else {
+                  Write-Host "##vso[task.logissue type=warning]Trusted issue context file was not produced: $name"
+                }
+              }
+            displayName: 'Stage trusted issue context for publication'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Artifacts'
+            inputs:
+              targetPath: '$(REPLICATION_ARTIFACT_ROOT)'
+              artifact: 'ReplicationArtifacts'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Copilot Logs'
+            inputs:
+              targetPath: '$(REPLICATION_ARTIFACT_ROOT)/copilot-token-usage'
+              artifact: 'CopilotLogs'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+            continueOnError: true
+
           # ─────────────────────────────────────────────────────────
           #  Task 1 — SETUP: symlink copilot, git config, env prep,
           #  copy trusted scripts, invoke Review-PR.ps1 -Phase Setup
@@ -1630,6 +1860,7 @@ stages:
               fi
             name: RunSetup
             displayName: 'Task 1: Setup (branch + merge)'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -1736,6 +1967,7 @@ stages:
             # the capped A/B set headroom (each device test builds+runs TWICE)
             # while still catching true hangs ~3.5h earlier than the job cap.
             timeoutInMinutes: 150
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -1787,7 +2019,7 @@ stages:
             # usual" and the gate timeout is explained in the AI Summary's Gate section instead.
             # (A genuine test FAILURE exits 0 → Task 2 succeeds, so this does not change that
             # path. The Task 3 timeout itself is handled by continueOnError below.)
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
             timeoutInMinutes: 180
             # An outer safety timeout is an incomplete optional expert review,
             # not a failed Gate. Preserve partial artifacts and let PostReview,
@@ -1837,7 +2069,7 @@ stages:
                 Write-Host "  $($_.FullName.Substring($logsDir.Length))"
               }
             displayName: 'Copy review artifacts to staging'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
@@ -1846,7 +2078,7 @@ stages:
               targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
               artifact: 'CopilotLogs'
               publishLocation: 'pipeline'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
 
           # Publish build logs if they exist
           - task: PublishPipelineArtifact@1
@@ -1891,7 +2123,7 @@ stages:
               fi
               exit $FAILED
             displayName: 'Check Review Result'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
             env:
               COPILOT_FAILED: $(CopilotFailed)
               GATE_FAILED: $(GateFailed)
@@ -1899,7 +2131,7 @@ stages:
       - job: PostReview
         displayName: 'Post review results'
         dependsOn: CopilotReview
-        condition: in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed')
+        condition: and(eq('${{ parameters.Mode }}', 'review'), in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -2057,6 +2289,193 @@ stages:
               publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
+  # Replication publication configuration:
+  # - MAUI_REPLICATION_AZURE_SERVICE_CONNECTION: federated Azure service connection
+  # - MAUI_REPLICATION_STORAGE_ACCOUNT / MAUI_REPLICATION_STORAGE_CONTAINER
+  # - MAUI_REPLICATION_PUBLIC_BASE_URL: anonymous-read container base URL
+  # - MAUI_REPLICATION_FORK_OWNER / MAUI_REPLICATION_FORK_REPOSITORY
+  # - GH_REPLICATION_TOKEN: dedicated token for the bot fork and draft PR creation
+  - stage: PublishReplication
+    displayName: 'Validate and publish issue replication'
+    dependsOn: ReviewPR
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'))
+    jobs:
+      - job: PublishReplication
+        displayName: 'Publish validated reproduction'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 45
+        variables:
+          replicationBaseSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['ResolveReplicationBase.replicationBaseSha'] ]
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            persistCredentials: false
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
+              Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
+              foreach ($name in @(
+                'Assert-ReplicationTestGuard.ps1',
+                'Validate-ReplicationCandidate.ps1',
+                'Publish-ReplicationEvidence.ps1',
+                'Publish-ReplicationPR.ps1'
+              )) {
+                $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared/$name"
+                if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+                  throw "Trusted publisher script is missing: $source"
+                }
+                Copy-Item -LiteralPath $source -Destination (Join-Path $trustedRoot $name) -Force
+              }
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_PUBLISHER_ROOT]$trustedRoot"
+            displayName: 'Stage trusted replication publisher'
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Replication Artifacts'
+            inputs:
+              buildType: 'current'
+              artifactName: 'ReplicationArtifacts'
+              targetPath: '$(Pipeline.Workspace)/ReplicationArtifacts'
+
+          - bash: |
+              set -euo pipefail
+              BASE_SHA="${REPLICATION_BASE_SHA}"
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Trusted replication baseline output is invalid."
+                exit 1
+              fi
+              git fetch --no-tags origin main
+              git cat-file -e "${BASE_SHA}^{commit}"
+              git merge-base --is-ancestor "${BASE_SHA}" origin/main
+              git checkout --detach "${BASE_SHA}"
+              test -z "$(git status --porcelain)"
+              echo "Publisher checkout pinned to ${BASE_SHA}"
+            displayName: 'Pin clean replication baseline'
+            env:
+              REPLICATION_BASE_SHA: $(replicationBaseSha)
+
+          - bash: |
+              set -e
+              if ! command -v ffprobe >/dev/null 2>&1; then
+                sudo apt-get update -qq
+                sudo apt-get install -y -qq ffmpeg
+              fi
+              ffprobe -version | head -1
+            displayName: 'Install publisher media validator'
+            timeoutInMinutes: 10
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
+              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+
+              & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
+                -RepoRoot "$(Build.SourcesDirectory)" `
+                -CandidateManifestPath (Join-Path $artifactRoot "candidate.json") `
+                -PatchPath (Join-Path $artifactRoot "test.patch") `
+                -EvidenceDir $artifactRoot `
+                -IssueNumber ${{ parameters.IssueNumber }} `
+                -Platform "${{ parameters.Platform }}" `
+                -OutputPath (Join-Path $outputRoot "validated-candidate.json")
+              if ($LASTEXITCODE -ne 0) {
+                throw "Replication candidate validation failed."
+              }
+            displayName: 'Validate replication candidate without credentials'
+
+          - task: AzureCLI@2
+            displayName: 'Upload validated public evidence'
+            inputs:
+              azureSubscription: '$(MAUI_REPLICATION_AZURE_SERVICE_CONNECTION)'
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                $ErrorActionPreference = 'Stop'
+                foreach ($name in @(
+                  'MAUI_REPLICATION_STORAGE_ACCOUNT',
+                  'MAUI_REPLICATION_STORAGE_CONTAINER',
+                  'MAUI_REPLICATION_PUBLIC_BASE_URL'
+                )) {
+                  $value = [Environment]::GetEnvironmentVariable($name)
+                  if ([string]::IsNullOrWhiteSpace($value) -or $value.StartsWith('$(')) {
+                    throw "Required replication publication variable '$name' is not configured."
+                  }
+                }
+
+                $attempt = if ($env:SYSTEM_JOBATTEMPT -match '^[1-9]\d*$') { $env:SYSTEM_JOBATTEMPT } else { '1' }
+                $prefix = "maui-copilot/issue-${{ parameters.IssueNumber }}/${{ parameters.Platform }}/$(Build.BuildId)-$attempt"
+                try {
+                  & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationEvidence.ps1") `
+                    -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                    -EvidenceDirectory "$(Pipeline.Workspace)/ReplicationArtifacts/evidence" `
+                    -StorageAccount $env:MAUI_REPLICATION_STORAGE_ACCOUNT `
+                    -Container $env:MAUI_REPLICATION_STORAGE_CONTAINER `
+                    -BlobPrefix $prefix `
+                    -PublicBaseUrl $env:MAUI_REPLICATION_PUBLIC_BASE_URL `
+                    -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json"
+                  if ($LASTEXITCODE -ne 0) {
+                    throw "Publishing replication evidence failed."
+                  }
+                }
+                finally {
+                  az logout 2>$null
+                  az account clear 2>$null
+                }
+            env:
+              MAUI_REPLICATION_STORAGE_ACCOUNT: $(MAUI_REPLICATION_STORAGE_ACCOUNT)
+              MAUI_REPLICATION_STORAGE_CONTAINER: $(MAUI_REPLICATION_STORAGE_CONTAINER)
+              MAUI_REPLICATION_PUBLIC_BASE_URL: $(MAUI_REPLICATION_PUBLIC_BASE_URL)
+              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              foreach ($name in @('MAUI_REPLICATION_FORK_OWNER', 'MAUI_REPLICATION_FORK_REPOSITORY')) {
+                $value = [Environment]::GetEnvironmentVariable($name)
+                if ([string]::IsNullOrWhiteSpace($value) -or $value.StartsWith('$(')) {
+                  throw "Required replication publication variable '$name' is not configured."
+                }
+              }
+
+              & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
+                -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
+                -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
+                -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -ForkOwner $env:MAUI_REPLICATION_FORK_OWNER `
+                -ForkRepository $env:MAUI_REPLICATION_FORK_REPOSITORY `
+                -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
+                -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
+              if ($LASTEXITCODE -ne 0) {
+                throw "Publishing the replication pull request failed."
+              }
+
+              $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw | ConvertFrom-Json
+              if ([string]::IsNullOrWhiteSpace([string]$result.url)) {
+                throw "Replication publisher did not return a pull request URL."
+              }
+              Write-Host "##vso[task.setvariable variable=replicationPrUrl;isOutput=true]$($result.url)"
+            name: PublishReplicationPR
+            displayName: 'Create draft reproduction pull request'
+            env:
+              GH_TOKEN: $(GH_REPLICATION_TOKEN)
+              MAUI_REPLICATION_FORK_OWNER: $(MAUI_REPLICATION_FORK_OWNER)
+              MAUI_REPLICATION_FORK_REPOSITORY: $(MAUI_REPLICATION_FORK_REPOSITORY)
+              BUILD_BUILDID: $(Build.BuildId)
+              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Publication Result'
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/ReplicationPublication'
+              artifact: 'ReplicationPublication'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: RunDeepUITests
   # ─────────────────────────────────────────────────────────────────────────────
@@ -2094,6 +2513,7 @@ stages:
     # in-process results when no deep artifact exists).
     condition: >-
       and(
+        eq('${{ parameters.Mode }}', 'review'),
         not(canceled()),
         in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), ''),
@@ -3390,7 +3810,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(not(canceled()), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
@@ -4909,6 +5329,7 @@ stages:
     jobs:
       - job: CleanupReviewLock
         displayName: 'Remove PR review in-progress label'
+        condition: eq('${{ parameters.Mode }}', 'review')
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -5032,11 +5453,13 @@ stages:
     displayName: 'Analyze Copilot token usage'
     dependsOn:
       - ReviewPR
+      - PublishReplication
       - RunDeepUITests
       - UpdateAISummaryComment
     condition: not(canceled())
     variables:
       reviewPrResult: $[ dependencies.ReviewPR.result ]
+      publishReplicationResult: $[ dependencies.PublishReplication.result ]
       runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
       updateAISummaryCommentResult: $[ dependencies.UpdateAISummaryComment.result ]
     jobs:
@@ -5093,8 +5516,11 @@ stages:
                 -InputRoot $inputRoot `
                 -OutputDir $outputDir `
                 -PRNumber "${{ parameters.PRNumber }}" `
+                -IssueNumber "${{ parameters.IssueNumber }}" `
+                -Operation "${{ parameters.Mode }}" `
                 -ExpectedStages @(
                   'ReviewPR',
+                  'PublishReplication',
                   'RunDeepUITests',
                   'UpdateAISummaryComment',
                   'AnalyzeCopilotTokenUsage'
@@ -5130,6 +5556,7 @@ stages:
               $summary = Get-Content -Path $summaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
               $stageResults = [ordered]@{
                 ReviewPR               = "${env:REVIEW_PR_RESULT}"
+                PublishReplication     = "${env:PUBLISH_REPLICATION_RESULT}"
                 RunDeepUITests         = "${env:RUN_DEEP_UI_TESTS_RESULT}"
                 UpdateAISummaryComment = "${env:UPDATE_AI_SUMMARY_COMMENT_RESULT}"
                 AnalyzeCopilotTokenUsage = "${env:AGENT_JOB_STATUS}"
@@ -5145,7 +5572,12 @@ stages:
               $payload = [ordered]@{
                 event_type = 'maui-copilot-token-usage'
                 client_payload = [ordered]@{
-                  schemaVersion = 1
+                  schemaVersion = 2
+                  operation = "${{ parameters.Mode }}"
+                  target = [ordered]@{
+                    type = if ("${{ parameters.Mode }}" -eq 'replicate') { 'issue' } else { 'pr' }
+                    number = if ("${{ parameters.Mode }}" -eq 'replicate') { "${{ parameters.IssueNumber }}" } else { "${{ parameters.PRNumber }}" }
+                  }
                   build = [ordered]@{
                     id            = "${env:BUILD_BUILD_ID}"
                     number        = "${env:BUILD_BUILD_NUMBER}"
@@ -5154,6 +5586,8 @@ stages:
                     sourceVersion = "${env:BUILD_SOURCE_VERSION}"
                     requestedFor  = "${env:BUILD_REQUESTED_FOR}"
                     prNumber      = "${{ parameters.PRNumber }}"
+                    issueNumber   = "${{ parameters.IssueNumber }}"
+                    operation     = "${{ parameters.Mode }}"
                     platform      = "${{ parameters.Platform }}"
                     result        = $pipelineResult
                     stageResults  = $stageResults
@@ -5186,6 +5620,7 @@ stages:
               # out of the string literal and execute in a step holding the dispatch token.
               BUILD_ARTIFACTSTAGINGDIRECTORY: $(Build.ArtifactStagingDirectory)
               REVIEW_PR_RESULT: $(reviewPrResult)
+              PUBLISH_REPLICATION_RESULT: $(publishReplicationResult)
               RUN_DEEP_UI_TESTS_RESULT: $(runDeepUITestsResult)
               UPDATE_AI_SUMMARY_COMMENT_RESULT: $(updateAISummaryCommentResult)
               AGENT_JOB_STATUS: $(Agent.JobStatus)

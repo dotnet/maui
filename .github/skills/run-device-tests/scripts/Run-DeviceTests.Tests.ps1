@@ -15,6 +15,7 @@ BeforeAll {
 
     foreach ($functionName in @(
         'Get-CategoryFiltersFromTestFilter',
+        'Get-DeviceTestReproductionIssue',
         'ConvertTo-DeviceTestClassFilterValue',
         'New-AndroidDeviceTestClassFilterInjection',
         'Get-XHarnessTestResultSnapshot',
@@ -54,6 +55,31 @@ Describe 'Build isolation options' {
         $content | Should -Match '\$summaryMethodFilter\s*=\s*\$IncludeMethods'
         $content | Should -Match '-RequireClassIsolation:\(-not \[string\]::IsNullOrWhiteSpace\(\$IncludeClasses\)\)'
         $content | Should -Not -Match '\$summaryClassFilter\s*=\s*if\s*\(-not\s+\$useCategoryFiltering\)'
+    }
+}
+
+Describe 'Issue replication guard forwarding' {
+    AfterEach {
+        [Environment]::SetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE', $null)
+    }
+
+    It 'accepts only a positive integer guard value' {
+        [Environment]::SetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE', '37440')
+        Get-DeviceTestReproductionIssue | Should -BeExactly '37440'
+
+        [Environment]::SetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE', 'all')
+        { Get-DeviceTestReproductionIssue } | Should -Throw -ExpectedMessage '*positive integer*'
+    }
+
+    It 'forwards the guard through Android instrumentation and Apple process environment' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '"--arg", "MAUI_REPRODUCTION_ISSUE=\$reproductionIssue"'
+        $content | Should -Match '"--set-env=MAUI_REPRODUCTION_ISSUE=\$reproductionIssue"'
+    }
+
+    It 'sets the exact guard value in the Windows child process' {
+        $functionText = (Get-Command Start-WindowsDeviceTestProcess).Definition
+        $functionText | Should -Match ([regex]::Escape("`$startInfo.Environment['MAUI_REPRODUCTION_ISSUE']"))
     }
 }
 

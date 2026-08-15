@@ -41,8 +41,16 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [switch]$PrepareOnly,
+
+    [switch]$SkipBuildDeploy
 )
+
+if ($PrepareOnly -and $SkipBuildDeploy) {
+    throw 'PrepareOnly and SkipBuildDeploy cannot be used together.'
+}
 
 # Script configuration
 $ErrorActionPreference = "Stop"
@@ -206,11 +214,20 @@ if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
     $buildDeployParams.BundleId = $AppBundleId
 }
 
-& "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
+if (-not $SkipBuildDeploy) {
+    & "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Build or deployment failed"
-    exit 1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Build or deployment failed"
+        exit 1
+    }
+} else {
+    Write-Info "Skipping Sandbox build/deploy; using the prepared app."
+}
+
+if ($PrepareOnly) {
+    Write-Success "Sandbox build and deployment preparation completed"
+    return
 }
 
 # For MacCatalyst, launch the app BEFORE Appium test (similar to BuildAndRunHostApp.ps1)
@@ -344,14 +361,31 @@ if ($Platform -eq "android") {
 Push-Location $SandboxAppiumDir
 
 try {
-    # Set DEVICE_UDID environment variable for the test script
+    # Set trusted adapter inputs for the Appium runner.
     $env:DEVICE_UDID = $DeviceUdid
+    $env:REPLICATION_PLATFORM = $Platform
+    if ($Platform -eq "windows") {
+        $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
+        $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
+            Get-ChildItem `
+                -LiteralPath $windowsBin `
+                -Filter "Maui.Controls.Sample.Sandbox.exe" `
+                -Recurse `
+                -File `
+                -ErrorAction SilentlyContinue |
+                Select-Object -First 1 -ExpandProperty FullName
+        }
+        if (-not $windowsApp) {
+            throw "Windows Sandbox executable was not found under '$windowsBin'."
+        }
+        $env:REPLICATION_WINDOWS_APP_PATH = $windowsApp
+    }
     
     Write-Info "Executing: dotnet run RunWithAppiumTest.cs"
     Write-Info "Test will connect to device: $DeviceUdid"
     Write-Host ""
     
-    # Run the Appium test and capture output to extract PID
+    # Run the trusted Appium plan interpreter.
     # Suppress CA1307 (culture) and CS0162 (unreachable code due to const platform)
     $appiumOutput = "" | & dotnet run RunWithAppiumTest.cs /p:NoWarn="CA1307;CS0162" 2>&1
     
@@ -360,26 +394,32 @@ try {
     
     $testExitCode = $LASTEXITCODE
     
-    # Extract PID from Appium test output (Android)
+    # Resolve the Android app PID through trusted adb after the plan completes.
     $sandboxPid = $null
-    $pidLine = $appiumOutput | Select-String -Pattern "SANDBOX_APP_PID=(\d+)"
-    if ($pidLine -and $pidLine.Matches.Groups.Count -gt 1) {
-        $sandboxPid = $pidLine.Matches.Groups[1].Value
-        Write-Host ""
-        Write-Info "Captured Sandbox app PID from Appium test: $sandboxPid"
-        
-        # Dump logcat buffer for this PID to file (Android)
-        if ($Platform -eq "android" -and $sandboxPid) {
-            Write-Info "Dumping logcat buffer for PID $sandboxPid..."
-            & adb -s $DeviceUdid logcat -d --pid=$sandboxPid > $deviceLogFile
-            Write-Info "Logcat dumped to: $deviceLogFile"
+    if ($Platform -eq "android") {
+        $pidOutput = @(
+            & adb -s $DeviceUdid shell pidof -s com.microsoft.maui.sandbox 2>$null
+        )
+        if ($LASTEXITCODE -eq 0) {
+            $pidText = ($pidOutput -join '').Trim()
+            if ($pidText -match '^[1-9][0-9]*$') {
+                $sandboxPid = $pidText
+            }
         }
+    }
+    if ($sandboxPid) {
+        Write-Host ""
+        Write-Info "Resolved Sandbox app PID after Appium plan: $sandboxPid"
+        
+        Write-Info "Dumping logcat buffer for PID $sandboxPid..."
+        & adb -s $DeviceUdid logcat -d --pid=$sandboxPid > $deviceLogFile
+        Write-Info "Logcat dumped to: $deviceLogFile"
     }
     elseif ($Platform -eq "android") {
         # Fallback: If we couldn't get PID, dump entire logcat buffer (unfiltered)
         # This ensures we always have logs for the agent to analyze
         Write-Host ""
-        Write-Warn "Could not capture app PID from Appium test output"
+        Write-Warn "Could not resolve the Sandbox app PID after the Appium plan"
         Write-Info "Dumping entire logcat buffer (unfiltered)..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
         Write-Info "Logcat dumped to: $deviceLogFile (UNFILTERED - contains all apps)"

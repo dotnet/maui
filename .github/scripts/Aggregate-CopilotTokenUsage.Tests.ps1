@@ -59,6 +59,10 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
 
         $summary = Get-Content (Join-Path $script:outputRoot 'token-usage-summary.json') -Raw | ConvertFrom-Json
         $summary.recordCount | Should -Be 1
+        $summary.operation | Should -BeExactly 'review'
+        $summary.target.type | Should -BeExactly 'pr'
+        $summary.target.number | Should -BeExactly '35677'
+        $summary.prNumber | Should -BeExactly '35677'
         $summary.totals.inputTokens | Should -Be 100
         $summary.totals.outputTokens | Should -Be 40
         $summary.totals.cachedInputTokens | Should -Be 10
@@ -91,5 +95,25 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
         $summary.recordCount | Should -Be 0
         ($summary.stages | Where-Object { $_.stageName -eq 'ReviewPR' }).invocationCount | Should -Be 0
         Test-Path (Join-Path $script:outputRoot 'token-usage-by-step.csv') | Should -Be $true
+    }
+
+    It 'records issue targets while preserving the legacy prNumber field' {
+        $scriptPath = Join-Path $PSScriptRoot 'shared/Aggregate-CopilotTokenUsage.ps1'
+        & $scriptPath `
+            -InputRoot (Join-Path $script:fixtureRoot 'missing') `
+            -OutputDir $script:outputRoot `
+            -PRNumber '0' `
+            -IssueNumber '37440' `
+            -Operation 'replicate' `
+            -ExpectedStages @('ReviewPR', 'PublishReplication', 'AnalyzeCopilotTokenUsage')
+
+        $summary = Get-Content (Join-Path $script:outputRoot 'token-usage-summary.json') -Raw | ConvertFrom-Json
+        $summary.schemaVersion | Should -Be 2
+        $summary.operation | Should -BeExactly 'replicate'
+        $summary.target.type | Should -BeExactly 'issue'
+        $summary.target.number | Should -BeExactly '37440'
+        $summary.issueNumber | Should -BeExactly '37440'
+        $summary.prNumber | Should -BeExactly '0'
+        ($summary.stages | Where-Object { $_.stageName -eq 'PublishReplication' }).invocationCount | Should -Be 0
     }
 }
