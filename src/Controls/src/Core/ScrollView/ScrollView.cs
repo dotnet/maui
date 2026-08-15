@@ -122,6 +122,13 @@ namespace Microsoft.Maui.Controls
 		// them. Non-visual containers' own visibility semantics (a hidden tab, say) are
 		// deliberately not consulted: parking keeps the scroll correct if that container is
 		// ever shown, and a handler detach still completes the task.
+		// Evaluated when a request is parked, at every retry, and again when this view's own
+		// IsVisible or parent changes (OnIsVisibleChanged/OnParentSet) so a request parked
+		// while visible is released if the view is collapsed or reparented into a collapsed
+		// branch before it arranges. An *ancestor* collapsing after the park sends no signal
+		// down the tree; that request is released when the branch is shown again or the
+		// handler detaches, and watching every ancestor for it would cost more than it
+		// covers.
 		bool WillArrange()
 		{
 			for (Element element = this; element is not null; element = element.RealParent)
@@ -133,6 +140,33 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return true;
+		}
+
+		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
+		{
+			base.OnIsVisibleChanged(oldValue, newValue);
+
+			// A request parked while visible loses its arrange callbacks if this view is
+			// collapsed before layout runs: release the caller now (the request stays parked
+			// and replays if the view is shown again, exactly as a request parked while
+			// already collapsed does)
+			ReleaseParkedRequestIfCollapsed();
+		}
+
+		protected override void OnParentSet()
+		{
+			base.OnParentSet();
+
+			// Same for a parked request carried into a collapsed branch by reparenting
+			ReleaseParkedRequestIfCollapsed();
+		}
+
+		void ReleaseParkedRequestIfCollapsed()
+		{
+			if (_pendingScrollToRequested is not null && !WillArrange())
+			{
+				SendScrollFinished();
+			}
 		}
 
 		void SendPendingScrollToRequest()

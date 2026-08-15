@@ -550,6 +550,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ElementRequestParkedWhileVisibleIsReleasedWhenCollapsedBeforeArrange()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// Parked while visible with geometry not ready — the OnAppearing ordering
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.False(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// Collapsing before the first arrange removes the callbacks that would retry
+			// it: the caller must be released rather than left pending forever, and the
+			// request must stay parked instead of resolving against unarranged geometry
+			scrollView.IsVisible = false;
+			Assert.True(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// Shown again, the first arrange still replays it against real geometry:
+			// End = 450 - 100 + 50
+			scrollView.IsVisible = true;
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(400, request.VerticalOffset);
+		}
+
+		[Fact]
+		public void ElementRequestParkedWhileVisibleIsReleasedWhenReparentedIntoCollapsedBranch()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task.IsCompleted);
+
+			// Moving the ScrollView under a collapsed parent means no arrange is coming
+			// from there either: the parent change must release the caller
+			_ = new StackLayout { IsVisible = false, Children = { scrollView } };
+			Assert.True(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+		}
+
+		[Fact]
 		public void CollapsedShellAncestorBeyondNonVisualLinksIsDetected()
 		{
 			var item = new View();
