@@ -9,13 +9,40 @@ Describe '/review tests compiled trust boundary' {
         $script:source = Get-Content -Raw -LiteralPath $sourcePath
         $pesterWorkflowPath = Join-Path $PSScriptRoot '../workflows/powershell-script-tests.yml'
         $script:pesterWorkflow = Get-Content -Raw -LiteralPath $pesterWorkflowPath
+        $script:repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        $script:mandatoryFiles = @(
+            @{
+                Source = '.github/skills/review-test-failures/SKILL.md'
+                Destination = '${trusted}/SKILL.md'
+            },
+            @{
+                Source = '.github/docs/maui-ci-facts.md'
+                Destination = '${trusted}/maui-ci-facts.md'
+            },
+            @{
+                Source = '.github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1'
+                Destination = '${trusted}/Merge-TestVisualsIntoComment.ps1'
+            }
+        )
     }
 
-    It 'runs for changes to both protected review workflow files' {
+    It 'runs for changes to every protected review workflow input' {
         $script:pesterWorkflow | Should -Match (
             "(?m)^\s+- '\.github/workflows/copilot-review-tests\.md'\s*$")
         $script:pesterWorkflow | Should -Match (
             "(?m)^\s+- '\.github/workflows/copilot-review-tests\.lock\.yml'\s*$")
+        $script:pesterWorkflow | Should -Match (
+            "(?m)^\s+- '\.github/skills/review-test-failures/\*\*'\s*$")
+        $script:pesterWorkflow | Should -Match (
+            "(?m)^\s+- '\.github/docs/maui-ci-facts\.md'\s*$")
+    }
+
+    It 'keeps every mandatory sealed source in the trusted base checkout' {
+        foreach ($file in $script:mandatoryFiles) {
+            $sourcePath = Join-Path $script:repoRoot $file.Source
+            Test-Path -LiteralPath $sourcePath -PathType Leaf |
+                Should -BeTrue
+        }
     }
 
     It 'installs immutable trusted inputs and fails closed before PR checkout' {
@@ -34,53 +61,48 @@ Describe '/review tests compiled trust boundary' {
             $seal,
             [StringComparison]::Ordinal)
         $sealStepStart | Should -BeGreaterOrEqual 0
-        $sealStep = $script:lock.Substring($sealStepStart, $checkout - $sealStepStart)
+        $sealStepEnd = $script:lock.IndexOf(
+            "`n      - ",
+            $sealStepStart + 1,
+            [StringComparison]::Ordinal)
+        $sealStepEnd | Should -BeGreaterThan $seal
+        $sealStep = $script:lock.Substring(
+            $sealStepStart,
+            $sealStepEnd - $sealStepStart)
 
         $sealStep | Should -Not -Match 'continue-on-error:\s*true'
-        $sealStep | Should -Match (
-            'trap .*?::error::Failed to seal trusted review inputs before PR checkout\..*? ERR')
-        $sealStep | Should -Match (
-            'sudo install -d -o root -g root -m 0755 (?:(?!sudo install).)*?\$\{trusted\}')
+        $runMatch = [regex]::Match(
+            $sealStep,
+            '(?m)^\s*run:\s*"(?<body>(?:\\.|[^"\\])*)"\s*$')
+        $runMatch.Success | Should -BeTrue
+        $runBody = [regex]::Unescape(
+            $runMatch.Groups['body'].Value).Replace("`r`n", "`n")
 
-        $contextGuard = $sealStep.IndexOf(
-            'if [ -f \"${CONTEXT_DIRECTORY}/context.json\" ]; then',
+        $contextGuard = $runBody.IndexOf(
+            'if [ -f "${CONTEXT_DIRECTORY}/context.json" ]; then',
             [StringComparison]::Ordinal)
         $contextGuard | Should -BeGreaterOrEqual 0
 
-        $mandatorySeal = $sealStep.Substring(0, $contextGuard)
-        $mandatorySealText = [regex]::Unescape($mandatorySeal).Replace("`r`n", "`n")
-        $runStart = $mandatorySealText.IndexOf(
-            'run: "set -euo pipefail',
-            [StringComparison]::Ordinal)
-        $runStart | Should -BeGreaterOrEqual 0
-        $mandatoryCommands = $mandatorySealText.Substring($runStart)
-        $mandatoryCommands | Should -Not -Match '(?m)^\s*(?:if|elif|else)\b'
-        $mandatoryCommands | Should -Not -Match '&&|\|\|'
-
-        $mandatoryFiles = @(
-            @{
-                Source = '.github/skills/review-test-failures/SKILL.md'
-                Destination = '${trusted}/SKILL.md'
-            },
-            @{
-                Source = '.github/docs/maui-ci-facts.md'
-                Destination = '${trusted}/maui-ci-facts.md'
-            },
-            @{
-                Source = '.github/skills/review-test-failures/scripts/Merge-TestVisualsIntoComment.ps1'
-                Destination = '${trusted}/Merge-TestVisualsIntoComment.ps1'
-            }
+        $mandatoryCommands = $runBody.Substring(
+            0,
+            $contextGuard).TrimEnd([char[]]"`r`n")
+        $expectedMandatoryLines = @(
+            'set -euo pipefail'
+            'trap ''echo "::error::Failed to seal trusted review inputs before PR checkout."'' ERR'
+            'trusted="${RUNNER_TEMP}/gh-aw/review-tests-trusted-${GITHUB_RUN_ID}-${PR_NUMBER}"'
+            'sudo install -d -o root -g root -m 0755 "${trusted}"'
         )
 
-        foreach ($file in $mandatoryFiles) {
-            $expectedInstall = @(
+        foreach ($file in $script:mandatoryFiles) {
+            $expectedMandatoryLines += @(
                 'sudo install -o root -g root -m 0444 \'
                 '  ' + $file.Source + ' \'
                 '  "' + $file.Destination + '"'
-            ) -join "`n"
-            $mandatoryCommands | Should -Match (
-                '(?m)^' + [regex]::Escape($expectedInstall) + '$')
+            )
         }
+
+        $mandatoryCommands | Should -BeExactly (
+            $expectedMandatoryLines -join "`n")
 
         $optionalFiles = @(
             @{
@@ -98,10 +120,10 @@ Describe '/review tests compiled trust boundary' {
                 '(?:(?!sudo install).)*?' + [regex]::Escape($file.Source) +
                 '(?:(?!sudo install).)*?' +
                 [regex]::Escape($file.Destination)
-            $sealStep | Should -Match $installPattern
+            $runBody | Should -Match $installPattern
         }
 
-        $sealStep | Should -Match (
+        $runBody | Should -Match (
             'sudo chmod 0555 .*?\$\{trusted\}')
     }
 

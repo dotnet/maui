@@ -20,6 +20,8 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - '.github/skills/review-test-failures/**'
+      - '.github/docs/maui-ci-facts.md'
       - '.github/workflows/copilot-review-tests.md'
       - '.github/workflows/copilot-review-tests.lock.yml'
       - '.github/workflows/powershell-script-tests.yml'
