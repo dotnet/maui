@@ -190,6 +190,32 @@ Context 'error aggregation' {
         $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
         $summary.systemicFailure | Should -BeTrue
     }
+
+    It 'fails after writing the summary when an eligible label cannot be applied or verified' {
+        $script:DryRun = $false
+        $script:prList = @(New-TestPR -Number 1)
+        $script:issueComments = @(
+            [pscustomobject]@{
+                id = 1
+                body = "<!-- AI Summary -->`n<!-- SESSION:1111111 START -->"
+                created_at = '2026-05-31T09:00:00Z'
+                updated_at = '2026-05-31T09:00:00Z'
+                user = [pscustomobject]@{ login = 'MauiBot'; type = 'User' }
+                author_association = 'MEMBER'
+            }
+        )
+        Mock Ensure-LabelExists {}
+        Mock Add-Label { $false }
+        Mock Get-IssueLabels { @() }
+
+        { Invoke-TestScan } | Should -Throw '*1 label application failure(s)*'
+
+        $summary = Get-Content -Raw -LiteralPath $script:OutputPath | ConvertFrom-Json
+        $summary.applyFailures | Should -Be 1
+        $summary.applied | Should -Be 0
+        $summary.decisions[0].eligible | Should -BeTrue
+        $summary.decisions[0].applied | Should -BeFalse
+    }
 }
 
 Context 'scanner decline checkpoint' {

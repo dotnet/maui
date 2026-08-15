@@ -175,6 +175,7 @@ function Invoke-AutoRerunCandidateScan {
     $labelEnsured = $false
     $decisions = @()
     $appliedCount = 0
+    $applyFailureCount = 0
 
     foreach ($pr in $openPRs) {
         $number = [int]$pr.number
@@ -273,6 +274,8 @@ function Invoke-AutoRerunCandidateScan {
                         Write-Host "  ✅ Applied $ReadyForRerunLabel to #$number ($($result.Reason)): $title" -ForegroundColor Green
                     } else {
                         Write-Host "  ⚠️  Failed to apply $ReadyForRerunLabel to #$number" -ForegroundColor Yellow
+                        Write-Host "::warning::Auto-rerun label application failed for PR #$number."
+                        $applyFailureCount++
                     }
                 }
             } elseif ($result.Eligible -and $alreadyPresent) {
@@ -309,10 +312,13 @@ function Invoke-AutoRerunCandidateScan {
         $errorCount -eq $evaluatedCount -or
         $errorCount -ge $systemicThreshold
     )
-    $shouldFail = ($DryRun -and $errorCount -gt 0) -or $systemicFailure
+    $shouldFail = ($DryRun -and $errorCount -gt 0) -or $systemicFailure -or $applyFailureCount -gt 0
 
     if ($errorCount -gt 0) {
         Write-Host "::warning::Autonomous rerun scan encountered $errorCount evaluation error(s) across $evaluatedCount evaluated PR(s)."
+    }
+    if ($applyFailureCount -gt 0) {
+        Write-Host "::warning::Autonomous rerun scan failed to apply $ReadyForRerunLabel to $applyFailureCount eligible PR(s)."
     }
 
     if ($DryRun) {
@@ -330,6 +336,7 @@ function Invoke-AutoRerunCandidateScan {
             generatedAt       = (Get-Date).ToUniversalTime().ToString('o')
             dryRun            = [bool]$DryRun
             applied           = $appliedCount
+            applyFailures     = $applyFailureCount
             eligible          = $eligibleCount
             errors            = $errorCount
             evaluated         = $evaluatedCount
@@ -348,6 +355,9 @@ function Invoke-AutoRerunCandidateScan {
     }
 
     if ($shouldFail) {
+        if ($applyFailureCount -gt 0) {
+            throw "Autonomous rerun scan failed: $applyFailureCount label application failure(s); $errorCount of $evaluatedCount evaluated PR(s) had errors."
+        }
         throw "Autonomous rerun scan failed: $errorCount of $evaluatedCount evaluated PR(s) had errors."
     }
 }

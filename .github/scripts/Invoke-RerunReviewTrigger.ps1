@@ -211,12 +211,11 @@ function Get-RerunActions {
             $platform = Get-PlatformFromLabels -Labels @() -Fallback ([string]$candidate.platform)
             $pipelineRef = Normalize-PipelineRef -Value ([string]$candidate.pipelineRef) -Fallback $DefaultPipelineRef
 
-            # A comment-less trigger is valid: the PR Review Queue workflow applies
-            # s/agent-ready-for-rerun autonomously (no `/review rerun` comment), so
-            # rerunCommentId is 0. review-trigger.yml does not need a comment to
-            # dispatch, and the downstream react step no-ops when the id is <= 0.
+            # The queue label does not prove which command created the current cycle,
+            # so source-ambiguous candidates intentionally carry no reaction target.
+            # review-trigger.yml does not need a comment to dispatch.
             if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
-                Write-Host "PR #$prNumber trigger has no rerun comment id (autonomous queue label); dispatching without a reaction target."
+                Write-Host "PR #$prNumber trigger has no proven current-cycle rerun comment; dispatching without a reaction target."
             }
 
             $actions.Add([pscustomobject]@{

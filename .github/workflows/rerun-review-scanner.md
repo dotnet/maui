@@ -115,7 +115,7 @@ safe-outputs:
         # scanner to a single PR per run. Batching all decisions into one array
         # field lets a single invocation carry every candidate's decision.
         decisions:
-          description: "JSON array of decision objects, one per candidate PR. Each object: pr_number (string), decision ('trigger'|'skip'), rerun_comment_id (string), expected_head_sha (string), reason (short string), and optional platform and pipeline_ref strings."
+          description: "JSON array of decision objects, one per candidate PR. Each object: pr_number (string), decision ('trigger'|'skip'), rerun_comment_id ('0' unless a current-cycle source is proven), expected_head_sha (string), reason (short string), and optional platform and pipeline_ref strings."
           required: true
           type: string
       steps:
@@ -459,12 +459,12 @@ Each object in the `decisions` array must use:
 
 - `pr_number`: the candidate `prNumber`.
 - `decision`: `trigger` or `skip`.
-- `rerun_comment_id`: the candidate `rerunCommentId`. It may be missing (`"0"`) when the queue label was applied autonomously by the PR Review Queue instead of a `/review rerun` comment. A missing id is **not** by itself a reason to skip — base `trigger`/`skip` on the new activity in the candidate context, and use `"0"` when it is absent (the dispatch does not need a comment; the acknowledgement reaction is simply skipped).
+- `rerun_comment_id`: use the candidate `rerunCommentId`, currently `"0"`. The queue label does not preserve which `/review rerun` command, if any, created the current cycle, so historical comments are never reused as reaction targets. A missing id is **not** a reason to skip; the dispatch does not require a comment.
 - `expected_head_sha`: the candidate `headSha`.
 - `platform`: the candidate `platform`.
 - `pipeline_ref`: the candidate `pipelineRef`.
 - `reason`: one short sentence.
 
-Example: `decisions = "[{\"pr_number\":\"123\",\"decision\":\"trigger\",\"rerun_comment_id\":\"456\",\"expected_head_sha\":\"abc123\",\"platform\":\"android\",\"pipeline_ref\":\"main\",\"reason\":\"New commit addresses review feedback.\"}]"`
+Example: `decisions = "[{\"pr_number\":\"123\",\"decision\":\"trigger\",\"rerun_comment_id\":\"0\",\"expected_head_sha\":\"abc123\",\"platform\":\"android\",\"pipeline_ref\":\"main\",\"reason\":\"New commit addresses review feedback.\"}]"`
 
 Do not call any other write tool. Do not create comments, labels, issues, or pull requests directly. The safe-output job will handle reactions, queue-label removal, and dispatching `review-trigger.yml` deterministically.

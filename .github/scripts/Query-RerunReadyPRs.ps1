@@ -59,6 +59,19 @@ function Get-PlatformFromLabels {
     return 'android'
 }
 
+function Invoke-RerunReadyPRQuery {
+    param(
+        [int]$QueryMaxPRs = $MaxPRs,
+        [string]$QueryOwner = $Owner,
+        [string]$QueryRepo = $Repo,
+        [string]$QueryOutputPath = $OutputPath
+    )
+
+    $MaxPRs = $QueryMaxPRs
+    $Owner = $QueryOwner
+    $Repo = $QueryRepo
+    $OutputPath = $QueryOutputPath
+
 $searchJson = gh pr list `
     --repo "$Owner/$Repo" `
     --state open `
@@ -80,10 +93,8 @@ foreach ($pr in @($searchResult)) {
     if ($labels -contains $ReviewInProgressLabel -and -not (Test-AgentReviewInProgressIsStale -PRNumber $number -Owner $Owner -Repo $Repo)) {
         continue
     }
-
     $activity = @(Get-ActivityForPR -Number $number)
     $commits = @(Get-CommitsForPR -Number $number)
-    $latestRerun = Get-LatestRerunComment -Comments $activity
     $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -Owner $Owner -Repo $Repo
     $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
     $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
@@ -103,7 +114,10 @@ foreach ($pr in @($searchResult)) {
         reviewCommandId = $reviewOptions.CommentId
         reviewCommand   = $reviewOptions.Body
         labels          = $labels
-        rerunCommentId  = if ($latestRerun) { [Int64]$latestRerun.id } else { $null }
+        # The ready label does not encode whether this queue cycle came from a
+        # specific command or the autonomous labeler. Never reuse a historical
+        # /review rerun comment as this cycle's reaction target.
+        rerunCommentId  = [Int64]0
         contextMarkdown = $contextMarkdown
     }
 }
@@ -118,3 +132,8 @@ $json | Set-Content -LiteralPath $OutputPath -Encoding UTF8
 
 Write-Host "Wrote $($candidates.Count) rerun-ready candidate(s) to $OutputPath"
 Write-Output $json
+}
+
+if ($MyInvocation.InvocationName -ne '.') {
+    Invoke-RerunReadyPRQuery
+}

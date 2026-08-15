@@ -333,7 +333,7 @@ Describe 'Get-RerunActions' {
         $result.Actions.Count | Should -Be 0
     }
 
-    It 'triggers when the candidate has no rerun comment id (autonomous queue label)' {
+    It 'triggers when the candidate has no proven current-cycle rerun comment id' {
         $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
         $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x' -RerunCommentId 0)
 
