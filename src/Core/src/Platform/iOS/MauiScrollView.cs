@@ -486,33 +486,40 @@ namespace Microsoft.Maui.Platform
 		/// <see cref="UIScrollView.AdjustedContentInset"/>. When it is not
 		/// (<see cref="UIScrollViewContentInsetAdjustmentBehavior.Never"/>, or a zero system
 		/// inset), <see cref="CrossPlatformArrange"/> bakes the safe area into the content's
-		/// coordinate space instead. Shared by the arrange branch, the <c>_safeArea</c> source
-		/// selection in <see cref="ValidateSafeArea"/>, and
-		/// <see cref="SafeAreaBakedIntoContent"/> so the sites can never desynchronize.
+		/// coordinate space instead. Shared by the arrange branch and the <c>_safeArea</c>
+		/// source selection in <see cref="ValidateSafeArea"/> so the two cannot desynchronize;
+		/// the arrange records the outcome in <see cref="SafeAreaBakedIntoContent"/> for
+		/// readers between arranges.
 		/// </summary>
 		bool UIKitCompensatesForSafeArea =>
 			SystemAdjustedContentInset != UIEdgeInsets.Zero
 			&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never;
 
 		/// <summary>
-		/// The safe area <see cref="CrossPlatformArrange"/> baked into the content's coordinate
-		/// space: when it applies the safe area while UIKit is not compensating through
-		/// <see cref="UIScrollView.AdjustedContentInset"/>, the content is arranged inside
-		/// safe-area-inset bounds, so element positions carry the padding and the trailing
-		/// padding still obscures the viewport without ever appearing in the adjusted inset.
+		/// The safe area the last <see cref="CrossPlatformArrange"/> baked into the content's
+		/// coordinate space: when it applies the safe area while UIKit is not compensating
+		/// through <see cref="UIScrollView.AdjustedContentInset"/>, the content is arranged
+		/// inside safe-area-inset bounds, so element positions carry the padding and the
+		/// trailing padding still obscures the viewport without ever appearing in the
+		/// adjusted inset.
 		/// </summary>
 		/// <remarks>
-		/// Shares <see cref="UIKitCompensatesForSafeArea"/> with the arrange branch, so the
-		/// baked state always describes what the last arrange actually did: when UIKit is not
-		/// compensating, the content is arranged inside safe-area-inset bounds and the padding
-		/// lives in its coordinate space; when UIKit compensates, the content is re-based at
-		/// the origin and the adjusted inset owns the compensation, which the arranged rect
-		/// <see cref="ScrollableContentSize"/> measures naturally excludes (issue #36801).
+		/// Captured at arrange time rather than derived live from UIKit state, because the
+		/// two can legitimately disagree between arranges: under
+		/// <see cref="UIScrollViewContentInsetAdjustmentBehavior.Automatic"/> the arrange
+		/// that bakes the padding can push the content size past the bounds, at which point
+		/// UIKit turns the adjusted inset non-zero — the content still carries the padding
+		/// until the next arrange re-bases it, and this must keep saying so. Recorded
+		/// alongside <see cref="_arrangedContentRect"/>, which does the same for the rect
+		/// (issue #36801).
 		/// </remarks>
-		internal SafeAreaPadding SafeAreaBakedIntoContent =>
-			_appliesSafeAreaAdjustments && !UIKitCompensatesForSafeArea
-				? _safeArea
-				: SafeAreaPadding.Empty;
+		internal SafeAreaPadding SafeAreaBakedIntoContent => _bakedSafeArea;
+
+		/// <summary>
+		/// The value <see cref="SafeAreaBakedIntoContent"/> reports, set by
+		/// <see cref="CrossPlatformArrange"/> from the branch it actually took.
+		/// </summary>
+		SafeAreaPadding _bakedSafeArea = SafeAreaPadding.Empty;
 
 		UIEdgeInsets SystemAdjustedContentInset
 		{
@@ -548,12 +555,15 @@ namespace Microsoft.Maui.Platform
 			Size contentSize;
 
 			CGPoint contentOrigin;
+			SafeAreaPadding bakedSafeArea;
 			double width;
 			double height;
 			if (!UIKitCompensatesForSafeArea)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
 				contentOrigin = bounds.Location;
+				// The inset bounds put the safe area into the content's coordinate space
+				bakedSafeArea = _appliesSafeAreaAdjustments ? _safeArea : SafeAreaPadding.Empty;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
@@ -562,14 +572,20 @@ namespace Microsoft.Maui.Platform
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
 				contentOrigin = CGPoint.Empty;
+				// Re-based at the origin: UIKit's adjusted inset owns the compensation
+				bakedSafeArea = SafeAreaPadding.Empty;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
 			}
 
-			// Record where the content was actually arranged, before the ContentSize adjustments
-			// below: ScrollableContentSize measures the scrollable extent from this rect
+			// Record what this arrange actually did, before the ContentSize adjustments below:
+			// ScrollableContentSize measures the scrollable extent from the rect, and
+			// SafeAreaBakedIntoContent reports the padding the content now carries. Both are
+			// captured rather than re-derived later, since UIKit's inset state can move
+			// between arranges (see SafeAreaBakedIntoContent).
 			_arrangedContentRect = new CGRect(contentOrigin, contentSize.ToCGSize());
+			_bakedSafeArea = bakedSafeArea;
 
 
 			// When using ContentInsetAdjustmentBehavior.Automatic, UIKit dynamically decides whether to apply 
