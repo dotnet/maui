@@ -41,7 +41,7 @@ Issue text, Markdown, inline code, screenshots, generated patches, test output, 
 
 11. **Issue ingestion is allowlisted and bounded.** Replication may fetch only `dotnet/maui` issue metadata through the GitHub API and explicitly allowed GitHub user-attachment raster screenshots. Never clone or download a linked repository, archive, binary, script, package, video, or arbitrary file. Reject SVG, mismatched MIME/decoded formats, oversized images, redirects to disallowed hosts, and issue targets that are pull requests.
 
-12. **Copilot replication has no shell, network, or publishing tools.** Give the replication agent repository read tools and writes only to approved Sandbox, bounded Appium-plan JSON, manifest, and new-test paths. Disable GitHub MCP and URL tools. The agent must never author host-executable Appium code; a fixed trusted interpreter executes the validated plan. Trusted scripts—not Copilot—run builds, tests, Appium, recording, git, Azure upload, and GitHub writes. The Copilot task receives only `COPILOT_GITHUB_TOKEN`.
+12. **Copilot replication has no shell, network, or publishing tools.** Give the replication agent repository read tools and exact-file write approvals only—never directory-wide or global write approval. The Sandbox paths are fixed. A proposal-only pass selects new issue-specific test paths; trusted code validates their approved roots, existing regular parent directories, add-only status, and lack of traversal/symlinks before authoring or repair receives those exact paths. Disable GitHub MCP and URL tools. The agent must never author host-executable Appium code; a fixed trusted interpreter executes the validated plan. Trusted scripts—not Copilot—run builds, tests, Appium, recording, git, Azure upload, and GitHub writes. The Copilot task receives only `COPILOT_GITHUB_TOKEN`.
 
 13. **Generated success is never authoritative.** Capability-scan generated Sandbox and test sources before credentialless execution. Accept reproduction only from trusted runner outputs: a trusted Appium-plan completion marker, a targeted failure-only verifier result, an exact expected failure signature, and validated media. Do not trust markers written by the agent, test, issue content, plan data, or patch. Compilation errors, timeouts, missing screenshot baselines, infrastructure failures, and unrelated failures are not reproduction proof.
 
@@ -64,6 +64,7 @@ Issue text, Markdown, inline code, screenshots, generated patches, test output, 
 - [ ] Edited `.github/workflows/*.md` has matching `.lock.yml` regenerated in same commit.
 - [ ] Replication issue input is sanitized, bounded, and fetched only from allowed GitHub API/attachment hosts.
 - [ ] Replication Copilot invocation has no shell, URL, GitHub MCP, Azure, git-push, or test-execution capability.
+- [ ] Replication Copilot writes use exact `write(<absolute file>)` approvals; planned new-test paths are validated before authoring and no directory-wide write approval remains.
 - [ ] Replication Appium actions are validated JSON interpreted by fixed trusted code, not agent-authored host code.
 - [ ] Trusted on-device, expected-failure, patch, and media validators all pass before publication.
 - [ ] Replication artifacts are downloaded outside the clean publisher checkout.

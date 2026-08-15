@@ -18,12 +18,15 @@ BeforeAll {
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
         'Test-PathInsideRoot',
+        'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
         'Assert-GeneratedSandboxSources',
         'Assert-NoDuplicateJsonProperties',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
+        'Get-ProposedTestFiles',
+        'Assert-TestProposalMatchesPlan',
         'Get-VerifierTestType',
         'Assert-GeneratedTestContent'
     )) {
@@ -201,12 +204,53 @@ InitializeComponent();
     }
 
     It 'gives Copilot no shell, URL, MCP, broad write, Azure, or GitHub publication capability' {
-        $script:Source | Should -Match "'--available-tools', 'view', 'grep', 'glob', 'edit', 'create'"
+        $script:Source | Should -Match "'--available-tools', 'view', 'rg', 'glob', 'apply_patch'"
         $script:Source | Should -Match '--disable-builtin-mcps'
-        $script:Source | Should -Match '--allow-tool.*write\('
+        $script:Source | Should -Match '--allow-tool.*write\(\$fullPath\)'
+        $script:Source | Should -Match 'permissions must target exact regular files'
+        $script:Source | Should -Not -Match 'WriteRoots'
         $script:Source | Should -Not -Match '--allow-all-tools|--allow-all-paths|--allow-all-urls|--yolo'
         $script:Source | Should -Match 'GH_REPLICATION_TOKEN'
         $script:Source | Should -Match 'Invoke-WithoutReplicationSecrets'
+    }
+
+    It 'plans exact new issue-specific test files before granting write access' {
+        $repoRoot = Join-Path $TestDrive 'repo'
+        $approvedTestRoots = @('tests/')
+        $IssueNumber = 37440
+        New-Item -ItemType Directory -Path (Join-Path $repoRoot 'tests/Issues') -Force |
+            Out-Null
+        $proposal = [pscustomobject]@{
+            testType = 'unit'
+            testFilter = 'Issue37440'
+            files = @('tests/Issues/Issue37440Tests.cs')
+        }
+
+        Get-ProposedTestFiles -Proposal $proposal -ValidateNewTargets |
+            Should -BeExactly 'tests/Issues/Issue37440Tests.cs'
+
+        $proposal.files = @('tests/Issues/OtherTests.cs')
+        { Get-ProposedTestFiles -Proposal $proposal -ValidateNewTargets } |
+            Should -Throw '*issue-specific*'
+
+        $proposal.files = @('tests/Issues/Issue37440Tests.cs')
+        Set-Content -LiteralPath (Join-Path $repoRoot $proposal.files[0]) -Value 'existing'
+        { Get-ProposedTestFiles -Proposal $proposal -ValidateNewTargets } |
+            Should -Throw '*already exists*'
+    }
+
+    It 'uses stable host identifiers instead of unresolved device variables' {
+        $script:Source | Should -Match 'DeviceUdid contains an unresolved pipeline variable'
+        $script:Source | Should -Match "'mac-catalyst-host'"
+        $script:Source | Should -Match "'windows-host'"
+        $script:Source | Should -Match 'device = \$selectedDeviceId'
+        $script:Source | Should -Match 'id = \$selectedDeviceId'
+    }
+
+    It 'preserves current attempt counts in blocked candidate manifests' {
+        $script:Source | Should -Match 'sandbox = \$sandboxAttempts'
+        $script:Source | Should -Match 'automatedTest = \$testAttempts'
+        $script:Source | Should -Not -Match 'attempts = \[ordered\]@\{ sandbox = 0; automatedTest = 0 \}'
     }
 
     It 'prepares the app before starting a bounded recording-only run' {

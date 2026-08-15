@@ -75,13 +75,14 @@ Use the same order as `evaluate-pr-tests` and `write-tests-agent`:
 
 Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, `write-device-tests`, or `write-ui-tests` skill. State why every lighter type cannot prove the observed Sandbox failure.
 
+- Plan the exact new, issue-numbered test paths before authoring. Use only existing parent directories. After trusted validation, create or repair only those exact files; never change the planned type, filter, or file list.
 - Persist only added test files; never edit a project, dependency, shared runner, existing test, or product file.
 - Every generated test type must use the exact targeted-only guard `MAUI_REPRODUCTION_ISSUE == <issue>` so ordinary CI no-ops/skips and the replication runner enables only this issue. Device tests must use the platform-aware `GetReplicationIssue` helper from `write-device-tests`.
 - Unit and device file/class/filter names must use exactly `Issue<issue>`; XAML uses `Maui<issue>` and UI uses `Issue<issue>` per their existing skills.
 - The assertion must describe correct behavior and fail because of the observed bug, not because of setup, compilation, infrastructure, missing data, screenshot, or baseline errors.
 - Have the trusted `.github/scripts/shared/Invoke-ReplicationTestVerification.ps1` wrapper invoke `verify-tests-fail-without-fix` in failure-only mode with the exact issue filter and literal expected failure signature. Never add a fix or use `-RequireFullVerification`.
 
-Use only the runner-configured bounded automated-test attempts (default two and never more than three), including type escalation. Success requires the verifier to confirm the targeted test fails for the expected assertion. Otherwise remove unverified test additions, write `status: "blocked"`, and stop.
+Use only the runner-configured bounded automated-test attempts (default two and never more than three). Success requires the verifier to confirm the targeted test fails for the expected assertion. Otherwise remove unverified test additions, write `status: "blocked"`, and stop.
 
 ### 4. Validate Video and Final State
 

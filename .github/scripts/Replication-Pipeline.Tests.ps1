@@ -49,6 +49,13 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)displayName: 'Install reproduction recording tools'.*?eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "REPLICATION_AGENT_CONTEXT_PATH.*?issue-agent-context\.json"
         $script:Pipeline | Should -Match "(?s)name: RunReplication.*?COPILOT_GITHUB_TOKEN: \$\(COPILOT_TOKEN\)"
+        $script:Pipeline.Contains(
+            '$deviceUdid -match ''^\$\([A-Za-z0-9_.-]+\)$'''
+        ) | Should -BeTrue
+        $script:Pipeline.Contains(
+            'if ($platform -in @(''catalyst'', ''windows''))'
+        ) | Should -BeTrue
+        $script:Pipeline | Should -Match 'A resolved device UDID is required for \$platform replication'
         $script:Pipeline | Should -Match "artifact: 'ReplicationArtifacts'"
     }
 

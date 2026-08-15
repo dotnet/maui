@@ -181,6 +181,49 @@ function Test-PathInsideRoot {
     return $fullPath.StartsWith($fullRoot, $comparison)
 }
 
+function Assert-NoReparsePointInParentPath {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Root
+    )
+
+    $fullRoot = [IO.Path]::GetFullPath($Root).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $current = [IO.Path]::GetFullPath((Split-Path -Parent $Path))
+    $comparison = if ($IsWindows) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+
+    while ($true) {
+        if (
+            -not $current.Equals($fullRoot, $comparison) -and
+            -not (Test-PathInsideRoot -Path $current -Root $fullRoot)
+        ) {
+            throw "Write target parent is outside the approved root: $Path"
+        }
+
+        $item = Get-Item -LiteralPath $current -Force -ErrorAction Stop
+        if (
+            -not $item.PSIsContainer -or
+            $item.Attributes -band [IO.FileAttributes]::ReparsePoint
+        ) {
+            throw "Write target parent must be a regular directory: $current"
+        }
+        if ($current.Equals($fullRoot, $comparison)) {
+            break
+        }
+
+        $parent = [IO.Path]::GetDirectoryName($current)
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $current) {
+            throw "Unable to validate the write target parent chain: $Path"
+        }
+        $current = $parent
+    }
+}
+
 function Get-ReplicationGitStatus {
     $lines = @(& git status --porcelain=v1 --untracked-files=all)
     if ($LASTEXITCODE -ne 0) {
@@ -628,6 +671,109 @@ function Get-GeneratedTestFiles {
     return @($files | Sort-Object -Unique)
 }
 
+function Get-ProposedTestFiles {
+    param(
+        [Parameter(Mandatory = $true)][object]$Proposal,
+        [switch]$ValidateNewTargets
+    )
+
+    $rawFiles = @($Proposal.files)
+    if ($rawFiles.Count -lt 1 -or $rawFiles.Count -gt 10) {
+        throw 'The test proposal must contain 1-10 files.'
+    }
+
+    $comparison = if ($IsWindows) {
+        [StringComparer]::OrdinalIgnoreCase
+    } else {
+        [StringComparer]::Ordinal
+    }
+    $seen = [Collections.Generic.HashSet[string]]::new($comparison)
+    $files = @()
+    foreach ($rawFile in $rawFiles) {
+        if ($rawFile -isnot [string]) {
+            throw 'Every proposed test path must be a string.'
+        }
+        $relativePath = ([string]$rawFile).Replace('\', '/')
+        if (
+            [string]::IsNullOrWhiteSpace($relativePath) -or
+            $relativePath -cne $relativePath.Trim() -or
+            $relativePath.Length -gt 400 -or
+            [IO.Path]::IsPathRooted($relativePath) -or
+            $relativePath -notmatch '^[A-Za-z0-9._/-]+$'
+        ) {
+            throw "Proposed test path is invalid: $relativePath"
+        }
+
+        $segments = @($relativePath.Split('/'))
+        if (
+            $segments.Count -lt 2 -or
+            $segments -contains '' -or
+            $segments -contains '.' -or
+            $segments -contains '..'
+        ) {
+            throw "Proposed test path is not canonical: $relativePath"
+        }
+
+        $allowed = $false
+        foreach ($root in $approvedTestRoots) {
+            if ($relativePath.StartsWith($root, [StringComparison]::Ordinal)) {
+                $allowed = $true
+                break
+            }
+        }
+        $extension = [IO.Path]::GetExtension($relativePath).ToLowerInvariant()
+        $fileName = [IO.Path]::GetFileNameWithoutExtension($relativePath)
+        if (
+            -not $allowed -or
+            $extension -notin @('.cs', '.xaml') -or
+            $fileName -notmatch "(?i)(?:Issue|Maui)$IssueNumber"
+        ) {
+            throw "Generated test path is not approved or issue-specific: $relativePath"
+        }
+
+        $fullPath = [IO.Path]::GetFullPath((Join-Path $repoRoot $relativePath))
+        if (-not (Test-PathInsideRoot -Path $fullPath -Root $repoRoot)) {
+            throw "Proposed test path escapes the repository: $relativePath"
+        }
+        if (-not $seen.Add($relativePath)) {
+            throw "The test proposal contains a duplicate path: $relativePath"
+        }
+
+        if ($ValidateNewTargets) {
+            if (Get-Item -LiteralPath $fullPath -Force -ErrorAction SilentlyContinue) {
+                throw "The proposed test path already exists: $relativePath"
+            }
+            $parent = Split-Path -Parent $fullPath
+            if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+                throw "The proposed test parent directory does not exist: $relativePath"
+            }
+            Assert-NoReparsePointInParentPath -Path $fullPath -Root $repoRoot
+        }
+        $files += $relativePath
+    }
+
+    return @($files | Sort-Object)
+}
+
+function Assert-TestProposalMatchesPlan {
+    param(
+        [Parameter(Mandatory = $true)][object]$Plan,
+        [Parameter(Mandatory = $true)][object]$Proposal
+    )
+
+    if (
+        [string]$Proposal.testType -cne [string]$Plan.testType -or
+        [string]$Proposal.testFilter -cne [string]$Plan.testFilter
+    ) {
+        throw 'The authored test changed the trusted test type or filter plan.'
+    }
+    $plannedFiles = @(Get-ProposedTestFiles -Proposal $Plan)
+    $actualFiles = @(Get-ProposedTestFiles -Proposal $Proposal)
+    if (($plannedFiles -join "`n") -cne ($actualFiles -join "`n")) {
+        throw 'The authored test changed the trusted file plan.'
+    }
+}
+
 function ConvertTo-BoundedAgentLine {
     param(
         [AllowNull()][object]$Value,
@@ -746,7 +892,10 @@ function Assert-GeneratedTestContent {
 }
 
 function Read-TestProposal {
-    param([Parameter(Mandatory = $true)][string[]]$ActualFiles)
+    param(
+        [string[]]$ActualFiles,
+        [switch]$ValidateNewTargets
+    )
 
     if (-not (Test-Path -LiteralPath $testProposalPath -PathType Leaf)) {
         throw 'The test agent did not write test-proposal.json.'
@@ -792,10 +941,14 @@ function Read-TestProposal {
         throw 'Test proposal has an invalid expected failure signature.'
     }
 
-    $proposedFiles = @($proposal.files | ForEach-Object { ([string]$_).Replace('\', '/') } | Sort-Object -Unique)
-    $actual = @($ActualFiles | Sort-Object -Unique)
-    if (($proposedFiles -join "`n") -ne ($actual -join "`n")) {
-        throw 'Test proposal files do not exactly match generated add-only files.'
+    $proposedFiles = @(Get-ProposedTestFiles `
+        -Proposal $proposal `
+        -ValidateNewTargets:$ValidateNewTargets)
+    if ($PSBoundParameters.ContainsKey('ActualFiles')) {
+        $actual = @($ActualFiles | Sort-Object -Unique)
+        if (($proposedFiles -join "`n") -cne ($actual -join "`n")) {
+            throw 'Test proposal files do not exactly match generated add-only files.'
+        }
     }
 
     $steps = @($proposal.reproductionSteps)
@@ -828,7 +981,9 @@ function Get-VerifierTestType {
 
 function New-CopilotPrompt {
     param(
-        [Parameter(Mandatory = $true)][ValidateSet('sandbox', 'test', 'repair')][string]$Phase,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('sandbox', 'test-plan', 'test', 'repair')]
+        [string]$Phase,
         [string]$FailureSummary = ''
     )
 
@@ -867,18 +1022,29 @@ Do not create an automated test yet and do not claim reproduction succeeded.
 $retryGuidance
 "@
         }
-        'test' {
+        'test-plan' {
+            $approvedRoots = ($approvedTestRoots | ForEach-Object { "- $_" }) -join [Environment]::NewLine
             return $common + @"
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
-Create the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last.
+Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last.
+Do not create or modify any repository file in this phase.
+Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, and lighterTypesRejected.
+Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
+List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
+$approvedRoots
+The expectedFailureSignature must be literal text that the trusted failing assertion will emit.
+"@
+        }
+        'test' {
+            return $common + @"
+
+Trusted test planning succeeded. Read "$testProposalPath", "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Read the matching trusted skill under "$trustedSkills".
-Add only new test source files in existing MAUI test projects. Do not edit any existing file.
+Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files.
 Every test must no-op unless MAUI_REPRODUCTION_ISSUE equals "$IssueNumber" with StringComparison.Ordinal. Device tests must use the exact platform-aware GetReplicationIssue helper from write-device-tests.
 Do not use snapshots/baselines, delays, process execution, network access, external data, or unconditional failures.
-Write "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, and lighterTypesRejected.
-Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
-The expectedFailureSignature must be literal text that the trusted failing assertion will emit.
+Rewrite test-proposal.json only to refine expectedFailureSignature, reproductionSteps, expectedBehavior, observedBehavior, or lighterTypesRejected.
 "@
         }
         'repair' {
@@ -888,8 +1054,9 @@ The trusted failure-only verifier rejected the generated test.
 Read "$testProposalPath" and "$verificationDir/verification-console.log".
 Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 Revise only the already-created new test files and rewrite test-proposal.json.
+Do not change testType, testFilter, or files.
 The exact targeted test must fail for the intended assertion, not compilation, setup, timeout, missing data, device infrastructure, screenshot, or baseline reasons.
-Do not add a fix or escalate test type unless the current type cannot observe the trusted Sandbox behavior.
+Do not add a fix or escalate the test type.
 "@
         }
     }
@@ -899,10 +1066,11 @@ function Invoke-ReplicationCopilot {
     param(
         [Parameter(Mandatory = $true)][string]$PhaseName,
         [Parameter(Mandatory = $true)][string]$Prompt,
-        [Parameter(Mandatory = $true)][string[]]$WriteRoots,
+        [Parameter(Mandatory = $true)][string[]]$WritePaths,
         [Parameter(Mandatory = $true)][int]$Attempt
     )
 
+    New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
     $logPath = Join-Path $agentDir "copilot-$PhaseName-attempt-$Attempt.jsonl"
     $arguments = @(
         '-p', $Prompt,
@@ -915,15 +1083,46 @@ function Invoke-ReplicationCopilot {
         '--disable-builtin-mcps',
         '--disallow-temp-dir',
         '--no-ask-user',
-        '--available-tools', 'view', 'grep', 'glob', 'edit', 'create',
+        '--available-tools', 'view', 'rg', 'glob', 'apply_patch',
         '--add-dir', $TrustedRoot,
         '--secret-env-vars=GH_TOKEN,GITHUB_TOKEN,GH_COMMENT_TOKEN,GH_REPLICATION_TOKEN,SYSTEM_ACCESSTOKEN,COPILOT_GITHUB_TOKEN,AZURE_STORAGE_KEY,AZURE_STORAGE_SAS_TOKEN'
     )
-    foreach ($root in $WriteRoots) {
-        $arguments += @('--allow-tool', "write($([IO.Path]::GetFullPath($root)))")
+    $writePathComparer = if ($IsWindows) {
+        [StringComparer]::OrdinalIgnoreCase
+    } else {
+        [StringComparer]::Ordinal
+    }
+    $seenWritePaths = [Collections.Generic.HashSet[string]]::new($writePathComparer)
+    foreach ($path in $WritePaths) {
+        $fullPath = [IO.Path]::GetFullPath($path)
+        if (-not $seenWritePaths.Add($fullPath)) {
+            continue
+        }
+        $permissionRoot = if (Test-PathInsideRoot -Path $fullPath -Root $repoRoot) {
+            $repoRoot
+        } elseif (Test-PathInsideRoot -Path $fullPath -Root $ArtifactRoot) {
+            $ArtifactRoot
+        } else {
+            throw "Copilot write target is outside trusted writable roots: $fullPath"
+        }
+        $existingTarget = Get-Item -LiteralPath $fullPath -Force -ErrorAction SilentlyContinue
+        if (
+            $existingTarget -and
+            (
+                $existingTarget.PSIsContainer -or
+                $existingTarget.Attributes -band [IO.FileAttributes]::ReparsePoint
+            )
+        ) {
+            throw "Copilot write permissions must target exact regular files: $fullPath"
+        }
+        $parent = Split-Path -Parent $fullPath
+        if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+            throw "Copilot write target parent does not exist: $fullPath"
+        }
+        Assert-NoReparsePointInParentPath -Path $fullPath -Root $permissionRoot
+        $arguments += @('--allow-tool', "write($fullPath)")
     }
 
-    New-Item -ItemType Directory -Path $agentDir -Force | Out-Null
     $started = [DateTimeOffset]::UtcNow
     $runResult = Invoke-WithoutReplicationSecrets -Names $publisherSecretNames -ScriptBlock {
         $capturedLines = @(& copilot @arguments 2>&1)
@@ -1102,11 +1301,14 @@ function Write-BlockedCandidate {
             reason = ConvertTo-ReplicationSafeLog $Reason 500
         }
         selectedDevice = [ordered]@{
-            id = if ($DeviceUdid) { $DeviceUdid } else { 'host' }
+            id = $selectedDeviceId
             name = $DeviceName
             osVersion = $DeviceOSVersion
         }
-        attempts = [ordered]@{ sandbox = 0; automatedTest = 0 }
+        attempts = [ordered]@{
+            sandbox = $sandboxAttempts
+            automatedTest = $testAttempts
+        }
         reproductionSteps = @()
         expectedBehavior = $null
         observedBehavior = $null
@@ -1153,6 +1355,18 @@ if (-not (Test-Path -LiteralPath (Join-Path $trustedSkills 'replicate-issue/SKIL
 if ($Platform -in @('android', 'ios') -and [string]::IsNullOrWhiteSpace($DeviceUdid)) {
     throw "DeviceUdid is required for $Platform replication."
 }
+if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
+    throw 'DeviceUdid contains an unresolved pipeline variable.'
+}
+$selectedDeviceId = if ($DeviceUdid) {
+    $DeviceUdid
+} elseif ($Platform -eq 'catalyst') {
+    'mac-catalyst-host'
+} elseif ($Platform -eq 'windows') {
+    'windows-host'
+} else {
+    'host'
+}
 Assert-InitialReplicationWorktree
 Clear-TransientAppiumDirectory
 
@@ -1161,6 +1375,8 @@ $sandboxAttempts = 0
 $testAttempts = 0
 $generatedFiles = @()
 $sandboxProposal = $null
+$plannedTestProposal = $null
+$plannedTestFiles = @()
 $testProposal = $null
 
 try {
@@ -1173,7 +1389,12 @@ try {
             Invoke-ReplicationCopilot `
                 -PhaseName 'sandbox' `
                 -Prompt (New-CopilotPrompt -Phase sandbox -FailureSummary $sandboxFailureSummary) `
-                -WriteRoots @($sandboxDir, $sandboxAppiumDir, $agentDir) `
+                -WritePaths @(
+                    $sandboxXamlPath,
+                    $sandboxCodePath,
+                    $appiumPlanPath,
+                    $sandboxProposalPath
+                ) `
                 -Attempt $attempt
             Assert-SandboxChanges
             Assert-GeneratedSandboxSources
@@ -1234,7 +1455,7 @@ try {
                 baseSha = $BaseSha.ToLowerInvariant()
                 attempt = $attempt
                 succeeded = $true
-                device = if ($DeviceUdid) { $DeviceUdid } else { 'host' }
+                device = $selectedDeviceId
                 evidenceManifest = 'evidence/evidence.json'
             } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $reproductionResultPath -Encoding utf8NoBOM
             $sandboxSucceeded = $true
@@ -1259,6 +1480,14 @@ try {
     Restore-TransientSandbox
 
     $stage = 'test'
+    Invoke-ReplicationCopilot `
+        -PhaseName 'test-plan' `
+        -Prompt (New-CopilotPrompt -Phase test-plan) `
+        -WritePaths @($testProposalPath) `
+        -Attempt 1
+    $plannedTestProposal = Read-TestProposal -ValidateNewTargets
+    $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
+
     for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
         $testAttempts = $attempt
         $phase = if ($attempt -eq 1) { 'test' } else { 'repair' }
@@ -1267,18 +1496,19 @@ try {
             $failureSummary = Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw
         }
 
-        $testWriteRoots = @($agentDir)
-        foreach ($relativeRoot in $approvedTestRoots) {
-            $testWriteRoots += Join-Path $repoRoot $relativeRoot
-        }
+        $testWritePaths = @($testProposalPath)
+        $testWritePaths += $plannedTestFiles | ForEach-Object { Join-Path $repoRoot $_ }
         Invoke-ReplicationCopilot `
             -PhaseName $phase `
             -Prompt (New-CopilotPrompt -Phase $phase -FailureSummary $failureSummary) `
-            -WriteRoots $testWriteRoots `
+            -WritePaths $testWritePaths `
             -Attempt $attempt
 
         $generatedFiles = @(Get-GeneratedTestFiles)
         $testProposal = Read-TestProposal -ActualFiles $generatedFiles
+        Assert-TestProposalMatchesPlan `
+            -Plan $plannedTestProposal `
+            -Proposal $testProposal
         $verifierTestType = Get-VerifierTestType -TestType ([string]$testProposal.testType)
         Assert-GeneratedTestContent `
             -Files $generatedFiles `
@@ -1337,7 +1567,7 @@ try {
         status = 'reproduced'
         blocked = $null
         selectedDevice = [ordered]@{
-            id = if ($DeviceUdid) { $DeviceUdid } else { 'host' }
+            id = $selectedDeviceId
             name = $DeviceName
             osVersion = $DeviceOSVersion
         }

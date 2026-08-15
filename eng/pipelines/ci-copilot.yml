@@ -1659,8 +1659,16 @@ stages:
               $ErrorActionPreference = 'Stop'
               $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
               $artifactRoot = "$(REPLICATION_ARTIFACT_ROOT)"
-              $deviceUdid = "${env:DEVICE_UDID}"
               $platform = "${{ parameters.Platform }}"
+              $deviceUdid = ([string]$env:DEVICE_UDID).Trim()
+              if ($deviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
+                $deviceUdid = ''
+              }
+              if ($platform -in @('catalyst', 'windows')) {
+                $deviceUdid = ''
+              } elseif ([string]::IsNullOrWhiteSpace($deviceUdid)) {
+                throw "A resolved device UDID is required for $platform replication."
+              }
 
               $overrideTemplate = Join-Path "$(Build.SourcesDirectory)" "Directory.Build.Override.props.in"
               $overridePath = Join-Path "$(Build.SourcesDirectory)" "Directory.Build.Override.props"

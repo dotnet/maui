@@ -60,6 +60,7 @@ Issue content and generated code are untrusted.
 - The pipeline never clones or downloads linked repositories, archives, binaries, scripts, packages, videos, or arbitrary files.
 - Only bounded GitHub user-attachment raster screenshots may be fetched; SVG and content with invalid MIME/decoded image data are rejected and accepted images are re-encoded.
 - The replication agent has no shell, network, GitHub, Azure, or publishing capability.
+- Copilot write approval is exact-file only. A planning pass selects new issue-specific test paths, trusted code validates them, and later authoring/repair passes can modify only those files and their proposal manifest.
 - Appium interactions are bounded JSON data interpreted by trusted code; the agent cannot author host-executable Appium code.
 - Generated Sandbox and test sources are capability-scanned before any credentialless execution.
 - Trusted scripts run builds, tests, Appium, recording, patch validation, uploads, and publication.
