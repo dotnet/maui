@@ -511,7 +511,6 @@ function Read-GeneratedAppiumPlan {
         'clear',
         'enterText',
         'assertExists',
-        'assertNotExists',
         'assertTextEquals',
         'assertTextContains'
     )
@@ -521,12 +520,6 @@ function Read-GeneratedAppiumPlan {
         'assertTextContains',
         'swipe',
         'setOrientation'
-    )
-    $assertionActions = @(
-        'assertExists',
-        'assertNotExists',
-        'assertTextEquals',
-        'assertTextContains'
     )
     $allowedActions = @(
         $locatorActions + @('back', 'swipe', 'setOrientation') |
@@ -631,8 +624,11 @@ function Read-GeneratedAppiumPlan {
         }
     }
 
-    if ([string]$steps[-1].action -cnotin $assertionActions) {
-        throw 'Generated Appium plan must end with a deterministic assertion.'
+    if ([string]$steps[-1].action -cne 'assertTextEquals') {
+        throw 'Generated Appium plan must end with an exact semantic text assertion.'
+    }
+    if ([string]$steps[-1].value -cnotmatch '^BUG REPRODUCED:') {
+        throw 'Generated Appium plan final assertion must prove a BUG REPRODUCED: result.'
     }
     return $plan
 }
@@ -879,7 +875,15 @@ function Read-SandboxProposal {
         throw 'The Sandbox proposal is empty or oversized.'
     }
     $proposal = Get-Content -LiteralPath $sandboxProposalPath -Raw | ConvertFrom-Json -Depth 10
-    $expectedProperties = @('expectedBehavior', 'files', 'observedBehaviorCheck', 'reproductionSteps')
+    $expectedProperties = @(
+        'expectedBehavior',
+        'files',
+        'observedBehaviorCheck',
+        'reportedTrigger',
+        'reproductionSteps',
+        'sandboxTrigger',
+        'scenarioDifferences'
+    )
     $actualProperties = @($proposal.PSObject.Properties.Name | Sort-Object)
     if (($actualProperties -join "`n") -cne (($expectedProperties | Sort-Object) -join "`n")) {
         throw 'The Sandbox proposal does not match the exact trusted schema.'
@@ -894,6 +898,17 @@ function Read-SandboxProposal {
     }
     $null = ConvertTo-BoundedAgentLine -Value $proposal.expectedBehavior -Description 'Sandbox expected behavior'
     $null = ConvertTo-BoundedAgentLine -Value $proposal.observedBehaviorCheck -Description 'Sandbox observed-behavior check'
+    $null = ConvertTo-BoundedAgentLine `
+        -Value $proposal.reportedTrigger `
+        -Description 'Reported issue trigger' `
+        -MaximumLength 1000
+    $null = ConvertTo-BoundedAgentLine `
+        -Value $proposal.sandboxTrigger `
+        -Description 'Sandbox reproduction trigger' `
+        -MaximumLength 1000
+    if (@($proposal.scenarioDifferences).Count -ne 0) {
+        throw 'The Sandbox trigger must be semantically equivalent to the reported issue trigger; scenarioDifferences must be empty.'
+    }
 
     $expectedFiles = @(
         'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml',
@@ -1250,11 +1265,11 @@ Perform only the Sandbox-authoring portion:
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind.
-3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, and assertTextContains require a locator object; back, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertNotExists, and back require `"value": null`. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: non-bug outcomes MUST begin with `PASS:` and reproduced outcomes MUST begin with `BUG REPRODUCED:`. Assert the reproduced value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
+3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, and assertTextContains require a locator object; back, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, and back require `"value": null`. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: non-bug outcomes MUST begin with `PASS:` and reproduced outcomes MUST begin with `BUG REPRODUCED:`. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value. Swipe values are up|down|left|right. Orientation values are portrait|landscape.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
-5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, and files. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
+5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, and input modality. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, and action. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
 Do not create an automated test yet and do not claim reproduction succeeded.
 $retryGuidance
 "@

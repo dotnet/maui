@@ -44,6 +44,7 @@ BeforeAll {
         'Assert-NoDuplicateJsonProperties',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
+        'Read-SandboxProposal',
         'Assert-LighterTestRejections',
         'Get-ProposedTestFiles',
         'Assert-TestProposalMatchesPlan',
@@ -168,10 +169,10 @@ Describe 'Replication orchestrator security boundary' {
       "timeoutSeconds": 10
     },
     {
-      "action": "assertTextContains",
+      "action": "assertTextEquals",
       "description": "Verify the reported incorrect result",
       "locator": { "strategy": "accessibilityId", "value": "ResultLabel" },
-      "value": "Incorrect",
+      "value": "BUG REPRODUCED: Incorrect",
       "timeoutSeconds": 10
     }
   ]
@@ -187,7 +188,17 @@ Describe 'Replication orchestrator security boundary' {
         $invalid | ConvertTo-Json -Depth 10 |
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
-            Should -Throw '*must end with a deterministic assertion*'
+            Should -Throw '*must end with an exact semantic text assertion*'
+
+        $invalid.steps[-1].action = 'assertNotExists'
+        $invalid.steps[-1].locator = [pscustomobject]@{
+            strategy = 'accessibilityId'
+            value = 'MissingItem'
+        }
+        $invalid | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw "*uses unsupported action 'assertNotExists'*"
     }
 
     It 'accepts safe Android literal text locators and rejects other platforms or expressions' {
@@ -202,8 +213,8 @@ Describe 'Replication orchestrator security boundary' {
     {
       "action": "assertTextEquals",
       "description": "Verify the native Android result",
-      "locator": { "strategy": "androidText", "value": "BUG_REPRODUCED" },
-      "value": "BUG_REPRODUCED",
+      "locator": { "strategy": "androidText", "value": "BUG REPRODUCED: Native Android result" },
+      "value": "BUG REPRODUCED: Native Android result",
       "timeoutSeconds": 30
     }
   ]
@@ -219,11 +230,42 @@ Describe 'Replication orchestrator security boundary' {
         $Platform = 'android'
         $invalid = Get-Content -LiteralPath $appiumPlanPath -Raw |
             ConvertFrom-Json -Depth 10
-        $invalid.steps[0].locator.value = 'new UiSelector().text("BUG_REPRODUCED")'
+        $invalid.steps[0].locator.value = 'new UiSelector().text("BUG REPRODUCED")'
         $invalid | ConvertTo-Json -Depth 10 |
             Set-Content -LiteralPath $appiumPlanPath
         { Read-GeneratedAppiumPlan | Out-Null } |
             Should -Throw '*androidText value is unsafe*'
+    }
+
+    It 'requires exact semantic trigger equivalence in the Sandbox proposal' {
+        $sandboxProposalPath = Join-Path $TestDrive 'sandbox-proposal.json'
+        @'
+{
+  "reproductionSteps": ["Move the pointer outside the stationary SwipeView item."],
+  "expectedBehavior": "The active gesture continues tracking.",
+  "observedBehaviorCheck": "The semantic result reports tracking stopped.",
+  "reportedTrigger": "A pointer leaves the bounds of a stationary SwipeView item during an active gesture.",
+  "sandboxTrigger": "A pointer leaves the bounds of a stationary SwipeView item during an active gesture.",
+  "scenarioDifferences": [],
+  "files": [
+    "src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml",
+    "src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs",
+    "CustomAgentLogsTmp/Sandbox/appium-plan.json"
+  ]
+}
+'@ | Set-Content -LiteralPath $sandboxProposalPath
+
+        { Read-SandboxProposal | Out-Null } | Should -Not -Throw
+
+        $invalid = Get-Content -LiteralPath $sandboxProposalPath -Raw |
+            ConvertFrom-Json -Depth 10
+        $invalid.sandboxTrigger =
+            'Move the SwipeView outside a stationary pointer during the active gesture.'
+        $invalid.scenarioDifferences = @('The control moves instead of the pointer.')
+        $invalid | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $sandboxProposalPath
+        { Read-SandboxProposal | Out-Null } |
+            Should -Throw '*scenarioDifferences must be empty*'
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
@@ -652,7 +694,9 @@ exit 0
         $script:Source |
             Should -Match 'back, swipe, and setOrientation require `"locator": null`'
         $script:Source |
-            Should -Match 'assertNotExists, and back require `"value": null`'
+            Should -Match 'Do not use assertNotExists or any intermediate assertion'
+        $script:Source |
+            Should -Match 'rather than moving the control when the report moves the pointer'
         $script:Source |
             Should -Match 'prior tracked Sandbox files were restored to baseline'
         $script:Source |
