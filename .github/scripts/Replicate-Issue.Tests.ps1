@@ -43,6 +43,7 @@ BeforeAll {
         'Assert-NoDuplicateJsonProperties',
         'Read-GeneratedAppiumPlan',
         'ConvertTo-BoundedAgentLine',
+        'Assert-LighterTestRejections',
         'Get-ProposedTestFiles',
         'Assert-TestProposalMatchesPlan',
         'Get-VerifierTestType',
@@ -493,6 +494,31 @@ exit 0
         $script:Source | Should -Match 'Assert-ReplicationTestGuard'
         $script:Source | Should -Match 'ExpectedFailureSignature'
         $script:Source | Should -Match 'verificationPassed'
+    }
+
+    It 'requires exact reasons for every rejected lighter test type' {
+        $deviceReasons = [pscustomobject]@{
+            unit = 'Requires the native control.'
+            xaml = 'Requires a runtime property update.'
+        }
+        {
+            Assert-LighterTestRejections -Value $deviceReasons -SelectedType device
+        } | Should -Not -Throw
+
+        {
+            Assert-LighterTestRejections `
+                -Value ([pscustomobject]@{ unit = 'Only unit was considered.' }) `
+                -SelectedType device
+        } | Should -Throw '*exactly the rejected lighter test types*'
+
+        {
+            Assert-LighterTestRejections `
+                -Value ([pscustomobject]@{
+                    unit = 'Requires native state.'
+                    xaml = [pscustomobject]@{ reason = 'Not a string.' }
+                }) `
+                -SelectedType device
+        } | Should -Throw "*reason for 'xaml' must be a string*"
     }
 
     It 'accepts the canonical platform-aware device guard before verification' {

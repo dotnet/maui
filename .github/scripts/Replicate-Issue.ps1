@@ -814,6 +814,32 @@ function ConvertTo-BoundedAgentLine {
     return $line
 }
 
+function Assert-LighterTestRejections {
+    param(
+        [Parameter(Mandatory = $true)][object]$Value,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('unit', 'xaml', 'device', 'ui')]
+        [string]$SelectedType
+    )
+
+    $expectedTypes = switch ($SelectedType) {
+        'unit' { @() }
+        'xaml' { @('unit') }
+        'device' { @('unit', 'xaml') }
+        'ui' { @('device', 'unit', 'xaml') }
+    }
+    $actualTypes = @($Value.PSObject.Properties.Name | Sort-Object)
+    if (($actualTypes -join "`n") -cne (($expectedTypes | Sort-Object) -join "`n")) {
+        throw "lighterTypesRejected must contain exactly the rejected lighter test types for '$SelectedType'."
+    }
+    foreach ($type in $actualTypes) {
+        $null = ConvertTo-BoundedAgentLine `
+            -Value $Value.$type `
+            -Description "Rejected lighter test reason for '$type'" `
+            -MaximumLength 300
+    }
+}
+
 function Read-SandboxProposal {
     if (-not (Test-Path -LiteralPath $sandboxProposalPath -PathType Leaf)) {
         throw 'The Sandbox agent did not write sandbox-proposal.json.'
@@ -981,9 +1007,9 @@ function Read-TestProposal {
     }
     $null = ConvertTo-BoundedAgentLine -Value $proposal.expectedBehavior -Description 'Test expected behavior'
     $null = ConvertTo-BoundedAgentLine -Value $proposal.observedBehavior -Description 'Test observed behavior'
-    foreach ($reason in @($proposal.lighterTypesRejected)) {
-        $null = ConvertTo-BoundedAgentLine -Value $reason -Description 'Rejected lighter test reason' -MaximumLength 300
-    }
+    Assert-LighterTestRejections `
+        -Value $proposal.lighterTypesRejected `
+        -SelectedType ([string]$proposal.testType)
 
     return $proposal
 }
@@ -1198,7 +1224,7 @@ $retryGuidance
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last.
 Do not create or modify any repository file in this phase.
-Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, and lighterTypesRejected.
+Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
