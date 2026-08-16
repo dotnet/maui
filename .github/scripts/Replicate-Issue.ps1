@@ -41,7 +41,7 @@ param(
     [int]$MaxSandboxAttempts = 3,
 
     [ValidateRange(1, 3)]
-    [int]$MaxTestAttempts = 2,
+    [int]$MaxTestAttempts = 3,
 
     [string]$Model = ''
 )
@@ -1242,6 +1242,7 @@ Trusted test planning succeeded. Read "$testProposalPath", "$reproductionResultP
 Read the matching trusted skill under "$trustedSkills".
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files.
 Every test must no-op unless MAUI_REPRODUCTION_ISSUE equals "$IssueNumber" with StringComparison.Ordinal. Device tests must use the exact platform-aware GetReplicationIssue helper from write-device-tests.
+Do not add nullable reference annotations unless the target file also enables a nullable annotation context; prefer non-nullable local declarations compatible with the existing project.
 Do not use snapshots/baselines, delays, process execution, network access, external data, or unconditional failures.
 Rewrite test-proposal.json only to refine expectedFailureSignature, reproductionSteps, expectedBehavior, observedBehavior, or lighterTypesRejected.
 "@
@@ -1255,6 +1256,7 @@ Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
 The exact targeted test must fail for the intended assertion, not compilation, setup, timeout, missing data, device infrastructure, screenshot, or baseline reasons.
+Fix all compiler diagnostics shown by the trusted verifier. Do not add nullable reference annotations unless the target file also enables a nullable annotation context.
 Do not use Task.Delay, Thread.Sleep, timers, Task.Run, or other arbitrary settling/background work. Use an existing test wait helper or event-driven completion such as a TaskCompletionSource completed by the relevant layout, size, navigation, or collection event.
 Do not add a fix or escalate the test type.
 "@

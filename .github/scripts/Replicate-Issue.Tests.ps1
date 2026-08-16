@@ -536,6 +536,12 @@ exit 0
             Should -Match 'if \(\$intentToAddApplied\)\s*\{\s*& git reset'
     }
 
+    It 'allows a source repair, a compile repair, and final empirical verification' {
+        $script:Source | Should -Match '\[int\]\$MaxTestAttempts = 3'
+        $script:Source |
+            Should -Match 'Fix all compiler diagnostics shown by the trusted verifier'
+    }
+
     It 'requires exact reasons for every rejected lighter test type' {
         {
             Assert-LighterTestRejections `
