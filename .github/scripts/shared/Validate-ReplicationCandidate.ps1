@@ -972,16 +972,10 @@ function Read-ReplicationManifest {
             -Context 'Manifest reproduction marker' `
             -MaximumLength 96
     } else {
-        "MAUI_REPRODUCTION_ISSUE == $ExpectedIssueNumber"
+        'UNCONDITIONAL_REPRODUCTION_TEST'
     }
-    $allowedMarkers = @(
-        "MAUI_REPRODUCTION_ISSUE == $ExpectedIssueNumber",
-        "MAUI_REPRODUCTION_ISSUE: $ExpectedIssueNumber",
-        "MAUI_REPRODUCTION_ISSUE: #$ExpectedIssueNumber",
-        "MAUI_REPRODUCTION_ISSUE=$ExpectedIssueNumber"
-    )
-    if ($sourceMarker -cnotin $allowedMarkers) {
-        throw 'Manifest reproduction marker is not the exact issue-keyed MAUI_REPRODUCTION_ISSUE guard.'
+    if ($sourceMarker -cne 'UNCONDITIONAL_REPRODUCTION_TEST') {
+        throw 'Manifest reproduction marker must identify an unconditional reproduction test.'
     }
 
     $proposedProperty = Find-AliasedProperty `
@@ -1017,7 +1011,7 @@ function Read-ReplicationManifest {
         TestFilter = $testFilter
         ExpectedFailurePattern = $failurePattern
         SourceMarker = $sourceMarker
-        ReproductionMarker = "MAUI_REPRODUCTION_ISSUE == $ExpectedIssueNumber"
+        ReproductionMarker = 'UNCONDITIONAL_REPRODUCTION_TEST'
         ProposedFiles = @($proposedFiles.ToArray() | Sort-Object)
         BaseSha = $baseSha
         PublishedTestType = ConvertTo-PublishedTestType -TestType $testType
@@ -1551,7 +1545,6 @@ function Assert-ReplicationCandidateSources {
         if ($file.Mode -cne '100644') {
             throw 'Candidate file mode must be regular and non-executable.'
         }
-        $isTestSource = $false
         if ([System.IO.Path]::GetExtension($file.Path) -ieq '.cs') {
             $testAttributeMatches = @([regex]::Matches(
                 $file.Content,
@@ -1566,7 +1559,6 @@ function Assert-ReplicationCandidateSources {
                     $file.Path -cmatch '^src/Controls/tests/TestCases\.Shared\.Tests/'
                 ) {
                     $testAttributeFound = $true
-                    $isTestSource = $true
                 }
             }
             if ($file.Content -match $testNamePattern) {
@@ -1576,8 +1568,7 @@ function Assert-ReplicationCandidateSources {
         Assert-SourceTextIsSafe `
             -Content $file.Content `
             -Path $file.Path `
-            -Manifest $Manifest `
-            -RequireGuard:$isTestSource
+            -Manifest $Manifest
     }
 
     if (-not $testAttributeFound) {

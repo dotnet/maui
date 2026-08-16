@@ -79,73 +79,23 @@ BeforeAll {
             [string]$FailurePattern = 'Expected control to remain visible'
         )
 
-        if ($TestType -ceq 'UITest') {
-            return @"
-using NUnit.Framework;
-
-public class $TestName
-{
-    const string IssueNumber = "$IssueNumber";
-
-    [Test]
-    public void ReproducesIssue()
-    {
-        if (!string.Equals(
-            Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"),
-            IssueNumber,
-            StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        Assert.Fail("$FailurePattern");
-    }
-}
-"@
-        }
-
-        $guardHelper = if ($TestType -ceq 'DeviceTest') {
-            @"
-    static string? GetReplicationIssue()
-    {
-#if ANDROID
-        return global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation.Current?.Arguments?.GetString("MAUI_REPRODUCTION_ISSUE");
-#elif IOS || MACCATALYST
-        return global::Foundation.NSProcessInfo.ProcessInfo.Environment["MAUI_REPRODUCTION_ISSUE"]?.ToString();
-#else
-        return Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE");
-#endif
-    }
-"@
+        $framework = if ($TestType -ceq 'UITest') { 'NUnit.Framework' } else { 'Xunit' }
+        $attribute = if ($TestType -ceq 'UITest') { 'Test' } else { 'Fact' }
+        $assertion = if ($TestType -ceq 'UITest') {
+            "Assert.Fail(`"$FailurePattern`");"
         } else {
-            ''
-        }
-        $guardCall = if ($TestType -ceq 'DeviceTest') {
-            'GetReplicationIssue()'
-        } else {
-            'Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE")'
+            "Assert.True(false, `"$FailurePattern`");"
         }
 
         return @"
-using Xunit;
+using $framework;
 
 public class $TestName
 {
-    const string IssueNumber = "$IssueNumber";
-
-$guardHelper
-    [Fact]
+    [$attribute]
     public void ReproducesIssue()
     {
-        if (!string.Equals(
-            $guardCall,
-            IssueNumber,
-            StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        Assert.True(false, "$FailurePattern");
+        $assertion
     }
 }
 "@
@@ -198,7 +148,7 @@ $guardHelper
             testName = $Fixture.TestName
             testFilter = $Fixture.TestFilter
             expectedFailurePattern = $Fixture.FailurePattern
-            reproductionMarker = "MAUI_REPRODUCTION_ISSUE: $($Fixture.IssueNumber)"
+            reproductionMarker = 'UNCONDITIONAL_REPRODUCTION_TEST'
             proposedFiles = @($Fixture.CandidatePath)
         }
         if ($Overrides) {
@@ -751,14 +701,14 @@ Describe 'Validate-ReplicationCandidate manifest boundary' {
             Should -Throw '*build, infrastructure, timeout, or missing-baseline*'
     }
 
-    It 'rejects a non-canonical issue guard' {
+    It 'rejects a conditional reproduction marker' {
         $fixture = New-ValidationFixture
         Write-FixtureManifest `
             -Fixture $fixture `
             -Overrides @{ reproductionMarker = 'MAUI_REPRODUCTION_ISSUE: 99999' }
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*exact issue-keyed*'
+            Should -Throw '*unconditional reproduction test*'
     }
 }
 
@@ -940,45 +890,19 @@ static void LoadInlineXaml()
             Should -Throw '*prohibited*'
     }
 
-    It 'rejects a source file without the exact ordinal guard' {
-        $fixture = New-ValidationFixture
-        $source = [regex]::Replace(
-            $fixture.Source,
-            '(?s)\s*if\s*\(\s*!string\.Equals.*?\{\s*return;\s*\}',
-            ''
-        )
-        Write-FixturePatch -Fixture $fixture -Content $source
-
-        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*missing the exact issue-keyed*'
-    }
-
-    It 'rejects an ordinal guard keyed to a different issue' {
+    It 'rejects an opt-in reproduction environment variable' {
         $fixture = New-ValidationFixture
         $source = $fixture.Source.Replace(
-            'const string IssueNumber = "12345";',
-            'const string IssueNumber = "99999";'
+            'Assert.True(false, "Expected control to remain visible");',
+            @'
+if (Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE") == "12345")
+    Assert.True(false, "Expected control to remain visible");
+'@
         )
         Write-FixturePatch -Fixture $fixture -Content $source
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*missing the exact issue-keyed*'
-    }
-
-    It 'requires the platform-aware guard for device tests' {
-        $fixture = New-ValidationFixture -TestType DeviceTest
-        $source = [regex]::Replace(
-            $fixture.Source,
-            '(?s)\s*static string\? GetReplicationIssue\(\).*?#endif\s*\}',
-            ''
-        ).Replace(
-            'GetReplicationIssue()',
-            'Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE")'
-        )
-        Write-FixturePatch -Fixture $fixture -Content $source
-
-        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*missing the exact issue-keyed*'
+            Should -Throw '*environment-secrets*'
     }
 
     It 'rejects a test constructor that runs before the issue guard' {

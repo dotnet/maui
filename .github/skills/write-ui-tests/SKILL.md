@@ -128,14 +128,6 @@ public class IssueXXXXX : _IssuesUITest
     [Category(UITestCategories.Button)]  // Pick ONE appropriate category
     public void ButtonClickUpdatesLabel()
     {
-        if (!string.Equals(
-            Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"),
-            "XXXXX",
-            StringComparison.Ordinal))
-        {
-            return;
-        }
-
         // Wait for element to be ready
         App.WaitForElement("TestButton");
 
@@ -154,8 +146,8 @@ public class IssueXXXXX : _IssuesUITest
 - Use same `AutomationId` values as HostApp
 - Add ONE `[Category()]` attribute (check `UITestCategories.cs` for options)
 - Use `App.WaitForElement()` before interactions
-- For issue-replication PRs, use exact ordinal `MAUI_REPRODUCTION_ISSUE == XXXXX` guard semantics as shown. Normal CI must no-op unless the trusted runner enables this exact issue.
-- Use one parameterless `[Test]`; do not add constructors, setup hooks, data sources, or field initializers that can run before the guard.
+- For issue-replication PRs, the test must run normally without an environment variable, command-line switch, category override, skip condition, or other opt-in gate.
+- Use one parameterless `[Test]`; do not add setup hooks, data sources, or field initializers. The canonical empty `TestDevice` constructor required by `_IssuesUITest` is allowed.
 - Add only the new HostApp issue page and exact UI test files. Do not edit projects, shared runners, product files, dependencies, or existing tests.
 
 ### Step 4: Verify Files Compile

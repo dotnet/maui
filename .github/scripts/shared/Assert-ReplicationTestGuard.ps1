@@ -17,7 +17,8 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'remote-url'; Pattern = '(?i)\b(?:https?|ftps?|wss?|file)\b\s*(?::|["'']\s*\+\s*["'']\s*:)|://' },
         [pscustomobject]@{ Code = 'package-reference'; Pattern = '(?i)\b(?:PackageReference|PackageDownload|dotnet\s+add\s+package|nuget\s*:|nuget\.exe)\b|#(?:r|load)\b' },
         [pscustomobject]@{ Code = 'obfuscated-source'; Pattern = '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})' },
-        [pscustomobject]@{ Code = 'verification-spoof'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|::set-output' }
+        [pscustomobject]@{ Code = 'verification-spoof'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|::set-output' },
+        [pscustomobject]@{ Code = 'conditional-reproduction'; Pattern = '\bMAUI_REPRODUCTION_ISSUE\b' }
     )
 }
 
@@ -41,8 +42,6 @@ function Assert-ReplicationGeneratedSourceSafety {
             '$1'
         )
     }
-    $environmentGuardCall = '(?:global::)?(?:System\.)?Environment\.GetEnvironmentVariable\s*\(\s*"MAUI_REPRODUCTION_ISSUE"\s*\)'
-    $scanText = [regex]::Replace($scanText, $environmentGuardCall, '')
     foreach ($entry in Get-ReplicationUnsafeSourcePatterns) {
         if ($scanText -match $entry.Pattern) {
             throw "Candidate source '$Path' contains prohibited '$($entry.Code)' content."
@@ -94,51 +93,5 @@ function Assert-ReplicationTestLifecycleSafety {
         if ($constructorScanContent -match $primaryConstructorPattern) {
             throw "Candidate test source '$Path' contains an unguarded primary constructor."
         }
-    }
-}
-
-function Assert-ReplicationTestGuard {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Content,
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)]
-        [ValidateRange(1, [int]::MaxValue)]
-        [long]$IssueNumber,
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('UnitTest', 'XamlUnitTest', 'DeviceTest', 'UITest')]
-        [string]$TestType
-    )
-
-    $normalized = $Content.Replace("`r`n", "`n")
-    $environmentGuardCall = '(?:global::)?(?:System\.)?Environment\.GetEnvironmentVariable\s*\(\s*"MAUI_REPRODUCTION_ISSUE"\s*\)'
-    $guardCall = if ($TestType -ceq 'DeviceTest') {
-        'GetReplicationIssue\s*\(\s*\)'
-    } else {
-        $environmentGuardCall
-    }
-    $issueText = [string]$IssueNumber
-    $issueOperand = "(?:`"$([regex]::Escape($issueText))`"|IssueNumber)"
-    $guardPattern = "if\s*\(\s*!\s*string\.Equals\s*\(\s*$guardCall\s*,\s*$issueOperand\s*,\s*StringComparison\.Ordinal\s*\)\s*\)\s*\{\s*return\s*;\s*\}"
-    $testMethodPrefix = "(?s)\[\s*(?:(?:[A-Za-z_]\w*)\.)*(?:Fact|Test)\b[^\]]*\][^{};/]{1,1000}\{\s*"
-    $testGuardPattern = "$testMethodPrefix$guardPattern"
-    $hasGuard = $normalized -match $testGuardPattern
-
-    if ($hasGuard -and $TestType -ceq 'DeviceTest') {
-        $androidIssueCall = '(?:global::)?Microsoft\.Maui\.TestUtils\.DeviceTests\.Runners\.HeadlessRunner\s*\.\s*MauiTestInstrumentation\.Current\?\.Arguments\?\.GetString\s*\(\s*"MAUI_REPRODUCTION_ISSUE"\s*\)'
-        $appleIssueCall = '(?:global::)?Foundation\.NSProcessInfo\.ProcessInfo\.Environment\s*\[\s*"MAUI_REPRODUCTION_ISSUE"\s*\]\?\.ToString\s*\(\s*\)'
-        $deviceHelperPattern = "(?s)static\s+string\?\s+GetReplicationIssue\s*\(\s*\)\s*\{\s*#if\s+ANDROID\s*return\s+$androidIssueCall\s*;\s*#elif\s+IOS\s*\|\|\s*MACCATALYST\s*return\s+$appleIssueCall\s*;\s*#else\s*return\s+$environmentGuardCall\s*;\s*#endif\s*\}"
-        $hasGuard = $normalized -match $deviceHelperPattern
-    }
-
-    if ($hasGuard -and $normalized -match '\bIssueNumber\b') {
-        $constantPattern = "(?m)^\s*const\s+string\s+IssueNumber\s*=\s*`"$([regex]::Escape($issueText))`"\s*;\s*$"
-        if ($normalized -notmatch $constantPattern) {
-            $hasGuard = $false
-        }
-    }
-
-    if (-not $hasGuard) {
-        throw "Candidate test source '$Path' is missing the exact issue-keyed MAUI_REPRODUCTION_ISSUE ordinal guard."
     }
 }

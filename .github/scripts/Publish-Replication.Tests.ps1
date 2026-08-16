@@ -118,7 +118,7 @@ Describe 'Trusted replication pull request publishing' {
             Should -BeExactly 'Title bad'
     }
 
-    It 'generates a draft body with video evidence, guard semantics, and safety statement' {
+    It 'generates a draft body with video evidence, unconditional failure semantics, and safety statement' {
         $candidate = [pscustomobject]@{
             issueNumber = 37440
             platform = 'android'
@@ -146,7 +146,7 @@ Describe 'Trusted replication pull request publishing' {
             -BuildUrl 'https://dev.azure.com/example/build/1'
 
         $body | Should -Match 'AI-generated \*\*reproduction evidence\*\*'
-        $body | Should -Match 'MAUI_REPRODUCTION_ISSUE=37440'
+        $body | Should -Match 'test intentionally fails on the unfixed baseline'
         $body | Should -Match '\[!\[Reproduction preview\]\(https://example.test/preview.gif\)\]\(https://example.test/repro.mp4\)'
         $body | Should -Match 'No linked repository, archive, binary, script, package, or arbitrary external file was downloaded'
         $body | Should -Match 'MAUI_COPILOT_REPLICATION issue=37440 platform=android'

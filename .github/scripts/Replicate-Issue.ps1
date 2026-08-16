@@ -916,7 +916,7 @@ function Assert-GeneratedTestContent {
         [string]$TestType
     )
 
-    $guardedTestFound = $false
+    $targetTestFound = $false
     foreach ($file in $Files) {
         $content = Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
         Assert-ReplicationGeneratedSourceSafety -Content $content -Path $file
@@ -941,12 +941,7 @@ function Assert-GeneratedTestContent {
                     $file.Replace('\', '/') -cmatch '^src/Controls/tests/TestCases\.Shared\.Tests/'
                 )
             ) {
-                Assert-ReplicationTestGuard `
-                    -Content $content `
-                    -Path $file `
-                    -IssueNumber $Issue `
-                    -TestType $TestType
-                $guardedTestFound = $true
+                $targetTestFound = $true
             }
         }
         foreach ($pattern in @(
@@ -963,8 +958,8 @@ function Assert-GeneratedTestContent {
         }
     }
 
-    if (-not $guardedTestFound) {
-        throw 'Generated files do not contain a guarded test method in the expected test project.'
+    if (-not $targetTestFound) {
+        throw 'Generated files do not contain a test method in the expected test project.'
     }
 }
 
@@ -1269,9 +1264,9 @@ The expectedFailureSignature must be a trimmed single-line string of 3-1000 char
 Trusted test planning succeeded. Read "$testProposalPath", "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Read the matching trusted skill under "$trustedSkills".
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files.
-Every test must no-op unless MAUI_REPRODUCTION_ISSUE equals "$IssueNumber" with StringComparison.Ordinal. Device tests must use the exact platform-aware GetReplicationIssue helper from write-device-tests.
+The generated test must run normally and fail without an environment variable, command-line switch, category override, or other opt-in gate. Do not reference MAUI_REPRODUCTION_ISSUE.
 Do not add nullable reference annotations unless the target file also enables a nullable annotation context; prefer non-nullable local declarations compatible with the existing project.
-Do not use snapshots/baselines, delays, process execution, network access, external data, or unconditional failures.
+Do not use snapshots/baselines, delays, process execution, network access, external data, or a hard-coded failure unrelated to the reported behavior.
 Rewrite test-proposal.json only to refine expectedFailureSignature, reproductionSteps, expectedBehavior, observedBehavior, or lighterTypesRejected.
 "@
         }
@@ -1283,22 +1278,7 @@ Read "$testProposalPath" and, if it exists, "$verificationDir/verification-conso
 Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
-If the failure says the issue-keyed guard is missing, copy the guard exactly from the selected trusted write-test skill. For a device test, use this exact helper body without expression-bodied methods or reordered preprocessor branches:
-static string? GetReplicationIssue()
-{
-#if ANDROID
-    return global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation.Current?.Arguments?.GetString("MAUI_REPRODUCTION_ISSUE");
-#elif IOS || MACCATALYST
-    return global::Foundation.NSProcessInfo.ProcessInfo.Environment["MAUI_REPRODUCTION_ISSUE"]?.ToString();
-#else
-    return Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE");
-#endif
-}
-The first statement in every device [Fact] or [Test] body must be exactly:
-if (!string.Equals(GetReplicationIssue(), IssueNumber, StringComparison.Ordinal))
-{
-    return;
-}
+The generated test must remain unconditional: do not add an environment-variable guard, skip condition, command-line switch, or category-based opt-in.
 The exact targeted test must fail for the intended assertion, not compilation, setup, timeout, missing data, device infrastructure, screenshot, or baseline reasons.
 Fix all compiler diagnostics shown by the trusted verifier. Do not add nullable reference annotations unless the target file also enables a nullable annotation context.
 When a handler or platform type is unresolved, read existing tests in the same project and platform for the proven namespace, using directive, and registration pattern instead of inventing a replacement type.

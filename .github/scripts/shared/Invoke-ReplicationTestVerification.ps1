@@ -106,15 +106,11 @@ $machineResultPath = Join-Path $OutputDirectory 'verifier-machine-result.json'
 
 $secretNames = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')
 $savedSecrets = @{}
-$previousIssue = [Environment]::GetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE')
-
 try {
     foreach ($name in $secretNames) {
         $savedSecrets[$name] = [Environment]::GetEnvironmentVariable($name)
         [Environment]::SetEnvironmentVariable($name, $null)
     }
-    [Environment]::SetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE', [string]$IssueNumber)
-
     $arguments = @(
         '-NoProfile',
         '-File', $VerifierPath,
@@ -152,7 +148,6 @@ try {
     Write-Host (ConvertTo-AzdoSafeReplicationOutput -Value $outputText)
 }
 finally {
-    [Environment]::SetEnvironmentVariable('MAUI_REPRODUCTION_ISSUE', $previousIssue)
     foreach ($name in $secretNames) {
         [Environment]::SetEnvironmentVariable($name, $savedSecrets[$name])
     }

@@ -139,7 +139,7 @@ function New-ReplicationPullRequestBody {
 $marker
 
 > [!IMPORTANT]
-> This is AI-generated **reproduction evidence**, not a merge-ready product fix. The guarded test intentionally fails only when ``MAUI_REPRODUCTION_ISSUE=$issueNumber`` is set. A product fix should remove the guard and make the test pass before this PR is considered for merge.
+> This is AI-generated **reproduction evidence**, not a merge-ready product fix. The added test intentionally fails on the unfixed baseline. A product fix should make the test pass before this PR is considered for merge.
 
 ## Reproduced issue
 

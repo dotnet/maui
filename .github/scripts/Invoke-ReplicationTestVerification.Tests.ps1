@@ -105,8 +105,8 @@ Describe 'Replication failure-only verification' {
             Should -BeExactly 'bad secret and fake'
     }
 
-    It 'sets the issue guard only around a child verifier and clears all publisher tokens' {
-        $script:Source | Should -Match "MAUI_REPRODUCTION_ISSUE"
+    It 'runs the child verifier without an issue guard and clears all publisher tokens' {
+        $script:Source | Should -Not -Match "MAUI_REPRODUCTION_ISSUE"
         $script:Source | Should -Match "'GH_TOKEN'"
         $script:Source | Should -Not -Match "GH_REPLICATION_TOKEN"
         $script:Source | Should -Match "& pwsh @arguments"

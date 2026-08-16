@@ -61,13 +61,10 @@ BeforeAll {
 }
 
 Describe 'Replication orchestrator security boundary' {
-    It 'gives repair attempts the exact device-test guard template' {
+    It 'requires unconditional reproduction tests during generation and repair' {
         $script:Source |
-            Should -Match 'If the failure says the issue-keyed guard is missing'
-        $script:Source |
-            Should -Match '#elif IOS \|\| MACCATALYST'
-        $script:Source |
-            Should -Match 'if \(!string\.Equals\(GetReplicationIssue\(\), IssueNumber, StringComparison\.Ordinal\)\)'
+            Should -Match 'must run normally and fail without an environment variable'
+        $script:Source | Should -Match 'Do not reference MAUI_REPRODUCTION_ISSUE'
     }
 
     It 'requires a single-line expected failure signature during planning' {
@@ -626,7 +623,7 @@ exit 0
             Should -Match 'finally\s*\{\s*Copy-VerificationDiagnostics -Attempt \$attempt\s*Restore-TrackedVerificationSideEffects'
     }
 
-    It 'allows guard, host, compile, and empirical repairs within the bounded Sandbox loop' {
+    It 'allows source-safety, host, compile, and empirical repairs within the bounded Sandbox loop' {
         $script:Source |
             Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*5'
         $script:Source |
@@ -660,14 +657,14 @@ exit 0
             Should -Match 'event-driven completion such as a TaskCompletionSource'
     }
 
-    It 'requires new add-only guarded tests and literal expected failure verification' {
+    It 'requires new add-only unconditional tests and literal expected failure verification' {
         $script:Source | Should -Match ([regex]::Escape("`$entry.Status -ne '??'"))
-        $script:Source | Should -Match 'Assert-ReplicationTestGuard'
+        $script:Source | Should -Match 'Assert-ReplicationGeneratedSourceSafety'
         $script:Source | Should -Match 'ExpectedFailureSignature'
         $script:Source | Should -Match 'verificationPassed'
     }
 
-    It 'repairs generated tests that fail the trusted guard before verification' {
+    It 'repairs generated tests that fail trusted source validation before verification' {
         $script:Source |
             Should -Match 'try\s*\{\s*\$generatedFiles = @\(Get-GeneratedTestFiles\)'
         $script:Source |
@@ -676,7 +673,7 @@ exit 0
             Should -Match 'if \(\$intentToAddApplied\)\s*\{\s*& git reset'
     }
 
-    It 'allows guard repairs, a compile repair, and final empirical verification' {
+    It 'allows source repairs, a compile repair, and final empirical verification' {
         $script:Source | Should -Match '\[int\]\$MaxTestAttempts = 5'
         $script:Source |
             Should -Match 'Fix all compiler diagnostics shown by the trusted verifier'
@@ -715,7 +712,7 @@ exit 0
         } | Should -Throw "*reason for 'xaml' must be a string*"
     }
 
-    It 'accepts the canonical platform-aware device guard before verification' {
+    It 'accepts an unconditional device reproduction test before verification' {
         $repoRoot = $TestDrive
         $relativePath = 'src/Controls/tests/DeviceTests/Issues/Issue37440Tests.cs'
         $path = Join-Path $repoRoot $relativePath
@@ -726,27 +723,9 @@ using Xunit;
 
 public class Issue37440Tests
 {
-    const string IssueNumber = "37440";
-
-    static string? GetReplicationIssue()
-    {
-#if ANDROID
-        return global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation.Current?.Arguments?.GetString("MAUI_REPRODUCTION_ISSUE");
-#elif IOS || MACCATALYST
-        return global::Foundation.NSProcessInfo.ProcessInfo.Environment["MAUI_REPRODUCTION_ISSUE"]?.ToString();
-#else
-        return Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE");
-#endif
-    }
-
     [Fact]
     public void ReproducesIssue()
     {
-        if (!string.Equals(GetReplicationIssue(), IssueNumber, StringComparison.Ordinal))
-        {
-            return;
-        }
-
         Assert.True(false, "Expected failure");
     }
 }
@@ -760,7 +739,7 @@ public class Issue37440Tests
         } | Should -Not -Throw
     }
 
-    It 'rejects a noncanonical device guard before verification' {
+    It 'rejects an opt-in device reproduction guard before verification' {
         $repoRoot = $TestDrive
         $relativePath = 'src/Controls/tests/DeviceTests/Issues/Issue37440AlternativeTests.cs'
         $path = Join-Path $repoRoot $relativePath
@@ -792,44 +771,23 @@ public class Issue37440AlternativeTests
                 -Files @($relativePath) `
                 -Issue 37440 `
                 -TestType DeviceTest
-        } | Should -Throw '*missing the exact issue-keyed*'
+        } | Should -Throw '*environment-secrets*'
     }
 
-    It 'rejects commented or late reproduction guards' {
-        $commentedGuard = @'
-[Fact]
-public void ReproducesIssue()
-{
-    // if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal)) { return; }
-    Assert.True(false);
-}
-'@
-        {
-            Assert-ReplicationTestGuard `
-                -Content $commentedGuard `
-                -Path 'CommentedGuard.cs' `
-                -IssueNumber 37440 `
-                -TestType UnitTest
-        } | Should -Throw '*missing the exact issue-keyed*'
-
-        $lateGuard = @'
+    It 'rejects reproduction guards even when the assertion is unconditional' {
+        $guardedSource = @'
 [Fact]
 public void ReproducesIssue()
 {
     Assert.True(false);
-    if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal))
-    {
-        return;
-    }
+    _ = Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE");
 }
 '@
         {
-            Assert-ReplicationTestGuard `
-                -Content $lateGuard `
-                -Path 'LateGuard.cs' `
-                -IssueNumber 37440 `
-                -TestType UnitTest
-        } | Should -Throw '*missing the exact issue-keyed*'
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $guardedSource `
+                -Path 'Guarded.cs'
+        } | Should -Throw '*environment-secrets*'
     }
 
     It 'rejects test lifecycle code that can run before the guard' {
@@ -844,10 +802,7 @@ public class Issue37440
     [Fact]
     public void ReproducesIssue()
     {
-        if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal))
-        {
-            return;
-        }
+        Assert.True(false);
     }
 }
 '@
@@ -945,11 +900,6 @@ public class Issue37440Tests
     [Fact]
     public void ReproducesIssue()
     {
-        if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal))
-        {
-            return;
-        }
-
         Assert.True(false, "Issue37440");
     }
 }
@@ -988,11 +938,6 @@ public class Issue37440Tests
     [Test]
     public void ReproducesIssue()
     {
-        if (!string.Equals(Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"), "37440", StringComparison.Ordinal))
-        {
-            return;
-        }
-
         Assert.Fail("Issue37440");
     }
 }

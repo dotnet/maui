@@ -29,22 +29,18 @@ Replication targets `main` in the first version. The issue must describe a scena
    - unit or XAML test first;
    - device test when native/platform behavior is required;
    - UI test only when lower-level tests cannot prove the issue.
-6. Runs the exact test with `MAUI_REPRODUCTION_ISSUE=<issue>` and confirms the expected assertion fails.
+6. Runs the exact test normally and confirms the expected assertion fails on the unfixed baseline.
 7. Validates that the patch is add-only and restricted to approved test locations.
 8. Publishes evidence to the repository's public, asset-only `review-tests-assets-v2` branch.
-9. Pushes the validated patch to a same-repository branch and opens a draft PR against `dotnet/maui:main`.
+9. Pushes the validated patch to the configured MauiBot fork and opens a draft PR against `dotnet/maui:main`.
 
 The PR embeds the GIF/thumbnail linked to the MP4. GitHub does not provide a supported API for uploading a video attachment directly into a PR body.
 
 ## Test semantics
 
-Generated reproduction tests must not intentionally fail normal MAUI CI. Each test is guarded by the exact issue number and runs only when:
+Generated reproduction tests are unconditional: they use no environment variable, command-line switch, category override, skip condition, or other opt-in gate. The exact targeted test must fail on the unfixed baseline during a normal test run.
 
-```text
-MAUI_REPRODUCTION_ISSUE=<issue-number>
-```
-
-The draft PR is evidence, not merge-ready work. A product fix should remove the reproduction guard and make the test pass before the test is merged.
+The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
 
 Successful publication requires both:
 

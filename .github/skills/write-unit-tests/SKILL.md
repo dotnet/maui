@@ -39,7 +39,7 @@ Common mappings:
 | Graphics | `src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj` |
 | Resizetizer | `src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj` |
 
-For source generators, compatibility, or another subsystem, select its existing unit-test project. Read its `.csproj` and nearby tests; follow their namespace, base fixture, helpers, and assertion conventions. Reproduction tests must use one parameterless `[Fact]`, never `[Theory]`, data sources, constructors, setup hooks, or field initializers, so no generated code runs before the issue guard. SDK default compile globs must pick up the new file without a project edit.
+For source generators, compatibility, or another subsystem, select its existing unit-test project. Read its `.csproj` and nearby tests; follow their namespace, base fixture, helpers, and assertion conventions. Reproduction tests must use one parameterless `[Fact]`, never `[Theory]`, data sources, constructors, setup hooks, or field initializers. SDK default compile globs must pick up the new file without a project edit.
 
 ### 2. Add the Exact Issue Test
 
@@ -59,37 +59,15 @@ dotnet test <project> --filter "FullyQualifiedName=<namespace>.Issue12345"
 
 Do not append `Tests`, a feature name, or another issue number to the canonical class/filter. Do not use a feature-wide or project-wide filter. Confirm verification targets only `Issue12345`.
 
-### 3. Add the Target-Only Guard
+### 3. Add the Unconditional Reproduction Test
 
-The reproduction body may run only when `MAUI_REPRODUCTION_ISSUE == <issue>` using exact ordinal string equality. Normal CI must no-op or skip it; the replication runner enables it.
-
-```csharp
-const string IssueNumber = "12345";
-
-[Fact]
-public void ExpectedBehavior()
-{
-	if (!string.Equals(
-		Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE"),
-		IssueNumber,
-		StringComparison.Ordinal))
-	{
-		return;
-	}
-
-	var actual = ExerciseReportedScenario();
-
-	Assert.Equal(expected: "correct value", actual);
-}
-```
-
-Do not accept truthy values, lists, prefixes, or a different issue number. Do not weaken or remove the guard to make verification run.
+The reproduction test must run normally and reach its behavioral assertion without an environment variable, command-line switch, category override, skip condition, or other opt-in gate.
 
 ### 4. Prove the Expected Failure
 
-The enabled test must reach its behavioral assertion and fail because the actual unfixed result differs from the expected result. Capture the assertion message and reject failures caused by build errors, setup errors, timeouts, missing data, or unrelated tests.
+The test must reach its behavioral assertion and fail because the actual unfixed result differs from the expected result. Capture the assertion message and reject failures caused by build errors, setup errors, timeouts, missing data, or unrelated tests.
 
-Have the trusted replication runner set `MAUI_REPRODUCTION_ISSUE` to the exact issue number and invoke `verify-tests-fail-without-fix` with `TestType=UnitTest`, `TestFilter=Issue12345`, and the literal expected assertion signature. The trusted wrapper is `.github/scripts/shared/Invoke-ReplicationTestVerification.ps1`.
+Have the trusted replication runner invoke `verify-tests-fail-without-fix` with `TestType=UnitTest`, `TestFilter=Issue12345`, and the literal expected assertion signature. The trusted wrapper is `.github/scripts/shared/Invoke-ReplicationTestVerification.ps1`.
 
 ```bash
 pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 -TestType UnitTest -TestFilter "Issue12345"
@@ -99,4 +77,4 @@ Omit `-RequireFullVerification`; this skill must not create a product fix. The t
 
 ## Output
 
-Report the project, added files, exact class/filter, guard value, failing assertion, and verification report path. Never report success unless `verify-tests-fail-without-fix` confirms the test fails for the expected behavioral assertion.
+Report the project, added files, exact class/filter, failing assertion, and verification report path. Never report success unless `verify-tests-fail-without-fix` confirms the test fails for the expected behavioral assertion.
