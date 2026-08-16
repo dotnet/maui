@@ -15,7 +15,7 @@ Describe 'MAUI Copilot mode routing' {
         $modeIndex | Should -BeGreaterThan -1
         $modeIndex | Should -BeLessThan $prIndex
         $prIndex | Should -BeLessThan $issueIndex
-        $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate"
+        $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate\s+- feedback"
         $script:Pipeline | Should -Match "(?s)- name: PRNumber.*?default: 0"
         $script:Pipeline | Should -Match "(?s)- name: IssueNumber.*?default: 0"
     }
@@ -38,7 +38,7 @@ Describe 'MAUI Copilot mode routing' {
     }
 
     It 'uses a clean main baseline and replication-only recording dependencies' {
-        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
+        $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?condition: or\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)\)"
         $script:Pipeline | Should -Match "displayName: 'Probe MauiBot identity and writable fork'"
         $script:Pipeline | Should -Match 'Expected at most one writable MauiBot fork of dotnet/maui'
         $script:Pipeline | Should -Match 'gh api -X POST repos/dotnet/maui/forks'
@@ -51,6 +51,9 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'sparseCheckoutDirectories: \.github/scripts/shared'
         $script:Pipeline | Should -Match 'Move-ReplicationPRsToTestingFork\.ps1'
         $script:Pipeline | Should -Match 'Move-ReplicationPRCommentsToTestingFork\.ps1'
+        $script:Pipeline | Should -Match 'Export-ReplicationPRFeedback\.ps1'
+        $script:Pipeline | Should -Match "artifact: 'ReplicationFeedback'"
+        $script:Pipeline | Should -Match "(?s)- job: CopilotReview.*?condition: or\(eq\('\$\{\{ parameters\.Mode \}\}', 'review'\), eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)\)"
         $script:Pipeline | Should -Match 'git checkout --detach origin/main'
         $restoreIndex = $script:Pipeline.IndexOf("displayName: 'Restore clean replication baseline'")
         $replicateIndex = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")

@@ -17,6 +17,8 @@ The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
 4. Set `IssueNumber` to the `dotnet/maui` issue number.
 5. Choose `android`, `ios`, `catalyst`, or `windows`. Android is the default.
 
+Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` reproduction PRs, and skips device reproduction.
+
 Replication targets `main` in the first version. The issue must describe a scenario that can be reconstructed from its text, inline snippets, and allowed raster screenshots.
 
 ## What a successful run does

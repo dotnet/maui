@@ -17,6 +17,7 @@ parameters:
     values:
       - review
       - replicate
+      - feedback
 
   - name: PRNumber
     displayName: 'Pull Request Number'
@@ -95,7 +96,7 @@ stages:
     jobs:
       - job: ValidateReplicationPublisher
         displayName: 'Validate MauiBot replication publisher'
-        condition: eq('${{ parameters.Mode }}', 'replicate')
+        condition: or(eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Mode }}', 'feedback'))
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -173,13 +174,15 @@ stages:
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
+              $feedbackRoot = Join-Path "$(Build.ArtifactStagingDirectory)" "ReplicationFeedback"
+              New-Item -ItemType Directory -Path $feedbackRoot -Force | Out-Null
               & (Join-Path $sharedRoot "Move-ReplicationPRsToTestingFork.ps1") `
                 -SourceOwner "dotnet" `
                 -SourceRepository "maui" `
                 -TargetOwner "kubaflo" `
                 -TargetRepository "maui" `
                 -TargetBaseBranch "main" `
-                -OutputPath "$(Agent.TempDirectory)/migrated-prs.json"
+                -OutputPath (Join-Path $feedbackRoot "migrated-prs.json")
               if ($LASTEXITCODE -ne 0) {
                 throw 'Moving existing reproduction PRs to the testing fork failed.'
               }
@@ -189,16 +192,33 @@ stages:
                 -SourceRepository "maui" `
                 -TargetOwner "kubaflo" `
                 -TargetRepository "maui" `
-                -OutputPath "$(Agent.TempDirectory)/migrated-pr-comments.json"
+                -OutputPath (Join-Path $feedbackRoot "migrated-pr-comments.json")
               if ($LASTEXITCODE -ne 0) {
                 throw 'Moving reproduction PR comments to the testing fork failed.'
+              }
+
+              & (Join-Path $sharedRoot "Export-ReplicationPRFeedback.ps1") `
+                -RepositoryOwner "kubaflo" `
+                -RepositoryName "maui" `
+                -OutputPath (Join-Path $feedbackRoot "feedback.json")
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Exporting reproduction PR feedback failed.'
               }
             displayName: 'Move existing reproduction PRs and comments to testing fork'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
 
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Feedback Snapshot'
+            condition: succeededOrFailed()
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/ReplicationFeedback'
+              artifact: 'ReplicationFeedback'
+              publishLocation: 'pipeline'
+
       - job: CopilotReview
         displayName: 'Run Copilot ${{ parameters.Mode }} Agent'
+        condition: or(eq('${{ parameters.Mode }}', 'review'), eq('${{ parameters.Mode }}', 'replicate'))
         ${{ if eq(parameters.Platform, 'android') }}:
           pool: ${{ parameters.androidPool }}
         ${{ elseif eq(parameters.Platform, 'ios') }}:
