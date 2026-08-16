@@ -1435,6 +1435,43 @@ function Restore-TransientSandbox {
     Clear-TransientAppiumDirectory
 }
 
+function Restore-TrackedVerificationSideEffects {
+    param([Parameter(Mandatory = $true)][string[]]$PreservedFiles)
+
+    $preserved = [System.Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal)
+    foreach ($file in $PreservedFiles) {
+        [void]$preserved.Add($file.Replace('\', '/'))
+    }
+
+    $restorePaths = [System.Collections.Generic.List[string]]::new()
+    foreach ($entry in Get-ReplicationGitStatus) {
+        if ($entry.Path.StartsWith('CustomAgentLogsTmp/', [StringComparison]::Ordinal) -or
+            $preserved.Contains($entry.Path)) {
+            continue
+        }
+        if ($entry.Status -eq '??') {
+            throw "Verification created an unexpected untracked repository path: $($entry.Path)"
+        }
+        [void]$restorePaths.Add($entry.Path)
+    }
+
+    if ($restorePaths.Count -gt 0) {
+        & git restore --source $BaseSha --staged --worktree -- @restorePaths
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Failed to restore tracked verifier build side effects.'
+        }
+    }
+
+    $unexpected = @(Get-ReplicationGitStatus | Where-Object {
+        -not $_.Path.StartsWith('CustomAgentLogsTmp/', [StringComparison]::Ordinal) -and
+        -not $preserved.Contains($_.Path)
+    })
+    if ($unexpected.Count -gt 0) {
+        throw "Verifier cleanup left an unexpected repository path: $($unexpected[0].Path)"
+    }
+}
+
 function New-TestPatch {
     param([Parameter(Mandatory = $true)][string[]]$Files)
 
@@ -1736,6 +1773,9 @@ try {
             if ($attempt -eq $MaxTestAttempts) {
                 throw
             }
+        }
+        finally {
+            Restore-TrackedVerificationSideEffects -PreservedFiles $generatedFiles
         }
     }
 

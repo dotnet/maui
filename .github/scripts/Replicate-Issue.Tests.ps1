@@ -450,6 +450,17 @@ exit 0
             Should -Not -Match 'git restore --worktree -- \$sandboxXamlPath \$sandboxCodePath'
     }
 
+    It 'restores tracked verifier build side effects while preserving generated tests' {
+        $script:Source |
+            Should -Match 'function Restore-TrackedVerificationSideEffects'
+        $script:Source |
+            Should -Match '\$preserved\.Contains\(\$entry\.Path\)'
+        $script:Source |
+            Should -Match 'git restore --source \$BaseSha --staged --worktree -- @restorePaths'
+        $script:Source |
+            Should -Match 'finally\s*\{\s*Restore-TrackedVerificationSideEffects -PreservedFiles \$generatedFiles'
+    }
+
     It 'allows a compile repair plus an empirical adjustment within the bounded Sandbox loop' {
         $script:Source |
             Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*3'
