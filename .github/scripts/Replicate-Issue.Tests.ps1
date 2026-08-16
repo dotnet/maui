@@ -732,6 +732,10 @@ exit 0
         $script:Source | Should -Match 'replacing the reported public source/service with a custom test type or service'
         $script:Source | Should -Match 'prove the same virtual or native view instance was reused'
         $script:Source | Should -Match 'FIFO completion order are not proof'
+        $script:Source | Should -Match 'every environmental prerequisite such as locale/culture'
+        $script:Source | Should -Match 'hard-coding locale-specific output without arranging and verifying'
+        $script:Source | Should -Match 'derive the expected value from the active environment'
+        $script:Source | Should -Match 'Do not repair an environment-sensitive test by hard-coding'
     }
 
     It 'repairs generated tests that fail trusted source validation before verification' {

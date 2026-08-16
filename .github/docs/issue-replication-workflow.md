@@ -44,6 +44,8 @@ To avoid test-rollout noise in `dotnet/maui`, the trusted publisher also recreat
 
 Generated reproduction tests are unconditional: they use no environment variable, command-line switch, category override, skip condition, or other opt-in gate. The exact targeted test must fail on the unfixed baseline during a normal test run.
 
+Environment-sensitive tests must explicitly arrange and verify every required locale, platform format, time zone, theme, orientation, accessibility, permission, or input setting. They may use an environment-relative oracle only when it still proves the reported defect; runner-dependent hard-coded localized output is rejected.
+
 The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
 
 Successful publication requires both:
