@@ -77,6 +77,9 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_(?:STORAGE|PUBLIC_BASE_URL|FORK)'
         $script:Pipeline | Should -Match 'git merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
         $script:Pipeline | Should -Match "'Assert-ReplicationTestGuard\.ps1'"
+        $script:Pipeline | Should -Match '\$validation\.Count -ne 1'
+        $script:Pipeline | Should -Match '\$validation\[0\]\.validationPassed -ne \$true'
+        $script:Pipeline | Should -Not -Match '(?s)Validate-ReplicationCandidate\.ps1.*?\$LASTEXITCODE'
     }
 
     It 'preserves PR telemetry while adding operation and issue target fields' {

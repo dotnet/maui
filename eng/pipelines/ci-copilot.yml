@@ -2430,16 +2430,18 @@ stages:
               $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
               New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 
-              & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
-                -RepoRoot "$(Build.SourcesDirectory)" `
-                -CandidateManifestPath (Join-Path $artifactRoot "candidate.json") `
-                -PatchPath (Join-Path $artifactRoot "test.patch") `
-                -EvidenceDir $artifactRoot `
-                -IssueNumber ${{ parameters.IssueNumber }} `
-                -Platform "${{ parameters.Platform }}" `
-                -OutputPath (Join-Path $outputRoot "validated-candidate.json")
-              if ($LASTEXITCODE -ne 0) {
-                throw "Replication candidate validation failed."
+              $validation = @(
+                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
+                  -RepoRoot "$(Build.SourcesDirectory)" `
+                  -CandidateManifestPath (Join-Path $artifactRoot "candidate.json") `
+                  -PatchPath (Join-Path $artifactRoot "test.patch") `
+                  -EvidenceDir $artifactRoot `
+                  -IssueNumber ${{ parameters.IssueNumber }} `
+                  -Platform "${{ parameters.Platform }}" `
+                  -OutputPath (Join-Path $outputRoot "validated-candidate.json")
+              )
+              if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
+                throw "Replication candidate validation did not return one validated result."
               }
             displayName: 'Validate replication candidate without credentials'
 
