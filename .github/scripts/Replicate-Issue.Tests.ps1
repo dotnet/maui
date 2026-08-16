@@ -70,6 +70,13 @@ Describe 'Replication orchestrator security boundary' {
             Should -Match 'if \(!string\.Equals\(GetReplicationIssue\(\), IssueNumber, StringComparison\.Ordinal\)\)'
     }
 
+    It 'requires a single-line expected failure signature during planning' {
+        $script:Source |
+            Should -Match 'expectedFailureSignature must be a trimmed single-line string'
+        $script:Source |
+            Should -Match 'not an Expected/Actual multi-line rendering'
+    }
+
     It 'uses native Appium class-name locators instead of Selenium CSS locators' {
         $script:TrustedAppiumSource |
             Should -Match '"className"\s*=>\s*MobileBy\.ClassName\(locator\.Value\)'

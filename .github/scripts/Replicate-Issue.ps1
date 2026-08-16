@@ -1260,7 +1260,7 @@ Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
-The expectedFailureSignature must be literal text that the trusted failing assertion will emit.
+The expectedFailureSignature must be a trimmed single-line string of 3-1000 characters with no newline, control character, URL, or Azure logging directive. Use one literal assertion-message fragment, not an Expected/Actual multi-line rendering.
 "@
         }
         'test' {
