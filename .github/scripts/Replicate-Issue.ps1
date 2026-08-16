@@ -41,7 +41,7 @@ param(
     [int]$MaxSandboxAttempts = 5,
 
     [ValidateRange(1, 3)]
-    [int]$MaxTestAttempts = 3,
+    [int]$MaxTestAttempts = 4,
 
     [string]$Model = ''
 )
@@ -1285,6 +1285,7 @@ Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
 The exact targeted test must fail for the intended assertion, not compilation, setup, timeout, missing data, device infrastructure, screenshot, or baseline reasons.
 Fix all compiler diagnostics shown by the trusted verifier. Do not add nullable reference annotations unless the target file also enables a nullable annotation context.
+When a handler or platform type is unresolved, read existing tests in the same project and platform for the proven namespace, using directive, and registration pattern instead of inventing a replacement type.
 Do not use Task.Delay, Thread.Sleep, timers, Task.Run, or other arbitrary settling/background work. Use an existing test wait helper or event-driven completion such as a TaskCompletionSource completed by the relevant layout, size, navigation, or collection event.
 Do not add a fix or escalate the test type.
 "@
