@@ -955,6 +955,11 @@ foreach ($knownPath in $knownEvidencePaths) {
 
 $durationArgument = ConvertTo-InvariantArgument $MaxDurationSeconds
 $boundedVideoFilter = "fps=$maxFrameRate,scale=${maxWidth}:${maxHeight}:force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1"
+$normalizationVideoFilter = if ($Platform -eq 'ios') {
+    "$boundedVideoFilter,tpad=stop_mode=clone:stop_duration=2"
+} else {
+    $boundedVideoFilter
+}
 $remoteAndroidPath = if ($Platform -eq 'android') {
     "/sdcard/maui-reproduction-$([guid]::NewGuid().ToString('N')).mp4"
 } else {
@@ -1288,7 +1293,7 @@ try {
             '-i', $rawVideoPath,
             '-map', '0:v:0',
             '-an',
-            '-vf', $boundedVideoFilter,
+            '-vf', $normalizationVideoFilter,
             '-r', [string][int]$maxFrameRate,
             '-t', $durationArgument,
             '-c:v', 'libx264',

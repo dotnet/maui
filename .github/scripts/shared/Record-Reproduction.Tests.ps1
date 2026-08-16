@@ -633,6 +633,24 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $normalize = (Get-CommandRequest $harness 'Normalize recording')[0]
         $normalize.ArgumentList | Should -Contain (Join-Path $evidenceDir 'recording.raw.mp4')
         $normalize.ArgumentList | Should -Contain (Join-Path $evidenceDir 'repro.mp4')
+        $filterIndex = [array]::IndexOf($normalize.ArgumentList, '-vf')
+        $normalize.ArgumentList[$filterIndex + 1] |
+            Should -Match 'tpad=stop_mode=clone:stop_duration=2'
+    }
+
+    It 'does not pad non-iOS recordings during normalization' {
+        $harness = New-RecordingHarness
+        $evidenceDir = Join-Path $TestDrive 'android-normalization'
+
+        Invoke-TestRecording `
+            -Harness $harness `
+            -Platform android `
+            -EvidenceDir $evidenceDir `
+            -DeviceUdid 'emulator-5554' | Out-Null
+
+        $normalize = (Get-CommandRequest $harness 'Normalize recording')[0]
+        $filterIndex = [array]::IndexOf($normalize.ArgumentList, '-vf')
+        $normalize.ArgumentList[$filterIndex + 1] | Should -Not -Match 'tpad='
     }
 
     It 'rejects an EvidenceDir reached through a symbolic link before starting commands' {
