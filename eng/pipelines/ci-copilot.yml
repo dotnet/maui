@@ -93,6 +93,56 @@ stages:
   - stage: ReviewPR
     displayName: 'Run Copilot Operation'
     jobs:
+      - job: ValidateReplicationPublisher
+        displayName: 'Validate MauiBot replication publisher'
+        condition: eq('${{ parameters.Mode }}', 'replicate')
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 10
+        steps:
+          - checkout: none
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $login = (& gh api user --jq '.login').Trim()
+              if ($LASTEXITCODE -ne 0 -or
+                  -not $login.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
+                throw "GH_COMMENT_TOKEN must authenticate as MauiBot."
+              }
+
+              $query = @'
+              query {
+                viewer {
+                  repositories(first: 100, affiliations: [OWNER, ORGANIZATION_MEMBER]) {
+                    nodes {
+                      nameWithOwner
+                      isFork
+                      viewerPermission
+                      parent { nameWithOwner }
+                    }
+                  }
+                }
+              }
+              '@
+              $response = & gh api graphql -f "query=$query" |
+                ConvertFrom-Json -Depth 20
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to inspect repositories available to MauiBot.'
+              }
+              $forks = @($response.data.viewer.repositories.nodes) |
+                Where-Object {
+                  $_.isFork -eq $true -and
+                  [string]$_.parent.nameWithOwner -eq 'dotnet/maui' -and
+                  [string]$_.viewerPermission -in @('WRITE', 'MAINTAIN', 'ADMIN')
+                }
+              if ($forks.Count -ne 1) {
+                throw "Expected exactly one writable MauiBot fork of dotnet/maui; found $($forks.Count)."
+              }
+              Write-Host "MauiBot replication publisher preflight passed."
+            displayName: 'Probe MauiBot identity and writable fork'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
       - job: CopilotReview
         displayName: 'Run Copilot ${{ parameters.Mode }} Agent'
         ${{ if eq(parameters.Platform, 'android') }}:
