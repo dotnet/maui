@@ -198,8 +198,8 @@ static AppiumDriver CreateDriver(string platform, string udid)
             var appPath = RequireEnvironmentValue("REPLICATION_WINDOWS_APP_PATH");
             options.PlatformName = "Windows";
             options.AutomationName = "Windows";
-            options.AddAdditionalAppiumOption("appium:deviceName", "WindowsPC");
-            options.AddAdditionalAppiumOption("appium:app", appPath);
+            options.DeviceName = "WindowsPC";
+            options.App = appPath;
             return new WindowsDriver(server, options);
         default:
             throw new InvalidOperationException($"Unsupported replication platform '{platform}'.");

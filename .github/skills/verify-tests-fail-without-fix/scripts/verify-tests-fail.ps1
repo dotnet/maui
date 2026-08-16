@@ -1222,7 +1222,7 @@ function Write-ReplicationVerifierMachineResult {
     param(
         [Parameter(Mandatory = $true)][hashtable]$TestEntry,
         [Parameter(Mandatory = $true)][hashtable]$TestResult,
-        [Parameter(Mandatory = $true)][string]$ActualFailureMessage
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ActualFailureMessage
     )
 
     if ([string]::IsNullOrWhiteSpace($MachineResultPath)) {

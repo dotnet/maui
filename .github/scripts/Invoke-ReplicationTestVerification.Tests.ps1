@@ -91,6 +91,15 @@ Describe 'Replication failure-only verification' {
         Test-ReplicationInfrastructureFailure -Content 'Xunit.Sdk.EqualException: expected 1 actual 0' | Should -BeFalse
     }
 
+    It 'allows the verifier to persist an empty failure message for non-test failures' {
+        $verifierSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        ) -Raw
+
+        $verifierSource |
+            Should -Match '\[AllowEmptyString\(\)\]\[string\]\$ActualFailureMessage'
+    }
+
     It 'removes Azure logging directives from verifier console output' {
         ConvertTo-AzdoSafeReplicationOutput -Value 'bad ##vso[task.setvariable variable=X]secret and ##[error]fake' |
             Should -BeExactly 'bad secret and fake'

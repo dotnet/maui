@@ -287,6 +287,15 @@ InitializeComponent();
         $script:BuildSandboxSource | Should -Match 'shell pidof -s com\.microsoft\.maui\.sandbox'
     }
 
+    It 'uses typed Appium properties for reserved Windows capabilities' {
+        $script:TrustedAppiumSource |
+            Should -Match 'options\.DeviceName\s*=\s*"WindowsPC"'
+        $script:TrustedAppiumSource |
+            Should -Match 'options\.App\s*=\s*appPath'
+        $script:TrustedAppiumSource |
+            Should -Not -Match 'AddAdditionalAppiumOption\("appium:(?:deviceName|app)"'
+    }
+
     It 'stores verifier wrapper logs outside the strict verification contract' {
         $script:Source |
             Should -Match 'sandboxArtifactDir "verification-wrapper-attempt-\$attempt\.log"'
