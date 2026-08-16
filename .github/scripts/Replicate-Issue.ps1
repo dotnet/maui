@@ -38,7 +38,7 @@ param(
     [int]$MaxAiCredits = 2000,
 
     [ValidateRange(1, 4)]
-    [int]$MaxSandboxAttempts = 4,
+    [int]$MaxSandboxAttempts = 5,
 
     [ValidateRange(1, 3)]
     [int]$MaxTestAttempts = 3,
@@ -1242,6 +1242,7 @@ Every XAML element referenced from code-behind must have x:Name; AutomationId al
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind.
 3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. Locator actions use exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Use null for locator/value when the action does not need them. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable wrong outcomes, expose a stable semantic result in the app and assert a trimmed value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
+Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, and files. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
 Do not create an automated test yet and do not claim reproduction succeeded.

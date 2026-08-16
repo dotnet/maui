@@ -545,9 +545,9 @@ exit 0
             Should -Match 'finally\s*\{\s*Copy-VerificationDiagnostics -Attempt \$attempt\s*Restore-TrackedVerificationSideEffects'
     }
 
-    It 'allows guard repairs, a compile repair, and an empirical adjustment within the bounded Sandbox loop' {
+    It 'allows guard, host, compile, and empirical repairs within the bounded Sandbox loop' {
         $script:Source |
-            Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*4'
+            Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*5'
         $script:Source |
             Should -Match 'throw "\$Description failed with exit code \$exitCode\.`n\$failureDetails"'
         $script:Source |
@@ -561,6 +561,8 @@ exit 0
                 "XAML namespace '`$prefix' is not allowed or has the wrong value"))
         $script:Source |
             Should -Match 'Use Console\.WriteLine rather than importing System\.Diagnostics'
+        $script:Source |
+            Should -Match 'Sandbox source must not use Task\.Delay'
         $script:Source |
             Should -Match 'Every XAML element referenced from code-behind must have x:Name'
         $script:Source |
