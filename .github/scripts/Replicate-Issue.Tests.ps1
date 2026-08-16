@@ -937,6 +937,20 @@ public class Issue36826 : _IssuesUITest
                 -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36826.cs'
         } | Should -Not -Throw
 
+        $descriptiveParameter = @'
+public class Issue36800 : _IssuesUITest
+{
+    public Issue36800(TestDevice testDevice) : base(testDevice)
+    {
+    }
+}
+'@
+        {
+            Assert-ReplicationTestLifecycleSafety `
+                -Content $descriptiveParameter `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36800.cs'
+        } | Should -Not -Throw
+
         $constructorWithCode = @'
 public class Issue36826 : _IssuesUITest
 {

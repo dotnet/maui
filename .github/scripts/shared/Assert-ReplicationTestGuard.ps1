@@ -115,7 +115,7 @@ function Assert-ReplicationTestLifecycleSafety {
 
     $constructorScanContent = $Content
     if ($Path.Replace('\', '/') -cmatch '^src/Controls/tests/TestCases\.Shared\.Tests/Tests/Issues/') {
-        $canonicalUiTestConstructor = '(?ms)^\s*public\s+(?<class>[A-Za-z_]\w*)\s*(?:/\*.*?\*/\s*)?\(\s*TestDevice\s+device\s*\)\s*:\s*base\s*\(\s*device\s*\)\s*\{\s*\}\s*$'
+        $canonicalUiTestConstructor = '(?ms)^\s*public\s+(?<class>[A-Za-z_]\w*)\s*(?:/\*.*?\*/\s*)?\(\s*TestDevice\s+(?<device>[A-Za-z_]\w*)\s*\)\s*:\s*base\s*\(\s*\k<device>\s*\)\s*\{\s*\}\s*$'
         $constructorScanContent = [regex]::Replace(
             $constructorScanContent,
             $canonicalUiTestConstructor,
