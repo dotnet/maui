@@ -828,7 +828,11 @@ function Assert-LighterTestRejections {
         'device' { @('unit', 'xaml') }
         'ui' { @('device', 'unit', 'xaml') }
     }
-    $actualTypes = @($Value.PSObject.Properties.Name | Sort-Object)
+    $actualTypes = @(
+        $Value.PSObject.Properties |
+            ForEach-Object { $_.Name } |
+            Sort-Object
+    )
     if (($actualTypes -join "`n") -cne (($expectedTypes | Sort-Object) -join "`n")) {
         throw "lighterTypesRejected must contain exactly the rejected lighter test types for '$SelectedType'."
     }
@@ -1499,6 +1503,49 @@ function Restore-TrackedVerificationSideEffects {
     }
 }
 
+function Copy-VerificationDiagnostics {
+    param([Parameter(Mandatory = $true)][int]$Attempt)
+
+    $sourceRoot = Join-Path `
+        $repoRoot `
+        "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/gate/verify-tests-fail"
+    if (-not (Test-Path -LiteralPath $sourceRoot -PathType Container)) {
+        return
+    }
+
+    $destinationRoot = Join-Path $verificationDir "diagnostics/attempt-$Attempt"
+    New-Item -ItemType Directory -Path $destinationRoot -Force | Out-Null
+    $totalBytes = 0L
+    $files = @(
+        Get-ChildItem -LiteralPath $sourceRoot -File -Recurse -Force |
+            Where-Object {
+                $_.Extension.ToLowerInvariant() -in @('.json', '.log', '.txt', '.xml')
+            } |
+            Sort-Object FullName
+    )
+    if ($files.Count -gt 64) {
+        throw 'Device verification produced too many diagnostic files.'
+    }
+    foreach ($file in $files) {
+        if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+            $file.Length -gt 2MB) {
+            throw "Device verification produced an unsafe diagnostic file: $($file.Name)"
+        }
+        $totalBytes += $file.Length
+        if ($totalBytes -gt 8MB) {
+            throw 'Device verification diagnostics exceed the bounded artifact limit.'
+        }
+        $relativePath = [IO.Path]::GetRelativePath($sourceRoot, $file.FullName)
+        if ($relativePath.StartsWith('..', [StringComparison]::Ordinal)) {
+            throw 'Device verification diagnostic escaped its trusted root.'
+        }
+        $destination = Join-Path $destinationRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force |
+            Out-Null
+        Copy-Item -LiteralPath $file.FullName -Destination $destination -Force
+    }
+}
+
 function New-TestPatch {
     param([Parameter(Mandatory = $true)][string[]]$Files)
 
@@ -1802,6 +1849,7 @@ try {
             }
         }
         finally {
+            Copy-VerificationDiagnostics -Attempt $attempt
             Restore-TrackedVerificationSideEffects -PreservedFiles $generatedFiles
         }
     }

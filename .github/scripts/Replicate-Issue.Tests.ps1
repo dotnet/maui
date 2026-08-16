@@ -473,7 +473,15 @@ exit 0
         $script:Source |
             Should -Match 'git restore --source \$BaseSha --staged --worktree -- @restorePaths'
         $script:Source |
-            Should -Match 'finally\s*\{\s*Restore-TrackedVerificationSideEffects -PreservedFiles \$generatedFiles'
+            Should -Match 'Restore-TrackedVerificationSideEffects -PreservedFiles \$generatedFiles'
+    }
+
+    It 'preserves bounded device verification diagnostics before cleanup' {
+        $script:Source | Should -Match 'function Copy-VerificationDiagnostics'
+        $script:Source | Should -Match '\$files\.Count -gt 64'
+        $script:Source | Should -Match '\$totalBytes -gt 8MB'
+        $script:Source |
+            Should -Match 'finally\s*\{\s*Copy-VerificationDiagnostics -Attempt \$attempt\s*Restore-TrackedVerificationSideEffects'
     }
 
     It 'allows a compile repair plus an empirical adjustment within the bounded Sandbox loop' {
@@ -501,6 +509,12 @@ exit 0
     }
 
     It 'requires exact reasons for every rejected lighter test type' {
+        {
+            Assert-LighterTestRejections `
+                -Value ([pscustomobject]@{}) `
+                -SelectedType unit
+        } | Should -Not -Throw
+
         $deviceReasons = [pscustomobject]@{
             unit = 'Requires the native control.'
             xaml = 'Requires a runtime property update.'
