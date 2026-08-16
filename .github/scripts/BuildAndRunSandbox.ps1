@@ -334,7 +334,7 @@ $appiumWasRunning = $false
 $appiumJob = $null
 
 try {
-    $response = Invoke-WebRequest -Uri "http://localhost:$AppiumPort/status" -TimeoutSec 2 -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri "http://localhost:$AppiumPort/status" -NoProxy -TimeoutSec 2 -ErrorAction Stop
     Write-Success "Appium is already running on port $AppiumPort"
     $appiumWasRunning = $true
 } catch {
@@ -364,7 +364,7 @@ try {
         $waited++
         
         try {
-            $response = Invoke-WebRequest -Uri "http://localhost:$AppiumPort/status" -TimeoutSec 1 -ErrorAction Stop
+            $response = Invoke-WebRequest -Uri "http://localhost:$AppiumPort/status" -NoProxy -TimeoutSec 1 -ErrorAction Stop
             $ready = $true
         } catch {
             # Continue waiting
