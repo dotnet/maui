@@ -121,7 +121,6 @@
         {
           "condition": "(UseCSharpUI)",
           "exclude": [
-            "App.xaml",
             "App.xaml.cs",
             "AppShell.xaml",
             "AppShell.xaml.cs",
