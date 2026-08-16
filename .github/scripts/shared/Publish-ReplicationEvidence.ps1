@@ -104,7 +104,7 @@ function Invoke-ReplicationExternalCommand {
         [Parameter(Mandatory = $true)][string]$Description
     )
 
-    & $FilePath @Arguments
+    & $FilePath @Arguments | Out-Host
     if ($LASTEXITCODE -ne 0) {
         throw "$Description failed with exit code $LASTEXITCODE."
     }
@@ -187,7 +187,8 @@ function Publish-ReplicationAssetCommit {
 
         $pushed = $false
         for ($attempt = 1; $attempt -le 3 -and -not $pushed; $attempt++) {
-            & git -C $worktreePath push origin "HEAD:refs/heads/$AssetBranch"
+            & git -C $worktreePath push origin "HEAD:refs/heads/$AssetBranch" |
+                Out-Host
             if ($LASTEXITCODE -eq 0) {
                 $pushed = $true
                 break
@@ -227,9 +228,9 @@ function Publish-ReplicationAssetCommit {
     }
     finally {
         if (Test-Path -LiteralPath $worktreePath) {
-            & git worktree remove --force $worktreePath 2>$null
+            & git worktree remove --force $worktreePath 2>$null | Out-Null
         }
-        & git worktree prune 2>$null
+        & git worktree prune 2>$null | Out-Null
         Pop-Location
     }
 }
