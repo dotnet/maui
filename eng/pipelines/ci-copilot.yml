@@ -373,7 +373,28 @@ stages:
                 sudo apt-get update -qq
                 sudo apt-get install -y -qq ffmpeg
               } elseif ($IsWindows) {
-                choco install ffmpeg -y --no-progress
+                $installed = $false
+                for ($attempt = 1; $attempt -le 3; $attempt++) {
+                  choco install ffmpeg -y --no-progress
+                  if ($LASTEXITCODE -eq 0) {
+                    $installed = $true
+                    break
+                  }
+
+                  if ($attempt -lt 3) {
+                    Write-Warning "Chocolatey ffmpeg installation attempt $attempt failed; retrying."
+                    Start-Sleep -Seconds (15 * $attempt)
+                  }
+                }
+
+                if (-not $installed) {
+                  throw "Chocolatey failed to install ffmpeg after 3 attempts."
+                }
+
+                $chocolateyBin = Join-Path $env:ChocolateyInstall 'bin'
+                if ($env:PATH -notlike "*$chocolateyBin*") {
+                  $env:PATH = "$chocolateyBin;$env:PATH"
+                }
               } else {
                 throw "Unsupported host OS for ffmpeg installation."
               }
@@ -385,6 +406,7 @@ stages:
             displayName: 'Install reproduction recording tools'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
             timeoutInMinutes: 15
+            retryCountOnTaskFailure: 2
 
           - bash: |
               echo "Installing GitHub CLI..."
