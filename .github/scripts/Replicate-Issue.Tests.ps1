@@ -704,7 +704,7 @@ public class Issue10792
             Should -Match '\$env:APPIUM_HOME = \$homeValue'
         ([regex]::Matches(
             $script:BuildSandboxSource,
-            'Invoke-WebRequest -Uri "http://localhost:\$AppiumPort/status" -NoProxy'
+            'Invoke-WebRequest -Uri "http://127\.0\.0\.1:\$AppiumPort/status" -NoProxy'
         ).Count) | Should -Be 2
         $script:BuildSandboxSource |
             Should -Match 'Appium startup log:'
