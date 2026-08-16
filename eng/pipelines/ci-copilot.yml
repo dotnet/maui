@@ -2454,7 +2454,8 @@ stages:
                 'Validate-ReplicationCandidate.ps1',
                 'Publish-ReplicationOutcome.ps1',
                 'Publish-ReplicationEvidence.ps1',
-                'Publish-ReplicationPR.ps1'
+                'Publish-ReplicationPR.ps1',
+                'Move-ReplicationPRsToTestingFork.ps1'
               )) {
                 $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared/$name"
                 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
@@ -2604,12 +2605,27 @@ stages:
               }
 
               try {
+                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Move-ReplicationPRsToTestingFork.ps1") `
+                  -SourceOwner "dotnet" `
+                  -SourceRepository "maui" `
+                  -TargetOwner "kubaflo" `
+                  -TargetRepository "maui" `
+                  -TargetBaseBranch "main" `
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/migrated-prs.json"
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Migrating existing reproduction pull requests to the testing fork failed."
+                }
+
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
                   -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
                   -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
                   -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
                   -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
                   -RepositoryRoot "$(Build.SourcesDirectory)" `
+                  -IssueOwner "dotnet" `
+                  -IssueRepository "maui" `
+                  -TargetOwner "kubaflo" `
+                  -TargetRepository "maui" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
                   -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
                 if ($LASTEXITCODE -ne 0) {
@@ -2627,7 +2643,7 @@ stages:
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
               }
             name: PublishReplicationPR
-            displayName: 'Create MauiBot draft reproduction PR'
+            displayName: 'Move existing PRs and create MauiBot testing draft PR'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               BUILD_BUILDID: $(Build.BuildId)

@@ -26,7 +26,13 @@ param(
     [string]$RepositoryRoot,
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$TargetOwner = 'dotnet',
+    [string]$IssueOwner = 'dotnet',
+
+    [ValidatePattern('^[A-Za-z0-9._-]+$')]
+    [string]$IssueRepository = 'maui',
+
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
+    [string]$TargetOwner = 'kubaflo',
 
     [ValidatePattern('^[A-Za-z0-9._-]+$')]
     [string]$TargetRepository = 'maui',
@@ -97,8 +103,8 @@ function New-ReplicationPullRequestBody {
         [Parameter(Mandatory = $true)]$Candidate,
         [Parameter(Mandatory = $true)]$Evidence,
         [Parameter(Mandatory = $true)][string]$IssueTitle,
-        [Parameter(Mandatory = $true)][string]$TargetOwner,
-        [Parameter(Mandatory = $true)][string]$TargetRepository,
+        [Parameter(Mandatory = $true)][string]$IssueOwner,
+        [Parameter(Mandatory = $true)][string]$IssueRepository,
         [AllowEmptyString()][string]$BuildUrl
     )
 
@@ -133,7 +139,7 @@ function New-ReplicationPullRequestBody {
     }
 
     $buildLine = if ($BuildUrl) { "- Pipeline run: $BuildUrl" } else { '- Pipeline run: unavailable' }
-    $issueUrl = "https://github.com/$TargetOwner/$TargetRepository/issues/$issueNumber"
+    $issueUrl = "https://github.com/$IssueOwner/$IssueRepository/issues/$issueNumber"
 
     return @"
 $marker
@@ -143,7 +149,7 @@ $marker
 
 ## Reproduced issue
 
-- Issue: [$TargetOwner/$TargetRepository#$issueNumber — $safeTitle]($issueUrl)
+- Issue: [$IssueOwner/$IssueRepository#$issueNumber — $safeTitle]($issueUrl)
 - Platform: **$platform**
 - Baseline commit: ``$baseSha``
 - Test type: **$testType**
@@ -203,8 +209,8 @@ function Invoke-ReplicationExternalCommand {
 
 function Resolve-ReplicationSourceRepository {
     param(
-        [Parameter(Mandatory = $true)][string]$TargetOwner,
-        [Parameter(Mandatory = $true)][string]$TargetRepository
+        [Parameter(Mandatory = $true)][string]$ParentOwner,
+        [Parameter(Mandatory = $true)][string]$ParentRepository
     )
 
     $query = @'
@@ -232,7 +238,7 @@ query {
         throw 'Unable to inspect repositories available to the publication token.'
     }
     $response = $responseJson | ConvertFrom-Json -Depth 20
-    $expectedParent = "$TargetOwner/$TargetRepository"
+    $expectedParent = "$ParentOwner/$ParentRepository"
     $matches = @($response.data.viewer.repositories.nodes) |
         Where-Object {
             $_.isFork -eq $true -and
@@ -242,7 +248,7 @@ query {
     if ($matches.Count -eq 0) {
         $createdForkJson = & gh api `
             -X POST `
-            "repos/$TargetOwner/$TargetRepository/forks"
+            "repos/$ParentOwner/$ParentRepository/forks"
         if ($LASTEXITCODE -ne 0) {
             throw "MauiBot has no writable fork of $expectedParent and creating one failed."
         }
@@ -315,8 +321,8 @@ $prBody = New-ReplicationPullRequestBody `
     -Candidate $candidate `
     -Evidence $evidence `
     -IssueTitle $issueTitle `
-    -TargetOwner $TargetOwner `
-    -TargetRepository $TargetRepository `
+    -IssueOwner $IssueOwner `
+    -IssueRepository $IssueRepository `
     -BuildUrl $BuildUrl
 
 $plan = [ordered]@{
@@ -341,8 +347,8 @@ if (-not $DryRun) {
         throw "GH_TOKEN must authenticate as 'MauiBot'."
     }
     $source = Resolve-ReplicationSourceRepository `
-        -TargetOwner $TargetOwner `
-        -TargetRepository $TargetRepository
+        -ParentOwner $IssueOwner `
+        -ParentRepository $IssueRepository
     $sourceOwner = [string]$source.Owner
     $sourceRepository = [string]$source.Repository
 

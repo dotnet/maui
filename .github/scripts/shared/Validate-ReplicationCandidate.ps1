@@ -1527,6 +1527,10 @@ function Assert-SourceTextIsSafe {
     }
 
     Assert-ReplicationGeneratedSourceSafety -Content $normalized -Path $Path
+    Assert-ReplicationPlatformSourceSafety `
+        -Content $normalized `
+        -Path $Path `
+        -Platform ([string]$Manifest.Platform)
 }
 
 function Assert-ReplicationCandidateSources {

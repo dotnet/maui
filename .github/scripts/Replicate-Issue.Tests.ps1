@@ -790,6 +790,45 @@ public void ReproducesIssue()
         } | Should -Throw '*environment-secrets*'
     }
 
+    It 'rejects framework behavior switches that manufacture the failure' {
+        $source = @'
+[Fact]
+public void ReproducesIssue()
+{
+    VisualElement.SkipMeasureInvalidatedPropagation = true;
+    Assert.True(false);
+}
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $source `
+                -Path 'Issue20722.cs'
+        } | Should -Throw "*prohibited 'framework-behavior-switch'*"
+    }
+
+    It 'rejects unsafe MacCatalyst filenames and mismatched platform APIs' {
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content 'using UIKit;' `
+                -Path 'src/Controls/tests/DeviceTests/Issue35516.MacCatalyst.cs' `
+                -Platform 'catalyst'
+        } | Should -Throw '*unsafe MacCatalyst filename*'
+
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content 'using UIKit;' `
+                -Path 'src/Controls/tests/DeviceTests/Issue35516.cs' `
+                -Platform 'catalyst'
+        } | Should -Throw '*without a matching platform-specific path*'
+
+        {
+            Assert-ReplicationPlatformSourceSafety `
+                -Content 'using UIKit;' `
+                -Path 'src/Controls/tests/DeviceTests/Issue35516.iOS.cs' `
+                -Platform 'catalyst'
+        } | Should -Not -Throw
+    }
+
     It 'rejects test lifecycle code that can run before the guard' {
         $source = @'
 public class Issue37440

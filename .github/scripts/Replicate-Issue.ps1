@@ -1267,6 +1267,9 @@ Create exactly the new test files listed in test-proposal.json. Do not create an
 The generated test must run normally and fail without an environment variable, command-line switch, category override, or other opt-in gate. Do not reference MAUI_REPRODUCTION_ISSUE.
 Do not add nullable reference annotations unless the target file also enables a nullable annotation context; prefer non-nullable local declarations compatible with the existing project.
 Do not use snapshots/baselines, delays, process execution, network access, external data, or a hard-coded failure unrelated to the reported behavior.
+Do not assign framework-wide test switches or static behavior flags to manufacture the failure. In particular, never assign SkipMeasureInvalidatedPropagation.
+Exercise the reported behavior through the MAUI API and handler path under test. Do not directly mutate the native property or native configuration whose missing MAUI update is the asserted defect.
+For Mac Catalyst device tests that use UIKit, use the repository's .iOS.cs convention; never create a .MacCatalyst.cs file because shared compile globs can include it on other platforms.
 Rewrite test-proposal.json only to refine expectedFailureSignature, reproductionSteps, expectedBehavior, observedBehavior, or lighterTypesRejected.
 "@
         }
@@ -1282,6 +1285,8 @@ The generated test must remain unconditional: do not add an environment-variable
 The exact targeted test must fail for the intended assertion, not compilation, setup, timeout, missing data, device infrastructure, screenshot, or baseline reasons.
 Fix all compiler diagnostics shown by the trusted verifier. Do not add nullable reference annotations unless the target file also enables a nullable annotation context.
 When a handler or platform type is unresolved, read existing tests in the same project and platform for the proven namespace, using directive, and registration pattern instead of inventing a replacement type.
+Do not assign framework-wide test switches or static behavior flags, directly mutate the native property being asserted, or bypass the MAUI handler path to force a failure.
+For Mac Catalyst tests using UIKit, keep the code in an .iOS.cs file or an existing Apple-platform directory; never use a .MacCatalyst.cs filename.
 Do not use Task.Delay, Thread.Sleep, timers, Task.Run, or other arbitrary settling/background work. Use an existing test wait helper or event-driven completion such as a TaskCompletionSource completed by the relevant layout, size, navigation, or collection event.
 Do not add a fix or escalate the test type.
 "@

@@ -905,6 +905,29 @@ if (Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE") == "12345")
             Should -Throw '*environment-secrets*'
     }
 
+    It 'rejects a framework behavior switch that manufactures the failure' {
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + "`nVisualElement.SkipMeasureInvalidatedPropagation = true;")
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw "*framework-behavior-switch*"
+    }
+
+    It 'rejects Catalyst UIKit source in an unsafe MacCatalyst filename' {
+        $fixture = New-ValidationFixture `
+            -TestType DeviceTest `
+            -Platform catalyst `
+            -CandidatePath 'src/Core/tests/DeviceTests/Handlers/Issue12345.MacCatalyst.cs'
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + "`nusing UIKit;")
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*unsafe MacCatalyst filename*'
+    }
+
     It 'rejects a test constructor that runs before the issue guard' {
         $fixture = New-ValidationFixture
         $source = $fixture.Source.Replace(

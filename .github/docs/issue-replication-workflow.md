@@ -32,9 +32,11 @@ Replication targets `main` in the first version. The issue must describe a scena
 6. Runs the exact test normally and confirms the expected assertion fails on the unfixed baseline.
 7. Validates that the patch is add-only and restricted to approved test locations.
 8. Publishes evidence to the repository's public, asset-only `review-tests-assets-v2` branch.
-9. Pushes the validated patch to the configured MauiBot fork and opens a draft PR against `dotnet/maui:main`.
+9. Pushes the validated patch to `MauiBot/maui` and opens a draft PR against `kubaflo/maui:main` while the workflow is being tested.
 
 The PR embeds the GIF/thumbnail linked to the MP4. GitHub does not provide a supported API for uploading a video attachment directly into a PR body.
+
+To avoid test-rollout noise in `dotnet/maui`, the trusted publisher also recreates any open MauiBot reproduction PRs in `kubaflo/maui` and closes an upstream PR only after its testing-fork replacement exists.
 
 ## Test semantics
 

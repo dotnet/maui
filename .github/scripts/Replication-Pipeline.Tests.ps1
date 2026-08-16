@@ -69,7 +69,7 @@ Describe 'MAUI Copilot mode routing' {
         $validationIndex = $script:Pipeline.IndexOf("displayName: 'Validate replication candidate without credentials'")
         $credentialIndex = $script:Pipeline.IndexOf('$checkoutToken = $null', $validationIndex)
         $evidenceIndex = $script:Pipeline.IndexOf("displayName: 'Publish reproduction evidence'")
-        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Create MauiBot draft reproduction PR'")
+        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing PRs and create MauiBot testing draft PR'")
 
         $validationIndex | Should -BeGreaterThan -1
         $validationIndex | Should -BeLessThan $credentialIndex
@@ -80,9 +80,12 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
         $script:Pipeline | Should -Match 'Publish-ReplicationOutcome\.ps1'
+        $script:Pipeline | Should -Match "'Move-ReplicationPRsToTestingFork\.ps1'"
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish MauiBot non-reproduction outcome'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Match 's/try-latest-version'
-        $script:Pipeline | Should -Match "(?s)displayName: 'Create MauiBot draft reproduction PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
+        $script:Pipeline | Should -Match "(?s)displayName: 'Move existing PRs and create MauiBot testing draft PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
+        $script:Pipeline | Should -Match 'Move-ReplicationPRsToTestingFork\.ps1'
+        $script:Pipeline | Should -Match '-TargetOwner "kubaflo"'
         $script:Pipeline | Should -Match 'Remove-Item Env:GH_TOKEN'
         $script:Pipeline | Should -Not -Match 'GH_REPLICATION_TOKEN'
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'

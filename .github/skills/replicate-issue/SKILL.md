@@ -57,6 +57,8 @@ Empirical proof requires all of:
 - Appium executed the intended actions on the selected device.
 - A semantic assertion, device log, deterministic measurement, or issue-caused crash shows expected versus actual behavior.
 - `evidence/repro.mp4` visibly covers those actions and the resulting failure.
+- The affected control, geometry, text, animation, or interaction is visible in the recording. An app-authored `PASS:`/`BUG REPRODUCED:` label is supplemental and cannot be the only visible proof.
+- The recording is continuous action-focused evidence, not a slideshow of staged still frames, and the preview reaches the failing state rather than ending on a setup or `PASS` frame.
 - The result is not merely a screenshot difference or missing baseline.
 
 Use only the runner-configured bounded attempts (default three and never more than three). If proof is still absent or inconclusive, write a blocked manifest and stop. Before restoring the Sandbox, copy the final scenario and logs into the artifact contract below.
@@ -78,6 +80,9 @@ Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, `write-device-t
 - Plan the exact new, issue-numbered test paths before authoring. Use only existing parent directories. After trusted validation, create or repair only those exact files; never change the planned type, filter, or file list.
 - Persist only added test files; never edit a project, dependency, shared runner, existing test, or product file.
 - Every generated test must run normally and fail on the unfixed baseline without an environment variable, command-line switch, category override, or other opt-in gate.
+- Never assign framework-wide test switches or static behavior flags to manufacture the failure, including `SkipMeasureInvalidatedPropagation`.
+- Exercise the reported behavior through the MAUI API and handler path. Do not directly mutate the native property or native configuration whose missing MAUI update is the asserted defect.
+- For Mac Catalyst device tests using UIKit, use an `.iOS.cs` file or an existing Apple-platform directory; never create `.MacCatalyst.cs`, which can be included by other platform compile globs.
 - Unit and device file/class/filter names must use exactly `Issue<issue>`; XAML uses `Maui<issue>` and UI uses `Issue<issue>` per their existing skills.
 - The assertion must describe correct behavior and fail because of the observed bug, not because of setup, compilation, infrastructure, missing data, screenshot, or baseline errors.
 - Have the trusted `.github/scripts/shared/Invoke-ReplicationTestVerification.ps1` wrapper invoke `verify-tests-fail-without-fix` in failure-only mode with the exact issue filter and literal expected failure signature. Never add a fix or use `-RequireFullVerification`.

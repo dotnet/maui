@@ -27,8 +27,10 @@ BeforeAll {
 
     $evidenceScript = Join-Path $PSScriptRoot 'shared/Publish-ReplicationEvidence.ps1'
     $prScript = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+    $migrationScript = Join-Path $PSScriptRoot 'shared/Move-ReplicationPRsToTestingFork.ps1'
     $script:EvidenceSource = Get-Content -LiteralPath $evidenceScript -Raw
     $script:PrSource = Get-Content -LiteralPath $prScript -Raw
+    $script:MigrationSource = Get-Content -LiteralPath $migrationScript -Raw
 
     foreach ($name in @(
         'Test-ReplicationAssetPrefix',
@@ -46,6 +48,12 @@ BeforeAll {
         'Resolve-ReplicationSourceRepository'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
+    }
+    foreach ($name in @(
+        'Test-ReplicationPullRequestBody',
+        'Get-ReplicationMigrationKey'
+    )) {
+        Invoke-Expression (Get-ScriptFunctionText -Path $migrationScript -Name $name)
     }
 }
 
@@ -141,8 +149,8 @@ Describe 'Trusted replication pull request publishing' {
             -Candidate $candidate `
             -Evidence $evidence `
             -IssueTitle 'Reported behavior' `
-            -TargetOwner 'dotnet' `
-            -TargetRepository 'maui' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
             -BuildUrl 'https://dev.azure.com/example/build/1'
 
         $body | Should -Match 'AI-generated \*\*reproduction evidence\*\*'
@@ -176,8 +184,8 @@ Describe 'Trusted replication pull request publishing' {
                 -Candidate $candidate `
                 -Evidence $evidence `
                 -IssueTitle 'Reported behavior' `
-                -TargetOwner dotnet `
-                -TargetRepository maui `
+                -IssueOwner dotnet `
+                -IssueRepository maui `
                 -BuildUrl ''
         } | Should -Throw '*targeted failure message*'
     }
@@ -195,6 +203,33 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match 'creating one failed'
         $script:PrSource | Should -Match 'did not become writable within 60 seconds'
         $script:PrSource | Should -Match "'replication-fork'"
+        $script:PrSource.Contains("[string]`$TargetOwner = 'kubaflo'") | Should -BeTrue
+        $script:PrSource | Should -Match '-ParentOwner \$IssueOwner'
+        $script:PrSource | Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
+    }
+}
+
+Describe 'Trusted replication PR migration' {
+    It 'recognizes and keys only bounded replication markers' {
+        $pull = [pscustomobject]@{
+            number = 42
+            body = '<!-- MAUI_COPILOT_REPLICATION issue=37440 platform=android -->'
+        }
+
+        Test-ReplicationPullRequestBody -Body $pull.body | Should -BeTrue
+        Get-ReplicationMigrationKey -PullRequest $pull | Should -BeExactly '37440/android'
+        Test-ReplicationPullRequestBody -Body '<!-- unrelated -->' | Should -BeFalse
+    }
+
+    It 'closes upstream only after a testing PR URL is verified' {
+        $createIndex = $script:MigrationSource.IndexOf('$targetUrl = [string]$targetPull.html_url')
+        $closeIndex = $script:MigrationSource.IndexOf('"Closing upstream PR #')
+
+        $script:MigrationSource.Contains("[string]`$TargetOwner = 'kubaflo'") | Should -BeTrue
+        $script:MigrationSource.Contains("`$headRepository -ne 'MauiBot/maui'") | Should -BeTrue
+        $createIndex | Should -BeGreaterThan -1
+        $closeIndex | Should -BeGreaterThan $createIndex
+        $script:MigrationSource | Should -Match "state = 'closed'"
     }
 }

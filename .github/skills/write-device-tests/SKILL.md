@@ -42,8 +42,7 @@ Read `.github/instructions/helix-device-tests.instructions.md`, `.github/skills/
 Use platform suffixes only when required:
 
 - `.Android.cs` — Android
-- `.iOS.cs` — iOS and MacCatalyst
-- `.MacCatalyst.cs` — MacCatalyst only
+- `.iOS.cs` — use this for iOS and MacCatalyst UIKit tests; do not create `.MacCatalyst.cs` because DeviceTests compile globs can include it on Android/Windows
 - `.Windows.cs` — Windows
 
 ### 2. Add the Exact Issue Test
@@ -51,7 +50,7 @@ Use platform suffixes only when required:
 For issue `12345`:
 
 - File/class: `Issue12345.cs` and `Issue12345`
-- Platform-specific file when needed: `Issue12345.iOS.cs`, `.Android.cs`, `.MacCatalyst.cs`, or `.Windows.cs`; keep the class name unchanged
+- Platform-specific file when needed: `Issue12345.iOS.cs`, `.Android.cs`, or `.Windows.cs`; keep the class name unchanged
 - Method: a descriptive behavior name
 - Exact issue filter: `Issue12345`
 - Exact target: the fully qualified class name, for example `Microsoft.Maui.DeviceTests.Issue12345`

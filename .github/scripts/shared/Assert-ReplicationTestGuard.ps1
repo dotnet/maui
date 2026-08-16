@@ -18,7 +18,8 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'package-reference'; Pattern = '(?i)\b(?:PackageReference|PackageDownload|dotnet\s+add\s+package|nuget\s*:|nuget\.exe)\b|#(?:r|load)\b' },
         [pscustomobject]@{ Code = 'obfuscated-source'; Pattern = '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})' },
         [pscustomobject]@{ Code = 'verification-spoof'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|::set-output' },
-        [pscustomobject]@{ Code = 'conditional-reproduction'; Pattern = '\bMAUI_REPRODUCTION_ISSUE\b' }
+        [pscustomobject]@{ Code = 'conditional-reproduction'; Pattern = '\bMAUI_REPRODUCTION_ISSUE\b' },
+        [pscustomobject]@{ Code = 'framework-behavior-switch'; Pattern = '(?i)\bSkipMeasureInvalidatedPropagation\s*=' }
     )
 }
 
@@ -46,6 +47,52 @@ function Assert-ReplicationGeneratedSourceSafety {
         if ($scanText -match $entry.Pattern) {
             throw "Candidate source '$Path' contains prohibited '$($entry.Code)' content."
         }
+    }
+}
+
+function Assert-ReplicationPlatformSourceSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Platform
+    )
+
+    if ([System.IO.Path]::GetExtension($Path) -ine '.cs') {
+        return
+    }
+
+    $normalizedPath = $Path.Replace('\', '/')
+    if ($normalizedPath -match '(?i)\.MacCatalyst\.cs$') {
+        throw "Candidate source '$Path' uses an unsafe MacCatalyst filename. Use an .iOS.cs file with the repository's existing platform pattern."
+    }
+
+    $platformNamespaceRules = @(
+        [pscustomobject]@{
+            Name = 'UIKit'
+            Pattern = '(?i)\b(?:UIKit|Foundation|CoreGraphics)\b'
+            PathPattern = '(?i)\.iOS\.cs$|/(?:iOS|MacCatalyst)/'
+        },
+        [pscustomobject]@{
+            Name = 'Android'
+            Pattern = '(?i)\b(?:Android|AndroidX)\s*\.'
+            PathPattern = '(?i)\.Android\.cs$|/Android/'
+        },
+        [pscustomobject]@{
+            Name = 'Windows'
+            Pattern = '(?i)\b(?:Microsoft\s*\.\s*UI|Windows\s*\.\s*UI)\b'
+            PathPattern = '(?i)\.Windows\.cs$|/Windows/'
+        }
+    )
+
+    foreach ($rule in $platformNamespaceRules) {
+        if ($Content -match $rule.Pattern -and $normalizedPath -notmatch $rule.PathPattern) {
+            throw "Candidate source '$Path' uses $($rule.Name) APIs without a matching platform-specific path."
+        }
+    }
+
+    if ($Platform -ceq 'catalyst' -and $Content -match '(?i)\bUIKit\b' -and $normalizedPath -notmatch '(?i)\.iOS\.cs$|/(?:iOS|MacCatalyst)/') {
+        throw "Catalyst candidate source '$Path' must place UIKit code in an .iOS.cs file or existing Apple-platform directory."
     }
 }
 
