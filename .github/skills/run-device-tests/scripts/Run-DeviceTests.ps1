@@ -328,7 +328,7 @@ function Get-XHarnessTestResultSnapshot {
     }
 
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+            Where-Object { $_.Name -like $ResultFileName })) {
         $snapshot[$file.FullName] = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
     }
 
@@ -348,7 +348,7 @@ function Get-FreshXHarnessTestResultFiles {
 
     $freshFiles = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+            Where-Object { $_.Name -like $ResultFileName })) {
         $fingerprint = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
         if (-not $BeforeSnapshot.ContainsKey($file.FullName) -or $BeforeSnapshot[$file.FullName] -ne $fingerprint) {
             $freshFiles.Add($file.FullName)
@@ -1364,7 +1364,11 @@ try {
     $script:XHarnessDeviceTestSummary = $null
     $script:XHarnessDeviceTestResultFiles = @()
     $testOutputDirectory = $OutputDirectory
-    $xharnessResultFileName = "testResults.xml"
+    $xharnessResultFileName = if ($Platform -in @("ios", "maccatalyst")) {
+        "xunit-test-*.xml"
+    } else {
+        "testResults.xml"
+    }
 
     if ($platformConfig.UsesXHarness) {
         # ═══════════════════════════════════════════════════════════
