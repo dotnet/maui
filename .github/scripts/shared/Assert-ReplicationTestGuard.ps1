@@ -35,6 +35,11 @@ function Assert-ReplicationGeneratedSourceSafety {
             '(?i)http://schemas\.microsoft\.com/(?:dotnet/2021/maui|winfx/2009/xaml)(?=["''])',
             ''
         )
+        $scanText = [regex]::Replace(
+            $scanText,
+            '(?i)(\bxmlns(?::[A-Za-z_]\w*)?\s*=\s*["''][^"'']*);assembly=[^"'']+(?=["''])',
+            '$1'
+        )
     }
     $environmentGuardCall = '(?:global::)?(?:System\.)?Environment\.GetEnvironmentVariable\s*\(\s*"MAUI_REPRODUCTION_ISSUE"\s*\)'
     $scanText = [regex]::Replace($scanText, $environmentGuardCall, '')

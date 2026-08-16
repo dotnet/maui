@@ -249,6 +249,28 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Throw '*prohibited*'
     }
 
+    It 'accepts assembly-qualified XAML namespace declarations without allowing reflection' {
+        $xaml = @'
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="Maui.Controls.Sample.MainPage">
+    <maps:Map />
+</ContentPage>
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $xaml `
+                -Path 'MainPage.xaml'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'var assembly = typeof(string).Assembly;' `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'reflection'*"
+    }
+
     It 'requires the exact bounded Sandbox XAML schema' {
 $repoRoot = $TestDrive
 $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
