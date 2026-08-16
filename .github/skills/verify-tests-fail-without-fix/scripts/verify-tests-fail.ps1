@@ -1110,12 +1110,13 @@ function Get-TargetedTestFailureMessage {
             -File `
             -Recurse `
             -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTimeUtc -Descending |
                 Select-Object -First 20)) {
             $candidateResultPaths.Add($resultFile.FullName)
         }
     }
 
-    foreach ($candidatePath in @($candidateResultPaths | Sort-Object -Unique)) {
+    foreach ($candidatePath in @($candidateResultPaths)) {
         if ([string]::IsNullOrWhiteSpace($candidatePath)) {
             continue
         }

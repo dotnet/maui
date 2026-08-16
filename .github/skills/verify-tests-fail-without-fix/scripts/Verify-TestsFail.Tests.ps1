@@ -174,6 +174,47 @@ Total tests: 2
         Remove-Item -LiteralPath $diagnostics -Recurse -Force
     }
 
+    It 'prefers the newest device result when repair attempts share diagnostics' {
+        $RepoRoot = [IO.Path]::GetTempPath()
+        $log = New-LogFile '[DeviceTest] Issue12345 FAILED'
+        $diagnostics = "$log.diagnostics"
+        $oldDirectory = Join-Path $diagnostics 'xharness-run-old'
+        $newDirectory = Join-Path $diagnostics 'xharness-run-new'
+        New-Item -ItemType Directory -Path $oldDirectory, $newDirectory | Out-Null
+
+        $oldResult = Join-Path $oldDirectory 'xunit-test-old.xml'
+        $newResult = Join-Path $newDirectory 'xunit-test-new.xml'
+        foreach ($result in @(
+            @{ Path = $oldResult; Message = 'System.InvalidCastException : Specified cast is not valid.' },
+            @{ Path = $newResult; Message = 'Expected centered item index to remain 5 after orientation change, but was 4.' }
+        )) {
+            @"
+<assemblies>
+  <assembly>
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.Issue12345Tests" method="ReproducesIssue" result="Fail">
+        <failure><message>$($result.Message)</message></failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+"@ | Set-Content -LiteralPath $result.Path -Encoding utf8NoBOM
+        }
+        (Get-Item -LiteralPath $oldResult).LastWriteTimeUtc = [DateTime]::UtcNow.AddMinutes(-1)
+        (Get-Item -LiteralPath $newResult).LastWriteTimeUtc = [DateTime]::UtcNow
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.DeviceTests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue12345 |
+            Should -BeExactly 'Expected centered item index to remain 5 after orientation change, but was 4.'
+
+        Remove-Item -LiteralPath $log -Force
+        Remove-Item -LiteralPath $diagnostics -Recurse -Force
+    }
+
     It 'reads the exact UI target exception message from the authoritative TRX' {
         $RepoRoot = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))
         $trxPath = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/TestResults/Issue12345.trx'
