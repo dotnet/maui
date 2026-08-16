@@ -983,8 +983,11 @@ function Read-TestProposal {
         'files',
         'lighterTypesRejected',
         'observedBehavior',
+        'reportedTrigger',
         'reproductionSteps',
+        'scenarioDifferences',
         'testFilter',
+        'testTrigger',
         'testType'
     )
     $actualProperties = @($proposal.PSObject.Properties.Name | Sort-Object)
@@ -1032,6 +1035,18 @@ function Read-TestProposal {
     }
     $null = ConvertTo-BoundedAgentLine -Value $proposal.expectedBehavior -Description 'Test expected behavior'
     $null = ConvertTo-BoundedAgentLine -Value $proposal.observedBehavior -Description 'Test observed behavior'
+    $null = ConvertTo-BoundedAgentLine `
+        -Value $proposal.reportedTrigger `
+        -Description 'Reported issue trigger' `
+        -MaximumLength 1000
+    $null = ConvertTo-BoundedAgentLine `
+        -Value $proposal.testTrigger `
+        -Description 'Automated test trigger' `
+        -MaximumLength 1000
+    $scenarioDifferences = @($proposal.scenarioDifferences)
+    if ($scenarioDifferences.Count -ne 0) {
+        throw 'The automated test trigger must be semantically equivalent to the reported issue trigger; scenarioDifferences must be empty.'
+    }
     Assert-LighterTestRejections `
         -Value $proposal.lighterTypesRejected `
         -SelectedType ([string]$proposal.testType)
@@ -1251,7 +1266,8 @@ $retryGuidance
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last.
 Do not create or modify any repository file in this phase.
-Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
+Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
+reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, and input modality. testTrigger must state the automated test's corresponding hierarchy, styling/default state, and action. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, or dropping a hierarchy that changes sizing or behavior.
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
@@ -1269,8 +1285,9 @@ Do not add nullable reference annotations unless the target file also enables a 
 Do not use snapshots/baselines, delays, process execution, network access, external data, or a hard-coded failure unrelated to the reported behavior.
 Do not assign framework-wide test switches or static behavior flags to manufacture the failure. In particular, never assign SkipMeasureInvalidatedPropagation.
 Exercise the reported behavior through the MAUI API and handler path under test. Do not directly mutate the native property or native configuration whose missing MAUI update is the asserted defect.
+Preserve the exact trigger recorded in reportedTrigger/testTrigger. Do not add layout ancestors, explicit styles, programmatic actions, or substitute controls that alter the reported sizing, default appearance, input modality, or handler path.
 For Mac Catalyst device tests that use UIKit, use the repository's .iOS.cs convention; never create a .MacCatalyst.cs file because shared compile globs can include it on other platforms.
-Rewrite test-proposal.json only to refine expectedFailureSignature, reproductionSteps, expectedBehavior, observedBehavior, or lighterTypesRejected.
+Rewrite test-proposal.json only to refine expectedFailureSignature, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, or lighterTypesRejected.
 "@
         }
         'repair' {
@@ -1286,6 +1303,7 @@ The exact targeted test must fail for the intended assertion, not compilation, s
 Fix all compiler diagnostics shown by the trusted verifier. Do not add nullable reference annotations unless the target file also enables a nullable annotation context.
 When a handler or platform type is unresolved, read existing tests in the same project and platform for the proven namespace, using directive, and registration pattern instead of inventing a replacement type.
 Do not assign framework-wide test switches or static behavior flags, directly mutate the native property being asserted, or bypass the MAUI handler path to force a failure.
+Do not repair the test by changing the reported trigger. Keep scenarioDifferences empty: no extra layout ancestor, explicit style replacing a platform default, programmatic replacement for a reported gesture, or hierarchy simplification that changes sizing or behavior.
 For Mac Catalyst tests using UIKit, keep the code in an .iOS.cs file or an existing Apple-platform directory; never use a .MacCatalyst.cs filename.
 Do not use Task.Delay, Thread.Sleep, timers, Task.Run, or other arbitrary settling/background work. Use an existing test wait helper or event-driven completion such as a TaskCompletionSource completed by the relevant layout, size, navigation, or collection event.
 Do not add a fix or escalate the test type.

@@ -82,6 +82,7 @@ Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, `write-device-t
 - Every generated test must run normally and fail on the unfixed baseline without an environment variable, command-line switch, category override, or other opt-in gate.
 - Never assign framework-wide test switches or static behavior flags to manufacture the failure, including `SkipMeasureInvalidatedPropagation`.
 - Exercise the reported behavior through the MAUI API and handler path. Do not directly mutate the native property or native configuration whose missing MAUI update is the asserted defect.
+- Preserve the reported trigger exactly. Compare the issue and test control hierarchy, default-versus-explicit styling, input modality, and product code path before authoring. Reject the candidate instead of adding an absent layout ancestor, replacing platform-default styling with an explicit style, replacing a gesture with a programmatic API, or simplifying a hierarchy in a way that changes sizing or behavior.
 - For Mac Catalyst device tests using UIKit, use an `.iOS.cs` file or an existing Apple-platform directory; never create `.MacCatalyst.cs`, which can be included by other platform compile globs.
 - Unit and device file/class/filter names must use exactly `Issue<issue>`; XAML uses `Maui<issue>` and UI uses `Issue<issue>` per their existing skills.
 - The assertion must describe correct behavior and fail because of the observed bug, not because of setup, compilation, infrastructure, missing data, screenshot, or baseline errors.

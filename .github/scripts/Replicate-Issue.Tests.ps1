@@ -664,6 +664,16 @@ exit 0
         $script:Source | Should -Match 'verificationPassed'
     }
 
+    It 'requires exact semantic trigger equivalence before test authoring' {
+        $script:Source | Should -Match "'reportedTrigger'"
+        $script:Source | Should -Match "'testTrigger'"
+        $script:Source | Should -Match "'scenarioDifferences'"
+        $script:Source | Should -Match 'scenarioDifferences must be empty'
+        $script:Source | Should -Match 'replacing platform-default styling with an explicit Style'
+        $script:Source | Should -Match 'replacing a gesture with a programmatic API'
+        $script:Source | Should -Match 'adding a layout ancestor absent from the issue'
+    }
+
     It 'repairs generated tests that fail trusted source validation before verification' {
         $script:Source |
             Should -Match 'try\s*\{\s*\$generatedFiles = @\(Get-GeneratedTestFiles\)'
