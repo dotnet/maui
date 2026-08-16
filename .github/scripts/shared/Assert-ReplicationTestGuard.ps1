@@ -16,7 +16,7 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'shell-execution'; Pattern = '(?i)\b(?:powershell|pwsh|cmd\.exe|bash)\b|/(?:bin/)?(?:ba)?sh\b|\bSystem\.Management\.Automation\b' },
         [pscustomobject]@{ Code = 'remote-url'; Pattern = '(?i)\b(?:https?|ftps?|wss?|file)\b\s*(?::|["'']\s*\+\s*["'']\s*:)|://' },
         [pscustomobject]@{ Code = 'package-reference'; Pattern = '(?i)\b(?:PackageReference|PackageDownload|dotnet\s+add\s+package|nuget\s*:|nuget\.exe)\b|#(?:r|load)\b' },
-        [pscustomobject]@{ Code = 'obfuscated-source'; Pattern = '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|\busing\s+[A-Za-z_]\w*\s*=' },
+        [pscustomobject]@{ Code = 'obfuscated-source'; Pattern = '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})' },
         [pscustomobject]@{ Code = 'verification-spoof'; Pattern = '(?i)\bVERIFICATION\s+(?:PASSED|FAILED|INCONCLUSIVE)\b|##vso\[|::set-output' }
     )
 }

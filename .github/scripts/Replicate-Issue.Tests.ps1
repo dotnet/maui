@@ -220,6 +220,20 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
 
         @'
+using ShellRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+namespace Maui.Controls.Sample;
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        _ = typeof(ShellRenderer);
+    }
+}
+'@ | Set-Content -LiteralPath $sandboxCodePath
+        { Assert-GeneratedSandboxSources } | Should -Not -Throw
+
+        @'
 using P = System.Diagnostics.Process;
 namespace Maui.Controls.Sample;
 public partial class MainPage : ContentPage
