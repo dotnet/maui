@@ -186,7 +186,15 @@ stages:
               if ($LASTEXITCODE -ne 0) {
                 throw 'Moving existing reproduction PRs to the testing fork failed.'
               }
+            displayName: 'Move existing reproduction PRs to testing fork'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
+              $feedbackRoot = Join-Path "$(Build.ArtifactStagingDirectory)" "ReplicationFeedback"
+              New-Item -ItemType Directory -Path $feedbackRoot -Force | Out-Null
               & (Join-Path $sharedRoot "Move-ReplicationPRCommentsToTestingFork.ps1") `
                 -SourceOwner "dotnet" `
                 -SourceRepository "maui" `
@@ -204,13 +212,14 @@ stages:
               if ($LASTEXITCODE -ne 0) {
                 throw 'Exporting reproduction PR feedback failed.'
               }
-            displayName: 'Move existing reproduction PRs and comments to testing fork'
+            displayName: 'Migrate comments and export replication feedback'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'feedback'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Replication Feedback Snapshot'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'feedback'))
             inputs:
               targetPath: '$(Build.ArtifactStagingDirectory)/ReplicationFeedback'
               artifact: 'ReplicationFeedback'

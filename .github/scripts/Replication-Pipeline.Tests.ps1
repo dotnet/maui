@@ -44,7 +44,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'gh api -X POST repos/dotnet/maui/forks'
         $script:Pipeline | Should -Match 'newly created MauiBot fork did not become writable within 60 seconds'
         $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
-        $migrationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing reproduction PRs and comments to testing fork'")
+        $migrationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing reproduction PRs to testing fork'")
         $copilotJobIndex = $script:Pipeline.IndexOf("- job: CopilotReview")
         $migrationIndex | Should -BeGreaterThan -1
         $migrationIndex | Should -BeLessThan $copilotJobIndex
@@ -52,6 +52,8 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'Move-ReplicationPRsToTestingFork\.ps1'
         $script:Pipeline | Should -Match 'Move-ReplicationPRCommentsToTestingFork\.ps1'
         $script:Pipeline | Should -Match 'Export-ReplicationPRFeedback\.ps1'
+        $script:Pipeline | Should -Match "(?s)displayName: 'Migrate comments and export replication feedback'.*?condition: and\(succeeded\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)\)"
+        $script:Pipeline | Should -Match "(?s)displayName: 'Publish Replication Feedback Snapshot'.*?condition: and\(succeededOrFailed\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)\)"
         $script:Pipeline | Should -Match "artifact: 'ReplicationFeedback'"
         $script:Pipeline | Should -Match "(?s)- job: CopilotReview.*?condition: or\(eq\('\$\{\{ parameters\.Mode \}\}', 'review'\), eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)\)"
         $script:Pipeline | Should -Match 'git checkout --detach origin/main'
