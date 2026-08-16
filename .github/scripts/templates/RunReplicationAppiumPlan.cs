@@ -1,5 +1,7 @@
 #!/usr/bin/env dotnet run
 #:package Appium.WebDriver@8.0.1
+#:property WindowsAppSdkBootstrapInitialize=false
+#:property WindowsAppSdkDeploymentManagerInitialize=false
 
 using System;
 using System.Collections.Generic;

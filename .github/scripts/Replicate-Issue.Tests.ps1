@@ -399,6 +399,10 @@ InitializeComponent();
 
     It 'uses typed Appium properties for reserved Windows capabilities' {
         $script:TrustedAppiumSource |
+            Should -Match '#:property WindowsAppSdkBootstrapInitialize=false'
+        $script:TrustedAppiumSource |
+            Should -Match '#:property WindowsAppSdkDeploymentManagerInitialize=false'
+        $script:TrustedAppiumSource |
             Should -Match 'options\.DeviceName\s*=\s*"WindowsPC"'
         $script:TrustedAppiumSource |
             Should -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
