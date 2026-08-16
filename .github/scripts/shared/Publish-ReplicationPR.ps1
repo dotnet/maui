@@ -34,12 +34,6 @@ param(
     [ValidatePattern('^[A-Za-z0-9._/-]+$')]
     [string]$BaseBranch = 'main',
 
-    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$SourceOwner = 'MauiBot',
-
-    [ValidatePattern('^[A-Za-z0-9._-]+$')]
-    [string]$SourceRepository = 'maui',
-
     [string]$BuildUrl = '',
 
     [string]$OutputPath = '',
@@ -207,6 +201,60 @@ function Invoke-ReplicationExternalCommand {
     }
 }
 
+function Resolve-ReplicationSourceRepository {
+    param(
+        [Parameter(Mandatory = $true)][string]$TargetOwner,
+        [Parameter(Mandatory = $true)][string]$TargetRepository
+    )
+
+    $query = @'
+query {
+  viewer {
+    login
+    repositories(
+      first: 100
+      affiliations: [OWNER, ORGANIZATION_MEMBER]
+    ) {
+      nodes {
+        nameWithOwner
+        isFork
+        viewerPermission
+        parent {
+          nameWithOwner
+        }
+      }
+    }
+  }
+}
+'@
+    $responseJson = & gh api graphql -f "query=$query"
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Unable to inspect repositories available to the publication token.'
+    }
+    $response = $responseJson | ConvertFrom-Json -Depth 20
+    $expectedParent = "$TargetOwner/$TargetRepository"
+    $matches = @($response.data.viewer.repositories.nodes) |
+        Where-Object {
+            $_.isFork -eq $true -and
+            [string]$_.parent.nameWithOwner -eq $expectedParent -and
+            [string]$_.viewerPermission -in @('WRITE', 'MAINTAIN', 'ADMIN')
+        }
+    if ($matches.Count -ne 1) {
+        throw "Expected exactly one writable fork of $expectedParent; found $($matches.Count)."
+    }
+
+    $parts = ([string]$matches[0].nameWithOwner) -split '/', 2
+    if ($parts.Count -ne 2 -or
+        $parts[0] -notmatch '^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$' -or
+        $parts[1] -notmatch '^[A-Za-z0-9._-]+$') {
+        throw 'Resolved reproduction fork has an invalid repository name.'
+    }
+    return [pscustomobject]@{
+        Owner = $parts[0]
+        Repository = $parts[1]
+    }
+}
+
 $candidate = Get-Content -LiteralPath $ValidatedCandidatePath -Raw | ConvertFrom-Json -Depth 50
 if ($candidate.validationPassed -ne $true) {
     throw 'Candidate validation did not pass; a pull request will not be created.'
@@ -259,21 +307,14 @@ if (-not $DryRun) {
 
     $authenticatedLogin = (& gh api user --jq '.login').Trim()
     if ($LASTEXITCODE -ne 0 -or
-        -not $authenticatedLogin.Equals($SourceOwner, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "GH_TOKEN must authenticate as the configured source owner '$SourceOwner'."
+        -not $authenticatedLogin.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
+        throw "GH_TOKEN must authenticate as 'MauiBot'."
     }
-
-    $sourceRepositoryJson = & gh api "repos/$SourceOwner/$SourceRepository"
-    if ($LASTEXITCODE -ne 0) {
-        throw "Unable to inspect source fork $SourceOwner/$SourceRepository."
-    }
-    $sourceRepositoryInfo = $sourceRepositoryJson | ConvertFrom-Json
-    $expectedParent = "$TargetOwner/$TargetRepository"
-    if ($sourceRepositoryInfo.fork -ne $true -or
-        [string]$sourceRepositoryInfo.parent.full_name -ne $expectedParent -or
-        $sourceRepositoryInfo.permissions.push -ne $true) {
-        throw "$SourceOwner/$SourceRepository must be a writable fork of $expectedParent."
-    }
+    $source = Resolve-ReplicationSourceRepository `
+        -TargetOwner $TargetOwner `
+        -TargetRepository $TargetRepository
+    $sourceOwner = [string]$source.Owner
+    $sourceRepository = [string]$source.Repository
 
     Push-Location $RepositoryRoot
     try {
@@ -328,7 +369,7 @@ if (-not $DryRun) {
         & git remote remove $sourceRemote 2>$null
         Invoke-ReplicationExternalCommand `
             -FilePath 'git' `
-            -Arguments @('remote', 'add', $sourceRemote, "https://github.com/$SourceOwner/$SourceRepository.git") `
+            -Arguments @('remote', 'add', $sourceRemote, "https://github.com/$sourceOwner/$sourceRepository.git") `
             -Description 'Configuring reproduction fork'
 
         $commitMessage = @"
@@ -348,7 +389,7 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             $prBody | Set-Content -LiteralPath $bodyPath -Encoding utf8NoBOM
             $prUrl = & gh pr create `
                 --repo "$TargetOwner/$TargetRepository" `
-                --head "$SourceOwner`:$branchName" `
+                --head "$sourceOwner`:$branchName" `
                 --base $BaseBranch `
                 --title $prTitle `
                 --body-file $bodyPath `

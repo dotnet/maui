@@ -2536,8 +2536,6 @@ stages:
                   -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
                   -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
                   -RepositoryRoot "$(Build.SourcesDirectory)" `
-                  -SourceOwner "MauiBot" `
-                  -SourceRepository "maui" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
                   -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
                 if ($LASTEXITCODE -ne 0) {
