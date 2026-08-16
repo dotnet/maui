@@ -46,7 +46,9 @@ if ([int]$candidate.issueNumber -ne $IssueNumber -or
     throw 'Replication outcome candidate does not match the requested issue and platform.'
 }
 
-$blockedCode = if ($candidate.PSObject.Properties['blocked']) {
+$blockedCode = if ($candidate.PSObject.Properties['blocked'] -and
+    $null -ne $candidate.blocked -and
+    $candidate.blocked.PSObject.Properties['code']) {
     [string]$candidate.blocked.code
 } else {
     ''

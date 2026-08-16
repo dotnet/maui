@@ -57,6 +57,27 @@ Describe 'Trusted replication issue outcome publishing' {
         }
     }
 
+    It 'does not handle a reproduced candidate with a null blocked value' {
+        $candidatePath = Join-Path $TestDrive 'reproduced.json'
+        @{
+            issueNumber = 12345
+            platform = 'ios'
+            status = 'reproduced'
+            blocked = $null
+        } | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
+
+        $result = & $script:OutcomeScript `
+            -CandidatePath $candidatePath `
+            -IssueNumber 12345 `
+            -Platform ios `
+            -BuildId 14980002 `
+            -BuildUrl 'https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=14980002' `
+            -DryRun
+
+        $result.handled | Should -BeFalse
+    }
+
     It 'requires MauiBot authentication and uses the exact repository label' {
         $script:OutcomeSource | Should -Match "ExpectedLogin = 'Maui-Bot'"
         $script:OutcomeSource | Should -Match "Label = 's/try-latest-version'"
