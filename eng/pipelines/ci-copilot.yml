@@ -2351,7 +2351,7 @@ stages:
   - stage: PublishReplication
     displayName: 'Validate and publish issue replication'
     dependsOn: ReviewPR
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'))
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
     jobs:
       - job: PublishReplication
         displayName: 'Publish validated reproduction'

@@ -69,7 +69,7 @@ Describe 'MAUI Copilot mode routing' {
         $validationIndex | Should -BeLessThan $credentialIndex
         $credentialIndex | Should -BeLessThan $evidenceIndex
         $evidenceIndex | Should -BeLessThan $publicationIndex
-        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
+        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\)\)"
         $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
