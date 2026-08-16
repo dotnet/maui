@@ -568,6 +568,10 @@ exit 0
         $script:Source |
             Should -Match 'Every string must be non-empty and already trimmed'
         $script:Source |
+            Should -Match 'back, swipe, and setOrientation require `"locator": null`'
+        $script:Source |
+            Should -Match 'assertNotExists, and back require `"value": null`'
+        $script:Source |
             Should -Match 'prior tracked Sandbox files were restored to baseline'
         $script:Source |
             Should -Match 'Do not use Task\.Delay, Thread\.Sleep, timers, Task\.Run'
