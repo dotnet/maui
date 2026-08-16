@@ -6,9 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
@@ -19,6 +21,53 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		void SetupCollectionViewHandler2Builder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView2 items participate in tab navigation")]
+		public async Task CollectionView2ItemsParticipateInTabNavigation()
+		{
+			SetupCollectionViewHandler2Builder();
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				ItemsSource = new[] { "One", "Two", "Three" },
+				ItemTemplate = new Controls.DataTemplate(() => new Label())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				IReadOnlyList<UI.Xaml.Controls.ItemContainer> GetContainers() =>
+					handler.PlatformView.GetChildren<UI.Xaml.Controls.ItemContainer>().ToList();
+
+				await AssertEventually(() => GetContainers().Count == 3);
+
+				var platformView = Assert.IsType<MauiItemsView>(handler.PlatformView);
+				var repeater = platformView.ItemsRepeaterControl;
+				Assert.NotNull(repeater);
+				Assert.Equal(UI.Xaml.Input.KeyboardNavigationMode.Local, repeater.TabFocusNavigation);
+				Assert.False(platformView.ScrollViewerControl?.IsTabStop);
+
+				var containers = GetContainers()
+					.OrderBy(repeater.GetElementIndex)
+					.ToList();
+				Assert.All(containers, container => Assert.True(container.IsTabStop));
+
+				Assert.True(platformView.Focus(UI.Xaml.FocusState.Keyboard));
+				Assert.Same(containers[0], UI.Xaml.Input.FocusManager.GetFocusedElement(platformView.XamlRoot));
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView Disconnects Correctly")]
 		public async Task CollectionViewHandlerDisconnects()
 		{

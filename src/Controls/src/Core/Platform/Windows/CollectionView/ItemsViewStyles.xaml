@@ -350,7 +350,8 @@
                                       BorderBrush="{TemplateBinding BorderBrush}"
                                       BorderThickness="{TemplateBinding BorderThickness}"
                                       CornerRadius="{TemplateBinding CornerRadius}"
-                                      TabNavigation="{TemplateBinding TabNavigation}"
+                                      IsTabStop="False"
+                                      TabFocusNavigation="{TemplateBinding TabFocusNavigation}"
                                       HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                                       HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                                       VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
@@ -373,6 +374,7 @@
                                                                 Margin="{TemplateBinding Padding}"
                                                                 HorizontalAlignment="Stretch"
                                                                 VerticalAlignment="Stretch"
+                                                                TabFocusNavigation="{TemplateBinding TabFocusNavigation}"
                                                                 XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
 
 

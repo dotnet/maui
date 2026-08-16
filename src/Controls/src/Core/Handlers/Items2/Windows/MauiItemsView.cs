@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
@@ -36,9 +38,14 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ScrollViewer? _scrollViewer;
 	Canvas? _dropIndicatorCanvas;
 
+	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
+
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+		IsTabStop = true;
+		TabFocusNavigation = KeyboardNavigationMode.Local;
+		GettingFocus += OnGettingFocus;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
@@ -47,6 +54,162 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		ItemTransitionProvider = null;
 
 		ApplyItemContainerResourceOverrides();
+	}
+
+	void OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
+	{
+		if (!ReferenceEquals(args.NewFocusedElement, this) || _itemsRepeater is not ItemsRepeater repeater)
+		{
+			return;
+		}
+
+		var movePrevious = args.Direction == FocusNavigationDirection.Previous;
+		var target = FindEdgeContainer(repeater, movePrevious);
+		if (target is not null)
+		{
+			args.TrySetNewFocusedElement(target);
+		}
+	}
+
+	protected override void OnKeyDown(KeyRoutedEventArgs args)
+	{
+		base.OnKeyDown(args);
+
+		if (args.Key != global::Windows.System.VirtualKey.Tab ||
+			_itemsRepeater is not ItemsRepeater repeater ||
+			XamlRoot is null ||
+			FocusManager.GetFocusedElement(XamlRoot) is not ItemContainer focusedContainer)
+		{
+			return;
+		}
+
+		var focusedIndex = repeater.GetElementIndex(focusedContainer);
+		if (focusedIndex < 0)
+		{
+			return;
+		}
+
+		var shiftState = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(global::Windows.System.VirtualKey.Shift);
+		var movePrevious = (shiftState & global::Windows.UI.Core.CoreVirtualKeyStates.Down) != 0;
+		var target = GetAdjacentDataContainer(repeater, focusedIndex, movePrevious);
+
+		if (target?.Focus(FocusState.Keyboard) == true ||
+			(target is null && MoveFocusOutsideCollection(focusedContainer, movePrevious)))
+		{
+			args.Handled = true;
+		}
+	}
+
+	static ItemContainer? FindEdgeContainer(ItemsRepeater repeater, bool last)
+	{
+		var start = last ? repeater.ItemsSourceView.Count - 1 : 0;
+		var end = last ? -1 : repeater.ItemsSourceView.Count;
+		var step = last ? -1 : 1;
+		for (var index = start; index != end; index += step)
+		{
+			if (GetDataContainer(repeater, index) is ItemContainer container)
+			{
+				return container;
+			}
+		}
+
+		return null;
+	}
+
+	static ItemContainer? GetAdjacentDataContainer(ItemsRepeater repeater, int currentIndex, bool movePrevious)
+	{
+		var step = movePrevious ? -1 : 1;
+		for (var index = currentIndex + step;
+			index >= 0 && index < repeater.ItemsSourceView.Count;
+			index += step)
+		{
+			if (GetDataContainer(repeater, index) is ItemContainer container)
+			{
+				return container;
+			}
+		}
+
+		return null;
+	}
+
+	static ItemContainer? GetDataContainer(ItemsRepeater repeater, int index)
+	{
+		if (repeater.ItemsSourceView.GetAt(index) is ItemTemplateContext2 context &&
+			(context.IsHeader || context.IsFooter))
+		{
+			return null;
+		}
+
+		var element = repeater.TryGetElement(index) ?? repeater.GetOrCreateElement(index);
+		element.UpdateLayout();
+		if (element is ItemContainer container)
+		{
+			container.IsTabStop = true;
+			return container;
+		}
+
+		return null;
+	}
+
+	bool MoveFocusOutsideCollection(ItemContainer focusedContainer, bool movePrevious)
+	{
+		if (XamlRoot?.Content is not DependencyObject root)
+		{
+			return false;
+		}
+
+		var controls = new List<Control>();
+		CollectFocusableControls(root, controls);
+		var focusedPosition = controls.IndexOf(focusedContainer);
+		if (focusedPosition < 0)
+		{
+			return false;
+		}
+
+		var step = movePrevious ? -1 : 1;
+		for (var position = focusedPosition + step;
+			position >= 0 && position < controls.Count;
+			position += step)
+		{
+			var candidate = controls[position];
+			if (!IsDescendantOfThis(candidate))
+			{
+				return candidate.Focus(FocusState.Keyboard);
+			}
+		}
+
+		return false;
+	}
+
+	static void CollectFocusableControls(DependencyObject parent, List<Control> controls)
+	{
+		if (parent is Control control &&
+			control.IsTabStop && control.IsEnabled && control.Visibility == WVisibility.Visible)
+		{
+			controls.Add(control);
+		}
+
+		var childCount = VisualTreeHelper.GetChildrenCount(parent);
+		for (var childIndex = 0; childIndex < childCount; childIndex++)
+		{
+			CollectFocusableControls(VisualTreeHelper.GetChild(parent, childIndex), controls);
+		}
+	}
+
+	bool IsDescendantOfThis(DependencyObject element)
+	{
+		DependencyObject? current = element;
+		while (current is not null)
+		{
+			if (ReferenceEquals(current, this))
+			{
+				return true;
+			}
+
+			current = VisualTreeHelper.GetParent(current);
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -196,6 +359,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override void OnApplyTemplate()
 	{
+		if (_itemsRepeater is ItemsRepeater previousRepeater)
+		{
+			previousRepeater.ElementPrepared -= OnElementPreparedForTabNavigation;
+			previousRepeater.ElementIndexChanged -= OnElementIndexChangedForTabNavigation;
+		}
+
 		base.OnApplyTemplate();
 
 		// WinUI's base.OnApplyTemplate() re-assigns ItemTransitionProvider to its
@@ -217,7 +386,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
 		// defaults, so a direct code assignment is the reliable approach.
 		if (_itemsRepeater is ItemsRepeater repeater)
+		{
 			repeater.ItemTransitionProvider = null;
+			repeater.ElementPrepared += OnElementPreparedForTabNavigation;
+			repeater.ElementIndexChanged += OnElementIndexChangedForTabNavigation;
+		}
 
 		if (_emptyViewContentControl is not null)
 		{
@@ -247,6 +420,22 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// allocates a Storyboard + 2 DoubleAnimations per drag gesture; caching one instance
 		// avoids the repeated allocations.
 		InitInsertionFadeStoryboard();
+	}
+
+	void OnElementPreparedForTabNavigation(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args) =>
+		UpdateContainerTabStop(sender, args.Element, args.Index);
+
+	void OnElementIndexChangedForTabNavigation(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
+		UpdateContainerTabStop(sender, args.Element, args.NewIndex);
+
+	static void UpdateContainerTabStop(ItemsRepeater repeater, UIElement element, int index)
+	{
+		if (element is ItemContainer container)
+		{
+			container.IsTabStop = index >= 0 && index < repeater.ItemsSourceView.Count &&
+				(repeater.ItemsSourceView.GetAt(index) is not ItemTemplateContext2 context ||
+					(!context.IsHeader && !context.IsFooter));
+		}
 	}
 
 	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>
