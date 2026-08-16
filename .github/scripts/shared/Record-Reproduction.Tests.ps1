@@ -289,7 +289,7 @@ Describe 'Record-Reproduction recorder adapters' {
         $start.ArgumentList[-1] | Should -BeExactly (Join-Path $evidenceDir 'recording.raw.mp4')
     }
 
-    It 'constructs a no-audio bounded AVFoundation command for Catalyst' {
+    It 'constructs a bounded native screen recording command for Catalyst' {
         $harness = New-RecordingHarness
         $evidenceDir = Join-Path $TestDrive 'catalyst evidence'
 
@@ -299,22 +299,15 @@ Describe 'Record-Reproduction recorder adapters' {
             -EvidenceDir $evidenceDir
 
         $start = (Get-ProcessRequest $harness Start)[0]
-        $start.FilePath | Should -BeExactly 'ffmpeg'
-        $start.ArgumentList | Should -Contain 'avfoundation'
-        $pixelFormatIndex = [array]::IndexOf($start.ArgumentList, '-pixel_format')
-        $inputIndex = [array]::IndexOf($start.ArgumentList, '-i')
-        $pixelFormatIndex | Should -BeGreaterThan -1
-        $start.ArgumentList[$pixelFormatIndex + 1] | Should -BeExactly 'nv12'
-        $pixelFormatIndex | Should -BeLessThan $inputIndex
-        $start.ArgumentList | Should -Contain 'Capture screen 0:none'
-        $start.ArgumentList | Should -Contain '-an'
-        $start.ArgumentList | Should -Contain '-t'
-        $start.ArgumentList | Should -Contain 'mpegts'
+        $start.FilePath | Should -BeExactly '/usr/sbin/screencapture'
+        $start.ArgumentList | Should -Contain '-v'
+        $start.ArgumentList | Should -Contain '-V10'
+        $start.ArgumentList | Should -Contain '-D1'
+        $start.ArgumentList | Should -Contain '-x'
+        $start.ArgumentList | Should -Contain '-C'
         $start.ArgumentList[-1] |
-            Should -BeExactly (Join-Path $evidenceDir 'recording.raw.ts')
-        ($start.ArgumentList -join ' ') | Should -Match 'fps=15'
-        ($start.ArgumentList -join ' ') | Should -Match 'scale=1280:720'
-        $start.ArgumentList | Should -Not -Contain ':default'
+            Should -BeExactly (Join-Path $evidenceDir 'recording.raw.mov')
+        $start.ArgumentList | Should -Not -Contain '-g'
         $result.device | Should -BeExactly 'mac-catalyst-host'
         (Get-Content -LiteralPath (Join-Path $evidenceDir 'evidence.json') -Raw |
             ConvertFrom-Json).device | Should -BeExactly 'mac-catalyst-host'

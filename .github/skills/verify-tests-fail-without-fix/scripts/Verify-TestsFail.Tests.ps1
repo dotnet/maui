@@ -132,6 +132,8 @@ Total tests: 2
             Should -Match '"FullyQualifiedName=\$TestClass\.\$TestMethod"'
         $script:VerifierSource |
             Should -Match '\$deviceTestScript\s*=\s*\$resolvedDeviceTestScriptPath'
+        $script:VerifierSource |
+            Should -Match 'RepositoryRoot\s*=\s*\$RepoRoot'
     }
 
     It 'reads only the exact device target failure message from scoped xUnit XML' {

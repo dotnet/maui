@@ -651,6 +651,7 @@ function Invoke-TestRun {
             $deviceParams = @{
                 Project       = $deviceProject
                 Platform      = $devicePlatform
+                RepositoryRoot = $RepoRoot
                 # Preserve XHarness/ADB crash diagnostics with the Gate artifact. The default
                 # `artifacts/log` directory is not published by this pipeline and is shared
                 # across A/B retries, so persistent APP_CRASH runs previously told maintainers

@@ -494,6 +494,16 @@ function Invoke-DefaultProcessOperation {
             $forcedTermination = $false
 
             try {
+                if (
+                    -not $process.HasExited -and
+                    $waitForNaturalExit -and
+                    $kind -eq 'catalyst'
+                ) {
+                    Wait-ForBoundedRecorderNaturalExit `
+                        -Process $process `
+                        -MaximumDurationSeconds $maximumDurationSeconds
+                }
+
                 if (-not $process.HasExited) {
                     if ($kind -in @('catalyst', 'windows')) {
                         if (-not $process.HasExited) {
@@ -914,7 +924,7 @@ if ($Platform -eq 'ios' -and $DeviceUdid -notmatch '^[0-9A-Fa-f-]{8,64}$') {
 
 $evidenceRoot = Initialize-SafeEvidenceDirectory -Path $EvidenceDir
 $rawVideoFileName = if ($Platform -eq 'catalyst') {
-    'recording.raw.ts'
+    'recording.raw.mov'
 } else {
     'recording.raw.mp4'
 }
@@ -983,27 +993,13 @@ switch ($Platform) {
         )
     }
     'catalyst' {
-        $recorderFile = 'ffmpeg'
+        $recorderFile = '/usr/sbin/screencapture'
         $recorderArguments = @(
-            '-y',
-            '-hide_banner',
-            '-loglevel', 'error',
-            '-nostats',
-            '-f', 'avfoundation',
-            '-framerate', [string][int]$maxFrameRate,
-            '-pixel_format', 'nv12',
-            '-capture_cursor', '1',
-            '-i', 'Capture screen 0:none',
-            '-an',
-            '-vf', $boundedVideoFilter,
-            '-t', $durationArgument,
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-pix_fmt', 'yuv420p',
-            '-g', [string][int]$maxFrameRate,
-            '-maxrate', '4M',
-            '-bufsize', '8M',
-            '-f', 'mpegts',
+            '-v',
+            "-V$MaxDurationSeconds",
+            '-D1',
+            '-x',
+            '-C',
             $rawVideoPath
         )
     }

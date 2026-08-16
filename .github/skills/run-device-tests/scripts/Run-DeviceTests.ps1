@@ -115,6 +115,9 @@ param(
     [string]$DeviceUdid,
 
     [Parameter(Mandatory = $false)]
+    [string]$RepositoryRoot,
+
+    [Parameter(Mandatory = $false)]
     [switch]$SkipXcodeVersionCheck
 )
 
@@ -1015,13 +1018,18 @@ $PlatformConfigs = @{
     }
 }
 
-# Find repository root
-$RepoRoot = $PSScriptRoot
-while ($RepoRoot -and -not (Test-Path (Join-Path $RepoRoot ".git"))) {
-    $RepoRoot = Split-Path $RepoRoot -Parent
+# Find repository root. Trusted pipeline copies can live outside the checkout,
+# so replication passes the already resolved source root explicitly.
+if (-not [string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+    $RepoRoot = (Resolve-Path -LiteralPath $RepositoryRoot).Path
+} else {
+    $RepoRoot = $PSScriptRoot
+    while ($RepoRoot -and -not (Test-Path (Join-Path $RepoRoot ".git"))) {
+        $RepoRoot = Split-Path $RepoRoot -Parent
+    }
 }
 
-if (-not $RepoRoot) {
+if (-not $RepoRoot -or -not (Test-Path -LiteralPath (Join-Path $RepoRoot '.git'))) {
     Write-Error "Could not find repository root. Run this script from within the maui repository."
     exit 1
 }
