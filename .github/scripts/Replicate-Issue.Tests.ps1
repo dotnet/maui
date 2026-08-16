@@ -487,6 +487,10 @@ exit 0
             Should -Match 'Every string must be non-empty and already trimmed'
         $script:Source |
             Should -Match 'prior tracked Sandbox files were restored to baseline'
+        $script:Source |
+            Should -Match 'Do not use Task\.Delay, Thread\.Sleep, timers, Task\.Run'
+        $script:Source |
+            Should -Match 'event-driven completion such as a TaskCompletionSource'
     }
 
     It 'requires new add-only guarded tests and literal expected failure verification' {
