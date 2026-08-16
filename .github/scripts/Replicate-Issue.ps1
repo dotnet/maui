@@ -1283,6 +1283,22 @@ Read "$testProposalPath" and, if it exists, "$verificationDir/verification-conso
 Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
+If the failure says the issue-keyed guard is missing, copy the guard exactly from the selected trusted write-test skill. For a device test, use this exact helper body without expression-bodied methods or reordered preprocessor branches:
+static string? GetReplicationIssue()
+{
+#if ANDROID
+    return global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation.Current?.Arguments?.GetString("MAUI_REPRODUCTION_ISSUE");
+#elif IOS || MACCATALYST
+    return global::Foundation.NSProcessInfo.ProcessInfo.Environment["MAUI_REPRODUCTION_ISSUE"]?.ToString();
+#else
+    return Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE");
+#endif
+}
+The first statement in every device [Fact] or [Test] body must be exactly:
+if (!string.Equals(GetReplicationIssue(), IssueNumber, StringComparison.Ordinal))
+{
+    return;
+}
 The exact targeted test must fail for the intended assertion, not compilation, setup, timeout, missing data, device infrastructure, screenshot, or baseline reasons.
 Fix all compiler diagnostics shown by the trusted verifier. Do not add nullable reference annotations unless the target file also enables a nullable annotation context.
 When a handler or platform type is unresolved, read existing tests in the same project and platform for the proven namespace, using directive, and registration pattern instead of inventing a replacement type.

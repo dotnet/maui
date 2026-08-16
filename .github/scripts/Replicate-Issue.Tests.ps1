@@ -61,6 +61,15 @@ BeforeAll {
 }
 
 Describe 'Replication orchestrator security boundary' {
+    It 'gives repair attempts the exact device-test guard template' {
+        $script:Source |
+            Should -Match 'If the failure says the issue-keyed guard is missing'
+        $script:Source |
+            Should -Match '#elif IOS \|\| MACCATALYST'
+        $script:Source |
+            Should -Match 'if \(!string\.Equals\(GetReplicationIssue\(\), IssueNumber, StringComparison\.Ordinal\)\)'
+    }
+
     It 'uses native Appium class-name locators instead of Selenium CSS locators' {
         $script:TrustedAppiumSource |
             Should -Match '"className"\s*=>\s*MobileBy\.ClassName\(locator\.Value\)'
