@@ -41,7 +41,7 @@ param(
     [int]$MaxSandboxAttempts = 5,
 
     [ValidateRange(1, 3)]
-    [int]$MaxTestAttempts = 4,
+    [int]$MaxTestAttempts = 5,
 
     [string]$Model = ''
 )

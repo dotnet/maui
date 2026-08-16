@@ -800,8 +800,8 @@ function Read-ReplicationManifest {
                 -Context 'Manifest attempts' `
                 -Required).Value `
             -Context 'Manifest automatedTest attempts'
-        if ($testAttemptCount -gt 4) {
-            throw 'Manifest automated test attempt count must be between 1 and 4.'
+        if ($testAttemptCount -gt 5) {
+            throw 'Manifest automated test attempt count must be between 1 and 5.'
         }
 
         $stepsProperty = Find-AliasedProperty `

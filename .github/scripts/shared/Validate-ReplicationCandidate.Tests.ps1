@@ -658,7 +658,7 @@ Describe 'Validate-ReplicationCandidate happy paths' {
         $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
             ConvertFrom-Json
         $manifest.attempts.sandbox = 5
-        $manifest.attempts.automatedTest = 4
+        $manifest.attempts.automatedTest = 5
         Write-TestJson -Path $fixture.ManifestPath -Value $manifest
 
         $resultPath = Join-Path $fixture.EvidenceDir 'reproduction-result.json'
@@ -734,11 +734,11 @@ Describe 'Validate-ReplicationCandidate manifest boundary' {
             Should -Throw '*Sandbox attempt count must be between 1 and 5*'
 
         $manifest.attempts.sandbox = 5
-        $manifest.attempts.automatedTest = 5
+        $manifest.attempts.automatedTest = 6
         Write-TestJson -Path $fixture.ManifestPath -Value $manifest
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*automated test attempt count must be between 1 and 4*'
+            Should -Throw '*automated test attempt count must be between 1 and 5*'
     }
 
     It 'rejects a manifest whose expected pattern is an infrastructure failure' {

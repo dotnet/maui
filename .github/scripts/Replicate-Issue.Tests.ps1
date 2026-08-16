@@ -619,7 +619,7 @@ exit 0
     }
 
     It 'allows guard repairs, a compile repair, and final empirical verification' {
-        $script:Source | Should -Match '\[int\]\$MaxTestAttempts = 4'
+        $script:Source | Should -Match '\[int\]\$MaxTestAttempts = 5'
         $script:Source |
             Should -Match 'Fix all compiler diagnostics shown by the trusted verifier'
         $script:Source |
