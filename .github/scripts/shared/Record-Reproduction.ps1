@@ -931,6 +931,16 @@ $catalystFramesDirectory = if ($Platform -eq 'catalyst') {
 } else {
     $null
 }
+if ($Platform -eq 'catalyst') {
+    foreach ($item in Get-ChildItem -LiteralPath $catalystFramesDirectory -Force) {
+        if ($item.PSIsContainer -or
+            $item.Attributes -band [System.IO.FileAttributes]::ReparsePoint -or
+            $item.Name -cnotmatch '^frame-[0-9]{4}\.png$') {
+            throw "Catalyst frame directory contains an unexpected entry: '$($item.Name)'."
+        }
+        Remove-KnownEvidenceFile -Path $item.FullName
+    }
+}
 $knownEvidencePaths = @(
     $rawVideoPath,
     $videoPath,

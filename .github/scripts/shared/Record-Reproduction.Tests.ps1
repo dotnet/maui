@@ -309,14 +309,25 @@ Describe 'Record-Reproduction recorder adapters' {
     It 'constructs a bounded video from trusted Catalyst Appium frames' {
         $harness = New-RecordingHarness
         $evidenceDir = Join-Path $TestDrive 'catalyst evidence'
+        $framesDirectory = Join-Path $evidenceDir 'catalyst-frames'
+        New-Item -ItemType Directory -Path $framesDirectory -Force | Out-Null
+        [System.IO.File]::WriteAllBytes(
+            (Join-Path $framesDirectory 'frame-0000.png'),
+            [byte[]](1..16))
         $captureFrames = {
             $framesDirectory = $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY
-            [System.IO.File]::WriteAllBytes(
-                (Join-Path $framesDirectory 'frame-0000.png'),
-                [byte[]](1..32))
-            [System.IO.File]::WriteAllBytes(
-                (Join-Path $framesDirectory 'frame-0001.png'),
-                [byte[]](1..32))
+            foreach ($index in 0..1) {
+                $stream = [System.IO.FileStream]::new(
+                    (Join-Path $framesDirectory ('frame-{0:D4}.png' -f $index)),
+                    [System.IO.FileMode]::CreateNew,
+                    [System.IO.FileAccess]::Write,
+                    [System.IO.FileShare]::None)
+                try {
+                    $stream.Write([byte[]](1..32))
+                } finally {
+                    $stream.Dispose()
+                }
+            }
         }
 
         $result = Invoke-TestRecording `

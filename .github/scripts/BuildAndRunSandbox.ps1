@@ -339,12 +339,18 @@ try {
     $appiumWasRunning = $true
 } catch {
     Write-Info "Appium not running, starting server on port $AppiumPort..."
-    
+
+    $appiumExecutable = (Get-Command appium -ErrorAction Stop).Source
+    $appiumPath = $env:PATH
+    $appiumHome = $env:APPIUM_HOME
+
     # Start Appium in background with logging (appiumLogFile already defined above)
     $appiumJob = Start-Job -ScriptBlock {
-        param($logFile)
-        appium --log-level info > $logFile 2>&1
-    } -ArgumentList $appiumLogFile
+        param($executable, $logFile, $pathValue, $homeValue)
+        $env:PATH = $pathValue
+        $env:APPIUM_HOME = $homeValue
+        & $executable --log-level info > $logFile 2>&1
+    } -ArgumentList $appiumExecutable, $appiumLogFile, $appiumPath, $appiumHome
     
     Write-Info "Appium logs → $appiumLogFile"
     
@@ -366,8 +372,20 @@ try {
     }
     
     if (-not $ready) {
-        Stop-Job $appiumJob
+        if ($appiumJob.State -eq 'Running') {
+            Stop-Job $appiumJob
+        }
+        if (Test-Path -LiteralPath $appiumLogFile -PathType Leaf) {
+            Write-Host "Appium startup log:"
+            Get-Content -LiteralPath $appiumLogFile -Tail 100 |
+                ForEach-Object { Write-Host $_ }
+        } else {
+            Receive-Job $appiumJob -Keep -ErrorAction SilentlyContinue |
+                Select-Object -Last 100 |
+                ForEach-Object { Write-Host $_ }
+        }
         Remove-Job $appiumJob
+        $appiumJob = $null
         Write-Error "Appium failed to start within $maxWait seconds"
         exit 1
     }

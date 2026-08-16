@@ -624,6 +624,44 @@ public class Issue37440
         } | Should -Throw '*unguarded test-class constructor*'
     }
 
+    It 'allows expression-bodied helper properties but rejects field initializers' {
+        $helperProperties = @'
+sealed class BindingSource
+{
+    public string Property1 => "First value";
+    public string Property2 => "Second value";
+}
+'@
+        {
+            Assert-ReplicationTestLifecycleSafety `
+                -Content $helperProperties `
+                -Path 'Issue10792.cs'
+        } | Should -Not -Throw
+
+        $fieldInitializer = @'
+public class Issue10792
+{
+    private string value = "runs before the guard";
+}
+'@
+        {
+            Assert-ReplicationTestLifecycleSafety `
+                -Content $fieldInitializer `
+                -Path 'Issue10792.cs'
+        } | Should -Throw '*unguarded test lifecycle hook*'
+    }
+
+    It 'starts Appium from a resolved executable with explicit inherited environment' {
+        $script:BuildSandboxSource |
+            Should -Match '\(Get-Command appium -ErrorAction Stop\)\.Source'
+        $script:BuildSandboxSource |
+            Should -Match '\$env:PATH = \$pathValue'
+        $script:BuildSandboxSource |
+            Should -Match '\$env:APPIUM_HOME = \$homeValue'
+        $script:BuildSandboxSource |
+            Should -Match 'Appium startup log:'
+    }
+
     It 'rejects pre-execution code in a generated helper file without a test attribute' {
         $repoRoot = $TestDrive
         $testFile = 'src/Controls/tests/Core.UnitTests/Issues/Issue37440Tests.cs'
