@@ -1513,7 +1513,7 @@ function Copy-VerificationDiagnostics {
         return
     }
 
-    $destinationRoot = Join-Path $artifactDir "verification-diagnostics/attempt-$Attempt"
+    $destinationRoot = Join-Path $ArtifactRoot "verification-diagnostics/attempt-$Attempt"
     New-Item -ItemType Directory -Path $destinationRoot -Force | Out-Null
     $totalBytes = 0L
     $files = @(
