@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.UnitTests;
 using NSubstitute;
 using Xunit;
 
@@ -555,33 +556,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task ScrollCompletionNeverResumesTheCallerInlineOnTheMutationStack()
+		public void DroppedRequestCompletesThroughTheDispatcherNotInlineOnTheMutationStack()
 		{
-			var item = new View();
-			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
-			var parent = new StackLayout { Children = { scrollView } };
-			scrollView.Handler = new ViewportProviderHandlerStub();
+			// Capture dispatcher posts instead of running them, so the test can observe
+			// exactly when the completion is raised relative to the mutation. The option is
+			// thread-static and this capture swallows posts, so it must be restored.
+			var posted = new System.Collections.Generic.List<Action>();
+			DispatcherProviderStubOptions.InvokeOnMainThread = posted.Add;
+			try
+			{
+				var item = new View();
+				var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+				var parent = new StackLayout { Children = { scrollView } };
+				scrollView.Handler = new ViewportProviderHandlerStub();
 
-			// The task is completed from inside a lifecycle mutation (child removal). The
-			// caller's continuation must not run inline on that mutation's stack, where it
-			// could re-enter a half-finished parenting operation. A continuation that asks
-			// to run synchronously would do exactly that if the completion source allowed
-			// it, so it must instead land on a different thread than the one mutating.
-			var mutatingThread = Environment.CurrentManagedThreadId;
-			var continuationThread = -1;
-			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
-			var continuation = task.ContinueWith(
-				_ => continuationThread = Environment.CurrentManagedThreadId,
-				TaskContinuationOptions.ExecuteSynchronously);
+				var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+				Assert.False(task.IsCompleted);
 
-			parent.Children.Remove(scrollView);
+				// The drop runs from inside a lifecycle mutation (child removal). Completing
+				// the task inline there would resume the caller's continuation in the middle
+				// of a half-finished parenting operation, so the completion must be posted:
+				// after Remove returns the task is still pending and exactly one post is queued
+				parent.Children.Remove(scrollView);
+				Assert.False(task.IsCompleted);
+				var completion = Assert.Single(posted);
 
-			// The task itself completes synchronously with the drop...
-			Assert.True(task.IsCompleted);
-
-			// ...but the continuation was pushed off the mutating thread's stack
-			await continuation.WaitAsync(TimeSpan.FromSeconds(5));
-			Assert.NotEqual(mutatingThread, continuationThread);
+				// Running the post — what the real dispatcher does on its next turn — completes it
+				completion();
+				Assert.True(task.IsCompleted);
+			}
+			finally
+			{
+				DispatcherProviderStubOptions.InvokeOnMainThread = null;
+			}
 		}
 
 		[Fact]

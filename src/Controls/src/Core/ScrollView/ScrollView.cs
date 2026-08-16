@@ -93,10 +93,13 @@ namespace Microsoft.Maui.Controls
 			// A stale replay flag from a pre-handler park must not carry over to a later request
 			_replayPendingScrollToRequestedEvent = false;
 
-			// Safe to complete here even though this runs from a lifecycle mutation: the
-			// completion source runs continuations asynchronously, so the caller never
-			// resumes inline on this stack (see CheckTaskCompletionSource)
-			SendScrollFinished();
+			// This runs from inside a lifecycle mutation (a handler change, the view leaving
+			// the tree), and the caller's await continuation must not resume in the middle of
+			// it — it could re-enter a half-finished parenting or property change. Post the
+			// completion instead of raising it inline. Only this path defers: the platform
+			// scroll callbacks complete the task exactly as before, so ordinary
+			// `await ScrollToAsync(...)` continuations keep their existing timing.
+			Dispatcher.Dispatch(SendScrollFinished);
 		}
 
 		void DispatchPendingScrollToRequest()
@@ -537,12 +540,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_scrollCompletionSource.TrySetCanceled();
 			}
-			// The task can be completed from inside a lifecycle mutation (a handler change, the
-			// view leaving the tree) as well as from platform scroll callbacks. The caller's
-			// await continuation must never resume on that stack — it could re-enter a
-			// half-finished parenting or property change — so continuations always run
-			// asynchronously. The task itself still transitions to completed synchronously.
-			_scrollCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			_scrollCompletionSource = new TaskCompletionSource<bool>();
 		}
 
 		double GetCoordinate(Element item, string coordinateName, double coordinate)
