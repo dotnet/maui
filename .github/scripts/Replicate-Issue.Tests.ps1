@@ -487,6 +487,10 @@ exit 0
 
     It 'preserves bounded device verification diagnostics before cleanup' {
         $script:Source | Should -Match 'function Copy-VerificationDiagnostics'
+        $script:Source |
+            Should -Match '\$artifactDir "verification-diagnostics/attempt-\$Attempt"'
+        $script:Source |
+            Should -Not -Match '\$verificationDir "diagnostics/attempt-\$Attempt"'
         $script:Source | Should -Match '\$files\.Count -gt 64'
         $script:Source | Should -Match '\$totalBytes -gt 8MB'
         $script:Source |
