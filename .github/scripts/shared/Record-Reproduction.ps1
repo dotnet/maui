@@ -212,6 +212,39 @@ function Remove-KnownEvidenceFile {
     }
 }
 
+function Remove-KnownEvidenceDirectory {
+    param(
+        [AllowNull()][string]$Path,
+        [Parameter(Mandatory = $true)][string]$ExpectedParent
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    $parent = [System.IO.Path]::GetFullPath($item.Parent.FullName)
+    if (
+        -not $item.PSIsContainer -or
+        $item.Attributes -band [System.IO.FileAttributes]::ReparsePoint -or
+        $parent -cne [System.IO.Path]::GetFullPath($ExpectedParent)
+    ) {
+        throw 'Evidence intermediate directory is unsafe to remove.'
+    }
+
+    foreach ($child in @(Get-ChildItem -LiteralPath $item.FullName -Force)) {
+        if (
+            $child.PSIsContainer -or
+            $child.Attributes -band [System.IO.FileAttributes]::ReparsePoint -or
+            $child.Name -cnotmatch '^frame-[0-9]{4}\.png$'
+        ) {
+            throw 'Evidence intermediate directory contains an unsafe entry.'
+        }
+        Remove-Item -LiteralPath $child.FullName -Force -ErrorAction Stop
+    }
+    Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop
+}
+
 function Assert-GeneratedFile {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -1406,6 +1439,11 @@ try {
     $success = $true
 } finally {
     Remove-KnownEvidenceFile -Path $rawVideoPath
+    if ($success -and $Platform -eq 'catalyst') {
+        Remove-KnownEvidenceDirectory `
+            -Path $catalystFramesDirectory `
+            -ExpectedParent $evidenceRoot
+    }
     if (-not $success) {
         foreach ($partialPath in @(
             $videoPath,

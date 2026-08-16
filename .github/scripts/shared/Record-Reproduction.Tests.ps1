@@ -349,6 +349,7 @@ Describe 'Record-Reproduction recorder adapters' {
         $result.device | Should -BeExactly 'mac-catalyst-host'
         (Get-Content -LiteralPath (Join-Path $evidenceDir 'evidence.json') -Raw |
             ConvertFrom-Json).device | Should -BeExactly 'mac-catalyst-host'
+        Test-Path -LiteralPath $framesDirectory | Should -BeFalse
     }
 
     It 'constructs a no-audio bounded gdigrab desktop command for Windows' {
