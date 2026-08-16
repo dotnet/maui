@@ -653,6 +653,23 @@ Describe 'Validate-ReplicationCandidate happy paths' {
             Should -Throw '*successful trusted run*'
     }
 
+    It 'accepts the orchestrator Sandbox and generated-test attempt limits' {
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json
+        $manifest.attempts.sandbox = 5
+        $manifest.attempts.automatedTest = 4
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        $resultPath = Join-Path $fixture.EvidenceDir 'reproduction-result.json'
+        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        $result.attempt = 5
+        Write-TestJson -Path $resultPath -Value $result
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+    }
+
     It 'supports direct PatchPath script invocation' {
         $fixture = New-ValidationFixture
 
@@ -703,6 +720,25 @@ Describe 'Validate-ReplicationCandidate manifest boundary' {
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*unexpected property*'
+    }
+
+    It 'rejects attempt counts beyond the orchestrator limits' {
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture (
+            New-ValidationFixture)
+        $manifest = Get-Content -Raw -LiteralPath $fixture.ManifestPath |
+            ConvertFrom-Json
+        $manifest.attempts.sandbox = 6
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*Sandbox attempt count must be between 1 and 5*'
+
+        $manifest.attempts.sandbox = 5
+        $manifest.attempts.automatedTest = 5
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*automated test attempt count must be between 1 and 4*'
     }
 
     It 'rejects a manifest whose expected pattern is an infrastructure failure' {

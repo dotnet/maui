@@ -783,20 +783,25 @@ function Read-ReplicationManifest {
             -Object $attempts `
             -AllowedNames @('sandbox', 'automatedTest', 'automated_test') `
             -Context 'Manifest attempts'
-        foreach ($attemptName in @(
-            @('sandbox'),
-            @('automatedTest', 'automated_test')
-        )) {
-            $attemptCount = ConvertTo-PositiveInteger `
-                -Value (Find-AliasedProperty `
-                    -Object $attempts `
-                    -Names $attemptName `
-                    -Context 'Manifest attempts' `
-                    -Required).Value `
-                -Context "Manifest $($attemptName[0]) attempts"
-            if ($attemptCount -gt 3) {
-                throw 'Manifest attempt counts must be between 1 and 3.'
-            }
+        $sandboxAttemptCount = ConvertTo-PositiveInteger `
+            -Value (Find-AliasedProperty `
+                -Object $attempts `
+                -Names @('sandbox') `
+                -Context 'Manifest attempts' `
+                -Required).Value `
+            -Context 'Manifest sandbox attempts'
+        if ($sandboxAttemptCount -gt 5) {
+            throw 'Manifest Sandbox attempt count must be between 1 and 5.'
+        }
+        $testAttemptCount = ConvertTo-PositiveInteger `
+            -Value (Find-AliasedProperty `
+                -Object $attempts `
+                -Names @('automatedTest', 'automated_test') `
+                -Context 'Manifest attempts' `
+                -Required).Value `
+            -Context 'Manifest automatedTest attempts'
+        if ($testAttemptCount -gt 4) {
+            throw 'Manifest automated test attempt count must be between 1 and 4.'
         }
 
         $stepsProperty = Find-AliasedProperty `
@@ -1829,8 +1834,8 @@ function Assert-ReplicationExecutionResult {
             -Context 'Replication execution result' `
             -Required).Value `
         -Context 'Replication execution attempt'
-    if ($attempt -gt 3) {
-        throw 'Replication execution attempt must be between 1 and 3.'
+    if ($attempt -gt 5) {
+        throw 'Replication execution attempt must be between 1 and 5.'
     }
 
     $succeeded = (Find-AliasedProperty `
