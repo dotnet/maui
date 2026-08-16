@@ -35,6 +35,7 @@ BeforeAll {
 
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
+        'Get-ReplicationFailureDetails',
         'Test-PathInsideRoot',
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
@@ -105,6 +106,23 @@ Describe 'Replication orchestrator security boundary' {
         ConvertTo-ReplicationSafeLog `
             -Value "x`e[31;1m red`e[0m`n##vso[task.setvariable variable=Y]bad ##[error]fake" |
             Should -BeExactly 'x red bad fake'
+    }
+
+    It 'preserves primary failure lines when long stack traces displace them from the tail' {
+        $output = @(
+            'System.TimeoutException: Expected REPRODUCED but actual text was NOT REPRODUCED.'
+            1..40 | ForEach-Object { "   at Example.Stack.Frame$_()" }
+            'final cleanup line'
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $output
+
+        $details |
+            Should -Match ([regex]::Escape(
+                'System.TimeoutException: Expected REPRODUCED but actual text was NOT REPRODUCED.'))
+        $details | Should -Match 'at Example\.Stack\.Frame40\(\)'
+        $details | Should -Match 'final cleanup line'
+        $details | Should -Not -Match 'at Example\.Stack\.Frame1\(\)'
     }
 
     It 'recognizes only paths inside the requested root' {
@@ -530,6 +548,8 @@ exit 0
             Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*4'
         $script:Source |
             Should -Match 'throw "\$Description failed with exit code \$exitCode\.`n\$failureDetails"'
+        $script:Source |
+            Should -Match 'Get-ReplicationFailureDetails -Output \$output'
         $script:Source |
             Should -Match 'Do not add maps or other assembly-qualified XAML namespaces'
         $script:Source |

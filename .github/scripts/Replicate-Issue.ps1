@@ -147,6 +147,32 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationFailureDetails {
+    param(
+        [AllowEmptyCollection()][object[]]$Output,
+        [int]$MaximumSignalLines = 12,
+        [int]$MaximumTailLines = 20
+    )
+
+    $safeLines = @($Output | ForEach-Object {
+        $line = ConvertTo-ReplicationSafeLog $_ 500
+        if ($line) {
+            $line
+        }
+    })
+    $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|\bMSB\d+\b|\bCS\d+\b)'
+    $candidateLines = @(
+        $safeLines |
+            Where-Object { $_ -match $signalPattern } |
+            Select-Object -First $MaximumSignalLines
+        $safeLines | Select-Object -Last $MaximumTailLines
+    )
+    $seen = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal)
+    $details = @($candidateLines | Where-Object { $seen.Add($_) })
+    return $details -join [Environment]::NewLine
+}
+
 function Invoke-WithoutReplicationSecrets {
     param(
         [Parameter(Mandatory = $true)][string[]]$Names,
@@ -1421,7 +1447,7 @@ function Invoke-LoggedChildProcess {
         Write-Host $tail
     }
     if ($exitCode -ne 0) {
-        $failureDetails = ConvertTo-ReplicationSafeLog $tail 2000
+        $failureDetails = Get-ReplicationFailureDetails -Output $output
         throw "$Description failed with exit code $exitCode.`n$failureDetails"
     }
 }
