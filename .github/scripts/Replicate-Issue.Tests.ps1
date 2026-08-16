@@ -325,6 +325,8 @@ InitializeComponent();
         $script:BuildSandboxSource | Should -Match 'REPLICATION_PLATFORM'
         $script:BuildSandboxSource | Should -Match 'REPLICATION_WINDOWS_APP_PATH'
         $script:BuildSandboxSource | Should -Match 'shell pidof -s com\.microsoft\.maui\.sandbox'
+        $script:TrustedAppiumSource |
+            Should -Match '"appium:uiautomator2ServerInstallTimeout",\s*120_000'
     }
 
     It 'uses typed Appium properties for reserved Windows capabilities' {

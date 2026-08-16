@@ -196,6 +196,9 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
                 "appium:appActivity",
                 "com.microsoft.maui.sandbox.MainActivity");
             options.AddAdditionalAppiumOption("appium:noReset", true);
+            options.AddAdditionalAppiumOption(
+                "appium:uiautomator2ServerInstallTimeout",
+                120_000);
             options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
             return new AndroidDriver(server, options);
         case "ios":
