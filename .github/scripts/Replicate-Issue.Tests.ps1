@@ -720,6 +720,9 @@ exit 0
         $script:Source | Should -Match 'replacing platform-default styling with an explicit Style'
         $script:Source | Should -Match 'replacing a gesture with a programmatic API'
         $script:Source | Should -Match 'adding a layout ancestor absent from the issue'
+        $script:Source | Should -Match 'replacing the reported public source/service with a custom test type or service'
+        $script:Source | Should -Match 'prove the same virtual or native view instance was reused'
+        $script:Source | Should -Match 'FIFO completion order are not proof'
     }
 
     It 'repairs generated tests that fail trusted source validation before verification' {
