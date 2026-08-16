@@ -77,7 +77,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish MauiBot non-reproduction outcome'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Match 's/try-latest-version'
         $script:Pipeline | Should -Match "(?s)displayName: 'Create MauiBot draft reproduction PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
-        $script:Pipeline | Should -Match '-SourceOwner "Maui-Bot"'
+        $script:Pipeline | Should -Match '-SourceOwner "MauiBot"'
         $script:Pipeline | Should -Match '-SourceRepository "maui"'
         $script:Pipeline | Should -Match 'Remove-Item Env:GH_TOKEN'
         $script:Pipeline | Should -Not -Match 'GH_REPLICATION_TOKEN'

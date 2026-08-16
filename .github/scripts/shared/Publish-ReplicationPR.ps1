@@ -35,7 +35,7 @@ param(
     [string]$BaseBranch = 'main',
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$SourceOwner = 'Maui-Bot',
+    [string]$SourceOwner = 'MauiBot',
 
     [ValidatePattern('^[A-Za-z0-9._-]+$')]
     [string]$SourceRepository = 'maui',

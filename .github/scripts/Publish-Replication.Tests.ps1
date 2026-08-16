@@ -185,7 +185,7 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match 'git diff --cached --name-status --diff-filter=ACDMRTUXB'
         $script:PrSource | Should -Match '\s--draft'
         $script:PrSource | Should -Match 'GH_TOKEN is required'
-        $script:PrSource | Should -Match "\[string\]\`$SourceOwner = 'Maui-Bot'"
+        $script:PrSource | Should -Match "\[string\]\`$SourceOwner = 'MauiBot'"
         $script:PrSource | Should -Match "\[string\]\`$SourceRepository = 'maui'"
         $script:PrSource | Should -Match "'push', \`$sourceRemote"
         $script:PrSource.Contains('--head "$SourceOwner`:$branchName"') | Should -BeTrue

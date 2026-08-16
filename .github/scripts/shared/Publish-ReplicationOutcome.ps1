@@ -28,7 +28,7 @@ param(
     [string]$Repository = 'dotnet/maui',
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$ExpectedLogin = 'Maui-Bot',
+    [string]$ExpectedLogin = 'MauiBot',
 
     [ValidatePattern('^[A-Za-z0-9._/-]+$')]
     [string]$Label = 's/try-latest-version',

@@ -79,7 +79,7 @@ Describe 'Trusted replication issue outcome publishing' {
     }
 
     It 'requires MauiBot authentication and uses the exact repository label' {
-        $script:OutcomeSource | Should -Match "ExpectedLogin = 'Maui-Bot'"
+        $script:OutcomeSource | Should -Match "ExpectedLogin = 'MauiBot'"
         $script:OutcomeSource | Should -Match "Label = 's/try-latest-version'"
         $script:OutcomeSource | Should -Match 'GH_TOKEN is required'
         $script:OutcomeSource | Should -Match 'gh issue comment'
