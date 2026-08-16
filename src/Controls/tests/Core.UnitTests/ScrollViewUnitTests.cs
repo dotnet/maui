@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.UnitTests;
 using NSubstitute;
 using Xunit;
 
@@ -522,7 +521,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task ElementRequestIsDroppedAndCompletedWhenTheViewLeavesTheTree()
+		public void ElementRequestIsDroppedAndCompletedWhenTheViewLeavesTheTree()
 		{
 			var item = new View();
 			var layout = new StackLayout { Children = { item } };
@@ -539,10 +538,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Removing the view from the tree ends its lifecycle for layout purposes: no
 			// arrange will ever come from a parent it no longer has, and the removal does
 			// not disconnect its handler — so the request must be dropped and the caller
-			// released here rather than left pending forever
+			// released here, at the moment of removal, rather than left pending forever
 			parent.Children.Remove(scrollView);
-
-			await task.WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.True(task.IsCompleted);
 			Assert.Empty(handler.ScrollToRequests);
 
@@ -556,39 +553,241 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DroppedRequestCompletesThroughTheDispatcherNotInlineOnTheMutationStack()
+		public void DropCompletesTheDroppedTaskAndOnlyThatTask()
 		{
-			// Capture dispatcher posts instead of running them, so the test can observe
-			// exactly when the completion is raised relative to the mutation. The option is
-			// thread-static and this capture swallows posts, so it must be restored.
-			var posted = new System.Collections.Generic.List<Action>();
-			DispatcherProviderStubOptions.InvokeOnMainThread = posted.Add;
-			try
-			{
-				var item = new View();
-				var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
-				var parent = new StackLayout { Children = { scrollView } };
-				scrollView.Handler = new ViewportProviderHandlerStub();
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			var parent = new StackLayout { Children = { scrollView } };
+			scrollView.Handler = new ViewportProviderHandlerStub();
 
-				var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
-				Assert.False(task.IsCompleted);
+			// T1 parks (handler attached, geometry not ready)
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task1.IsCompleted);
 
-				// The drop runs from inside a lifecycle mutation (child removal). Completing
-				// the task inline there would resume the caller's continuation in the middle
-				// of a half-finished parenting operation, so the completion must be posted:
-				// after Remove returns the task is still pending and exactly one post is queued
-				parent.Children.Remove(scrollView);
-				Assert.False(task.IsCompleted);
-				var completion = Assert.Single(posted);
+			// The view leaves the tree: T1's request is dropped and T1 completes at that
+			// moment — bound to the request being dropped, with no window in which anything
+			// else could be released in its place
+			parent.Children.Remove(scrollView);
+			Assert.True(task1.IsCompleted);
 
-				// Running the post — what the real dispatcher does on its next turn — completes it
-				completion();
-				Assert.True(task.IsCompleted);
-			}
-			finally
-			{
-				DispatcherProviderStubOptions.InvokeOnMainThread = null;
-			}
+			// Re-attached, a new request T2 parks. It is a different request with its own
+			// task: nothing about the earlier drop may touch it
+			parent.Children.Add(scrollView);
+			var task2 = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.False(task2.IsCompleted);
+
+			// T2 stays pending until its own scroll: the arrange replays it and lands on the
+			// element (End = 450 - 100 + 50), and only then does its task complete
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			var handler = (ViewportProviderHandlerStub)scrollView.Handler;
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(400, request.VerticalOffset);
+			Assert.False(task2.IsCompleted);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task2.IsCompleted);
+		}
+
+		[Fact]
+		public void ConsecutiveDropsEachCompleteTheirOwnTask()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var parent = new StackLayout { Children = { scrollView } };
+			scrollView.Handler = new ViewportProviderHandlerStub();
+
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			parent.Children.Remove(scrollView);
+			Assert.True(task1.IsCompleted);
+
+			// A second park-and-drop cycle on the same view: the second drop must complete
+			// the second task, and the first drop must have had no effect on it
+			parent.Children.Add(scrollView);
+			var task2 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task2.IsCompleted);
+
+			parent.Children.Remove(scrollView);
+			Assert.True(task2.IsCompleted);
+		}
+
+		[Fact]
+		public void NewerRequestSupersedesAGeometryParkedElementRequest()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			// T1 parks for geometry with the handler attached
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// A direct request while T1 is parked wins: it is sent now, and T1's request is
+			// cleared so the arrange cannot replay the stale target on top of it
+			var task2 = scrollView.ScrollToAsync(0, 100, false);
+			var direct = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(100, direct.VerticalOffset);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			Assert.Single(handler.ScrollToRequests);
+
+			// The scroll completes the current (latest) request's task
+			scrollView.SendScrollFinished();
+			Assert.True(task2.IsCompleted);
+		}
+
+		[Fact]
+		public void HandlerDetachDropCompletesOnlyTheDroppedTaskAndDoesNotResurrect()
+		{
+			var item = new View();
+			var layout = new StackLayout { Children = { item } };
+			var scrollView = new ScrollView { Content = layout };
+			scrollView.Handler = new ViewportProviderHandlerStub();
+
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task1.IsCompleted);
+
+			// Handler detach is the other lifecycle end: T1 completes at that moment
+			scrollView.Handler = null;
+			Assert.True(task1.IsCompleted);
+
+			// A new handler and a new request: T2 is its own request, unaffected by the drop
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+			var task2 = scrollView.ScrollToAsync(item, ScrollToPosition.End, false);
+			Assert.False(task2.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// The arrange replays exactly one request — T2's — and the dropped T1 request is
+			// not resurrected alongside it
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			layout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(400, request.VerticalOffset);
+			Assert.False(task2.IsCompleted);
+
+			scrollView.SendScrollFinished();
+			Assert.True(task2.IsCompleted);
+		}
+
+		[Fact]
+		public void DoubleLifecycleEndOnOneRequestCompletesItOnceAndLeavesLaterRequestsAlone()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var parent = new StackLayout { Children = { scrollView } };
+			scrollView.Handler = new ViewportProviderHandlerStub();
+
+			var task1 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			// Both lifecycle ends fire for the same parked request: the first drops and
+			// completes it, the second must be a no-op (nothing left to drop)
+			parent.Children.Remove(scrollView);
+			Assert.True(task1.IsCompleted);
+			scrollView.Handler = null;
+
+			// A later request on the revived view is untouched by either earlier end
+			parent.Children.Add(scrollView);
+			scrollView.Handler = new ViewportProviderHandlerStub();
+			var task2 = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task2.IsCompleted);
+		}
+
+		[Fact]
+		public void PreHandlerParkedRequestIsDroppedWhenTheViewLeavesTheTree()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var parent = new StackLayout { Children = { scrollView } };
+
+			// Parked because there is no handler yet
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task.IsCompleted);
+
+			// Leaving the tree is a lifecycle end whether or not a handler ever attached
+			parent.Children.Remove(scrollView);
+			Assert.True(task.IsCompleted);
+
+			// And a handler attaching afterwards must find nothing to replay
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+			Assert.Empty(handler.ScrollToRequests);
+		}
+
+		[Fact]
+		public void PreHandlerParkedOffsetRequestIsDroppedWhenTheViewLeavesTheTree()
+		{
+			var scrollView = new ScrollView { Content = new StackLayout() };
+			var parent = new StackLayout { Children = { scrollView } };
+
+			// The contract is about parked requests of any mode, not only element mode
+			var task = scrollView.ScrollToAsync(0, 100, false);
+			Assert.False(task.IsCompleted);
+
+			parent.Children.Remove(scrollView);
+			Assert.True(task.IsCompleted);
+
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+			Assert.Empty(handler.ScrollToRequests);
+		}
+
+		[Fact]
+		public void ParkedElementRequestSurvivesContentReplacementAndDrainsOnTheNewContent()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+			Assert.False(task.IsCompleted);
+
+			// The content is swapped while the request is parked. The retry is hooked to
+			// the content's SizeChanged, so it must be re-hooked to the new content — the
+			// element still belongs to the tree via the old layout, but the ScrollView's
+			// geometry callbacks now come from the new one
+			var newLayout = new StackLayout { Children = { item } };
+			scrollView.Content = newLayout;
+			Assert.False(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			item.Layout(new Graphics.Rect(0, 450, 100, 50));
+			newLayout.Layout(new Graphics.Rect(0, 0, 100, 1000));
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+
+			var request = Assert.Single(handler.ScrollToRequests);
+			Assert.Equal(450, request.VerticalOffset);
+		}
+
+		[Fact]
+		public void ParkedElementRequestWithContentRemovedWaitsThenCompletesOnLifecycleEnd()
+		{
+			var item = new View();
+			var scrollView = new ScrollView { Content = new StackLayout { Children = { item } } };
+			var handler = new ViewportProviderHandlerStub();
+			scrollView.Handler = handler;
+
+			var task = scrollView.ScrollToAsync(item, ScrollToPosition.Start, false);
+
+			// With no content there is no geometry to resolve against, so the request must
+			// keep waiting rather than dispatch a target computed from nothing
+			scrollView.Content = null;
+			scrollView.Layout(new Graphics.Rect(0, 0, 100, 100));
+			Assert.False(task.IsCompleted);
+			Assert.Empty(handler.ScrollToRequests);
+
+			// It is still bound to the view's lifecycle: a detach releases it
+			scrollView.Handler = null;
+			Assert.True(task.IsCompleted);
 		}
 
 		[Fact]

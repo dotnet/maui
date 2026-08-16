@@ -93,13 +93,14 @@ namespace Microsoft.Maui.Controls
 			// A stale replay flag from a pre-handler park must not carry over to a later request
 			_replayPendingScrollToRequestedEvent = false;
 
-			// This runs from inside a lifecycle mutation (a handler change, the view leaving
-			// the tree), and the caller's await continuation must not resume in the middle of
-			// it — it could re-enter a half-finished parenting or property change. Post the
-			// completion instead of raising it inline. Only this path defers: the platform
-			// scroll callbacks complete the task exactly as before, so ordinary
-			// `await ScrollToAsync(...)` continuations keep their existing timing.
-			Dispatcher.Dispatch(SendScrollFinished);
+			// Complete inline, at the moment the request is dropped. Deferring the completion
+			// would open a window in which a newer ScrollToAsync could swap the completion
+			// source, so a deferred completion would release the wrong task and orphan this
+			// one. Completing here binds the release to the request being dropped by
+			// construction. This is also the convention already in place: the handler-detach
+			// drop and Core's own DisconnectHandler both complete the task inline from their
+			// lifecycle hooks.
+			SendScrollFinished();
 		}
 
 		void DispatchPendingScrollToRequest()
@@ -135,9 +136,11 @@ namespace Microsoft.Maui.Controls
 		// then is garbage. The content check must be "not yet arranged" rather than "arranged
 		// to nothing": content can legitimately arrange to a zero size (a collapsed container),
 		// and that raises no further callbacks — gating on the size would hang the caller's
-		// task forever, while dispatching just clamps the target to the origin.
+		// task forever, while dispatching just clamps the target to the origin. No content at
+		// all is different again: there is nothing to resolve the element against, so the
+		// request keeps waiting (for content to be set and arranged, or a lifecycle end).
 		bool IsElementTargetGeometryReady() =>
-			Width >= 0 && Height >= 0 && Content is not ({ Width: < 0 } or { Height: < 0 });
+			Width >= 0 && Height >= 0 && Content is { Width: >= 0, Height: >= 0 };
 
 		void SendPendingScrollToRequest()
 		{
