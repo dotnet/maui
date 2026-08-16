@@ -30,12 +30,18 @@ ValidatePlan(plan, platform);
 
 Console.WriteLine($"Running issue {plan.IssueNumber} Appium plan on {platform}.");
 using var driver = CreateDriver(platform, udid);
+var catalystFramesDirectory = platform == "catalyst"
+    ? RequireEnvironmentValue("MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY")
+    : null;
+var catalystFrameIndex = 0;
+CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
 
 for (var index = 0; index < plan.Steps.Count; index++)
 {
     var step = plan.Steps[index];
     Console.WriteLine($"STEP {index + 1}/{plan.Steps.Count}: {step.Description}");
     ExecuteStep(driver, platform, step);
+    CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
 }
 
 Console.WriteLine($"REPLICATION_ACTIONS_COMPLETED issue={plan.IssueNumber}");
@@ -49,6 +55,37 @@ static string RequireEnvironmentValue(string name)
         throw new InvalidOperationException($"Required environment value '{name}' is missing.");
     }
     return value;
+}
+
+static void CaptureCatalystFrame(
+    AppiumDriver driver,
+    string? framesDirectory,
+    ref int frameIndex)
+{
+    if (framesDirectory is null)
+    {
+        return;
+    }
+    if (!Path.IsPathFullyQualified(framesDirectory) || !Directory.Exists(framesDirectory))
+    {
+        throw new InvalidOperationException(
+            "Trusted Catalyst frame directory is missing or not fully qualified.");
+    }
+    if (frameIndex >= 128)
+    {
+        throw new InvalidOperationException("Catalyst Appium frame limit was exceeded.");
+    }
+
+    var framePath = Path.Combine(framesDirectory, $"frame-{frameIndex:D4}.png");
+    var screenshot = ((ITakesScreenshot)driver).GetScreenshot();
+    using var stream = new FileStream(
+        framePath,
+        FileMode.CreateNew,
+        FileAccess.Write,
+        FileShare.None);
+    stream.Write(screenshot.AsByteArray);
+    Console.WriteLine($"Captured Catalyst evidence frame {frameIndex}.");
+    frameIndex++;
 }
 
 static ReplicationPlan ReadPlan(string json)

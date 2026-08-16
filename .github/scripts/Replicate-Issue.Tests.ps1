@@ -77,6 +77,15 @@ Describe 'Replication orchestrator security boundary' {
             Should -Match 'androidText value is unsafe'
     }
 
+    It 'captures Catalyst evidence frames through the trusted Appium session' {
+        $script:TrustedAppiumSource |
+            Should -Match 'MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY'
+        $script:TrustedAppiumSource |
+            Should -Match '\(\(ITakesScreenshot\)driver\)\.GetScreenshot\(\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'frame-\{frameIndex:D4\}\.png'
+    }
+
     It 'polls semantic text assertions until the expected state or timeout' {
         $script:TrustedAppiumSource |
             Should -Match 'static void AssertElementText[\s\S]*new WebDriverWait\(driver, timeout\)'

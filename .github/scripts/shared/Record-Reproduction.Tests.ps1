@@ -170,10 +170,27 @@ BeforeAll {
             [long]$MaxVideoBytes = 4096
         )
 
+        $effectiveReproductionScriptBlock = $ReproductionScriptBlock
+        if ($Platform -eq 'catalyst') {
+            $originalReproductionScriptBlock = $ReproductionScriptBlock
+            $effectiveReproductionScriptBlock = {
+                & $originalReproductionScriptBlock
+                $framesDirectory = $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY
+                if (@(Get-ChildItem -LiteralPath $framesDirectory -File).Count -eq 0) {
+                    [System.IO.File]::WriteAllBytes(
+                        (Join-Path $framesDirectory 'frame-0000.png'),
+                        [byte[]](1..32))
+                    [System.IO.File]::WriteAllBytes(
+                        (Join-Path $framesDirectory 'frame-0001.png'),
+                        [byte[]](1..32))
+                }
+            }.GetNewClosure()
+        }
+
         $parameters = @{
             Platform                  = $Platform
             EvidenceDir               = $EvidenceDir
-            ReproductionScriptBlock   = $ReproductionScriptBlock
+            ReproductionScriptBlock   = $effectiveReproductionScriptBlock
             MaxDurationSeconds        = $MaxDurationSeconds
             MaxVideoBytes             = $MaxVideoBytes
             CommandRunner             = $Harness.CommandRunner
@@ -289,25 +306,35 @@ Describe 'Record-Reproduction recorder adapters' {
         $start.ArgumentList[-1] | Should -BeExactly (Join-Path $evidenceDir 'recording.raw.mp4')
     }
 
-    It 'constructs a bounded native screen recording command for Catalyst' {
+    It 'constructs a bounded video from trusted Catalyst Appium frames' {
         $harness = New-RecordingHarness
         $evidenceDir = Join-Path $TestDrive 'catalyst evidence'
+        $captureFrames = {
+            $framesDirectory = $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY
+            [System.IO.File]::WriteAllBytes(
+                (Join-Path $framesDirectory 'frame-0000.png'),
+                [byte[]](1..32))
+            [System.IO.File]::WriteAllBytes(
+                (Join-Path $framesDirectory 'frame-0001.png'),
+                [byte[]](1..32))
+        }
 
         $result = Invoke-TestRecording `
             -Harness $harness `
             -Platform catalyst `
-            -EvidenceDir $evidenceDir
+            -EvidenceDir $evidenceDir `
+            -ReproductionScriptBlock $captureFrames
 
-        $start = (Get-ProcessRequest $harness Start)[0]
-        $start.FilePath | Should -BeExactly '/usr/sbin/screencapture'
-        $start.ArgumentList | Should -Contain '-v'
-        $start.ArgumentList | Should -Contain '-V10'
-        $start.ArgumentList | Should -Contain '-D1'
-        $start.ArgumentList | Should -Contain '-x'
-        $start.ArgumentList | Should -Contain '-C'
-        $start.ArgumentList[-1] |
+        Get-ProcessRequest $harness Start | Should -BeNullOrEmpty
+        $encode = (Get-CommandRequest $harness 'Encode Catalyst Appium frames')[0]
+        $encode.FilePath | Should -BeExactly 'ffmpeg'
+        $encode.ArgumentList | Should -Contain '-framerate'
+        $encode.ArgumentList | Should -Contain '1'
+        $encode.ArgumentList | Should -Contain '-start_number'
+        $encode.ArgumentList | Should -Contain '0'
+        $encode.ArgumentList | Should -Not -Contain '-frames:v'
+        $encode.ArgumentList[-1] |
             Should -BeExactly (Join-Path $evidenceDir 'recording.raw.mov')
-        $start.ArgumentList | Should -Not -Contain '-g'
         $result.device | Should -BeExactly 'mac-catalyst-host'
         (Get-Content -LiteralPath (Join-Path $evidenceDir 'evidence.json') -Raw |
             ConvertFrom-Json).device | Should -BeExactly 'mac-catalyst-host'
@@ -353,7 +380,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
 
         Invoke-TestRecording `
             -Harness $harness `
-            -Platform catalyst `
+            -Platform windows `
             -EvidenceDir (Join-Path $TestDrive 'success') | Out-Null
 
         $stops = Get-ProcessRequest $harness Stop
@@ -395,7 +422,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
         {
             Invoke-TestRecording `
                 -Harness $harness `
-                -Platform catalyst `
+                -Platform windows `
                 -EvidenceDir (Join-Path $TestDrive 'early-exit')
         } | Should -Throw '*exited during startup*'
 
@@ -412,7 +439,7 @@ Describe 'Record-Reproduction exact process lifecycle' {
         {
             Invoke-TestRecording `
                 -Harness $harness `
-                -Platform catalyst `
+                -Platform windows `
                 -EvidenceDir $evidenceDir
         } | Should -Throw '*Recording cleanup failed*exact stop failed*'
 
@@ -429,9 +456,9 @@ Describe 'Record-Reproduction exact process lifecycle' {
         {
             Invoke-TestRecording `
                 -Harness $harness `
-                -Platform catalyst `
+                -Platform windows `
                 -EvidenceDir $evidenceDir
-        } | Should -Throw '*catalyst recorder exited with code 1*capture denied*'
+        } | Should -Throw '*windows recorder exited with code 1*capture denied*'
 
         Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') |
             Should -BeFalse
@@ -456,20 +483,21 @@ Describe 'Record-Reproduction exact process lifecycle' {
         Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') | Should -BeFalse
     }
 
-    It 'accepts an exact forced Catalyst stop only when retained media validates' {
-        $harness = New-RecordingHarness `
-            -StopExitCode 137 `
-            -StopForcedTermination
-        $evidenceDir = Join-Path $TestDrive 'forced-catalyst-stop'
+    It 'fails closed when Catalyst Appium capture returns too few frames' {
+        $harness = New-RecordingHarness
+        $evidenceDir = Join-Path $TestDrive 'missing-catalyst-frames'
 
-        $result = Invoke-TestRecording `
-            -Harness $harness `
-            -Platform catalyst `
-            -EvidenceDir $evidenceDir
-
-        $result.platform | Should -BeExactly 'catalyst'
-        Test-Path -LiteralPath (Join-Path $evidenceDir 'evidence.json') |
-            Should -BeTrue
+        {
+            & $script:recordScript `
+                -Platform catalyst `
+                -EvidenceDir $evidenceDir `
+                -ReproductionScriptBlock {} `
+                -MaxDurationSeconds 10 `
+                -MaxVideoBytes 4096 `
+                -CommandRunner $harness.CommandRunner `
+                -ProcessRunner $harness.ProcessRunner `
+                -MediaProbe $harness.MediaProbe
+        } | Should -Throw '*between 2 and 128 frames; found 0*'
     }
 }
 
@@ -625,7 +653,7 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $evidenceDir = Join-Path $TestDrive 'path-mode'
 
         & $script:recordScript `
-            -Platform catalyst `
+            -Platform windows `
             -EvidenceDir $evidenceDir `
             -ReproductionScriptPath $reproductionPath `
             -MaxDurationSeconds 10 `

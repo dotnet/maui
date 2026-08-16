@@ -660,17 +660,7 @@ function Stop-Recorder {
     }
 
     $exitCode = [int](Get-ObjectPropertyValue $result 'ExitCode' 0)
-    $forcedTermination = [bool](Get-ObjectPropertyValue `
-        $result `
-        'ForcedTermination' `
-        $false)
-    $allowValidatedCatalystStop = (
-        $Kind -eq 'catalyst' -and
-        $WaitForNaturalExit -and
-        $forcedTermination -and
-        $exitCode -eq 137
-    )
-    if ($exitCode -ne 0 -and -not $allowValidatedCatalystStop) {
+    if ($exitCode -ne 0) {
         $output = @(
             Get-ObjectPropertyValue $result 'StdErr' ''
             Get-ObjectPropertyValue $result 'StdOut' ''
@@ -936,6 +926,11 @@ $thumbnailPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'thumbnail.p
 $previewPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'preview.gif'
 $evidencePath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'evidence.json'
 $evidenceTempPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'evidence.json.tmp'
+$catalystFramesDirectory = if ($Platform -eq 'catalyst') {
+    Initialize-SafeEvidenceDirectory -Path (Join-Path $evidenceRoot 'catalyst-frames')
+} else {
+    $null
+}
 $knownEvidencePaths = @(
     $rawVideoPath,
     $videoPath,
@@ -992,17 +987,7 @@ switch ($Platform) {
             $rawVideoPath
         )
     }
-    'catalyst' {
-        $recorderFile = '/usr/sbin/screencapture'
-        $recorderArguments = @(
-            '-v',
-            "-V$MaxDurationSeconds",
-            '-D1',
-            '-x',
-            '-C',
-            $rawVideoPath
-        )
-    }
+    'catalyst' {}
     'windows' {
         $recorderFile = 'ffmpeg'
         $recorderArguments = @(
@@ -1039,11 +1024,13 @@ $metadata = $null
 
 try {
     try {
-        $recorderHandle = Start-Recorder `
-            -FilePath $recorderFile `
-            -ArgumentList $recorderArguments `
-            -Kind $Platform `
-            -OutputPath $(if ($Platform -eq 'android') { $remoteAndroidPath } else { $rawVideoPath })
+        if ($Platform -ne 'catalyst') {
+            $recorderHandle = Start-Recorder `
+                -FilePath $recorderFile `
+                -ArgumentList $recorderArguments `
+                -Kind $Platform `
+                -OutputPath $(if ($Platform -eq 'android') { $remoteAndroidPath } else { $rawVideoPath })
+        }
         if ($Platform -eq 'android') {
             $resolvePidCommand = (
                 'i=0; while [ "$i" -lt 50 ]; do' +
@@ -1070,7 +1057,17 @@ try {
         }
         $captureClock = [System.Diagnostics.Stopwatch]::StartNew()
         try {
-            Invoke-TrustedReproduction -CaptureClock $captureClock
+            $previousCatalystFramesDirectory = $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY
+            try {
+                if ($Platform -eq 'catalyst') {
+                    $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY =
+                        $catalystFramesDirectory
+                }
+                Invoke-TrustedReproduction -CaptureClock $captureClock
+            } finally {
+                $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY =
+                    $previousCatalystFramesDirectory
+            }
         } catch {
             $reproductionError = $_
         }
@@ -1220,6 +1217,48 @@ try {
     }
     if ($cleanupErrors.Count -gt 0) {
         throw "Recording cleanup failed: $($cleanupErrors -join '; ')"
+    }
+
+    if ($Platform -eq 'catalyst') {
+        $frames = @(
+            Get-ChildItem -LiteralPath $catalystFramesDirectory -File |
+                Sort-Object Name
+        )
+        if ($frames.Count -lt 2 -or $frames.Count -gt 128) {
+            throw "Catalyst Appium capture must produce between 2 and 128 frames; found $($frames.Count)."
+        }
+        for ($index = 0; $index -lt $frames.Count; $index++) {
+            $expectedName = 'frame-{0:D4}.png' -f $index
+            if ($frames[$index].Name -cne $expectedName) {
+                throw "Catalyst Appium frame sequence is invalid at '$($frames[$index].Name)'."
+            }
+            [void](Assert-GeneratedFile `
+                -Path $frames[$index].FullName `
+                -Description "Catalyst Appium frame $expectedName" `
+                -MaxBytes 16MB)
+        }
+
+        [void](Invoke-RequiredCommand `
+            -FilePath 'ffmpeg' `
+            -ArgumentList @(
+                '-nostdin',
+                '-y',
+                '-hide_banner',
+                '-loglevel', 'error',
+                '-framerate', '1',
+                '-start_number', '0',
+                '-i', (Join-Path $catalystFramesDirectory 'frame-%04d.png'),
+                '-an',
+                '-vf', $boundedVideoFilter,
+                '-c:v', 'libx264',
+                '-preset', 'veryfast',
+                '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart',
+                $rawVideoPath
+            ) `
+            -TimeoutSeconds 60 `
+            -Purpose 'Encode Catalyst Appium frames' `
+            -ExpectedOutputPath $rawVideoPath)
     }
 
     $rawLimit = [long][Math]::Min(1GB, [Math]::Max($MaxVideoBytes, ($MaxVideoBytes * 4L)))
