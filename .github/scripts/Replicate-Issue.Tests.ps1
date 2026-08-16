@@ -702,6 +702,10 @@ exit 0
         $script:Source |
             Should -Match 'Do not use Task\.Delay, Thread\.Sleep, timers, Task\.Run'
         $script:Source |
+            Should -Match 'Never repeat a fully qualified type after CS0234 or CS0246'
+        $script:Source |
+            Should -Match 'do not guess namespaces'
+        $script:Source |
             Should -Match 'event-driven completion such as a TaskCompletionSource'
     }
 
