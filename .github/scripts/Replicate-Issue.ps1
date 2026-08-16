@@ -1240,7 +1240,7 @@ Perform only the Sandbox-authoring portion:
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind.
-3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, and assertTextContains require a locator object; back, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertNotExists, and back require `"value": null`. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable wrong outcomes, expose a stable semantic result in the app and assert a trimmed value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
+3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, and assertTextContains require a locator object; back, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertNotExists, and back require `"value": null`. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: non-bug outcomes MUST begin with `PASS:` and reproduced outcomes MUST begin with `BUG REPRODUCED:`. Assert the reproduced value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
@@ -1955,8 +1955,16 @@ try {
     Write-Host "ISSUE REPLICATION CANDIDATE READY: $candidatePath"
 }
 catch {
-    $reason = ConvertTo-ReplicationSafeLog $_.Exception.Message 500
-    $code = if ($stage -eq 'sandbox') { 'sandbox_not_reproduced' } else { 'verification_inconclusive' }
+    $rawReason = [string]$_.Exception.Message
+    $reason = ConvertTo-ReplicationSafeLog $rawReason 500
+    $code = if ($stage -eq 'sandbox' -and
+        $rawReason.Contains('REPLICATION_NOT_REPRODUCED', [StringComparison]::Ordinal)) {
+        'sandbox_not_reproduced'
+    } elseif ($stage -eq 'sandbox') {
+        'sandbox_inconclusive'
+    } else {
+        'verification_inconclusive'
+    }
     Write-BlockedCandidate -Stage $stage -Code $code -Reason $reason
     try {
         Restore-TransientSandbox

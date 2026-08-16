@@ -2378,6 +2378,7 @@ stages:
               foreach ($name in @(
                 'Assert-ReplicationTestGuard.ps1',
                 'Validate-ReplicationCandidate.ps1',
+                'Publish-ReplicationOutcome.ps1',
                 'Publish-ReplicationEvidence.ps1',
                 'Publish-ReplicationPR.ps1'
               )) {
@@ -2423,6 +2424,29 @@ stages:
               ffprobe -version | head -1
             displayName: 'Install publisher media validator'
             timeoutInMinutes: 10
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              try {
+                $outcome = & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationOutcome.ps1") `
+                  -CandidatePath "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json" `
+                  -IssueNumber ${{ parameters.IssueNumber }} `
+                  -Platform "${{ parameters.Platform }}" `
+                  -BuildId "$(Build.BuildId)" `
+                  -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
+                  -Label "s/try-latest-version"
+                if ($outcome.handled) {
+                  Write-Host "MauiBot published a not-reproduced issue outcome."
+                } else {
+                  Write-Host "No not-reproduced issue outcome requires publication."
+                }
+              }
+              finally {
+                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+              }
+            displayName: 'Publish MauiBot non-reproduction outcome'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'

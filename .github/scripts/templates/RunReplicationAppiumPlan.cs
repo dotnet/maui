@@ -45,7 +45,11 @@ try
     {
         var step = plan.Steps[index];
         Console.WriteLine($"STEP {index + 1}/{plan.Steps.Count}: {step.Description}");
-        ExecuteStep(driver, platform, step);
+        ExecuteStep(
+            driver,
+            platform,
+            step,
+            isFinalStep: index == plan.Steps.Count - 1);
         CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
     }
 
@@ -291,7 +295,11 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
     }
 }
 
-static void ExecuteStep(AppiumDriver driver, string platform, ReplicationStep step)
+static void ExecuteStep(
+    AppiumDriver driver,
+    string platform,
+    ReplicationStep step,
+    bool isFinalStep)
 {
     var timeout = TimeSpan.FromSeconds(step.TimeoutSeconds);
     switch (step.Action)
@@ -315,10 +323,20 @@ static void ExecuteStep(AppiumDriver driver, string platform, ReplicationStep st
             WaitForAbsence(driver, step.Locator!, timeout);
             break;
         case "assertTextEquals":
-            AssertElementText(driver, step, timeout, contains: false);
+            AssertElementText(
+                driver,
+                step,
+                timeout,
+                contains: false,
+                isFinalStep);
             break;
         case "assertTextContains":
-            AssertElementText(driver, step, timeout, contains: true);
+            AssertElementText(
+                driver,
+                step,
+                timeout,
+                contains: true,
+                isFinalStep);
             break;
         case "back":
             driver.Navigate().Back();
@@ -397,7 +415,8 @@ static void AssertElementText(
     AppiumDriver driver,
     ReplicationStep step,
     TimeSpan timeout,
-    bool contains)
+    bool contains,
+    bool isFinalStep)
 {
     var expected = step.Value!;
     var by = CreateLocator(step.Locator!);
@@ -432,6 +451,16 @@ static void AssertElementText(
     }
     catch (WebDriverTimeoutException exception)
     {
+        var normalizedActual = actual.Trim();
+        if (isFinalStep &&
+            (normalizedActual.StartsWith("PASS:", StringComparison.Ordinal) ||
+             normalizedActual.StartsWith("NO BUG:", StringComparison.Ordinal)))
+        {
+            var sentinel =
+                $"REPLICATION_NOT_REPRODUCED actual='{normalizedActual}'";
+            Console.WriteLine(sentinel);
+            throw new InvalidOperationException(sentinel, exception);
+        }
         var comparison = contains ? "contain" : "equal";
         throw new InvalidOperationException(
             $"Expected element text to {comparison} '{expected}', actual '{actual}'.",
