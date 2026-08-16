@@ -181,12 +181,17 @@ Describe 'Trusted replication pull request publishing' {
         } | Should -Throw '*targeted failure message*'
     }
 
-    It 'uses an add-only staged diff and creates a same-repository draft PR' {
+    It 'uses an add-only staged diff and creates a MauiBot fork draft PR' {
         $script:PrSource | Should -Match 'git diff --cached --name-status --diff-filter=ACDMRTUXB'
         $script:PrSource | Should -Match '\s--draft'
         $script:PrSource | Should -Match 'GH_TOKEN is required'
-        $script:PrSource | Should -Match "'push', 'origin'"
-        $script:PrSource | Should -Not -Match 'ForkOwner|ForkRepository|replication-fork'
+        $script:PrSource | Should -Match "\[string\]\`$SourceOwner = 'Maui-Bot'"
+        $script:PrSource | Should -Match "\[string\]\`$SourceRepository = 'maui'"
+        $script:PrSource | Should -Match "'push', \`$sourceRemote"
+        $script:PrSource.Contains('--head "$SourceOwner`:$branchName"') | Should -BeTrue
+        $script:PrSource | Should -Match 'GH_TOKEN must authenticate as the configured source owner'
+        $script:PrSource | Should -Match 'must be a writable fork'
+        $script:PrSource | Should -Match "'replication-fork'"
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
     }
 }

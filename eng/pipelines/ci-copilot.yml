@@ -2486,13 +2486,34 @@ stages:
                 if ($LASTEXITCODE -ne 0) {
                   throw "Publishing replication evidence failed."
                 }
+              }
+              finally {
+                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+                $checkoutToken = $null
+              }
+            displayName: 'Publish reproduction evidence'
+            env:
+              BUILD_BUILDID: $(Build.BuildId)
+              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
 
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
+                $key = ($line -split '\s+', 2)[0]
+                if ($key) {
+                  git config --unset-all $key 2>$null
+                }
+              }
+
+              try {
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
                   -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
                   -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
                   -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
                   -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
                   -RepositoryRoot "$(Build.SourcesDirectory)" `
+                  -SourceOwner "Maui-Bot" `
+                  -SourceRepository "maui" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
                   -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json"
                 if ($LASTEXITCODE -ne 0) {
@@ -2508,11 +2529,11 @@ stages:
               }
               finally {
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
-                $checkoutToken = $null
               }
             name: PublishReplicationPR
-            displayName: 'Publish evidence and create draft reproduction PR'
+            displayName: 'Create MauiBot draft reproduction PR'
             env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
               BUILD_BUILDID: $(Build.BuildId)
               SYSTEM_JOBATTEMPT: $(System.JobAttempt)
 

@@ -468,10 +468,17 @@ InitializeComponent();
 
     It 'prepares the app before starting a bounded recording-only run' {
         $script:Source | Should -Match "'-PrepareOnly'"
+        $script:Source | Should -Match "'-LaunchOnly'"
         $script:Source | Should -Match "'-SkipBuildDeploy'"
+        $script:Source | Should -Match 'Launching the Sandbox before evidence recording'
         $script:Source | Should -Match ([regex]::Escape("'-RepoRoot', `$repoRoot"))
         $script:BuildSandboxSource | Should -Match '\[string\]\$RepoRoot'
         $script:BuildSandboxSource | Should -Match 'Repository root does not exist'
+        $script:BuildSandboxSource | Should -Match 'Prepared Sandbox launch settled before evidence recording'
+        $script:TrustedAppiumSource | Should -Match '"appium:forceAppLaunch", false'
+        $script:TrustedAppiumSource | Should -Match '"appium:dontStopAppOnReset", true'
+        $script:TrustedAppiumSource | Should -Match 'MAUI_REPLICATION_RECORDING_START_MARKER'
+        $script:TrustedAppiumSource | Should -Match 'WriteRecordingStartMarker\(\)'
         $script:Source | Should -Match "'-MaxDurationSeconds', '180'"
         $script:Source | Should -Match 'Record-Reproduction\.ps1'
     }

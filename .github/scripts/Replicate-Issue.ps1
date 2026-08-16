@@ -1734,6 +1734,22 @@ try {
                 -LogPath $prepareLog `
                 -Description 'Preparing the Sandbox app'
 
+            $launchArgs = @(
+                '-Platform', $Platform,
+                '-Configuration', 'Debug',
+                '-RepoRoot', $repoRoot,
+                '-SkipBuildDeploy',
+                '-LaunchOnly'
+            )
+            if ($DeviceUdid) {
+                $launchArgs += @('-DeviceUdid', $DeviceUdid)
+            }
+            Invoke-LoggedChildProcess `
+                -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+                -Arguments $launchArgs `
+                -LogPath (Join-Path $sandboxArtifactDir "launch-attempt-$attempt.log") `
+                -Description 'Launching the Sandbox before evidence recording'
+
             $escapedRepoRoot = $repoRoot.Replace("'", "''")
             $wrapperArgs = @(
                 '$ErrorActionPreference = ''Stop''',

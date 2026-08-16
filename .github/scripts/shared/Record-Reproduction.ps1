@@ -959,6 +959,9 @@ $thumbnailPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'thumbnail.p
 $previewPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'preview.gif'
 $evidencePath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'evidence.json'
 $evidenceTempPath = Get-SafeEvidencePath -Root $evidenceRoot -FileName 'evidence.json.tmp'
+$recordingStartMarkerPath = Get-SafeEvidencePath `
+    -Root $evidenceRoot `
+    -FileName 'recording-action-start.txt'
 $catalystFramesDirectory = if ($Platform -eq 'catalyst') {
     Initialize-SafeEvidenceDirectory -Path (Join-Path $evidenceRoot 'catalyst-frames')
 } else {
@@ -980,7 +983,8 @@ $knownEvidencePaths = @(
     $thumbnailPath,
     $previewPath,
     $evidencePath,
-    $evidenceTempPath
+    $evidenceTempPath,
+    $recordingStartMarkerPath
 )
 foreach ($knownPath in $knownEvidencePaths) {
     Remove-KnownEvidenceFile -Path $knownPath
@@ -1069,9 +1073,11 @@ $cleanupErrors = [System.Collections.Generic.List[string]]::new()
 $captureClock = $null
 $success = $false
 $metadata = $null
+$recordingStartedAt = $null
 
 try {
     try {
+        $recordingStartedAt = [DateTimeOffset]::UtcNow
         if ($Platform -ne 'catalyst') {
             $recorderHandle = Start-Recorder `
                 -FilePath $recorderFile `
@@ -1106,15 +1112,21 @@ try {
         $captureClock = [System.Diagnostics.Stopwatch]::StartNew()
         try {
             $previousCatalystFramesDirectory = $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY
+            $previousRecordingStartMarker =
+                $env:MAUI_REPLICATION_RECORDING_START_MARKER
             try {
                 if ($Platform -eq 'catalyst') {
                     $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY =
                         $catalystFramesDirectory
                 }
+                $env:MAUI_REPLICATION_RECORDING_START_MARKER =
+                    $recordingStartMarkerPath
                 Invoke-TrustedReproduction -CaptureClock $captureClock
             } finally {
                 $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY =
                     $previousCatalystFramesDirectory
+                $env:MAUI_REPLICATION_RECORDING_START_MARKER =
+                    $previousRecordingStartMarker
             }
         } catch {
             $reproductionError = $_
@@ -1315,28 +1327,61 @@ try {
         -Description 'Raw recording' `
         -MaxBytes $rawLimit)
 
+    $trimStartSeconds = 0.0
+    if ($Platform -ne 'catalyst' -and
+        $null -ne $recordingStartedAt -and
+        (Test-Path -LiteralPath $recordingStartMarkerPath -PathType Leaf)) {
+        $markerItem = Assert-GeneratedFile `
+            -Path $recordingStartMarkerPath `
+            -Description 'Recording action start marker' `
+            -MaxBytes 64
+        $markerText = Get-Content -LiteralPath $markerItem.FullName -Raw
+        $markerMilliseconds = 0L
+        if (-not [long]::TryParse(
+            $markerText.Trim(),
+            [Globalization.NumberStyles]::None,
+            [Globalization.CultureInfo]::InvariantCulture,
+            [ref]$markerMilliseconds)) {
+            throw 'Recording action start marker is invalid.'
+        }
+        $actionStartedAt = [DateTimeOffset]::FromUnixTimeMilliseconds(
+            $markerMilliseconds)
+        $trimStartSeconds = [Math]::Max(
+            0.0,
+            ($actionStartedAt - $recordingStartedAt).TotalSeconds - 0.25)
+        $trimStartSeconds = [Math]::Min(
+            $trimStartSeconds,
+            [Math]::Max(0.0, $MaxDurationSeconds - 2.0))
+    }
+    $trimStartArgument = ConvertTo-InvariantArgument $trimStartSeconds
+    $normalizeArguments = @(
+        '-nostdin',
+        '-y',
+        '-hide_banner',
+        '-loglevel', 'error',
+        '-protocol_whitelist', 'file,pipe'
+    )
+    if ($trimStartSeconds -gt 0) {
+        $normalizeArguments += @('-ss', $trimStartArgument)
+    }
+    $normalizeArguments += @(
+        '-i', $rawVideoPath,
+        '-map', '0:v:0',
+        '-an',
+        '-vf', $normalizationVideoFilter,
+        '-r', [string][int]$maxFrameRate,
+        '-t', $durationArgument,
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '28',
+        '-pix_fmt', 'yuv420p',
+        '-movflags', '+faststart',
+        '-fs', [string]$MaxVideoBytes,
+        $videoPath
+    )
     [void](Invoke-RequiredCommand `
         -FilePath 'ffmpeg' `
-        -ArgumentList @(
-            '-nostdin',
-            '-y',
-            '-hide_banner',
-            '-loglevel', 'error',
-            '-protocol_whitelist', 'file,pipe',
-            '-i', $rawVideoPath,
-            '-map', '0:v:0',
-            '-an',
-            '-vf', $normalizationVideoFilter,
-            '-r', [string][int]$maxFrameRate,
-            '-t', $durationArgument,
-            '-c:v', 'libx264',
-            '-preset', 'veryfast',
-            '-crf', '28',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', '+faststart',
-            '-fs', [string]$MaxVideoBytes,
-            $videoPath
-        ) `
+        -ArgumentList $normalizeArguments `
         -TimeoutSeconds ($MaxDurationSeconds + 30) `
         -Purpose 'Normalize recording' `
         -ExpectedOutputPath $videoPath)
@@ -1439,6 +1484,7 @@ try {
     $success = $true
 } finally {
     Remove-KnownEvidenceFile -Path $rawVideoPath
+    Remove-KnownEvidenceFile -Path $recordingStartMarkerPath
     if ($success -and $Platform -eq 'catalyst') {
         Remove-KnownEvidenceDirectory `
             -Path $catalystFramesDirectory `

@@ -59,18 +59,23 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "artifact: 'ReplicationArtifacts'"
     }
 
-    It 'validates before extracting the trusted checkout credential for publication' {
+    It 'validates before separating trusted evidence and MauiBot PR credentials' {
         $validationIndex = $script:Pipeline.IndexOf("displayName: 'Validate replication candidate without credentials'")
         $credentialIndex = $script:Pipeline.IndexOf('$checkoutToken = $null', $validationIndex)
-        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Publish evidence and create draft reproduction PR'")
+        $evidenceIndex = $script:Pipeline.IndexOf("displayName: 'Publish reproduction evidence'")
+        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Create MauiBot draft reproduction PR'")
 
         $validationIndex | Should -BeGreaterThan -1
         $validationIndex | Should -BeLessThan $credentialIndex
-        $credentialIndex | Should -BeLessThan $publicationIndex
+        $credentialIndex | Should -BeLessThan $evidenceIndex
+        $evidenceIndex | Should -BeLessThan $publicationIndex
         $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
+        $script:Pipeline | Should -Match "(?s)displayName: 'Create MauiBot draft reproduction PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
+        $script:Pipeline | Should -Match '-SourceOwner "Maui-Bot"'
+        $script:Pipeline | Should -Match '-SourceRepository "maui"'
         $script:Pipeline | Should -Match 'Remove-Item Env:GH_TOKEN'
         $script:Pipeline | Should -Not -Match 'GH_REPLICATION_TOKEN'
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'
@@ -79,7 +84,10 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "'Assert-ReplicationTestGuard\.ps1'"
         $script:Pipeline | Should -Match '\$validation\.Count -ne 1'
         $script:Pipeline | Should -Match '\$validation\[0\]\.validationPassed -ne \$true'
-        $script:Pipeline | Should -Not -Match '(?s)Validate-ReplicationCandidate\.ps1.*?\$LASTEXITCODE'
+        $validationTask = $script:Pipeline.Substring(
+            $script:Pipeline.LastIndexOf('- pwsh: |', $validationIndex),
+            $credentialIndex - $script:Pipeline.LastIndexOf('- pwsh: |', $validationIndex))
+        $validationTask | Should -Not -Match '\$LASTEXITCODE'
     }
 
     It 'preserves PR telemetry while adding operation and issue target fields' {

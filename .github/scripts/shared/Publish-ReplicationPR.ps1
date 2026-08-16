@@ -34,6 +34,12 @@ param(
     [ValidatePattern('^[A-Za-z0-9._/-]+$')]
     [string]$BaseBranch = 'main',
 
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
+    [string]$SourceOwner = 'Maui-Bot',
+
+    [ValidatePattern('^[A-Za-z0-9._-]+$')]
+    [string]$SourceRepository = 'maui',
+
     [string]$BuildUrl = '',
 
     [string]$OutputPath = '',
@@ -251,6 +257,24 @@ if (-not $DryRun) {
         throw 'GH_TOKEN is required to publish the reproduction pull request.'
     }
 
+    $authenticatedLogin = (& gh api user --jq '.login').Trim()
+    if ($LASTEXITCODE -ne 0 -or
+        -not $authenticatedLogin.Equals($SourceOwner, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "GH_TOKEN must authenticate as the configured source owner '$SourceOwner'."
+    }
+
+    $sourceRepositoryJson = & gh api "repos/$SourceOwner/$SourceRepository"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to inspect source fork $SourceOwner/$SourceRepository."
+    }
+    $sourceRepositoryInfo = $sourceRepositoryJson | ConvertFrom-Json
+    $expectedParent = "$TargetOwner/$TargetRepository"
+    if ($sourceRepositoryInfo.fork -ne $true -or
+        [string]$sourceRepositoryInfo.parent.full_name -ne $expectedParent -or
+        $sourceRepositoryInfo.permissions.push -ne $true) {
+        throw "$SourceOwner/$SourceRepository must be a writable fork of $expectedParent."
+    }
+
     Push-Location $RepositoryRoot
     try {
         $status = & git status --porcelain
@@ -298,6 +322,14 @@ if (-not $DryRun) {
 
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('config', 'user.name', 'maui-copilot-replication') -Description 'Configuring git author'
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('config', 'user.email', '223556219+Copilot@users.noreply.github.com') -Description 'Configuring git email'
+        Invoke-ReplicationExternalCommand -FilePath 'gh' -Arguments @('auth', 'setup-git') -Description 'Configuring bot Git authentication'
+
+        $sourceRemote = 'replication-fork'
+        & git remote remove $sourceRemote 2>$null
+        Invoke-ReplicationExternalCommand `
+            -FilePath 'git' `
+            -Arguments @('remote', 'add', $sourceRemote, "https://github.com/$SourceOwner/$SourceRepository.git") `
+            -Description 'Configuring reproduction fork'
 
         $commitMessage = @"
 Add failing reproduction for #$issueNumber on $platform
@@ -308,7 +340,7 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('commit', '-m', $commitMessage) -Description 'Committing reproduction test'
         Invoke-ReplicationExternalCommand `
             -FilePath 'git' `
-            -Arguments @('push', 'origin', "HEAD:refs/heads/$branchName") `
+            -Arguments @('push', $sourceRemote, "HEAD:refs/heads/$branchName") `
             -Description 'Pushing reproduction branch'
 
         $bodyPath = Join-Path ([IO.Path]::GetTempPath()) "maui-replication-pr-$issueNumber-$buildId.md"
@@ -316,7 +348,7 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             $prBody | Set-Content -LiteralPath $bodyPath -Encoding utf8NoBOM
             $prUrl = & gh pr create `
                 --repo "$TargetOwner/$TargetRepository" `
-                --head $branchName `
+                --head "$SourceOwner`:$branchName" `
                 --base $BaseBranch `
                 --title $prTitle `
                 --body-file $bodyPath `

@@ -50,11 +50,16 @@ param(
 
     [switch]$PrepareOnly,
 
-    [switch]$SkipBuildDeploy
+    [switch]$SkipBuildDeploy,
+
+    [switch]$LaunchOnly
 )
 
-if ($PrepareOnly -and $SkipBuildDeploy) {
-    throw 'PrepareOnly and SkipBuildDeploy cannot be used together.'
+if ($PrepareOnly -and ($SkipBuildDeploy -or $LaunchOnly)) {
+    throw 'PrepareOnly cannot be combined with SkipBuildDeploy or LaunchOnly.'
+}
+if ($LaunchOnly -and -not $SkipBuildDeploy) {
+    throw 'LaunchOnly requires SkipBuildDeploy.'
 }
 
 # Script configuration
@@ -270,6 +275,46 @@ if ($PrepareOnly) {
     return
 }
 
+$windowsApp = $null
+if ($Platform -eq "windows") {
+    $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
+    $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
+        Get-ChildItem `
+            -LiteralPath $windowsBin `
+            -Filter "Maui.Controls.Sample.Sandbox.exe" `
+            -Recurse `
+            -File `
+            -ErrorAction SilentlyContinue |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
+    if (-not $windowsApp) {
+        throw "Windows Sandbox executable was not found under '$windowsBin'."
+    }
+}
+
+if ($LaunchOnly) {
+    Write-Step "Launching the prepared Sandbox before evidence recording..."
+    switch ($Platform) {
+        "android" {
+            & adb -s $DeviceUdid shell am start -W `
+                -n "com.microsoft.maui.sandbox/com.microsoft.maui.sandbox.MainActivity"
+            if ($LASTEXITCODE -ne 0) {
+                throw "Launching the prepared Android Sandbox failed."
+            }
+        }
+        "ios" {
+            & xcrun simctl launch --terminate-running-process `
+                $DeviceUdid $AppBundleId
+            if ($LASTEXITCODE -ne 0) {
+                throw "Launching the prepared iOS Sandbox failed."
+            }
+        }
+        "windows" {
+            Start-Process -FilePath $windowsApp -WorkingDirectory (Split-Path -Parent $windowsApp)
+        }
+    }
+}
+
 # For MacCatalyst, launch the app BEFORE Appium test (similar to BuildAndRunHostApp.ps1)
 # We use dotnet run with StandardOutputPath/StandardErrorPath to capture Console.WriteLine
 # See: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-properties.md#runwithopen
@@ -300,21 +345,22 @@ if ($Platform -eq "catalyst") {
     $stderrFile = "$deviceLogFile.stderr"
     $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
         
-    Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
-    & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
-        -p:StandardOutputPath=$deviceLogFile `
-        -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
-        
-    # dotnet run exits immediately when using 'open', give app time to launch
-    Start-Sleep -Seconds 3
-        
-    # Get app process ID for later cleanup
     $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($catalystAppProcess) {
-        Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
-    } else {
-        Write-Success "MacCatalyst Sandbox app launched with log capture"
+    if (-not $catalystAppProcess) {
+        Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
+        & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
+            -p:StandardOutputPath=$deviceLogFile `
+            -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
+        Start-Sleep -Seconds 3
+        $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
     }
+    Write-Success "MacCatalyst Sandbox app is running$(if ($catalystAppProcess) { " (PID: $($catalystAppProcess.Id))" })."
+}
+
+if ($LaunchOnly) {
+    Start-Sleep -Seconds 5
+    Write-Success "Prepared Sandbox launch settled before evidence recording"
+    return
 }
 
 #endregion
@@ -421,19 +467,6 @@ try {
     $env:DEVICE_UDID = $DeviceUdid
     $env:REPLICATION_PLATFORM = $Platform
     if ($Platform -eq "windows") {
-        $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
-        $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
-            Get-ChildItem `
-                -LiteralPath $windowsBin `
-                -Filter "Maui.Controls.Sample.Sandbox.exe" `
-                -Recurse `
-                -File `
-                -ErrorAction SilentlyContinue |
-                Select-Object -First 1 -ExpandProperty FullName
-        }
-        if (-not $windowsApp) {
-            throw "Windows Sandbox executable was not found under '$windowsBin'."
-        }
         $env:REPLICATION_WINDOWS_APP_PATH = $windowsApp
     }
     

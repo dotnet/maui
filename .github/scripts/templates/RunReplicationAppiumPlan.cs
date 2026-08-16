@@ -39,6 +39,7 @@ try
         : null;
     var catalystFrameIndex = 0;
     CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
+    WriteRecordingStartMarker();
 
     for (var index = 0; index < plan.Steps.Count; index++)
     {
@@ -70,6 +71,37 @@ static string RequireEnvironmentValue(string name)
         throw new InvalidOperationException($"Required environment value '{name}' is missing.");
     }
     return value;
+}
+
+static void WriteRecordingStartMarker()
+{
+    var markerPath = Environment.GetEnvironmentVariable(
+        "MAUI_REPLICATION_RECORDING_START_MARKER");
+    if (string.IsNullOrWhiteSpace(markerPath))
+    {
+        return;
+    }
+    if (!Path.IsPathFullyQualified(markerPath))
+    {
+        throw new InvalidOperationException(
+            "Recording start marker path must be fully qualified.");
+    }
+    var parent = Path.GetDirectoryName(markerPath);
+    if (string.IsNullOrWhiteSpace(parent) || !Directory.Exists(parent))
+    {
+        throw new InvalidOperationException(
+            "Recording start marker directory is unavailable.");
+    }
+
+    using var stream = new FileStream(
+        markerPath,
+        FileMode.CreateNew,
+        FileAccess.Write,
+        FileShare.None);
+    using var writer = new StreamWriter(stream);
+    writer.Write(
+        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            .ToString(System.Globalization.CultureInfo.InvariantCulture));
 }
 
 static void CaptureCatalystFrame(
@@ -196,6 +228,7 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
                 "appium:appActivity",
                 "com.microsoft.maui.sandbox.MainActivity");
             options.AddAdditionalAppiumOption("appium:noReset", true);
+            options.AddAdditionalAppiumOption("appium:dontStopAppOnReset", true);
             options.AddAdditionalAppiumOption(
                 "appium:uiautomator2ServerInstallTimeout",
                 120_000);
@@ -205,6 +238,9 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
             options.PlatformName = "iOS";
             options.AutomationName = "XCUITest";
             options.AddAdditionalAppiumOption("appium:bundleId", "com.microsoft.maui.sandbox");
+            options.AddAdditionalAppiumOption("appium:noReset", true);
+            options.AddAdditionalAppiumOption("appium:forceAppLaunch", false);
+            options.AddAdditionalAppiumOption("appium:shouldTerminateApp", false);
             options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
             return new IOSDriver(server, options);
         case "catalyst":
@@ -215,12 +251,15 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
             return new MacDriver(server, options);
         case "windows":
             var appPath = RequireEnvironmentValue("REPLICATION_WINDOWS_APP_PATH");
-            launchedWindowsApp = Process.Start(new ProcessStartInfo(appPath)
-            {
-                UseShellExecute = false,
-                WorkingDirectory = Path.GetDirectoryName(appPath)
-                    ?? throw new InvalidOperationException("Windows app directory is unavailable.")
-            }) ?? throw new InvalidOperationException("Windows Sandbox process did not start.");
+            launchedWindowsApp = Array.Find(
+                Process.GetProcessesByName(Path.GetFileNameWithoutExtension(appPath)),
+                process => !process.HasExited);
+            launchedWindowsApp ??= Process.Start(new ProcessStartInfo(appPath)
+                {
+                    UseShellExecute = false,
+                    WorkingDirectory = Path.GetDirectoryName(appPath)
+                        ?? throw new InvalidOperationException("Windows app directory is unavailable.")
+                }) ?? throw new InvalidOperationException("Windows Sandbox process did not start.");
             var windowDeadline = DateTime.UtcNow.AddSeconds(30);
             while (DateTime.UtcNow < windowDeadline)
             {
