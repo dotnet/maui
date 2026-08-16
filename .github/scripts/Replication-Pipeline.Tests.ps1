@@ -44,13 +44,13 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'gh api -X POST repos/dotnet/maui/forks'
         $script:Pipeline | Should -Match 'newly created MauiBot fork did not become writable within 60 seconds'
         $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
-        $migrationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing reproduction PRs to testing fork'")
+        $migrationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing reproduction PRs and comments to testing fork'")
         $copilotJobIndex = $script:Pipeline.IndexOf("- job: CopilotReview")
         $migrationIndex | Should -BeGreaterThan -1
         $migrationIndex | Should -BeLessThan $copilotJobIndex
-        $script:Pipeline.Contains('& gh api -X POST "repos/$targetRepository/pulls" --input -') | Should -BeTrue
-        $script:Pipeline.Contains('& gh api -X PATCH "repos/$sourceRepository/pulls/$($pull.number)" --input -') | Should -BeTrue
-        $script:Pipeline.Contains('Testing-fork replacement for upstream PR #$($pull.number) has no URL') | Should -BeTrue
+        $script:Pipeline | Should -Match 'sparseCheckoutDirectories: \.github/scripts/shared'
+        $script:Pipeline | Should -Match 'Move-ReplicationPRsToTestingFork\.ps1'
+        $script:Pipeline | Should -Match 'Move-ReplicationPRCommentsToTestingFork\.ps1'
         $script:Pipeline | Should -Match 'git checkout --detach origin/main'
         $restoreIndex = $script:Pipeline.IndexOf("displayName: 'Restore clean replication baseline'")
         $replicateIndex = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")

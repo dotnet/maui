@@ -99,9 +99,12 @@ stages:
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
-        timeoutInMinutes: 10
+        timeoutInMinutes: 45
         steps:
-          - checkout: none
+          - checkout: self
+            fetchDepth: 1
+            persistCredentials: false
+            sparseCheckoutDirectories: .github/scripts/shared
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               $login = (& gh api user --jq '.login').Trim()
@@ -169,77 +172,28 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $sourceRepository = 'dotnet/maui'
-              $targetRepository = 'kubaflo/maui'
-              $markerPattern = '<!--\s*MAUI_COPILOT_REPLICATION\s+issue=(\d+)\s+platform=([a-z0-9-]+)\s*-->'
-
-              $sourcePulls = @(
-                & gh api "repos/$sourceRepository/pulls?state=open&per_page=100" |
-                  ConvertFrom-Json -Depth 30
-              ) | Where-Object {
-                [string]$_.user.login -eq 'MauiBot' -and
-                [string]$_.body -match $markerPattern
-              }
+              $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
+              & (Join-Path $sharedRoot "Move-ReplicationPRsToTestingFork.ps1") `
+                -SourceOwner "dotnet" `
+                -SourceRepository "maui" `
+                -TargetOwner "kubaflo" `
+                -TargetRepository "maui" `
+                -TargetBaseBranch "main" `
+                -OutputPath "$(Agent.TempDirectory)/migrated-prs.json"
               if ($LASTEXITCODE -ne 0) {
-                throw "Unable to list open MauiBot reproduction PRs in $sourceRepository."
+                throw 'Moving existing reproduction PRs to the testing fork failed.'
               }
 
-              $targetPulls = @(
-                & gh api "repos/$targetRepository/pulls?state=open&per_page=100" |
-                  ConvertFrom-Json -Depth 30
-              )
+              & (Join-Path $sharedRoot "Move-ReplicationPRCommentsToTestingFork.ps1") `
+                -SourceOwner "dotnet" `
+                -SourceRepository "maui" `
+                -TargetOwner "kubaflo" `
+                -TargetRepository "maui" `
+                -OutputPath "$(Agent.TempDirectory)/migrated-pr-comments.json"
               if ($LASTEXITCODE -ne 0) {
-                throw "Unable to list open reproduction PRs in $targetRepository."
+                throw 'Moving reproduction PR comments to the testing fork failed.'
               }
-              $targetByMarker = @{}
-              foreach ($pull in $targetPulls) {
-                $match = [regex]::Match([string]$pull.body, $markerPattern)
-                if ($match.Success) {
-                  $targetByMarker["$($match.Groups[1].Value)/$($match.Groups[2].Value)"] = $pull
-                }
-              }
-
-              foreach ($pull in $sourcePulls) {
-                $match = [regex]::Match([string]$pull.body, $markerPattern)
-                $key = "$($match.Groups[1].Value)/$($match.Groups[2].Value)"
-                if ([string]$pull.head.repo.full_name -ne 'MauiBot/maui' -or
-                    [string]$pull.head.repo.owner.login -ne 'MauiBot' -or
-                    [string]::IsNullOrWhiteSpace([string]$pull.head.ref)) {
-                  throw "Upstream PR #$($pull.number) does not use a MauiBot/maui head branch."
-                }
-
-                $targetPull = $targetByMarker[$key]
-                if (-not $targetPull) {
-                  $createPayload = [ordered]@{
-                    title = [string]$pull.title
-                    head = "MauiBot:$($pull.head.ref)"
-                    base = 'main'
-                    body = [string]$pull.body
-                    draft = $true
-                  } | ConvertTo-Json -Depth 10
-                  $targetPull = $createPayload |
-                    & gh api -X POST "repos/$targetRepository/pulls" --input - |
-                    ConvertFrom-Json -Depth 30
-                  if ($LASTEXITCODE -ne 0 -or
-                      [string]::IsNullOrWhiteSpace([string]$targetPull.html_url)) {
-                    throw "Creating a testing-fork replacement for upstream PR #$($pull.number) failed."
-                  }
-                  $targetByMarker[$key] = $targetPull
-                }
-
-                if ([string]::IsNullOrWhiteSpace([string]$targetPull.html_url)) {
-                  throw "Testing-fork replacement for upstream PR #$($pull.number) has no URL."
-                }
-                '{"state":"closed"}' |
-                  & gh api -X PATCH "repos/$sourceRepository/pulls/$($pull.number)" --input - |
-                  Out-Null
-                if ($LASTEXITCODE -ne 0) {
-                  throw "Closing upstream reproduction PR #$($pull.number) failed."
-                }
-                Write-Host "Moved $($pull.html_url) to $($targetPull.html_url)."
-              }
-              Write-Host "Migrated $($sourcePulls.Count) open MauiBot reproduction PR(s) to $targetRepository."
-            displayName: 'Move existing reproduction PRs to testing fork'
+            displayName: 'Move existing reproduction PRs and comments to testing fork'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
 
