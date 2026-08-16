@@ -1249,8 +1249,8 @@ Rewrite test-proposal.json only to refine expectedFailureSignature, reproduction
         'repair' {
             return $common + @"
 
-The trusted failure-only verifier rejected the generated test.
-Read "$testProposalPath" and "$verificationDir/verification-console.log".
+Trusted generated-source validation or the failure-only verifier rejected the generated test.
+Read "$testProposalPath" and, if it exists, "$verificationDir/verification-console.log".
 Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
@@ -1774,13 +1774,15 @@ try {
         -Attempt 1
     $plannedTestProposal = Read-TestProposal -ValidateNewTargets
     $plannedTestFiles = @(Get-ProposedTestFiles -Proposal $plannedTestProposal)
+    $repairFailureSummary = ''
 
     for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
         $testAttempts = $attempt
         $phase = if ($attempt -eq 1) { 'test' } else { 'repair' }
-        $failureSummary = ''
+        $failureSummary = $repairFailureSummary
         if ($attempt -gt 1 -and (Test-Path -LiteralPath (Join-Path $verificationDir 'verification-result.json'))) {
-            $failureSummary = Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw
+            $failureSummary += [Environment]::NewLine
+            $failureSummary += Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw
         }
 
         $testWritePaths = @($testProposalPath)
@@ -1791,30 +1793,32 @@ try {
             -WritePaths $testWritePaths `
             -Attempt $attempt
 
-        $generatedFiles = @(Get-GeneratedTestFiles)
-        $testProposal = Read-TestProposal -ActualFiles $generatedFiles
-        Assert-TestProposalMatchesPlan `
-            -Plan $plannedTestProposal `
-            -Proposal $testProposal
-        $verifierTestType = Get-VerifierTestType -TestType ([string]$testProposal.testType)
-        Assert-GeneratedTestContent `
-            -Files $generatedFiles `
-            -Issue $IssueNumber `
-            -TestType $verifierTestType
-        $verifierMetadata = Resolve-ReplicationVerifierMetadata `
-            -Files $plannedTestFiles `
-            -TestType $verifierTestType `
-            -TestFilter ([string]$testProposal.testFilter) `
-            -Platform $Platform
-
-        foreach ($file in $generatedFiles) {
-            & git add -N -- $file
-            if ($LASTEXITCODE -ne 0) {
-                throw "Unable to expose generated test to the failure-only verifier: $file"
-            }
-        }
-
+        $intentToAddApplied = $false
         try {
+            $generatedFiles = @(Get-GeneratedTestFiles)
+            $testProposal = Read-TestProposal -ActualFiles $generatedFiles
+            Assert-TestProposalMatchesPlan `
+                -Plan $plannedTestProposal `
+                -Proposal $testProposal
+            $verifierTestType = Get-VerifierTestType -TestType ([string]$testProposal.testType)
+            Assert-GeneratedTestContent `
+                -Files $generatedFiles `
+                -Issue $IssueNumber `
+                -TestType $verifierTestType
+            $verifierMetadata = Resolve-ReplicationVerifierMetadata `
+                -Files $plannedTestFiles `
+                -TestType $verifierTestType `
+                -TestFilter ([string]$testProposal.testFilter) `
+                -Platform $Platform
+
+            foreach ($file in $generatedFiles) {
+                & git add -N -- $file
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Unable to expose generated test to the failure-only verifier: $file"
+                }
+            }
+            $intentToAddApplied = $true
+
             $verificationArgs = @(
                 '-IssueNumber', [string]$IssueNumber,
                 '-Platform', $Platform,
@@ -1840,9 +1844,12 @@ try {
             break
         }
         catch {
-            & git reset -- @generatedFiles 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-                throw 'Failed to clear generated-test intent-to-add state after verification.'
+            $repairFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 4000
+            if ($intentToAddApplied) {
+                & git reset -- @generatedFiles 2>&1 | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    throw 'Failed to clear generated-test intent-to-add state after verification.'
+                }
             }
             if ($attempt -eq $MaxTestAttempts) {
                 throw

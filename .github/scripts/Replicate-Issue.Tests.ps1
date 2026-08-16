@@ -527,6 +527,15 @@ exit 0
         $script:Source | Should -Match 'verificationPassed'
     }
 
+    It 'repairs generated tests that fail the trusted guard before verification' {
+        $script:Source |
+            Should -Match 'try\s*\{\s*\$generatedFiles = @\(Get-GeneratedTestFiles\)'
+        $script:Source |
+            Should -Match '\$repairFailureSummary = ConvertTo-ReplicationSafeLog \$_.Exception.Message 4000'
+        $script:Source |
+            Should -Match 'if \(\$intentToAddApplied\)\s*\{\s*& git reset'
+    }
+
     It 'requires exact reasons for every rejected lighter test type' {
         {
             Assert-LighterTestRejections `
