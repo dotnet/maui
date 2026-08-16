@@ -343,6 +343,17 @@ static void ExecuteStep(
         case "back":
             driver.Navigate().Back();
             break;
+        case "restartApp":
+            var appId = platform switch
+            {
+                "android" => "com.microsoft.maui.sandbox",
+                "ios" => "com.microsoft.maui.sandbox",
+                _ => throw new InvalidOperationException(
+                    $"restartApp is unsupported on replication platform '{platform}'.")
+            };
+            driver.TerminateApp(appId);
+            driver.ActivateApp(appId);
+            break;
         case "swipe":
             Swipe(driver, platform, step.Value!);
             break;

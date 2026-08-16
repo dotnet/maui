@@ -437,6 +437,9 @@ InitializeComponent();
         $script:BuildSandboxSource | Should -Match 'shell pidof -s com\.microsoft\.maui\.sandbox'
         $script:TrustedAppiumSource |
             Should -Match '"appium:uiautomator2ServerInstallTimeout",\s*120_000'
+        $script:TrustedAppiumSource | Should -Match 'case "restartApp"'
+        $script:TrustedAppiumSource | Should -Match 'driver\.TerminateApp\(appId\)'
+        $script:TrustedAppiumSource | Should -Match 'driver\.ActivateApp\(appId\)'
     }
 
     It 'uses typed Appium properties for reserved Windows capabilities' {
@@ -692,7 +695,7 @@ exit 0
         $script:Source |
             Should -Match 'Every string must be non-empty and already trimmed'
         $script:Source |
-            Should -Match 'back, swipe, and setOrientation require `"locator": null`'
+            Should -Match 'back, restartApp, swipe, and setOrientation require `"locator": null`'
         $script:Source |
             Should -Match 'Do not use assertNotExists or any intermediate assertion'
         $script:Source |
@@ -705,6 +708,8 @@ exit 0
             Should -Match 'Never repeat a fully qualified type after CS0234 or CS0246'
         $script:Source |
             Should -Match 'do not guess namespaces'
+        $script:Source |
+            Should -Match 'evidence that starts with the failure already latched is invalid'
         $script:Source |
             Should -Match 'event-driven completion such as a TaskCompletionSource'
     }
