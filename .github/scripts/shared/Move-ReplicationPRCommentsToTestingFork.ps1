@@ -170,13 +170,16 @@ foreach ($pull in $targetPulls) {
 
 $copied = 0
 $skipped = 0
+$unmatched = 0
 $failures = [Collections.Generic.List[string]]::new()
 foreach ($sourcePull in $sourcePulls) {
     try {
         $key = Get-ReplicationPullRequestKey -PullRequest $sourcePull
         $targetPull = $targetByKey[$key]
         if (-not $targetPull) {
-            throw "No open testing-fork PR matches upstream PR #$($sourcePull.number)."
+            $unmatched++
+            Write-Host "Skipping upstream PR #$($sourcePull.number); no open testing-fork PR has the same replication marker."
+            continue
         }
 
         $existingComments = @(
@@ -251,6 +254,7 @@ $manifest = [ordered]@{
     sourcePullRequestCount = $sourcePulls.Count
     copiedCommentCount = $copied
     skippedCommentCount = $skipped
+    unmatchedSourcePullRequestCount = $unmatched
     failureCount = $failures.Count
     failures = @($failures)
 }
@@ -264,7 +268,7 @@ if ($outputDirectory) {
 }
 $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
 Write-Host "Replication comment migration manifest: $OutputPath"
-Write-Host "Copied $copied comment(s); skipped $skipped existing migrated comment(s)."
+Write-Host "Copied $copied comment(s); skipped $skipped existing migrated comment(s) and $unmatched unmatched upstream PR(s)."
 
 if ($failures.Count -gt 0) {
     throw "Failed to migrate comments for $($failures.Count) reproduction PR(s): $($failures -join '; ')"

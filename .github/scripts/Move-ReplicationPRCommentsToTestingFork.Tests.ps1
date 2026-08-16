@@ -75,5 +75,7 @@ Describe 'Replication PR comment migration' {
         $script:MigrationSource | Should -Match "Kind = 'review'"
         $script:MigrationSource | Should -Match "Kind = 'inline'"
         $script:MigrationSource | Should -Match 'issues/\$TargetPullRequestNumber/comments'
+        $script:MigrationSource | Should -Match 'unmatchedSourcePullRequestCount'
+        $script:MigrationSource | Should -Match 'no open testing-fork PR has the same replication marker'
     }
 }
