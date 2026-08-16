@@ -29,12 +29,12 @@ function Assert-ReplicationGeneratedSourceSafety {
     )
 
     $scanText = $Content.Replace("`r`n", "`n")
+    $scanText = [regex]::Replace(
+        $scanText,
+        '(?i)http://schemas\.microsoft\.com/(?:dotnet/2021/maui|winfx/2009/xaml)(?=["''])',
+        ''
+    )
     if ([System.IO.Path]::GetExtension($Path) -ieq '.xaml') {
-        $scanText = [regex]::Replace(
-            $scanText,
-            '(?i)http://schemas\.microsoft\.com/(?:dotnet/2021/maui|winfx/2009/xaml)(?=["''])',
-            ''
-        )
         $scanText = [regex]::Replace(
             $scanText,
             '(?i)(\bxmlns(?::[A-Za-z_]\w*)?\s*=\s*["''][^"'']*);assembly=[^"'']+(?=["''])',

@@ -267,6 +267,29 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Throw '*prohibited*'
     }
 
+    It 'allows standard XAML schema URIs in LoadFromXaml strings only' {
+        $source = @'
+var xaml = """
+<Label xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Label.FormattedText><FormattedString /></Label.FormattedText>
+</Label>
+""";
+new Label().LoadFromXaml(xaml);
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $source `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content ($source + "`nvar endpoint = `"https://example.invalid`";") `
+                -Path 'MainPage.xaml.cs'
+        } | Should -Throw "*prohibited 'remote-url'*"
+    }
+
     It 'accepts assembly-qualified XAML namespace declarations without allowing reflection' {
         $xaml = @'
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
