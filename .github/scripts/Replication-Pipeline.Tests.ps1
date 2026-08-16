@@ -40,7 +40,9 @@ Describe 'MAUI Copilot mode routing' {
     It 'uses a clean main baseline and replication-only recording dependencies' {
         $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?condition: eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "displayName: 'Probe MauiBot identity and writable fork'"
-        $script:Pipeline | Should -Match 'Expected exactly one writable MauiBot fork of dotnet/maui'
+        $script:Pipeline | Should -Match 'Expected at most one writable MauiBot fork of dotnet/maui'
+        $script:Pipeline | Should -Match 'gh api -X POST repos/dotnet/maui/forks'
+        $script:Pipeline | Should -Match 'newly created MauiBot fork did not become writable within 60 seconds'
         $script:Pipeline | Should -Match "(?s)job: ValidateReplicationPublisher.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Match 'git checkout --detach origin/main'
         $restoreIndex = $script:Pipeline.IndexOf("displayName: 'Restore clean replication baseline'")

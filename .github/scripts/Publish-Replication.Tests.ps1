@@ -191,6 +191,9 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match "GH_TOKEN must authenticate as 'MauiBot'"
         $script:PrSource | Should -Match 'Expected exactly one writable fork'
         $script:PrSource | Should -Match 'affiliations: \[OWNER, ORGANIZATION_MEMBER\]'
+        $script:PrSource | Should -Match '-X POST'
+        $script:PrSource | Should -Match 'creating one failed'
+        $script:PrSource | Should -Match 'did not become writable within 60 seconds'
         $script:PrSource | Should -Match "'replication-fork'"
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
     }

@@ -239,6 +239,36 @@ query {
             [string]$_.parent.nameWithOwner -eq $expectedParent -and
             [string]$_.viewerPermission -in @('WRITE', 'MAINTAIN', 'ADMIN')
         }
+    if ($matches.Count -eq 0) {
+        $createdForkJson = & gh api `
+            -X POST `
+            "repos/$TargetOwner/$TargetRepository/forks"
+        if ($LASTEXITCODE -ne 0) {
+            throw "MauiBot has no writable fork of $expectedParent and creating one failed."
+        }
+        $createdFork = $createdForkJson | ConvertFrom-Json -Depth 20
+        $createdFullName = [string]$createdFork.full_name
+        if ($createdFullName -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$') {
+            throw 'GitHub returned an invalid name for the newly created MauiBot fork.'
+        }
+
+        for ($attempt = 1; $attempt -le 12; $attempt++) {
+            Start-Sleep -Seconds 5
+            $forkJson = & gh api "repos/$createdFullName" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $fork = $forkJson | ConvertFrom-Json -Depth 20
+                if ($fork.fork -eq $true -and
+                    [string]$fork.parent.full_name -eq $expectedParent -and
+                    $fork.permissions.push -eq $true) {
+                    return [pscustomobject]@{
+                        Owner = ($createdFullName -split '/', 2)[0]
+                        Repository = ($createdFullName -split '/', 2)[1]
+                    }
+                }
+            }
+        }
+        throw 'The newly created MauiBot fork did not become writable within 60 seconds.'
+    }
     if ($matches.Count -ne 1) {
         throw "Expected exactly one writable fork of $expectedParent; found $($matches.Count)."
     }

@@ -135,8 +135,32 @@ stages:
                   [string]$_.parent.nameWithOwner -eq 'dotnet/maui' -and
                   [string]$_.viewerPermission -in @('WRITE', 'MAINTAIN', 'ADMIN')
                 }
-              if ($forks.Count -ne 1) {
-                throw "Expected exactly one writable MauiBot fork of dotnet/maui; found $($forks.Count)."
+              if ($forks.Count -gt 1) {
+                throw "Expected at most one writable MauiBot fork of dotnet/maui; found $($forks.Count)."
+              }
+              if ($forks.Count -eq 0) {
+                $createdFork = & gh api -X POST repos/dotnet/maui/forks |
+                  ConvertFrom-Json -Depth 20
+                if ($LASTEXITCODE -ne 0 -or
+                    [string]$createdFork.full_name -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$') {
+                  throw 'MauiBot has no writable MAUI fork and creating one failed.'
+                }
+                $forkReady = $false
+                for ($attempt = 1; $attempt -le 12; $attempt++) {
+                  Start-Sleep -Seconds 5
+                  $fork = & gh api "repos/$($createdFork.full_name)" 2>$null |
+                    ConvertFrom-Json -Depth 20
+                  if ($LASTEXITCODE -eq 0 -and
+                      $fork.fork -eq $true -and
+                      [string]$fork.parent.full_name -eq 'dotnet/maui' -and
+                      $fork.permissions.push -eq $true) {
+                    $forkReady = $true
+                    break
+                  }
+                }
+                if (-not $forkReady) {
+                  throw 'The newly created MauiBot fork did not become writable within 60 seconds.'
+                }
               }
               Write-Host "MauiBot replication publisher preflight passed."
             displayName: 'Probe MauiBot identity and writable fork'
