@@ -899,6 +899,23 @@ LcmeAS@N?(olHy``u
 }
 
 Describe 'Validate-ReplicationCandidate source boundary' {
+    It 'allows trimming annotations from System.Diagnostics.CodeAnalysis' {
+        $fixture = New-ValidationFixture
+        Write-FixturePatch `
+            -Fixture $fixture `
+            -Content ($fixture.Source + @'
+
+using System.Diagnostics.CodeAnalysis;
+[RequiresUnreferencedCode("Loads bounded inline XAML.")]
+static void LoadInlineXaml()
+{
+}
+'@)
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+    }
+
     It 'rejects unsafe <Kind> source content' -TestCases @(
         @{ Kind = 'HttpClient'; Snippet = 'var value = new HttpClient();' },
         @{ Kind = 'WebClient'; Snippet = 'var value = new WebClient();' },

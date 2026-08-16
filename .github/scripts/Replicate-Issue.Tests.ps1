@@ -253,6 +253,24 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
 
         @'
+using System.Diagnostics.CodeAnalysis;
+namespace Maui.Controls.Sample;
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    [RequiresUnreferencedCode("Loads bounded inline XAML.")]
+    void LoadInlineXaml()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath $sandboxCodePath
+{ Assert-GeneratedSandboxSources } | Should -Not -Throw
+
+@'
 using P = System.Diagnostics.Process;
 namespace Maui.Controls.Sample;
 public partial class MainPage : ContentPage
