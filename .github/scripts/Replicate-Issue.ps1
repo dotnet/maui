@@ -337,7 +337,7 @@ function Assert-GeneratedSandboxXaml {
             $attribute.Value -cne $expectedNamespace -or
             -not $namespacePrefixes.Add($prefix)
         ) {
-            throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+            throw "Generated Sandbox XAML namespace '$prefix' is not allowed or has the wrong value; use only the default MAUI namespace, x, and optional local namespace."
         }
     }
     if (
@@ -362,7 +362,7 @@ function Assert-GeneratedSandboxXaml {
             $element.Name.NamespaceName -cne $mauiNamespace -and
             $element.Name.NamespaceName -cne $localNamespace
         ) {
-            throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+            throw "Generated Sandbox XAML element '$($element.Name.LocalName)' uses a disallowed namespace; create platform/control-specific elements in code-behind."
         }
         foreach ($attribute in $element.Attributes()) {
             if ($attribute.IsNamespaceDeclaration) {
@@ -1213,6 +1213,7 @@ Perform only the Sandbox-authoring portion:
 1. Read the sanitized local issue context.
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir".
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
+The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind.
 3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertNotExists, assertTextEquals, assertTextContains, back, swipe, setOrientation. Locator actions use exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. androidText accepts literal visible text rather than a UiAutomator expression. Use null for locator/value when the action does not need them. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable wrong outcomes, expose a stable semantic result in the app and assert a trimmed value. Swipe values are up|down|left|right. Orientation values are portrait|landscape. End with a deterministic assert action proving the reported bug.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.

@@ -296,7 +296,7 @@ InitializeComponent();
 '@ | Set-Content -LiteralPath $sandboxCodePath
 
 { Assert-GeneratedSandboxSources } |
-    Should -Throw '*bounded MainPage contract*'
+    Should -Throw "*XAML namespace 'system' is not allowed*"
     }
 
     It 'uses a trusted Appium interpreter instead of agent-authored host code' {
@@ -530,6 +530,13 @@ exit 0
             Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*4'
         $script:Source |
             Should -Match 'throw "\$Description failed with exit code \$exitCode\.`n\$failureDetails"'
+        $script:Source |
+            Should -Match 'Do not add maps or other assembly-qualified XAML namespaces'
+        $script:Source |
+            Should -Match 'Fully qualify ambiguous framework type names'
+        $script:Source |
+            Should -Match ([regex]::Escape(
+                "XAML namespace '`$prefix' is not allowed or has the wrong value"))
         $script:Source |
             Should -Match 'Use Console\.WriteLine rather than importing System\.Diagnostics'
         $script:Source |
