@@ -37,8 +37,8 @@ param(
     [ValidateRange(30, 10000)]
     [int]$MaxAiCredits = 2000,
 
-    [ValidateRange(1, 3)]
-    [int]$MaxSandboxAttempts = 3,
+    [ValidateRange(1, 4)]
+    [int]$MaxSandboxAttempts = 4,
 
     [ValidateRange(1, 3)]
     [int]$MaxTestAttempts = 3,
@@ -1420,7 +1420,8 @@ function Invoke-LoggedChildProcess {
         Write-Host $tail
     }
     if ($exitCode -ne 0) {
-        throw "$Description failed with exit code $exitCode."
+        $failureDetails = ConvertTo-ReplicationSafeLog $tail 2000
+        throw "$Description failed with exit code $exitCode.`n$failureDetails"
     }
 }
 

@@ -525,9 +525,11 @@ exit 0
             Should -Match 'finally\s*\{\s*Copy-VerificationDiagnostics -Attempt \$attempt\s*Restore-TrackedVerificationSideEffects'
     }
 
-    It 'allows a compile repair plus an empirical adjustment within the bounded Sandbox loop' {
+    It 'allows guard repairs, a compile repair, and an empirical adjustment within the bounded Sandbox loop' {
         $script:Source |
-            Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*3'
+            Should -Match '\[int\]\$MaxSandboxAttempts\s*=\s*4'
+        $script:Source |
+            Should -Match 'throw "\$Description failed with exit code \$exitCode\.`n\$failureDetails"'
         $script:Source |
             Should -Match 'Use Console\.WriteLine rather than importing System\.Diagnostics'
         $script:Source |
