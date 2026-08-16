@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Text.Json;
@@ -29,22 +30,36 @@ var plan = ReadPlan(planJson);
 ValidatePlan(plan, platform);
 
 Console.WriteLine($"Running issue {plan.IssueNumber} Appium plan on {platform}.");
-using var driver = CreateDriver(platform, udid);
-var catalystFramesDirectory = platform == "catalyst"
-    ? RequireEnvironmentValue("MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY")
-    : null;
-var catalystFrameIndex = 0;
-CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
-
-for (var index = 0; index < plan.Steps.Count; index++)
+Process? launchedWindowsApp = null;
+try
 {
-    var step = plan.Steps[index];
-    Console.WriteLine($"STEP {index + 1}/{plan.Steps.Count}: {step.Description}");
-    ExecuteStep(driver, platform, step);
+    using var driver = CreateDriver(platform, udid, out launchedWindowsApp);
+    var catalystFramesDirectory = platform == "catalyst"
+        ? RequireEnvironmentValue("MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY")
+        : null;
+    var catalystFrameIndex = 0;
     CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
+
+    for (var index = 0; index < plan.Steps.Count; index++)
+    {
+        var step = plan.Steps[index];
+        Console.WriteLine($"STEP {index + 1}/{plan.Steps.Count}: {step.Description}");
+        ExecuteStep(driver, platform, step);
+        CaptureCatalystFrame(driver, catalystFramesDirectory, ref catalystFrameIndex);
+    }
+
+    Console.WriteLine($"REPLICATION_ACTIONS_COMPLETED issue={plan.IssueNumber}");
+}
+finally
+{
+    if (launchedWindowsApp is { HasExited: false })
+    {
+        launchedWindowsApp.Kill(entireProcessTree: true);
+        launchedWindowsApp.WaitForExit(10_000);
+    }
+    launchedWindowsApp?.Dispose();
 }
 
-Console.WriteLine($"REPLICATION_ACTIONS_COMPLETED issue={plan.IssueNumber}");
 return;
 
 static string RequireEnvironmentValue(string name)
@@ -164,8 +179,9 @@ static void RequireProperties(JsonElement element, params string[] expected)
     }
 }
 
-static AppiumDriver CreateDriver(string platform, string udid)
+static AppiumDriver CreateDriver(string platform, string udid, out Process? launchedWindowsApp)
 {
+    launchedWindowsApp = null;
     var server = new Uri("http://127.0.0.1:4723");
     var options = new AppiumOptions();
     options.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
@@ -196,10 +212,37 @@ static AppiumDriver CreateDriver(string platform, string udid)
             return new MacDriver(server, options);
         case "windows":
             var appPath = RequireEnvironmentValue("REPLICATION_WINDOWS_APP_PATH");
+            launchedWindowsApp = Process.Start(new ProcessStartInfo(appPath)
+            {
+                UseShellExecute = false,
+                WorkingDirectory = Path.GetDirectoryName(appPath)
+                    ?? throw new InvalidOperationException("Windows app directory is unavailable.")
+            }) ?? throw new InvalidOperationException("Windows Sandbox process did not start.");
+            var windowDeadline = DateTime.UtcNow.AddSeconds(30);
+            while (DateTime.UtcNow < windowDeadline)
+            {
+                launchedWindowsApp.Refresh();
+                if (launchedWindowsApp.HasExited)
+                {
+                    throw new InvalidOperationException(
+                        $"Windows Sandbox exited with code {launchedWindowsApp.ExitCode} before creating a window.");
+                }
+                if (launchedWindowsApp.MainWindowHandle != IntPtr.Zero)
+                {
+                    break;
+                }
+                System.Threading.Thread.Sleep(250);
+            }
+            if (launchedWindowsApp.MainWindowHandle == IntPtr.Zero)
+            {
+                throw new TimeoutException("Windows Sandbox did not create a top-level window within 30 seconds.");
+            }
             options.PlatformName = "Windows";
             options.AutomationName = "Windows";
             options.DeviceName = "WindowsPC";
-            options.App = appPath;
+            options.AddAdditionalAppiumOption(
+                "appTopLevelWindow",
+                $"0x{launchedWindowsApp.MainWindowHandle.ToInt64():X}");
             return new WindowsDriver(server, options);
         default:
             throw new InvalidOperationException($"Unsupported replication platform '{platform}'.");

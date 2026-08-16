@@ -291,7 +291,13 @@ InitializeComponent();
         $script:TrustedAppiumSource |
             Should -Match 'options\.DeviceName\s*=\s*"WindowsPC"'
         $script:TrustedAppiumSource |
-            Should -Match 'options\.App\s*=\s*appPath'
+            Should -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'MainWindowHandle\s*!=\s*IntPtr\.Zero'
+        $script:TrustedAppiumSource |
+            Should -Match '"appTopLevelWindow"'
+        $script:TrustedAppiumSource |
+            Should -Match 'launchedWindowsApp\.Kill\(entireProcessTree:\s*true\)'
         $script:TrustedAppiumSource |
             Should -Not -Match 'AddAdditionalAppiumOption\("appium:(?:deviceName|app)"'
     }
