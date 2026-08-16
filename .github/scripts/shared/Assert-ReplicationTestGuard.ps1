@@ -11,7 +11,7 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'reflection'; Pattern = '(?i)\bSystem\s*\.\s*Reflection\b|\b(?:Assembly|Activator|AppDomain|MethodInfo|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|InvokeMember|GetMethod|GetProperty|GetField|GetType)\b' },
         [pscustomobject]@{ Code = 'native-code'; Pattern = '(?i)\bSystem\s*\.\s*Runtime\s*\.\s*InteropServices\b|\b(?:DllImport|LibraryImport|GeneratedDllImport|NativeLibrary|UnmanagedCallersOnly|GetDelegateForFunctionPointer|Marshal|GCHandle)\b|\b(?:unsafe|stackalloc|extern)\b' },
         [pscustomobject]@{ Code = 'environment-secrets'; Pattern = '(?i)\bEnvironment\s*\.|\bEnvironmentVariableTarget\b|\b(?:GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|AZURE_STORAGE_KEY|AZURE_STORAGE_SAS_TOKEN)\b' },
-        [pscustomobject]@{ Code = 'device-external-access'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|Preferences|FileSystem|Connectivity|Clipboard|WebView|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b' },
+        [pscustomobject]@{ Code = 'device-external-access'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|WebView|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b|\bPreferences\s*\.' },
         [pscustomobject]@{ Code = 'delays-or-background-work'; Pattern = '(?i)\bThread\s*\.\s*Sleep\b|\bTask\s*\.\s*(?:Delay|Run|Factory)\b|\bTimer\b' },
         [pscustomobject]@{ Code = 'shell-execution'; Pattern = '(?i)\b(?:powershell|pwsh|cmd\.exe|bash)\b|/(?:bin/)?(?:ba)?sh\b|\bSystem\.Management\.Automation\b' },
         [pscustomobject]@{ Code = 'remote-url'; Pattern = '(?i)\b(?:https?|ftps?|wss?|file)\b\s*(?::|["'']\s*\+\s*["'']\s*:)|://' },
@@ -67,6 +67,15 @@ function Assert-ReplicationTestLifecycleSafety {
         throw "Candidate test source '$Path' contains an unguarded test lifecycle hook."
     }
 
+    $constructorScanContent = $Content
+    if ($Path.Replace('\', '/') -cmatch '^src/Controls/tests/TestCases\.Shared\.Tests/Tests/Issues/') {
+        $canonicalUiTestConstructor = '(?ms)^\s*public\s+(?<class>[A-Za-z_]\w*)\s*(?:/\*.*?\*/\s*)?\(\s*TestDevice\s+device\s*\)\s*:\s*base\s*\(\s*device\s*\)\s*\{\s*\}\s*$'
+        $constructorScanContent = [regex]::Replace(
+            $constructorScanContent,
+            $canonicalUiTestConstructor,
+            '')
+    }
+
     $classNames = @(
         [regex]::Matches($Content, '\bclass\s+(?<name>[A-Za-z_]\w*)\b') |
             ForEach-Object { $_.Groups['name'].Value } |
@@ -74,15 +83,15 @@ function Assert-ReplicationTestLifecycleSafety {
     )
     foreach ($className in $classNames) {
         $constructorPattern = "(?m)^\s*(?:(?:public|internal|protected|private)\s+)?$([regex]::Escape($className))\s*\("
-        if ($Content -match $constructorPattern) {
+        if ($constructorScanContent -match $constructorPattern) {
             throw "Candidate test source '$Path' contains an unguarded test-class constructor."
         }
         $staticConstructorPattern = "(?m)^\s*static\s+$([regex]::Escape($className))\s*\("
-        if ($Content -match $staticConstructorPattern) {
+        if ($constructorScanContent -match $staticConstructorPattern) {
             throw "Candidate test source '$Path' contains an unguarded static constructor."
         }
         $primaryConstructorPattern = "\bclass\s+$([regex]::Escape($className))\s*\("
-        if ($Content -match $primaryConstructorPattern) {
+        if ($constructorScanContent -match $primaryConstructorPattern) {
             throw "Candidate test source '$Path' contains an unguarded primary constructor."
         }
     }

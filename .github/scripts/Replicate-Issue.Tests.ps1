@@ -294,6 +294,20 @@ public partial class MainPage : ContentPage
         { Assert-GeneratedSandboxSources } | Should -Throw '*prohibited*'
     }
 
+    It 'allows ordinary preference variables while rejecting the Preferences API' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'var preferences = new UIWindowSceneGeometryPreferencesIOS();' `
+                -Path 'Issue37264.iOS.cs'
+        } | Should -Not -Throw
+
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content 'Preferences.Set("theme", "dark");' `
+                -Path 'Issue37264.iOS.cs'
+        } | Should -Throw '*device-external-access*'
+    }
+
     It 'allows standard XAML schema URIs in LoadFromXaml strings only' {
         $source = @'
 var xaml = """
@@ -834,6 +848,37 @@ public class Issue37440
             Assert-ReplicationTestLifecycleSafety `
                 -Content $source `
                 -Path 'Issue37440.cs'
+        } | Should -Throw '*unguarded test-class constructor*'
+    }
+
+    It 'allows only the canonical empty UI-test device constructor' {
+        $canonicalConstructor = @'
+public class Issue36826 : _IssuesUITest
+{
+    public Issue36826 /* NUnit provides the selected test device. */ (TestDevice device) : base(device)
+    {
+    }
+}
+'@
+        {
+            Assert-ReplicationTestLifecycleSafety `
+                -Content $canonicalConstructor `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36826.cs'
+        } | Should -Not -Throw
+
+        $constructorWithCode = @'
+public class Issue36826 : _IssuesUITest
+{
+    public Issue36826(TestDevice device) : base(device)
+    {
+        App.Tap("unsafe");
+    }
+}
+'@
+        {
+            Assert-ReplicationTestLifecycleSafety `
+                -Content $constructorWithCode `
+                -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue36826.cs'
         } | Should -Throw '*unguarded test-class constructor*'
     }
 
