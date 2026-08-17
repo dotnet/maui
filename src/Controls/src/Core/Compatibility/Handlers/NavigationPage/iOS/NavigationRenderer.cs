@@ -1741,6 +1741,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				var scrollView = FindPrimaryScrollableDescendant(presentedContent, View);
+				if (scrollView is null)
+				{
+					ResetLargeTitleContentScrollView();
+					return;
+				}
+
 				SetContentScrollView(scrollView, NSDirectionalRectEdge.Top);
 			}
 

@@ -274,23 +274,38 @@ class Issue33037NonShellModalListViewPage : ContentPage
 		var closeButton = new Button
 		{
 			AutomationId = "Issue33037ModalListViewCloseButton",
+			HorizontalOptions = LayoutOptions.Center,
+			Margin = 12,
 			Text = "Close"
 		};
 		closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
 
 		AbsoluteLayout.SetLayoutFlags(listView, AbsoluteLayoutFlags.All);
 		AbsoluteLayout.SetLayoutBounds(listView, new Rect(0, 0, 1, 1));
-		AbsoluteLayout.SetLayoutFlags(closeButton, AbsoluteLayoutFlags.PositionProportional);
-		AbsoluteLayout.SetLayoutBounds(closeButton, new Rect(0.5, 1, 120, 44));
 
-		Content = new AbsoluteLayout
+		var listContainer = new AbsoluteLayout
 		{
 			Children =
 			{
-				listView,
+				listView
+			}
+		};
+
+		var content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Star),
+				new RowDefinition(GridLength.Auto)
+			},
+			Children =
+			{
+				listContainer,
 				closeButton
 			}
 		};
+		Grid.SetRow(closeButton, 1);
+		Content = content;
 	}
 }
 

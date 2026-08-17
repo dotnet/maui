@@ -97,8 +97,14 @@ public class Issue33037NonShell : _IssuesUITest
 			App.WaitForElement("Item 17");
 
 			var collapsedTitleRect = App.WaitForElement("Issue33037 Modal List").GetRect();
+			Assert.That(collapsedTitleRect.Height, Is.GreaterThan(0),
+				"The modal navigation title should remain visible after collapsing.");
 			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
 				"The modal navigation title should collapse after scrolling down.");
+			Assert.That(collapsedTitleRect.Height, Is.LessThan(30),
+				"The modal navigation title should use the collapsed standard-title size.");
+			Assert.That(collapsedTitleRect.Y, Is.LessThan(130),
+				"The modal navigation title should remain in the navigation bar after collapsing.");
 
 			App.ScrollUp("Issue33037ModalListViewScroller", swipePercentage: 0.8);
 			App.WaitForElement("Item 0");
