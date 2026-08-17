@@ -48,6 +48,7 @@ BeforeAll {
         'Assert-LighterTestRejections',
         'Get-ProposedTestFiles',
         'Assert-TestProposalMatchesPlan',
+        'Read-TestProposal',
         'Get-VerifierTestType',
         'Get-ReplicationTargetTestDeclarations',
         'Resolve-ReplicationVerifierMetadata',
@@ -736,6 +737,51 @@ exit 0
         $script:Source | Should -Match 'hard-coding locale-specific output without arranging and verifying'
         $script:Source | Should -Match 'derive the expected value from the active environment'
         $script:Source | Should -Match 'Do not repair an environment-sensitive test by hard-coding'
+        $script:Source | Should -Match 'pure new-API/feature request is not an empirically reproducible baseline defect'
+        $script:Source | Should -Match 'sentinel outside the passing domain'
+        $script:Source | Should -Match 'replacing a real orientation change with WidthRequest or Arrange'
+        $script:Source | Should -Match 'substitutes Arrange for a real device orientation change'
+    }
+
+    It 'rejects synthetic Arrange as a device-orientation trigger' {
+        $repoRoot = $TestDrive
+        $IssueNumber = 31059
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Issue31059.iOS.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        @'
+public class Issue31059
+{
+    public void ReproducesIssue()
+    {
+        view.Arrange(new Rect(0, 0, 844, 220));
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue31059'
+            expectedFailureSignature = 'Item should remain centered after rotation.'
+            files = @($relativePath)
+            reproductionSteps = @('Rotate the device from portrait to landscape.')
+            expectedBehavior = 'The last item remains centered.'
+            observedBehavior = 'The previous item becomes centered.'
+            reportedTrigger = 'Rotate the iOS device from portrait to landscape.'
+            testTrigger = 'Change width with Arrange to imitate landscape.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires the native iOS CollectionView.'
+                xaml = 'Requires runtime scrolling and orientation.'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+            Should -Throw '*substitutes Arrange for a real device orientation change*'
     }
 
     It 'repairs generated tests that fail trusted source validation before verification' {

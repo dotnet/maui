@@ -46,6 +46,8 @@ Generated reproduction tests are unconditional: they use no environment variable
 
 Environment-sensitive tests must explicitly arrange and verify every required locale, platform format, time zone, theme, orientation, accessibility, permission, or input setting. They may use an environment-relative oracle only when it still proves the reported defect; runner-dependent hard-coded localized output is rejected.
 
+Tests must preserve the issue's existing product contract. Requests for a new public API cannot be reinterpreted as failures of a different existing event, and real device actions such as rotation cannot be replaced with synthetic layout calls. Event/state tests use a non-passing sentinel and separately prove the post-trigger transition occurred before asserting its result.
+
 The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
 
 Successful publication requires both:
