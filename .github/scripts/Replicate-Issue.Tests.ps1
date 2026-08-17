@@ -168,6 +168,12 @@ Describe 'Replication orchestrator security boundary' {
             Should -Match 'ReadVisibleAndroidNegativeVerdict\(driver\)'
         $script:TrustedAppiumSource |
             Should -Match 'new UiSelector\(\)\.textStartsWith'
+        $script:TrustedAppiumSource |
+            Should -Match 'IsReplicationVerdictPrefix\(expected\)'
+        $script:TrustedAppiumSource |
+            Should -Match 'expected is "PASS:" or "NO BUG:" or "BUG REPRODUCED:"'
+        $script:TrustedAppiumSource |
+            Should -Match 'IsReplicationVerdictPrefix\(expected\)[\s\S]*textStartsWith'
     }
 
     It 'uses the supported macOS unified-log debug flag' {

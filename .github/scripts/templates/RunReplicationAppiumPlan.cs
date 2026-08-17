@@ -561,10 +561,15 @@ static bool IsAndroidTextVisible(
         .Replace("\"", "\\\"", StringComparison.Ordinal);
     var selector = contains
         ? $"new UiSelector().textContains(\"{escaped}\")"
-        : $"new UiSelector().text(\"{escaped}\")";
+        : IsReplicationVerdictPrefix(expected)
+            ? $"new UiSelector().textStartsWith(\"{escaped}\")"
+            : $"new UiSelector().text(\"{escaped}\")";
     return driver.FindElements(MobileBy.AndroidUIAutomator(selector))
         .Any(element => element.Displayed);
 }
+
+static bool IsReplicationVerdictPrefix(string expected) =>
+    expected is "PASS:" or "NO BUG:" or "BUG REPRODUCED:";
 
 static string ReadVisibleAndroidNegativeVerdict(AppiumDriver driver)
 {
