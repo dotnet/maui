@@ -58,6 +58,7 @@ BeforeAll {
         'ConvertTo-ReplicationSafeLog',
         'Get-ReplicationFailureDetails',
         'Get-ReplicationVerificationFailureSummary',
+        'Get-ReplicationCompilerDiagnostics',
         'Test-PathInsideRoot',
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
@@ -377,6 +378,48 @@ Describe 'Replication orchestrator security boundary' {
         $details | Should -Not -Match 'throw \[System\.InvalidOperationException\]'
         $details | Should -Not -Match '~~~~'
         $details | Should -Not -Match '^\s*\|'
+    }
+
+    It 'quotes the compiler diagnostics behind an infrastructure failure' {
+        # Verbatim shape from run 14994604 (#33037 ios): the verifier records no
+        # actualFailureMessage for a build break, so CS0108 was invisible.
+        $dir = Join-Path $TestDrive 'verification-build'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @{
+            verifierPassed = $false
+            signatureMatched = $false
+            infrastructureFailure = $true
+            expectedFailureSignature = 'The navigation title should remain visibly rendered.'
+            actualFailureMessage = ''
+        } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $dir 'verification-result.json')
+        @(
+            '  🖥️ [UITest] Issue33037: 🛠️ BUILD ERROR — Build failed: /Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.HostApp/Issues/Issue33037NavigationPage.cs(8,15): error CS0108: ''Issue33037NavigationPage.Title'' hides inherited member ''Page.Title''. Use th...'
+            '║              VERIFICATION INCONCLUSIVE ⚠️                  ║'
+        ) | Set-Content -LiteralPath (Join-Path $dir 'verification-console.log')
+
+        $summary = Get-ReplicationVerificationFailureSummary -VerificationDirectory $dir
+
+        $summary | Should -Match 'CS0108'
+        $summary | Should -Match ([regex]::Escape('hides inherited member'))
+        $summary | Should -Match 'warnings as errors'
+    }
+
+    It 'deduplicates compiler diagnostics and ignores banner art' {
+        $dir = Join-Path $TestDrive 'diagnostics'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        @(
+            'error CS0246: The type or namespace name ''Foo'' could not be found'
+            'error CS0246: The type or namespace name ''Foo'' could not be found'
+            'warning CS0168: The variable ''x'' is declared but never used'
+            '╔═══════════════════════════════════════════════════════════╗'
+            '║         VERIFY FAILURE ONLY MODE                          ║'
+        ) | Set-Content -LiteralPath (Join-Path $dir 'verification-console.log')
+
+        $diagnostics = Get-ReplicationCompilerDiagnostics -VerificationDirectory $dir
+
+        ([regex]::Matches($diagnostics, 'CS0246')).Count | Should -Be 1
+        $diagnostics | Should -Match 'CS0168'
+        $diagnostics | Should -Not -Match 'VERIFY FAILURE ONLY'
     }
 
     It 'diagnoses a verification rejected for the wrong failure signature' {

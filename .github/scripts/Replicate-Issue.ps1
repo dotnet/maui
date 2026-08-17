@@ -154,6 +154,67 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationCompilerDiagnostics {
+    <#
+        .SYNOPSIS
+        Recovers distinct compiler diagnostics from the verification console.
+
+        .DESCRIPTION
+        The verifier reports a build break only as an infrastructure failure, so
+        the compiler text that names the offending member is otherwise lost.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$VerificationDirectory,
+        [int]$MaximumDiagnostics = 5
+    )
+
+    $consolePath = Join-Path $VerificationDirectory 'verification-console.log'
+    if (-not (Test-Path -LiteralPath $consolePath -PathType Leaf)) {
+        return ''
+    }
+
+    try {
+        $lines = @(Get-Content -LiteralPath $consolePath -ErrorAction Stop)
+    } catch {
+        return ''
+    }
+
+    $seen = [System.Collections.Generic.HashSet[string]]::new()
+    $diagnostics = [System.Collections.Generic.List[string]]::new()
+    foreach ($line in $lines) {
+        $match = [regex]::Match([string]$line, '(?<code>(?:CS|MSB|XC|XLS|NETSDK|CA)\d{3,5})\s*:\s*(?<text>.+)$')
+        if (-not $match.Success) {
+            continue
+        }
+
+        $code = $match.Groups['code'].Value
+        $text = $match.Groups['text'].Value -replace '\s+', ' '
+        $text = $text.Trim().TrimEnd('.')
+        if ($text.Length -gt 220) {
+            $text = $text.Substring(0, 220) + '...'
+        }
+
+        $diagnostic = ConvertTo-ReplicationSafeLog "${code}: $text" 260
+        if (-not $diagnostic) {
+            continue
+        }
+        if (-not $seen.Add($diagnostic)) {
+            continue
+        }
+
+        $diagnostics.Add($diagnostic)
+        if ($diagnostics.Count -ge $MaximumDiagnostics) {
+            break
+        }
+    }
+
+    if ($diagnostics.Count -eq 0) {
+        return ''
+    }
+
+    return ($diagnostics -join '; ')
+}
+
 function Get-ReplicationVerificationFailureSummary {
     <#
         .SYNOPSIS
@@ -181,6 +242,13 @@ function Get-ReplicationVerificationFailureSummary {
     $actual = ConvertTo-ReplicationSafeLog ([string]$result.actualFailureMessage) 300
 
     if ($result.infrastructureFailure -eq $true) {
+        # An infrastructure failure is usually a compile error, and the verifier
+        # records no actualFailureMessage for it, so recover the diagnostics.
+        $diagnostics = Get-ReplicationCompilerDiagnostics `
+            -VerificationDirectory $VerificationDirectory
+        if ($diagnostics) {
+            return "The test never ran because the build failed. Fix these compiler diagnostics: $diagnostics. Note that this repository builds with warnings as errors, so a warning-level diagnostic such as CS0108 still fails the build."
+        }
         return "The test did not run: it failed for build or infrastructure reasons rather than the reported behavior. Actual failure: '$actual'. Make the test compile and run before asserting the bug."
     }
     if ($result.verifierPassed -ne $true) {
@@ -1522,6 +1590,7 @@ Trusted test planning succeeded. Read "$testProposalPath", "$reproductionResultP
 Read the matching trusted skill under "$trustedSkills".
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files.
 The generated test must run normally and fail without an environment variable, command-line switch, category override, or other opt-in gate. Do not reference MAUI_REPRODUCTION_ISSUE.
+This repository builds with warnings as errors, so warning-level diagnostics still break the build. Do not declare a member whose name hides an inherited MAUI member such as Page.Title, Element.Parent, VisualElement.Window, or View.Handler; give the field a distinct name instead of using `new`. Do not leave an unused field, variable, or using directive.
 Do not add nullable reference annotations unless the target file also enables a nullable annotation context; prefer non-nullable local declarations compatible with the existing project.
 Do not use snapshots/baselines, delays, process execution, network access, external data, or a hard-coded failure unrelated to the reported behavior.
 Do not assign framework-wide test switches or static behavior flags to manufacture the failure. In particular, never assign SkipMeasureInvalidatedPropagation.
