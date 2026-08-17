@@ -825,14 +825,13 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
 				var nextPage = 1;
-				Action queueNextPage = null;
-				queueNextPage = () =>
+				void QueueNextPage()
 				{
 					if (nextPage < pages.Length)
-						handler.ConnectContent(pages[nextPage++], queueNextPage);
-				};
+						handler.ConnectContent(pages[nextPage++], QueueNextPage);
+				}
 
-				Assert.False(handler.ConnectContent(pages[0], queueNextPage));
+				Assert.False(handler.ConnectContent(pages[0], QueueNextPage));
 				Assert.True(nextPage < pages.Length);
 				Assert.True(HasRootSwapRetryInfrastructure(handler.MauiContext.GetNavigationRootManager()));
 

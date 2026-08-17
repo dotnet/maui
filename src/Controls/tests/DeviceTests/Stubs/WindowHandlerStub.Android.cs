@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable annotations
+
+using System;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -12,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, AActivity>, IWindowHandler
 	{
-		FakeActivityRootView _activityRoot;
+		FakeActivityRootView? _activityRoot;
 
 		public static IPropertyMapper<IWindow, WindowHandlerStub> WindowMapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandler.Mapper)
 		{
