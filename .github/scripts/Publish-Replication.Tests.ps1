@@ -158,6 +158,11 @@ Describe 'Trusted replication pull request publishing' {
         $body | Should -Match '\[!\[Reproduction preview\]\(https://example.test/preview.gif\)\]\(https://example.test/repro.mp4\)'
         $body | Should -Match 'No linked repository, archive, binary, script, package, or arbitrary external file was downloaded'
         $body | Should -Match 'MAUI_COPILOT_REPLICATION issue=37440 platform=android'
+        # Reviews of kubaflo/maui#164 and #173 both treated the recording as
+        # probative; state its evidentiary role explicitly instead.
+        $body | Should -Match 'authoritative proof is the trusted targeted test'
+        $body | Should -Match 'only the app-reported verdict rather than the defect itself'
+        $body | Should -Match 'applied directly onto the pull request base'
     }
 
     It 'rejects publication when the expected signature is absent from the failure message' {

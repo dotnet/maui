@@ -166,6 +166,8 @@ $buildLine
 
 [Open the full MP4 recording]($($Evidence.blobs.video)) · [Evidence manifest]($($Evidence.blobs.manifest))
 
+The authoritative proof is the trusted targeted test failing with the expected assertion above. The recording corroborates that; for defects with no visible symptom it may show only the app-reported verdict rather than the defect itself.
+
 ## Reproduction steps
 
 $($steps -join [Environment]::NewLine)
