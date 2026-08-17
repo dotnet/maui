@@ -391,7 +391,16 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for Windows..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration) + $hostAppBuildProps
+    # Hosted Windows agents do not reliably have the matching Windows App
+    # Runtime registered. Bundle it beside the unpackaged Sandbox executable
+    # so launch does not depend on machine-wide DeploymentManager activation.
+    $buildArgs = @(
+        $ProjectPath,
+        "-f", $TargetFramework,
+        "-c", $Configuration,
+        "-p:WindowsPackageType=None",
+        "-p:WindowsAppSDKSelfContained=true"
+    ) + $hostAppBuildProps
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }

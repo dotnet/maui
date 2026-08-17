@@ -8,6 +8,9 @@ BeforeAll {
     $script:BuildSandboxSource = Get-Content `
         -LiteralPath $script:BuildSandboxPath `
         -Raw
+    $script:BuildDeploySource = Get-Content `
+        -LiteralPath (Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') `
+        -Raw
     $script:TrustedAppiumSource = Get-Content `
         -LiteralPath (Join-Path $PSScriptRoot 'templates/RunReplicationAppiumPlan.cs') `
         -Raw
@@ -454,6 +457,10 @@ InitializeComponent();
             Should -Match 'dotnet run --file \$AppiumTestScript'
         $script:BuildSandboxSource |
             Should -Not -Match 'dotnet run RunWithAppiumTest\.cs'
+        $script:BuildDeploySource |
+            Should -Match '"-p:WindowsPackageType=None"'
+        $script:BuildDeploySource |
+            Should -Match '"-p:WindowsAppSDKSelfContained=true"'
         $script:TrustedAppiumSource |
             Should -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
         $script:TrustedAppiumSource |
