@@ -662,22 +662,27 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var initialPage = new ContentPage { Content = new Label { Text = "Initial page" } };
-			var window = new Window(initialPage);
+			var window = new Window(new NavigationPage(initialPage));
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
 			{
 				await OnLoadedAsync(initialPage);
 
 				var rootManager = handler.MauiContext.GetNavigationRootManager();
+				var fragmentManager = handler.MauiContext.GetFragmentManager();
+				var outgoingFragment = fragmentManager.FindFragmentById(Resource.Id.navigationlayout_content);
+				Assert.NotNull(outgoingFragment);
+				Assert.NotNull(rootManager.ToolbarElement);
 				handler.PlatformViewUnderTest.RemoveFromParent();
 				NavigationRootManager.RootRequestOutcome? outcome = null;
 
 				rootManager.Disconnect((result, _) => outcome = result);
-				handler.MauiContext.GetFragmentManager().ExecutePendingTransactions();
+				fragmentManager.ExecutePendingTransactions();
 
 				Assert.Equal(NavigationRootManager.RootRequestOutcome.Applied, outcome);
 				Assert.Null(rootManager.RootView);
 				Assert.Null(rootManager.ToolbarElement);
+				Assert.DoesNotContain(outgoingFragment!, fragmentManager.Fragments);
 			});
 		}
 
