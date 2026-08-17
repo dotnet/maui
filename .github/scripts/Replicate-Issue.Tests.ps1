@@ -352,6 +352,32 @@ Describe 'Replication orchestrator security boundary' {
         $details | Should -Not -Match 'at Example\.Stack\.Frame1\(\)'
     }
 
+    It 'surfaces the real diagnostic instead of PowerShell source-echo noise' {
+        # Verbatim shape of the run 14994335 Windows recording failure, where
+        # the useful line was crowded out by the rendered source context.
+        $output = @(
+            'Exception: D:\a\1\a\trusted-github\scripts\Invoke-Recording.ps1:1271'
+            'Line |'
+            ' 1271 |          throw [System.InvalidOperationException]::new('
+            '      |          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+            '      | Reproduction failed: Run trusted reproduction script failed with exit code -532462766.'
+            '      | Confirm the exact selection trigger closes the trusted Windows Sandbox process.'
+            '      | System.TimeoutException: Windows Sandbox process remained open after the reported crash trigger.'
+        )
+
+        $details = Get-ReplicationFailureDetails -Output $output
+
+        $details |
+            Should -Match ([regex]::Escape(
+                'System.TimeoutException: Windows Sandbox process remained open after the reported crash trigger.'))
+        $details |
+            Should -Match ([regex]::Escape(
+                'Confirm the exact selection trigger closes the trusted Windows Sandbox process.'))
+        $details | Should -Not -Match 'throw \[System\.InvalidOperationException\]'
+        $details | Should -Not -Match '~~~~'
+        $details | Should -Not -Match '^\s*\|'
+    }
+
     It 'recognizes only paths inside the requested root' {
         $root = Join-Path $TestDrive 'root'
         New-Item -ItemType Directory -Path $root | Out-Null

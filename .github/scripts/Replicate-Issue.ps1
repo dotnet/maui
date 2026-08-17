@@ -167,6 +167,14 @@ function Get-ReplicationFailureDetails {
             $line
         }
     })
+    # PowerShell renders failures as a source echo ("1271 |  throw ..."), a
+    # squiggle underline and gutter-prefixed message lines. The echo and the
+    # underline are noise that crowd out the real diagnostic, while the gutter
+    # lines hold the message the agent actually needs, so unwrap them.
+    $safeLines = @($safeLines |
+        Where-Object { $_ -notmatch '^\s*\d+\s*\|' } |
+        ForEach-Object { ($_ -replace '^\s*\|\s?', '').TrimEnd() } |
+        Where-Object { $_ -and $_ -notmatch '^\s*\+?\s*~+\s*$' })
     $signalPattern = '(?i)(error|exception|fail(?:ed|ure)?|timed?\s*out|timeout|assert|expected|actual|not found|unable|cannot|could not|\bMSB\d+\b|\bCS\d+\b)'
     $candidateLines = @(
         $safeLines |
