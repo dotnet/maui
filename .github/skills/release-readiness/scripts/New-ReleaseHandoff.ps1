@@ -67,6 +67,38 @@ function Get-HandoffProperty {
     return $Default
 }
 
+function Test-HandoffBooleanProperty {
+    param(
+        [AllowNull()]$Object,
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][bool]$Expected
+    )
+
+    # Inspect Value locally: returning it through Get-HandoffProperty would let
+    # PowerShell unwrap a singleton JSON array before the strict type check.
+    if ($null -eq $Object) { return $false }
+    $value = $null
+    $found = $false
+    if ($Object -is [Collections.IDictionary]) {
+        foreach ($key in $Object.Keys) {
+            if ([string]$key -ieq $Name) {
+                $value = $Object[$key]
+                $found = $true
+                break
+            }
+        }
+    } else {
+        $property = $Object.PSObject.Properties |
+            Where-Object { $_.Name -ieq $Name } |
+            Select-Object -First 1
+        if ($property) {
+            $value = $property.Value
+            $found = $true
+        }
+    }
+    return $found -and $value -is [bool] -and $value -eq $Expected
+}
+
 function Test-HandoffPublicUrl {
     param([AllowNull()][string]$Url)
 
@@ -541,8 +573,8 @@ function New-ReleaseHandoffModel {
     )
 
     if ($null -eq $Evidence) { $Evidence = [PSCustomObject]@{} }
-    $publicEvidenceValue = Get-HandoffProperty -Object $Evidence -Name 'PublicEvidence' -Default $false
-    $evidenceIsPublic = $publicEvidenceValue -is [bool] -and $publicEvidenceValue
+    $evidenceIsPublic = Test-HandoffBooleanProperty `
+        -Object $Evidence -Name 'PublicEvidence' -Expected $true
     $useEvidence = -not $PublicSafe -or $evidenceIsPublic
     $effectiveEvidence = if ($useEvidence) { $Evidence } else { [PSCustomObject]@{} }
     $releaseType = Get-HandoffReleaseType -Readiness $Readiness
@@ -588,13 +620,12 @@ function New-ReleaseHandoffModel {
     }
 
     $workload = Get-HandoffProperty -Object $effectiveEvidence -Name 'WorkloadSet'
-    $installabilityPublicValue = Get-HandoffProperty -Object $installability -Name 'PublicEvidence' -Default $false
-    $installabilityIsPublic = $installabilityPublicValue -is [bool] -and $installabilityPublicValue
-    $installabilityConfirmedValue = Get-HandoffProperty -Object $installability -Name 'VersionConfirmed' -Default $false
-    $installabilityVersionIsConfirmed = $installabilityConfirmedValue -is [bool] -and $installabilityConfirmedValue
-    $installabilitySensitiveValue = Get-HandoffProperty -Object $installability -Name 'VersionSourceIsSensitive'
-    $installabilityVersionIsPublic = $installabilitySensitiveValue -is [bool] -and
-        -not $installabilitySensitiveValue
+    $installabilityIsPublic = Test-HandoffBooleanProperty `
+        -Object $installability -Name 'PublicEvidence' -Expected $true
+    $installabilityVersionIsConfirmed = Test-HandoffBooleanProperty `
+        -Object $installability -Name 'VersionConfirmed' -Expected $true
+    $installabilityVersionIsPublic = Test-HandoffBooleanProperty `
+        -Object $installability -Name 'VersionSourceIsSensitive' -Expected $false
     $useInstallabilityFallback = -not $PublicSafe -or (
         $installabilityIsPublic -and
         $installabilityVersionIsConfirmed -and

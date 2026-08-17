@@ -528,6 +528,81 @@ try {
         -Actual (Test-Path -LiteralPath (Join-Path $outputDir 'release-handoff.md'))
     Assert-HandoffTrue -Label 'Entry point writes normalized JSON' `
         -Actual (Test-Path -LiteralPath (Join-Path $outputDir 'release-handoff.json'))
+
+    $arrayGateCases = @(
+        @{
+            Label = 'Evidence PublicEvidence singleton array'
+            EvidencePublic = @($true)
+            InstallPublic = $true
+            Confirmed = $true
+            Sensitive = $false
+            ExpectEvidence = $false
+        },
+        @{
+            Label = 'Installability PublicEvidence singleton array'
+            EvidencePublic = $true
+            InstallPublic = @($true)
+            Confirmed = $true
+            Sensitive = $false
+            ExpectEvidence = $true
+        },
+        @{
+            Label = 'VersionConfirmed singleton array'
+            EvidencePublic = $true
+            InstallPublic = $true
+            Confirmed = @($true)
+            Sensitive = $false
+            ExpectEvidence = $true
+        },
+        @{
+            Label = 'VersionSourceIsSensitive singleton array'
+            EvidencePublic = $true
+            InstallPublic = $true
+            Confirmed = $true
+            Sensitive = @($false)
+            ExpectEvidence = $true
+        }
+    )
+    foreach ($case in $arrayGateCases) {
+        $caseReadiness = $previewReadiness.PSObject.Copy()
+        if ($case.ExpectEvidence) {
+            $caseReadiness | Add-Member -MemberType NoteProperty -Name ConsumerInstallability -Value ([PSCustomObject]@{
+                PublicEvidence = $case.InstallPublic
+                VersionConfirmed = $case.Confirmed
+                VersionSourceIsSensitive = $case.Sensitive
+                CliVersion = '11.0.100-preview.7.26000.9'
+                NuGetConfig = $publicNuGetConfig
+            })
+        }
+        $caseEvidence = [PSCustomObject]@{
+            PublicEvidence = $case.EvidencePublic
+            ReleaseVersion = '11.0.0-preview.7'
+        }
+        if (-not $case.ExpectEvidence) {
+            $caseEvidence | Add-Member -MemberType NoteProperty -Name WorkloadSet -Value ([PSCustomObject]@{
+                CliVersion = '11.0.100-preview.7.26000.9'
+                NuGetConfig = $publicNuGetConfig
+            })
+        }
+        $caseReadiness | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $readinessPath -Encoding utf8
+        $caseEvidence | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $evidencePath -Encoding utf8
+        & pwsh -NoProfile -File (Join-Path $scripts 'New-ReleaseHandoff.ps1') `
+            -ReadinessJson $readinessPath `
+            -EvidenceJson $evidencePath `
+            -OutputDir $outputDir
+        $caseOutput = Get-Content -LiteralPath (Join-Path $outputDir 'release-handoff.json') -Raw |
+            ConvertFrom-Json
+        Assert-HandoffEqual -Label "$($case.Label) does not emit readiness CLI version" `
+            -Expected $null -Actual $caseOutput.WorkloadSet.CliVersion
+        Assert-HandoffEqual -Label "$($case.Label) does not emit readiness NuGet config" `
+            -Expected $null -Actual $caseOutput.WorkloadSet.NuGetConfig
+        Assert-HandoffEqual -Label "$($case.Label) does not emit an install command" `
+            -Expected $null -Actual $caseOutput.WorkloadSet.InstallCommand
+        if (-not $case.ExpectEvidence) {
+            Assert-HandoffEqual -Label "$($case.Label) does not admit top-level evidence" `
+                -Expected $null -Actual $caseOutput.ReleaseVersion
+        }
+    }
 } finally {
     if (Test-Path -LiteralPath $tempRoot) {
         Remove-Item -LiteralPath $tempRoot -Recurse -Force
