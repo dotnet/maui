@@ -450,6 +450,10 @@ InitializeComponent();
             Should -Match '#:property WindowsAppSdkDeploymentManagerInitialize=false'
         $script:TrustedAppiumSource |
             Should -Match 'options\.DeviceName\s*=\s*"WindowsPC"'
+        $script:BuildSandboxSource |
+            Should -Match 'dotnet run --file \$AppiumTestScript'
+        $script:BuildSandboxSource |
+            Should -Not -Match 'dotnet run RunWithAppiumTest\.cs'
         $script:TrustedAppiumSource |
             Should -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
         $script:TrustedAppiumSource |

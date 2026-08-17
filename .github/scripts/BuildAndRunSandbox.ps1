@@ -470,13 +470,13 @@ try {
         $env:REPLICATION_WINDOWS_APP_PATH = $windowsApp
     }
     
-    Write-Info "Executing: dotnet run RunWithAppiumTest.cs"
+    Write-Info "Executing trusted file-based runner: dotnet run --file RunWithAppiumTest.cs"
     Write-Info "Test will connect to device: $DeviceUdid"
     Write-Host ""
     
-    # Run the trusted Appium plan interpreter.
-    # Suppress CA1307 (culture) and CS0162 (unreachable code due to const platform)
-    $appiumOutput = "" | & dotnet run RunWithAppiumTest.cs /p:NoWarn="CA1307;CS0162" 2>&1
+    # Force file-based mode so project files in the working directory cannot
+    # bypass the trusted runner's package and Windows App SDK properties.
+    $appiumOutput = "" | & dotnet run --file $AppiumTestScript 2>&1
     
     # Display appium test output
     $appiumOutput | ForEach-Object { Write-Host $_ }
