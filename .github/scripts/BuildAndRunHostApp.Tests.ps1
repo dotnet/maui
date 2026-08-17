@@ -121,8 +121,8 @@ Describe 'MacCatalyst Retina screenshot cropping' {
     }
 
     It 'normalizes the physical crop back to logical snapshot dimensions' {
-        $script:UiTestContent | Should -Match 'var logicalWidth = \(int\)Math\.Round\(width\)'
-        $script:UiTestContent | Should -Match 'var logicalHeight = \(int\)Math\.Round\(height\)'
+        $script:UiTestContent | Should -Match 'var logicalWidth = width'
+        $script:UiTestContent | Should -Match 'var logicalHeight = height'
         $script:UiTestContent | Should -Match 'x \+ logicalWidth'
         $script:UiTestContent | Should -Match 'y \+ logicalHeight'
         $script:UiTestContent | Should -Match 'new MagickGeometry\(\(uint\)logicalWidth, \(uint\)logicalHeight\)'
