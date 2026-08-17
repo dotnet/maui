@@ -88,8 +88,34 @@ if ($shouldPublish -and -not $DryRun) {
     if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
         throw 'GH_TOKEN is required to publish the replication outcome.'
     }
-    $authenticatedLogin = (& gh api user --jq '.login').Trim()
-    if ($LASTEXITCODE -ne 0 -or
+
+    $authenticatedLogin = ''
+    $authenticationSucceeded = $false
+    $serviceRetryDelaysSeconds = @(30, 60)
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        $authenticationOutput = @(& gh api user --jq '.login' 2>&1)
+        if ($LASTEXITCODE -eq 0) {
+            $authenticatedLogin = ([string]($authenticationOutput | Select-Object -First 1)).Trim()
+            $authenticationSucceeded = $true
+            break
+        }
+
+        $failureText = ($authenticationOutput | ForEach-Object { [string]$_ }) -join "`n"
+        $transientServiceFailure = (
+            $failureText -match '(?im)\bHTTP\s*(?:429|50[234])\b' -or
+            $failureText -match '(?im)\bservice unavailable\b' -or
+            $failureText -match '(?im)\bno server is currently available\b'
+        )
+        if (-not $transientServiceFailure) {
+            break
+        }
+        if ($attempt -eq 3) {
+            throw 'GitHub service unavailable while validating MauiBot authentication after 3 bounded attempts.'
+        }
+        Start-Sleep -Seconds $serviceRetryDelaysSeconds[$attempt - 1]
+    }
+
+    if (-not $authenticationSucceeded -or
         -not $authenticatedLogin.Equals($ExpectedLogin, [StringComparison]::OrdinalIgnoreCase)) {
         throw "GH_TOKEN must authenticate as '$ExpectedLogin'."
     }

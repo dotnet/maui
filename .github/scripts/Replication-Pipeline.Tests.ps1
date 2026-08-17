@@ -142,4 +142,11 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "'copilot-win32-arm64'"
         $script:Pipeline | Should -Match 'Copilot CLI native Windows executable was not installed'
     }
+
+    It 'does not validate or publish blocked candidates as reproduced results' {
+        $script:Pipeline | Should -Match '\[string\]\$candidate\.status -ne ''reproduced'''
+        $script:Pipeline | Should -Match 'REPLICATION_CANDIDATE_READY\]false'
+        $script:Pipeline | Should -Match 'REPLICATION_CANDIDATE_READY\]true'
+        $script:Pipeline | Should -Match "condition: and\(succeeded\(\), eq\(variables\['REPLICATION_CANDIDATE_READY'\], 'true'\)\)"
+    }
 }

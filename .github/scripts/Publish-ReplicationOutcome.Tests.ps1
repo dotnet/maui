@@ -91,4 +91,11 @@ Describe 'Trusted replication issue outcome publishing' {
         $script:OutcomeSource | Should -Match 'gh issue edit'
         $script:OutcomeSource | Should -Match 'MAUI_COPILOT_NOT_REPRODUCED'
     }
+
+    It 'retries transient GitHub service failures without misclassifying the token' {
+        $script:OutcomeSource | Should -Match '\$serviceRetryDelaysSeconds = @\(30, 60\)'
+        $script:OutcomeSource | Should -Match ([regex]::Escape(
+            "`$failureText -match '(?im)\bHTTP\s*(?:429|50[234])\b'"))
+        $script:OutcomeSource | Should -Match 'GitHub service unavailable while validating MauiBot authentication'
+    }
 }

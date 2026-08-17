@@ -2643,11 +2643,26 @@ stages:
               $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
               $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
               New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              $candidatePath = Join-Path $artifactRoot "candidate.json"
+              $candidate = Get-Content -LiteralPath $candidatePath -Raw |
+                ConvertFrom-Json -Depth 20
+              if ([string]$candidate.status -ne 'reproduced') {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'skipped'
+                  validationPassed = $false
+                  blocked = $candidate.blocked
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath (Join-Path $outputRoot "validated-candidate.json") -Encoding utf8NoBOM
+                Write-Host "Replication candidate is '$($candidate.status)'; reproduced-only validation is not applicable."
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
+                exit 0
+              }
 
               $validation = @(
                 & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
                   -RepoRoot "$(Build.SourcesDirectory)" `
-                  -CandidateManifestPath (Join-Path $artifactRoot "candidate.json") `
+                  -CandidateManifestPath $candidatePath `
                   -PatchPath (Join-Path $artifactRoot "test.patch") `
                   -EvidenceDir $artifactRoot `
                   -IssueNumber ${{ parameters.IssueNumber }} `
@@ -2657,7 +2672,9 @@ stages:
               if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
                 throw "Replication candidate validation did not return one validated result."
               }
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]true"
             displayName: 'Validate replication candidate without credentials'
+            condition: succeededOrFailed()
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -2706,6 +2723,7 @@ stages:
                 $checkoutToken = $null
               }
             displayName: 'Publish reproduction evidence'
+            condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
             env:
               BUILD_BUILDID: $(Build.BuildId)
               SYSTEM_JOBATTEMPT: $(System.JobAttempt)
@@ -2759,6 +2777,7 @@ stages:
               }
             name: PublishReplicationPR
             displayName: 'Move existing PRs and create MauiBot testing draft PR'
+            condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               BUILD_BUILDID: $(Build.BuildId)
