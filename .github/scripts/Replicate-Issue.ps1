@@ -350,7 +350,7 @@ function Assert-GeneratedSandboxXaml {
         $root.Name.LocalName -cne 'ContentPage' -or
         $root.Name.NamespaceName -cne $mauiNamespace
     ) {
-        throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+        throw "Generated Sandbox XAML must have a <ContentPage> root in the default MAUI namespace; found '$(if ($null -eq $root) { 'no root element' } else { $root.Name.LocalName })'."
     }
 
     $namespacePrefixes = [Collections.Generic.HashSet[string]]::new(
@@ -385,7 +385,7 @@ function Assert-GeneratedSandboxXaml {
         -not $namespacePrefixes.Contains('') -or
         -not $namespacePrefixes.Contains('x')
     ) {
-        throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+        throw 'Generated Sandbox XAML must declare both the default MAUI xmlns and the x: xmlns on the root ContentPage.'
     }
 
     $classAttribute = $root.Attribute(
@@ -394,7 +394,7 @@ function Assert-GeneratedSandboxXaml {
         $null -eq $classAttribute -or
         $classAttribute.Value -cne 'Maui.Controls.Sample.MainPage'
     ) {
-        throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+        throw "Generated Sandbox XAML must set x:Class to 'Maui.Controls.Sample.MainPage'; found '$(if ($null -eq $classAttribute) { 'no x:Class attribute' } else { $classAttribute.Value })'."
     }
 
     $elements = @($root) + @($root.Descendants())
@@ -408,7 +408,7 @@ function Assert-GeneratedSandboxXaml {
         foreach ($attribute in $element.Attributes()) {
             if ($attribute.IsNamespaceDeclaration) {
                 if ($element -ne $root) {
-                    throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+                    throw "Generated Sandbox XAML declares a namespace on nested element '$($element.Name.LocalName)'; declare every xmlns on the root ContentPage instead."
                 }
                 continue
             }
@@ -418,17 +418,17 @@ function Assert-GeneratedSandboxXaml {
                     $attribute.Name.LocalName -cin @('Name', 'Key', 'DataType')
                 )
                 if (-not $allowedXamlAttribute) {
-                    throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+                    throw "Generated Sandbox XAML uses unsupported attribute 'x:$($attribute.Name.LocalName)' on '$($element.Name.LocalName)'; only x:Class on the root plus x:Name, x:Key and x:DataType are allowed."
                 }
             } elseif (
                 -not [string]::IsNullOrEmpty($attribute.Name.NamespaceName) -and
                 $attribute.Name.NamespaceName -cne $mauiNamespace -and
                 $attribute.Name.NamespaceName -cne $localNamespace
             ) {
-                throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+                throw "Generated Sandbox XAML attribute '$($attribute.Name.LocalName)' on '$($element.Name.LocalName)' uses a disallowed namespace; set that value from code-behind instead."
             }
             if ($attribute.Value -match '(?i)\{\s*(?:x:(?:Static|Type)\b|local:)') {
-                throw 'Generated Sandbox XAML does not match the bounded MainPage contract.'
+                throw "Generated Sandbox XAML attribute '$($attribute.Name.LocalName)' on '$($element.Name.LocalName)' uses an x:Static, x:Type or local: markup extension; assign that value from code-behind instead."
             }
         }
     }
@@ -461,7 +461,7 @@ function Assert-GeneratedSandboxSources {
             $source -notmatch '\bpartial\s+class\s+MainPage\b' -or
             $source -notmatch '\bInitializeComponent\s*\(\s*\)'
         ) {
-            throw 'Generated Sandbox code-behind does not match the bounded MainPage contract.'
+            throw 'Generated Sandbox code-behind must declare "public partial class MainPage" and call InitializeComponent() in its constructor.'
         } else {
             $verdictAssignments = [regex]::Matches(
                 $source,

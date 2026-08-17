@@ -1895,7 +1895,7 @@ public class Issue10792
             Assert-ReplicationTestLifecycleSafety `
                 -Content $fieldInitializer `
                 -Path 'Issue10792.cs'
-        } | Should -Throw '*unguarded test lifecycle hook*'
+        } | Should -Throw '*runs outside the test*Move the setup inside the test method body.*'
     }
 
     It 'starts Appium from a resolved executable with explicit inherited environment' {
@@ -1946,7 +1946,7 @@ public static class Issue37440Bootstrap
                 -Files @($testFile, $helperFile) `
                 -Issue 37440 `
                 -TestType UnitTest
-        } | Should -Throw '*unguarded test lifecycle hook*'
+        } | Should -Throw '*test lifecycle attribute*Move the setup inside the test method body.*'
     }
 
     It 'allows a UI HostApp companion constructor while guarding the UI test assembly' {

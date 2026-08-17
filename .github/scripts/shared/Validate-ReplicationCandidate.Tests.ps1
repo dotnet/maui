@@ -974,7 +974,7 @@ public static class Issue12345Bootstrap
             )
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*unguarded test lifecycle hook*'
+            Should -Throw '*test lifecycle attribute*Move the setup inside the test method body.*'
     }
 
     It 'allows a UI HostApp companion constructor' {

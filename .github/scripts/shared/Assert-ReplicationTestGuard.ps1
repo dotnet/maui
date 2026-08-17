@@ -299,14 +299,33 @@ function Assert-ReplicationTestLifecycleSafety {
         [Parameter(Mandatory = $true)][string]$Path
     )
 
-    if (
-        $Content -match '(?i)\[\s*(?:SetUp|TearDown|OneTimeSetUp|OneTimeTearDown|TestInitialize|TestCleanup|ClassInitialize|ClassCleanup|AssemblyInitialize|AssemblyCleanup|ModuleInitializer)\b' -or
-        $Content -match '(?i)\b(?:IAsyncLifetime|IClassFixture|ICollectionFixture|BeforeAfterTestAttribute)\b' -or
-        $Content -match '(?m)^\s*(?:(?:public|internal|protected|private)\s+)?static\s+[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)' -or
-        $Content -match '(?m)^\s*(?:(?:public|internal|protected|private)\s+)?readonly\s+[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)' -or
-        $Content -match '(?m)^\s*(?:public|internal|protected|private)\s+(?!class\b|interface\b|enum\b|record\b)[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)'
-    ) {
-        throw "Candidate test source '$Path' contains an unguarded test lifecycle hook."
+    $lifecycleRules = @(
+        [pscustomobject]@{
+            Reason = 'a test lifecycle attribute'
+            Pattern = '(?i)\[\s*(?:SetUp|TearDown|OneTimeSetUp|OneTimeTearDown|TestInitialize|TestCleanup|ClassInitialize|ClassCleanup|AssemblyInitialize|AssemblyCleanup|ModuleInitializer)\b'
+        },
+        [pscustomobject]@{
+            Reason = 'a test fixture lifecycle contract'
+            Pattern = '(?i)\b(?:IAsyncLifetime|IClassFixture|ICollectionFixture|BeforeAfterTestAttribute)\b'
+        },
+        [pscustomobject]@{
+            Reason = 'a static field initializer that runs outside the test'
+            Pattern = '(?m)^\s*(?:(?:public|internal|protected|private)\s+)?static\s+[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)'
+        },
+        [pscustomobject]@{
+            Reason = 'a readonly field initializer that runs outside the test'
+            Pattern = '(?m)^\s*(?:(?:public|internal|protected|private)\s+)?readonly\s+[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)'
+        },
+        [pscustomobject]@{
+            Reason = 'a field initializer that runs outside the test'
+            Pattern = '(?m)^\s*(?:public|internal|protected|private)\s+(?!class\b|interface\b|enum\b|record\b)[^;(){}]+\s+[A-Za-z_]\w*\s*=(?!>)'
+        }
+    )
+    foreach ($rule in $lifecycleRules) {
+        $match = [regex]::Match($Content, $rule.Pattern)
+        if ($match.Success) {
+            throw "Candidate test source '$Path' contains $($rule.Reason): $(Get-ReplicationUnsafeMatchDetail -ScanText ($Content.Replace("`r`n", "`n")) -Match $match). Move the setup inside the test method body."
+        }
     }
 
     $constructorScanContent = $Content
