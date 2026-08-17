@@ -358,6 +358,43 @@ public partial class MainPage : ContentPage
         } | Should -Throw '*device-external-access*'
     }
 
+    It 'allows direct handler context wiring but rejects service resolution' {
+        $repoRoot = $TestDrive
+        $sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
+        $sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+        @'
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage">
+    <Button x:Name="TargetButton" Text="Target" />
+</ContentPage>
+'@ | Set-Content -LiteralPath $sandboxXamlPath
+        @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        var customHandler = new NativeStyledButtonHandler();
+        customHandler.SetMauiContext(Handler.MauiContext);
+        TargetButton.Handler = customHandler;
+    }
+}
+'@ | Set-Content -LiteralPath $sandboxCodePath
+
+        { Assert-GeneratedSandboxSources } | Should -Not -Throw
+
+        (Get-Content -LiteralPath $sandboxCodePath -Raw).Replace(
+            'customHandler.SetMauiContext(Handler.MauiContext);',
+            'var service = Handler.MauiContext.Services.GetService(typeof(object));'
+        ) | Set-Content -LiteralPath $sandboxCodePath
+
+        { Assert-GeneratedSandboxSources } |
+            Should -Throw '*prohibited service-provider access*'
+    }
+
     It 'allows standard XAML schema URIs in LoadFromXaml strings only' {
         $source = @'
 var xaml = """
