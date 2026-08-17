@@ -31,6 +31,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
+. (Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1')
+
 function Test-ReplicationPullRequestBody {
     param([AllowEmptyString()][string]$Body)
 
@@ -69,9 +71,8 @@ if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
     throw 'GH_TOKEN is required to migrate reproduction pull requests.'
 }
 
-$authenticatedLogin = (& gh api user --jq '.login').Trim()
-if ($LASTEXITCODE -ne 0 -or
-    -not $authenticatedLogin.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
+$authenticatedLogin = Get-ReplicationGitHubLogin
+if (-not $authenticatedLogin.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
     throw "GH_TOKEN must authenticate as 'MauiBot'."
 }
 

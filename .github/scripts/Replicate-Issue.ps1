@@ -37,14 +37,17 @@ param(
     [ValidateRange(30, 10000)]
     [int]$MaxAiCredits = 2000,
 
-    [ValidateRange(1, 4)]
+    [ValidateRange(1, 8)]
     [int]$MaxSandboxAttempts = 5,
 
-    [ValidateRange(1, 3)]
+    [ValidateRange(1, 8)]
     [int]$MaxTestAttempts = 5,
 
     [ValidateRange(5, 45)]
     [int]$CopilotTimeoutMinutes = 20,
+
+    [ValidateRange(1, 45)]
+    [int]$CopilotServiceRetryBudgetMinutes = 20,
 
     [string]$Model = ''
 )
@@ -1643,13 +1646,17 @@ function Invoke-ReplicationCopilot {
 
     $started = [DateTimeOffset]::UtcNow
     $copilotExecutable = Resolve-ReplicationCopilotExecutable
-    $serviceRetryDelaysSeconds = @(30, 60)
+    $serviceRetryDelaysSeconds = @(30, 60, 120, 240, 300)
+    $maxServiceInvocations = $serviceRetryDelaysSeconds.Count + 1
+    # Transient 503s fail within seconds, so this budget caps the retry tail
+    # without letting six full CopilotTimeoutMinutes invocations stack up.
+    $serviceRetryDeadline = $started.AddMinutes($CopilotServiceRetryBudgetMinutes)
     $allLines = [Collections.Generic.List[string]]::new()
     $lines = @()
     $runResult = $null
     $exitCode = 1
 
-    for ($serviceAttempt = 1; $serviceAttempt -le 3; $serviceAttempt++) {
+    for ($serviceAttempt = 1; $serviceAttempt -le $maxServiceInvocations; $serviceAttempt++) {
         $runResult = Invoke-WithoutReplicationSecrets -Names $publisherSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath $copilotExecutable `
@@ -1667,14 +1674,15 @@ function Invoke-ReplicationCopilot {
         }
 
         $failureText = ($lines | ForEach-Object { [string]$_ }) -join "`n"
+        $delaySeconds = $serviceRetryDelaysSeconds[$serviceAttempt - 1]
         if (
             -not (Test-TransientCopilotServiceFailure -Output $failureText) -or
-            $serviceAttempt -eq 3
+            $serviceAttempt -eq $maxServiceInvocations -or
+            [DateTimeOffset]::UtcNow.AddSeconds($delaySeconds) -ge $serviceRetryDeadline
         ) {
             break
         }
 
-        $delaySeconds = $serviceRetryDelaysSeconds[$serviceAttempt - 1]
         $allLines.Add(
             "Transient Copilot service failure; retrying invocation in $delaySeconds seconds.")
         Start-Sleep -Seconds $delaySeconds

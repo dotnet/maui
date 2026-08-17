@@ -190,11 +190,36 @@ Describe 'Replication orchestrator security boundary' {
         Test-TransientCopilotServiceFailure `
             -Output 'The generated Sandbox source did not compile: error CS7036' |
             Should -BeFalse
-        $script:Source | Should -Match '\$serviceRetryDelaysSeconds = @\(30, 60\)'
+        $script:Source | Should -Match '\$serviceRetryDelaysSeconds = @\(30, 60, 120, 240, 300\)'
+        $script:Source |
+            Should -Match '\$maxServiceInvocations = \$serviceRetryDelaysSeconds\.Count \+ 1'
+        $script:Source |
+            Should -Match '\$serviceAttempt -le \$maxServiceInvocations'
+        $script:Source |
+            Should -Match '\$serviceAttempt -eq \$maxServiceInvocations'
+        $script:Source |
+            Should -Match '\$serviceRetryDeadline = \$started\.AddMinutes\('
+        $script:Source |
+            Should -Match 'AddSeconds\(\$delaySeconds\) -ge \$serviceRetryDeadline'
         $script:Source |
             Should -Match 'failed with exit code \$exitCode after \$serviceAttempt service invocation\(s\)'
         $script:Source |
             Should -Match '\(\?:Copilot service unavailable during \|Copilot CLI unavailable:\)'
+    }
+
+    It 'keeps every bounded attempt default inside its own validation range' {
+        $ranges = [regex]::Matches(
+            $script:Source,
+            '\[ValidateRange\((?<min>\d+),\s*(?<max>\d+)\)\]\s*\r?\n\s*\[int\]\$(?<name>\w+)\s*=\s*(?<default>\d+)')
+        $ranges.Count | Should -BeGreaterThan 3
+        foreach ($range in $ranges) {
+            $default = [int]$range.Groups['default'].Value
+            $name = $range.Groups['name'].Value
+            $default | Should -BeGreaterOrEqual ([int]$range.Groups['min'].Value) `
+                -Because "the $name default must stay bindable"
+            $default | Should -BeLessOrEqual ([int]$range.Groups['max'].Value) `
+                -Because "the $name default must stay bindable"
+        }
     }
 
     It 'uses the native Copilot executable on Windows' {
