@@ -1404,15 +1404,44 @@ stages:
           # avoids persisting credentials in the agent's gh auth store where
           # Gate and CopilotReview tasks could access them.
 
-          - bash: |
-              echo "Installing GitHub Copilot CLI..."
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              Write-Host "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
-              # Ensure npm global bin is on PATH for subsequent steps (Linux UseNode installs to toolcache)
-              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
-              echo "Copilot binary at: $COPILOT_BIN_DIR/copilot"
-              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
-              copilot --version || true
-              echo "Copilot CLI installed successfully"
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Installing GitHub Copilot CLI failed.'
+              }
+
+              if ($IsWindows) {
+                $npmRoot = (& npm root -g).Trim()
+                $architecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+                $packageName = if ($architecture -eq [Runtime.InteropServices.Architecture]::Arm64) {
+                  'copilot-win32-arm64'
+                } else {
+                  'copilot-win32-x64'
+                }
+                $copilot = @(
+                  (Join-Path $npmRoot "@github/$packageName/copilot.exe"),
+                  (Join-Path $npmRoot "@github/copilot/node_modules/@github/$packageName/copilot.exe")
+                ) | Where-Object {
+                  Test-Path -LiteralPath $_ -PathType Leaf
+                } | Select-Object -First 1
+                if (-not $copilot) {
+                  throw 'Copilot CLI native Windows executable was not installed.'
+                }
+              } else {
+                $copilot = Get-Command copilot -CommandType Application -ErrorAction Stop |
+                  Select-Object -ExpandProperty Source
+              }
+
+              $copilotBinDir = Split-Path -Parent $copilot
+              Write-Host "Copilot binary at: $copilot"
+              Write-Host "##vso[task.prependpath]$copilotBinDir"
+              & $copilot --version
+              if ($LASTEXITCODE -ne 0) {
+                throw 'GitHub Copilot CLI validation failed.'
+              }
+              Write-Host "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
           # Boot iOS Simulator (only for iOS platform)

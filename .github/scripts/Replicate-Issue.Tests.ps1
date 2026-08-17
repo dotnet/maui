@@ -77,7 +77,8 @@ BeforeAll {
         'Assert-GeneratedTestContent',
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
-        'Test-TransientCopilotServiceFailure'
+        'Test-TransientCopilotServiceFailure',
+        'Resolve-ReplicationCopilotExecutable'
     )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -138,7 +139,17 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source |
             Should -Match 'failed with exit code \$exitCode after \$serviceAttempt service invocation\(s\)'
         $script:Source |
-            Should -Match 'if \(\$sandboxFailureSummary -match ''\^Copilot service unavailable during ''\)'
+            Should -Match '\(\?:Copilot service unavailable during \|Copilot CLI unavailable:\)'
+    }
+
+    It 'uses the native Copilot executable on Windows' {
+        $script:Source | Should -Match "'copilot-win32-x64'"
+        $script:Source | Should -Match "'copilot-win32-arm64'"
+        $script:Source | Should -Match '@github/\$packageName/copilot\.exe'
+        $script:Source | Should -Match '-FilePath \$copilotExecutable'
+        $script:Source | Should -Not -Match "-FilePath 'copilot'"
+        $script:Source | Should -Match "'copilot_cli_unavailable'"
+        $script:Source | Should -Match 'Copilot CLI unavailable:'
     }
 
     It 'bounds every external replication phase below the job timeout' {

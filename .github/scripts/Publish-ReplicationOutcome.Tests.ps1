@@ -35,6 +35,7 @@ Describe 'Trusted replication issue outcome publishing' {
 
     It 'does not handle infrastructure or verification failures' {
         foreach ($code in @(
+            'copilot_cli_unavailable',
             'copilot_service_unavailable',
             'sandbox_inconclusive',
             'verification_inconclusive'

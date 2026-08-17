@@ -1528,6 +1528,37 @@ function Test-TransientCopilotServiceFailure {
     )
 }
 
+function Resolve-ReplicationCopilotExecutable {
+    if (-not $IsWindows) {
+        $command = Get-Command copilot -CommandType Application -ErrorAction Stop
+        return [string]$command.Source
+    }
+
+    $npmRoot = (& npm root -g).Trim()
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($npmRoot)) {
+        throw 'Copilot CLI unavailable: unable to resolve the global npm root.'
+    }
+
+    $packageName = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq
+        [Runtime.InteropServices.Architecture]::Arm64) {
+        'copilot-win32-arm64'
+    } else {
+        'copilot-win32-x64'
+    }
+    $candidates = @(
+        (Join-Path $npmRoot "@github/$packageName/copilot.exe"),
+        (Join-Path $npmRoot "@github/copilot/node_modules/@github/$packageName/copilot.exe")
+    )
+    $executable = $candidates |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
+        Select-Object -First 1
+    if (-not $executable) {
+        throw 'Copilot CLI unavailable: native Windows executable was not found under the global npm root.'
+    }
+
+    return [IO.Path]::GetFullPath($executable)
+}
+
 function Invoke-ReplicationCopilot {
     param(
         [Parameter(Mandatory = $true)][string]$PhaseName,
@@ -1590,6 +1621,7 @@ function Invoke-ReplicationCopilot {
     }
 
     $started = [DateTimeOffset]::UtcNow
+    $copilotExecutable = Resolve-ReplicationCopilotExecutable
     $serviceRetryDelaysSeconds = @(30, 60)
     $allLines = [Collections.Generic.List[string]]::new()
     $lines = @()
@@ -1599,7 +1631,7 @@ function Invoke-ReplicationCopilot {
     for ($serviceAttempt = 1; $serviceAttempt -le 3; $serviceAttempt++) {
         $runResult = Invoke-WithoutReplicationSecrets -Names $publisherSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
-                -FilePath 'copilot' `
+                -FilePath $copilotExecutable `
                 -Arguments $arguments `
                 -TimeoutSeconds ($CopilotTimeoutMinutes * 60)
         }
@@ -2144,7 +2176,8 @@ try {
         catch {
             $sandboxFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
-            if ($sandboxFailureSummary -match '^Copilot service unavailable during ') {
+            if ($sandboxFailureSummary -match
+                '^(?:Copilot service unavailable during |Copilot CLI unavailable:)') {
                 throw
             }
             if ($attempt -eq $MaxSandboxAttempts) {
@@ -2308,6 +2341,10 @@ catch {
     $rawReason = [string]$_.Exception.Message
     $reason = ConvertTo-ReplicationSafeLog $rawReason 500
     $code = if ($rawReason.StartsWith(
+        'Copilot CLI unavailable:',
+        [StringComparison]::Ordinal)) {
+        'copilot_cli_unavailable'
+    } elseif ($rawReason.StartsWith(
         'Copilot service unavailable during ',
         [StringComparison]::Ordinal)) {
         'copilot_service_unavailable'

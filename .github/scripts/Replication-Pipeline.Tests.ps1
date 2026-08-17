@@ -134,4 +134,12 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish Replication Copilot Logs'.*?targetPath: '\$\(Build\.ArtifactStagingDirectory\)/copilot-logs'.*?artifact: 'CopilotLogs'"
         $script:Pipeline | Should -Not -Match "targetPath: '\$\(REPLICATION_ARTIFACT_ROOT\)/copilot-token-usage'"
     }
+
+    It 'installs and validates the native Copilot executable cross-platform' {
+        $script:Pipeline | Should -Match ([regex]::Escape("- pwsh: |"))
+        $script:Pipeline | Should -Match ([regex]::Escape('Write-Host "Installing GitHub Copilot CLI..."'))
+        $script:Pipeline | Should -Match "'copilot-win32-x64'"
+        $script:Pipeline | Should -Match "'copilot-win32-arm64'"
+        $script:Pipeline | Should -Match 'Copilot CLI native Windows executable was not installed'
+    }
 }
