@@ -59,6 +59,7 @@ BeforeAll {
         'Get-ReplicationFailureDetails',
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
+        'Get-ReplicationElementInventory',
         'Get-ReplicationExistingIssueTestPaths',
         'Assert-ReplicationScenarioNotBlocked',
         'Test-PathInsideRoot',
@@ -952,6 +953,33 @@ public partial class MainPage : ContentPage
                     -Content $dangerous[$code] -Path 'MainPage.xaml.cs'
             } | Should -Throw "*prohibited '$code'*" -Because "$code must stay blocked"
         }
+    }
+
+    It 'reports the elements the app exposed when a locator times out' {
+        # Issue 37429 on Android burned every attempt because the agent was told
+        # only which locator failed, so it re-guessed names such as 'Group 1'
+        # and '- Group' that the app never exposed.
+        $log = Join-Path $TestDrive 'record-attempt-1.log'
+        @(
+            'Element was not visible: automationId=Group 1.'
+            '<<<REPLICATION_VISIBLE_ELEMENTS resource-id=EmptyLabel | text=No items | content-desc=AddButton REPLICATION_VISIBLE_ELEMENTS>>>'
+        ) | Set-Content -LiteralPath $log
+
+        $inventory = Get-ReplicationElementInventory -LogPath $log
+        $inventory | Should -Match 'resource-id=EmptyLabel'
+        $inventory | Should -Match 'content-desc=AddButton'
+        $inventory | Should -Not -Match 'REPLICATION_VISIBLE_ELEMENTS'
+
+        Get-ReplicationElementInventory -LogPath (Join-Path $TestDrive 'missing.log') |
+            Should -BeNullOrEmpty
+
+        $withoutMarker = Join-Path $TestDrive 'plain.log'
+        'Element was not visible: automationId=Group 1.' | Set-Content -LiteralPath $withoutMarker
+        Get-ReplicationElementInventory -LogPath $withoutMarker | Should -BeNullOrEmpty
+
+        # The orchestrator must actually route locator failures through it.
+        $script:Source | Should -Match 'Element was not visible\|no such element\|ElementNotFound'
+        $script:Source | Should -Match 'Do not re-guess a name that is absent from the inventory'
     }
 
     It 'demands measurable, tolerant, and causal assertions' {

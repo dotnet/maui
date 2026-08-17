@@ -450,7 +450,76 @@ static IWebElement WaitForElement(
         $"Element was not visible: {locator.Strategy}={locator.Value}. " +
         $"Tried {candidates.Count} equivalent locator(s) on {platform}: " +
         string.Join(" | ", candidates.Select(by => by.ToString())) +
-        ". Confirm the element sets AutomationId and is accessibility-visible.");
+        ". Confirm the element sets AutomationId and is accessibility-visible." +
+        Environment.NewLine +
+        DescribeAddressableElements(driver));
+}
+
+// A locator timeout otherwise reports only what was searched for, which leaves
+// the next attempt guessing at identifiers that may never have existed. Listing
+// what the running app actually exposes turns that guess into a choice.
+static string DescribeAddressableElements(AppiumDriver driver)
+{
+    const string ElementInventoryStart = "<<<REPLICATION_VISIBLE_ELEMENTS";
+    const string ElementInventoryEnd = "REPLICATION_VISIBLE_ELEMENTS>>>";
+    const int MaximumDescribedElements = 40;
+    const int MaximumDescribedValueLength = 60;
+
+    string source;
+    try
+    {
+        source = driver.PageSource ?? string.Empty;
+    }
+    catch (Exception exception)
+    {
+        return $"{ElementInventoryStart} unavailable: {exception.GetType().Name}. {ElementInventoryEnd}";
+    }
+
+    if (source.Length == 0)
+    {
+        return $"{ElementInventoryStart} unavailable: the driver returned an empty page source. {ElementInventoryEnd}";
+    }
+
+    var seen = new HashSet<string>(StringComparer.Ordinal);
+    var described = new List<string>();
+    foreach (Match match in Regex.Matches(
+        source,
+        "(?<attribute>resource-id|content-desc|AutomationId|accessibilityIdentifier|name|label|text|value)=\"(?<value>[^\"]*)\"",
+        RegexOptions.IgnoreCase))
+    {
+        if (described.Count >= MaximumDescribedElements)
+        {
+            break;
+        }
+
+        var value = match.Groups["value"].Value.Trim();
+        if (value.Length == 0 || value.Length > MaximumDescribedValueLength)
+        {
+            continue;
+        }
+
+        // Android reports a package-qualified resource id; only the local part
+        // is addressable through an AutomationId locator.
+        var separator = value.LastIndexOf('/');
+        if (separator >= 0 && separator < value.Length - 1)
+        {
+            value = value.Substring(separator + 1);
+        }
+
+        var attribute = match.Groups["attribute"].Value.ToLowerInvariant();
+        var entry = $"{attribute}={value}";
+        if (seen.Add(entry))
+        {
+            described.Add(entry);
+        }
+    }
+
+    if (described.Count == 0)
+    {
+        return $"{ElementInventoryStart} none: the app exposes no identifying attributes on any element. {ElementInventoryEnd}";
+    }
+
+    return ElementInventoryStart + " " + string.Join(" | ", described) + " " + ElementInventoryEnd;
 }
 
 static void WaitForAbsence(

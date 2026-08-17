@@ -155,6 +155,49 @@ function ConvertTo-ReplicationSafeLog {
     return $safe
 }
 
+function Get-ReplicationElementInventory {
+    <#
+        .SYNOPSIS
+        Recovers the addressable elements the app exposed when a locator timed out.
+
+        .DESCRIPTION
+        A locator timeout reports only the identifiers that were searched for, so
+        successive attempts re-guess names that may never have existed. The
+        trusted runner records what the running app actually exposes; surfacing
+        that inventory lets the next attempt choose a real element.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [string]$LogPath,
+        [int]$MaximumLength = 1200
+    )
+
+    if (-not (Test-Path -LiteralPath $LogPath -PathType Leaf)) {
+        return ''
+    }
+
+    try {
+        $content = Get-Content -LiteralPath $LogPath -Raw -ErrorAction Stop
+    } catch {
+        return ''
+    }
+
+    $match = [regex]::Match(
+        [string]$content,
+        '<<<REPLICATION_VISIBLE_ELEMENTS(?<body>.*?)REPLICATION_VISIBLE_ELEMENTS>>>',
+        [Text.RegularExpressions.RegexOptions]::Singleline)
+    if (-not $match.Success) {
+        return ''
+    }
+
+    $inventory = ($match.Groups['body'].Value -replace '\s+', ' ').Trim()
+    if (-not $inventory) {
+        return ''
+    }
+
+    return ConvertTo-ReplicationSafeLog $inventory $MaximumLength
+}
+
 function Get-ReplicationCompilerDiagnostics {
     <#
         .SYNOPSIS
@@ -2501,6 +2544,18 @@ try {
                     $sandboxFailureSummary = @"
 The Sandbox build failed with these compiler diagnostics: $prepareDiagnostics
 Fix the authored Sandbox source so it compiles. This repository builds with warnings as errors. Resolve ambiguous type references such as ILayout by fully qualifying the intended type, match the exact overload signature of the API you call, and give collection expressions a constructible target type.
+
+$sandboxFailureSummary
+"@
+                }
+            }
+            elseif ($sandboxFailureSummary -match '(?i)Element was not visible|no such element|ElementNotFound') {
+                $inventory = Get-ReplicationElementInventory `
+                    -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log")
+                if ($inventory) {
+                    $sandboxFailureSummary = @"
+The Appium plan waited for an element that the running app never exposed. These are the identifying attributes the app actually exposed at that moment: $inventory
+Choose the next locator from that inventory, or give the Sandbox element an explicit AutomationId and address it by that identifier. Do not re-guess a name that is absent from the inventory.
 
 $sandboxFailureSummary
 "@
