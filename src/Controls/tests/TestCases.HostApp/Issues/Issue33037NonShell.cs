@@ -1,3 +1,4 @@
+using Microsoft.Maui.Layouts;
 using ControlsPage = Microsoft.Maui.Controls.Page;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 
@@ -31,6 +32,7 @@ public class Issue33037NonShellRootPage : ContentPage
 					Text = "Select a non-Shell NavigationPage large-title scenario.",
 					FontAttributes = FontAttributes.Bold
 				},
+				CreateModalButton(),
 				CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
 				CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
 				CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
@@ -58,6 +60,27 @@ public class Issue33037NonShellRootPage : ContentPage
 		};
 
 		button.Clicked += async (_, _) => await Navigation.PushAsync(createPage());
+		return button;
+	}
+
+	Button CreateModalButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037ModalListViewButton",
+			Text = "Modal NavigationPage with ListView"
+		};
+
+		button.Clicked += async (_, _) =>
+		{
+			var navigationPage = new NavigationPage(new Issue33037NonShellModalListViewPage())
+			{
+				BarBackgroundColor = Colors.Transparent
+			};
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navigationPage, true);
+			await Navigation.PushModalAsync(navigationPage);
+		};
+
 		return button;
 	}
 }
@@ -99,7 +122,7 @@ abstract class Issue33037NonShellScenarioPage : ContentPage
 		return stack;
 	}
 
-	protected static IList<string> CreateItems(int count = 60)
+	internal static IList<string> CreateItems(int count = 60)
 	{
 		var items = new List<string>();
 		for (int i = 0; i < count; i++)
@@ -221,6 +244,53 @@ class Issue33037NonShellListViewPage : Issue33037NonShellScenarioPage
 			})
 		};
 #pragma warning restore CS0618
+	}
+}
+
+class Issue33037NonShellModalListViewPage : ContentPage
+{
+	public Issue33037NonShellModalListViewPage()
+	{
+		Title = "Issue33037 Modal List";
+
+#pragma warning disable CS0618 // ListView/ViewCell obsolete - intentionally matching the reported issue #33037 scenario
+		var listView = new ListView
+		{
+			AutomationId = "Issue33037ModalListViewScroller",
+			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(18),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					HeightRequest = 50,
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return new ViewCell { View = label };
+			})
+		};
+#pragma warning restore CS0618
+
+		var closeButton = new Button
+		{
+			AutomationId = "Issue33037ModalListViewCloseButton",
+			Text = "Close"
+		};
+		closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
+
+		AbsoluteLayout.SetLayoutFlags(listView, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(listView, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(closeButton, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(closeButton, new Rect(0.5, 1, 120, 44));
+
+		Content = new AbsoluteLayout
+		{
+			Children =
+			{
+				listView,
+				closeButton
+			}
+		};
 	}
 }
 

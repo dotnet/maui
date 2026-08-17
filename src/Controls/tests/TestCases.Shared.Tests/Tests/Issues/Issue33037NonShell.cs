@@ -83,6 +83,40 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	public void ModalListViewLargeTitleRemainsVisibleAfterScrollRoundTrip()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037ModalListViewButton").Click();
+
+		try
+		{
+			var expandedTitleRect = App.WaitForElement("Issue33037 Modal List").GetRect();
+			App.WaitForElement("Issue33037ModalListViewScroller");
+
+			App.ScrollDown("Issue33037ModalListViewScroller", swipePercentage: 0.8);
+			App.WaitForElement("Item 17");
+
+			var collapsedTitleRect = App.WaitForElement("Issue33037 Modal List").GetRect();
+			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
+				"The modal navigation title should collapse after scrolling down.");
+
+			App.ScrollUp("Issue33037ModalListViewScroller", swipePercentage: 0.8);
+			App.WaitForElement("Item 0");
+
+			var restoredTitleRect = App.WaitForElement(
+				"Issue33037 Modal List",
+				"The modal navigation title disappeared after scrolling back to the top.").GetRect();
+			Assert.That(restoredTitleRect.Height, Is.GreaterThan(collapsedTitleRect.Height),
+				"The modal navigation title should expand again after scrolling back to the top.");
+		}
+		finally
+		{
+			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
 	public void ProgrammaticWebViewScrollCollapsesLargeTitle()
 	{
 		RequireIOS26OrHigher();

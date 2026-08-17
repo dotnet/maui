@@ -1873,15 +1873,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateLargeTitleProxyState(UIScrollView scrollView)
 			{
-				if (scrollView.ContentOffset.Y <= _largeTitleInitialContentOffset.Y + 0.5)
+				if (_largeTitleProxyScrollView is null)
 				{
-					RemoveLargeTitleProxyScrollView();
-					return;
+					if (scrollView.ContentOffset.Y <= _largeTitleInitialContentOffset.Y + 0.5)
+						return;
+
+					CreateLargeTitleProxyScrollView();
 				}
 
-				if (_largeTitleProxyScrollView is null)
-					CreateLargeTitleProxyScrollView();
-
+				// Keep the proxy attached while returning to rest so UIKit can complete the expand transition.
 				_largeTitleProxyScrollView.Frame = View.Bounds;
 				_largeTitleProxyScrollView.ContentSize = new SizeF(
 					Math.Max(0, scrollView.ContentSize.Width + _largeTitleProxyScrollView.Bounds.Width - scrollView.Bounds.Width),
