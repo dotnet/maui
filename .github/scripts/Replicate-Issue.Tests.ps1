@@ -79,6 +79,7 @@ BeforeAll {
         'Get-ReplicationPwshArguments',
         'Test-TransientCopilotServiceFailure',
         'Test-TransientReproductionInfrastructureFailure',
+        'Get-UnsupportedReplicationCapability',
         'Resolve-ReplicationCopilotExecutable'
     )) {
         $function = $ast.Find({
@@ -121,6 +122,32 @@ Describe 'Replication orchestrator security boundary' {
         $result.TimedOut | Should -BeFalse
         $result.ExitCode | Should -Be 0
         $result.Output | Should -Contain 'expected'
+    }
+
+    It 'rejects scenarios that require prohibited capabilities before spending device attempts' {
+        Get-UnsupportedReplicationCapability `
+            -Title 'WebView Control Fails to Render Image' `
+            -Labels @('t/bug', 'platform/android') |
+            Should -BeExactly 'web content hosting'
+        Get-UnsupportedReplicationCapability `
+            -Title 'Something is broken' `
+            -Labels @('area-controls-webview') |
+            Should -BeExactly 'web content hosting'
+        Get-UnsupportedReplicationCapability `
+            -Title 'FilePicker returns the wrong path' `
+            -Labels @() |
+            Should -BeExactly 'file system or picker access'
+        Get-UnsupportedReplicationCapability `
+            -Title 'SetDynamicResource does not update the Background property of the Label' `
+            -Labels @('area-controls-label', 't/bug') |
+            Should -BeExactly ''
+        Get-UnsupportedReplicationCapability `
+            -Title '[NET11] CollectionView Throws Exception on Windows' `
+            -Labels @('area-controls-collectionview') |
+            Should -BeExactly ''
+
+        $script:Source | Should -Match "'unsupported_scenario'"
+        $script:Source | Should -Match 'Unsupported replication scenario:'
     }
 
     It 'retries device infrastructure flakiness without consuming semantic attempts' {

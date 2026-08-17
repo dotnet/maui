@@ -180,7 +180,7 @@ Allowed values:
 
 - `status`: `reproduced` or `blocked`
 - `blocked.stage`: `input`, `sandbox`, `video`, `test`, or `cleanup`
-- `blocked.code`: `invalid_input`, `sandbox_not_reproduced`, `sandbox_inconclusive`, `video_missing`, `video_invalid`, `test_not_failing`, `verification_inconclusive`, or `cleanup_failed`
+- `blocked.code`: `invalid_input`, `unsupported_scenario`, `copilot_cli_unavailable`, `copilot_service_unavailable`, `sandbox_not_reproduced`, `sandbox_inconclusive`, `video_missing`, `video_invalid`, `test_not_failing`, `verification_inconclusive`, or `cleanup_failed`
 - `platform`: `android`, `ios`, `catalyst`, or `windows`
 - `testType`: `unit`, `xaml`, `device`, or `ui`
 - `testFilter`: `Issue<issueNumber>` for unit/device/UI, or `Maui<issueNumber>` for XAML

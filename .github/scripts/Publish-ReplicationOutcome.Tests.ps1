@@ -37,6 +37,7 @@ Describe 'Trusted replication issue outcome publishing' {
         foreach ($code in @(
             'copilot_cli_unavailable',
             'copilot_service_unavailable',
+            'unsupported_scenario',
             'sandbox_inconclusive',
             'verification_inconclusive'
         )) {

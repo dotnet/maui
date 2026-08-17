@@ -2044,6 +2044,55 @@ $currentSha = (& git rev-parse HEAD).Trim()
 if ($currentSha -ne $BaseSha) {
     throw "Current HEAD '$currentSha' does not match trusted baseline '$BaseSha'."
 }
+function Get-UnsupportedReplicationCapability {
+    [CmdletBinding()]
+    param(
+        [AllowEmptyString()][string]$Title = '',
+        [AllowEmptyCollection()][string[]]$Labels = @()
+    )
+
+    $rules = @(
+        [pscustomobject]@{
+            Capability = 'web content hosting'
+            LabelPattern = '(?i)^area-controls-(?:webview|hybridwebview)$|^area-blazor$'
+            TitlePattern = '(?i)\b(?:web ?view|hybrid ?web ?view|blazor ?web ?view)\b'
+        },
+        [pscustomobject]@{
+            Capability = 'maps'
+            LabelPattern = '(?i)^area-controls-map$'
+            TitlePattern = '(?i)\bmap(?:s|view)?\b'
+        },
+        [pscustomobject]@{
+            Capability = 'file system or picker access'
+            LabelPattern = '(?i)^area-essentials-(?:filepicker|filesystem|mediapicker)$'
+            TitlePattern = '(?i)\b(?:file ?picker|media ?picker|file ?system|save ?file|folder ?picker)\b'
+        },
+        [pscustomobject]@{
+            Capability = 'network access'
+            LabelPattern = '(?i)^area-essentials-(?:connectivity|webauthenticator)$'
+            TitlePattern = '(?i)\b(?:http ?client|download|upload|remote (?:url|image|server)|rest api)\b'
+        },
+        [pscustomobject]@{
+            Capability = 'device services'
+            LabelPattern = '(?i)^area-essentials-(?:securestorage|preferences|geolocation|permissions|clipboard|browser|launcher)$'
+            TitlePattern = '(?i)\b(?:secure ?storage|geolocation|bluetooth|camera|push ?notification)\b'
+        }
+    )
+
+    foreach ($rule in $rules) {
+        foreach ($label in @($Labels)) {
+            if ($label -match $rule.LabelPattern) {
+                return $rule.Capability
+            }
+        }
+        if ($Title -match $rule.TitlePattern) {
+            return $rule.Capability
+        }
+    }
+
+    return ''
+}
+
 if (-not (Test-Path -LiteralPath $ContextPath -PathType Leaf)) {
     throw "Sanitized issue context is missing: $ContextPath"
 }
@@ -2078,6 +2127,8 @@ $selectedDeviceId = if ($DeviceUdid) {
 Assert-InitialReplicationWorktree
 Clear-TransientAppiumDirectory
 
+$structuredContextPath = Join-Path $ArtifactRoot 'context/issue-context.json'
+
 $stage = 'sandbox'
 $sandboxAttempts = 0
 $testAttempts = 0
@@ -2088,6 +2139,17 @@ $plannedTestFiles = @()
 $testProposal = $null
 
 try {
+    if (Test-Path -LiteralPath $structuredContextPath -PathType Leaf) {
+        $structuredContext = Get-Content -LiteralPath $structuredContextPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $unsupportedCapability = Get-UnsupportedReplicationCapability `
+            -Title ([string]$structuredContext.title) `
+            -Labels ([string[]]@($structuredContext.labels))
+        if ($unsupportedCapability) {
+            throw ("Unsupported replication scenario: the reported behavior requires $unsupportedCapability, " +
+                'which the bounded Sandbox safety rules prohibit.')
+        }
+    }
     $sandboxFailureSummary = ''
     $previousSandboxFailureSummary = ''
     $infrastructureRetries = 0
@@ -2404,6 +2466,10 @@ catch {
         'Copilot CLI unavailable:',
         [StringComparison]::Ordinal)) {
         'copilot_cli_unavailable'
+    } elseif ($rawReason.StartsWith(
+        'Unsupported replication scenario:',
+        [StringComparison]::Ordinal)) {
+        'unsupported_scenario'
     } elseif ($rawReason.StartsWith(
         'Copilot service unavailable during ',
         [StringComparison]::Ordinal)) {
