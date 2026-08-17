@@ -218,8 +218,11 @@ extends:
                 }
 
                 $dropPath = "$(Build.StagingDirectory)\nupkgs"
+                # Darc represents NuGet packages as slash-free asset names. Symbol and other blob
+                # assets use paths and are not inputs to this NuGet.org release.
+                $packageAssetFilter = '^[^/]+$'
                 Write-Host "Gathering BAR build '$barId' into '$dropPath'."
-                & $darc gather-drop --ci --id $barId -o "$dropPath" --azdev-pat $(System.AccessToken) --include-released --verbose
+                & $darc gather-drop --ci --id $barId -o "$dropPath" --azdev-pat $(System.AccessToken) --include-released --asset-filter $packageAssetFilter --verbose
                 if ($LASTEXITCODE -ne 0) {
                   throw "Darc gather-drop failed for BAR build '$barId'."
                 }

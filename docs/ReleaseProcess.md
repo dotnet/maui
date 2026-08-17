@@ -21,7 +21,7 @@ The pipeline accepts:
 
 ### Preparation
 
-The preparation stage resolves the BAR build once and runs one fail-fast `darc gather-drop`. It rejects a failed or incomplete gather, applies the include and exclude filters, and requires non-empty workload-pack and workload-manifest sets.
+The preparation stage resolves the BAR build once and runs one fail-fast `darc gather-drop`, filtered to BAR NuGet package assets. Symbol and other path-based blob assets are not NuGet.org release inputs and are not downloaded. The stage rejects a failed or incomplete package gather, applies the include and exclude filters, and requires non-empty workload-pack and workload-manifest sets.
 
 For every selected package, the stage reads the package ID and version from its nuspec and reports the selected identities and counts. It publishes two 1ES pipeline outputs:
 

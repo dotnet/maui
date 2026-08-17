@@ -18,6 +18,8 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - 'eng/pipelines/ci-official-release.yml'
+      - 'eng/pipelines/ci-official-release.Tests.ps1'
       - 'eng/scripts/nuget_release_packages.ps1'
       - 'eng/scripts/nuget_release_packages.Tests.ps1'
       - '.github/workflows/powershell-script-tests.yml'
@@ -65,6 +67,7 @@ jobs:
           $config = New-PesterConfiguration
           $config.Run.Path = @(
             '.github/scripts'
+            'eng/pipelines/ci-official-release.Tests.ps1'
             'eng/scripts/nuget_release_packages.Tests.ps1'
           )
           $config.Run.PassThru = $true
