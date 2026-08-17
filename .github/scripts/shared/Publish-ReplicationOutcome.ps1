@@ -24,8 +24,11 @@ param(
     [ValidatePattern('^https://devdiv\.visualstudio\.com/DevDiv/_build/results\?buildId=[0-9]+$')]
     [string]$BuildUrl,
 
+    # No default: an accidental omission must not comment on the public issue
+    # tracker and notify the reporter.
+    [Parameter(Mandatory = $true)]
     [ValidatePattern('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')]
-    [string]$Repository = 'dotnet/maui',
+    [string]$Repository,
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
     [string]$ExpectedLogin = 'MauiBot',

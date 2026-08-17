@@ -150,3 +150,29 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "condition: and\(succeeded\(\), eq\(variables\['REPLICATION_CANDIDATE_READY'\], 'true'\)\)"
     }
 }
+
+Describe 'Replication issue outcome publication boundary' {
+    BeforeAll {
+        $script:PipelineYaml = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
+        $script:OutcomeSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Publish-ReplicationOutcome.ps1') -Raw
+    }
+
+    It 'keeps commenting on the public issue tracker opt-in' {
+        # Build 14997672 commented on dotnet/maui#36694 and applied
+        # s/try-latest-version, which notified the reporter, while the flow was
+        # still being hardened and only reproduction PRs were meant to be public.
+        $script:PipelineYaml | Should -Match 'name: PublishIssueOutcome'
+        $script:PipelineYaml | Should -Match '(?s)name: PublishIssueOutcome.*?default: false'
+        $script:PipelineYaml.Contains('-DryRun:(-not $publishIssueOutcome)') |
+            Should -BeTrue
+    }
+
+    It 'requires an explicit repository so omission cannot reach dotnet/maui' {
+        $script:OutcomeSource.Contains("[string]`$Repository = 'dotnet/maui'") |
+            Should -BeFalse
+        $script:OutcomeSource | Should -Match '(?s)Parameter\(Mandatory = \$true\)\][\r\n\s]*\[ValidatePattern[^\r\n]*\][\r\n\s]*\[string\]\$Repository,'
+        $script:PipelineYaml | Should -Match '-Repository "dotnet/maui"'
+    }
+}

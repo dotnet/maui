@@ -27,6 +27,7 @@ Describe 'Trusted replication issue outcome publishing' {
             -Platform ios `
             -BuildId 14980000 `
             -BuildUrl 'https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=14980000' `
+            -Repository 'dotnet/maui' `
             -DryRun
 
         $result.handled | Should -BeTrue
@@ -56,6 +57,7 @@ Describe 'Trusted replication issue outcome publishing' {
                 -Platform android `
                 -BuildId 14980001 `
                 -BuildUrl 'https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=14980001' `
+            -Repository 'dotnet/maui' `
                 -DryRun
 
             $result.handled | Should -BeFalse
@@ -79,6 +81,7 @@ Describe 'Trusted replication issue outcome publishing' {
             -Platform ios `
             -BuildId 14980002 `
             -BuildUrl 'https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=14980002' `
+            -Repository 'dotnet/maui' `
             -DryRun
 
         $result.handled | Should -BeFalse

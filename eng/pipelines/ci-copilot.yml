@@ -29,6 +29,11 @@ parameters:
     type: number
     default: 0
 
+  - name: PublishIssueOutcome
+    displayName: 'Comment the not-reproduced outcome on the public issue'
+    type: boolean
+    default: false
+
   - name: Platform
     displayName: 'Target Platform'
     type: string
@@ -2618,6 +2623,12 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
+              # Commenting on a public issue notifies its reporter, so it stays
+              # opt-in while the replicate flow is being hardened.
+              $publishIssueOutcome = [bool]::Parse('${{ parameters.PublishIssueOutcome }}')
+              if (-not $publishIssueOutcome) {
+                Write-Host "Issue outcome publication is disabled; running without writing to the issue."
+              }
               try {
                 $outcome = & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationOutcome.ps1") `
                   -CandidatePath "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json" `
@@ -2625,7 +2636,9 @@ stages:
                   -Platform "${{ parameters.Platform }}" `
                   -BuildId "$(Build.BuildId)" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
-                  -Label "s/try-latest-version"
+                  -Repository "dotnet/maui" `
+                  -Label "s/try-latest-version" `
+                  -DryRun:(-not $publishIssueOutcome)
                 if ($outcome.handled) {
                   Write-Host "MauiBot published a not-reproduced issue outcome."
                 } else {
