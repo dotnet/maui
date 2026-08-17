@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 			{
 				UpdateUseLargeTitles();
-				UpdateCurrentPageLargeTitleProxy();
+				UpdateCurrentPageContentScrollView();
 			}
 			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
@@ -688,9 +688,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
 		}
 
-		void UpdateCurrentPageLargeTitleProxy()
+		void UpdateCurrentPageContentScrollView()
 		{
-			(TopViewController as ParentingViewController)?.UpdateLargeTitleProxyScrollView();
+			(TopViewController as ParentingViewController)?.UpdateLargeTitleContentScrollView();
 		}
 
 		void UpdateTranslucent()
@@ -1407,16 +1407,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
 			bool _toolbarUpdatePending = false;
 
-			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proxy scroll view is removed from its superview, disposed, and cleared in RemoveLargeTitleProxyScrollView.")]
-			UIScrollView _largeTitleProxyScrollView;
-			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observed scroll view reference is cleared in TearDownLargeTitleProxyScrollView.")]
-			UIScrollView _largeTitleObservedScrollView;
-			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared in TearDownLargeTitleProxyScrollView.")]
-			IDisposable _largeTitleContentOffsetObserver;
-			PointF _largeTitleInitialContentOffset;
-			bool _largeTitleProxyScrollObservationArmed;
-			bool _isAppeared;
-
 			public ParentingViewController(NavigationRenderer navigation)
 			{
 #pragma warning disable CA1416, CA1422 // TODO: 'UIViewController.AutomaticallyAdjustsScrollViewInsets' is unsupported on: 'ios' 11.0 and later
@@ -1438,7 +1428,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (child is not null)
 					{
-						TearDownLargeTitleProxyScrollView();
+						ResetLargeTitleContentScrollView();
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1478,15 +1468,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewDidAppear(animated);
 
 				Appearing?.Invoke(this, EventArgs.Empty);
-				_isAppeared = true;
-				ScheduleLargeTitleProxyScrollObservation();
 			}
 
 			public override void ViewDidDisappear(bool animated)
 			{
 				base.ViewDidDisappear(animated);
-				_isAppeared = false;
-				_largeTitleProxyScrollObservationArmed = false;
 
 				// force a redraw for right toolbar items by resetting TintColor to prevent
 				// toolbar items being grayed out when canceling swipe to a previous page
@@ -1548,7 +1534,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidLayoutSubviews();
 				UpdateFrames();
-				UpdateLargeTitleProxyScrollView();
+				UpdateLargeTitleContentScrollView();
 			}
 
 			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Toolbar tracker CollectionChanged is removed in Disconnect.")]
@@ -1613,7 +1599,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
 
-				TearDownLargeTitleProxyScrollView();
+				ResetLargeTitleContentScrollView();
 
 				if (Child is Page child)
 				{
@@ -1692,7 +1678,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
 				{
 					UpdateNavigationBarVisibility(true);
-					UpdateLargeTitleProxyScrollView();
+					UpdateLargeTitleContentScrollView();
 				}
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
 					NavigationItem.Title = Child.Title;
@@ -1703,7 +1689,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
 				{
 					UpdateLargeTitles();
-					UpdateLargeTitleProxyScrollView();
+					UpdateLargeTitleContentScrollView();
 				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
@@ -1713,10 +1699,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
 				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
-					RestartLargeTitleProxyScrollView();
+					UpdateLargeTitleContentScrollView();
 			}
 
-			bool NeedsLargeTitleProxyScrollView()
+			bool NeedsLargeTitleContentScrollView()
 			{
 				if (!OperatingSystem.IsIOSVersionAtLeast(26) || Child is null)
 					return false;
@@ -1736,187 +1722,39 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return true;
 			}
 
-			void RestartLargeTitleProxyScrollView()
+			internal void UpdateLargeTitleContentScrollView()
 			{
-				TearDownLargeTitleProxyScrollView();
-				UpdateLargeTitleProxyScrollView();
-			}
+				if (!OperatingSystem.IsIOSVersionAtLeast(26))
+					return;
 
-			internal void UpdateLargeTitleProxyScrollView()
-			{
-				if (!NeedsLargeTitleProxyScrollView() || !IsViewLoaded)
+				if (!NeedsLargeTitleContentScrollView() || !IsViewLoaded)
 				{
-					TearDownLargeTitleProxyScrollView();
+					ResetLargeTitleContentScrollView();
 					return;
 				}
 
 				var presentedContent = (Child as IContentView)?.PresentedContent;
 				if (presentedContent is null)
 				{
-					TearDownLargeTitleProxyScrollView();
+					ResetLargeTitleContentScrollView();
 					return;
 				}
 
-				if (_largeTitleObservedScrollView is UIScrollView observedScrollView &&
-					observedScrollView.IsDescendantOfView(View) &&
-					IsEligiblePlatformScrollView(observedScrollView))
-				{
-					if (_largeTitleProxyScrollView is not null)
-						UpdateLargeTitleProxyState(observedScrollView);
-					else if (!_largeTitleProxyScrollObservationArmed)
-						_largeTitleInitialContentOffset = observedScrollView.ContentOffset;
-
-					return;
-				}
-
-				var scrollable = FindPrimaryScrollableDescendant(presentedContent, View, out var scrollView);
-				if (scrollView is null)
-				{
-					TearDownLargeTitleProxyScrollView();
-					return;
-				}
-
-				if (ReferenceEquals(presentedContent, scrollable) &&
-					ReferenceEquals(scrollable.Handler?.PlatformView, scrollView))
-				{
-					TearDownLargeTitleProxyScrollView();
-					return;
-				}
-
-				if (!ReferenceEquals(_largeTitleObservedScrollView, scrollView))
-				{
-					TearDownLargeTitleProxyScrollView();
-					SetUpLargeTitleProxyScrollView(scrollView);
-				}
-
-				if (_largeTitleProxyScrollView is not null)
-					UpdateLargeTitleProxyState(scrollView);
-				else if (!_largeTitleProxyScrollObservationArmed)
-					_largeTitleInitialContentOffset = scrollView.ContentOffset;
+				var scrollView = FindPrimaryScrollableDescendant(presentedContent, View);
+				SetContentScrollView(scrollView, NSDirectionalRectEdge.Top);
 			}
 
-			void SetUpLargeTitleProxyScrollView(UIScrollView scrollView)
+			void ResetLargeTitleContentScrollView()
 			{
-				_largeTitleObservedScrollView = scrollView;
-				_largeTitleInitialContentOffset = scrollView.ContentOffset;
-				_largeTitleProxyScrollObservationArmed = false;
-				_largeTitleContentOffsetObserver = scrollView.AddObserver(
-					"contentOffset",
-					NSKeyValueObservingOptions.New,
-					OnLargeTitleObservedScrollViewChanged);
-
-				if (_isAppeared)
-					ScheduleLargeTitleProxyScrollObservation();
+				if (OperatingSystem.IsIOSVersionAtLeast(26))
+					SetContentScrollView(null, NSDirectionalRectEdge.Top);
 			}
 
-			void TearDownLargeTitleProxyScrollView()
-			{
-				_largeTitleContentOffsetObserver?.Dispose();
-				_largeTitleContentOffsetObserver = null;
-				_largeTitleObservedScrollView = null;
-				_largeTitleProxyScrollObservationArmed = false;
-				RemoveLargeTitleProxyScrollView();
-			}
-
-			void RemoveLargeTitleProxyScrollView()
-			{
-				if (_largeTitleProxyScrollView is not null)
-				{
-					_largeTitleProxyScrollView.RemoveFromSuperview();
-					_largeTitleProxyScrollView.Dispose();
-					_largeTitleProxyScrollView = null;
-				}
-			}
-
-			void OnLargeTitleObservedScrollViewChanged(NSObservedChange change)
-			{
-				if (_largeTitleObservedScrollView is UIScrollView scrollView)
-				{
-					if (!_largeTitleProxyScrollObservationArmed)
-					{
-						if (_largeTitleProxyScrollView is null)
-							_largeTitleInitialContentOffset = scrollView.ContentOffset;
-
-						return;
-					}
-
-					UpdateLargeTitleProxyState(scrollView);
-				}
-			}
-
-			void ScheduleLargeTitleProxyScrollObservation()
-			{
-				var scrollView = _largeTitleObservedScrollView;
-				if (scrollView is null)
-					return;
-
-				BeginInvokeOnMainThread(() =>
-				{
-					if (!_isAppeared ||
-						!ReferenceEquals(_largeTitleObservedScrollView, scrollView))
-					{
-						return;
-					}
-
-					if (_largeTitleProxyScrollView is null)
-					{
-						var adjustedContentInset = scrollView.AdjustedContentInset;
-						_largeTitleInitialContentOffset = new PointF(
-							-(float)adjustedContentInset.Left,
-							-(float)adjustedContentInset.Top);
-					}
-
-					_largeTitleProxyScrollObservationArmed = true;
-					UpdateLargeTitleProxyState(scrollView);
-				});
-			}
-
-			void UpdateLargeTitleProxyState(UIScrollView scrollView)
-			{
-				if (_largeTitleProxyScrollView is null)
-				{
-					if (scrollView.ContentOffset.Y <= _largeTitleInitialContentOffset.Y + 0.5)
-						return;
-
-					CreateLargeTitleProxyScrollView();
-				}
-
-				// Keep the proxy attached while returning to rest so UIKit can complete the expand transition.
-				_largeTitleProxyScrollView.Frame = View.Bounds;
-				_largeTitleProxyScrollView.ContentSize = new SizeF(
-					Math.Max(0, scrollView.ContentSize.Width + _largeTitleProxyScrollView.Bounds.Width - scrollView.Bounds.Width),
-					Math.Max(0, scrollView.ContentSize.Height + _largeTitleProxyScrollView.Bounds.Height - scrollView.Bounds.Height));
-				_largeTitleProxyScrollView.ContentInset = scrollView.AdjustedContentInset;
-				_largeTitleProxyScrollView.ContentOffset = scrollView.ContentOffset;
-			}
-
-			void CreateLargeTitleProxyScrollView()
-			{
-				// UIKit only observes a direct, visible UIScrollView for large-title collapse.
-				// Mirror wrapped scrollers into a transparent view behind the real content.
-				_largeTitleProxyScrollView = new UIScrollView(View.Bounds)
-				{
-					AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
-					BackgroundColor = UIColor.Clear,
-					Opaque = false,
-					UserInteractionEnabled = false,
-					ScrollsToTop = false,
-					ShowsHorizontalScrollIndicator = false,
-					ShowsVerticalScrollIndicator = false,
-					AccessibilityElementsHidden = true,
-					IsAccessibilityElement = false,
-					ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never,
-				};
-
-				View.InsertSubview(_largeTitleProxyScrollView, 0);
-			}
-
-			static IView FindPrimaryScrollableDescendant(IView view, UIView container, out UIScrollView scrollView)
+			static UIScrollView FindPrimaryScrollableDescendant(IView view, UIView container)
 			{
 				var candidates = new List<IView>();
 				CollectScrollableDescendants(view, candidates);
 
-				IView primaryScrollable = null;
 				UIScrollView primaryScrollView = null;
 				nfloat primaryTop = nfloat.MaxValue;
 
@@ -1930,13 +1768,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (frame.GetMinY() >= primaryTop)
 						continue;
 
-					primaryScrollable = candidates[i];
 					primaryScrollView = candidateScrollView;
 					primaryTop = frame.GetMinY();
 				}
 
-				scrollView = primaryScrollView;
-				return primaryScrollable;
+				return primaryScrollView;
 			}
 
 			static void CollectScrollableDescendants(IView view, List<IView> candidates)
