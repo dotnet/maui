@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -10,6 +12,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 using WPoint = Windows.Foundation.Point;
 using WScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
 using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
 using WUIElement = Microsoft.UI.Xaml.UIElement;
 
@@ -207,10 +210,80 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task CollectionChangeWithKeepScrollOffsetPreservesCurrentItem()
+		{
+			SetupBuilder();
+			var originalItem = new object();
+			var items = new ObservableCollection<object> { originalItem, new object(), new object() };
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: false);
+			carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				await WaitForInitialPositionAsync(handler, scrollViewer);
+
+				items.Insert(0, new object());
+
+				await AssertEventually(
+					() => carouselView.Position == 1 && ReferenceEquals(carouselView.CurrentItem, originalItem),
+					timeout: 3000,
+					message: "KeepScrollOffset did not preserve the current item after inserting before it.");
+				await Task.Delay(250);
+
+				Assert.Equal(1, carouselView.Position);
+				Assert.Same(originalItem, carouselView.CurrentItem);
+			});
+		}
+
+		[Fact]
+		public async Task ConflictingNativeSnapCoercionDoesNotRepeatRecentering()
+		{
+			SetupBuilder();
+			var items = CreateItems();
+			var carouselView = CreateCarouselView(items, SnapPointsType.MandatorySingle, loop: true);
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async handler =>
+			{
+				var scrollViewer = handler.PlatformView.GetChildren<WScrollViewer>().Single();
+				var initialPhysicalPosition = await WaitForInitialPositionAsync(handler, scrollViewer);
+				var itemWidth = GetItemContainer(handler, initialPhysicalPosition).ActualWidth;
+
+				// Keep the MAUI layout centered while forcing WinUI to coerce corrections to
+				// near-aligned snap points. The handler must stop retrying an identical target.
+				scrollViewer.HorizontalSnapPointsAlignment = WSnapPointsAlignment.Near;
+
+				int terminalEvents = 0;
+				void CountTerminalEvents(object sender, Microsoft.UI.Xaml.Controls.ScrollViewerViewChangedEventArgs args)
+				{
+					if (!args.IsIntermediate && ++terminalEvents == 20)
+						scrollViewer.HorizontalSnapPointsType = WSnapPointsType.None;
+				}
+
+				scrollViewer.ViewChanged += CountTerminalEvents;
+				try
+				{
+					Assert.True(scrollViewer.ChangeView(
+						scrollViewer.HorizontalOffset + itemWidth * 0.75,
+						null,
+						null,
+						true));
+					await Task.Delay(750);
+				}
+				finally
+				{
+					scrollViewer.ViewChanged -= CountTerminalEvents;
+				}
+
+				Assert.InRange(terminalEvents, 1, 6);
+			});
+		}
+
 		static object[] CreateItems() =>
 			[new object(), new object(), new object(), new object(), new object()];
 
-		static CarouselView CreateCarouselView(object[] items, SnapPointsType snapPointsType, bool loop)
+		static CarouselView CreateCarouselView(IEnumerable items, SnapPointsType snapPointsType, bool loop)
 		{
 			return new CarouselView
 			{

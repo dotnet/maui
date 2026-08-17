@@ -35,9 +35,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _isRecentering;
 		double _recenteringHorizontalOffset;
 		double _recenteringVerticalOffset;
+		Point? _failedRecenteringOffset;
+		Point? _failedRecenteringTarget;
+		int _recenteringAttemptCount;
 		bool _isScrollingForward;
 		int _gotoPosition = -1;
 		bool _isCollectionChanged;
+		bool _isCollectionChangeScrollPending;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -593,6 +597,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				position = ItemsView.Position;
 				_isCollectionChanged = false;
+				_isCollectionChangeScrollPending = true;
 			}
 
 			// Suppress intermediate scroll events during a programmatic animated scroll.
@@ -640,6 +645,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView.ItemsSource is null)
 				return;
 
+			// A new native scroll supersedes any collection-change terminal event we were waiting for.
+			_isCollectionChangeScrollPending = false;
+			if (!_isRecentering)
+				_recenteringAttemptCount = 0;
 			ItemsView.SetIsDragging(true);
 			ItemsView.IsScrolling = true;
 		}
@@ -652,18 +661,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (e.IsIntermediate)
 				return;
 
+			if (_isCollectionChangeScrollPending)
+			{
+				_isCollectionChangeScrollPending = false;
+				return;
+			}
+
 			if (_isRecentering)
 			{
 				_isRecentering = false;
-				if (Math.Abs(_scrollViewer.HorizontalOffset - _recenteringHorizontalOffset) < 1
-					&& Math.Abs(_scrollViewer.VerticalOffset - _recenteringVerticalOffset) < 1)
+				var currentOffset = new Point(_scrollViewer.HorizontalOffset, _scrollViewer.VerticalOffset);
+				var recenteringTarget = new Point(_recenteringHorizontalOffset, _recenteringVerticalOffset);
+				if (AreClose(currentOffset, recenteringTarget))
+				{
+					_failedRecenteringOffset = null;
+					_failedRecenteringTarget = null;
+					_recenteringAttemptCount = 0;
+					return;
+				}
+
+				if (_failedRecenteringOffset is Point failedOffset
+					&& _failedRecenteringTarget is Point failedTarget
+					&& AreClose(currentOffset, failedOffset)
+					&& AreClose(recenteringTarget, failedTarget))
 				{
 					return;
 				}
+
+				_failedRecenteringOffset = currentOffset;
+				_failedRecenteringTarget = recenteringTarget;
+			}
+			else
+			{
+				_failedRecenteringOffset = null;
+				_failedRecenteringTarget = null;
 			}
 
 			CenterCarouselItem();
 		}
+
+		static bool AreClose(Point first, Point second) =>
+			Math.Abs(first.X - second.X) <= 1
+				&& Math.Abs(first.Y - second.Y) <= 1;
 
 		void CenterCarouselItem()
 		{
@@ -685,13 +724,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition != -1 || ItemsView.Position != closestPosition)
 				return;
 
-			if (distance >= 1)
+			if (distance > 1 && _recenteringAttemptCount < 2)
 			{
+				_recenteringAttemptCount++;
 				_isRecentering = true;
 				_recenteringHorizontalOffset = horizontalOffset;
 				_recenteringVerticalOffset = verticalOffset;
 				if (!_scrollViewer.ChangeView(horizontalOffset, verticalOffset, null, true))
+				{
 					_isRecentering = false;
+					_recenteringAttemptCount = 0;
+				}
 			}
 		}
 
