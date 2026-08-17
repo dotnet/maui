@@ -48,6 +48,8 @@ Environment-sensitive tests must explicitly arrange and verify every required lo
 
 Tests must preserve the issue's existing product contract. Requests for a new public API cannot be reinterpreted as failures of a different existing event, and real device actions such as rotation cannot be replaced with synthetic layout calls. Event/state tests use a non-passing sentinel and separately prove the post-trigger transition occurred before asserting its result.
 
+Visible rendering tests must prove visible/native output, not only managed MAUI bounds. The automated test must retain the recorded Sandbox's meaningful hierarchy, assets, sizing constraints, and dynamic action sequence; reports involving resize, rotation, mutation, scrolling, drift, disappearance, or flicker cannot be reduced to a single fixed layout.
+
 The draft PR is evidence, not merge-ready work. A product fix should make the test pass before it is merged.
 
 Successful publication requires both:

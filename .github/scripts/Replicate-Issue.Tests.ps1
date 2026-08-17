@@ -746,6 +746,9 @@ exit 0
         $script:Source | Should -Match 'replacing a real orientation change with WidthRequest or Arrange'
         $script:Source | Should -Match 'substitutes Arrange for a real device orientation change'
         $script:Source | Should -Match 'reportedTrigger and testTrigger must each be a single line of at most 2000 characters'
+        $script:Source | Should -Match 'managed MAUI Bounds alone are not direct proof'
+        $script:Source | Should -Match 'a single fixed layout is insufficient'
+        $script:Source | Should -Match 'same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence'
         ([regex]::Matches(
             $script:Source,
             '(?s)-Description ''(?:Reported issue trigger|Automated test trigger)''\s*`\s*-MaximumLength 2000'
@@ -791,6 +794,50 @@ public class Issue31059
 
         { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
             Should -Throw '*substitutes Arrange for a real device orientation change*'
+    }
+
+    It 'rejects managed-only bounds oracles for visible rendering defects' {
+        $repoRoot = $TestDrive
+        $IssueNumber = 14305
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Elements/Image/Issue14305.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        @'
+public class Issue14305
+{
+    [Fact]
+    public void ImageRemainsVisible()
+    {
+        var imageBounds = image.Bounds;
+        var rowBounds = row.Bounds;
+        Assert.True(imageBounds.Bottom <= rowBounds.Bottom);
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue14305'
+            expectedFailureSignature = 'Image should remain visibly clipped within its assigned star row.'
+            files = @($relativePath)
+            reproductionSteps = @('Resize the grid and observe the image shift outside its row.')
+            expectedBehavior = 'Rendered image pixels remain visibly clipped to the star row.'
+            observedBehavior = 'The image visibly shifts and overflows after the dynamic resize.'
+            reportedTrigger = 'Resize the Android layout after the image renders and observe visible pixel overflow.'
+            testTrigger = 'Compare managed Image.Bounds and row Bounds in one fixed layout.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires Android rendering.'
+                xaml = 'Requires native image layout.'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+            Should -Throw '*relies only on managed Bounds without native-view or rendered-pixel evidence*'
     }
 
     It 'repairs generated tests that fail trusted source validation before verification' {
