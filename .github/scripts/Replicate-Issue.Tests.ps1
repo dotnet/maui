@@ -60,6 +60,7 @@ BeforeAll {
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
         'Get-ReplicationExistingIssueTestPaths',
+        'Assert-ReplicationScenarioNotBlocked',
         'Test-PathInsideRoot',
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
@@ -212,8 +213,9 @@ Describe 'Replication orchestrator security boundary' {
             Should -Match 'AddSeconds\(\$delaySeconds\) -ge \$serviceRetryDeadline'
         $script:Source |
             Should -Match 'failed with exit code \$exitCode after \$serviceAttempt service invocation\(s\)'
-        $script:Source |
-            Should -Match '\(\?:Copilot service unavailable during \|Copilot CLI unavailable:\)'
+        $script:Source.Contains(
+            '(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') |
+            Should -BeTrue
     }
 
     It 'keeps every bounded attempt default inside its own validation range' {
@@ -950,6 +952,62 @@ public partial class MainPage : ContentPage
                     -Content $dangerous[$code] -Path 'MainPage.xaml.cs'
             } | Should -Throw "*prohibited '$code'*" -Because "$code must stay blocked"
         }
+    }
+
+    It 'accepts a substantiated block only after genuine attempts' {
+        # dotnet/maui#36851 needs an unpackaged unit-test host, so the packaged
+        # Sandbox can never reproduce it. The agent said so in prose and the run
+        # still burned every attempt and reported a hard failure.
+        $script:sandboxBlockedPath = Join-Path $TestDrive 'sandbox-blocked.json'
+
+        Assert-ReplicationScenarioNotBlocked -Attempt 1
+        Assert-ReplicationScenarioNotBlocked -Attempt 5
+
+        $declaration = @{ reason = 'the defect requires an unpackaged unit-test host' } |
+            ConvertTo-Json
+        Set-Content -LiteralPath $script:sandboxBlockedPath -Value $declaration
+        { Assert-ReplicationScenarioNotBlocked -Attempt 2 } |
+            Should -Throw '*not accepted on attempt 2*'
+        Test-Path -LiteralPath $script:sandboxBlockedPath | Should -BeFalse
+
+        Set-Content -LiteralPath $script:sandboxBlockedPath -Value $declaration
+        { Assert-ReplicationScenarioNotBlocked -Attempt 3 } |
+            Should -Throw '*Unsupported replication scenario: the defect requires an unpackaged unit-test host*'
+        Test-Path -LiteralPath $script:sandboxBlockedPath | Should -BeFalse
+
+        Set-Content -LiteralPath $script:sandboxBlockedPath -Value (@{ reason = '' } | ConvertTo-Json)
+        { Assert-ReplicationScenarioNotBlocked -Attempt 4 } | Should -Throw
+
+        $script:Source.Contains(
+            '|Unsupported replication scenario:)') | Should -BeTrue
+        $script:Source | Should -Match 'It is ignored before attempt 3'
+    }
+
+    It 'surfaces Sandbox build diagnostics that truncation would otherwise hide' {
+        # dotnet/maui#37427 lost three Sandbox attempts to compiler errors the
+        # agent never saw, because the 1000 character summary kept only the
+        # build command banner.
+        $log = Join-Path $TestDrive 'prepare-attempt-1.log'
+        @(
+            'info : Build command: dotnet build Maui.Controls.Sample.Sandbox.csproj'
+            "MainPage.xaml.cs(12,20): error CS0104: 'ILayout' is an ambiguous reference between 'Microsoft.Maui.Controls.ILayout' and 'Microsoft.Maui.ILayout'"
+            "MainPage.xaml.cs(31,9): error CS1503: Argument 2: cannot convert from 'string' to 'Microsoft.Maui.Controls.BindingBase'"
+            "MainPage.xaml.cs(31,9): error CS1503: Argument 2: cannot convert from 'string' to 'Microsoft.Maui.Controls.BindingBase'"
+        ) | Set-Content -LiteralPath $log
+
+        $diagnostics = Get-ReplicationCompilerDiagnostics -LogPath $log
+
+        $diagnostics | Should -Match 'CS0104'
+        $diagnostics | Should -Match 'ambiguous reference'
+        $diagnostics | Should -Match 'CS1503'
+        ([regex]::Matches($diagnostics, 'CS1503')).Count | Should -Be 1
+
+        Get-ReplicationCompilerDiagnostics -LogPath (
+            Join-Path $TestDrive 'missing-prepare.log') | Should -BeExactly ''
+
+        $script:Source | Should -Match 'Preparing the Sandbox app failed'
+        $script:Source | Should -Match 'Get-ReplicationCompilerDiagnostics -LogPath \$prepareLog'
+        $script:Source | Should -Match 'The Sandbox build failed with these compiler diagnostics'
     }
 
     It 'names the code-behind alternative when XAML uses an unsupported directive' {

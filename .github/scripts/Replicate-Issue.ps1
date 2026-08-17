@@ -89,6 +89,7 @@ $candidatePath = Join-Path $ArtifactRoot 'candidate.json'
 $patchPath = Join-Path $ArtifactRoot 'test.patch'
 $reproductionResultPath = Join-Path $ArtifactRoot 'reproduction-result.json'
 $sandboxProposalPath = Join-Path $agentDir 'sandbox-proposal.json'
+$sandboxBlockedPath = Join-Path $agentDir 'sandbox-blocked.json'
 $testProposalPath = Join-Path $agentDir 'test-proposal.json'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
@@ -157,19 +158,28 @@ function ConvertTo-ReplicationSafeLog {
 function Get-ReplicationCompilerDiagnostics {
     <#
         .SYNOPSIS
-        Recovers distinct compiler diagnostics from the verification console.
+        Recovers distinct compiler diagnostics from a trusted build log.
 
         .DESCRIPTION
-        The verifier reports a build break only as an infrastructure failure, so
-        the compiler text that names the offending member is otherwise lost.
+        Both the verifier and the Sandbox prepare step report a build break only
+        as a generic failure whose message is truncated before the compiler text
+        appears, so the diagnostic that names the offending member is otherwise
+        lost to the agent.
     #>
     param(
-        [Parameter(Mandatory = $true)][string]$VerificationDirectory,
+        [string]$VerificationDirectory,
+        [string]$LogPath,
         [int]$MaximumDiagnostics = 5
     )
 
-    $consolePath = Join-Path $VerificationDirectory 'verification-console.log'
-    if (-not (Test-Path -LiteralPath $consolePath -PathType Leaf)) {
+    $consolePath = if ($LogPath) {
+        $LogPath
+    } elseif ($VerificationDirectory) {
+        Join-Path $VerificationDirectory 'verification-console.log'
+    } else {
+        ''
+    }
+    if (-not $consolePath -or -not (Test-Path -LiteralPath $consolePath -PathType Leaf)) {
         return ''
     }
 
@@ -1110,6 +1120,50 @@ function Assert-LighterTestRejections {
     }
 }
 
+function Assert-ReplicationScenarioNotBlocked {
+    <#
+        .SYNOPSIS
+        Converts a substantiated agent block into a clean unsupported outcome.
+
+        .DESCRIPTION
+        Some reported defects genuinely cannot occur inside the bounded Sandbox,
+        such as a failure that requires an unpackaged unit-test host. Without a
+        channel to say so the agent burns every attempt and the run reports a
+        hard failure instead of an accurate unsupported result. The declaration
+        is honored only after earlier attempts genuinely tried, so it cannot be
+        used to skip difficult work.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][int]$Attempt,
+        [int]$MinimumAttempt = 3
+    )
+
+    if (-not (Test-Path -LiteralPath $sandboxBlockedPath -PathType Leaf)) {
+        return
+    }
+
+    try {
+        $item = Get-Item -LiteralPath $sandboxBlockedPath -Force
+        if ($item.Length -le 0 -or $item.Length -gt 8KB) {
+            throw 'The Sandbox block declaration is empty or oversized.'
+        }
+        $declaration = Get-Content -LiteralPath $sandboxBlockedPath -Raw | ConvertFrom-Json -Depth 5
+        $reason = ConvertTo-BoundedAgentLine `
+            -Value $declaration.reason `
+            -Description 'Sandbox block reason' `
+            -MaximumLength 600
+
+        if ($Attempt -lt $MinimumAttempt) {
+            throw ("A block declaration is not accepted on attempt $Attempt. " +
+                "Attempt the reproduction genuinely first; only declare the scenario blocked from attempt $MinimumAttempt onward.")
+        }
+
+        throw "Unsupported replication scenario: $reason"
+    } finally {
+        Remove-Item -LiteralPath $sandboxBlockedPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Read-SandboxProposal {
     if (-not (Test-Path -LiteralPath $sandboxProposalPath -PathType Leaf)) {
         throw 'The Sandbox agent did not write sandbox-proposal.json.'
@@ -1595,6 +1649,7 @@ Use Console.WriteLine rather than importing System.Diagnostics for optional diag
 Sandbox XAML supports only x:Class on the root element plus x:Name, x:Key, and x:DataType. Do not use x:FactoryMethod, x:Arguments, x:Static, x:Type, x:Reference, or any other x: directive. Assign any value that needs a factory method or constructor arguments from code-behind instead, for example setting Keyboard with Keyboard.Create in the page constructor.
 5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
 Do not create an automated test yet and do not claim reproduction succeeded.
+If the reported defect genuinely cannot occur inside this bounded Sandbox, because it requires a host, packaging model, project type, or environment the Sandbox cannot be, write "$sandboxBlockedPath" as JSON with exactly a reason field naming that specific structural impossibility. Never use it for a scenario that is merely difficult, for an element you could not locate, or for a behavior that simply did not reproduce; those must be attempted properly instead. It is ignored before attempt 3.
 $retryGuidance
 "@
         }
@@ -2343,9 +2398,11 @@ try {
                     $sandboxXamlPath,
                     $sandboxCodePath,
                     $appiumPlanPath,
-                    $sandboxProposalPath
+                    $sandboxProposalPath,
+                    $sandboxBlockedPath
                 ) `
                 -Attempt $attempt
+            Assert-ReplicationScenarioNotBlocked -Attempt $attempt
             Assert-SandboxChanges
             Assert-GeneratedSandboxSources
             [void](Read-GeneratedAppiumPlan)
@@ -2438,9 +2495,20 @@ try {
         }
         catch {
             $sandboxFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
+            if ($sandboxFailureSummary -match '(?i)Preparing the Sandbox app failed') {
+                $prepareDiagnostics = Get-ReplicationCompilerDiagnostics -LogPath $prepareLog
+                if ($prepareDiagnostics) {
+                    $sandboxFailureSummary = @"
+The Sandbox build failed with these compiler diagnostics: $prepareDiagnostics
+Fix the authored Sandbox source so it compiles. This repository builds with warnings as errors. Resolve ambiguous type references such as ILayout by fully qualifying the intended type, match the exact overload signature of the API you call, and give collection expressions a constructible target type.
+
+$sandboxFailureSummary
+"@
+                }
+            }
             Write-Host "Sandbox attempt $attempt failed: $sandboxFailureSummary"
             if ($sandboxFailureSummary -match
-                '^(?:Copilot service unavailable during |Copilot CLI unavailable:)') {
+                '^(?:Copilot service unavailable during |Copilot CLI unavailable:|Unsupported replication scenario:)') {
                 throw
             }
             if (Test-TransientReproductionInfrastructureFailure $sandboxFailureSummary) {
