@@ -1544,7 +1544,11 @@ function Assert-ReplicationCandidateSources {
     $testAttributeFound = $false
     $testNameFound = $false
     $testNameLeaf = @($Manifest.TestName -split '[.+]')[-1]
-    $testNamePattern = "(?<![A-Za-z0-9_])$([regex]::Escape($testNameLeaf))(?![A-Za-z0-9_])"
+    # dotnet test --filter matches fully qualified names by substring, so the
+    # repository convention of naming the type Issue<number><Scenario> is
+    # selected by the Issue<number> filter. Require the filter token to start an
+    # identifier and allow the descriptive suffix the convention appends.
+    $testNamePattern = "(?<![A-Za-z0-9_])$([regex]::Escape($testNameLeaf))(?![0-9])"
     foreach ($file in $CandidateFiles) {
         if ($file.Mode -cne '100644') {
             throw 'Candidate file mode must be regular and non-executable.'

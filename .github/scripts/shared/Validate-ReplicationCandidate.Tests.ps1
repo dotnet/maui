@@ -1244,3 +1244,90 @@ Describe 'Validate-ReplicationCandidate media and file safety boundary' {
             Should -Throw '*SHA-256 does not match*'
     }
 }
+
+Describe 'Replication candidate test-name matching' {
+    BeforeAll {
+        $script:uiTestPath =
+            'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue33037LargeTitleNavigationPage.cs'
+        $script:hostAppPath =
+            'src/Controls/tests/TestCases.HostApp/Issues/Issue33037LargeTitleNavigationPage.cs'
+
+        function script:New-NameFixture {
+            param([string]$TestName, [string]$TypeName)
+
+            return @{
+                Manifest = [pscustomobject]@{
+                    TestName = $TestName
+                    TestType = 'UITest'
+                    IssueNumber = 33037
+                    Platform = 'ios'
+                    ProposedFiles = @($script:hostAppPath, $script:uiTestPath)
+                }
+                CandidateFiles = @(
+                    [pscustomobject]@{
+                        Path = $script:hostAppPath
+                        Mode = '100644'
+                        Content = "public class $TypeName : ContentPage { }"
+                    },
+                    [pscustomobject]@{
+                        Path = $script:uiTestPath
+                        Mode = '100644'
+                        Content = @"
+public class $TypeName : _IssuesUITest
+{
+    [Test]
+    public void LargeTitleCollapsesToVisibleStandardTitle() { }
+}
+"@
+                    }
+                )
+            }
+        }
+    }
+
+    It 'accepts the repository convention of an issue-prefixed descriptive type name' {
+        $fixture = script:New-NameFixture `
+            -TestName 'Issue33037' `
+            -TypeName 'Issue33037LargeTitleNavigationPage'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Not -Throw
+    }
+
+    It 'accepts an exactly named test type' {
+        $fixture = script:New-NameFixture -TestName 'Issue33037' -TypeName 'Issue33037'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Not -Throw
+    }
+
+    It 'rejects candidate files that only reference a different issue number' {
+        $fixture = script:New-NameFixture `
+            -TestName 'Issue33037' `
+            -TypeName 'Issue330371ScrollBehavior'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Throw '*named test from the exact filter*'
+    }
+
+    It 'rejects a filter token that does not start an identifier' {
+        $fixture = script:New-NameFixture `
+            -TestName 'Issue33037' `
+            -TypeName 'RegressionIssue33037Page'
+
+        {
+            Assert-ReplicationCandidateSources `
+                -Manifest $fixture.Manifest `
+                -CandidateFiles $fixture.CandidateFiles
+        } | Should -Throw '*named test from the exact filter*'
+    }
+}

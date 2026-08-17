@@ -120,9 +120,24 @@ stages:
             sparseCheckoutDirectories: .github/scripts/shared
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $login = (& gh api user --jq '.login').Trim()
-              if ($LASTEXITCODE -ne 0 -or
-                  -not $login.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
+              $login = ''
+              $probeDelaysSeconds = @(30, 60)
+              for ($probeAttempt = 1; $probeAttempt -le 3; $probeAttempt++) {
+                $probeOutput = (& gh api user --jq '.login' 2>&1 | Out-String)
+                if ($LASTEXITCODE -eq 0) {
+                  $login = $probeOutput.Trim()
+                  break
+                }
+                $transient = $probeOutput -match '(?im)\b(?:HTTP\s*)?(?:429|50[234])\b' -or
+                  $probeOutput -match '(?im)\bno server is currently available\b' -or
+                  $probeOutput -match '(?im)\bconnection (?:reset|closed|timed out)\b'
+                if (-not $transient -or $probeAttempt -eq 3) {
+                  throw "Failed to read the MauiBot identity: $($probeOutput.Trim())"
+                }
+                Write-Host "Transient GitHub failure reading the bot identity; retrying."
+                Start-Sleep -Seconds $probeDelaysSeconds[$probeAttempt - 1]
+              }
+              if (-not $login.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
                 throw "GH_COMMENT_TOKEN must authenticate as MauiBot."
               }
 
