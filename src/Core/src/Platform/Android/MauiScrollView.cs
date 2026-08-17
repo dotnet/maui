@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
 
-			if (ev == null)
+			if (ev == null || _scrollOrientation == ScrollOrientation.Horizontal)
 				return false;
 
 			// set the start point for the bidirectional scroll; 
@@ -329,7 +329,7 @@ namespace Microsoft.Maui.Platform
 
 		public override bool OnTouchEvent(MotionEvent? ev)
 		{
-			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither)
+			if (ev == null || !Enabled || _scrollOrientation == ScrollOrientation.Neither || _scrollOrientation == ScrollOrientation.Horizontal)
 				return false;
 
 			if (ShouldSkipOnTouch)
