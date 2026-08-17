@@ -14,6 +14,46 @@ function Test-TransientReplicationGitHubFailure {
     )
 }
 
+function Invoke-ReplicationGitHubCli {
+    <#
+        .SYNOPSIS
+        Runs a `gh` command, retrying transient GitHub service failures.
+
+        .DESCRIPTION
+        Every publication step depends on GitHub being reachable. During an
+        outage each call returns a 503, so without bounded retries a healthy
+        credential looks like a permissions or identity problem and the whole
+        reproduction is discarded. Returns the captured stdout lines.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$Description,
+        [int]$MaximumAttempts = 4,
+        [int[]]$RetryDelaysSeconds = @(20, 45, 90)
+    )
+
+    for ($attempt = 1; $attempt -le $MaximumAttempts; $attempt++) {
+        $output = @(& gh @Arguments 2>&1)
+        if ($LASTEXITCODE -eq 0) {
+            return @($output | ForEach-Object { [string]$_ })
+        }
+
+        $failureText = ($output | ForEach-Object { [string]$_ }) -join "`n"
+        if (-not (Test-TransientReplicationGitHubFailure -Output $failureText) -or
+            $attempt -eq $MaximumAttempts) {
+            throw "Failed to $Description`: $($failureText.Trim())"
+        }
+
+        $delaySeconds = $RetryDelaysSeconds[
+            [Math]::Min($attempt - 1, $RetryDelaysSeconds.Count - 1)]
+        Write-Host "Transient GitHub failure while trying to $Description; retrying in $delaySeconds seconds."
+        Start-Sleep -Seconds $delaySeconds
+    }
+
+    throw "Failed to $Description."
+}
+
 function Get-ReplicationGitHubLogin {
     <#
         .SYNOPSIS

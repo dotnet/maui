@@ -82,6 +82,94 @@ Describe 'Replication GitHub login probe' {
         }
     }
 
+    It 'retries the exact 503 that blocked reproduced runs 14994333 and 14994436' {
+        $script:calls = 0
+        function global:gh {
+            $script:calls++
+            if ($script:calls -lt 3) {
+                $global:LASTEXITCODE = 1
+                return 'gh: No server is currently available to service your request. Sorry about that. Please try resubmitting your request and contact us if the problem persists. (HTTP 503)'
+            }
+            $global:LASTEXITCODE = 0
+            return '{"data":{"ok":true}}'
+        }
+
+        try {
+            $result = Invoke-ReplicationGitHubCli `
+                -Arguments @('api', 'graphql', '-f', 'query=x') `
+                -Description 'inspect repositories available to MauiBot' `
+                -MaximumAttempts 4 -RetryDelaysSeconds @(0, 0, 0)
+            ($result -join '') | Should -Match 'ok'
+            $script:calls | Should -Be 3
+        }
+        finally {
+            Remove-Item Function:global:gh -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'does not retry a non-transient GitHub CLI failure' {
+        $script:calls = 0
+        function global:gh {
+            $script:calls++
+            $global:LASTEXITCODE = 1
+            return 'gh: HTTP 404: Not Found'
+        }
+
+        try {
+            {
+                Invoke-ReplicationGitHubCli -Arguments @('api', 'repos/x/y') `
+                    -Description 'read a repository' `
+                    -MaximumAttempts 4 -RetryDelaysSeconds @(0, 0, 0)
+            } | Should -Throw '*read a repository*Not Found*'
+            $script:calls | Should -Be 1
+        }
+        finally {
+            Remove-Item Function:global:gh -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'routes every publisher preflight GitHub call through the bounded helper' {
+        $pipeline = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml') -Raw
+        $probe = [regex]::Match(
+            $pipeline,
+            "(?s)- pwsh: \|(?<body>.*?)displayName: 'Probe MauiBot identity and writable fork'")
+        $probe.Success | Should -BeTrue
+        $body = $probe.Groups['body'].Value
+        $body | Should -Match 'Get-ReplicationGitHubLogin'
+        $body | Should -Match "Invoke-ReplicationGitHubCli"
+        $body | Should -Not -Match '&\s+gh\s+api\s+graphql'
+        $body | Should -Not -Match '&\s+gh\s+api\s+-X\s+POST'
+    }
+
+    It 'stages every shared script the trusted publishers dot-source' {
+        $sharedDir = $PSScriptRoot
+        $pipelinePath = Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml'
+        $pipeline = Get-Content -LiteralPath $pipelinePath -Raw
+
+        $stageBlock = [regex]::Match(
+            $pipeline,
+            "(?s)trusted-replication-publisher(?<body>.*?)displayName: 'Stage trusted replication publisher'")
+        $stageBlock.Success | Should -BeTrue
+        $staged = @([regex]::Matches($stageBlock.Groups['body'].Value, "'(?<name>[\w-]+\.ps1)'") |
+            ForEach-Object { $_.Groups['name'].Value })
+        $staged | Should -Contain 'Get-ReplicationGitHubLogin.ps1'
+
+        # Anything a staged publisher dot-sources must itself be staged, or the
+        # publisher dies at runtime on a missing file (run 14994436).
+        foreach ($name in $staged) {
+            $path = Join-Path $sharedDir $name
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
+            $content = Get-Content -LiteralPath $path -Raw
+            foreach ($m in [regex]::Matches($content, '(?m)^\s*\.\s+.*?(?<dep>[\w-]+\.ps1)')) {
+                $dep = $m.Groups['dep'].Value
+                if ($dep -eq $name) { continue }
+                $staged |
+                    Should -Contain $dep -Because "$name dot-sources $dep, so it must be staged too"
+            }
+        }
+    }
+
     It 'is staged into the trusted publisher root' {
         $pipeline = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml') -Raw

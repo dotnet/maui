@@ -120,23 +120,8 @@ stages:
             sparseCheckoutDirectories: .github/scripts/shared
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $login = ''
-              $probeDelaysSeconds = @(30, 60)
-              for ($probeAttempt = 1; $probeAttempt -le 3; $probeAttempt++) {
-                $probeOutput = (& gh api user --jq '.login' 2>&1 | Out-String)
-                if ($LASTEXITCODE -eq 0) {
-                  $login = $probeOutput.Trim()
-                  break
-                }
-                $transient = $probeOutput -match '(?im)\b(?:HTTP\s*)?(?:429|50[234])\b' -or
-                  $probeOutput -match '(?im)\bno server is currently available\b' -or
-                  $probeOutput -match '(?im)\bconnection (?:reset|closed|timed out)\b'
-                if (-not $transient -or $probeAttempt -eq 3) {
-                  throw "Failed to read the MauiBot identity: $($probeOutput.Trim())"
-                }
-                Write-Host "Transient GitHub failure reading the bot identity; retrying."
-                Start-Sleep -Seconds $probeDelaysSeconds[$probeAttempt - 1]
-              }
+              . (Join-Path "$(Build.SourcesDirectory)" '.github/scripts/shared/Get-ReplicationGitHubLogin.ps1')
+              $login = Get-ReplicationGitHubLogin
               if (-not $login.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
                 throw "GH_COMMENT_TOKEN must authenticate as MauiBot."
               }
@@ -155,11 +140,10 @@ stages:
                 }
               }
               '@
-              $response = & gh api graphql -f "query=$query" |
+              $response = (Invoke-ReplicationGitHubCli `
+                -Arguments @('api', 'graphql', '-f', "query=$query") `
+                -Description 'inspect repositories available to MauiBot') -join "`n" |
                 ConvertFrom-Json -Depth 20
-              if ($LASTEXITCODE -ne 0) {
-                throw 'Unable to inspect repositories available to MauiBot.'
-              }
               $forks = @($response.data.viewer.repositories.nodes) |
                 Where-Object {
                   $_.isFork -eq $true -and
@@ -170,10 +154,11 @@ stages:
                 throw "Expected at most one writable MauiBot fork of dotnet/maui; found $($forks.Count)."
               }
               if ($forks.Count -eq 0) {
-                $createdFork = & gh api -X POST repos/dotnet/maui/forks |
+                $createdFork = (Invoke-ReplicationGitHubCli `
+                  -Arguments @('api', '-X', 'POST', 'repos/dotnet/maui/forks') `
+                  -Description 'create a MauiBot fork of dotnet/maui') -join "`n" |
                   ConvertFrom-Json -Depth 20
-                if ($LASTEXITCODE -ne 0 -or
-                    [string]$createdFork.full_name -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$') {
+                if ([string]$createdFork.full_name -notmatch '^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$') {
                   throw 'MauiBot has no writable MAUI fork and creating one failed.'
                 }
                 $forkReady = $false
