@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.UI.Xaml;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ScrollViewTests
 	{
 		[Fact]
-		public async Task ScrollViewerReceivesFocusBeforeContent()
+		public async Task EntryDoesNotReceiveFocusWhenWindowOpens()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -23,33 +22,61 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			var entry = new Entry();
+			var focused = false;
+			entry.Focused += (_, _) => focused = true;
+
 			var scrollView = new ScrollView
 			{
 				Content = new VerticalStackLayout
 				{
-					entry
+					HeightRequest = 2000,
+					Children =
+					{
+						entry
+					}
 				}
 			};
 
-			await AttachAndRun<ScrollViewHandler>(scrollView, async handler =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(new ContentPage { Content = scrollView }), async _ =>
 			{
-				Assert.True(handler.PlatformView.IsTabStop);
+				var platformScrollView = ((ScrollViewHandler)scrollView.Handler).PlatformView;
+				await WaitAssert(() => !platformScrollView.IsTabStop);
 
-				var platformEntry = Assert.IsAssignableFrom<Microsoft.UI.Xaml.Controls.Control>(entry.Handler.PlatformView);
-				Assert.Equal(FocusState.Unfocused, platformEntry.FocusState);
+				Assert.False(entry.IsFocused);
+				Assert.False(focused);
+			});
+		}
 
-				Assert.True(handler.PlatformView.Focus(FocusState.Programmatic));
-				Assert.NotEqual(FocusState.Unfocused, handler.PlatformView.FocusState);
-				Assert.Equal(FocusState.Unfocused, platformEntry.FocusState);
+		[Fact]
+		public async Task ScrollViewerRestoresTabStopDefaultAcrossHandlerLifecycle()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ScrollView, ScrollViewHandler>();
+				});
+			});
 
-				var contentPanel = Assert.IsAssignableFrom<UIElement>(handler.PlatformView.Content);
-				Assert.False(contentPanel.IsTabStop);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var scrollView = new ScrollView();
+				var handler = CreateHandler<ScrollViewHandler>(scrollView);
+				var mauiContext = handler.MauiContext;
+				var platformView = handler.PlatformView;
 
-				Assert.True(platformEntry.Focus(FocusState.Programmatic));
-				Assert.NotEqual(FocusState.Unfocused, platformEntry.FocusState);
-				Assert.Equal(FocusState.Unfocused, handler.PlatformView.FocusState);
+				Assert.True(platformView.IsTabStop);
 
-				await Task.CompletedTask;
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.False(platformView.IsTabStop);
+
+				((IElementHandler)handler).SetMauiContext(mauiContext);
+				((IElementHandler)handler).SetVirtualView(scrollView);
+				var reconnectedPlatformView = handler.PlatformView;
+				Assert.True(reconnectedPlatformView.IsTabStop);
+
+				((IElementHandler)handler).DisconnectHandler();
+				Assert.False(reconnectedPlatformView.IsTabStop);
 			});
 		}
 	}

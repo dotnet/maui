@@ -20,10 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override ScrollViewer CreatePlatformView()
 		{
-			return new ScrollViewer
-			{
-				IsTabStop = true
-			};
+			return new ScrollViewer();
 		}
 
 		internal static void MapInvalidateMeasure(IScrollViewHandler handler, IView view, object? args)
@@ -39,6 +36,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);
+			// Give WinUI's initial focus pass a non-content target, then restore the native default after loading.
+			platformView.IsTabStop = true;
+			platformView.Loaded += OnPlatformViewLoaded;
+			platformView.Unloaded += OnPlatformViewUnloaded;
 			platformView.ViewChanged += ViewChanged;
 		}
 
@@ -51,7 +52,10 @@ namespace Microsoft.Maui.Handlers
 			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
 			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
+			platformView.Loaded -= OnPlatformViewLoaded;
+			platformView.Unloaded -= OnPlatformViewUnloaded;
 			platformView.ViewChanged -= ViewChanged;
+			platformView.IsTabStop = false;
 
 			if (PendingScrollToRequest is not null)
 			{
@@ -63,6 +67,21 @@ namespace Microsoft.Maui.Handlers
 				VirtualView?.ScrollFinished();
 				PendingScrollToRequest = null;
 			}
+		}
+
+		static void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
+		{
+			var scrollViewer = (ScrollViewer)sender;
+			scrollViewer.DispatcherQueue.TryEnqueue(() =>
+			{
+				if (scrollViewer.IsLoaded)
+					scrollViewer.IsTabStop = false;
+			});
+		}
+
+		static void OnPlatformViewUnloaded(object sender, RoutedEventArgs e)
+		{
+			((ScrollViewer)sender).IsTabStop = true;
 		}
 
 		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
