@@ -73,6 +73,7 @@ namespace Microsoft.Maui.Controls
 				Step = step
 			};
 			s_tweeners[id] = animation;
+			animation.AnimationManagerDisposed = () => s_tweeners.TryRemove(id, out _);
 			animation.Commit(animationManager);
 
 			animation.Finished += () =>
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls
 				Easing = Easing.Linear,
 			};
 			s_tweeners[id] = animation;
+			animation.AnimationManagerDisposed = () => s_tweeners.TryRemove(id, out _);
 			animation.Commit(animationManager);
 
 			animation.Finished += () =>
