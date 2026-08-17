@@ -59,6 +59,7 @@ BeforeAll {
         'Get-ReplicationFailureDetails',
         'Get-ReplicationVerificationFailureSummary',
         'Get-ReplicationCompilerDiagnostics',
+        'Get-ReplicationExistingIssueTestPaths',
         'Test-PathInsideRoot',
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
@@ -945,8 +946,37 @@ public partial class MainPage : ContentPage
         }
     }
 
-    It 'blocks reassigning an AutomationId and allows a single assignment' {
-        # kubaflo/maui#173 review: the page set Border.AutomationId twice to
+    It 'allows the reported COMException type while still blocking real interop' {
+        # dotnet/maui#36694 reports a System.Runtime.InteropServices.COMException
+        # crash, so naming that exact exception type is the faithful oracle even
+        # though the interop namespace stays blocked for actual native calls.
+        $reportedException = @'
+try
+{
+    affectedImage.BackgroundColor = Colors.Red;
+}
+catch (System.Runtime.InteropServices.COMException)
+{
+    resultLabel.Text = "BUG REPRODUCED:";
+}
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $reportedException -Path 'MainPage.xaml.cs'
+        } | Should -Not -Throw
+
+        foreach ($interop in @(
+                'using System.Runtime.InteropServices;',
+                'System.Runtime.InteropServices.Marshal.ReadInt32(handle);',
+                '[System.Runtime.InteropServices.DllImport("user32.dll")]'
+            )) {
+            {
+                Assert-ReplicationGeneratedSourceSafety -Content $interop -Path 'MainPage.xaml.cs'
+            } | Should -Throw "*prohibited 'native-code'*" -Because "interop must stay blocked: $interop"
+        }
+    }
+
+    It 'blocks reassigning an AutomationId and allows a single assignment' {        # kubaflo/maui#173 review: the page set Border.AutomationId twice to
         # signal progress, which MAUI rejects at runtime for a reason unrelated
         # to the reported crash.
         $reassigned = @'
@@ -1299,6 +1329,40 @@ InitializeComponent();
         $script:Source | Should -Match 'for \(\$planAttempt = 1; \$planAttempt -le 3; \$planAttempt\+\+\)'
         $script:Source | Should -Match 'Test-plan attempt \$planAttempt failed'
         $script:Source | Should -Match '-FailureSummary \$testPlanFailureSummary'
+    }
+
+    It 'lists existing issue-numbered test files so the plan avoids colliding paths' {
+        $repoRoot = Join-Path $TestDrive 'existing-issue-repo'
+        $approved = @('src/Controls/tests/TestCases.HostApp/Issues/', 'src/Core/tests/UnitTests/')
+        foreach ($root in $approved) {
+            New-Item -ItemType Directory -Path (Join-Path $repoRoot $root) -Force | Out-Null
+        }
+
+        $hostApp = Join-Path $repoRoot 'src/Controls/tests/TestCases.HostApp/Issues'
+        Set-Content -LiteralPath (Join-Path $hostApp 'Issue33037.cs') -Value 'existing'
+        Set-Content -LiteralPath (Join-Path $hostApp 'Issue33037.xaml') -Value '<x/>'
+        Set-Content -LiteralPath (Join-Path $hostApp 'Issue12345.cs') -Value 'unrelated'
+        Set-Content -LiteralPath (Join-Path $hostApp 'Issue33037.txt') -Value 'not source'
+        Set-Content -LiteralPath (Join-Path $repoRoot 'src/Core/tests/UnitTests/Maui33037Tests.cs') -Value 'existing'
+
+        $found = @(Get-ReplicationExistingIssueTestPaths `
+                -RepositoryRoot $repoRoot `
+                -ApprovedRoots $approved `
+                -IssueNumber 33037)
+
+        $found | Should -BeExactly @(
+            'src/Controls/tests/TestCases.HostApp/Issues/Issue33037.cs',
+            'src/Controls/tests/TestCases.HostApp/Issues/Issue33037.xaml',
+            'src/Core/tests/UnitTests/Maui33037Tests.cs'
+        )
+
+        @(Get-ReplicationExistingIssueTestPaths `
+                -RepositoryRoot $repoRoot `
+                -ApprovedRoots $approved `
+                -IssueNumber 99999).Count | Should -Be 0
+
+        $script:Source | Should -Match 'This repository already contains these files whose names match issue'
+        $script:Source | Should -Match '\$existingIssueGuidance'
     }
 
     It 'uses stable host identifiers instead of unresolved device variables' {

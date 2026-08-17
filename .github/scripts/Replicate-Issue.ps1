@@ -926,6 +926,35 @@ function Get-GeneratedTestFiles {
     return @($files | Sort-Object -Unique)
 }
 
+function Get-ReplicationExistingIssueTestPaths {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string[]]$ApprovedRoots,
+        [Parameter(Mandatory = $true)][int]$IssueNumber
+    )
+
+    $collisions = [Collections.Generic.List[string]]::new()
+    foreach ($root in $ApprovedRoots) {
+        $rootFull = Join-Path $RepositoryRoot ($root.TrimEnd('/'))
+        if (-not (Test-Path -LiteralPath $rootFull -PathType Container)) {
+            continue
+        }
+        $found = Get-ChildItem -LiteralPath $rootFull -Recurse -File -Force -ErrorAction SilentlyContinue |
+            Where-Object {
+                ($_.Extension -in @('.cs', '.xaml')) -and
+                ([IO.Path]::GetFileNameWithoutExtension($_.Name) -match "(?i)(?:Issue|Maui)$IssueNumber")
+            }
+        foreach ($item in $found) {
+            $relative = $item.FullName.Substring($RepositoryRoot.Length).TrimStart('/', '\').Replace('\', '/')
+            if (-not $collisions.Contains($relative)) {
+                $collisions.Add($relative)
+            }
+        }
+    }
+
+    return @($collisions | Sort-Object)
+}
+
 function Get-ProposedTestFiles {
     param(
         [Parameter(Mandatory = $true)][object]$Proposal,
@@ -1560,6 +1589,7 @@ The bounded XAML contract allows only the default MAUI namespace, the x namespac
 3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, assertAppClosed, back, restartApp, swipe, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, and assertTextContains require a locator object; assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertAppClosed, back, and restartApp require `"value": null`. restartApp is available only on Android and iOS. assertAppClosed is available only on Windows, only as the final step, and only when the issue reports that the exact trigger crashes or closes the application; it succeeds only when the trusted Sandbox process launched by the runner exits after a preceding ready-state check and trigger action. Never use it for ordinary navigation, element disappearance, window replacement, or a failure already present before recording. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. A mutable result/status element is the exception: give it a stable id or AutomationId and locate it independently of its current verdict. Never assign an AutomationId more than once on any element, because MAUI permits it to be set only once and reassigning it throws InvalidOperationException; change the result element's Text to signal progress instead. Never locate the final result by the expected `BUG REPRODUCED:` text itself. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: initialize the separate result/status element to a visible `PASS:` or `NO BUG:` value before the trigger, and change it to `BUG REPRODUCED:` only when the reported defect is observed. This initialized negative state is required so the trusted runner can distinguish completed non-reproduction from element lookup or infrastructure failure. Never replace the affected control's Text, Title, Content, geometry, or other visible state with the verdict. The recording must keep the affected control visible and, for transition defects, show its pre-trigger reference state before the action and its post-trigger failure state afterward. When the issue says the failure is timing-sensitive, intermittent, a race, or may require multiple attempts, preserve that prerequisite and perform 2-5 bounded reset-and-trigger cycles in the same Appium plan whenever the non-crashing state can be reset. Do not spend whole Sandbox regeneration attempts repeating an unchanged one-shot plan. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. For initial launch, OnAppearing, or OnNavigatedTo issues on Android/iOS, use restartApp or an in-app navigation step after recording begins; evidence that starts with the failure already latched is invalid. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value against that independently located result element, except an exact Windows app-crash report may end with assertAppClosed. Swipe values are up|down|left|right. Orientation values are portrait|landscape.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Do not resolve services through DependencyService, ServiceProvider, GetService, or MauiContext.Services. For a reported custom-handler scenario, direct handler wiring with SetMauiContext(Handler.MauiContext) is allowed when it does not access Services.
+When the issue reports a crash identified by a specific managed exception type, prefer proving that exact exception over process termination: wrap only the reported trigger in a try/catch for that exact type, set the semantic result element to `BUG REPRODUCED:` in the catch, and leave the plan's final step as the assertTextEquals result check instead of assertAppClosed. Reference the exception by its fully qualified name, such as System.Runtime.InteropServices.COMException, rather than adding a using directive for the interop namespace. Never catch a broad exception type such as Exception, and never let an unrelated failure satisfy the catch. Reserve assertAppClosed for reports that describe process exit without naming a managed exception type.
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps and list exactly the three repository-relative authored paths (MainPage.xaml, MainPage.xaml.cs, and appium-plan.json).
@@ -1569,6 +1599,20 @@ $retryGuidance
         }
         'test-plan' {
             $approvedRoots = ($approvedTestRoots | ForEach-Object { "- $_" }) -join [Environment]::NewLine
+            $existingIssuePaths = @(Get-ReplicationExistingIssueTestPaths `
+                    -RepositoryRoot $repoRoot `
+                    -ApprovedRoots $approvedTestRoots `
+                    -IssueNumber $IssueNumber)
+            $existingIssueGuidance = ''
+            if ($existingIssuePaths.Count -gt 0) {
+                $existingList = ($existingIssuePaths | ForEach-Object { "- $_" }) -join [Environment]::NewLine
+                $existingIssueGuidance = @"
+
+This repository already contains these files whose names match issue ${IssueNumber}:
+$existingList
+Reproduction tests are add-only, so every proposed path must be new. Do not propose, reuse, or modify any path listed above; append a short scenario suffix such as Repro or a specific behavior word after the issue number to form a distinct new file name.
+"@
+            }
             return $common + @"
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
@@ -1580,6 +1624,7 @@ If the issue requests a new public event, property, method, or other API that do
 Use testFilter "Maui$IssueNumber" only for XAML; otherwise use "Issue$IssueNumber".
 List 1-10 exact new repository-relative .cs or .xaml files. Every filename must contain "$IssueNumber", every parent directory must already exist, and every path must be under one of these roots:
 $approvedRoots
+$existingIssueGuidance
 The expectedFailureSignature must be a trimmed single-line string of 3-1000 characters with no newline, control character, URL, or Azure logging directive. Use one literal assertion-message fragment, not an Expected/Actual multi-line rendering.
 "@
         }
