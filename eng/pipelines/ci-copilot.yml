@@ -565,7 +565,7 @@ stages:
               Remove-Item -LiteralPath $privateContextDir -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $contextDir -Force | Out-Null
               New-Item -ItemType Directory -Path $privateContextDir -Force | Out-Null
-              New-Item -ItemType Directory -Path (Join-Path $root "copilot-token-usage/raw") -Force | Out-Null
+              New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -Force | Out-Null
               Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_ROOT]$root"
               Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $contextDir 'issue-context.json')"
               Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
@@ -1889,7 +1889,7 @@ stages:
                 -DeviceName $deviceName `
                 -DeviceOSVersion $deviceOSVersion `
                 -ArtifactRoot $artifactRoot `
-                -TokenUsageOutputDir (Join-Path $artifactRoot "copilot-token-usage/raw")
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw"
               if ($LASTEXITCODE -ne 0) {
                 throw "Issue replication orchestration failed."
               }
@@ -1925,10 +1925,22 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
 
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              $logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"
+              $target = Join-Path $logsDir "copilot-token-usage"
+
+              New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
+              Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction SilentlyContinue
+              Copy-Item -LiteralPath $source -Destination $target -Recurse -Force
+            displayName: 'Stage replication Copilot telemetry'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Replication Copilot Logs'
             inputs:
-              targetPath: '$(REPLICATION_ARTIFACT_ROOT)/copilot-token-usage'
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
               artifact: 'CopilotLogs'
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))

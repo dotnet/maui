@@ -185,10 +185,10 @@ function Read-CopilotTokenUsageRecords {
         return @()
     }
 
-    # Security: the CopilotLogs artifact also bundles PR-worktree content (CustomAgentLogsTmp)
-    # where PR-controlled steps can drop forged copilot-token-usage-*.json. Only trust records
-    # under the pipeline-written 'copilot-token-usage/raw' subtree, and never those under
-    # CustomAgentLogsTmp, so a forged file can't be aggregated and dispatched as official usage.
+    # Security: review-mode CopilotLogs also bundles PR-worktree content (CustomAgentLogsTmp)
+    # where PR-controlled steps can drop forged copilot-token-usage-*.json. Both review and
+    # replication mode retain the pipeline-staged 'copilot-token-usage/raw' subtree. Only trust
+    # that subtree, and never matching files under CustomAgentLogsTmp or agent-pr-session.
     $files = Get-ChildItem -Path $Root -Recurse -File -Filter 'copilot-token-usage-*.json' -ErrorAction SilentlyContinue |
         Where-Object {
             $normalized = $_.FullName -replace '\\', '/'
